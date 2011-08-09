@@ -52,6 +52,7 @@ try:
         import gettext
         import glob
         import itertools
+        import simplejson as json
         import locale
         import logging
         import os
@@ -72,7 +73,6 @@ try:
         import pkg.client.publisher as publisher
         import pkg.fmri as fmri
         import pkg.misc as misc
-        import pkg.portable as portable
         import pkg.version as version
 
         from pkg.client import global_settings
@@ -90,7 +90,7 @@ except KeyboardInterrupt:
         import sys
         sys.exit(1)
 
-CLIENT_API_VERSION = 65
+CLIENT_API_VERSION = 66
 PKG_CLIENT_NAME = "pkg"
 
 JUST_UNKNOWN = 0
@@ -589,21 +589,24 @@ def list_inventory(op, api_inst, pargs,
                 api_inst.log_operation_end(result=history.RESULT_NOTHING_TO_DO)
                 return EXIT_OOPS
 
-def get_tracker(quiet=False, verbose=0):
+def get_tracker(parsable_version=None, quiet=False, verbose=0):
         if quiet:
-                progresstracker = progress.QuietProgressTracker()
+                progresstracker = progress.QuietProgressTracker(
+                    parsable_version=parsable_version)
         else:
                 try:
                         progresstracker = \
                             progress.FancyUNIXProgressTracker(
-                                quiet=quiet, verbose=verbose)
+                                parsable_version=parsable_version, quiet=quiet,
+                                verbose=verbose)
                 except progress.ProgressTrackerException:
                         progresstracker = progress.CommandLineProgressTracker(
-                            quiet=quiet, verbose=verbose)
+                            parsable_version=parsable_version, quiet=quiet,
+                            verbose=verbose)
         return progresstracker
 
 def fix_image(api_inst, args):
-        progresstracker = get_tracker(False)
+        progresstracker = get_tracker(quiet=False)
 
         opts, pargs = getopt.getopt(args, "", ["accept", "licenses"])
 
@@ -774,7 +777,7 @@ def verify_image(api_inst, args):
         any_errors = False
         processed = False
         notfound = EmptyI
-        progresstracker = get_tracker(quiet, verbose)
+        progresstracker = get_tracker(quiet=quiet, verbose=verbose)
         try:
                 res = api_inst.get_pkg_list(api.ImageInterface.LIST_INSTALLED,
                     patterns=pargs, raise_unmatched=True, return_fmris=True)
@@ -1048,6 +1051,98 @@ def __display_plan(api_inst, verbose):
                 for a in plan.get_actions():
                         logger.info("  %s" % a)
 
+def __display_parsable_plan(api_inst, parsable_version,
+    child_images=None):
+        """Display the parsable version of the plan."""
+
+        assert parsable_version == 0, "parsable_version was %r" % \
+            parsable_version
+        plan = api_inst.describe()
+        # Set the default values.
+        added_fmris = []
+        removed_fmris = []
+        changed_fmris = []
+        affected_fmris = []
+        new_be_created = False
+        be_name = None
+        boot_archive_rebuilt = False
+        be_activated = True
+        space_available = None
+        space_required = None
+        facets_changed = []
+        variants_changed = []
+        services_affected = []
+        mediators_changed = []
+        licenses = []
+        if child_images is None:
+                child_images = []
+
+        if plan:
+                for rem, add in plan.get_changes():
+                        assert rem is not None or add is not None
+                        if rem is not None and add is not None:
+                                # Lists of lists are used here becuase json will
+                                # convert lists of tuples into lists of lists
+                                # anyway.
+                                if rem.fmri == add.fmri:
+                                        affected_fmris.append(str(rem))
+                                else:
+                                        changed_fmris.append(
+                                            [str(rem), str(add)])
+                        elif rem is not None:
+                                removed_fmris.append(str(rem))
+                        else:
+                                added_fmris.append(str(add))
+                variants_changed, facets_changed = plan.get_parsable_varcets()
+                new_be_created = plan.new_be
+                be_name = plan.be_name
+                boot_archive_rebuilt = plan.update_boot_archive
+                be_activated = plan.activate_be
+                space_available = plan.bytes_avail
+                space_required = plan.bytes_added
+                services_affected = plan.get_services()
+                mediators_changed = plan.get_parsable_mediators()
+                for dfmri, src_li, dest_li, acc, disp in \
+                    plan.get_licenses():
+                        src_tup = None
+                        if src_li:
+                                src_tup = (str(src_li.fmri), src_li.license,
+                                    src_li.get_text(), src_li.must_accept,
+                                    src_li.must_display)
+                        dest_tup = None
+                        if dest_li:
+                                dest_tup = (str(dest_li.fmri),
+                                    dest_li.license, dest_li.get_text(),
+                                    dest_li.must_accept, dest_li.must_display)
+                        licenses.append(
+                            (str(dfmri), src_tup, dest_tup))
+                        api_inst.set_plan_license_status(dfmri, dest_li.license,
+                            displayed=True)
+        ret = {
+            "create-new-be": new_be_created,
+            "be-name": be_name,
+            "boot-archive-rebuild": boot_archive_rebuilt,
+            "activate-be": be_activated,
+            "space-available": space_available,
+            "space-required": space_required,
+            "remove-packages": sorted(removed_fmris),
+            "add-packages": sorted(added_fmris),
+            "change-packages": sorted(changed_fmris),
+            "affect-packages": sorted(affected_fmris),
+            "change-facets": sorted(facets_changed),
+            "change-variants": sorted(variants_changed),
+            "affect-services": sorted(services_affected),
+            "change-mediators": sorted(mediators_changed),
+            "image-name": None,
+            "child-images": child_images,
+            "version": parsable_version,
+            "licenses": sorted(licenses)
+        }
+        # The image name for the parent image is always None.  If this image is
+        # a child image, then the image name will be set when the parent image
+        # processes this dictionary.
+        logger.info(json.dumps(ret))
+
 def display_plan_licenses(api_inst, show_all=False, show_req=True):
         """Helper function to display licenses for the current plan.
 
@@ -1075,8 +1170,8 @@ def display_plan_licenses(api_inst, show_all=False, show_req=True):
                 # Mark license as having been displayed.
                 api_inst.set_plan_license_status(pfmri, lic, displayed=True)
 
-def display_plan(api_inst, noexecute, op, quiet, show_licenses,
-    stage, verbose):
+def display_plan(api_inst, child_image_plans, noexecute, op, parsable_version,
+    quiet, show_licenses, stage, verbose):
 
         plan = api_inst.describe()
         if not plan:
@@ -1099,10 +1194,14 @@ def display_plan(api_inst, noexecute, op, quiet, show_licenses,
                 msg(s)
                 return
 
-        display_plan_licenses(api_inst, show_all=show_licenses)
+        if parsable_version is None:
+                display_plan_licenses(api_inst, show_all=show_licenses)
 
         if not quiet:
                 __display_plan(api_inst, verbose)
+        if parsable_version is not None:
+                __display_parsable_plan(api_inst, parsable_version,
+                    child_image_plans)
 
 def __api_prepare(operation, api_inst, accept=False):
         # Exceptions which happen here are printed in the above level, with
@@ -1241,7 +1340,7 @@ def __api_execute_plan(operation, api_inst):
         return rval
 
 def __api_alloc(imgdir, exact_match, pkg_image_used, quiet, runid=-1):
-        progresstracker = get_tracker(quiet)
+        progresstracker = get_tracker(quiet=quiet)
 
         def qv(val):
                 # Escape shell metacharacters; '\' must be escaped first to
@@ -1369,8 +1468,9 @@ Cannot remove '%s' due to the following packages that depend on it:"""
         # NOTREACHED
 
 def __api_op(_op, _api_inst, _accept=False, _li_ignore=None, _noexecute=False,
-    _origins=None, _quiet=False, _review_release_notes=False,
-    _show_licenses=False, _stage=API_STAGE_DEFAULT, _verbose=0, **kwargs):
+    _origins=None, _parsable_version=None, _quiet=False,
+    _review_release_notes=False, _show_licenses=False, _stage=API_STAGE_DEFAULT,
+    _verbose=0, **kwargs):
         """Do something that involves the api.
 
         Arguments prefixed with '_' are primarily used within this
@@ -1417,29 +1517,38 @@ def __api_op(_op, _api_inst, _accept=False, _li_ignore=None, _noexecute=False,
 
         first_plan = True
         plan_displayed = False
+        child_plans = []
         try:
                 for pd in api_plan_func(**kwargs):
                         if not first_plan:
                                 #
                                 # we don't display anything for child images
                                 # since they currently do their own display
-                                # work.
+                                # work unless parsable output is requested.
                                 #
+                                child_plans.append(pd)
                                 continue
 
                         # the first plan description is always for ourself.
                         first_plan = False
-                        display_plan(_api_inst, _noexecute, _op, _quiet,
-                            _show_licenses, _stage, _verbose)
-                        plan_displayed = True
+                        if _parsable_version is None:
+                                display_plan(_api_inst, [], _noexecute,
+                                    _op, _parsable_version, _quiet,
+                                    _show_licenses, _stage, _verbose)
+                                plan_displayed = True
         except:
                 rv = __api_plan_exception(_op, _noexecute, _verbose, _api_inst)
                 if rv != EXIT_OK:
                         return rv
 
         if not plan_displayed:
-                display_plan(_api_inst, _noexecute, _op, _quiet,
-                    _show_licenses, _stage, _verbose)
+                try:
+                        display_plan(_api_inst, child_plans, _noexecute, _op,
+                            _parsable_version, _quiet, _show_licenses, _stage,
+                            _verbose)
+                except api_errors.ApiException, e:
+                        error(e, cmd=op)
+                        return EXIT_OOPS
 
         stuff_to_do = not _api_inst.planned_nothingtodo()
         if not stuff_to_do:
@@ -1634,6 +1743,18 @@ def opts_table_cb_nqv(op, api_inst, opts, opts_new):
         if opts["verbose"] and opts["quiet"]:
                 opts_err_incompat("-v", "-q", op)
 
+def opts_table_cb_parsable(op, api_inst, opts, opts_new):
+        if opts["parsable_version"] and opts.get("verbose", False):
+                opts_err_incompat("--parsable", "-v", op)
+        if opts["parsable_version"]:
+                try:
+                        opts_new["parsable_version"] = int(
+                            opts["parsable_version"])
+                except ValueError:
+                        usage(_("--parsable expects an integer argument."),
+                            cmd=op)
+                opts_new["quiet"] = True
+
 def opts_table_cb_origins(op, api_inst, opts, opts_new):
         origins = set()
         for o in opts["origins"]:
@@ -1802,6 +1923,11 @@ opts_table_quiet = [
     ("q", "",                "quiet",                False),
 ]
 
+opts_table_parsable = [
+    opts_table_cb_parsable,
+    ("", "parsable=",        "parsable_version",    None),
+]
+
 opts_table_nqv = \
     opts_table_quiet + \
     opts_table_verbose + \
@@ -1833,6 +1959,7 @@ opts_install = \
     opts_table_no_index + \
     opts_table_no_refresh + \
     opts_table_nqv + \
+    opts_table_parsable + \
     opts_table_origins + \
     []
 
@@ -1868,6 +1995,7 @@ opts_set_mediator = \
     opts_table_beopts + \
     opts_table_no_index + \
     opts_table_nqv + \
+    opts_table_parsable + \
     [
     ("I", "implementation",  "med_implementation",   None),
     ("V", "version",         "med_version",          None)
@@ -1877,6 +2005,7 @@ opts_unset_mediator = \
     opts_table_beopts + \
     opts_table_no_index + \
     opts_table_nqv + \
+    opts_table_parsable + \
     [
     ("I", "",               "med_implementation",   False),
     ("V", "",               "med_version",          False)
@@ -1904,6 +2033,7 @@ opts_uninstall = \
     opts_table_li_ignore + \
     opts_table_no_index + \
     opts_table_nqv + \
+    opts_table_parsable + \
     opts_table_stage
 
 opts_audit_linked = \
@@ -1946,12 +2076,13 @@ opts_list_inventory = \
 
 def change_variant(op, api_inst, pargs,
     accept, be_activate, be_name, li_ignore, li_parent_sync, new_be,
-    noexecute, origins, quiet, refresh_catalogs, reject_pats,
+    noexecute, origins, parsable_version, quiet, refresh_catalogs, reject_pats,
     show_licenses, update_index, verbose):
         """Attempt to change a variant associated with an image, updating
         the image contents as necessary."""
 
-        api_inst.progresstracker = get_tracker(quiet, verbose)
+        api_inst.progresstracker = get_tracker(
+            parsable_version=parsable_version, quiet=quiet, verbose=verbose)
 
         xrval, xres = get_fmri_args(api_inst, reject_pats, cmd=op)
         if not xrval:
@@ -1979,7 +2110,8 @@ def change_variant(op, api_inst, pargs,
                 variants[name] = value
 
         return __api_op(op, api_inst, _accept=accept, _li_ignore=li_ignore,
-            _noexecute=noexecute, _origins=origins, _quiet=quiet,
+            _noexecute=noexecute, _origins=origins,
+            _parsable_version=parsable_version, _quiet=quiet,
             _show_licenses=show_licenses, _verbose=verbose,
             be_activate=be_activate, be_name=be_name,
             li_parent_sync=li_parent_sync, new_be=new_be,
@@ -1988,12 +2120,13 @@ def change_variant(op, api_inst, pargs,
 
 def change_facet(op, api_inst, pargs,
     accept, be_activate, be_name, li_ignore, li_parent_sync, new_be,
-    noexecute, origins, quiet, refresh_catalogs, reject_pats,
+    noexecute, origins, parsable_version, quiet, refresh_catalogs, reject_pats,
     show_licenses, update_index, verbose):
         """Attempt to change the facets as specified, updating
         image as necessary"""
 
-        api_inst.progresstracker = get_tracker(quiet, verbose)
+        api_inst.progresstracker = get_tracker(
+            parsable_version=parsable_version, quiet=quiet, verbose=verbose)
 
         xrval, xres = get_fmri_args(api_inst, reject_pats, cmd=op)
         if not xrval:
@@ -2034,7 +2167,8 @@ def change_facet(op, api_inst, pargs,
                         facets[name] = v
 
         return __api_op(op, api_inst, _accept=accept, _li_ignore=li_ignore,
-            _noexecute=noexecute, _origins=origins, _quiet=quiet,
+            _noexecute=noexecute, _origins=origins,
+            _parsable_version=parsable_version, _quiet=quiet,
             _show_licenses=show_licenses, _verbose=verbose,
             be_activate=be_activate, be_name=be_name,
             li_parent_sync=li_parent_sync, new_be=new_be, facets=facets,
@@ -2043,13 +2177,14 @@ def change_facet(op, api_inst, pargs,
 
 def install(op, api_inst, pargs,
     accept, be_activate, be_name, li_ignore, li_parent_sync, new_be,
-    noexecute, origins, quiet, refresh_catalogs, reject_pats,
+    noexecute, origins, parsable_version, quiet, refresh_catalogs, reject_pats,
     show_licenses, update_index, verbose):
 
         """Attempt to take package specified to INSTALLED state.  The operands
         are interpreted as glob patterns."""
 
-        api_inst.progresstracker = get_tracker(quiet, verbose)
+        api_inst.progresstracker = get_tracker(
+            parsable_version=parsable_version, quiet=quiet, verbose=verbose)
 
         if not pargs:
                 usage(_("at least one package name required"), cmd=op)
@@ -2066,16 +2201,18 @@ def install(op, api_inst, pargs,
             _noexecute=noexecute, _origins=origins, _quiet=quiet,
             _show_licenses=show_licenses, _verbose=verbose,
             be_activate=be_activate, be_name=be_name,
-            li_parent_sync=li_parent_sync, new_be=new_be, pkgs_inst=pargs,
+            li_parent_sync=li_parent_sync, new_be=new_be,
+            _parsable_version=parsable_version, pkgs_inst=pargs,
             refresh_catalogs=refresh_catalogs, reject_list=reject_pats,
             update_index=update_index)
 
 def uninstall(op, api_inst, pargs,
     be_activate, be_name, new_be, li_ignore, update_index, noexecute,
-    quiet, verbose, stage):
+    parsable_version, quiet, verbose, stage):
         """Attempt to take package specified to DELETED state."""
 
-        api_inst.progresstracker = get_tracker(quiet, verbose)
+        api_inst.progresstracker = get_tracker(
+            parsable_version=parsable_version, quiet=quiet, verbose=verbose)
 
         if not pargs:
                 usage(_("at least one package name required"), cmd=op)
@@ -2090,16 +2227,18 @@ def uninstall(op, api_inst, pargs,
         return __api_op(op, api_inst, _li_ignore=li_ignore,
             _noexecute=noexecute, _quiet=quiet, _stage=stage,
             _verbose=verbose, be_activate=be_activate, be_name=be_name,
-            new_be=new_be, pkgs_to_uninstall=pargs, update_index=update_index)
+            new_be=new_be, _parsable_version=parsable_version,
+            pkgs_to_uninstall=pargs, update_index=update_index)
 
 def update(op, api_inst, pargs,
     accept, be_activate, be_name, force, li_ignore, li_parent_sync,
-    new_be, noexecute, origins, quiet, refresh_catalogs, reject_pats,
-    show_licenses, stage, update_index, verbose):
+    new_be, noexecute, origins, parsable_version, quiet, refresh_catalogs,
+    reject_pats, show_licenses, stage, update_index, verbose):
         """Attempt to take all installed packages specified to latest
         version."""
 
-        api_inst.progresstracker = get_tracker(quiet, verbose)
+        api_inst.progresstracker = get_tracker(
+            parsable_version=parsable_version, quiet=quiet, verbose=verbose)
 
         rval, res = get_fmri_args(api_inst, pargs, cmd=op)
         if not rval:
@@ -2125,7 +2264,8 @@ def update(op, api_inst, pargs,
                 review_release_notes = True
 
         return __api_op(op, api_inst, _accept=accept, _li_ignore=li_ignore,
-            _noexecute=noexecute, _origins=origins, _quiet=quiet,
+            _noexecute=noexecute, _origins=origins,
+            _parsable_version=parsable_version, _quiet=quiet,
             _review_release_notes=review_release_notes,
             _show_licenses=show_licenses, _stage=stage, _verbose=verbose,
             be_activate=be_activate, be_name=be_name, force=force,
@@ -2139,13 +2279,14 @@ def revert(api_inst, args):
 
         op = "revert"
         opts, pargs = getopt.getopt(args, "nvq", ["tagged", "deny-new-be",
-            "no-be-activate", "require-new-be", "be-name="])
+            "no-be-activate", "parsable=", "require-new-be", "be-name="])
 
         quiet = tagged = noexecute = False
         verbose = 0
         new_be = None
         be_activate = True
         be_name = None
+        parsable_version = None
 
         for opt, arg in opts:
                 if opt == "-n":
@@ -2164,13 +2305,25 @@ def revert(api_inst, args):
                         be_name = arg
                 elif opt == "--tagged":
                         tagged = True
+                elif opt == "--parsable":
+                        try:
+                                parsable_version = int(arg)
+                        except ValueError:
+                                usage(_("--parsable takes an integer "
+                                    "indicating the version of parsable output "
+                                    "to display."), cmd=op)
+                        quiet = True
 
         if not pargs:
                 usage(_("at least one file path or tag name required"), cmd=op)
         if verbose > 2:
                 DebugValues.set_value("plan", "True")
+        if verbose and (parsable_version is not None):
+                usage(_("verbose and parsable are incompatible options."),
+                    cmd=op)
 
-        api_inst.progresstracker = get_tracker(quiet, verbose)
+        api_inst.progresstracker = get_tracker(
+            parsable_version=parsable_version, quiet=quiet, verbose=verbose)
 
         stuff_to_do = None
         try:
@@ -2188,11 +2341,25 @@ def revert(api_inst, args):
         if not stuff_to_do:
                 if verbose:
                         __display_plan(api_inst, verbose)
-                msg(_("No files need to be reverted."))
+                if parsable_version is not None:
+                        try:
+                                __display_parsable_plan(api_inst,
+                                    parsable_version)
+                        except api_errors.ApiException, e:
+                                error(e, cmd=op)
+                                return EXIT_OOPS
+                else:
+                        msg(_("No files need to be reverted."))
                 return EXIT_NOP
 
         if not quiet:
                 __display_plan(api_inst, verbose)
+        if parsable_version is not None:
+                try:
+                        __display_parsable_plan(api_inst, parsable_version)
+                except api_errors.ApiException, e:
+                        error(e, cmd=op)
+                        return EXIT_OOPS
 
         if noexecute:
                 return EXIT_OK
@@ -2306,8 +2473,10 @@ def list_mediators(op, api_inst, pargs, omit_headers, output_format,
         return EXIT_OK
 
 def set_mediator(op, api_inst, pargs, be_activate, be_name, med_implementation,
-    med_version, new_be, noexecute, quiet, update_index, verbose):
-        """Set the version and/or implementation for the specified mediator(s)."""
+    med_version, new_be, noexecute, parsable_version, quiet, update_index,
+    verbose):
+        """Set the version and/or implementation for the specified
+        mediator(s)."""
 
         op = "set-mediator"
         if not pargs:
@@ -2320,7 +2489,8 @@ def set_mediator(op, api_inst, pargs, be_activate, be_name, med_implementation,
         if verbose > 2:
                 DebugValues.set_value("plan", "True")
 
-        api_inst.progresstracker = get_tracker(quiet, verbose)
+        api_inst.progresstracker = get_tracker(
+            parsable_version=parsable_version, quiet=quiet, verbose=verbose)
 
         # Now set version and/or implementation for all matching mediators.
         # The user may specify 'None' as a special value to explicitly
@@ -2361,11 +2531,25 @@ def set_mediator(op, api_inst, pargs, be_activate, be_name, med_implementation,
         if not stuff_to_do:
                 if verbose:
                         __display_plan(api_inst, verbose)
-                msg(_("No changes required."))
+                if parsable_version is not None:
+                        try:
+                                __display_parsable_plan(api_inst,
+                                    parsable_version)
+                        except api_errors.ApiException, e:
+                                error(e, cmd=op)
+                                return EXIT_OOPS
+                else:
+                        msg(_("No changes required."))
                 return EXIT_NOP
 
         if not quiet:
                 __display_plan(api_inst, verbose)
+        if parsable_version is not None:
+                try:
+                        __display_parsable_plan(api_inst, parsable_version)
+                except api_errors.ApiException, e:
+                        error(e, cmd=op)
+                        return EXIT_OOPS
 
         if noexecute:
                 return EXIT_OK
@@ -2378,9 +2562,11 @@ def set_mediator(op, api_inst, pargs, be_activate, be_name, med_implementation,
 
         return ret_code
 
-def unset_mediator(op, api_inst, pargs, be_activate, be_name, med_implementation,
-    med_version, new_be, noexecute, quiet, update_index, verbose):
-        """Unset the version and/or implementation for the specified mediator(s)."""
+def unset_mediator(op, api_inst, pargs, be_activate, be_name,
+    med_implementation, med_version, new_be, noexecute, parsable_version,quiet,
+    update_index, verbose):
+        """Unset the version and/or implementation for the specified
+        mediator(s)."""
 
         op = "unset-mediator"
         if not pargs:
@@ -2389,7 +2575,8 @@ def unset_mediator(op, api_inst, pargs, be_activate, be_name, med_implementation
         if verbose > 2:
                 DebugValues.set_value("plan", "True")
 
-        api_inst.progresstracker = get_tracker(quiet, verbose)
+        api_inst.progresstracker = get_tracker(
+            parsable_version=parsable_version, quiet=quiet, verbose=verbose)
 
         # Build dictionary of mediators to unset based on input.
         mediators = collections.defaultdict(dict)
@@ -2421,11 +2608,25 @@ def unset_mediator(op, api_inst, pargs, be_activate, be_name, med_implementation
         if not stuff_to_do:
                 if verbose:
                         __display_plan(api_inst, verbose)
-                msg(_("No changes required."))
+                if parsable_version is not None:
+                        try:
+                                __display_parsable_plan(api_inst,
+                                    parsable_version)
+                        except api_errors.ApiException, e:
+                                error(e, cmd=op)
+                                return EXIT_OOPS
+                else:
+                        msg(_("No changes required."))
                 return EXIT_NOP
 
         if not quiet:
                 __display_plan(api_inst, verbose)
+        if parsable_version is not None:
+                try:
+                        __display_parsable_plan(api_inst, parsable_version)
+                except api_errors.ApiException, e:
+                        error(e, cmd=op)
+                        return EXIT_OOPS
 
         if noexecute:
                 return EXIT_OK
@@ -4831,8 +5032,9 @@ def list_property_linked(op, api_inst, pargs,
 
 def set_property_linked(op, api_inst, pargs,
     accept, be_activate, be_name, li_ignore, li_md_only, li_name,
-    li_parent_sync, li_pkg_updates, new_be, noexecute, origins, quiet,
-    refresh_catalogs, reject_pats, show_licenses, update_index, verbose):
+    li_parent_sync, li_pkg_updates, new_be, noexecute, origins,
+    parsable_version, quiet, refresh_catalogs, reject_pats, show_licenses,
+    update_index, verbose):
         """pkg set-property-linked
             [-nvq] [--accept] [--licenses] [--no-index] [--no-refresh]
             [--no-parent-sync] [--no-pkg-updates]
@@ -4841,7 +5043,8 @@ def set_property_linked(op, api_inst, pargs,
         Change the specified linked image properties.  This may result in
         updating the package contents of a child image."""
 
-        api_inst.progresstracker = get_tracker(quiet, verbose)
+        api_inst.progresstracker = get_tracker(
+            parsable_version=parsable_version, quiet=quiet, verbose=verbose)
 
         # make sure we're a child image
         if li_name:
@@ -4884,20 +5087,20 @@ def audit_linked(op, api_inst, pargs,
                 msg(fmt % ("NAME", "STATUS"))
 
         if not quiet:
-                for k, (rv, err) in rvdict.items():
+                for k, (rv, err, p_dict) in rvdict.items():
                         if rv == EXIT_OK:
                                 msg(fmt % (k, _("synced")))
                         elif rv == EXIT_DIVERGED:
                                 msg(fmt % (k, _("diverged")))
 
-        rv, err = api_inst.audit_linked_rvdict2rv(rvdict)
+        rv, err, p_dicts = api_inst.audit_linked_rvdict2rv(rvdict)
         if err:
                 error(err, cmd=op)
         return rv
 
 def sync_linked(op, api_inst, pargs,
     accept, be_activate, be_name, li_ignore, li_parent_sync, new_be,
-    noexecute, origins, quiet, refresh_catalogs, reject_pats,
+    noexecute, origins, parsable_version, quiet, refresh_catalogs, reject_pats,
     show_licenses, update_index, verbose, li_md_only, li_pkg_updates,
     li_target_all, li_target_list, stage):
 
@@ -4908,7 +5111,8 @@ def sync_linked(op, api_inst, pargs,
 
         Sync one or more child images with their parent image."""
 
-        api_inst.progresstracker = get_tracker(quiet, verbose)
+        api_inst.progresstracker = get_tracker(
+            parsable_version=parsable_version, quiet=quiet, verbose=verbose)
 
         xrval, xres = get_fmri_args(api_inst, reject_pats, cmd=op)
         if not xrval:
@@ -4922,8 +5126,8 @@ def sync_linked(op, api_inst, pargs,
                 # sync the current image
                 return __api_op(op, api_inst, _accept=accept,
                     _li_ignore=li_ignore, _noexecute=noexecute,
-                    _origins=origins, _quiet=quiet,
-                    _show_licenses=show_licenses, _stage=stage,
+                    _origins=origins, _parsable_version=parsable_version,
+                    _quiet=quiet, _show_licenses=show_licenses, _stage=stage,
                     _verbose=verbose, be_activate=be_activate,
                     be_name=be_name, li_md_only=li_md_only,
                     li_parent_sync=li_parent_sync,
@@ -4938,20 +5142,28 @@ def sync_linked(op, api_inst, pargs,
             refresh_catalogs=refresh_catalogs, update_index=update_index,
             li_pkg_updates=li_pkg_updates, li_md_only=li_md_only)
 
-        rv, err = api_inst.sync_linked_rvdict2rv(rvdict)
+        rv, err, p_dicts = api_inst.sync_linked_rvdict2rv(rvdict)
         if err:
                 error(err, cmd=op)
+        if parsable_version is not None and rv == EXIT_OK:
+                try:
+                        __display_parsable_plan(api_inst, parsable_version,
+                            p_dicts)
+                except api_errors.ApiException, e:
+                        error(e, cmd=op)
+                        return EXIT_OOPS
         return rv
 
 def attach_linked(op, api_inst, pargs,
     accept, allow_relink, attach_child, attach_parent, be_activate,
     be_name, force, li_ignore, li_md_only, li_parent_sync, li_pkg_updates,
-    li_props, new_be, noexecute, origins, quiet, refresh_catalogs,
-    reject_pats, show_licenses, update_index, verbose):
+    li_props, new_be, noexecute, origins, parsable_version, quiet,
+    refresh_catalogs, reject_pats, show_licenses, update_index, verbose):
         """pkg attach-linked
             [-fnvq] [--accept] [--licenses] [--no-index] [--no-refresh]
             [--no-pkg-updates] [--linked-md-only]
             [--allow-relink]
+            [--parsable-version=<version>]
             [--prop-linked <propname>=<propvalue> ...]
             (-c|-p) <li-name> <dir>
 
@@ -4959,7 +5171,8 @@ def attach_linked(op, api_inst, pargs,
         itself to a parent, or another image being attach as a child with
         this image being the parent."""
 
-        api_inst.progresstracker = get_tracker(quiet, verbose)
+        api_inst.progresstracker = get_tracker(
+            parsable_version=parsable_version, quiet=quiet, verbose=verbose)
 
         for k, v in li_props:
                 if k in [li.PROP_PATH, li.PROP_NAME, li.PROP_MODEL]:
@@ -4984,8 +5197,8 @@ def attach_linked(op, api_inst, pargs,
                 # attach the current image to a parent
                 return __api_op(op, api_inst, _accept=accept,
                     _li_ignore=li_ignore, _noexecute=noexecute,
-                    _origins=origins, _quiet=quiet,
-                    _show_licenses=show_licenses,
+                    _origins=origins, _parsable_version=parsable_version,
+                    _quiet=quiet, _show_licenses=show_licenses,
                     _verbose=verbose, allow_relink=allow_relink,
                     be_activate=be_activate, be_name=be_name, force=force,
                     li_md_only=li_md_only, li_path=li_path,
@@ -4994,7 +5207,7 @@ def attach_linked(op, api_inst, pargs,
                     reject_list=reject_pats, update_index=update_index)
 
         # attach the requested child image
-        (rv, err) = api_inst.attach_linked_child(lin, li_path, li_props,
+        (rv, err, p_dict) = api_inst.attach_linked_child(lin, li_path, li_props,
             accept=accept, allow_relink=allow_relink, force=force,
             li_md_only=li_md_only, li_pkg_updates=li_pkg_updates,
             noexecute=noexecute, refresh_catalogs=refresh_catalogs,
@@ -5003,16 +5216,24 @@ def attach_linked(op, api_inst, pargs,
 
         if err:
                 error(err, cmd=op)
+        if parsable_version is not None and rv == EXIT_OK:
+                assert p_dict is not None
+                try:
+                        __display_parsable_plan(api_inst, parsable_version,
+                            [p_dict])
+                except api_errors.ApiException, e:
+                        error(e, cmd=op)
+                        return EXIT_OOPS
         return rv
 
-def detach_linked(op, api_inst, pargs,
-    force, li_target_all, li_target_list, noexecute, quiet, verbose):
+def detach_linked(op, api_inst, pargs, force, li_target_all, li_target_list,
+    noexecute, quiet, verbose):
         """pkg detach-linked
             [-fnvq] [-a|-l <li-name>] [--linked-md-only]
 
         Detach one or more child linked images."""
 
-        api_inst.progresstracker = get_tracker(quiet, verbose)
+        api_inst.progresstracker = get_tracker(quiet=quiet, verbose=verbose)
 
         li_target_list = api_inst.parse_linked_name_list(li_target_list)
 
@@ -5025,7 +5246,7 @@ def detach_linked(op, api_inst, pargs,
         rvdict = api_inst.detach_linked_children(li_target_list, force=force,
             noexecute=noexecute)
 
-        rv, err = api_inst.detach_linked_rvdict2rv(rvdict)
+        rv, err, p_dicts = api_inst.detach_linked_rvdict2rv(rvdict)
         if err:
                 error(err, cmd=op)
         return rv

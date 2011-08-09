@@ -46,6 +46,7 @@ import os
 import pprint
 import shutil
 import signal
+import simplejson as json
 import stat
 import subprocess
 import sys
@@ -125,7 +126,7 @@ from pkg.client.debugvalues import DebugValues
 
 # Version test suite is known to work with.
 PKG_CLIENT_NAME = "pkg"
-CLIENT_API_VERSION = 65
+CLIENT_API_VERSION = 66
 
 ELIDABLE_ERRORS = [ TestSkippedException, depotcontroller.DepotStateException ]
 
@@ -750,6 +751,74 @@ if __name__ == "__main__":
                     "Actual output differed from expected output.\n" +
                     "\n".join(difflib.unified_diff(expected_lines, actual_lines,
                         "Expected output", "Actual output", lineterm="")))
+
+        def __compare_child_images(self, ev, ov):
+                """A helper function used to match child images with their
+                expected values so that they can be checked."""
+
+                enames = [d["image_name"] for d in ev]
+                onames = [d["image-name"] for d in ov]
+                if sorted(enames) != sorted(onames):
+                        raise RuntimeError("Got a different set of image names "
+                            "than was expected.\nExpected:\n%s\nSeen:\n%s" %
+                            (" ".join(enames), " ".join(onames)))
+                for ed in ev:
+                        for od in ov:
+                                if ed["image_name"] == od["image-name"]:
+                                        self.assertEqualParsable(od, **ed)
+                                        break
+
+        def assertEqualParsable(self, output, activate_be=True,
+            add_packages=EmptyI, affect_packages=EmptyI, affect_services=EmptyI,
+            be_name=None, boot_archive_rebuild=False, change_facets=EmptyI,
+            change_packages=EmptyI, change_mediators=EmptyI,
+            change_variants=EmptyI, child_images=EmptyI, create_new_be=False,
+            image_name=None, licenses=EmptyI, remove_packages=EmptyI,
+            version=0):
+                """Check that the parsable output in 'output' is what is
+                expected."""
+
+                if isinstance(output, basestring):
+                        try:
+                                outd = json.loads(output)
+                        except Exception, e:
+                                raise RuntimeError("JSON couldn't parse the "
+                                    "output.\nError was: %s\nOutput was:\n%s" %
+                                    (e, output))
+                else:
+                        self.assert_(isinstance(output, dict))
+                        outd = output
+                expected = locals()
+                # It's difficult to check that space-available is correct in the
+                # test suite.
+                self.assert_("space-available" in outd)
+                del outd["space-available"]
+                # While we could check for space-required, it just means lots of
+                # tests would need to be changed if we ever changed our size
+                # measurement and other tests should be ensuring that the number
+                # is correct.
+                self.assert_("space-required" in outd)
+                del outd["space-required"]
+                # Add 3 to outd to take account of self, output, and outd.
+                self.assertEqual(len(expected), len(outd) + 3, "Got a "
+                    "different set of keys for expected and outd.  Those in "
+                    "expected but not in outd:\n%s\nThose in outd but not in "
+                    "expected:\n%s" % (
+                        sorted(set([k.replace("_", "-") for k in expected]) -
+                        set(outd)),
+                        sorted(set(outd) -
+                        set([k.replace("_", "-") for k in expected]))))
+                for k in sorted(outd):
+                        ek = k.replace("-", "_")
+                        ev = expected[ek]
+                        if ev == EmptyI:
+                                ev = []
+                        if ek == "child_images" and ev != []:
+                                self.__compare_child_images(ev, outd[k])
+                                continue
+                        self.assertEqual(ev, outd[k], "In image %s, the value "
+                            "of %s was expected to be\n%s but was\n%s" %
+                            (image_name, k, ev, outd[k]))
 
         def configure_rcfile(self, rcfile, config, test_root, section="DEFAULT",
             suffix=""):

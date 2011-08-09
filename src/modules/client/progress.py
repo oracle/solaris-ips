@@ -57,8 +57,9 @@ class ProgressTracker(object):
             External consumers should base their subclasses on the
             NullProgressTracker class. """
 
-        def __init__(self, quiet=False, verbose=0):
+        def __init__(self, parsable_version=None, quiet=False, verbose=0):
 
+                self.parsable_version = parsable_version
                 self.quiet = quiet
                 self.verbose = verbose
 
@@ -513,8 +514,9 @@ class QuietProgressTracker(ProgressTracker):
         """ This progress tracker outputs nothing, but is semantically
             intended to be "quiet"  See also NullProgressTracker below. """
 
-        def __init__(self):
-                ProgressTracker.__init__(self, quiet=True)
+        def __init__(self, parsable_version=None):
+                ProgressTracker.__init__(self,
+                    parsable_version=parsable_version, quiet=True)
 
         def cat_output_start(self):
                 return
@@ -622,8 +624,9 @@ class CommandLineProgressTracker(ProgressTracker):
             and so is appropriate for sending through a pipe.  This code
             is intended to be platform neutral. """
 
-        def __init__(self, quiet=False, verbose=0):
-                ProgressTracker.__init__(self, quiet=quiet,
+        def __init__(self, parsable_version=None, quiet=False, verbose=0):
+                ProgressTracker.__init__(self,
+                    parsable_version=parsable_version, quiet=quiet,
                     verbose=verbose)
                 self.last_printed_pkg = None
                 self.msg_prefix = ""
@@ -803,8 +806,10 @@ class FancyUNIXProgressTracker(ProgressTracker):
         #
         TERM_DELAY = 0.10
 
-        def __init__(self, quiet=False, verbose=0):
-                ProgressTracker.__init__(self, quiet=quiet, verbose=verbose)
+        def __init__(self, parsable_version=None, quiet=False, verbose=0):
+                ProgressTracker.__init__(self,
+                    parsable_version=parsable_version, quiet=quiet,
+                    verbose=verbose)
 
                 self.act_started = False
                 self.ind_started = False

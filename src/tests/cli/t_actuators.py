@@ -282,8 +282,7 @@ stop/type astring method
                 """test actuators"""
 
                 rurl = self.dc.get_repo_url()
-                for pkg in self.pkg_list:
-                        self.pkgsend_bulk(rurl, pkg)
+                plist = self.pkgsend_bulk(rurl, self.pkg_list)
                 self.image_create(rurl)
                 os.environ["PKG_TEST_DIR"] = self.testdata_dir
                 os.environ["PKG_SVCADM_EXIT_CODE"] = "0"
@@ -296,7 +295,11 @@ stop/type astring method
                 os.environ["PKG_SVCPROP_OUTPUT"] = "svcprop_enabled"
 
                 # test to see if our test service is restarted on install
-                self.pkg("install basics@1.0")
+                self.pkg("install --parsable=0 basics@1.0")
+                self.assertEqualParsable(self.output, add_packages=[plist[0]],
+                    affect_services=[["restart_fmri",
+                        "svc:/system/test_restart_svc:default"]
+                    ])
                 self.pkg("verify")
 
                 self.file_contains(svcadm_output,

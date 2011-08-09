@@ -235,13 +235,20 @@ class ImagePlan(object):
 
                 if self.__new_mediators:
                         s = s + "\nMediator changes:\n %s" % \
-                            "\n".join(self.mediators)
+                            "\n".join(self.mediators_to_strings())
 
                 return s
 
         @property
         def mediators(self):
-                """Returns list of strings describing mediator changes."""
+                """Returns a list of three-tuples containing information about
+                the mediators.  The first element in the tuple is the name of
+                the mediator.  The second element is a tuple containing the
+                original version and source and the new version and source of
+                the mediator.  The third element is a tuple containing the
+                original implementation and source and new implementation and
+                source."""
+
                 ret = []
                 cfg_mediators = self.image.cfg.mediators
                 if not (self.__mediators_change and
@@ -257,7 +264,8 @@ class ImagePlan(object):
                                 mimpl_ver = mediators[m].get(
                                     "implementation-version")
                                 if mimpl_ver:
-                                        mimpl_ver = mimpl_ver.get_short_version()
+                                        mimpl_ver = \
+                                            mimpl_ver.get_short_version()
                                 if mimpl and mimpl_ver:
                                         mimpl += "(@%s)" % mimpl_ver
                                 mimpl_source = mediators[m].get(
@@ -284,33 +292,49 @@ class ImagePlan(object):
                                 # Mediation not changed.
                                 continue
 
+                        out = (m,
+                            ((orig_ver, orig_ver_source),
+                            (new_ver, new_ver_source)),
+                            ((orig_impl, orig_impl_source),
+                            (new_impl, new_impl_source)))
+
+                        ret.append(out)
+
+                return ret
+
+        def mediators_to_strings(self):
+                """Returns list of strings describing mediator changes."""
+                ret = []
+                for m, ver, impl in self.mediators:
+                        ((orig_ver, orig_ver_source),
+                            (new_ver, new_ver_source)) = ver
+                        ((orig_impl, orig_impl_source),
+                            (new_impl, new_impl_source)) = impl
                         out = "mediator %s:\n" % m
                         if orig_ver and new_ver:
-                                out += "           version: %s (%s default) -> " \
-                                    "%s (%s default)\n" % (orig_ver,
+                                out += "           version: %s (%s default) " \
+                                    "-> %s (%s default)\n" % (orig_ver,
                                     orig_ver_source, new_ver, new_ver_source)
                         elif orig_ver:
-                                out += "           version: %s (%s default) -> " \
-                                    "None\n" % (orig_ver, orig_ver_source)
+                                out += "           version: %s (%s default) " \
+                                    "-> None\n" % (orig_ver, orig_ver_source)
                         elif new_ver:
                                 out += "           version: None -> " \
                                     "%s (%s default)\n" % (new_ver,
                                     new_ver_source)
 
                         if orig_impl and new_impl:
-                                out += "    implementation: %s (%s default) -> " \
-                                    "%s (%s default)\n" % (orig_impl,
+                                out += "    implementation: %s (%s default) " \
+                                    "-> %s (%s default)\n" % (orig_impl,
                                     orig_impl_source, new_impl, new_impl_source)
                         elif orig_impl:
-                                out += "    implementation: %s (%s default) -> " \
-                                    "None\n" % (orig_impl, orig_impl_source)
+                                out += "    implementation: %s (%s default) " \
+                                    "-> None\n" % (orig_impl, orig_impl_source)
                         elif new_impl:
                                 out += "    implementation: None -> " \
                                     "%s (%s default)\n" % (new_impl,
                                     new_impl_source)
-
                         ret.append(out)
-
                 return ret
 
         @property
@@ -336,15 +360,15 @@ class ImagePlan(object):
         @property
         def varcets(self):
                 """Returns list of variant/facet changes"""
-                ret = []
                 if self.__new_variants:
-                        ret += ["variant %s: %s" % a
-                            for a in self.__new_variants.iteritems()]
+                        vs = self.__new_variants.items()
+                else:
+                        vs = []
                 if self.__new_facets:
-                        ret += ["  facet %s: %s" % a
-                            for a in self.__new_facets.iteritems()]
-
-                return ret
+                        fs = self.__new_facets.items()
+                else:
+                        fs = []
+                return vs, fs
 
         def __verbose_str(self):
                 s = str(self)
@@ -720,7 +744,8 @@ class ImagePlan(object):
                         uninstall = True
 
                 # audits are fast, so do an audit to check if we're in sync.
-                rv, err = self.image.linked.audit_self(li_parent_sync=False)
+                rv, err, p_dict = self.image.linked.audit_self(
+                    li_parent_sync=False)
 
                 # if we're not trying to uninstall packages and we're
                 # already in sync then don't bother invoking the solver.

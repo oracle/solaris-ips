@@ -203,18 +203,22 @@ class TestPkgInstallBasics(pkg5unittest.SingleDepotTestCase):
         def test_basics_1(self):
                 """ Send empty package foo@1.0, install and uninstall """
 
-                self.pkgsend_bulk(self.rurl, self.foo10)
+                plist = self.pkgsend_bulk(self.rurl, self.foo10)
                 self.image_create(self.rurl)
 
                 self.pkg("list -a")
                 self.pkg("list", exit=1)
 
-                self.pkg("install foo")
+                self.pkg("install --parsable=0 foo")
+                self.assertEqualParsable(self.output,
+                    add_packages=plist)
 
                 self.pkg("list")
                 self.pkg("verify")
 
-                self.pkg("uninstall foo")
+                self.pkg("uninstall --parsable=0 foo")
+                self.assertEqualParsable(self.output,
+                    remove_packages=plist)
                 self.pkg("verify")
 
         def test_basics_2(self):
@@ -574,11 +578,14 @@ class TestPkgInstallBasics(pkg5unittest.SingleDepotTestCase):
                 However, "pkg install a@2" works.
                 """
 
-                self.pkgsend_bulk(self.rurl, (self.a6018_1, self.a6018_2,
-                    self.b6018_1))
+                plist = self.pkgsend_bulk(self.rurl, (self.a6018_1,
+                    self.a6018_2, self.b6018_1))
                 self.image_create(self.rurl)
                 self.pkg("install b6018@1 a6018@1")
-                self.pkg("update")
+                # Test the parsable output of update.
+                self.pkg("update --parsable=0")
+                self.assertEqualParsable(self.output,
+                    change_packages=[[plist[0], plist[1]]])
                 self.pkg("list b6018@1 a6018@2")
 
         def test_install_matching(self):
@@ -3703,11 +3710,14 @@ class TestDependencies(pkg5unittest.SingleDepotTestCase):
                     self.pkg142, self.pkg_nosol, self.pkg_renames,
                     self.pkgSUNWcs075))
 
+                self.leaf_pkgs = []
                 for t in self.leaf_expansion:
-                        self.pkgsend_bulk(self.rurl, self.leaf_template % t)
+                        self.leaf_pkgs.extend(self.pkgsend_bulk(self.rurl,
+                            self.leaf_template % t))
 
+                self.incorp_pkgs = []
                 for i in self.incorps:
-                        self.pkgsend_bulk(self.rurl, i)
+                        self.incorp_pkgs.extend(self.pkgsend_bulk(self.rurl, i))
 
         def test_rename_matching(self):
                 """Verify install won't fail with a multiple match error for
@@ -3825,14 +3835,19 @@ class TestDependencies(pkg5unittest.SingleDepotTestCase):
                 self.pkg("install -v A_incorp@1.1  pkgA_1")
                 self.pkg("list pkgA_1@1.1")
                 self.pkg("list A_incorp@1.1")
-                # next attempt will fail because incorporations prevent motion even though
-                # explicit dependency exists from pkg to incorporation.
+                # next attempt will fail because incorporations prevent motion
+                # even though explicit dependency exists from pkg to
+                # incorporation.
                 self.pkg("install pkgA_1@1.2", exit=1)
-                # test to see if we could install both; presence of incorp causes relaxation
-                # of pkg.depend.install-hold
-                self.pkg("install -nv A_incorp@1.2 pkgA_1@1.2")
-                # this attempt also succeeds because pkg.depend.install-hold is relaxed
-                # since A_incorp is on command line
+                # test to see if we could install both; presence of incorp
+                # causes relaxation of pkg.depend.install-hold and also test
+                # that parsable output works when -n is used
+                self.pkg("install -n --parsable=0 A_incorp@1.2 pkgA_1@1.2")
+                self.assertEqualParsable(self.output, change_packages=[
+                    [self.incorp_pkgs[2], self.incorp_pkgs[4]],
+                    [self.leaf_pkgs[9], self.leaf_pkgs[17]]])
+                # this attempt also succeeds because pkg.depend.install-hold is
+                # relaxed since A_incorp is on command line
                 self.pkg("install A_incorp@1.2")
                 self.pkg("list pkgA_1@1.2")
                 self.pkg("list A_incorp@1.2")
@@ -5705,7 +5720,7 @@ class TestPkgInstallLicense(pkg5unittest.SingleDepotTestCase):
                 pkg5unittest.SingleDepotTestCase.setUp(self, publisher="bobcat")
                 self.make_misc_files(self.misc_files)
 
-                plist = self.pkgsend_bulk(self.rurl, (self.licensed10,
+                self.plist = self.pkgsend_bulk(self.rurl, (self.licensed10,
                     self.licensed12, self.licensed13, self.baz10))
 
         def test_01_install_update(self):
@@ -5716,7 +5731,16 @@ class TestPkgInstallLicense(pkg5unittest.SingleDepotTestCase):
 
                 # First, test the basic install case to see if a license that
                 # does not require viewing or acceptance will be installed.
-                self.pkg("install licensed@1.0")
+                self.pkg("install --parsable=0 licensed@1.0")
+                self.assertEqualParsable(self.output,
+                    add_packages=[self.plist[3], self.plist[0]], licenses=[
+                        [self.plist[3], None,
+                            [self.plist[3], "copyright.baz", "copyright.baz",
+                            False, False]],
+                        [self.plist[0], None,
+                            [self.plist[0], "copyright.licensed",
+                            "copyright.licensed", False, False]
+                        ]])
                 self.pkg("list")
                 self.pkg("info licensed@1.0 baz@1.0")
 
@@ -5730,11 +5754,25 @@ class TestPkgInstallLicense(pkg5unittest.SingleDepotTestCase):
 
                 # Next, check that an upgrade succeeds when a license requires
                 # display and that the license will be displayed.
-                self.pkg("install licensed@1.2 | grep 'copyright.licensed'")
+                self.pkg("install --parsable=0 licensed@1.2")
+                self.assertEqualParsable(self.output,
+                    change_packages=[[self.plist[0], self.plist[1]]], licenses=[
+                        [self.plist[1],
+                            None,
+                            [self.plist[1], "license.licensed",
+                            "license.licensed", False, False]],
+                        [self.plist[1],
+                            [self.plist[0], "copyright.licensed",
+                            "copyright.licensed", False, False],
+                            [self.plist[1], "copyright.licensed",
+                            "copyright.licensed", False, True]]])
 
                 # Next, check that an update fails if the user has not
                 # specified --accept and a license requires acceptance.
                 self.pkg("update -v", exit=6)
+                # Check that asking for parsable output doesn't change this
+                # requirement.
+                self.pkg("update --parsable=0", exit=6)
 
                 # Verify that licenses are not included in -n output if
                 # --licenses is not provided.
@@ -5746,7 +5784,14 @@ class TestPkgInstallLicense(pkg5unittest.SingleDepotTestCase):
 
                 # Next, check that an update succeeds if the user has
                 # specified --accept and a license requires acceptance.
-                self.pkg("update -v --accept")
+                self.pkg("update --parsable=0 --accept")
+                self.assertEqualParsable(self.output,
+                    change_packages=[[self.plist[1], self.plist[2]]], licenses=[
+                        [self.plist[2],
+                            [self.plist[1], "license.licensed",
+                            "license.licensed", False, False],
+                            [self.plist[2], "license.licensed",
+                            "license.licensed", True, False]]])
                 self.pkg("info licensed@1.3")
 
 

@@ -159,7 +159,7 @@ class PackageInfo(object):
                 self.attrs = attrs or {}
 
         def __str__(self):
-                return self.fmri
+                return str(self.fmri)
 
         @staticmethod
         def build_from_fmri(f):

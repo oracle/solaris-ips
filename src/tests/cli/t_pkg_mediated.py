@@ -267,8 +267,18 @@ class TestPkgMediated(pkg5unittest.SingleDepotTestCase):
                 # graceful failure.
                 self.pkg("set-mediator -vvv -I sendmail mta", exit=1, su_wrap=True)
 
-                # Verify mediation can be set.
-                self.pkg("set-mediator -vvv -I sendmail mta")
+                # Verify mediation can be set and that the parsable output is
+                # correct.
+                self.pkg("set-mediator -n --parsable=0 -I sendmail mta")
+                self.assertEqualParsable(self.output, change_mediators=[
+                    ["mta",
+                        [[None, None], [None, "system"]],
+                        [[None, None], ["sendmail", "local"]]]])
+                self.pkg("set-mediator --parsable=0 -I sendmail mta")
+                self.assertEqualParsable(self.output, change_mediators=[
+                    ["mta",
+                        [[None, None], [None, "system"]],
+                        [[None, None], ["sendmail", "local"]]]])
                 self.__assert_mediation_matches("""\
 mta\tsystem\t\tlocal\tsendmail\t
 """)
@@ -295,11 +305,26 @@ mta\tlocal\t1.0\tlocal\tpostfix@1.0\t
                 self.__assert_mediation_matches("""\
 mta\tsystem\t\tlocal\tpostfix@1.0\t
 """)
-                self.pkg("set-mediator -V 1.0 mta")
+                # Test the parsable output of set-mediator.
+                self.pkg("set-mediator --parsable=0 -V 1.0 mta")
+                self.assertEqualParsable(self.output, change_mediators=[
+                    ["mta",
+                        [[None, "system"], ["1.0", "local"]],
+                        [["postfix@1.0", "local"], ["postfix@1.0", "local"]]]])
                 self.__assert_mediation_matches("""\
 mta\tlocal\t1.0\tlocal\tpostfix@1.0\t
 """)
-                self.pkg("unset-mediator -vvv -I mta")
+
+                self.pkg("unset-mediator -n --parsable=0 -I mta")
+                self.assertEqualParsable(self.output, change_mediators=[
+                    ["mta",
+                        [["1.0", "local"], ["1.0", "local"]],
+                        [["postfix@1.0", "local"], [None, "system"]]]])
+                self.pkg("unset-mediator --parsable=0 -I mta")
+                self.assertEqualParsable(self.output, change_mediators=[
+                    ["mta",
+                        [["1.0", "local"], ["1.0", "local"]],
+                        [["postfix@1.0", "local"], [None, "system"]]]])
                 self.__assert_mediation_matches("""\
 mta\tlocal\t1.0\tsystem\t\t
 """)

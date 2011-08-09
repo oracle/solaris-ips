@@ -428,6 +428,22 @@ class TestPkgChangeVariant(pkg5unittest.SingleDepotTestCase):
                 self.cv_test("sparc", "global", ["pkg_cluster"],
                     "i386", "nonglobal", ["pkg_cluster"])
 
+        def test_cv_parsable(self):
+                """Test the parsable output of change-variant."""
+
+                self.image_create(self.rurl, variants={
+                    "variant.arch": "i386",
+                    "variant.opensolaris.zone": "nonglobal"
+                })
+                self.pkg("change-variant --parsable=0 variant.arch=sparc "
+                    "variant.opensolaris.zone=global")
+                self.assertEqualParsable(self.output, change_variants=[
+                    ["variant.arch", "sparc"],
+                    ["variant.opensolaris.zone", "global"]])
+                self.pkg("change-variant --parsable=0 variant.arch=i386")
+                self.assertEqualParsable(self.output, change_variants=[
+                    ["variant.arch", "i386"]])
+
 
 if __name__ == "__main__":
         unittest.main()

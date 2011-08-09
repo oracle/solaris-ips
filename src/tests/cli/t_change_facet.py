@@ -20,7 +20,7 @@
 # CDDL HEADER END
 #
 
-# Copyright (c) 2009, 2010, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2009, 2011, Oracle and/or its affiliates. All rights reserved.
 
 import testutils
 if __name__ == "__main__":
@@ -58,7 +58,7 @@ class TestPkgChangeFacet(pkg5unittest.SingleDepotTestCase):
         def setUp(self):
                 pkg5unittest.SingleDepotTestCase.setUp(self)
                 self.make_misc_files(self.misc_files)
-                self.pkgsend_bulk(self.rurl, self.pkg_A)
+                self.plist = self.pkgsend_bulk(self.rurl, self.pkg_A)
 
         def assert_file_is_there(self, path, negate=False):
                 """Verify that the specified path exists. If negate is true,
@@ -104,8 +104,17 @@ class TestPkgChangeFacet(pkg5unittest.SingleDepotTestCase):
                 self.assert_file_is_there("6", negate=True)
                 self.assert_file_is_there("7", negate=True)
 
-                # change to pick up another file w/ two tags
-                self.pkg("change-facet -v facet.locale.nl_ZA=True")
+                # change to pick up another file w/ two tags and test the
+                # parsable output
+                self.pkg("change-facet --parsable=0 facet.locale.nl_ZA=True")
+                self.assertEqualParsable(self.output,
+                    affect_packages=self.plist,
+                    change_facets=[
+                        ["facet.locale*", False],
+                        ["facet.locale.fr*", True],
+                        ["facet.locale.fr_CA", False],
+                        ["facet.locale.nl_ZA", True]
+                    ])
                 self.pkg("verify")
                 self.pkg("facet")
 
@@ -119,7 +128,11 @@ class TestPkgChangeFacet(pkg5unittest.SingleDepotTestCase):
                 self.assert_file_is_there("7")
 
                 # remove all the facets
-                self.pkg("change-facet -v facet.locale*=None 'facet.locale.fr*'=None facet.locale.fr_CA=None")
+                self.pkg("change-facet --parsable=0 facet.locale*=None "
+                    "'facet.locale.fr*'=None facet.locale.fr_CA=None")
+                self.assertEqualParsable(self.output,
+                    affect_packages=self.plist,
+                    change_facets=[["facet.locale.nl_ZA", True]])
                 self.pkg("verify")
 
                 for i in range(8):

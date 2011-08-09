@@ -1,3 +1,25 @@
+Version 66:
+Incompatible with clients using versions 0-63.
+
+    The incompatible change is that attach_linked_child, audit_linked,
+    audit_linked_children, and detach_linked_children now return a tuple
+    containing the return value, any errors, and either None or a dictionary
+    representing the parsable output for the operation. All the *_rvdict2rv
+    functions have been changed similar except they return a list of
+    dictionaries.
+
+    The following are the compatible changes:
+    pkg.client.api.ImageInterface has changed as follows:
+        * gen_plan_* now takes an optional argument, parsable version, which is
+          either None or contains the version of parsable output to generate.
+
+    pkg.client.api.PlanDescription has changed as follows:
+
+        * get_parsable_mediators and get_parsable_varcets have been added as
+          functions which return the raw structures for mediators, variants, and
+          facets rather than the formatted strings which get_mediators and
+          get_varcets do.
+
 Version 65:
 Incompatible with clients using versions 0-64.
 

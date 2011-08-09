@@ -92,7 +92,7 @@ class TestPkgRevert(pkg5unittest.SingleDepotTestCase):
                 self.make_misc_files(self.misc_files)
 
         def test_revert(self):
-                self.pkgsend_bulk(self.rurl, self.pkgs)
+                plist = self.pkgsend_bulk(self.rurl, self.pkgs)
                 self.image_create(self.rurl)
                 # try reverting non-editable files
                 self.pkg("install A@1.0 B@1.0 C@1.0 D@1.0")
@@ -129,8 +129,13 @@ class TestPkgRevert(pkg5unittest.SingleDepotTestCase):
                 self.pkg("verify D")
                 self.damage_all_files()
 
-                # revert damage to B, C,D by tag
-                self.pkg("revert --tagged bob")
+                # revert damage to B, C, D by tag and test the parsable output.
+                self.pkg("revert -n --parsable=0 --tagged bob")
+                self.assertEqualParsable(self.output,
+                    affect_packages=[plist[1], plist[2], plist[3]])
+                self.pkg("revert --parsable=0 --tagged bob")
+                self.assertEqualParsable(self.output,
+                    affect_packages=[plist[1], plist[2], plist[3]])
                 self.pkg("verify A", exit=1)
                 self.pkg("verify B")
                 self.pkg("verify C")

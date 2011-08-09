@@ -73,7 +73,7 @@ from pkg.client.debugvalues import DebugValues
 from pkg.client.pkgdefs import *
 from pkg.smf import NonzeroExitException
 
-CURRENT_API_VERSION = 65
+CURRENT_API_VERSION = 66
 CURRENT_P5I_VERSION = 1
 
 # Image type constants.
@@ -798,7 +798,7 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                 # it later because __reset_unlock() torches it.
                 if exc_type == apx.ConflictingActionErrors:
                         plan_desc = PlanDescription(self._img, self.__new_be,
-                            self.__be_activate)
+                            self.__be_activate, self.__be_name)
 
                 self.__reset_unlock()
 
@@ -859,9 +859,8 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
         def __plan_op(self, _op, _accept=False, _ad_kwargs=None,
             _be_activate=True, _be_name=None, _ipkg_require_latest=False,
             _li_ignore=None, _li_md_only=False, _li_parent_sync=True,
-            _new_be=False, _noexecute=False, _refresh_catalogs=True,
-            _repos=None, _update_index=True,
-            **kwargs):
+            _new_be=False, _noexecute=False,
+            _refresh_catalogs=True, _repos=None, _update_index=True, **kwargs):
                 """Contructs a plan to change the package or linked image
                 state of an image.
 
@@ -887,8 +886,10 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                 'gen_plan_*' functions which invoke this function for an
                 explanation of their usage and effects.
 
-                This function returns a boolean indicating whether there is
-                anything to do."""
+                This function first yields the plan description for the global
+                zone, then either a series of dictionaries representing the
+                parsable output from operating on the child images or a series
+                of None values."""
 
                 # sanity checks
                 assert _op in api_op_values
@@ -942,7 +943,8 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
 
                         # prepare to recurse into child images
                         self._img.linked.init_recurse(_op, _li_ignore,
-                            _accept, _refresh_catalogs, _update_index, kwargs)
+                            _accept, _refresh_catalogs,
+                            _update_index, kwargs)
 
                         if _op == API_OP_ATTACH:
                                 self._img.linked.attach_parent(**_ad_kwargs)
@@ -1009,7 +1011,7 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                         self._disable_cancel()
                         self.__set_new_be()
                         self.__plan_desc = PlanDescription(self._img,
-                            self.__new_be, self.__be_activate)
+                            self.__new_be, self.__be_activate, self.__be_name)
 
                         # Yield to our caller so they can display our plan
                         # before we recurse into child images.  Drop the
@@ -1020,11 +1022,15 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                         yield self.__plan_desc
                         self._activity_lock.acquire()
 
-                        # plan operation in child images.  eventually these
-                        # will yield plan descriptions objects as well.
+                        # plan operation in child images.  This currently yields
+                        # either a dictionary representing the parsable output
+                        # from the child image operation, or None.  Eventually
+                        # these will yield plan descriptions objects instead.
                         if self.__stage in [API_STAGE_DEFAULT, API_STAGE_PLAN]:
-                                self._img.linked.do_recurse(API_STAGE_PLAN,
-                                    ip=self._img.imageplan)
+                                plans = self._img.linked.do_recurse(
+                                    API_STAGE_PLAN, ip=self._img.imageplan)
+                                for rv, p_dict in plans:
+                                        yield p_dict
                         self.__planned_children = True
 
                 except:
@@ -1109,8 +1115,9 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
             li_parent_sync=True, new_be=True, noexecute=False,
             refresh_catalogs=True, reject_list=misc.EmptyI, repos=None,
             update_index=True):
-                """This is a generator function that returns PlanDescription
-                objects.
+                """This is a generator function that yields a PlanDescription
+                object.  If parsable_version is set, it also yields dictionaries
+                containing plan information for child images.
 
                 If pkgs_update is not set, constructs a plan to update all
                 packages on the system to the latest known versions.  Once an
@@ -1163,10 +1170,11 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
 
         def gen_plan_install(self, pkgs_inst, accept=False, be_activate=True,
             be_name=None, li_ignore=None, li_parent_sync=True, new_be=False,
-            noexecute=False, refresh_catalogs=True, reject_list=misc.EmptyI,
-            repos=None, update_index=True):
-                """This is a generator function that returns PlanDescription
-                objects.
+            noexecute=False, refresh_catalogs=True,
+            reject_list=misc.EmptyI, repos=None, update_index=True):
+                """This is a generator function that yields a PlanDescription
+                object.  If parsable_version is set, it also yields dictionaries
+                containing plan information for child images.
 
                 Constructs a plan to install the packages provided in
                 pkgs_inst.  Once an operation has been planned, it may be
@@ -1240,10 +1248,11 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
         def gen_plan_sync(self, accept=False, be_activate=True, be_name=None,
             li_ignore=None, li_md_only=False, li_parent_sync=True,
             li_pkg_updates=True, new_be=False, noexecute=False,
-            refresh_catalogs=True, reject_list=misc.EmptyI, repos=None,
-            update_index=True):
-                """This is a generator function that returns PlanDescription
-                objects.
+            refresh_catalogs=True,
+            reject_list=misc.EmptyI, repos=None, update_index=True):
+                """This is a generator function that yields a PlanDescription
+                object.  If parsable_version is set, it also yields dictionaries
+                containing plan information for child images.
 
                 Constructs a plan to sync the current image with its
                 linked image constraints.  Once an operation has been planned,
@@ -1285,10 +1294,11 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
             allow_relink=False, be_activate=True, be_name=None,
             force=False, li_ignore=None, li_md_only=False,
             li_pkg_updates=True, li_props=None, new_be=False,
-            noexecute=False, refresh_catalogs=True, reject_list=misc.EmptyI,
-            repos=None, update_index=True):
-                """This is a generator function that returns PlanDescription
-                objects.
+            noexecute=False, refresh_catalogs=True,
+            reject_list=misc.EmptyI, repos=None, update_index=True):
+                """This is a generator function that yields a PlanDescription
+                object.  If parsable_version is set, it also yields dictionaries
+                containing plan information for child images.
 
                 Attach a parent image and sync the packages in the current
                 image with the new parent.  Once an operation has been
@@ -1337,8 +1347,9 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
         def gen_plan_detach(self, accept=False, be_activate=True,
             be_name=None, force=False, li_ignore=None, new_be=False,
             noexecute=False):
-                """This is a generator function that returns PlanDescription
-                objects.
+                """This is a generator function that yields a PlanDescription
+                object.  If parsable_version is set, it also yields dictionaries
+                containing plan information for child images.
 
                 Detach from a parent image and remove any constraints
                 package from this image.  Once an operation has been planned,
@@ -1375,8 +1386,9 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
         def gen_plan_uninstall(self, pkgs_to_uninstall, accept=False,
             be_activate=True, be_name=None, li_ignore=None, new_be=False,
             noexecute=False, update_index=True):
-                """This is a generator function that returns PlanDescription
-                objects.
+                """This is a generator function that yields a PlanDescription
+                object.  If parsable_version is set, it also yields dictionaries
+                containing plan information for child images.
 
                 Constructs a plan to remove the packages provided in
                 pkgs_to_uninstall.  Once an operation has been planned, it may
@@ -1406,8 +1418,9 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
         def gen_plan_set_mediators(self, mediators, be_activate=True,
             be_name=None, li_ignore=None, li_parent_sync=True, new_be=None,
             noexecute=False, update_index=True):
-                """This is a generator function that returns PlanDescription
-                objects.
+                """This is a generator function that yields a PlanDescription
+                object.  If parsable_version is set, it also yields dictionaries
+                containing plan information for child images.
 
                 Creates a plan to change the version and implementation values
                 for mediators as specified in the provided dictionary.  Once an
@@ -1463,10 +1476,11 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
         def gen_plan_change_varcets(self, facets=None, variants=None,
             accept=False, be_activate=True, be_name=None, li_ignore=None,
             li_parent_sync=True, new_be=None, noexecute=False,
-            refresh_catalogs=True, reject_list=misc.EmptyI, repos=None,
-            update_index=True):
-                """This is a generator function that returns PlanDescription
-                objects.
+            refresh_catalogs=True,
+            reject_list=misc.EmptyI, repos=None, update_index=True):
+                """This is a generator function that yields a PlanDescription
+                object.  If parsable_version is set, it also yields dictionaries
+                containing plan information for child images.
 
                 Creates a plan to change the specified variants and/or
                 facets for the image.  Once an operation has been planned, it
@@ -1513,8 +1527,9 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
 
         def gen_plan_revert(self, args, tagged=False, noexecute=True,
             be_activate=True, be_name=None, new_be=None):
-                """This is a generator function that returns PlanDescription
-                objects.
+                """This is a generator function that yields a PlanDescription
+                object.  If parsable_version is set, it also yields dictionaries
+                containing plan information for child images.
 
                 Plan to revert either files or all files tagged with
                 specified values.  Args contains either path names or tag
@@ -1592,7 +1607,8 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                 return self._img.linked.attach_child(lin, li_path, li_props,
                     accept=accept, allow_relink=allow_relink, force=force,
                     li_md_only=li_md_only, li_pkg_updates=li_pkg_updates,
-                    noexecute=noexecute, progtrack=self.__progresstracker,
+                    noexecute=noexecute,
+                    progtrack=self.__progresstracker,
                     refresh_catalogs=refresh_catalogs, reject_list=reject_list,
                     show_licenses=show_licenses, update_index=update_index)
 
@@ -1616,10 +1632,9 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                 encountered err is an exception object which describes the
                 error."""
 
-                rvdict = self._img.linked.detach_children(li_list,
+                return self._img.linked.detach_children(li_list,
                     force=force, noexecute=noexecute,
                     progtrack=self.__progresstracker)
-                return rvdict
 
         def detach_linked_rvdict2rv(self, rvdict):
                 """Convenience function that takes a dictionary returned from
@@ -1630,8 +1645,8 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
 
         def sync_linked_children(self, li_list,
             accept=False, li_md_only=False,
-            li_pkg_updates=True, noexecute=False, refresh_catalogs=True,
-            show_licenses=False, update_index=True):
+            li_pkg_updates=True, noexecute=False,
+            refresh_catalogs=True, show_licenses=False, update_index=True):
                 """Sync one or more children of the current image.
 
                 For all other parameters, refer to the 'attach_linked_child'
@@ -1686,8 +1701,9 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
 
                 lin = self._img.linked.child_name
                 rvdict = {}
-                rvdict[lin] = self._img.linked.audit_self(
+                ret = self._img.linked.audit_self(
                     li_parent_sync=li_parent_sync)
+                rvdict[lin] = ret
                 return rvdict
 
         def ischild(self):
@@ -4496,22 +4512,40 @@ class Query(query_p.Query):
 class PlanDescription(object):
         """A class which describes the changes the plan will make."""
 
-        def __init__(self, img, new_be, be_activate):
+        def __init__(self, img, new_be, be_activate, be_name):
                 self.__plan = img.imageplan
                 self._img = img
                 self.__new_be = new_be
                 self.__be_activate = be_activate
+                self.__be_name = be_name
 
         def get_services(self):
                 """Returns a list of services affected in this plan."""
                 return self.__plan.services
 
         def get_mediators(self):
-                """Returns a dict of mediator changes in this plan"""
-                return self.__plan.mediators
+                """Returns a list of strings contianing mediator changes in this
+                plan"""
+                return self.__plan.mediators_to_strings()
 
+        def get_parsable_mediators(self):
+                """Returns a list of mediator changes in this plan"""
+                return self.__plan.mediators
+        
         def get_varcets(self):
-                """Returns a list of variant/facet changes in this plan"""
+                """Returns a formatted list of strings representing the
+                variant/facet changes in this plan"""
+                vs, fs = self.__plan.varcets
+                ret = []
+                for v in vs:
+                        ret += ["variant %s: %s" % a for a in vs]
+                for f in fs:
+                        ret += ["  facet %s: %s" % a for a in fs]
+                return ret
+
+        def get_parsable_varcets(self):
+                """Returns a tuple of two lists containing the facet and variant
+                changes in this plan."""
                 return self.__plan.varcets
 
         def get_changes(self):
@@ -4618,6 +4652,12 @@ class PlanDescription(object):
                 """A boolean value indicating whether any new boot environment
                 will be set active on next boot."""
                 return self.__be_activate
+
+        @property
+        def be_name(self):
+                """A value containing either the name of the boot environment to
+                create, or None."""
+                return self.__be_name
 
         @property
         def reboot_needed(self):

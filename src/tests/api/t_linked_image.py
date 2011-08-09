@@ -366,7 +366,8 @@ class TestApiLinked(pkg5unittest.ManyDepotTestCase):
                 # attach each child to parent
                 for c in cl:
                         rv = rvdict.get(c, EXIT_OK)
-                        (c_rv, c_err) = self.api_objs[i].attach_linked_child(
+                        (c_rv, c_err, p_dict) = \
+                            self.api_objs[i].attach_linked_child(
                             lin=self.i_lin[c], li_path=self.i_path[c], **args)
                         self.assertEqual(rv, c_rv, """
 Child attach returned unexpected error code.  Expected %d, got: %d.
@@ -398,7 +399,7 @@ Error output:
 
                 # check that the actual return values match up with expected
                 # return values in rvdict
-                for c_lin, (c_rv, c_err) in c_rvdict.items():
+                for c_lin, (c_rv, c_err, p_dict) in c_rvdict.items():
                         rv = rvdict.get(self.i_lin2index[c_lin], EXIT_OK)
                         self.assertEqual(c_rv, rv)
 
@@ -819,17 +820,17 @@ packages known:
                 api_objs[1].reset()
 
                 # Attach p2c, 0 -> 2 (sync error)
-                (rv, err) = api_objs[0].attach_linked_child(
+                (rv, err, p_dict) = api_objs[0].attach_linked_child(
                     lin=self.i_lin[2], li_path=self.i_path[2])
                 self.assertEqual(rv, EXIT_OOPS)
 
                 # Attach p2c, 0 -> 3 (sync error)
-                (rv, err) = api_objs[0].attach_linked_child(
+                (rv, err, p_dict) = api_objs[0].attach_linked_child(
                     lin=self.i_lin[3], li_path=self.i_path[3])
                 self.assertEqual(rv, EXIT_OOPS)
 
                 # Attach p2c, 0 -> 4 (sync error)
-                (rv, err) = api_objs[0].attach_linked_child(
+                (rv, err, p_dict) = api_objs[0].attach_linked_child(
                     lin=self.i_lin[4], li_path=self.i_path[4])
                 self.assertEqual(rv, EXIT_OOPS)
 

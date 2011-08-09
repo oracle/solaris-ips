@@ -1308,7 +1308,7 @@ class LinkedImage(object):
                 parent."""
 
                 if not self.ischild():
-                        return (pkgdefs.EXIT_OOPS, self.__apx_not_child())
+                        return (pkgdefs.EXIT_OOPS, self.__apx_not_child(), None)
 
                 try:
                         if li_parent_sync:
@@ -1317,14 +1317,14 @@ class LinkedImage(object):
                                 self.syncmd_from_parent()
 
                 except apx.LinkedImageException, e:
-                        return (e.lix_exitrv, e)
+                        return (e.lix_exitrv, e, None)
 
                 if not self.__insync():
                         e = apx.LinkedImageException(
                             child_diverged=self.child_name)
-                        return (pkgdefs.EXIT_DIVERGED, e)
+                        return (pkgdefs.EXIT_DIVERGED, e, None)
 
-                return (pkgdefs.EXIT_OK, None)
+                return (pkgdefs.EXIT_OK, None, None)
 
         @staticmethod
         def __rvdict2rv(rvdict, rv_map=None):
@@ -1333,11 +1333,12 @@ class LinkedImage(object):
                 into a single return code."""
 
                 assert not rvdict or type(rvdict) == dict
-                for k, (rv, err) in rvdict.iteritems():
+                for k, (rv, err, p_dict) in rvdict.iteritems():
                         assert type(k) == LinkedImageName
                         assert type(rv) == int
                         assert err is None or \
                             isinstance(err, apx.LinkedImageException)
+                        assert p_dict is None or isinstance(p_dict, dict)
                 if type(rv_map) != type(None):
                         assert type(rv_map) == list
                         for (rv_set, rv) in rv_map:
@@ -1345,16 +1346,21 @@ class LinkedImage(object):
                                 assert(type(rv) == int)
 
                 if not rvdict:
-                        return (pkgdefs.EXIT_OK, None)
+                        return (pkgdefs.EXIT_OK, None, None)
 
                 if not rv_map:
                         rv_map = [(set([pkgdefs.EXIT_OK]), pkgdefs.EXIT_OK)]
 
+                p_dicts = [
+                    p_dict for (rv, e, p_dict) in rvdict.itervalues()
+                    if p_dict is not None
+                ]
+
                 rv_mapped = set()
-                rv_seen = set([rv for (rv, e) in rvdict.itervalues()])
+                rv_seen = set([rv for (rv, e, p_dict) in rvdict.itervalues()])
                 for (rv_map_set, rv_map_rv) in rv_map:
                         if (rv_seen == rv_map_set):
-                                return (rv_map_rv, None)
+                                return (rv_map_rv, None, p_dicts)
                         # keep track of all the return values that are mapped
                         rv_mapped |= rv_map_set
 
@@ -1364,7 +1370,7 @@ class LinkedImage(object):
                 # if we had errors for unmapped return values, bundle them up
                 errs = [
                         e
-                        for (rv, e) in rvdict.itervalues()
+                        for (rv, e, p_dict) in rvdict.itervalues()
                         if e and rv not in rv_mapped
                 ]
                 if errs:
@@ -1374,9 +1380,9 @@ class LinkedImage(object):
 
                 if len(rv_seen) == 1:
                         # we have one consistent return value
-                        return (list(rv_seen)[0], err)
+                        return (list(rv_seen)[0], err, p_dicts)
 
-                return (pkgdefs.EXIT_PARTIAL, err)
+                return (pkgdefs.EXIT_PARTIAL, err, p_dicts)
 
         def audit_rvdict2rv(self, rvdict):
                 """Convenience function that takes a dictionary returned from
@@ -1513,8 +1519,8 @@ class LinkedImage(object):
 
         def attach_child(self, lin, path, props,
             accept=False, allow_relink=False, force=False, li_md_only=False,
-            li_pkg_updates=True, noexecute=False, progtrack=None,
-            refresh_catalogs=True, reject_list=misc.EmptyI,
+            li_pkg_updates=True, noexecute=False,
+            progtrack=None, refresh_catalogs=True, reject_list=misc.EmptyI,
             show_licenses=False, update_index=True):
                 """Attach an image as a child to the current image (the
                 current image will become a parent image. This operation
@@ -1526,7 +1532,6 @@ class LinkedImage(object):
 
                 # Too many arguments; pylint: disable-msg=R0913
                 # Too many return statements; pylint: disable-msg=R0911
-
                 assert type(lin) == LinkedImageName
                 assert type(path) == str
                 assert props == None or type(props) == dict, \
@@ -1538,12 +1543,12 @@ class LinkedImage(object):
                 if not lip.support_attach and not force:
                         e = apx.LinkedImageException(
                             attach_child_notsup=lin.lin_type)
-                        return (e.lix_exitrv, e)
+                        return (e.lix_exitrv, e, None)
 
                 # Path must be an absolute path.
                 if not os.path.isabs(path):
                         e = apx.LinkedImageException(child_path_notabs=path)
-                        return (e.lix_exitrv, e)
+                        return (e.lix_exitrv, e, None)
 
                 # cleanup specified path
                 cwd = os.getcwd()
@@ -1551,7 +1556,7 @@ class LinkedImage(object):
                         os.chdir(path)
                 except OSError, e:
                         e = apx.LinkedImageException(child_path_eaccess=path)
-                        return (e.lix_exitrv, e)
+                        return (e.lix_exitrv, e, None)
                 path = os.getcwd()
                 os.chdir(cwd)
 
@@ -1575,7 +1580,7 @@ class LinkedImage(object):
                         self.__validate_child_attach(lin, path, props,
                             allow_relink=allow_relink)
                 except apx.LinkedImageException, e:
-                        return (e.lix_exitrv, e)
+                        return (e.lix_exitrv, e, None)
 
                 # make a copy of the options and start updating them
                 child_props = props.copy()
@@ -1594,40 +1599,40 @@ class LinkedImage(object):
 
                 if noexecute and li_md_only:
                         # we've validated parameters, nothing else to do
-                        return (pkgdefs.EXIT_OK, None)
+                        return (pkgdefs.EXIT_OK, None, None)
 
                 # update the child
                 try:
                         lic = LinkedImageChild(self, lin)
                 except apx.LinkedImageException, e:
-                        return (e.lix_exitrv, e)
+                        return (e.lix_exitrv, e, None)
 
-                rv, e = self.__sync_child(lic,
+                rv, e, p_dict = self.__sync_child(lic,
                     accept=accept, li_attach_sync=True, li_md_only=li_md_only,
                     li_pkg_updates=li_pkg_updates, noexecute=noexecute,
-                    progtrack=progtrack, refresh_catalogs=refresh_catalogs,
-                    reject_list=reject_list, show_licenses=show_licenses,
-                    update_index=update_index)
+                    progtrack=progtrack,
+                    refresh_catalogs=refresh_catalogs, reject_list=reject_list,
+                    show_licenses=show_licenses, update_index=update_index)
 
                 assert isinstance(e, (type(None), apx.LinkedImageException))
 
                 if rv not in [pkgdefs.EXIT_OK, pkgdefs.EXIT_NOP]:
-                        return (rv, e)
+                        return (rv, e, p_dict)
 
                 if noexecute:
                         # if noexecute then we're done
-                        return (pkgdefs.EXIT_OK, None)
+                        return (pkgdefs.EXIT_OK, None, p_dict)
 
                 # save child image properties
                 rv, e = lip.sync_children_todisk()
                 assert isinstance(e, (type(None), apx.LinkedImageException))
                 if e:
-                        return (pkgdefs.EXIT_OOPS, e)
+                        return (pkgdefs.EXIT_OOPS, e, p_dict)
 
                 # save parent image properties
                 self.syncmd()
 
-                return (pkgdefs.EXIT_OK, None)
+                return (pkgdefs.EXIT_OK, None, p_dict)
 
         def audit_children(self, lin_list, **kwargs):
                 """Audit one or more children of the current image to see if
@@ -1664,7 +1669,7 @@ class LinkedImage(object):
                 for lin in lin_list:
                         # if the detach failed leave metadata in parent
                         # Unused variable 'rv'; pylint: disable-msg=W0612
-                        rv, e = rvdict[lin]
+                        rv, e, p_dict = rvdict[lin]
                         # pylint: enable-msg=W0612
                         assert e == None or \
                             (isinstance(e, apx.LinkedImageException))
@@ -1682,7 +1687,7 @@ class LinkedImage(object):
                                     (isinstance(e2, apx.LinkedImageException))
                                 if not e:
                                         # don't overwrite previous errors
-                                        rvdict[lin] = (rv2, e2)
+                                        rvdict[lin] = (rv2, e2, p_dict)
 
                 if not (self.ischild() or self.isparent()):
                         # we're not linked anymore, so delete all our linked
@@ -1712,13 +1717,13 @@ class LinkedImage(object):
                                 rvdict[lin] = op(lic, **kwargs)
 
                                 # Unused variable; pylint: disable-msg=W0612
-                                rv, e = rvdict[lin]
+                                rv, e, p_dict = rvdict[lin]
                                 # pylint: enable-msg=W0612
                                 assert e == None or \
                                     (isinstance(e, apx.LinkedImageException))
 
                         except apx.LinkedImageException, e:
-                                rvdict[lin] = (e.lix_exitrv, e)
+                                rvdict[lin] = (e.lix_exitrv, e, None)
 
                 return rvdict
 
@@ -1742,7 +1747,7 @@ class LinkedImage(object):
                         # we can't detach this type of image.
                         e = apx.LinkedImageException(
                             detach_child_notsup=lin.lin_type)
-                        return (pkgdefs.EXIT_OOPS, e)
+                        return (pkgdefs.EXIT_OOPS, e, None)
 
                 # remove linked data from the child
                 return lic.child_detach(noexecute=noexecute,
@@ -1753,10 +1758,12 @@ class LinkedImage(object):
 
                 self.__lic_list = []
 
-        def init_recurse(self, op, li_ignore, accept, refresh_catalogs,
-            update_index, args):
+        def init_recurse(self, op, li_ignore, accept,
+            refresh_catalogs, update_index, args):
                 """When planning changes on a parent image, prepare to
                 recurse into all child images and operate on them as well."""
+
+                # Too many arguments; pylint: disable-msg=R0913
 
                 if op == pkgdefs.API_OP_DETACH:
                         # we don't need to recurse for these operations
@@ -1799,7 +1806,8 @@ class LinkedImage(object):
 
                 for lic in self.__lic_list:
                         lic.child_init_recurse(pkg_op, accept,
-                            refresh_catalogs, update_index, args)
+                            refresh_catalogs, update_index,
+                            args)
 
         def do_recurse(self, stage, ip=None):
                 """When planning changes within a parent image, recurse into
@@ -1808,8 +1816,10 @@ class LinkedImage(object):
                 assert stage in pkgdefs.api_stage_values
                 assert stage != pkgdefs.API_STAGE_DEFAULT
 
+                res = []
                 for lic in self.__lic_list:
-                        lic.child_do_recurse(stage=stage, ip=ip)
+                        res.append(lic.child_do_recurse(stage=stage, ip=ip))
+                return res
 
         def recurse_nothingtodo(self):
                 """Return True if there is no planned work to do on child
@@ -2220,7 +2230,13 @@ class LinkedImageChild(object):
                 if not disp_linked_cmds and \
                     "PKG_DISP_LINKED_CMDS" in os.environ:
                         disp_linked_cmds = True
-                if disp_linked_cmds:
+                pv_in_args = False
+                for a in pkg_args:
+                        if a.startswith("--parsable="):
+                                pv_in_args = True
+                # If we're using --parsable, don't emit the child cmd
+                # information as info because it will confuse the JSON parser.
+                if disp_linked_cmds and not pv_in_args:
                         logger.info("child cmd: %s" % " ".join(pkg_cmd))
                 else:
                         logger.debug("child cmd: %s" % " ".join(pkg_cmd))
@@ -2230,8 +2246,15 @@ class LinkedImageChild(object):
                 # access to stdout but capture stderr.
                 #
                 ferrout = tempfile.TemporaryFile()
+                # If we're using --parsable, then we need to capture stdout so
+                # that we can parse the plan of the child image and include it
+                # in our plan.
+                outloc = None
+                if pv_in_args:
+                        outloc = tempfile.TemporaryFile()
                 try:
-                        p = pkg.pkgsubprocess.Popen(pkg_cmd, stderr=ferrout)
+                        p = pkg.pkgsubprocess.Popen(pkg_cmd, stderr=ferrout,
+                            stdout=outloc)
                         p.wait()
                 except OSError, e:
                         # W0212 Access to a protected member
@@ -2248,7 +2271,22 @@ class LinkedImageChild(object):
                 if progtrack:
                         progtrack.li_recurse_end(self.child_name)
 
-                return (p.returncode, errout)
+                p_dict = None
+                # A parsable plan is only displayed if the operation was
+                # successful and the stage was default or plan.
+                if pv_in_args and stage in (pkgdefs.API_STAGE_PLAN,
+                    pkgdefs.API_STAGE_DEFAULT) and p.returncode == 0:
+                        outloc.seek(0)
+                        output = outloc.read()
+                        try:
+                                p_dict = json.loads(output)
+                        except ValueError, e:
+                                # JSON raises a subclass of ValueError when it
+                                # can't parse a string.
+                                raise apx.UnparsableJSON(output, e)
+                        p_dict["image-name"] = str(self.child_name)
+
+                return (p.returncode, errout, p_dict)
 
         def child_detach(self, noexecute=False, progtrack=None):
                 """Detach a child image."""
@@ -2264,16 +2302,16 @@ class LinkedImageChild(object):
                 if noexecute:
                         pkg_args.append("-n")
 
-                rv, errout = self.__pkg_cmd(pkgdefs.PKG_OP_DETACH,
+                rv, errout, p_dict = self.__pkg_cmd(pkgdefs.PKG_OP_DETACH,
                     pkg_args)
 
                 # if the detach command ran, return its status.
                 if rv in [pkgdefs.EXIT_OK, pkgdefs.EXIT_NOPARENT]:
-                        return (pkgdefs.EXIT_OK, None)
+                        return (pkgdefs.EXIT_OK, None, p_dict)
 
                 e = apx.LinkedImageException(lin=self.child_name, exitrv=rv,
                     pkg_op_failed=(pkgdefs.PKG_OP_DETACH, rv, errout))
-                return (rv, e)
+                return (rv, e, p_dict)
 
         def child_audit(self):
                 """Audit a child image to see if it's in sync with its
@@ -2285,17 +2323,17 @@ class LinkedImageChild(object):
                 # recurse into the child image
                 pkg_args = ["-q"]
 
-                rv, errout = self.__pkg_cmd(pkgdefs.PKG_OP_AUDIT_LINKED,
+                rv, errout, p_dict = self.__pkg_cmd(pkgdefs.PKG_OP_AUDIT_LINKED,
                     pkg_args)
 
                 # if the audit command ran, return its status.
                 if rv in [pkgdefs.EXIT_OK, pkgdefs.EXIT_DIVERGED]:
-                        return (rv, None)
+                        return (rv, None, p_dict)
 
                 # something went unexpectedly wrong.
                 e = apx.LinkedImageException(lin=self.child_name, exitrv=rv,
                     pkg_op_failed=(pkgdefs.PKG_OP_AUDIT_LINKED, rv, errout))
-                return (rv, e)
+                return (rv, e, p_dict)
 
         def child_sync(self, accept=False, li_attach_sync=False,
             li_md_only=False, li_pkg_updates=True, progtrack=None,
@@ -2318,12 +2356,12 @@ class LinkedImageChild(object):
                         try:
                                 updated = self.__syncmd(test=noexecute)
                         except apx.LinkedImageException, e:
-                                return (e.lix_exitrv, e)
+                                return (e.lix_exitrv, e, None)
 
                         if updated:
-                                return (pkgdefs.EXIT_OK, None)
+                                return (pkgdefs.EXIT_OK, None, None)
                         else:
-                                return (pkgdefs.EXIT_NOP, None)
+                                return (pkgdefs.EXIT_NOP, None, None)
 
                 # first sync the metadata
                 try:
@@ -2336,7 +2374,7 @@ class LinkedImageChild(object):
                         # commit.
                         self.__syncmd(tmp=li_attach_sync)
                 except apx.LinkedImageException, e:
-                        return (e.lix_exitrv, e)
+                        return (e.lix_exitrv, e, None)
 
                 pkg_args = []
                 pkg_args.extend(["-v"] * progtrack.verbose)
@@ -2354,20 +2392,24 @@ class LinkedImageChild(object):
                         pkg_args.append("--no-index")
                 if not li_pkg_updates:
                         pkg_args.append("--no-pkg-updates")
+                if progtrack.parsable_version is not None:
+                        assert progtrack.quiet
+                        pkg_args.append("--parsable=%s" %
+                            progtrack.parsable_version)
                 for pat in reject_list:
                         pkg_args.extend(["--reject", str(pat)])
 
-                rv, errout = self.__pkg_cmd(pkgdefs.PKG_OP_SYNC,
+                rv, errout, p_dict = self.__pkg_cmd(pkgdefs.PKG_OP_SYNC,
                     pkg_args, progtrack=progtrack)
 
                 # if the audit command ran, return its status.
                 if rv in [pkgdefs.EXIT_OK, pkgdefs.EXIT_NOP]:
-                        return (rv, None)
+                        return (rv, None, p_dict)
 
                 # something went unexpectedly wrong.
                 e = apx.LinkedImageException(lin=self.child_name, exitrv=rv,
                     pkg_op_failed=(pkgdefs.PKG_OP_SYNC, rv, errout))
-                return (rv, e)
+                return (rv, e, p_dict)
 
         def child_init_root(self, old_altroot):
                 """Our image path is being updated, so figure out our new
@@ -2432,6 +2474,9 @@ class LinkedImageChild(object):
                         pkg_args.append("-q")
                 if noexecute:
                         pkg_args.append("-n")
+                if progtrack.parsable_version is not None:
+                        pkg_args.append("--parsable=%s" %
+                            progtrack.parsable_version)
 
                 # W0511 XXX / FIXME Comments; pylint: disable-msg=W0511
                 # XXX: also need to support --licenses.
@@ -2479,9 +2524,9 @@ class LinkedImageChild(object):
                         if stage == pkgdefs.API_STAGE_EXECUTE:
                                 self.child_reset_recurse()
                         # the child image told us it has no changes planned.
-                        return pkgdefs.EXIT_NOP
+                        return pkgdefs.EXIT_NOP, None
 
-                rv, errout = self.__pkg_cmd(self.__r_op, self.__r_args,
+                rv, errout, p_dict = self.__pkg_cmd(self.__r_op, self.__r_args,
                     stage=stage, progtrack=self.__r_progtrack)
 
                 if rv in [pkgdefs.EXIT_OK, pkgdefs.EXIT_NOP]:
@@ -2501,7 +2546,7 @@ class LinkedImageChild(object):
                         # we're done with this operation
                         self.child_reset_recurse()
 
-                return rv
+                return rv, p_dict
 
 
 # ---------------------------------------------------------------------------

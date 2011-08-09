@@ -48,6 +48,8 @@ class TestPkgLinked(pkg5unittest.ManyDepotTestCase):
         persistent_setup = True
 
         p_all = []
+        p_sync1 = []
+        p_foo1 = []
         p_vers = [
             "@1.2,5.11-145:19700101T000001Z",
             "@1.2,5.11-145:19700101T000000Z", # old time
@@ -71,7 +73,7 @@ class TestPkgLinked(pkg5unittest.ManyDepotTestCase):
                     add file tmp/bar mode=0555 owner=root group=bin path=foo_bar variant.foo=bar
                     add file tmp/baz mode=0555 owner=root group=bin path=foo_baz variant.foo=baz
                     close\n"""
-                p_all.append(p_data)
+                p_foo1.append(p_data)
 
         p_foo2_name_gen = "foo2"
         pkgs = [p_foo2_name_gen + ver for ver in p_vers]
@@ -98,7 +100,7 @@ class TestPkgLinked(pkg5unittest.ManyDepotTestCase):
                     add file tmp/bar mode=0555 owner=root group=bin path=sync1_bar variant.foo=bar
                     add file tmp/baz mode=0555 owner=root group=bin path=sync1_baz variant.foo=baz
                     close\n"""
-                p_all.append(p_data)
+                p_sync1.append(p_data)
 
         # generate packages that do need to be synced
         p_sync2_name_gen = "sync2"
@@ -128,6 +130,8 @@ class TestPkgLinked(pkg5unittest.ManyDepotTestCase):
 
                 # populate repository
                 self.pkgsend_bulk(self.rurl1, self.p_all)
+                self.s1_list = self.pkgsend_bulk(self.rurl1, self.p_sync1)
+                self.foo1_list = self.pkgsend_bulk(self.rurl1, self.p_foo1)
 
                 # setup image names and paths
                 self.i_name = []
@@ -341,6 +345,7 @@ class TestPkgLinked(pkg5unittest.ManyDepotTestCase):
                             (args, self.i_name[c], self.i_path[c]),
                             rv=rv)
 
+class TestPkgLinked1(TestPkgLinked):
         def test_not_linked(self):
                 self._imgs_create(1)
 
@@ -515,7 +520,12 @@ class TestPkgLinked(pkg5unittest.ManyDepotTestCase):
                 #          1 -> 3
 
                 # attach parent (0) to child (1), (0 -> 1)
-                self._attach_child(0, [1])
+                self._attach_child(0, [1], args="--parsable=0 -n")
+                self.assertEqualParsable(self.output,
+                    child_images=[{"image_name": "system:img1"}])
+                self._attach_child(0, [1], args="--parsable=0")
+                self.assertEqualParsable(self.output,
+                    child_images=[{"image_name": "system:img1"}])
                 self._v_has_children(0, [1])
                 self._v_has_parent([1])
                 self._v_not_linked([2, 3])
@@ -572,6 +582,7 @@ class TestPkgLinked(pkg5unittest.ManyDepotTestCase):
                 self._attach_child(1, [2, 3])
 
                 # detach child (1) from parent (0)
+                self._pkg_child_all(0, "detach-linked", args="-n")
                 self._pkg_child_all(0, "detach-linked")
                 self._v_has_children(1, [2, 3])
                 self._v_has_parent([2, 3])
@@ -594,7 +605,10 @@ class TestPkgLinked(pkg5unittest.ManyDepotTestCase):
                 #     3 -> 1
 
                 # attach child (2) to parent (1), (2 -> 1)
-                self._attach_parent([2], 1)
+                self._attach_parent([2], 1, args="--parsable=0 -n")
+                self.assertEqualParsable(self.output)
+                self._attach_parent([2], 1, args="--parsable=0")
+                self.assertEqualParsable(self.output)
                 self._v_has_parent([2])
                 self._v_no_children([2])
                 self._v_not_linked([0, 1, 3])
@@ -621,6 +635,7 @@ class TestPkgLinked(pkg5unittest.ManyDepotTestCase):
                 self._attach_parent([1], 0)
 
                 # detach parent (0) from child (1)
+                self._pkg([1], "detach-linked -n")
                 self._pkg([1], "detach-linked")
                 self._v_has_parent([2, 3])
                 self._v_no_children([2, 3])
@@ -1153,7 +1168,12 @@ class TestPkgLinked2(TestPkgLinked):
                 self._pkg([1, 2, 3, 4], "audit-linked", rv=EXIT_DIVERGED)
 
                 # sync child (direct)
-                self._pkg([1, 4], "sync-linked -v")
+                self._pkg([1, 4], "sync-linked", args="--parsable=0 -n")
+                self.assertEqualParsable(self.output,
+                    change_packages=[[self.s1_list[-1], self.s1_list[0]]])
+                self._pkg([1, 4], "sync-linked", args="--parsable=0")
+                self.assertEqualParsable(self.output,
+                    change_packages=[[self.s1_list[-1], self.s1_list[0]]])
                 rvdict = {2: EXIT_DIVERGED, 3: EXIT_DIVERGED}
                 self._pkg([1, 2, 3, 4], "audit-linked", rvdict=rvdict)
                 self._pkg([1, 4], "sync-linked -v", rv=EXIT_NOP)
@@ -1163,7 +1183,18 @@ class TestPkgLinked2(TestPkgLinked):
                 self._pkg([1, 2, 3], "audit-linked", rvdict=rvdict)
 
                 # sync child (indirectly via -l)
-                self._pkg_child(0, [2], "sync-linked -v")
+                self._pkg_child(0, [2], "sync-linked", args="--parsable=0 -n")
+                self.assertEqualParsable(self.output,
+                    child_images=[{
+                        "image_name": "system:img2",
+                        "change_packages": [[self.s1_list[2], self.s1_list[0]]]
+                    }])
+                self._pkg_child(0, [2], "sync-linked", args="--parsable=0")
+                self.assertEqualParsable(self.output,
+                    child_images=[{
+                        "image_name": "system:img2",
+                        "change_packages": [[self.s1_list[2], self.s1_list[0]]]
+                    }])
                 rvdict = {3: EXIT_DIVERGED}
                 self._pkg([1, 2, 3], "audit-linked", rvdict=rvdict)
                 self._pkg_child(0, [2], "sync-linked -vn", rv=EXIT_NOP)
@@ -1219,7 +1250,10 @@ class TestPkgLinked2(TestPkgLinked):
                 self._pkg([1, 2], "audit-linked", rv=EXIT_DIVERGED)
 
                 # sync child
-                self._pkg([1, 2], "image-update -v")
+                self._pkg([1, 2], "image-update --parsable=0")
+                self.assertEqualParsable(self.output, change_packages=[
+                    [self.foo1_list[2], self.foo1_list[0]],
+                    [self.s1_list[2], self.s1_list[1]]])
                 self._pkg([1, 2], "audit-linked")
                 self._pkg([1, 2], "image-update -v", rv=EXIT_NOP)
                 self._pkg([1, 2], "sync-linked -v", rv=EXIT_NOP)
@@ -1433,7 +1467,17 @@ class TestPkgLinked3(TestPkgLinked):
                 self._attach_child(0, [2], args="--linked-md-only")
 
                 self._pkg([0], "image-update -v -n")
-                self._pkg([0], "image-update -v")
+                self._pkg([0], "image-update --parsable=0")
+                self.assertEqualParsable(self.output,
+                    change_packages=[[self.s1_list[1], self.s1_list[0]]],
+                    child_images=[{
+                        "image_name": "system:img1",
+                        "change_packages": [[self.s1_list[1], self.s1_list[0]]],
+                    },
+                    {
+                        "image_name": "system:img2",
+                        "change_packages": [[self.s1_list[2], self.s1_list[0]]],
+                    }])
                 self._pkg([0], "image-update -v", rv=EXIT_NOP)
 
                 # make sure the latest synced packaged is in every image
@@ -1457,7 +1501,17 @@ class TestPkgLinked3(TestPkgLinked):
                 self._attach_child(0, [2], args="--linked-md-only")
 
                 self._pkg([0], "install -v -n %s" % self.p_sync1_name[0])
-                self._pkg([0], "install -v %s" % self.p_sync1_name[0])
+                self._pkg([0], "install --parsable=0 %s" % self.p_sync1_name[0])
+                self.assertEqualParsable(self.output,
+                    change_packages=[[self.s1_list[1], self.s1_list[0]]],
+                    child_images=[{
+                        "image_name": "system:img1",
+                        "change_packages": [[self.s1_list[1], self.s1_list[0]]],
+                    },
+                    {
+                        "image_name": "system:img2",
+                        "change_packages": [[self.s1_list[2], self.s1_list[0]]],
+                    }])
                 self._pkg([0], "install -v %s" % self.p_sync1_name[0],
                     rv=EXIT_NOP)
 

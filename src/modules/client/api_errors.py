@@ -2808,3 +2808,15 @@ class UnknownFreezeFileVersion(ApiException):
                     "found": self.found,
                     "loc": self.loc,
                 }
+
+class UnparsableJSON(ApiException):
+        """Used when JSON has been asked to parse an unparsable string."""
+
+        def __init__(self, s, e):
+                self.unparsable = s
+                self.json_exception = e
+
+        def __str__(self):
+                return _("Because of this error:\n%(err)s\nJSON could not "
+                    "parse the following data:\n%(data)s") % \
+                    {"err": str(self.json_exception), "data": self.unparsable}
