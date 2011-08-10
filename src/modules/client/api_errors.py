@@ -403,6 +403,7 @@ class PlanCreationException(ApiException):
             no_solution=False,
             no_tmp_origins=False,
             no_version=EmptyI,
+            not_avoided=EmptyI,
             nofiles=EmptyI,
             obsolete=EmptyI,
             pkg_updates_required=EmptyI,
@@ -427,6 +428,7 @@ class PlanCreationException(ApiException):
                 self.no_solution           = no_solution
                 self.no_tmp_origins        = no_tmp_origins
                 self.no_version            = no_version
+                self.not_avoided           = not_avoided
                 self.nofiles               = nofiles
                 self.obsolete              = obsolete
                 self.pkg_updates_required  = pkg_updates_required
@@ -569,6 +571,11 @@ persistently.""")
                             "of group dependencies; use install to unavoid "
                             "these:")]
                         res += [ "\t%s" % s for s in self.would_install]
+
+                if self.not_avoided:
+                        res += [_("The following packages are not on the "
+                            "avoid list, so they\ncannot be removed from it.")]
+                        res += [ "\t%s" % s for s in sorted(self.not_avoided)]
 
                 def __format_li_pubs(pubs, res):
                         i = 0

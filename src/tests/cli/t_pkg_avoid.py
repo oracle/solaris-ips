@@ -103,6 +103,9 @@ class TestPkgAvoid(pkg5unittest.SingleDepotTestCase):
         def test_group_basics(self):
                 """Make sure group dependencies work"""
                 self.image_create(self.rurl)
+                # make sure that unavoiding a package which isn't avoided
+                # doesn't traceback.
+                self.pkg("unavoid C", exit=1)
 
                 # make sure group dependency brings in packages
                 self.pkg("install C")
