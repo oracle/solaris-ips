@@ -62,6 +62,18 @@ _ORDER_DICT_LIST = [
 # EmptyI for argument defaults; no import to avoid pkg.misc dependency.
 EmptyI = tuple()
 
+def quote_attr_value(s):
+        """Returns a properly quoted version of the provided string suitable for
+        use as an attribute value for actions in string form."""
+
+        if " " in s or "'" in s or "\"" in s or s == "":
+                if "\"" not in s:
+                        return '"%s"' % s
+                elif "'" not in s:
+                        return "'%s'" % s
+                return '"%s"' % s.replace("\"", "\\\"")
+        return s
+
 class NSG(type):
         """This metaclass automatically assigns a subclass of Action a
         namespace_group member if it hasn't already been specified.  This is a
@@ -347,24 +359,14 @@ class Action(object):
                         else:
                                 self.attrs["hash"] = self.hash
 
-                def q(s):
-                        if " " in s or "'" in s or "\"" in s or s == "":
-                                if "\"" not in s:
-                                        return '"%s"' % s
-                                elif "'" not in s:
-                                        return "'%s'" % s
-                                else:
-                                        return '"%s"' % s.replace("\"", "\\\"")
-                        else:
-                                return s
-
                 # Sort so that we get consistent action attribute ordering.
                 # We pay a performance penalty to do so, but it seems worth it.
                 for k in sorted(self.attrs.keys()):
                         v = self.attrs[k]
                         if isinstance(v, list) or isinstance(v, set):
                                 out += " " + " ".join([
-                                    "%s=%s" % (k, q(lmt)) for lmt in v
+                                    "=".join((k, quote_attr_value(lmt)))
+                                    for lmt in v
                                 ])
                         elif " " in v or "'" in v or "\"" in v or v == "":
                                 if "\"" not in v:
@@ -372,7 +374,8 @@ class Action(object):
                                 elif "'" not in v:
                                         out += " " + k + "='" + v + "'"
                                 else:
-                                        out += " " + k + "=\"" + v.replace("\"", "\\\"") + "\""
+                                        out += " " + k + "=\"" + \
+                                            v.replace("\"", "\\\"") + "\""
                         else:
                                 out += " " + k + "=" + v
 

@@ -69,6 +69,7 @@ try:
         import pkg.misc
         import pkg.portable
         from pkg.misc import emsg, PipeError
+        from pkg.actions.generic import quote_attr_value
 except KeyboardInterrupt:
         import sys
         sys.exit(1)
@@ -292,12 +293,6 @@ def write_line(line, fileobj):
         if hasattr(act, "hash") and act.hash != "NOHASH":
                 out += " " + act.hash
 
-        # handle quoting of attribute values
-        def q(s):
-                if " " in s or s == "":
-                        return '"%s"' % s
-                else:
-                        return s
         # high order bits in sorting
         def kvord(a):
                 # Variants should always be last attribute.
@@ -452,8 +447,9 @@ def write_line(line, fileobj):
                                     (k == "alias" or (opt_format == FMT_V2 and
                                     k.startswith("pkg.debug")))
 
-                                aout = grow(aout, "%s=%s" % (k, q(lmt)),
-                                    rem_count, force_nl=force_nl)
+                                aout = grow(aout, "=".join((k,
+                                    quote_attr_value(lmt))), rem_count,
+                                    force_nl=force_nl)
 
                                 # Must be done for each value.
                                 if first_line and JOIN_TOK in aout:

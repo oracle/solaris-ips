@@ -117,94 +117,94 @@ $(sparc_ONLY)driver name=i8042 alias=8042
 $(i386_ONLY)driver name=i8042
 driver name=icmp perms="icmp 0666 root sys" policy="read_priv_set=net_icmpaccess write_priv_set=net_icmpaccess"
 driver name=icmp6 perms="icmp6 0666 root sys" policy="read_priv_set=net_icmpaccess write_priv_set=net_icmpaccess"
-$(i386_ONLY)driver name=intel_nb5000 \
-    alias=pci8086,25c0 \
-    alias=pci8086,25d0 \
-    alias=pci8086,25d4 \
-    alias=pci8086,25d8 \
-    alias=pci8086,3600 \
-    alias=pci8086,4000 \
-    alias=pci8086,4001 \
-    alias=pci8086,4003 \
+$(i386_ONLY)driver name=intel_nb5000 \\
+    alias=pci8086,25c0 \\
+    alias=pci8086,25d0 \\
+    alias=pci8086,25d4 \\
+    alias=pci8086,25d8 \\
+    alias=pci8086,3600 \\
+    alias=pci8086,4000 \\
+    alias=pci8086,4001 \\
+    alias=pci8086,4003 \\
     alias=pci8086,65c0
-$(i386_ONLY)driver name=intel_nhm \
-    alias=pci8086,3423 \
+$(i386_ONLY)driver name=intel_nhm \\
+    alias=pci8086,3423 \\
     alias=pci8086,372a
 $(i386_ONLY)driver name=intel_nhmex alias=pci8086,3422
-driver name=ip perms="ip 0666 root sys" \
+driver name=ip perms="ip 0666 root sys" \\
     policy="read_priv_set=net_rawaccess write_priv_set=net_rawaccess"
-driver name=ip6 perms="ip6 0666 root sys" \
+driver name=ip6 perms="ip6 0666 root sys" \\
     policy="read_priv_set=net_rawaccess write_priv_set=net_rawaccess"
-driver name=ipnet perms="lo0 0666 root sys" \
+driver name=ipnet perms="lo0 0666 root sys" \\
     policy="read_priv_set=net_observability write_priv_set=net_observability"
 driver name=ippctl
-driver name=ipsecah perms="ipsecah 0666 root sys" \
+driver name=ipsecah perms="ipsecah 0666 root sys" \\
     policy="read_priv_set=sys_ip_config write_priv_set=sys_ip_config"
-driver name=ipsecesp perms="ipsecesp 0666 root sys" \
+driver name=ipsecesp perms="ipsecesp 0666 root sys" \\
     policy="read_priv_set=sys_ip_config write_priv_set=sys_ip_config"
 driver name=iptun
 driver name=iwscn
 driver name=kb8042 alias=pnpPNP,303
-driver name=keysock perms="keysock 0666 root sys" \
+driver name=keysock perms="keysock 0666 root sys" \\
     policy="read_priv_set=sys_ip_config write_priv_set=sys_ip_config"
 driver name=kmdb
 driver name=kssl perms="* 0666 root sys"
 driver name=llc1 clone_perms="llc1 0666 root sys"
 driver name=lofi perms="* 0600 root sys" perms="ctl 0644 root sys"
 driver name=log perms="conslog 0666 root sys" perms="log 0640 root sys"
-$(i386_ONLY)driver name=mc-amd \
-    alias=pci1022,1100 \
-    alias=pci1022,1101 \
+$(i386_ONLY)driver name=mc-amd \\
+    alias=pci1022,1100 \\
+    alias=pci1022,1101 \\
     alias=pci1022,1102
-driver name=mm perms="allkmem 0600 root sys" perms="kmem 0640 root sys" \
-    perms="mem 0640 root sys" perms="null 0666 root sys" \
-    perms="zero 0666 root sys" \
-    policy="allkmem read_priv_set=all write_priv_set=all" \
-    policy="kmem read_priv_set=none write_priv_set=all" \
+driver name=mm perms="allkmem 0600 root sys" perms="kmem 0640 root sys" \\
+    perms="mem 0640 root sys" perms="null 0666 root sys" \\
+    perms="zero 0666 root sys" \\
+    policy="allkmem read_priv_set=all write_priv_set=all" \\
+    policy="kmem read_priv_set=none write_priv_set=all" \\
     policy="mem read_priv_set=none write_priv_set=all"
 driver name=mouse8042 alias=pnpPNP,f03
-$(i386_ONLY)driver name=mpt class=scsi \
-    alias=pci1000,30 \
-    alias=pci1000,50 \
-    alias=pci1000,54 \
-    alias=pci1000,56 \
-    alias=pci1000,58 \
-    alias=pci1000,62 \
-    alias=pciex1000,56 \
-    alias=pciex1000,58 \
+$(i386_ONLY)driver name=mpt class=scsi \\
+    alias=pci1000,30 \\
+    alias=pci1000,50 \\
+    alias=pci1000,54 \\
+    alias=pci1000,56 \\
+    alias=pci1000,58 \\
+    alias=pci1000,62 \\
+    alias=pciex1000,56 \\
+    alias=pciex1000,58 \\
     alias=pciex1000,62
-driver name=nulldriver \
-    alias=scsa,nodev \
+driver name=nulldriver \\
+    alias=scsa,nodev \\
     alias=scsa,probe
 driver name=openeepr perms="openprom 0640 root sys" policy=write_priv_set=all
 driver name=options
-$(sparc_ONLY)driver name=pci_pci class=pci \
-    alias=pci1011,1 \
-    alias=pci1011,21 \
-    alias=pci1011,24 \
-    alias=pci1011,25 \
-    alias=pci1011,26 \
-    alias=pci1014,22 \
+$(sparc_ONLY)driver name=pci_pci class=pci \\
+    alias=pci1011,1 \\
+    alias=pci1011,21 \\
+    alias=pci1011,24 \\
+    alias=pci1011,25 \\
+    alias=pci1011,26 \\
+    alias=pci1014,22 \\
     alias=pciclass,060400
-$(i386_ONLY)driver name=pci_pci class=pci \
-    alias=pci1011,1 \
-    alias=pci1011,21 \
-    alias=pci1014,22 \
-    alias=pciclass,060400 \
+$(i386_ONLY)driver name=pci_pci class=pci \\
+    alias=pci1011,1 \\
+    alias=pci1011,21 \\
+    alias=pci1014,22 \\
+    alias=pciclass,060400 \\
     alias=pciclass,060401
-$(sparc_ONLY)driver name=pcieb \
-    alias=pciex108e,9010 \
-    alias=pciex108e,9020 \
-    alias=pciex10b5,8114 \
-    alias=pciex10b5,8516 \
-    alias=pciex10b5,8517 \
-    alias=pciex10b5,8518 \
-    alias=pciex10b5,8532 \
-    alias=pciex10b5,8533 \
-    alias=pciex10b5,8548 \
+$(sparc_ONLY)driver name=pcieb \\
+    alias=pciex108e,9010 \\
+    alias=pciex108e,9020 \\
+    alias=pciex10b5,8114 \\
+    alias=pciex10b5,8516 \\
+    alias=pciex10b5,8517 \\
+    alias=pciex10b5,8518 \\
+    alias=pciex10b5,8532 \\
+    alias=pciex10b5,8533 \\
+    alias=pciex10b5,8548 \\
     alias=pciexclass,060400
-$(i386_ONLY)driver name=pcieb \
-    alias=pciexclass,060400 \
+$(i386_ONLY)driver name=pcieb \\
+    alias=pciexclass,060400 \\
     alias=pciexclass,060401
 $(sparc_ONLY)driver name=pcieb_bcm alias=pciex1166,103
 driver name=physmem perms="* 0600 root sys"
@@ -214,29 +214,29 @@ $(i386_ONLY)driver name=power
 driver name=pseudo alias=zconsnex
 driver name=ptc perms="* 0666 root sys"
 driver name=ptsl perms="* 0666 root sys"
-$(sparc_ONLY)driver name=ramdisk alias=SUNW,ramdisk perms="* 0600 root sys" \
+$(sparc_ONLY)driver name=ramdisk alias=SUNW,ramdisk perms="* 0600 root sys" \\
     perms="ctl 0644 root sys"
-$(i386_ONLY)driver name=ramdisk perms="* 0600 root sys" \
+$(i386_ONLY)driver name=ramdisk perms="* 0600 root sys" \\
     perms="ctl 0644 root sys"
 driver name=random perms="* 0644 root sys" policy=write_priv_set=sys_devices
 driver name=rts perms="rts 0666 root sys"
 driver name=sad perms="admin 0666 root sys" perms="user 0666 root sys"
-driver name=scsi_vhci class=scsi-self-identifying perms="* 0666 root sys" \
+driver name=scsi_vhci class=scsi-self-identifying perms="* 0666 root sys" \\
     policy="devctl write_priv_set=sys_devices"
-$(sparc_ONLY)driver name=sd perms="* 0640 root sys" \
-    alias=ide-cdrom \
-    alias=scsiclass,00 \
+$(sparc_ONLY)driver name=sd perms="* 0640 root sys" \\
+    alias=ide-cdrom \\
+    alias=scsiclass,00 \\
     alias=scsiclass,05
-$(i386_ONLY)driver name=sd perms="* 0640 root sys" \
-    alias=scsiclass,00 \
+$(i386_ONLY)driver name=sd perms="* 0640 root sys" \\
+    alias=scsiclass,00 \\
     alias=scsiclass,05
-driver name=sgen perms="* 0600 root sys" \
-    alias=scsa,08.bfcp \
+driver name=sgen perms="* 0600 root sys" \\
+    alias=scsa,08.bfcp \\
     alias=scsa,08.bvhci
 driver name=simnet clone_perms="simnet 0666 root sys" perms="* 0666 root sys"
 $(i386_ONLY)driver name=smbios perms="smbios 0444 root sys"
 driver name=softmac
-driver name=spdsock perms="spdsock 0666 root sys" \
+driver name=spdsock perms="spdsock 0666 root sys" \\
     policy="read_priv_set=sys_ip_config write_priv_set=sys_ip_config"
 driver name=st alias=scsiclass,01 perms="* 0666 root sys"
 driver name=sy perms="tty 0666 root tty"
@@ -244,23 +244,23 @@ driver name=sysevent perms="* 0600 root sys"
 driver name=sysmsg perms="msglog 0600 root sys" perms="sysmsg 0600 root sys"
 driver name=tcp perms="tcp 0666 root sys"
 driver name=tcp6 perms="tcp6 0666 root sys"
-driver name=tl perms="* 0666 root sys" clone_perms="ticlts 0666 root sys" \
+driver name=tl perms="* 0666 root sys" clone_perms="ticlts 0666 root sys" \\
     clone_perms="ticots 0666 root sys" clone_perms="ticotsord 0666 root sys"
 $(sparc_ONLY)driver name=ttymux alias=multiplexer
 $(i386_ONLY)driver name=tzmon
-$(sparc_ONLY)driver name=uata \
-    alias=pci1095,646 \
-    alias=pci1095,649 \
-    alias=pci1095,680 \
-    alias=pci10b9,5229 \
+$(sparc_ONLY)driver name=uata \\
+    alias=pci1095,646 \\
+    alias=pci1095,649 \\
+    alias=pci1095,680 \\
+    alias=pci10b9,5229 \\
     alias=pci10b9,5288 class=dada class=scsi
 $(i386_ONLY)driver name=ucode perms="* 0644 root sys"
 driver name=udp perms="udp 0666 root sys"
 driver name=udp6 perms="udp6 0666 root sys"
-$(i386_ONLY)driver name=vgatext \
-    alias=pciclass,000100 \
-    alias=pciclass,030000 \
-    alias=pciclass,030001 \
+$(i386_ONLY)driver name=vgatext \\
+    alias=pciclass,000100 \\
+    alias=pciclass,030000 \\
+    alias=pciclass,030001 \\
     alias=pnpPNP,900
 driver name=vnic clone_perms="vnic 0666 root sys" perms="* 0666 root sys"
 driver name=wc perms="* 0600 root sys"
@@ -272,16 +272,16 @@ $(i386_ONLY)file path=boot/solaris/bin/symdef group=sys mode=0555
 $(i386_ONLY)file path=boot/solaris/bin/update_grub group=sys mode=0555
 file path=boot/solaris/filelist.ramdisk group=sys
 file path=boot/solaris/filelist.safe group=sys
-file path=etc/crypto/kcf.conf group=sys \
+file path=etc/crypto/kcf.conf group=sys \\
     original_name=SUNWckr:etc/crypto/kcf.conf preserve=true
-file path=etc/name_to_sysnum group=sys original_name=SUNWckr:etc/name_to_sysnum \
+file path=etc/name_to_sysnum group=sys original_name=SUNWckr:etc/name_to_sysnum \\
     preserve=renameold
 file path=etc/system group=sys original_name=SUNWckr:etc/system preserve=true
-$(i386_ONLY)file path=kernel/$(ARCH64)/genunix group=sys mode=0755 \
+$(i386_ONLY)file path=kernel/$(ARCH64)/genunix group=sys mode=0755 \\
     reboot-needed=true
 file path=kernel/crypto/$(ARCH64)/aes group=sys mode=0755 reboot-needed=true
 file path=kernel/crypto/$(ARCH64)/arcfour group=sys mode=0755 reboot-needed=true
-file path=kernel/crypto/$(ARCH64)/blowfish group=sys mode=0755 \
+file path=kernel/crypto/$(ARCH64)/blowfish group=sys mode=0755 \\
     reboot-needed=true
 file path=kernel/crypto/$(ARCH64)/des group=sys mode=0755 reboot-needed=true
 file path=kernel/crypto/$(ARCH64)/ecc group=sys mode=0755 reboot-needed=true
@@ -292,9 +292,9 @@ file path=kernel/crypto/$(ARCH64)/sha1 group=sys mode=0755 reboot-needed=true
 file path=kernel/crypto/$(ARCH64)/sha2 group=sys mode=0755 reboot-needed=true
 file path=kernel/crypto/$(ARCH64)/swrand group=sys mode=0755 reboot-needed=true
 $(i386_ONLY)file path=kernel/crypto/aes group=sys mode=0755 reboot-needed=true
-$(i386_ONLY)file path=kernel/crypto/arcfour group=sys mode=0755 \
+$(i386_ONLY)file path=kernel/crypto/arcfour group=sys mode=0755 \\
     reboot-needed=true
-$(i386_ONLY)file path=kernel/crypto/blowfish group=sys mode=0755 \
+$(i386_ONLY)file path=kernel/crypto/blowfish group=sys mode=0755 \\
     reboot-needed=true
 $(i386_ONLY)file path=kernel/crypto/des group=sys mode=0755 reboot-needed=true
 $(i386_ONLY)file path=kernel/crypto/ecc group=sys mode=0755 reboot-needed=true
@@ -303,12 +303,12 @@ $(i386_ONLY)file path=kernel/crypto/md5 group=sys mode=0755 reboot-needed=true
 $(i386_ONLY)file path=kernel/crypto/rsa group=sys mode=0755 reboot-needed=true
 $(i386_ONLY)file path=kernel/crypto/sha1 group=sys mode=0755 reboot-needed=true
 $(i386_ONLY)file path=kernel/crypto/sha2 group=sys mode=0755 reboot-needed=true
-$(i386_ONLY)file path=kernel/crypto/swrand group=sys mode=0755 \
+$(i386_ONLY)file path=kernel/crypto/swrand group=sys mode=0755 \\
     reboot-needed=true
-$(sparc_ONLY)file path=kernel/dacf/$(ARCH64)/consconfig_dacf group=sys mode=0755 \
+$(sparc_ONLY)file path=kernel/dacf/$(ARCH64)/consconfig_dacf group=sys mode=0755 \\
     reboot-needed=true
 file path=kernel/dacf/$(ARCH64)/net_dacf group=sys mode=0755 reboot-needed=true
-$(i386_ONLY)file path=kernel/dacf/net_dacf group=sys mode=0755 \
+$(i386_ONLY)file path=kernel/dacf/net_dacf group=sys mode=0755 \\
     reboot-needed=true
 $(i386_ONLY)file path=kernel/drv/$(ARCH64)/acpi_drv group=sys
 $(i386_ONLY)file path=kernel/drv/$(ARCH64)/acpi_toshiba group=sys
@@ -470,7 +470,7 @@ file path=kernel/drv/llc1.conf group=sys reboot-needed=false
 $(i386_ONLY)file path=kernel/drv/lofi group=sys
 file path=kernel/drv/lofi.conf group=sys reboot-needed=false
 $(i386_ONLY)file path=kernel/drv/log group=sys
-file path=kernel/drv/log.conf group=sys \
+file path=kernel/drv/log.conf group=sys \\
     original_name=SUNWckr:kernel/drv/log.conf preserve=true reboot-needed=false
 $(i386_ONLY)file path=kernel/drv/mc-amd group=sys
 $(i386_ONLY)file path=kernel/drv/mc-amd.conf group=sys reboot-needed=false
@@ -478,7 +478,7 @@ $(i386_ONLY)file path=kernel/drv/mm group=sys
 file path=kernel/drv/mm.conf group=sys reboot-needed=false
 $(i386_ONLY)file path=kernel/drv/mouse8042 group=sys
 $(i386_ONLY)file path=kernel/drv/mpt group=sys
-$(i386_ONLY)file path=kernel/drv/mpt.conf group=sys \
+$(i386_ONLY)file path=kernel/drv/mpt.conf group=sys \\
     original_name=SUNWckr:kernel/drv/mpt.conf preserve=true reboot-needed=false
 $(i386_ONLY)file path=kernel/drv/nulldriver group=sys
 $(i386_ONLY)file path=kernel/drv/openeepr group=sys
@@ -509,14 +509,14 @@ file path=kernel/drv/rts.conf group=sys reboot-needed=false
 $(i386_ONLY)file path=kernel/drv/sad group=sys
 file path=kernel/drv/sad.conf group=sys reboot-needed=false
 $(i386_ONLY)file path=kernel/drv/scsi_vhci group=sys
-file path=kernel/drv/scsi_vhci.conf group=sys \
-    original_name=SUNWckr:kernel/drv/scsi_vhci.conf preserve=true \
+file path=kernel/drv/scsi_vhci.conf group=sys \\
+    original_name=SUNWckr:kernel/drv/scsi_vhci.conf preserve=true \\
     reboot-needed=false
-$(sparc_ONLY)file path=kernel/drv/sd.conf group=sys \
+$(sparc_ONLY)file path=kernel/drv/sd.conf group=sys \\
     original_name=SUNWckr:kernel/drv/sd.conf preserve=true reboot-needed=false
 $(i386_ONLY)file path=kernel/drv/sgen group=sys
-file path=kernel/drv/sgen.conf group=sys \
-    original_name=SUNWckr:kernel/drv/sgen.conf preserve=true \
+file path=kernel/drv/sgen.conf group=sys \\
+    original_name=SUNWckr:kernel/drv/sgen.conf preserve=true \\
     reboot-needed=false
 $(i386_ONLY)file path=kernel/drv/simnet group=sys
 file path=kernel/drv/simnet.conf group=sys reboot-needed=false
@@ -527,7 +527,7 @@ file path=kernel/drv/softmac.conf group=sys reboot-needed=false
 $(i386_ONLY)file path=kernel/drv/spdsock group=sys
 file path=kernel/drv/spdsock.conf group=sys reboot-needed=false
 $(i386_ONLY)file path=kernel/drv/st group=sys
-file path=kernel/drv/st.conf group=sys original_name=SUNWckr:kernel/drv/st.conf \
+file path=kernel/drv/st.conf group=sys original_name=SUNWckr:kernel/drv/st.conf \\
     preserve=true reboot-needed=false
 $(i386_ONLY)file path=kernel/drv/sy group=sys
 file path=kernel/drv/sy.conf group=sys reboot-needed=false
@@ -543,8 +543,8 @@ $(i386_ONLY)file path=kernel/drv/tl group=sys
 file path=kernel/drv/tl.conf group=sys reboot-needed=false
 $(i386_ONLY)file path=kernel/drv/tzmon group=sys
 $(i386_ONLY)file path=kernel/drv/tzmon.conf group=sys reboot-needed=false
-$(sparc_ONLY)file path=kernel/drv/uata.conf group=sys \
-    original_name=SUNWckr:kernel/drv/uata.conf preserve=true \
+$(sparc_ONLY)file path=kernel/drv/uata.conf group=sys \\
+    original_name=SUNWckr:kernel/drv/uata.conf preserve=true \\
     reboot-needed=false
 $(i386_ONLY)file path=kernel/drv/ucode group=sys
 $(i386_ONLY)file path=kernel/drv/ucode.conf group=sys reboot-needed=false
@@ -557,12 +557,12 @@ $(i386_ONLY)file path=kernel/drv/vnic group=sys
 file path=kernel/drv/vnic.conf group=sys reboot-needed=false
 $(i386_ONLY)file path=kernel/drv/wc group=sys
 file path=kernel/drv/wc.conf group=sys reboot-needed=false
-$(sparc_ONLY)file path=kernel/exec/$(ARCH64)/aoutexec group=sys mode=0755 \
+$(sparc_ONLY)file path=kernel/exec/$(ARCH64)/aoutexec group=sys mode=0755 \\
     reboot-needed=true
 file path=kernel/exec/$(ARCH64)/elfexec group=sys mode=0755 reboot-needed=true
 file path=kernel/exec/$(ARCH64)/intpexec group=sys mode=0755 reboot-needed=true
 $(i386_ONLY)file path=kernel/exec/elfexec group=sys mode=0755 reboot-needed=true
-$(i386_ONLY)file path=kernel/exec/intpexec group=sys mode=0755 \
+$(i386_ONLY)file path=kernel/exec/intpexec group=sys mode=0755 \\
     reboot-needed=true
 file path=kernel/fs/$(ARCH64)/autofs group=sys mode=0755 reboot-needed=true
 file path=kernel/fs/$(ARCH64)/cachefs group=sys mode=0755 reboot-needed=true
@@ -603,25 +603,25 @@ $(i386_ONLY)file path=kernel/fs/ufs group=sys mode=0755 reboot-needed=true
 $(i386_ONLY)file path=kernel/genunix group=sys mode=0755 reboot-needed=true
 file path=kernel/ipp/$(ARCH64)/ipgpc group=sys mode=0755 reboot-needed=true
 $(i386_ONLY)file path=kernel/ipp/ipgpc group=sys mode=0755 reboot-needed=true
-file path=kernel/kiconv/$(ARCH64)/kiconv_emea group=sys mode=0755 \
+file path=kernel/kiconv/$(ARCH64)/kiconv_emea group=sys mode=0755 \\
     reboot-needed=true
-file path=kernel/kiconv/$(ARCH64)/kiconv_ja group=sys mode=0755 \
+file path=kernel/kiconv/$(ARCH64)/kiconv_ja group=sys mode=0755 \\
     reboot-needed=true
-file path=kernel/kiconv/$(ARCH64)/kiconv_ko group=sys mode=0755 \
+file path=kernel/kiconv/$(ARCH64)/kiconv_ko group=sys mode=0755 \\
     reboot-needed=true
-file path=kernel/kiconv/$(ARCH64)/kiconv_sc group=sys mode=0755 \
+file path=kernel/kiconv/$(ARCH64)/kiconv_sc group=sys mode=0755 \\
     reboot-needed=true
-file path=kernel/kiconv/$(ARCH64)/kiconv_tc group=sys mode=0755 \
+file path=kernel/kiconv/$(ARCH64)/kiconv_tc group=sys mode=0755 \\
     reboot-needed=true
-$(i386_ONLY)file path=kernel/kiconv/kiconv_emea group=sys mode=0755 \
+$(i386_ONLY)file path=kernel/kiconv/kiconv_emea group=sys mode=0755 \\
     reboot-needed=true
-$(i386_ONLY)file path=kernel/kiconv/kiconv_ja group=sys mode=0755 \
+$(i386_ONLY)file path=kernel/kiconv/kiconv_ja group=sys mode=0755 \\
     reboot-needed=true
-$(i386_ONLY)file path=kernel/kiconv/kiconv_ko group=sys mode=0755 \
+$(i386_ONLY)file path=kernel/kiconv/kiconv_ko group=sys mode=0755 \\
     reboot-needed=true
-$(i386_ONLY)file path=kernel/kiconv/kiconv_sc group=sys mode=0755 \
+$(i386_ONLY)file path=kernel/kiconv/kiconv_sc group=sys mode=0755 \\
     reboot-needed=true
-$(i386_ONLY)file path=kernel/kiconv/kiconv_tc group=sys mode=0755 \
+$(i386_ONLY)file path=kernel/kiconv/kiconv_tc group=sys mode=0755 \\
     reboot-needed=true
 file path=kernel/mac/$(ARCH64)/mac_6to4 group=sys mode=0755 reboot-needed=true
 file path=kernel/mac/$(ARCH64)/mac_ether group=sys mode=0755 reboot-needed=true
@@ -630,26 +630,26 @@ file path=kernel/mac/$(ARCH64)/mac_ipv4 group=sys mode=0755 reboot-needed=true
 file path=kernel/mac/$(ARCH64)/mac_ipv6 group=sys mode=0755 reboot-needed=true
 file path=kernel/mac/$(ARCH64)/mac_wifi group=sys mode=0755 reboot-needed=true
 $(i386_ONLY)file path=kernel/mac/mac_6to4 group=sys mode=0755 reboot-needed=true
-$(i386_ONLY)file path=kernel/mac/mac_ether group=sys mode=0755 \
+$(i386_ONLY)file path=kernel/mac/mac_ether group=sys mode=0755 \\
     reboot-needed=true
 $(i386_ONLY)file path=kernel/mac/mac_ib group=sys mode=0755 reboot-needed=true
 $(i386_ONLY)file path=kernel/mac/mac_ipv4 group=sys mode=0755 reboot-needed=true
 $(i386_ONLY)file path=kernel/mac/mac_ipv6 group=sys mode=0755 reboot-needed=true
 $(i386_ONLY)file path=kernel/mac/mac_wifi group=sys mode=0755 reboot-needed=true
-$(i386_ONLY)file path=kernel/misc/$(ARCH64)/acpica group=sys mode=0755 \
+$(i386_ONLY)file path=kernel/misc/$(ARCH64)/acpica group=sys mode=0755 \\
     reboot-needed=true
-$(i386_ONLY)file path=kernel/misc/$(ARCH64)/agpmaster group=sys mode=0755 \
+$(i386_ONLY)file path=kernel/misc/$(ARCH64)/agpmaster group=sys mode=0755 \\
     reboot-needed=true
 file path=kernel/misc/$(ARCH64)/bignum group=sys mode=0755 reboot-needed=true
-$(i386_ONLY)file path=kernel/misc/$(ARCH64)/bootdev group=sys mode=0755 \
+$(i386_ONLY)file path=kernel/misc/$(ARCH64)/bootdev group=sys mode=0755 \\
     reboot-needed=true
 file path=kernel/misc/$(ARCH64)/busra group=sys mode=0755 reboot-needed=true
 file path=kernel/misc/$(ARCH64)/cardbus group=sys mode=0755 reboot-needed=true
 file path=kernel/misc/$(ARCH64)/cmlb group=sys mode=0755 reboot-needed=true
-file path=kernel/misc/$(ARCH64)/consconfig group=sys mode=0755 \
+file path=kernel/misc/$(ARCH64)/consconfig group=sys mode=0755 \\
     reboot-needed=true
 file path=kernel/misc/$(ARCH64)/ctf group=sys mode=0755 reboot-needed=true
-$(sparc_ONLY)file path=kernel/misc/$(ARCH64)/dada group=sys mode=0755 \
+$(sparc_ONLY)file path=kernel/misc/$(ARCH64)/dada group=sys mode=0755 \\
     reboot-needed=true
 file path=kernel/misc/$(ARCH64)/dls group=sys mode=0755 reboot-needed=true
 file path=kernel/misc/$(ARCH64)/fssnap_if group=sys mode=0755 reboot-needed=true
@@ -657,55 +657,55 @@ file path=kernel/misc/$(ARCH64)/gld group=sys mode=0755 reboot-needed=true
 file path=kernel/misc/$(ARCH64)/hook group=sys mode=0755 reboot-needed=true
 file path=kernel/misc/$(ARCH64)/hpcsvc group=sys mode=0755 reboot-needed=true
 file path=kernel/misc/$(ARCH64)/idmap group=sys mode=0755 reboot-needed=true
-$(i386_ONLY)file path=kernel/misc/$(ARCH64)/iommulib group=sys mode=0755 \
+$(i386_ONLY)file path=kernel/misc/$(ARCH64)/iommulib group=sys mode=0755 \\
     reboot-needed=true
 file path=kernel/misc/$(ARCH64)/ipc group=sys mode=0755 reboot-needed=true
 file path=kernel/misc/$(ARCH64)/kbtrans group=sys mode=0755 reboot-needed=true
 file path=kernel/misc/$(ARCH64)/kcf group=sys mode=0755 reboot-needed=true
-$(i386_ONLY)file path=kernel/misc/$(ARCH64)/kmdbmod group=sys mode=0755 \
+$(i386_ONLY)file path=kernel/misc/$(ARCH64)/kmdbmod group=sys mode=0755 \\
     reboot-needed=true
 file path=kernel/misc/$(ARCH64)/ksocket group=sys mode=0755 reboot-needed=true
 file path=kernel/misc/$(ARCH64)/mac group=sys mode=0755 reboot-needed=true
 file path=kernel/misc/$(ARCH64)/mii group=sys mode=0755 reboot-needed=true
-$(i386_ONLY)file path=kernel/misc/$(ARCH64)/net80211 group=sys mode=0755 \
+$(i386_ONLY)file path=kernel/misc/$(ARCH64)/net80211 group=sys mode=0755 \\
     reboot-needed=true
 file path=kernel/misc/$(ARCH64)/neti group=sys mode=0755 reboot-needed=true
-$(i386_ONLY)file path=kernel/misc/$(ARCH64)/pci_autoconfig group=sys mode=0755 \
+$(i386_ONLY)file path=kernel/misc/$(ARCH64)/pci_autoconfig group=sys mode=0755 \\
     reboot-needed=true
-$(i386_ONLY)file path=kernel/misc/$(ARCH64)/pcicfg group=sys mode=0755 \
+$(i386_ONLY)file path=kernel/misc/$(ARCH64)/pcicfg group=sys mode=0755 \\
     reboot-needed=true
-$(i386_ONLY)file path=kernel/misc/$(ARCH64)/pcie group=sys mode=0755 \
+$(i386_ONLY)file path=kernel/misc/$(ARCH64)/pcie group=sys mode=0755 \\
     reboot-needed=true
 file path=kernel/misc/$(ARCH64)/pcihp group=sys mode=0755 reboot-needed=true
 file path=kernel/misc/$(ARCH64)/pcmcia group=sys mode=0755 reboot-needed=true
 file path=kernel/misc/$(ARCH64)/rpcsec group=sys mode=0755 reboot-needed=true
-$(i386_ONLY)file path=kernel/misc/$(ARCH64)/sata group=sys mode=0755 \
+$(i386_ONLY)file path=kernel/misc/$(ARCH64)/sata group=sys mode=0755 \\
     reboot-needed=true
 file path=kernel/misc/$(ARCH64)/scsi group=sys mode=0755 reboot-needed=true
 file path=kernel/misc/$(ARCH64)/strplumb group=sys mode=0755 reboot-needed=true
-$(sparc_ONLY)file path=kernel/misc/$(ARCH64)/swapgeneric group=sys mode=0755 \
+$(sparc_ONLY)file path=kernel/misc/$(ARCH64)/swapgeneric group=sys mode=0755 \\
     reboot-needed=true
 file path=kernel/misc/$(ARCH64)/tem group=sys mode=0755 reboot-needed=true
 file path=kernel/misc/$(ARCH64)/tlimod group=sys mode=0755 reboot-needed=true
 $(i386_ONLY)file path=kernel/misc/acpica group=sys mode=0755 reboot-needed=true
-$(i386_ONLY)file path=kernel/misc/agpmaster group=sys mode=0755 \
+$(i386_ONLY)file path=kernel/misc/agpmaster group=sys mode=0755 \\
     reboot-needed=true
 $(i386_ONLY)file path=kernel/misc/bignum group=sys mode=0755 reboot-needed=true
 $(i386_ONLY)file path=kernel/misc/bootdev group=sys mode=0755 reboot-needed=true
 $(i386_ONLY)file path=kernel/misc/busra group=sys mode=0755 reboot-needed=true
 $(i386_ONLY)file path=kernel/misc/cardbus group=sys mode=0755 reboot-needed=true
 $(i386_ONLY)file path=kernel/misc/cmlb group=sys mode=0755 reboot-needed=true
-$(i386_ONLY)file path=kernel/misc/consconfig group=sys mode=0755 \
+$(i386_ONLY)file path=kernel/misc/consconfig group=sys mode=0755 \\
     reboot-needed=true
 $(i386_ONLY)file path=kernel/misc/ctf group=sys mode=0755 reboot-needed=true
 $(i386_ONLY)file path=kernel/misc/dls group=sys mode=0755 reboot-needed=true
-$(i386_ONLY)file path=kernel/misc/fssnap_if group=sys mode=0755 \
+$(i386_ONLY)file path=kernel/misc/fssnap_if group=sys mode=0755 \\
     reboot-needed=true
 $(i386_ONLY)file path=kernel/misc/gld group=sys mode=0755 reboot-needed=true
 $(i386_ONLY)file path=kernel/misc/hook group=sys mode=0755 reboot-needed=true
 $(i386_ONLY)file path=kernel/misc/hpcsvc group=sys mode=0755 reboot-needed=true
 $(i386_ONLY)file path=kernel/misc/idmap group=sys mode=0755 reboot-needed=true
-$(i386_ONLY)file path=kernel/misc/iommulib group=sys mode=0755 \
+$(i386_ONLY)file path=kernel/misc/iommulib group=sys mode=0755 \\
     reboot-needed=true
 $(i386_ONLY)file path=kernel/misc/ipc group=sys mode=0755 reboot-needed=true
 $(i386_ONLY)file path=kernel/misc/kbtrans group=sys mode=0755 reboot-needed=true
@@ -714,10 +714,10 @@ $(i386_ONLY)file path=kernel/misc/kmdbmod group=sys mode=0755 reboot-needed=true
 $(i386_ONLY)file path=kernel/misc/ksocket group=sys mode=0755 reboot-needed=true
 $(i386_ONLY)file path=kernel/misc/mac group=sys mode=0755 reboot-needed=true
 $(i386_ONLY)file path=kernel/misc/mii group=sys mode=0755 reboot-needed=true
-$(i386_ONLY)file path=kernel/misc/net80211 group=sys mode=0755 \
+$(i386_ONLY)file path=kernel/misc/net80211 group=sys mode=0755 \\
     reboot-needed=true
 $(i386_ONLY)file path=kernel/misc/neti group=sys mode=0755 reboot-needed=true
-$(i386_ONLY)file path=kernel/misc/pci_autoconfig group=sys mode=0755 \
+$(i386_ONLY)file path=kernel/misc/pci_autoconfig group=sys mode=0755 \\
     reboot-needed=true
 $(i386_ONLY)file path=kernel/misc/pcicfg group=sys mode=0755 reboot-needed=true
 $(i386_ONLY)file path=kernel/misc/pcie group=sys mode=0755 reboot-needed=true
@@ -726,43 +726,43 @@ $(i386_ONLY)file path=kernel/misc/pcmcia group=sys mode=0755 reboot-needed=true
 $(i386_ONLY)file path=kernel/misc/rpcsec group=sys mode=0755 reboot-needed=true
 $(i386_ONLY)file path=kernel/misc/sata group=sys mode=0755 reboot-needed=true
 $(i386_ONLY)file path=kernel/misc/scsi group=sys mode=0755 reboot-needed=true
-file path=kernel/misc/scsi_vhci/$(ARCH64)/scsi_vhci_f_asym_emc group=sys \
+file path=kernel/misc/scsi_vhci/$(ARCH64)/scsi_vhci_f_asym_emc group=sys \\
     mode=0755 reboot-needed=true
-file path=kernel/misc/scsi_vhci/$(ARCH64)/scsi_vhci_f_asym_lsi group=sys \
+file path=kernel/misc/scsi_vhci/$(ARCH64)/scsi_vhci_f_asym_lsi group=sys \\
     mode=0755 reboot-needed=true
-file path=kernel/misc/scsi_vhci/$(ARCH64)/scsi_vhci_f_asym_sun group=sys \
+file path=kernel/misc/scsi_vhci/$(ARCH64)/scsi_vhci_f_asym_sun group=sys \\
     mode=0755 reboot-needed=true
-file path=kernel/misc/scsi_vhci/$(ARCH64)/scsi_vhci_f_sym group=sys mode=0755 \
+file path=kernel/misc/scsi_vhci/$(ARCH64)/scsi_vhci_f_sym group=sys mode=0755 \\
     reboot-needed=true
-file path=kernel/misc/scsi_vhci/$(ARCH64)/scsi_vhci_f_sym_emc group=sys \
+file path=kernel/misc/scsi_vhci/$(ARCH64)/scsi_vhci_f_sym_emc group=sys \\
     mode=0755 reboot-needed=true
-file path=kernel/misc/scsi_vhci/$(ARCH64)/scsi_vhci_f_sym_hds group=sys \
+file path=kernel/misc/scsi_vhci/$(ARCH64)/scsi_vhci_f_sym_hds group=sys \\
     mode=0755 reboot-needed=true
-file path=kernel/misc/scsi_vhci/$(ARCH64)/scsi_vhci_f_tape group=sys mode=0755 \
+file path=kernel/misc/scsi_vhci/$(ARCH64)/scsi_vhci_f_tape group=sys mode=0755 \\
     reboot-needed=true
-file path=kernel/misc/scsi_vhci/$(ARCH64)/scsi_vhci_f_tpgs group=sys mode=0755 \
+file path=kernel/misc/scsi_vhci/$(ARCH64)/scsi_vhci_f_tpgs group=sys mode=0755 \\
     reboot-needed=true
-file path=kernel/misc/scsi_vhci/$(ARCH64)/scsi_vhci_f_tpgs_tape group=sys \
+file path=kernel/misc/scsi_vhci/$(ARCH64)/scsi_vhci_f_tpgs_tape group=sys \\
     mode=0755 reboot-needed=true
-$(i386_ONLY)file path=kernel/misc/scsi_vhci/scsi_vhci_f_asym_emc group=sys \
+$(i386_ONLY)file path=kernel/misc/scsi_vhci/scsi_vhci_f_asym_emc group=sys \\
     mode=0755 reboot-needed=true
-$(i386_ONLY)file path=kernel/misc/scsi_vhci/scsi_vhci_f_asym_lsi group=sys \
+$(i386_ONLY)file path=kernel/misc/scsi_vhci/scsi_vhci_f_asym_lsi group=sys \\
     mode=0755 reboot-needed=true
-$(i386_ONLY)file path=kernel/misc/scsi_vhci/scsi_vhci_f_asym_sun group=sys \
+$(i386_ONLY)file path=kernel/misc/scsi_vhci/scsi_vhci_f_asym_sun group=sys \\
     mode=0755 reboot-needed=true
-$(i386_ONLY)file path=kernel/misc/scsi_vhci/scsi_vhci_f_sym group=sys mode=0755 \
+$(i386_ONLY)file path=kernel/misc/scsi_vhci/scsi_vhci_f_sym group=sys mode=0755 \\
     reboot-needed=true
-$(i386_ONLY)file path=kernel/misc/scsi_vhci/scsi_vhci_f_sym_emc group=sys \
+$(i386_ONLY)file path=kernel/misc/scsi_vhci/scsi_vhci_f_sym_emc group=sys \\
     mode=0755 reboot-needed=true
-$(i386_ONLY)file path=kernel/misc/scsi_vhci/scsi_vhci_f_sym_hds group=sys \
+$(i386_ONLY)file path=kernel/misc/scsi_vhci/scsi_vhci_f_sym_hds group=sys \\
     mode=0755 reboot-needed=true
-$(i386_ONLY)file path=kernel/misc/scsi_vhci/scsi_vhci_f_tape group=sys mode=0755 \
+$(i386_ONLY)file path=kernel/misc/scsi_vhci/scsi_vhci_f_tape group=sys mode=0755 \\
     reboot-needed=true
-$(i386_ONLY)file path=kernel/misc/scsi_vhci/scsi_vhci_f_tpgs group=sys mode=0755 \
+$(i386_ONLY)file path=kernel/misc/scsi_vhci/scsi_vhci_f_tpgs group=sys mode=0755 \\
     reboot-needed=true
-$(i386_ONLY)file path=kernel/misc/scsi_vhci/scsi_vhci_f_tpgs_tape group=sys \
+$(i386_ONLY)file path=kernel/misc/scsi_vhci/scsi_vhci_f_tpgs_tape group=sys \\
     mode=0755 reboot-needed=true
-$(i386_ONLY)file path=kernel/misc/strplumb group=sys mode=0755 \
+$(i386_ONLY)file path=kernel/misc/strplumb group=sys mode=0755 \\
     reboot-needed=true
 $(i386_ONLY)file path=kernel/misc/tem group=sys mode=0755 reboot-needed=true
 $(i386_ONLY)file path=kernel/misc/tlimod group=sys mode=0755 reboot-needed=true
@@ -771,60 +771,60 @@ file path=kernel/sched/$(ARCH64)/TS group=sys mode=0755 reboot-needed=true
 file path=kernel/sched/$(ARCH64)/TS_DPTBL group=sys mode=0755 reboot-needed=true
 $(i386_ONLY)file path=kernel/sched/SDC group=sys mode=0755 reboot-needed=true
 $(i386_ONLY)file path=kernel/sched/TS group=sys mode=0755 reboot-needed=true
-$(i386_ONLY)file path=kernel/sched/TS_DPTBL group=sys mode=0755 \
+$(i386_ONLY)file path=kernel/sched/TS_DPTBL group=sys mode=0755 \\
     reboot-needed=true
-file path=kernel/socketmod/$(ARCH64)/socksctp group=sys mode=0755 \
+file path=kernel/socketmod/$(ARCH64)/socksctp group=sys mode=0755 \\
     reboot-needed=true
-file path=kernel/socketmod/$(ARCH64)/trill group=sys mode=0755 \
+file path=kernel/socketmod/$(ARCH64)/trill group=sys mode=0755 \\
     reboot-needed=true
-$(i386_ONLY)file path=kernel/socketmod/socksctp group=sys mode=0755 \
+$(i386_ONLY)file path=kernel/socketmod/socksctp group=sys mode=0755 \\
     reboot-needed=true
-$(i386_ONLY)file path=kernel/socketmod/trill group=sys mode=0755 \
+$(i386_ONLY)file path=kernel/socketmod/trill group=sys mode=0755 \\
     reboot-needed=true
 file path=kernel/strmod/$(ARCH64)/bufmod group=sys mode=0755 reboot-needed=true
 file path=kernel/strmod/$(ARCH64)/connld group=sys mode=0755 reboot-needed=true
 file path=kernel/strmod/$(ARCH64)/dedump group=sys mode=0755 reboot-needed=true
-file path=kernel/strmod/$(ARCH64)/drcompat group=sys mode=0755 \
+file path=kernel/strmod/$(ARCH64)/drcompat group=sys mode=0755 \\
     reboot-needed=true
 file path=kernel/strmod/$(ARCH64)/ldterm group=sys mode=0755 reboot-needed=true
-$(sparc_ONLY)file path=kernel/strmod/$(ARCH64)/ms group=sys mode=0755 \
+$(sparc_ONLY)file path=kernel/strmod/$(ARCH64)/ms group=sys mode=0755 \\
     reboot-needed=true
 file path=kernel/strmod/$(ARCH64)/pckt group=sys mode=0755 reboot-needed=true
 file path=kernel/strmod/$(ARCH64)/pfmod group=sys mode=0755 reboot-needed=true
 file path=kernel/strmod/$(ARCH64)/pipemod group=sys mode=0755 reboot-needed=true
 file path=kernel/strmod/$(ARCH64)/ptem group=sys mode=0755 reboot-needed=true
-file path=kernel/strmod/$(ARCH64)/redirmod group=sys mode=0755 \
+file path=kernel/strmod/$(ARCH64)/redirmod group=sys mode=0755 \\
     reboot-needed=true
 file path=kernel/strmod/$(ARCH64)/rpcmod group=sys mode=0755 reboot-needed=true
 file path=kernel/strmod/$(ARCH64)/timod group=sys mode=0755 reboot-needed=true
 file path=kernel/strmod/$(ARCH64)/tirdwr group=sys mode=0755 reboot-needed=true
-file path=kernel/strmod/$(ARCH64)/ttcompat group=sys mode=0755 \
+file path=kernel/strmod/$(ARCH64)/ttcompat group=sys mode=0755 \\
     reboot-needed=true
-$(sparc_ONLY)file path=kernel/strmod/$(ARCH64)/vuid3ps2 group=sys mode=0755 \
+$(sparc_ONLY)file path=kernel/strmod/$(ARCH64)/vuid3ps2 group=sys mode=0755 \\
     reboot-needed=true
-$(i386_ONLY)file path=kernel/strmod/bufmod group=sys mode=0755 \
+$(i386_ONLY)file path=kernel/strmod/bufmod group=sys mode=0755 \\
     reboot-needed=true
-$(i386_ONLY)file path=kernel/strmod/connld group=sys mode=0755 \
+$(i386_ONLY)file path=kernel/strmod/connld group=sys mode=0755 \\
     reboot-needed=true
-$(i386_ONLY)file path=kernel/strmod/dedump group=sys mode=0755 \
+$(i386_ONLY)file path=kernel/strmod/dedump group=sys mode=0755 \\
     reboot-needed=true
-$(i386_ONLY)file path=kernel/strmod/drcompat group=sys mode=0755 \
+$(i386_ONLY)file path=kernel/strmod/drcompat group=sys mode=0755 \\
     reboot-needed=true
-$(i386_ONLY)file path=kernel/strmod/ldterm group=sys mode=0755 \
+$(i386_ONLY)file path=kernel/strmod/ldterm group=sys mode=0755 \\
     reboot-needed=true
 $(i386_ONLY)file path=kernel/strmod/pckt group=sys mode=0755 reboot-needed=true
 $(i386_ONLY)file path=kernel/strmod/pfmod group=sys mode=0755 reboot-needed=true
-$(i386_ONLY)file path=kernel/strmod/pipemod group=sys mode=0755 \
+$(i386_ONLY)file path=kernel/strmod/pipemod group=sys mode=0755 \\
     reboot-needed=true
 $(i386_ONLY)file path=kernel/strmod/ptem group=sys mode=0755 reboot-needed=true
-$(i386_ONLY)file path=kernel/strmod/redirmod group=sys mode=0755 \
+$(i386_ONLY)file path=kernel/strmod/redirmod group=sys mode=0755 \\
     reboot-needed=true
-$(i386_ONLY)file path=kernel/strmod/rpcmod group=sys mode=0755 \
+$(i386_ONLY)file path=kernel/strmod/rpcmod group=sys mode=0755 \\
     reboot-needed=true
 $(i386_ONLY)file path=kernel/strmod/timod group=sys mode=0755 reboot-needed=true
-$(i386_ONLY)file path=kernel/strmod/tirdwr group=sys mode=0755 \
+$(i386_ONLY)file path=kernel/strmod/tirdwr group=sys mode=0755 \\
     reboot-needed=true
-$(i386_ONLY)file path=kernel/strmod/ttcompat group=sys mode=0755 \
+$(i386_ONLY)file path=kernel/strmod/ttcompat group=sys mode=0755 \\
     reboot-needed=true
 file path=kernel/sys/$(ARCH64)/c2audit group=sys mode=0755 reboot-needed=true
 file path=kernel/sys/$(ARCH64)/doorfs group=sys mode=0755 reboot-needed=true
@@ -838,7 +838,7 @@ file path=kernel/sys/$(ARCH64)/semsys group=sys mode=0755 reboot-needed=true
 file path=kernel/sys/$(ARCH64)/shmsys group=sys mode=0755 reboot-needed=true
 $(i386_ONLY)file path=kernel/sys/c2audit group=sys mode=0755 reboot-needed=true
 $(i386_ONLY)file path=kernel/sys/doorfs group=sys mode=0755 reboot-needed=true
-$(i386_ONLY)file path=kernel/sys/inst_sync group=sys mode=0755 \
+$(i386_ONLY)file path=kernel/sys/inst_sync group=sys mode=0755 \\
     reboot-needed=true
 $(i386_ONLY)file path=kernel/sys/kaio group=sys mode=0755 reboot-needed=true
 $(i386_ONLY)file path=kernel/sys/msgsys group=sys mode=0755 reboot-needed=true
@@ -854,88 +854,88 @@ file path=lib/svc/manifest/system/dumpadm.xml group=sys mode=0444
 file path=lib/svc/manifest/system/fmd.xml group=sys mode=0444
 file path=lib/svc/manifest/system/intrd.xml group=sys mode=0444
 file path=lib/svc/manifest/system/scheduler.xml group=sys mode=0444
-hardlink path=kernel/misc/$(ARCH64)/md5 \
+hardlink path=kernel/misc/$(ARCH64)/md5 \\
     target=../../../kernel/crypto/$(ARCH64)/md5
-hardlink path=kernel/misc/$(ARCH64)/sha1 \
+hardlink path=kernel/misc/$(ARCH64)/sha1 \\
     target=../../../kernel/crypto/$(ARCH64)/sha1
-hardlink path=kernel/misc/$(ARCH64)/sha2 \
+hardlink path=kernel/misc/$(ARCH64)/sha2 \\
     target=../../../kernel/crypto/$(ARCH64)/sha2
 $(i386_ONLY)hardlink path=kernel/misc/md5 target=../../kernel/crypto/md5
 $(i386_ONLY)hardlink path=kernel/misc/sha1 target=../../kernel/crypto/sha1
 $(i386_ONLY)hardlink path=kernel/misc/sha2 target=../../kernel/crypto/sha2
-hardlink path=kernel/socketmod/$(ARCH64)/icmp \
+hardlink path=kernel/socketmod/$(ARCH64)/icmp \\
     target=../../../kernel/drv/$(ARCH64)/icmp
-hardlink path=kernel/socketmod/$(ARCH64)/rts \
+hardlink path=kernel/socketmod/$(ARCH64)/rts \\
     target=../../../kernel/drv/$(ARCH64)/rts
-hardlink path=kernel/socketmod/$(ARCH64)/tcp \
+hardlink path=kernel/socketmod/$(ARCH64)/tcp \\
     target=../../../kernel/drv/$(ARCH64)/tcp
-hardlink path=kernel/socketmod/$(ARCH64)/udp \
+hardlink path=kernel/socketmod/$(ARCH64)/udp \\
     target=../../../kernel/drv/$(ARCH64)/udp
 $(i386_ONLY)hardlink path=kernel/socketmod/icmp target=../../kernel/drv/icmp
 $(i386_ONLY)hardlink path=kernel/socketmod/rts target=../../kernel/drv/rts
 $(i386_ONLY)hardlink path=kernel/socketmod/tcp target=../../kernel/drv/tcp
 $(i386_ONLY)hardlink path=kernel/socketmod/udp target=../../kernel/drv/udp
-hardlink path=kernel/strmod/$(ARCH64)/arp \
+hardlink path=kernel/strmod/$(ARCH64)/arp \\
     target=../../../kernel/drv/$(ARCH64)/arp
-hardlink path=kernel/strmod/$(ARCH64)/icmp \
+hardlink path=kernel/strmod/$(ARCH64)/icmp \\
     target=../../../kernel/drv/$(ARCH64)/icmp
 hardlink path=kernel/strmod/$(ARCH64)/ip target=../../../kernel/drv/$(ARCH64)/ip
-hardlink path=kernel/strmod/$(ARCH64)/ipsecah \
+hardlink path=kernel/strmod/$(ARCH64)/ipsecah \\
     target=../../../kernel/drv/$(ARCH64)/ipsecah
-hardlink path=kernel/strmod/$(ARCH64)/ipsecesp \
+hardlink path=kernel/strmod/$(ARCH64)/ipsecesp \\
     target=../../../kernel/drv/$(ARCH64)/ipsecesp
-hardlink path=kernel/strmod/$(ARCH64)/keysock \
+hardlink path=kernel/strmod/$(ARCH64)/keysock \\
     target=../../../kernel/drv/$(ARCH64)/keysock
-hardlink path=kernel/strmod/$(ARCH64)/tcp \
+hardlink path=kernel/strmod/$(ARCH64)/tcp \\
     target=../../../kernel/drv/$(ARCH64)/tcp
-hardlink path=kernel/strmod/$(ARCH64)/udp \
+hardlink path=kernel/strmod/$(ARCH64)/udp \\
     target=../../../kernel/drv/$(ARCH64)/udp
 $(i386_ONLY)hardlink path=kernel/strmod/arp target=../../kernel/drv/arp
 $(i386_ONLY)hardlink path=kernel/strmod/icmp target=../../kernel/drv/icmp
 $(i386_ONLY)hardlink path=kernel/strmod/ip target=../../kernel/drv/ip
 $(i386_ONLY)hardlink path=kernel/strmod/ipsecah target=../../kernel/drv/ipsecah
-$(i386_ONLY)hardlink path=kernel/strmod/ipsecesp \
+$(i386_ONLY)hardlink path=kernel/strmod/ipsecesp \\
     target=../../kernel/drv/ipsecesp
 $(i386_ONLY)hardlink path=kernel/strmod/keysock target=../../kernel/drv/keysock
 $(i386_ONLY)hardlink path=kernel/strmod/tcp target=../../kernel/drv/tcp
 $(i386_ONLY)hardlink path=kernel/strmod/udp target=../../kernel/drv/udp
-hardlink path=kernel/sys/$(ARCH64)/autofs \
+hardlink path=kernel/sys/$(ARCH64)/autofs \\
     target=../../../kernel/fs/$(ARCH64)/autofs
-hardlink path=kernel/sys/$(ARCH64)/rpcmod \
+hardlink path=kernel/sys/$(ARCH64)/rpcmod \\
     target=../../../kernel/strmod/$(ARCH64)/rpcmod
 $(i386_ONLY)hardlink path=kernel/sys/autofs target=../../kernel/fs/autofs
 $(i386_ONLY)hardlink path=kernel/sys/rpcmod target=../../kernel/strmod/rpcmod
-legacy pkg=SUNWckr arch=$(ARCH) category=system \
-    desc="core kernel software for a specific instruction-set architecture" \
-    hotline="Please contact your local service provider" \
-    name="Core Solaris Kernel (Root)" vendor="Sun Microsystems, Inc." \
+legacy pkg=SUNWckr arch=$(ARCH) category=system \\
+    desc="core kernel software for a specific instruction-set architecture" \\
+    hotline="Please contact your local service provider" \\
+    name="Core Solaris Kernel (Root)" vendor="Sun Microsystems, Inc." \\
     version=11.11,REV=2009.11.11
-license common/crypto/THIRDPARTYLICENSE.cryptogams \
+license common/crypto/THIRDPARTYLICENSE.cryptogams \\
     license=common/crypto/THIRDPARTYLICENSE.cryptogams
-license common/crypto/aes/amd64/THIRDPARTYLICENSE.gladman \
+license common/crypto/aes/amd64/THIRDPARTYLICENSE.gladman \\
     license=common/crypto/aes/amd64/THIRDPARTYLICENSE.gladman
-license common/crypto/aes/amd64/THIRDPARTYLICENSE.openssl \
+license common/crypto/aes/amd64/THIRDPARTYLICENSE.openssl \\
     license=common/crypto/aes/amd64/THIRDPARTYLICENSE.openssl
-license common/crypto/ecc/THIRDPARTYLICENSE \
+license common/crypto/ecc/THIRDPARTYLICENSE \\
     license=common/crypto/ecc/THIRDPARTYLICENSE
-license common/crypto/md5/amd64/THIRDPARTYLICENSE \
+license common/crypto/md5/amd64/THIRDPARTYLICENSE \\
     license=common/crypto/md5/amd64/THIRDPARTYLICENSE
 license common/mpi/THIRDPARTYLICENSE license=common/mpi/THIRDPARTYLICENSE
 license cr_Sun license=cr_Sun
 license lic_CDDL license=lic_CDDL
-license uts/common/inet/ip/THIRDPARTYLICENSE.rts \
+license uts/common/inet/ip/THIRDPARTYLICENSE.rts \\
     license=uts/common/inet/ip/THIRDPARTYLICENSE.rts
-license uts/common/inet/tcp/THIRDPARTYLICENSE \
+license uts/common/inet/tcp/THIRDPARTYLICENSE \\
     license=uts/common/inet/tcp/THIRDPARTYLICENSE
-license uts/common/io/THIRDPARTYLICENSE.etheraddr \
+license uts/common/io/THIRDPARTYLICENSE.etheraddr \\
     license=uts/common/io/THIRDPARTYLICENSE.etheraddr
-license uts/common/sys/THIRDPARTYLICENSE.icu \
+license uts/common/sys/THIRDPARTYLICENSE.icu \\
     license=uts/common/sys/THIRDPARTYLICENSE.icu
-license uts/common/sys/THIRDPARTYLICENSE.unicode \
+license uts/common/sys/THIRDPARTYLICENSE.unicode \\
     license=uts/common/sys/THIRDPARTYLICENSE.unicode
-license uts/intel/io/acpica/THIRDPARTYLICENSE \
+license uts/intel/io/acpica/THIRDPARTYLICENSE \\
     license=uts/intel/io/acpica/THIRDPARTYLICENSE
-$(i386_ONLY)link path=boot/solaris/bin/root_archive \
+$(i386_ONLY)link path=boot/solaris/bin/root_archive \\
     target=../../../usr/sbin/root_archive
 link path=dev/dld target=../devices/pseudo/dld@0:ctl
 link path=kernel/misc/$(ARCH64)/des target=../../../kernel/crypto/$(ARCH64)/des
@@ -999,9 +999,14 @@ driver alias=usb1044,800a alias=usb13b1,20 alias=usb148f,2573 alias=usb15a9,4 al
 # privs, policy, devlink, alias.
 driver name=driver alias="bobcat" clone_perms="driver 0666 root sys" devlink=type=ddi_pseudo;name=sv\\t\\D perms="driver 0666 root sys" policy="write_priv_set=net_rawaccess" privs=sys_config
 
-# This was comment was for set name=foo; its attributes should be reordered and
+# This comment was for set name=foo; its attributes should be reordered and
 # wrapped.
 set name=foo value=bar variant.arch=i386 variant.arch=sparc variant.opensolaris.zone=global variant.opensolaris.zone=nonglobal
+
+# This comment was for set name=pkg.description; its value should remain quoted
+# and on a single, separate line.
+set name=pkg.description \\
+    value='PolicyKit provides an authorization API intended to be used by privileged programs ("mechanisms") offering service to unprivileged programs ("clients") through some form of IPC mechanism such as D-Bus or Unix pipes.'
 
 # This transform is the third; it should remain unwrapped.
 <transform pkg variant.arch=set-default -> emit set name=variant.arch value=$(ARCH)>
@@ -1033,7 +1038,12 @@ set name=pkg.fmri value=pkg://solaris/package/pkg@0.5.11,5.11-0.163:20110410T074
 set name=pkg.fmri \\
     value=pkg://solaris/package/pkg@0.5.11,5.11-0.163:20110410T074945Z
 
-# This was comment was for set name=foo; its attributes should be reordered and
+# This comment was for set name=pkg.description; its value should remain quoted
+# and on a single, separate line.
+set name=pkg.description \\
+    value='PolicyKit provides an authorization API intended to be used by privileged programs ("mechanisms") offering service to unprivileged programs ("clients") through some form of IPC mechanism such as D-Bus or Unix pipes.'
+
+# This comment was for set name=foo; its attributes should be reordered and
 # wrapped.
 set name=foo value=bar variant.arch=i386 variant.arch=sparc \\
     variant.opensolaris.zone=global variant.opensolaris.zone=nonglobal
@@ -1131,7 +1141,12 @@ depend fmri=zorch@2.0 type=optional
 set name=pkg.fmri \\
     value=pkg://solaris/package/pkg@0.5.11,5.11-0.163:20110410T074945Z
 
-# This was comment was for set name=foo; its attributes should be reordered and
+# This comment was for set name=pkg.description; its value should remain quoted
+# and on a single, separate line.
+set name=pkg.description \\
+    value='PolicyKit provides an authorization API intended to be used by privileged programs ("mechanisms") offering service to unprivileged programs ("clients") through some form of IPC mechanism such as D-Bus or Unix pipes.'
+
+# This comment was for set name=foo; its attributes should be reordered and
 # wrapped.
 set name=foo value=bar variant.arch=i386 variant.arch=sparc \\
     variant.opensolaris.zone=global variant.opensolaris.zone=nonglobal
