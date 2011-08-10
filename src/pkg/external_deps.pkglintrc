@@ -8,7 +8,9 @@
 # match all versions of that particular package.  If version
 # numbers are specified, we only match the given version.
 #
-pkglint.action005.1.missing-deps = pkg:/archiver/gnu-tar
+pkglint.action005.1.missing-deps =
+    pkg:/SUNWcs
+    pkg:/archiver/gnu-tar
     pkg:/crypto/ca-certificates
     pkg:/desktop/gksu
     pkg:/developer/assembler
@@ -46,11 +48,11 @@ pkglint.action005.1.missing-deps = pkg:/archiver/gnu-tar
     pkg:/library/python-2/simplejson-26
     pkg:/package/svr4
     pkg:/runtime/python-26
-    pkg:/SUNWcs
     pkg:/shell/ksh
     pkg:/system/core-os
     pkg:/system/extended-system-utilities
     pkg:/system/font/xorg/xorg-core
+    pkg:/system/header
     pkg:/system/library
     pkg:/system/library/dbus
     pkg:/system/library/math

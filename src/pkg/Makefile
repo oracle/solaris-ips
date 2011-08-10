@@ -27,7 +27,7 @@ BUILDNUM.cmd      = hg tags | nawk '$$1 ~ /^in[0-9]*$$/ {print substr($$1, 3) + 
 BUILDNUM          = $(BUILDNUM.cmd:sh)
 CHANGESET.cmd     = hg id -i
 CHANGESET         = $(CHANGESET.cmd:sh)
-CURBUILD.cmd      = $(PKG) -R / list -H osnet-incorporation | sed -e 's/.*-0\.\([^ ]*\).*/\1/'
+CURBUILD.cmd      = $(PKG) -R / list -H osnet-incorporation | sed -e 's/.*-0\.\([^ .]*\).*/\1/'
 CURBUILD          = $(CURBUILD.cmd:sh)
 PKGVERS_BRANCH    = 0.$(BUILDNUM)
 PKGVERS           = $(PKGVERS_COMPONENT),$(PKGVERS_BUILTON)-$(PKGVERS_BRANCH)
@@ -56,7 +56,7 @@ MANIFESTS         = $(MANIFESTS.cmd:sh)
 $(PUBLISHALL)MANIFESTS:sh      = (cd manifests; print *.p5m)
 PKGS.cmd          = print $(MANIFESTS:%.p5m=%) | sed -e s/%2F/\\//g
 PKGS              = $(PKGS.cmd:sh)
-PKGCMDENV         = PATH=$(PKGROOT)/usr/bin:/usr/bin PYTHONPATH=$(PKGROOT)/usr/lib/python2.6/vendor-packages
+PKGCMDENV         = PATH=$(PKGROOT)/usr/bin:/usr/sbin:/usr/bin PYTHONPATH=$(PKGROOT)/usr/lib/python2.6/vendor-packages
 PKG               = $(PKGCMDENV) pkg
 PKGDEPEND         = $(PKGCMDENV) pkgdepend
 PKGLINT           = $(PKGCMDENV) pkglint

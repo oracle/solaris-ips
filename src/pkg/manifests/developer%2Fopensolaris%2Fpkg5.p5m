@@ -44,6 +44,7 @@ depend type=require fmri=pkg:/library/python-2/python-gnome-extras-26
 depend type=require fmri=pkg:/library/python-2/python-notify-26
 depend type=require fmri=pkg:/package/svr4
 depend type=require fmri=pkg:/runtime/python-26
+depend type=require fmri=pkg:/system/header
 depend type=require fmri=pkg:/system/linker
 depend type=require fmri=pkg:/text/tidy
 depend type=require fmri=pkg:/web/server/apache-22

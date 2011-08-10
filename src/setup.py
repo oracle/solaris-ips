@@ -36,12 +36,14 @@ import tempfile
 import urllib
 import py_compile
 import hashlib
+import time
 
 from distutils.errors import DistutilsError
 from distutils.core import setup, Extension
 from distutils.cmd import Command
 from distutils.command.install import install as _install
 from distutils.command.build import build as _build
+from distutils.command.build_ext import build_ext as _build_ext
 from distutils.command.build_py import build_py as _build_py
 from distutils.command.bdist import bdist as _bdist
 from distutils.command.clean import clean as _clean
@@ -51,6 +53,8 @@ from distutils.sysconfig import get_python_inc
 import distutils.file_util as file_util
 import distutils.dir_util as dir_util
 import distutils.util as util
+import distutils.ccompiler
+from distutils.unixccompiler import UnixCCompiler
 
 osname = platform.uname()[0].lower()
 ostype = arch = 'unknown'
@@ -258,9 +262,11 @@ sysrepo_log_stubs = [
         'util/apache2/sysrepo/logs/access_log',
         'util/apache2/sysrepo/logs/error_log',
         ]
-execattrd_files = ['util/misc/exec_attr.d/SUNWipkg',
-                   'util/misc/exec_attr.d/SUNWipkg-gui']
-authattrd_files = ['util/misc/auth_attr.d/SUNWipkg']
+execattrd_files = [
+        'util/misc/exec_attr.d/package:pkg',
+        'util/misc/exec_attr.d/package:pkg:package-manager'
+]
+authattrd_files = ['util/misc/auth_attr.d/package:pkg']
 syscallat_srcs = [
         'modules/syscallat.c'
         ]
@@ -599,8 +605,86 @@ def syntax_check(filename):
 
                 raise DistutilsError(res)
 
+# On Solaris, ld inserts the full argument to the -o option into the symbol
+# table.  This means that the resulting object will be different depending on
+# the path at which the workspace lives, and not just on the interesting content
+# of the object.
+#
+# In order to work around that bug (7076871), we create a new compiler class
+# that looks at the argument indicating the output file, chdirs to its
+# directory, and runs the real link with the output file set to just the base
+# name of the file.
+#
+# Unfortunately, distutils isn't too customizable in this regard, so we have to
+# twiddle with a couple of the names in the distutils.ccompiler namespace: we
+# have to add a new entry to the compiler_class dict, and we have to override
+# the new_compiler() function to point to our own.  Luckily, our copy of
+# new_compiler() gets to be very simple, since we always know what we want to
+# return.
+class MyUnixCCompiler(UnixCCompiler):
+
+        def link(self, *args, **kwargs):
+
+                output_filename = args[2]
+                output_dir = kwargs.get('output_dir')
+                cwd = os.getcwd()
+
+                assert(not output_dir)
+                output_dir = os.path.join(cwd, os.path.dirname(output_filename))
+                output_filename = os.path.basename(output_filename)
+                nargs = args[:2] + (output_filename,) + args[3:]
+                os.chdir(output_dir)
+
+                UnixCCompiler.link(self, *nargs, **kwargs)
+
+                os.chdir(cwd)
+
+distutils.ccompiler.compiler_class['myunix'] = (
+    'unixccompiler', 'MyUnixCCompiler',
+    'standard Unix-style compiler with a link stage modified for Solaris'
+)
+
+def my_new_compiler(plat=None, compiler=None, verbose=0, dry_run=0, force=0):
+        return MyUnixCCompiler(None, dry_run, force)
+
+if osname == 'sunos':
+        distutils.ccompiler.new_compiler = my_new_compiler
+
+class build_ext_func(_build_ext):
+
+        def initialize_options(self):
+                _build_ext.initialize_options(self)
+                if osname == 'sunos':
+                        self.compiler = 'myunix'
 
 class build_py_func(_build_py):
+
+        def __init__(self, dist):
+                ret = _build_py.__init__(self, dist)
+
+                # Gather the timestamps of the .py files in the gate, so we can
+                # force the mtimes of the built and delivered copies to be
+                # consistent across builds, causing their corresponding .pyc
+                # files to be unchanged unless the .py file content changed.
+
+                self.timestamps = {}
+
+                p = subprocess.Popen(
+                    [sys.executable, os.path.join(pwd, "pydates")],
+                    stdout=subprocess.PIPE)
+
+                for line in p.stdout:
+                        stamp, path = line.split()
+                        stamp = float(stamp)
+                        self.timestamps[path] = stamp
+
+                if p.wait() != 0:
+                        print >> sys.stderr, "ERROR: unable to gather .py " \
+                            "timestamps"
+                        sys.exit(1)
+
+                return ret
+
         # override the build_module method to do VERSION substitution on pkg/__init__.py
         def build_module (self, module, module_file, package):
 
@@ -636,6 +720,44 @@ class build_py_func(_build_py):
                 syntax_check(module_file)
 
                 return _build_py.build_module(self, module, module_file, package)
+
+        def copy_file(self, infile, outfile, preserve_mode=1, preserve_times=1,
+            link=None, level=1):
+
+                # If the timestamp on the source file (coming from mercurial if
+                # unchanged, or from the filesystem if changed) doesn't match
+                # the filesystem timestamp on the destination, then force the
+                # copy to make sure the right data is in place.
+
+                try:
+                        dst_mtime = os.stat(outfile).st_mtime
+                except OSError, e:
+                        if e.errno != errno.ENOENT:
+                                raise
+                        dst_mtime = time.time()
+
+                # The timestamp for __init__.py is the timestamp for the
+                # workspace itself.
+                if outfile.endswith("/pkg/__init__.py"):
+                        src_mtime = self.timestamps["."]
+                else:
+                        src_mtime = self.timestamps[os.path.join("src", infile)]
+
+                if dst_mtime != src_mtime:
+                        f = self.force
+                        self.force = True
+                        dst, copied = _build_py.copy_file(self, infile, outfile,
+                            preserve_mode, preserve_times, link, level)
+                        self.force = f
+                else:
+                        dst, copied = outfile, 0
+
+                # If we copied the file, then we need to go and readjust the
+                # timestamp on the file to match what we have in our database.
+                if copied and dst.endswith(".py"):
+                        os.utime(dst, (src_mtime, src_mtime))
+
+                return dst, copied
 
 class clean_func(_clean):
         def initialize_options(self):
@@ -730,7 +852,10 @@ class dist_func(_bdist):
 compile_args = None
 if osname in ("sunos", "linux", "darwin"):
         compile_args = [ "-O3" ]
-link_args = None
+if osname == "sunos":
+        link_args = [ "-zstrip-class=nonalloc" ]
+else:
+        link_args = []
 ext_modules = [
         Extension(
                 'actions._actions',
@@ -744,7 +869,7 @@ ext_modules = [
                 solver_srcs,
                 include_dirs = include_dirs + ["."],
                 extra_compile_args = compile_args,
-                extra_link_args = solver_link_args,
+                extra_link_args = link_args + solver_link_args,
                 define_macros = [('_FILE_OFFSET_BITS', '64')]
                 ),
         ]
@@ -753,6 +878,7 @@ data_files = web_files
 cmdclasses = {
         'install': install_func,
         'build': build_func,
+        'build_ext': build_ext_func,
         'build_py': build_py_func,
         'bdist': dist_func,
         'lint': lint_func,
