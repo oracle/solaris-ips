@@ -1248,7 +1248,7 @@ def prune_debug_attrs(action):
         return actions.depend.DependencyAction(**attrs)
 
 def add_fmri_path_mapping(files_dict, links_dict, pfmri, mfst,
-    distro_vars=None):
+    distro_vars=None, use_template=False):
         """Add mappings from path names to FMRIs and variants.
 
         'files_dict' is a dictionary which maps package identity to the files
@@ -1264,25 +1264,33 @@ def add_fmri_path_mapping(files_dict, links_dict, pfmri, mfst,
         'mfst' is the manifest to process.
 
         'distro_vars' is a VariantCombinationTemplate which contains all the
-        variant types and values known."""
+        variant types and values known.
 
-        pvariants = mfst.get_all_variants()
-        if distro_vars:
-                pvariants.merge_unknown(distro_vars)
+        'use_template is a boolean which indicates whether to fill the
+        dictionaries with VariantCombinationTemplates instead of
+        VariantCombinations."""
+
+        assert not distro_vars or not use_template
+        if not use_template:
+                pvariants = mfst.get_all_variants()
+                if distro_vars:
+                        pvariants.merge_unknown(distro_vars)
 
         for f in mfst.gen_actions_by_type("file"):
-                dep_vars = f.get_variant_template()
-                dep_vars.merge_unknown(pvariants)
-                vc = variants.VariantCombinations(dep_vars,
-                    satisfied=True)
+                vc = f.get_variant_template()
+                if not use_template:
+                        vc.merge_unknown(pvariants)
+                        vc = variants.VariantCombinations(vc,
+                            satisfied=True)
                 files_dict.setdefault(f.attrs["path"], []).append(
                     (pfmri, vc))
         for f in itertools.chain(mfst.gen_actions_by_type("hardlink"),
              mfst.gen_actions_by_type("link")):
-                dep_vars = f.get_variant_template()
-                dep_vars.merge_unknown(pvariants)
-                vc = variants.VariantCombinations(dep_vars,
-                    satisfied=True)
+                vc = f.get_variant_template()
+                if not use_template:
+                        vc.merge_unknown(pvariants)
+                        vc = variants.VariantCombinations(vc,
+                            satisfied=True)
                 links_dict.setdefault(f.attrs["path"], []).append(
                     (pfmri, vc, f.attrs["target"]))
 
@@ -1297,7 +1305,6 @@ def resolve_deps(manifest_paths, api_inst, prune_attrs=False, use_system=True):
 
         'prune_attrs' is a boolean indicating whether debugging
         attributes should be stripped from returned actions."""
-
 
         # The variable 'manifests' is a list of 5-tuples. The first element
         # of the tuple is the path to the manifest. The second is the name of
@@ -1328,20 +1335,55 @@ def resolve_deps(manifest_paths, api_inst, prune_attrs=False, use_system=True):
                 if pfmri:
                         resolving_pkgs.add(pfmri.pkg_name)
 
-        pkg_list = None
+        def __merge_actvct_with_pkgvct(act_vct, pkg_vct):
+                act_vct.merge_unknown(pkg_vct)
+                return variants.VariantCombinations(act_vct, satisfied=True)
+
         if use_system:
-                # We make this a list because we want to reuse the list of
-                # packages again, and despite its name, get_pkg_list is a
-                # generator.
-                pkg_list = list(api_inst.get_pkg_list(
-                    api.ImageInterface.LIST_INSTALLED))
+                pkg_list = api_inst.get_pkg_list(
+                    api.ImageInterface.LIST_INSTALLED)
+                tmp_files = {}
+                tmp_links = {}
+                package_vars = {}
+                pkg_cnt = 0
+                # Gather information from installed packages
                 for (pub, stem, ver), summ, cats, states, attrs in pkg_list:
-                        pfmri = fmri.PkgFmri("pkg:/%s@%s" % (stem, ver), "5.11")
-                        if pfmri.pkg_name in resolving_pkgs:
+                        # If this package is being resolved, then that's the
+                        # information to use.
+                        if stem in resolving_pkgs:
                                 continue
+                        pfmri = fmri.PkgFmri("pkg:/%s@%s" % (stem, ver))
                         mfst = api_inst.get_manifest(pfmri, all_variants=True)
                         distro_vars.merge_values(mfst.get_all_variants())
-
+                        package_vars[stem] = mfst.get_all_variants()
+                        add_fmri_path_mapping(tmp_files, tmp_links, pfmri, mfst,
+                            use_template=True)
+                        pkg_cnt += 1
+                del pkg_list
+                # Move all package variants into the same universe.
+                for pkg_vct in package_vars.values():
+                        pkg_vct.merge_unknown(distro_vars)
+                # Populate the installed files dictionary.
+                for pth, l in tmp_files.iteritems():
+                        new_val = [
+                            (p, __merge_actvct_with_pkgvct(tmpl,
+                                package_vars[p.pkg_name]))
+                            for (p, tmpl) in l
+                        ]
+                        files.installed[pth] = new_val
+                del tmp_files
+                # Populate the link dictionary using the installed packages'
+                # information.
+                for pth, l in tmp_links.iteritems():
+                        new_val = [
+                            (p, __merge_actvct_with_pkgvct(tmpl,
+                                package_vars[p.pkg_name]), target)
+                            for (p, tmpl, target) in l
+                        ]
+                        links[pth] = new_val
+                del tmp_links
+                del package_vars
+                                   
         # Build a list of all files delivered in the manifests being resolved.
         for mp, (name, pfmri), mfst, pkg_vars, miss_files in manifests:
                 try:
@@ -1351,19 +1393,6 @@ def resolve_deps(manifest_paths, api_inst, prune_attrs=False, use_system=True):
                         raise BadPackageFmri(mp, e)
                 add_fmri_path_mapping(files.delivered, links, pfmri, mfst,
                     distro_vars)
-
-        # Build a list of all files delivered in the packages installed on
-        # the system.
-        if use_system:
-                for (pub, stem, ver), summ, cats, states, attrs in pkg_list:
-                        pfmri = fmri.PkgFmri("pkg:/%s@%s" % (stem, ver), "5.11")
-                        if pfmri.pkg_name in resolving_pkgs:
-                                continue
-                        mfst = api_inst.get_manifest(pfmri, all_variants=True)
-                        add_fmri_path_mapping(files.installed, links,
-                            pfmri, mfst, distro_vars)
-        if pkg_list:
-                del pkg_list
 
         pkg_deps = {}
         errs = []
