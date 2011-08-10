@@ -60,26 +60,26 @@ def main_func():
         
         usage = \
             _("\n"
-            "        %prog [ -b <build_no> ] [ -c <cache_dir> ] [ -f <file> ]\n"
-            "        [ -l <uri> ] [ -p <regexp> ] [ -r <uri> ] [ -v ]\n"
-            "        [ <manifest> ... ]\n"
+            "        %prog [-b build_no] [-c cache_dir] [-f file]\n"
+            "            [-l uri] [-p regexp] [-r uri] [-v]\n"
+            "            [manifest ...]\n"
             "        %prog -L")
         parser = OptionParser(usage=usage)
 
-        parser.add_option("-b", dest="release", metavar="<build_no>",
+        parser.add_option("-b", dest="release", metavar="build_no",
             help=_("build to use from lint and reference repositories"))
-        parser.add_option("-c", dest="cache", metavar="<dir>",
+        parser.add_option("-c", dest="cache", metavar="dir",
             help=_("directory to use as a repository cache"))
-        parser.add_option("-f", dest="config", metavar="<file>",
+        parser.add_option("-f", dest="config", metavar="file",
             help=_("specify an alternative pkglintrc file"))
-        parser.add_option("-l", dest="lint_uris", metavar="<uri>",
+        parser.add_option("-l", dest="lint_uris", metavar="uri",
             action="append", help=_("lint repository URI"))
         parser.add_option("-L", dest="list_checks",
             action="store_true",
             help=_("list checks configured for this session and exit"))
-        parser.add_option("-p", dest="pattern", metavar="<regexp>",
+        parser.add_option("-p", dest="pattern", metavar="regexp",
             help=_("pattern to match FMRIs in lint URI"))
-        parser.add_option("-r", dest="ref_uris", metavar="<uri>",
+        parser.add_option("-r", dest="ref_uris", metavar="uri",
             action="append", help=_("reference repository URI"))
         parser.add_option("-v", dest="verbose", action="store_true",
             help=_("produce verbose output, overriding settings in pkglintrc")

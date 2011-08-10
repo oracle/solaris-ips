@@ -20,7 +20,7 @@
 # CDDL HEADER END
 
 #
-# Copyright (c) 2009, 2010, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2009, 2011, Oracle and/or its affiliates. All rights reserved.
 #
 
 import getopt
@@ -49,9 +49,10 @@ def usage(errmsg="", exitcode=2):
         if errmsg:
                 print >> sys.stderr, "pkgmogrify: %s" % errmsg
 
-        print _(
-            "/usr/bin/pkgmogrify [-vi] [-I includedir ...] [-D macro=value ...] "
-            "[-O outputfile] [-P printfile] [inputfile ...]")
+        print _("""\
+Usage:
+        pkgmogrify [-vi] [-I includedir ...] [-D macro=value ...]
+            [-O outputfile] [-P printfile] [inputfile ...]""")
         sys.exit(exitcode)
 
 def add_transform(transform, filename, lineno):

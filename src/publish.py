@@ -84,7 +84,7 @@ Usage:
 Packager subcommands:
         pkgsend generate [-T pattern] [--target file] source ...
         pkgsend publish [-b bundle ...] [-d source ...] [-s repo_uri_or_path]
-          [-T pattern] [--no-catalog] [manifest ...]
+            [-T pattern] [--no-catalog] [manifest ...]
 
 Options:
         --help or -?    display usage message

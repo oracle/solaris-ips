@@ -43,9 +43,10 @@ def usage(errmsg="", exitcode=2):
         if errmsg:
                 print >> sys.stderr, "pkgdiff: %s" % errmsg
 
-        print _(
-            "pkgdiff [-i attribute ...] [-o attribute] [-v variant=value ...]\n"
-            "    file1 file2")
+        print _("""\
+Usage:
+        pkgdiff [-i attribute ...] [-o attribute] [-v variant=value ...]
+            file1 file2""")
         sys.exit(exitcode)
 
 def error(text, exitcode=1):

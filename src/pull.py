@@ -144,7 +144,8 @@ Options:
 
         --key keyfile   Specify a client SSL key file to use for pkg retrieval.
 
-        --cert certfile Specify a client SSL certificate file to use for pkg retrieval.
+        --cert certfile Specify a client SSL certificate file to use for pkg
+                        retrieval.
 
 Environment:
         PKG_DEST        Destination directory or URI
