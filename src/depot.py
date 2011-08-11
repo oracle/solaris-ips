@@ -86,6 +86,7 @@ except ImportError:
         sys.exit(2)
 
 import cherrypy.process.servers
+from cherrypy.process.plugins import Daemonizer
 
 from pkg.misc import msg, emsg, setlocale
 import pkg.client.api_errors as api_errors
@@ -877,6 +878,12 @@ if __name__ == "__main__":
                 # can be served immediately while search indexes are
                 # still being updated.
                 depot._queue_refresh_index()
+
+        # If stdin is not a tty and the pkgdepot controller isn't being used,
+        # then assume process should be daemonized.
+        if not os.environ.get("PKGDEPOT_CONTROLLER") and \
+            not os.isatty(sys.stdin.fileno()):
+                Daemonizer(cherrypy.engine).subscribe()
 
         try:
                 root = cherrypy.Application(depot)

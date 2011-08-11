@@ -91,10 +91,6 @@
 		exec='%{pkg/pkg_root}/lib/svc/method/svc-pkg-depot %m %{restarter/contract}'
 		timeout_seconds='30' />
 
-	<property_group name='startd' type='framework'>
-		<propval name='duration' type='astring' value='child' />
-	</property_group>
-
 	<property_group name='pkg' type='application'>
 		<propval name='pkg_root' type='astring' value='/' />
 		<propval name='inst_root' type='astring' value='/var/pkgrepo' />

@@ -71,7 +71,7 @@ class DepotController(object):
                 self.__starttime = 0
                 self.__wrapper_start = []
                 self.__wrapper_end = wrapper_end
-                self.__env = {}
+                self.__env = { "PKGDEPOT_CONTROLLER": 1 }
                 if wrapper_start:
                         self.__wrapper_start = wrapper_start
                 if env:
