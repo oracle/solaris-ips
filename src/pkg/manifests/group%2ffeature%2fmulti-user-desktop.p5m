@@ -305,7 +305,6 @@ depend type=group fmri=system/library/usb/libusbugen
 depend type=group fmri=system/locale/support
 depend type=group fmri=system/management/rad
 depend type=group fmri=system/management/rad/client/rad-java
-depend type=group fmri=system/management/rad/client/rad-java/locale
 depend type=group fmri=system/management/rad/client/rad-python
 depend type=group fmri=system/management/rad/module/rad-smf
 depend type=group fmri=system/management/visual-panels-core

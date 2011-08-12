@@ -87,7 +87,6 @@ depend type=group fmri=driver/network/bge
 $(i386_ONLY)depend type=group fmri=driver/network/bnx
 $(i386_ONLY)depend type=group fmri=driver/network/bnxe
 depend type=group fmri=driver/network/bpf
-depend type=group fmri=driver/network/ce
 depend type=group fmri=driver/network/chxge
 depend type=group fmri=driver/network/cxge
 depend type=group fmri=driver/network/dmfe
@@ -103,7 +102,6 @@ depend type=group fmri=driver/network/fcoei
 depend type=group fmri=driver/network/fcp
 depend type=group fmri=driver/network/fcsm
 depend type=group fmri=driver/network/fp
-$(sparc_ONLY)depend type=group fmri=driver/network/ge
 depend type=group fmri=driver/network/hermon
 depend type=group fmri=driver/network/hme
 depend type=group fmri=driver/network/hxge
@@ -253,6 +251,7 @@ depend type=group fmri=library/python-2/python-extra-26
 depend type=group fmri=library/python-2/simplejson-26
 depend type=group fmri=library/readline
 depend type=group fmri=library/security/libgpg-error
+depend type=group fmri=library/security/nss
 depend type=group fmri=library/security/openssl
 depend type=group fmri=library/security/trousers
 depend type=group fmri=library/unixodbc
@@ -296,7 +295,6 @@ depend type=group fmri=runtime/java
 depend type=group fmri=runtime/perl-512
 depend type=group fmri=runtime/perl-584
 depend type=group fmri=runtime/perl-584/extra
-depend type=group fmri=runtime/perl-584/manual
 depend type=group fmri=runtime/python-26
 depend type=group fmri=runtime/tcl-8
 depend type=group fmri=security/bart
@@ -304,7 +302,10 @@ depend type=group fmri=security/sudo
 depend type=group fmri=security/tcp-wrapper
 depend type=group fmri=service/diagnostic/spray
 depend type=group fmri=service/fault-management
+depend type=group fmri=service/fault-management/asr-notify
 depend type=group fmri=service/fault-management/fm-snmp-mib
+depend type=group fmri=service/fault-management/smtp-notify
+depend type=group fmri=service/fault-management/snmp-notify
 depend type=group fmri=service/file-system/nfs
 depend type=group fmri=service/file-system/smb
 depend type=group fmri=service/gnome/desktop-cache
@@ -418,7 +419,6 @@ depend type=group fmri=system/library/libdbus-glib
 depend type=group fmri=system/library/libdiskmgt
 depend type=group fmri=system/library/libfcoe
 depend type=group fmri=system/library/math
-depend type=group fmri=system/library/mozilla-nss
 depend type=group fmri=system/library/openmp
 depend type=group fmri=system/library/platform
 depend type=group fmri=system/library/policykit
@@ -455,7 +455,6 @@ depend type=group fmri=system/network/ppp/tunnel
 depend type=group fmri=system/network/routing
 depend type=group fmri=system/network/udapl
 depend type=group fmri=system/network/udapl/udapl-tavor
-depend type=group fmri=system/osnet/locale
 depend type=group fmri=system/prerequisite/gnu
 depend type=group fmri=system/scheduler/fss
 depend type=group fmri=system/storage/fibre-channel/port-utility

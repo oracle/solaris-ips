@@ -53,6 +53,9 @@ DEVPRO_REPO=http://localhost:20014
 SOLARIS_RE_REPO=http://localhost:20015
 MAN_REPO=http://localhost:20016
 LDOMS_REPO=http://localhost:20017
+SIC_TEAM_REPO=http://localhost:20018
+SUNVTS_REPO=http://localhost:20019
+JAVA_REPO=http://localhost:20020
 
 INPUT_REPOS = \
     $(ON_REPO) \
@@ -72,7 +75,10 @@ INPUT_REPOS = \
     $(DEVPRO_REPO) \
     $(SOLARIS_RE_REPO) \
     $(MAN_REPO) \
-    $(LDOMS_REPO)
+    $(LDOMS_REPO) \
+    $(SIC_TEAM_REPO) \
+    $(SUNVTS_REPO) \
+    $(JAVA_REPO)
 
 ON_EXTRA_REPO=http://localhost:30000
 

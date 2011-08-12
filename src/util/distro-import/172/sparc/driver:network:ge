@@ -1,0 +1,9 @@
+package driver/network/ge
+consolidation "nspg"
+obsoleted 172
+end package
+
+package SUNWged
+consolidation "nspg"
+obsoleted 172
+end package
