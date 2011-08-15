@@ -347,6 +347,9 @@ class ReadOnlyFileSystemException(PermissionsException):
 
 
 class PackageMatchErrors(ApiException):
+        """Used to indicate which patterns were not matched or illegal during
+        a package name matching operation."""
+
         def __init__(self, unmatched_fmris=EmptyI, multiple_matches=EmptyI,
             illegal=EmptyI, multispec=EmptyI):
                 ApiException.__init__(self)

@@ -31,12 +31,10 @@ import getopt
 import hashlib
 import locale
 import os
-import pkg.client.api_errors as api_errors
-import pkg.portable as portable
-import pkg.version as version
 import platform
 import re
 import shutil
+import simplejson as json
 import stat
 import struct
 import sys
@@ -44,6 +42,9 @@ import time
 import urllib
 import urlparse
 import zlib
+
+import pkg.client.api_errors as api_errors
+import pkg.portable as portable
 
 from pkg import VERSION
 from pkg.client import global_settings
@@ -1083,12 +1084,12 @@ def get_dir_size(path):
                     for fname in fnames
                 )
         except EnvironmentError, e:
-                raise apx._convert_error(e)
+                raise api_errors._convert_error(e)
 
-def get_col_listing(desired_field_order, field_data, field_values, out_format,
+def get_listing(desired_field_order, field_data, field_values, out_format,
     def_fmt, omit_headers, escape_output=True):
-        """Returns a string containing a columnar listing defined by provided
-        values.
+        """Returns a string containing a listing defined by provided values
+        in the specified output format.
 
         'desired_field_order' is the list of the fields to show in the order
         they should be output left to right.
@@ -1109,19 +1110,22 @@ def get_col_listing(desired_field_order, field_data, field_values, out_format,
             field_nameN: field_value
           }
 
-        'out_format' is the format to use for output.  Currently 'default' and
-        'tsv' are supported.  The first is intended for human-readable output,
-        the latter for parseable output.
+        'out_format' is the format to use for output.  Currently 'default',
+        'tsv', 'json', and 'json-formatted' are supported.  The first is
+        intended for columnar, human-readable output, and the others for
+        parsable output.
 
-        'def_fmt' is the default Python formatting string to use for output.  It
-        must match the fields defined in 'field_data'.
+        'def_fmt' is the default Python formatting string to use for the
+        'default' human-readable output.  It must match the fields defined
+        in 'field_data'.
 
         'omit_headers' is a boolean specifying whether headers should be
-        included in the listing.
+        included in the listing.  (If applicable to the specified output
+        format.)
 
         'escape_output' is an optional boolean indicating whether shell
         metacharacters or embedded control sequences should be escaped
-        before display.
+        before display.  (If applicable to the specified output format.)
         """
 
         # Custom sort function for preserving field ordering
@@ -1156,7 +1160,7 @@ def get_col_listing(desired_field_order, field_data, field_values, out_format,
         def set_value(entry):
                 val = entry[1]
                 multi_value = False
-                if isinstance(val, (list, set)):
+                if isinstance(val, (list, tuple, set, frozenset)):
                         multi_value = True
                 elif val == "":
                         entry[0][2] = '""'
@@ -1196,9 +1200,44 @@ def get_col_listing(desired_field_order, field_data, field_values, out_format,
         elif out_format == "tsv":
                 # Create a formatting string for the tsv output
                 # format.
-                num_fields = len(field_data.keys())
+                num_fields = sum(
+                    1 for k in field_data
+                    if filter_tsv(field_data[k])
+                )
                 fmt = "\t".join('%s' for x in xrange(num_fields))
                 filter_func = filter_tsv
+        elif out_format == "json" or out_format == "json-formatted":
+                args = { "sort_keys": True }
+                if out_format == "json-formatted":
+                        args["indent"] = 2
+
+                # 'json' formats always include any extra fields returned;
+                # any explicitly named fields are only included if 'json'
+                # is explicitly listed.
+                def fmt_val(v):
+                        if isinstance(v, basestring):
+                                return v
+                        if isinstance(v, (list, tuple, set, frozenset)):
+                                return [fmt_val(e) for e in v]
+                        if isinstance(v, dict):
+                                for k, e in v.items():
+                                        v[k] = fmt_val(e)
+                                return v
+                        return str(v)
+
+                output = json.dumps([
+                    dict(
+                        (k, fmt_val(entry[k]))
+                        for k in entry
+                        if k not in field_data or "json" in field_data[k][0]
+                    )
+                    for entry in field_values
+                ], **args)
+
+                if out_format == "json-formatted":
+                        # Include a trailing newline for readability.
+                        return output + "\n"
+                return output
 
         # Extract the list of headers from the field_data dictionary.  Ensure
         # they are extracted in the desired order by using the custom sort
@@ -1216,6 +1255,7 @@ def get_col_listing(desired_field_order, field_data, field_values, out_format,
                 map(set_value, (
                     (field_data[f], v)
                     for f, v in entry.iteritems()
+                    if f in field_data
                 ))
                 values = map(get_value, sorted(filter(filter_func,
                     field_data.values()), sort_fields))

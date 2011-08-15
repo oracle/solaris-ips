@@ -26,15 +26,12 @@ that operate on lists of package FMRIs."""
 
 import copy
 import calendar
+import collections
 import datetime
 import errno
+import fnmatch
 import hashlib
 import os
-try:
-        # Some versions of python don't have these constants.
-        os.SEEK_SET
-except AttributeError:
-        os.SEEK_SET, os.SEEK_CUR, os.SEEK_END = range(3)
 import simplejson as json
 import stat
 import statvfs
@@ -48,7 +45,7 @@ import pkg.portable as portable
 import pkg.version
 
 from operator import itemgetter
-from pkg.misc import EmptyI
+from pkg.misc import EmptyDict, EmptyI
 
 class _JSONWriter(object):
         """Private helper class used to serialize catalog data and generate
@@ -1286,6 +1283,7 @@ class Catalog(object):
 
         # Class Constants
         DEPENDENCY, SUMMARY = range(2)
+        PKG_STATE_OBSOLETE, PKG_STATE_RENAMED, PKG_STATE_UNSUPPORTED = range(3)
 
         def __init__(self, batch_mode=False, meta_root=None, log_updates=False,
             manifest_cb=None, read_only=False, sign=True):
@@ -1736,6 +1734,78 @@ class Catalog(object):
                         attrs.parts[name] = {
                             "last-modified": part.last_modified
                         }
+
+        @staticmethod
+        def __parse_fmri_patterns(patterns):
+                """A generator function that yields a list of tuples of the form
+                (pattern, error, fmri, matcher) based on the provided patterns,
+                where 'error' is any exception encountered while parsing the
+                pattern, 'fmri' is the resulting FMRI object, and 'matcher' is
+                one of the following pkg.fmri matching functions:
+
+                        pkg.fmri.exact_name_match
+                                Indicates that the name portion of the pattern
+                                must match exactly and the version (if provided)
+                                must be considered a successor or equal to the
+                                target FMRI.
+
+                        pkg.fmri.fmri_match
+                                Indicates that the name portion of the pattern
+                                must be a proper subset and the version (if
+                                provided) must be considered a successor or
+                                equal to the target FMRI.
+
+                        pkg.fmri.glob_match
+                                Indicates that the name portion of the pattern
+                                uses fnmatch rules for pattern matching (shell-
+                                style wildcards) and that the version can either
+                                match exactly, match partially, or contain
+                                wildcards.
+                """
+
+                brelease = "5.11"
+                for pat in patterns:
+                        error = None
+                        matcher = None
+                        npat = None
+                        try:
+                                parts = pat.split("@", 1)
+                                pat_stem = parts[0]
+                                pat_ver = None
+                                if len(parts) > 1:
+                                        pat_ver = parts[1]
+
+                                if "*" in pat_stem or "?" in pat_stem:
+                                        matcher = fmri.glob_match
+                                elif pat_stem.startswith("pkg:/") or \
+                                    pat_stem.startswith("/"):
+                                        matcher = fmri.exact_name_match
+                                else:
+                                        matcher = fmri.fmri_match
+
+                                if matcher == fmri.glob_match:
+                                        npat = fmri.MatchingPkgFmri(pat_stem,
+                                            brelease)
+                                else:
+                                        npat = fmri.PkgFmri(pat_stem, brelease)
+
+                                if not pat_ver:
+                                        # Do nothing.
+                                        pass
+                                elif "*" in pat_ver or "?" in pat_ver or \
+                                    pat_ver == "latest":
+                                        npat.version = \
+                                            pkg.version.MatchingVersion(pat_ver,
+                                                brelease)
+                                else:
+                                        npat.version = \
+                                            pkg.version.Version(pat_ver,
+                                                brelease)
+
+                        except (fmri.FmriError, pkg.version.VersionError), e:
+                                # Whatever the error was, return it.
+                                error = e
+                        yield (pat, error, npat, matcher)
 
         def __save(self):
                 """Private save function.  Caller is responsible for locking
@@ -2755,6 +2825,282 @@ class Catalog(object):
                                 return values
                 return None
 
+        def gen_packages(self, collect_attrs=False, matched=None,
+            patterns=EmptyI, pubs=EmptyI, unmatched=None, return_fmris=False):
+                """A generator function that produces tuples of the form:
+
+                    (
+                        (
+                            pub,    - (string) the publisher of the package
+                            stem,   - (string) the name of the package
+                            version - (string) the version of the package
+                        ),
+                        states,     - (list) states
+                        attributes  - (dict) package attributes
+                    )
+
+                Results are always sorted by stem, publisher, and then in
+                descending version order.
+
+                'collect_attrs' is an optional boolean that indicates whether
+                all package attributes should be collected and returned in the
+                fifth element of the return tuple.  If False, that element will
+                be an empty dictionary.
+
+                'matched' is an optional set to add matched patterns to.
+
+                'patterns' is an optional list of FMRI wildcard strings to
+                filter results by.
+
+                'pubs' is an optional list of publisher prefixes to restrict
+                the results to.
+
+                'unmatched' is an optional set to add unmatched patterns to.
+
+                'return_fmris' is an optional boolean value that indicates that
+                an FMRI object should be returned in place of the (pub, stem,
+                ver) tuple that is normally returned."""
+
+                brelease = "5.11"
+
+                # Each pattern in patterns can be a partial or full FMRI, so
+                # extract the individual components for use in filtering.
+                newest = False
+                illegals = []
+                pat_tuples = {}
+                latest_pats = set()
+                seen = set()
+                npatterns = set()
+                for pat, error, pfmri, matcher in self.__parse_fmri_patterns(
+                    patterns):
+                        if error:
+                                illegals.append(error)
+                                continue
+
+                        # Duplicate patterns are ignored.
+                        sfmri = str(pfmri)
+                        if sfmri in seen:
+                                # A different form of the same pattern
+                                # was specified already; ignore this
+                                # one (e.g. pkg:/network/ping,
+                                # /network/ping).
+                                continue
+
+                        # Track used patterns.
+                        seen.add(sfmri)
+                        npatterns.add(pat)
+
+                        if getattr(pfmri.version, "match_latest", None):
+                                latest_pats.add(pat)
+                        pat_tuples[pat] = (pfmri.tuple(), matcher)
+
+                patterns = npatterns
+                del npatterns, seen
+
+                if illegals:
+                        raise api_errors.PackageMatchErrors(illegal=illegals)
+
+                # Keep track of listed stems for all other packages on a
+                # per-publisher basis.
+                nlist = collections.defaultdict(int)
+
+                # Track matching patterns.
+                matched_pats = set()
+                pkg_matching_pats = None
+
+                # Need dependency and summary actions.
+                cat_info = frozenset([self.DEPENDENCY, self.SUMMARY])
+
+                for t, entry, actions in self.entry_actions(cat_info,
+                    ordered=True, pubs=pubs):
+                        pub, stem, ver = t
+
+                        omit_ver = False
+                        omit_package = None
+
+                        pkg_stem = "!".join((pub, stem))
+                        if newest and pkg_stem in nlist:
+                                # A newer version has already been listed, so
+                                # any additional entries need to be marked for
+                                # omission before continuing.
+                                omit_package = True
+                        else:
+                                nlist[pkg_stem] += 1
+
+                        if matched is not None or unmatched is not None:
+                                pkg_matching_pats = set()
+                        if not omit_package:
+                                ever = None
+                                for pat in patterns:
+                                        (pat_pub, pat_stem, pat_ver), matcher = \
+                                            pat_tuples[pat]
+
+                                        if pat_pub is not None and \
+                                            pub != pat_pub:
+                                                # Publisher doesn't match.
+                                                if omit_package is None:
+                                                        omit_package = True
+                                                continue
+
+                                        if matcher == fmri.exact_name_match:
+                                                if pat_stem != stem:
+                                                        # Stem doesn't match.
+                                                        if omit_package is None:
+                                                                omit_package = \
+                                                                    True
+                                                        continue
+                                        elif matcher == fmri.fmri_match:
+                                                if not ("/" + stem).endswith(
+                                                    "/" + pat_stem):
+                                                        # Stem doesn't match.
+                                                        if omit_package is None:
+                                                                omit_package = \
+                                                                    True
+                                                        continue
+                                        elif matcher == fmri.glob_match:
+                                                if not fnmatch.fnmatchcase(stem,
+                                                    pat_stem):
+                                                        # Stem doesn't match.
+                                                        if omit_package is None:
+                                                                omit_package = \
+                                                                    True
+                                                        continue
+
+                                        if pat_ver is not None:
+                                                if ever is None:
+                                                        # Avoid constructing a
+                                                        # version object more
+                                                        # than once for each
+                                                        # entry.
+                                                        ever = pkg.version.Version(ver,
+                                                            brelease)
+                                                if not ever.is_successor(pat_ver,
+                                                    pkg.version.CONSTRAINT_AUTO):
+                                                        if omit_package is None:
+                                                                omit_package = \
+                                                                    True
+                                                        omit_ver = True
+                                                        continue
+
+                                        if pat in latest_pats and \
+                                            nlist[pkg_stem] > 1:
+                                                # Package allowed by pattern,
+                                                # but isn't the "latest"
+                                                # version.
+                                                if omit_package is None:
+                                                        omit_package = True
+                                                omit_ver = True
+                                                continue
+
+                                        # If this entry matched at least one
+                                        # pattern, then ensure it is returned.
+                                        omit_package = False
+                                        if (matched is None and
+                                            unmatched is None):
+                                                # It's faster to stop as soon
+                                                # as a match is found.
+                                                break
+
+                                        # If caller has requested other match
+                                        # cases be returned, then all patterns
+                                        # must be tested for every entry.  This
+                                        # is slower, so only done if necessary.
+                                        pkg_matching_pats.add(pat)
+
+                        if omit_package:
+                                # Package didn't match critera; skip it.
+                                continue
+
+                        # Collect attribute data if requested.
+                        summ = None
+
+                        omit_var = False
+                        states = set()
+                        if collect_attrs:
+                                ddm = lambda: collections.defaultdict(list)
+                                attrs = collections.defaultdict(ddm)
+                        else:
+                                attrs = EmptyDict
+
+                        try:
+                                for a in actions:
+                                        if a.name != "set":
+                                                continue
+
+                                        atname = a.attrs["name"]
+                                        atvalue = a.attrs["value"]
+                                        if collect_attrs:
+                                                atvlist = a.attrlist("value")
+
+                                                # XXX Need to describe this data
+                                                # structure sanely somewhere.
+                                                mods = frozenset(
+                                                    (k, frozenset(a.attrlist(k)))
+                                                    for k in a.attrs.iterkeys()
+                                                    if k not in ("name", "value")
+                                                )
+                                                attrs[atname][mods].extend(
+                                                    atvlist)
+
+                                        if atname == "pkg.summary":
+                                                summ = atvalue
+                                                continue
+
+                                        if atname == "description":
+                                                if summ is None:
+                                                        # Historical summary
+                                                        # field.
+                                                        summ = atvalue
+                                                        collect_attrs and \
+                                                            attrs["pkg.summary"] \
+                                                            [mods]. \
+                                                            extend(atvlist)
+                                                continue
+
+                                        if atname == "pkg.renamed":
+                                                if atvalue == "true":
+                                                        states.add(
+                                                            self.PKG_STATE_RENAMED)
+                                                continue
+                                        if atname == "pkg.obsolete":
+                                                if atvalue == "true":
+                                                        states.add(
+                                                            self.PKG_STATE_OBSOLETE)
+                                                continue
+                        except api_errors.InvalidPackageErrors:
+                                # Ignore errors for packages that have invalid
+                                # or unsupported metadata.
+                                states.add(self.PKG_STATE_UNSUPPORTED)
+
+                        if omit_package:
+                                # Package didn't match criteria; skip it.
+                                if omit_ver and nlist[pkg_stem] == 1:
+                                        del nlist[pkg_stem]
+                                continue
+
+                        if matched is not None or unmatched is not None:
+                                # Only after all other filtering has been
+                                # applied are the patterns that the package
+                                # matched considered "matching".
+                                matched_pats.update(pkg_matching_pats)
+
+                        # Return the requested package data.
+                        if return_fmris:
+                                pfmri = fmri.PkgFmri("%s@%s" % (stem, ver),
+                                    build_release=brelease, publisher=pub)
+                                yield (pfmri, states, attrs)
+                        else:
+                                yield (t, states, attrs)
+
+                if matched is not None:
+                        # Caller has requested that matched patterns be
+                        # returned.
+                        matched.update(matched_pats)
+                if unmatched is not None:
+                        # Caller has requested that unmatched patterns be
+                        # returned.
+                        unmatched.update(set(pat_tuples.keys()) - matched_pats)
+
         def get_matching_fmris(self, patterns, raise_unmatched=True):
                 """Given a user-specified list of FMRI pattern strings, return
                 a tuple of ('matching', 'references', 'unmatched'), where
@@ -2804,57 +3150,40 @@ class Catalog(object):
                 pat_data = []
                 wildcard_patterns = set()
 
-                # ignore dups
-                patterns = list(set(patterns))
+                brelease = "5.11"
 
-                # figure out which kind of matching rules to employ
-                brelease = "5.11" # XXX a better way to default this?
+                # Each pattern in patterns can be a partial or full FMRI, so
+                # extract the individual components for use in filtering.
                 latest_pats = set()
-                for pat in patterns:
-                        try:
-                                parts = pat.split("@", 1)
-                                pat_stem = parts[0]
-                                pat_ver = None
-                                if len(parts) > 1:
-                                        pat_ver = parts[1]
+                seen = set()
+                npatterns = set()
+                for pat, error, pfmri, matcher in self.__parse_fmri_patterns(
+                    patterns):
+                        if error:
+                                illegals.append(error)
+                                continue
 
-                                if "*" in pat_stem or "?" in pat_stem:
-                                        matcher = fmri.glob_match
-                                        wildcard_patterns.add(pat)
-                                elif pat_stem.startswith("pkg:/") or \
-                                    pat_stem.startswith("/"):
-                                        matcher = fmri.exact_name_match
-                                else:
-                                        matcher = fmri.fmri_match
+                        # Duplicate patterns are ignored.
+                        sfmri = str(pfmri)
+                        if sfmri in seen:
+                                # A different form of the same pattern
+                                # was specified already; ignore this
+                                # one (e.g. pkg:/network/ping,
+                                # /network/ping).
+                                continue
 
-                                if matcher == fmri.glob_match:
-                                        pfmri = fmri.MatchingPkgFmri(
-                                            pat_stem, brelease)
-                                else:
-                                        pfmri = fmri.PkgFmri(
-                                            pat_stem, brelease)
+                        # Track used patterns.
+                        seen.add(sfmri)
+                        npatterns.add(pat)
+                        if "*" in pfmri.pkg_name or "?" in pfmri.pkg_name:
+                                wildcard_patterns.add(pat)
 
-                                if not pat_ver:
-                                        # Do nothing.
-                                        pass
-                                elif "*" in pat_ver or "?" in pat_ver or \
-                                    pat_ver == "latest":
-                                        pfmri.version = \
-                                            pkg.version.MatchingVersion(pat_ver,
-                                                brelease)
-                                else:
-                                        pfmri.version = \
-                                            pkg.version.Version(pat_ver,
-                                                brelease)
+                        if getattr(pfmri.version, "match_latest", None):
+                                latest_pats.add(pat)
+                        pat_data.append((matcher, pfmri))
 
-                                if pat_ver and getattr(pfmri.version,
-                                    "match_latest", None):
-                                        latest_pats.add(pat)
-
-                                pat_data.append((matcher, pfmri))
-                        except (fmri.FmriError,
-                            pkg.version.VersionError), e:
-                                illegals.append(e)
+                patterns = npatterns
+                del npatterns, seen
 
                 if illegals:
                         raise api_errors.PackageMatchErrors(illegal=illegals)

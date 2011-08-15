@@ -57,7 +57,6 @@ clobber: $(SUBDIRS)
 #
 install: $(SUBDIRS)
 	$(PYTHON) setup.py install
-	$(PYTHON) setup.py pylint_quiet
 
 lint:
 	$(PYTHON) setup.py lint
@@ -76,7 +75,7 @@ $(SUBDIRS): FRC
 	@cd $@; pwd; $(MAKE) $(TARGET)
 
 # Use the bits we just built to create the packages.
-packages: install
+packages: install pylint
 	@cd pkg; pwd; $(MAKE) $(TARGET) check svr4_test \
 		PATH=$$(hg root)/proto/root_$$(uname -p)/usr/bin:$$PATH \
 		PYTHONPATH=$$(hg root)/proto/root_$$(uname -p)/usr/lib/python2.6/vendor-packages

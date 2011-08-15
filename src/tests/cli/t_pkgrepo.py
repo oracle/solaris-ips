@@ -51,26 +51,45 @@ class TestPkgRepo(pkg5unittest.SingleDepotTestCase):
         need_ro_data = True
 
         tree10 = """
-            open tree@1.0,5.11-0
+            open tree@1.0,5.11-0:20110804T203458Z
             add file tmp/empty mode=0555 owner=root group=bin path=/etc/empty
             add file tmp/truck1 mode=0444 owner=root group=bin path=/etc/trailer
+            add set name=info.classification value=org.opensolaris.category.2008:System/Core
+            add set name=pkg.summary value="Leafy SPARC package" variant.arch=sparc
+            add set name=pkg.summary value="Leafy i386 package" variant.arch=i386
+            add set name=variant.arch value=i386 value=sparc
             close
         """
 
         amber10 = """
-            open amber@1.0,5.11-0
+            open amber@1.0,5.11-0:20110804T203458Z
             add depend fmri=pkg:/tree@1.0 type=require
+            add set name=pkg.summary value="Millenia old resin"
+            add set name=pkg.human-version value="1.0a"
             close
         """
 
         amber20 = """
-            open amber@2.0,5.11-0
+            open amber@2.0,5.11-0:20110804T203458Z
             add depend fmri=pkg:/tree@1.0 type=require
             close
         """
 
+        amber30 = """
+            open amber@3.0,5.11-0:20110804T203458Z
+            add set name=pkg.renamed value=true
+            add depend fmri=pkg:/bronze@1.0 type=require
+            close
+        """
+
+        amber40 = """
+            open amber@4.0,5.11-0:20110804T203458Z
+            add set name=pkg.obsolete value=true
+            close
+        """
+
         truck10 = """
-            open truck@1.0,5.11-0
+            open truck@1.0,5.11-0:20110804T203458Z
             add file tmp/empty mode=0555 owner=root group=bin path=/etc/NOTICES/empty
             add file tmp/truck1 mode=0444 owner=root group=bin path=/etc/truck1
             add depend fmri=pkg:/amber@1.0 type=require
@@ -78,7 +97,7 @@ class TestPkgRepo(pkg5unittest.SingleDepotTestCase):
         """
 
         truck20 = """
-            open truck@2.0,5.11-0
+            open truck@2.0,5.11-0:20110804T203458Z
             add file tmp/empty mode=0555 owner=root group=bin path=/etc/NOTICES/empty
             add file tmp/truck1 mode=0444 owner=root group=bin path=/etc/truck1
             add file tmp/truck2 mode=0444 owner=root group=bin path=/etc/truck2
@@ -87,7 +106,7 @@ class TestPkgRepo(pkg5unittest.SingleDepotTestCase):
         """
 
         zoo10 = """
-            open zoo@1.0,5.11-0
+            open zoo@1.0,5.11-0:20110804T203458Z
             close
         """
 
@@ -1324,6 +1343,282 @@ publisher\tprefix\texample.net
                 # Cleanup.
                 shutil.rmtree(src_repo)
                 shutil.rmtree(dest_repo)
+
+        def test_10_list(self):
+                """Verify the list subcommand works as expected."""
+
+                repo_path = self.dc.get_repodir()
+                repo_uri = self.dc.get_repo_url()
+
+                # Publish some packages.
+                self.pkgsend_bulk(repo_uri, (self.tree10, self.amber10,
+                    self.amber20, self.amber30, self.amber40))
+
+                # Verify graceful exit if invalid or incomplete set of
+                # options specified.
+                self.pkgrepo("list", exit=2)
+                self.pkgrepo("-s bogus://location list", exit=1)
+                self.pkgrepo("list -s bogus://location list", exit=1)
+                self.pkgrepo("list -s %s -F bad-format" % repo_uri, exit=2)
+
+                # Verify graceful exit for bad repository.
+                self.pkgrepo("list -s /no/such/repository", exit=1)
+
+                # Verify graceful exit if invalid package name given.
+                self.pkgrepo("list -s %s ^notvalid" % repo_path, exit=1)
+
+                # Verify graceful exit if no matching package found.
+                self.pkgrepo("list -s %s nosuchpackage" % repo_path, exit=1)
+
+                # Verify default output when listing all packages for both
+                # file and http cases:
+                for src in (repo_path, repo_uri):
+                        # json output.
+                        self.pkgrepo("list -s %s -F json" % src)
+                        expected = """\
+[{"branch": "0", "build-release": "5.11", "name": "amber", "pkg.fmri": "pkg://test/amber@4.0,5.11-0:20110804T203458Z", "pkg.obsolete": [{"value": ["true"]}], "publisher": "test", "release": "4.0", "timestamp": "20110804T203458Z", "version": "4.0,5.11-0:20110804T203458Z"}, {"branch": "0", "build-release": "5.11", "name": "amber", "pkg.fmri": "pkg://test/amber@3.0,5.11-0:20110804T203458Z", "pkg.renamed": [{"value": ["true"]}], "publisher": "test", "release": "3.0", "timestamp": "20110804T203458Z", "version": "3.0,5.11-0:20110804T203458Z"}, {"branch": "0", "build-release": "5.11", "name": "amber", "pkg.fmri": "pkg://test/amber@2.0,5.11-0:20110804T203458Z", "publisher": "test", "release": "2.0", "timestamp": "20110804T203458Z", "version": "2.0,5.11-0:20110804T203458Z"}, {"branch": "0", "build-release": "5.11", "name": "amber", "pkg.fmri": "pkg://test/amber@1.0,5.11-0:20110804T203458Z", "pkg.human-version": [{"value": ["1.0a"]}], "pkg.summary": [{"value": ["Millenia old resin"]}], "publisher": "test", "release": "1.0", "timestamp": "20110804T203458Z", "version": "1.0,5.11-0:20110804T203458Z"}, {"branch": "0", "build-release": "5.11", "info.classification": [{"value": ["org.opensolaris.category.2008:System/Core"]}], "name": "tree", "pkg.fmri": "pkg://test/tree@1.0,5.11-0:20110804T203458Z", "pkg.summary": [{"value": ["Leafy i386 package"], "variant.arch": ["i386"]}, {"value": ["Leafy SPARC package"], "variant.arch": ["sparc"]}], "publisher": "test", "release": "1.0", "timestamp": "20110804T203458Z", "variant.arch": [{"value": ["i386", "sparc"]}], "version": "1.0,5.11-0:20110804T203458Z"}]"""
+                        self.assertEqualDiff(expected, self.output)
+
+                # Now verify list output in different formats but only using
+                # file repository for test efficiency.
+
+                # Human readable (default) output.
+                self.pkgrepo("list -s %s" % src)
+                expected = """\
+PUBLISHER NAME                                          O VERSION
+test      amber                                         o 4.0,5.11-0:20110804T203458Z
+test      amber                                         r 3.0,5.11-0:20110804T203458Z
+test      amber                                           2.0,5.11-0:20110804T203458Z
+test      amber                                           1.0,5.11-0:20110804T203458Z
+test      tree                                            1.0,5.11-0:20110804T203458Z
+"""
+                self.assertEqualDiff(expected, self.output)
+
+                # Human readable (default) output with no header.
+                self.pkgrepo("list -s %s -H" % repo_path)
+                expected = """\
+test      amber                                         o 4.0,5.11-0:20110804T203458Z
+test      amber                                         r 3.0,5.11-0:20110804T203458Z
+test      amber                                           2.0,5.11-0:20110804T203458Z
+test      amber                                           1.0,5.11-0:20110804T203458Z
+test      tree                                            1.0,5.11-0:20110804T203458Z
+"""
+                self.assertEqualDiff(expected, self.output)
+
+                # tsv output.
+                self.pkgrepo("list -s %s -F tsv" % repo_path)
+                expected = """\
+PUBLISHER	NAME	O	RELEASE	BUILD RELEASE	BRANCH	PACKAGING DATE	FMRI
+test	amber	o	4.0	5.11	0	20110804T203458Z	pkg://test/amber@4.0,5.11-0:20110804T203458Z
+test	amber	r	3.0	5.11	0	20110804T203458Z	pkg://test/amber@3.0,5.11-0:20110804T203458Z
+test	amber		2.0	5.11	0	20110804T203458Z	pkg://test/amber@2.0,5.11-0:20110804T203458Z
+test	amber		1.0	5.11	0	20110804T203458Z	pkg://test/amber@1.0,5.11-0:20110804T203458Z
+test	tree		1.0	5.11	0	20110804T203458Z	pkg://test/tree@1.0,5.11-0:20110804T203458Z
+"""
+                self.assertEqualDiff(expected, self.output)
+
+                # json-formatted output.
+                self.pkgrepo("list -s %s -F json-formatted" % src)
+                expected = """\
+[
+  {
+    "branch": "0", 
+    "build-release": "5.11", 
+    "name": "amber", 
+    "pkg.fmri": "pkg://test/amber@4.0,5.11-0:20110804T203458Z", 
+    "pkg.obsolete": [
+      {
+        "value": [
+          "true"
+        ]
+      }
+    ], 
+    "publisher": "test", 
+    "release": "4.0", 
+    "timestamp": "20110804T203458Z", 
+    "version": "4.0,5.11-0:20110804T203458Z"
+  }, 
+  {
+    "branch": "0", 
+    "build-release": "5.11", 
+    "name": "amber", 
+    "pkg.fmri": "pkg://test/amber@3.0,5.11-0:20110804T203458Z", 
+    "pkg.renamed": [
+      {
+        "value": [
+          "true"
+        ]
+      }
+    ], 
+    "publisher": "test", 
+    "release": "3.0", 
+    "timestamp": "20110804T203458Z", 
+    "version": "3.0,5.11-0:20110804T203458Z"
+  }, 
+  {
+    "branch": "0", 
+    "build-release": "5.11", 
+    "name": "amber", 
+    "pkg.fmri": "pkg://test/amber@2.0,5.11-0:20110804T203458Z", 
+    "publisher": "test", 
+    "release": "2.0", 
+    "timestamp": "20110804T203458Z", 
+    "version": "2.0,5.11-0:20110804T203458Z"
+  }, 
+  {
+    "branch": "0", 
+    "build-release": "5.11", 
+    "name": "amber", 
+    "pkg.fmri": "pkg://test/amber@1.0,5.11-0:20110804T203458Z", 
+    "pkg.human-version": [
+      {
+        "value": [
+          "1.0a"
+        ]
+      }
+    ], 
+    "pkg.summary": [
+      {
+        "value": [
+          "Millenia old resin"
+        ]
+      }
+    ], 
+    "publisher": "test", 
+    "release": "1.0", 
+    "timestamp": "20110804T203458Z", 
+    "version": "1.0,5.11-0:20110804T203458Z"
+  }, 
+  {
+    "branch": "0", 
+    "build-release": "5.11", 
+    "info.classification": [
+      {
+        "value": [
+          "org.opensolaris.category.2008:System/Core"
+        ]
+      }
+    ], 
+    "name": "tree", 
+    "pkg.fmri": "pkg://test/tree@1.0,5.11-0:20110804T203458Z", 
+    "pkg.summary": [
+      {
+        "value": [
+          "Leafy i386 package"
+        ], 
+        "variant.arch": [
+          "i386"
+        ]
+      }, 
+      {
+        "value": [
+          "Leafy SPARC package"
+        ], 
+        "variant.arch": [
+          "sparc"
+        ]
+      }
+    ], 
+    "publisher": "test", 
+    "release": "1.0", 
+    "timestamp": "20110804T203458Z", 
+    "variant.arch": [
+      {
+        "value": [
+          "i386", 
+          "sparc"
+        ]
+      }
+    ], 
+    "version": "1.0,5.11-0:20110804T203458Z"
+  }
+]
+"""
+                self.assertEqualDiff(expected, self.output)
+
+                # Verify ability to list specific packages.
+                self.pkgrepo("list -s %s -H -F tsv tree amber@2.0" % repo_path)
+                expected = """\
+test	amber		2.0	5.11	0	20110804T203458Z	pkg://test/amber@2.0,5.11-0:20110804T203458Z
+test	tree		1.0	5.11	0	20110804T203458Z	pkg://test/tree@1.0,5.11-0:20110804T203458Z
+"""
+                self.assertEqualDiff(expected, self.output)
+
+                self.pkgrepo("list -s %s -H -F tsv tree amber@4.0 amber@2.0" %
+                    repo_path)
+                expected = """\
+test	amber	o	4.0	5.11	0	20110804T203458Z	pkg://test/amber@4.0,5.11-0:20110804T203458Z
+test	amber		2.0	5.11	0	20110804T203458Z	pkg://test/amber@2.0,5.11-0:20110804T203458Z
+test	tree		1.0	5.11	0	20110804T203458Z	pkg://test/tree@1.0,5.11-0:20110804T203458Z
+"""
+                self.assertEqualDiff(expected, self.output)
+
+                self.pkgrepo("list -s %s -H -F tsv amber@latest tree" %
+                    repo_path)
+                expected = """\
+test	amber	o	4.0	5.11	0	20110804T203458Z	pkg://test/amber@4.0,5.11-0:20110804T203458Z
+test	tree		1.0	5.11	0	20110804T203458Z	pkg://test/tree@1.0,5.11-0:20110804T203458Z
+"""
+                self.assertEqualDiff(expected, self.output)
+
+                # Verify exit with partial failure if one match fails.
+                self.pkgrepo("list -s %s -H -F tsv tree bogus" % repo_path,
+                    exit=3)
+                expected = """\
+test	tree		1.0	5.11	0	20110804T203458Z	pkg://test/tree@1.0,5.11-0:20110804T203458Z
+"""
+                self.assertEqualDiff(expected, self.output)
+
+                #
+                # Add packages for a different publisher.
+                #
+                self.pkgrepo("set -s %s publisher/prefix=test2" % repo_path)
+                self.pkgsend_bulk(repo_path, (self.truck10, self.zoo10))
+
+                # Verify list of all package includes all publishers.
+                # tsv output.
+                self.pkgrepo("list -s %s -H -F tsv" % repo_path)
+                expected = """\
+test	amber	o	4.0	5.11	0	20110804T203458Z	pkg://test/amber@4.0,5.11-0:20110804T203458Z
+test	amber	r	3.0	5.11	0	20110804T203458Z	pkg://test/amber@3.0,5.11-0:20110804T203458Z
+test	amber		2.0	5.11	0	20110804T203458Z	pkg://test/amber@2.0,5.11-0:20110804T203458Z
+test	amber		1.0	5.11	0	20110804T203458Z	pkg://test/amber@1.0,5.11-0:20110804T203458Z
+test	tree		1.0	5.11	0	20110804T203458Z	pkg://test/tree@1.0,5.11-0:20110804T203458Z
+test2	truck		1.0	5.11	0	20110804T203458Z	pkg://test2/truck@1.0,5.11-0:20110804T203458Z
+test2	zoo		1.0	5.11	0	20110804T203458Z	pkg://test2/zoo@1.0,5.11-0:20110804T203458Z
+"""
+                self.assertEqualDiff(expected, self.output)
+
+                self.pkgrepo("list -s %s -H -F tsv -p all" % repo_path)
+                self.assertEqualDiff(expected, self.output)
+
+                # Verify that packages for a single publisher can be listed.
+                self.pkgrepo("list -s %s -H -F tsv -p test2" % repo_path)
+                expected = """\
+test2	truck		1.0	5.11	0	20110804T203458Z	pkg://test2/truck@1.0,5.11-0:20110804T203458Z
+test2	zoo		1.0	5.11	0	20110804T203458Z	pkg://test2/zoo@1.0,5.11-0:20110804T203458Z
+"""
+                self.assertEqualDiff(expected, self.output)
+
+                # Verify that patterns matching packages only provided by one
+                # publisher will not result in partial failure.
+                self.pkgrepo("list -s %s -H -F tsv zoo" % repo_path)
+                expected = """\
+test2	zoo		1.0	5.11	0	20110804T203458Z	pkg://test2/zoo@1.0,5.11-0:20110804T203458Z
+"""
+                self.assertEqualDiff(expected, self.output)
+
+                self.pkgrepo("list -s %s -H -F tsv '//test2/*'" % repo_path)
+                expected = """\
+test2	truck		1.0	5.11	0	20110804T203458Z	pkg://test2/truck@1.0,5.11-0:20110804T203458Z
+test2	zoo		1.0	5.11	0	20110804T203458Z	pkg://test2/zoo@1.0,5.11-0:20110804T203458Z
+"""
+                self.assertEqualDiff(expected, self.output)
+
+                # Verify that a package provided by no publisher will result
+                # in graceful failure when multiple publishers are present.
+                self.pkgrepo("list -s %s -H -F tsv nosuchpackage" % repo_path,
+                    exit=1)
 
 
 if __name__ == "__main__":

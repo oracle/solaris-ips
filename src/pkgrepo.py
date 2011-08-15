@@ -33,7 +33,7 @@ EXIT_BADOPT  = 2
 EXIT_PARTIAL = 3
 
 # listing constants
-LISTING_FORMATS = ("tsv", )
+LISTING_FORMATS = ("json", "json-formatted", "tsv")
 
 # globals
 tmpdirs = []
@@ -46,7 +46,6 @@ import getopt
 import gettext
 import locale
 import logging
-import os
 import shlex
 import shutil
 import sys
@@ -66,7 +65,6 @@ import pkg.misc as misc
 import pkg.server.repository as sr
 
 logger = global_settings.logger
-orig_cwd = None
 
 @atexit.register
 def cleanup():
@@ -130,7 +128,7 @@ Usage:
         pkgrepo [options] command [cmd_options] [operands]
 
 Subcommands:
-     pkgrepo create [--version] uri_or_path
+     pkgrepo create [--version ver] uri_or_path
 
      pkgrepo add-publisher -s repo_uri_or_path publisher ...
 
@@ -139,6 +137,9 @@ Subcommands:
 
      pkgrepo info [-F format] [-H] [-p publisher ...]
          -s repo_uri_or_path
+
+     pkgrepo list [-F format] [-H] [-p publisher ...] -s repo_uri_or_path
+         [pkg_fmri_pattern ...]
 
      pkgrepo rebuild [-p publisher ...] -s repo_uri_or_path
          [--no-catalog] [--no-index]
@@ -288,8 +289,6 @@ def subcmd_add_publisher(conf, args):
         subcommand = "add-publisher"
 
         opts, pargs = getopt.getopt(args, "s:")
-
-        version = None
         for opt, arg in opts:
                 if opt == "-s":
                         conf["repo_uri"] = parse_uri(arg)
@@ -402,7 +401,7 @@ def subcmd_get(conf, args):
                                 usage(_("Unrecognized format %(format)s."
                                     " Supported formats: %(valid)s") % \
                                     { "format": out_format,
-                                    "valid": LISTING_FORMATS }, cmd="get")
+                                    "valid": LISTING_FORMATS }, cmd=subcommand)
                                 return EXIT_OOPS
                 elif opt == "-H":
                         omit_headers = True
@@ -469,11 +468,11 @@ def _get_repo(conf, subcommand, xport, xpub, omit_headers, out_format, pargs):
         #    <sec_2> <prop_2> <prop_2_value>
         #    ...
         field_data = {
-            "section" : [("default", "tsv"), _("SECTION"), ""],
-            "property" : [("default", "tsv"), _("PROPERTY"), ""],
-            "value" : [("default", "tsv"), _("VALUE"), ""],
+            "section" : [("default", "json", "tsv"), _("SECTION"), ""],
+            "property" : [("default", "json", "tsv"), _("PROPERTY"), ""],
+            "value" : [("default", "json", "tsv"), _("VALUE"), ""],
         }
-        desired_field_order = ((_("SECTION"), _("PROPERTY"), _("VALUE")))
+        desired_field_order = (_("SECTION"), _("PROPERTY"), _("VALUE"))
 
         # Default output formatting.
         def_fmt = "%-" + str(max_sname_len) + "s %-" + str(max_pname_len) + \
@@ -481,7 +480,7 @@ def _get_repo(conf, subcommand, xport, xpub, omit_headers, out_format, pargs):
 
         if found or (not req_props and out_format == "default"):
                 # print without trailing newline.
-                sys.stdout.write(misc.get_col_listing(desired_field_order,
+                sys.stdout.write(misc.get_listing(desired_field_order,
                     field_data, gen_listing(), out_format, def_fmt,
                     omit_headers))
 
@@ -496,7 +495,8 @@ def _get_repo(conf, subcommand, xport, xpub, omit_headers, out_format, pargs):
         return EXIT_OK
 
 
-def _get_matching_pubs(subcommand, pubs, xport, xpub, out_format="default"):
+def _get_matching_pubs(subcommand, pubs, xport, xpub, out_format="default",
+    use_transport=False):
 
         # Retrieve publisher information.
         pub_data = xport.get_publisherdata(xpub)
@@ -504,9 +504,15 @@ def _get_matching_pubs(subcommand, pubs, xport, xpub, out_format="default"):
         if len(pubs) > 0 and "all" not in pubs:
                 found = known_pubs & pubs
                 notfound = pubs - found
+                pub_data = [p for p in pub_data if p.prefix in found]
         else:
                 found = known_pubs
                 notfound = set()
+
+        if use_transport:
+                # Assign transport information.
+                for p in pub_data:
+                        p.repository = xpub.repository
 
         # Establish initial return value and perform early exit if appropriate.
         rval = EXIT_OK
@@ -541,9 +547,6 @@ def _get_pub(conf, subcommand, xport, xpub, omit_headers, out_format, pubs,
         # For each requested publisher, retrieve the requested property data.
         pub_idx = {}
         for pub in pub_data:
-                if pub.prefix not in found:
-                        continue
-
                 pub_idx[pub.prefix] = {
                     "publisher": {
                         "alias": pub.alias,
@@ -613,10 +616,10 @@ def _get_pub(conf, subcommand, xport, xpub, omit_headers, out_format, pubs,
         #    <pub_1>   <sec_2> <prop_2> <prop_2_value>
         #    ...
         field_data = {
-            "publisher" : [("default", "tsv"), _("PUBLISHER"), ""],
-            "section" : [("default", "tsv"), _("SECTION"), ""],
-            "property" : [("default", "tsv"), _("PROPERTY"), ""],
-            "value" : [("default", "tsv"), _("VALUE"), ""],
+            "publisher" : [("default", "json", "tsv"), _("PUBLISHER"), ""],
+            "section" : [("default", "json", "tsv"), _("SECTION"), ""],
+            "property" : [("default", "json", "tsv"), _("PROPERTY"), ""],
+            "value" : [("default", "json", "tsv"), _("VALUE"), ""],
         }
         desired_field_order = (_("PUBLISHER"), _("SECTION"), _("PROPERTY"),
             _("VALUE"))
@@ -627,7 +630,7 @@ def _get_pub(conf, subcommand, xport, xpub, omit_headers, out_format, pubs,
 
         if found or (not req_props and out_format == "default"):
                 # print without trailing newline.
-                sys.stdout.write(misc.get_col_listing(desired_field_order,
+                sys.stdout.write(misc.get_listing(desired_field_order,
                     field_data, gen_listing(), out_format, def_fmt,
                     omit_headers))
 
@@ -659,7 +662,7 @@ def subcmd_info(conf, args):
                                 usage(_("Unrecognized format %(format)s."
                                     " Supported formats: %(valid)s") % \
                                     { "format": arg,
-                                    "valid": LISTING_FORMATS }, cmd="publisher")
+                                    "valid": LISTING_FORMATS }, cmd=subcommand)
                                 return EXIT_OOPS
                         out_format = arg
                 elif opt == "-H":
@@ -713,10 +716,10 @@ def subcmd_info(conf, args):
         #    <pub_2>   <num_uniq_pkgs> <status> <cat_last_modified>
         #    ...
         field_data = {
-            "publisher" : [("default", "tsv"), _("PUBLISHER"), ""],
-            "packages" : [("default", "tsv"), _("PACKAGES"), ""],
-            "status" : [("default", "tsv"), _("STATUS"), ""],
-            "updated" : [("default", "tsv"), _("UPDATED"), ""],
+            "publisher" : [("default", "json", "tsv"), _("PUBLISHER"), ""],
+            "packages" : [("default", "json", "tsv"), _("PACKAGES"), ""],
+            "status" : [("default", "json", "tsv"), _("STATUS"), ""],
+            "updated" : [("default", "json", "tsv"), _("UPDATED"), ""],
         }
 
         desired_field_order = (_("PUBLISHER"), "", _("PACKAGES"), _("STATUS"),
@@ -730,7 +733,7 @@ def subcmd_info(conf, args):
 
         if found or (not pubs and out_format == "default"):
                 # print without trailing newline.
-                sys.stdout.write(misc.get_col_listing(desired_field_order,
+                sys.stdout.write(misc.get_listing(desired_field_order,
                     field_data, gen_listing(), out_format, def_fmt,
                     omit_headers))
 
@@ -742,6 +745,153 @@ def subcmd_info(conf, args):
                         error(_("no matching publishers found"),
                             cmd=subcommand)
                 return EXIT_OOPS
+        return EXIT_OK
+
+def subcmd_list(conf, args):
+        """List all packages matching the specified patterns."""
+
+        subcommand = "list"
+        omit_headers = False
+        out_format = "default"
+        pubs = set()
+
+        opts, pargs = getopt.getopt(args, "F:Hp:s:")
+        for opt, arg in opts:
+                if opt == "-F":
+                        out_format = arg
+                        if out_format not in LISTING_FORMATS:
+                                usage(_("Unrecognized format %(format)s."
+                                    " Supported formats: %(valid)s") %
+                                    { "format": out_format,
+                                    "valid": LISTING_FORMATS }, cmd=subcommand)
+                                return EXIT_OOPS
+                elif opt == "-H":
+                        omit_headers = True
+                elif opt == "-p":
+                        pubs.add(arg)
+                elif opt == "-s":
+                        conf["repo_uri"] = parse_uri(arg)
+
+        # Setup transport so configuration can be retrieved.
+        if not conf.get("repo_uri", None):
+                usage(_("A package repository location must be provided "
+                    "using -s."), cmd=subcommand)
+        xport, xpub, tmp_dir = setup_transport(conf, subcommand=subcommand)
+
+        rval, found, pub_data = _get_matching_pubs(subcommand, pubs, xport,
+            xpub, out_format=out_format, use_transport=True)
+        if rval == EXIT_OOPS:
+                return rval
+
+        temp_root = misc.config_temp_root()
+        progtrack = get_tracker()
+        for pub in pub_data:
+                meta_root = tempfile.mkdtemp(dir=temp_root)
+                tmpdirs.append(meta_root)
+                pub.meta_root = meta_root
+                pub.transport = xport
+
+                progtrack.catalog_start(pub.prefix)
+                try:
+                        pub.refresh(True, True)
+                except apx.TransportError:
+                        # Assume that a catalog doesn't exist for the target
+                        # publisher and drive on.
+                        pass
+                finally:
+                        progtrack.catalog_done()
+
+        listed = {}
+        matched = set()
+        unmatched = set()
+
+        def gen_listing():
+                collect_attrs = out_format.startswith("json")
+                for pub in pub_data:
+                        cat = pub.catalog
+                        for f, states, attrs in cat.gen_packages(
+                            collect_attrs=collect_attrs, matched=matched,
+                            patterns=pargs, pubs=[pub.prefix],
+                            unmatched=unmatched, return_fmris=True):
+                                if not listed:
+                                        listed["packages"] = True
+
+                                state = None
+                                if out_format == "default" or \
+                                    out_format == "tsv":
+                                        if cat.PKG_STATE_OBSOLETE in states:
+                                                state = "o"
+                                        elif cat.PKG_STATE_RENAMED in states:
+                                                state = "r"
+
+                                ret = {
+                                    "publisher": f.publisher,
+                                    "name": f.pkg_name,
+                                    "version": str(f.version),
+                                    "release": str(f.version.release),
+                                    "build-release":
+                                        str(f.version.build_release),
+                                    "branch": str(f.version.branch),
+                                    "timestamp":
+                                        str(f.version.timestr),
+                                    "pkg.fmri": str(f),
+                                    "short_state": state,
+                                }
+
+                                for attr in attrs:
+                                        ret[attr] = []
+                                        for mods in attrs[attr]:
+                                                d = dict(mods)
+                                                d["value"] = \
+                                                    attrs[attr][mods]
+                                                ret[attr].append(d)
+                                yield ret
+
+                        unmatched.difference_update(matched)
+
+        field_data = {
+            "publisher": [("default", "json", "tsv"), _("PUBLISHER"), ""],
+            "name": [("default", "json", "tsv"), _("NAME"), ""],
+            "version": [("default", "json"), _("VERSION"), ""],
+            "release": [("json", "tsv",), _("RELEASE"), ""],
+            "build-release": [("json", "tsv",), _("BUILD RELEASE"), ""],
+            "branch": [("json", "tsv",), _("BRANCH"), ""],
+            "timestamp": [("json", "tsv",), _("PACKAGING DATE"), ""],
+            "pkg.fmri": [("json", "tsv",), _("FMRI"), ""],
+            "short_state": [("default", "tsv"), "O", ""],
+         }
+
+        desired_field_order = (_("PUBLISHER"), _("NAME"), "O", _("VERSION"),
+            _("SUMMARY"), _("DESCRIPTION"), _("CATEGORIES"), _("RELEASE"),
+            _("BUILD RELEASE"), _("BRANCH"), _("PACKAGING DATE"), _("FMRI"),
+            _("STATE"))
+
+        # Default output formatting.
+        max_pub_name_len = str(
+            max(list(len(p) for p in found) + [len(_("PUBLISHER"))]))
+        def_fmt = "%-" + max_pub_name_len + "s %-45s %-1s %-s"
+
+        # print without trailing newline.
+        sys.stdout.write(misc.get_listing(
+            desired_field_order, field_data, gen_listing(),
+            out_format, def_fmt, omit_headers))
+
+        if not listed and pargs:
+                # No matching packages.
+                logger.error("")
+                if not unmatched:
+                        unmatched = pargs
+                error(apx.PackageMatchErrors(unmatched_fmris=unmatched),
+                    cmd=subcommand)
+                return EXIT_OOPS
+        elif unmatched:
+                # One or more patterns didn't match a package from any
+                # publisher; only display the error.
+                logger.error("")
+                error(apx.PackageMatchErrors(unmatched_fmris=unmatched),
+                    cmd=subcommand)
+                return EXIT_PARTIAL
+
         return EXIT_OK
 
 
@@ -861,7 +1011,6 @@ def subcmd_set(conf, args):
         """Set repository properties."""
 
         subcommand = "set"
-        omit_headers = False
         pubs = set()
 
         opts, pargs = getopt.getopt(args, "p:s:")
@@ -1039,18 +1188,6 @@ def subcmd_version(conf, args):
 def main_func():
         global_settings.client_name = PKG_CLIENT_NAME
 
-        global orig_cwd
-
-        try:
-                orig_cwd = os.getcwd()
-        except OSError, e:
-                try:
-                        orig_cwd = os.environ["PWD"]
-                        if not orig_cwd or orig_cwd[0] != "/":
-                                orig_cwd = None
-                except KeyError:
-                        orig_cwd = None
-
         try:
                 opts, pargs = getopt.getopt(sys.argv[1:], "s:?",
                     ["help"])
@@ -1121,9 +1258,11 @@ this message) when filing a bug at:
                         __ret = EXIT_OOPS
         except SystemExit, __e:
                 raise __e
-        except (PipeError, KeyboardInterrupt):
+        except (IOError, PipeError, KeyboardInterrupt), __e:
                 # Don't display any messages here to prevent possible further
                 # broken pipe (EPIPE) errors.
+                if isinstance(__e, IOError) and __e.errno != errno.EPIPE:
+                        error(str(__e))
                 __ret = EXIT_OOPS
         except apx.VersionException, __e:
                 error(_("The pkgrepo command appears out of sync with the "

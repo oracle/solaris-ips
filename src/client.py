@@ -2443,22 +2443,24 @@ def list_mediators(op, api_inst, pargs, omit_headers, output_format,
         #    <med_2>  <src_2>    <ver_2> <src_2>    <impl_2_value> <impl_2_ver>
         #    ...
         field_data = {
-            "mediator" : [("default", "tsv"), _("MEDIATOR"), ""],
-            "version" : [("default", "tsv"), _("VERSION"), ""],
-            "version-source": [("default", "tsv"), _("VER. SRC."), ""],
-            "implementation" : [("default", "tsv"), _("IMPLEMENTATION"), ""],
-            "implementation-source": [("default", "tsv"), _("IMPL. SRC."), ""],
-            "implementation-version" : [("tsv",), _("IMPL. VER."), ""],
+            "mediator" : [("default", "json", "tsv"), _("MEDIATOR"), ""],
+            "version" : [("default", "json", "tsv"), _("VERSION"), ""],
+            "version-source": [("default", "json", "tsv"), _("VER. SRC."), ""],
+            "implementation" : [("default", "json", "tsv"), _("IMPLEMENTATION"),
+                ""],
+            "implementation-source": [("default", "json", "tsv"),
+                _("IMPL. SRC."), ""],
+            "implementation-version" : [("json", "tsv"), _("IMPL. VER."), ""],
         }
-        desired_field_order = ((_("MEDIATOR"), _("VER. SRC."), _("VERSION"),
-            _("IMPL. SRC."), _("IMPLEMENTATION"), _("IMPL. VER.")))
+        desired_field_order = (_("MEDIATOR"), _("VER. SRC."), _("VERSION"),
+            _("IMPL. SRC."), _("IMPLEMENTATION"), _("IMPL. VER."))
 
         # Default output formatting.
         def_fmt = "%-" + str(max_mname_len) + "s %-" + str(max_vsrc_len) + \
             "s %-" + str(max_version_len) + "s %-" + str(max_isrc_len) + "s %s"
 
         if found or (not requested_mediators and output_format == "default"):
-                sys.stdout.write(misc.get_col_listing(desired_field_order,
+                sys.stdout.write(misc.get_listing(desired_field_order,
                     field_data, gen_listing(), output_format, def_fmt,
                     omit_headers, escape_output=False))
 

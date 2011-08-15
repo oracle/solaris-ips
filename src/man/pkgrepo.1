@@ -7,7 +7,7 @@ pkgrepo \- Image Packaging System repository management utility
 .SH SYNOPSIS
 .LP
 .nf
-/usr/bin/pkgrepo create [--version] \fIuri_or_path\fR
+/usr/bin/pkgrepo create [--version \fIver\fR] \fIuri_or_path\fR
 .fi
 
 .LP
@@ -25,6 +25,12 @@ pkgrepo \- Image Packaging System repository management utility
 .nf
 /usr/bin/pkgrepo info [-F \fIformat\fR] [-H] [-p \fIpublisher\fR ...]
     -s \fIrepo_uri_or_path\fR
+.fi
+
+.LP
+.nf
+/usr/bin/pkgrepo list [-F \fIformat\fR] [-H] [-p \fIpublisher\fR ...]
+    -s \fIrepo_uri_or_path\fR \fIpkg_fmri_pattern\fR ...
 .fi
 
 .LP
@@ -89,7 +95,7 @@ The following subcommands are supported:
 .ne 2
 .mk
 .na
-\fBcreate\fR [\fB--version\fR] \fIuri_or_path\fR
+\fBcreate\fR [\fB--version\fR \fIver\fR] \fIuri_or_path\fR
 .ad
 .sp .6
 .RS 4n
@@ -151,7 +157,7 @@ See the "Examples" section.
 .sp
 For a list of possible properties and the purpose and value of each property, see the \fBset\fR subcommand below.
 .sp
-With \fB-F\fR, specify an alternative output format. The only value for \fIformat\fR is \fBtsv\fR (Tab Separated Values).
+With \fB-F\fR, specify an alternative output format. Supported formats are: \fBtsv\fR (Tab Separated Values), \fBjson\fR (JavaScript Object Notation as a single line), and \fBjson-formatted\fR (same as the previous, formatted for readability).
 .sp
 With \fB-H\fR, omit the headers from the listing.
 .sp
@@ -170,11 +176,32 @@ With \fB-s\fR, operate on the repository located at the given URI or file system
 .RS 4n
 Displays a listing of the package publishers known by the repository. The listing includes the number of packages for each publisher, when the publisher's package data was last updated, and the status of the publisher's package data (such as whether it is currently being processed).
 .sp
-With \fB-F\fR, specify an alternative output format. The only value for \fIformat\fR is \fBtsv\fR (Tab Separated Values).
+With \fB-F\fR, specify an alternative output format. Supported formats are: \fBtsv\fR (Tab Separated Values), \fBjson\fR (JavaScript Object Notation as a single line), and \fBjson-formatted\fR (same as the previous, formatted for readability).
 .sp
 With \fB-H\fR, omit the headers from the listing.
 .sp
 With \fB-p\fR, only display the data for the given publisher. If not provided, the data for all publishers is displayed. This option can be specified multiple times.
+.sp
+With \fB-s\fR, operate on the repository located at the given URI or file system path.
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fBlist\fR [\fB-F\fR \fIformat\fR] [\fB-H\fR] [\fB-p\fR \fIpublisher\fR ...] \fB-s\fR \fIrepo_uri_or_path\fR \fIpkg_fmri_pattern\fR ...\fR
+.ad
+.sp .6
+.RS 4n
+List the packages matching the specified patterns in the repository. If no patterns are specified, all packages will be listed. To list the latest version of a package, use \fBlatest\fR for the pattern version (e.g. \fBvim@latest\fR).
+.sp
+In the default output, the first column contains the name of the publisher of the package. The second column contains the name of the package. The third column is a flag showing the status of the package, where \fBo\fR indicates it is obsolete, and an \fBr\fR shows that it has been renamed (a form of obsoletion). The last column contains the release and branch versions of the package (see \fBpkg\fR(5)).
+.sp
+With \fB-F\fR, specify an alternative output format. Supported formats are: \fBtsv\fR (Tab Separated Values), \fBjson\fR (JavaScript Object Notation as a single line), and \fBjson-formatted\fR (same as the previous, formatted for readability).
+.sp
+With \fB-H\fR, omit the headers from the listing.
+.sp
+With \fB-p\fR, only display the packages for the given publisher. If not provided, the packages for all publishers will be displayed. This option can be specified multiple times.
 .sp
 With \fB-s\fR, operate on the repository located at the given URI or file system path.
 .RE
