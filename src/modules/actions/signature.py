@@ -407,7 +407,7 @@ class SignatureAction(generic.Action):
                 if self.hash is not None:
                         res.append((self.name, "certificate", self.hash,
                             self.hash))
-                res.append((self.name, "hash type",
+                res.append((self.name, "algorithm",
                     self.attrs["algorithm"], self.attrs["algorithm"]))
                 res.append((self.name, "signature", self.attrs["value"],
                     self.attrs["value"]))
