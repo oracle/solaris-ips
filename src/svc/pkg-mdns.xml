@@ -19,7 +19,7 @@
 
 	CDDL HEADER END
 
-	Copyright (c) 2010 Oracle and/or its affiliates.  All rights reserved.
+	Copyright (c) 2010, 2011 Oracle and/or its affiliates.  All rights reserved.
 
 	NOTE:  This service manifest is not editable; its contents will
 	be overwritten by package or patch operations, including
@@ -79,6 +79,14 @@
 		<service_fmri value='svc:/milestone/network' />
 	</dependency>
 
+	<dependency
+                name='multicast'
+                grouping='require_all'
+                restart_on='none'
+                type='service'>
+                <service_fmri value='svc:/network/dns/multicast:default' />
+        </dependency>
+
 	<exec_method
 		type='method'
 		name='start'
@@ -97,8 +105,8 @@
 	</exec_method>
 
 	<property_group name='pkg' type='application'>
-		<propval name='file_root' type='astring'
-			value='/var/pkg/download' />
+		<propval name='image_root' type='astring'
+			value='/' />
 		<propval name='pkg_root' type='astring' value='/' />
 		<propval name='port' type='count' value='10000' />
 	</property_group>

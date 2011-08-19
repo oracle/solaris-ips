@@ -69,12 +69,7 @@ class TestBasicSysrepoCli(pkg5unittest.CliTestCase):
                 self.next_free_port += 1
                 self.sc = pkg5unittest.SysrepoController(self.default_sc_conf,
                     self.sysrepo_port, runtime_dir, testcase=self)
-                started = True
-                try:
-                        self.sc.start()
-                except pkg5unittest.SysrepoStateException:
-                        started = False
-                return started
+                self.sc.start()
 
         def test_0_sysrepo(self):
                 """A very basic test to see that we can start the sysrepo."""
@@ -83,8 +78,7 @@ class TestBasicSysrepoCli(pkg5unittest.CliTestCase):
                 self.sysrepo("", exit=2, fill_missing_args=False)
 
                 self.sysrepo("")
-                started = self._start_sysrepo()
-                self.assert_(started, "sysrepo was unable to start.")
+                self._start_sysrepo()
                 self.sc.stop()
 
         def test_1_sysrepo_usage(self):
@@ -134,9 +128,8 @@ class TestBasicSysrepoCli(pkg5unittest.CliTestCase):
                         port = self.next_free_port
                         ret, output, err = self.sysrepo("-l %s -p %s" %
                             (invalid_log, port), out=True, stderr=True, exit=0)
-                        started = self._start_sysrepo()
-                        self.assertFalse(started, "sysrepo unexpectedly started"
-                           " with invalid logdir %s" % invalid_log)
+                        self.assertRaises(pkg5unittest.SysrepoStateException,
+                            self._start_sysrepo)
                         self.sc.stop()
 
         def test_6_invalid_port(self):
@@ -252,12 +245,7 @@ class TestDetailedSysrepoCli(pkg5unittest.ManyDepotTestCase):
                 self.next_free_port += 1
                 self.sc = pkg5unittest.SysrepoController(self.default_sc_conf,
                     self.sysrepo_port, runtime_dir, testcase=self)
-                started = True
-                try:
-                        self.sc.start()
-                except pkg5unittest.SysrepoStateException:
-                        started = False
-                self.assert_(started, "Unable to start sysrepo!")
+                self.sc.start()
 
         def test_1_substring_proxy(self):
                 """We can proxy publishers that are substrings of each other"""

@@ -93,11 +93,11 @@ Logs the headers of every request to the error log.
 .ne 2
 .mk
 .na
-\fB\fBpkg/file_root\fR\fR
+\fB\fBpkg/image_root\fR\fR
 .ad
 .sp .6
 .RS 4n
-(\fBastring\fR) The root of the file content for this repository. If undefined, this defaults to \fIinst_root\fR/\fIfile\fR.
+(\fBastring\fR) The path to the image whose file information will be used as a cache for file data.
 .RE
 
 .sp
@@ -108,7 +108,7 @@ Logs the headers of every request to the error log.
 .ad
 .sp .6
 .RS 4n
-(\fBastring\fR) The file system path at which the instance should find its repository data. Required unless \fBfile_root\fR or \fBPKG_REPO\fR has been provided. The default value is \fB/var/pkgrepo\fR.
+(\fBastring\fR) The file system path at which the instance should find its repository data. Required unless \fBPKG_REPO\fR has been provided. The default value is \fB/var/pkgrepo\fR.
 .RE
 
 .sp
@@ -366,11 +366,11 @@ The mDNS mirror is generally configured via the \fBsmf\fR(5) properties associat
 .ne 2
 .mk
 .na
-\fB\fBpkg/file_root\fR\fR
+\fB\fBpkg/image_root\fR\fR
 .ad
 .RS 17n
 .rt  
-(\fBastring\fR) The file system path at which the instance should find its file content. The default value is \fB/var/pkg/download\fR.
+(\fBastring\fR) The path to the image whose file information will be used as a cache for file data. The default value is \fB/\fR.
 .RE
 
 .sp
@@ -461,11 +461,11 @@ See \fBpkg/disable_ops\fR above.
 .ne 2
 .mk
 .na
-\fB\fB--file-root\fR \fIpath\fR\fR
+\fB\fB--image-root\fR \fIpath\fR\fR
 .ad
 .RS 30n
 .rt  
-See \fBpkg/file_root\fR above.
+See \fBpkg/image_root\fR above.
 .RE
 
 .sp

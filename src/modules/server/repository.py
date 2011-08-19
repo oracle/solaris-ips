@@ -1971,7 +1971,13 @@ class Repository(object):
                                     "publisher")
 
                         if not create and cfgpathname and \
-                            not os.path.exists(cfgpathname):
+                            not os.path.exists(cfgpathname) and \
+                            not (os.path.exists(self.pub_root) or
+                            os.path.exists(os.path.join(
+                                self.root, "pkg5.image")) and
+                            Image(self.root, augment_ta_from_parent_image=False,
+                                allow_ondisk_upgrade=False,
+                                should_exist=True).version >= 3):
                                 # If this isn't a repository creation operation,
                                 # and the base configuration file doesn't exist,
                                 # this isn't a valid repository.

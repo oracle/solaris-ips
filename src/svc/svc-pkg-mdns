@@ -19,7 +19,7 @@
 #
 # CDDL HEADER END
 #
-# Copyright (c) 2010 Oracle and/or its affiliates.  All rights reserved.
+# Copyright (c) 2010, 2011 Oracle and/or its affiliates.  All rights reserved.
 #
 
 # Load SMF constants and functions
@@ -33,15 +33,6 @@ fi
 case "$1" in
 'start')
 	# Handles mDNS depot startup
-
-	# short_option_props are properties which are communicated to the depot
-	# via a single character flag which takes an argument.
-	short_option_props="port"
-	set -A short_option_cmd_line "p"
-
-	long_option_props="file_root"
-
-	set -A long_option_cmd_line "file-root"
 
 	# retrieve the pkg_root property. If the variable is left empty
 	# pkg_root is /
@@ -73,48 +64,27 @@ case "$1" in
 
 	export PYTHONPATH
 
-	# Go through each property in short_option_props and, if its value is
-	# set to something other than "", add the appropriate command line
-	# flag and argument to the string.
-	cnt=0
-	for o in $short_option_props; do
-		val=$(svcprop -p pkg/$o $SMF_FMRI)
-		if [[ $? -ne 0 ]]; then
-			echo "service property pkg/$o not defined for" \
-		       	    "service: $SMF_FMRI"
-			exit $SMF_EXIT_ERR_CONFIG
-		fi
-		# If the SMF property is set to something other than 'none', add
-		# the flag and its argument to the command.
-		if [[ $val != '""' ]]; then
-			option_ops="$option_ops -${short_option_cmd_line[$cnt]} $val"
-		fi
-		cnt=$(($cnt + 1))
-	done
+	#
+	# If this process has net_privaddr, then we pass it along.
+	# If not, we ensure that we don't specify it, since that will
+	# cause ppriv to throw an error.
+	#
+	privaddr=""
+	ppriv -v $$ | grep 'E: ' | grep net_privaddr > /dev/null 2>&1
+	if [[ $? == 0 ]]; then
+		echo "Dropping net_privaddr privilege."
+		privaddr=",net_privaddr"
+	fi
 
-	# Go through each property in long_option_props and, if its value is
-	# set to something other than "", add the appropriate command line
-	# flag and argument to the string.
-	cnt=0
-	for o in $long_option_props; do
-		val=$(svcprop -p pkg/$o $SMF_FMRI)
-		if [[ $? -ne 0 ]]; then
-			echo "service property pkg/$o not defined for" \
-		       	    "service: $SMF_FMRI"
-			exit $SMF_EXIT_ERR_CONFIG
-		fi
-		if [[ $val != '""' ]]; then
-			option_ops="$option_ops --${long_option_cmd_line[$cnt]}=$val"
-		fi
-		cnt=$(($cnt + 1))
-	done
+	#
+	# Build up the privileges available starting with "basic".  This
+	# provides some protection even when the depot runs as root.
+	#
+	wrapper="ppriv -s \
+            A=basic,-file_link_any,-proc_info,-proc_session$privaddr -e"
 
-	# In order to run in mdns mode, we need to append the --llmirror
-	# flag to the list of command options.  Do that last, here.
-	option_ops="$option_ops --llmirror"
-
-	# Build the command to start pkg.depotd with the specified options.
-	cmd="${pkg_root}usr/lib/pkg.depotd $option_ops"
+	# Build the command to start pkg.depotd.
+	cmd="$wrapper ${pkg_root}usr/lib/pkg.depotd --llmirror --cfg $SMF_FMRI"
 	# Echo the command so that the log contains the command used to start
 	# the depot.
 	echo $cmd
@@ -150,7 +120,7 @@ case "$1" in
 		ret=$?
 		# '2' indicates timeout with non-empty contract.
 		if [[ $ret -eq 2 ]]; then
-			echo "Gentle contract kill timed out after"
+			echo "Gentle contract kill timed out after" \
 		       	    "$POLITE seconds, trying SIGKILL." >&2
 			#
 			# Again, despite the specified timeout, this will
