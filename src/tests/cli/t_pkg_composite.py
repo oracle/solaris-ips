@@ -256,6 +256,9 @@ class TestPkgCompositePublishers(pkg5unittest.ManyDepotTestCase):
 
                 # Create an image and verify no packages are known.
                 self.image_create(self.empty_rurl, prefix=None)
+                self.pkg("set-property signature-policy ignore")
+                self.pkg("set-publisher --set-property signature-policy=ignore "
+                    "test")
                 self.pkg("list -a", exit=1)
 
                 # Verify list output for multiple, disparate sources using
@@ -407,6 +410,9 @@ Packaging Date: %(pkg_date)s
                 # Create an image and verify no packages are known.
                 #
                 self.image_create(self.empty_rurl, prefix=None)
+                self.pkg("set-property signature-policy ignore")
+                self.pkg("set-publisher --set-property signature-policy=ignore "
+                    "test")
                 self.pkg("list -a", exit=1)
 
                 # Verify that packages with dependencies can be installed when

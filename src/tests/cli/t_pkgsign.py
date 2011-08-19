@@ -959,12 +959,15 @@ class TestPkgSign(pkg5unittest.SingleDepotTestCase):
                 # Test that the cli handles an UnverifiedSignature exception.
                 self.pkg("install example_pkg", exit=1)
                 self.pkg("set-property signature-policy ignore")
+                self.pkg("set-publisher --set-property signature-policy=ignore "
+                    "test")
                 api_obj = self.get_img_api_obj()
                 self._api_install(api_obj, ["example_pkg"])
                 self._api_uninstall(api_obj, ["example_pkg"])
                 self.pkg("unset-property signature-policy")
                 api_obj = self.get_img_api_obj()
-                self._api_install(api_obj, ["example_pkg"])
+                self.assertRaises(apx.UnverifiedSignature, self._api_install,
+                    api_obj, ["example_pkg"])
 
         def test_mismatched_hashes(self):
                 """Test that if the hash signature isn't correct, an error
@@ -990,12 +993,22 @@ class TestPkgSign(pkg5unittest.SingleDepotTestCase):
                 self.assertRaises(apx.UnverifiedSignature, self._api_install,
                     api_obj, ["example_pkg"])
                 self.pkg("set-property signature-policy ignore")
+                self.pkg("set-publisher --set-property signature-policy=ignore "
+                    "test")
                 api_obj = self.get_img_api_obj()
                 self._api_install(api_obj, ["example_pkg"])
                 self._api_uninstall(api_obj, ["example_pkg"])
                 self.pkg("unset-property signature-policy")
+                # Make sure the manifest is locally stored.
+                self.pkg("install -n example_pkg")
+                # Append an action to the manifest.
+                pfmri = fmri.PkgFmri(plist[0])
+                s = self.get_img_manifest(pfmri)
+                s += "\nset name=foo value=bar"
+                self.write_img_manifest(pfmri, s)
                 api_obj = self.get_img_api_obj()
-                self._api_install(api_obj, ["example_pkg"])
+                self.assertRaises(apx.UnverifiedSignature, self._api_install,
+                    api_obj, ["example_pkg"])
 
         def test_unknown_sig_alg(self):
                 """Test that if the certificate can't validate the signature,
@@ -1014,6 +1027,9 @@ class TestPkgSign(pkg5unittest.SingleDepotTestCase):
                 self.pkg_image_create(self.rurl1)
                 self.seed_ta_dir("ta3")
 
+                self.pkg("set-property signature-policy ignore")
+                self.pkg("set-publisher --set-property signature-policy=ignore "
+                    "test")
                 # Make sure the manifest is locally stored.
                 api_obj = self.get_img_api_obj()
                 for pd in api_obj.gen_plan_install(["example_pkg"],
@@ -1083,6 +1099,8 @@ class TestPkgSign(pkg5unittest.SingleDepotTestCase):
                 # Tests that the cli can handle an UnsupportedCriticalExtension.
                 self.pkg("install example_pkg", exit=1)
                 self.pkg("set-property signature-policy ignore")
+                self.pkg("set-publisher --set-property signature-policy=ignore "
+                    "test")
                 api_obj = self.get_img_api_obj()
                 self._api_install(api_obj, ["example_pkg"])
 
@@ -1175,6 +1193,8 @@ class TestPkgSign(pkg5unittest.SingleDepotTestCase):
                 self.assertRaises(apx.BrokenChain, self._api_install, api_obj,
                     ["example_pkg"])
                 self.pkg("set-property signature-policy ignore")
+                self.pkg("set-publisher --set-property signature-policy=ignore "
+                    "test")
                 api_obj = self.get_img_api_obj()
                 self._api_install(api_obj, ["example_pkg"])
 
@@ -1204,6 +1224,8 @@ class TestPkgSign(pkg5unittest.SingleDepotTestCase):
                 # exception.
                 self.pkg("install example_pkg", exit=1)
                 self.pkg("set-property signature-policy ignore")
+                self.pkg("set-publisher --set-property signature-policy=ignore "
+                    "test")
                 api_obj = self.get_img_api_obj()
                 self._api_install(api_obj, ["example_pkg"])
 
@@ -1269,6 +1291,8 @@ class TestPkgSign(pkg5unittest.SingleDepotTestCase):
                 # Tests that the cli can handle an UnsupportedCriticalExtension.
                 self.pkg("install example_pkg", exit=1)
                 self.pkg("set-property signature-policy ignore")
+                self.pkg("set-publisher --set-property signature-policy=ignore "
+                    "test")
                 api_obj = self.get_img_api_obj()
                 self._api_install(api_obj, ["example_pkg"])
 
@@ -1296,6 +1320,8 @@ class TestPkgSign(pkg5unittest.SingleDepotTestCase):
                 self.assertRaises(apx.UnsupportedExtensionValue,
                     self._api_install, api_obj, ["example_pkg"])
                 self.pkg("set-property signature-policy ignore")
+                self.pkg("set-publisher --set-property signature-policy=ignore "
+                    "test")
                 api_obj = self.get_img_api_obj()
                 self._api_install(api_obj, ["example_pkg"])
 
@@ -1749,6 +1775,8 @@ class TestPkgSign(pkg5unittest.SingleDepotTestCase):
                 # exception.
                 self.pkg("install example_pkg", exit=1)
                 self.pkg("set-property signature-policy ignore")
+                self.pkg("set-publisher --set-property signature-policy=ignore "
+                    "test")
                 api_obj = self.get_img_api_obj()
                 self._api_install(api_obj, ["example_pkg"])
                 self.pkg("set-property signature-policy require-signatures")

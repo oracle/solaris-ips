@@ -679,6 +679,9 @@ link path=usr/local/bin/soft-foo target=usr/bin/foo
                 # Create an image and verify no packages are known.
                 #
                 self.image_create(self.empty_rurl, prefix=None)
+                self.pkg("set-property signature-policy ignore")
+                self.pkg("set-publisher --set-property signature-policy=ignore "
+                    "test")
                 self.pkg("list -a", exit=1)
 
                 # Verify graceful failure if source doesn't exist.

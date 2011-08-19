@@ -188,4 +188,5 @@ class RequireNames(Policy):
 
 Policy._policies[RequireNames.name] = RequireNames
 
-DEFAULT_POLICY = "ignore"
+DEFAULT_POLICY = "verify"
+
