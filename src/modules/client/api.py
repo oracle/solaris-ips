@@ -4625,14 +4625,13 @@ class PlanDescription(object):
                 plan execution.  Each tuple is of the form (original_path,
                 salvage_path).  Where 'original_path' is the path of the item
                 before it was salvaged, and 'salvage_path' is where the item was
-                moved to.  This method may only be called after plan execution
-                has completed."""
+                moved to.  This method only has useful information after plan
+                execution."""
 
-                assert self.__plan.state in (ip.EXECUTED_OK,
-                    ip.EXECUTED_ERROR), \
-                        "self.__plan.state in (ip.EXECUTED_OK, " \
-                        "ip.EXECUTED_ERROR)\nself.__plan.state == %d" % \
-                        self.__plan.state
+                if self.__plan.state not in (ip.EXECUTED_OK, ip.EXECUTED_ERROR):
+                        # Return an empty list so that the type matches with
+                        # self.__plan.salvaged.
+                        return []
                 return copy.copy(self.__plan.salvaged)
 
         def get_solver_errors(self):
