@@ -1238,7 +1238,6 @@ class FancyUNIXProgressTracker(ProgressTracker):
                 self.__generic_simple_done()
 
         def index_optimize(self):
-                self.ind_output_done()
                 self.ind_started = False
                 self.last_print_time = 0
                 try:
