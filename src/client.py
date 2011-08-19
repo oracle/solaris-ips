@@ -144,6 +144,7 @@ def usage(usage_error=None, cmd=None, retcode=EXIT_BADOPT, full=False):
 
         basic_usage = {}
         adv_usage = {}
+        priv_usage = {}
 
         basic_cmds = ["refresh", "install", "uninstall", "update", "list",
             "version"]
@@ -212,13 +213,6 @@ def usage(usage_error=None, cmd=None, retcode=EXIT_BADOPT, full=False):
             "rebuild-index",
             "update-format",
             "image-create",
-            "",
-            "attach-linked",
-            "detach-linked",
-            "list-linked",
-            "audit-linked",
-            "sync-linked",
-            "property-linked",
         ]
 
         adv_usage["info"] = \
@@ -309,22 +303,22 @@ def usage(usage_error=None, cmd=None, retcode=EXIT_BADOPT, full=False):
         adv_usage["rebuild-index"] = ""
         adv_usage["update-format"] = ""
 
-        adv_usage["list-linked"] = _("-H")
-        adv_usage["attach-linked"] = _(
+        priv_usage["list-linked"] = _("-H")
+        priv_usage["attach-linked"] = _(
             "[-fnvq] [--accept] [--licenses] [--no-index]\n"
             "            [--no-refresh] [--no-pkg-updates] [--linked-md-only]\n"
             "            [--allow-relink]\n"
             "            [--prop-linked <propname>=<propvalue> ...]\n"
             "            (-c|-p) <li-name> <dir>")
-        adv_usage["detach-linked"] = _(
+        priv_usage["detach-linked"] = _(
             "[-fnvq] [-a|-l <li-name>] [--linked-md-only]")
-        adv_usage["property-linked"] = _("[-H] [-l <li-name>] [propname ...]")
-        adv_usage["audit-linked"] = _("[-a|-l <li-name>]")
-        adv_usage["sync-linked"] = _(
+        priv_usage["property-linked"] = _("[-H] [-l <li-name>] [propname ...]")
+        priv_usage["audit-linked"] = _("[-a|-l <li-name>]")
+        priv_usage["sync-linked"] = _(
             "[-nvq] [--accept] [--licenses] [--no-index]\n"
             "            [--no-refresh] [--no-parent-sync] [--no-pkg-updates]\n"
             "            [--linked-md-only] [-a|-l <name>]")
-        adv_usage["set-property-linked"] = _(
+        priv_usage["set-property-linked"] = _(
             "[-nvq] [--accept] [--licenses] [--no-index] [--no-refresh]\n"
             "            [--no-parent-sync] [--no-pkg-updates]\n"
             "            [--linked-md-only] <propname>=<propvalue> ...")
@@ -349,10 +343,15 @@ def usage(usage_error=None, cmd=None, retcode=EXIT_BADOPT, full=False):
                                 else:
                                         logger.error("        pkg %s" % cmd)
         if not full and cmd:
-                logger.error("Usage:")
+                if cmd not in priv_usage:
+                        logger.error(_("Usage:"))
+                else:
+                        logger.error(_("Private subcommand usage, options "
+                            "subject to change at any time:"))
                 combined = {}
                 combined.update(basic_usage)
                 combined.update(adv_usage)
+                combined.update(priv_usage)
                 print_cmds([cmd], combined)
                 sys.exit(retcode)
 
