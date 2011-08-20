@@ -1,0 +1,413 @@
+'\" te
+.\" Copyright (c) 2007, 2011, Oracle and/or its affiliates. All rights reserved.
+.TH pkgmerge 1 "2011 年 7 月 28 日" "SunOS 5.11" "用户命令"
+.SH 名称
+pkgmerge \- 映像包管理系统软件包合并实用程序
+.SH 用法概要
+.LP
+.nf
+/usr/bin/pkgmerge [-n] -d \fIdest_repo\fR
+    -s \fIvariant\fR=\fIvalue\fR[,...],\fIsrc_repo\fR ...
+    [\fIpkg_fmri_pattern\fR ...]
+.fi
+
+.SH 描述
+.sp
+.LP
+\fBpkgmerge\fR 是一种用于创建多变量软件包的软件包发布工具。它通过合并具有相同名称和版本的软件包（时间戳除外），使用给定源的指定变量名称和值标记合并的版本中的唯一操作，然后将新的软件包发布到目标系统信息库，从而实现此操作。仅使用每个源中各软件包的最新版本。
+.sp
+.LP
+如果将某一操作的 \fBpkg.merge.blend\fR 属性设置为要合并变量的名称，则在合并之前将该操作复制到其他清单，以便在最终输出中显示该操作时不显示任何已添加的变量标记。请注意，属性 \fBpkg.merge.blend\fR 本身已从输出清单的所有操作中删除。对于多个传递合并，可以使用不同的值重复该属性。
+.sp
+.LP
+在输入清单中交付到同一路径的不同操作将导致 \fBpkgmerge\fR 因错误而退出。
+.SH 选项
+.sp
+.LP
+支持以下选项：
+.sp
+.ne 2
+.mk
+.na
+\fB\fB-d\fR \fIdest_repo\fR\fR
+.ad
+.sp .6
+.RS 4n
+要将合并软件包发布到的目标系统信息库的文件系统路径或 URI。目标系统信息库必须已存在。可以使用 \fBpkgrepo\fR(1) 创建新的系统信息库。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB-n\fR\fR
+.ad
+.sp .6
+.RS 4n
+执行试运行，不对目标系统信息库进行任何更改。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB-s\fR \fIvariant\fR=\fI value\fR[,...],\fIsrc_repo\fR\fR
+.ad
+.sp .6
+.RS 4n
+用于该源中软件包的变量名称和值，后跟要从中检索软件包的源系统信息库或软件包归档文件的文件系统路径或 URI。可指定多个变量，以逗号分隔。必须为所有源命名相同的变量。可以多次指定此选项。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB--help\fR 或 \fB-?\fR\fR
+.ad
+.sp .6
+.RS 4n
+显示用法消息。
+.RE
+
+.SH 环境变量
+.sp
+.LP
+支持以下环境变量：
+.sp
+.ne 2
+.mk
+.na
+\fB\fBTMPDIR\fR\fR
+.ad
+.RS 10n
+.rt  
+在程序执行期间用于存储临时数据的目录的绝对路径。如果未设置，则存储临时数据的缺省路径为 \fB/var/tmp\fR。
+.RE
+
+.SH 示例
+.LP
+\fB示例 1 \fR指定变量名称和值
+.sp
+.LP
+使用为从中检索到软件包的源指定的给定变量名称和值标记在指定源中发现的每个软件包：
+
+.sp
+.in +2
+.nf
+$ \fBpkgmerge -s arch=sparc,http://src.example.com \e\fR
+\fB-d http://dest.example.com\fR
+.fi
+.in -2
+.sp
+
+.sp
+.LP
+样例软件包：
+
+.sp
+.in +2
+.nf
+set name=pkg.fmri value=pkg://example.com/foo@5.11,5.11-0.200:20381001T163427Z
+dir group=sys mode=0755 owner=root path=usr
+.fi
+.in -2
+
+.sp
+.LP
+操作后的样例软件包：
+
+.sp
+.in +2
+.nf
+set name=pkg.fmri value=pkg://example.com/foo@5.11,5.11-0.200:20381001T163427Z
+set name=variant.arch value=sparc
+dir group=sys mode=0755 owner=root path=usr
+.fi
+.in -2
+
+.LP
+\fB示例 2 \fR合并和发布软件包
+.sp
+.LP
+合并给定源中每个软件包的最新版本并将新软件包发布到目标系统信息库：
+
+.sp
+.in +2
+.nf
+$ \fBpkgmerge -s arch=sparc,http://src1.example.com \e\fR
+\fB-s arch=i386,http://src2.example.com \e\fR
+\fB-d /\fIpath/to/target/repository\fR\fR
+.fi
+.in -2
+.sp
+
+.sp
+.LP
+源 1 (SPARC) 中的样例软件包：
+
+.sp
+.in +2
+.nf
+set name=pkg.fmri value=pkg://example.com/foo@5.11,5.11-0.200:20381001T121410Z
+file \fIid\fR mode=0555 owner=root group=bin path=usr/bin/foo
+dir group=sys mode=0755 owner=root path=usr
+.fi
+.in -2
+
+.sp
+.LP
+源 2 (i386) 中的样例软件包：
+
+.sp
+.in +2
+.nf
+set name=pkg.fmri value=pkg://example.com/foo@5.11,5.11-0.200:20381001T163427Z
+file \fIid\fR mode=0555 owner=root group=bin path=usr/bin/foo
+dir group=sys mode=0755 owner=root path=usr
+.fi
+.in -2
+
+.sp
+.LP
+合并软件包：
+
+.sp
+.in +2
+.nf
+set name=pkg.fmri value=pkg://example.com/foo@5.11,5.11-0.200:20381001T163427Z
+set name=variant.arch value=sparc value=i386
+file \fIid\fR mode=0555 owner=root group=bin path=usr/bin/foo variant.arch=sparc
+file \fIid\fR mode=0555 owner=root group=bin path=usr/bin/foo variant.arch=i386
+dir group=sys mode=0755 owner=root path=usr
+.fi
+.in -2
+
+.LP
+\fB示例 3 \fR合并 i386 和 SPARC 系统的调试和非调试软件包
+.sp
+.LP
+在一组用于 i386 和 SPARC 系统的调试及非调试系统信息库中，合并每个软件包的最新版本：
+
+.sp
+.in +2
+.nf
+$ \fBpkgmerge -s arch=sparc,debug=false,/repo/sparc-nondebug \e\fR
+\fB-s arch=sparc,debug=true,/repo/sparc-debug \e\fR
+\fB-s arch=i386,debug=false,/repo/i386-nondebug \e\fR
+\fB-s arch=i386,debug=true,/repo/i386-debug \e\fR
+\fB-d /\fIpath/to/target/repository\fR\fR
+.fi
+.in -2
+.sp
+
+.sp
+.LP
+源 1（SPARC 非调试）中的样例软件包：
+
+.sp
+.in +2
+.nf
+set name=pkg.fmri value=pkg://example.com/foo@5.11,5.11-0.200:20381001T121410Z
+file \fIid\fR mode=0555 owner=root group=bin path=usr/bin/foo
+dir group=sys mode=0755 owner=root path=usr
+.fi
+.in -2
+
+.sp
+.LP
+源 2（SPARC 调试）中的样例软件包：
+
+.sp
+.in +2
+.nf
+set name=pkg.fmri value=pkg://example.com/foo@5.11,5.11-0.200:20381001T121411Z
+file \fIid\fR mode=0555 owner=root group=bin path=usr/bin/foo
+dir group=sys mode=0755 owner=root path=usr
+.fi
+.in -2
+
+.sp
+.LP
+源 3（i386 非调试）中的样例软件包：
+
+.sp
+.in +2
+.nf
+set name=pkg.fmri value=pkg://example.com/foo@5.11,5.11-0.200:20381001T163427Z
+file \fIid\fR mode=0555 owner=root group=bin path=usr/bin/foo
+dir group=sys mode=0755 owner=root path=usr
+.fi
+.in -2
+
+.sp
+.LP
+源 4（i386 调试）中的样例软件包：
+
+.sp
+.in +2
+.nf
+set name=pkg.fmri value=pkg://example.com/foo@5.11,5.11-0.200:20381001T163428Z
+file \fIid\fR mode=0555 owner=root group=bin path=usr/bin/foo
+dir group=sys mode=0755 owner=root path=usr
+.fi
+.in -2
+
+.sp
+.LP
+合并软件包：
+
+.sp
+.in +2
+.nf
+set name=pkg.fmri value=pkg://example.com/foo@5.11,5.11-0.200:20381001T163428Z
+set name=variant.arch value=sparc value=i386
+set name=variant.debug value=false value=true
+file \fIid\fR mode=0555 owner=root group=bin path=usr/bin/foo variant.arch=sparc variant.debug=false
+file \fIid\fR mode=0555 owner=root group=bin path=usr/bin/foo variant.arch=sparc variant.debug=true
+file \fIid\fR mode=0555 owner=root group=bin path=usr/bin/foo variant.arch=i386 variant.debug=false
+file \fIid\fR mode=0555 owner=root group=bin path=usr/bin/foo variant.arch=i386 variant.debug=true
+dir group=sys mode=0755 owner=root path=usr
+.fi
+.in -2
+
+.LP
+\fB示例 4 \fR使用 \fBpkg.merge.blend\fR 合并
+.sp
+.LP
+使用 \fB pkg.merge.blend\fR 属性合并两个不相互冲突的体系结构的软件包。
+
+.sp
+.in +2
+.nf
+$ \fBpkgmerge -s arch=sparc,http://src1/example.com \e\fR
+\fB-s arch=i386,http://src2.example.com \e\fR
+\fB-d /\fIpath/to/target/repository\fR\fR
+.fi
+.in -2
+.sp
+
+.sp
+.LP
+源 1 (SPARC) 中的样例软件包：
+
+.sp
+.in +2
+.nf
+set name=pkg.fmri value=pkg://example.com/foo@5.11,5.11-0.200:20381001T121410Z
+file 1d5eac1aab628317f9c088d21e4afda9c754bb76 mode=0555 owner=root \e
+    group=bin path=usr/bin/sparc/foo pkg.merge.blend=arch
+file d285ada5f3cae14ea00e97a8d99bd3e357caadc0 mode=0555 owner=root \e
+    group=bin path=usr/bin/foo
+dir group=sys mode=0755 owner=root path=usr
+.fi
+.in -2
+
+.sp
+.LP
+源 2 (i386) 中的样例软件包：
+
+.sp
+.in +2
+.nf
+set name=pkg.fmri value=pkg://example.com/foo@5.11,5.11-0.200:20381001T163427Z
+file a285ada5f3cae14ea00e97a8d99bd3e357cb0dca mode=0555 owner=root \e
+    group=bin path=usr/bin/i386/foo pkg.merge.blend=arch
+file d285ada5f3cae14ea00e97a8d99bd3e357caadc0 mode=0555 owner=root \e
+    group=bin path=usr/bin/foo
+dir group=sys mode=0755 owner=root path=usr
+.fi
+.in -2
+
+.sp
+.LP
+合并软件包：
+
+.sp
+.in +2
+.nf
+set name=pkg.fmri value=pkg://example.com/foo@5.11,5.11-0.200:20381001T163427Z
+set name=variant.arch value=sparc value=i386
+file d285ada5f3cae14ea00e97a8d99bd3e357caadc0 mode=0555 owner=root \e
+    group=bin path=usr/bin/foo
+file a285ada5f3cae14ea00e97a8d99bd3e357cb0dca mode=0555 owner=root \e
+    group=bin path=usr/bin/i386/foo
+file 1d5eac1aab628317f9c088d21e4afda9c754bb76 mode=0555 owner=root \e
+    group=bin path=usr/bin/sparc/foo
+dir group=sys mode=0755 owner=root path=usr
+.fi
+.in -2
+
+.SH 退出状态
+.sp
+.LP
+将返回以下退出值：
+.sp
+.ne 2
+.mk
+.na
+\fB\fB0\fR\fR
+.ad
+.RS 6n
+.rt  
+命令成功。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB1\fR\fR
+.ad
+.RS 6n
+.rt  
+出现错误。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB2\fR\fR
+.ad
+.RS 6n
+.rt  
+指定的命令行选项无效。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB99\fR\fR
+.ad
+.RS 6n
+.rt  
+发生了意外的异常。
+.RE
+
+.SH 属性
+.sp
+.LP
+有关下列属性的说明，请参见 \fBattributes\fR(5)：
+.sp
+
+.sp
+.TS
+tab() box;
+cw(2.75i) |cw(2.75i) 
+lw(2.75i) |lw(2.75i) 
+.
+属性类型属性值
+_
+可用性\fBpackage/pkg\fR（软件包/pkg）
+_
+接口稳定性Uncommitted（未确定）
+.TE
+
+.SH 另请参见
+.sp
+.LP
+\fBpkgrepo\fR(1)、\fBpkg\fR(5)
+.sp
+.LP
+\fBhttp://hub.opensolaris.org/bin/view/Project+pkg/\fR

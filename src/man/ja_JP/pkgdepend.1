@@ -1,0 +1,383 @@
+'\" te
+.\" Copyright (c) 2007, 2011, Oracle and/or its affiliates. All rights reserved.
+.TH pkgdepend 1 "2011 年 7 月 28 日" "SunOS 5.11" "ユーザーコマンド"
+.SH 名前
+pkgdepend \- Image Packaging System 依存関係アナライザ
+.SH 形式
+.LP
+.nf
+/usr/bin/pkgdepend [\fIoptions\fR] \fIcommand\fR [\fIcmd_options\fR] [\fIoperands\fR]
+.fi
+
+.LP
+.nf
+/usr/bin/pkgdepend generate [-IMm] -d \fIdir\fR [-d \fIdir\fR]
+    [-D \fIname\fR=\fIvalue\fR] [-k \fIpath\fR] \fImanifest_path\fR
+.fi
+
+.LP
+.nf
+/usr/bin/pkgdepend resolve [-moSv] [-d \fIoutput_dir\fR]
+    [-s \fIsuffix\fR] \fImanifest_path\fR ...
+.fi
+
+.SH 機能説明
+.sp
+.LP
+\fBpkgdepend\fR は、パッケージの依存関係を生成および解決するために使用されます。パッケージは、ほかのパッケージのファイルに依存することがあります。\fBpkgdepend\fR は通常、ファイル依存関係の生成と、ファイルからパッケージへの解決という 2 つのパスで使用されます。
+.sp
+.LP
+\fBgenerate\fR サブコマンドはパッケージの内容を検査し、そのパッケージにどのような外部ファイルが必要かを判定します。
+.sp
+.LP
+\fBresolve\fR サブコマンドは、\fBgenerate\fR ステップからファイルのリストを取得し、これらの依存ファイルを含むパッケージの名前を判定するためにパッケージの参照セットを検索します。依存ファイルが検索されるパッケージの参照セットは、パブリッシャーのシステムに現在インストールされているパッケージです。
+.sp
+.LP
+依存関係情報のソースとして、提供されたファイルの次のいくつかのコンポーネントが使用されます。
+.sp
+.ne 2
+.mk
+.na
+\fBELF\fR
+.ad
+.RS 22n
+.rt  
+提供されたファイル内の ELF ヘッダーが依存関係情報のために分析され、\fB-k\fR および \fB-D\fR オプションが指定されていると取得された情報が変更されます。ELF 依存関係についての詳細は、\fBldd\fR(1) および\fI『『リンカーとライブラリ』』\fRを参照してください。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fBスクリプト\fR
+.ad
+.RS 22n
+.rt  
+インタプリタを参照している \fB#!\fR 行を含むシェルスクリプトによって、そのインタプリタを提供しているパッケージへの依存関係が生成されます。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fBPython\fR
+.ad
+.RS 22n
+.rt  
+Python スクリプトはまず、スクリプトとして分析されます。さらに、そのスクリプトでインポートが宣言されていると、それらも依存関係情報のソースとして機能することがあります。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fBハードリンク\fR
+.ad
+.RS 22n
+.rt  
+マニフェスト内のハードリンクによって、リンクターゲットを提供しているパッケージへの依存関係が生成されます。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fBSMF\fR
+.ad
+.RS 22n
+.rt  
+\fBrequire_all\fR 依存関係を含む提供された SMF サービスマニフェストによって、これらの FMRI を提供する SMF マニフェストを提供しているパッケージへの依存関係が生成されます。
+.RE
+
+.SH オプション
+.sp
+.LP
+次のオプションがサポートされています。
+.sp
+.ne 2
+.mk
+.na
+\fB\fB-R\fR \fIdir\fR\fR
+.ad
+.RS 16n
+.rt  
+\fIdir\fR をルートとするイメージを操作します。ディレクトリが指定されなかったか、または環境に基づいて決定される場合、デフォルトは / です。詳細は、「環境変数」の節を参照してください。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB--help\fR or \fB-?\fR\fR
+.ad
+.RS 16n
+.rt  
+使用方法に関するメッセージを表示します。
+.RE
+
+.SH サブコマンド
+.sp
+.LP
+次のサブコマンドがサポートされています。
+.sp
+.ne 2
+.mk
+.na
+\fB\fBgenerate [\fB-IMm\fR] \fB-d\fR \fI dir\fR [\fB-d\fR \fIdir\fR] [\fB-D\fR \fI name\fR=\fIvalue\fR] [\fB-k\fR \fI path\fR] \fImanifest_path\fR\fR\fR
+.ad
+.sp .6
+.RS 4n
+\fImanifest_path\fR で指定されたマニフェストのファイルへの依存関係を生成します。
+.sp
+\fB-I\fR が指定されている場合は、指定されたマニフェスト内で満たされている依存関係を表示します。
+.sp
+\fB-M\fR が指定されている場合は、分析できなかったファイルタイプのリストを表示します。
+.sp
+\fB-m\fR が指定されている場合は、元のマニフェストを繰り返してから、検出された依存関係をすべて追加します。
+.sp
+\fB-d\fR が指定されている場合は、マニフェストのファイルを検索するディレクトリのリストに \fIdir\fR を追加します。
+.sp
+\fB-D\fR が指定されるたびに、ELF ファイル依存関係のための実行パス内のトークン \fIname\fR を展開する方法として \fIvalue\fR を追加します。
+.sp
+\fB-k\fR が指定されるたびに、カーネルモジュールを検索する実行パスのリストに \fIpath\fR を追加します。\fB-k\fR 引数を使用すると、デフォルトのパス (\fB/kernel\fR と \fB/usr/kernel\fR) が削除されます。
+.sp
+\fB-k\fR オプションで指定されるような実行パスは、アクションまたはマニフェスト属性 \fBpkg.depend.runpath\fR を使用して、アクションごとまたはマニフェストごとにも指定できます。\fBpkg.depend.runpath\fR 属性の値は、使用するパスのコロンで区切られた文字列です。
+.sp
+\fB-k\fR の使用は、マニフェストまたはアクションで設定された任意の \fBpkg.depend.runpath\fR 属性によって上書きされます。
+.sp
+\fBpkg.depend.runpath\fR 属性値の 1 つのコンポーネントとして、特殊なトークン \fB$PKGDEPEND_RUNPATH\fR を使用すると、分析対象のファイルのための標準のシステム実行パスを含めることができます。
+.sp
+場合によっては、依存関係が自動的に生成されることを回避したいことがあります。たとえば、あるパッケージによって、一連のモジュールをインポートするサンプルの Python スクリプトが提供される場合、そのサンプルスクリプトによってインポートされるこれらのモジュールは、サンプルスクリプトを提供しているパッケージの依存関係ではありません。指定されたファイルに対する依存関係の生成を回避するには、アクションまたはマニフェスト属性 \fBpkg.depend.bypass-generate\fR を使用します。
+.sp
+\fBpkg.depend.bypass-generate\fR 値は、ファイル名に一致する \fBperl5\fR の正規表現です。これらの正規表現は、ファイルパスの先頭と最後に暗黙的に固定されます。次の例で指定された値は \fBthis/that\fR に一致しますが、\fBsomething/this/that/the/other\fR には一致しません。
+.sp
+.in +2
+.nf
+pkg.depend.bypass-generate=this/that
+.fi
+.in -2
+
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fBresolve [\fB-moSv\fR] [\fB-d\fR \fI output_dir\fR] [\fB-s\fR \fIsuffix\fR] \fI manifest_path\fR ...\fR\fR
+.ad
+.sp .6
+.RS 4n
+ファイルへの依存関係を、これらのファイルを提供するパッケージへの依存関係に変換します。依存関係は、まずコマンド行で指定されたマニフェストに対して解決され、次にシステムにインストールされているパッケージに対して解決されます。デフォルトでは、各マニフェストの依存関係は \fB\fImanifest_path\fR.res\fR という名前のファイルに格納されます。
+.sp
+\fB-m\fR が指定されている場合は、解決された依存関係を追加する前に、\fBgenerate\fR ステップによって生成された依存関係をすべて削除して、マニフェストを繰り返します。
+.sp
+\fB-o\fR が指定されている場合は、結果を標準出力に書き込みます。このオプションは、人による使用を目的にしています。この出力をファイルに追加すると、無効なマニフェストが生成されることがあります。マニフェスト処理のパイプラインでは、\fB-o\fR の代わりに \fB-d\fR または \fB-s\fR オプションを使用することを強くお勧めします。
+.sp
+\fB-d\fR が指定されている場合は、指定された各マニフェストの解決された依存関係を \fIoutput_dir\fR 内の個別のファイルに書き込みます。デフォルトでは、各ファイルには、そのファイルに書き込まれた依存関係のソースだったマニフェストと同じベース名が付けられます。
+.sp
+\fB-s\fR が指定されている場合は、出力ファイルごとに、解決された依存関係のソースだったファイルのベース名に \fIsuffix\fR を追加します。「.」が \fIsuffix\fR に付加されます (指定されていない場合)。
+.sp
+\fB-S\fR が指定されている場合は、コマンド行で指定されたマニフェストに対してのみ解決し、システムにインストールされているマニフェストに対しては解決しません。
+.sp
+\fB-v\fR が指定されている場合は、追加のパッケージ依存関係デバッグ用のメタデータを含めます。
+.RE
+
+.SH 使用例
+.LP
+\fB例 1 \fR依存関係を生成する
+.sp
+.LP
+\fBfoo\fR (このコンテンツディレクトリは \fB\&./bar/baz\fR 内に存在する) に書き込まれているマニフェストの依存関係を生成し、その結果を \fBfoo.fdeps\fR に格納します。
+
+.sp
+.in +2
+.nf
+$ \fBpkgdepend generate -d ./bar/baz foo > foo.fdeps\fR
+.fi
+.in -2
+.sp
+
+.LP
+\fB例 2 \fR依存関係を解決する
+.sp
+.LP
+\fBfoo.fdeps\fR と \fB bar.fdeps\fR における互いに対するファイル依存関係と、システムに現在インストールされているパッケージに対するファイル依存関係を解決します。
+
+.sp
+.in +2
+.nf
+$ \fBpkgdepend resolve foo.fdeps bar.fdeps\fR
+$ \fBls *.res\fR
+foo.fdeps.res    bar.fdeps.res
+.fi
+.in -2
+.sp
+
+.LP
+\fB例 3 \fR2 つのマニフェストの依存関係を生成および解決する
+.sp
+.LP
+2 つのマニフェスト (\fBfoo\fR と \fBbar\fR) へのファイル依存関係を生成し、すべての情報を元のマニフェスト内に保持します。次に、これらのファイル依存関係を解決し、結果のマニフェストを \fB\&./res\fR 内に格納します。これらの結果のマニフェストは、\fBpkgsend publish\fR で使用できます。
+
+.sp
+.in +2
+.nf
+$ \fBpkgdepend generate -d /proto/foo -m foo > ./deps/foo\fR
+$ \fBpkgdepend generate -d /proto/bar -m bar > ./deps/bar\fR
+$ \fBpkgdepend resolve -m -d ./res ./deps/foo ./deps/bar\fR
+$ \fBls ./res\fR
+foo    bar
+.fi
+.in -2
+.sp
+
+.LP
+\fB例 4 \fRELF ファイル依存関係のためのトークンに値を追加する
+.sp
+.LP
+コンテンツディレクトリが / 内に存在する \fBfoo\fR に書き込まれているマニフェストの依存関係を生成するときに、ELF ファイルの実行パス内のすべての \fBPLATFORM\fR トークンを \fBsun4v\fR と \fBsun4u\fR に置き換えます。
+
+.sp
+.in +2
+.nf
+$ \fBpkgdepend generate -d / -D 'PLATFORM=sun4v' -D 'PLATFORM=sun4u' foo\fR
+.fi
+.in -2
+.sp
+
+.LP
+\fB例 5 \fRカーネルモジュールディレクトリを指定する
+.sp
+.LP
+コンテンツディレクトリが / 内に存在する \fBfoo\fR に書き込まれているマニフェストの依存関係を生成するときに、カーネルモジュールを検索するディレクトリとして \fB/kmod\fR を指定します。
+
+.sp
+.in +2
+.nf
+$ \fBpkgdepend generate -d / -k /kmod foo\fR
+.fi
+.in -2
+.sp
+
+.LP
+\fB例 6 \fR依存関係の生成をバイパスする
+.sp
+.LP
+指定された Python スクリプトの標準の Python 実行パスに \fBopt/python\fR を追加し、\fBopt/python/foo/file.py\fR として提供されるファイルの \fBtest\fR という名前のすべての Python モジュールに対する依存関係の生成をバイパスします。
+
+.sp
+.LP
+\fBusr/lib/python2.6/vendor-packages/xdg\fR で提供されたすべてのファイルに対する依存関係の生成を回避します。
+
+.sp
+.in +2
+.nf
+$ \fBcat manifest.py\fR
+set name=pkg.fmri value=pkg:/mypackage@1.0,1.0
+set name=pkg.summary value="My test package"
+dir path=opt mode=0755 group=sys owner=root
+dir path=opt/python mode=0755 group=sys owner=root
+dir path=opt/python/foo mode=0755 group=sys owner=root
+file NOHASH path=opt/python/__init__.py mode=0644 group=sys owner=root
+file NOHASH path=opt/python/foo/__init__.py mode=0644 group=sys owner=root
+#
+# Add runpath and bypass-generate attributes:
+#
+file NOHASH path=opt/python/foo/file.py mode=0644 group=sys owner=root \e
+    pkg.depend.bypass-generate=^.*/test.py.*$ \e
+    pkg.depend.bypass-generate=^.*/testmodule.so$ \e
+    pkg.depend.bypass-generate=^.*/test.so$ \e
+    pkg.depend.bypass-generate=^usr/lib/python2.6/vendor-packages/xdg/.*$ \e
+    pkg.depend.runpath=$PKGDEPEND_RUNPATH:/opt/python
+
+$ \fBpkgdepend generate -d proto manifest.py\fR
+.fi
+.in -2
+.sp
+
+.SH 環境
+.sp
+.ne 2
+.mk
+.na
+\fB\fBPKG_IMAGE\fR\fR
+.ad
+.RS 13n
+.rt  
+パッケージ操作に使用するイメージを含むディレクトリを指定します。\fB-R\fR が指定されている場合は、この値は無視されます。
+.RE
+
+.SH 終了ステータス
+.sp
+.LP
+次の終了値が返されます。
+.sp
+.ne 2
+.mk
+.na
+\fB\fB0\fR\fR
+.ad
+.RS 6n
+.rt  
+すべてが動作しました。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB1\fR\fR
+.ad
+.RS 6n
+.rt  
+エラーが発生しました。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB2\fR\fR
+.ad
+.RS 6n
+.rt  
+無効なコマンド行オプションが指定されました。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB99\fR\fR
+.ad
+.RS 6n
+.rt  
+予期しない例外が発生しました。
+.RE
+
+.SH 属性
+.sp
+.LP
+次の属性については \fBattributes\fR(5) のマニュアルページを参照してください。
+.sp
+
+.sp
+.TS
+tab() box;
+cw(2.75i) |cw(2.75i) 
+lw(2.75i) |lw(2.75i) 
+.
+属性タイプ属性値
+_
+使用条件\fBpackage/pkg\fR
+_
+インタフェースの安定性不確実
+.TE
+
+.SH 関連項目
+.sp
+.LP
+\fBpkg\fR(5)
+.sp
+.LP
+\fBhttp://hub.opensolaris.org/bin/view/Project+pkg/\fR

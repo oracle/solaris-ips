@@ -1,0 +1,810 @@
+'\" te
+.\" Copyright (c) 2007, 2011, Oracle and/or its affiliates. All rights reserved.
+.TH pkg.depotd 1m "2011 年 7 月 28 日" "SunOS 5.11" "系统管理命令"
+.SH 名称
+pkg.depotd \- 映像包管理系统仓库服务器
+.SH 用法概要
+.LP
+.nf
+/usr/lib/pkg.depotd [-a \fIaddress\fR] [-d \fIinst_root\fR] [-p \fIport\fR]
+    [-s \fIthreads\fR] [-t \fIsocket_timeout\fR] [--add-content]
+    [--cfg] [--content-root] [--debug feature_list]
+    [--disable-ops=\fIop\fR[/1][,...]]
+    [--log-access] [--log-errors] [--mirror]
+    [--proxy-base \fIurl\fR] [--readonly] [--rebuild]
+    [--ssl-cert-file] [--ssl-dialog] [--ssl-key-file]
+    [--writable-root]
+.fi
+
+.SH 描述
+.sp
+.LP
+\fBpkg.depotd\fR 是映像包管理系统的仓库服务器。它提供对包含在软件包系统信息库中的数据的网络访问。对于不支持通过文件系统直接访问系统信息库的客户机，或网络访问是唯一可用或希望使用的传输方法的客户机，通常使用软件包仓库。
+.sp
+.LP
+诸如 \fBpkg\fR(1) 的检索客户机可直接或通过仓库服务器从系统信息库检索软件包和软件包元数据的列表。发布客户机 \fBpkgsend\fR(1) 可将软件包的新版本直接或通过仓库服务器发送到系统信息库。\fBpkgrepo\fR(1) 可用于创建系统信息库来与仓库服务器一起使用，或用于直接以及通过仓库服务器管理它们。
+.sp
+.LP
+\fBpkg.depotd\fR 通常在系统上作为服务运行。软件包和软件开发者可能希望运行专用副本进行测试。
+.sp
+.LP
+仓库不提供任何自己的访问控制方法。缺省情况下，所有能够连接的客户机都能够读取所有软件包数据和发布新的软件包版本。在服务管理工具 (Service Management Facility, SMF) 下运行时例外，缺省情况为在只读模式中运行。下列"附注"部分描述了维护具有不断变化内容的公共仓库服务器的一些最佳做法。
+.SH SMF 属性
+.sp
+.LP
+\fBpkg.depot\fR 服务器通常通过与其服务关联的 \fBsmf\fR(5) 属性来配置。可以识别以下属性：
+.sp
+.ne 2
+.mk
+.na
+\fB\fBpkg/address\fR\fR
+.ad
+.sp .6
+.RS 4n
+(\fBnet_address\fR) 在其上侦听连接的 IP 地址。缺省值为 0.0.0.0 (\fBINADDR_ANY\fR)，该地址侦听所有活动接口。要侦听所有活动的 IPv6 接口，请使用 \fB::\fR。只使用第一个值。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fBpkg/content_root\fR\fR
+.ad
+.sp .6
+.RS 4n
+(\fBastring\fR) 实例应在其中找到其静态 Web 内容以及其他 Web 内容的文件系统路径。缺省值为 \fB/usr/share/lib/pkg\fR。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fBpkg/debug\fR\fR
+.ad
+.sp .6
+.RS 4n
+(\fBastring\fR) 以逗号分隔的要启用的调试功能列表。可能的值为：
+.sp
+.ne 2
+.mk
+.na
+\fB\fBheaders\fR\fR
+.ad
+.RS 11n
+.rt  
+将每个请求的标题记录到错误日志。
+.RE
+
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fBpkg/disable_ops\fR\fR
+.ad
+.sp .6
+.RS 4n
+(\fBastring\fR) 以逗号分隔的应该为仓库服务器禁用的操作列表。操作以 \fI operation\fR[/\fIversion\fR] 形式提供（例如 \fBcatalog\fR 或 \fB search_1\fR）。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fBpkg/file_root\fR\fR
+.ad
+.sp .6
+.RS 4n
+(\fBastring\fR) 该系统信息库的文件内容的根。如果未定义，则该缺省值为 \fIinst_root\fR/\fI file\fR。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fBpkg/inst_root\fR\fR
+.ad
+.sp .6
+.RS 4n
+(\fBastring\fR) 实例应在其中找到其系统信息库数据的文件系统路径。除非已提供 \fBfile_root\fR 或 \fB PKG_REPO\fR，否则需要该路径。缺省值为 \fB/var/pkgrepo \fR。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fBpkg/log_access\fR\fR
+.ad
+.sp .6
+.RS 4n
+(\fBastring\fR) 仓库进程记录的任何与访问相关的信息的目标。可能的值为：\fBstderr\fR、\fBstdout\fR、\fBnone\fR 或绝对路径名称。如果 \fBstdout\fR 是 \fBtty\fR，则缺省值为 \fBstdout\fR。如果 \fBstdout\fR 不是 \fBtty\fR，则缺省值为 \fBnone\fR。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fBpkg/log_errors\fR\fR
+.ad
+.sp .6
+.RS 4n
+(\fBastring\fR) 仓库进程记录的任何错误或其他信息的目标。可能的值为：\fBstderr\fR、\fBstdout\fR、\fBnone\fR 或绝对路径名称。缺省值为 \fBstderr\fR。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fBpkg/mirror\fR\fR
+.ad
+.sp .6
+.RS 4n
+(\fBboolean\fR) 设置是否使用软件包镜像模式。为 true 时，禁用发布和元数据操作，只提供受限制的浏览器用户界面。当 \fBpkg/readonly\fR 属性为 true 时，该属性不能为 true。缺省值为 \fBfalse\fR。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fBpkg/port\fR\fR
+.ad
+.sp .6
+.RS 4n
+(\fBcount\fR) 实例应侦听传入软件包请求的端口号。如果未提供 SSL 证书和密钥信息，则缺省值为 80；否则，缺省值为 443。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fBpkg/proxy_base\fR\fR
+.ad
+.sp .6
+.RS 4n
+(\fBuri\fR) 该属性更改仓库服务器的基本 URL，当在 Apache 或反向代理配置中的某个其他 Web 服务器后运行时最有用。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fBpkg/readonly\fR\fR
+.ad
+.sp .6
+.RS 4n
+(\fBboolean\fR) 设置是否禁用修改操作，如 \fBpkgsend\fR(1) 启动的那些操作。检索操作仍可用。当 \fBpkg/mirror \fR 属性为 true 时，该属性不能为 true。缺省值为 \fBtrue\fR。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fBpkg/socket_timeout\fR\fR
+.ad
+.sp .6
+.RS 4n
+(\fBcount\fR) 在断开连接之前服务器应该等待客户机响应的最大秒数。缺省值为 60。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fBpkg/sort_file_max_size\fR\fR
+.ad
+.sp .6
+.RS 4n
+(\fBcount\fR) 索引器排序文件的最大大小。用于限制仓库用来创建索引的 RAM 数量，或增加数量以提高速度。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fBpkg/ssl_cert_file\fR\fR
+.ad
+.sp .6
+.RS 4n
+(\fBastring\fR) PEM 编码的证书文件的绝对路径名称。缺省值为 \fBnone\fR。此属性必须与 \fBssl_key_file\fR 一起使用。如果同时提供 \fBssl_cert_file\fR 和 \fB/ssl_key_file \fR，则仓库只响应 SSL 请求。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fBpkg/ssl_dialog\fR\fR
+.ad
+.sp .6
+.RS 4n
+(\fBastring\fR) 指定应使用何种方法来获取用于对 \fBssl_key_file\fR 进行解密的口令短语。可能的值为：
+.sp
+.ne 2
+.mk
+.na
+\fB\fBbuiltin\fR\fR
+.ad
+.RS 25n
+.rt  
+提示输入口令短语。这是缺省值。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fBexec:\fI/path/to/program\fR\fR\fR
+.ad
+.RS 25n
+.rt  
+执行指定的外部程序来获取口令短语。程序的第一个参数为 \fB\&''\fR，并保留该参数。程序的第二个参数是服务器的端口号。口令短语输出到 \fBstdout\fR。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fBsmf:fmri\fR\fR
+.ad
+.RS 25n
+.rt  
+尝试从与 FMRI 相关的服务实例中检索属性 \fBpkg_secure/ssl_key_passphrase \fR 的值。
+.RE
+
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fBpkg/ssl_key_file\fR\fR
+.ad
+.sp .6
+.RS 4n
+(\fBastring\fR) PEM 编码的私钥文件的绝对路径名称。此属性必须与 \fBssl_cert_file \fR 属性一起使用。如果同时提供 \fB/ssl_key_file \fR 和 \fBssl_cert_file\fR，则仓库只响应 SSL 请求。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fBpkg/threads\fR\fR
+.ad
+.sp .6
+.RS 4n
+(\fBcount\fR) 启动以为请求提供服务的线程数。缺省值为 60。只适用于小型部署。该值应该为并发客户机数量的 20 倍左右。\fBthreads\fR 的最大值为 5000。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fBpkg/writable_root\fR\fR
+.ad
+.sp .6
+.RS 4n
+(\fBastring\fR) 程序对其具有写入访问权限的目录的文件系统路径。此属性可与 \fB-readonly\fR 选项一起使用，以允许仓库服务器创建文件（如搜索索引），而无需具有对软件包信息的写入访问权限。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fBpkg_secure/ssl_key_passphrase\fR\fR
+.ad
+.sp .6
+.RS 4n
+(\fBastring\fR) 用于对 \fBpkg/ssl_key_file\fR 进行解密的口令。该值受读取授权保护（使用属性 \fBsolaris.smf.read.pkg-server\fR）。
+.RE
+
+.sp
+.LP
+使用以下属性控制仓库服务器的浏览器用户界面 (Browser User Interface, BUI) 的显示和行为：
+.sp
+.ne 2
+.mk
+.na
+\fB\fBpkg_bui/feed_description\fR\fR
+.ad
+.RS 28n
+.rt  
+(\fBastring\fR) RSS/Atom 源的描述性段落。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fBpkg_bui/feed_icon\fR\fR
+.ad
+.RS 28n
+.rt  
+(\fBastring\fR) 用于以可视方式表示 RSS/Atom 源的小型图像的路径名称。路径名称应相对于 \fBcontent_root\fR。缺省值为 \fBweb/_themes/pkg-block-icon.png\fR。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fBpkg_bui/feed_logo\fR\fR
+.ad
+.RS 28n
+.rt  
+(\fBastring\fR) 将用于以可视方式标记或标识 RSS/Atom 源的大型图像的路径名称。该值应相对于 \fBcontent_root\fR。缺省值为 \fBweb/_themes/pkg-block-icon.png\fR。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fBpkg_bui/feed_name\fR\fR
+.ad
+.RS 28n
+.rt  
+(\fBastring\fR) 由为系统信息库提供服务的仓库生成的 RSS/Atom 源的简短描述性名称。缺省值为 "package repository feed"。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fBpkg_bui/feed_window\fR\fR
+.ad
+.RS 28n
+.rt  
+(\fBcount\fR) 系统信息库的源最后生成之前的小时数，以包括生成源的时间。
+.RE
+
+.sp
+.LP
+软件包仓库还可以用作来自 \fBpkg\fR(5) 的本地客户机映像的镜像服务器。这使得在 LAN 上共享一个子网的客户机可以对它们的文件高速缓存进行镜像。客户机可以相互下载文件，从而减少软件包仓库服务器上的负载。此功能作为 \fBsmf\fR(5) 配置的备用仓库服务提供。它为服务发现使用 mDNS 和 \fBdns-sd\fR。
+.sp
+.LP
+mDNS 镜像通常通过与其服务关联的 \fBsmf\fR(5) 属性来配置。可以识别以下属性：
+.sp
+.ne 2
+.mk
+.na
+\fB\fBpkg/file_root\fR\fR
+.ad
+.RS 17n
+.rt  
+(\fBastring\fR) 实例应在其中找到其文件内容的文件系统路径。缺省值为 \fB/var/pkg/download\fR。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fBpkg/port\fR\fR
+.ad
+.RS 17n
+.rt  
+(\fBcount\fR) 实例应侦听传入软件包请求的端口号。缺省值为 80。
+.RE
+
+.SH 选项
+.sp
+.LP
+\fBpkg.depotd\fR 可从文件或现有 \fBsmf\fR(5) 服务实例的属性数据读取其基本配置信息。
+.sp
+.ne 2
+.mk
+.na
+\fB\fB--cfg\fR \fIsource\fR\fR
+.ad
+.RS 16n
+.rt  
+读取和写入配置数据时使用的文件的路径名称，或格式为 \fBsmf:\fIfmri\fR\fR 的字符串，其中 \fI fmri\fR 是从中读取配置数据的实例的服务故障管理资源标识符 (fault management resource identifier, FMRI)。有关指定文件的格式的详细信息，请参见下面的"仓库配置"。
+.RE
+
+.sp
+.LP
+如果没有可用的已存在的配置源，或者要覆盖从使用 \fB--cfg\fR 提供的配置文件中读取的值，则可以使用下列选项来更改仓库服务器的缺省行为：
+.sp
+.ne 2
+.mk
+.na
+\fB\fB-a address\fR\fR
+.ad
+.RS 30n
+.rt  
+请参见上述 \fBpkg/address\fR。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB--content-root\fR \fIroot_dir\fR\fR
+.ad
+.RS 30n
+.rt  
+请参见上述 \fBpkg/content_root\fR。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB-d\fR \fIinst_root\fR\fR
+.ad
+.RS 30n
+.rt  
+请参见上述 \fBpkg/inst_root\fR。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB--debug\fR \fIfeatures\fR\fR
+.ad
+.RS 30n
+.rt  
+请参见上述 \fBpkg/debug\fR。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB--disable-ops\fR \fIop_list\fR\fR
+.ad
+.RS 30n
+.rt  
+请参见上述 \fBpkg/disable_ops\fR。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB--file-root\fR \fIpath\fR\fR
+.ad
+.RS 30n
+.rt  
+请参见上述 \fBpkg/file_root\fR。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB--log-access\fR \fIdest\fR\fR
+.ad
+.RS 30n
+.rt  
+请参见上述 \fBpkg/log_access\fR。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB--log-errors\fR \fIdest\fR\fR
+.ad
+.RS 30n
+.rt  
+请参见上述 \fBpkg/log_errors\fR。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB--mirror\fR\fR
+.ad
+.RS 30n
+.rt  
+请参见上述 \fBpkg/mirror\fR。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB-p\fR \fIport\fR\fR
+.ad
+.RS 30n
+.rt  
+请参见上述 \fBpkg/port\fR。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB--proxy-base\fR \fIurl\fR\fR
+.ad
+.RS 30n
+.rt  
+请参见上述 \fBpkg/proxy_base\fR。如果提供空值，则忽略该选项。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB--readonly\fR\fR
+.ad
+.RS 30n
+.rt  
+请参见上述 \fBpkg/readonly\fR。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB-s\fR \fIthreads\fR\fR
+.ad
+.RS 30n
+.rt  
+请参见上述 \fBpkg/threads\fR。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB-s-ort-file-max-size\fR \fIbytes\fR\fR
+.ad
+.RS 30n
+.rt  
+请参见上述 \fBpkg/sort_file_max_size\fR。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB--ssl-cert-file\fR \fIsource\fR\fR
+.ad
+.RS 30n
+.rt  
+请参见上述 \fBpkg/ssl_cert_file\fR。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB--ssl-dialog\fR \fItype\fR\fR
+.ad
+.RS 30n
+.rt  
+请参见上述 \fBpkg/ssl_dialog\fR。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB--ssl-key-file\fR \fIsource\fR\fR
+.ad
+.RS 30n
+.rt  
+请参见上述 \fBpkg/ssl_key_file\fR。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB-t\fR \fIsocket_timeout\fR\fR
+.ad
+.RS 30n
+.rt  
+请参见上述 \fBpkg/socket_timeout\fR。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB--writable-root\fR \fIpath\fR\fR
+.ad
+.RS 30n
+.rt  
+请参见上述 \fBpkg/writable_root\fR。
+.RE
+
+.sp
+.LP
+\fBpkgrepo\fR(1) 提供软件包系统信息库的其他管理功能。
+.SH 仓库配置
+.sp
+.LP
+通过使用 \fB--cfg\fR 选项提供配置文件（而非 \fBsmf\fR(5) FMRI）时，仓库服务器以简单的文本格式读取和写入所有配置数据。在上述"SMF 属性"中描述了配置数据。配置数据包含各个部分，以 \fB[\fIsection\fR]\fR 标题开始，后跟 \fBname = \fIvalue\fR\fR 条目。后续部分为 RFC 822 样式。可以跨多个行拆分数据，以空格开始后续行即可。
+.sp
+.LP
+必须使用上述"选项"中列出的选项提供配置文件中未提供的任何所需值。样例配置文件可能类似如下：
+.sp
+.in +2
+.nf
+[pkg]
+port = 80
+inst_root = /export/repo
+
+[pub_example_com]
+feed_description = example.com's software
+  update log
+.fi
+.in -2
+
+.SH 示例
+.LP
+\fB示例 1 \fR启用仓库服务器
+.sp
+.in +2
+.nf
+# \fBsvcadm enable application/pkg/server\fR
+.fi
+.in -2
+.sp
+
+.LP
+\fB示例 2 \fR更改服务器的侦听端口。
+.sp
+.in +2
+.nf
+# \fBsvccfg -s application/pkg/server setprop pkg/port = 10000\fR
+# \fBsvcadm refresh application/pkg/server\fR
+# \fBsvcadm restart application/pkg/server\fR
+.fi
+.in -2
+.sp
+
+.LP
+\fB示例 3 \fR启用镜像
+.sp
+.in +2
+.nf
+# \fBsvcadm enable application/pkg/dynamic-mirror\fR
+.fi
+.in -2
+.sp
+
+.SH 环境变量
+.sp
+.ne 2
+.mk
+.na
+\fB\fBPKG_REPO\fR\fR
+.ad
+.RS 21n
+.rt  
+指定包含要提供的系统信息库的目录。如果指定 \fB-d\fR，则忽略该值。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fBPKG_DEPOT_CONTENT\fR\fR
+.ad
+.RS 21n
+.rt  
+指定包含仓库提供的静态内容的目录。该目录中应该有列在下方"文件"下的文件，虽然其中的内容可能与提供的缺省内容不同。
+.RE
+
+.SH 退出状态
+.sp
+.LP
+将返回以下退出值：
+.sp
+.ne 2
+.mk
+.na
+\fB\fB0\fR\fR
+.ad
+.RS 6n
+.rt  
+操作成功。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB1\fR\fR
+.ad
+.RS 6n
+.rt  
+出现错误。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB2\fR\fR
+.ad
+.RS 6n
+.rt  
+指定的命令行选项无效。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB99\fR\fR
+.ad
+.RS 6n
+.rt  
+发生了意外的异常。
+.RE
+
+.SH 文件
+.sp
+.ne 2
+.mk
+.na
+\fB\fB/usr/share/lib/pkg\fR\fR
+.ad
+.RS 22n
+.rt  
+缺省显示内容的位置。修改 \fBpkg/content_root \fR 以选择备用位置。
+.RE
+
+.SH 属性
+.sp
+.LP
+有关下列属性的说明，请参见 \fBattributes\fR(5)：
+.sp
+
+.sp
+.TS
+tab() box;
+cw(2.75i) |cw(2.75i) 
+lw(2.75i) |lw(2.75i) 
+.
+属性类型属性值
+_
+可用性\fBpackage/pkg\fR（软件包/pkg）
+_
+接口稳定性Uncommitted（未确定）
+.TE
+
+.SH 另请参见
+.sp
+.LP
+\fBdns-sd\fR(1)、\fBmdnsd\fR(1)、\fBpkg\fR(1)、\fBpkgrepo\fR(1)、\fBpkgsend\fR(1)、\fBsyslogd\fR(1M)、\fBsmf\fR(5)
+.sp
+.LP
+\fBhttp://hub.opensolaris.org/bin/view/Project+pkg/\fR
+.SH 附注
+.sp
+.LP
+\fBpkd.depotd\fR 服务由 SMF 管理，在服务标识符 \fBsvc:/application/pkg/server\fR 下。
+.sp
+.LP
+mDNS 镜像服务由 SMF 管理，在服务标识符 \fB svc:/application/pkg/dynamic-mirror\fR 下。
+.sp
+.LP
+要控制对仓库的读取访问权限，可以将 HTTP 反向代理与授权方法结合使用，如 \fBpkg\fR(1) 本身支持的基于客户机的 SSL 证书访问权限。
+.sp
+.LP
+配置的更改，或使用基于文件系统的操作对软件包数据的更改，需要重新启动仓库服务器进程，从而使更改能够反映在操作和输出中。使用下列方法之一来重新启动仓库服务器进程：
+.RS +4
+.TP
+.ie t \(bu
+.el o
+使用 \fBsvcadm\fR(1M) 来重新启动 \fBapplication/pkg/server \fR 实例。
+.RE
+.RS +4
+.TP
+.ie t \(bu
+.el o
+使用 \fBkill\fR(1) 将 \fBSIGUSR1\fR 信号发送到仓库服务器进程。这样可执行正常的重新启动，使进程保持不变，但重新加载所有配置、软件包和搜索数据：
+.sp
+.in +2
+.nf
+# \fBkill -USR1 \fIpid\fR\fR
+.fi
+.in -2
+.sp
+
+.RE

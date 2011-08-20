@@ -1,0 +1,696 @@
+'\" te
+.\" Copyright (c) 2007, 2011, Oracle and/or its affiliates. All rights reserved.
+.TH pkgrepo 1 "2011 年 7 月 28 日" "SunOS 5.11" "ユーザーコマンド"
+.SH 名前
+pkgrepo \- Image Packaging System リポジトリ管理ユーティリティー
+.SH 形式
+.LP
+.nf
+/usr/bin/pkgrepo create [--version] \fIuri_or_path\fR
+.fi
+
+.LP
+.nf
+/usr/bin/pkgrepo add-publisher -s \fIrepo_uri_or_path\fR \fIpublisher\fR ...
+.fi
+
+.LP
+.nf
+/usr/bin/pkgrepo get [-F \fIformat\fR] [-p \fIpublisher\fR ...]
+    -s \fIrepo_uri_or_path\fR [\fIsection/property\fR ...]
+.fi
+
+.LP
+.nf
+/usr/bin/pkgrepo info [-F \fIformat\fR] [-H] [-p \fIpublisher\fR ...]
+    -s \fIrepo_uri_or_path\fR
+.fi
+
+.LP
+.nf
+/usr/bin/pkgrepo rebuild [-p \fIpublisher\fR ...]
+    -s \fIrepo_uri_or_path\fR [--no-catalog] [--no-index]
+.fi
+
+.LP
+.nf
+/usr/bin/pkgrepo refresh [-p \fIpublisher\fR ...]
+    -s \fIrepo_uri_or_path\fR [--no-catalog] [--no-index]
+.fi
+
+.LP
+.nf
+/usr/bin/pkgrepo remove [-n] [-p \fIpublisher\fR ...]
+    -s \fIrepo_uri_or_path\fR \fIpkg_fmri_pattern\fR ...
+.fi
+
+.LP
+.nf
+/usr/bin/pkgrepo set [-p \fIpublisher\fR] -s \fIrepo_uri_or_path\fR
+    \fIsection/property\fR=[\fIvalue\fR] ... or
+    \fIsection/property\fR=([\fIvalue\fR]) ...
+.fi
+
+.LP
+.nf
+/usr/bin/pkgrepo help
+.fi
+
+.LP
+.nf
+/usr/bin/pkgrepo version
+.fi
+
+.SH 機能説明
+.sp
+.LP
+\fBpkgrepo\fR を使用すると、\fBpkg\fR(5) パッケージリポジトリの作成および管理を行うことができます。パッケージリポジトリは、\fBpkg\fR(1) や、\fBpkgsend\fR(1) または \fBpkgrecv\fR(1) などの公開クライアントがパッケージデータを格納したり取得したりできるようにするための、定義済みの一連のディレクトリおよびファイルです。さらに、パッケージリポジトリへのネットワークベースのアクセスが必要な場合、\fBpkg.depotd\fR(1m) は、クライアントにパッケージデータを格納したり取得したりするためのリポジトリへのアクセスを提供できます。
+.SH オプション
+.sp
+.LP
+次のオプションがサポートされています。
+.sp
+.ne 2
+.mk
+.na
+\fB\fB--help\fR or \fB-?\fR\fR
+.ad
+.RS 16n
+.rt  
+使用方法に関するメッセージを表示します。
+.RE
+
+.SH サブコマンド
+.sp
+.LP
+次のサブコマンドがサポートされています。
+.sp
+.ne 2
+.mk
+.na
+\fB\fBcreate [\fB--version\fR] \fIuri_or_path \fR\fR\fR
+.ad
+.sp .6
+.RS 4n
+指定された場所に \fBpkg\fR(5) リポジトリを作成します。
+.sp
+このサブコマンドは、ファイルシステムベースのリポジトリでのみ使用できます。
+.sp
+\fB--version\fR が指定されている場合は、指定されたバージョンと互換性がある形式でリポジトリを作成します。デフォルトでは、バージョン 4 のリポジトリが作成されます。サポートされるバージョンは次のとおりです。
+.sp
+
+.sp
+.TS
+tab();
+lw(.33i) lw(5.17i) 
+lw(.33i) lw(5.17i) 
+.
+3T{
+1 つのパブリッシャー、カタログバージョン 1、および検索バージョン 1 でのパッケージの格納をサポートします。
+T}
+4T{
+複数のパブリッシャー、カタログバージョン 1、および検索バージョン 1 でのパッケージの格納をサポートします。
+T}
+.TE
+
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fBadd-publisher \fB-s\fR \fIrepo_uri_or_path \fR \fIpublisher\fR ...\fR\fR
+.ad
+.sp .6
+.RS 4n
+指定されたパブリッシャーをリポジトリに追加します。新しいパブリッシャーにパッケージや内容は含まれていません。
+.sp
+このサブコマンドは、バージョン 4 のファイルシステムベースのリポジトリでのみ使用できます。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fBget [\fB-F\fR \fIformat\fR] [\fB-p\fR \fIpublisher\fR ...] \fB-s\fR \fI repo_uri_or_path\fR [\fIsection/property\fR ...]\fR\fR
+.ad
+.sp .6
+.RS 4n
+リポジトリまたはそのパブリッシャーのプロパティー情報を表示します。
+.sp
+デフォルトでは、各プロパティーとその値が個別の行に出力されます。空の ASCII 文字列値は、二重引用符 (\fB""\fR) のペアで表されます。ASCII 文字列値内の次の Bourne シェルのメタキャラクタと、改行、スペース、およびタブは、バックスラッシュ文字 (\fB\e\fR) でエスケープする必要があります。
+.sp
+.in +2
+.nf
+; & ( ) | ^ < > \e " ' `
+.fi
+.in -2
+
+「使用例」の節を参照してください。
+.sp
+指定できるプロパティーのリスト、および各プロパティーの目的と値については、下の \fBset\fR サブコマンドを参照してください。
+.sp
+\fB-F\fR が指定されている場合は、代替の出力形式を指定します。\fIformat\fR の唯一の値は \fBtsv\fR (タブで区切られた値) です。
+.sp
+\fB-H\fR が指定されている場合は、リストのヘッダーを省略します。
+.sp
+\fB-p\fR が指定されている場合は、指定されたパブリッシャーのプロパティー情報を表示します。特殊な値 \fBall\fR により、すべてのパブリッシャーのプロパティーが表示されます。このオプションは複数回指定できます。
+.sp
+\fB-s\fR が指定されている場合は、指定された URI またはファイルシステムのパスにあるリポジトリを操作します。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fBinfo [\fB-F\fR \fIformat\fR] [\fB-H\fR] [\fB-p\fR \fIpublisher\fR ...] \fB- s\fR \fIrepo_uri_or_path\fR\fR\fR
+.ad
+.sp .6
+.RS 4n
+リポジトリで認識されているパッケージパブリッシャーのリストを表示します。このリストには、パブリッシャーごとのパッケージの数、パブリッシャーのパッケージデータが最後に更新された日時、およびパブリッシャーのパッケージデータのステータス (現在処理されているかどうかなど) が含まれます。
+.sp
+\fB-F\fR が指定されている場合は、代替の出力形式を指定します。\fIformat\fR の唯一の値は \fBtsv\fR (タブで区切られた値) です。
+.sp
+\fB-H\fR が指定されている場合は、リストのヘッダーを省略します。
+.sp
+\fB-p\fR が指定されている場合は、指定されたパブリッシャーのデータのみが表示されます。指定されていない場合は、すべてのパブリッシャーのデータが表示されます。このオプションは複数回指定できます。
+.sp
+\fB-s\fR が指定されている場合は、指定された URI またはファイルシステムのパスにあるリポジトリを操作します。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fBrebuild [\fB-p\fR \fIpublisher\fR ...] \fB- s\fR \fIrepo_uri_or_path\fR [\fB--no-catalog\fR] [\fB--no-index\fR]\fR\fR
+.ad
+.sp .6
+.RS 4n
+リポジトリ内に見つかったすべてのカタログ、検索、およびその他のキャッシュされた情報を破棄し、それをリポジトリの現在の内容に基づいて再作成します。
+.sp
+\fB-p\fR が指定されている場合は、指定されたパブリッシャーについてのみ操作を実行します。指定されていない場合や、特殊な値 \fBall\fR が指定されている場合は、すべてのパブリッシャーについて操作が実行されます。このオプションは複数回指定できます。
+.sp
+\fB-s\fR が指定されている場合は、指定された URI またはファイルシステムのパスにあるリポジトリを操作します。
+.sp
+\fB--no-catalog\fR が指定されている場合は、パッケージデータを再構築しません。
+.sp
+\fB--no-index\fR が指定されている場合は、検索インデックスを再構築しません。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fBrefresh [\fB-p\fR \fIpublisher\fR ...] \fB- s\fR \fIrepo_uri_or_path\fR [\fB--no-catalog\fR] [\fB--no-index\fR]\fR\fR
+.ad
+.sp .6
+.RS 4n
+リポジトリ内に見つかった新しいパッケージをすべてカタログ化し、すべての検索インデックスを更新します。これは、遅延公開 (\fBpkgsend\fR の \fB--no-catalog\fR または \fB--no-index\fR オプション) で使用されることを目的にしています。
+.sp
+\fB-p\fR が指定されている場合は、指定されたパブリッシャーについてのみ操作を実行します。指定されていない場合や、特殊な値 \fBall\fR が指定されている場合は、すべてのパブリッシャーについて操作が実行されます。このオプションは複数回指定できます。
+.sp
+\fB-s\fR が指定されている場合は、指定された URI またはファイルシステムのパスにあるリポジトリを操作します。
+.sp
+\fB--no-catalog\fR が指定されている場合は、新しいパッケージを追加しません。
+.sp
+\fB--no-index\fR が指定されている場合は、検索インデックスを更新しません。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fBremove [\fB-n\fR] [\fB-p\fR \fI publisher\fR ...] \fB-s\fR \fIrepo_uri_or_path\fR \fI pkg_fmri_pattern\fR ...\fR\fR
+.ad
+.sp .6
+.RS 4n
+リポジトリから、指定されたパターンに一致するパッケージを削除します。これらのパッケージが参照している、ほかのどのパッケージでも使用されていないすべてのファイルも削除されます。
+.LP
+注 - 
+.sp
+.RS 2
+関連するパブリッシャーのすべての検索インデックスデータが削除されます。
+.RE
+このサブコマンドは、ファイルシステムベースのリポジトリでのみ使用できます。
+.LP
+注意 - 
+.sp
+.RS 2
+この操作は元に戻せません。また、ほかのクライアントがそのリポジトリにアクセスしている間に使用すべきではありません。使用すると、それらのクライアントが取得操作中に失敗する可能性があります。
+.RE
+\fB-n\fR が指定されている場合は、パッケージを変更することなく、操作の試験実行を行います。終了する前に、削除されるパッケージのリストが表示されます。
+.sp
+\fB-p\fR が指定されている場合は、指定されたパブリッシャーの一致するパッケージのみを削除します。指定されていない場合は、すべてのパブリッシャーの一致するパッケージがすべて削除されます。このオプションは複数回指定できます。
+.sp
+\fB-s\fR が指定されている場合は、指定された URI またはファイルシステムのパスにあるリポジトリを操作します。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fBset [\fB-p\fR \fIpublisher\fR] \fB- s\fR \fIrepo_uri_or_path\fR \fIsection/property \fR=[\fIvalue\fR] ... or \fIsection/property \fR=([\fIvalue\fR]) ...\fR\fR
+.ad
+.sp .6
+.RS 4n
+リポジトリまたはパブリッシャーの指定されたプロパティーの値を設定します。
+.sp
+このサブコマンドは、ファイルシステムベースのリポジトリでのみ使用できます。
+.sp
+\fB-p\fR が指定されている場合は、指定されたパブリッシャーのプロパティーデータのみを設定します。パブリッシャーがまだ存在しない場合は、追加されます。特殊な値 \fBall\fR を使用すると、すべてのパブリッシャーのプロパティーを設定できます。
+.sp
+\fB-s\fR が指定されている場合は、指定された URI またはファイルシステムのパスにあるリポジトリを操作します。
+.sp
+プロパティーと値は、次のいずれかの形式を使用して指定できます。
+.sp
+.ne 2
+.mk
+.na
+\fB\fIsection\fR/\fIproperty\fR= \fR
+.ad
+.sp .6
+.RS 4n
+プロパティー値をクリアーします。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fIsection\fR/\fIproperty\fR=\fI value\fR\fR
+.ad
+.sp .6
+.RS 4n
+プロパティー値を指定された値に置き換えます。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fIsection\fR/\fIproperty\fR=(\fI value1\fR \fIvalue2\fR \fIvalueN\fR) \fR
+.ad
+.sp .6
+.RS 4n
+プロパティー値を値のリストに置き換えます。
+.RE
+
+リポジトリバージョン 3 および 4 の場合は、リポジトリの次のプロパティーを設定できます。
+.sp
+.ne 2
+.mk
+.na
+\fB\fIpublisher\fR/\fIprefix\fR\fR
+.ad
+.sp .6
+.RS 4n
+デフォルトのパブリッシャーの名前を表す文字列。最初の文字は a-z、A-Z、または 0-9 である必要があります。文字列の残りの部分には、文字 0-9、-、.、a-z、および A-Z のみを含めることができます。この値は、複数のパブリッシャーのパッケージが存在する場合や、パッケージがリポジトリに公開されたときにパブリッシャーが指定されていない場合に使用すべきパブリッシャーを示します。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fIpublisher\fR/\fIsigning_ca_certs \fR\fR
+.ad
+.sp .6
+.RS 4n
+このパブリッシャーに使用すべき署名元の CA 証明書のハッシュを含む文字列のリスト。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fIpublisher\fR/\fIintermediate_certs \fR\fR
+.ad
+.sp .6
+.RS 4n
+このパブリッシャーに使用すべき中間証明書のハッシュを含む文字列のリスト。
+.RE
+
+リポジトリバージョン 3 および 4 の場合は、リポジトリ内の個々のパブリッシャーの次のプロパティーを設定できます。
+.sp
+.ne 2
+.mk
+.na
+\fB\fIpublisher\fR/\fIalias\fR\fR
+.ad
+.sp .6
+.RS 4n
+リポジトリの構成データを使用してパブリッシャーを追加するときにクライアントが使用すべきデフォルトの別名を表す文字列。最初の文字は a-z、A-Z、または 0-9 である必要があります。文字列の残りの部分には、文字 0-9、-、.、a-z、および A-Z のみを含めることができます。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fIrepository\fR/\fIcollection_type \fR\fR
+.ad
+.sp .6
+.RS 4n
+このリポジトリで提供されるパッケージのタイプを示す値 \fBcore\fR または \fBsupplemental\fR を持つことができます。
+.sp
+\fBcore\fR タイプは、このリポジトリにはリポジトリ内のパッケージによって宣言されたすべての依存関係が含まれていることを示します。\fBcore\fR タイプは主に、オペレーティングシステムリポジトリに使用されます。
+.sp
+\fBsupplemental\fR タイプは、このリポジトリには、別のリポジトリ内に配置されているパッケージに依存するか、またはそれらのパッケージとともに使用されるためのパッケージが含まれていることを示します。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fIrepository\fR/\fIdescription \fR\fR
+.ad
+.sp .6
+.RS 4n
+リポジトリの目的と内容を説明した標準テキストの段落。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fIrepository\fR/\fIdetailed_url \fR\fR
+.ad
+.sp .6
+.RS 4n
+リポジトリに関する追加情報を提供するドキュメント (Web ページなど) の場所を表す URI。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fIrepository\fR/\fIlegal_uris \fR\fR
+.ad
+.sp .6
+.RS 4n
+リポジトリに関する追加の使用条件情報を提供するドキュメントの場所 (URI) のリスト。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fIrepository\fR/\fImirrors\fR\fR
+.ad
+.sp .6
+.RS 4n
+リポジトリのパッケージ内容のコピーを含むが、パッケージのメタデータは含まないリポジトリの場所 (URI) のリスト。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fIrepository\fR/\fIname\fR\fR
+.ad
+.sp .6
+.RS 4n
+リポジトリの名前を含む標準テキスト文字列。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fIrepository\fR/\fIorigins\fR\fR
+.ad
+.sp .6
+.RS 4n
+リポジトリのパッケージのメタデータと内容の完全なコピーを含むリポジトリの場所 (URI) のリスト。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fIrepository\fR/\fIrefresh_seconds \fR\fR
+.ad
+.sp .6
+.RS 4n
+クライアントが、更新されたパッケージデータがあるかどうかを調べるためにリポジトリをチェックする際に、各更新チェックのあとに待つべき秒数を表す整数値。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fIrepository\fR/\fIregistration_uri \fR\fR
+.ad
+.sp .6
+.RS 4n
+リポジトリへのアクセスのための資格を取得するために使用する必要のあるリソースの場所を表す URI。この 1 つの例に、登録 Web ページがあります。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fIrepository\fR/\fIrelated_uris \fR\fR
+.ad
+.sp .6
+.RS 4n
+ユーザーが関心を持っている可能性があるパッケージを含むリポジトリの場所 (URI) のリスト。
+.RE
+
+ここでは文書化されていないが、\fBget\fR サブコマンドの出力に一覧表示されるプロパティーは内部使用のために予約されているため、設定しないようにしてください。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fBversion\fR\fR
+.ad
+.sp .6
+.RS 4n
+\fBpkg\fR(5) システムのバージョンを識別する一意の文字列を表示します。\fBversion\fR 操作によって生成される値はソート可能ではないため、等しいかどうかを超えて安全に比較することはできません。
+.RE
+
+.SH 使用例
+.LP
+\fB例 1 \fRパッケージリポジトリを作成する
+.sp
+.in +2
+.nf
+$ \fBpkgrepo create /my/repository\fR
+.fi
+.in -2
+.sp
+
+.LP
+\fB例 2 \fR情報を表示する
+.sp
+.LP
+パブリッシャーの概要と、リポジトリ内のパッケージの数を表示します。
+
+.sp
+.in +2
+.nf
+$ \fBpkgrepo info -s /my/repository\fR
+PUBLISHER   PACKAGES STATUS UPDATED
+example.com 5        online 2011-07-22T18:09:09.769106Z
+$ \fBpkgrepo info -s http://pkg.oracle.com/solaris/release/\fR
+PUBLISHER PACKAGES STATUS UPDATED
+solaris   3941     online 2010-11-12T19:24:25.967246Z
+.fi
+.in -2
+.sp
+
+.LP
+\fB例 3 \fRカタログと検索データを再構築する
+.sp
+.LP
+リポジトリのカタログと検索データを再構築します。
+
+.sp
+.in +2
+.nf
+$ \fBpkgrepo rebuild -s /my/repository\fR
+.fi
+.in -2
+.sp
+
+.LP
+\fB例 4 \fRカタログと検索データを再表示する
+.sp
+.LP
+リポジトリのカタログと検索データを再表示します。
+
+.sp
+.in +2
+.nf
+$ \fBpkgrepo refresh -s /my/repository\fR
+$ \fBpkgrepo refresh -s http://example.com/repository\fR
+.fi
+.in -2
+.sp
+
+.LP
+\fB例 5 \fRすべてのリポジトリプロパティーを表示する
+.sp
+.in +2
+.nf
+$ \fBpkgrepo get -s /my/repository\fR
+SECTION    PROPERTY VALUE
+publisher  prefix   ""
+repository version  4
+$ \fBpkgrepo get -s http://pkg.oracle.com/solaris/release/\fR
+SECTION    PROPERTY VALUE
+publisher  prefix   solaris
+repository version  4
+.fi
+.in -2
+.sp
+
+.LP
+\fB例 6 \fRすべてのパブリッシャープロパティーを表示する
+.sp
+.in +2
+.nf
+$ \fBpkgrepo get -s http://pkg.oracle.com/solaris/release/ -p all\fR
+PUBLISHER SECTION    PROPERTY         VALUE
+solaris   publisher  alias
+solaris   publisher  prefix           solaris
+solaris   repository collection-type  core
+solaris   repository description      This\e repository\e serves\e the\e Oracle\e Solaris\e 11\e Package\e repository.
+solaris   repository legal-uris       ()
+solaris   repository mirrors          (http://pkg-cdn1.oracle.com/solaris.release/)
+solaris   repository name             Oracle\e Solaris\e 11\e Package\e Repository
+solaris   repository origins          ()
+solaris   repository refresh-seconds
+solaris   repository registration-uri ""
+solaris   repository related-uris     ()
+.fi
+.in -2
+.sp
+
+.LP
+\fB例 7 \fRデフォルトのパブリッシャーを設定する
+.sp
+.in +2
+.nf
+$ \fBpkgrepo set -s /my/repository publisher/prefix=example.com\fR
+.fi
+.in -2
+.sp
+
+.LP
+\fB例 8 \fRパブリッシャープロパティーを設定する
+.sp
+.in +2
+.nf
+$ \fBpkgrepo set -s /my/repository -p example.com \e\fR
+\fBrepository/origins=http://example.com/repository\fR
+.fi
+.in -2
+.sp
+
+.LP
+\fB例 9 \fR新しいパブリッシャーをリポジトリに追加する
+.sp
+.in +2
+.nf
+$ \fBpkgrepo add-publisher -s /my/repository example.com\fR
+.fi
+.in -2
+.sp
+
+.SH 終了ステータス
+.sp
+.LP
+次の終了値が返されます。
+.sp
+.ne 2
+.mk
+.na
+\fB\fB0\fR\fR
+.ad
+.RS 6n
+.rt  
+コマンドが成功しました。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB1\fR\fR
+.ad
+.RS 6n
+.rt  
+エラーが発生しました。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB2\fR \fR
+.ad
+.RS 6n
+.rt  
+無効なコマンド行オプションが指定されました。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB3\fR\fR
+.ad
+.RS 6n
+.rt  
+複数の操作が要求されましたが、その一部しか成功しませんでした。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB4\fR\fR
+.ad
+.RS 6n
+.rt  
+変更は行われませんでした。処理がありません。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB99\fR\fR
+.ad
+.RS 6n
+.rt  
+予期しない例外が発生しました。
+.RE
+
+.SH 属性
+.sp
+.LP
+次の属性については \fBattributes\fR(5) のマニュアルページを参照してください。
+.sp
+
+.sp
+.TS
+tab() box;
+cw(2.75i) |cw(2.75i) 
+lw(2.75i) |lw(2.75i) 
+.
+属性タイプ属性値
+_
+使用条件\fBpackage/pkg\fR
+_
+インタフェースの安定性不確実
+.TE
+
+.SH 関連項目
+.sp
+.LP
+\fBpkg\fR(1), \fBpkgrecv\fR(1), \fBpkgsend\fR(1), \fB pkg.depotd\fR(1M), \fBpkg\fR(5)
+.sp
+.LP
+\fBhttp://hub.opensolaris.org/bin/view/Project+pkg/\fR

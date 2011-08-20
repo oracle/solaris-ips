@@ -76,6 +76,12 @@
 <transform dir file \
     path=usr/share/gnome/help/package-manager/([a-z]{2,3}(_[A-Z]{2,3})?)(/.*)?$ -> \
     default facet.locale.%<1> true>
+<transform dir file \
+    path=usr/share/man/([a-z]{2,3}(_[A-Z]{2,3})?)([.@][^/]+)?(/.+)?$ -> \
+    default facet.locale.%<1> true>
+# locale dir, section dir, and manpages (add zh_SG to zh_CN)
+<transform dir file link path=usr/share/man/zh_CN([/.@].+)?$ -> \
+    default facet.locale.zh_SG true>
 <transform file \
     path=usr/share/omf/package-manager/package-manager-([a-z]{2,3}(_[A-Z]{2,3})?)\.omf$ -> \
     default facet.locale.%<1> true>

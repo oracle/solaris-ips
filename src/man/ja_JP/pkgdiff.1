@@ -1,0 +1,184 @@
+'\" te
+.\" Copyright (c) 2007, 2011, Oracle and/or its affiliates. All rights reserved.
+.TH pkgdiff 1 "2011 年 7 月 28 日" "SunOS 5.11" "ユーザーコマンド"
+.SH 名前
+pkgdiff \- パッケージマニフェストの比較
+.SH 形式
+.LP
+.nf
+/usr/bin/pkgdiff [-i \fIattribute\fR ...] [-o \fIattribute\fR]
+    [-v \fIname\fR=\fIvalue\fR ...] \fIfile1\fR \fIfile2\fR
+.fi
+
+.SH 機能説明
+.sp
+.LP
+\fBpkgdiff\fR は 2 つのパッケージマニフェストを比較し、それらの違いを報告します。\fBpkgdiff\fR は、比較の前に、各マニフェストとアクションを一貫した順序にソートします。
+.sp
+.LP
+出力の形式は次のとおりです。
+.sp
+.ne 2
+.mk
+.na
+\fB+ \fIcomplete_action\fR\fR
+.ad
+.RS 21n
+.rt  
+このアクションは \fIfile2\fR に含まれていますが、\fIfile1\fR には含まれていません。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB- \fIcomplete_action\fR\fR
+.ad
+.RS 21n
+.rt  
+このアクションは \fIfile1\fR に含まれていますが、\fIfile2\fR には含まれていません。
+.RE
+
+.sp
+.in +2
+.nf
+\fIactionname\fR \fIkeyvalue\fR [\fIvariant values, if any\fR]
+.fi
+.in -2
+
+.sp
+.ne 2
+.mk
+.na
+\fB- \fIattribute1\fR=\fIvalue1\fR\fR
+.ad
+.RS 23n
+.rt  
+この \fIattribute\fR,\fIvalue\fR は \fIfile1\fR に含まれていますが、\fIfile2\fR には含まれていません。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB+ \fIattribute2\fR=\fIvalue2\fR\fR
+.ad
+.RS 23n
+.rt  
+この \fIattribute\fR,\fIvalue\fR は \fIfile2\fR に含まれていますが、\fIfile1\fR には含まれていません。
+.RE
+
+.sp
+.LP
+バリアントは異なるが、タイプとキー属性値が同じアクションは、比較の目的では別のアクションとして扱われます。そのため、属性を変更したアクションは属性変更としてではなく、完全な形式で表示されます。
+.SH オプション
+.sp
+.LP
+次のオプションがサポートされています。
+.sp
+.ne 2
+.mk
+.na
+\fB\fB-i\fR \fIattribute\fR\fR
+.ad
+.RS 17n
+.rt  
+比較中に \fIattribute\fR が存在した場合は、無視します。\fB-i\fR \fIhash\fR により、ファイルのハッシュ値を無視できます。このオプションを \fB-o\fR オプションとともに使用することはできません。このオプションは繰り返すことができます。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB-o\fR \fIattribute\fR\fR
+.ad
+.RS 17n
+.rt  
+\fIattribute\fR の違いのみを報告します。このオプションを \fB-i\fR オプションとともに使用することはできません。このオプションは、アクション時に \fIattribute\fR に影響を与えないアクション変更をすべて省略します。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB-v\fR \fIname\fR=\fIvalue\fR\fR
+.ad
+.RS 17n
+.rt  
+このバリアント値の違いのみを計算します。たとえば、\fBarch=sparc\fR の違いのみを計算します。このバリアントタグは、比較前にすべてのアクションについて削除されます。バリアントあたり 1 つの値のみを指定できます。このオプションは、異なるバリアントに対して繰り返すことができます。
+.RE
+
+.SH 終了ステータス
+.sp
+.LP
+次の終了値が返されます。
+.sp
+.ne 2
+.mk
+.na
+\fB\fB0\fR\fR
+.ad
+.RS 7n
+.rt  
+違いは見つかりませんでした。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB1\fR\fR
+.ad
+.RS 7n
+.rt  
+違いが見つかりました。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB>1\fR \fR
+.ad
+.RS 7n
+.rt  
+エラーが発生しました。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB99\fR\fR
+.ad
+.RS 7n
+.rt  
+予期しない例外が発生しました。
+.RE
+
+.SH 属性
+.sp
+.LP
+次の属性については \fBattributes\fR(5) のマニュアルページを参照してください。
+.sp
+
+.sp
+.TS
+tab() box;
+cw(2.75i) |cw(2.75i) 
+lw(2.75i) |lw(2.75i) 
+.
+属性タイプ属性値
+_
+使用条件\fBpackage/pkg\fR
+_
+インタフェースの安定性不確実
+.TE
+
+.SH 関連項目
+.sp
+.LP
+\fBpkg\fR(5)
+.sp
+.LP
+\fBhttp://hub.opensolaris.org/bin/view/Project+pkg/\fR

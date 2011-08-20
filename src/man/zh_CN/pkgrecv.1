@@ -1,0 +1,463 @@
+'\" te
+.\" Copyright (c) 2007, 2011, Oracle and/or its affiliates. All rights reserved.
+.TH pkgrecv 1 "2011 年 7 月 28 日" "SunOS 5.11" "用户命令"
+.SH 名称
+pkgrecv \- 映像包管理系统内容检索实用程序
+.SH 用法概要
+.LP
+.nf
+/usr/bin/pkgrecv [-s \fIsrc_uri\fR] [-a] [-d (\fIpath\fR|\fIdest_uri\fR)]
+    [-c \fIcache_dir\fR] [-kr] [-m \fImatch\fR] [-n] [--raw]
+    [--key \fIkeyfile\fR --cert \fIcertfile\fR] (\fIfmri\fR|\fIpattern\fR) ...
+.fi
+
+.LP
+.nf
+/usr/bin/pkgrecv [-s \fIsrc_uri\fR] --newest
+.fi
+
+.SH 描述
+.sp
+.LP
+\fBpkgrecv\fR 允许用户检索 \fBpkg\fR(5) 系统信息库或软件包归档文件中的软件包。\fBpkgrecv\fR 还可以选择性地将检索到的软件包重新发布到另一个软件包系统信息库中或者对其进行归档。缺省情况下，会以 \fBpkg\fR(1)、\fBpkg.depotd\fR(1M) 以及软件包发布工具可使用的软件包系统信息库格式检索软件包。
+.SH 选项
+.sp
+.LP
+支持以下选项：
+.sp
+.ne 2
+.mk
+.na
+\fB\fB-a\fR\fR
+.ad
+.RS 19n
+.rt  
+将检索的软件包数据存储在 \fB-d\fR 指定的位置中的 \fBpkg\fR(5) 归档文件中。该文件不能已存在。此选项仅可以与基于文件系统的目标一起使用。尽管不要求，但还是强烈建议使用文件扩展名 \fB\&.p5p\fR（例如：\fB archive.p5p\fR）。该选项不能与 \fB--raw\fR 结合使用。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB-c\fR \fIcache_dir\fR\fR
+.ad
+.RS 19n
+.rt  
+将用于缓存已下载内容的目录的路径。如果没有提供此目录，客户机将自动选择一个高速缓存目录。如果下载中断并且已自动选择了一个高速缓存目录，可使用该选项继续执行下载。有关如何设置用于存储临时数据的位置的详细信息，请参见下面的"环境变量"部分。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB-d\fR \fIpath_or_uri\fR\fR
+.ad
+.RS 19n
+.rt  
+要将软件包重新发布到的目标的文件系统路径或 URI。该目标必须已存在。可以使用 \fB pkgrepo\fR(1) 创建新的系统信息库。如果指定了 \fB-a\fR，则会假定目标为新的软件包归档文件。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB-h\fR\fR
+.ad
+.RS 19n
+.rt  
+显示用法消息。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB-k\fR\fR
+.ad
+.RS 19n
+.rt  
+使检索的软件包内容保持压缩状态。重新发布时会忽略该选项。压缩的软件包内容不得与 \fBpkgsend\fR(1) 一起使用。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB-m\fR \fImatch\fR\fR
+.ad
+.RS 19n
+.rt  
+使用以下值控制匹配行为：
+.sp
+.ne 2
+.mk
+.na
+\fB\fBall-timestamps\fR\fR
+.ad
+.RS 18n
+.rt  
+包括所有匹配的时间戳，而不仅仅是最新的时间戳（意味着 \fB all-versions\fR）。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fBall-versions\fR\fR
+.ad
+.RS 18n
+.rt  
+包括所有匹配的版本，而不仅仅是最新的版本。
+.RE
+
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB-n\fR\fR
+.ad
+.RS 19n
+.rt  
+执行试运行，不进行任何更改。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB-r\fR\fR
+.ad
+.RS 19n
+.rt  
+递归检索提供的软件包列表的所有依赖项。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB-s\fR \fIsrc_repo_uri\fR\fR
+.ad
+.RS 19n
+.rt  
+URI 代表要从中接收软件包数据的 \fBpkg\fR(5) 系统信息库或软件包归档文件的位置。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB--cert\fR \fIfile\fR\fR
+.ad
+.RS 19n
+.rt  
+指定用于从 HTTPS 系统信息库进行软件包检索的客户机 SSL 证书文件。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB--key\fR \fIfile\fR\fR
+.ad
+.RS 19n
+.rt  
+指定用于从 HTTPS 系统信息库进行软件包检索的客户机 SSL 密钥文件。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB--newest\fR\fR
+.ad
+.RS 19n
+.rt  
+列出指定系统信息库中提供的最新版本的软件包，然后退出。（忽略 \fB-s\fR 以外的所有其他选项。）
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB--raw\fR\fR
+.ad
+.RS 19n
+.rt  
+按主干和版本，检索一组目录结构中的原始软件包数据并将其存储在 \fB-d\fR 指定的位置中。此选项仅可以与基于文件系统的目标一起使用。此软件包数据可用于方便地修改和重新发布软件包，也许通过更正文件内容，也许通过提供附加的软件包元数据。该选项不能与 \fB-a\fR 结合使用。
+.RE
+
+.SH 示例
+.LP
+\fB示例 1 \fR列出最新的软件包
+.sp
+.LP
+列出名为 \fBtest\fR 的系统上的系统信息库中的最新软件包。
+
+.sp
+.in +2
+.nf
+$ \fBpkgrecv -s http://test --newest\fR
+pkg:/SUNWlibC@0.5.11,5.11-0.79:20080221T125720Z
+pkg:/SUNWfreetype2@0.5.11,5.11-0.79:20080221T123955Z
+pkg:/SUNWlibm@0.5.11,5.11-0.79:20080221T125728Z
+pkg:/SUNWliboil@0.5.11,5.11-0.79:20080221T125730Z
+.fi
+.in -2
+.sp
+
+.LP
+\fB示例 2 \fR检索原始软件包数据
+.sp
+.LP
+以 \fBpkgsend include\fR 可以使用的格式接收示例 1 中的 \fBSUNWlibC\fR、\fBSUNWfreetype\fR 和 \fBSUNWlibm\fR 软件包。
+
+.sp
+.in +2
+.nf
+$ \fBpkgrecv -s http://test \e\fR
+\fBSUNWlibC@0.5.11,5.11-0.79:20080221T125720Z --raw\fR
+SUNWfreetype2@0.5.11,5.11-0.79:20080221T123955Z
+SUNWlibm@0.5.11,5.11-0.79:20080221T125728Z
+$ \fBls -d SUNW*\fR
+SUNWfreetype2  SUNWlibC       SUNWlibm
+.fi
+.in -2
+.sp
+
+.LP
+\fB示例 3 \fR从系统中检索依赖项
+.sp
+.LP
+从名为 \fBtest\fR 的系统中接收软件包 \fBSUNWvim\fR 及其所有依赖项。
+
+.sp
+.in +2
+.nf
+$ \fBpkgrecv -s http://test -r SUNWvim\fR
+.fi
+.in -2
+.sp
+
+.LP
+\fB示例 4 \fR检索所有版本
+.sp
+.LP
+从名为 \fBtest\fR 的系统中接收软件包 \fBSUNWvim\fR 的所有版本。
+
+.sp
+.in +2
+.nf
+$ \fBpkgrecv -s http://test -m all-versions SUNWvim\fR
+.fi
+.in -2
+.sp
+
+.LP
+\fB示例 5 \fR检索所有版本并本地重新发布
+.sp
+.LP
+从名为 \fBtest\fR 的系统中接收软件包 \fBSUNWvim\fR 的所有版本，然后将其重新发布到本地系统信息库中。
+
+.sp
+.in +2
+.nf
+$ \fBpkgrecv -s http://test -d /local/repo SUNWvim\fR
+.fi
+.in -2
+.sp
+
+.LP
+\fB示例 6 \fR检索所有版本并远程重新发布
+.sp
+.LP
+从名为 \fBtest\fR 的系统中接收软件包 \fBSUNWzlib\fR 的所有版本，然后将其重新发布到名为 \fBremote\fR 的系统上的远程系统信息库中。
+
+.sp
+.in +2
+.nf
+$ \fBpkgrecv -s http://test -d http://remote:10000 SUNWzlib\fR
+.fi
+.in -2
+.sp
+
+.LP
+\fB示例 7 \fR从系统信息库中检索依赖项
+.sp
+.LP
+从位于 \fB/export/repo\fR 的系统信息库中接收软件包 \fBSUNWemacs\fR 及其所有依赖项。
+
+.sp
+.in +2
+.nf
+$ \fBpkgrecv -s /export/repo -r SUNWemacs\fR
+.fi
+.in -2
+.sp
+
+.LP
+\fB示例 8 \fR检索其他软件包
+.sp
+.LP
+从位于 \fBhttp://example.com:10000\fR 的系统信息库中接收并非已存在的所有软件包。
+
+.sp
+.in +2
+.nf
+$ \fBpkgrecv -s http://example.com:10000 -d /my/pkg/repo '*'\fR
+.fi
+.in -2
+.sp
+
+.LP
+\fB示例 9 \fR创建软件包归档文件
+.sp
+.LP
+从位于 \fBhttp://example.com:10000 \fR 的系统信息库中创建包含软件包 \fBSUNWemacs\fR 及其所有依赖项的软件包归档文件。
+
+.sp
+.in +2
+.nf
+$ \fBpkgrecv -s http://example.com:10000 -d /my/emacs.p5p -a -r SUNWemacs\fR
+.fi
+.in -2
+.sp
+
+.LP
+\fB示例 10 \fR将软件包从归档文件复制到系统信息库中
+.sp
+.LP
+将软件包归档文件中的所有软件包复制到位于 \fB/export/repo\fR 中的现有系统信息库。
+
+.sp
+.in +2
+.nf
+$ \fBpkgrecv -s /my/archive.p5p -d /export/repo '*'\fR
+.fi
+.in -2
+.sp
+
+.SH 环境变量
+.sp
+.LP
+支持以下环境变量：
+.sp
+.ne 2
+.mk
+.na
+\fB\fBPKG_DEST\fR\fR
+.ad
+.RS 12n
+.rt  
+要将检索到的软件包保存到的目录的路径，或者要复制软件包的系统信息库或软件包归档文件的文件系统路径或 URI。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fBPKG_SRC\fR\fR
+.ad
+.RS 12n
+.rt  
+URI 或文件系统路径代表要从中检索软件包的 \fB pkg\fR(5) 系统信息库或软件包归档文件的位置。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fBTMPDIR\fR\fR
+.ad
+.RS 12n
+.rt  
+在程序执行期间用于存储临时数据的目录的绝对路径。如果未设置，则存储临时数据的缺省路径为 \fB/var/tmp\fR。
+.RE
+
+.SH 退出状态
+.sp
+.LP
+将返回以下退出值：
+.sp
+.ne 2
+.mk
+.na
+\fB\fB0\fR\fR
+.ad
+.RS 6n
+.rt  
+命令成功。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB1\fR\fR
+.ad
+.RS 6n
+.rt  
+出现错误。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB2\fR\fR
+.ad
+.RS 6n
+.rt  
+指定的命令行选项无效。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB3\fR\fR
+.ad
+.RS 6n
+.rt  
+请求了多项操作，但只有一部分操作成功。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB99\fR\fR
+.ad
+.RS 6n
+.rt  
+发生了意外的异常。
+.RE
+
+.SH 属性
+.sp
+.LP
+有关下列属性的说明，请参见 \fBattributes\fR(5)：
+.sp
+
+.sp
+.TS
+tab() box;
+cw(2.75i) |cw(2.75i) 
+lw(2.75i) |lw(2.75i) 
+.
+属性类型属性值
+_
+可用性\fBpackage/pkg\fR（软件包/pkg）
+_
+接口稳定性Uncommitted（未确定）
+.TE
+
+.SH 另请参见
+.sp
+.LP
+\fBpkgrepo\fR(1)、\fBpkgsend\fR(1)、\fBpkg\fR(5)
+.sp
+.LP
+\fBhttp://hub.opensolaris.org/bin/view/Project+pkg/\fR

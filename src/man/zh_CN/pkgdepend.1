@@ -1,0 +1,383 @@
+'\" te
+.\" Copyright (c) 2007, 2011, Oracle and/or its affiliates. All rights reserved.
+.TH pkgdepend 1 "2011 年 7 月 28 日" "SunOS 5.11" "用户命令"
+.SH 名称
+pkgdepend \- 映像包管理系统依赖项分析器
+.SH 用法概要
+.LP
+.nf
+/usr/bin/pkgdepend [\fIoptions\fR] \fIcommand\fR [\fIcmd_options\fR] [\fIoperands\fR]
+.fi
+
+.LP
+.nf
+/usr/bin/pkgdepend generate [-IMm] -d \fIdir\fR [-d \fIdir\fR]
+    [-D \fIname\fR=\fIvalue\fR] [-k \fIpath\fR] \fImanifest_path\fR
+.fi
+
+.LP
+.nf
+/usr/bin/pkgdepend resolve [-moSv] [-d \fIoutput_dir\fR]
+    [-s \fIsuffix\fR] \fImanifest_path\fR ...
+.fi
+
+.SH 描述
+.sp
+.LP
+\fBpkgdepend\fR 用于生成并解析软件包的依赖项。软件包可能依赖于其他软件包中的文件。\fBpkgdepend\fR 通常用于两种传递：文件依赖项生成和文件到软件包的解析。
+.sp
+.LP
+\fBgenerate\fR 子命令将检查软件包的内容，并确定该软件包所需的外部文件。
+.sp
+.LP
+\fBresolve\fR 子命令使用执行 \fBgenerate\fR 步骤后输出的文件列表，然后搜索软件包的引用集来确定包含这些依赖文件的软件包的名称。为依赖文件搜索的软件包的引用集为当前在发布者的系统上安装的软件包。
+.sp
+.LP
+提供的文件的多个组件用作依赖项信息的源：
+.sp
+.ne 2
+.mk
+.na
+\fBELF\fR
+.ad
+.RS 13n
+.rt  
+分析提供的文件中的 ELF 头以获取依赖项信息，\fB-k\fR 和 \fB-D\fR 选项可用于修改获取的信息。有关 ELF 依赖项的更多详细信息，请参见 \fBldd\fR(1) 和\fI《Linker and Libraries Guide》\fR。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB脚本\fR
+.ad
+.RS 13n
+.rt  
+包含引用某个解释程序的 \fB#!\fR 行的 Shell 脚本会导致对提供该解释程序的程序包出现依赖项。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fBPython\fR
+.ad
+.RS 13n
+.rt  
+Python 脚本首先作为脚本进行分析。此外，脚本声明的任何导入可能还会充当依赖项信息的源。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB硬链接\fR
+.ad
+.RS 13n
+.rt  
+清单中的硬链接会导致对提供链接目标的软件包出现依赖项。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fBSMF\fR
+.ad
+.RS 13n
+.rt  
+提供的包含 \fBrequire_all \fR 依赖项的 SMF 服务清单会导致对提供 SMF 清单（这些清单提供这些 FMRI）的软件包出现依赖项。
+.RE
+
+.SH 选项
+.sp
+.LP
+支持以下选项：
+.sp
+.ne 2
+.mk
+.na
+\fB\fB-R\fR \fIdir\fR\fR
+.ad
+.RS 17n
+.rt  
+对根目录为 \fIdir\fR 的映像进行操作。如果未根据环境指定或确定目录，则缺省值为 /。有关更多信息，请参见"环境变量"部分。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB--help\fR 或 \fB-?\fR\fR
+.ad
+.RS 17n
+.rt  
+显示用法消息。
+.RE
+
+.SH 子命令
+.sp
+.LP
+支持以下子命令：
+.sp
+.ne 2
+.mk
+.na
+\fB\fBgenerate [\fB-IMm\fR] \fB-d\fR \fI dir\fR [\fB-d\fR \fIdir\fR] [\fB-D\fR \fI name\fR=\fIvalue\fR] [\fB-k\fR \fI path\fR] \fImanifest_path\fR\fR\fR
+.ad
+.sp .6
+.RS 4n
+生成由 \fImanifest_path\fR 指定的清单文件的依赖项。
+.sp
+与 \fB-I\fR 一起使用时，将显示在给定清单中满足条件的依赖项。
+.sp
+与 \fB-M\fR 一起使用时，将显示无法分析的文件类型的列表。
+.sp
+与 \fB-m\fR 一起使用时，将重复原始清单，并在其后添加任何发现的依赖项。
+.sp
+与 \fB-d\fR 一起使用时，将 \fIdir\fR 添加到目录列表以搜索清单的文件。
+.sp
+对于每个 \fB-D\fR，将添加 \fIvalue\fR，作为在 ELF 文件依赖项的运行路径中扩展标记 \fIname\fR 的一种方法。
+.sp
+对于每个 \fB-k\fR，将 \fIpath\fR 添加到运行路径的列表，以搜索内核模块。使用 \fB-k\fR 参数会删除缺省路径 \fB/kernel\fR 和 \fB/usr/kernel\fR。
+.sp
+运行路径（例如 \fB-k\fR 选项指定的那些运行路径）也可以通过使用操作或清单属性 \fBpkg.depend.runpath\fR 来按操作或清单指定。\fBpkg.depend.runpath \fR 属性的值是要使用的路径的冒号分隔字符串。
+.sp
+使用的 \fB-k\fR 将被清单或操作中设置的任何 \fBpkg.depend.runpath \fR 属性覆盖。
+.sp
+特殊标记 \fB$PKGDEPEND_RUNPATH\fR 可用作 \fBpkg.depend.runpath\fR 属性值的一个组件，以包括所分析文件的标准系统运行路径。
+.sp
+在某些情况下，您可能需要防止自动生成依赖项。例如，如果软件包提供了一个用于导入一组模块的样例 Python 脚本，则该样例脚本导入的那些模块不是提供该样例脚本的软件包的依赖项。使用操作或清单属性 \fBpkg.depend.bypass-generate\fR 可以防止针对指定的文件生成依赖项。
+.sp
+\fBpkg.depend.bypass-generate\fR 值是与文件名匹配的 \fBperl5 \fR 正则表达式。正则表达式隐式固定在文件路径的开头和结尾。以下示例中提供的值与 \fBthis/that\fR 匹配，但与 \fBsomething/this/that/the/other\fR 不匹配。
+.sp
+.in +2
+.nf
+pkg.depend.bypass-generate=this/that
+.fi
+.in -2
+
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fBresolve [\fB-moSv\fR] [\fB-d\fR \fI output_dir\fR] [\fB-s\fR \fIsuffix\fR] \fI manifest_path\fR ...\fR\fR
+.ad
+.sp .6
+.RS 4n
+将文件中的依赖项转换为提供这些文件的软件包中的依赖项。先根据命令行中给定的清单解析依赖项，然后再根据系统上安装的软件包进行解析。缺省情况下，每个清单的依赖项放置在名为 \fB\fI manifest_path\fR.res\fR 的文件中。
+.sp
+与 \fB-m\fR 一起使用时，将重复清单，删除 \fBgenerate\fR 步骤生成的任何依赖项，然后添加已解析的依赖项。
+.sp
+与 \fB-o\fR 一起使用时，会将结果写入到标准输出。该选项旨在供用户使用。将此输出附加到某个文件可能会导致产生无效的清单。在用于清单处理的管道中使用时，强烈建议使用 \fB-d\fR 或 \fB-s\fR 选项，而不要使用 \fB-o\fR。
+.sp
+与 \fB-d\fR 一起使用时，会将单独文件中提供的每个清单的已解析依赖项写入 \fIoutput_dir\fR 中。缺省情况下，每个文件与清单（该清单是写入该文件的依赖项的源）具有相同的基名。
+.sp
+与 \fB-s\fR 一起使用时，对于每个输出文件，会将 \fIsuffix\fR 附加到文件（该文件是解析的依赖项的源）的基名。"." 附加到 \fIsuffix\fR 的前面（如果未提供）。
+.sp
+与 \fB-S\fR 一起使用时，只根据命令行上指定的清单进行解析，而不根据系统上安装的清单进行解析。
+.sp
+与 \fB-v\fR 一起使用时，将包括其他软件包依赖项调试元数据。
+.RE
+
+.SH 示例
+.LP
+\fB示例 1 \fR生成依赖项
+.sp
+.LP
+为 \fBfoo\fR 中写入的清单（其内容目录在 \fB\&./bar/baz\fR 中）生成 赖项，并将结果存储在 \fBfoo fdeps\fR 中。
+
+.sp
+.in +2
+.nf
+$ \fBpkgdepend generate -d ./bar/baz foo > foo.fdeps\fR
+.fi
+.in -2
+.sp
+
+.LP
+\fB示例 2 \fR解析依赖项
+.sp
+.LP
+根据彼此的情况和当前系统上安装的软件包来解析 \fBfoo.fdeps\fR 和 \fB bar.fdeps\fR 中的文件依赖项。
+
+.sp
+.in +2
+.nf
+$ \fBpkgdepend resolve foo.fdeps bar.fdeps\fR
+$ \fBls *.res\fR
+foo.fdeps.res    bar.fdeps.res
+.fi
+.in -2
+.sp
+
+.LP
+\fB示例 3 \fR生成并解析两个清单的依赖项
+.sp
+.LP
+生成两个清单（\fBfoo\fR 和 \fB bar\fR）的文件依赖项，并保留原始清单中的所有信息。然后解析文件依赖项，并将生成的清单放置在 \fB\&./res \fR中。这些生成的清单可以和 \fBpkgsend publish\fR 一起使用。
+
+.sp
+.in +2
+.nf
+$ \fBpkgdepend generate -d /proto/foo -m foo > ./deps/foo\fR
+$ \fBpkgdepend generate -d /proto/bar -m bar > ./deps/bar\fR
+$ \fBpkgdepend resolve -m -d ./res ./deps/foo ./deps/bar\fR
+$ \fBls ./res\fR
+foo    bar
+.fi
+.in -2
+.sp
+
+.LP
+\fB示例 4 \fR将值添加到 ELF 文件依赖项的标记
+.sp
+.LP
+在为 \fBfoo\fR 中写入的清单（其内容目录在 / 中）生成依赖项时，将 ELF 文件中运行路径内的所有 \fBPLATFORM\fR 标记替换为 \fBsun4v\fR 和 \fBsun4u\fR。
+
+.sp
+.in +2
+.nf
+$ \fBpkgdepend generate -d / -D 'PLATFORM=sun4v' -D 'PLATFORM=sun4u' foo\fR
+.fi
+.in -2
+.sp
+
+.LP
+\fB示例 5 \fR指定内核模块目录
+.sp
+.LP
+在为 \fB foo\fR 中写入的清单（其内容目录在 / 中）生成依赖项时，将 \fB/kmod\fR 指定为要在其中查找内核模块的目录。
+
+.sp
+.in +2
+.nf
+$ \fBpkgdepend generate -d / -k /kmod foo\fR
+.fi
+.in -2
+.sp
+
+.LP
+\fB示例 6 \fR绕过依赖项生成
+.sp
+.LP
+将 \fBopt/python\fR 附加到给定 Python 脚本的标准 Python 运行路径，然后根据名称为 \fBtest\fR 的所有 Python 模块绕过作为 \fBopt/python/foo/file.py \fR 提供的文件的依赖项生成。
+
+.sp
+.LP
+避免针对 \fBusr/lib/python2.6/vendor-packages/xdg \fR 中提供的任何文件生成依赖项。
+
+.sp
+.in +2
+.nf
+$ \fBcat manifest.py\fR
+set name=pkg.fmri value=pkg:/mypackage@1.0,1.0
+set name=pkg.summary value="My test package"
+dir path=opt mode=0755 group=sys owner=root
+dir path=opt/python mode=0755 group=sys owner=root
+dir path=opt/python/foo mode=0755 group=sys owner=root
+file NOHASH path=opt/python/__init__.py mode=0644 group=sys owner=root
+file NOHASH path=opt/python/foo/__init__.py mode=0644 group=sys owner=root
+#
+# Add runpath and bypass-generate attributes:
+#
+file NOHASH path=opt/python/foo/file.py mode=0644 group=sys owner=root \e
+    pkg.depend.bypass-generate=^.*/test.py.*$ \e
+    pkg.depend.bypass-generate=^.*/testmodule.so$ \e
+    pkg.depend.bypass-generate=^.*/test.so$ \e
+    pkg.depend.bypass-generate=^usr/lib/python2.6/vendor-packages/xdg/.*$ \e
+    pkg.depend.runpath=$PKGDEPEND_RUNPATH:/opt/python
+
+$ \fBpkgdepend generate -d proto manifest.py\fR
+.fi
+.in -2
+.sp
+
+.SH 环境变量
+.sp
+.ne 2
+.mk
+.na
+\fB\fBPKG_IMAGE\fR\fR
+.ad
+.RS 13n
+.rt  
+指定包含要用于软件包操作的映像的目录。如果指定 \fB-R\fR，则忽略该值。
+.RE
+
+.SH 退出状态
+.sp
+.LP
+将返回以下退出值：
+.sp
+.ne 2
+.mk
+.na
+\fB\fB0\fR\fR
+.ad
+.RS 6n
+.rt  
+一切正常工作。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB1\fR\fR
+.ad
+.RS 6n
+.rt  
+出现错误。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB2\fR\fR
+.ad
+.RS 6n
+.rt  
+指定的命令行选项无效。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB99\fR\fR
+.ad
+.RS 6n
+.rt  
+发生了意外的异常。
+.RE
+
+.SH 属性
+.sp
+.LP
+有关下列属性的说明，请参见 \fBattributes\fR(5)：
+.sp
+
+.sp
+.TS
+tab() box;
+cw(2.75i) |cw(2.75i) 
+lw(2.75i) |lw(2.75i) 
+.
+属性类型属性值
+_
+可用性\fBpackage/pkg\fR（软件包/pkg）
+_
+接口稳定性Uncommitted（未确定）
+.TE
+
+.SH 另请参见
+.sp
+.LP
+\fBpkg\fR(5)
+.sp
+.LP
+\fBhttp://hub.opensolaris.org/bin/view/Project+pkg/\fR

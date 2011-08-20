@@ -1,0 +1,132 @@
+'\" te
+.\" Copyright (c) 2007, 2011, Oracle and/or its affiliates. All rights reserved.
+.TH pkgfmt 1 "2011 年 7 月 28 日" "SunOS 5.11" "用户命令"
+.SH 名称
+pkgfmt \- 格式化软件包清单
+.SH 用法概要
+.LP
+.nf
+/usr/bin/pkgfmt [-c|-d|-u] [\fIpackage-manifest-file\fR]
+.fi
+
+.SH 描述
+.sp
+.LP
+不带 \fB-c\fR 或 \fB-d\fR 选项的 \fBpkgfmt\fR 将以一致的方式对软件包清单进行格式化，包括每 80 个字符自动换行，按类型对操作排序，以及对属性排序。未解析成操作（如宏、注释或转换）的行不会按排序顺序显示。
+.sp
+.LP
+如果未提供参数，\fBpkgfmt\fR 将会读取 \fBstdin\fR，直到遇到 EOF，然后将格式化的清单写入 \fBstdout\fR。在命令行上指定的任何清单将在原位格式化。
+.sp
+.LP
+带 \fB-c\fR 选项的 \fBpkgfmt\fR 将会检查清单是否格式化为 \fBpkgfmt\fR 样式。如果文件未正确格式化，\fB- d\fR 选项将显示差异。
+.SH 选项
+.sp
+.LP
+支持以下选项：
+.sp
+.ne 2
+.mk
+.na
+\fB\fB-c\fR\fR
+.ad
+.RS 6n
+.rt  
+检查清单是否格式化为 \fBpkgfmt\fR 样式。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB-d\fR\fR
+.ad
+.RS 6n
+.rt  
+以统一格式显示与格式化版本的清单差异。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB-u\fR\fR
+.ad
+.RS 6n
+.rt  
+达到 80 个字符时不自动换行。将传统的文本处理工具应用到软件包清单时，该选项十分有用。
+.RE
+
+.SH 退出状态
+.sp
+.LP
+将返回以下退出值：
+.sp
+.ne 2
+.mk
+.na
+\fB\fB0\fR\fR
+.ad
+.RS 6n
+.rt  
+命令成功。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB1\fR\fR
+.ad
+.RS 6n
+.rt  
+指定了 \fB-c\fR 或 \fB-d\fR 选项，并且一个或多个清单不处于 \fBpkgfmt\fR 正常格式，或出现了错误。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB2\fR\fR
+.ad
+.RS 6n
+.rt  
+指定的命令行选项无效。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB99\fR\fR
+.ad
+.RS 6n
+.rt  
+发生了意外的异常。
+.RE
+
+.SH 属性
+.sp
+.LP
+有关下列属性的说明，请参见 \fBattributes\fR(5)：
+.sp
+
+.sp
+.TS
+tab() box;
+cw(2.75i) |cw(2.75i) 
+lw(2.75i) |lw(2.75i) 
+.
+属性类型属性值
+_
+可用性\fBpackage/pkg\fR（软件包/pkg）
+_
+接口稳定性Uncommitted（未确定）
+.TE
+
+.SH 另请参见
+.sp
+.LP
+\fBpkg\fR(5)
+.sp
+.LP
+\fBhttp://hub.opensolaris.org/bin/view/Project+pkg/\fR

@@ -1,0 +1,608 @@
+'\" te
+.\" Copyright (c) 2007, 2011, Oracle and/or its affiliates. All rights reserved.
+.TH pkgmogrify 1 "2011 年 7 月 28 日" "SunOS 5.11" "ユーザーコマンド"
+.SH 名前
+pkgmogrify \- Image Packaging System マニフェスト変換ツール
+.SH 形式
+.LP
+.nf
+/usr/bin/pkgmogrify [-vi] [-I \fIincludedir\fR ...]
+    [-D \fImacro\fR=\fIvalue\fR ...] [-O \fIoutputfile\fR]
+    [-P \fIprintfile\fR] [\fIinputfile\fR ...]
+.fi
+
+.SH 機能説明
+.sp
+.LP
+\fBpkgmogrify\fR は、パッケージマニフェストのプログラムによる編集を可能にして、ソフトウェアの構築やパッケージの公開を自動化するときに必要な標準的な変換を簡略化します。
+.sp
+.LP
+\fBpkgmogrify\fR は、次の機能を提供します。
+.RS +4
+.TP
+.ie t \(bu
+.el o
+マクロ置換。単一のマニフェストを各種アーキテクチャーやプラットフォーム間で簡単に共有できます。
+.RE
+.RS +4
+.TP
+.ie t \(bu
+.el o
+ほかのマニフェスト、または標準のコンポーネントや変換などのマニフェストフラグメントの取り込み。
+.RE
+.RS +4
+.TP
+.ie t \(bu
+.el o
+パッケージアクションの変換。アクション属性の変更、削除、または追加が含まれます。
+.RE
+.SH オプション
+.sp
+.LP
+次のオプションがサポートされています。
+.sp
+.ne 2
+.mk
+.na
+\fB\fB-D\fR \fIname\fR=\fIvalue\fR\fR
+.ad
+.sp .6
+.RS 4n
+\fIname\fR を値 \fIvalue\fR とともにマクロとして定義します。マクロは、入力ファイル内で \fB$(macro)\fR として指定されます。置換は、それ以上の変換が見つからなくなるまで繰り返されます。一般的な語法には次のものがあります。
+.RS +4
+.TP
+.ie t \(bu
+.el o
+行の先頭にあるアーキテクチャー固有のタグを使用した、ほかのアーキテクチャー上のマニフェスト内の行の除外。
+.sp
+.in +2
+.nf
+$(sparc_ONLY)file ...
+.fi
+.in -2
+
+SPARC アーキテクチャーを処理する場合、このマクロは空の文字列に設定されます。ほかのアーキテクチャーを処理する場合、このマクロはコマンド行で \fB#\fR に設定されるため、このアクションが現在のアーキテクチャー上のマニフェストから除外されます。
+.RE
+.RS +4
+.TP
+.ie t \(bu
+.el o
+パス名のプラットフォーム固有の部分の指定。実行可能ファイルおよびライブラリのための 64 ビットアーキテクチャーディレクトリの名前などがあります。
+.sp
+.in +2
+.nf
+file NOHASH path=usr/bin/$(ARCH64)/cputrack ...
+.fi
+.in -2
+
+これらのマクロは、コマンド行で目的の値に設定するようにしてください。定義済みのマクロ値は存在しません。
+.RE
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB-I\fR \fIinclude_directory\fR\fR
+.ad
+.sp .6
+.RS 4n
+指定されたディレクトリを、コマンド行で指定されたファイルと、埋め込みのインクルード指令の両方の検索パスに追加します。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB-O\fR \fIoutputfile\fR\fR
+.ad
+.sp .6
+.RS 4n
+マニフェスト出力を指定されたファイルに書き込みます。このファイルは、エラーが発生した場合や、変換指令によって強制的な中止操作が実行された場合は書き込まれません。デフォルトでは、マニフェスト出力は\fB標準出力\fRに書き込まれます。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB-P\fR \fIprintfile\fR\fR
+.ad
+.sp .6
+.RS 4n
+変換指令の出力操作から得られた出力を指定されたファイルに書き込みます。このファイルは、エラーが発生した場合や、変換指令によって強制的な中止操作が実行された場合は書き込まれません。デフォルトでは、この出力は\fB標準出力\fRに書き込まれます。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB-i\fR\fR
+.ad
+.sp .6
+.RS 4n
+ファイル内のインクルード指令を無視します。コマンド行 (または\fB標準入力\fR) で指定されたファイルのみが処理されます。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB-v\fR\fR
+.ad
+.sp .6
+.RS 4n
+出力マニフェストに変換の効果を示すコメントを書き込みます。この情報がデバッグに役立つことがあります。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB--help\fR or \fB-?\fR\fR
+.ad
+.sp .6
+.RS 4n
+使用方法に関するメッセージを表示します。
+.RE
+
+.SH 埋め込みの指令
+.sp
+.LP
+マニフェストファイルでは、インクルード指令と変換指令という 2 つのタイプの指令がサポートされています。
+.sp
+.LP
+インクルード指令の形式は次のとおりです。
+.sp
+.in +2
+.nf
+<include \fIfile\fR>
+.fi
+.in -2
+
+.sp
+.LP
+この指令により、\fBpkgmogrify\fR は \fBfile\fR という名前のファイルを、最初に現在のディレクトリで、次に \fB-I\fR オプションで指定されたディレクトリで検索します。見つかった場合は、ファイルの内容がマニフェストの、この指令が置かれている場所に挿入されます。見つからなかった場合、\fBpkgmogrify\fR はエラーで終了します。
+.sp
+.LP
+変換指令の形式は次のとおりです。
+.sp
+.in +2
+.nf
+<transform \fImatching-criteria\fR -> \fIoperation\fR>
+.fi
+.in -2
+
+.sp
+.LP
+これらの指令は、すべての入力がメモリー内に読み取られるまで累積されたあと、各指令が検出された順序でアクションに適用されます。
+.sp
+.LP
+一致条件の形式は次のとおりです。
+.sp
+.in +2
+.nf
+[\fIaction-type\fR ... ] [\fIattribute\fR=<\fIvalue-regexp\fR> ...]
+.fi
+.in -2
+
+.sp
+.LP
+指定された \fIaction-types\fR のいずれかが一致する必要があります。指定された \fIattributes\fR のすべてが一致する必要があります。使用されている正規表現の構文は Python の構文です。Python 正規表現の構文については、コマンド \fBpydoc re\fR を使用するか、または \fBhttp://docs.python.org/dev/howto/regex.html\fR にあるより完全なドキュメントを参照してください。正規表現は先頭に固定され、末尾には固定されません。そのため、ファイルを拡張子で照合する正規表現には先頭に \fB\&.*\fR を含める必要があり、さらに末尾には \fB$\fR を含めるようにしてください。
+.sp
+.LP
+複数の条件をスペースで区切って指定できます。
+.sp
+.LP
+次の操作が使用できます。
+.sp
+.ne 2
+.mk
+.na
+\fB\fBadd\fR\fR
+.ad
+.RS 11n
+.rt  
+属性に値を追加します。この操作は 2 つの引数を取ります。最初の引数は属性の名前であり、2 番目の引数は値です。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fBdefault\fR\fR
+.ad
+.RS 11n
+.rt  
+属性の値がまだ存在しない場合は、その値を設定します。この操作は \fBadd\fR 操作と同じく 2 つの引数を取ります。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fBdelete\fR\fR
+.ad
+.RS 11n
+.rt  
+属性値を削除します。この操作は 2 つの引数を取ります。最初の引数は属性の名前です。2 番目の引数は、削除される属性値を照合するための正規表現です。アクションを照合するために使用される正規表現とは異なり、この表現は固定されません。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fBdrop\fR\fR
+.ad
+.RS 11n
+.rt  
+このアクションを破棄します。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fBedit\fR\fR
+.ad
+.RS 11n
+.rt  
+アクションの属性を変更します。この操作には 3 つの引数を指定します。最初の引数は属性の名前であり、2 番目の引数は属性値を照合するための正規表現です。3 番目の引数は、正規表現で一致した値の部分に置き換えられる置換文字列です。アクションを照合するために使用される正規表現とは異なり、この表現は固定されません。正規表現でグループが定義されている場合は、置換文字列内で通常の正規表現の後方参照 (形式は \fB\e1\fR、\fB\e2\fR など) を使用できます。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fBemit\fR\fR
+.ad
+.RS 11n
+.rt  
+マニフェスト出力ストリームに行を出力します。これは、有効なアクション文字列、空 (空行が生成されます)、またはコメント (\fB#\fR のあとに任意のテキストが続きます) である必要があります。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fBexit\fR\fR
+.ad
+.RS 11n
+.rt  
+マニフェスト処理を終了します。マニフェストは出力されず、\fBprint\fR 操作は適用されません。引数が 1 つ指定されている場合、その引数は整数である必要があり、終了コードとして使用されます。デフォルト値は 0 です。引数が 2 つ指定されている場合、最初の引数は終了コードであり、2 番目の引数は\fB標準エラー出力\fRに出力されるメッセージです。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fBprint\fR\fR
+.ad
+.RS 11n
+.rt  
+\fB-P\fR で指定された出力ファイルにメッセージを出力します。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fBset\fR\fR
+.ad
+.RS 11n
+.rt  
+属性の値を設定します。この操作は \fBadd\fR 操作と同じく 2 つの引数を取ります。
+.RE
+
+.sp
+.LP
+\fBdelete\fR と \fBdrop\fR を除くすべての操作は、出力ストリームにその内容が出力される (省略可能である可能性がある) 引数を取ります。これらの文字列には、3 種類の特殊なトークンを含めることができます。これらのトークンにより、各アクションの固定された変換に基づかない情報を出力に含めることが可能になります。
+.sp
+.LP
+最初の種類の置換を使用すると、パーセント記号に続けて属性の名前を丸括弧に入れて指定することによって、操作で現在のアクションの属性の値を参照できます。たとえば、\fB%(alias)\fR は、アクションの \fBalias\fR 属性の値を参照します。
+.sp
+.LP
+いくつかの合成属性が存在します。次の 2 つは \fBpkgmogrify\fR に固有です
+.RS +4
+.TP
+.ie t \(bu
+.el o
+\fBpkg.manifest.filename\fR は、アクションが見つかったファイルの名前を参照します。
+.RE
+.RS +4
+.TP
+.ie t \(bu
+.el o
+\fBpkg.manifest.lineno\fR は、アクションが見つかった行を参照します。
+.RE
+.sp
+.LP
+次の 3 つの合成属性は、\fBpkg\fR(1) で使用されるものに似ています。
+.RS +4
+.TP
+.ie t \(bu
+.el o
+\fBaction.hash\fR は、アクションにペイロードが含まれている場合、そのアクションのハッシュ値を参照します。ペイロードを含むアクションの場合、\fBset\fR 操作は、\fBaction.hash\fR 属性を操作することによってアクションのハッシュを変更できます。
+.RE
+.RS +4
+.TP
+.ie t \(bu
+.el o
+\fBaction.key\fR は、キー属性の値を参照します。
+.RE
+.RS +4
+.TP
+.ie t \(bu
+.el o
+\fBaction.name\fR は、アクションタイプの名前を参照します。
+.RE
+.sp
+.LP
+値を要求された属性が存在しない場合、\fBpkgmogrify\fR はエラーで終了します。エラーで終了することを回避するには、属性名のあとに \fB;notfound=\fR と、属性値の代わりに置換する値を指定します。たとえば、\fB%(alias;notfound='no alias')\fR は、属性 \fBalias\fR の値が存在する場合はその値を出力し、それ以外の場合は \fBno alias\fR を出力します。
+.sp
+.LP
+値を要求された属性が複数値の場合は、各値がスペースで区切られて出力されます。\fBnotfound\fR トークンと同様に、トークン \fBprefix\fR、\fBsuffix\fR、および \fBsep\fR を使用してこの動作を変更できます。\fBprefix\fR で指定された文字列は各値の先頭に追加され、\fBsuffix\fR で指定された文字列は各値の末尾に追加され、\fBsep\fR はある値の接尾辞とその次の値の接頭辞の間に配置されます。
+.sp
+.LP
+アクション属性と同様に、\fBpkgmogrify\fR 指令では \fB%{pkg.fmri}\fR のように、丸括弧の代わりに中括弧を使用してパッケージ属性を参照できます。変換指令が適用される時点で、この属性は \fBset\fR アクションで定義されている必要があります。そうしないと、この属性は上で説明した \fBnotfound\fR として扱われます。処理が、パッケージを記述しているマニフェストファイルの最後に達すると、属性は次のパッケージのためにクリアーされます。
+.sp
+.LP
+これは、パッケージ属性をアクション属性であるかのように参照するためだけでなく、これらの属性を照合したり、一時的に変更したりするためにも有効です。したがって、これらの状況では、合成アクション名 \fBpkg\fR を (\fBpkgmogrify\fR のコンテキストでのみ) 使用できます。
+.sp
+.LP
+\fBpkgmogrify\fR がコマンド行で指定されたマニフェストの読み取りを完了し、そのマニフェストで \fBpkg.fmri\fR パッケージ属性が定義されている場合、\fBpkgmogrify\fR はこの合成アクション \fBpkg\fR を作成します。属性はパッケージの属性になります。その後、\fB<transform>\fR 指令は、ほかのアクションタイプと同様に、このアクションに照合できます。
+.sp
+.LP
+\fBpkg\fR アクションに対する操作は、メモリー内でのみ実行されるために、出力されたマニフェストに直接影響を与えないという点で特殊です。たとえば、\fBadd\fR、\fBdefault\fR、または \fBset\fR 操作を使用して \fBpkg\fR アクションに属性を設定しようとしても、照合するほかの \fB<transform>\fR 指令では使用可能であるにもかかわらず、\fBset\fR アクションがマニフェストに追加されません。\fBpkg\fR アクションに対して \fBemit\fR を実行しようとすると、エラーが発生します。パッケージ属性を追加するには、代わりに \fBset\fR アクションに対して \fBemit\fR を実行します。
+.sp
+.LP
+3 番目の種類の置換は後方参照です。この置換は \fBedit\fR 操作で使用可能なものとは異なり、\fB->\fR の左側にある変換一致に列挙されているグループへの参照です。これらは、一致条件にある順序で、\fB%<1>\fR、\fB%<2>\fR などによって指定されます。
+.sp
+.LP
+処理の順序は次のとおりです。
+.RS +4
+.TP
+1.
+入力ファイルから行が読み取られます。
+.RE
+.RS +4
+.TP
+2.
+マクロが適用されます。
+.RE
+.RS +4
+.TP
+3.
+\fB<include ...>\fR および \fB<transform>\fR 指令が処理されることにより、追加のファイルが検出され、読み取られます。
+.RE
+.RS +4
+.TP
+4.
+すべての入力が累積されたあと、入力内の各行がアクションに変換され、すべての変換が適用されます。
+.RE
+.RS +4
+.TP
+5.
+処理が正常に完了すると、出力が書き込まれます。
+.RE
+.SH 使用例
+.LP
+\fB例 1 \fRSMF マニフェストにタグを追加する
+.sp
+.LP
+サービス管理機能 (SMF) マニフェストにタグを追加して、パッケージがライブシステムにインストールされたときにこれらのマニフェストがインポートされるようにします。
+
+.sp
+.in +2
+.nf
+<transform file path=(var|lib)/svc/manifest/.*\e.xml -> \e
+    add restart_fmri svc:/system/manifest-import:default>
+.fi
+.in -2
+
+.LP
+\fB例 2 \fRファイルを移動する
+.sp
+.LP
+ファイルを \fBusr/sfw/bin\fR から \fBusr/bin\fR に移動します。
+
+.sp
+.in +2
+.nf
+<transform file -> edit path usr/sfw/bin usr/bin>
+.fi
+.in -2
+
+.LP
+\fB例 3 \fRリブートの必要性を指定する
+.sp
+.LP
+\fBreboot-needed\fR タグを、\fB/kernel\fR の下にある、\fB\&.conf\fR ファイル以外のファイルに追加します。この例では、入力ファイルに存在する順序で各アクションに変換が適用されることを利用しています。
+
+.sp
+.in +2
+.nf
+<transform file path=kernel/.* -> set reboot-needed true>
+<transform file path=kernel/.*\e.conf -> delete reboot-needed .*>
+.fi
+.in -2
+
+.sp
+.LP
+これはまた、正規表現を使用した 1 つの変換規則でも実行できます。
+
+.LP
+\fB例 4 \fRFMRI 属性を依存アクションに変換する
+.sp
+.LP
+パッケージ属性 \fBpkg.fmri\fR を incorporation の一部になるように \fBdepend\fR アクションに変換します。
+
+.sp
+.in +2
+.nf
+<transform set name=pkg.fmri -> \e
+    emit depend type=incorporate fmri=%(value)>
+<transform set name=pkg.fmri -> drop>
+.fi
+.in -2
+
+.LP
+\fB例 5 \fRバグ番号のリストを出力する
+.sp
+.LP
+引用符で囲まれた、接頭辞付きのバグ番号のコンマ区切りリストを出力します。
+
+.sp
+.in +2
+.nf
+set name=bugs value=12345 value=54321 value=13579 value=97531
+<transform set name=bugs -> \e
+    print %(value;sep=",";prefix="bug='";suffix="'")>
+.fi
+.in -2
+
+.LP
+\fB例 6 \fR欠落した属性を許可する
+.sp
+.LP
+属性がない場合でも、安全にメッセージを出力します。
+
+.sp
+.in +2
+.nf
+<transform driver -> print Found aliases: %(alias;notfound=<none>)>
+.fi
+.in -2
+
+.LP
+\fB例 7 \fRデフォルト値を設定する
+.sp
+.LP
+所有者、グループ、およびアクセス権のデフォルト値を設定します。
+
+.sp
+.in +2
+.nf
+<transform file dir -> default owner root>
+<transform file dir -> default group bin>
+<transform file -> default mode 0444>
+<transform dir -> default mode 0755>
+.fi
+.in -2
+
+.LP
+\fB例 8 \fR廃止としてマークされていないパッケージに依存関係を追加する
+.sp
+.LP
+廃止としてマークされていないすべてのパッケージについて、そのパッケージを提供する統合のための incorporation への依存関係を追加します。この一連の変換は、マニフェストが読み取られたあとに実行される必要があります。そうしないと、依存関係が常に出力されます。\fBpkg\fR アクションの変更には永続的な効果がないため、\fBpkg.obsolete=false\fR に一致する属性をクリーンアップする必要はありません。
+
+.sp
+.in +2
+.nf
+<transform pkg -> default pkg.obsolete false>
+<transform pkg pkg.obsolete=false -> emit depend \e
+    fmri=consolidation/$(CONS)/$(CONS)-incorporation type=require>
+.fi
+.in -2
+
+.LP
+\fB例 9 \fRエラーが検出された場合は終了してメッセージを出力する
+.sp
+.LP
+廃止された属性がマニフェスト内に検出された場合は、エラーメッセージを出力します。
+
+.sp
+.in +2
+.nf
+<transform file dir link hardlink opensolaris.zone=.* -> \e
+    exit 1 The opensolaris.zone attribute is obsolete.>
+.fi
+.in -2
+
+.LP
+\fB例 10 \fR適切なロケールファセットを設定する
+.sp
+.LP
+対象のパス名に適したロケールファセットを設定します。
+
+.sp
+.in +2
+.nf
+<transform dir file link hardlink path=.*/locale/([^/]+).* -> \e
+    default facet.locale.%<1> true>
+.fi
+.in -2
+
+.SH 終了ステータス
+.sp
+.LP
+次の終了値が返されます。
+.sp
+.ne 2
+.mk
+.na
+\fB\fB0\fR\fR
+.ad
+.RS 6n
+.rt  
+すべてが動作しました。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB1\fR\fR
+.ad
+.RS 6n
+.rt  
+予期しない不具合が発生しました。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB2\fR \fR
+.ad
+.RS 6n
+.rt  
+無効なコマンド行オプションが指定されました。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB99\fR\fR
+.ad
+.RS 6n
+.rt  
+予期しない処理エラー。
+.RE
+
+.SH 属性
+.sp
+.LP
+次の属性については \fBattributes\fR(5) のマニュアルページを参照してください。
+.sp
+
+.sp
+.TS
+tab() box;
+cw(2.75i) |cw(2.75i) 
+lw(2.75i) |lw(2.75i) 
+.
+属性タイプ属性値
+_
+使用条件\fBpackage/pkg\fR
+_
+インタフェースの安定性不確実
+.TE
+
+.SH 関連項目
+.sp
+.LP
+\fBpkg\fR(1), \fBpkg\fR(5)
+.sp
+.LP
+\fBhttp://hub.opensolaris.org/bin/view/Project+pkg/\fR

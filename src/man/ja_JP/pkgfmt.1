@@ -1,0 +1,132 @@
+'\" te
+.\" Copyright (c) 2007, 2011, Oracle and/or its affiliates. All rights reserved.
+.TH pkgfmt 1 "2011 年 7 月 28 日" "SunOS 5.11" "ユーザーコマンド"
+.SH 名前
+pkgfmt \- パッケージマニフェストの整形
+.SH 形式
+.LP
+.nf
+/usr/bin/pkgfmt [-c|-d|-u] [\fIpackage-manifest-file\fR]
+.fi
+
+.SH 機能説明
+.sp
+.LP
+\fB-c\fR または \fB-d\fR オプションが指定されない \fBpkgfmt\fR は、80 文字での行の折り返し、タイプによるアクションのソート、属性のソートなどを含む、一貫した方法でパッケージマニフェストを整形します。アクションに解析されない行 (マクロ、コメント、変換など) は、ソートされた順序では表示されません。
+.sp
+.LP
+引数が指定されない場合、\fBpkgfmt\fR は \fBstdin\fR を EOF まで読み取ったあと、整形されたマニフェストを \fBstdout\fR に書き込みます。コマンド行で指定されたマニフェストはすべて、その場所で整形されます。
+.sp
+.LP
+\fB-c\fR オプションが指定された \fBpkgfmt\fR は、マニフェストが \fBpkgfmt\fR 形式で整形されているかどうかをチェックします。\fB-d\fR オプションを指定すると、ファイルが正しく整形されていない場合にその違いが表示されます。
+.SH オプション
+.sp
+.LP
+次のオプションがサポートされています。
+.sp
+.ne 2
+.mk
+.na
+\fB\fB-c\fR\fR
+.ad
+.RS 6n
+.rt  
+マニフェストが \fBpkgfmt\fR 形式で整形されているかどうかをチェックします。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB-d\fR\fR
+.ad
+.RS 6n
+.rt  
+統合された形式で整形されたバージョンとのマニフェストの違いを表示します。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB-u\fR\fR
+.ad
+.RS 6n
+.rt  
+80 文字で行を折り返しません。このオプションは、パッケージマニフェストに従来のテキスト処理ツールを適用する場合に有効です。
+.RE
+
+.SH 終了ステータス
+.sp
+.LP
+次の終了値が返されます。
+.sp
+.ne 2
+.mk
+.na
+\fB\fB0\fR\fR
+.ad
+.RS 6n
+.rt  
+コマンドが成功しました。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB1\fR\fR
+.ad
+.RS 6n
+.rt  
+\fB-c\fR または \fB-d\fR オプションが指定され、1 つ以上のマニフェストが \fBpkgfmt\fR の正常な形式でないか、またはエラーが発生しました。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB2\fR \fR
+.ad
+.RS 6n
+.rt  
+無効なコマンド行オプションが指定されました。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB99\fR\fR
+.ad
+.RS 6n
+.rt  
+予期しない例外が発生しました。
+.RE
+
+.SH 属性
+.sp
+.LP
+次の属性については \fBattributes\fR(5) のマニュアルページを参照してください。
+.sp
+
+.sp
+.TS
+tab() box;
+cw(2.75i) |cw(2.75i) 
+lw(2.75i) |lw(2.75i) 
+.
+属性タイプ属性値
+_
+使用条件\fBpackage/pkg\fR
+_
+インタフェースの安定性不確実
+.TE
+
+.SH 関連項目
+.sp
+.LP
+\fBpkg\fR(5)
+.sp
+.LP
+\fBhttp://hub.opensolaris.org/bin/view/Project+pkg/\fR

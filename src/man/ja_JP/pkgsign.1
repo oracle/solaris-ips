@@ -1,0 +1,168 @@
+'\" te
+.\" Copyright (c) 2007, 2011, Oracle and/or its affiliates. All rights reserved.
+.TH pkgsign 1 "2011 年 7 月 28 日" "SunOS 5.11" "ユーザーコマンド"
+.SH 名前
+pkgsign \- Image Packaging System の署名ユーティリティー
+.SH 形式
+.LP
+.nf
+/usr/bin/pkgsign [-a \fIhash_algorithm\fR]
+    [-c \fIpath_to_signing_certificate\fR]
+    [-i \fIpath_to_intermediate_cert\fR] ...
+    [-k \fIpath_to_private_key\fR] [-n] -s \fIpath_or_uri\fR
+    [--help] [--no-index] [--no-catalog]
+    (\fIfmri\fR|\fIpattern\fR) ...
+.fi
+
+.SH 機能説明
+.sp
+.LP
+\fBpkgsign\fR は、指定されたキーと証明書を使用して署名アクションを追加することにより、リポジトリ内で所定の FMRI のマニフェストを直接更新します。変更されたパッケージは、元のタイムスタンプを保持します。
+.SH オプション
+.sp
+.LP
+次のオプションを指定できます。
+.sp
+.LP
+\fB-a\fR を指定すると、デフォルトの署名アルゴリズムではなく、\fIhash_algorithm\fR 署名アルゴリズムが使用されます。デフォルトの署名アルゴリズムは \fBrsa-sha256\fR です。サポートされている署名アルゴリズムは、\fBrsa-sha256\fR、\fBrsa-sha384\fR、\fBrsa-sha512\fR、\fBsha256\fR、\fBsha384\fR、\fBsha512\fR です。ハッシュアルゴリズムを指定するだけの署名アルゴリズムを使用すると、署名の値は、パッケージのマニフェストのハッシュになります。\fBrsa\fR とハッシュアルゴリズムを指定する署名アルゴリズムを使用すると、署名の値は、提供された非公開鍵で署名が追加されたマニフェストのハッシュになります (\fB-c\fR オプションと \fB-k\fR オプションを参照)。
+.sp
+.LP
+\fB-c\fR を指定すると、証明書 \fIpath_to_signing_certificate\fR が、このアクションで署名の値を検証するときに使用する証明書として追加されます。\fB-c\fR オプションは、\fB-k\fR オプションでのみ使用されます。
+.sp
+.LP
+\fB-i\fR を指定すると、証明書 \fIpath_to_intermediate_cert\fR が、\fB-c\fR への引数として指定された証明書 \fIpath_to_signing_certificate\fR を検証するときに使用する証明書として追加されます。複数の証明書を追加するには、\fB-i\fR を複数回指定します。
+.sp
+.LP
+\fB-k\fR を指定すると、\fIpath_to_private_key\fR に格納された非公開鍵を使用してマニフェストに署名が追加されます。\fB-k\fR オプションは、\fB-c\fR オプションでのみ使用されます。\fB-k\fR が設定されていない場合、署名の値はマニフェストのハッシュになります。
+.sp
+.LP
+\fB-n\fR を指定すると、評価実行が行われ、リポジトリは一切変更されません。
+.sp
+.LP
+\fB-s\fR を指定すると、\fIpath_or_uri\fR にあるリポジトリ内のパッケージに署名が追加されます。
+.sp
+.LP
+\fB--help\fR を指定すると、使用法のメッセージが表示されます。
+.sp
+.LP
+\fB--no-index\fR を指定すると、署名付きマニフェストが再公開されたあとに、リポジトリの検索インデックスが更新されません。
+.sp
+.LP
+\fB--no-catalog\fR を指定すると、署名付きマニフェストが再公開されたあとに、リポジトリのカタログが更新されません。
+.SH 使用例
+.LP
+\fB例 1 \fRマニフェストのハッシュ値を使用した署名の追加
+.sp
+.LP
+マニフェストのハッシュ値を使用して、\fBhttp://localhost:10000\fR に公開されたパッケージに署名を追加します。多くの場合、これはテストに役立ちます。
+
+.sp
+.in +2
+.nf
+$ \fBpkgsign -s http://localhost:10000 -a sha256 \e\fR
+\fBexample_pkg@1.0,5.11-0:20100626T030108Z\fR
+.fi
+.in -2
+.sp
+
+.LP
+\fB例 2 \fRキーと証明書を使用した署名の追加
+.sp
+.LP
+\fBrsa-sha384\fR を使用して、\fB/foo/bar\fR 内のファイルリポジトリに公開されたパッケージに署名を追加し、マニフェストをハッシュ化して署名を追加します。署名キーは \fB/key/usr2.key\fR に、関連の証明書は \fB/key/usr2.cert\fR に、その証明書の検証に必要な証明書は \fB/icerts/usr1.cert\fR にあります。
+
+.sp
+.in +2
+.nf
+$ \fBpkgsign -s file:///foo/bar/ -a rsa-sha384 \e\fR
+\fB-k /key/usr2.key -c /key/usr2.cert -i /icerts/usr1.cert \e\fR
+\fBexample_pkg@1.0,5.11-0:20100626T031341Z\fR
+.fi
+.in -2
+.sp
+
+.SH 終了ステータス
+.sp
+.LP
+次の終了値が返されます。
+.sp
+.ne 2
+.mk
+.na
+\fB\fB0\fR\fR
+.ad
+.RS 6n
+.rt  
+コマンドが成功しました。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB1\fR\fR
+.ad
+.RS 6n
+.rt  
+エラーが発生した。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB2\fR \fR
+.ad
+.RS 6n
+.rt  
+無効なコマンド行オプションが指定された。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB3\fR\fR
+.ad
+.RS 6n
+.rt  
+複数の操作が要求されましたが、それらの一部のみが成功しました。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB99\fR\fR
+.ad
+.RS 6n
+.rt  
+予期しない例外が発生しました。
+.RE
+
+.SH 属性
+.sp
+.LP
+次の属性については、\fBattributes\fR(5) のマニュアルページを参照してください。
+.sp
+
+.sp
+.TS
+tab() box;
+cw(2.75i) |cw(2.75i) 
+lw(2.75i) |lw(2.75i) 
+.
+属性タイプ属性値
+_
+使用条件\fBpackage/pkg\fR
+_
+インタフェースの安定性不確実
+.TE
+
+.SH 関連項目
+.sp
+.LP
+\fBpkg\fR(1), \fBpkgrecv\fR(1), \fBpkgsend\fR(1), \fBpkgrepo\fR(1M), \fBpkg\fR(5)
+.sp
+.LP
+\fBhttp://hub.opensolaris.org/bin/view/Project+pkg/\fR

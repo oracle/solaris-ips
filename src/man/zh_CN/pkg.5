@@ -1,0 +1,1150 @@
+'\" te
+.\" Copyright (c) 2007, 2011, Oracle and/or its affiliates. All rights reserved.
+.TH pkg 5 "2011 年 7 月 29 日" "SunOS 5.11" "标准、环境和宏"
+.SH 名称
+pkg \- 映像包管理系统
+.SH 描述
+.sp
+.LP
+映像包管理系统 \fBpkg\fR(5) 是用于提供软件生命周期管理（安装、升级和删除）的框架。映像包管理以软件包为单位对软件进行管理，软件包是由一组关键字/值对以及可能的数据有效负荷定义的操作的集合。在许多情况下，操作是在文件系统中找到的文件，但它们也表示其他可安装对象，例如驱动程序、服务和用户。
+.SH 软件包 FMRI 和版本
+.sp
+.LP
+每个软件包均由带有机制 \fBpkg:\fR 的故障管理资源标识符 (fault management resource identifier, FMRI) 表示。软件包的完整 FMRI 由机制、发布者、软件包名称和以下格式的版本字符串组成：
+.sp
+.in +2
+.nf
+pkg://opensolaris.org/library/libc@5.11,5.11-0.75:20071001T163427Z
+.fi
+.in -2
+.sp
+
+.sp
+.LP
+\fBopensolaris.org\fR 是发布者。\fBlibrary/libc\fR 是软件包名称。虽然名称空间是有层次的且可具有任意深度，但不存在强制包含；名称从本质上而言是任意的。发布者信息为可选项，但必须位于 \fBpkg://\fR 之后（如果存在）。包括发布者的 FMRI 通常称为"全限定"FMRI。如果不存在发布者信息，则软件包名称通常应位于 \fBpkg:/\fR 之后。
+.sp
+.LP
+如果 FMRI 不包含发布者信息，打包客户端通常允许省略 FMRI 的机制。例如，\fBpkg:/library/libc\fR 可以写为 \fBlibrary/libc\fR。如果省略了机制，客户端也允许省略除软件包名称的最后一个组成部分（用于匹配目的）之外的所有其他内容。例如，\fBlibrary/libc\fR 可写为 \fBlibc\fR，这将与名为 \fBlibc\fR 的软件包或以 \fB/libc\fR 结尾的软件包名称匹配。
+.sp
+.LP
+发布者名称将个人、个人组或组织标识为一个或多个软件包的源。为避免发布者名称冲突并有帮于标识发布者，最佳做法是使用代表发布软件包实体的域名作为发布者名称。
+.sp
+.LP
+版本跟在软件包名称后面，由 @ 符号分隔。版本包含四个数字序列，由标点符号分隔。前三个序列中的元素由圆点分隔，各序列可具有任意长度。不允许版本的组成部分以零开头（例如 01.1 或 1.01）。允许以零结尾（例如 1.10）。
+.sp
+.LP
+版本的第一个部分是组件版本。对于紧密绑定到操作系统上的组件，此序列通常是操作系统中该版本的 \fBuname -r\fR 值。对于具有自己的开发生命周期的组件，此序列是一个由小圆点分隔的发行编号，例如 2.4.10。
+.sp
+.LP
+版本的第二个部分（如果存在）必须跟在逗号 (,) 后面，是内部版本。内部版本指定构建软件包内容的操作系统版本，提供了希望软件包内容可成功运行的最低操作系统版本。
+.sp
+.LP
+版本的第三个部分（如果存在）必须跟在连字符 (\fB-\fR) 后面，是分支版本。分支版本是用于提供特定于供应商的信息的版本控制组件。分支版本可在打包元数据发生更改时增大，独立于组件版本。分支版本可能包含内部版本号或其他信息。
+.sp
+.LP
+版本的第四个部分（如果存在）必须跟在冒号 (:) 后面，是一个时间戳。时间戳表示软件包的发布时间。
+.sp
+.LP
+在版本之间进行比较时，不考虑完整版本的任何组件，除非左侧的组件与其相同。因此 "4.3\(hy1" 大于 "4.2-7"，因为 "4.3" 大于 "4.2"；"4.3-3" 大于 "4.3-1"，因为 "3" 大于 "1"。
+.sp
+.LP
+系统的许多部分（如果适用）会在显示 FMRI 时缩短 FMRI 并接受简短格式的输入，以减少显示的或所需的信息量。通常，可以省略机制、发布者、内部版本和时间戳。有时可以省略所有版本控制信息。
+.SH 操作
+.sp
+.LP
+操作表示系统上的可安装对象。在软件包的清单中对操作进行了描述。每个操作主要由其名称和一个关键属性组成。这些内容共同引用一个唯一的对象，与该对象一样遵循版本历史记录。操作可以具有其他属性。某些属性由包管理系统直接解释。其他属性可能仅对系统管理员或最终用户有用。
+.sp
+.LP
+操作具有一种简单文本表示法：
+.sp
+.in +2
+.nf
+\fIaction_name\fR \fIattribute1\fR=\fIvalue1\fR \fIattribute2\fR=\fIvalue2\fR ...
+.fi
+.in -2
+
+.sp
+.LP
+属性名称中不能包含空格、引号或等号 (=)。第一个等号后的所有字符都属于值。值中可以包含所有这些符号，虽然空格必须括在单引号或双引号中。单引号处于括在双引号中的字符串内时不需要进行转义，双引号处于括在单引号中的字符串内时也不需要进行转义。可使用反斜杠 (\) 字符作为引号的前缀来避免终止带引号的字符串。反斜杠可使用反斜杠进行转义。
+.sp
+.LP
+可以使用多个值对属性进行多次命名。这些值被视为无序列表。
+.sp
+.LP
+具有多个属性的操作可以在清单文件中创建长行。可以通过使用反斜杠终止每个不完整的行来对此类行进行折行。请注意，属性/值对之间必须具有此接续字符。属性、属性值及其组合均不可分离。
+.sp
+.LP
+下面列出的属性不是全部属性。事实上，任意属性都可附加到操作中，标准属性组易于扩大以合并将来的开发。
+.sp
+.LP
+某些操作属性会导致在打包上下文外部执行其他操作。这些属性记录在下面的"执行器"部分中。
+.SS "文件操作"
+.sp
+.LP
+\fBfile\fR 操作表示普通文件。\fBfile\fR 操作引用有效负荷，具有四个标准属性：
+.sp
+.ne 2
+.mk
+.na
+\fB\fBpath\fR\fR
+.ad
+.RS 9n
+.rt  
+安装文件的文件系统路径。此属性是 \fBfile\fR 操作的关键属性。 
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fBmode\fR\fR
+.ad
+.RS 9n
+.rt  
+文件的访问权限（采用数字格式）。这些只是简单权限，并非 ACL。 
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fBowner\fR\fR
+.ad
+.RS 9n
+.rt  
+拥有文件的用户的名称。 
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fBgroup\fR\fR
+.ad
+.RS 9n
+.rt  
+拥有文件的组的名称。 
+.RE
+
+.sp
+.LP
+有效负荷是一个位置属性，因为它未命名。它是操作名称后面的第一个词。在发布的清单中，它是文件内容的 \fBSHA-1\fR 散列。如果存在于尚待发布的清单中，则它表示可以找到有效负荷的路径。请参见 \fBpkgsend\fR(1)。如果值包括一个等号，则可以使用散列属性代替位置属性。这两种属性可用于同一操作中。但是，散列必须完全相同。
+.sp
+.LP
+其他属性包括：
+.sp
+.ne 2
+.mk
+.na
+\fB\fBpreserve\fR\fR
+.ad
+.RS 12n
+.rt  
+此属性指定在升级时不应覆盖文件的内容（如果确定自文件安装或上次升级后其内容已发生了更改）。在初始安装时，如果找到现有文件，则挽救该文件（存储在 \fB/var/pkg/lost+found\fR 中）。
+.sp
+如果 \fBpreserve\fR 的值是 \fBrenameold\fR，则使用扩展名 \fB\&.old\fR 重命名现有文件，并将新文件放入相应位置。
+.sp
+如果 \fBpreserve\fR 的值是 \fBrenamenew\fR，则现有文件保持不变，并使用扩展名 \fB\&.new\fR 安装新文件。
+.sp
+如果 \fBpreserve\fR 的值是 \fBlegacy\fR，则在初始软件包安装时不会安装此文件。在升级时，会使用扩展名 \fB\&.legacy\fR 重命名任何现有文件，并在随后将新文件放入相应位置。
+.sp
+如果 \fBpreserve\fR 的值是 \fBtrue\fR（或是上面未列出的值，例如 \fBstrawberry\fR），则现有文件保持不变，而且也不安装新文件。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fBoverlay\fR\fR
+.ad
+.RS 12n
+.rt  
+此属性指定操作是允许其他软件包在同一位置提供文件，还是提供用于覆盖其他文件的文件。此功能设计用于不参与任何自组装（例如 \fB/etc/motd\fR）且可安全覆盖的配置文件。
+.sp
+如果未指定 \fBoverlay\fR，多个软件包将无法向同一位置提供文件。
+.sp
+如果 \fBoverlay\fR 的值是 \fBallow\fR，则允许另外一个软件包向同一位置提供文件。除非也设置了 \fBpreserve\fR 属性，否则此值没有效果。
+.sp
+如果 \fBoverlay\fR 的值是 \fBtrue\fR，操作提供的文件将覆盖已指定 \fBallow\fR 的任何其他操作。基于覆盖文件的 \fBpreserve\fR 属性值保留对已安装文件进行的更改。在删除时，如果仍要安装将覆盖的操作，则将保留文件的内容，无论是否指定了 \fBpreserve\fR 属性。只能一个操作覆盖另一个操作，且 \fBmode\fR、\fBowner\fR 和 \fBgroup\fR 属性必须匹配。
+.RE
+
+.sp
+.LP
+也可以"体验"文件，而且文件可根据自身情况具有其他属性。对于 ELF 文件，可识别下列属性：
+.sp
+.ne 2
+.mk
+.na
+\fB\fBelfarch\fR\fR
+.ad
+.RS 17n
+.rt  
+ELF 文件的体系结构。此属性是 \fBuname -p\fR 在构建文件的体系结构上的输出。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fBelfbits\fR\fR
+.ad
+.RS 17n
+.rt  
+此属性为 \fB32\fR 或 \fB64\fR。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fBelfhash\fR\fR
+.ad
+.RS 17n
+.rt  
+此属性是文件中"相关"ELF 部分的散列。这些部分已在装入二进制文件时映射到内存中。在确定两个二进制文件的可执行行为是否将不同时，仅需要考虑这些部分。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fBoriginal_name\fR\fR
+.ad
+.RS 17n
+.rt  
+此属性用于处理可编辑文件在软件包之间或在位置之间（或在这两者之间）的移动操作。此属性采用的格式为源软件包的名称后跟一个冒号和文件的原始路径。所删除的任何文件将使用其软件包和路径或 \fBoriginal_name\fR 属性的值（如果指定）进行记录。所安装的已设置 \fBoriginal_name\fR 属性的任何可编辑文件将使用具有该名称的文件（如果它在同一打包操作中被删除）。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fBrevert-tag\fR\fR
+.ad
+.RS 17n
+.rt  
+此属性用于标记应恢复为一个组的可编辑文件。可以指定多个 revert-tag 值。在使用所指定的任意标记调用 \fBpkg revert\fR 时，文件将恢复为其清单定义的状态。请参见 \fBpkg\fR(1)。
+.RE
+
+.SS "目录操作"
+.sp
+.LP
+\fBdir\fR 操作类似于 \fBfile\fR 操作，因为它表示文件系统对象。但 \fBdir\fR 操作表示目录而不是普通文件。\fBdir\fR 操作具有与 \fBfile\fR 操作相同的四个标准属性，\fBpath\fR 是关键属性。
+.sp
+.LP
+目录是 IPS 中包括的引用。当显式或隐式引用某目录的最新软件包不再引用该目录时，将删除该目录。如果该目录包含未打包的文件系统对象，则将这些项移动到 \fB$IMAGE_META/lost+found\fR 中。有关 \fB$IMAGE_META\fR 的更多信息，请参见"文件"部分。
+.sp
+.LP
+要将未打包的内容移动到新的目录中，以下属性可能会有用：
+.sp
+.ne 2
+.mk
+.na
+\fB\fBsalvage-from\fR\fR
+.ad
+.RS 16n
+.rt  
+此属性指定所挽救项的目录。具有此属性的目录在创建时可继承所挽救目录的内容（如果存在）。
+.RE
+
+.SS "链接操作"
+.sp
+.LP
+\fBlink\fR 操作表示符号链接。\fBlink\fR 操作具有以下标准属性：
+.sp
+.ne 2
+.mk
+.na
+\fB\fBpath\fR\fR
+.ad
+.sp .6
+.RS 4n
+安装符号链接的文件系统路径。此属性是 \fBlink\fR 操作的关键属性。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fBtarget\fR\fR
+.ad
+.sp .6
+.RS 4n
+符号链接的目标。链接将解析到的文件系统对象。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fBmediator\fR\fR
+.ad
+.sp .6
+.RS 4n
+指定由给定中介组（例如 \fBpython\fR）中涉及的所有路径名称共享的中介名称空间中的条目。可基于 \fBmediator-version\fR 和/或 \fBmediator-implementation\fR 执行链接中介。给定路径名称的所有中介链接必须指定同一中介者。但是，并非所有中介者版本和实现都需要在给定路径上提供链接。如果中介不提供链接，则会在选定该中介时删除链接。\fBmediator\fR 与特定版本和/或实现组合起来表示可选择供包管理系统使用的中介。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fBmediator-version\fR\fR
+.ad
+.sp .6
+.RS 4n
+指定 \fBmediator\fR 属性描述的接口的版本（表示为非负整数的点分序列）。如果指定了 \fBmediator\fR 而未指定 \fBmediator-implementation\fR，则此属性是必需的。本地系统管理员可以显式设置要使用的版本。指定的值通常应与提供链接的软件包版本相匹配（例如，\fBruntime/python-26\fR 应使用 \fBmediator-version=2.6\fR），尽管这不是必需的。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fBmediator-implementation\fR\fR
+.ad
+.sp .6
+.RS 4n
+指定除 \fBmediator-version\fR 之外还使用中介者实现，或使用中介者实现代替 mediator-version。不认为实现字符串应进行排序，如果系统管理员未显式指定，则由 \fBpkg\fR(5) 任意选择一个字符串。
+.sp
+该值可以是由字母数字字符和空格组成的任意长度的字符串。如果实现本身可被版本化或已被版本化，则应在字符串的结尾处在 @ 之后指定版本（表示为非负整数的点分序列）。如果存在实现的多个版本，则缺省行为是选择最高版本的实现。
+.sp
+如果系统上仅安装了特定路径的实现中介链接的一个实例，则会自动选择该实例。如果以后安装了该路径的其他链接，除非应用供应商、站点或本地覆盖或者如果某一链接进行了版本中介，否则不会切换链接。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fBmediator-priority\fR\fR
+.ad
+.sp .6
+.RS 4n
+在解决中介链接中的冲突时，\fBpkg\fR(5) 通常会选择 \fBmediator-version\fR 值最大的链接，如果不可能，则会基于 \fBmediator-implementation\fR 进行选择。此属性用于为常规冲突解决方案过程指定覆盖。
+.sp
+如果未指定此属性，则会应用缺省中介者选择逻辑。
+.sp
+如果值为 \fBvendor\fR，则与未指定 \fBmediator-priority\fR 的链接相比，会优先选择该链接。
+.sp
+如果值为 \fBsite\fR，则与值为 \fBvendor\fR 或未指定 \fBmediator-priority\fR 的链接相比，会优先选择该链接。
+.sp
+本地系统管理员可以覆盖上面所述的选择逻辑。
+.RE
+
+.SS "硬链接操作"
+.sp
+.LP
+\fBhardlink\fR 操作表示硬链接。它具有与 \fBlink\fR 操作相同的属性，\fBpath\fR 也是其关键属性。
+.SS "驱动程序操作"
+.sp
+.LP
+\fBdriver\fR 操作表示设备驱动程序。\fBdriver\fR 操作不引用有效负荷。驱动程序文件自身必须作为 \fBfile\fR 操作进行安装。可识别下列属性（有关更多信息，请参见 \fBadd_drv\fR(1M)）：
+.sp
+.ne 2
+.mk
+.na
+\fB\fBname\fR\fR
+.ad
+.RS 15n
+.rt  
+驱动程序的名称。这通常是（但并不总是）二进制驱动程序文件的文件名。此属性是 \fBdriver\fR 操作的关键属性。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fBalias\fR\fR
+.ad
+.RS 15n
+.rt  
+此属性表示驱动程序的别名。给定的驱动程序可以具有多个 \fBalias\fR 属性。无需任何特殊的引号规则。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fBclass\fR\fR
+.ad
+.RS 15n
+.rt  
+此属性表示驱动程序类。给定的驱动程序可以具有多个 \fBclass\fR 属性。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fBperms\fR\fR
+.ad
+.RS 15n
+.rt  
+此属性表示驱动程序的设备节点的文件系统权限。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fBclone_perms\fR\fR
+.ad
+.RS 15n
+.rt  
+此属性表示此驱动程序的克隆驱动程序次要节点的文件系统权限。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fBpolicy\fR\fR
+.ad
+.RS 15n
+.rt  
+此属性指定设备的其他安全策略。给定的驱动程序可以具有多个 \fBpolicy\fR 属性，但次要设备规范不可以存在于多个属性中。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fBprivs\fR\fR
+.ad
+.RS 15n
+.rt  
+此属性指定驱动程序所用的特权。给定的驱动程序可以具有多个 \fBprivs\fR 属性。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fBdevlink\fR\fR
+.ad
+.RS 15n
+.rt  
+此属性指定 \fB/etc/devlink.tab\fR 中的条目。该值是用于进入文件的精确行，带有由 \fB\t\fR 表示的制表符。有关更多信息，请参见 \fBdevlinks\fR(1M)。给定的驱动程序可以具有多个 \fBdevlink\fR 属性。
+.RE
+
+.SS "依赖操作"
+.sp
+.LP
+\fBdepend\fR 操作表示软件包间的依赖性。一个软件包可以依赖于另一个软件包，因为第一个软件包需要第二个软件包中的功能才能运行自身包含的功能或者甚至进行安装。依赖性可以是可选的。如果安装时未满足某个依赖性，包管理系统会尝试安装或更新依赖软件包至足够新的版本（受其他约束限制）。
+.sp
+.LP
+可以识别下列属性：
+.sp
+.ne 2
+.mk
+.na
+\fB\fBfmri\fR\fR
+.ad
+.RS 14n
+.rt  
+表示依赖软件包的 FMRI。此属性是 \fBdependency\fR 操作的关键属性。\fBfmri\fR 值不得包括发布者。假定软件包名称是完整的。\fBrequire-any\fR 类型的依赖性可具有多个 \fBfmri\fR 属性。\fBfmri\fR 值中的版本是可选项，虽然对于某些类型的依赖性来说，不带版本的 \fBfmri\fR 没有任何意义。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fBtype\fR\fR
+.ad
+.RS 14n
+.rt  
+依赖性的类型。
+.sp
+如果值为 \fBrequire\fR，则依赖性是必需的，且必须具有等于或大于 \fBfmri\fR 属性中指定版本的版本。如果未指定版本，则任何版本都满足依赖性。如果不能满足其任一必需依赖性，则无法安装软件包。
+.sp
+如果值为 \fBoptional\fR，则依赖性（如果存在）必须处于指定的版本级别或更高级别。
+.sp
+如果值为 \fBexclude\fR，则当依赖性存在于指定的版本级别或更高级别时，无法安装包含软件包。如果未指定版本，则依赖软件包无法与指定依赖性的软件包同时安装。
+.sp
+如果值为 \fBincorporate\fR，则依赖性是可选的，但依赖软件包的版本会受到约束。请参见下面的"约束和冻结"。
+.sp
+如果值为 \fBrequire-any\fR，则多个 \fBfmri\fR 属性指定的多个依赖软件包中的任一个都可满足依赖性（遵循与 \fBrequire\fR 依赖性类型相同的规则）。
+.sp
+如果值为 \fBconditional\fR，则依赖性仅在系统上存在 \fBpredicate\fR 属性定义的软件包时是必需的。
+.sp
+如果值为 \fBorigin\fR，依赖性（如果存在）必须在要在安装之前修改的映像上具有指定值或更优值。如果 \fBroot-image\fR 属性的值为 \fBtrue\fR，则依赖性必须存在于根目录为 / 的映像上，才能安装此软件包。
+.sp
+如果值为 \fBgroup\fR，则依赖性是必需的，除非软件包出现在映像避免列表上。请注意，过时软件包会无提示地满足组依赖性。请参见 \fBpkg\fR(1) 中的 \fBavoid\fR 子命令。
+.sp
+如果值为 \fBparent\fR，则在映像不是子映像时忽略依赖性。如果映像是子映像，则依赖性必须存在于父映像中。符合 \fBparent\fR 依赖性的软件包版本与用于 \fBincorporate\fR 依赖性的软件包版本相同。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fBpredicate\fR\fR
+.ad
+.RS 14n
+.rt  
+表示 \fBconditional\fR 依赖性的谓词的 FMRI。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fBroot-image\fR\fR
+.ad
+.RS 14n
+.rt  
+仅对 \fBorigin\fR 依赖性有影响，如上所述。
+.RE
+
+.SS "许可证操作"
+.sp
+.LP
+\fBlicense\fR 操作表示许可证或其他与软件包内容相关联的信息文件。软件包可以通过 \fBlicense\fR 操作将许可证、免责声明或其他指南提供给软件包安装程序。
+.sp
+.LP
+\fBlicense\fR 操作的有效负荷将提供到与软件包相关的映像元数据目录中，且应仅包含用户可读的文本数据。不应包含 HTML 或任何其他形式的标记。通过各属性，\fBlicense\fR 操作可以向客户端指示必须显示相关的有效负荷并/或要求接受它。显示并/或接受的方法由客户端决定。
+.sp
+.LP
+可以识别下列属性：
+.sp
+.ne 2
+.mk
+.na
+\fB\fBlicense\fR\fR
+.ad
+.RS 16n
+.rt  
+此属性是 \fBlicense\fR 操作的关键属性。此属性为许可证提供有意义的描述，以帮助用户在无需阅读许可证文本本身的情况下确定内容。其中一些示例值包括：
+.RS +4
+.TP
+.ie t \(bu
+.el o
+ABC Co. Copyright Notice
+.RE
+.RS +4
+.TP
+.ie t \(bu
+.el o
+ABC Co. Custom License
+.RE
+.RS +4
+.TP
+.ie t \(bu
+.el o
+Common Development and Distribution License 1.0 (CDDL)
+.RE
+.RS +4
+.TP
+.ie t \(bu
+.el o
+GNU General Public License 2.0 (GPL)
+.RE
+.RS +4
+.TP
+.ie t \(bu
+.el o
+GNU General Public License 2.0 (GPL) Only
+.RE
+.RS +4
+.TP
+.ie t \(bu
+.el o
+MIT License
+.RE
+.RS +4
+.TP
+.ie t \(bu
+.el o
+Mozilla Public License 1.1 (MPL)
+.RE
+.RS +4
+.TP
+.ie t \(bu
+.el o
+Simplified BSD License
+.RE
+建议尽可能在描述中包括许可证的版本，如上所示。\fBlicense\fR 值在软件包内必须唯一。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fBmust-accept\fR\fR
+.ad
+.RS 16n
+.rt  
+如果为 \fBtrue\fR，则用户必须先接受此许可证，才能安装或更新相关软件包。省略此属性等效于 \fBfalse\fR。接受的方法（例如，交互式或基于配置）由客户端决定。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fBmust-display\fR\fR
+.ad
+.RS 16n
+.rt  
+如果为 \fBtrue\fR，则在执行打包操作期间客户端必须显示操作的有效负荷。省略此值等效于 \fBfalse\fR。此属性不应用于版权声明，仅用于实际许可证或执行操作期间必须显示的其他材料。显示的方法由客户端决定。
+.RE
+
+.SS "传统操作"
+.sp
+.LP
+\fBlegacy\fR 操作表示由传统包管理系统使用的软件包数据。与此操作相关联的属性将添加到传统系统的数据库中，以便查询这些数据库的工具可以像实际安装了传统软件包一样工作。需特别指出的是，这应足以使传统系统确信系统上已安装了 \fBpkg\fR 属性指定的软件包，如此便可使用软件包来满足依赖性。
+.sp
+.LP
+可识别根据 \fBpkginfo\fR(4) 上的参数指定的下列属性：
+.sp
+.ne 2
+.mk
+.na
+\fB\fBcategory\fR\fR
+.ad
+.RS 12n
+.rt  
+\fBCATEGORY\fR 参数的值。缺省值为 \fBsystem\fR。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fBdesc\fR\fR
+.ad
+.RS 12n
+.rt  
+\fBDESC\fR 参数的值。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fBhotline\fR\fR
+.ad
+.RS 12n
+.rt  
+\fBHOTLINE\fR 参数的值。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fBname\fR\fR
+.ad
+.RS 12n
+.rt  
+\fBNAME\fR 参数的值。缺省值为 \fBnone provided\fR。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fBpkg\fR\fR
+.ad
+.RS 12n
+.rt  
+要安装的软件包的缩写。缺省值为软件包的 FMRI 中的名称。此属性是 \fBlegacy\fR 操作的关键属性。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fBvendor\fR\fR
+.ad
+.RS 12n
+.rt  
+\fBVENDOR\fR 参数的值。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fBversion\fR\fR
+.ad
+.RS 12n
+.rt  
+VERSION 参数的值。缺省值为软件包的 FMRI 中的版本。
+.RE
+
+.SS "设置操作"
+.sp
+.LP
+\fBset\fR 操作表示软件包级别的属性或元数据，例如软件包描述。
+.sp
+.LP
+可以识别下列属性：
+.sp
+.ne 2
+.mk
+.na
+\fB\fBname\fR\fR
+.ad
+.RS 9n
+.rt  
+属性的名称。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fBvalue\fR\fR
+.ad
+.RS 9n
+.rt  
+提供给属性的值。
+.RE
+
+.sp
+.LP
+\fBset\fR 操作可以提供软件包作者选择的任何元数据。但是，存在大量定义明确的对包管理系统具有特定意义的属性名称。
+.sp
+.ne 2
+.mk
+.na
+\fB\fBinfo.classification\fR\fR
+.ad
+.RS 23n
+.rt  
+一个 \fBpkg\fR(5) 客户端可以使用一个或多个标记对软件包进行分类。该值应具有一个机制（例如 "org.opensolaris.category.2008" 或 "org.acm.class.1998"）和实际分类（例如 "Applications/Games"），由冒号 (:) 分隔。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fBpkg.description\fR\fR
+.ad
+.RS 23n
+.rt  
+软件包的内容和功能的详细描述，长度通常约为一个段落。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fBpkg.obsolete\fR\fR
+.ad
+.RS 23n
+.rt  
+如果为 \fBtrue\fR，则将软件包标记为过时。过时的软件包除了设置操作外不能具有任何其他操作，且不得标记为已重命名。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fBpkg.renamed\fR\fR
+.ad
+.RS 23n
+.rt  
+如果为 \fBtrue\fR，则软件包已被重命名。软件包中还必须存在一个或多个 \fBdepend\fR 操作，且指向此软件包已重命名到的软件包版本。软件包不能同时标记为已重命名和过时，但在其他情况下可以具有任意多个设置操作。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fBpkg.summary\fR\fR
+.ad
+.RS 23n
+.rt  
+软件包的一行简短描述。
+.RE
+
+.SS "组操作"
+.sp
+.LP
+\fBgroup\fR 操作定义 UNIX 组，如 \fBgroup\fR(4) 中所定义。不存在对于组口令的支持。使用此操作定义的组最初不具有用户列表。可以使用 \fBuser\fR 操作添加用户。可以识别下列属性：
+.sp
+.ne 2
+.mk
+.na
+\fB\fBgroupname\fR\fR
+.ad
+.RS 13n
+.rt  
+组名的值。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fBgid\fR\fR
+.ad
+.RS 13n
+.rt  
+组的唯一数字 ID。缺省值为 100 之下的第一个自由组。
+.RE
+
+.SS "用户操作"
+.sp
+.LP
+\fBuser\fR 操作定义 UNIX 用户，如 \fB/etc/passwd\fR、\fB/etc/shadow\fR、\fB/etc/group\fR 和 \fB/etc/ftpd/ftpusers\fR 文件中所定义。使用此属性定义的用户具有添加到相应文件中的条目。
+.sp
+.LP
+可以识别下列属性：
+.sp
+.ne 2
+.mk
+.na
+\fB\fBusername\fR\fR
+.ad
+.RS 15n
+.rt  
+用户的唯一名称
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fBpassword\fR\fR
+.ad
+.RS 15n
+.rt  
+用户的加密口令。缺省值为 \fB*LK*\fR。请参见 \fBshadow\fR(4)。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fBuid\fR\fR
+.ad
+.RS 15n
+.rt  
+用户的唯一 UID。缺省值为 100 之下的第一个自由值。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fBgroup\fR\fR
+.ad
+.RS 15n
+.rt  
+用户的主组名称。必须可在 \fB/etc/group\fR 中找到。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fBgcos-field\fR\fR
+.ad
+.RS 15n
+.rt  
+\fB/etc/passwd\fR 中 \fBgcos\fR 字段的值。缺省值为 \fBusername\fR。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fBhome-dir\fR\fR
+.ad
+.RS 15n
+.rt  
+用户的起始目录。缺省值为 /。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fBlogin-shell\fR\fR
+.ad
+.RS 15n
+.rt  
+用户的缺省 shell。缺省值为空。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fBgroup-list\fR\fR
+.ad
+.RS 15n
+.rt  
+用户所属的辅助组。请参见 \fBgroup\fR(4)。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fBftpuser\fR\fR
+.ad
+.RS 15n
+.rt  
+可设置为 \fBtrue\fR 或 \fBfalse\fR。缺省值 \fBtrue\fR 指示允许用户通过 FTP 登录。请参见 \fBftpusers\fR(4)。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fBlastchg\fR\fR
+.ad
+.RS 15n
+.rt  
+1970 年 1 月 1 日至上次修改口令的日期之间的天数。缺省值为空。请参见 \fBshadow\fR(4)。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fBmin\fR\fR
+.ad
+.RS 15n
+.rt  
+所需的相邻两次更改口令之间的最小天数。必须将此字段设置为 0 或更大值才能启用口令有效期。缺省值为空。请参见 \fBshadow\fR(4)。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fBmax\fR\fR
+.ad
+.RS 15n
+.rt  
+口令的最大有效天数。缺省值为空。请参见 \fBshadow\fR(4)。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fBwarn\fR\fR
+.ad
+.RS 15n
+.rt  
+用户在口令到期之前多少天收到警告。请参见 \fBshadow\fR(4)。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fBinactive\fR\fR
+.ad
+.RS 15n
+.rt  
+允许该用户不活动的天数。按每台计算机对此进行计数。可从计算机的 \fBlastlog\fR 文件获取有关上次登录的信息。请参见 \fBshadow\fR(4)。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fBexpire\fR\fR
+.ad
+.RS 15n
+.rt  
+表示为自 UNIX 纪元（1970 年 1 月 1 日）后的天数的绝对日期。达到此数字时，将无法再进行登录。例如，到期值为 13514 指定登录将在 2007 年 1 月 1 日失效。请参见 \fBshadow\fR(4)。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fBflag\fR\fR
+.ad
+.RS 15n
+.rt  
+设置为空。请参见 \fBshadow\fR(4)。
+.RE
+
+.SH 执行器
+.sp
+.LP
+在某些上下文中，附加操作可能适合在为特定操作做准备时执行或者在引入特定操作后执行。这些附加操作通常仅在实时系统映像上才需要，而且特定于操作系统。当软件包安装或删除过程中涉及的多个操作具有相同的执行器时，会为该安装或删除过程执行一次与执行器存在情况相对应的操作。
+.sp
+.LP
+错误指定的执行器可能会导致软件包安装失败，如果该执行器无法确定进行安全安装的方法。
+.sp
+.LP
+系统定义了以下执行器：
+.sp
+.ne 2
+.mk
+.na
+\fB\fBreboot-needed\fR\fR
+.ad
+.sp .6
+.RS 4n
+可设置为 \fBtrue\fR 或 \fBfalse\fR。如果在软件包安装期间安装或更新某个操作（此执行器设置为 \fBtrue\fR），则可以将打包事务通告为需要重新引导。某些客户端实现可能会执行附加步骤，例如，在映像是实时系统映像的情况下，使用该映像的克隆执行整个软件包操作。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fBdisable_fmri\fR、\fBrefresh_fmri\fR、\fBrestart_fmri\fR、\fBsuspend_fmri\fR\fR
+.ad
+.sp .6
+.RS 4n
+其中每个执行器在软件包安装或删除过程中均使用服务实例的 FMRI 值进行操作。根据 \fBsvcadm\fR(1M) 的 \fBdisable\fR 子命令，\fBdisable_fmri\fR 会导致给定的 FMRI 在删除操作之前被禁用。根据 \fBsvcadm\fR(1M) 的各个子命令，\fBrefresh_fmri\fR 和 \fBrestart_fmri\fR 会导致给定的 FMRI 在安装或更新操作后被刷新或重新启动。最后，\fBsuspend_fmri\fR 会导致给定的 FMRI 在安装操作阶段之前被临时禁用，并在该阶段完成后被重新启用。
+.sp
+该值可以包含与多个服务实例匹配的模式。但是，它必须使用 \fBsvcs\fR(1) 所接受的 glob 显式执行此操作，而不是通过不指示任何实例来隐式执行此操作。
+.RE
+
+.SH 约束和冻结
+.sp
+.LP
+在将软件包转换为新版本、添加到系统中或从系统中删除时，所选的版本或是否允许删除由对软件包施加的各种约束确定。这些约束可由其他软件包以依赖性的形式进行定义，或者由管理员以冻结的形式进行定义。
+.sp
+.LP
+最常见的约束形式由 \fBrequire\fR 依赖性提供，如上面的"依赖操作"中所述。此类约束可防止软件包被降级或删除。
+.sp
+.LP
+操作系统的大多数部分由名为 \fBincorporation\fR 的软件包进行封装。这些软件包主要提供由 \fBincorporate\fR 依赖性表示的约束。
+.sp
+.LP
+如上所述，合并的软件包不需要存在于系统上，但如果存在，它将同时指定一个非独占最低版本和一个独占最高版本。例如，如果依赖 FMRI 具有版本 1.4.3，则低于 1.4.3 的版本都不能满足依赖性，且任何高于或等于 1.4.4 的版本也都不能满足依赖性。但是，允许使用仅扩展点分序列的版本（例如 1.4.3.7）。
+.sp
+.LP
+Incorporation 用于强制系统的各部分进行同步升级。对于某些组件（例如 C 库和内核），这是一项基本要求。对于其他组件（例如，不具有任何其他依赖性的简单用户级组件），同步升级仅仅用来提供一组经过测试的已知软件包版本，这些软件包版本可由 incorporation 的特定版本进行引用。
+.sp
+.LP
+因为 incorporation 只是一个软件包，所以可将其删除，它提供的所有约束也将随之解除。但是，Oracle Solaris 提供的许多 incorporation 是合并软件包所必需的，因为解除其约束可能会不安全。
+.sp
+.LP
+尝试将软件包升级到已安装的 incorporation 所不允许的版本，将不会尝试查找更高的 incorporation 版本来满足该请求，反而会失败。如果必须移动约束本身，而又无法删除指定它的 incorporation，则必须将 incorporation 升级到指定所需约束版本的版本。升级 incorporation 会导致不能满足新版本提供的约束的所有合并软件包也进行升级。
+.sp
+.LP
+系统管理员可以使用 \fBpkg freeze\fR 命令约束软件包。在未提供版本的情况下，将指定软件包约束为系统上已安装的版本。如果提供了版本化软件包，则此管理约束或冻结会像已安装了合并依赖性（其中 \fBfmri\fR 属性具有所提供的软件包版本值）一样进行操作。
+.sp
+.LP
+包管理系统永远不会自动解除冻结。要解除约束，请使用 \fBpkg unfreeze\fR 命令。
+.SH 发布者和系统信息库
+.sp
+.LP
+如上所述，发布者只是软件包客户端用来标识软件包提供者的一个名称。发布者可使用软件包系统信息库和/或软件包归档来发行其软件包。软件包系统当前支持以下两种类型的系统信息库：源系统信息库和镜像系统信息库。
+.sp
+.LP
+\fB源\fR是包含一个或多个软件包的所有元数据（例如，目录、清单和搜索索引）和内容（文件）的软件包系统信息库。如果在一个映像中为给定发布者配置了多个源，则软件包客户端 API 会尝试选择从其检索软件包数据的最佳源。这是最常见的系统信息库类型，当每次在软件包系统信息库上使用 \fBpkgsend\fR 或 \fBpkgrecv\fR 时进行隐式创建。
+.sp
+.LP
+\fBmirror\fR 是仅包含软件包内容（文件）的软件包系统信息库。如果在一个映像中为给定发布者配置了一个或多个镜像，则客户端 API 会优先使用镜像进行软件包内容检索并尝试选择从其检索软件包内容的最佳镜像。如果镜像不可访问、不具有所需内容或者运行缓慢，客户端 API 将从任何已配置的源系统信息库检索内容。镜像设计用于通过 \fBpkg.depotd\fR(1M) 的动态镜像功能在一组可信客户端之间共享内容。镜像还设计用于验证对软件包元数据的访问，但发行软件包内容不需要进行验证。例如，客户端可能配置有需要具有 SSL 密钥和证书对才能访问的 \fBhttps\fR 源，以及提供软件包内容的 \fBhttp\fR 镜像。这样，只有经过授权的客户端才可以安装或更新软件包，同时避免了验证软件包内容检索的开销。通过删除系统信息库中除名为 \fBfile\fR 的子目录及其父目录之外的所有子目录可创建镜像。通过使用 \fBpkg.depotd\fR(1M) 的镜像模式还可将源系统信息库置备为镜像。
+.SH 属性
+.sp
+.LP
+映像可具有一个或多个与其关联的属性。这些属性可用来存储有关映像的用途、内容和行为的信息。有关完整列表，请参见 \fBpkg\fR(1)。
+.SH 映像策略
+.sp
+.LP
+策略由带有布尔值的映像属性所定义。支持的策略包括：
+.sp
+.ne 2
+.mk
+.na
+\fB\fBflush-content-cache-on-success\fR\fR
+.ad
+.sp .6
+.RS 4n
+如果为 true，则在成功安装软件包之后删除已下载文件的高速缓存。缺省值：\fBFalse\fR。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fBsend-uuid\fR\fR
+.ad
+.sp .6
+.RS 4n
+如果为 true，则对所有请求发送向发布者标识映像的唯一标识符 (UUID)。缺省值：\fBTrue\fR。
+.RE
+
+.SH 文件
+.sp
+.LP
+因为在较大的文件系统内可以任意找到 \fBpkg\fR(5) 映像，所以标记 \fB$IMAGE_ROOT\fR 可用于区分相对路径。对于典型的系统安装，\fB$IMAGE_ROOT\fR 等效于 /。
+.sp
+.ne 2
+.mk
+.na
+\fB\fB$IMAGE_ROOT/var/pkg\fR\fR
+.ad
+.sp .6
+.RS 4n
+完整或部分映像的元数据目录。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB$IMAGE_ROOT/.org.opensolaris,pkg\fR\fR
+.ad
+.sp .6
+.RS 4n
+用户映像的元数据目录。
+.RE
+
+.sp
+.LP
+在特定映像的元数据中，某些文件和目录可能包含修复和恢复期间有用的信息。标记 \fB$IMAGE_META\fR 用于引用元数据所在的顶层目录。\fB$IMAGE_META\fR 通常是上述两个路径之一。
+.sp
+.ne 2
+.mk
+.na
+\fB\fB$IMAGE_META/lost+found\fR\fR
+.ad
+.RS 26n
+.rt  
+在软件包操作期间移动的有冲突目录和文件的位置。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB$IMAGE_META/publisher\fR\fR
+.ad
+.RS 26n
+.rt  
+为每个发布者包含一个目录。每个目录存储特定于发布者的元数据。
+.RE
+
+.sp
+.LP
+\fB$IMAGE_META\fR 目录分层结构中的其他路径是"专用的"，可能会进行更改。
+.SH 属性
+.sp
+.LP
+有关下列属性的描述，请参见 \fBattributes\fR(5)：
+.sp
+
+.sp
+.TS
+tab() box;
+cw(2.75i) |cw(2.75i) 
+lw(2.75i) |lw(2.75i) 
+.
+属性类型属性值
+_
+可用性\fBpackage/pkg\fR（软件包/pkg）
+_
+接口稳定性Uncommitted（未确定）
+.TE
+
+.SH 另请参见
+.sp
+.LP
+\fBpkg\fR(1)、\fBpkgsend\fR(1)、\fBpkg.depotd\fR(1M)、\fBsvcadm\fR(1M)、\fBpkginfo\fR(4)
+.sp
+.LP
+\fBhttp://hub.opensolaris.org/bin/view/Project+pkg/\fR

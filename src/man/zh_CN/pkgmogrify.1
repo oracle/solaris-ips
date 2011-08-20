@@ -1,0 +1,608 @@
+'\" te
+.\" Copyright (c) 2007, 2011, Oracle and/or its affiliates. All rights reserved.
+.TH pkgmogrify 1 "2011 年 7 月 28 日" "SunOS 5.11" "用户命令"
+.SH 名称
+pkgmogrify \- 映像包管理系统清单变换程序
+.SH 用法概要
+.LP
+.nf
+/usr/bin/pkgmogrify [-vi] [-I \fIincludedir\fR ...]
+    [-D \fImacro\fR=\fIvalue\fR ...] [-O \fIoutputfile\fR]
+    [-P \fIprintfile\fR] [\fIinputfile\fR ...]
+.fi
+
+.SH 描述
+.sp
+.LP
+\fBpkgmogrify\fR 允许对软件包清单进行编程式编辑，以简化自动生成软件和自动发布软件包时所需的典型变换。
+.sp
+.LP
+\fBpkgmogrify\fR 提供：
+.RS +4
+.TP
+.ie t \(bu
+.el o
+宏替换，以便于在各种体系结构和平台间共享单个清单。
+.RE
+.RS +4
+.TP
+.ie t \(bu
+.el o
+包含其他清单或清单片段，例如标准组件和变换。
+.RE
+.RS +4
+.TP
+.ie t \(bu
+.el o
+变换软件包操作，包括修改、删除或添加操作属性。
+.RE
+.SH 选项
+.sp
+.LP
+支持以下选项：
+.sp
+.ne 2
+.mk
+.na
+\fB\fB-D\fR \fIname\fR=\fI value\fR\fR
+.ad
+.sp .6
+.RS 4n
+将 \fIname\fR 定义为一个宏，其值为 \fIvalue\fR。宏在输入文件中显示为 \fB $(macro)\fR。将重复执行替换操作，直到再也找不到变换。常见用语包括：
+.RS +4
+.TP
+.ie t \(bu
+.el o
+通过在行的开头使用特定于体系结构的标记来删除其他体系结构清单中的行。
+.sp
+.in +2
+.nf
+$(sparc_ONLY)file ...
+.fi
+.in -2
+
+处理 SPARC 体系结构时，该宏将被设置为空字符串。而处理其他体系结构时，该宏在命令行中会被设置为 \fB#\fR，从而从当前体系结构的清单中删除此操作。
+.RE
+.RS +4
+.TP
+.ie t \(bu
+.el o
+指定路径名称中特定于平台的部分，例如，可执行文件和库的 64 位体系结构目录的名称：
+.sp
+.in +2
+.nf
+file NOHASH path=usr/bin/$(ARCH64)/cputrack ...
+.fi
+.in -2
+
+应当将这些宏设置为命令行中所需的值。不存在预定义的宏值。
+.RE
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB-I\fR \fIinclude_directory\fR\fR
+.ad
+.sp .6
+.RS 4n
+将指定目录添加到在命令行中和在嵌入式 include 指令中指定的文件的搜索路径中。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB-O\fR \fIoutputfile\fR\fR
+.ad
+.sp .6
+.RS 4n
+将清单输出写入指定的文件中。如果出现错误或 transform 指令引起中止操作，则不会写入该文件。缺省情况下，清单输出会写入 \fBstdout\fR。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB-P\fR \fIprintfile\fR\fR
+.ad
+.sp .6
+.RS 4n
+将 transform 指令输出操作生成的输出写入指定的文件。如果出现错误或 transform 指令引起中止操作，则不会写入该文件。缺省情况下，输出会写入 \fBstdout\fR。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB-i\fR\fR
+.ad
+.sp .6
+.RS 4n
+忽略文件中的 include 指令。仅处理在命令行（或 \fBstdin\fR）中指定的文件。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB-v\fR\fR
+.ad
+.sp .6
+.RS 4n
+将注释写入显示变换效果的输出清单。该信息可以帮助调试。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB--help\fR 或 \fB-?\fR\fR
+.ad
+.sp .6
+.RS 4n
+显示用法消息。
+.RE
+
+.SH 嵌入式指令
+.sp
+.LP
+清单文件支持两种类型的指令：include 指令和 transform 指令。
+.sp
+.LP
+Include 指令的格式为：
+.sp
+.in +2
+.nf
+<include \fIfile\fR>
+.fi
+.in -2
+
+.sp
+.LP
+该指令能够使 \fBpkgmogrify\fR 首先在当前目录中搜索名为 \fBfile\fR 的文件，然后在 \fB-I\fR 选项指定的目录中搜索该文件。如果找到，则会将该文件的内容插入清单中遇到该指令的位置。如果未找到，\fBpkgmogrify\fR 将退出并显示错误。
+.sp
+.LP
+Transform 指令的格式为：
+.sp
+.in +2
+.nf
+<transform \fImatching-criteria\fR -> \fIoperation\fR>
+.fi
+.in -2
+
+.sp
+.LP
+这些指令会进行累积（直到将所有输入都读入内存中），然后按遇到这些指令的顺序应用到操作。
+.sp
+.LP
+匹配条件的格式为：
+.sp
+.in +2
+.nf
+[\fIaction-type\fR ... ] [\fIattribute\fR=<\fIvalue-regexp\fR> ...]
+.fi
+.in -2
+
+.sp
+.LP
+必须匹配其中一个指定的 \fIaction-types\fR。必须匹配所有指定的 \fIattributes\fR。使用的正则表达式语法是 Python 语法。有关 Python 正则表达式语法的更多信息，请使用命令 \fBpydoc re\fR 或参见 \fBhttp://docs.python.org/dev/howto/regex.html \fR 中的更完整文档。该正则表达式固定于开头而非结尾。因此，通过文件扩展名进行匹配的正则表达式匹配文件必须包含前导 \fB\&.*\fR，且应当包含尾随 \fB $\fR。
+.sp
+.LP
+可以指定多个条件，以空格分隔。
+.sp
+.LP
+有以下操作可用：
+.sp
+.ne 2
+.mk
+.na
+\fB\fBadd\fR\fR
+.ad
+.RS 11n
+.rt  
+将值添加到属性中。此操作使用两个参数。第一个参数是属性的名称，第二个参数是对应值。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fBdefault\fR\fR
+.ad
+.RS 11n
+.rt  
+如果不存在属性值，则设置该属性值。此操作与 \fBadd\fR 操作使用相同的两个参数。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fBdelete\fR\fR
+.ad
+.RS 11n
+.rt  
+删除属性值。此操作使用两个参数。第一个参数是属性的名称。第二个参数是要与删除的属性值匹配的正则表达式。与用于匹配操作的正则表达式不同，该正则表达式并不是固定的。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fBdrop\fR\fR
+.ad
+.RS 11n
+.rt  
+放弃该操作。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fBedit\fR\fR
+.ad
+.RS 11n
+.rt  
+修改操作的属性。此操作使用三个参数。第一个参数是属性的名称，第二个参数是与属性值匹配的正则表达式。第三个参数是用于替换正则表达式匹配的部分值的替换字符串。与用于匹配操作的正则表达式不同，该正则表达式并不是固定的。如果在正则表达式中定义了组，则在替换字符串中可以使用 \fB\e1\fR、\fB\e2\fR 等格式的一般正则表达式向后引用。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fBemit\fR\fR
+.ad
+.RS 11n
+.rt  
+向清单输出流中发出一行。此行必须是有效操作字符串、为空（导致空白行）或注释（\fB #\fR 后面跟有任意文本）。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fBexit\fR\fR
+.ad
+.RS 11n
+.rt  
+终止清单处理过程。不输出任何清单，也不应用任何 \fB print\fR 操作。如果给定一个参数，该参数必须是整数并且用作退出代码。缺省为 0。如果给定两个参数，则第一个参数是退出代码，第二个参数是要输出到 \fBstderr\fR 的消息。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fBprint\fR\fR
+.ad
+.RS 11n
+.rt  
+将消息输出到 \fB-P\fR 指定的输出文件中。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fBset\fR\fR
+.ad
+.RS 11n
+.rt  
+设置属性的值。此操作与 \fBadd\fR 操作使用相同的两个参数。
+.RE
+
+.sp
+.LP
+除了 \fBdelete\fR 和 \fBdrop\fR 以外的所有操作都使用其内容输出到输出流的参数（可能是可选的）。这些字符串可能包含三种不同类型的特殊标记，这些标记允许输出包含不基于每种操作的固定变换的信息。
+.sp
+.LP
+第一种替换通过将属性的名称放置在括号内（跟随在百分号后面），允许操作引用当前操作的属性值。例如，\fB%(alias)\fR 引用操作的 \fBalias\fR 属性的值。
+.sp
+.LP
+存在几个合成属性。以下两个对 \fBpkgmogrify\fR 而言是唯一的：
+.RS +4
+.TP
+.ie t \(bu
+.el o
+\fBpkg.manifest.filename\fR 引用在其中找到操作的文件的名称。
+.RE
+.RS +4
+.TP
+.ie t \(bu
+.el o
+\fBpkg.manifest.lineno\fR 引用在其中找到操作的行。
+.RE
+.sp
+.LP
+以下三个合成属性类似于 \fBpkg\fR(1) 中使用的属性：
+.RS +4
+.TP
+.ie t \(bu
+.el o
+\fBaction.hash\fR 引用操作的散列值（如果该操作携带有效负荷）。对于携带有效负荷的操作，\fB set\fR 操作可以通过对 \fBaction.hash\fR 属性进行操作来更改该操作的散列。
+.RE
+.RS +4
+.TP
+.ie t \(bu
+.el o
+\fBaction.key\fR 引用关键属性的值。
+.RE
+.RS +4
+.TP
+.ie t \(bu
+.el o
+\fBaction.name\fR 引用操作类型的名称。
+.RE
+.sp
+.LP
+如果请求其值的属性不存在，\fBpkgmogrify \fR 将退出并显示错误。为防止出现错误退出，请在属性名称后面附加 \fB;notfound=\fR 以及要用于替换属性值的值。例如，如果存在 \fBalias\fR 属性，则 \fB%(alias;notfound='no alias')\fR 输出该属性的值，否则输出 \fBno alias\fR。
+.sp
+.LP
+如果请求其值的属性具有多个值，则输出每个值，以空格隔开。与 \fBnotfound\fR 标记类似，标记 \fBprefix\fR、\fBsuffix\fR 和 \fBsep \fR 也可用于更改此行为。由 \fBprefix \fR 表示的字符串放置在每个值之前，由 \fBsuffix\fR 表示的字符串放置在每个值之后，而 \fBsep\fR 放置在某个值的后缀与下一个值的前缀之间。
+.sp
+.LP
+与操作属性类似，\fBpkgmogrify\fR 指令也可以使用花括 （而非圆括号）引用 件包属性：\fB%{pkg.fmri}\fR。应用 transform 指令时，必须已在 \fBset\fR 操作中定义了属性，否则会将其视为 \fBnotfound\fR，如上所述。当处理过程到达清单文件（介绍软件包）的结尾处时，将清除下一个软件包的属性。
+.sp
+.LP
+这不仅在将软件包属性视为操作属性来引用方面，而且在匹配甚至暂时修改这些属性方面，都很有用。因此，在这些情况下都可以使用合成属性名称 \fBpkg\fR（仅在 \fBpkgmogrify\fR 上下文中）。
+.sp
+.LP
+如果 \fBpkgmogrify\fR 完成读取在命令行中指定的清单并且该清单定义了 \fBpkg.fmri\fR 软件包属性，\fBpkgmogrify\fR 会创建此合成 \fBpkg\fR 操作，其属性为软件包的属性。\fB<transform>\fR 指令随后会对此操作进行匹配（正如任何其他操作类型一样）。
+.sp
+.LP
+\fBpkg\fR 操作中的操作是特殊的，它们仅在内存中进行，不会直接影响发出的清单。例如，尝试通过 \fBadd\fR、\fBdefault\fR 或 \fBset\fR 操作设置 \fBpkg\fR 操作的属性时，不会使 \fBset\fR 操作添加到清单中，虽然该操作将可用于其他 \fB<transform>\fR 指令进行匹配。尝试 \fBemit\fR\fBpkg\fR 操作会导致错误。要添加软件包属性，改为 \fBemit\fR\fBset \fR 操作。
+.sp
+.LP
+第三种替换是逆向引用功能。该替换与在 \fBedit\fR 操作中可使用的替换不同，它是对 \fB->\fR 左侧的变换匹配中列出组的引用。它们由 \fB%<1>\fR、\fB %<2>\fR 等表示（以在匹配条件中显示的顺序）。
+.sp
+.LP
+处理顺序如下所示：
+.RS +4
+.TP
+1.
+从输入文件中读取行。
+.RE
+.RS +4
+.TP
+2.
+应用宏。
+.RE
+.RS +4
+.TP
+3.
+处理 \fB<include ...>\fR 和 \fB<transform>\fR 指令，从而找到并读取更多文件。
+.RE
+.RS +4
+.TP
+4.
+累积所有输入之后，输出中的每行都会转换为操作并应用所有变换。
+.RE
+.RS +4
+.TP
+5.
+成功完成处理后，写入输出。
+.RE
+.SH 示例
+.LP
+\fB示例 1 \fR将标记添加到 SMF 清单中
+.sp
+.LP
+将标记添加到服务管理工具 (Service Management Facility, SMF) 清单中，以便在活动系统上安装软件包时导入这些标记。
+
+.sp
+.in +2
+.nf
+<transform file path=(var|lib)/svc/manifest/.*\e.xml -> \e
+    add restart_fmri svc:/system/manifest-import:default>
+.fi
+.in -2
+
+.LP
+\fB示例 2 \fR移动文件
+.sp
+.LP
+将文件从 \fBusr/sfw/bin\fR 移至 \fBusr/bin\fR。
+
+.sp
+.in +2
+.nf
+<transform file -> edit path usr/sfw/bin usr/bin>
+.fi
+.in -2
+
+.LP
+\fB示例 3 \fR指定需要重新引导
+.sp
+.LP
+将 \fBreboot-needed\fR 标记添加到 \fB/kernel\fR 下 \fB\&.conf\fR 文件以外的文件中。请注意，以下示例利用了按照在输入文件中看见的顺序将变换应用到每个操作的方式。
+
+.sp
+.in +2
+.nf
+<transform file path=kernel/.* -> set reboot-needed true>
+<transform file path=kernel/.*\e.conf -> delete reboot-needed .*>
+.fi
+.in -2
+
+.sp
+.LP
+这还可以通过包含正则表达式的单个变换规则完成。
+
+.LP
+\fB示例 4 \fR将 FMRI 属性转换为 Depend 操作
+.sp
+.LP
+将软件包属性 \fBpkg.fmri\fR 转换为 \fBdepend\fR 操作，使其成为集合的一部分。
+
+.sp
+.in +2
+.nf
+<transform set name=pkg.fmri -> \e
+    emit depend type=incorporate fmri=%(value)>
+<transform set name=pkg.fmri -> drop>
+.fi
+.in -2
+
+.LP
+\fB示例 5 \fR输出错误编号列表
+.sp
+.LP
+输出带有双引号和前缀的错误编号的逗号分隔列表。
+
+.sp
+.in +2
+.nf
+set name=bugs value=12345 value=54321 value=13579 value=97531
+<transform set name=bugs -> \e
+    print %(value;sep=",";prefix="bug='";suffix="'")>
+.fi
+.in -2
+
+.LP
+\fB示例 6 \fR允许丢失属性
+.sp
+.LP
+即使是在丢失属性时，也可以安全输出消息。
+
+.sp
+.in +2
+.nf
+<transform driver -> print Found aliases: %(alias;notfound=<none>)>
+.fi
+.in -2
+
+.LP
+\fB示例 7 \fR设置缺省值
+.sp
+.LP
+设置缺省所有者、组以及权限的值。
+
+.sp
+.in +2
+.nf
+<transform file dir -> default owner root>
+<transform file dir -> default group bin>
+<transform file -> default mode 0444>
+<transform dir -> default mode 0755>
+.fi
+.in -2
+
+.LP
+\fB示例 8 \fR将依赖项添加到未标记为已过时的软件包中
+.sp
+.LP
+对于未标记为已过时的任何软件包，为提供软件包的合并添加集合的依赖项。必须在读入清单后执行该组变换，否则始终发出依赖项。因为修改 \fBpkg\fR 操作不会永久起作用，所以无需清除匹配 \fB pkg.obsolete=false\fR 的属性。
+
+.sp
+.in +2
+.nf
+<transform pkg -> default pkg.obsolete false>
+<transform pkg pkg.obsolete=false -> emit depend \e
+    fmri=consolidation/$(CONS)/$(CONS)-incorporation type=require>
+.fi
+.in -2
+
+.LP
+\fB示例 9 \fR发现问题时退出并输出消息
+.sp
+.LP
+在清单中发现已过时属性时退出并输出错误消息。
+
+.sp
+.in +2
+.nf
+<transform file dir link hardlink opensolaris.zone=.* -> \e
+    exit 1 The opensolaris.zone attribute is obsolete.>
+.fi
+.in -2
+
+.LP
+\fB示例 10 \fR设置合适的语言环境侧面
+.sp
+.LP
+设置适用于正在考虑的路径名称的语言环境侧面。
+
+.sp
+.in +2
+.nf
+<transform dir file link hardlink path=.*/locale/([^/]+).* -> \e
+    default facet.locale.%<1> true>
+.fi
+.in -2
+
+.SH 退出状态
+.sp
+.LP
+将返回以下退出值：
+.sp
+.ne 2
+.mk
+.na
+\fB\fB0\fR\fR
+.ad
+.RS 6n
+.rt  
+一切正常工作。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB1\fR\fR
+.ad
+.RS 6n
+.rt  
+出现预料中的错误情况。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB2\fR\fR
+.ad
+.RS 6n
+.rt  
+指定的命令行选项无效。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB99\fR\fR
+.ad
+.RS 6n
+.rt  
+意外的处理错误。
+.RE
+
+.SH 属性
+.sp
+.LP
+有关下列属性的说明，请参见 \fBattributes\fR(5)：
+.sp
+
+.sp
+.TS
+tab() box;
+cw(2.75i) |cw(2.75i) 
+lw(2.75i) |lw(2.75i) 
+.
+属性类型属性值
+_
+可用性\fBpackage/pkg\fR（软件包/pkg）
+_
+接口稳定性Uncommitted（未确定）
+.TE
+
+.SH 另请参见
+.sp
+.LP
+\fBpkg\fR(1)、\fBpkg\fR(5)
+.sp
+.LP
+\fBhttp://hub.opensolaris.org/bin/view/Project+pkg/\fR

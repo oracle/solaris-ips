@@ -1,0 +1,391 @@
+'\" te
+.\" Copyright (c) 2007, 2011, Oracle and/or its affiliates. All rights reserved.
+.TH pkglint 1 "2011 年 7 月 28 日" "SunOS 5.11" "用户命令"
+.SH 名称
+pkglint \- 映像包管理系统软件包 lint
+.SH 用法概要
+.LP
+.nf
+/usr/bin/pkglint [-c \fIdir\fR] [-r \fIuri\fR] [-p \fIregexp\fR]
+    [-f \fIrcfile\fR] [-b \fIbuild_no\fR] [-v]
+    [-l \fIuri\fR] | \fImanifest\fR ...
+.fi
+
+.LP
+.nf
+/usr/bin/pkglint -L [-v]
+.fi
+
+.SH 描述
+.sp
+.LP
+\fBpkglint\fR 对一个或多个软件包清单运行一系列检查，并有选择性地引用其他系统信息库。
+.sp
+.LP
+在发布软件包之前，应该在软件包构建期间使用 \fBpkglint\fR。\fBpkglint\fR 将对清单执行全面的测试，在正常操作 \fBpkgsend\fR(1) 或 \fBpkg.depotd\fR(1M) 期间，执行这种测试可能会消耗过多的资源。\fB pkglint\fR 检查包括对重复操作、缺少的属性和非常规文件权限进行测试。
+.sp
+.LP
+可以在命令行上将用于 lint 的清单作为本地文件的空格分隔列表进行传递，也可以从系统信息库检索清单。
+.sp
+.LP
+从系统信息库检索清单时，首次运行时 \fBpkglint\fR 将在指定的高速缓存目录中创建并填充 \fBpkg\fR(5) 用户映像。如果提供了 \fB-r\fR 选项，则为引用系统信息库创建名为 \fI cache_dir\fR\fB/ref_image\fR 的用户映像。如果提供了 \fB-l\fR 选项，则为 lint 系统信息库创建名为 \fI cache_dir\fR\fB/lint_image\fR 的用户映像。不会在这些映像中安装任何内容。\fBpkglint\fR 只使用这些映像从系统信息库中检索清单。
+.sp
+.LP
+\fBpkglint\fR 的后续调用可以重新使用高速缓存目录，并可以省略任何 \fB-r\fR 或 \fB-l\fR 参数。
+.sp
+.LP
+\fBpkglint\fR 对在高速缓存目录中配置发布者提供有限的支持。使用 \fBpkg\fR(1) 可对这些映像执行更复杂的发布者配置。
+.sp
+.LP
+\fBpkglint\fR 使软件包作者能够绕过对给定清单或操作进行的检查。其中的属性 \fB pkg.linted\fR 设置为 \fBTrue\fR 的清单或操作不会为该清单或操作生成任何 lint 输出。
+.sp
+.LP
+使用 \fBpkglint\fR 检查名称的子字符串可以进行更高粒度的 \fBpkg.linted\fR 设置。例如，设置为 \fBTrue\fR 的 \fBpkg.linted.\fI check\fR.\fIid\fR\fR 将对给定的清单或操作绕过名称为 \fB\fIcheck\fR.\fIid \fR\fR 的所有检查。
+.sp
+.LP
+可通过指定一个 \fBpkglintrc\fR 文件来配置 \fBpkglint\fR 的行为。缺省情况下，\fBpkglint\fR 在 \fB/usr/share/lib/pkg/pkglintrc\fR 和 \fB$HOME/.pkglintrc \fR 中搜索配置选项。使用 \fB-f\fR 选项可以指定其他配置文件。
+.sp
+.LP
+lint 运行期间，遇到的任何错误或警告将输出到 \fBstderr\fR。
+.SH 选项
+.sp
+.LP
+支持以下选项：
+.sp
+.ne 2
+.mk
+.na
+\fB\fB-b\fR \fIbuild_no\fR\fR
+.ad
+.RS 18n
+.rt  
+指定内部版本号，用于细化从 lint 和引用系统信息库执行 lint 期间使用的软件包列表。如果不指定 \fB-b\fR 选项，将使用最新版本的软件包。另请参见 \fBversion.pattern \fR 配置属性。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB-c\fR \fIcache_dir\fR\fR
+.ad
+.RS 18n
+.rt  
+指定用于从 lint 和引用系统信息库高速缓存软件包元数据的本地目录。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB-l\fR \fIlint_uri\fR\fR
+.ad
+.RS 18n
+.rt  
+指定表示 lint 系统信息库位置的 URI。支持基于 HTTP 和基于文件系统的发布。如果指定 \fB- l\fR，则还必须指定 \fB-c\fR。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB-L\fR\fR
+.ad
+.RS 18n
+.rt  
+列出已知的和排除的 lint 检查，然后退出。显示每个检查的短名称和描述。与 \fB-v\fR 标志结合使用时，将显示实现检查的方法而不显示描述。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB-f\fR \fIconfig_file\fR\fR
+.ad
+.RS 18n
+.rt  
+使用 \fI config_file\fR 配置文件来配置 \fBpkglint\fR 会话。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB-p\fR \fIregexp\fR\fR
+.ad
+.RS 18n
+.rt  
+指定正则表达式，用于细化要从 lint 系统信息库检查的软件包列表。将会加载来自引用系统信息库的所有清单（假定它们与提供的 \fB-b\fR 值匹配），并忽略此模式。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB-r\fR \fIrepo_uri\fR\fR
+.ad
+.RS 18n
+.rt  
+指定表示引用系统信息库位置的 URI。如果指定 \fB-r\fR，则还必须指定 \fB-c\fR。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB-v\fR\fR
+.ad
+.RS 18n
+.rt  
+以详细模式运行 \fBpkglint\fR，覆盖配置文件中的任何 \fBlog_level\fR 设置。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB--help\fR 或 \fB-?\fR\fR
+.ad
+.RS 18n
+.rt  
+显示用法消息。
+.RE
+
+.SH 文件
+.sp
+.LP
+\fBpkglintrc\fR 配置文件采用以下键/值参数：
+.sp
+.ne 2
+.mk
+.na
+\fB\fBlog_level\fR\fR
+.ad
+.RS 24n
+.rt  
+发出 lint 消息的最低级别。低于该级别的 lint 消息将被放弃。缺省值为 \fBINFO\fR。
+.sp
+严重性从低到高的日志级别依次为 \fBDEBUG\fR、\fB INFO\fR、\fBWARNING\fR、\fBERROR\fR 和 \fB CRITICAL\fR。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fBdo_pub_checks\fR\fR
+.ad
+.RS 24n
+.rt  
+如果为 \fBTrue\fR，则执行可能只对已发布的软件包有意义的检查。缺省值为 \fBTrue\fR。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fBpkglint.ext.\fR*\fR
+.ad
+.RS 24n
+.rt  
+\fBpkglint\fR 的插件机制允许在运行时添加其他 lint 模块。以 \fB pkglint.ext.\fR 开头的任何键采用必须是完全指定的 Python 模块的值。有关更多信息，请参见"开发者"一节。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fBpkglint.exclude\fR\fR
+.ad
+.RS 24n
+.rt  
+要从执行的检查集中省略的完全指定的 Python 模块、类或函数名称的空格分隔列表。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fBuse_progress_tracker\fR\fR
+.ad
+.RS 24n
+.rt  
+如果为 \fBTrue\fR，则在 lint 运行期间迭代清单时，会使用进度跟踪器。缺省值为 \fBTrue\fR。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fBversion.pattern\fR\fR
+.ad
+.RS 24n
+.rt  
+指定内部版本号以针对 (\fB-b\fR) 执行 lint 时使用的版本模式。如果未在配置文件中指定，则 \fB-b\fR 选项将使用模式 \fB*,5.11-0.\fR，并使用分支前缀 0 来匹配 5.11 内部版本的所有组件。
+.RE
+
+.SH 开发者
+.sp
+.LP
+扩展 \fBpkglint\fR、子类 \fBpkg.lint.base.Checker\fR 及其子类 \fBManifestChecker \fR、\fBActionChecker\fR 和 \fBContentChecker\fR 执行的检查集。将包含这些类的 Python 模块名称添加到配置文件中的新 \fBpkglint.ext.\fR 键。
+.sp
+.LP
+这些新子类的实例由 \fBpkglint\fR 在启动时创建。lint 会话过程中，将会调用带有特殊关键字参数 \fB pkglint_id\fR 的每个子类中的方法。这些方法应该与超类中的相应 \fBcheck()\fR 方法具有相同的签名。还应该为方法指定一个 \fBpkglint_desc\fR 属性，该属性用作 \fBpkglint -L\fR 输出的描述。
+.sp
+.LP
+参数可用于 \fBChecker\fR 子类，使这些子类能够调优其行为。建议的参数命名约定为 \fB\fI pkglint_id\fR.\fIname\fR\fR。参数值可以存储在配置文件中，或者在使用 \fBLintEngine.get_param()\fR 方法检索的清单或操作中访问。从清单访问参数时，将在键名的前面附加前缀 \fBpkg.lint\fR，以确保 \fBpkglint\fR 参数不会与任何现有的操作或清单值重叠。
+.SH 示例
+.LP
+\fB示例 1 \fR对特定系统信息库的首次运行
+.sp
+.LP
+对给定系统信息库上首次运行 \fBpkglint\fR 会话。
+
+.sp
+.in +2
+.nf
+$ \fBpkglint -c /space/cache -r http://localhost:10000 mymanifest.mf\fR
+.fi
+.in -2
+.sp
+
+.LP
+\fB示例 2 \fR对相同系统信息库的后续运行
+.sp
+.LP
+针对示例 1 中使用的同一系统信息库的后续运行。
+
+.sp
+.in +2
+.nf
+$ \fBpkglint -c /space/cache mymanifest-fixed.mf\fR
+.fi
+.in -2
+.sp
+
+.LP
+\fB示例 3 \fR将 Lint 系统信息库和细化的清单集一起使用
+.sp
+.LP
+将 \fBpkglint\fR 会话和 lint 系统信息库结合运行，并指定要检查的清单的子集。
+
+.sp
+.in +2
+.nf
+$ \fBpkglint -c /space/othercache -l http://localhost:10000 \e\fR
+\fB-p '.*firefox.*'\fR
+.fi
+.in -2
+.sp
+
+.LP
+\fB示例 4 \fR指定内部版本
+.sp
+.LP
+在详细模式下针对给定的内部版本运行 \fBpkglint\fR 会话。
+
+.sp
+.in +2
+.nf
+$ \fBpkglint -c /space/cache -r http://localhost:10000 \e\fR
+\fB-l http://localhost:12000 -b 147 -v\fR
+.fi
+.in -2
+.sp
+
+.LP
+\fB示例 5 \fR修改配置文件
+.sp
+.LP
+带有新的 lint 模块的配置文件，排除某些检查。
+
+.sp
+.in +2
+.nf
+$ \fBcat ~/.pkglintrc\fR
+[pkglint]
+
+log_level = DEBUG
+# log_level = INFO
+
+pkglint.ext.mycheck = org.timf.mychecks
+pkglint.ext.opensolaris = pkg.lint.opensolaris
+pkglint.exclude: pkg.lint.opensolaris.OpenSolarisActionChecker
+pkg.lint.pkglint.PkgActionChecker.unusual_perms pkg.lint.pkglint.PkgManifestChecker
+pkg.lint.opensolaris.OpenSolarisManifestChecker
+.fi
+.in -2
+.sp
+
+.SH 退出状态
+.sp
+.LP
+将返回以下退出值：
+.sp
+.ne 2
+.mk
+.na
+\fB\fB0\fR\fR
+.ad
+.RS 6n
+.rt  
+命令成功。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB1\fR\fR
+.ad
+.RS 6n
+.rt  
+一项或多项 lint 检查提供了输出。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB2\fR\fR
+.ad
+.RS 6n
+.rt  
+指定的命令行选项无效。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB99\fR\fR
+.ad
+.RS 6n
+.rt  
+发生了意外的异常。
+.RE
+
+.SH 属性
+.sp
+.LP
+有关下列属性的说明，请参见 \fBattributes\fR(5)：
+.sp
+
+.sp
+.TS
+tab() box;
+cw(2.75i) |cw(2.75i) 
+lw(2.75i) |lw(2.75i) 
+.
+属性类型属性值
+_
+可用性\fBpackage/pkg\fR（软件包/pkg）
+_
+接口稳定性Uncommitted（未确定）
+.TE
+
+.SH 另请参见
+.sp
+.LP
+\fBpkg\fR(1)、\fBpkg.depotd\fR(1M)、\fBpkgsend\fR(1)、\fBpkg\fR(5)
+.sp
+.LP
+\fBhttp://hub.opensolaris.org/bin/view/Project+pkg/\fR

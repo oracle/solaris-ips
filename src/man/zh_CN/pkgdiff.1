@@ -1,0 +1,184 @@
+'\" te
+.\" Copyright (c) 2007, 2011, Oracle and/or its affiliates. All rights reserved.
+.TH pkgdiff 1 "2011 年 7 月 28 日" "SunOS 5.11" "用户命令"
+.SH 名称
+pkgdiff \- 比较软件包清单
+.SH 用法概要
+.LP
+.nf
+/usr/bin/pkgdiff [-i \fIattribute\fR ...] [-o \fIattribute\fR]
+    [-v \fIname\fR=\fIvalue\fR ...] \fIfile1\fR \fIfile2\fR
+.fi
+
+.SH 描述
+.sp
+.LP
+\fBpkgdiff\fR 可比较两个软件包清单并报告差异。在进行比较之前，\fBpkgdiff\fR 会将每个清单和操作按一致的顺序排序。
+.sp
+.LP
+输出采用以下格式：
+.sp
+.ne 2
+.mk
+.na
+\fB+ \fIcomplete_action\fR\fR
+.ad
+.RS 21n
+.rt  
+此操作在 \fIfile2\fR 中而不在 \fIfile1\fR 中。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB- \fIcomplete_action\fR\fR
+.ad
+.RS 21n
+.rt  
+此操作在 \fIfile1\fR 中而不在 \fIfile2\fR 中。
+.RE
+
+.sp
+.in +2
+.nf
+\fIactionname\fR \fIkeyvalue\fR [\fIvariant values, if any\fR]
+.fi
+.in -2
+
+.sp
+.ne 2
+.mk
+.na
+\fB- \fIattribute1\fR=\fIvalue1\fR\fR
+.ad
+.RS 23n
+.rt  
+此 \fIattribute\fR,\fIvalue\fR 在 \fIfile1\fR 中而不在 \fIfile2\fR 中。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB+ \fIattribute2\fR=\fIvalue2\fR\fR
+.ad
+.RS 23n
+.rt  
+此 \fIattribute\fR,\fIvalue\fR 在 \fIfile2\fR 中而不在 \fIfile1\fR 中。
+.RE
+
+.sp
+.LP
+为了完成比较，带有不同变体、但带有相同类型和关键属性值的操作将被视为不同的操作。因此，可更改属性的操作将以其完整格式显示，而不是作为属性更改显示。
+.SH 选项
+.sp
+.LP
+支持以下选项：
+.sp
+.ne 2
+.mk
+.na
+\fB\fB-i\fR \fIattribute\fR\fR
+.ad
+.RS 18n
+.rt  
+比较期间将忽略 \fIattribute\fR（如果存在）。可以使用 \fB-i\fR\fI hash\fR 忽略文件散列值。该选项不能与 \fB-o\fR 选项一起使用。可以重复该选项。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB-o\fR \fIattribute\fR\fR
+.ad
+.RS 18n
+.rt  
+仅报告 \fIattribute\fR 的差异。该选项不能与 \fB-i\fR 选项一起使用。该选项会省略不影响操作 \fIattribute\fR 的任何操作更改。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB-v\fR \fIname\fR=\fI value\fR\fR
+.ad
+.RS 18n
+.rt  
+仅计算该变体值的差异。例如，只计算 \fBarch=sparc\fR 的差异。在进行比较之前，将删除所有操作的该变体标记。只能为每个变体指定一个值。可对不同的变体重复该选项。
+.RE
+
+.SH 退出状态
+.sp
+.LP
+将返回以下退出值：
+.sp
+.ne 2
+.mk
+.na
+\fB\fB0\fR\fR
+.ad
+.RS 6n
+.rt  
+未找到差异。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB1\fR\fR
+.ad
+.RS 6n
+.rt  
+找到了差异。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB>1\fR\fR
+.ad
+.RS 6n
+.rt  
+出现错误。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB99\fR\fR
+.ad
+.RS 6n
+.rt  
+发生了意外的异常。
+.RE
+
+.SH 属性
+.sp
+.LP
+有关下列属性的说明，请参见 \fBattributes\fR(5)：
+.sp
+
+.sp
+.TS
+tab() box;
+cw(2.75i) |cw(2.75i) 
+lw(2.75i) |lw(2.75i) 
+.
+属性类型属性值
+_
+可用性\fBpackage/pkg\fR（软件包/pkg）
+_
+接口稳定性Uncommitted（未确定）
+.TE
+
+.SH 另请参见
+.sp
+.LP
+\fBpkg\fR(5)
+.sp
+.LP
+\fBhttp://hub.opensolaris.org/bin/view/Project+pkg/\fR

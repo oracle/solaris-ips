@@ -1,0 +1,171 @@
+'\" te
+.\" Copyright (c) 2007, 2011, Oracle and/or its affiliates. All rights reserved.
+.TH pkg.sysrepo 1m "2011 年 7 月 28 日" "SunOS 5.11" "系统管理命令"
+.SH 名称
+pkg.sysrepo \- 映像包管理系统的系统信息库配置
+.SH 用法概要
+.LP
+.nf
+pkg.sysrepo -p \fIport\fR [-c \fIcache_dir\fR] [-s \fIcache_size\fR]
+    [-w \fIhttp_proxy\fR] [-W \fIhttps_proxy\fR]
+.fi
+
+.SH 描述
+.sp
+.LP
+\fBpkg.sysrepo\fR 用于生成映像包管理系统 (Image Packaging System, IPS) 系统信息库的配置文件。\fBpkg.sysrepo \fR 由 \fBsvc:/application/pkg/system-repository\fR 服务管理工具 (Service Management Facility, SMF) 服务调用。应对 SMF 服务中的属性进行配置更改。
+.sp
+.LP
+系统信息库负责提供对通过集中代理在参考映像中配置的软件包系统信息库的访问权限。配置为使用系统信息库的任何客户机可立即看到对该参考映像所做的发布者配置更改。
+.sp
+.LP
+系统信息库主要用于全局区域，以允许非全局区域访问在全局区域中配置的系统信息库。SMF 服务 \fBsvc:/application/pkg/zones-proxyd\fR 和 \fB svc:/application/pkg/zones-proxy-client\fR 负责提供非全局区域和全局区域之间的传输。只有 \fBpkg\fR(5) 使用该传输。
+.sp
+.LP
+请注意，仅支持 http、https 和 v4 文件系统信息库。不支持基于 p5p 的文件系统信息库或更早的文件系统信息库格式。有关系统信息库版本的更多信息，请参见 \fBpkgrepo\fR(1)。
+.SH 选项
+.sp
+.LP
+支持以下选项：
+.sp
+.ne 2
+.mk
+.na
+\fB\fB-c\fR \fIcache_dir\fR\fR
+.ad
+.RS 18n
+.rt  
+应由系统信息库用来缓存来自配置的发布者响应的目录的绝对路径。
+.sp
+缺省情况下，使用文件高速缓存。但是，可以使用特殊值 \fBmemory \fR 来表示应使用内存高速缓存。特殊值 \fBNone\fR 可用于表示系统信息库不应执行任何缓存。应使用 \fBconfig/cache_dir\fR SMF 属性配置该设置。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB-p\fR \fIport\fR\fR
+.ad
+.RS 18n
+.rt  
+系统信息库应用来侦听请求的端口。应使用 \fBconfig/port\fR SMF 属性配置该设置。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB-s\fR \fIcache_size\fR\fR
+.ad
+.RS 18n
+.rt  
+定义系统信息库的最大高速缓存大小的整数值 (MB)。应使用 \fB config/cache_max\fR SMF 属性配置该设置。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB-w\fR \fIhttp_proxy\fR\fR
+.ad
+.RS 18n
+.rt  
+\fB\fIscheme\fR://\fIhostname\fR[:\fIport\fR]\fR 格式的字符串，用于定义一个 Web 代理服务器，系统信息库可以使用该 Web 代理服务器来访问基于 http 的软件包系统信息库。可以使用 \fBconfig/http_proxy\fR SMF 属性配置此设置。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB-W\fR \fIhttps_proxy\fR\fR
+.ad
+.RS 18n
+.rt  
+\fB\fIscheme\fR://\fI hostname\fR[:\fIport\fR]\fR 格式的字符串，用于定义一个 Web 代理服务器，系统信息库可以使用该 Web 代理服务器来访问基于 https 的软件包系统信息库。可以使用 \fBconfig/https_proxy\fR SMF 属性配置此设置。
+.RE
+
+.SH 示例
+.LP
+\fB示例 1 \fR启用系统信息库
+.sp
+.in +2
+.nf
+$ \fBsvcadm enable svc:/application/pkg/system-repository\fR
+.fi
+.in -2
+.sp
+
+.SH 退出状态
+.sp
+.LP
+将返回以下退出值：
+.sp
+.ne 2
+.mk
+.na
+\fB\fB0\fR\fR
+.ad
+.RS 6n
+.rt  
+命令成功。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB1\fR\fR
+.ad
+.RS 6n
+.rt  
+命令无法写入有效配置。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB2\fR\fR
+.ad
+.RS 6n
+.rt  
+指定的命令行选项无效。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB99\fR\fR
+.ad
+.RS 6n
+.rt  
+发生了意外的异常。
+.RE
+
+.SH 属性
+.sp
+.LP
+有关下列属性的说明，请参见 \fBattributes\fR(5)：
+.sp
+
+.sp
+.TS
+tab() box;
+cw(2.75i) |cw(2.75i) 
+lw(2.75i) |lw(2.75i) 
+.
+属性类型属性值
+_
+可用性\fBpackage/pkg\fR（软件包/pkg）
+_
+接口稳定性Uncommitted（未确定）
+.TE
+
+.SH 另请参见
+.sp
+.LP
+\fBpkg\fR(1)、\fBpkgdepotd\fR(1M)、\fBpkg\fR(5)
+.sp
+.LP
+\fBhttp://hub.opensolaris.org/bin/view/Project+pkg/\fR

@@ -1,0 +1,336 @@
+'\" te
+.\" Copyright (c) 2007, 2011, Oracle and/or its affiliates. All rights reserved.
+.TH pkgsend 1 "2011 年 7 月 28 日" "SunOS 5.11" "用户命令"
+.SH 名称
+pkgsend \- 映像包管理系统发布客户机
+.SH 用法概要
+.LP
+.nf
+/usr/bin/pkgsend [\fIoptions\fR] \fIcommand\fR [\fIcmd_options\fR] [\fIoperands\fR]
+.fi
+
+.LP
+.nf
+/usr/bin/pkgsend generate [-T \fIpattern\fR] [--target \fIfile\fR]
+    \fIsource\fR ...
+.fi
+
+.LP
+.nf
+/usr/bin/pkgsend publish [-b \fIbundle\fR ...] [-d \fIsource\fR ...] 
+    [-s \fIrepo_uri_or_path\fR] [-T \fIpattern\fR] [--no-catalog]
+    [\fImanifest\fR ...]
+.fi
+
+.SH 描述
+.sp
+.LP
+通过 \fBpkgsend\fR，可使用软件包清单将新软件包和新软件包版本发布到映像包管理系统信息库。要创建或管理系统信息库，请参见 \fBpkgrepo\fR(1)。要从现有系统信息库的软件包中创建软件包归档文件，请参见 \fBpkgrecv\fR(1)。有关软件包清单的更多信息，请参见 \fBpkg\fR(5)。
+.SH 选项
+.sp
+.LP
+支持以下选项：
+.sp
+.ne 2
+.mk
+.na
+\fB\fB--help\fR 或 \fB-?\fR\fR
+.ad
+.RS 17n
+.rt  
+显示用法消息。
+.RE
+
+.SH 子命令
+.sp
+.LP
+支持以下子命令：
+.sp
+.ne 2
+.mk
+.na
+\fB\fBgenerate [\fB-T\fR \fIpattern\fR] [\fB--target\fR \fIfile\fR] \fIsource\fR ... \fR\fR
+.ad
+.sp .6
+.RS 4n
+读取每个 \fIsource\fR（例如，SVR4 软件包、目录或 \fBtar\fR 文件）并将介绍 \fIsource\fR 的清单发送到 \fBstdout\fR。然后可以注释输出清单，使用 \fBpkgdepend\fR(1) 添加或分析依赖项，并在将其传递到 \fBpublish\fR 子命令之前使用 \fB pkglint\fR(1) 验证它的正确性。以下是支持的源：
+.RS +4
+.TP
+.ie t \(bu
+.el o
+文件系统格式 SVR4 软件包
+.RE
+.RS +4
+.TP
+.ie t \(bu
+.el o
+数据流格式 SVR4 软件包
+.RE
+.RS +4
+.TP
+.ie t \(bu
+.el o
+\fBtar\fR 文件
+.RE
+.RS +4
+.TP
+.ie t \(bu
+.el o
+目录
+.RE
+如果源中文件的基本名称与使用 \fB-T\fR 指定的模式匹配，则将文件的时间戳添加到该文件的操作中。\fIpattern\fR 使用 shell 匹配规则：
+.sp
+.ne 2
+.mk
+.na
+\fB\fB*\fR\fR
+.ad
+.RS 20n
+.rt  
+匹配所有内容。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB?\fR\fR
+.ad
+.RS 20n
+.rt  
+匹配任何单个字符。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB[\fIseq\fR]\fR\fR
+.ad
+.RS 20n
+.rt  
+匹配 \fIseq\fR 中的任何字符。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB![\fIseq\fR]\fR\fR
+.ad
+.RS 20n
+.rt  
+匹配不在 \fIseq\fR 中的任何字符。
+.RE
+
+如果指定源是一个目录，当单个 inode 具有多个路径名称时，则没有明确的方式区分 \fBfile\fR 操作与 \fBhardlink\fR 操作。通常，在文件系统遍历中发现的第一个视为文件，其余的视为硬链接。这可以是任意的，具体取决于文件系统的实现方式。要指定哪些路径名称应视为文件，请将每个路径名称作为参数传递到 \fB--target\fR 选项。该选项不会影响其他类型的源，因为它们可以表明哪些路径名称是文件，哪些是硬链接。
+.sp
+当提供 SVR4 软件包作为源时，\fBpkgsend\fR 会确认不存在具有类操作脚本的文件，以及不存在安装前、安装后、删除前或删除后脚本。但与 \fBmanifest\fR 类一起安装的任何 SMF 清单除外。将从所有可重定位路径中删除 \fBBASEDIR \fR。
+.sp
+SVR4 \fBDESC\fR 参数将转换为 \fBpkg.description \fR 值。SVR4 \fBNAME\fR 参数将转换为 \fBpkg.summary\fR 值。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fBpublish [\fB-b\fR \fIbundle\fR ...] [\fB-d\fR \fIsource\fR ...] [\fB-s\fR \fI repo_uri_or_path\fR] [\fB-T\fR \fIpattern\fR] [\fB--no-catalog\fR] [\fImanifest\fR ...]\fR\fR
+.ad
+.sp .6
+.RS 4n
+将使用指定软件包清单的软件包发布到目标软件包系统信息库，并从提供的源中检索该软件包的文件。如果指定了多个清单，它们将以提供的顺序联接。如果未指定清单，则从 \fB stdin\fR 中读取清单。
+.sp
+通过 \fB-b\fR，将指定的包添加到源列表，以便在清单中查找文件时进行搜索。包是 tar 文件和 SVR4 软件包等源。如果多次指定该选项，则以在命令行显示的顺序对源进行搜索。如果同时指定 \fB- b\fR 和 \fB-d\fR，则首先搜索 \fB-d\fR 源。有关支持的包及其使用方式的说明，请参阅以上的 \fBgenerate\fR 子命令。
+.sp
+通过 \fB-d\fR，将指定的目录添加到源列表，以便在清单中查找文件时进行搜索。如果多次指定该选项，则以在命令行显示的顺序对源进行搜索。有关支持的源及其使用方式的说明，请参阅以上的 \fBgenerate\fR 子命令。
+.sp
+通过 \fB-s\fR，将软件包发布到位于给定 URI 或文件系统路径的系统信息库。有关发布限制和建议的更多信息，请参见下面的"附注"部分。另请参见"环境变量"部分。
+.sp
+通过 \fB--no-catalog\fR，不将软件包添加到发布者的目录。当一次发布多个软件包，并且必须连续执行发布者目录更新时，建议使用该选项。完成发布后，可使用 \fBpkgrepo \fR(1) 的 \fBrefresh\fR 子命令将新软件包添加到相应的发布者目录。
+.sp
+有关所有其他选项的用法及其影响，请参阅以上的 \fBgenerate\fR 子命令。
+.RE
+
+.SH 环境变量
+.sp
+.ne 2
+.mk
+.na
+\fB\fBPKG_REPO\fR\fR
+.ad
+.RS 12n
+.rt  
+目标系统信息库的路径或 URI。
+.RE
+
+.SH 示例
+.LP
+\fB示例 1 \fR生成并发布软件包
+.sp
+.LP
+使用 \fBpkgsend generate\fR 创建软件包并将其发布。
+
+.sp
+.in +2
+.nf
+$ \fBpkgsend generate /path/to/proto > /path/to/manifests/foo.p5m\fR
+.fi
+.in -2
+.sp
+
+.sp
+.LP
+将 \fBexample.com\fR 发布者的软件包 FMRI 添加到 \fBfoo.p5m\fR 的开头。
+
+.sp
+.in +2
+.nf
+set name=pkg.fmri value=pkg://example.com/foo@1.0
+.fi
+.in -2
+
+.sp
+.LP
+结果清单应类似于以下内容：
+
+.sp
+.in +2
+.nf
+set name=pkg.fmri value=pkg://example.com/foo@1.0
+dir group=sys mode=0755 owner=root path=usr
+dir group=bin mode=0755 owner=root path=usr/bin
+file usr/bin/foo group=bin mode=0555 owner=root path=usr/bin/foo
+.fi
+.in -2
+
+.sp
+.in +2
+.nf
+$ \fBpkgsend publish -s http://example.com:10000 -d /path/to/proto \e\fR
+\fB/path/to/manifests/foo.p5m\fR
+.fi
+.in -2
+.sp
+
+.LP
+\fB示例 2 \fR创建和发布普通软件包
+.sp
+.LP
+为包含以下行的发布者 \fBexample.com\fR 创建清单：
+
+.sp
+.in +2
+.nf
+set name=pkg.fmri value=pkg://example.com/foo@1.0-1
+file /exdir/foo mode=0555 owner=root group=bin path=/usr/bin/foo
+.fi
+.in -2
+
+.sp
+.LP
+发布软件包：
+
+.sp
+.in +2
+.nf
+$ \fBpkgsend publish -s http://example.com:10000 -d /exdir\fR
+.fi
+.in -2
+.sp
+
+.LP
+\fB示例 3 \fR使用已经存在的清单
+.sp
+.LP
+使用基于文件系统的发布和已经存在的清单发布软件包。
+
+.sp
+.in +2
+.nf
+$ \fBpkgsend publish -s /tmp/example_repo -d /tmp/pkg_files \e\fR
+\fB/tmp/pkg_manifest\fR
+.fi
+.in -2
+.sp
+
+.SH 退出状态
+.sp
+.LP
+将返回以下退出值：
+.sp
+.ne 2
+.mk
+.na
+\fB\fB0\fR\fR
+.ad
+.RS 6n
+.rt  
+命令成功。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB1\fR\fR
+.ad
+.RS 6n
+.rt  
+出现错误。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB2\fR\fR
+.ad
+.RS 6n
+.rt  
+指定的命令行选项无效。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB99\fR\fR
+.ad
+.RS 6n
+.rt  
+发生了意外的异常。
+.RE
+
+.SH 属性
+.sp
+.LP
+有关下列属性的说明，请参见 \fBattributes\fR(5)：
+.sp
+
+.sp
+.TS
+tab() box;
+cw(2.75i) |cw(2.75i) 
+lw(2.75i) |lw(2.75i) 
+.
+属性类型属性值
+_
+可用性\fBpackage/pkg\fR（软件包/pkg）
+_
+接口稳定性Uncommitted（未确定）
+.TE
+
+.SH 另请参见
+.sp
+.LP
+\fBpkgdepend\fR(1)、\fBpkgrepo\fR(1)、\fBpkg.depotd\fR(1M)、\fBpkg\fR(5)
+.sp
+.LP
+\fBhttp://hub.opensolaris.org/bin/view/Project+pkg/\fR
+.SH 附注
+.sp
+.LP
+由于发布协议限制，当发布大小超过 128 MB 的单个软件包文件时，必须使用基于文件系统的发布。当需要系统信息库的访问控制时，也建议使用基于文件系统的发布。
+.sp
+.LP
+当使用基于文件系统的发布时，在完成发布后必须重新启动提供目标系统信息库服务的任何 \fBpkg.depotd\fR 进程，以便在其 Web 界面或搜索响应中反映更改。有关更多信息，请参见 \fBpkg.depotd\fR(1M)。

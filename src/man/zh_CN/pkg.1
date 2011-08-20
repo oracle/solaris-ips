@@ -1,0 +1,2153 @@
+'\" te
+.\" Copyright (c) 2007, 2011, Oracle and/or its affiliates. All rights reserved.
+.TH pkg 1 "2011 年 7 月 28 日" "" ""
+.SH 名称
+pkg \- 映像包管理系统的检索客户端
+.SH 用法概要
+.LP
+.nf
+/usr/bin/pkg [\fIoptions\fR] command [\fIcmd_options\fR] [\fIoperands\fR]
+.fi
+
+.LP
+.nf
+/usr/bin/pkg refresh [--full] [\fIpublisher\fR ...]
+.fi
+
+.LP
+.nf
+/usr/bin/pkg install [-nvq] [-g \fIpath_or_uri\fR ...] [--accept]
+    [--licenses] [--no-be-activate] [--no-index]
+    [--no-refresh] [--deny-new-be | --require-new-be]
+    [--be-name \fIname\fR] [--reject \fIpkg_fmri_pattern\fR ...]
+    \fIpkg_fmri_pattern\fR ...
+.fi
+
+.LP
+.nf
+/usr/bin/pkg uninstall [-nvq] [--no-be-activate]
+    [--no-index] [--deny-new-be | --require-new-be]
+    [--be-name \fIname\fR] \fIpkg_fmri_pattern\fR ...
+.fi
+
+.LP
+.nf
+/usr/bin/pkg update [-fnvq] [-g \fIpath_or_uri\fR ...] [--accept]
+    [--licenses] [--no-be-activate] [--no-index]
+    [--no-refresh] [--deny-new-be | --require-new-be]
+    [--be-name \fIname\fR] [--reject \fIpkg_fmri_pattern\fR ...]
+    [\fIpkg_fmri_pattern\fR ...]
+.fi
+
+.LP
+.nf
+/usr/bin/pkg list [-Hafnsuv] [-g \fIpath_or_uri\fR ...]
+    [--no-refresh] [\fIpkg_fmri_pattern\fR ...]
+.fi
+
+.LP
+.nf
+/usr/bin/pkg info [-lr] [-g \fIpath_or_uri\fR ...] [--license]
+    [\fIpkg_fmri_pattern\fR ...]
+.fi
+
+.LP
+.nf
+/usr/bin/pkg contents [-Hmr] [-a \fIattribute\fR=\fIpattern\fR ...]
+    [-g \fIpath_or_uri\fR ...] [-o \fIattribute\fR ...] [-s \fIsort_key\fR]
+    [-t \fIaction_type\fR ...] [\fIpkg_fmri_pattern\fR ...]
+.fi
+
+.LP
+.nf
+/usr/bin/pkg search [HIaflpr] [-o \fIattribute\fR ...]
+    [-s \fIrepo_uri\fR] \fIquery\fR
+.fi
+
+.LP
+.nf
+/usr/bin/pkg verify [-Hqv] [\fIpkg_fmri_pattern\fR ...]
+.fi
+
+.LP
+.nf
+/usr/bin/pkg fix [--accept] [--licenses] [\fIpkg_fmri_pattern\fR ...]
+.fi
+
+.LP
+.nf
+/usr/bin/pkg revert [-nv] [--no-be-activate]
+    [--be-name \fIname\fR] [--deny-new-be | --require-new-be]
+    (--tagged \fItag-name\fR ... | \fIpath-to-file\fR ...)
+.fi
+
+.LP
+.nf
+/usr/bin/pkg mediator [-aH] [-F \fIformat\fR] [\fImediator\fR ...]
+.fi
+
+.LP
+.nf
+usr/bin/pkg set-mediator [-nv] [-I \fIimplementation\fR]
+    [-V \fIversion\fR] [--no-be-activate]
+    [--deny-new-be | --require-new-be]
+    [--be-name \fIname\fR] \fImediator\fR ...
+.fi
+
+.LP
+.nf
+/usr/bin/pkg unset-mediator [-nvIV] [--no-be-activate]
+    [--deny-new-be | --require-new-be] [--be-name \fIname\fR]
+    \fImediator\fR ...
+.fi
+
+.LP
+.nf
+/usr/bin/pkg variant [-H] [\fIvariant_spec\fR]
+.fi
+
+.LP
+.nf
+/usr/bin/pkg change-variant [-nvq] [-g \fIpath_or_uri\fR ...]
+    [--accept] [--licenses] [--no-be-activate]
+    [--deny-new-be | --require-new-be]
+    [--be-name \fIname\fR] \fIvariant_spec\fR=\fIinstance\fR ...
+.fi
+
+.LP
+.nf
+/usr/bin/pkg facet [-H] [\fIfacet_spec\fR]
+.fi
+
+.LP
+.nf
+/usr/bin/pkg change-facet [-nvq] [-g \fIpath_or_uri\fR ...]
+    [--accept] [--licenses] [--no-be-activate]
+    [--deny-new-be | --require-new-be]
+    [--be-name \fIname\fR] \fIfacet_spec\fR=[True|False|None] ...
+.fi
+
+.LP
+.nf
+/usr/bin/pkg avoid [\fIpkg_fmri_pattern\fR ...]
+.fi
+
+.LP
+.nf
+/usr/bin/pkg unavoid [\fIpkg_fmri_pattern\fR ...]
+.fi
+
+.LP
+.nf
+/usr/bin/pkg freeze [-n] [-c \fIreason\fR] [\fIpkg_fmri_pattern\fR] ...
+.fi
+
+.LP
+.nf
+/usr/bin/pkg unfreeze [-n] [\fIpkg_name_pattern\fR] ...
+.fi
+
+.LP
+.nf
+/usr/bin/pkg property [-H] [\fIpropname\fR ...]
+.fi
+
+.LP
+.nf
+/usr/bin/pkg set-property \fIpropname\fR \fIpropvalue\fR
+.fi
+
+.LP
+.nf
+/usr/bin/pkg add-property-value \fIpropname\fR \fIpropvalue\fR
+.fi
+
+.LP
+.nf
+/usr/bin/pkg remove-property-value \fIpropname\fR \fIpropvalue\fR
+.fi
+
+.LP
+.nf
+/usr/bin/pkg unset-property \fIpropname\fR ...
+.fi
+
+.LP
+.nf
+/usr/bin/pkg publisher [-HPn] [\fIpublisher\fR ...]
+.fi
+
+.LP
+.nf
+/usr/bin/pkg set-publisher [-Ped] [-k \fIssl_key\fR] [-c \fIssl_cert\fR]
+    [-g \fIorigin_to_add\fR | --add-origin \fIorigin_to_add\fR ...]
+    [-G \fIorigin_to_remove\fR | --remove-origin \fIorigin_to_remove\fR ...]
+    [-m \fImirror_to_add\fR | --add-mirror \fImirror_to_add\fR ...]
+    [-M \fImirror_to_remove\fR | --remove-mirror \fImirror_to_remove\fR ...]
+    [-p \fIrepo_uri\fR] [--enable] [--disable] [--no-refresh]
+    [--reset-uuid] [--non-sticky] [--sticky]
+    [--search-after \fIpublisher\fR] [--search-before \fIpublisher\fR]
+    [--search-first]
+    [--approve-ca-cert \fIpath_to_CA\fR]
+    [--revoke-ca-cert \fIhash_of_CA_to_remove\fR]
+    [--unset-ca-cert \fIhash_of_CA_to_remove\fR]
+    [--set-property \fIname_of_property\fR=\fIvalue\fR]
+    [--add-property-value \fIname_of_property\fR=\fIvalue_to_add\fR]
+    [--remove-property-value \fIname_of_property\fR=\fIvalue_to_remove\fR]
+    [--unset-property \fIname_of_property_to_delete\fR]
+    [\fIpublisher\fR]
+.fi
+
+.LP
+.nf
+/usr/bin/pkg unset-publisher \fIpublisher\fR ...
+.fi
+
+.LP
+.nf
+/usr/bin/pkg history [-Hl] [-t [\fItime\fR | \fItime\fR-\fItime\fR],...]
+    [-o \fIcolumn\fR,...] [-n \fInumber\fR]
+.fi
+
+.LP
+.nf
+/usr/bin/pkg purge-history
+.fi
+
+.LP
+.nf
+/usr/bin/pkg rebuild-index
+.fi
+
+.LP
+.nf
+/usr/bin/pkg update-format
+.fi
+
+.LP
+.nf
+/usr/bin/pkg version
+.fi
+
+.LP
+.nf
+/usr/bin/pkg help
+.fi
+
+.LP
+.nf
+/usr/bin/pkg image-create [-FPUfz] [--force]
+    [--full | --partial | --user] [--zone]
+    [-k \fIssl_key\fR] [-c \fIssl_cert\fR]
+    [--no-refresh] [--variant \fIvariant_spec\fR=\fIinstance\fR ...]
+    [-g \fIpath_or_uri\fR | --origin \fIpath_or_uri\fR ...]
+    [-m \fIuri\fR | --mirror \fIuri\fR ...]
+    [--facet \fIfacet_spec\fR=(True|False) ...]
+    [(-p | --publisher) [\fIname\fR=]\fIrepo_uri\fR] \fIdir\fR
+.fi
+
+.SH 描述
+.sp
+.LP
+\fBpkg\fR 是映像包管理系统的检索客户端。在有效配置下，可以调用 \fBpkg\fR 来为要安装的软件包创建位置（称为"映像"），然后将软件包安装到这些映像中。软件包由发布者发布。发布者可使其软件包在一个或多个系统信息库上可用，或者在软件包归档中可用。\fBpkg\fR 从发布者的系统信息库或软件包归档中检索软件包，然后将软件包安装到映像中。
+.sp
+.LP
+发布者名称将个人、个人组或组织标识为一个或多个软件包的源。为避免发布者名称冲突并有帮于标识发布者，最佳做法是使用代表发布软件包实体的域名作为发布者名称。
+.sp
+.LP
+系统信息库是客户端可在其中发布和检索软件包内容（该软件包包含的文件，例如程序和文档）和元数据（有关该软件包的信息，例如其名称和描述）的位置。例如，有一个名为 \fBexample.org\fR 的发布者，其系统信息库位于 URI \fBhttp://example.org/repository\fR。
+.sp
+.LP
+\fBpkg\fR 还可以卸载软件包、刷新发布者元数据（例如可用软件包的列表）、验证映像中的软件包安装，以及查询映像中的各个标记。也可以对 \fBpkg\fR(5) 系统信息库执行这些查询。
+.sp
+.LP
+映像有三种类型：完整映像：能够提供完整的系统；部分映像：与完整映像（父映像）链接，但本身无法提供完整的系统；用户映像。
+.SH 选项
+.sp
+.LP
+支持以下选项：
+.sp
+.ne 2
+.mk
+.na
+\fB\fB-R\fR \fIdir\fR\fR
+.ad
+.sp .6
+.RS 4n
+对根目录为 \fIdir\fR 的映像执行操作。如果未根据环境指定或确定目录，则缺省值为 /。有关更多信息，请参见"环境变量"部分。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB--help\fR 或 \fB-?\fR\fR
+.ad
+.sp .6
+.RS 4n
+显示用法消息。
+.RE
+
+.SH 子命令
+.sp
+.LP
+支持以下子命令：
+.sp
+.ne 2
+.mk
+.na
+\fB\fBrefresh [\fB--full\fR] [\fIpublisher \fR ...]\fR\fR
+.ad
+.sp .6
+.RS 4n
+对于每个指定的发布者，更新客户端可用软件包列表和发布者元数据。如果未指定任何发布者，则针对所有发布者执行此操作。
+.sp
+使用 \fB--full\fR 时，会强制完全检索所有发布者元数据（而不是尝试增量更新），并请求操作期间使用的所有代理忽略高速缓存的数据。此选项用于进行故障排除，正常情况下不应使用。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fBinstall [\fB-nvq\fR] [\fB-g\fR\fI path_or_uri\fR ...][\fB--accept\fR] [\fB--licenses\fR] [\fB--no-be-activate\fR] [\fB--no-index\fR] [\fB--no-refresh \fR] [\fB--deny-new-be\fR | \fB--require-new-be\fR] [\fB--be-name\fR\fIname\fR] [\fB--reject\fR\fI pkg_fmri_pattern\fR ...] \fIpkg_fmri_pattern\fR ... \fR\fR
+.ad
+.sp .6
+.RS 4n
+安装与映像中安装的软件包所允许的 \fIpkg_fmri_pattern\fR 匹配的软件包，并将其更新到最新版本。要显式请求某个软件包的最新版本，请为 \fIpkg_fmri_pattern\fR 的版本部分使用 \fBlatest\fR。例如，指定 \fBvim@latest\fR。
+.sp
+安装过程中，某些配置文件可能被重命名或替换。有关软件包系统如何确定要保留的文件，以及在软件包操作期间如何保留这些文件的更多信息，请参见 \fBpkg\fR(5) 中的"文件操作"。
+.sp
+如果某个软件包在避免列表中，则安装该软件包会将它从该列表中删除。
+.sp
+使用 \fB-g\fR 时，会暂时将指定的软件包系统信息库或归档添加到从中检索软件包数据的映像中的源列表内。如果也可以通过映像中配置的发布者使用指定源中的软件包，客户端将仅从指定的源检索这些软件包的内容。确定要使用的软件包版本时，优先选择映像中配置的、但在给定源中找不到的发布者。安装或更新后，在映像中找不到的发布者提供的任何软件包将添加到映像配置中，且添加的软件包没有源。可以多次指定此选项。
+.sp
+使用 \fB-n\fR 时，会试运行操作而不进行软件包更改。
+.sp
+使用 \fB-q\fR 时，会在执行请求的操作期间隐藏进度消息。
+.sp
+使用 \fB-v\fR 时，会在执行请求的操作期间发出详细进度消息，并显示详细的规划信息（例如更改侧面、中介者和变体）。可以多次指定此选项，以增加显示的规划信息量。
+.sp
+使用 \fB--accept\fR 时，表示同意并接受所更新或安装的软件包的许可证条款。如果不提供此选项，且任何软件包许可证都要求接受，则安装操作将失败。
+.sp
+使用 \fB--licenses\fR 时，会在此操作过程中显示已安装或更新的软件包的所有许可证。
+.sp
+使用 \fB--no-be-activate\fR 时，如果创建了一个引导环境 (boot environment, BE)，则下次引导时，不会将该 BE 设置为活动 BE。有关更多信息，请参见 \fBbeadm\fR(1M)。
+.sp
+使用 \fB--no-index\fR 时，不会在操作成功完成后更新搜索索引。
+.sp
+使用 \fB--no-refresh\fR 时，不会尝试联系系统信息库来让映像发布者检索最新的可用软件包列表和其他元数据。
+.sp
+使用 \fB--be-name\fR 时，会将新创建的引导环境重命名为给定的参数。只有在操作期间创建新引导环境时，此选项才有效。另请参见 \fBbeadm\fR(1M)。
+.sp
+使用 \fB--require-new-be\fR 时，始终创建新的引导环境。如果不指定此选项，则根据需要自动创建引导环境。
+.sp
+使用 \fB--deny-new-be\fR 时，不会创建新的引导环境。如果需要新的引导环境，则不执行此操作。
+.sp
+使用 \fB--reject\fR 时，会阻止安装其名称与给定模式匹配的软件包。如果已安装匹配的软件包，则在此操作过程会将其删除。作为组依赖性目标的被拒绝软件包将放置在避免列表中。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fBuninstall [\fB-nvq\fR] [\fB--no-be-activate \fR] [\fB--no-index\fR] [\fB--deny-new-be\fR | \fB- -require-new-be\fR] [\fB--be-name\fR \fIname\fR] \fI pkg_fmri_pattern\fR ...\fR\fR
+.ad
+.sp .6
+.RS 4n
+删除与 \fIpkg_fmri_pattern\fR 匹配的已安装软件包。
+.sp
+如果某个软件包是组依赖性的主体，则卸载该软件包会将它放置在避免列表中。请参见下面的 \fBavoid\fR 子命令。
+.sp
+对于其他所有选项，请参阅上面的 \fBinstall\fR 命令，以了解其用法及效果。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fBupdate [\fB-fnvq\fR] [\fB-g\fR\fI path_or_uri\fR ...][\fB--accept\fR] [\fB--licenses\fR] [\fB--no-be-activate\fR] [\fB--no-index\fR] [\fB--no-refresh \fR] [\fB--deny-new-be\fR | \fB--require-new-be\fR] [\fB--be-name\fR\fIname\fR] [\fB--reject\fR\fI pkg_fmri_pattern\fR ...][\fIpkg_fmri_pattern\fR ...] \fR\fR
+.ad
+.sp .6
+.RS 4n
+如果不使用任何参数，或者星号 (*) 是提供的模式之一，则将当前映像中安装的所有软件包更新到由安装的软件包和发布者配置强加于系统的约束所允许的最新版本。要显式请求某个软件包的最新版本，请为 \fIpkg_fmri_pattern\fR 的版本部分使用 \fBlatest\fR。例如，指定 \fBvim@latest\fR。
+.sp
+如果提供了 \fIpkg_fmri_pattern\fR，\fBupdate\fR 将与 \fIpkg_fmri_pattern\fR 匹配的已安装软件包替换为由安装的软件包和发布者配置强加于系统的模式和约束所允许的最新版本。可以指定比已安装版本更高或更低的版本，以便对特定软件包执行就地降级或升级。不支持跨越软件包重命名边界或过时边界更新特定的软件包。
+.sp
+作为将要由 \fBupdate\fR 降级的软件包的一部分、自安装原始版本以来已更改的任何保留配置文件，将会使用扩展名 \fB\&.update\fR 进行重命名。有关软件包系统如何确定要保留的文件，以及在软件包升级期间如何保留这些文件的更多信息，请参见 \fBpkg\fR(5) 中的"文件操作"。
+.sp
+使用 \fB-f\fR 选项时，不会在更新已安装的所有软件包时执行客户端最新状态检查。
+.sp
+对于其他所有选项，请参阅上面的 \fBinstall\fR 命令，以了解其用法及效果。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fBlist [\fB-Hafnsuv\fR] [\fB-g\fR\fI path_or_uri\fR ...][\fB--no-refresh\fR] [\fIpkg_fmri_pattern \fR ...]\fR\fR
+.ad
+.sp .6
+.RS 4n
+显示当前映像中的软件包列表，包括状态和其他信息。缺省情况下，会排除不同体系结构或区域类型的软件包变体。输出通常包括三个列：
+.sp
+.in +2
+.nf
+NAME (PUBLISHER)            VERSION           IFO
+system/core-os              0.5.11-0.169      i--
+x11/wm/fvwm (fvwm.org)      2.6.1-3           i--
+.fi
+.in -2
+
+第一列包含软件包的名称。如果安装（或者提供）该软件包的发布者在发布者搜索顺序上不是第一个，则该发布者名称将列在软件包名称的后面，并括在括号中。第二列包含软件包的发行版本和分支版本。有关发行版本和分支版本的信息，请参见 \fBpkg\fR(5)。
+.sp
+.LP
+最后一列包含一组标志，用于显示软件包的状态：
+.RS +4
+.TP
+.ie t \(bu
+.el o
+\fBI\fR 列中的 \fBi\fR 表明软件包已安装。
+.RE
+.RS +4
+.TP
+.ie t \(bu
+.el o
+\fBF\fR 列中的 \fBf\fR 表明软件包已冻结。
+.RE
+.RS +4
+.TP
+.ie t \(bu
+.el o
+\fBO\fR 列中的 \fBo\fR 表明软件包已过时。\fBO\fR 列中的 \fBr\fR 表明软件包已重命名（一种形式的过时）。
+.RE
+使用 \fB-H\fR 时，会省略列表中的标题。
+.sp
+使用 \fB-a\fR 时，会列出已安装的软件包，以及可用于安装的软件包的最新版本。如果软件包得到已安装 incorporation 和映像变体的允许，则认为这些软件包可用于安装。如果指定了一个或多个模式，则会列出与指定模式匹配的、得到任何已安装 incorporation 和映像变体允许的最新版本。如果不使用 \fB-a\fR，则仅列出已安装的软件包。
+.sp
+使用 \fB-f\fR 和 \fB-a\fR 时，会列出所有变体的所有软件包的所有版本，而不管 incorporation 约束或安装状态如何。使用这些选项时，要显式列出某个软件包的最新版本，请为 \fIpkg_fmri_pattern\fR 的版本部分使用 \fBlatest\fR。例如，指定 \fBvim@latest\fR。
+.sp
+使用 \fB-g\fR 时，会使用指定的软件包系统信息库或归档作为操作的软件包数据源。可以多次指定此选项。如果未指定 \fB-n\fR，则可使用 \fB-g\fR 表示 \fB-a\fR。
+.sp
+使用 \fB-n\fR 时，会显示所有已知软件包的最新版本，而不管安装状态如何。
+.sp
+使用 \fB-s\fR 时，会显示单行短格式，用于提供软件包名称和摘要。此选项可与 \fB-a\fR、\fB-n\fR、\fB-u\fR 或 \fB-v\fR 一起使用。
+.sp
+使用 \fB-u\fR 时，仅列出其更高版本可用的软件包。此选项不能与 \fB-g\fR 一起使用。
+.sp
+使用 \fB-v\fR 时，会在第一列中显示完整的软件包 FMRI，包括发布者和完整版本（VERSION 列将会消失）。此选项可与 \fB-a\fR、\fB-n\fR 或 \fB-u\fR 一起使用。
+.sp
+使用 \fB--no-refresh\fR 时，不会尝试联系系统信息库来让映像发布者检索最新的可用软件包列表。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fBinfo [\fB-lr\fR] [\fB-g\fR\fI path_or_uri\fR ...][\fB--license\fR] [\fIpkg_fmri_pattern \fR ...]\fR\fR
+.ad
+.sp .6
+.RS 4n
+以用户可读的格式显示有关软件包的信息。可以指定多个 FMRI 模式。如果未指定模式，则显示映像中所有已安装软件包的相关信息。
+.sp
+使用 \fB-g\fR 时，会使用指定的软件包系统信息库或归档作为操作的软件包数据源。可以多次指定此选项。可使用 \fB-g\fR 表示 \fB-r\fR。
+.sp
+使用 \fB-l\fR 时，仅显示已安装的软件包的信息。这是缺省值。
+.sp
+使用 \fB-r\fR 时，会根据可用的最新版本匹配软件包，并从映像的已配置发布者系统信息库中检索当前未安装的软件包的相关信息（如有必要）。使用此选项时，必须至少指定一个软件包。如果不指定 \fB-r\fR，则缺省情况下仅显示已安装的软件包。
+.sp
+使用 \fB--license\fR 时，会显示软件包的许可证文本。此选项可与 \fB-l\fR 或 \fB-r\fR 结合使用。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fBcontents [\fB-Hmr\fR] [\fB-a\fR\fI attribute\fR=\fIpattern\fR ...][\fB-g\fR\fI path_or_uri\fR ...][\fB-o\fR\fIattribute\fR,...][\fB-s\fR\fIsort_key\fR] [\fB-t\fR\fI action_type\fR ...][\fIpkg_fmri_pattern\fR ...]\fR\fR
+.ad
+.sp .6
+.RS 4n
+显示当前映像中软件包的内容（操作属性）。缺省情况下，仅显示 \fBpath\fR 属性。可以使用 \fB-o\fR 选项确定所显示的属性。可以多次指定 \fB-o\fR 选项；也可以通过使用逗号分隔属性名称，将多个属性指定为一个 \fB-o\fR 选项的参数。仅显示包含所请求属性的操作。也可以使用 \fB-m\fR 选项，作为 \fB-Ho action.raw\fR 的简写形式。
+.sp
+使用 \fB-a\fR 时，会将输出限制为在选项参数中带有某个命名属性的那些操作，该属性的值与选项参数中的 (glob) 模式匹配（在属性名称后面添加一个等号）。如果指定了多个 \fB-a\fR 选项，则会显示与其中任一选项匹配的操作。
+.sp
+使用 \fB-g\fR 时，会使用指定的软件包系统信息库或归档作为操作的软件包数据源。可以多次指定此选项。可使用 \fB-g\fR 表示 \fB-r\fR。
+.sp
+使用 \fB-r\fR 时，会根据可用的最新版本匹配软件包，并从映像的已配置发布者系统信息库中检索当前未安装的软件包的相关信息（如有必要）。使用此选项时，必须至少指定一个软件包。如果不指定 \fB-r\fR，则缺省情况下仅显示已安装的软件包。
+.sp
+使用 \fB-s\fR 时，会按指定的操作属性对操作进行排序。如果未提供此选项，则缺省设置是按照路径或者按照 \fB-o\fR 选项指定的第一个属性进行排序。可以多次指定 \fB-s\fR 选项。
+.sp
+使用 \fB-t\fR 时，仅列出指定类型的操作。可以在一个逗号分隔的列表中指定多个类型。可以多次指定此选项。
+.sp
+使用 \fB-H\fR 时，会省略列表中的标题。
+.sp
+如果未指定任何参数，则输出包括所有已安装的软件包。或者，可以指定多个 FMRI 模式，这会将显示内容限制为匹配软件包的内容。使用 \fB-r\fR 时，必须指定一个或多个 \fIpkg_fmri_pattern\fR。
+.sp
+为方便起见，可以使用多个特殊的伪属性名称：
+.sp
+.ne 2
+.mk
+.na
+\fB\fBaction.hash\fR\fR
+.ad
+.RS 17n
+.rt  
+对应于操作的散列值（如果该操作承载了有效负荷）。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fBaction.key\fR\fR
+.ad
+.RS 17n
+.rt  
+对应于该操作的关键属性值。例如，对于某个文件操作，这是该文件的路径。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fBaction.name\fR\fR
+.ad
+.RS 17n
+.rt  
+对应于操作的名称。例如，对于某个文件操作，这是 \fBfile\fR。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fBaction.raw\fR\fR
+.ad
+.RS 17n
+.rt  
+对应于软件包清单中所示操作的完整内容。这对应于 \fBpkg contents -m\fR 的输出行。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fBpkg.fmri\fR\fR
+.ad
+.RS 17n
+.rt  
+对应于包含操作的软件包的完整格式 FMRI，例如 \fBpkg://solaris/web/amp@0.5.11,5.11-0.169:20110705T153434Z\fR。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fBpkg.name\fR\fR
+.ad
+.RS 17n
+.rt  
+对应于包含操作的软件包的名称，例如 \fBweb/amp\fR。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fBpkg.publisher\fR\fR
+.ad
+.RS 17n
+.rt  
+对应于包含操作的软件包的发布者，例如 \fBsolaris\fR。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fBpkg.shortfmri\fR\fR
+.ad
+.RS 17n
+.rt  
+对应于包含操作的软件包的短格式 FMRI，例如 \fBpkg://solaris/web/amp@0.5.11,5.11-0.169\fR
+.RE
+
+\fBcontents\fR 和 \fBsearch\fR 子命令是彼此相关的：两者都可用于在系统中查询软件包的内容。\fBcontents\fR 子命令显示一个或多个软件包中的操作，根据用户选择的选项过滤输出。\fBsearch\fR 子命令从另一个方向处理查询，查找包含用户提供的标记的软件包。
+.sp
+每个子命令都能够表达另一个子命令也能表达的某些查询。应该谨慎选择所需的子命令，因为使用其中一个子命令来表达某个给定查询，可能比使用另一个子命令更为自然。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fBsearch [\fB-HIaflpr\fR] [\fB-o\fR\fI attribute\fR,...][\fB-s\fR\fIrepo_uri\fR] \fI query\fR\fR\fR
+.ad
+.sp .6
+.RS 4n
+搜索 \fIquery\fR 的匹配项并显示结果。要为哪些标记建立索引是与操作相关的，不过可以包括内容散列和路径名称。缺省情况下，会将查询解释为要精确匹配的一系列条件。可将 \fB?\fR 和 \fB*\fR 字符用作 \fBglob\fR(3C) 式通配符，以更灵活地获取查询匹配项。
+.sp
+使用 \fB-H\fR 时，会省略标题。
+.sp
+使用 \fB-I\fR 时，会使用区分大小写的搜索。
+.sp
+缺省情况下，使用 \fB-a\fR 时，会执行搜索并显示有关匹配操作的信息。
+.sp
+缺省情况下，\fBsearch\fR 会删改低于当前安装版本的软件包中的结果，以及当前 incorporation 排除的软件包版本中的结果。使用 \fB-f\fR 可显示所有结果，而不管软件包版本如何。
+.sp
+使用 \fB-l\fR 时，会搜索映像的已安装软件包。
+.sp
+使用 \fB-o\fR 时，可以控制结果的各列。可以多次指定 \fB-o\fR 选项；也可以通过使用逗号分隔属性名称，将多个属性指定为一个 \fB-o\fR 选项的参数。除了上面概述的伪属性外，还为搜索结果定义了下列属性：
+.sp
+.ne 2
+.mk
+.na
+\fB\fBsearch.match\fR\fR
+.ad
+.RS 21n
+.rt  
+对应于与搜索查询匹配的字符串。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fBsearch.match_type\fR\fR
+.ad
+.RS 21n
+.rt  
+对应于包含与搜索查询匹配的字符串的属性。
+.RE
+
+使用 \fB-p\fR 时，会显示其某些操作与每个查询词匹配的软件包。使用此选项相当于在查询中的每个词两侧添加尖括号 (\fB<>\fR)。有关 \fB<>\fR 运算符的更多描述，请参见下文。
+.sp
+缺省情况下，使用 \fB-r\fR 时，会搜索对应于映像发布者的系统信息库。
+.sp
+使用 \fB-s\fR 时，会搜索位于给定 URI 的 \fBpkg\fR(5) 系统信息库。可以多次指定此选项。不支持软件包归档。
+.sp
+可以同时指定 \fB-l\fR 和 \fB-r\fR（或 \fB-s\fR），在此情况下，将会同时执行本地搜索和远程搜索。
+.sp
+除了支持简单的标记匹配和通配符搜索外，还支持更复杂的查询语言。可通过使用单引号或双引号（\fB\&'\fR 或 \fB"\fR）来搜索短语。请务必考虑所用的 shell，使 \fBpkg\fR 能够真正识别 \fB\&'\fR 或 \fB"\fR。
+.sp
+支持使用 AND 和 OR 的布尔搜索。支持字段（或结构化）查询。这些命令的语法为 \fB\fIpkg_name\fR:\fIaction_type\fR:\fIkey\fR:\fItoken\fR\fR。对缺少的字段使用隐式通配符。搜索 \fB:basename:pkg\fR 将会匹配包含关键字 \fBbasename\fR 且与标记 \fBpkg\fR 匹配的所有软件包中的所有操作类型。\fBpkg_name\fR 和 \fBtoken\fR 字段中支持显式通配符。\fBaction_type\fR 和 \fBkey\fR 必须完全匹配。
+.sp
+要将操作转换为包含这些操作的软件包，请使用 \fB<>\fR。使用 \fB-a\fR 选项时，搜索 \fBtoken\fR 会导致返回与 \fBtoken\fR 匹配的操作的相关信息，而搜索 \fB<token>\fR 会导致返回一个软件包列表，这些软件包包含与 \fBtoken\fR 匹配的操作。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fBverify [\fB-Hqv\fR] [\fIpkg_fmri_pattern \fR ...]\fR\fR
+.ad
+.sp .6
+.RS 4n
+验证当前映像中的软件包安装。如果相关发布者的当前签名策略不是 \fBignore\fR，则会根据策略验证每个软件包的签名。有关如何应用签名策略的说明，请参见下面的"映像属性"中的 \fBsignature-policy\fR。
+.sp
+使用 \fB-H\fR 时，会省略验证输出中的标题。
+.sp
+使用 \fB-q\fR 时，如果出现任何致命错误，则不会显示任何信息，但会返回失败消息。
+.sp
+使用 \fB-v\fR 时，会包括有关软件包的提示性消息。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fBfix [\fB--accept\fR] [\fB--licenses\fR] [\fIpkg_fmri_pattern\fR ...]\fR\fR
+.ad
+.sp .6
+.RS 4n
+修复 \fBpkg verify\fR 报告的任何错误。已安装软件包内容的验证基于自定义内容分析，该分析可能会返回与其他程序不同的结果。
+.sp
+使用 \fB--accept\fR 时，表示同意并接受所更新或安装的软件包的许可证条款。如果不提供此选项，且任何软件包许可证都要求接受，则操作将失败。
+.sp
+使用 \fB--licenses\fR 时，会在此操作过程中显示要安装或更新的软件包的所有许可证。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fBrevert [\fB-nv\fR] [\fB--no-be-activate \fR] [\fB--be-name\fR\fIname\fR] [\fB--deny-new-be \fR | \fB--require-new-be\fR] (\fB--tagged\fR\fI tag-name\fR ...| \fIpath-to-file\fR ...)\fR\fR
+.ad
+.sp .6
+.RS 4n
+将文件恢复为其交付时的状态。可以使用特定值标记所有文件，也可以恢复单个文件。文件所有权和保护也会得到恢复。
+.LP
+注意 - 
+.sp
+.RS 2
+将某些可编辑文件恢复为其缺省值可能会使系统无法引导，或导致其他故障。
+.RE
+对于其他所有选项，请参阅上面的 \fBinstall\fR 命令，以了解其用法及效果。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fBmediator [\fB-aH\fR] [\fB-F\fR \fI format\fR] [\fImediator\fR ...]\fR\fR
+.ad
+.sp .6
+.RS 4n
+显示所有中介者的当前选定版本和/或实现；如果提供了参数，则仅显示指定中介者的当前选定版本和/或实现。
+.sp
+使用 \fB-a\fR 时，会列出可针对当前安装的软件包设置的中介。
+.sp
+使用 \fB-F\fR 时，会指定替代输出格式。当前，只有 \fBtsv\fR（Tab Separated Values，制表符分隔值）有效。
+.sp
+使用 \fB-H\fR 时，会省略列表中的标题。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fBset-mediator [\fB-nv\fR] [\fB-I\fR \fI implementation\fR] [\fB-V\fR \fIversion\fR] [\fB--no-be-activate\fR] [\fB--deny-new-be\fR | \fB--require-new-be \fR] [\fB--be-name\fR \fIname\fR] \fI mediator\fR ...\fR\fR
+.ad
+.sp .6
+.RS 4n
+设置当前映像中指定中介者的版本和/或实现。
+.sp
+使用 \fB-I\fR 时，会设置要使用的中介接口的实现。缺省情况下，如果未指定版本，则允许所有实现版本。要指定一个没有版本的实现，请附加 @ 符号。
+.sp
+使用 \fB-V\fR 时，会设置要使用的中介接口的版本。
+.sp
+如果指定的中介者版本和/或实现当前不可用，则会删除使用指定中介者的任何链接。
+.sp
+对于其他所有选项，请参阅上面的 \fBinstall\fR 命令，以了解其用法及效果。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fBunset-mediator [\fB-nvIV\fR] [\fB--no-be-activate \fR] [\fB--deny-new-be\fR | \fB--require-new-be\fR] [\fB--be-name\fR \fIname\fR] \fImediator \fR ...\fR\fR
+.ad
+.sp .6
+.RS 4n
+将指定中介者的版本和/或实现恢复为系统缺省值。
+.sp
+使用 \fB-I\fR 时，仅恢复中介接口的实现。
+.sp
+使用 \fB-V\fR 时，仅恢复中介接口的版本。
+.sp
+对于其他所有选项，请参阅上面的 \fBinstall\fR 命令，以了解其用法及效果。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fBvariant [\fB-H\fR] [\fIvariant_spec \fR]\fR\fR
+.ad
+.sp .6
+.RS 4n
+显示所有变体的当前值；如果提供了参数，则仅显示指定变体的当前值。
+.sp
+使用 \fB-H\fR 时，会省略列表中的标题。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fBchange-variant [\fB-nvq\fR] [\fB-g\fR\fI path_or_uri\fR ...][\fB--accept\fR] [\fB--licenses\fR] [\fB--no-be-activate\fR] [\fB--deny-new-be\fR | \fB--require-new-be \fR] [\fB--be-name\fR\fIname\fR] \fI variant_spec\fR=\fIinstance\fR ...\fR\fR
+.ad
+.sp .6
+.RS 4n
+更改当前映像中的指定变体。
+.sp
+有关选项的用法和效果，请参阅上面的 \fBinstall\fR 命令。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fBfacet [\fB-H\fR] [\fIfacet_spec\fR] \fR\fR
+.ad
+.sp .6
+.RS 4n
+如果未提供参数，则显示所有侧面的当前值。如果提供了参数，则评估每个侧面将为 true 还是 false，并显示结果。
+.sp
+使用 \fB-H\fR 时，会省略列表中的标题。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fBchange-facet [\fB-nvq\fR] [\fB-g\fR\fI path_or_uri\fR ...][\fB--accept\fR] [\fB--licenses\fR] [\fB--no-be-activate\fR] [\fB--deny-new-be\fR | \fB--require-new-be \fR] [\fB--be-name\fR\fIname\fR] \fI facet_spec\fR=[True|False|None] ...\fR\fR
+.ad
+.sp .6
+.RS 4n
+更改当前映像中的指定侧面。
+.sp
+可以将侧面设置为 \fBTrue\fR 或 \fBFalse\fR。将侧面设置为 \fBNone\fR 会从当前映像中删除该侧面的说明。
+.sp
+有关选项的用法和效果，请参阅上面的 \fBinstall\fR 命令。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fBavoid [\fIpkg_fmri_pattern\fR ...] \fR\fR
+.ad
+.sp .6
+.RS 4n
+如果指定的软件包是某个组依赖性的目标，则会通过将匹配指定模式的软件包名称放置在避免列表中，来避免安装这些软件包。只能避免安装当前尚未安装的软件包。如果某个软件包当前是某个组依赖性的目标，则卸载该软件包会将它放置在避免列表中。
+.sp
+如果不提供任何参数，则会显示每个避免安装的软件包，以及与该软件包存在组依赖性的任何软件包。
+.sp
+为满足所需的依赖性，会根据需要安装避免列表中的软件包。如果删除了该依赖性，则会卸载相应的软件包。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fBunavoid [\fIpkg_fmri_pattern\fR ...] \fR\fR
+.ad
+.sp .6
+.RS 4n
+从避免列表中删除指定的软件包。使用此子命令无法删除避免列表中与某个已安装软件包的组依赖性相匹配的软件包。要从避免列表中删除与某个组依赖性匹配的某个软件包，请安装该软件包。
+.sp
+如果不提供任何参数，则会显示已避免安装的软件包的列表。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fBfreeze [\fB-n\fR] [\fB-c\fR \fI reason\fR] [\fIpkg_fmri_pattern\fR] ...\fR\fR
+.ad
+.sp .6
+.RS 4n
+将指定的软件包冻结到指定的版本。如果未提供版本，则必须安装该软件包，然后将它冻结在该已安装版本。如果冻结的软件包已安装或已更新，则它最终使用的版本必须与冻结时使用的版本匹配。例如，如果某个软件包在冻结时的版本为 1.2，则可以将它更新到 1.2.1、1.2.9、1.2.0.0.1，等等。该软件包最终使用的版本不能是 1.3 或 1.1。\fIpkg_fmri_pattern\fR 中提供的发布者用于查找匹配软件包。但是，在冻结过程中不会记录发布者信息。软件包只能针对其版本（而不能是发布者）进行冻结。冻结一个已经冻结的软件包会将冻结版本替换为新指定的版本。
+.sp
+如果未提供任何软件包，则会显示有关当前已冻结软件包的信息：软件包名称、版本、冻结时间以及任何相关原因。
+.sp
+冻结某个软件包不会阻止删除该软件包。删除软件包时不会显示警告。
+.sp
+使用 \fB-c\fR 时，会记录冻结软件包的 \fIreason\fR。当冻结操作阻止安装或更新成功进行时，将会显示原因。
+.sp
+使用 \fB-n\fR 时，会试运行操作，并显示要冻结的软件包的列表，但不冻结任何软件包。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fBunfreeze [\fB-n\fR] [\fIpkg_name_pattern \fR] ...\fR\fR
+.ad
+.sp .6
+.RS 4n
+从指定的软件包中删除冻结操作强加的约束。将会忽略提供的任何版本。
+.sp
+使用 \fB-n\fR 时，会试运行解冻，并显示要解冻的软件包的列表，但不解冻任何软件包。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fBproperty [\fB-H\fR] [\fIpropname \fR ...]\fR\fR
+.ad
+.sp .6
+.RS 4n
+显示映像属性信息。如果不提供参数，则会显示所有映像属性的名称和值。如果请求了特定的属性名称列表，则显示这些属性的名称和值。
+.sp
+使用 \fB-H\fR 时，会省略列表中的标题。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fBset-property \fIpropname\fR \fI propvalue\fR\fR\fR
+.ad
+.sp .6
+.RS 4n
+更新现有映像属性或添加新的映像属性。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fBadd-property-value \fIpropname\fR \fI propvalue\fR\fR\fR
+.ad
+.sp .6
+.RS 4n
+向现有映像属性添加值，或添加新的映像属性。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fBremove-property-value \fIpropname\fR \fI propvalue\fR\fR\fR
+.ad
+.sp .6
+.RS 4n
+从现有映像属性中删除值。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fBunset-property \fIpropname\fR ... \fR\fR
+.ad
+.sp .6
+.RS 4n
+删除一个或多个现有映像属性。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fBpublisher [\fB-HPn\fR] [\fIpublisher \fR ...]\fR\fR
+.ad
+.sp .6
+.RS 4n
+显示发布者信息。如果不提供参数，则会按搜索优先顺序显示所有发布者、其源 URI 和镜像的列表。如果请求了特定的发布者，则显示这些发布者的详细配置。
+.sp
+使用 \fB-H\fR 时，会省略列表中的标题。
+.sp
+使用 \fB-P\fR 时，仅按发布者搜索顺序显示第一个发布者。
+.sp
+使用 \fB-n\fR 时，仅显示已启用的发布者。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fBset-publisher [\fB-Ped\fR] [\fB-k\fR\fI ssl_key\fR] [\fB-c\fR\fIssl_cert\fR] [\fB-g\fR\fIorigin_to_add\fR | \fB--add-origin \fR\fIorigin_to_add\fR ...][\fB-G\fR\fI origin_to_remove\fR | \fB--remove-origin\fR\fIorigin_to_remove \fR ...][\fB-m\fR\fImirror_to_add\fR | \fB- -add-mirror\fR\fImirror_to_add\fR ...][\fB-M\fR\fI mirror_to_remove\fR | \fB--remove-mirror\fR\fImirror_to_remove \fR ...][\fB-p\fR\fIrepo_uri\fR] [\fB--enable\fR] [\fB--disable\fR] [\fB--no-refresh\fR] [\fB--reset-uuid\fR] [\fB--non-sticky\fR] [\fB--sticky\fR] [\fB--search-after\fR\fIpublisher\fR] [\fB--search-before \fR\fIpublisher\fR] [\fB--search-first\fR] [\fB--approve-ca-cert\fR\fIpath_to_CA\fR] [\fB--revoke-ca-cert\fR\fIhash_of_CA_to_remove\fR] [\fB--unset-ca-cert\fR\fIhash_of_CA_to_remove\fR] [\fB--set-property\fR\fIname_of_property\fR=\fI value\fR] [\fB--add-property-value\fR\fIname_of_property \fR=\fIvalue_to_add\fR] [\fB--remove-property-value \fR\fIname_of_property\fR=\fIvalue_to_remove \fR] [\fB--unset-property\fR\fIname_of_property_to_delete \fR] [\fIpublisher\fR]\fR\fR
+.ad
+.sp .6
+.RS 4n
+更新现有发布者，或添加软件包发布者。如果未指定任何影响搜索顺序的选项，则会将新发布者附加到搜索顺序，因此，会最后搜索这些新发布者。
+.sp
+使用 \fB-P\fR 或 \fB--search-first\fR 时，会将指定的发布者设置在搜索顺序的首位。安装新软件包时，将首先搜索此发布者。对已安装软件包的更新将来自最初提供该软件包的同一发布者，前提是该发布者保持粘滞。将 \fB-P\fR 或 \fB--search-first\fR 与 \fB-p\fR 一起使用时，仅将添加的发布者放置在搜索顺序的首位。
+.sp
+使用 \fB--non-sticky\fR 时，会指定级别比此发布者更高的发布者可以为最初通过此发布者安装的软件包提供更新。
+.sp
+使用 \fB--sticky\fR 时，会指定对通过此发布者安装的软件包的更新必须也来自此发布者。这是缺省行为。
+.sp
+使用 \fB--search-before\fR 时，会更改发布者搜索顺序，以便在指定的发布者之前搜索被修改的发布者。与 \fB-p\fR 一起使用时，\fB--search-before\fR 仅适用于添加的发布者。
+.sp
+使用 \fB--search-after\fR 时，会更改发布者搜索顺序，以便在指定的发布者之后搜索被修改的发布者。与 \fB-p\fR 一起使用时，\fB--search-after\fR 仅适用于添加的发布者。
+.sp
+使用 \fB--approve-ca-cert\fR 时，会将给定的证书添加为可信的 CA 证书。\fBpkg publisher\fR 命令的详细输出中列出了用户批准的 CA 证书的 PEM 表示法散列。
+.sp
+使用 \fB--revoke-ca-cert\fR 时，会将具有其 PEM 表示法的给定散列的证书视为已撤销。\fBpkg publisher\fR 命令的详细输出中列出了用户撤销的 CA 证书的散列。
+.sp
+使用 \fB--unset-ca-cert\fR 时，会从已批准证书列表和已撤销证书列表中删除具有给定散列的证书。
+.sp
+使用 \fB--set-property\fR 时，会更新现有的发布者属性，或添加新的发布者属性。
+.sp
+使用 \fB--add-property-value\fR 时，会向现有的发布者属性添加值，或添加新的发布者属性。
+.sp
+使用 \fB--remove-property-value\fR 时，会从现有的发布者属性中删除某个值。
+.sp
+使用 \fB--unset-property\fR 时，会删除某个现有的发布者属性。
+.sp
+使用 \fB-c\fR 和 \fB-k\fR 时，会分别指定客户端 SSL 证书和密钥。
+.sp
+使用 \fB-g\fR (\fB--add-origin\fR) 时，会将指定的 URI 或路径添加为给定发布者的源。这应该是软件包系统信息库或归档的位置。
+.sp
+使用 \fB-G\fR (\fB--remove-origin\fR) 时，会从给定发布者的源列表中删除 URI 或路径。可以使用特殊值 \fB*\fR 来删除所有源。
+.sp
+使用 \fB--no-refresh\fR 时，不会尝试联系系统信息库来让映像发布者检索最新的可用软件包列表和其他元数据。
+.sp
+使用 \fB--reset-uuid\fR 时，会选择一个新的唯一标识符，用于向其发布者标识此映像。
+.sp
+使用 \fB-m\fR (\fB--add-mirror\fR) 时，会将 URI 添加为给定发布者的镜像。
+.sp
+使用 \fB-M\fR (\fB--remove-mirror\fR) 时，会从给定发布者的镜像列表中删除 URI。可以使用特殊值 \fB*\fR 来删除所有镜像。
+.sp
+使用 \fB-p\fR 时，会从指定的系统信息库 URI 中检索发布者配置信息。如果指定了发布者，则仅添加或更新匹配的发布者。如果未指定发布者，则根据需要添加或更新所有发布者。此选项不能与 \fB-g\fR、\fB--add-origin\fR、\fB--G\fR、\fB--remove-origin\fR、\fB-m\fR、\fB--add-mirror\fR、\fB-M\fR、\fB--remove-mirror\fR、\fB--disable\fR、\fB--enable\fR、\fB--no-refresh\fR 或 \fB--reset-uuid\fR 选项结合使用。
+.sp
+使用 \fB-e\fR (\fB--enable\fR) 时，会启用发布者。使用 \fB-d\fR (\fB--disable\fR) 时，会禁用发布者。填充软件包列表时，或者执行某些软件包操作（安装、卸载和更新）时，将不使用被禁用的发布者。但是，仍可以设置和查看被禁用的发布者的属性。如果只存在一个发布者，则不能将其禁用。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fBunset-publisher \fIpublisher\fR ... \fR\fR
+.ad
+.sp .6
+.RS 4n
+删除与一个或多个给定发布者相关联的配置。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fBhistory [\fB-Hl\fR] [\fB-t\fR [\fI time\fR | \fItime\fR-\fItime\fR],...][\fB-o\fR\fIcolumn\fR,...][\fB-n\fR\fI number\fR]\fR\fR
+.ad
+.sp .6
+.RS 4n
+显示适用映像的命令历史记录。
+.sp
+使用 \fB-H\fR 时，会省略列表中的标题。
+.sp
+使用 \fB-t\fR 时，会显示时间戳（格式为 \fB%Y-%m-%dT%H:%M:%S\fR）逗号分隔列表的日志记录（请参见 \fBstrftime\fR(3C)）。要指定时间范围，请在开始和完成时间戳之间使用连字符 (-)。可以将关键字 \fBnow\fR 用作当前时间的别名。如果指定的时间戳包含重复的时间戳或重叠的日期范围，则仅显示每个重复历史记录事件的单个实例。
+.sp
+使用 \fB-l\fR 时，会以长格式显示日志记录，也就是说，除了显示标准格式的内容外，还包括命令的结果、命令完成时间、所用客户端的版本和名称、执行操作的用户名，以及执行命令时遇到的任何错误。
+.sp
+使用 \fB-n\fR 时，仅显示指定数目的最近条目。
+.sp
+使用 \fB-o\fR 时，会使用指定的列名逗号分隔列表显示输出。有效的列名为：
+.sp
+.ne 2
+.mk
+.na
+\fB\fBbe\fR\fR
+.ad
+.RS 15n
+.rt  
+在其上启动此操作的引导环境的名称。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fBbe_uuid\fR\fR
+.ad
+.RS 15n
+.rt  
+在其上启动此操作的引导环境的 \fBuuid\fR。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fBclient\fR\fR
+.ad
+.RS 15n
+.rt  
+客户端的名称。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fBclient_ver\fR\fR
+.ad
+.RS 15n
+.rt  
+客户端的版本。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fBcommand\fR\fR
+.ad
+.RS 15n
+.rt  
+用于此操作的命令行。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fBfinish\fR\fR
+.ad
+.RS 15n
+.rt  
+完成此操作时的时间。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fBid\fR\fR
+.ad
+.RS 15n
+.rt  
+启动此操作的用户 ID。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fBnew_be\fR\fR
+.ad
+.RS 15n
+.rt  
+此操作创建的新引导环境。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fBnew_be_uuid\fR\fR
+.ad
+.RS 15n
+.rt  
+此操作创建的新引导环境的 \fBuuid\fR。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fBoperation\fR\fR
+.ad
+.RS 15n
+.rt  
+操作的名称。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fBoutcome\fR\fR
+.ad
+.RS 15n
+.rt  
+此操作的结果摘要。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fBreason\fR\fR
+.ad
+.RS 15n
+.rt  
+有关此操作的结果的其他信息。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fBsnapshot\fR\fR
+.ad
+.RS 15n
+.rt  
+执行此操作期间创建的快照。仅当成功完成操作后未自动删除快照时，才会记录此信息。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fBstart\fR\fR
+.ad
+.RS 15n
+.rt  
+启动此操作时的时间。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fBtime\fR\fR
+.ad
+.RS 15n
+.rt  
+执行此操作花费的总时间。（对于花费时间不到一秒的操作，将显示 0:00:00）。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fBuser\fR\fR
+.ad
+.RS 15n
+.rt  
+启动此操作的用户名。
+.RE
+
+如果指定了 \fBcommand\fR 或 \fBreason\fR 列，则它们必须是 \fB-o\fR 列表中的最后一项，这样才能让输出字段彼此分隔。这两列不能显示在同一个 \fBhistory\fR 命令中。
+.sp
+如果系统上不再存在该引导环境，则在 \fBbe\fR 或 \fBnew_be\fR 值的后面会显示一个星号 (*)。
+.sp
+可通过使用 \fBbe_uuid\fR 或 \fBnew_be_uuid\fR 字段查找当前引导环境名称，来获取 \fBbe\fR 和 \fBnew_be\fR 的值。如果某个引导环境后来已重命名，随后又被删除，则显示的 \fBbe\fR 和 \fBnew_be\fR 值是执行 \fBpkg\fR 操作时记录的值。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fBpurge-history\fR\fR
+.ad
+.sp .6
+.RS 4n
+删除所有现有历史记录信息。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fBrebuild-index\fR\fR
+.ad
+.sp .6
+.RS 4n
+重建由 \fBpkg search\fR 使用的索引。这是一项恢复操作，不适用于一般用途。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fBupdate-format\fR\fR
+.ad
+.sp .6
+.RS 4n
+将映像格式更新到当前版本。完成此操作后，该映像无法再在早期版本的 \fBpkg\fR(5) 系统上使用。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fBversion\fR\fR
+.ad
+.sp .6
+.RS 4n
+显示一个用于标识 \fBpkg\fR(1) 版本的唯一字符串。不保证在不同版本中，此字符串在任何方面都具有类似性。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fBimage-create [\fB-FPUfz\fR] [\fB--force \fR] [\fB--full\fR | \fB--partial\fR | \fB--user\fR] [\fB--zone\fR] [\fB-k\fR\fIssl_key\fR] [\fB-c\fR\fIssl_cert\fR] [\fB--no-refresh\fR] [\fB--variant\fR\fIvariant_spec\fR=\fIinstance \fR ...][\fB-g\fR\fIpath_or_uri\fR | \fB- -origin\fR\fIpath_or_uri\fR ...][\fB-m\fR\fI uri\fR | \fB--mirror\fR\fIuri\fR ...][\fB--facet\fR\fIfacet_spec\fR=(True|False) ...][(\fB-p\fR | \fB--publisher\fR) [\fIname\fR=]\fI repo_uri\fR] \fIdir\fR\fR\fR
+.ad
+.sp .6
+.RS 4n
+在 \fIdir\fR 指定的位置，创建一个适合于软件包操作的映像。缺省的映像类型为"用户"，即 \fB-U\fR (\fB--user\fR) 选项指定的类型。可以将映像类型设置为完整映像（\fB--F\fR 或 \fB--full\fR），或者设置为与完整映像（包括给定的 \fIdir\fR 路径）链接的部分映像（\fB-P\fR 或 \fB--partial\fR）。可以使用 \fB-g\fR 或 \fB--origin\fR 指定其他源。可以使用 \fB--m\fR 或 \fB--mirror\fR 指定其他镜像。
+.sp
+必须使用 \fB-p\fR 或 \fB--publisher\fR 选项提供软件包系统信息库 URI。如果还提供了某个发布者名称，则创建映像时仅添加该发布者。如果未提供发布者名称，则会将指定的系统信息库已知的所有发布者添加到映像。完成初始创建操作后，将会尝试检索与此发布者关联的目录。
+.sp
+对于使用客户端 SSL 验证的发布者，可以通过 \fB-c\fR 和 \fB-k\fR 选项注册客户端密钥和客户端证书。此密钥和证书用于映像创建期间添加的所有发布者。
+.sp
+如果要在非全局区域上下文中运行映像，则可以使用 \fB-z\fR (\fB--zone\fR) 选项设置相应的变体。
+.sp
+使用 \fB-f\fR (\fB--force\fR) 时，会基于现有映像强制创建一个映像。请慎用此选项。
+.sp
+使用 \fB--no-refresh\fR 时，不会尝试联系系统信息库来让映像发布者检索最新的可用软件包列表和其他元数据。
+.sp
+使用 \fB--variant\fR 时，会将指定的变体设置为指示值。
+.sp
+使用 \fB--facet\fR 时，会将指定的侧面设置为指示值。
+.RE
+
+.SH 映像属性
+.sp
+.LP
+以下属性是映像的一部分，可使用 \fBset-property\fR 子命令进行设置。使用 \fBproperty\fR 子命令可以查看这些属性的值。
+.sp
+.ne 2
+.mk
+.na
+\fB\fBca-path\fR\fR
+.ad
+.sp .6
+.RS 4n
+（字符串）一个路径名称，指向为执行 SSL 操作而将 CA 证书保存到的目录。此目录的格式特定于底层 SSL 实现。要对可信 CA 证书使用替代位置，请将此值更改为指向另一个目录。有关 CA 目录的要求，请参见 \fBSSL_CTX_load_verify_locations\fR(3openssl) 的 \fBCApath\fR 部分。
+.sp
+缺省值：\fB/etc/openssl/certs\fR
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fBcheck-certificate-revocation\fR\fR
+.ad
+.sp .6
+.RS 4n
+（字符串）如果此属性设置为 True，则软件包客户端尝试联系用于签名验证的证书中的任何 CRL 分发点，以确定证书自颁发以来是否已被撤销。
+.sp
+缺省值：\fBFalse\fR
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fBflush-content-cache-on-success\fR\fR
+.ad
+.sp .6
+.RS 4n
+（布尔型）如果此属性设置为 True，则完成安装或更新操作后，软件包客户端将删除其内容高速缓存中的文件。对于更新操作，仅从源 BE 中删除内容。如果随后目标 BE 中发生了打包操作，并且此选项未发生更改，则软件包客户端将刷新其内容高速缓存。
+.sp
+在磁盘空间有限的系统上，可以使用此属性使内容高速缓存保持为较小的大小。此属性可能会导致花费更长的时间来完成操作。
+.sp
+缺省值：\fBFalse\fR
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fBmirror-discovery\fR\fR
+.ad
+.sp .6
+.RS 4n
+（布尔型）此属性通知客户端使用 mDNS 和 DNS-SD 发现本地链路内容镜像。如果此属性设置为 True，则客户端尝试从其动态发现的镜像中下载软件包内容。要运行一个通过 mDNS 通告其内容的镜像，请参见 \fBpkg.depotd\fR(1M)。
+.sp
+缺省值：\fBFalse\fR
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fBsend-uuid\fR\fR
+.ad
+.sp .6
+.RS 4n
+（布尔型）执行网络操作时发送映像的通用唯一标识符 (Universally Unique Identifier, UUID)。尽管用户可以禁用此选项，但是某些网络系统信息库可能会拒绝与不提供 UUID 的客户端通信。
+.sp
+缺省值：\fBTrue\fR
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fBsignature-policy\fR\fR
+.ad
+.sp .6
+.RS 4n
+（字符串）确定在映像中安装、更新、修改或验证软件包时，要对清单执行哪些检查。应用于软件包的最终策略取决于映像策略和发布者策略的组合。该策略组合的严格程度至少相当于这两个策略单独执行时较严格的策略。缺省情况下，软件包客户端不检查是否已撤销证书。要启用这些检查（可能需要客户端联系外部 Web 站点），请将 \fBcheck-certificate-revocation\fR 映像属性设置为 \fBtrue\fR。允许使用以下值：
+.sp
+.ne 2
+.mk
+.na
+\fB\fBignore\fR\fR
+.ad
+.RS 22n
+.rt  
+忽略所有清单的签名。这是缺省值。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fBverify\fR\fR
+.ad
+.RS 22n
+.rt  
+验证所有具有签名的清单的签名是否有效，但不要求签名所有安装的软件包。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fBrequire-signatures\fR\fR
+.ad
+.RS 22n
+.rt  
+要求所有新安装的软件包至少具有一个有效签名。如果安装的软件包不具备有效签名，\fBpkg fix\fR 和 \fBpkg verify\fR 命令也会发出警告。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fBrequire-names\fR\fR
+.ad
+.RS 22n
+.rt  
+与 \fBrequire-signatures\fR 遵循相同的要求，但还要求 \fBsignature-required-names\fR 属性中列出的字符串显示为用于验证签名信任链的证书的通用名称。
+.RE
+
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fBsignature-required-names\fR\fR
+.ad
+.sp .6
+.RS 4n
+（字符串列表）在验证软件包签名时必须视为证书通用名称的名称列表。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fBtrust-anchor-directory\fR\fR
+.ad
+.sp .6
+.RS 4n
+（字符串）包含映像信任锚的目录的路径名称。此路径是映像的相对路径。缺省值为 \fBignore\fR。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fBuse-system-repo\fR\fR
+.ad
+.sp .6
+.RS 4n
+（布尔型）此属性指示映像是否应使用系统信息库作为映像和发布者配置的源，以及作为与提供的发布者通信的代理。缺省值为 \fBignore\fR。有关系统信息库的信息，请参见 \fBpkg.sysrepo\fR(1M)。
+.RE
+
+.SH 发布者属性
+.sp
+.LP
+以下属性是映像的一部分，可使用 \fBset-publisher\fR 子命令的 \fB--set-property\fR 选项进行设置。
+.sp
+.ne 2
+.mk
+.na
+\fB\fBsignature-policy\fR\fR
+.ad
+.sp .6
+.RS 4n
+（字符串）此属性的作用与同名映像属性的功能相同，不过它仅适用于来自特定发布者的软件包。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fBsignature-required-names\fR\fR
+.ad
+.sp .6
+.RS 4n
+（字符串列表）此属性的作用与同名映像属性的功能相同，不过它仅适用于来自特定发布者的软件包。
+.RE
+
+.SH 示例
+.LP
+\fB示例 1 \fR在配置了发布者的情况下创建映像
+.sp
+.LP
+使用 \fB/aux0/example_root\fR 中存储的发布者 \fBexample.com\fR 创建一个新的完整映像。
+
+.sp
+.in +2
+.nf
+$ \fBpkg image-create -F -p example.com=http://pkg.example.com:10000 \e\fR
+\fB/aux0/example_root\fR
+.fi
+.in -2
+.sp
+
+.LP
+\fB示例 2 \fR创建一个映像并指定附加源和镜像
+.sp
+.LP
+使用发布者 \fBexample.com\fR 创建一个新的完整映像。该映像还有一个附加镜像、两个附加源，并存储在 \fB/aux0/example_root\fR 中。
+
+.sp
+.in +2
+.nf
+$ \fBpkg image-create -F -p example.com=http://pkg.example.com:10000 \e\fR
+\fB-g http://alternate1.example.com:10000/ \e\fR
+\fB-g http://alternate2.example.com:10000/ \e\fR
+\fB-m http://mirror.example.com:10000/ \e\fR
+\fB/aux0/example_root\fR
+.fi
+.in -2
+.sp
+
+.LP
+\fB示例 3 \fR在未配置发布者的情况下创建映像
+.sp
+.LP
+在未配置发布者的情况下，在 \fB/aux0/example_root\fR 中创建一个新的完整映像。
+
+.sp
+.in +2
+.nf
+$ \fBpkg image-create -F /aux0/example_root\fR
+.fi
+.in -2
+.sp
+
+.LP
+\fB示例 4 \fR安装软件包
+.sp
+.LP
+在当前映像中安装最新版本的 \fBwidget\fR 软件包。
+
+.sp
+.in +2
+.nf
+$ \fBpkg install application/widget\fR
+.fi
+.in -2
+.sp
+
+.LP
+\fB示例 5 \fR列出软件包的指定内容
+.sp
+.LP
+列出 \fBsystem/file-system/zfs\fR 软件包的内容。显示操作名称、文件模式（如果已定义）、大小（如果已定义）、路径和目标（如果为链接）。将操作限制为类型 \fBdir\fR、\fBfile\fR、\fBlink\fR 和 \fBhardlink\fR，因为指定可用于所有操作的 \fBaction.name\fR 属性将显示一个列出了所有操作的行，而此处并不需要显示它。
+
+.sp
+.in +2
+.nf
+$ \fBpkg contents -t dir,file,link,hardlink \e\fR
+\fB-o action.name,mode,pkg.size,path,target system/file-system/zfs\fR
+ACTION.NAME MODE PKG.SIZE PATH                 TARGET
+dir         0755          etc
+dir         0755          etc/fs
+dir         0755          etc/fs/zfs
+link                      etc/fs/zfs/mount     ../../../usr/sbin/zfs
+link                      etc/fs/zfs/umount    ../../../usr/sbin/zfs
+dir         0755          etc/zfs
+dir         0755          kernel
+dir         0755          kernel/drv
+dir         0755          kernel/drv/amd64
+file        0755  1706744 kernel/drv/amd64/zfs
+file        0644      980 kernel/drv/zfs.conf
+dir         0755          kernel/fs
+dir         0755          kernel/fs/amd64
+hardlink                  kernel/fs/amd64/zfs  ../../../kernel/drv/amd64/zfs
+\&...
+.fi
+.in -2
+.sp
+
+.LP
+\fB示例 6 \fR列出两个软件包的指定内容
+.sp
+.LP
+列出 \fBweb/browser/firefox\fR 和 \fBmail/thunderbird \fR 的内容，将显示的内容仅限于软件包名称，以及其 \fBpath\fR 属性以 \fB\&.desktop\fR 或 \fB\&.png\fR 结尾的操作的路径属性。
+
+.sp
+.in +2
+.nf
+$ \fBpkg contents -o pkg.name,path -a path=\e*.desktop \e\fR
+\fB-a path=\e*.png web/browser/firefox mail/thunderbird\fR
+PKG.NAME            PATH
+web/browser/firefox usr/share/applications/firefox.desktop
+mail/thunderbird    usr/share/applications/thunderbird.desktop
+web/browser/firefox usr/share/pixmaps/firefox-icon.png
+mail/thunderbird    usr/share/pixmaps/thunderbird-icon.png
+\&...
+.fi
+.in -2
+.sp
+
+.LP
+\fB示例 7 \fR搜索软件包
+.sp
+.LP
+在软件包数据库中搜索标记 \fBbge\fR。
+
+.sp
+.in +2
+.nf
+$ \fBpkg search bge\fR
+INDEX       ACTION VALUE                      PACKAGE
+driver_name driver bge                        pkg:/driver/network/bge@0.5.11-0.169
+basename    file   kernel/drv/sparcv9/bge     pkg:/driver/network/bge@0.5.11-0.169
+basename    file   kernel/drv/amd64/bge       pkg:/driver/network/bge@0.5.11-0.169
+pkg.fmri    set    solaris/driver/network/bge pkg:/driver/network/bge@0.5.11-0.169
+.fi
+.in -2
+.sp
+
+.sp
+.LP
+该标记在软件包 \fBdriver/network/bge\fR 中，既用作代表 \fB/kernel/drv/\fI arch\fR/bge\fR 的文件操作的基名，又用作驱动程序名称。
+
+.LP
+\fB示例 8 \fR搜索依赖于指定软件包的软件包
+.sp
+.LP
+搜索依赖于 \fBpackage/pkg\fR 的已安装软件包。
+
+.sp
+.in +2
+.nf
+$ \fBpkg search -l 'depend::package/pkg'\fR
+INDEX       ACTION VALUE                    PACKAGE
+incorporate depend package/pkg@0.5.11-0.169 pkg:/consolidation/ips/ips-incorporation@0.5.11-0.169
+require     depend package/pkg@0.5.11-0.169 pkg:/system/install@0.5.11-0.169
+require     depend package/pkg@0.5.11-0.169 pkg:/package/pkg/system-repository@0.5.11-0.169
+.fi
+.in -2
+.sp
+
+.LP
+\fB示例 9 \fR搜索依赖性
+.sp
+.LP
+在安装的软件包中搜索所有 \fBincorporate\fR 依赖性。
+
+.sp
+.in +2
+.nf
+$ \fBpkg search -l 'depend:incorporate:'\fR
+INDEX       ACTION VALUE                           PACKAGE
+incorporate depend pkg:/BRCMbnx@0.5.11,5.11-0.133  pkg:/consolidation/osnet/osnet-incorporation@0.5.11-0.169
+incorporate depend pkg:/BRCMbnxe@0.5.11,5.11-0.133 pkg:/consolidation/osnet/osnet-incorporation@0.5.11-0.169
+\&...
+.fi
+.in -2
+.sp
+
+.LP
+\fB示例 10 \fR添加发布者
+.sp
+.LP
+添加新的发布者 \fBexample.com\fR，该发布者的系统信息库位于 \fBhttp://www.example.com/repo\fR。
+
+.sp
+.in +2
+.nf
+$ \fBpkg set-publisher -g http://www.example.com/repo example.com\fR
+.fi
+.in -2
+.sp
+
+.LP
+\fB示例 11 \fR添加具有密钥和证书的发布者
+.sp
+.LP
+添加新的发布者 \fBexample.com\fR，该发布者的安全系统信息库位于 \fBhttps://secure.example.com/repo\fR，其密钥和证书存储在目录 \fB/root/creds\fR 中。
+
+.sp
+.in +2
+.nf
+$ \fBpkg set-publisher -k /root/creds/example.key \e\fR
+\fB-c /root/creds/example.cert -g https://secure.example.com/repo \e\fR
+\fBexample.com\fR
+.fi
+.in -2
+.sp
+
+.LP
+\fB示例 12 \fR添加并自动配置发布者
+.sp
+.LP
+使用自动配置功能添加一个新的发布者，该发布者的系统信息库位于 \fB/export/repo\fR。
+
+.sp
+.in +2
+.nf
+$ \fBpkg set-publisher -p /export/repo\fR
+.fi
+.in -2
+.sp
+
+.LP
+\fB示例 13 \fR添加并手动配置发布者
+.sp
+.LP
+使用手动配置功能添加新的发布者 \fBexample.com\fR，该发布者的系统信息库位于 \fB/export/repo/example.com\fR。
+
+.sp
+.in +2
+.nf
+$ \fBpkg set-publisher -g /export/repo example.com\fR
+.fi
+.in -2
+.sp
+
+.LP
+\fB示例 14 \fR验证所有签名的软件包
+.sp
+.LP
+配置一个映像以验证所有签名的软件包。
+
+.sp
+.in +2
+.nf
+$ \fBpkg set-property signature-policy verify\fR
+.fi
+.in -2
+.sp
+
+.LP
+\fB示例 15 \fR要求签名所有软件包
+.sp
+.LP
+配置一个映像，以要求签名所有软件包，并要求字符串 \fBexample.com\fR 显示为信任链中某一个证书的通用名称。
+
+.sp
+.in +2
+.nf
+$ \fBpkg set-property signature-policy require-names example.com\fR
+.fi
+.in -2
+.sp
+
+.LP
+\fB示例 16 \fR要求对来自指定发布者的所有软件包进行签名
+.sp
+.LP
+配置一个映像，以便必须对通过发布者 \fBexample.com\fR 安装的所有软件包进行签名。
+
+.sp
+.in +2
+.nf
+$ \fBpkg set-publisher --set-property signature-policy=require-signatures \e\fR
+\fBexample.com\fR
+.fi
+.in -2
+.sp
+
+.LP
+\fB示例 17 \fR要求信任链中存在指定的字符串
+.sp
+.LP
+将字符串 \fBfoo\fR 添加到映像的通用名称列表，这些通用名称必须显示在签名的信任链中才能视为有效。
+
+.sp
+.in +2
+.nf
+$ \fBpkg add-property-value signature-require-names foo\fR
+.fi
+.in -2
+.sp
+
+.LP
+\fB示例 18 \fR从指定发布者的信任链中删除某个字符串
+.sp
+.LP
+从通用名称列表中删除字符串 \fBfoo\fR，必须显示这些通用名称才能验证发布者 \fBexample.com\fR 的签名。
+
+.sp
+.in +2
+.nf
+$ \fBpkg set-publisher --remove-property-value signature-require-names=foo \e\fR
+\fBexample.com\fR
+.fi
+.in -2
+.sp
+
+.LP
+\fB示例 19 \fR添加可信 CA 证书
+.sp
+.LP
+添加 \fB/tmp/example_file.pem\fR 中存储的证书，作为发布者 \fBexample.com\fR 的可信 CA 证书。
+
+.sp
+.in +2
+.nf
+$ \fBpkg set-publisher --approve-ca-cert /tmp/example_file.pem \e\fR
+\fBexample.com\fR
+.fi
+.in -2
+.sp
+
+.LP
+\fB示例 20 \fR撤销证书
+.sp
+.LP
+撤销发布者 \fBexample.com\fR 的、包含散列 \fBa12345\fR 的证书，防止该证书验证来自 \fBexample.com\fR 的软件包的任何签名。
+
+.sp
+.in +2
+.nf
+$ \fBpkg set-publisher --revoke-ca-cert a12345 example.com\fR
+.fi
+.in -2
+.sp
+
+.LP
+\fB示例 21 \fR忘记针对某个证书执行的操作
+.sp
+.LP
+使 \fBpkg\fR 忘记用户曾经添加或撤销了证书 \fBa12345\fR。
+
+.sp
+.in +2
+.nf
+$ \fBpkg set-publisher --unset-ca-cert a12345 example.com\fR
+.fi
+.in -2
+.sp
+
+.LP
+\fB示例 22 \fR将软件包降级
+.sp
+.LP
+将安装的软件包 \fBfoo@1.1\fR 降级到更低的版本。
+
+.sp
+.in +2
+.nf
+$ \fBpkg update foo@1.0\fR
+.fi
+.in -2
+.sp
+
+.LP
+\fB示例 23 \fR切换发生冲突的软件包安装
+.sp
+.LP
+当两个软件包发生冲突时，切换所安装的软件包。假定软件包 A 依赖于软件包 B 或软件包 C，而 B 和 C 是互斥的。如果安装了 A 和 B，则使用以下命令即可改为使用 C 而不是 B，且无需卸载 A：
+
+.sp
+.in +2
+.nf
+$ \fBpkg install --reject B C\fR
+.fi
+.in -2
+.sp
+
+.LP
+\fB示例 24 \fR列出软件包归档中的软件包
+.sp
+.LP
+列出某个软件包归档中所有软件包的所有版本。
+
+.sp
+.in +2
+.nf
+$ \fBpkg list -f -g /my/archive.p5p\fR
+.fi
+.in -2
+.sp
+
+.LP
+\fB示例 25 \fR列出软件包系统信息库中的软件包
+.sp
+.LP
+列出某个系统信息库中所有软件包的所有版本。
+
+.sp
+.in +2
+.nf
+$ \fBpkg list -f -g http://example.com:10000\fR
+.fi
+.in -2
+.sp
+
+.LP
+\fB示例 26 \fR显示有关软件包归档中某个软件包的信息
+.sp
+.LP
+显示软件包归档中某个软件包的最新版本的软件包信息。该软件包当前不一定已安装。
+
+.sp
+.in +2
+.nf
+$ \fBpkg info -g /my/archive.p5p pkg_name\fR
+.fi
+.in -2
+.sp
+
+.LP
+\fB示例 27 \fR显示软件包归档中某个软件包的内容
+.sp
+.LP
+显示软件包归档中某个软件包的内容。该软件包当前未安装。
+
+.sp
+.in +2
+.nf
+$ \fBpkg contents -g /my/archive.p5p pkg_name\fR
+.fi
+.in -2
+.sp
+
+.LP
+\fB示例 28 \fR删除发布者的所有源和镜像
+.sp
+.LP
+删除某个发布者的所有源和镜像，并添加新的源。
+
+.sp
+.in +2
+.nf
+$ \fBpkg set-publisher -G '*' -M '*' -g http://example.com:10000 \e\fR
+\fBexample.com\fR
+.fi
+.in -2
+.sp
+
+.SH 环境变量
+.sp
+.ne 2
+.mk
+.na
+\fB\fBPKG_IMAGE\fR\fR
+.ad
+.sp .6
+.RS 4n
+用于软件包操作的映像所在的目录。如果指定了 \fB-R\fR，则会忽略此属性。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fBPKG_CLIENT_CONNECT_TIMEOUT\fR\fR
+.ad
+.sp .6
+.RS 4n
+传输操作期间尝试建立连接时等待的秒数（针对每次尝试），达到此秒数后，客户端会异常中止操作。缺省值为 60。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fBPKG_CLIENT_LOWSPEED_TIMEOUT\fR\fR
+.ad
+.sp .6
+.RS 4n
+传输操作期间低于 \fBlowspeed\fR 限制（1024 字节/秒）的秒数，达到此秒数后，客户端会异常中止操作。缺省值为 30。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fBPKG_CLIENT_MAX_CONSECUTIVE_ERROR\fR\fR
+.ad
+.sp .6
+.RS 4n
+客户端异常中止操作之前发生瞬态传输错误的最大次数。缺省值为 4。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fBPKG_CLIENT_MAX_REDIRECT\fR\fR
+.ad
+.sp .6
+.RS 4n
+在传输操作期间，异常中止某个连接之前允许的最大 HTTP 或 HTTPS 重定向次数。缺省值为 5。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fBPKG_CLIENT_MAX_TIMEOUT\fR\fR
+.ad
+.sp .6
+.RS 4n
+客户端异常中止操作之前每台主机上的最大传输尝试次数。缺省值为 4。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fBhttp_proxy\fR、\fBhttps_proxy\fR\fR
+.ad
+.sp .6
+.RS 4n
+HTTP 或 HTTPS 代理服务器。
+.RE
+
+.SH 退出状态
+.sp
+.LP
+将返回以下退出值：
+.sp
+.ne 2
+.mk
+.na
+\fB\fB0\fR\fR
+.ad
+.RS 6n
+.rt  
+命令成功。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB1\fR\fR
+.ad
+.RS 6n
+.rt  
+出现错误。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB2\fR\fR
+.ad
+.RS 6n
+.rt  
+指定的命令行选项无效。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB3\fR\fR
+.ad
+.RS 6n
+.rt  
+请求了多项操作，但只有一部分操作成功。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB4\fR\fR
+.ad
+.RS 6n
+.rt  
+未进行更改－没有要执行的操作。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB5\fR\fR
+.ad
+.RS 6n
+.rt  
+无法对实时映像执行请求的操作。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB6\fR\fR
+.ad
+.RS 6n
+.rt  
+无法完成请求的操作，因为尚未接受所安装或更新的软件包的许可证。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB7\fR\fR
+.ad
+.RS 6n
+.rt  
+该映像当前已被另一个进程使用，无法修改。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB99\fR\fR
+.ad
+.RS 6n
+.rt  
+发生了意外的异常。
+.RE
+
+.SH 文件
+.sp
+.LP
+可将 \fBpkg\fR(5) 映像放置在较大文件系统中的任意位置。在以下文件描述中，标记 \fB$IMAGE_ROOT\fR 用于区分相对路径。对于典型的系统安装，\fB$IMAGE_ROOT\fR 等效于 \fB/\fR。
+.sp
+.ne 2
+.mk
+.na
+\fB\fB$IMAGE_ROOT/var/pkg\fR\fR
+.ad
+.sp .6
+.RS 4n
+完整或部分映像的元数据目录。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB$IMAGE_ROOT/.org.opensolaris,pkg\fR\fR
+.ad
+.sp .6
+.RS 4n
+用户映像的元数据目录。
+.RE
+
+.sp
+.LP
+在特定映像的元数据中，某些文件和目录可能包含修复和恢复期间有用的信息。标记 \fB$IMAGE_META\fR 引用元数据所在的顶层目录。\fB$IMAGE_META\fR 通常是上述两个路径之一。
+.sp
+.ne 2
+.mk
+.na
+\fB\fB$IMAGE_META/lost+found\fR\fR
+.ad
+.RS 26n
+.rt  
+在软件包操作期间移动的有冲突目录和文件的位置。某个已删除目录的未打包内容的位置。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB$IMAGE_META/publisher\fR\fR
+.ad
+.RS 26n
+.rt  
+为每个发布者包含一个目录。每个目录存储特定于发布者的元数据。
+.RE
+
+.sp
+.LP
+\fB$IMAGE_META\fR 目录分层结构中的其他路径是专用的，可能会进行更改。
+.SH 属性
+.sp
+.LP
+有关下列属性的描述，请参见 \fBattributes\fR(5)：
+.sp
+
+.sp
+.TS
+tab() box;
+cw(2.75i) |cw(2.75i) 
+lw(2.75i) |lw(2.75i) 
+.
+属性类型属性值
+_
+可用性\fBpackage/pkg\fR（软件包/pkg）
+_
+接口稳定性Uncommitted（未确定）
+.TE
+
+.SH 另请参见
+.sp
+.LP
+\fBpkgsend\fR(1)、\fBpkg.depotd\fR(1M)、\fBglob\fR(3C)、\fBpkg\fR(5)、\fBbeadm\fR(1M)
+.sp
+.LP
+\fBhttp://hub.opensolaris.org/bin/view/Project+pkg/\fR

@@ -1,0 +1,272 @@
+'\" te
+.\" Copyright (c) 2007, 2011, Oracle and/or its affiliates. All rights reserved.
+.TH packagemanager 1 "2011 年 7 月 28 日" "SunOS 5.11" "ユーザーコマンド"
+.SH 名前
+packagemanager \- Image Packaging System の GUI 
+.SH 形式
+.LP
+.nf
+/usr/bin/packagemanager [\fIoptions\fR]
+.fi
+
+.LP
+.nf
+/usr/bin/packagemanager [-hiRu] [--help]
+    [--info-install \fIfile\fR] [--update-all]
+    [--image-dir \fIdir\fR]
+.fi
+
+.LP
+.nf
+/usr/bin/packagemanager [\fIfile\fR]
+.fi
+
+.SH 機能説明
+.sp
+.LP
+\fBpackagemanager\fR は、\fB pkg\fR(5) (Image Packaging System ソフトウェア) のグラフィカルユーザーインタフェースです。
+.sp
+.LP
+パッケージマネージャーを使用すると、次の作業を実行できます。
+.RS +4
+.TP
+.ie t \(bu
+.el o
+パッケージの検索、インストール、および削除
+.RE
+.RS +4
+.TP
+.ie t \(bu
+.el o
+パブリッシャーの追加、削除、および変更
+.RE
+.RS +4
+.TP
+.ie t \(bu
+.el o
+ブート環境の作成、削除、および管理
+.RE
+.sp
+.LP
+\fIfile\fR オペランドが指定されていて、その接尾辞が \fB\&.p5i\fR である場合、\fBpackagemanager\fR は Web インストールモードで起動し、1 つ以上のパブリッシャーおよびパブリッシャーごとに数多くのパッケージが追加されます。
+.SH オプション
+.sp
+.LP
+次のオプションを指定できます。
+.sp
+.ne 2
+.mk
+.na
+\fB\fB-h\fR または \fB--help\fR\fR
+.ad
+.sp .6
+.RS 4n
+使用方法に関するメッセージを表示します。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB-i\fR または \fB--info-install\fR \fI file\fR\fR
+.ad
+.sp .6
+.RS 4n
+\fB\&.p5i\fR ファイルを指定して、\fBpackagemanager\fR を Web インストールモードで実行できます。\fIfile\fR の接尾辞は \fB\&.p5i\fR である必要があります。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB-R\fR または \fB--image-dir\fR \fI dir\fR\fR
+.ad
+.sp .6
+.RS 4n
+自動的に検出されたイメージではなく、\fIdir\fR をルートとするイメージに対して処理を行います。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB-U\fR または \fB--update-all\fR\fR
+.ad
+.sp .6
+.RS 4n
+利用可能な更新があるすべてのインストール済みパッケージを更新します。
+.LP
+注 - 
+.sp
+.RS 2
+\fBpackage/pkg\fR、\fBpackage/pkg/package-manager \fR、または \fBpackage/pkg/update-manager\fR を更新する必要がある場合、\fBpackagemanager\fR は最初にこれらのパッケージを更新してから、残りの更新を実行するために再起動されます。
+.RE
+.RE
+
+.SH オペランド
+.sp
+.ne 2
+.mk
+.na
+\fB\fIfile\fR\fR
+.ad
+.RS 8n
+.rt  
+Web インストールファイル。このファイルの接尾辞は \fB\&.p5i\fR である必要があります。Web インストールについての詳細は、パッケージマネージャーのオンラインヘルプを参照してください。
+.RE
+
+.SH 使用例
+.LP
+\fB例 1 \fR現在のイメージで操作する
+.sp
+.LP
+現在のイメージで \fBpackagemanager\fR を起動します。
+
+.sp
+.in +2
+.nf
+$ \fBpackagemanager\fR
+.fi
+.in -2
+.sp
+
+.LP
+\fB例 2 \fR指定されたイメージで操作する
+.sp
+.LP
+\fB/aux0/example_root\fR に格納されたイメージで \fBpackagemanager\fR を起動します。
+
+.sp
+.in +2
+.nf
+$ \fBpackagemanager -R /aux0/example_root\fR
+.fi
+.in -2
+.sp
+
+.LP
+\fB例 3 \fRWeb インストールモードで起動する
+.sp
+.LP
+Web インストールモードで \fBpackagemanager\fR を起動します。
+
+.sp
+.in +2
+.nf
+$ \fBpackagemanager ~/test.p5i\fR
+.fi
+.in -2
+.sp
+
+.SH 終了ステータス
+.sp
+.LP
+次の終了値が返されます。
+.sp
+.ne 2
+.mk
+.na
+\fB\fB0\fR\fR
+.ad
+.RS 6n
+.rt  
+すべて正常に動作しました。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB1\fR\fR
+.ad
+.RS 6n
+.rt  
+エラーが発生しました。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB2\fR \fR
+.ad
+.RS 6n
+.rt  
+無効なコマンド行オプションが指定されました。
+.RE
+
+.SH ファイル
+.sp
+.LP
+\fBpkg\fR(5) イメージはより大きなファイルシステム内に任意に配置できるため、トークン \fB$IMAGE_ROOT\fR を使用して相対パスが区別されます。標準のシステムインストールでは、\fB$IMAGE_ROOT\fR は / と同等です。
+.sp
+.ne 2
+.mk
+.na
+\fB\fB$IMAGE_ROOT/var/pkg\fR\fR
+.ad
+.sp .6
+.RS 4n
+完全または部分的なイメージのメタデータディレクトリ。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB$IMAGE_ROOT/.org.opensolaris,pkg\fR\fR
+.ad
+.sp .6
+.RS 4n
+ユーザーイメージのメタデータディレクトリ。
+.sp
+特定のイメージのメタデータ内にある特定のファイルおよびディレクトリには、修復時や復旧時に役立つ情報が含まれています。トークン \fB$IMAGE_META \fR は、メタデータが含まれる最上位ディレクトリを参照するために使用されます。通常、\fB $IMAGE_META\fR は前述の 2 つのパスのいずれかです。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB$IMAGE_META/gui-cache\fR\fR
+.ad
+.sp .6
+.RS 4n
+プログラムの起動やパブリッシャーの切り替えの速度を上げるために \fBpackagemanager\fR で保持されるキャッシュ済みメタデータの場所。
+.RE
+
+.sp
+.LP
+\fB$IMAGE_META\fR ディレクトリ階層内のその他のパスは非公開であり、変更される可能性があります。
+.SH 属性
+.sp
+.LP
+次の属性についての詳細は、マニュアルページの \fBattributes\fR(5) を参照してください。
+.sp
+
+.sp
+.TS
+tab() box;
+cw(2.75i) |cw(2.75i) 
+lw(2.75i) |lw(2.75i) 
+.
+属性タイプ属性値
+_
+使用条件\fBpackage/pkg/package-manager\fR
+_
+インタフェースの安定性不確実
+.TE
+
+.SH 関連項目
+.sp
+.LP
+\fBpm-updatemanager\fR(1), \fBpkg\fR(1), \fB pkg\fR(5)
+.sp
+.LP
+パッケージマネージャーのオンラインヘルプ
+.sp
+.LP
+\fBhttp://hub.opensolaris.org/bin/view/Project+pkg/\fR
+.SH 注意事項
+.sp
+.LP
+\fBpackagemanager\fR は、イメージのファイルおよびディレクトリで操作するために十分な権限で起動する必要があります。

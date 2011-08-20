@@ -1,0 +1,391 @@
+'\" te
+.\" Copyright (c) 2007, 2011, Oracle and/or its affiliates. All rights reserved.
+.TH pkglint 1 "2011 年 7 月 28 日" "SunOS 5.11" "ユーザーコマンド"
+.SH 名前
+pkglint \- Image Packaging System パッケージ lint
+.SH 形式
+.LP
+.nf
+/usr/bin/pkglint [-c \fIdir\fR] [-r \fIuri\fR] [-p \fIregexp\fR]
+    [-f \fIrcfile\fR] [-b \fIbuild_no\fR] [-v]
+    [-l \fIuri\fR] | \fImanifest\fR ...
+.fi
+
+.LP
+.nf
+/usr/bin/pkglint -L [-v]
+.fi
+
+.SH 機能説明
+.sp
+.LP
+\fBpkglint\fR は、必要に応じて別のリポジトリを参照しながら、1 つ以上のパッケージマニフェストに対して一連のチェックを実行します。
+.sp
+.LP
+\fBpkglint\fR は、パッケージ公開前の、パッケージ作成処理中に使用するべきです。\fBpkglint\fR は、マニフェストに対して、\fBpkgsend\fR(1) または \fBpkg.depotd\fR(1M) の通常動作中に実行するには負荷が大きすぎる可能性のある徹底的なテストを実行します。\fBpkglint\fR のチェックには、重複したアクション、欠落した属性、および異常なファイルアクセス権に対するテストが含まれます。
+.sp
+.LP
+lint のためのマニフェストは、コマンド行で、スペースで区切られたローカルファイルのリストとして渡すことができます。または、リポジトリからマニフェストを取得できます。
+.sp
+.LP
+リポジトリからマニフェストを取得する場合、\fBpkglint\fR は最初の実行で、指定されたキャッシュディレクトリ内に \fBpkg\fR(5) ユーザーイメージを作成して設定します。\fB-r\fR オプションが指定されている場合は、参照リポジトリのために \fIcache_dir\fR\fB/ref_image\fR という名前のユーザーイメージが作成されます。\fB-l\fR オプションが指定されている場合は、lint リポジトリのために \fIcache_dir\fR\fB/lint_image\fR という名前のユーザーイメージが作成されます。これらのイメージに内容はインストールされません。これらのイメージは、リポジトリからマニフェストを取得するために \fBpkglint\fR でのみ使用されます。
+.sp
+.LP
+\fBpkglint\fR の以降の呼び出しではキャッシュディレクトリを再利用できるため、\fB-r\fR または \fB-l\fR 引数はすべて省略できます。
+.sp
+.LP
+\fBpkglint\fR では、キャッシュディレクトリ内のパブリッシャーを構成するためのサポートが制限されています。これらのイメージに対して、より複雑なパブリッシャーの構成を実行するには、\fBpkg\fR(1) を使用します。
+.sp
+.LP
+\fBpkglint\fR では、パッケージ作成者は、特定のマニフェストまたはアクションに対するチェックをバイパスできます。\fBTrue\fR に設定された属性 \fBpkg.linted\fR を含むマニフェストまたはアクションでは、そのマニフェストまたはアクションに対する lint 出力は生成されません。
+.sp
+.LP
+\fBpkglint\fR チェックの名前の部分文字列を使用して、よりきめ細かな \fBpkg.linted\fR 設定を行うことができます。たとえば、\fBpkg.linted.\fI check\fR.\fIid\fR\fR が \fBTrue\fR に設定されていると、特定のマニフェストまたはアクションに対する \fB\fIcheck\fR.\fIid \fR\fR という名前を持つすべてのチェックがバイパスされます。
+.sp
+.LP
+\fBpkglint\fR の動作は、\fBpkglintrc\fR ファイルを指定することによって構成できます。デフォルトでは、\fBpkglint\fR は、\fB/usr/share/lib/pkg/pkglintrc\fR および \fB$HOME/.pkglintrc \fR 内の構成オプションを検索します。別の構成ファイルを指定するには、\fB-f\fR オプションを使用します。
+.sp
+.LP
+lint の実行中に検出されたエラーまたは警告はすべて \fBstderr\fR に出力されます。
+.SH オプション
+.sp
+.LP
+次のオプションがサポートされています。
+.sp
+.ne 2
+.mk
+.na
+\fB\fB-b\fR \fIbuild_no\fR\fR
+.ad
+.RS 18n
+.rt  
+lint および参照リポジトリからの lint 中に使用されるパッケージのリストを絞り込むために使用されるビルド番号を指定します。\fB-b\fR オプションが指定されていない場合は、最新バージョンのパッケージが使用されます。\fBversion.pattern \fR 設定プロパティーも参照してください。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB-c\fR \fIcache_dir\fR\fR
+.ad
+.RS 18n
+.rt  
+lint および参照リポジトリからのパッケージのメタデータをキャッシュするために使用されるローカルディレクトリを指定します。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB-l\fR \fIlint_uri\fR\fR
+.ad
+.RS 18n
+.rt  
+lint リポジトリの場所を表す URI を指定します。HTTP ベースとファイルシステムベースの両方の公開がサポートされています。\fB-l\fR を指定する場合は、\fB-c\fR も指定する必要があります。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB-L\fR\fR
+.ad
+.RS 18n
+.rt  
+既知の lint チェックと除外された lint チェックを一覧表示してから終了します。各チェックの短縮名と説明を表示します。\fB-v\fR フラグと組み合わせる場合は、説明の代わりに、このチェックを実装するメソッドを表示します。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB-f\fR \fIconfig_file\fR\fR
+.ad
+.RS 18n
+.rt  
+\fIconfig_file\fR 構成ファイルを使用して \fBpkglint\fR セッションを構成します。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB-p\fR \fIregexp\fR\fR
+.ad
+.RS 18n
+.rt  
+lint リポジトリからチェックされるパッケージのリストを絞り込むために使用される正規表現を指定します。参照リポジトリからはすべてのマニフェストがロードされ (\fB-b\fR が指定されている場合は、その値に一致すると仮定)、このパターンは無視されます。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB-r\fR \fIrepo_uri\fR\fR
+.ad
+.RS 18n
+.rt  
+参照リポジトリの場所を表す URI を指定します。\fB-r\fR を指定する場合は、\fB-c\fR も指定する必要があります。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB-v\fR\fR
+.ad
+.RS 18n
+.rt  
+\fBpkglint\fR を冗長モードで実行し、構成ファイル内の \fBlog_level\fR 設定をすべて上書きします。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB--help\fR or \fB-?\fR\fR
+.ad
+.RS 18n
+.rt  
+使用方法に関するメッセージを表示します。
+.RE
+
+.SH ファイル
+.sp
+.LP
+\fBpkglintrc\fR 構成ファイルは、次のキーと値の引数を取ります。
+.sp
+.ne 2
+.mk
+.na
+\fB\fBlog_level\fR\fR
+.ad
+.RS 24n
+.rt  
+lint メッセージを発行する最小のレベル。このレベルより低い lint メッセージは破棄されます。デフォルト値は \fBINFO\fR です。
+.sp
+ログレベルを最小のレベルからもっとも重大なレベルの順に示すと、\fBDEBUG\fR、\fBINFO\fR、\fBWARNING\fR、\fBERROR\fR、\fBCRITICAL\fR になります。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fBdo_pub_checks\fR\fR
+.ad
+.RS 24n
+.rt  
+\fBTrue\fR の場合は、公開されたパッケージにとってのみ意味がある可能性のあるチェックを実行します。デフォルト値は \fBTrue\fR です。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fBpkglint.ext.\fR*\fR
+.ad
+.RS 24n
+.rt  
+\fBpkglint\fR のプラグインメカニズムを使用すると、実行時に lint モジュールを追加できます。\fBpkglint.ext.\fR で始まるキーはすべて、完全に指定された Python モジュールである必要のある値を取ります。詳細は、「開発者」の節を参照してください。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fBpkglint.exclude\fR\fR
+.ad
+.RS 24n
+.rt  
+実行されるチェックのセットから省略する、完全に指定された Python モジュール、クラス、または関数名のスペースで区切られたリスト。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fBuse_progress_tracker\fR\fR
+.ad
+.RS 24n
+.rt  
+\fBTrue\fR の場合は、lint の実行中にマニフェストに対する処理を繰り返すときに進捗トラッカーを使用します。デフォルト値は \fBTrue\fR です。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fBversion.pattern\fR\fR
+.ad
+.RS 24n
+.rt  
+lint の対象となるビルド番号を指定するときに使用されるバージョンのパターン (\fB-b\fR)。構成ファイルで指定されていない場合、\fB-b\fR オプションはパターン \fB*,5.11-0.\fR を使用します。これは、ブランチ接頭辞が 0 である 5.11 ビルドのすべてのコンポーネントに一致します。
+.RE
+
+.SH 開発者
+.sp
+.LP
+\fBpkglint\fR によって実行されるチェックのセットを拡張するには、\fBpkg.lint.base.Checker\fR とそのサブクラス \fBManifestChecker \fR、\fBActionChecker\fR、および \fBContentChecker\fR をサブクラス化します。これらのクラスを含む Python モジュール名を、構成ファイル内の新しい \fBpkglint.ext.\fR キーに追加します。
+.sp
+.LP
+これらの新しいサブクラスのインスタンスは、起動時に \fBpkglint\fR によって作成されます。lint セッション中に、特殊なキーワード引数 \fBpkglint_id\fR を持つ、各サブクラスの内部のメソッドが呼び出されます。これらのメソッドには、スーパークラス内の対応する \fBcheck()\fR メソッドと同じ署名が含まれているべきです。また、これらのメソッドには、\fBpkglint -L\fR によって出力される説明として使用される \fBpkglint_desc\fR 属性も割り当てられていなくてはいけません。
+.sp
+.LP
+パラメータは \fBChecker\fR サブクラスから使用できます。これにより、これらのサブクラスは自身の動作を調整できます。推奨されるパラメータの命名規則は、\fB\fIpkglint_id\fR.\fIname\fR\fR です。パラメータ値は構成ファイル内に格納するか、または \fBLintEngine.get_param()\fR メソッドを使用して取得されるマニフェストまたはアクションでアクセスすることができます。マニフェストからパラメータにアクセスする場合は、\fBpkglint\fR パラメータが既存のどのアクションまたはマニフェスト値とも重複しないようにするために、キー名に接頭辞 \fBpkg.lint\fR が付加されます。
+.SH 使用例
+.LP
+\fB例 1 \fR特定のリポジトリに対する最初の実行
+.sp
+.LP
+特定のリポジトリに対する \fBpkglint\fR セッションのはじめての実行。
+
+.sp
+.in +2
+.nf
+$ \fBpkglint -c /space/cache -r http://localhost:10000 mymanifest.mf\fR
+.fi
+.in -2
+.sp
+
+.LP
+\fB例 2 \fR同じリポジトリに対するそれ以降の実行
+.sp
+.LP
+例 1 で使用されている同じリポジトリに対するそれ以降の実行。
+
+.sp
+.in +2
+.nf
+$ \fBpkglint -c /space/cache mymanifest-fixed.mf\fR
+.fi
+.in -2
+.sp
+
+.LP
+\fB例 3 \fR絞り込まれたマニフェストセットでの lint リポジトリの使用
+.sp
+.LP
+lint リポジトリでの \fBpkglint\fR セッションの実行と、チェックするマニフェストのサブセットの指定。
+
+.sp
+.in +2
+.nf
+$ \fBpkglint -c /space/othercache -l http://localhost:10000 \e\fR
+\fB-p '.*firefox.*'\fR
+.fi
+.in -2
+.sp
+
+.LP
+\fB例 4 \fRビルドの指定
+.sp
+.LP
+冗長モードでの特定のビルドに対する \fBpkglint\fR セッションの実行。
+
+.sp
+.in +2
+.nf
+$ \fBpkglint -c /space/cache -r http://localhost:10000 \e\fR
+\fB-l http://localhost:12000 -b 147 -v\fR
+.fi
+.in -2
+.sp
+
+.LP
+\fB例 5 \fR構成ファイルの変更
+.sp
+.LP
+新しい lint モジュールを含む構成ファイル (一部のチェックを除外)。
+
+.sp
+.in +2
+.nf
+$ \fBcat ~/.pkglintrc\fR
+[pkglint]
+
+log_level = DEBUG
+# log_level = INFO
+
+pkglint.ext.mycheck = org.timf.mychecks
+pkglint.ext.opensolaris = pkg.lint.opensolaris
+pkglint.exclude: pkg.lint.opensolaris.OpenSolarisActionChecker
+pkg.lint.pkglint.PkgActionChecker.unusual_perms pkg.lint.pkglint.PkgManifestChecker
+pkg.lint.opensolaris.OpenSolarisManifestChecker
+.fi
+.in -2
+.sp
+
+.SH 終了ステータス
+.sp
+.LP
+次の終了値が返されます。
+.sp
+.ne 2
+.mk
+.na
+\fB\fB0\fR\fR
+.ad
+.RS 6n
+.rt  
+コマンドが成功しました。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB1\fR\fR
+.ad
+.RS 6n
+.rt  
+1 つ以上の lint チェックが出力を発行しました。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB2\fR \fR
+.ad
+.RS 6n
+.rt  
+無効なコマンド行オプションが指定されました。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB99\fR\fR
+.ad
+.RS 6n
+.rt  
+予期しない例外が発生しました。
+.RE
+
+.SH 属性
+.sp
+.LP
+次の属性については \fBattributes\fR(5) のマニュアルページを参照してください。
+.sp
+
+.sp
+.TS
+tab() box;
+cw(2.75i) |cw(2.75i) 
+lw(2.75i) |lw(2.75i) 
+.
+属性タイプ属性値
+_
+使用条件\fBpackage/pkg\fR
+_
+インタフェースの安定性不確実
+.TE
+
+.SH 関連項目
+.sp
+.LP
+\fBpkg\fR(1), \fBpkg.depotd\fR(1M), \fBpkgsend \fR(1), \fBpkg\fR(5)
+.sp
+.LP
+\fBhttp://hub.opensolaris.org/bin/view/Project+pkg/\fR
