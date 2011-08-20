@@ -982,6 +982,11 @@ class ImagePlan(object):
                     for k in set(olddict.keys() + newdict.keys())
                 ]
 
+        def reboot_advised(self):
+                """Check if evaluated imageplan suggests a reboot"""
+                assert self.state >= MERGED_OK
+                return self.__actuators.reboot_advised()
+
         def reboot_needed(self):
                 """Check if evaluated imageplan requires a reboot"""
                 assert self.state >= MERGED_OK

@@ -51,6 +51,7 @@ import pkg.client.api_errors as apx
 import pkg.client.bootenv as bootenv
 import pkg.client.history as history
 import pkg.client.image as image
+import pkg.client.imageconfig as imgcfg
 import pkg.client.imageplan as ip
 import pkg.client.imagetypes as imgtypes
 import pkg.client.indexer as indexer
@@ -73,7 +74,8 @@ from pkg.client.debugvalues import DebugValues
 from pkg.client.pkgdefs import *
 from pkg.smf import NonzeroExitException
 
-CURRENT_API_VERSION = 66
+CURRENT_API_VERSION = 67
+COMPATIBLE_API_VERSIONS = frozenset([66, CURRENT_API_VERSION])
 CURRENT_P5I_VERSION = 1
 
 # Image type constants.
@@ -282,9 +284,7 @@ class ImageInterface(object):
                 by 'img_path'.
                 """
 
-                compatible_versions = set([CURRENT_API_VERSION])
-
-                if version_id not in compatible_versions:
+                if version_id not in COMPATIBLE_API_VERSIONS:
                         raise apx.VersionException(CURRENT_API_VERSION,
                             version_id)
 
@@ -370,6 +370,7 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                 self.__prepared = False
                 self.__executed = False
                 self.__be_activate = True
+                self.__backup_be_name = None
                 self.__be_name = None
                 self.__can_be_canceled = False
                 self.__canceling = False
@@ -378,6 +379,7 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                 self._img.blocking_locks = self.__blocking_locks
                 self.__cancel_lock = pkg.nrlock.NRLock()
                 self.__cancel_cv = threading.Condition(self.__cancel_lock)
+                self.__backup_be = None # create if needed
                 self.__new_be = None # create if needed
                 self.__alt_sources = {}
 
@@ -574,8 +576,8 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                 if not rc:
                         raise apx.ImageLockedError()
 
-        def __plan_common_start(self, operation, noexecute, new_be, be_name,
-            be_activate):
+        def __plan_common_start(self, operation, noexecute, backup_be,
+            backup_be_name, new_be, be_name, be_activate):
                 """Start planning an operation:
                     Acquire locks.
                     Log the start of the operation.
@@ -595,13 +597,16 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
 
                 assert self._activity_lock._is_owned()
                 self.log_operation_start(operation)
+                self.__backup_be = backup_be
+                self.__backup_be_name = backup_be_name
                 self.__new_be = new_be
                 self.__be_activate = be_activate
                 self.__be_name = be_name
-                if self.__be_name is not None:
-                        self.check_be_name(be_name)
-                        if not self._img.is_liveroot():
-                                raise apx.BENameGivenOnDeadBE(self.__be_name)
+                for val in (self.__be_name, self.__backup_be_name):
+                        if val is not None:
+                                self.check_be_name(val)
+                                if not self._img.is_liveroot():
+                                        raise apx.BENameGivenOnDeadBE(val)
 
         def __plan_common_finish(self):
                 """Finish planning an operation."""
@@ -619,20 +624,48 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
 
                 self._activity_lock.release()
 
-        def __set_new_be(self):
-                """Figure out whether or not we'd create a new boot environment
-                given inputs and plan.  Toss cookies if we need a new be and
-                can't have one."""
-                # decide whether or not to create new BE.
+        def __set_be_creation(self):
+                """Figure out whether or not we'd create a new or backup boot
+                environment given inputs and plan.  Toss cookies if we need a
+                new be and can't have one."""
 
-                if self._img.is_liveroot():
-                        if self.__new_be is None:
-                                self.__new_be = self._img.imageplan.reboot_needed()
-                        elif self.__new_be is False and \
-                            self._img.imageplan.reboot_needed():
-                                raise apx.ImageUpdateOnLiveImageException()
-                else:
+                if not self._img.is_liveroot():
+                        self.__backup_be = False
                         self.__new_be = False
+                        return
+
+                if self.__new_be is None:
+                        # If image policy requires a new BE or the plan requires
+                        # it, then create a new BE.
+                        self.__new_be = (self._img.cfg.get_policy_str(
+                            imgcfg.BE_POLICY) == "always-new" or
+                            self._img.imageplan.reboot_needed())
+                elif self.__new_be is False and \
+                    self._img.imageplan.reboot_needed():
+                        raise apx.ImageUpdateOnLiveImageException()
+
+                if not self.__new_be and self.__backup_be is None:
+                        # Create a backup be if allowed by policy (note that the
+                        # 'default' policy is currently an alias for
+                        # 'create-backup') ...
+                        allow_backup = self._img.cfg.get_policy_str(
+                            imgcfg.BE_POLICY) in ("default",
+                                "create-backup")
+
+                        self.__backup_be = False
+                        if allow_backup:
+                                # ...when packages are being
+                                # updated...
+                                for src, dest in self._img.imageplan.plan_desc:
+                                        if src and dest:
+                                                self.__backup_be = True
+                                                break
+                        if allow_backup and not self.__backup_be:
+                                # ...or if new packages that have
+                                # reboot-needed=true are being
+                                # installed.
+                                self.__backup_be = \
+                                    self._img.imageplan.reboot_advised()
 
         def avoid_pkgs(self, fmri_strings, unavoid=False):
                 """Avoid/Unavoid one or more packages.  It is an error to
@@ -797,7 +830,8 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                 # information in the plan.  We have to save it here and restore
                 # it later because __reset_unlock() torches it.
                 if exc_type == apx.ConflictingActionErrors:
-                        plan_desc = PlanDescription(self._img, self.__new_be,
+                        plan_desc = PlanDescription(self._img, self.__backup_be,
+                            self.__backup_be_name, self.__new_be,
                             self.__be_activate, self.__be_name)
 
                 self.__reset_unlock()
@@ -857,10 +891,11 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                 raise apx.IpkgOutOfDateException()
 
         def __plan_op(self, _op, _accept=False, _ad_kwargs=None,
-            _be_activate=True, _be_name=None, _ipkg_require_latest=False,
-            _li_ignore=None, _li_md_only=False, _li_parent_sync=True,
-            _new_be=False, _noexecute=False,
-            _refresh_catalogs=True, _repos=None, _update_index=True, **kwargs):
+            _backup_be=None, _backup_be_name=None, _be_activate=True,
+            _be_name=None, _ipkg_require_latest=False, _li_ignore=None,
+            _li_md_only=False, _li_parent_sync=True, _new_be=False,
+            _noexecute=False, _refresh_catalogs=True, _repos=None,
+            _update_index=True, **kwargs):
                 """Contructs a plan to change the package or linked image
                 state of an image.
 
@@ -934,8 +969,8 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                 kwargs.update(args_common)
 
                 # Lock the current image.
-                self.__plan_common_start(_op, _noexecute, _new_be, _be_name,
-                    _be_activate)
+                self.__plan_common_start(_op, _noexecute, _backup_be,
+                    _backup_be_name, _new_be, _be_name, _be_activate)
 
                 try:
                         # reset any child recursion state we might have
@@ -1009,8 +1044,9 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                                 _update_index = False
 
                         self._disable_cancel()
-                        self.__set_new_be()
+                        self.__set_be_creation()
                         self.__plan_desc = PlanDescription(self._img,
+                            self.__backup_be, self.__backup_be_name,
                             self.__new_be, self.__be_activate, self.__be_name)
 
                         # Yield to our caller so they can display our plan
@@ -1111,10 +1147,10 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                 return (not self.planned_nothingtodo(), self.solaris_image())
 
         def gen_plan_update(self, pkgs_update=None, accept=False,
-            be_activate=True, be_name=None, force=False, li_ignore=None,
-            li_parent_sync=True, new_be=True, noexecute=False,
-            refresh_catalogs=True, reject_list=misc.EmptyI, repos=None,
-            update_index=True):
+            backup_be=None, backup_be_name=None, be_activate=True,
+            be_name=None, force=False, li_ignore=None, li_parent_sync=True,
+            new_be=True, noexecute=False, refresh_catalogs=True,
+            reject_list=misc.EmptyI, repos=None, update_index=True):
                 """This is a generator function that yields a PlanDescription
                 object.  If parsable_version is set, it also yields dictionaries
                 containing plan information for child images.
@@ -1147,6 +1183,7 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
 
                 op = API_OP_UPDATE
                 return self.__plan_op(op, _accept=accept,
+                    _backup_be=backup_be, _backup_be_name=backup_be_name,
                     _be_activate=be_activate, _be_name=be_name,
                     _ipkg_require_latest=ipkg_require_latest,
                     _li_ignore=li_ignore, _li_parent_sync=li_parent_sync,
@@ -1168,10 +1205,11 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                         continue
                 return not self.planned_nothingtodo()
 
-        def gen_plan_install(self, pkgs_inst, accept=False, be_activate=True,
-            be_name=None, li_ignore=None, li_parent_sync=True, new_be=False,
-            noexecute=False, refresh_catalogs=True,
-            reject_list=misc.EmptyI, repos=None, update_index=True):
+        def gen_plan_install(self, pkgs_inst, accept=False, backup_be=None,
+            backup_be_name=None, be_activate=True, be_name=None, li_ignore=None,
+            li_parent_sync=True, new_be=False, noexecute=False,
+            refresh_catalogs=True, reject_list=misc.EmptyI, repos=None,
+            update_index=True):
                 """This is a generator function that yields a PlanDescription
                 object.  If parsable_version is set, it also yields dictionaries
                 containing plan information for child images.
@@ -1186,6 +1224,17 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                 not by positional order.
 
                 'pkgs_inst' is a list of packages to install.
+
+                'backup_be' indicates whether a backup boot environment should
+                be created before the operation is executed.  If True, a backup
+                boot environment will be created.  If False, a backup boot
+                environment will not be created. If None and a new boot
+                environment is not created, and packages are being updated or
+                are being installed and tagged with reboot-needed, a backup
+                boot environment will be created.
+
+                'backup_be_name' is a string to use as the name of any backup 
+                boot environment created during the operation.
 
                 'be_name' is a string to use as the name of any new boot
                 environment created during the operation.
@@ -1238,6 +1287,7 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
 
                 op = API_OP_INSTALL
                 return self.__plan_op(op, _accept=accept,
+                    _backup_be=backup_be, _backup_be_name=backup_be_name,
                     _be_activate=be_activate, _be_name=be_name,
                     _li_ignore=li_ignore, _li_parent_sync=li_parent_sync,
                     _new_be=new_be, _noexecute=noexecute,
@@ -1245,7 +1295,8 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                     _update_index=update_index, pkgs_inst=pkgs_inst,
                     reject_list=reject_list)
 
-        def gen_plan_sync(self, accept=False, be_activate=True, be_name=None,
+        def gen_plan_sync(self, accept=False, backup_be=None,
+            backup_be_name=None, be_activate=True, be_name=None,
             li_ignore=None, li_md_only=False, li_parent_sync=True,
             li_pkg_updates=True, new_be=False, noexecute=False,
             refresh_catalogs=True,
@@ -1283,6 +1334,7 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
 
                 op = API_OP_SYNC
                 return self.__plan_op(op, _accept=accept,
+                    _backup_be=backup_be, _backup_be_name=backup_be_name,
                     _be_activate=be_activate, _be_name=be_name,
                     _li_ignore=li_ignore, _li_md_only=li_md_only,
                     _li_parent_sync=li_parent_sync, _new_be=new_be,
@@ -1291,9 +1343,9 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                     li_pkg_updates=li_pkg_updates, reject_list=reject_list)
 
         def gen_plan_attach(self, lin, li_path, accept=False,
-            allow_relink=False, be_activate=True, be_name=None,
-            force=False, li_ignore=None, li_md_only=False,
-            li_pkg_updates=True, li_props=None, new_be=False,
+            allow_relink=False, backup_be=None, backup_be_name=None,
+            be_activate=True, be_name=None, force=False, li_ignore=None,
+            li_md_only=False, li_pkg_updates=True, li_props=None, new_be=False,
             noexecute=False, refresh_catalogs=True,
             reject_list=misc.EmptyI, repos=None, update_index=True):
                 """This is a generator function that yields a PlanDescription
@@ -1337,6 +1389,7 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                     "props": li_props,
                 }
                 return self.__plan_op(op, _accept=accept,
+                    _backup_be=backup_be, _backup_be_name=backup_be_name,
                     _be_activate=be_activate, _be_name=be_name,
                     _li_ignore=li_ignore, _li_md_only=li_md_only,
                     _new_be=new_be, _noexecute=noexecute,
@@ -1344,9 +1397,9 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                     _update_index=update_index, _ad_kwargs=ad_kwargs,
                     li_pkg_updates=li_pkg_updates, reject_list=reject_list)
 
-        def gen_plan_detach(self, accept=False, be_activate=True,
-            be_name=None, force=False, li_ignore=None, new_be=False,
-            noexecute=False):
+        def gen_plan_detach(self, accept=False, backup_be=None,
+            backup_be_name=None, be_activate=True, be_name=None, force=False,
+            li_ignore=None, new_be=False, noexecute=False):
                 """This is a generator function that yields a PlanDescription
                 object.  If parsable_version is set, it also yields dictionaries
                 containing plan information for child images.
@@ -1369,6 +1422,7 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                     "force": force
                 }
                 return self.__plan_op(op, _accept=accept, _ad_kwargs=ad_kwargs,
+                    _backup_be=backup_be, _backup_be_name=backup_be_name,
                     _be_activate=be_activate, _be_name=be_name,
                     _li_ignore=li_ignore, _new_be=new_be,
                     _noexecute=noexecute, _refresh_catalogs=False,
@@ -1384,8 +1438,9 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                 return not self.planned_nothingtodo()
 
         def gen_plan_uninstall(self, pkgs_to_uninstall, accept=False,
-            be_activate=True, be_name=None, li_ignore=None, new_be=False,
-            noexecute=False, update_index=True):
+            backup_be=None, backup_be_name=None, be_activate=True,
+            be_name=None, li_ignore=None, new_be=False, noexecute=False,
+            update_index=True):
                 """This is a generator function that yields a PlanDescription
                 object.  If parsable_version is set, it also yields dictionaries
                 containing plan information for child images.
@@ -1409,15 +1464,17 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
 
                 op = API_OP_UNINSTALL
                 return self.__plan_op(op, _accept=accept,
+                    _backup_be=backup_be, _backup_be_name=backup_be_name,
                     _be_activate=be_activate, _be_name=be_name,
                     _li_ignore=li_ignore, _li_parent_sync=False,
                     _new_be=new_be, _noexecute=noexecute,
                     _refresh_catalogs=False, _update_index=update_index,
                     pkgs_to_uninstall=pkgs_to_uninstall)
 
-        def gen_plan_set_mediators(self, mediators, be_activate=True,
-            be_name=None, li_ignore=None, li_parent_sync=True, new_be=None,
-            noexecute=False, update_index=True):
+        def gen_plan_set_mediators(self, mediators, backup_be=None,
+            backup_be_name=None, be_activate=True, be_name=None, li_ignore=None,
+            li_parent_sync=True, new_be=None, noexecute=False,
+            update_index=True):
                 """This is a generator function that yields a PlanDescription
                 object.  If parsable_version is set, it also yields dictionaries
                 containing plan information for child images.
@@ -1457,6 +1514,7 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
 
                 assert mediators
                 return self.__plan_op(API_OP_SET_MEDIATOR, _accept=True,
+                    _backup_be=backup_be, _backup_be_name=backup_be_name,
                     _be_activate=be_activate, _be_name=be_name,
                     _li_ignore=li_ignore, _li_parent_sync=li_parent_sync,
                     mediators=mediators, _new_be=new_be, _noexecute=noexecute,
@@ -1474,9 +1532,9 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                 return not self.planned_nothingtodo()
 
         def gen_plan_change_varcets(self, facets=None, variants=None,
-            accept=False, be_activate=True, be_name=None, li_ignore=None,
-            li_parent_sync=True, new_be=None, noexecute=False,
-            refresh_catalogs=True,
+            accept=False, backup_be=None, backup_be_name=None,
+            be_activate=True, be_name=None, li_ignore=None, li_parent_sync=True,
+            new_be=None, noexecute=False, refresh_catalogs=True,
             reject_list=misc.EmptyI, repos=None, update_index=True):
                 """This is a generator function that yields a PlanDescription
                 object.  If parsable_version is set, it also yields dictionaries
@@ -1508,12 +1566,12 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                 else:
                         op = API_OP_CHANGE_FACET
 
-                return self.__plan_op(op, _accept=accept,
-                    _be_activate=be_activate, _be_name=be_name,
-                    _li_ignore=li_ignore, _li_parent_sync=li_parent_sync,
-                    _new_be=new_be, _noexecute=noexecute,
-                    _refresh_catalogs=refresh_catalogs, _repos=repos,
-                    _update_index=update_index, variants=variants,
+                return self.__plan_op(op, _accept=accept, _backup_be=backup_be,
+                    _backup_be_name=backup_be_name, _be_activate=be_activate,
+                    _be_name=be_name, _li_ignore=li_ignore,
+                    _li_parent_sync=li_parent_sync, _new_be=new_be,
+                    _noexecute=noexecute, _refresh_catalogs=refresh_catalogs,
+                    _repos=repos, _update_index=update_index, variants=variants,
                     facets=facets, reject_list=reject_list)
 
         def plan_revert(self, args, tagged=False, noexecute=True, be_name=None,
@@ -1525,8 +1583,9 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                         continue
                 return not self.planned_nothingtodo()
 
-        def gen_plan_revert(self, args, tagged=False, noexecute=True,
-            be_activate=True, be_name=None, new_be=None):
+        def gen_plan_revert(self, args, backup_be=None, backup_be_name=None,
+            be_activate=True, be_name=None, new_be=None, noexecute=True,
+            tagged=False):
                 """This is a generator function that yields a PlanDescription
                 object.  If parsable_version is set, it also yields dictionaries
                 containing plan information for child images.
@@ -1544,6 +1603,7 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
 
                 op = API_OP_REVERT
                 return self.__plan_op(op, _be_activate=be_activate,
+                    _backup_be=backup_be, _backup_be_name=backup_be_name,
                     _be_name=be_name, _li_ignore=[], _new_be=new_be,
                     _noexecute=noexecute, _refresh_catalogs=False,
                     _update_index=False, args=args, tagged=tagged)
@@ -1885,6 +1945,25 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                                 self.log_operation_end(error=e)
                                 raise e
 
+                        # Before proceeding, create a backup boot environment if
+                        # requested.
+                        if self.__backup_be == True:
+                                try:
+                                        be.create_backup_be(
+                                            be_name=self.__backup_be_name)
+                                except Exception, e:
+                                        self.log_operation_end(error=e)
+                                        raise
+                                except:
+                                        # Handle exceptions that are not
+                                        # subclasses of Exception.
+                                        exc_type, exc_value, exc_traceback = \
+                                            sys.exc_info()
+                                        self.log_operation_end(error=exc_type)
+                                        raise
+
+                        # After (possibly) creating backup be, determine if
+                        # operation should execute on a clone of current BE.
                         if self.__new_be == True:
                                 try:
                                         be.init_image_recovery(self._img,
@@ -4512,9 +4591,12 @@ class Query(query_p.Query):
 class PlanDescription(object):
         """A class which describes the changes the plan will make."""
 
-        def __init__(self, img, new_be, be_activate, be_name):
+        def __init__(self, img, backup_be, backup_be_name, new_be, be_activate,
+            be_name):
                 self.__plan = img.imageplan
                 self._img = img
+                self.__backup_be = backup_be
+                self.__backup_be_name = backup_be_name
                 self.__new_be = new_be
                 self.__be_activate = be_activate
                 self.__be_name = be_name
@@ -4653,10 +4735,41 @@ class PlanDescription(object):
                 return self.__be_activate
 
         @property
+        def backup_be(self):
+                """A boolean value indicating that execution of the plan will
+                result in a backup clone of the current live environment."""
+                return self.__backup_be
+
+        @property
+        def backup_be_name(self):
+                """A value containing either the name of the backup boot
+                environment to create or None."""
+                return self.__backup_be_name
+ 
+        @property
         def be_name(self):
                 """A value containing either the name of the boot environment to
-                create, or None."""
+                create or None."""
                 return self.__be_name
+
+        @property
+        def is_active_root_be(self):
+                """A boolean indicating whether the image to be modified is the
+                active BE for the system's root image."""
+
+                if not self._img.is_liveroot() or self._img.is_zone():
+                        return False
+
+                try:
+                        be_name, be_uuid = bootenv.BootEnv.get_be_name(
+                            self._img.root)
+                        return be_name == \
+                            bootenv.BootEnv.get_activated_be_name()
+                except apx.BEException:
+                        # If boot environment logic isn't supported, return
+                        # False.  This is necessary for user images and for
+                        # the test suite.
+                        return False
 
         @property
         def reboot_needed(self):

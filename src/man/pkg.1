@@ -18,26 +18,27 @@ pkg \- Image Packaging System retrieval client
 .LP
 .nf
 /usr/bin/pkg install [-nvq] [-g \fIpath_or_uri\fR ...] [--accept]
-    [--licenses] [--no-be-activate] [--no-index]
-    [--no-refresh] [--deny-new-be | --require-new-be]
-    [--be-name \fIname\fR] [--reject \fIpkg_fmri_pattern\fR ...]
+    [--licenses] [--no-be-activate] [--no-index] [--no-refresh]
+    [--no-backup-be | --require-backup-be] [--backup-be-name \fIname\fR]
+    [--deny-new-be | --require-new-be] [--be-name \fIname\fR]
+    [--reject \fIpkg_fmri_pattern\fR ...] \fIpkg_fmri_pattern\fR ...
+.fi
+
+.LP
+.nf
+/usr/bin/pkg uninstall [-nvq] [--no-be-activate] [--no-index]
+    [--no-backup-be | --require-backup-be] [--backup-be-name \fIname\fR]
+    [--deny-new-be | --require-new-be] [--be-name \fIname\fR]
     \fIpkg_fmri_pattern\fR ...
 .fi
 
 .LP
 .nf
-/usr/bin/pkg uninstall [-nvq] [--no-be-activate]
-    [--no-index] [--deny-new-be | --require-new-be]
-    [--be-name \fIname\fR] \fIpkg_fmri_pattern\fR ...
-.fi
-
-.LP
-.nf
 /usr/bin/pkg update [-fnvq] [-g \fIpath_or_uri\fR ...] [--accept]
-    [--licenses] [--no-be-activate] [--no-index]
-    [--no-refresh] [--deny-new-be | --require-new-be]
-    [--be-name \fIname\fR] [--reject \fIpkg_fmri_pattern\fR ...]
-    [\fIpkg_fmri_pattern\fR ...]
+    [--licenses] [--no-be-activate] [--no-index] [--no-refresh]
+    [--no-backup-be | --require-backup-be] [--backup-be-name \fIname\fR]
+    [--deny-new-be | --require-new-be] [--be-name \fIname\fR]
+    [--reject \fIpkg_fmri_pattern\fR ...] [\fIpkg_fmri_pattern\fR ...]
 .fi
 
 .LP
@@ -78,7 +79,8 @@ pkg \- Image Packaging System retrieval client
 .LP
 .nf
 /usr/bin/pkg revert [-nv] [--no-be-activate]
-    [--be-name \fIname\fR] [--deny-new-be | --require-new-be]
+    [--no-backup-be | --require-backup-be] [--backup-be-name \fIname\fR]
+    [--deny-new-be | --require-new-be] [--be-name \fIname\fR]
     (--tagged \fItag-name\fR ... | \fIpath-to-file\fR ...)
 .fi
 
@@ -91,13 +93,15 @@ pkg \- Image Packaging System retrieval client
 .nf
 usr/bin/pkg set-mediator [-nv] [-I \fIimplementation\fR]
     [-V \fIversion\fR] [--no-be-activate]
-    [--deny-new-be | --require-new-be]
-    [--be-name \fIname\fR] \fImediator\fR ...
+    [--no-backup-be | --require-backup-be] [--backup-be-name \fIname\fR]
+    [--deny-new-be | --require-new-be] [--be-name \fIname\fR]
+    \fImediator\fR ...
 .fi
 
 .LP
 .nf
 /usr/bin/pkg unset-mediator [-nvIV] [--no-be-activate]
+    [--no-backup-be | --require-backup-be] [--backup-be-name \fIname\fR]
     [--deny-new-be | --require-new-be] [--be-name \fIname\fR]
     \fImediator\fR ...
 .fi
@@ -111,8 +115,9 @@ usr/bin/pkg set-mediator [-nv] [-I \fIimplementation\fR]
 .nf
 /usr/bin/pkg change-variant [-nvq] [-g \fIpath_or_uri\fR ...]
     [--accept] [--licenses] [--no-be-activate]
-    [--deny-new-be | --require-new-be]
-    [--be-name \fIname\fR] \fIvariant_spec\fR=\fIinstance\fR ...
+    [--no-backup-be | --require-backup-be] [--backup-be-name \fIname\fR]
+    [--deny-new-be | --require-new-be] [--be-name \fIname\fR]
+    \fIvariant_spec\fR=\fIinstance\fR ...
 .fi
 
 .LP
@@ -124,8 +129,9 @@ usr/bin/pkg set-mediator [-nv] [-I \fIimplementation\fR]
 .nf
 /usr/bin/pkg change-facet [-nvq] [-g \fIpath_or_uri\fR ...]
     [--accept] [--licenses] [--no-be-activate]
-    [--deny-new-be | --require-new-be]
-    [--be-name \fIname\fR] \fIfacet_spec\fR=[True|False|None] ...
+    [--no-backup-be | --require-backup-be] [--backup-be-name \fIname\fR]
+    [--deny-new-be | --require-new-be] [--be-name \fIname\fR]
+    \fIfacet_spec\fR=[True|False|None] ...
 .fi
 
 .LP
@@ -310,7 +316,7 @@ With \fB--full\fR, force a full retrieval of all publisher metadata, instead of 
 .ne 2
 .mk
 .na
-\fBinstall\fR [\fB-nvq\fR] [\fB-g\fR \fIpath_or_uri\fR ...] [\fB--accept\fR] [\fB--licenses\fR] [\fB--no-be-activate\fR] [\fB--no-index\fR] [\fB--no-refresh\fR] [\fB--deny-new-be\fR | \fB--require-new-be\fR] [\fB--be-name\fR \fIname\fR] [\fB--reject\fR \fIpkg_fmri_pattern\fR ...] \fIpkg_fmri_pattern\fR ...\fR
+\fBinstall\fR [\fB-nvq\fR] [\fB-g\fR \fIpath_or_uri\fR ...] [\fB--accept\fR] [\fB--licenses\fR] [\fB--no-be-activate\fR] [\fB--no-index\fR] [\fB--no-refresh\fR] [\fB--no-backup-be\fR | \fB--require-backup-be\fR] [\fB--backup-be-name\fR \fIname\fR] [\fB--deny-new-be\fR | \fB--require-new-be\fR] [\fB--be-name\fR \fIname\fR] [\fB--reject\fR \fIpkg_fmri_pattern\fR ...] \fIpkg_fmri_pattern\fR ...\fR
 .ad
 .sp .6
 .RS 4n
@@ -332,17 +338,23 @@ With \fB--accept\fR, you indicate that you agree to and accept the terms of the 
 .sp
 With \fB--licenses\fR, display all of the licenses for the packages that are installed or updated as part of this operation.
 .sp
+With \fB--no-backup-be\fR, do not create a backup boot environment.
+.sp
 With \fB--no-be-activate\fR, if a boot environment is created, do not set it as the active BE on the next boot. See \fBbeadm\fR(1M) for more information.
 .sp
 With \fB--no-index\fR, do not update the search indices after the operation has completed successfully.
 .sp
 With \fB--no-refresh\fR, do not attempt to contact the repositories for the image's publishers to retrieve the newest list of available packages and other metadata.
 .sp
-With \fB--be-name\fR, rename the newly created boot environment to be the argument given. This option is only valid if a new boot environment is created during the operation. See also \fBbeadm\fR(1M).
+With \fB--backup-be-name\fR, name the created backup boot environment using the given argument. Use of \fB--backup-be-name\fR implies \fB--require-backup-be\fR. See also \fBbeadm\fR(1M).
 .sp
-With \fB--require-new-be\fR, always create a new boot environment. Without this option, a boot environment is created automatically if needed.
+With \fB--be-name\fR, rename the newly created boot environment to be the argument given. Use of \fB--be-name\fR implies \fB--require-new-be\fR. See also \fBbeadm\fR(1M).
 .sp
-With \fB--deny-new-be\fR, do not create a new boot environment. This operation is not performed if a new boot environment is required.
+With \fB--require-backup-be\fR, always create a backup boot environment if a new boot environment will not be created. Without this option, a backup boot environment is created based on image policy. See \fBbe-policy\fR in "Image Properties" below for an explanation of when backup boot environments are created automatically.
+.sp
+With \fB--require-new-be\fR, always create a new boot environment. Without this option, a boot environment is created based on image policy. See \fBbe-policy\fR in "Image Properties" below for an explanation of when boot environments are created automatically. This option cannot be combined with \fB--require-backup-be\R.
+.sp
+With \fB--deny-new-be\fR, do not create a new boot environment. The operation will not be performed if a new boot environment is required.
 .sp
 With \fB--reject\fR, prevent packages with names matching the given pattern from being installed. If matching packages are already installed, they are removed as part of this operation. Rejected packages that are the target of group dependencies are placed on the avoid list.
 .RE
@@ -351,7 +363,7 @@ With \fB--reject\fR, prevent packages with names matching the given pattern from
 .ne 2
 .mk
 .na
-\fBuninstall\fR [\fB-nvq\fR] [\fB--no-be-activate\fR] [\fB--no-index\fR] [\fB--deny-new-be\fR | \fB--require-new-be\fR] [\fB--be-name\fR \fIname\fR] \fIpkg_fmri_pattern\fR ...\fR
+\fBuninstall\fR [\fB-nvq\fR] [\fB--no-be-activate\fR] [\fB--no-index\fR] [\fB--no-backup-be\fR | \fB--require-backup-be\fR] [\fB--backup-be-name\fR \fIname\fR] [\fB--deny-new-be\fR | \fB--require-new-be\fR] [\fB--be-name\fR \fIname\fR] \fIpkg_fmri_pattern\fR ...\fR
 .ad
 .sp .6
 .RS 4n
@@ -366,7 +378,7 @@ For all other options, refer to the \fBinstall\fR command above for usage and th
 .ne 2
 .mk
 .na
-\fBupdate\fR [\fB-fnvq\fR] [\fB-g\fR \fIpath_or_uri\fR ...] [\fB--accept\fR] [\fB--licenses\fR] [\fB--no-be-activate\fR] [\fB--no-index\fR] [\fB--no-refresh\fR] [\fB--deny-new-be\fR | \fB--require-new-be\fR] [\fB--be-name\fR \fIname\fR] [\fB--reject\fR \fIpkg_fmri_pattern\fR ...] [\fIpkg_fmri_pattern\fR ...]\fR
+\fBupdate\fR [\fB-fnvq\fR] [\fB-g\fR \fIpath_or_uri\fR ...] [\fB--accept\fR] [\fB--licenses\fR] [\fB--no-be-activate\fR] [\fB--no-index\fR] [\fB--no-refresh\fR] [\fB--no-backup-be\fR | \fB--require-backup-be\fR] [\fB--backup-be-name\fR \fIname\fR] [\fB--deny-new-be\fR | \fB--require-new-be\fR] [\fB--be-name\fR \fIname\fR] [\fB--reject\fR \fIpkg_fmri_pattern\fR ...] [\fIpkg_fmri_pattern\fR ...]\fR
 .ad
 .sp .6
 .RS 4n
@@ -671,7 +683,7 @@ With \fB--licenses\fR, display all of the licenses for the packages to be instal
 .ne 2
 .mk
 .na
-\fBrevert\fR [\fB-nv\fR] [\fB--no-be-activate\fR] [\fB--be-name\fR \fIname\fR] [\fB--deny-new-be\fR | \fB--require-new-be\fR] (\fB--tagged\fR \fItag-name\fR ... | \fIpath-to-file\fR ...)\fR
+\fBrevert\fR [\fB-nv\fR] [\fB--no-be-activate\fR] [\fB--no-backup-be\fR | \fB--require-backup-be\fR] [\fB--backup-be-name\fR \fIname\fR] [\fB--deny-new-be\fR | \fB--require-new-be\fR] [\fB--be-name\fR \fIname\fR] (\fB--tagged\fR \fItag-name\fR ... | \fIpath-to-file\fR ...)\fR
 .ad
 .sp .6
 .RS 4n
@@ -706,7 +718,7 @@ With \fB-H\fR, omit the headers from the listing.
 .ne 2
 .mk
 .na
-\fBset-mediator\fR [\fB-nv\fR] [\fB-I\fR \fIimplementation\fR] [\fB-V\fR \fIversion\fR] [\fB--no-be-activate\fR] [\fB--deny-new-be\fR | \fB--require-new-be\fR] [\fB--be-name\fR \fIname\fR] \fImediator\fR ...\fR
+\fBset-mediator\fR [\fB-nv\fR] [\fB-I\fR \fIimplementation\fR] [\fB-V\fR \fIversion\fR] [\fB--no-be-activate\fR] [\fB--no-backup-be\fR | \fB--require-backup-be\fR] [\fB--backup-be-name\fR \fIname\fR] [\fB--deny-new-be\fR | \fB--require-new-be\fR] [\fB--be-name\fR \fIname\fR] \fImediator\fR ...\fR
 .ad
 .sp .6
 .RS 4n
@@ -725,7 +737,7 @@ For all other options, refer to the \fBinstall\fR command above for their usage 
 .ne 2
 .mk
 .na
-\fBunset-mediator\fR [\fB-nvIV\fR] [\fB--no-be-activate\fR] [\fB--deny-new-be\fR | \fB--require-new-be\fR] [\fB--be-name\fR \fIname\fR] \fImediator\fR ...\fR
+\fBunset-mediator\fR [\fB-nvIV\fR] [\fB--no-be-activate\fR] [\fB--no-backup-be\fR | \fB--require-backup-be\fR] [\fB--backup-be-name\fR \fIname\fR] [\fB--deny-new-be\fR | \fB--require-new-be\fR] [\fB--be-name\fR \fIname\fR] \fImediator\fR ...\fR
 .ad
 .sp .6
 .RS 4n
@@ -755,7 +767,7 @@ With \fB-H\fR, omit the headers from the listing.
 .ne 2
 .mk
 .na
-\fBchange-variant\fR [\fB-nvq\fR] [\fB-g\fR \fIpath_or_uri\fR ...] [\fB--accept\fR] [\fB--licenses\fR] [\fB--no-be-activate\fR] [\fB--deny-new-be\fR | \fB--require-new-be\fR] [\fB--be-name\fR \fIname\fR] \fIvariant_spec\fR=\fIinstance\fR ...\fR
+\fBchange-variant\fR [\fB-nvq\fR] [\fB-g\fR \fIpath_or_uri\fR ...] [\fB--accept\fR] [\fB--licenses\fR] [\fB--no-be-activate\fR] [\fB--no-backup-be\fR | \fB--require-backup-be\fR] [\fB--backup-be-name\fR \fIname\fR] [\fB--deny-new-be\fR | \fB--require-new-be\fR] [\fB--be-name\fR \fIname\fR] \fIvariant_spec\fR=\fIinstance\fR ...\fR
 .ad
 .sp .6
 .RS 4n
@@ -781,7 +793,7 @@ With \fB-H\fR, omit the headers from the listing.
 .ne 2
 .mk
 .na
-\fBchange-facet\fR [\fB-nvq\fR] [\fB-g\fR \fIpath_or_uri\fR ...] [\fB--accept\fR] [\fB--licenses\fR] [\fB--no-be-activate\fR] [\fB--deny-new-be\fR | \fB--require-new-be\fR] [\fB--be-name\fR \fIname\fR] \fIfacet_spec\fR=[True|False|None] ...\fR
+\fBchange-facet\fR [\fB-nvq\fR] [\fB-g\fR \fIpath_or_uri\fR ...] [\fB--accept\fR] [\fB--licenses\fR] [\fB--no-be-activate\fR] [\fB--no-backup-be\fR | \fB--require-backup-be\fR] [\fB--backup-be-name\fR \fIname\fR] [\fB--deny-new-be\fR | \fB--require-new-be\fR] [\fB--be-name\fR \fIname\fR] \fIfacet_spec\fR=[True|False|None] ...\fR
 .ad
 .sp .6
 .RS 4n
@@ -1265,6 +1277,65 @@ With \fB--facet\fR, set the specified facet to the indicated value.
 .sp
 .LP
 The following properties are part of the image and can be set using the \fBset-property\fR subcommand. The values of these properties are viewable with the \fBproperty\fR subcommand.
+.sp
+.ne 2
+.mk
+.na
+\fBbe-policy\fR
+.ad
+.sp .6
+.RS 4n
+(string) Specify when a boot environment is created during packaging operations. The following values are allowed:
+.sp
+.ne 2
+.mk
+.na
+\fBdefault\fR
+.ad
+.RS 22n
+.rt  
+Apply the default BE creation policy, currently 'create-backup'.
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fBalways-new\fR
+.ad
+.RS 22n
+.rt  
+Requires a reboot for all package operations by performing them in a new BE set as active on the next boot. A backup BE will never be created unless explicitly requested.
+.sp
+This policy is the safest, but is more strict than most sites need, as no packages can be added without a reboot.
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fBcreate-backup\fR
+.ad
+.RS 22n
+.rt  
+For package operations that require a reboot, a new BE will be created and set as active on the next boot. If packages are modified or content that could affect the kernel are installed and the operation affects the live BE, a backup BE will be created but will not be set as active. A backup BE may also be explicitly requested.
+.sp
+This policy is potentially risky only if newly installed software causes system instability, which is possible, but relatively rare.
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fBwhen-required\fR
+.ad
+.RS 22n
+.rt  
+For package operations that require a reboot, a new BE will be created and set as active on the next boot. A backup BE will never be created unless explicitly requested.
+.sp
+This policy carries the greatest risk since if a packaging change to the live BE makes further changes impossible, there may be no recent BE to which one can fallback.
+.RE
+
 .sp
 .ne 2
 .mk

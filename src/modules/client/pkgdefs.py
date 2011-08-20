@@ -52,6 +52,7 @@ PKG_OP_INSTALL         = "install"
 PKG_OP_LIST            = "list"
 PKG_OP_LIST_LINKED     = "list-linked"
 PKG_OP_PROP_LINKED     = "property-linked"
+PKG_OP_REVERT          = "revert"
 PKG_OP_SET_MEDIATOR    = "set-mediator"
 PKG_OP_SET_PROP_LINKED = "set-property-linked"
 PKG_OP_SYNC            = "sync-linked"
@@ -67,6 +68,7 @@ pkg_op_values          = frozenset([
     PKG_OP_LIST,
     PKG_OP_LIST_LINKED,
     PKG_OP_PROP_LINKED,
+    PKG_OP_REVERT,
     PKG_OP_SET_MEDIATOR,
     PKG_OP_SET_PROP_LINKED,
     PKG_OP_SYNC,

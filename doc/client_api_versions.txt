@@ -1,3 +1,23 @@
+Version 67:
+Compatible with clients using version 66.
+
+    pkg.client.api.ImageInterface has changed as follows:
+
+        * planning functions such as gen_plan_install that allow
+          specifying a be_name now also support specifying a
+          backup_be_name, and the ability to create a backup BE
+          by setting backup_be=True.
+
+    pkg.client.api.PlanDescription has changed as follows:
+
+        * New properties named 'backup_be' and 'backup_be_name' have been
+          added to allow callers to determine whether a backup BE will be
+          created and what name was specified for it.
+
+        * The new property 'is_active_root_be' has been added to allow
+          consumers to determine if the image being modified is for the
+          live, active root BE.
+
 Version 66:
 Incompatible with clients using versions 0-63.
 

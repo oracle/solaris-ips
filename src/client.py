@@ -90,7 +90,7 @@ except KeyboardInterrupt:
         import sys
         sys.exit(1)
 
-CLIENT_API_VERSION = 66
+CLIENT_API_VERSION = 67
 PKG_CLIENT_NAME = "pkg"
 
 JUST_UNKNOWN = 0
@@ -149,18 +149,22 @@ def usage(usage_error=None, cmd=None, retcode=EXIT_BADOPT, full=False):
             "version"]
 
         basic_usage["install"] = _(
-            "[-nvq] [-g path_or_uri ...] [--accept] [--licenses]\n"
-            "            [--no-be-activate] [--no-index] [--no-refresh] [--deny-new-be |\n"
-            "            --require-new-be] [--be-name name] [--reject pkg_fmri_pattern ... ]\n"
-            "            pkg_fmri_pattern ...")
+            "[-nvq] [-g path_or_uri ...] [--accept]\n"
+            "            [--licenses] [--no-be-activate] [--no-index] [--no-refresh]\n"
+            "            [--no-backup-be | --require-backup-be] [--backup-be-name name]\n"
+            "            [--deny-new-be | --require-new-be] [--be-name name]\n"
+            "            [--reject pkg_fmri_pattern ... ] pkg_fmri_pattern ...")
         basic_usage["uninstall"] = _(
-            "[-nvq] [--no-be-activate] [--no-index] [--deny-new-be |\n"
-            "            --require-new-be] [--be-name name] pkg_fmri_pattern ...")
+            "[-nvq] [--no-be-activate] [--no-index]\n"
+            "            [--no-backup-be | --require-backup-be] [--backup-be-name]\n"
+            "            [--deny-new-be | --require-new-be] [--be-name name]\n"
+            "            pkg_fmri_pattern ...")
         basic_usage["update"] = _(
-            "[-fnvq] [-g path_or_uri ...] [--accept] [--licenses]\n"
-            "            [--no-be-activate] [--no-index] [--no-refresh] [--deny-new-be |\n"
-            "            --require-new-be] [--be-name name] [--reject pkg_fmri_pattern ...]\n"
-            "            [pkg_fmri_pattern ...]")
+            "[-fnvq] [-g path_or_uri ...] [--accept]\n"
+            "            [--licenses] [--no-be-activate] [--no-index] [--no-refresh]\n"
+            "            [--no-backup-be | --require-backup-be] [--backup-be-name]\n"
+            "            [--deny-new-be | --require-new-be] [--be-name name]\n"
+            "            [--reject pkg_fmri_pattern ...] [pkg_fmri_pattern ...]")
         basic_usage["list"] = _(
             "[-Hafnsuv] [-g path_or_uri ...] [--no-refresh]\n"
             "            [pkg_fmri_pattern ...]")
@@ -229,8 +233,10 @@ def usage(usage_error=None, cmd=None, retcode=EXIT_BADOPT, full=False):
         adv_usage["verify"] = _("[-Hqv] [pkg_fmri_pattern ...]")
         adv_usage["fix"] = _("[--accept] [--licenses] [pkg_fmri_pattern ...]")
         adv_usage["revert"] = _(
-            "[-nv] [--no-be-activate] [--be-name name] [--deny-new-be |\n"
-            "            --require-new-be] (--tagged tag-name ... | path-to-file ...)")
+            "[-nv] [--no-be-activate]\n"
+            "            [--no-backup-be | --require-backup-be] [--backup-be-name name]\n"
+            "            [--deny-new-be | --require-new-be] [--be-name name]\n"
+            "            (--tagged tag-name ... | path-to-file ...)")
 
         adv_usage["image-create"] = _(
             "[-FPUfz] [--force] [--full|--partial|--user] [--zone]\n"
@@ -240,21 +246,28 @@ def usage(usage_error=None, cmd=None, retcode=EXIT_BADOPT, full=False):
             "            [--facet <facet_spec>=(True|False) ...]\n"
             "            [(-p|--publisher) [<name>=]<repo_uri>] dir")
         adv_usage["change-variant"] = _(
-            "[-nvq] [-g path_or_uri ...] [--accept] [--licenses]\n"
-            "            [--no-be-activate] [--deny-new-be | --require-new-be]\n"
-            "            [--be-name name] <variant_spec>=<instance> ...")
+            "[-nvq] [-g path_or_uri ...]\n"
+            "            [--accept] [--licenses] [--no-be-activate]\n"
+            "            [--no-backup-be | --require-backup-be] [--backup-be-name name]\n"
+            "            [--deny-new-be | --require-new-be] [--be-name name]\n"
+            "            <variant_spec>=<instance> ...")
 
         adv_usage["change-facet"] = _(
-            "[-nvq] [-g path_or_uri ...] [--accept] [--licenses]\n"
-            "            [--no-be-activate] [--deny-new-be | --require-new-be]\n"
-            "            [--be-name name] <facet_spec>=[True|False|None] ...")
+            "[-nvq] [-g path_or_uri ...]\n"
+            "            [--accept] [--licenses] [--no-be-activate]\n"
+            "            [--no-backup-be | --require-backup-be] [--backup-be-name name]\n"
+            "            [--deny-new-be | --require-new-be] [--be-name name]\n"
+            "            <facet_spec>=[True|False|None] ...")
 
         adv_usage["mediator"] = _("[-aH] [-F format] [<mediator> ...]")
         adv_usage["set-mediator"] = _(
-            "[-nv] [-I <implementation>] [-V <version>]\n"
-            "            [--no-be-activate] [--deny-new-be | --require-new-be]\n"
-            "            [--be-name name] <mediator> ...")
+            "[-nv] [-I <implementation>]\n"
+            "            [-V <version>] [--no-be-activate]\n"
+            "            [--no-backup-be | --require-backup-be] [--backup-be-name name]\n"
+            "            [--deny-new-be | --require-new-be] [--be-name name]\n"
+            "            <mediator> ...")
         adv_usage["unset-mediator"] = _("[-nvIV] [--no-be-activate]\n"
+            "            [--no-backup-be | --require-backup-be] [--backup-be-name]\n"
             "            [--deny-new-be | --require-new-be] [--be-name name]\n"
             "            <mediator> ...")
 
@@ -901,6 +914,19 @@ def __display_plan(api_inst, verbose):
 
         plan = api_inst.describe()
 
+        if not api_inst.is_zone and not plan.is_active_root_be:
+                # Warn the user since this isn't likely what they wanted.
+                if plan.new_be:
+                        logger.warning(_("""\
+WARNING: The boot environment being modified is not the active one.  Changes
+made in the active BE will not be reflected on the next boot.
+"""))
+                else:
+                        logger.warning(_("""\
+WARNING: The boot environment being modified is not the active one.  Changes
+made will not be reflected on the next boot.
+"""))
+
         a, r, i, c = [], [], [], []
         for src, dest in plan.get_changes():
                 if dest is None:
@@ -954,6 +980,9 @@ def __display_plan(api_inst, verbose):
                         # will not be activated.
                         status.append((_("Activate boot environment:"),
                             bool_str(plan.activate_be)))
+
+                status.append((_("Create backup boot environment:"),
+                    bool_str(plan.backup_be)))
 
                 if not plan.new_be:
                         cond_show(_("Services to change:"), "%d",
@@ -1063,7 +1092,9 @@ def __display_parsable_plan(api_inst, parsable_version,
         removed_fmris = []
         changed_fmris = []
         affected_fmris = []
+        backup_be_created = False
         new_be_created = False
+        backup_be_name = None
         be_name = None
         boot_archive_rebuilt = False
         be_activated = True
@@ -1094,7 +1125,9 @@ def __display_parsable_plan(api_inst, parsable_version,
                         else:
                                 added_fmris.append(str(add))
                 variants_changed, facets_changed = plan.get_parsable_varcets()
+                backup_be_created = plan.backup_be
                 new_be_created = plan.new_be
+                backup_be_name = plan.backup_be_name
                 be_name = plan.be_name
                 boot_archive_rebuilt = plan.update_boot_archive
                 be_activated = plan.activate_be
@@ -1119,7 +1152,9 @@ def __display_parsable_plan(api_inst, parsable_version,
                         api_inst.set_plan_license_status(dfmri, dest_li.license,
                             displayed=True)
         ret = {
+            "create-backup-be": backup_be_created,
             "create-new-be": new_be_created,
+            "backup-be-name": backup_be_name,
             "be-name": be_name,
             "boot-archive-rebuild": boot_archive_rebuilt,
             "activate-be": be_activated,
@@ -1485,8 +1520,9 @@ def __api_op(_op, _api_inst, _accept=False, _li_ignore=None, _noexecute=False,
 
         # All the api interface functions that we inovke have some
         # common arguments.  Set those up now.
-        kwargs["accept"] = _accept
-        kwargs["li_ignore"] = _li_ignore
+        if _op != PKG_OP_REVERT:
+                kwargs["accept"] = _accept
+                kwargs["li_ignore"] = _li_ignore
         kwargs["noexecute"] = _noexecute
         if _origins != None:
                 kwargs["repos"] = _origins
@@ -1506,6 +1542,8 @@ def __api_op(_op, _api_inst, _accept=False, _li_ignore=None, _noexecute=False,
                 api_plan_func = _api_inst.gen_plan_detach
         elif _op == PKG_OP_INSTALL:
                 api_plan_func = _api_inst.gen_plan_install
+        elif _op == PKG_OP_REVERT:
+                api_plan_func = _api_inst.gen_plan_revert
         elif _op == PKG_OP_SYNC:
                 api_plan_func = _api_inst.gen_plan_sync
         elif _op == PKG_OP_UNINSTALL:
@@ -1597,14 +1635,33 @@ def opts_table_cb_beopts(op, api_inst, opts, opts_new):
         del opts_new["deny_new_be"]
         opts_new["new_be"] = None
 
-        if opts["require_new_be"] and opts["deny_new_be"]:
+        if (opts["be_name"] or opts["require_new_be"]) and opts["deny_new_be"]:
                 opts_err_incompat("--require-new-be", "--deny-new-be", op)
 
-        # create a new key called "new_be" in the options array
-        if opts["require_new_be"]:
+        # create a new key called "backup_be" in the options array
+        if opts["require_new_be"] or opts["be_name"]:
                 opts_new["new_be"] = True
         if opts["deny_new_be"]:
                 opts_new["new_be"] = False
+
+        # synthesize require_backup_be and no_backup_be into backup_be
+        del opts_new["require_backup_be"]
+        del opts_new["no_backup_be"]
+        opts_new["backup_be"] = None
+
+        if (opts["require_backup_be"] or opts["backup_be_name"]) and \
+            opts["no_backup_be"]:
+                opts_err_incompat("--require-backup-be", "--no-backup-be", op)
+
+        if (opts["require_backup_be"] or opts["backup_be_name"]) and \
+            (opts["require_new_be"] or opts["be_name"]):
+                opts_err_incompat("--require-backup-be", "--require-new-be", op)
+
+        # create a new key called "backup_be" in the options array
+        if opts["require_backup_be"] or opts["backup_be_name"]:
+                opts_new["backup_be"] = True
+        if opts["no_backup_be"]:
+                opts_new["backup_be"] = False
 
 def opts_table_cb_li_ignore(op, api_inst, opts, opts_new):
 
@@ -1847,10 +1904,13 @@ def opts_cb_list(op, api_inst, opts, opts_new):
 #
 opts_table_beopts = [
     opts_table_cb_beopts,
-    ("",  "be-name=",        "be_name",              None),
-    ("",  "deny-new-be",     "deny_new_be",          False),
-    ("",  "no-be-activate",  "be_activate",          True),
-    ("",  "require-new-be",  "require_new_be",       False),
+    ("",  "backup-be-name=",   "backup_be_name",     None),
+    ("",  "be-name=",          "be_name",            None),
+    ("",  "deny-new-be",       "deny_new_be",        False),
+    ("",  "no-backup-be",      "no_backup_be",       False),
+    ("",  "no-be-activate",    "be_activate",        True),
+    ("",  "require-backup-be", "require_backup_be",  False),
+    ("",  "require-new-be",    "require_new_be",     False),
 ]
 
 opts_table_force = [
@@ -1925,7 +1985,7 @@ opts_table_quiet = [
 
 opts_table_parsable = [
     opts_table_cb_parsable,
-    ("", "parsable=",        "parsable_version",    None),
+    ("", "parsable=",        "parsable_version",     None),
 ]
 
 opts_table_nqv = \
@@ -1989,6 +2049,14 @@ opts_list_mediator = \
     [
     ("a", "",                "list_available",      False),
     ("F", "output-format",   "output_format",       None)
+]
+
+opts_revert= \
+    opts_table_beopts + \
+    opts_table_nqv + \
+    opts_table_parsable + \
+    [
+    ("",  "tagged",          "tagged",               False),
 ]
 
 opts_set_mediator = \
@@ -2075,9 +2143,9 @@ opts_list_inventory = \
 ]
 
 def change_variant(op, api_inst, pargs,
-    accept, be_activate, be_name, li_ignore, li_parent_sync, new_be,
-    noexecute, origins, parsable_version, quiet, refresh_catalogs, reject_pats,
-    show_licenses, update_index, verbose):
+    accept, backup_be, backup_be_name, be_activate, be_name, li_ignore,
+    li_parent_sync, new_be, noexecute, origins, parsable_version, quiet,
+    refresh_catalogs, reject_pats, show_licenses, update_index, verbose):
         """Attempt to change a variant associated with an image, updating
         the image contents as necessary."""
 
@@ -2113,15 +2181,16 @@ def change_variant(op, api_inst, pargs,
             _noexecute=noexecute, _origins=origins,
             _parsable_version=parsable_version, _quiet=quiet,
             _show_licenses=show_licenses, _verbose=verbose,
+            backup_be=backup_be, backup_be_name=backup_be_name,
             be_activate=be_activate, be_name=be_name,
             li_parent_sync=li_parent_sync, new_be=new_be,
             refresh_catalogs=refresh_catalogs, reject_list=reject_pats,
             update_index=update_index, variants=variants)
 
 def change_facet(op, api_inst, pargs,
-    accept, be_activate, be_name, li_ignore, li_parent_sync, new_be,
-    noexecute, origins, parsable_version, quiet, refresh_catalogs, reject_pats,
-    show_licenses, update_index, verbose):
+    accept, backup_be, backup_be_name, be_activate, be_name, li_ignore,
+    li_parent_sync, new_be, noexecute, origins, parsable_version, quiet,
+    refresh_catalogs, reject_pats, show_licenses, update_index, verbose):
         """Attempt to change the facets as specified, updating
         image as necessary"""
 
@@ -2170,15 +2239,16 @@ def change_facet(op, api_inst, pargs,
             _noexecute=noexecute, _origins=origins,
             _parsable_version=parsable_version, _quiet=quiet,
             _show_licenses=show_licenses, _verbose=verbose,
+            backup_be=backup_be, backup_be_name=backup_be_name,
             be_activate=be_activate, be_name=be_name,
             li_parent_sync=li_parent_sync, new_be=new_be, facets=facets,
             refresh_catalogs=refresh_catalogs, reject_list=reject_pats,
             update_index=update_index)
 
 def install(op, api_inst, pargs,
-    accept, be_activate, be_name, li_ignore, li_parent_sync, new_be,
-    noexecute, origins, parsable_version, quiet, refresh_catalogs, reject_pats,
-    show_licenses, update_index, verbose):
+    accept, backup_be, backup_be_name, be_activate, be_name, li_ignore,
+    li_parent_sync, new_be, noexecute, origins, parsable_version, quiet,
+    refresh_catalogs, reject_pats, show_licenses, update_index, verbose):
 
         """Attempt to take package specified to INSTALLED state.  The operands
         are interpreted as glob patterns."""
@@ -2200,6 +2270,7 @@ def install(op, api_inst, pargs,
         return __api_op(op, api_inst, _accept=accept, _li_ignore=li_ignore,
             _noexecute=noexecute, _origins=origins, _quiet=quiet,
             _show_licenses=show_licenses, _verbose=verbose,
+            backup_be=backup_be, backup_be_name=backup_be_name,
             be_activate=be_activate, be_name=be_name,
             li_parent_sync=li_parent_sync, new_be=new_be,
             _parsable_version=parsable_version, pkgs_inst=pargs,
@@ -2207,8 +2278,8 @@ def install(op, api_inst, pargs,
             update_index=update_index)
 
 def uninstall(op, api_inst, pargs,
-    be_activate, be_name, new_be, li_ignore, update_index, noexecute,
-    parsable_version, quiet, verbose, stage):
+    be_activate, backup_be, backup_be_name, be_name, new_be, li_ignore,
+    update_index, noexecute, parsable_version, quiet, verbose, stage):
         """Attempt to take package specified to DELETED state."""
 
         api_inst.progresstracker = get_tracker(
@@ -2226,14 +2297,15 @@ def uninstall(op, api_inst, pargs,
 
         return __api_op(op, api_inst, _li_ignore=li_ignore,
             _noexecute=noexecute, _quiet=quiet, _stage=stage,
-            _verbose=verbose, be_activate=be_activate, be_name=be_name,
-            new_be=new_be, _parsable_version=parsable_version,
+            _verbose=verbose, backup_be=backup_be,
+            backup_be_name=backup_be_name, be_activate=be_activate,
+            be_name=be_name, new_be=new_be, _parsable_version=parsable_version,
             pkgs_to_uninstall=pargs, update_index=update_index)
 
 def update(op, api_inst, pargs,
-    accept, be_activate, be_name, force, li_ignore, li_parent_sync,
-    new_be, noexecute, origins, parsable_version, quiet, refresh_catalogs,
-    reject_pats, show_licenses, stage, update_index, verbose):
+    accept, backup_be, backup_be_name, be_activate, be_name, force, li_ignore,
+    li_parent_sync, new_be, noexecute, origins, parsable_version, quiet,
+    refresh_catalogs, reject_pats, show_licenses, stage, update_index, verbose):
         """Attempt to take all installed packages specified to latest
         version."""
 
@@ -2268,111 +2340,28 @@ def update(op, api_inst, pargs,
             _parsable_version=parsable_version, _quiet=quiet,
             _review_release_notes=review_release_notes,
             _show_licenses=show_licenses, _stage=stage, _verbose=verbose,
+            backup_be=backup_be, backup_be_name=backup_be_name,
             be_activate=be_activate, be_name=be_name, force=force,
             li_parent_sync=li_parent_sync, new_be=new_be,
             pkgs_update=pkgs_update, refresh_catalogs=refresh_catalogs,
             reject_list=reject_pats, update_index=update_index)
 
-def revert(api_inst, args):
+def revert(op, api_inst, pargs,
+    backup_be, backup_be_name, be_activate, be_name, new_be, noexecute,
+    parsable_version, quiet, tagged, verbose):
         """Attempt to revert files to their original state, either
         via explicit path names or via tagged contents."""
 
-        op = "revert"
-        opts, pargs = getopt.getopt(args, "nvq", ["tagged", "deny-new-be",
-            "no-be-activate", "parsable=", "require-new-be", "be-name="])
-
-        quiet = tagged = noexecute = False
-        verbose = 0
-        new_be = None
-        be_activate = True
-        be_name = None
-        parsable_version = None
-
-        for opt, arg in opts:
-                if opt == "-n":
-                        noexecute = True
-                elif opt == "-v":
-                        verbose = verbose + 1
-                elif opt == "-q":
-                        quiet = True
-                elif opt == "--deny-new-be":
-                        new_be = False
-                elif opt == "--no-be-activate":
-                        be_activate = False
-                elif opt == "--require-new-be":
-                        new_be = True
-                elif opt == "--be-name":
-                        be_name = arg
-                elif opt == "--tagged":
-                        tagged = True
-                elif opt == "--parsable":
-                        try:
-                                parsable_version = int(arg)
-                        except ValueError:
-                                usage(_("--parsable takes an integer "
-                                    "indicating the version of parsable output "
-                                    "to display."), cmd=op)
-                        quiet = True
-
         if not pargs:
                 usage(_("at least one file path or tag name required"), cmd=op)
-        if verbose > 2:
-                DebugValues.set_value("plan", "True")
-        if verbose and (parsable_version is not None):
-                usage(_("verbose and parsable are incompatible options."),
-                    cmd=op)
 
         api_inst.progresstracker = get_tracker(
             parsable_version=parsable_version, quiet=quiet, verbose=verbose)
 
-        stuff_to_do = None
-        try:
-                for pd in api_inst.gen_plan_revert(pargs, tagged=tagged,
-                    noexecute=noexecute, be_name=be_name, new_be=new_be,
-                    be_activate=be_activate):
-                        continue
-                stuff_to_do = not api_inst.planned_nothingtodo()
-        except:
-                ret_code = __api_plan_exception(op, noexecute, verbose,
-                    api_inst)
-                if ret_code != EXIT_OK:
-                        return ret_code
-
-        if not stuff_to_do:
-                if verbose:
-                        __display_plan(api_inst, verbose)
-                if parsable_version is not None:
-                        try:
-                                __display_parsable_plan(api_inst,
-                                    parsable_version)
-                        except api_errors.ApiException, e:
-                                error(e, cmd=op)
-                                return EXIT_OOPS
-                else:
-                        msg(_("No files need to be reverted."))
-                return EXIT_NOP
-
-        if not quiet:
-                __display_plan(api_inst, verbose)
-        if parsable_version is not None:
-                try:
-                        __display_parsable_plan(api_inst, parsable_version)
-                except api_errors.ApiException, e:
-                        error(e, cmd=op)
-                        return EXIT_OOPS
-
-        if noexecute:
-                return EXIT_OK
-
-        # Exceptions which happen here are printed in the above level, with
-        # or without some extra decoration done here.
-        ret_code = __api_prepare(op, api_inst, accept=False)
-        if ret_code != EXIT_OK:
-                return ret_code
-
-        ret_code = __api_execute_plan(op, api_inst)
-
-        return ret_code
+        return __api_op(op, api_inst, _noexecute=noexecute, _quiet=quiet,
+            _verbose=verbose, be_activate=be_activate, be_name=be_name,
+            new_be=new_be, _parsable_version=parsable_version, args=pargs,
+            tagged=tagged)
 
 def list_mediators(op, api_inst, pargs, omit_headers, output_format,
     list_available):
@@ -2474,13 +2463,13 @@ def list_mediators(op, api_inst, pargs, omit_headers, output_format,
                 return EXIT_OOPS
         return EXIT_OK
 
-def set_mediator(op, api_inst, pargs, be_activate, be_name, med_implementation,
+def set_mediator(op, api_inst, pargs,
+    backup_be, backup_be_name, be_activate, be_name, med_implementation,
     med_version, new_be, noexecute, parsable_version, quiet, update_index,
     verbose):
         """Set the version and/or implementation for the specified
         mediator(s)."""
 
-        op = "set-mediator"
         if not pargs:
                 usage(_("at least one mediator must be specified"),
                     cmd=op)
@@ -2520,8 +2509,9 @@ def set_mediator(op, api_inst, pargs, be_activate, be_name, med_implementation,
         stuff_to_do = None
         try:
                 for pd in api_inst.gen_plan_set_mediators(mediators,
-                    noexecute=noexecute, be_name=be_name, new_be=new_be,
-                    be_activate=be_activate):
+                    noexecute=noexecute, backup_be=backup_be,
+                    backup_be_name=backup_be_name, be_name=be_name,
+                    new_be=new_be, be_activate=be_activate):
                         continue
                 stuff_to_do = not api_inst.planned_nothingtodo()
         except:
@@ -2564,13 +2554,13 @@ def set_mediator(op, api_inst, pargs, be_activate, be_name, med_implementation,
 
         return ret_code
 
-def unset_mediator(op, api_inst, pargs, be_activate, be_name,
-    med_implementation, med_version, new_be, noexecute, parsable_version,quiet,
-    update_index, verbose):
+def unset_mediator(op, api_inst, pargs,
+    backup_be, backup_be_name, be_activate, be_name, med_implementation,
+    med_version, new_be, noexecute, parsable_version, quiet, update_index,
+    verbose):
         """Unset the version and/or implementation for the specified
         mediator(s)."""
 
-        op = "unset-mediator"
         if not pargs:
                 usage(_("at least one mediator must be specified"),
                     cmd=op)
@@ -2597,8 +2587,9 @@ def unset_mediator(op, api_inst, pargs, be_activate, be_name,
         stuff_to_do = None
         try:
                 for pd in api_inst.gen_plan_set_mediators(mediators,
-                    noexecute=noexecute, be_name=be_name, new_be=new_be,
-                    be_activate=be_activate):
+                    noexecute=noexecute, backup_be=backup_be,
+                    backup_be_name=backup_be_name, be_name=be_name,
+                    new_be=new_be, be_activate=be_activate):
                         continue
                 stuff_to_do = not api_inst.planned_nothingtodo()
         except:
@@ -5033,10 +5024,10 @@ def list_property_linked(op, api_inst, pargs,
         return EXIT_OK
 
 def set_property_linked(op, api_inst, pargs,
-    accept, be_activate, be_name, li_ignore, li_md_only, li_name,
-    li_parent_sync, li_pkg_updates, new_be, noexecute, origins,
-    parsable_version, quiet, refresh_catalogs, reject_pats, show_licenses,
-    update_index, verbose):
+    accept, backup_be, backup_be_name, be_activate, be_name, li_ignore,
+    li_md_only, li_name, li_parent_sync, li_pkg_updates, new_be, noexecute,
+    origins, parsable_version, quiet, refresh_catalogs, reject_pats,
+    show_licenses, update_index, verbose):
         """pkg set-property-linked
             [-nvq] [--accept] [--licenses] [--no-index] [--no-refresh]
             [--no-parent-sync] [--no-pkg-updates]
@@ -5058,7 +5049,7 @@ def set_property_linked(op, api_inst, pargs,
         if not xrval:
                 return EXIT_OOPS
 
-        LIXXX
+        return EXIT_OK
 
 def audit_linked(op, api_inst, pargs,
     li_parent_sync, li_target_all, li_target_list, omit_headers, quiet):
@@ -5101,10 +5092,10 @@ def audit_linked(op, api_inst, pargs,
         return rv
 
 def sync_linked(op, api_inst, pargs,
-    accept, be_activate, be_name, li_ignore, li_parent_sync, new_be,
-    noexecute, origins, parsable_version, quiet, refresh_catalogs, reject_pats,
-    show_licenses, update_index, verbose, li_md_only, li_pkg_updates,
-    li_target_all, li_target_list, stage):
+    accept, backup_be, backup_be_name, be_activate, be_name, li_ignore,
+    li_parent_sync, new_be, noexecute, origins, parsable_version, quiet,
+    refresh_catalogs, reject_pats, show_licenses, update_index, verbose,
+    li_md_only, li_pkg_updates, li_target_all, li_target_list, stage):
 
         """pkg audit-linked [-a|-l <li-name>]
             [-nvq] [--accept] [--licenses] [--no-index] [--no-refresh]
@@ -5130,7 +5121,8 @@ def sync_linked(op, api_inst, pargs,
                     _li_ignore=li_ignore, _noexecute=noexecute,
                     _origins=origins, _parsable_version=parsable_version,
                     _quiet=quiet, _show_licenses=show_licenses, _stage=stage,
-                    _verbose=verbose, be_activate=be_activate,
+                    _verbose=verbose, backup_be=backup_be,
+                    backup_be_name=backup_be_name, be_activate=be_activate,
                     be_name=be_name, li_md_only=li_md_only,
                     li_parent_sync=li_parent_sync,
                     li_pkg_updates=li_pkg_updates, new_be=new_be,
@@ -5158,9 +5150,10 @@ def sync_linked(op, api_inst, pargs,
 
 def attach_linked(op, api_inst, pargs,
     accept, allow_relink, attach_child, attach_parent, be_activate,
-    be_name, force, li_ignore, li_md_only, li_parent_sync, li_pkg_updates,
-    li_props, new_be, noexecute, origins, parsable_version, quiet,
-    refresh_catalogs, reject_pats, show_licenses, update_index, verbose):
+    backup_be, backup_be_name, be_name, force, li_ignore, li_md_only,
+    li_parent_sync, li_pkg_updates, li_props, new_be, noexecute, origins,
+    parsable_version, quiet, refresh_catalogs, reject_pats, show_licenses,
+    update_index, verbose):
         """pkg attach-linked
             [-fnvq] [--accept] [--licenses] [--no-index] [--no-refresh]
             [--no-pkg-updates] [--linked-md-only]
@@ -5202,6 +5195,7 @@ def attach_linked(op, api_inst, pargs,
                     _origins=origins, _parsable_version=parsable_version,
                     _quiet=quiet, _show_licenses=show_licenses,
                     _verbose=verbose, allow_relink=allow_relink,
+                    backup_be=backup_be, backup_be_name=backup_be_name,
                     be_activate=be_activate, be_name=be_name, force=force,
                     li_md_only=li_md_only, li_path=li_path,
                     li_pkg_updates=li_pkg_updates, li_props=li_props,
@@ -5946,7 +5940,7 @@ def main_func():
             "rebuild-index"         : (rebuild_index, None),
             "refresh"               : (publisher_refresh, None),
             "remove-property-value" : (property_remove_value, None),
-            "revert"                : (revert, None),
+            "revert"                : (revert, opts_revert, -1),
             "search"                : (search, None),
             "set-authority"         : (publisher_set, None),
             "set-mediator"          : (set_mediator, opts_set_mediator, -1),

@@ -144,6 +144,55 @@ class BootEnv(object):
                         # if were are on UFS.
                         raise RuntimeError, "recoveryDisabled"
 
+        def __get_new_be_name(self, suffix=None):
+                """Create a new boot environment name."""
+
+                new_bename = self.be_name
+                if suffix:
+                        new_bename += suffix
+                base, sep, rev = new_bename.rpartition("-")
+                if sep and rev.isdigit():
+                        # The source BE has already been auto-named, so we need
+                        # to bump the revision.  List all BEs, cycle through the
+                        # names and find the one with the same basename as
+                        # new_bename, and has the highest revision.  Then add
+                        # one to it.  This means that gaps in the numbering will
+                        # not be filled.
+                        rev = int(rev)
+                        maxrev = rev
+
+                        for d in self.beList:
+                                oben = d.get("orig_be_name", None)
+                                if not oben:
+                                        continue
+                                nbase, sep, nrev = oben.rpartition("-")
+                                if (not sep or nbase != base or
+                                    not nrev.isdigit()):
+                                        continue
+                                maxrev = max(int(nrev), rev)
+                else:
+                        # If we didn't find the separator, or if the rightmost
+                        # part wasn't an integer, then we just start with the
+                        # original name.
+                        base = new_bename
+                        maxrev = 0
+
+                good = False
+                num = maxrev
+                while not good:
+                        new_bename = "-".join((base, str(num)))
+                        for d in self.beList:
+                                oben = d.get("orig_be_name", None)
+                                if not oben:
+                                        continue
+                                if oben == new_bename:
+                                        break
+                        else:
+                                good = True
+
+                        num += 1
+                return new_bename
+
         def __store_image_state(self):
                 """Internal function used to preserve current image information
                 and history state to be restored later with __reset_image_state
@@ -332,6 +381,32 @@ class BootEnv(object):
                                         return be.get("orig_be_name")
                 except AttributeError:
                         raise api_errors.BENamingNotSupported(be_name)
+
+        def create_backup_be(self, be_name=None):
+                """Create a backup BE if the BE being modified is the live one.
+
+                'be_name' is an optional string indicating the name to use
+                for the new backup BE."""
+
+                self.check_be_name(be_name)
+
+                if self.is_live_BE:
+                        # Create a clone of the live BE, but do not mount or
+                        # activate it.  Do nothing with the returned snapshot
+                        # name that is taken of the clone during beCopy.
+                        ret, be_name_clone, not_used = be.beCopy()
+                        if ret != 0:
+                                raise api_errors.UnableToCopyBE()
+
+                        if not be_name:
+                                be_name = self.__get_new_be_name(
+                                    suffix="-backup-1")
+                        ret = be.beRename(be_name_clone, be_name)
+                        if ret != 0:
+                                raise api_errors.UnableToRenameBE(
+                                    be_name_clone, be_name)
+                elif be_name is not None:
+                        raise api_errors.BENameGivenOnDeadBE(be_name)
 
         def init_image_recovery(self, img, be_name=None):
 
@@ -664,6 +739,11 @@ class BootEnvNull(object):
         @staticmethod
         def get_active_be_name():
                 pass
+
+        @staticmethod
+        def create_backup_be(be_name=None):
+                if be_name is not None:
+                        raise api_errors.BENameGivenOnDeadBE(be_name)
 
         @staticmethod
         def init_image_recovery(img, be_name=None):

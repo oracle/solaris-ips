@@ -141,7 +141,16 @@ class Actuator(GenericActuator):
                 return "\n".join("  %16s: %s" % (fmri, smf)
                     for fmri, smf in self.get_list())
 
+        def reboot_advised(self):
+                """Returns True if action install execution may require a
+                reboot."""
+
+                return bool("true" in self.install.get("reboot-needed", []))
+
         def reboot_needed(self):
+                """Returns True if action execution requires a new boot
+                environment."""
+
                 return bool("true" in self.update.get("reboot-needed", [])) or \
                     bool("true" in self.removal.get("reboot-needed", []))
 

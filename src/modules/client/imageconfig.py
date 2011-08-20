@@ -52,6 +52,7 @@ from pkg.client.transport.exception import TransportFailures
 # pkg(5) and their default values. Calls to the ImageConfig.get_policy method
 # should use the constants defined here.
 
+BE_POLICY = "be-policy"
 FLUSH_CONTENT_CACHE = "flush-content-cache-on-success"
 MIRROR_DISCOVERY = "mirror-discovery"
 SEND_UUID = "send-uuid"
@@ -59,6 +60,7 @@ USE_SYSTEM_REPO = "use-system-repo"
 CHECK_CERTIFICATE_REVOCATION = "check-certificate-revocation"
 
 default_policies = {
+    BE_POLICY: "default",
     CHECK_CERTIFICATE_REVOCATION: False,
     FLUSH_CONTENT_CACHE: False,
     MIRROR_DISCOVERY: False,
@@ -155,6 +157,9 @@ class ImageConfig(cfg.FileConfig):
                 cfg.PropertySection("property", properties=[
                     cfg.PropPublisher("preferred-authority"),
                     cfg.PropList("publisher-search-order"),
+                    cfg.PropDefined(BE_POLICY, allowed=["default",
+                        "always-new", "create-backup", "when-required"],
+                        default=default_policies[BE_POLICY]),
                     cfg.PropBool(FLUSH_CONTENT_CACHE,
                         default=default_policies[FLUSH_CONTENT_CACHE]),
                     cfg.PropBool(MIRROR_DISCOVERY,

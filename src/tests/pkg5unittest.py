@@ -126,7 +126,7 @@ from pkg.client.debugvalues import DebugValues
 
 # Version test suite is known to work with.
 PKG_CLIENT_NAME = "pkg"
-CLIENT_API_VERSION = 66
+CLIENT_API_VERSION = 67
 
 ELIDABLE_ERRORS = [ TestSkippedException, depotcontroller.DepotStateException ]
 
@@ -770,9 +770,10 @@ if __name__ == "__main__":
 
         def assertEqualParsable(self, output, activate_be=True,
             add_packages=EmptyI, affect_packages=EmptyI, affect_services=EmptyI,
-            be_name=None, boot_archive_rebuild=False, change_facets=EmptyI,
-            change_packages=EmptyI, change_mediators=EmptyI,
-            change_variants=EmptyI, child_images=EmptyI, create_new_be=False,
+            backup_be_name=None, be_name=None, boot_archive_rebuild=False,
+            change_facets=EmptyI, change_packages=EmptyI,
+            change_mediators=EmptyI, change_variants=EmptyI,
+            child_images=EmptyI, create_backup_be=False, create_new_be=False,
             image_name=None, licenses=EmptyI, remove_packages=EmptyI,
             version=0):
                 """Check that the parsable output in 'output' is what is
