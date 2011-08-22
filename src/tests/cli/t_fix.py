@@ -127,9 +127,6 @@ class TestFix(pkg5unittest.SingleDepotTestCase):
                 files, and make sure it gets fixed.  """
 
                 self.image_create(self.rurl)
-                # Cache must be flushed after install for tests to work as
-                # expected.
-                self.pkg("set-property flush-content-cache-on-success True")
                 self.pkg("install amber@1.0")
 
                 index_dir = self.get_img_api_obj().img.index_dir

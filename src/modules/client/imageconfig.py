@@ -62,7 +62,7 @@ CHECK_CERTIFICATE_REVOCATION = "check-certificate-revocation"
 default_policies = {
     BE_POLICY: "default",
     CHECK_CERTIFICATE_REVOCATION: False,
-    FLUSH_CONTENT_CACHE: False,
+    FLUSH_CONTENT_CACHE: True,
     MIRROR_DISCOVERY: False,
     SEND_UUID: True,
     SIGNATURE_POLICY: sigpolicy.DEFAULT_POLICY,

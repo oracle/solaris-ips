@@ -792,7 +792,6 @@ test2
                 #
                 self.image_create(self.empty_rurl, prefix=None)
                 self.pkg("list -a", exit=1)
-                self.pkg("set-property flush-content-cache-on-sucess True")
 
                 # Install a package from an archive.
                 self.pkg("install -g %s foo" % self.foo_arc)

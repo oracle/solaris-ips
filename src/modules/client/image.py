@@ -3631,7 +3631,6 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                 PKG_CACHEROOT. """
 
                 if self.cfg.get_policy(imageconfig.FLUSH_CONTENT_CACHE):
-                        logger.info("Deleting content cache")
                         for path, readonly, pub in self.get_cachedirs():
                                 if readonly or (self.__user_cache_dir and
                                     path.startswith(self.__user_cache_dir)):
