@@ -4619,10 +4619,8 @@ class PlanDescription(object):
                 variant/facet changes in this plan"""
                 vs, fs = self.__plan.varcets
                 ret = []
-                for v in vs:
-                        ret += ["variant %s: %s" % a for a in vs]
-                for f in fs:
-                        ret += ["  facet %s: %s" % a for a in fs]
+                ret.extend(["variant %s: %s" % a for a in vs])
+                ret.extend(["  facet %s: %s" % a for a in fs])
                 return ret
 
         def get_parsable_varcets(self):

@@ -109,12 +109,7 @@ class TestPkgChangeFacet(pkg5unittest.SingleDepotTestCase):
                 self.pkg("change-facet --parsable=0 facet.locale.nl_ZA=True")
                 self.assertEqualParsable(self.output,
                     affect_packages=self.plist,
-                    change_facets=[
-                        ["facet.locale*", False],
-                        ["facet.locale.fr*", True],
-                        ["facet.locale.fr_CA", False],
-                        ["facet.locale.nl_ZA", True]
-                    ])
+                    change_facets=[["facet.locale.nl_ZA", True]])
                 self.pkg("verify")
                 self.pkg("facet")
 
@@ -132,7 +127,11 @@ class TestPkgChangeFacet(pkg5unittest.SingleDepotTestCase):
                     "'facet.locale.fr*'=None facet.locale.fr_CA=None")
                 self.assertEqualParsable(self.output,
                     affect_packages=self.plist,
-                    change_facets=[["facet.locale.nl_ZA", True]])
+                    change_facets=[
+                        ["facet.locale*", None],
+                        ["facet.locale.fr*", None],
+                        ["facet.locale.fr_CA", None]
+                    ])
                 self.pkg("verify")
 
                 for i in range(8):
@@ -149,18 +148,20 @@ class TestPkgChangeFacet(pkg5unittest.SingleDepotTestCase):
         def test_removing_facets(self):
                 self.image_create()
                 # Test that setting an unset, non-existent facet to None works.
-                self.pkg("change-facet foo=None")
+                self.pkg("change-facet foo=None", exit=4)
 
                 # Test that setting a non-existent facet to True then removing
                 # it works.
-                self.pkg("change-facet foo=True")
+                self.pkg("change-facet -v foo=True")
                 self.pkg("facet -H")
                 self.assertEqual("facet.foo True\n", self.output)
-                self.pkg("change-facet foo=None")
+                self.pkg("change-facet --parsable=0 foo=None")
+                self.assertEqualParsable(self.output, change_facets=[
+                    ["facet.foo", None]])
                 self.pkg("facet -H")
                 self.assertEqual("", self.output)
 
-                self.pkg("change-facet foo=None")
+                self.pkg("change-facet -v foo=None", exit=4)
 
         def test_slashed_facets(self):
                 rurl = self.dc.get_repo_url()

@@ -175,6 +175,8 @@ class ImagePlan(object):
                 self.__mediators_change = False
                 self.__new_variants = None
                 self.__new_facets = None
+                self.__changed_facets = {}
+                self.__removed_facets = set()
                 self.__varcets_change = False
                 self.__match_inst = {} # dict of fmri -> pattern
                 self.__match_rm = {} # dict of fmri -> pattern
@@ -364,10 +366,9 @@ class ImagePlan(object):
                         vs = self.__new_variants.items()
                 else:
                         vs = []
-                if self.__new_facets:
-                        fs = self.__new_facets.items()
-                else:
-                        fs = []
+                fs = []
+                fs.extend(self.__changed_facets.items())
+                fs.extend([(f, None) for f in self.__removed_facets])
                 return vs, fs
 
         def __verbose_str(self):
@@ -491,10 +492,19 @@ class ImagePlan(object):
                         self.__fmri_changes = []
                         return
 
-                if new_variants or (new_facets is not None):
+                old_facets = self.image.cfg.facets
+                if new_variants or (new_facets != old_facets):
                         self.__varcets_change = True
                         self.__new_variants = new_variants
                         self.__new_facets   = new_facets
+                        tmp_new_facets = new_facets
+                        if tmp_new_facets is None:
+                                tmp_new_facets = pkg.facet.Facets()
+                        self.__changed_facets = pkg.facet.Facets(dict(
+                            set(tmp_new_facets.iteritems()) -
+                            set(old_facets.iteritems())))
+                        self.__removed_facets = set(old_facets.keys()) - \
+                            set(tmp_new_facets.keys())
 
                 # get ranking of publishers
                 pub_ranks = self.image.get_publisher_ranks()
