@@ -30,10 +30,6 @@ SPECIAL_CATEGORIES = ["locale", "plugin"] # We should cut all, but last part of 
 RELEASE_URL = "http://www.opensolaris.org" # Fallback url for release notes if api
                                            # does not gave us one.
 
-PUBCERT_COMMON_NAME =  _("  Common Name (CN):")
-PUBCERT_ORGANIZATION =  _("  Organization (O):")
-PUBCERT_ORGANIZATIONAL_UNIT =  _("  Organizational Unit (OU):")
-
 PROP_SIGNATURE_POLICY = "signature-policy"
 PROP_SIGNATURE_REQUIRED_NAMES = "signature-required-names"
 SIG_POLICY_IGNORE = "ignore"
@@ -41,6 +37,8 @@ SIG_POLICY_VERIFY = "verify"
 SIG_POLICY_REQUIRE_SIGNATURES = "require-signatures"
 SIG_POLICY_REQUIRE_NAMES = "require-names"
 
+import gettext
+import locale
 import os
 import sys
 import traceback
@@ -72,6 +70,13 @@ from pkg.gui.misc_non_gui import get_image_path as g_image_path
 from pkg.gui.misc_non_gui import is_frameworkerror as is_frameworke
 
 from pkg.client import global_settings
+
+misc.setlocale(locale.LC_ALL, "")
+gettext.install("pkg", "/usr/share/locale")
+
+PUBCERT_COMMON_NAME =  _("  Common Name (CN):")
+PUBCERT_ORGANIZATION =  _("  Organization (O):")
+PUBCERT_ORGANIZATIONAL_UNIT =  _("  Organizational Unit (OU):")
 
 PKG_CLIENT_NAME_PM = "packagemanager"
 PKG_CLIENT_NAME_WI = "packagemanager-webinstall"
