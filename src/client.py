@@ -3445,24 +3445,28 @@ def display_contents_results(actionlist, attrs, sort_attrs, action_types,
         lines = produce_lines(actionlist, attrs, action_types)
         widths = calc_widths(lines, attrs)
 
-        sortidx = 0
-        for i, attr in enumerate(attrs):
-                if attr == sort_attrs[0]:
-                        sortidx = i
-                        break
+        if sort_attrs:
+                sortidx = 0
+                for i, attr in enumerate(attrs):
+                        if attr == sort_attrs[0]:
+                                sortidx = i
+                                break
 
-        # Sort numeric columns numerically.
-        if justs[sortidx] == JUST_RIGHT:
-                def key_extract(x):
-                        try:
-                                return int(x[sortidx])
-                        except (ValueError, TypeError):
-                                return 0
+                # Sort numeric columns numerically.
+                if justs[sortidx] == JUST_RIGHT:
+                        def key_extract(x):
+                                try:
+                                        return int(x[sortidx])
+                                except (ValueError, TypeError):
+                                        return 0
+                else:
+                        key_extract = lambda x: x[sortidx]
+                line_gen = sorted(lines, key=key_extract)
         else:
-                key_extract = lambda x: x[sortidx]
+                line_gen = lines
 
         printed_output = False
-        for line in sorted(lines, key=key_extract):
+        for line in line_gen:
                 text = (create_output_format(display_headers, widths, justs,
                     line) % tuple(line)).rstrip()
                 if not text:
@@ -3545,7 +3549,7 @@ def list_contents(api_inst, args):
                 display_headers = False
                 attrs = ["action.raw"]
 
-                invalid = set(("-H", "-o", "-t")). \
+                invalid = set(("-H", "-o", "-t", "-s", "-a")). \
                     intersection(set([x[0] for x in opts]))
 
                 if len(invalid) > 0:
@@ -3571,7 +3575,7 @@ def list_contents(api_inst, args):
                 # dependencies.
                 attrs = ["path"]
 
-        if not sort_attrs:
+        if not sort_attrs and not display_raw:
                 # XXX reverse sorting
                 # Most likely want to sort by path, so don't force people to
                 # make it explicit
