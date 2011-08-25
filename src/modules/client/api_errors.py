@@ -26,6 +26,7 @@
 
 import errno
 import os
+import xml.parsers.expat as expat
 import urlparse
 
 # pkg classes
@@ -57,6 +58,55 @@ class SuidUnsupportedError(ApiException):
         def __str__(self):
                 return _("""
 The pkg client api module can not be invoked from an setuid executable.""")
+
+
+class HistoryException(ApiException):
+        """Private base exception class for all History exceptions."""
+
+        def __init__(self, *args):
+                Exception.__init__(self, *args)
+                self.error = args[0]
+
+        def __str__(self):
+                return str(self.error)
+
+
+class HistoryLoadException(HistoryException):
+        """Used to indicate that an unexpected error occurred while loading
+        History operation information.
+
+        The first argument should be an exception object related to the
+        error encountered.
+        """
+        def __init__(self, *args):
+                HistoryException.__init__(self, *args)
+                self.parse_failure = isinstance(self.error, expat.ExpatError)
+
+
+class HistoryRequestException(HistoryException):
+        """Used to indicate that invalid time / range values were provided to
+        history API functions."""
+        pass
+
+
+class HistoryStoreException(HistoryException):
+        """Used to indicate that an unexpected error occurred while storing
+        History operation information.
+
+        The first argument should be an exception object related to the
+        error encountered.
+        """
+        pass
+
+
+class HistoryPurgeException(HistoryException):
+        """Used to indicate that an unexpected error occurred while purging
+        History operation information.
+
+        The first argument should be an exception object related to the
+        error encountered.
+        """
+        pass
 
 
 class ImageLockedError(ApiException):

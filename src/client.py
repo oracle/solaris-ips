@@ -50,7 +50,6 @@ try:
         import fnmatch
         import getopt
         import gettext
-        import glob
         import itertools
         import simplejson as json
         import locale
@@ -67,7 +66,6 @@ try:
         import pkg.client.api as api
         import pkg.client.api_errors as api_errors
         import pkg.client.bootenv as bootenv
-        import pkg.client.history as history
         import pkg.client.progress as progress
         import pkg.client.linkedimage as li
         import pkg.client.publisher as publisher
@@ -76,21 +74,20 @@ try:
         import pkg.version as version
 
         from pkg.client import global_settings
-        from pkg.client.api import IMG_TYPE_ENTIRE, IMG_TYPE_PARTIAL, \
-            IMG_TYPE_USER
-        from pkg.client.debugvalues import DebugValues
-        from pkg.client.history import (RESULT_CANCELED,
-            RESULT_FAILED_BAD_REQUEST, RESULT_FAILED_CONFIGURATION,
-            RESULT_FAILED_LOCKED, RESULT_FAILED_STORAGE,
-            RESULT_FAILED_TRANSPORT, RESULT_FAILED_UNKNOWN,
+        from pkg.client.api import (IMG_TYPE_ENTIRE, IMG_TYPE_PARTIAL,
+            IMG_TYPE_USER, RESULT_CANCELED, RESULT_FAILED_BAD_REQUEST,
+            RESULT_FAILED_CONFIGURATION, RESULT_FAILED_CONSTRAINED,
+            RESULT_FAILED_LOCKED, RESULT_FAILED_STORAGE, RESULT_NOTHING_TO_DO,
+            RESULT_SUCCEEDED, RESULT_FAILED_TRANSPORT, RESULT_FAILED_UNKNOWN,
             RESULT_FAILED_OUTOFMEMORY)
+        from pkg.client.debugvalues import DebugValues
         from pkg.client.pkgdefs import *
         from pkg.misc import EmptyI, msg, PipeError
 except KeyboardInterrupt:
         import sys
         sys.exit(1)
 
-CLIENT_API_VERSION = 67
+CLIENT_API_VERSION = 68
 PKG_CLIENT_NAME = "pkg"
 
 JUST_UNKNOWN = 0
@@ -536,24 +533,24 @@ def list_inventory(op, api_inst, pargs,
                         if pkg_list == api_inst.LIST_INSTALLED:
                                 error(_("no packages installed"))
                                 api_inst.log_operation_end(
-                                    result=history.RESULT_NOTHING_TO_DO)
+                                    result=RESULT_NOTHING_TO_DO)
                                 return EXIT_OOPS
                         elif pkg_list == api_inst.LIST_INSTALLED_NEWEST:
                                 error(_("no packages installed or available "
                                     "for installation"))
                                 api_inst.log_operation_end(
-                                    result=history.RESULT_NOTHING_TO_DO)
+                                    result=RESULT_NOTHING_TO_DO)
                                 return EXIT_OOPS
                         elif pkg_list == api_inst.LIST_UPGRADABLE:
                                 error(_("no packages are installed or are "
                                     "installed and have newer versions "
                                     "available"))
                                 api_inst.log_operation_end(
-                                    result=history.RESULT_NOTHING_TO_DO)
+                                    result=RESULT_NOTHING_TO_DO)
                                 return EXIT_OOPS
                         else:
                                 api_inst.log_operation_end(
-                                    result=history.RESULT_NOTHING_TO_DO)
+                                    result=RESULT_NOTHING_TO_DO)
                                 return EXIT_OOPS
 
                 api_inst.log_operation_end()
@@ -568,7 +565,7 @@ def list_inventory(op, api_inst, pargs,
                         for i in e.illegal:
                                 error(i)
                         api_inst.log_operation_end(
-                            result=history.RESULT_FAILED_BAD_REQUEST)
+                            result=RESULT_FAILED_BAD_REQUEST)
                         return EXIT_OOPS
 
                 if found:
@@ -598,7 +595,7 @@ def list_inventory(op, api_inst, pargs,
                         # Only some patterns matched.
                         api_inst.log_operation_end()
                         return EXIT_PARTIAL
-                api_inst.log_operation_end(result=history.RESULT_NOTHING_TO_DO)
+                api_inst.log_operation_end(result=RESULT_NOTHING_TO_DO)
                 return EXIT_OOPS
 
 def get_tracker(parsable_version=None, quiet=False, verbose=0):
@@ -727,7 +724,7 @@ def fix_image(api_inst, args):
                 except api_errors.ImageFormatUpdateNeeded, e:
                         format_update_error(e)
                         api_inst.log_operation_end(
-                            result=history.RESULT_FAILED_CONFIGURATION)
+                            result=RESULT_FAILED_CONFIGURATION)
                         return EXIT_OOPS
                 except api_errors.PlanLicenseErrors, e:
                         error(_("The following packages require their "
@@ -740,7 +737,7 @@ def fix_image(api_inst, args):
                             "display all of the related licenses, use the "
                             "--licenses option."))
                         api_inst.log_operation_end(
-                            result=history.RESULT_FAILED_CONSTRAINED)
+                            result=RESULT_FAILED_CONSTRAINED)
                         return EXIT_LICENSE
                 except api_errors.RebootNeededOnLiveImageException:
                         error(_("Requested \"fix\" operation would affect "
@@ -748,7 +745,7 @@ def fix_image(api_inst, args):
                             "Please retry this operation on an alternate boot "
                             "environment."))
                         api_inst.log_operation_end(
-                            result=history.RESULT_FAILED_CONSTRAINED)
+                            result=RESULT_FAILED_CONSTRAINED)
                         return EXIT_NOTLIVE
                 except Exception, e:
                         api_inst.log_operation_end(error=e)
@@ -756,9 +753,9 @@ def fix_image(api_inst, args):
 
                 if not success:
                         api_inst.log_operation_end(
-                            result=history.RESULT_FAILED_UNKNOWN)
+                            result=RESULT_FAILED_UNKNOWN)
                         return EXIT_OOPS
-                api_inst.log_operation_end(result=history.RESULT_SUCCEEDED)
+                api_inst.log_operation_end(result=RESULT_SUCCEEDED)
         return EXIT_OK
 
 def verify_image(api_inst, args):
@@ -1584,7 +1581,7 @@ def __api_op(_op, _api_inst, _accept=False, _li_ignore=None, _noexecute=False,
                             _parsable_version, _quiet, _show_licenses, _stage,
                             _verbose)
                 except api_errors.ApiException, e:
-                        error(e, cmd=op)
+                        error(e, cmd=_op)
                         return EXIT_OOPS
 
         stuff_to_do = not _api_inst.planned_nothingtodo()
@@ -1614,18 +1611,18 @@ def __api_op(_op, _api_inst, _accept=False, _li_ignore=None, _noexecute=False,
         return ret_code
 
 def opts_err_opt1_req_opt2(opt1, opt2, op):
-        msg = _("%(opt1)s may only be used in combination with %(opt2)s") % \
+        txt = _("%(opt1)s may only be used in combination with %(opt2)s") % \
             {"opt1": opt1, "opt2": opt2}
-        usage(msg, cmd=op)
+        usage(txt, cmd=op)
 
 def opts_err_incompat(opt1, opt2, op):
-        msg = _("the %(opt1)s and %(opt2)s options may not be combined") % \
+        txt = _("the %(opt1)s and %(opt2)s options may not be combined") % \
             {"opt1": opt1, "opt2": opt2}
-        usage(msg, cmd=op)
+        usage(txt, cmd=op)
 
 def opts_err_repeated(opt1, op):
-        msg = _("option '%s' repeated") % (opt1)
-        usage(msg, cmd=op)
+        txt = _("option '%s' repeated") % (opt1)
+        usage(txt, cmd=op)
 
 def opts_table_cb_beopts(op, api_inst, opts, opts_new):
 
@@ -2050,7 +2047,7 @@ opts_list_mediator = \
     ("F", "output-format",   "output_format",       None)
 ]
 
-opts_revert= \
+opts_revert = \
     opts_table_beopts + \
     opts_table_nqv + \
     opts_table_parsable + \
@@ -3634,21 +3631,21 @@ def list_contents(api_inst, args):
         except api_errors.InvalidPackageErrors, e:
                 error(str(e), cmd=subcommand)
                 api_inst.log_operation_end(
-                    result=history.RESULT_FAILED_UNKNOWN)
+                    result=RESULT_FAILED_UNKNOWN)
                 return EXIT_OOPS
         except api_errors.InventoryException, e:
                 if e.illegal:
                         for i in e.illegal:
                                 error(i)
                         api_inst.log_operation_end(
-                            result=history.RESULT_FAILED_BAD_REQUEST)
+                            result=RESULT_FAILED_BAD_REQUEST)
                         return EXIT_OOPS
                 notfound = e.notfound
         else:
                 if local and not manifests and not pargs:
                         error(_("no packages installed"), cmd=subcommand)
                         api_inst.log_operation_end(
-                            result=history.RESULT_NOTHING_TO_DO)
+                            result=RESULT_NOTHING_TO_DO)
                         return EXIT_OOPS
 
         actionlist = [
@@ -3702,10 +3699,9 @@ examining the catalogs:"""))
                 logger.error("")
                 for p in notfound:
                         logger.error("        %s" % p)
-                api_inst.log_operation_end(
-                    result=history.RESULT_NOTHING_TO_DO)
+                api_inst.log_operation_end(result=RESULT_NOTHING_TO_DO)
         else:
-                api_inst.log_operation_end(result=history.RESULT_SUCCEEDED)
+                api_inst.log_operation_end(result=RESULT_SUCCEEDED)
         return rval
 
 
@@ -4432,7 +4428,7 @@ def publisher_list(api_inst, args):
         preferred_only = False
         inc_disabled = True
         valid_formats = ( "tsv", )
-        format = "default"
+        output_format = "default"
         field_data = {
             "publisher" : [("default", "tsv"), _("PUBLISHER"), ""],
             "attrs" : [("default"), "", ""],
@@ -4480,11 +4476,11 @@ def publisher_list(api_inst, args):
                 if opt == "-n":
                         inc_disabled = False
                 if opt == "-F":
-                        format = arg
-                        if format not in valid_formats:
+                        output_format = arg
+                        if output_format not in valid_formats:
                                 usage(_("Unrecognized format %(format)s."
                                     " Supported formats: %(valid)s") % \
-                                    { "format": format,
+                                    { "format": output_format,
                                     "valid": valid_formats }, cmd="publisher")
                                 return EXIT_OOPS
 
@@ -4539,13 +4535,13 @@ def publisher_list(api_inst, args):
                         ]
                 # Create a formatting string for the default output
                 # format
-                if format == "default":
+                if output_format == "default":
                         fmt = "%-24s %-12s %-8s %-8s %s"
                         filter_func = filter_default
 
                 # Create a formatting string for the tsv output
                 # format
-                if format == "tsv":
+                if output_format == "tsv":
                         fmt = "%s\t%s\t%s\t%s\t%s\t%s\t%s"
                         filter_func = filter_tsv
 
@@ -4566,7 +4562,7 @@ def publisher_list(api_inst, args):
                         set_value(field_data["publisher"], p.prefix)
                         # Setup the synthetic attrs field if the
                         # format is default.
-                        if format == "default":
+                        if output_format == "default":
                                 pstatus = ""
 
                                 if not p.sticky:
@@ -4998,7 +4994,7 @@ def list_property_linked(op, api_inst, pargs,
 
         api_inst.progresstracker = get_tracker(quiet=omit_headers)
 
-        lin=None
+        lin = None
         if li_name:
                 lin = api_inst.parse_linked_name(li_name)
         props = api_inst.get_linked_props(lin=lin)
@@ -5373,17 +5369,18 @@ def image_create(args):
         ssl_cert, ssl_key = _get_ssl_cert_key(image_dir, is_zone, ssl_cert,
             ssl_key)
 
+        global _api_inst
         global img
         try:
                 progtrack = get_tracker()
-                api_inst = api.image_create(PKG_CLIENT_NAME, CLIENT_API_VERSION,
+                _api_inst = api.image_create(PKG_CLIENT_NAME, CLIENT_API_VERSION,
                     image_dir, imgtype, is_zone, facets=facets, force=force,
                     mirrors=list(add_mirrors), origins=list(add_origins),
                     prefix=pub_name, progtrack=progtrack,
                     refresh_allowed=refresh_allowed, ssl_cert=ssl_cert,
                     ssl_key=ssl_key, repo_uri=repo_uri, variants=variants,
                     props=set_props)
-                img = api_inst.img
+                img = _api_inst.img
         except api_errors.InvalidDepotResponseException, e:
                 # Ensure messages are displayed after the spinner.
                 logger.error("\n")
@@ -5467,11 +5464,6 @@ def history_list(api_inst, args):
         time_vals = [] # list of timestamps for which we want history events
         columns = ["start", "operation", "client", "outcome"]
 
-        # XXX history should be accessible through pkg.client.api
-        if not os.path.exists(img.history.path):
-                # Nothing to display.
-                return EXIT_OK
-
         opts, pargs = getopt.getopt(args, "Hln:o:t:")
         for opt, arg in opts:
                 if opt == "-H":
@@ -5523,29 +5515,7 @@ def history_list(api_inst, args):
                                 return EXIT_BADOPT
 
                 elif opt == "-t":
-                        time_vals = arg.split(",")
-                        # make entries a set to cope with multiple overlapping
-                        # ranges or time values
-                        entries = set()
-                        for time_val in time_vals:
-                                try:
-                                        # used for the 'now' alias, we calculate
-                                        # this once only
-                                        utc_now = datetime.datetime.utcnow().strftime(
-                                            "%Y%m%dT%H%M%SZ")
-                                        files = __get_history_paths(time_val,
-                                            img.history.path, utc_now)
-                                        if files == EXIT_BADOPT:
-                                                return EXIT_BADOPT
-                                        entries.update(files)
-                                except ValueError:
-                                        logger.error(_("Invalid time format "
-                                        "'%s'.  Please use "
-                                        "%%Y-%%m-%%dT%%H:%%M:%%S or\n"
-                                        "%%Y-%%m-%%dT%%H:%%M:%%S-%%Y-%%m-%%dT%%H:%%M:%%S"
-                                        ) % time_val)
-                                        return EXIT_BADOPT
-                        entries = sorted(entries)
+                        time_vals.extend(arg.split(","))
 
         if omit_headers and long_format:
                 usage(_("-H and -l may not be combined"), cmd="history")
@@ -5575,33 +5545,24 @@ def history_list(api_inst, args):
                 if not omit_headers:
                         msg(history_fmt % tuple(headers))
 
-        if display_limit:
-                n = -display_limit
-                entries = sorted(os.listdir(img.history.path))[n:]
-        elif not time_vals:
-                entries = sorted(os.listdir(img.history.path))
-
-        uuid_be_dic = bootenv.BootEnv.get_uuid_be_dic()
-        for entry in entries:
-                # Load the history entry.
+        def gen_entries():
+                """Error handler for history generation; avoids need to indent
+                and clobber formatting of logic below."""
                 try:
-                        he = history.History(root_dir=img.history.root_dir,
-                            filename=entry)
-                except api_errors.PermissionsException, e:
-                        error(e, cmd="history")
-                        return EXIT_OOPS
-                except history.HistoryLoadException, e:
-                        if e.parse_failure:
-                                # Ignore corrupt entries.
-                                continue
-                        raise
+                        for he in api_inst.gen_history(limit=display_limit,
+                            times=time_vals):
+                                yield he
+                except api_errors.HistoryException, e:
+                        error(str(e), cmd="history")
+                        sys.exit(EXIT_OOPS)
 
+        for he in gen_entries(): 
                 # populate a dictionary containing our output
                 output = {}
                 for col in history_cols:
                         if not history_cols[col][2]:
                                 continue
-                        output[col] = he.__getattribute__(history_cols[col][2])
+                        output[col] = getattr(he, history_cols[col][2], None)
 
                 # format some of the History object attributes ourselves
                 output["start"] = misc.timestamp_to_time(
@@ -5635,29 +5596,28 @@ def history_list(api_inst, args):
                         output["time"] = "%s:%s:%s" % \
                             (add_hrs + hrs, mins, secs)
 
-                output["be"] = he.operation_be
-                be_uuid = he.operation_be_uuid
                 output["command"] = " ".join(he.client_args)
-                output["new_be"] = he.operation_new_be
-                new_be_uuid = he.operation_new_be_uuid
 
-                # lookup be and new_be names from the saved uuid, in case
-                # the boot environment names have changed since we stored the
-                # History object.  Where we weren't able to lookup the current
-                # name, add a '*' to the entry, indicating the boot environment
-                # is no longer present
-                if be_uuid in uuid_be_dic:
-                        output["be"] = uuid_be_dic[be_uuid]
-                elif be_uuid:
-                        output["be"] = "%s*" % output["be"]
+                # Where we weren't able to lookup the current name, add a '*' to
+                # the entry, indicating the boot environment is no longer
+                # present.
+                if he.operation_be and he.operation_current_be:
+                        output["be"] = he.operation_current_be
+                elif he.operation_be_uuid:
+                        output["be"] = "%s*" % he.operation_be
+                else:
+                        output["be"] = he.operation_be
 
-                if new_be_uuid in uuid_be_dic:
-                        output["new_be"] = uuid_be_dic[new_be_uuid]
-                elif new_be_uuid:
-                        output["new_be"] = "%s*" % output["new_be"]
+                if he.operation_new_be and he.operation_current_new_be:
+                        output["new_be"] = he.operation_current_new_be
+                elif he.operation_new_be_uuid:
+                        output["new_be"] = "%s*" % he.operation_new_be
+                else:
+                        output["new_be"] = "%s" % he.operation_new_be
 
-                output["outcome"] = history.result_l10n[he.operation_result[0]]
-                output["reason"] = history.result_l10n[he.operation_result[1]]
+                outcome, reason = he.operation_result_text
+                output["outcome"] = outcome
+                output["reason"] = reason
                 output["snapshot"] = he.operation_snapshot
 
                 # be, snapshot and new_be use values in parenthesis
@@ -5691,36 +5651,6 @@ def history_list(api_inst, args):
                         msg(history_fmt % tuple(items))
         return EXIT_OK
 
-def __get_history_paths(time_val, history_path, utc_now):
-        """Given a local timestamp, either as a discrete value, or a range of
-        values, formatted as '<timestamp>-<timestamp>', and a path to find
-        history xml files, return an array of paths that match that timestamp.
-        utc_now is the current time expressed in UTC"""
-
-        files = []
-        if len(time_val) > 20 or time_val.startswith("now-"):
-                if time_val.startswith("now-"):
-                        start = utc_now
-                        finish = __utc_format(time_val[4:], utc_now)
-                else:
-                        # our ranges are 19 chars of timestamp, a '-', and
-                        # another timestamp
-                        start = __utc_format(time_val[:19], utc_now)
-                        finish = __utc_format(time_val[20:], utc_now)
-                if start > finish:
-                        logger.error(_("Start time must be older than finish "
-                            "time: %s") % time_val)
-                        return EXIT_BADOPT
-                files = __get_history_range(history_path, start, finish)
-        else:
-                # there can be multiple event files per timestamp
-                prefix = __utc_format(time_val, utc_now)
-                files = glob.glob(os.path.join(history_path, "%s*" % prefix))
-        if not files:
-                logger.error(_("No history entries found for %s") % time_val)
-                return EXIT_BADOPT
-        return files
-
 def __unique_columns(columns):
         """Return true if each entry in the provided list of columns only
         appears once."""
@@ -5734,40 +5664,6 @@ def __unique_columns(columns):
         for col in dup_cols:
                 logger.error(_("Duplicate column specified: %s") % col)
         return not dup_cols
-
-def __utc_format(time_str, utc_now):
-        """ Given a local time value string, formatted with "%Y-%m-%dT%H:%M:%S,
-        return a UTC representation of that value, formatted with
-        %Y%m%dT%H%M%SZ.  This raises a ValueError if the time was incorrectly
-        formatted.  If the time_str is "now", we return the value of utc_now"""
-
-        if time_str == "now":
-                return utc_now
-
-        local_dt = datetime.datetime.strptime(time_str, "%Y-%m-%dT%H:%M:%S")
-        secs = time.mktime(local_dt.timetuple())
-        utc_dt = datetime.datetime.utcfromtimestamp(secs)
-        return utc_dt.strftime("%Y%m%dT%H%M%SZ")
-
-def __get_history_range(path, start, finish):
-        """Given an img.history.path and start and finish dates, formatted
-        as UTC date strings as per __utc_format(), return a list of history
-        file names that fall within that date range.  A range of two equal
-        dates is equivalent of just retrieving history for that single
-        date string."""
-
-        entries = []
-        all_entries = sorted(os.listdir(path))
-
-        for entry in all_entries:
-                # our timestamps are always 16 character datestamps
-                basename = os.path.basename(entry)[:16]
-                if basename >= start:
-                        if basename > finish:
-                                # we can stop looking now.
-                                break
-                        entries.append(entry)
-        return entries
 
 def __get_long_history_data(he, hist_info):
         """Return an array of tuples containing long_format history info"""
@@ -5814,14 +5710,8 @@ def __get_long_history_data(he, hist_info):
 
 def history_purge(api_inst, pargs):
         """Purge image history"""
-
-        # history should be accessible through pkg.client.api
-        be_name, be_uuid = bootenv.BootEnv.get_be_name(img.root)
-        ret_code = img.history.purge(
-            be_name=be_name, be_uuid=be_uuid)
-        if ret_code == EXIT_OK:
-                msg(_("History purged."))
-        return ret_code
+        api_inst.purge_history()
+        msg(_("History purged."))
 
 def print_proxy_config():
         """If the user has configured http_proxy or https_proxy in the
@@ -5865,12 +5755,14 @@ def print_version(pargs):
         return EXIT_OK
 
 # To allow exception handler access to the image.
+_api_inst = None
 img = None
 orig_cwd = None
 
 def main_func():
         global_settings.client_name = PKG_CLIENT_NAME
 
+        global _api_inst
         global img
         global orig_cwd
 
@@ -6048,6 +5940,7 @@ def main_func():
             runid=runid)
         if api_inst is None:
                 return EXIT_OOPS
+        _api_inst = api_inst
         img = api_inst.img
 
         # Find subcommand and execute operation.
@@ -6091,17 +5984,18 @@ this message) when filing a bug at:
                         if isinstance(__e, EnvironmentError) and \
                             __e.errno != errno.ENOMEM:
                                 raise
-                        if img:
-                                img.history.abort(RESULT_FAILED_OUTOFMEMORY)
+                        if _api_inst:
+                                _api_inst.abort(
+                                    result=RESULT_FAILED_OUTOFMEMORY)
                         error("\n" + misc.out_of_memory())
                         __ret = EXIT_OOPS
         except SystemExit, __e:
-                if img:
-                        img.history.abort(RESULT_FAILED_UNKNOWN)
+                if _api_inst:
+                        _api_inst.abort(result=RESULT_FAILED_UNKNOWN)
                 raise __e
         except (PipeError, KeyboardInterrupt):
-                if img:
-                        img.history.abort(RESULT_CANCELED)
+                if _api_inst:
+                        _api_inst.abort(result=RESULT_CANCELED)
                 # We don't want to display any messages here to prevent
                 # possible further broken pipe (EPIPE) errors.
                 __ret = EXIT_OOPS
@@ -6110,23 +6004,23 @@ this message) when filing a bug at:
                       str(__e))
                 __ret = __e.lix_exitrv
         except api_errors.CertificateError, __e:
-                if img:
-                        img.history.abort(RESULT_FAILED_CONFIGURATION)
+                if _api_inst:
+                        _api_inst.abort(result=RESULT_FAILED_CONFIGURATION)
                 error(__e)
                 __ret = EXIT_OOPS
         except api_errors.PublisherError, __e:
-                if img:
-                        img.history.abort(RESULT_FAILED_BAD_REQUEST)
+                if _api_inst:
+                        _api_inst.abort(result=RESULT_FAILED_BAD_REQUEST)
                 error(__e)
                 __ret = EXIT_OOPS
         except api_errors.ImageLockedError, __e:
-                if img:
-                        img.history.abort(RESULT_FAILED_LOCKED)
+                if _api_inst:
+                        _api_inst.abort(result=RESULT_FAILED_LOCKED)
                 error(__e)
                 __ret = EXIT_LOCKED
         except api_errors.TransportError, __e:
-                if img:
-                        img.history.abort(RESULT_FAILED_TRANSPORT)
+                if _api_inst:
+                        _api_inst.abort(result=RESULT_FAILED_TRANSPORT)
                 logger.error(_("\nErrors were encountered while attempting "
                     "to retrieve package or file data for\nthe requested "
                     "operation."))
@@ -6134,15 +6028,15 @@ this message) when filing a bug at:
                 print_proxy_config()
                 __ret = EXIT_OOPS
         except api_errors.InvalidCatalogFile, __e:
-                if img:
-                        img.history.abort(RESULT_FAILED_STORAGE)
+                if _api_inst:
+                        _api_inst.abort(result=RESULT_FAILED_STORAGE)
                 logger.error(_("""
 An error was encountered while attempting to read image state information
 to perform the requested operation.  Details follow:\n\n%s""") % __e)
                 __ret = EXIT_OOPS
         except api_errors.InvalidDepotResponseException, __e:
-                if img:
-                        img.history.abort(RESULT_FAILED_TRANSPORT)
+                if _api_inst:
+                        _api_inst.abort(result=RESULT_FAILED_TRANSPORT)
                 logger.error(_("\nUnable to contact a valid package "
                     "repository. This may be due to a problem with the "
                     "repository, network misconfiguration, or an incorrect "
@@ -6151,37 +6045,37 @@ to perform the requested operation.  Details follow:\n\n%s""") % __e)
                 logger.error(_("\nAdditional details:\n\n%s") % __e)
                 print_proxy_config()
                 __ret = EXIT_OOPS
-        except history.HistoryLoadException, __e:
+        except api_errors.HistoryLoadException, __e:
                 # Since a history related error occurred, discard all
                 # information about the current operation(s) in progress.
-                if img:
-                        img.history.clear()
+                if _api_inst:
+                        _api_inst.clear_history()
                 error(_("An error was encountered while attempting to load "
                     "history information\nabout past client operations."))
                 error(__e)
                 __ret = EXIT_OOPS
-        except history.HistoryStoreException, __e:
+        except api_errors.HistoryStoreException, __e:
                 # Since a history related error occurred, discard all
                 # information about the current operation(s) in progress.
-                if img:
-                        img.history.clear()
+                if _api_inst:
+                        _api_inst.clear_history()
                 error(_("An error was encountered while attempting to store "
                     "information about the\ncurrent operation in client "
                     "history."))
                 error(__e)
                 __ret = EXIT_OOPS
-        except history.HistoryPurgeException, __e:
+        except api_errors.HistoryPurgeException, __e:
                 # Since a history related error occurred, discard all
                 # information about the current operation(s) in progress.
-                if img:
-                        img.history.clear()
+                if _api_inst:
+                        _api_inst.clear_history()
                 error(_("An error was encountered while attempting to purge "
                     "client history."))
                 error(__e)
                 __ret = EXIT_OOPS
         except api_errors.VersionException, __e:
-                if img:
-                        img.history.abort(RESULT_FAILED_UNKNOWN)
+                if _api_inst:
+                        _api_inst.abort(result=RESULT_FAILED_UNKNOWN)
                 error(_("The pkg command appears out of sync with the libraries"
                     " provided\nby pkg:/package/pkg. The client version is "
                     "%(client)s while the library\nAPI version is %(api)s.") %
@@ -6205,8 +6099,8 @@ to perform the requested operation.  Details follow:\n\n%s""") % __e)
         except api_errors.ReadOnlyFileSystemException, __e:
                 __ret = EXIT_OOPS
         except:
-                if img:
-                        img.history.abort(RESULT_FAILED_UNKNOWN)
+                if _api_inst:
+                        _api_inst.abort(result=RESULT_FAILED_UNKNOWN)
                 if non_wrap_print:
                         traceback.print_exc()
                         error(traceback_str)

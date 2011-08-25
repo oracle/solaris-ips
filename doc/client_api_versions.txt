@@ -1,3 +1,21 @@
+Version 68:
+Compatible with clients using versions 66-67.
+
+    pkg.client.api.ImageInterface has changed as follows:
+
+        * New functions for managing client history have been added:
+          abort(), gen_history(), clear_history(), and purge_history().
+          See 'pydoc pkg.client.api' for details.
+
+        * New constants for decoding history entries have been added
+          named after the pattern RESULT_*.  See 'pydoc pkg.client.api'
+          for details.
+
+    pkg.client.api_errors has changed as follows:
+
+        * New exceptions for bad history requests or history parsing
+          errors have been added. (HistoryLoadException, etc.)
+
 Version 67:
 Compatible with clients using version 66.
 

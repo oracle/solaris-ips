@@ -60,7 +60,6 @@ except ImportError:
 
 import pkg.gui.progress as progress
 import pkg.misc as misc
-import pkg.client.history as history
 import pkg.client.api as api
 import pkg.client.api_errors as api_errors
 import pkg.gui.beadmin as beadm
@@ -838,7 +837,7 @@ class InstallUpdate(progress.GuiProgressTracker):
                         else:
                                 self.__handle_error()
                         return
-                except history.HistoryStoreException, uex:
+                except api_errors.HistoryStoreException, uex:
                         if (isinstance(uex.error, EnvironmentError) and
                            uex.error.errno in (errno.EDQUOT, errno.ENOSPC)):
                                 self.__handle_nospace_error()

@@ -37,6 +37,7 @@ import tempfile
 import unittest
 
 import pkg
+import pkg.client.api_errors as apx
 import pkg.client.history as history
 import pkg.misc as misc
 import pkg.portable as portable
@@ -304,7 +305,7 @@ class TestHistory(pkg5unittest.Pkg5TestCase):
                 try:
                         he = history.History(root_dir=h.root_dir,
                             filename=entry)
-                except history.HistoryLoadException, e:
+                except apx.HistoryLoadException, e:
                         if not e.parse_failure:
                                 raise
                         pass

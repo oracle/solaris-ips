@@ -39,11 +39,13 @@ import copy
 import datetime
 import errno
 import fnmatch
+import glob
 import operator
 import os
 import shutil
 import sys
 import tempfile
+import time
 import threading
 import urllib
 
@@ -71,11 +73,12 @@ from pkg.api_common import (PackageInfo, LicenseInfo, PackageCategory,
     _get_pkg_cat_data)
 from pkg.client import global_settings
 from pkg.client.debugvalues import DebugValues
+
 from pkg.client.pkgdefs import *
 from pkg.smf import NonzeroExitException
 
-CURRENT_API_VERSION = 67
-COMPATIBLE_API_VERSIONS = frozenset([66, CURRENT_API_VERSION])
+CURRENT_API_VERSION = 68
+COMPATIBLE_API_VERSIONS = frozenset([66, 67, CURRENT_API_VERSION])
 CURRENT_P5I_VERSION = 1
 
 # Image type constants.
@@ -84,6 +87,23 @@ IMG_TYPE_ENTIRE = imgtypes.IMG_ENTIRE # Full image ('/').
 IMG_TYPE_PARTIAL = imgtypes.IMG_PARTIAL  # Not yet implemented.
 IMG_TYPE_USER = imgtypes.IMG_USER # Not '/'; some other location.
 
+# History result constants.
+RESULT_CANCELED = history.RESULT_CANCELED
+RESULT_NOTHING_TO_DO = history.RESULT_NOTHING_TO_DO
+RESULT_SUCCEEDED = history.RESULT_SUCCEEDED
+RESULT_FAILED_BAD_REQUEST = history.RESULT_FAILED_BAD_REQUEST
+RESULT_FAILED_CONFIGURATION = history.RESULT_FAILED_CONFIGURATION
+RESULT_FAILED_CONSTRAINED = history.RESULT_FAILED_CONSTRAINED
+RESULT_FAILED_LOCKED = history.RESULT_FAILED_LOCKED
+RESULT_FAILED_SEARCH = history.RESULT_FAILED_SEARCH
+RESULT_FAILED_STORAGE = history.RESULT_FAILED_STORAGE
+RESULT_FAILED_TRANSPORT = history.RESULT_FAILED_TRANSPORT
+RESULT_FAILED_ACTUATOR = history.RESULT_FAILED_ACTUATOR
+RESULT_FAILED_OUTOFMEMORY = history.RESULT_FAILED_OUTOFMEMORY
+RESULT_CONFLICTING_ACTIONS = history.RESULT_CONFLICTING_ACTIONS
+RESULT_FAILED_UNKNOWN = history.RESULT_FAILED_UNKNOWN
+
+# Globals.
 logger = global_settings.logger
 
 class _LockedGenerator(object):
@@ -667,6 +687,11 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                                 self.__backup_be = \
                                     self._img.imageplan.reboot_advised()
 
+        def abort(self, result=RESULT_FAILED_UNKNOWN):
+                """Indicate that execution was unexpectedly aborted and log
+                operation failure if possible."""
+                self._img.history.abort(result)
+
         def avoid_pkgs(self, fmri_strings, unavoid=False):
                 """Avoid/Unavoid one or more packages.  It is an error to
                 avoid an installed package, or unavoid one that would
@@ -803,7 +828,7 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                         self._cancel_done()
                 elif exc_type == apx.ConflictingActionErrors:
                         self.log_operation_end(error=str(exc_value),
-                            result=history.RESULT_CONFLICTING_ACTIONS)
+                            result=RESULT_CONFLICTING_ACTIONS)
                 elif exc_type in [
                     apx.IpkgOutOfDateException,
                     fmri.IllegalFmri]:
@@ -1085,7 +1110,7 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
 
                 if not stuff_to_do or _noexecute:
                         self.log_operation_end(
-                            result=history.RESULT_NOTHING_TO_DO)
+                            result=RESULT_NOTHING_TO_DO)
 
                 self._img.imageplan.update_index = _update_index
                 self.__plan_common_finish()
@@ -1769,6 +1794,156 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
         def ischild(self):
                 """Indicates whether the current image is a child image."""
                 return self._img.linked.ischild()
+
+        @staticmethod
+        def __utc_format(time_str, utc_now):
+                """Given a local time value string, formatted with
+                "%Y-%m-%dT%H:%M:%S, return a UTC representation of that value,
+                formatted with %Y%m%dT%H%M%SZ.  This raises a ValueError if the
+                time was incorrectly formatted.  If the time_str is "now", it
+                returns the value of utc_now"""
+
+                if time_str == "now":
+                        return utc_now
+
+                try:
+                        local_dt = datetime.datetime.strptime(time_str,
+                            "%Y-%m-%dT%H:%M:%S")
+                        secs = time.mktime(local_dt.timetuple())
+                        utc_dt = datetime.datetime.utcfromtimestamp(secs)
+                        return utc_dt.strftime("%Y%m%dT%H%M%SZ")
+                except ValueError, e:
+                        raise apx.HistoryRequestException(e)
+
+        def __get_history_paths(self, time_val, utc_now):
+                """Given a local timestamp, either as a discrete value, or a
+                range of values, formatted as '<timestamp>-<timestamp>', and a
+                path to find history xml files, return an array of paths that
+                match that timestamp.  utc_now is the current time expressed in
+                UTC"""
+
+                files = []
+                if len(time_val) > 20 or time_val.startswith("now-"):
+                        if time_val.startswith("now-"):
+                                start = utc_now
+                                finish = self.__utc_format(time_val[4:],
+                                    utc_now)
+                        else:
+                                # our ranges are 19 chars of timestamp, a '-',
+                                # and another timestamp
+                                start = self.__utc_format(time_val[:19],
+                                    utc_now)
+                                finish = self.__utc_format(time_val[20:],
+                                    utc_now)
+                        if start > finish:
+                                raise apx.HistoryRequestException(_("Start "
+                                    "time must be older than finish time: "
+                                    "%s") % time_val)
+                        files = self.__get_history_range(start, finish)
+                else:
+                        # there can be multiple event files per timestamp
+                        prefix = self.__utc_format(time_val, utc_now)
+                        files = glob.glob(os.path.join(self._img.history.path,
+                            "%s*" % prefix))
+                if not files:
+                        raise apx.HistoryRequestException(_("No history "
+                            "entries found for %s") % time_val)
+                return files
+
+        def __get_history_range(self, start, finish):
+                """Given a start and finish date, formatted as UTC date strings
+                as per __utc_format(), return a list of history filenames that
+                fall within that date range.  A range of two equal dates is 
+                equivalent of just retrieving history for that single date
+                string."""
+
+                entries = []
+                all_entries = sorted(os.listdir(self._img.history.path))
+
+                for entry in all_entries:
+                        # our timestamps are always 16 character datestamps
+                        basename = os.path.basename(entry)[:16]
+                        if basename >= start:
+                                if basename > finish:
+                                        # we can stop looking now.
+                                        break
+                                entries.append(entry)
+                return entries
+
+        def gen_history(self, limit=None, times=misc.EmptyI):
+                """A generator function that returns History objects up to the
+                limit specified matching the times specified.
+
+                'limit' is an optional integer value specifying the maximum
+                number of entries to return.
+
+                'times' is a list of timestamp or timestamp range strings to
+                restrict the returned entries to."""
+
+                # Make entries a set to cope with multiple overlapping ranges or
+                # times.
+                entries = set()
+
+                utc_now = datetime.datetime.utcnow().strftime("%Y%m%dT%H%M%SZ")
+                for time_val in times:
+                        # Ranges are 19 chars of timestamp, a '-', and
+                        # another timestamp.
+                        if len(time_val) > 20 or time_val.startswith("now-"):
+                                if time_val.startswith("now-"):
+                                        start = utc_now
+                                        finish = self.__utc_format(time_val[4:],
+                                            utc_now)
+                                else:
+                                        start = self.__utc_format(time_val[:19],
+                                            utc_now)
+                                        finish = self.__utc_format(
+                                            time_val[20:], utc_now)
+                                if start > finish:
+                                        raise apx.HistoryRequestException(
+                                            _("Start time must be older than "
+                                            "finish time: %s") % time_val)
+                                files = self.__get_history_range(start, finish)
+                        else:
+                                # There can be multiple entries per timestamp.
+                                prefix = self.__utc_format(time_val, utc_now)
+                                files = glob.glob(os.path.join(
+                                    self._img.history.path, "%s*" % prefix))
+
+                        try:
+                                files = self.__get_history_paths(time_val,
+                                    utc_now)
+                                entries.update(files)
+                        except ValueError:
+                                raise apx.HistoryRequestException(_("Invalid "
+                                    "time format '%s'.  Please use "
+                                    "%%Y-%%m-%%dT%%H:%%M:%%S or\n"
+                                    "%%Y-%%m-%%dT%%H:%%M:%%S-"
+                                    "%%Y-%%m-%%dT%%H:%%M:%%S") % time_val)
+
+                if not times:
+                        try:
+                                entries = os.listdir(self._img.history.path)
+                        except EnvironmentError, e:
+                                if e.errno == errno.ENOENT:
+                                        # No history to list.
+                                        return
+                                raise apx._convert_error(e)
+
+                entries = sorted(entries)
+                if limit:
+                        limit *= -1
+                        entries = entries[limit:]
+                for entry in entries:
+                        # Yield each history entry object as it is loaded.
+                        try:
+                                yield history.History(
+                                    root_dir=self._img.history.root_dir,
+                                    filename=entry)
+                        except apx.HistoryLoadException, e:
+                                if e.parse_failure:
+                                        # Ignore corrupt entries.
+                                        continue
+                                raise
 
         def get_linked_name(self):
                 """If the current image is a child image, this function
@@ -3351,7 +3526,7 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                             self._img.IMG_CATALOG_INSTALLED)
                         if not fmri_strings and pkg_cat.package_count == 0:
                                 self.log_operation_end(
-                                    result=history.RESULT_NOTHING_TO_DO)
+                                    result=RESULT_NOTHING_TO_DO)
                                 raise apx.NoPackagesInstalledException()
                 else:
                         pkg_cat = self._img.get_catalog(
@@ -3510,7 +3685,7 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                 except apx.InventoryException, e:
                         if e.illegal:
                                 self.log_operation_end(
-                                    result=history.RESULT_FAILED_BAD_REQUEST)
+                                    result=RESULT_FAILED_BAD_REQUEST)
                         rval[self.INFO_MISSING] = e.notfound
                         rval[self.INFO_ILLEGALS] = e.illegal
                 else:
@@ -3518,7 +3693,7 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                                 self.log_operation_end()
                         else:
                                 self.log_operation_end(
-                                    result=history.RESULT_NOTHING_TO_DO)
+                                    result=RESULT_NOTHING_TO_DO)
                 return rval
 
         def can_be_canceled(self):
@@ -3680,11 +3855,15 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                 self.__cancel_lock.release()
                 return True
 
+        def clear_history(self):
+                """Discard history information about in-progress operations."""
+                self._img.history.clear()
+
         def __set_history_PlanCreationException(self, e):
                 if e.unmatched_fmris or e.multiple_matches or \
                     e.missing_matches or e.illegal:
                         self.log_operation_end(error=e,
-                            result=history.RESULT_FAILED_BAD_REQUEST)
+                            result=RESULT_FAILED_BAD_REQUEST)
                 else:
                         self.log_operation_end(error=e)
 
@@ -4491,6 +4670,11 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                                 # Whatever the error was, return it.
                                 error = e
                         yield (pat, error, npat, matcher)
+
+        def purge_history(self):
+                """Deletes all client history."""
+                be_name, be_uuid = bootenv.BootEnv.get_be_name(self._img.root)
+                self._img.history.purge(be_name=be_name, be_uuid=be_uuid)
 
         def update_format(self):
                 """Attempt to update the on-disk format of the image to the
