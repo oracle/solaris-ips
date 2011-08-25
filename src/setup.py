@@ -109,6 +109,7 @@ man1m_zh_CN_dir = 'usr/share/man/zh_CN.UTF-8/man1m'
 man5_zh_CN_dir = 'usr/share/man/zh_CN.UTF-8/man5'
 
 resource_dir = 'usr/share/lib/pkg'
+transform_dir = 'usr/share/pkg/transforms'
 smf_app_dir = 'lib/svc/manifest/application/pkg'
 execattrd_dir = 'etc/security/exec_attr.d'
 authattrd_dir = 'etc/security/auth_attr.d'
@@ -307,6 +308,12 @@ smf_app_files = [
 resource_files = [
         'util/opensolaris.org.sections',
         'util/pkglintrc',
+        ]
+transform_files = [
+        'util/publish/transforms/developer',
+        'util/publish/transforms/documentation',
+        'util/publish/transforms/locale',
+        'util/publish/transforms/smf-manifests'
         ]
 sysrepo_files = [
         'util/apache2/sysrepo/sysrepo_httpd.conf.mako',
@@ -957,7 +964,10 @@ data_files += [
         (man5_zh_CN_dir, man5_zh_CN_files),
         (resource_dir, resource_files),
         ]
-
+# add transforms
+data_files += [
+        (transform_dir, transform_files)
+        ]
 if osname == 'sunos':
         # Solaris-specific extensions are added here
         data_files += [

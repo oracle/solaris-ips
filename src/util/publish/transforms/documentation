@@ -1,0 +1,64 @@
+#
+# CDDL HEADER START
+#
+# The contents of this file are subject to the terms of the
+# Common Development and Distribution License (the "License").
+# You may not use this file except in compliance with the License.
+#
+# You can obtain a copy of the license at usr/src/OPENSOLARIS.LICENSE
+# or http://www.opensolaris.org/os/licensing.
+# See the License for the specific language governing permissions
+# and limitations under the License.
+#
+# When distributing Covered Code, include this CDDL HEADER in each
+# file and include the License file at usr/src/OPENSOLARIS.LICENSE.
+# If applicable, add the following below this CDDL HEADER, with the
+# fields enclosed by brackets "[]" replaced with your own identifying
+# information: Portions Copyright [yyyy] [name of copyright owner]
+#
+# CDDL HEADER END
+#
+
+#
+# Copyright (c) 2011, Oracle and/or its affiliates. All rights reserved.
+#
+
+# transforms for documentation that delivers to standard
+# Solaris locations
+
+# add general facet for all docs
+<transform dir file link hardlink path=usr/share/doc/.+ -> \
+    default facet.doc true>
+
+# man pages get their own
+<transform dir file link hardlink path=usr/.+/man(/.+)? -> \
+    default facet.doc.man true>
+
+<transform file path=usr/.+/man(/.+)? -> \
+    add restart_fmri svc:/application/man-index:default>
+
+# so do pdf docs
+<transform dir file link hardlink path=usr/.*/doc/.*\.pdf$ -> \
+    default facet.doc.pdf true>
+
+# and texinfo docs
+<transform dir file link hardlink path=usr/.*/info(/.+){0,1}$ -> \
+    default facet.doc.info true>
+
+# and html as well
+<transform dir file link hardlink path=usr/.*/doc/.*(html?|css).* -> \
+    default facet.doc.html true>
+<transform dir file link hardlink path=usr/lib/help/.*\.html$ -> \
+    default facet.doc.html true>
+
+# tag update service
+<transform file path=usr/.*/info/.+$ -> \
+    add restart_fmri svc:/application/texinfo-update:default>
+
+# drop facet.doc if we have a type specific facet; this makes
+# removing a specific type easier for admins
+
+<transform dir file link hardlink facet.doc.html=true -> delete facet.doc true>
+<transform dir file link hardlink facet.doc.info=true -> delete facet.doc true>
+<transform dir file link hardlink facet.doc.pdf=true -> delete facet.doc true>
+<transform dir file link hardlink facet.doc.man=true -> delete facet.doc true>

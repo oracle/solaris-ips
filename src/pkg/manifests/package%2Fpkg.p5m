@@ -333,6 +333,12 @@ dir  path=usr/share/man/zh_CN.UTF-8/man1m
 file path=usr/share/man/zh_CN.UTF-8/man1m/pkg.depotd.1m
 dir  path=usr/share/man/zh_CN.UTF-8/man5
 file path=usr/share/man/zh_CN.UTF-8/man5/pkg.5
+dir  path=usr/share/pkg
+dir  path=usr/share/pkg/transforms
+file path=usr/share/pkg/transforms/developer
+file path=usr/share/pkg/transforms/documentation
+file path=usr/share/pkg/transforms/locale
+file path=usr/share/pkg/transforms/smf-manifests
 group groupname=pkg5srv gid=97
 user username=pkg5srv gcos-field="pkg(5) server UID" group=pkg5srv uid=97
 legacy pkg=SUNWipkg version=0.0.0
