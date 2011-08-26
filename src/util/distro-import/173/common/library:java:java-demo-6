@@ -1,0 +1,31 @@
+package library/java/java-demo-6
+consolidation "ub_javavm"
+classification "Development/Java"
+import SUNWj6dmo
+import SUNWj6dmx
+version 1.6.0.0
+end package
+
+package library/java/demo
+consolidation "ub_javavm"
+renamed 173
+depend library/java/java-demo-6
+end package
+
+package SUNWj6dmo
+consolidation "ub_javavm"
+renamed 133
+depend library/java/demo
+end package
+
+package library/java/demo64
+consolidation "ub_javavm"
+renamed 173
+depend library/java/java-demo-6
+end package
+
+package SUNWj6dmx
+consolidation "ub_javavm"
+renamed 133
+depend library/java/demo64
+end package

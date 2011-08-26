@@ -1,0 +1,265 @@
+package runtime/java/jre-6
+consolidation "ub_javavm"
+classification "Development/Java"
+import SUNWj6rt
+drop usr/jdk/instances/jdk1.6.0/jre/lib/$(ARCH)/motif21/libmawt.so
+chattr usr/jdk/instances/jdk1.6.0/jre/lib/fontconfig.OpenSolaris.bfc \
+    path=usr/jdk/instances/jdk1.6.0/jre/lib/fontconfig.5.11.bfc
+chattr \
+    usr/jdk/instances/jdk1.6.0/jre/lib/fontconfig.OpenSolaris.properties.src \
+    path=usr/jdk/instances/jdk1.6.0/jre/lib/fontconfig.5.11.properties.src
+
+import SUNWj6rtx
+drop usr/jdk/instances/jdk1.6.0/jre/lib/$(ARCH64)/motif21/libmawt.so
+
+import SUNWj6man
+
+import SUNWj6jmp
+
+import SUNWj6cfg
+chattr etc/.java/.systemPrefs/.system.lock \
+    original_name=SUNWj6cfg:etc/.java/.systemPrefs/.system.lock
+chattr etc/.java/.systemPrefs/.systemRootModFile \
+    original_name=SUNWj6cfg:etc/.java/.systemPrefs/.systemRootModFile
+
+chattr_glob usr/jdk/instances/jdk1.6.0/jre/lib/desktop/applications/*.desktop \
+    type file \
+    restart_fmri=svc:/application/desktop-cache/desktop-mime-cache:default
+chattr_glob usr/jdk/instances/jdk1.6.0/jre/lib/desktop/icons/* type file \
+    restart_fmri=svc:/application/desktop-cache/icon-cache:default
+chattr_glob usr/jdk/instances/jdk1.6.0/jre/lib/desktop/mime/packages/*.xml \
+    type file \
+    restart_fmri=svc:/application/desktop-cache/mime-types-cache:default
+chattr_glob usr/jdk/instances/jdk1.6.0/man/* type file facet.doc.man=true
+chattr_glob usr/jdk/instances/jdk1.6.0/man/ja/* type file \
+    facet.locale.ja_JP=true
+chattr_glob usr/jdk/instances/jdk1.6.0/man/ja_JP.PCK/* type file \
+    facet.locale.ja_JP=true
+chattr_glob usr/jdk/instances/jdk1.6.0/man/ja_JP.UTF-8/* type file \
+    facet.locale.ja_JP=true
+
+add link path=usr/bin/ControlPanel target=../java/jre/bin/ControlPanel
+add link path=usr/bin/java target=../java/bin/java
+add link path=usr/bin/javaws target=../java/bin/javaws
+add link path=usr/bin/jcontrol target=../java/jre/bin/jcontrol
+add link path=usr/bin/keytool target=../java/bin/keytool
+add link path=usr/bin/orbd target=../java/bin/orbd
+add link path=usr/bin/policytool target=../java/bin/policytool
+add link path=usr/bin/rmid target=../java/bin/rmid
+add link path=usr/bin/rmiregistry target=../java/bin/rmiregistry
+add link path=usr/bin/servertool target=../java/bin/servertool
+add link path=usr/bin/tnameserv target=../java/bin/tnameserv
+add link path=usr/java target=jdk/jdk1.6.0_26
+add link path=usr/jdk/jdk1.6.0_26 target=instances/jdk1.6.0
+add link path=usr/jdk/latest target=jdk1.6.0_26
+
+add link path=usr/share/applications/sun_java.desktop \
+    target=../../jdk/instances/jdk1.6.0/jre/lib/desktop/applications/sun_java.desktop
+add link path=usr/share/applications/sun-java.desktop \
+    target=../../jdk/instances/jdk1.6.0/jre/lib/desktop/applications/sun-java.desktop
+add link path=usr/share/applications/sun-javaws.desktop \
+    target=../../jdk/instances/jdk1.6.0/jre/lib/desktop/applications/sun-javaws.desktop
+
+add link path=/usr/share/mime/packages/x-java-archive.xml \
+    target=../../../jdk/instances/jdk1.6.0/jre/lib/desktop/mime/packages/x-java-archive.xml
+add link path=/usr/share/mime/packages/x-java-jnlp-file.xml \
+    target=../../../jdk/instances/jdk1.6.0/jre/lib/desktop/mime/packages/x-java-jnlp-file.xml
+
+# --------------------------- hicolor theme ----------------------------
+
+# 16x16 resolution - apps
+add link path=usr/share/icons/hicolor/16x16/apps/sun-java.png \
+    target=../../../../../jdk/instances/jdk1.6.0/jre/lib/desktop/icons/hicolor/16x16/apps/sun-java.png
+add link path=usr/share/icons/hicolor/16x16/apps/sun-javaws.png \
+    target=../../../../../jdk/instances/jdk1.6.0/jre/lib/desktop/icons/hicolor/16x16/apps/sun-javaws.png
+add link path=usr/share/icons/hicolor/16x16/apps/sun-jcontrol.png \
+    target=../../../../../jdk/instances/jdk1.6.0/jre/lib/desktop/icons/hicolor/16x16/apps/sun-jcontrol.png
+
+# 48x48 resolution - apps
+add link path=usr/share/icons/hicolor/48x48/apps/sun-java.png \
+    target=../../../../../jdk/instances/jdk1.6.0/jre/lib/desktop/icons/hicolor/48x48/apps/sun-java.png
+add link path=usr/share/icons/hicolor/48x48/apps/sun-javaws.png \
+    target=../../../../../jdk/instances/jdk1.6.0/jre/lib/desktop/icons/hicolor/48x48/apps/sun-javaws.png
+add link path=usr/share/icons/hicolor/48x48/apps/sun-jcontrol.png \
+    target=../../../../../jdk/instances/jdk1.6.0/jre/lib/desktop/icons/hicolor/48x48/apps/sun-jcontrol.png
+
+# 16x16 resolution - mimetypes
+add link path=usr/share/icons/hicolor/16x16/mimetypes/gnome-mime-application-x-java-archive.png \
+    target=../../../../../jdk/instances/jdk1.6.0/jre/lib/desktop/icons/hicolor/16x16/mimetypes/gnome-mime-application-x-java-archive.png
+add link path=usr/share/icons/hicolor/16x16/mimetypes/gnome-mime-application-x-java-jnlp-file.png \
+    target=../../../../../jdk/instances/jdk1.6.0/jre/lib/desktop/icons/hicolor/16x16/mimetypes/gnome-mime-application-x-java-jnlp-file.png
+add link path=usr/share/icons/hicolor/16x16/mimetypes/gnome-mime-text-x-java.png \
+    target=../../../../../jdk/instances/jdk1.6.0/jre/lib/desktop/icons/hicolor/16x16/mimetypes/gnome-mime-text-x-java.png
+
+# 48x48 resolution - mimetypes
+add link path=usr/share/icons/hicolor/48x48/mimetypes/gnome-mime-application-x-java-archive.png \
+    target=../../../../../jdk/instances/jdk1.6.0/jre/lib/desktop/icons/hicolor/48x48/mimetypes/gnome-mime-application-x-java-archive.png
+add link path=usr/share/icons/hicolor/48x48/mimetypes/gnome-mime-application-x-java-jnlp-file.png \
+    target=../../../../../jdk/instances/jdk1.6.0/jre/lib/desktop/icons/hicolor/48x48/mimetypes/gnome-mime-application-x-java-jnlp-file.png
+add link path=usr/share/icons/hicolor/48x48/mimetypes/gnome-mime-text-x-java.png \
+    target=../../../../../jdk/instances/jdk1.6.0/jre/lib/desktop/icons/hicolor/48x48/mimetypes/gnome-mime-text-x-java.png
+
+# ----------------------- HighContrast theme ------------------------
+
+# 16x16 resolution - apps
+add link path=usr/share/icons/HighContrast/16x16/apps/sun-java.png \
+    target=../../../../../jdk/instances/jdk1.6.0/jre/lib/desktop/icons/HighContrast/16x16/apps/sun-java.png
+add link path=usr/share/icons/HighContrast/16x16/apps/sun-javaws.png \
+    target=../../../../../jdk/instances/jdk1.6.0/jre/lib/desktop/icons/HighContrast/16x16/apps/sun-javaws.png
+add link path=usr/share/icons/HighContrast/16x16/apps/sun-jcontrol.png \
+    target=../../../../../jdk/instances/jdk1.6.0/jre/lib/desktop/icons/HighContrast/16x16/apps/sun-jcontrol.png
+
+# 48x48 resolution - apps
+add link path=usr/share/icons/HighContrast/48x48/apps/sun-java.png \
+    target=../../../../../jdk/instances/jdk1.6.0/jre/lib/desktop/icons/HighContrast/48x48/apps/sun-java.png
+add link path=usr/share/icons/HighContrast/48x48/apps/sun-javaws.png \
+    target=../../../../../jdk/instances/jdk1.6.0/jre/lib/desktop/icons/HighContrast/48x48/apps/sun-javaws.png
+add link path=usr/share/icons/HighContrast/48x48/apps/sun-jcontrol.png \
+    target=../../../../../jdk/instances/jdk1.6.0/jre/lib/desktop/icons/HighContrast/48x48/apps/sun-jcontrol.png
+
+# 16x16 resolution - mimetypes
+add link path=usr/share/icons/HighContrast/16x16/mimetypes/gnome-mime-application-x-java-archive.png \
+    target=../../../../../jdk/instances/jdk1.6.0/jre/lib/desktop/icons/HighContrast/16x16/mimetypes/gnome-mime-application-x-java-archive.png
+add link path=usr/share/icons/HighContrast/16x16/mimetypes/gnome-mime-application-x-java-jnlp-file.png \
+    target=../../../../../jdk/instances/jdk1.6.0/jre/lib/desktop/icons/HighContrast/16x16/mimetypes/gnome-mime-application-x-java-jnlp-file.png
+add link path=usr/share/icons/HighContrast/16x16/mimetypes/gnome-mime-text-x-java.png \
+    target=../../../../../jdk/instances/jdk1.6.0/jre/lib/desktop/icons/HighContrast/16x16/mimetypes/gnome-mime-text-x-java.png
+
+# 48x48 resolution - mimetypes
+add link path=usr/share/icons/HighContrast/48x48/mimetypes/gnome-mime-application-x-java-archive.png \
+    target=../../../../../jdk/instances/jdk1.6.0/jre/lib/desktop/icons/HighContrast/48x48/mimetypes/gnome-mime-application-x-java-archive.png
+add link path=usr/share/icons/HighContrast/48x48/mimetypes/gnome-mime-application-x-java-jnlp-file.png \
+    target=../../../../../jdk/instances/jdk1.6.0/jre/lib/desktop/icons/HighContrast/48x48/mimetypes/gnome-mime-application-x-java-jnlp-file.png
+add link path=usr/share/icons/HighContrast/48x48/mimetypes/gnome-mime-text-x-java.png \
+    target=../../../../../jdk/instances/jdk1.6.0/jre/lib/desktop/icons/HighContrast/48x48/mimetypes/gnome-mime-text-x-java.png
+
+# -------------------- HighContrastInverse theme ---------------------
+
+# 16x16 resolution - apps
+add link path=usr/share/icons/HighContrastInverse/16x16/apps/sun-java.png \
+    target=../../../../../jdk/instances/jdk1.6.0/jre/lib/desktop/icons/HighContrastInverse/16x16/apps/sun-java.png
+add link path=usr/share/icons/HighContrastInverse/16x16/apps/sun-javaws.png \
+    target=../../../../../jdk/instances/jdk1.6.0/jre/lib/desktop/icons/HighContrastInverse/16x16/apps/sun-javaws.png
+add link path=usr/share/icons/HighContrastInverse/16x16/apps/sun-jcontrol.png \
+    target=../../../../../jdk/instances/jdk1.6.0/jre/lib/desktop/icons/HighContrastInverse/16x16/apps/sun-jcontrol.png
+
+# 48x48 resolution - apps
+add link path=usr/share/icons/HighContrastInverse/48x48/apps/sun-java.png \
+    target=../../../../../jdk/instances/jdk1.6.0/jre/lib/desktop/icons/HighContrastInverse/48x48/apps/sun-java.png
+add link path=usr/share/icons/HighContrastInverse/48x48/apps/sun-javaws.png \
+    target=../../../../../jdk/instances/jdk1.6.0/jre/lib/desktop/icons/HighContrastInverse/48x48/apps/sun-javaws.png
+add link path=usr/share/icons/HighContrastInverse/48x48/apps/sun-jcontrol.png \
+    target=../../../../../jdk/instances/jdk1.6.0/jre/lib/desktop/icons/HighContrastInverse/48x48/apps/sun-jcontrol.png
+
+# 16x16 resolution - mimetypes
+add link path=usr/share/icons/HighContrastInverse/16x16/mimetypes/gnome-mime-application-x-java-archive.png \
+    target=../../../../../jdk/instances/jdk1.6.0/jre/lib/desktop/icons/HighContrastInverse/16x16/mimetypes/gnome-mime-application-x-java-archive.png
+add link path=usr/share/icons/HighContrastInverse/16x16/mimetypes/gnome-mime-application-x-java-jnlp-file.png \
+    target=../../../../../jdk/instances/jdk1.6.0/jre/lib/desktop/icons/HighContrastInverse/16x16/mimetypes/gnome-mime-application-x-java-jnlp-file.png
+add link path=usr/share/icons/HighContrastInverse/16x16/mimetypes/gnome-mime-text-x-java.png \
+    target=../../../../../jdk/instances/jdk1.6.0/jre/lib/desktop/icons/HighContrastInverse/16x16/mimetypes/gnome-mime-text-x-java.png
+
+# 48x48 resolution - mimetypes
+add link path=usr/share/icons/HighContrastInverse/48x48/mimetypes/gnome-mime-application-x-java-archive.png \
+    target=../../../../../jdk/instances/jdk1.6.0/jre/lib/desktop/icons/HighContrastInverse/48x48/mimetypes/gnome-mime-application-x-java-archive.png
+add link path=usr/share/icons/HighContrastInverse/48x48/mimetypes/gnome-mime-application-x-java-jnlp-file.png \
+    target=../../../../../jdk/instances/jdk1.6.0/jre/lib/desktop/icons/HighContrastInverse/48x48/mimetypes/gnome-mime-application-x-java-jnlp-file.png
+add link path=usr/share/icons/HighContrastInverse/48x48/mimetypes/gnome-mime-text-x-java.png \
+    target=../../../../../jdk/instances/jdk1.6.0/jre/lib/desktop/icons/HighContrastInverse/48x48/mimetypes/gnome-mime-text-x-java.png
+
+# ------------------------ LowContrast theme -------------------------
+
+# 16x16 resolution - apps
+add link path=usr/share/icons/LowContrast/16x16/apps/sun-java.png \
+    target=../../../../../jdk/instances/jdk1.6.0/jre/lib/desktop/icons/LowContrast/16x16/apps/sun-java.png
+add link path=usr/share/icons/LowContrast/16x16/apps/sun-javaws.png \
+    target=../../../../../jdk/instances/jdk1.6.0/jre/lib/desktop/icons/LowContrast/16x16/apps/sun-javaws.png
+add link path=usr/share/icons/LowContrast/16x16/apps/sun-jcontrol.png \
+    target=../../../../../jdk/instances/jdk1.6.0/jre/lib/desktop/icons/LowContrast/16x16/apps/sun-jcontrol.png
+
+# 48x48 resolution - apps
+add link path=usr/share/icons/LowContrast/48x48/apps/sun-java.png \
+    target=../../../../../jdk/instances/jdk1.6.0/jre/lib/desktop/icons/LowContrast/48x48/apps/sun-java.png
+add link path=usr/share/icons/LowContrast/48x48/apps/sun-javaws.png \
+    target=../../../../../jdk/instances/jdk1.6.0/jre/lib/desktop/icons/LowContrast/48x48/apps/sun-javaws.png
+add link path=usr/share/icons/LowContrast/48x48/apps/sun-jcontrol.png \
+    target=../../../../../jdk/instances/jdk1.6.0/jre/lib/desktop/icons/LowContrast/48x48/apps/sun-jcontrol.png
+
+# 16x16 resolution - mimetypes
+add link path=usr/share/icons/LowContrast/16x16/mimetypes/gnome-mime-application-x-java-archive.png \
+    target=../../../../../jdk/instances/jdk1.6.0/jre/lib/desktop/icons/LowContrast/16x16/mimetypes/gnome-mime-application-x-java-archive.png
+add link path=usr/share/icons/LowContrast/16x16/mimetypes/gnome-mime-application-x-java-jnlp-file.png \
+    target=../../../../../jdk/instances/jdk1.6.0/jre/lib/desktop/icons/LowContrast/16x16/mimetypes/gnome-mime-application-x-java-jnlp-file.png
+add link path=usr/share/icons/LowContrast/16x16/mimetypes/gnome-mime-text-x-java.png \
+    target=../../../../../jdk/instances/jdk1.6.0/jre/lib/desktop/icons/LowContrast/16x16/mimetypes/gnome-mime-text-x-java.png
+
+# 48x48 resolution - mimetypes
+add link path=usr/share/icons/LowContrast/48x48/mimetypes/gnome-mime-application-x-java-archive.png \
+    target=../../../../../jdk/instances/jdk1.6.0/jre/lib/desktop/icons/LowContrast/48x48/mimetypes/gnome-mime-application-x-java-archive.png
+add link path=usr/share/icons/LowContrast/48x48/mimetypes/gnome-mime-application-x-java-jnlp-file.png \
+    target=../../../../../jdk/instances/jdk1.6.0/jre/lib/desktop/icons/LowContrast/48x48/mimetypes/gnome-mime-application-x-java-jnlp-file.png
+add link path=usr/share/icons/LowContrast/48x48/mimetypes/gnome-mime-text-x-java.png \
+    target=../../../../../jdk/instances/jdk1.6.0/jre/lib/desktop/icons/LowContrast/48x48/mimetypes/gnome-mime-text-x-java.png
+
+version 1.6.0.0
+end package
+
+package runtime/java
+consolidation "ub_javavm"
+renamed 173
+depend runtime/java/jre-6
+end package
+
+package SUNWj6rt
+consolidation "ub_javavm"
+renamed 133
+depend runtime/java
+end package
+
+package runtime/java/runtime64
+consolidation "ub_javavm"
+renamed 173
+depend runtime/java/jre-6
+end package
+
+package SUNWj6rtx
+consolidation "ub_javavm"
+renamed 133
+depend runtime/java/runtime64
+end package
+
+package library/java/manual
+consolidation "ub_javavm"
+renamed 173
+depend runtime/java/jre-6
+end package
+
+package SUNWj6man
+consolidation "ub_javavm"
+renamed 133
+depend library/java/manual
+end package
+
+package library/java/manual/locale/ja
+consolidation "ub_javavm"
+renamed 173
+depend runtime/java/jre-6
+end package
+
+package SUNWj6jmp
+consolidation "ub_javavm"
+renamed 133
+depend library/java/manual/locale/ja
+end package
+
+package library/java/host-config
+consolidation "ub_javavm"
+renamed 173
+depend runtime/java/jre-6
+end package
+
+package SUNWj6cfg
+consolidation "ub_javavm"
+renamed 133
+depend library/java/host-config
+end package

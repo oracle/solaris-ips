@@ -60,12 +60,13 @@ depend type=group fmri=developer/documentation-tool/openjade
 depend type=group fmri=developer/documentation-tool/opensp
 depend type=group fmri=developer/gnome/gettext
 depend type=group fmri=developer/gnome/gnome-doc-utils
-depend type=group fmri=developer/java/jdk
+depend type=group fmri=developer/java/jdk-6
 depend type=group fmri=developer/ui-designer/glade
 depend type=group fmri=diagnostic/ddu
 depend type=group fmri=diagnostic/ddu/locale
 depend type=group fmri=diagnostic/xload
 depend type=group fmri=documentation/gnome/gnome-user-docs
+depend type=group fmri=driver/audio/audio-usb
 $(i386_ONLY)depend type=group fmri=driver/audio/audio810
 $(i386_ONLY)depend type=group fmri=driver/audio/audiocmi
 $(i386_ONLY)depend type=group fmri=driver/audio/audioemu10k
@@ -75,9 +76,9 @@ depend type=group fmri=driver/audio/audiols
 depend type=group fmri=driver/audio/audiop16x
 $(i386_ONLY)depend type=group fmri=driver/audio/audiosolo
 $(i386_ONLY)depend type=group fmri=driver/audio/audiovia823x
-depend type=group fmri=driver/graphics/av1394
-depend type=group fmri=driver/graphics/dcam1394
 depend type=group fmri=driver/graphics/usbvc
+depend type=group fmri=driver/ieee-1394/av1394
+depend type=group fmri=driver/ieee-1394/dcam1394
 depend type=group fmri=driver/x11/winlock
 depend type=group fmri=editor/diagram/dia
 depend type=group fmri=editor/gedit
@@ -260,7 +261,6 @@ depend type=group fmri=print/filter/ghostscript/fonts/gnu-gs-fonts-other
 depend type=group fmri=print/filter/ghostscript/fonts/gnu-gs-fonts-std
 depend type=group fmri=print/filter/gutenprint
 depend type=group fmri=print/filter/hplip
-depend type=group fmri=print/lp/compatibility/sunos4
 depend type=group fmri=release/os-welcome
 depend type=group fmri=runtime/lua
 depend type=group fmri=runtime/tk-8
@@ -297,6 +297,7 @@ depend type=group fmri=system/input-method/library/libhangul
 depend type=group fmri=system/input-method/library/libthai
 depend type=group fmri=system/input-method/library/m17n
 depend type=group fmri=system/input-method/library/m17n/contrib
+depend type=group fmri=system/io/audio
 depend type=group fmri=system/library/dbus/dbus-x11
 depend type=group fmri=system/library/iconv/unicode
 depend type=group fmri=system/library/libpcap

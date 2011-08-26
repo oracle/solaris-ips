@@ -1,48 +1,48 @@
 package office/openoffice
 classification "Applications/Office"
 summary "OpenOffice.org Office Productivity Suite"
-version 3.2.1
-import ooo-bundled-extensions
-import ooobasis32-base
-import ooobasis32-binfilter
-import ooobasis32-calc
-import ooobasis32-core01
-import ooobasis32-core02
-import ooobasis32-core03
-import ooobasis32-core04
-import ooobasis32-core05
-import ooobasis32-core06
-import ooobasis32-core07
-import ooobasis32-draw
-import ooobasis32-en-US
-import ooobasis32-en-US-base
-import ooobasis32-en-US-binfilter
-import ooobasis32-en-US-calc
-import ooobasis32-en-US-draw
-import ooobasis32-en-US-help
-import ooobasis32-en-US-impress
-import ooobasis32-en-US-math
-import ooobasis32-en-US-res
-import ooobasis32-en-US-writer
-import ooobasis32-gnome-integratn
-import ooobasis32-graphicfilter
-import ooobasis32-images
-import ooobasis32-impress
-import ooobasis32-javafilter
-import ooobasis32-math
-import ooobasis32-ooofonts
-import ooobasis32-oooimprovement
-import ooobasis32-ooolinguistic
-import ooobasis32-pyuno
-import ooobasis32-testtool
-import ooobasis32-writer
-import ooobasis32-xsltfilter
+version 3.3.0
+import ooobasis33-base
+import ooobasis33-binfilter
+import ooobasis33-calc
+import ooobasis33-core01
+import ooobasis33-core02
+import ooobasis33-core03
+import ooobasis33-core04
+import ooobasis33-core05
+import ooobasis33-core06
+import ooobasis33-core07
+import ooobasis33-draw
+import ooobasis33-en-US
+import ooobasis33-en-US-base
+import ooobasis33-en-US-binfilter
+import ooobasis33-en-US-calc
+import ooobasis33-en-US-draw
+import ooobasis33-en-US-help
+import ooobasis33-en-US-impress
+import ooobasis33-en-US-math
+import ooobasis33-en-US-res
+import ooobasis33-en-US-writer
+import ooobasis33-gnome-integratn
+import ooobasis33-graphicfilter
+import ooobasis33-images
+import ooobasis33-impress
+import ooobasis33-javafilter
+import ooobasis33-math
+import ooobasis33-ooofonts
+import ooobasis33-oooimprovement
+import ooobasis33-ooolinguistic
+import ooobasis33-pyuno
+import ooobasis33-testtool
+import ooobasis33-writer
+import ooobasis33-xsltfilter
 import openofficeorg3
 import openofficeorg3-desktop-int
 drop etc/mailcap
 drop etc/mime.types
 drop share/mime
 drop share/mime/packages
+import openofficeorg-ure
 import openofficeorg3-base
 import openofficeorg3-calc
 import openofficeorg3-dict-en
@@ -51,7 +51,6 @@ import openofficeorg3-en-US
 import openofficeorg3-impress
 import openofficeorg3-math
 import openofficeorg3-writer
-import openofficeorg-ure
 add depend fmri=openoffice@3.1.0-1 type=optional
 # add actuators for desktop files under /opt as these are not picked up
 # by the default global rules
@@ -59,29 +58,203 @@ chattr_glob *.desktop type file \
     restart_fmri=svc:/application/desktop-cache/desktop-mime-cache:default
 end package
 
-package office/openoffice/openoffice-sdk
+package office/openoffice/locale/ar
 classification "Applications/Office"
-summary "Software Development Kit for OpenOffice.org"
-version 3.2.1
-import ooobasis32-sdk
+summary "Arabic localization for OpenOffice.org"
+version 3.3.0
+import ooobasis33-ar
+import ooobasis33-ar-base
+import ooobasis33-ar-binfilter
+import ooobasis33-ar-calc
+import ooobasis33-ar-draw
+import ooobasis33-ar-help
+import ooobasis33-ar-impress
+import ooobasis33-ar-math
+import ooobasis33-ar-res
+import ooobasis33-ar-writer
+import openofficeorg3-ar
 depend office/openoffice
-add depend fmri=openoffice-sdk@3.1.0-1 type=optional
+end package
+
+package office/openoffice/locale/as
+classification "Applications/Office"
+summary "Assamese localization for OpenOffice.org"
+version 3.3.0
+import ooobasis33-as
+import ooobasis33-as-base
+import ooobasis33-as-binfilter
+import ooobasis33-as-calc
+import ooobasis33-as-draw
+import ooobasis33-as-help
+import ooobasis33-as-impress
+import ooobasis33-as-math
+import ooobasis33-as-res
+import ooobasis33-as-writer
+import openofficeorg3-as
+depend office/openoffice
+end package
+
+package office/openoffice/locale/ast
+classification "Applications/Office"
+summary "Asturian localization for OpenOffice.org"
+version 3.3.0
+import ooobasis33-ast
+import ooobasis33-ast-base
+import ooobasis33-ast-binfilter
+import ooobasis33-ast-calc
+import ooobasis33-ast-draw
+import ooobasis33-ast-help
+import ooobasis33-ast-impress
+import ooobasis33-ast-math
+import ooobasis33-ast-res
+import ooobasis33-ast-writer
+import openofficeorg3-ast
+depend office/openoffice
+end package
+
+package office/openoffice/locale/be-BY
+classification "Applications/Office"
+summary "Belarusian localization for OpenOffice.org"
+version 3.3.0
+import ooobasis33-be-BY
+import ooobasis33-be-BY-base
+import ooobasis33-be-BY-binfilter
+import ooobasis33-be-BY-calc
+import ooobasis33-be-BY-draw
+import ooobasis33-be-BY-help
+import ooobasis33-be-BY-impress
+import ooobasis33-be-BY-math
+import ooobasis33-be-BY-res
+import ooobasis33-be-BY-writer
+import openofficeorg3-be-BY
+depend office/openoffice
+end package
+
+package office/openoffice/locale/bg
+classification "Applications/Office"
+summary "Bulgarian localization for OpenOffice.org"
+version 3.3.0
+import ooobasis33-bg
+import ooobasis33-bg-base
+import ooobasis33-bg-binfilter
+import ooobasis33-bg-calc
+import ooobasis33-bg-draw
+import ooobasis33-bg-help
+import ooobasis33-bg-impress
+import ooobasis33-bg-math
+import ooobasis33-bg-res
+import ooobasis33-bg-writer
+import openofficeorg3-bg
+depend office/openoffice
+end package
+
+package office/openoffice/locale/bn
+classification "Applications/Office"
+summary "Bengali localization for OpenOffice.org"
+version 3.3.0
+import ooobasis33-bn
+import ooobasis33-bn-base
+import ooobasis33-bn-binfilter
+import ooobasis33-bn-calc
+import ooobasis33-bn-draw
+import ooobasis33-bn-help
+import ooobasis33-bn-impress
+import ooobasis33-bn-math
+import ooobasis33-bn-res
+import ooobasis33-bn-writer
+import openofficeorg3-bn
+depend office/openoffice
+end package
+
+package office/openoffice/locale/ca
+classification "Applications/Office"
+summary "Catalan localization for OpenOffice.org"
+version 3.3.0
+import ooobasis33-ca
+import ooobasis33-ca-base
+import ooobasis33-ca-binfilter
+import ooobasis33-ca-calc
+import ooobasis33-ca-draw
+import ooobasis33-ca-help
+import ooobasis33-ca-impress
+import ooobasis33-ca-math
+import ooobasis33-ca-res
+import ooobasis33-ca-writer
+import openofficeorg3-ca
+import openofficeorg3-dict-ca
+depend office/openoffice
+end package
+
+package office/openoffice/locale/ca-XV
+classification "Applications/Office"
+summary "Catalan (Valencian) localization for OpenOffice.org"
+version 3.3.0
+import ooobasis33-ca-XV
+import ooobasis33-ca-XV-base
+import ooobasis33-ca-XV-binfilter
+import ooobasis33-ca-XV-calc
+import ooobasis33-ca-XV-draw
+import ooobasis33-ca-XV-help
+import ooobasis33-ca-XV-impress
+import ooobasis33-ca-XV-math
+import ooobasis33-ca-XV-res
+import ooobasis33-ca-XV-writer
+import openofficeorg3-ca-XV
+depend office/openoffice
+end package
+
+package office/openoffice/locale/cs
+classification "Applications/Office"
+summary "Czech localization for OpenOffice.org"
+version 3.3.0
+import ooobasis33-cs
+import ooobasis33-cs-base
+import ooobasis33-cs-binfilter
+import ooobasis33-cs-calc
+import ooobasis33-cs-draw
+import ooobasis33-cs-help
+import ooobasis33-cs-impress
+import ooobasis33-cs-math
+import ooobasis33-cs-res
+import ooobasis33-cs-writer
+import openofficeorg3-cs
+import openofficeorg3-dict-cs
+depend office/openoffice
+end package
+
+package office/openoffice/locale/da
+classification "Applications/Office"
+summary "Danish localization for OpenOffice.org"
+version 3.3.0
+import ooobasis33-da
+import ooobasis33-da-base
+import ooobasis33-da-binfilter
+import ooobasis33-da-calc
+import ooobasis33-da-draw
+import ooobasis33-da-help
+import ooobasis33-da-impress
+import ooobasis33-da-math
+import ooobasis33-da-res
+import ooobasis33-da-writer
+import openofficeorg3-da
+import openofficeorg3-dict-da
+depend office/openoffice
 end package
 
 package office/openoffice/locale/de
 classification "Applications/Office"
 summary "German localization for OpenOffice.org"
-version 3.2.1
-import ooobasis32-de
-import ooobasis32-de-base
-import ooobasis32-de-binfilter
-import ooobasis32-de-calc
-import ooobasis32-de-draw
-import ooobasis32-de-help
-import ooobasis32-de-impress
-import ooobasis32-de-math
-import ooobasis32-de-res
-import ooobasis32-de-writer
+version 3.3.0
+import ooobasis33-de
+import ooobasis33-de-base
+import ooobasis33-de-binfilter
+import ooobasis33-de-calc
+import ooobasis33-de-draw
+import ooobasis33-de-help
+import ooobasis33-de-impress
+import ooobasis33-de-math
+import ooobasis33-de-res
+import ooobasis33-de-writer
 import openofficeorg3-de
 import openofficeorg3-dict-de-AT
 import openofficeorg3-dict-de-CH
@@ -90,158 +263,689 @@ depend office/openoffice
 add depend fmri=openoffice-de@3.1.0-1 type=optional
 end package
 
+package office/openoffice/locale/dz
+classification "Applications/Office"
+summary "Dzongkha localization for OpenOffice.org"
+version 3.3.0
+import ooobasis33-dz
+import ooobasis33-dz-base
+import ooobasis33-dz-binfilter
+import ooobasis33-dz-calc
+import ooobasis33-dz-draw
+import ooobasis33-dz-help
+import ooobasis33-dz-impress
+import ooobasis33-dz-math
+import ooobasis33-dz-res
+import ooobasis33-dz-writer
+import openofficeorg3-dz
+depend office/openoffice
+end package
+
+package office/openoffice/locale/el
+classification "Applications/Office"
+summary "Greek localization for OpenOffice.org"
+version 3.3.0
+import ooobasis33-el
+import ooobasis33-el-base
+import ooobasis33-el-binfilter
+import ooobasis33-el-calc
+import ooobasis33-el-draw
+import ooobasis33-el-help
+import ooobasis33-el-impress
+import ooobasis33-el-math
+import ooobasis33-el-res
+import ooobasis33-el-writer
+import openofficeorg3-el
+depend office/openoffice
+end package
+
+package office/openoffice/locale/en-GB
+classification "Applications/Office"
+summary "English (British) localization for OpenOffice.org"
+version 3.3.0
+import ooobasis33-en-GB
+import ooobasis33-en-GB-base
+import ooobasis33-en-GB-binfilter
+import ooobasis33-en-GB-calc
+import ooobasis33-en-GB-draw
+import ooobasis33-en-GB-help
+import ooobasis33-en-GB-impress
+import ooobasis33-en-GB-math
+import ooobasis33-en-GB-res
+import ooobasis33-en-GB-writer
+import openofficeorg3-en-GB
+depend office/openoffice
+end package
+
+package office/openoffice/locale/eo
+classification "Applications/Office"
+summary "Esperanto localization for OpenOffice.org"
+version 3.3.0
+import ooobasis33-eo
+import ooobasis33-eo-base
+import ooobasis33-eo-binfilter
+import ooobasis33-eo-calc
+import ooobasis33-eo-draw
+import ooobasis33-eo-help
+import ooobasis33-eo-impress
+import ooobasis33-eo-math
+import ooobasis33-eo-res
+import ooobasis33-eo-writer
+import openofficeorg3-eo
+depend office/openoffice
+end package
+
 package office/openoffice/locale/es
 classification "Applications/Office"
 summary "Spanish localization for OpenOffice.org"
-version 3.2.1
-import ooobasis32-es
-import ooobasis32-es-base
-import ooobasis32-es-binfilter
-import ooobasis32-es-calc
-import ooobasis32-es-draw
-import ooobasis32-es-help
-import ooobasis32-es-impress
-import ooobasis32-es-math
-import ooobasis32-es-res
-import ooobasis32-es-writer
+version 3.3.0
+import ooobasis33-es
+import ooobasis33-es-base
+import ooobasis33-es-binfilter
+import ooobasis33-es-calc
+import ooobasis33-es-draw
+import ooobasis33-es-help
+import ooobasis33-es-impress
+import ooobasis33-es-math
+import ooobasis33-es-res
+import ooobasis33-es-writer
 import openofficeorg3-dict-es
 import openofficeorg3-es
 depend office/openoffice
 add depend fmri=openoffice-es@3.1.0-1 type=optional
 end package
 
+package office/openoffice/locale/et
+classification "Applications/Office"
+summary "Estonian localization for OpenOffice.org"
+version 3.3.0
+import ooobasis33-et
+import ooobasis33-et-base
+import ooobasis33-et-binfilter
+import ooobasis33-et-calc
+import ooobasis33-et-draw
+import ooobasis33-et-help
+import ooobasis33-et-impress
+import ooobasis33-et-math
+import ooobasis33-et-res
+import ooobasis33-et-writer
+import openofficeorg3-dict-et
+import openofficeorg3-et
+depend office/openoffice
+end package
+
+package office/openoffice/locale/eu
+classification "Applications/Office"
+summary "Basque localization for OpenOffice.org"
+version 3.3.0
+import ooobasis33-eu
+import ooobasis33-eu-base
+import ooobasis33-eu-binfilter
+import ooobasis33-eu-calc
+import ooobasis33-eu-draw
+import ooobasis33-eu-help
+import ooobasis33-eu-impress
+import ooobasis33-eu-math
+import ooobasis33-eu-res
+import ooobasis33-eu-writer
+import openofficeorg3-eu
+depend office/openoffice
+end package
+
+package office/openoffice/locale/fi
+classification "Applications/Office"
+summary "Finnish localization for OpenOffice.org"
+version 3.3.0
+import ooobasis33-fi
+import ooobasis33-fi-base
+import ooobasis33-fi-binfilter
+import ooobasis33-fi-calc
+import ooobasis33-fi-draw
+import ooobasis33-fi-help
+import ooobasis33-fi-impress
+import ooobasis33-fi-math
+import ooobasis33-fi-res
+import ooobasis33-fi-writer
+import openofficeorg3-fi
+depend office/openoffice
+end package
+
 package office/openoffice/locale/fr
 classification "Applications/Office"
 summary "French localization for OpenOffice.org"
-version 3.2.1
-import ooobasis32-fr
-import ooobasis32-fr-base
-import ooobasis32-fr-binfilter
-import ooobasis32-fr-calc
-import ooobasis32-fr-draw
-import ooobasis32-fr-help
-import ooobasis32-fr-impress
-import ooobasis32-fr-math
-import ooobasis32-fr-res
-import ooobasis32-fr-writer
+version 3.3.0
+import ooobasis33-fr
+import ooobasis33-fr-base
+import ooobasis33-fr-binfilter
+import ooobasis33-fr-calc
+import ooobasis33-fr-draw
+import ooobasis33-fr-help
+import ooobasis33-fr-impress
+import ooobasis33-fr-math
+import ooobasis33-fr-res
+import ooobasis33-fr-writer
 import openofficeorg3-dict-fr
 import openofficeorg3-fr
 depend office/openoffice
 add depend fmri=openoffice-fr@3.1.0-1 type=optional
 end package
 
+package office/openoffice/locale/ga
+classification "Applications/Office"
+summary "Irish localization for OpenOffice.org"
+version 3.3.0
+import ooobasis33-ga
+import ooobasis33-ga-base
+import ooobasis33-ga-binfilter
+import ooobasis33-ga-calc
+import ooobasis33-ga-draw
+import ooobasis33-ga-help
+import ooobasis33-ga-impress
+import ooobasis33-ga-math
+import ooobasis33-ga-res
+import ooobasis33-ga-writer
+import openofficeorg3-ga
+depend office/openoffice
+end package
+
+package office/openoffice/locale/gl
+classification "Applications/Office"
+summary "Galician localization for OpenOffice.org"
+version 3.3.0
+import ooobasis33-gl
+import ooobasis33-gl-base
+import ooobasis33-gl-binfilter
+import ooobasis33-gl-calc
+import ooobasis33-gl-draw
+import ooobasis33-gl-help
+import ooobasis33-gl-impress
+import ooobasis33-gl-math
+import ooobasis33-gl-res
+import ooobasis33-gl-writer
+import openofficeorg3-dict-gl
+import openofficeorg3-gl
+depend office/openoffice
+end package
+
+package office/openoffice/locale/gu
+classification "Applications/Office"
+summary "Gujarati localization for OpenOffice.org"
+version 3.3.0
+import ooobasis33-gu
+import ooobasis33-gu-base
+import ooobasis33-gu-binfilter
+import ooobasis33-gu-calc
+import ooobasis33-gu-draw
+import ooobasis33-gu-help
+import ooobasis33-gu-impress
+import ooobasis33-gu-math
+import ooobasis33-gu-res
+import ooobasis33-gu-writer
+import openofficeorg3-gu
+depend office/openoffice
+end package
+
+package office/openoffice/locale/he
+classification "Applications/Office"
+summary "Hebrew localization for OpenOffice.org"
+version 3.3.0
+import ooobasis33-he
+import ooobasis33-he-base
+import ooobasis33-he-binfilter
+import ooobasis33-he-calc
+import ooobasis33-he-draw
+import ooobasis33-he-help
+import ooobasis33-he-impress
+import ooobasis33-he-math
+import ooobasis33-he-res
+import ooobasis33-he-writer
+import openofficeorg3-dict-he
+import openofficeorg3-he
+depend office/openoffice
+end package
+
+package office/openoffice/locale/hi
+classification "Applications/Office"
+summary "Hindi localization for OpenOffice.org"
+version 3.3.0
+import ooobasis33-hi
+import ooobasis33-hi-base
+import ooobasis33-hi-binfilter
+import ooobasis33-hi-calc
+import ooobasis33-hi-draw
+import ooobasis33-hi-help
+import ooobasis33-hi-impress
+import ooobasis33-hi-math
+import ooobasis33-hi-res
+import ooobasis33-hi-writer
+import openofficeorg3-hi
+depend office/openoffice
+end package
+
 package office/openoffice/locale/hu
 classification "Applications/Office"
 summary "Hungarian localization for OpenOffice.org"
-version 3.2.1
-import ooobasis32-hu
-import ooobasis32-hu-base
-import ooobasis32-hu-binfilter
-import ooobasis32-hu-calc
-import ooobasis32-hu-draw
-import ooobasis32-hu-help
-import ooobasis32-hu-impress
-import ooobasis32-hu-math
-import ooobasis32-hu-res
-import ooobasis32-hu-writer
+version 3.3.0
+import ooobasis33-hu
+import ooobasis33-hu-base
+import ooobasis33-hu-binfilter
+import ooobasis33-hu-calc
+import ooobasis33-hu-draw
+import ooobasis33-hu-help
+import ooobasis33-hu-impress
+import ooobasis33-hu-math
+import ooobasis33-hu-res
+import ooobasis33-hu-writer
 import openofficeorg3-dict-hu
 import openofficeorg3-hu
 depend office/openoffice
 add depend fmri=openoffice-hu@3.1.0-1 type=optional
 end package
 
-package office/openoffice/locale/it
+package office/openoffice/locale/id
 classification "Applications/Office"
-summary "Italian localization for OpenOffice.org"
-version 3.2.1
-import ooobasis32-it
-import ooobasis32-it-base
-import ooobasis32-it-binfilter
-import ooobasis32-it-calc
-import ooobasis32-it-draw
-import ooobasis32-it-help
-import ooobasis32-it-impress
-import ooobasis32-it-math
-import ooobasis32-it-res
-import ooobasis32-it-writer
-import openofficeorg3-dict-it
-import openofficeorg3-it
+summary "Indonesian localization for OpenOffice.org"
+version 3.3.0
+import ooobasis33-id
+import ooobasis33-id-base
+import ooobasis33-id-binfilter
+import ooobasis33-id-calc
+import ooobasis33-id-draw
+import ooobasis33-id-help
+import ooobasis33-id-impress
+import ooobasis33-id-math
+import ooobasis33-id-res
+import ooobasis33-id-writer
+import openofficeorg3-id
 depend office/openoffice
-add depend fmri=openoffice-it@3.1.0-1 type=optional
+end package
+
+package office/openoffice/locale/is
+classification "Applications/Office"
+summary "Icelandic localization for OpenOffice.org"
+version 3.3.0
+import ooobasis33-is
+import ooobasis33-is-base
+import ooobasis33-is-binfilter
+import ooobasis33-is-calc
+import ooobasis33-is-draw
+import ooobasis33-is-help
+import ooobasis33-is-impress
+import ooobasis33-is-math
+import ooobasis33-is-res
+import ooobasis33-is-writer
+import openofficeorg3-is
+depend office/openoffice
+end package
+
+package office/openoffice/locale/it
+add set name=pkg.obsolete value=true
+version 3.2.1-1
 end package
 
 package office/openoffice/locale/ja
 classification "Applications/Office"
 summary "Japanese localization for OpenOffice.org"
-version 3.2.1
-import ooobasis32-ja
-import ooobasis32-ja-base
-import ooobasis32-ja-binfilter
-import ooobasis32-ja-calc
-import ooobasis32-ja-draw
-import ooobasis32-ja-help
-import ooobasis32-ja-impress
-import ooobasis32-ja-math
-import ooobasis32-ja-res
-import ooobasis32-ja-writer
+version 3.3.0
+import ooobasis33-ja
+import ooobasis33-ja-base
+import ooobasis33-ja-binfilter
+import ooobasis33-ja-calc
+import ooobasis33-ja-draw
+import ooobasis33-ja-help
+import ooobasis33-ja-impress
+import ooobasis33-ja-math
+import ooobasis33-ja-res
+import ooobasis33-ja-writer
 import openofficeorg3-ja
 depend office/openoffice
 add depend fmri=openoffice-ja@3.1.0-1 type=optional
 end package
 
+package office/openoffice/locale/ka
+classification "Applications/Office"
+summary "Georgian localization for OpenOffice.org"
+version 3.3.0
+import ooobasis33-ka
+import ooobasis33-ka-base
+import ooobasis33-ka-binfilter
+import ooobasis33-ka-calc
+import ooobasis33-ka-draw
+import ooobasis33-ka-help
+import ooobasis33-ka-impress
+import ooobasis33-ka-math
+import ooobasis33-ka-res
+import ooobasis33-ka-writer
+import openofficeorg3-ka
+depend office/openoffice
+end package
+
+package office/openoffice/locale/km
+classification "Applications/Office"
+summary "Khmer localization for OpenOffice.org"
+version 3.3.0
+import ooobasis33-km
+import ooobasis33-km-base
+import ooobasis33-km-binfilter
+import ooobasis33-km-calc
+import ooobasis33-km-draw
+import ooobasis33-km-help
+import ooobasis33-km-impress
+import ooobasis33-km-math
+import ooobasis33-km-res
+import ooobasis33-km-writer
+import openofficeorg3-km
+depend office/openoffice
+end package
+
+package office/openoffice/locale/kn
+classification "Applications/Office"
+summary "Kannada localization for OpenOffice.org"
+version 3.3.0
+import ooobasis33-kn
+import ooobasis33-kn-base
+import ooobasis33-kn-binfilter
+import ooobasis33-kn-calc
+import ooobasis33-kn-draw
+import ooobasis33-kn-help
+import ooobasis33-kn-impress
+import ooobasis33-kn-math
+import ooobasis33-kn-res
+import ooobasis33-kn-writer
+import openofficeorg3-kn
+depend office/openoffice
+end package
+
 package office/openoffice/locale/ko
 classification "Applications/Office"
 summary "Korean localization for OpenOffice.org"
-version 3.2.1
-import ooobasis32-ko
-import ooobasis32-ko-base
-import ooobasis32-ko-binfilter
-import ooobasis32-ko-calc
-import ooobasis32-ko-draw
-import ooobasis32-ko-help
-import ooobasis32-ko-impress
-import ooobasis32-ko-math
-import ooobasis32-ko-res
-import ooobasis32-ko-writer
+version 3.3.0
+import ooobasis33-ko
+import ooobasis33-ko-base
+import ooobasis33-ko-binfilter
+import ooobasis33-ko-calc
+import ooobasis33-ko-draw
+import ooobasis33-ko-help
+import ooobasis33-ko-impress
+import ooobasis33-ko-math
+import ooobasis33-ko-res
+import ooobasis33-ko-writer
 import openofficeorg3-ko
 depend office/openoffice
 add depend fmri=openoffice-ko@3.1.0-1 type=optional
 end package
 
+package office/openoffice/locale/ku
+classification "Applications/Office"
+summary "Kurdish localization for OpenOffice.org"
+version 3.3.0
+import ooobasis33-ku
+import ooobasis33-ku-base
+import ooobasis33-ku-binfilter
+import ooobasis33-ku-calc
+import ooobasis33-ku-draw
+import ooobasis33-ku-help
+import ooobasis33-ku-impress
+import ooobasis33-ku-math
+import ooobasis33-ku-res
+import ooobasis33-ku-writer
+import openofficeorg3-dict-ku-TR
+import openofficeorg3-ku
+depend office/openoffice
+end package
+
+package office/openoffice/locale/lt
+classification "Applications/Office"
+summary "Lithuanian localization for OpenOffice.org"
+version 3.3.0
+import ooobasis33-lt
+import ooobasis33-lt-base
+import ooobasis33-lt-binfilter
+import ooobasis33-lt-calc
+import ooobasis33-lt-draw
+import ooobasis33-lt-help
+import ooobasis33-lt-impress
+import ooobasis33-lt-math
+import ooobasis33-lt-res
+import ooobasis33-lt-writer
+import openofficeorg3-dict-lt
+import openofficeorg3-lt
+depend office/openoffice
+end package
+
+package office/openoffice/locale/lv
+classification "Applications/Office"
+summary "Latvian localization for OpenOffice.org"
+version 3.3.0
+import ooobasis33-lv
+import ooobasis33-lv-base
+import ooobasis33-lv-binfilter
+import ooobasis33-lv-calc
+import ooobasis33-lv-draw
+import ooobasis33-lv-help
+import ooobasis33-lv-impress
+import ooobasis33-lv-math
+import ooobasis33-lv-res
+import ooobasis33-lv-writer
+import openofficeorg3-lv
+depend office/openoffice
+end package
+
+package office/openoffice/locale/mk
+classification "Applications/Office"
+summary "Macedonian localization for OpenOffice.org"
+version 3.3.0
+import ooobasis33-mk
+import ooobasis33-mk-base
+import ooobasis33-mk-binfilter
+import ooobasis33-mk-calc
+import ooobasis33-mk-draw
+import ooobasis33-mk-help
+import ooobasis33-mk-impress
+import ooobasis33-mk-math
+import ooobasis33-mk-res
+import ooobasis33-mk-writer
+import openofficeorg3-mk
+depend office/openoffice
+end package
+
+package office/openoffice/locale/ml
+classification "Applications/Office"
+summary "Malayalam localization for OpenOffice.org"
+version 3.3.0
+import ooobasis33-ml
+import ooobasis33-ml-base
+import ooobasis33-ml-binfilter
+import ooobasis33-ml-calc
+import ooobasis33-ml-draw
+import ooobasis33-ml-help
+import ooobasis33-ml-impress
+import ooobasis33-ml-math
+import ooobasis33-ml-res
+import ooobasis33-ml-writer
+import openofficeorg3-ml
+depend office/openoffice
+end package
+
+package office/openoffice/locale/mr
+classification "Applications/Office"
+summary "Marathi localization for OpenOffice.org"
+version 3.3.0
+import ooobasis33-mr
+import ooobasis33-mr-base
+import ooobasis33-mr-binfilter
+import ooobasis33-mr-calc
+import ooobasis33-mr-draw
+import ooobasis33-mr-help
+import ooobasis33-mr-impress
+import ooobasis33-mr-math
+import ooobasis33-mr-res
+import ooobasis33-mr-writer
+import openofficeorg3-mr
+depend office/openoffice
+end package
+
+package office/openoffice/locale/my
+classification "Applications/Office"
+summary "Burmese localization for OpenOffice.org"
+version 3.3.0
+import ooobasis33-my
+import ooobasis33-my-base
+import ooobasis33-my-binfilter
+import ooobasis33-my-calc
+import ooobasis33-my-draw
+import ooobasis33-my-help
+import ooobasis33-my-impress
+import ooobasis33-my-math
+import ooobasis33-my-res
+import ooobasis33-my-writer
+import openofficeorg3-my
+depend office/openoffice
+end package
+
+package office/openoffice/locale/nb
+classification "Applications/Office"
+summary "Norwegian (Bokmal) localization for OpenOffice.org"
+version 3.3.0
+import ooobasis33-nb
+import ooobasis33-nb-base
+import ooobasis33-nb-binfilter
+import ooobasis33-nb-calc
+import ooobasis33-nb-draw
+import ooobasis33-nb-help
+import ooobasis33-nb-impress
+import ooobasis33-nb-math
+import ooobasis33-nb-res
+import ooobasis33-nb-writer
+import openofficeorg3-dict-no
+import openofficeorg3-nb
+depend office/openoffice
+end package
+
 package office/openoffice/locale/nl
 classification "Applications/Office"
 summary "Dutch localization for OpenOffice.org"
-version 3.2.1
-import ooobasis32-nl
-import ooobasis32-nl-base
-import ooobasis32-nl-binfilter
-import ooobasis32-nl-calc
-import ooobasis32-nl-draw
-import ooobasis32-nl-help
-import ooobasis32-nl-impress
-import ooobasis32-nl-math
-import ooobasis32-nl-res
-import ooobasis32-nl-writer
+version 3.3.0
+import ooobasis33-nl
+import ooobasis33-nl-base
+import ooobasis33-nl-binfilter
+import ooobasis33-nl-calc
+import ooobasis33-nl-draw
+import ooobasis33-nl-help
+import ooobasis33-nl-impress
+import ooobasis33-nl-math
+import ooobasis33-nl-res
+import ooobasis33-nl-writer
 import openofficeorg3-dict-nl
 import openofficeorg3-nl
 depend office/openoffice
 add depend fmri=openoffice-nl@3.1.0-1 type=optional
 end package
 
+package office/openoffice/locale/nn
+classification "Applications/Office"
+summary "Norwegian (Nynorsk) localization for OpenOffice.org"
+version 3.3.0
+import ooobasis33-nn
+import ooobasis33-nn-base
+import ooobasis33-nn-binfilter
+import ooobasis33-nn-calc
+import ooobasis33-nn-draw
+import ooobasis33-nn-help
+import ooobasis33-nn-impress
+import ooobasis33-nn-math
+import ooobasis33-nn-res
+import ooobasis33-nn-writer
+import openofficeorg3-nn
+depend office/openoffice
+end package
+
+package office/openoffice/locale/oc
+classification "Applications/Office"
+summary "Occitan localization for OpenOffice.org"
+version 3.3.0
+import ooobasis33-oc
+import ooobasis33-oc-base
+import ooobasis33-oc-binfilter
+import ooobasis33-oc-calc
+import ooobasis33-oc-draw
+import ooobasis33-oc-help
+import ooobasis33-oc-impress
+import ooobasis33-oc-math
+import ooobasis33-oc-res
+import ooobasis33-oc-writer
+import openofficeorg3-oc
+depend office/openoffice
+end package
+
+package office/openoffice/locale/om
+classification "Applications/Office"
+summary "Oromo localization for OpenOffice.org"
+version 3.3.0
+import ooobasis33-om
+import ooobasis33-om-base
+import ooobasis33-om-binfilter
+import ooobasis33-om-calc
+import ooobasis33-om-draw
+import ooobasis33-om-help
+import ooobasis33-om-impress
+import ooobasis33-om-math
+import ooobasis33-om-res
+import ooobasis33-om-writer
+import openofficeorg3-om
+depend office/openoffice
+end package
+
+package office/openoffice/locale/or
+classification "Applications/Office"
+summary "Oriya localization for OpenOffice.org"
+version 3.3.0
+import ooobasis33-or
+import ooobasis33-or-base
+import ooobasis33-or-binfilter
+import ooobasis33-or-calc
+import ooobasis33-or-draw
+import ooobasis33-or-help
+import ooobasis33-or-impress
+import ooobasis33-or-math
+import ooobasis33-or-res
+import ooobasis33-or-writer
+import openofficeorg3-or
+depend office/openoffice
+end package
+
+package office/openoffice/locale/pa-IN
+classification "Applications/Office"
+summary "Punjabi localization for OpenOffice.org"
+version 3.3.0
+import ooobasis33-pa-IN
+import ooobasis33-pa-IN-base
+import ooobasis33-pa-IN-binfilter
+import ooobasis33-pa-IN-calc
+import ooobasis33-pa-IN-draw
+import ooobasis33-pa-IN-help
+import ooobasis33-pa-IN-impress
+import ooobasis33-pa-IN-math
+import ooobasis33-pa-IN-res
+import ooobasis33-pa-IN-writer
+import openofficeorg3-pa-IN
+depend office/openoffice
+end package
+
 package office/openoffice/locale/pl
 classification "Applications/Office"
 summary "Polish localization for OpenOffice.org"
-version 3.2.1
-import ooobasis32-pl
-import ooobasis32-pl-base
-import ooobasis32-pl-binfilter
-import ooobasis32-pl-calc
-import ooobasis32-pl-draw
-import ooobasis32-pl-help
-import ooobasis32-pl-impress
-import ooobasis32-pl-math
-import ooobasis32-pl-res
-import ooobasis32-pl-writer
+version 3.3.0
+import ooobasis33-pl
+import ooobasis33-pl-base
+import ooobasis33-pl-binfilter
+import ooobasis33-pl-calc
+import ooobasis33-pl-draw
+import ooobasis33-pl-help
+import ooobasis33-pl-impress
+import ooobasis33-pl-math
+import ooobasis33-pl-res
+import ooobasis33-pl-writer
 import openofficeorg3-dict-pl
 import openofficeorg3-pl
 depend office/openoffice
@@ -250,18 +954,18 @@ end package
 
 package office/openoffice/locale/pt
 classification "Applications/Office"
-summary "Portuguese localization for OpenOffice.org"
-version 3.2.1
-import ooobasis32-pt
-import ooobasis32-pt-base
-import ooobasis32-pt-binfilter
-import ooobasis32-pt-calc
-import ooobasis32-pt-draw
-import ooobasis32-pt-help
-import ooobasis32-pt-impress
-import ooobasis32-pt-math
-import ooobasis32-pt-res
-import ooobasis32-pt-writer
+summary "Portuguese (European) localization for OpenOffice.org"
+version 3.3.0
+import ooobasis33-pt
+import ooobasis33-pt-base
+import ooobasis33-pt-binfilter
+import ooobasis33-pt-calc
+import ooobasis33-pt-draw
+import ooobasis33-pt-help
+import ooobasis33-pt-impress
+import ooobasis33-pt-math
+import ooobasis33-pt-res
+import ooobasis33-pt-writer
 import openofficeorg3-dict-pt
 import openofficeorg3-pt
 depend office/openoffice
@@ -270,77 +974,335 @@ end package
 
 package office/openoffice/locale/pt-BR
 classification "Applications/Office"
-summary "Portuguese Brazilian localization for OpenOffice.org"
-version 3.2.1
-import ooobasis32-pt-BR
-import ooobasis32-pt-BR-base
-import ooobasis32-pt-BR-binfilter
-import ooobasis32-pt-BR-calc
-import ooobasis32-pt-BR-draw
-import ooobasis32-pt-BR-help
-import ooobasis32-pt-BR-impress
-import ooobasis32-pt-BR-math
-import ooobasis32-pt-BR-res
-import ooobasis32-pt-BR-writer
+summary "Portuguese (Brazilian) localization for OpenOffice.org"
+version 3.3.0
+import ooobasis33-pt-BR
+import ooobasis33-pt-BR-base
+import ooobasis33-pt-BR-binfilter
+import ooobasis33-pt-BR-calc
+import ooobasis33-pt-BR-draw
+import ooobasis33-pt-BR-help
+import ooobasis33-pt-BR-impress
+import ooobasis33-pt-BR-math
+import ooobasis33-pt-BR-res
+import ooobasis33-pt-BR-writer
 import openofficeorg3-pt-BR
 depend office/openoffice
 add depend fmri=openoffice-pt-BR@3.1.0-1 type=optional
 end package
 
+package office/openoffice/locale/ro
+classification "Applications/Office"
+summary "Romanian localization for OpenOffice.org"
+version 3.3.0
+import ooobasis33-ro
+import ooobasis33-ro-base
+import ooobasis33-ro-binfilter
+import ooobasis33-ro-calc
+import ooobasis33-ro-draw
+import ooobasis33-ro-help
+import ooobasis33-ro-impress
+import ooobasis33-ro-math
+import ooobasis33-ro-res
+import ooobasis33-ro-writer
+import openofficeorg3-dict-ro
+import openofficeorg3-ro
+depend office/openoffice
+end package
+
 package office/openoffice/locale/ru
 classification "Applications/Office"
 summary "Russian localization for OpenOffice.org"
-version 3.2.1
-import ooobasis32-ru
-import ooobasis32-ru-base
-import ooobasis32-ru-binfilter
-import ooobasis32-ru-calc
-import ooobasis32-ru-draw
-import ooobasis32-ru-help
-import ooobasis32-ru-impress
-import ooobasis32-ru-math
-import ooobasis32-ru-res
-import ooobasis32-ru-writer
+version 3.3.0
+import ooobasis33-ru
+import ooobasis33-ru-base
+import ooobasis33-ru-binfilter
+import ooobasis33-ru-calc
+import ooobasis33-ru-draw
+import ooobasis33-ru-help
+import ooobasis33-ru-impress
+import ooobasis33-ru-math
+import ooobasis33-ru-res
+import ooobasis33-ru-writer
 import openofficeorg3-dict-ru
 import openofficeorg3-ru
 depend office/openoffice
 add depend fmri=openoffice-ru@3.1.0-1 type=optional
 end package
 
+package office/openoffice/locale/sh
+classification "Applications/Office"
+summary "Serbian (Cyrillic) localization for OpenOffice.org"
+version 3.3.0
+import ooobasis33-sh
+import ooobasis33-sh-base
+import ooobasis33-sh-binfilter
+import ooobasis33-sh-calc
+import ooobasis33-sh-draw
+import ooobasis33-sh-help
+import ooobasis33-sh-impress
+import ooobasis33-sh-math
+import ooobasis33-sh-res
+import ooobasis33-sh-writer
+import openofficeorg3-sh
+depend office/openoffice
+end package
+
+package office/openoffice/locale/si
+classification "Applications/Office"
+summary "Sinhala localization for OpenOffice.org"
+version 3.3.0
+import ooobasis33-si
+import ooobasis33-si-base
+import ooobasis33-si-binfilter
+import ooobasis33-si-calc
+import ooobasis33-si-draw
+import ooobasis33-si-help
+import ooobasis33-si-impress
+import ooobasis33-si-math
+import ooobasis33-si-res
+import ooobasis33-si-writer
+import openofficeorg3-si
+depend office/openoffice
+end package
+
+package office/openoffice/locale/sk
+classification "Applications/Office"
+summary "Slovak localization for OpenOffice.org"
+version 3.3.0
+import ooobasis33-sk
+import ooobasis33-sk-base
+import ooobasis33-sk-binfilter
+import ooobasis33-sk-calc
+import ooobasis33-sk-draw
+import ooobasis33-sk-help
+import ooobasis33-sk-impress
+import ooobasis33-sk-math
+import ooobasis33-sk-res
+import ooobasis33-sk-writer
+import openofficeorg3-dict-sk
+import openofficeorg3-sk
+depend office/openoffice
+end package
+
+package office/openoffice/locale/sl
+classification "Applications/Office"
+summary "Slovenian localization for OpenOffice.org"
+version 3.3.0
+import ooobasis33-sl
+import ooobasis33-sl-base
+import ooobasis33-sl-binfilter
+import ooobasis33-sl-calc
+import ooobasis33-sl-draw
+import ooobasis33-sl-help
+import ooobasis33-sl-impress
+import ooobasis33-sl-math
+import ooobasis33-sl-res
+import ooobasis33-sl-writer
+import openofficeorg3-dict-sl
+import openofficeorg3-sl
+depend office/openoffice
+end package
+
+package office/openoffice/locale/sr
+classification "Applications/Office"
+summary "Serbian (Latin) localization for OpenOffice.org"
+version 3.3.0
+import ooobasis33-sr
+import ooobasis33-sr-base
+import ooobasis33-sr-binfilter
+import ooobasis33-sr-calc
+import ooobasis33-sr-draw
+import ooobasis33-sr-help
+import ooobasis33-sr-impress
+import ooobasis33-sr-math
+import ooobasis33-sr-res
+import ooobasis33-sr-writer
+import openofficeorg3-dict-sr
+import openofficeorg3-sr
+depend office/openoffice
+end package
+
 package office/openoffice/locale/sv
 classification "Applications/Office"
 summary "Swedish localization for OpenOffice.org"
-version 3.2.1
-import ooobasis32-sv
-import ooobasis32-sv-base
-import ooobasis32-sv-binfilter
-import ooobasis32-sv-calc
-import ooobasis32-sv-draw
-import ooobasis32-sv-help
-import ooobasis32-sv-impress
-import ooobasis32-sv-math
-import ooobasis32-sv-res
-import ooobasis32-sv-writer
+version 3.3.0
+import ooobasis33-sv
+import ooobasis33-sv-base
+import ooobasis33-sv-binfilter
+import ooobasis33-sv-calc
+import ooobasis33-sv-draw
+import ooobasis33-sv-help
+import ooobasis33-sv-impress
+import ooobasis33-sv-math
+import ooobasis33-sv-res
+import ooobasis33-sv-writer
 import openofficeorg3-dict-sv
 import openofficeorg3-sv
 depend office/openoffice
 add depend fmri=openoffice-sv@3.1.0-1 type=optional
 end package
 
+package office/openoffice/locale/ta
+classification "Applications/Office"
+summary "Tamil localization for OpenOffice.org"
+version 3.3.0
+import ooobasis33-ta
+import ooobasis33-ta-base
+import ooobasis33-ta-binfilter
+import ooobasis33-ta-calc
+import ooobasis33-ta-draw
+import ooobasis33-ta-help
+import ooobasis33-ta-impress
+import ooobasis33-ta-math
+import ooobasis33-ta-res
+import ooobasis33-ta-writer
+import openofficeorg3-ta
+depend office/openoffice
+end package
+
+package office/openoffice/locale/te
+classification "Applications/Office"
+summary "Telugu localization for OpenOffice.org"
+version 3.3.0
+import ooobasis33-te
+import ooobasis33-te-base
+import ooobasis33-te-binfilter
+import ooobasis33-te-calc
+import ooobasis33-te-draw
+import ooobasis33-te-help
+import ooobasis33-te-impress
+import ooobasis33-te-math
+import ooobasis33-te-res
+import ooobasis33-te-writer
+import openofficeorg3-te
+depend office/openoffice
+end package
+
+package office/openoffice/locale/th
+classification "Applications/Office"
+summary "Thai localization for OpenOffice.org"
+version 3.3.0
+import ooobasis33-th
+import ooobasis33-th-base
+import ooobasis33-th-binfilter
+import ooobasis33-th-calc
+import ooobasis33-th-draw
+import ooobasis33-th-help
+import ooobasis33-th-impress
+import ooobasis33-th-math
+import ooobasis33-th-res
+import ooobasis33-th-writer
+import openofficeorg3-dict-th
+import openofficeorg3-th
+depend office/openoffice
+end package
+
+package office/openoffice/locale/tr
+classification "Applications/Office"
+summary "Turkish localization for OpenOffice.org"
+version 3.3.0
+import ooobasis33-tr
+import ooobasis33-tr-base
+import ooobasis33-tr-binfilter
+import ooobasis33-tr-calc
+import ooobasis33-tr-draw
+import ooobasis33-tr-help
+import ooobasis33-tr-impress
+import ooobasis33-tr-math
+import ooobasis33-tr-res
+import ooobasis33-tr-writer
+import openofficeorg3-tr
+depend office/openoffice
+end package
+
+package office/openoffice/locale/ug
+classification "Applications/Office"
+summary "Uyghur localization for OpenOffice.org"
+version 3.3.0
+import ooobasis33-ug
+import ooobasis33-ug-base
+import ooobasis33-ug-binfilter
+import ooobasis33-ug-calc
+import ooobasis33-ug-draw
+import ooobasis33-ug-help
+import ooobasis33-ug-impress
+import ooobasis33-ug-math
+import ooobasis33-ug-res
+import ooobasis33-ug-writer
+import openofficeorg3-ug
+depend office/openoffice
+end package
+
+package office/openoffice/locale/uk
+classification "Applications/Office"
+summary "Ukrainian localization for OpenOffice.org"
+version 3.3.0
+import ooobasis33-uk
+import ooobasis33-uk-base
+import ooobasis33-uk-binfilter
+import ooobasis33-uk-calc
+import ooobasis33-uk-draw
+import ooobasis33-uk-help
+import ooobasis33-uk-impress
+import ooobasis33-uk-math
+import ooobasis33-uk-res
+import ooobasis33-uk-writer
+import openofficeorg3-uk
+depend office/openoffice
+end package
+
+package office/openoffice/locale/uz
+classification "Applications/Office"
+summary "Uzbek localization for OpenOffice.org"
+version 3.3.0
+import ooobasis33-uz
+import ooobasis33-uz-base
+import ooobasis33-uz-binfilter
+import ooobasis33-uz-calc
+import ooobasis33-uz-draw
+import ooobasis33-uz-help
+import ooobasis33-uz-impress
+import ooobasis33-uz-math
+import ooobasis33-uz-res
+import ooobasis33-uz-writer
+import openofficeorg3-uz
+depend office/openoffice
+end package
+
+package office/openoffice/locale/vi
+classification "Applications/Office"
+summary "Vietnamese localization for OpenOffice.org"
+version 3.3.0
+import ooobasis33-vi
+import ooobasis33-vi-base
+import ooobasis33-vi-binfilter
+import ooobasis33-vi-calc
+import ooobasis33-vi-draw
+import ooobasis33-vi-help
+import ooobasis33-vi-impress
+import ooobasis33-vi-math
+import ooobasis33-vi-res
+import ooobasis33-vi-writer
+import openofficeorg3-dict-vi
+import openofficeorg3-vi
+depend office/openoffice
+end package
+
 package office/openoffice/locale/zh-CN
 classification "Applications/Office"
-summary "Simplified Chinese localization for OpenOffice.org"
-version 3.2.1
-import ooobasis32-zh-CN
-import ooobasis32-zh-CN-base
-import ooobasis32-zh-CN-binfilter
-import ooobasis32-zh-CN-calc
-import ooobasis32-zh-CN-draw
-import ooobasis32-zh-CN-help
-import ooobasis32-zh-CN-impress
-import ooobasis32-zh-CN-math
-import ooobasis32-zh-CN-res
-import ooobasis32-zh-CN-writer
+summary "Chinese (simplified) localization for OpenOffice.org"
+version 3.3.0
+import ooobasis33-zh-CN
+import ooobasis33-zh-CN-base
+import ooobasis33-zh-CN-binfilter
+import ooobasis33-zh-CN-calc
+import ooobasis33-zh-CN-draw
+import ooobasis33-zh-CN-help
+import ooobasis33-zh-CN-impress
+import ooobasis33-zh-CN-math
+import ooobasis33-zh-CN-res
+import ooobasis33-zh-CN-writer
 import openofficeorg3-zh-CN
 depend office/openoffice
 add depend fmri=openoffice-zh-CN@3.1.0-1 type=optional
@@ -348,32 +1310,35 @@ end package
 
 package office/openoffice/locale/zh-TW
 classification "Applications/Office"
-summary "Traditional Chinese localization for OpenOffice.org"
-version 3.2.1
-import ooobasis32-zh-TW
-import ooobasis32-zh-TW-base
-import ooobasis32-zh-TW-binfilter
-import ooobasis32-zh-TW-calc
-import ooobasis32-zh-TW-draw
-import ooobasis32-zh-TW-help
-import ooobasis32-zh-TW-impress
-import ooobasis32-zh-TW-math
-import ooobasis32-zh-TW-res
-import ooobasis32-zh-TW-writer
+summary "Chinese (traditional) localization for OpenOffice.org"
+version 3.3.0
+import ooobasis33-zh-TW
+import ooobasis33-zh-TW-base
+import ooobasis33-zh-TW-binfilter
+import ooobasis33-zh-TW-calc
+import ooobasis33-zh-TW-draw
+import ooobasis33-zh-TW-help
+import ooobasis33-zh-TW-impress
+import ooobasis33-zh-TW-math
+import ooobasis33-zh-TW-res
+import ooobasis33-zh-TW-writer
 import openofficeorg3-zh-TW
 depend office/openoffice
 add depend fmri=openoffice-zh-TW@3.1.0-1 type=optional
 end package
 
+package office/openoffice/openoffice-sdk
+classification "Applications/Office"
+summary "Software Development Kit (SDK) for OpenOffice.org"
+version 3.3.0
+import ooobasis33-sdk
+depend office/openoffice
+add depend fmri=openoffice-sdk@3.1.0-1 type=optional
+end package
+
 package openoffice
 add set name=pkg.renamed value=true
 depend office/openoffice
-version 3.1.0-1
-end package
-
-package openoffice-sdk
-add set name=pkg.renamed value=true
-depend office/openoffice/openoffice-sdk
 version 3.1.0-1
 end package
 
@@ -402,9 +1367,8 @@ version 3.1.0-1
 end package
 
 package openoffice-it
-add set name=pkg.renamed value=true
-depend office/openoffice/locale/it
-version 3.1.0-1
+add set name=pkg.obsolete value=true
+version 3.1.0-2
 end package
 
 package openoffice-ja
@@ -449,6 +1413,12 @@ depend office/openoffice/locale/ru
 version 3.1.0-1
 end package
 
+package openoffice-sdk
+add set name=pkg.renamed value=true
+depend office/openoffice/openoffice-sdk
+version 3.1.0-1
+end package
+
 package openoffice-sv
 add set name=pkg.renamed value=true
 depend office/openoffice/locale/sv
@@ -466,4 +1436,3 @@ add set name=pkg.renamed value=true
 depend office/openoffice/locale/zh-TW
 version 3.1.0-1
 end package
-
