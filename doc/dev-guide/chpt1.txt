@@ -1,0 +1,81 @@
+
+
+This chapter discusses the design goals and concepts behind IPS, and
+lays out some of the implications of those choices.
+
+We desgined IPS to resolve some long-standing issues with existing
+Solaris mechanisms for software delivery, installation and maintenance
+that had caused significant problems for both Solaris customers and
+Solaris developers/maintainers.  The new packaging system had to do 
+the following:
+
+* Minimize planned downtime by making software update possible while
+  in production; minimize unplanned downtime by making it simple and
+  quick to revert to known working software configurations.
+
+* Automate, as much as possible, the installation of new software, or
+  updates to existing software.
+
+* Resolve the difficulties with ever-increasing software size and 
+  limited distribution media space.
+
+* Provide means for cryptographic verification of correct software 
+  installation.
+
+* Incorporate mechanisms to allow easy virtualization of Solaris at a
+  variety of levels - and zones in particular.
+
+* Reduce the effort required to generate patches/upgrades for existing
+  systems.
+
+* Allow other software publishers (ISVs) to publish packages using
+  IPS.
+
+These requirements led fairly directly to the following ideas and
+implications:
+
+* Leverage ZFS directly to very quickly create new filesystems that
+  are clones of existing ones.  This meant that Solaris 11 requires
+  ZFS as the root filesystem, and allowed us to create as many boot
+  environments as the user desired.  The same mechanism would be used
+  for zones.
+
+* As much as possible, we wanted to eliminate duplicated mechanisms
+  and code used to install, patch and update Solaris. We decided to
+  make the packaging system responsible for the whole software
+  lifecycle - publication, installation, updating and removal.
+
+* The requirement to verify the installation of a package had several
+  interesting consequences:
+
+  * If a package could be correctly installed in multiple ways, those ways
+    should be specified by the developer, so the verification process could
+    take this into account.
+
+  * Scripting is inherently unverifiable since we cannot determine the
+    intent of the script writer.  This, along with other issues mentioned
+    later, led to the elimination of scripting during packaging operations.
+
+  * If the administrator wishes to install a package in a manner
+    incompatible with the original publisher's definition, we should
+    enable the administrator to easily republish the package he wishes
+    to alter so that the scope of his changes are clear, not lost 
+    across upgrades - and can be verified in the same manner as
+    the original package.
+
+* Avoiding size restrictions led to a software repository model,
+  accessed using several different methods.  Different repository
+  sources can be composited to provide a complete set of packages, and
+  repositories can be distributed as a single file.  In this manner,
+  no single media was ever required to contain all the available
+  software.  In order to support disconnected/firewalledoperations,
+  tools are provided to copy and merge repositories.
+
+* Supporting multiple (possibly competing) software publishers led us
+  to driving all the packaging metadata into the packages themselves,
+  so no master database of all packages, dependencies, etc. exists.  A
+  catalog of available packages from a software publisher is part of
+  the repository for performance reasons, but it can be regenerated
+  from the data contained in the packages at will.
+
+

@@ -1,0 +1,220 @@
+
+	    	Packaging Software with IPS
+		--------------------------
+
+This chapter describes how to package your software with IPS.  
+
+Packaging software with IPS is often relatively straightforward due to 
+amount of automation that is provided; the goal has been as much
+as possible to avoid repetetive tedium since that seems to be the
+principle cause of most packaging bugs.
+
+Publication in IPS consists of the following steps:
+
+* generate a package manifest
+* add necessary metadata to to the generated manifest
+* evaluate dependencies
+* add any facets or actuators needed
+* check package with pkglint
+* publish to a local repository
+
+The easiest way to get started is to lay out the software in the
+fashion you wish it installed in an directory.  This can be done with
+install target in Makefiles, or if the software you wish to package is
+already in a tarball, unpacking the tarball into a subdirectory.  For
+many open source software packages that use autoconf(1), setting the
+DESTDIR environment variable to point to the desired prototype area
+will accomplish this.
+
+Suppose your software consists of a binary, a library and a man page,
+and you wish to install this software in a directory under /opt named
+mysoftware.  You should create a directory (named proto in the
+examples) in your uild area under which your software appears; e.g
+
+   proto/opt/mysoftware/lib/mylib.so.1 
+   proto/opt/mysoftware/bin/mycmd
+   proto/opt/mysoftware/man/man1/mycmd.1
+
+Now, let's generate a manifest for this proto area.  We'll pipe it
+through pkgfmt to format the manifest more nicely for humans. Assuming
+that the proto directory is in the current working directory:
+
+$ pkgsend generate proto | pkgfmt > mypkg.p5m.1
+
+Examining the file, you'll see it contains the following lines
+
+  dir path=opt group=bin mode=0755 owner=root
+  dir path=opt/mysoftware group=bin mode=0755 owner=root
+  dir path=opt/mysoftware/bin group=bin mode=0755 owner=root
+  dir path=opt/mysoftware/lib group=bin mode=0755 owner=root
+  dir path=opt/mysoftware/man group=bin mode=0755 owner=root
+  dir path=opt/mysoftware/man/man1 group=bin mode=0755 owner=root
+  file opt/mysoftware/bin/mycmd path=opt/mysoftware/bin/mycmd group=bin \
+      mode=0755 owner=root
+  file opt/mysoftware/lib/mylib.so.1 path=opt/mysoftware/lib/mylib.so.1 \
+      group=bin mode=0644 owner=root
+  file opt/mysoftware/man/man1/mycmd.1 path=opt/mysoftware/man/man1/mycmd.1 \
+      group=bin mode=0644 owner=root
+
+You'll notice that path of the files to be packages appears
+twice - once in the path=... attribute, and once as the positional
+second attribute.  The latter describes the path in the proto area,
+the former the location the file is to be installed.  This double
+entry allows one to modify the installation location w/o requiring
+the proto area be modified to match; this can save significant
+amounts of effort when repackaging open source software when
+the install locations are defined for another operating system.
+
+Also, note that pkgsend generate has picked defaults for directory
+owners and groups.  In the case of /opt, the defaults are not correct;
+we'll just delete that directory since it's delivered by other packages
+already on the system.
+
+We also need to define several important pieces of metadata, expressed
+as set actions, that should appear in every package:
+
+* pkg.fmri defines the name and version of the package as described
+  in chapter 3.  Discussion about version numbering can be seen
+  in chapter 5 and a desciption of Solaris versioning can found
+  in chaper 12.
+
+* pkg.description is a proper description of the contents of the 
+  package.
+
+* pkg.summary is a one-line synopsis of the description.
+
+* variant.arch enumerates the architectures for which this package
+  is suitable.  If the entire package can be installed on any 
+  architecture, this may be omitted.  Producing packages that have
+  different components for different architectures is discussed in
+  chapter 7.
+
+* info.classification is a grouping scheme used by the packagemanager,
+  the IPS GUI.  The supported values are shown in Appendix 1.  In this
+  case, we pick an arbitrary one for our sample package.  Failure to
+  include this will mean the PackageManager doesn't display the
+  package; this is handy for common infrastructure packages which may
+  not be of direct interest, but instead are depended upon by higher
+  level packages.
+
+Rather than modifying the generated manifest directly, we'll use
+pkgmogrify to edit the generated manifest.  A full description
+of how pkgmogrify can be used to modify package manifests may be
+found in chapter 8.  In this example we use the macro capability
+to define the architecture,  as well as regular expression matching 
+for the directory we want to elide from the manifest.
+
+Now we create a small file containing the information we wish to add
+to the manifest, as well as the transform needed to drop the opt
+directory from the manifest.
+
+set name=pkg.fmri value=mypkg@1.0,5.11-0
+set name=pkg.summary value="This is our example package"
+set name=pkg.description value="This is a full description of \
+all the interesting attributes of this example package." 
+set name=variant.arch value=$(ARCH)
+set name=info.classification \
+    value=org.opensolaris.category.2008:Applications/Accessories
+<transform dir path=opt$->drop>
+
+Running pkgmogrify over mypkg.p5m.1 with the above lines in
+a file named mypkg.mog:
+
+% pkgmogrify -DARCH=`uname -p` mypkg.p5m.1 mypkg.mog  | pkgfmt > mypkg.p5m.2
+
+Examining the file we see:
+set name=pkg.fmri value=mypkg@1.0,5.11-0
+set name=pkg.description \
+    value="This is a full description of all the interesting attributes of this example package. "
+set name=pkg.summary value="This is our example package"
+set name=info.classification \
+    value=org.opensolaris.category.2008:Applications/Accessories
+set name=variant.arch value=i386
+dir path=opt/mysoftware group=bin mode=0755 owner=root
+dir path=opt/mysoftware/bin group=bin mode=0755 owner=root
+dir path=opt/mysoftware/lib group=bin mode=0755 owner=root
+dir path=opt/mysoftware/man group=bin mode=0755 owner=root
+dir path=opt/mysoftware/man/man1 group=bin mode=0755 owner=root
+file opt/mysoftware/bin/mycmd path=opt/mysoftware/bin/mycmd group=bin \
+    mode=0755 owner=root
+file opt/mysoftware/lib/mylib.so.1 path=opt/mysoftware/lib/mylib.so.1 \
+    group=bin mode=0644 owner=root
+file opt/mysoftware/man/man1/mycmd.1 path=opt/mysoftware/man/man1/mycmd.1 \
+    group=bin mode=0644 owner=root
+
+Note that the action defining "opt" has been removed, and the 
+manifest contents from mypkg.mog have been added to our package.
+For now, pkgfmt doesn't add line breaks to strings; this may
+change.
+
+Now, lets's generate dependencies:
+
+$ pkgdepend generate -md proto mypkg.p5m.2 | pkgfmt > mypkg.p5m.3
+
+In this new file, we see:
+set name=pkg.fmri value=mypkg@1.0,5.11-0
+set name=pkg.description \
+    value="This is a full description of all the interesting attributes of this example package."
+set name=pkg.summary value="This is our example package"
+set name=info.classification \
+    value=org.opensolaris.category.2008:Applications/Accessories
+set name=variant.arch value=i386
+dir path=opt/mysoftware group=bin mode=0755 owner=root
+dir path=opt/mysoftware/bin group=bin mode=0755 owner=root
+dir path=opt/mysoftware/lib group=bin mode=0755 owner=root
+dir path=opt/mysoftware/man group=bin mode=0755 owner=root
+dir path=opt/mysoftware/man/man1 group=bin mode=0755 owner=root
+file opt/mysoftware/bin/mycmd path=opt/mysoftware/bin/mycmd group=bin \
+    mode=0755 owner=root
+file opt/mysoftware/lib/mylib.so.1 path=opt/mysoftware/lib/mylib.so.1 \
+    group=bin mode=0644 owner=root
+file opt/mysoftware/man/man1/mycmd.1 path=opt/mysoftware/man/man1/mycmd.1 \
+    group=bin mode=0644 owner=root
+depend fmri=__TBD pkg.debug.depend.file=libc.so.1 \
+    pkg.debug.depend.reason=opt/mysoftware/bin/mycmd \
+    pkg.debug.depend.type=elf type=require pkg.debug.depend.path=lib \
+    pkg.debug.depend.path=opt/mysoftware/lib pkg.debug.depend.path=usr/lib
+depend fmri=__TBD pkg.debug.depend.file=libc.so.1 \
+    pkg.debug.depend.reason=opt/mysoftware/lib/mylib.so.1 \
+    pkg.debug.depend.type=elf type=require pkg.debug.depend.path=lib \
+    pkg.debug.depend.path=usr/lib
+
+pkgdepend has added notations about a dependency on libc.so.1 by both
+mylib.so.1 and mycmd.  Note that the internal dependency between mycmd
+and mylib.so.1 is currently silently elided by pkgdepend.
+
+Now we need to resolve these dependencies.  This resolution phase is
+done by examining the packages currently installed on the machine used
+for building the software.  Once again, pkgdepend does this, but this
+time by default puts its output in mypkg.p5m.3.res.  Note that this
+takes a while to run while it loads lots of info about the system on
+which it is running.  pkgdepend will resolve many packages at once if
+you wish to amortize this time over all packages; running it on one
+package at a time is not time efficient.
+
+$ pkgdepend resolve -m mypkg.p5m.3
+
+
+After a while, we find in myopkg.p5m.3.res::
+set name=info.classification \
+    value=org.opensolaris.category.2008:Applications/Accessories
+set name=variant.arch value=i386
+dir path=opt/mysoftware group=bin mode=0755 owner=root
+dir path=opt/mysoftware/bin group=bin mode=0755 owner=root
+dir path=opt/mysoftware/lib group=bin mode=0755 owner=root
+dir path=opt/mysoftware/man group=bin mode=0755 owner=root
+dir path=opt/mysoftware/man/man1 group=bin mode=0755 owner=root
+file opt/mysoftware/bin/mycmd path=opt/mysoftware/bin/mycmd group=bin \
+    mode=0755 owner=root
+file opt/mysoftware/lib/mylib.so.1 path=opt/mysoftware/lib/mylib.so.1 \
+    group=bin mode=0644 owner=root
+file opt/mysoftware/man/man1/mycmd.1 path=opt/mysoftware/man/man1/mycmd.1 \
+    group=bin mode=0644 owner=root
+depend fmri=pkg:/system/library@0.5.11-0.168 type=require
+
+
+TODO
+
+<add facets & man page actuators w/ pkgmogrify>
+<run pkglist>
+<publish to local file repo, create archive for sending off>

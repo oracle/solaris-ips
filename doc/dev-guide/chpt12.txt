@@ -1,0 +1,4 @@
+
+	Chapter 12, Dealing with Zones, describes how IPS handles zones
+	and discusses those cases where package developers should be
+	aware of zones.

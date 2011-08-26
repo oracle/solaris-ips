@@ -1,0 +1,120 @@
+
+	Chapter 5
+
+This chapter describes how the IPS client functions to install,
+update and remove the software installed in an image. Understanding
+basically how pkg(1) works will help administrators and developers
+better understand the various errors that can occur, and allow
+them to more quickly resolve package dependency problems.
+
+
+The following steps are executed when pkg is invoked to modify
+the software installed on the machine.
+
+1) inputs are error checked.
+
+2) a description of the desired end state of the system is
+   constructed; in the case of an unconstrainted software update this
+   might be something like "all the packages currently installed, or
+   newer versions of them".  In the case of package removal, it would
+   be "all the packages currently installed without this one".
+
+3) the options are reviewed to make sure that at least one exists,
+   and any missing dependencies, etc. of a package will mark that
+   package as uninstallable.  If an obvious error exists, such
+   as "I need to install A, but A depends on B, and no version of B
+   is available", then pkg will print an appropriate error and exit.
+   If no obvious errors are found, processing continues.
+
+4) The various possible choices for all the packages are assigned
+   boolean variables, and all the dependencies between those packages,
+   any required packages, etc. are cast as boolean expressions in 
+   conjunctive normal form.  The set of expressions thus generated 
+   is passed to MiniSAT. If MiniSAT cannot find any solution, the
+   error handling code attempts to walk the set of installed 
+   packages and the attempted operation and print reasons for
+   why each possible choice was eliminated.  If the curently installed
+   set of packages meet the requirements but no other does, pkg will
+   report that there is nothing to do.  Since the error message 
+   generation and specificity is determined by the inputs to pkg,
+   being as specific as possible in commands issued to pkg will
+   produce the most useful error messages.  If on the other hand
+   MiniSAT finds a possible solution, we begin optimization.
+
+5) The optimization phase is necessary because there is no way of
+   describing some solutions as more desirable than others to a SAT
+   solver. Instead, once a solution is found we add additional
+   constraints to the problem to "fence off" less desirable choices,
+   and we fence off the current solution as well.  We then repeatedly
+   invoke MiniSAT and repeat the above operation until no more
+   solutions are found; the last successful solution is taken as the
+   best one.  Clearly, the difficulty of finding a solution is
+   proportional to the number of possible solutions; being more
+   specific about the desired result will produce solutions
+   more quickly.
+
+6) Once the set of package FMRIs that best satisfy the posed
+   problem is found, the evaluation phase begins.  In this
+   phase, we compare the packages currently installed on the
+   system with the end state, and compare package manifests
+   of old and new packages to determine three principle lists:
+
+   * actions that are being removed
+   * actions that are being added
+   * actions that are being updated
+
+   The action lists are then updated so that:
+
+   * directory and link actions are reference counted mediated link
+   * processing is done hardlinks are marked for repair if their
+   * target file is updated; this is becaus updating a target of a
+     hardlink in a manner that is safe for currently executing
+     processes breaks the hard links.
+   * editable files moving between packages are correctly handled
+     so any user edits are not lost.
+   * The action lists are sorted so that removals, additions and 
+     updates occur in the correct order.
+ 
+   All the currently installed packages are then cross-checked to
+   make sure that no packages conflict - two packages do not attempt
+   to deliver a file to the same location, directory attributes
+   for the same directory agree between packagts, etc.  If conflicts
+   exist, these are reported and pkg exits with an error message.
+
+   Finally, the action lists are scanned to determine if any
+   SMF services need to be restarted if this operation is performed,
+   whether or not this change can be applied to a running system,
+   whether or not the boot archive needs to be rebuilt afterward,
+   amount of space required, etc.
+
+7) If pkg is running without the -n flag, processing continues
+   to the download phase.  For each action that requires content,
+   we download any required files by hash and cache them.  This
+   step may take some time if the amount of content to be 
+   retrieved is large.  Once donwloading is complete, if the
+   change is to be applied to a live system (image is rooted
+   at '/') and a reboot is required, the running system is 
+   cloned and the target image is switched to the clone.
+
+8) Execution begins with all the removal actions being executed.  If
+   any unexpected content is found in directories being removed from
+   the system, that content is placed in lost+found under /var/pkg.
+   Execution proceeds to install and update actions.  Note that all
+   the actions have been blended across all packages; thus all the
+   changes in a single pkg operation are applied to the system at once
+   rather than pkg by pkg; this permits packages to depend on each
+   other, exchange content, etc safely.  For details on how files
+   are updated, see the description of the file action in chapter 3.
+
+
+10)If we're updating a live system, any pending actuators are executed
+   at this point.  These are typicall SMF service restarts/refreshes.
+   Once these are launched, we update the local search indicies. 
+   Lastly, if neede, we update the boot archive.
+
+
+ 
+
+
+
+ 

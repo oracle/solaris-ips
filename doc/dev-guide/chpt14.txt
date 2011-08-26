@@ -1,0 +1,65 @@
+
+	Chapter 14, Package Republication, describes how administrators
+	can modify existing packages if needed for local conditions.
+
+Occasitionally administrators may wish or need to override attributes
+or modify packages they did not produce.  This may be to replace a
+portion of the package with an internal implementation, or something
+as simple as removing binaries not permitted on systems.  While other
+packaging systems provide various mechanisms to "force" installation,
+the IPS team decided to make it easy to republish an existing package
+with the desired modifications; this makes upgrade much easier since
+new versions can be re-published with the same modifications.  It also
+allows the rest of the packaging system to function normally since
+instead of forcing IPS to ignore changes, we just change the
+packages from the begining.
+
+Of course, running a system with a republished package may cause
+issues with the support organization if any connection is suspected
+between observed problems and the modified package.
+
+The basic steps are as follows:
+
+ 1) pkgrecv the package to be re-published in a raw format.  This
+    pulls down the package under the specified directory in a special
+    format:  all of the files are named by their hash value, and 
+    the manifest is named "manifest".  Remember to set any needed
+    proxy configuration in the http_proxy environment variable.
+
+ 2) Use pkgmogrify to modify the manifest in the desired manner.
+    In order to prevent problems with machines caching package
+    manifests, we always recommend deleting the timestamp from
+    the internal package fmri.
+
+    If changes are significant, running the resulting package 
+    through pkglint as shown in chapter 4 is a good idea.
+
+ 3) Republish the package with pkgsend.  Note that this republication
+    will strip the package of any signatures that are present; to
+    prevent a (harmless) warning message you may wish to remove
+    signature actions in the pkgmogrify step.
+
+ 4) Optionally, sign the package so that internal processes can be 
+    followed.
+
+Here's an simple manual example, where we change the pkg.summary field
+to be "IPS has lots of features" instead of whatever was there originally:
+
+  % mkdir republish; cd republish
+  % pkgrecv -d . --raw -s http://pkg.oracle.com/solaris/release package/pkg
+  % cd package*    # package name contains a '/', and is url-encoded.
+  % cd *           # we pulled down just the latest package by default
+  % cat > fix-pkg
+  # change value of pkg.summary
+  <transform set name=pkg.summary -> edit value '.*' "IPS has lots of features">
+  # delete any signature actions
+  <transform signature -> drop>
+  # remove timestamp from fmri so we get our own
+  <transform set name=pkg.fmri -> edit value ":20.+" "">
+  ^D
+  % pkgmogrify manifest fix-pkg > new-manifest
+  % pkgrepo create ./mypkg
+  % pkgrepo -s ./mypkg add-publisher solaris
+  % pkgsend -s ./mypkg publish -d . new-manifest
+
+  

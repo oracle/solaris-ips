@@ -1,0 +1,189 @@
+
+	Chapter 10, Advanced IPS, deals with more complex package
+	upgrade issues, and describe several features in IPS designed
+	to simplify these problems.
+
+For most upgrade operations, IPS will automatically do exactly what is
+needed to install updated packages.  There are some cases, however,
+that require that the developer provide additional information to IPS.
+For performance reasons, the solver works purely on the dependency
+information included in packages.  Packages whose dependencies indicate
+that they may be installed at the same time but whose content conflicts
+(attempts to install the same files, for example) will cause conflict
+checking to fail pre-installation, requiring manual user specification 
+of acceptable versions which would need to be determined by trial and
+error.  Thus, making sure that conflicting packages cannot be installed
+due to constraining dependencies is a responsibility of the package
+developer.
+
+Renaming, merging and splitting packages
+----------------------------------------
+
+Often, the desired breakdown of a software component changes, whether
+because of original mistakes, change in the product or its usage over
+time, or changes in the surrounding software environment.  Also,
+sometimes just the name of a package needs to change. When
+contemplating such changes, thought must be given to the customer who
+is upgrading their system to insure that unintended side effects do
+not occur.
+
+We'll deal with the three cases in order of increasing delicacy.
+
+First, simple renames are straightforward.  IPS provides a mechanism
+to indicate that a package has been renamed.  A new version of the
+package is published, containing a set action of the form:
+
+set name=pkg.renamed value=true 
+
+and a "require" dependency on the new package. Note that a renamed 
+package may not deliver contents other than depend or set actions.
+
+The new package MUST insure that it cannot be installed at the same
+time as the original package before the rename.  If both packages are
+covered by the same incorporation dependency, this is automatic... but
+if not, the new package must contain an optional dependency on the old
+package at the renamed version.  This insures that the solver will not
+select both packages, which would fail conflict checking.
+
+Anyone installing this renamed package will automatically receive the
+new named package, since it is a dependency of the old version.  If a
+renamed package is not depended upon by any other packages, it is
+automatically removed from the system.  The presence of older software
+may cause a number of renamed packages to be shown as installed; when
+that older software is removed the renamed packages will be
+automatically removed as well.  Packages may be renamed multiple times 
+without ill effect other than user confusion.
+
+Merging packages is straightforward as well.  There are two cases here;
+in the first case, one package absorbs another at the renamed version.
+For example, suppose package A@2 will absorb package B@3.  Simply 
+rename package B to package A@2; remember to include an optional
+dependency in A@2 on B@3 unless both packages are incorporated so
+they upgrade in lockstep as above.  Now, a user upgrading B to B@3
+will now get A installed, which has absorbed B.  The second case
+is when both packages change their name; in this case, simply rename
+both packages to the name of the new merged package, including of 
+course two optional dependencies on the old packages in the new one
+if they are not otherwise constrained.
+
+Splitting packages into pieces is problematic at present if one of the
+component pieces are not renamed.  This is because the package
+post-split is not strictly speaking compatible with the package
+pre-split, violating dependency logic that upgrading packages is the
+safe thing to do.  As a result, we recommend that packages that need
+to be split into multiple pieces have all different names for the
+component pieces.  In this case, simple rename the original package,
+including multiple require dependencies on the various pieces so that
+anyone having a dependency on the original package will get all the
+component pieces installed afterward.  Note that some components may
+be absorbed into existing packages as a merge without problems.
+
+Obsoleting packages
+-------------------
+
+Package obsoletion is the mechanism by which packages are emptied of
+contents and are removed from the system.  Such a package does not
+satisfy require dependencies, so a installed package w/ a 'require'
+dependency on a package that becomes obsolete will prevent upgrade
+unless a newer version of the installed package is available that does
+not contain the 'require' dependency.
+
+A package is made obsolete by publishing a new version with a set
+action as follows:
+
+set name=pkg.obsolete value=true
+
+with no other contents save possibly for other set actions.
+
+A package may be made non-obsolete by publishing newer versions;
+note that users who upgraded through the obsoletion will lose
+this package while those who did not will not.
+
+Preserving editable files during package renaming or path changes
+-----------------------------------------------------------------
+
+One of the more frequent issues is the migration of editable files,
+either in the filesystem or between packages.  IPS attempts to migrate
+editable files that move between packages (say as the result of a
+rename) and that are not renamed or otherwise have their path
+altered. However, if the path changes the following must be done for
+the user's customizations to be preserved:
+
+If the file action in the old package does not contain the attribute
+"original_name", it must be added.  Set the value to the original name
+of the package, followed by a colon and then the path to the file
+without a leading '/'. Once this is present on an editable file, it
+must not be changed; this value acts as a unique identifier for all
+moves going forward so that regardless of the number of versions
+skipped on an upgrade, the user's content is properly preserved.
+
+Moving unpackaged contents on directory removal/rename
+---------------------------------------------------------
+
+Normally, unpackaged contents are salvaged when the containing
+directory is removed because the last reference to it disappears.
+When a directory changes names, the packaging system treats this
+as the removal of the old directory and the creation of a new one.
+If the old directory has unpackaged content such as log files that
+should be moved to the new directory, this may be done with the
+salvage-from attribute if placed on the new directory.  For
+example, suppose we wished to rename a directory from
+
+/opt/mydata/log
+
+to 
+
+/opt/yourdata/log
+
+In the same package version that eliminates the former and
+introduces the latter, include 
+
+salvage-from=opt/mydata/log
+
+on the directory action that creates /opt/yourdata/log. Any 
+unpackaged contents of any time will be migrated to the new location.
+
+Delivering directories to be shared across boot environments
+------------------------------------------------------------
+
+In general IPS doesn't support delivery of packaged 
+contents to datasets that span boot environments.  This is because
+such shared contents if updated in one boot environment will not
+meet the definitions for other boot environments.
+
+However, some of the unpackaged files found under /var must be shared
+across boot environments to preserve normal system operation in the
+face of multiple boot environments.  Some examples include /var/mail,
+/var/log and the like.  Customers are likely to place such data on
+separate datasets as well, or on remote filers.  However, creating
+per-directory datasets would mean that many datasets would be created
+per-zone, which is not desirable.
+
+As a result, the following mechanism has been devised to allow
+multiple boot environments to cooperate on the management of the /var
+namespace, while minimizing the number of datasets needed.
+
+
+If it is desired to share a subdirectory of /var across boot
+environments, it must be placed under /var/share.  However, the
+packaging system cannot be used to deliver content to /var/share,
+because it is not mounted when alternate boot environments are mounted
+for modification.  To work around this restriction, a staging
+directory is present in /var/.migrate.  During the fs-minimal boot
+milestone which mounts /var, etc., any directories found under
+/var/.migrate are copied into /var/share.  Thus, a package that wishes
+to have a shared directory for mail would deliver a symbolic link from
+var/mail pointing to var/share/mail, and a directory var/.migrate/mail
+with the correct attributes.  Note that if this package needed to
+support upgrade from /var/mail being a directory, it would set the
+attribute salvage-from=var/mail on /var/.migrate/mail; the resulting
+files would be copied as well and renamed so they are not migrated
+again.
+
+It is not possible or desirable to create symbolic or hard links 
+in /var/share.
+
+
+
+
+

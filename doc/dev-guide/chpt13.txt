@@ -1,0 +1,4 @@
+
+	Chapter 13, Solaris and IPS, describes how Oracle use IPS to
+	package Solaris, and how the various dependency types are used
+	to define working package sets for Solaris.

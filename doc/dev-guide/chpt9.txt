@@ -1,0 +1,4 @@
+
+	Chapter 9 - Using SMF to generate side effects, explains how to
+	use the Service Management Framework to automatically handle
+	any necessary side effects of package installation.

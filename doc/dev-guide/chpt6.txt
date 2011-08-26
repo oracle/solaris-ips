@@ -1,0 +1,127 @@
+
+IPS provide a variety of different dependency types as discussed in 
+chapter 3; in this chapter we go into more detail about how each
+dependency type can be used to control the software that is installed.
+
+Dependencies in IPS are additive; all package dependecies
+must be satisfied in order to permit installation.  IPS allows
+packages to be mutually dependent.  In addition, you may have
+different kinds of dependencies on the same package at the
+same time; this allows one to achieve the desired relationship
+between packages using the dependencies as building blocks.
+
+Dependency Types
+----------------
+
+The most basic type of dependency is the 'require' dependency. If a
+package A@1.0' contains a 'require' dependency on pkg B@2, it means
+that if A@1.0 is installed, a version of B at 2 or higher must be
+installed as well.  This acceptance of higher versioned packages
+reflects the implicit expectation of binary compatibility in newer
+versions of existing packages.  These dependencies are typically used
+to express functional dependencies such as libraries or interpreters
+such as python, perl, etc.  The version portion of the specified fmri
+may be omitted; it indicates that any version will suffice.  The
+latter may not be actually true, but if other dependencies constrain
+the version adequately, this may save some effort.
+
+The 'require-any' dependency is used if more than one package will
+satisify a functional requirement.  IPS will pick one of the packages
+to install if the dependency is not already satisified; which one is
+selected is an implementation detail.  A typical use might be to
+insure that at least one version of perl was installed on the system,
+for example.  The versioning is handled in the same manner as
+the 'require' dependency.
+
+The 'optional' dependency is similar to the 'require' dependency, but
+the specified package need not be installed.  However, if it is
+present, it must be at the specified version or greater.  This type of
+dependency is typically used to handle cases where packages transfer
+content.  In this case, each version of the package post-transfer
+would contain an optional dependency on the other package's
+post-transfer version, so it would be impossible to install
+incompatible versions of the two packages. Omitting the version on an
+optional dependency makes the dependency a no-op, but is permitted.
+
+The 'conditional' dependency is similar to the 'require' dependency as
+well, except that a predicate attribute is present; if the package
+specified therein is present on the system at the specified or greater
+version, the conditional dependency is treated as a 'require'
+dependency, otherwise it is ignored.  This type of dependency is most
+often used to bring in optional extensions to a package if the
+requisite base packages are present on the system.  For example, an
+editor package that has both X11 and terminal versions might chose to
+place the X11 version in a separate package, and include a condtional
+dependency on the X11 version from the text version with the existence
+of the requisite X client library package as the predicate.
+
+The 'group' dependency is used as one would expect to construct groups
+of packages.  The group dependency will ignore the version specified;
+any version of the named package satisifies this dependency.  The
+named packge is required, unless either the package has been placed on
+the avoid list (see pkg(1)) or the package is explicitly rejected
+during installtion or specifically uninstalled.  This allow
+administrators to 'deselect' packages that are the subject of a group
+dependency.  IPS will remember this and not re-install the package
+during an update unless it becomes required by another dependency; in
+that case, if the package is no longer required after a subsequent
+operation it is removed.  A good example of how to use these
+dependencies is to construct packages containing group dependencies on
+packages that are needed for typical uses of a system.  Some examples
+might be 'end-user-desktop' or 'developer' or 'nfs-server' and the
+like; the administrator could install all that apply and know that
+over subsequent updates to newer versions of Solaris, the appropriate
+packages would be added to his system.
+
+The 'origin' dependency exists to resolve upgrade issues that require
+intermediate transitions.  The default behavior is to specify the
+mininum version of a package (if installed) that must be present on
+the system being updated.  For example, a typical use might be a
+database package version 5 that supports upgrade from version 3 or
+greater, but not earlier versions.  In this case, version 5 would have
+an origin dependency on itself at version 3.  Thus, version 5 was
+being fresh installed, installation would proceed; but if version 1 of
+the package was installed, one could not upgrade directly to this
+version.  Thus, pkg update database-package would not select version 5
+in this case but would pick version 3 instead as the latest possible
+version it could install.  The behavior of this dependency may be
+modified by the 'root-image' attribute being set to true; in this
+case the named package must be at the specified version or greater 
+if it is present in the running system, rather than the image
+being updated.  This is generally used for operating system 
+issues such as dependencies on boot block installers and the like.
+
+The 'parent' dependency is used for zones or other child images.  In
+this case, the dependency is only checked in a zone, and specifies a
+package and version that must be present in the parent image or global
+zone. The version specified must match to the level of precision
+specified.  For example, if the 'parent' dependency is on A@2.1, then
+any version of A begining with 2.1. will match.  This dependeny is
+often used to require that packages are kept in sync between local
+zones and the global zone, and as a short cut a special package name
+'feature/package/dependency/self' is used as a synonom for the exact
+version of the package that contains it.  This is used to keep key
+operating system components, such as libc.so.1 installed in the zone
+synchronized with the kernel installed in the global zone.
+
+The 'incorporate' dependency is heavily used in Solaris to insure that
+compatible versions of software are installed together.  The basic
+mechanism is like that of an 'optional' dependency, except that the
+version matching is that of the 'parent' dependency: if this package
+is present, it must be at the specified version to the level
+specified.  How these dependencies are typically used is that many of
+them are placed in the same package to define a surface in the package
+version space that is compatible.  Packages that contain such sets of
+incorporate dependencies are often called 'incorporations'; it is
+typical to define such for sets of software packages that are built
+together and are not separately versioned, like much of the kernel.
+
+The 'exclude' dependency is seldom used. It allows the containing
+package to preclude installation with the specified package at the
+specified version or higher.  Note that if the version is omitted, no
+version of the specified package may be installed with the containing
+package.  These constraints can be frustrating to administrators, 
+and should be avoided where possible.
+
+
+

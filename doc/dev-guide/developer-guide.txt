@@ -1,0 +1,75 @@
+
+Packaging and Delivering Software with the Image Packaging System
+
+                       A developer's guide
+
+
+Preface
+-------
+
+
+	In Solaris 11 and onwards, system software is packaged with
+	the Image Packaging System, or IPS.  IPS takes care of
+	installing new software and upgrading that software.  This
+	manual is for engineers and advanced administrators who wish
+	to better understand IPS, how to use it to package their own
+	software, and wish to understand how Solaris is packaged w/
+	IPS.  Special attention is given to the underlying design
+	concepts and design patterns so that readers can more readily
+	understand and utilize the more advanced features of IPS.
+
+How this book is organized:
+---------------------------
+
+	Chapter 1 - IPS Design Goals & Patterns, outlines the basic
+	design philosopy of IPS and its expression as software
+	patterns.
+
+	Chapter 2 - Package lifecycle,provides an overview of the
+        software package lifecycle with IPS.
+
+	Chapter 3 - IPS Core Concepts, lays out the basic terminology
+	and describes the various components that form IPS.
+
+	Chapter 4 - Creating simple packages with IPS, gets
+	the new user started constructing their own packages.
+
+	Chapter 5 - Basic operation of pkg(1).
+
+	Chapter 6 - Dependencies, explains the different types of IPS
+	dependencies and how they can be used to construct working
+	software systems.
+
+	Chapter 7 - Handling variations, explains how variants, facets
+	and mediated links are used to allow software publisher to
+	define multiple installation forms for their packages.
+
+	Chapter 8 - Transmogrifications, explains how package manifests
+	can be machine edited to permit the automated annotation and
+	checking of package manifests.
+
+	Chapter 9 - Using SMF to generate side effects, explains how to
+	use the Service Management Framework to automatically handle
+	any necessary side effects of package installation.
+
+	Chapter 10, Advanced Upgrade, deals with more complex package
+	upgrade issues, and describe several features in IPS designed
+	to simplify these problems.
+
+	Chapter 11, Package Signing, explains how package signing works
+	and how developers and QA organizations can sign either new
+	or existing, already signed packages.
+
+	Chapter 12, Dealing with Zones, describes how IPS handles zones
+	and discusses those cases where package developers should be
+	aware of zones.
+
+	Chapter 14, Solaris and IPS, describes how Oracle use IPS to
+	package Solaris, and how the various dependency types are used
+	to define working package sets for Solaris.
+
+	Chapter 15, Package Republication, describes how administrators
+	can modify existing packages if needed for local conditions.
+
+        Appendix 1: info.classification scheme definitions.
+

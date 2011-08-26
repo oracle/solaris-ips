@@ -1,0 +1,49 @@
+			Appendix 1
+
+The following are defined values for the package attribute
+info.classification with scheme org.opensolaris.category.2008, used by
+the PackageManager GUI to display possible packages.  A typical entry
+as used in a package manifest might be:
+
+set name=info.classification value=\
+    "org.opensolaris.category.2008:System/Administration and Configuration"
+
+Note that category and subcategory are separated by a "/"; 
+as usual, spaces in the attribute value require quoting.
+
+Defined values are:
+
+Meta Packages
+     Builds,Releases,Developer Tools,AMP Stack,Office Tools
+
+Applications
+     Accessories,Configuration and Preferences,Games,
+     Graphics and Imaging,Internet,Office,Panels and Applets,
+     Plug-ins and Run-times,Sound and Video,System Utilities,
+     Universal Access
+
+Desktop (GNOME)
+     Documentation,File Managers,Libraries,Localizations,
+     Scripts,Sessions,Theming,Trusted Extensions,
+     Window Managers
+
+Development
+     C,C++,Databases,Distribution Tools,Editors,Fortran,
+     GNOME and GTK+,GNU,High Performance Computing,
+     Integrated Development Environments,Java,Objective C,
+     Observability,Other Languages,PHP,Perl,Python,Ruby,
+     Source Code Management,Suites,System,X11
+
+Drivers
+     Display,Media,Networking,Other Peripherals,Ports,Storage
+
+System
+     Administration and Configuration,Core,Databases,
+     Enterprise Management,File System,Fonts,Hardware,
+     Internationalization,Libraries,Localizations,Media,
+     Multimedia Libraries,Packaging,Printing,Security,
+     Services,Shells,Software Management,Text Tools,Trusted,
+     Virtualization,X11
+
+Web Services
+     Application and Web Servers,Communications

@@ -1,0 +1,9 @@
+
+	Chapter 2 - Package lifecycle,provides an overview of the
+        software package lifecycle with IPS.
+
+Software packages go through a detailed lifecycle with IPS; understanding
+the various phases of the package lifecycle will help the developer and
+administrator optimize their results.
+
+From a publisher perspective, the 
