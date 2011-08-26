@@ -949,12 +949,19 @@ $(USE_INTERNAL_CRYPTO)depend fmri=driver/crypto/dprov type=require
 # The depend actions here should have their type attribute first, followed by
 # fmri, other attributes, facets, and then variants.  In addition, they should
 # be sorted by type and then fmri.
+
 depend fmri=zoo fmri=apple fmri=barge type=require-any
 depend fmri=baz type=require
 depend fmri=zorch@2.0 type=optional
 depend type=require fmri=bar
 # This action should be line wrapped after each pkg.debug attribute.
 depend fmri=__TBD pkg.debug.depend.file=libGL.so.1 pkg.debug.depend.path=lib pkg.debug.depend.path=usr/lib pkg.debug.depend.reason=usr/bin/xdriinfo pkg.debug.depend.type=elf type=require
+
+# These lines through the depend action are to test for comment duplication, bug
+# 18858.
+$(MAN_INCLUDE)<include network-ftp.man.p5m>
+# keep ping on system during upgrade from earlier releases
+depend fmri=network/ping
 
 # legacy and license actions should appear after group actions, which should
 # appear before depend actions.
@@ -1022,6 +1029,13 @@ set name=pkg.fmri value=pkg://solaris/package/pkg@0.5.11,5.11-0.163:20110410T074
 # The depend actions here should have their type attribute first, followed by
 # fmri, other attributes, facets, and then variants.  In addition, they should
 # be sorted by type and then fmri.
+
+
+# These lines through the depend action are to test for comment duplication, bug
+# 18858.
+$(MAN_INCLUDE)<include network-ftp.man.p5m>
+# keep ping on system during upgrade from earlier releases
+depend fmri=network/ping
 
 # This transform is the first; wrapping should be maintained although leading
 # spaces should be trimmed.
@@ -1122,6 +1136,13 @@ depend fmri=zorch@2.0 type=optional
 # The depend actions here should have their type attribute first, followed by
 # fmri, other attributes, facets, and then variants.  In addition, they should
 # be sorted by type and then fmri.
+
+
+# These lines through the depend action are to test for comment duplication, bug
+# 18858.
+$(MAN_INCLUDE)<include network-ftp.man.p5m>
+# keep ping on system during upgrade from earlier releases
+depend fmri=network/ping
 
 # This transform is the first; wrapping should be maintained although leading
 # spaces should be trimmed.

@@ -177,8 +177,8 @@ def read_line(f):
                     pkg.actions.InvalidActionError):
                         # cannot convert; treat as special macro
                         yield None, macro + actstr, comments
-                        continue
-                yield act, macro, comments
+                else:
+                        yield act, macro, comments
 
                 comments = []
 
