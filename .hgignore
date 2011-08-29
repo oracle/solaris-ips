@@ -21,9 +21,6 @@
 ^doc/guide-main.tex
 ^doc/guide-main.toc
 ^doc/html-out
-^src/brand/fmri_compare$
-^src/brand/support$
-^src/extern/.*
 ^src/gui/data/addmoresoftware.desktop$
 ^src/gui/data/packagemanager-info.xml$
 ^src/gui/data/packagemanager-preferences.schemas$

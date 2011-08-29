@@ -41,13 +41,14 @@ LINTFLAGS +=	-erroff=E_SEC_CREAT_WITHOUT_EXCL -U__PRAGMA_REDEFINE_EXTNAME
 
 .KEEP_STATE:
 
-$(ROOTHDR):
-	$(INSTALL) -d -m 0755 $(ROOTHDIR); \
-	$(INSTALL) -s -m 0644 -f $(ROOTHDIR) $(HDR)
+$(ROOTHDR): $(ROOTHDIR) $(HDR)
+	$(INSTALL) -m 0644 -d $(ROOTHDIR) -f $(HDR)
+
+$(ROOTHDIR):
+	$(MKDIR) -m 0755 $@
 
 all:	$(PROG)
 
 install: $(ZONES_PROG) $(ROOTHDR)
 
 lint: lint_PROG
-

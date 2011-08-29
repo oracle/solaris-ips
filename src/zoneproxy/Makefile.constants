@@ -22,11 +22,12 @@
 # Copyright (c) 2011, Oracle and/or its affiliates. All rights reserved.
 #
 
-INSTALL =	install
+INSTALL =	/usr/bin/python2.6 ../../setup.py installfile
 LINT =		lint
+MKDIR =		mkdir -p
 PROTO_AREA:sh =	echo $(hg root)/proto/root_$(uname -p)
-ZONES_LIBDIR =	 $(PROTO_AREA)/usr/lib/zones
-ZONES_PROG =	 $(PROG:%=$(ZONES_LIBDIR)/%)
+ZONES_LIBDIR =	$(PROTO_AREA)/usr/lib/zones
+ZONES_PROG =	$(PROG:%=$(ZONES_LIBDIR)/%)
 
 LINTFLAGS =	-asxm -u -errtags=yes -s -errsecurity=core -Xc99=%none
 CPPFLAGS =	-D_REENTRANT -I../zoneproxyd 
@@ -46,9 +47,9 @@ lint_PROG:	$$(PROG).c
 	$(LINK.c) -o $@ $< $(LDLIBS)
 
 $(ZONES_PROG):	$(PROG)
-	$(RM) -f $(ZONES_LIBDIR)/$(PROG); \
-		$(INSTALL) -d -m 0755 $(ZONES_LIBDIR); \
-		$(INSTALL) -s -m 0555 -f $(ZONES_LIBDIR) $(PROG)
+	$(RM) $(ZONES_LIBDIR)/$(PROG); \
+		$(MKDIR) -m 0755 $(ZONES_LIBDIR); \
+		$(INSTALL) -m 0555 -d $(ZONES_LIBDIR) -f $(PROG)
 
 clean:
 	-$(RM) $(CLEANFILES)
