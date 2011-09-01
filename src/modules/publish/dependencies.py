@@ -143,10 +143,11 @@ class AmbiguousPathError(DependencyError):
                 self.source = source
 
         def __str__(self):
+                s_str = "\n" + self.source.pretty_print() + "\n"
                 return _("The file dependency %(src)s depends on a path "
                     "delivered by multiple packages. Those packages "
                     "are:%(pkgs)s") % {
-                        "src":self.source,
+                        "src":s_str,
                         "pkgs":" ".join([str(p) for p in self.pkgs])
                     }
 
@@ -160,13 +161,14 @@ class UnresolvedDependencyError(DependencyError):
                 self.pvars = pvars
 
         def __str__(self):
+                dep_str = "\n" + self.file_dep.pretty_print()
                 if self.pvars.not_sat_set:
                         return _("%(pth)s has unresolved dependency '%(dep)s' "
                             "under the following combinations of "
                             "variants:\n%(combo)s") % \
                             {
                                 "pth":self.path,
-                                "dep":self.file_dep,
+                                "dep":dep_str + "\n",
                                 "combo":"\n".join([
                                     " ".join([
                                         ("%s:%s" % (name, val))
@@ -177,7 +179,7 @@ class UnresolvedDependencyError(DependencyError):
                 else:
                         return _("%(pth)s has unresolved dependency "
                             "'%(dep)s'.") % \
-                            { "pth":self.path, "dep":self.file_dep }
+                            { "pth":self.path, "dep":dep_str }
 
 
 class MissingPackageVariantError(DependencyError):

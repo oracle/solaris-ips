@@ -323,6 +323,113 @@ class DependencyAction(generic.Action):
                                 inds.append(("depend", ctype, stem, None))
                 return inds
 
+        def pretty_print(self):
+                """Write a dependency action across multiple lines.  This is
+                designed to be used in exceptions for cleaner printing of
+                unsatisfied dependencies."""
+
+                base_indent = "    "
+                act = self
+                out = base_indent + act.name
+
+                if hasattr(act, "hash") and act.hash != "NOHASH":
+                        out += " " + act.hash
+
+                # high order bits in sorting
+                def kvord(a):
+                        # Variants should always be last attribute.
+                        if a[0].startswith("variant."):
+                                return 7
+                        # Facets should always be before variants.
+                        if a[0].startswith("facet."):
+                                return 6
+                        # List attributes should be before facets and variants.
+                        if isinstance(a[1], list):
+                                return 5
+
+                        # For depend actions, type should always come
+                        # first even though it's not the key attribute,
+                        # and fmri should always come after type.
+                        if a[0] == "fmri":
+                                return 1
+                        elif a[0] == "type":
+                                return 0
+                        # Any other attributes should come just before list,
+                        # facet, and variant attributes.
+                        if a[0] != act.key_attr:
+                                return 4
+
+                        # No special order for all other cases.
+                        return 0
+
+                # actual cmp function
+                def cmpkv(a, b):
+                        c = cmp(kvord(a), kvord(b))
+                        if c:
+                                return c
+
+                        return cmp(a[0], b[0])
+
+                JOIN_TOK = " \\\n    " + base_indent
+                def grow(a, b, rem_values, force_nl=False):
+                        if not force_nl:
+                                lastnl = a.rfind("\n")
+                                if lastnl == -1:
+                                        lastnl = 0
+
+                                if rem_values == 1:
+                                        # If outputting the last attribute
+                                        # value, then use full line length.
+                                        max_len = 80
+                                else:
+                                        # If V1 format, or there are more
+                                        # attributes to output, then account for
+                                        # line-continuation marker.
+                                        max_len = 78
+
+                                # Note this length comparison doesn't include
+                                # the space used to append the second part of
+                                # the string.
+                                if (len(a) - lastnl + len(b) < max_len):
+                                        return a + " " + b
+                        return a + JOIN_TOK + b
+
+                def astr(aout):
+                        # Number of attribute values for first line and
+                        # remaining.
+                        first_line = True
+
+                        # Total number of remaining attribute values to output.
+                        rem_count = sum(len(act.attrlist(k)) for k in act.attrs)
+
+                        # Now build the action output string an attribute at a
+                        # time.
+                        for k, v in sorted(act.attrs.iteritems(), cmp=cmpkv):
+                                # Newline breaks are only forced when there is
+                                # more than one value for an attribute.
+                                if not (isinstance(v, list) or
+                                    isinstance(v, set)):
+                                        nv = [v]
+                                        use_force_nl = False
+                                else:
+                                        nv = v
+                                        use_force_nl = True
+
+                                for lmt in sorted(nv):
+                                        force_nl = use_force_nl and \
+                                            k.startswith("pkg.debug")
+                                        aout = grow(aout,
+                                            "=".join((k,
+                                                generic.quote_attr_value(lmt))),
+                                            rem_count,
+                                            force_nl=force_nl)
+                                        # Must be done for each value.
+                                        if first_line and JOIN_TOK in aout:
+                                                first_line = False
+                                        rem_count -= 1
+                        return aout
+                return astr(out)
+
         def validate(self, fmri=None):
                 """Performs additional validation of action attributes that
                 for performance or other reasons cannot or should not be done

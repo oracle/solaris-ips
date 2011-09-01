@@ -191,7 +191,13 @@ depend %(pfx)s.file=syslog %(pfx)s.path=var/log fmri=%(dummy_fmri)s type=require
         res_manf_2_missing = "ascii text"
 
         resolve_error = """\
-%(manf_path)s has unresolved dependency 'depend fmri=%(dummy_fmri)s %(pfx)s.file=libc.so.1 %(pfx)s.path=lib %(pfx)s.path=usr/lib %(pfx)s.reason=usr/xpg4/lib/libcurses.so.1 %(pfx)s.type=elf type=require' under the following combinations of variants:
+%(manf_path)s has unresolved dependency '
+    depend type=require fmri=%(dummy_fmri)s %(pfx)s.file=libc.so.1 \\
+        %(pfx)s.reason=usr/xpg4/lib/libcurses.so.1 \\
+        %(pfx)s.type=elf \\
+        %(pfx)s.path=lib \\
+        %(pfx)s.path=usr/lib
+' under the following combinations of variants:
 variant.arch:foo
 """
 
@@ -417,7 +423,10 @@ depend fmri=%(dummy_fmri)s %(pfx)s.file=libc.so.1 %(pfx)s.path=platform/pfoo/foo
 }
 
         two_v_deps_resolve_error = """\
-%(manf_path)s has unresolved dependency 'depend fmri=%(dummy_fmri)s %(pfx)s.file=var/log/authlog %(pfx)s.reason=baz %(pfx)s.type=hardlink type=require' under the following combinations of variants:
+%(manf_path)s has unresolved dependency '
+    depend type=require fmri=%(dummy_fmri)s %(pfx)s.file=var/log/authlog \\
+        %(pfx)s.reason=baz %(pfx)s.type=hardlink
+' under the following combinations of variants:
 variant.foo:baz variant.num:three
 """
         usage_msg = """\
@@ -460,7 +469,13 @@ The file dependency depend fmri=%(dummy_fmri)s %(pfx)s.file=no_such_named_file %
 The actions are:
 	depend fmri=pkg:/sat_bar_libc %(pfx)s.file=platform/bar/baz/no_such_named_file %(pfx)s.reason=foo/bar %(pfx)s.type=elf type=require
 	depend fmri=pkg:/sat_foo_libc %(pfx)s.file=platform/foo/baz/no_such_named_file %(pfx)s.reason=foo/bar %(pfx)s.type=elf type=require
-%(unresolved_path)s has unresolved dependency 'depend fmri=__TBD %(pfx)s.file=no_such_named_file %(pfx)s.path=platform/foo/baz %(pfx)s.path=platform/bar/baz %(pfx)s.path=lib %(pfx)s.path=usr/lib %(pfx)s.reason=foo/bar %(pfx)s.type=elf type=require'.
+%(unresolved_path)s has unresolved dependency '
+    depend type=require fmri=__TBD %(pfx)s.file=no_such_named_file \\
+        %(pfx)s.reason=foo/bar %(pfx)s.type=elf \\
+        %(pfx)s.path=lib \\
+        %(pfx)s.path=platform/bar/baz \\
+        %(pfx)s.path=platform/foo/baz \\
+        %(pfx)s.path=usr/lib'.
 """ % {
     "pfx":base.Dependency.DEPEND_DEBUG_PREFIX,
     "dummy_fmri":base.Dependency.DUMMY_FMRI,
@@ -468,8 +483,21 @@ The actions are:
 }
 
         amb_path_errors = """\
-The file dependency depend fmri=%(dummy_fmri)s %(pfx)s.file=no_such_named_file %(pfx)s.path=platform/foo/baz %(pfx)s.path=platform/bar/baz %(pfx)s.path=lib %(pfx)s.path=usr/lib %(pfx)s.reason=foo/bar %(pfx)s.type=elf type=require depends on a path delivered by multiple packages. Those packages are:pkg:/sat_bar_libc2 pkg:/sat_bar_libc
-%(unresolved_path)s has unresolved dependency 'depend fmri=%(dummy_fmri)s %(pfx)s.file=no_such_named_file %(pfx)s.path=platform/foo/baz %(pfx)s.path=platform/bar/baz %(pfx)s.path=lib %(pfx)s.path=usr/lib %(pfx)s.reason=foo/bar %(pfx)s.type=elf type=require'.
+The file dependency
+    depend type=require fmri=%(dummy_fmri)s %(pfx)s.file=no_such_named_file \\
+        %(pfx)s.reason=foo/bar %(pfx)s.type=elf \\
+        %(pfx)s.path=platform/foo/baz \\
+        %(pfx)s.path=platform/bar/baz \\
+        %(pfx)s.path=lib \\
+        %(pfx)s.path=usr/lib
+depends on a path delivered by multiple packages. Those packages are:pkg:/sat_bar_libc2 pkg:/sat_bar_libc
+%(unresolved_path)s has unresolved dependency '
+    depend type=require fmri=%(dummy_fmri)s %(pfx)s.file=no_such_named_file \\
+        %(pfx)s.reason=foo/bar %(pfx)s.type=elf \\
+        %(pfx)s.path=lib \\
+        %(pfx)s.path=platform/foo/baz \\
+        %(pfx)s.path=platform/bar/baz \\
+        %(pfx)s.path=usr/lib'.
 """ % {
     "pfx":base.Dependency.DEPEND_DEBUG_PREFIX,
     "dummy_fmri":base.Dependency.DUMMY_FMRI,
@@ -552,11 +580,18 @@ depend fmri=__TBD pkg.debug.depend.file=unsatisfied pkg.debug.depend.path=usr/bi
 """
 
         unsatisfied_error_1 = """\
-%s has unresolved dependency 'depend fmri=__TBD pkg.debug.depend.file=unsatisfied pkg.debug.depend.path=usr/bin pkg.debug.depend.reason=foo/bar pkg.debug.depend.type=elf type=require'.
+%s has unresolved dependency '
+    depend type=require fmri=__TBD pkg.debug.depend.file=unsatisfied \\
+        pkg.debug.depend.path=usr/bin pkg.debug.depend.reason=foo/bar \\
+        pkg.debug.depend.type=elf'.
 """
 
         unsatisfied_error_2 = """\
-%s has unresolved dependency 'depend fmri=__TBD pkg.debug.depend.file=unsatisfied pkg.debug.depend.path=usr/bin pkg.debug.depend.reason=foo/bar pkg.debug.depend.type=elf type=require' under the following combinations of variants:
+%s has unresolved dependency '
+    depend  type=require fmri=__TBD pkg.debug.depend.file=unsatisfied \\
+        pkg.debug.depend.path=usr/bin pkg.debug.depend.reason=foo/bar \\
+        pkg.debug.depend.type=elf
+' under the following combinations of variants:
 variant.foo:bar
 """
 
