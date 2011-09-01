@@ -62,7 +62,8 @@ import pkg.portable as portable
 import pkg.server.catalog as old_catalog
 import M2Crypto as m2
 
-from pkg.misc import EmptyDict, EmptyI, SIGNATURE_POLICY, DictProperty
+from pkg.misc import EmptyDict, EmptyI, SIGNATURE_POLICY, DictProperty, \
+    PKG_RO_FILE_MODE
 
 # The "core" type indicates that a repository contains all of the dependencies
 # declared by packages in the repository.  It is primarily used for operating
@@ -845,6 +846,7 @@ class Publisher(object):
                 self.__delay_validation = False
 
                 self.__properties = {}
+                self.__tmp_crls = {}
 
                 # Writing out an EmptyI to a config file and reading it back
                 # in doesn't work correctly at the moment, but reading and
@@ -2244,32 +2246,49 @@ pkg unset-publisher %s
                             path=orig.path,
                             params=orig.params, query=orig.params,
                             fragment=orig.fragment))
+                # If we've already read the CRL, use the previously created
+                # object.
+                if uri in self.__tmp_crls:
+                        return self.__tmp_crls[uri]
                 fn = urllib.quote(uri, "")
                 assert os.path.isdir(self.__crl_root)
                 fpath = os.path.join(self.__crl_root, fn)
                 crl = None
                 # Check if we already have a CRL for this URI.
                 if os.path.exists(fpath):
-                        # If we already have a CRL, check whether it's time
-                        # to retrieve a new one from the location.
-                        crl = self.__format_safe_read_crl(fpath)
-                        nu = crl.get_next_update().get_datetime()
-                        # get_datetime is supposed to return a UTC time, so
-                        # assert that's the case.
-                        assert nu.tzinfo.utcoffset(nu) == dt.timedelta(0)
-                        # Add timezone info to cur_time so that cur_time and
-                        # nu can be compared.
-                        cur_time = dt.datetime.now(nu.tzinfo)
-                        if cur_time < nu:
-                                return crl
+                        # If we already have a CRL that we can read, check
+                        # whether it's time to retrieve a new one from the
+                        # location.
+                        try:
+                                crl = self.__format_safe_read_crl(fpath)
+                        except EnvironmentError:
+                                pass
+                        else:
+                                nu = crl.get_next_update().get_datetime()
+                                # get_datetime is supposed to return a UTC time,
+                                # so assert that's the case.
+                                assert nu.tzinfo.utcoffset(nu) == \
+                                    dt.timedelta(0)
+                                # Add timezone info to cur_time so that cur_time
+                                # and nu can be compared.
+                                cur_time = dt.datetime.now(nu.tzinfo)
+                                if cur_time < nu:
+                                        self.__tmp_crls[uri] = crl
+                                        return crl
                 # If the CRL is already known to be unavailable, don't try
                 # connecting to it again.
                 if uri in Publisher.__bad_crls:
                         return crl
                 # If no CRL already exists or it's time to try to get a new one,
                 # try to retrieve it from the server.
-                tmp_pth = fpath + ".tmp"
-                with open(tmp_pth, "wb") as fh:
+                try:
+                        tmp_fd, tmp_pth = tempfile.mkstemp(dir=self.__crl_root)
+                except EnvironmentError, e:
+                        if e.errno in (errno.EACCES, errno.EPERM):
+                                tmp_fd, tmp_pth = tempfile.mkstemp()
+                        else:
+                                raise apx._convert_error(e)
+                with os.fdopen(tmp_fd, "wb") as fh:
                         hdl = pycurl.Curl()
                         hdl.setopt(pycurl.URL, uri)
                         hdl.setopt(pycurl.WRITEDATA, fh)
@@ -2294,7 +2313,17 @@ pkg unset-publisher %s
                 except api_errors.BadFileFormat:
                         portable.remove(tmp_pth)
                         return crl
-                portable.rename(tmp_pth, fpath)
+                try:
+                        portable.rename(tmp_pth, fpath)
+                        # Because the file was made using mkstemp, we need to
+                        # chmod it to match the other files in var/pkg.
+                        os.chmod(fpath, PKG_RO_FILE_MODE)
+                except EnvironmentError:
+                        self.__tmp_crls[uri] = ncrl
+                        try:
+                                portable.remove(tmp_pth)
+                        except EnvironmentError:
+                                pass
                 return ncrl
 
         def __check_crls(self, cert, ca_dict):

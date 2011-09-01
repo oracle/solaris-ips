@@ -1557,8 +1557,9 @@ class TestPkgSign(pkg5unittest.SingleDepotTestCase):
                 # Check that when the check-certificate-revocation is False, its
                 # default value, that the install succeedes.
                 self._api_install(api_obj, ["example_pkg"])
-                self._api_uninstall(api_obj, ["example_pkg"])
                 self.pkg("set-property check-certificate-revocation true")
+                self.pkg("verify", su_wrap=True, exit=1)
+                self._api_uninstall(api_obj, ["example_pkg"])
                 api_obj.reset()
                 self.assertRaises(apx.RevokedCertificate, self._api_install,
                     api_obj, ["example_pkg"])
@@ -1781,6 +1782,64 @@ class TestPkgSign(pkg5unittest.SingleDepotTestCase):
                 self._api_install(api_obj, ["example_pkg"])
                 self.pkg("set-property signature-policy require-signatures")
                 self.pkg("verify", exit=1)
+
+        def test_crl_8(self):
+                """Test that if two packages share the same CRL, it's only
+                downloaded once even if it can't be stored permanently in the
+                image."""
+
+                def cnt_crl_contacts(log_path):
+                        c = 0
+                        with open(log_path, "rb") as fh:
+                                for line in fh:
+                                        if "ch1_ta4_crl.pem" in line:
+                                                c += 1
+                        return c
+
+                r = self.get_repo(self.dcs[1].get_repodir())
+                rstore = r.get_pub_rstore(pub="test")
+                os.makedirs(os.path.join(rstore.file_root, "ch"))
+                portable.copyfile(os.path.join(self.crl_dir,
+                    "ch1_ta4_crl.pem"),
+                    os.path.join(rstore.file_root, "ch", "ch1_ta4_crl.pem"))
+
+                plist = self.pkgsend_bulk(self.rurl1,
+                    [self.example_pkg10, self.var_pkg])
+
+                sign_args = "-k %(key)s -c %(cert)s -i %(i1)s %(name)s" % {
+                        "name": " ".join(plist),
+                        "key": os.path.join(self.keys_dir,
+                            "cs1_ch1_ta4_key.pem"),
+                        "cert": os.path.join(self.cs_dir,
+                            "cs1_ch1_ta4_cert.pem"),
+                        "i1": os.path.join(self.chain_certs_dir,
+                            "ch1_ta4_cert.pem")
+                }
+                self.pkgsign(self.rurl1, sign_args)
+
+                self.dcs[1].start()
+
+                self.pkg_image_create(self.durl1)
+                self.seed_ta_dir("ta4")
+
+                self.pkg("set-property signature-policy require-signatures")
+                api_obj = self.get_img_api_obj()
+                self._api_install(api_obj, ["example_pkg", "var_pkg"])
+                self.pkg("set-property check-certificate-revocation true")
+                # Check that the server is only contacted once per CRL, not once
+                # per package with that CRL.
+                self.pkg("verify", su_wrap=True, exit=1)
+                self.assertEqual(cnt_crl_contacts(self.dcs[1].get_logpath()), 1)
+                self.pkg("verify", exit=1)
+                # Pkg should contact the server once more then store it in its
+                # permanent location.
+                self.assertEqual(cnt_crl_contacts(self.dcs[1].get_logpath()), 2)
+                # Check that once the crl file is in its permanent location,
+                # it's not retrieved again.
+                self.pkg("verify", su_wrap=True, exit=1)
+                self.assertEqual(cnt_crl_contacts(self.dcs[1].get_logpath()), 2)
+                self.pkg("verify", exit=1)
+                self.assertEqual(cnt_crl_contacts(self.dcs[1].get_logpath()), 2)
 
         def test_var_pkg(self):
                 """Test that actions tagged with variants don't break signing.
