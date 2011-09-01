@@ -1611,9 +1611,13 @@ class _RepoStore(object):
                                 rmdir(os.path.join(self.manifest_root, name))
 
                         if self.file_root:
-                                for entry in os.listdir(self.file_root):
-                                        rmdir(os.path.join(self.file_root,
-                                            entry))
+                                try:
+                                        for entry in os.listdir(self.file_root):
+                                                rmdir(os.path.join(
+                                                    self.file_root, entry))
+                                except EnvironmentError, e:
+                                        if e.errno != errno.ENOENT:
+                                                raise
                 except EnvironmentError, e:
                         raise apx._convert_error(e)
                 finally:

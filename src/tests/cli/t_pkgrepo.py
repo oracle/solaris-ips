@@ -1201,9 +1201,20 @@ publisher\tprefix\texample.net
                 # Create a repository and then copy it somewhere for testing
                 # to make it easy to restore the original as needed.
                 src_repo = os.path.join(self.test_root, "remove-repo")
-                self.create_repo(src_repo)
 
+                self.create_repo(src_repo)
                 self.pkgrepo("set -s %s publisher/prefix=test" % src_repo)
+
+                # Test that removing a package when no files have been published
+                # works (bug 18424).
+                published = self.pkgsend_bulk(src_repo, self.zoo10)
+                self.pkgrepo("remove -s %s zoo" % src_repo)
+
+                # Reset the src_repo for the rest of the test.
+                shutil.rmtree(src_repo)
+                self.create_repo(src_repo)
+                self.pkgrepo("set -s %s publisher/prefix=test" % src_repo)
+
                 published = self.pkgsend_bulk(src_repo, (self.tree10,
                     self.amber10, self.amber20, self.truck10, self.truck20,
                     self.zoo10))
@@ -1211,6 +1222,7 @@ publisher\tprefix\texample.net
                 published += self.pkgsend_bulk(src_repo, (self.tree10,
                     self.zoo10))
 
+                # Restore repository for next test.
                 dest_repo = os.path.join(self.test_root, "test-repo")
                 shutil.copytree(src_repo, dest_repo)
 
