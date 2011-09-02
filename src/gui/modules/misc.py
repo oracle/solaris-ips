@@ -458,16 +458,19 @@ def set_dependencies_text(textview, info, dep_info, installed_dep_info,
         if installed_dep_info != None and len(installed_dep_info.get(0)) >= 0:
                 installed_states = installed_dep_info[0]
         version_fmt = get_version_fmt_string()
-        i = 0
         for x in info.dependencies:
                 if states != None and len(states) > 0:
                         name = fmri.extract_pkg_name(x)
-                        if i < len(states):
-                                version = version_fmt % \
-                                    {"version": states[i].version,
-                                    "build": states[i].build_release,
-                                    "branch": states[i].branch}
-                        else:
+                        found = False
+                        for state in states:
+                                if name ==  state.pkg_stem:
+                                        version = version_fmt % \
+                                            {"version": state.version,
+                                            "build": state.build_release,
+                                            "branch": state.branch}
+                                        found = True
+                                        break
+                        if not found:
                                 version = version_fmt % \
                                     {"version": '0',
                                      "build": '0',
@@ -485,7 +488,6 @@ def set_dependencies_text(textview, info, dep_info, installed_dep_info,
                                 installed_version = (_("(not installed)"))
                         names.append((name, version, installed_version,
                             found))
-                        i += 1
                 else:
                         build_rel = "0"
                         pkg_fmri = fmri.PkgFmri(x, build_release=build_rel)
