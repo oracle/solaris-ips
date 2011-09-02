@@ -1335,7 +1335,7 @@ def __api_execute_plan(operation, api_inst):
                 raise
         except api_errors.ImageInsufficentSpace, e:
                 error(str(e))
-                return EXIT_OOPS
+                rval = EXIT_OOPS
         except Exception, e:
                 error(_("An unexpected error happened during "
                     "%s: %s") % (operation, e))
