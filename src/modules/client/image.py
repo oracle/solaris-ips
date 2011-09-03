@@ -2296,7 +2296,9 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                 pps = []
                 for fmri, actions in repairs:
                         logger.info("Repairing: %-50s" % fmri.get_pkg_stem())
-                        m = self.get_manifest(fmri)
+                        # Need to get all variants otherwise evaluating the
+                        # pkgplan will fail in signature verification.
+                        m = self.get_manifest(fmri, all_variants=True)
                         pp = pkgplan.PkgPlan(self, progtrack, lambda: False)
                         pp.propose_repair(fmri, m, actions, [])
                         pp.evaluate(self.list_excludes(), self.list_excludes())

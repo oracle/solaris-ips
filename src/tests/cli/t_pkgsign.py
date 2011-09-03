@@ -105,8 +105,14 @@ class TestPkgSign(pkg5unittest.SingleDepotTestCase):
             add set description='a package with an alternate publisher'
             close """
 
+        bug_18880_pkg = """
+            open b18880@1.0,5.11-0
+            add file tmp/example_file mode=0555 owner=root group=bin path=bin/example_path variant.foo=bar
+            add file tmp/example_file2 mode=0555 owner=root group=bin path=bin/example_path variant.foo=baz
+            close"""
+
         image_files = ['simple_file']
-        misc_files = ['tmp/example_file']
+        misc_files = ['tmp/example_file', 'tmp/example_file2']
 
         def seed_ta_dir(self, certs, dest_dir=None):
                 if isinstance(certs, basestring):
@@ -2610,6 +2616,42 @@ class TestPkgSign(pkg5unittest.SingleDepotTestCase):
                 self._api_install(api_obj, ["example_pkg"])
                 self.pkg("set-property signature-policy verify")
                 self.pkg("verify", su_wrap=True)
+
+        def test_bug_18880_hash(self):
+                plist = self.pkgsend_bulk(self.rurl1, self.bug_18880_pkg)
+                self.pkgsign(self.rurl1, plist[0])
+                self.image_create(self.rurl1, variants={"variant.foo":"bar"})
+                api_obj = self.get_img_api_obj()
+                self._api_install(api_obj, ["b18880"])
+                self.pkg("verify")
+                self.pkg("fix")
+                portable.remove(os.path.join(self.img_path(),
+                    "bin/example_path"))
+                self.pkg("verify", exit=1)
+                self.assert_("signature" not in self.errout)
+                self.pkg("fix")
+                self.assert_("signature" not in self.errout)
+
+        def test_bug_18880_sig(self):
+                plist = self.pkgsend_bulk(self.rurl1, self.bug_18880_pkg)
+                sign_args = "-k %(key)s -c %(cert)s %(pkg)s" % \
+                    { "key": os.path.join(self.keys_dir, "cs1_ta2_key.pem"),
+                      "cert": os.path.join(self.cs_dir, "cs1_ta2_cert.pem"),
+                      "pkg": plist[0]
+                    }
+                self.pkgsign(self.rurl1, sign_args)
+                self.image_create(self.rurl1, variants={"variant.foo":"bar"})
+                api_obj = self.get_img_api_obj()
+                self.seed_ta_dir("ta2")
+                self._api_install(api_obj, ["b18880"])
+                self.pkg("verify")
+                self.pkg("fix")
+                portable.remove(os.path.join(self.img_path(),
+                    "bin/example_path"))
+                self.pkg("verify", exit=1)
+                self.assert_("signature" not in self.errout)
+                self.pkg("fix")
+                self.assert_("signature" not in self.errout)
 
 
 class TestPkgSignMultiDepot(pkg5unittest.ManyDepotTestCase):
