@@ -103,6 +103,10 @@ class LogFormatter(object):
                 self.action = None
                 self.manifest = None
 
+                # when the logger is using an engine, the engine registers
+                # itself here
+                self.engine = None
+
         # setters/getters for the tracker being used, adding that
         # to our private log handler
         def _get_tracker(self):
@@ -212,6 +216,14 @@ class PlainLogFormatter(LogFormatter):
                                             _("Logging error: %s") % err))
 
                                 if linted_flag:
+                                        # we may have asked not to report errors
+                                        # that have been marked as pkg.linted
+                                        if self.engine:
+                                                report = self.engine.get_param(
+                                                    "pkglint001.5.report-linted")
+                                                if report and \
+                                                    report.lower() == "false":
+                                                        return
                                         key = ("%s pkglint001.5" % LEVELS[INFO])
                                         linted_msg = _(
                                             "Linted message: %(id)s  "

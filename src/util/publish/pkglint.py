@@ -269,14 +269,25 @@ def read_manifests(names, lint_logger):
 
                 if manifest and "pkg.fmri" in manifest:
                         try:
-                                manifest.fmri = fmri.PkgFmri(
-                                    manifest["pkg.fmri"])
-                                manifests.append(manifest)
+                                manifest.fmri = \
+                                    pkg.fmri.PkgFmri(manifest["pkg.fmri"],
+                                        "5.11")
                         except fmri.IllegalFmri, e:
                                 lint_logger.critical(
-                                    _("Error in file %(file)s: %(err)s") %
-                                    {"file": filename, "err": str(e)},
+                                    _("Error in file %(file)s: "
+                                    "%(err)s") %
+                                    {"file": filename, "err": e},
                                     "lint.manifest002")
+                        if manifest.fmri:
+                                if not manifest.fmri.version:
+                                        lint_logger.critical(
+                                            _("Error in file %s: "
+                                            "pkg.fmri does not include a "
+                                            "version string") % filename,
+                                            "lint.manifest003")
+                                else:
+                                        manifests.append(manifest)
+
                 elif manifest:
                         lint_logger.critical(
                             _("Manifest %s does not declare fmri.") % filename,

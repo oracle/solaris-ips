@@ -180,7 +180,7 @@ check: $(PDIR)/protomanifest $(PDIR)/pkgmanifest
 # the lint run, please edit external_deps.pkglintrc
 lint: repository-metadata
 	@sed -e "s#/usr/share/lib/pkg/opensolaris.org.sections#$(PKGROOT)&#" \
-		< $(PKGROOT)/usr/share/lib/pkg/pkglintrc > $(PDIR)/pkglintrc
+		 < ips-pkglintrc > $(PDIR)/pkglintrc
 
 	@# Ensure that the shipped pkglint_whitelist.txt is self-consistent.
 	@# That is, when sorting it in the C locale and diffing the output

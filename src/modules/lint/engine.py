@@ -309,6 +309,8 @@ class LintEngine(object):
                 # set up our python logger
                 self.logger = logging.getLogger("pkglint")
 
+                formatter.engine = self
+
                 # the pkglint LogFormatters we are configured with
                 self.logs = [formatter]
 

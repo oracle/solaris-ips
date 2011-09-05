@@ -145,6 +145,32 @@ set name=pkg.lint.pkglint.action005.1.missing-deps value="pkg:/does/not/exist pk
 depend type=require fmri=does/not/exist
 """
 
+        broken_fmri_mf = """
+set name=pkg.fmri value=pkg://opensolaris.org/system/kernel@@@
+set name=pkg.description value="core kernel software for a specific instruction-set architecture"
+set name=info.classification value=org.opensolaris.category.2008:System/Core
+set name=pkg.summary value="Core Solaris Kernel"
+set name=org.opensolaris.consolidation value=ON
+set name=variant.arch value=i386 value=sparc
+"""
+
+        no_build_release_mf = """
+set name=pkg.fmri value=pkg://opensolaris.org/system/kernel@1
+set name=pkg.description value="core kernel software for a specific instruction-set architecture"
+set name=info.classification value=org.opensolaris.category.2008:System/Core
+set name=pkg.summary value="Core Solaris Kernel"
+set name=org.opensolaris.consolidation value=ON
+set name=variant.arch value=i386 value=sparc
+"""
+
+        no_version_mf = """
+set name=pkg.fmri value=pkg://opensolaris.org/system/kernel
+set name=pkg.description value="core kernel software for a specific instruction-set architecture"
+set name=info.classification value=org.opensolaris.category.2008:System/Core
+set name=pkg.summary value="Core Solaris Kernel"
+set name=org.opensolaris.consolidation value=ON
+set name=variant.arch value=i386 value=sparc
+"""
         # for the rcfiles below, we also need to point the
         # info_classification_path field to the sections file we deliver in the
         # proto area
@@ -176,6 +202,22 @@ pkglint.action005.1.missing-deps = pkg:/does/not/exist
 [pkglint]
 info_classification_path: %s/usr/share/lib/pkg/opensolaris.org.sections
 pkglint.action005.1.missing-deps = pkg:/does/not/exist@2.0
+"""
+        # in each of the cases below, we disable the check that reports on
+        # the presence of pkg.linted attributes.  However it's the report-linted
+        # parameter that differs.
+        no_linted_messages_rc = """
+[pkglint]
+pkglint001.5.report-linted = False
+pkglint.exclude = pkg.lint.pkglint_action.PkgActionChecker.linted \
+    pkg.lint.pkglint_manifest.PkgManifestChecker.linted
+"""
+
+        linted_messages_rc = """
+[pkglint]
+pkglint001.5.report-linted = True
+pkglint.exclude = pkg.lint.pkglint_action.PkgActionChecker.linted \
+    pkg.lint.pkglint_manifest.PkgManifestChecker.linted
 """
 
         def setUp(self):                
@@ -382,6 +424,38 @@ pkglint.action005.1.missing-deps = pkg:/does/not/exist@2.0
                     exit=1)
                 self.pkglint("-f /etc/shadow %s" % mpath, testrc=False, exit=1)
 
+        def test_12_pkg_versions(self):
+                """Tests that the CLI deals with pkg.fmri values properly."""
+
+                mpath = self.make_manifest(self.broken_fmri_mf)
+                self.pkglint(mpath, exit=1)
+                mpath = self.make_manifest(self.no_version_mf)
+                self.pkglint(mpath, exit=1)
+                # pkglint will add a default build_release if one is missing,
+                # in line with pkgsend.
+                mpath = self.make_manifest(self.no_build_release_mf)
+                self.pkglint(mpath)
+
+        def test_13_linted_ignore(self):
+                """Tests that our rcfile parameter to avoid printing linted
+                messages works properly"""
+
+                mpath1 = self.make_manifest(self.linted_manifest1)
+                self.make_misc_files({"rcfile": self.no_linted_messages_rc})
+                self.make_misc_files({"rcfile1": self.linted_messages_rc})
+
+                ret, output, err = self.pkglint("-f %s/rcfile1 %s" %
+                    (self.test_root,  mpath1), exit=0)
+                self.assert_("INFO " in err, "error output: %s" % err)
+                self.assert_("Linted message: opensolaris.manifest003.6" in err,
+                    "error output: %s" % err)
+
+                # now we should still fail, but should not emit the linted INFO
+                ret, output, err = self.pkglint("-f %s/rcfile %s" %
+                    (self.test_root,  mpath1), testrc=False, exit=0)
+                self.assert_("INFO " not in err, "error output: %s" % err)
+                self.assert_("Linted message: opensolaris.manifest003.6" not in
+                    err, "error output: %s" % err)
 
 
 class TestPkglintCliDepot(pkg5unittest.ManyDepotTestCase):
