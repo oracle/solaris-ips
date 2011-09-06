@@ -870,9 +870,9 @@ def resolve_links(path, files_dict, links, path_vars, file_dep_attrs, index=1):
                         assert vc_intersection.intersects(rec_vc), \
                             "vc:%s\nvc_intersection:%s" % \
                             (rec_vc, vc_intersection)
+                        links_found.setdefault(next_path, []).append(
+                            (link_pfmri, rec_vc))
                 res_paths.extend(rec_paths)
-                links_found.setdefault(next_path, []).append(
-                    (link_pfmri, rec_vc))
         # Now add in the dependencies for the current link.
         for next_path in links_found.keys():
 

@@ -2173,8 +2173,110 @@ link path=usr/lib/64 target=amd64
                     "\n".join([str(d) for d in pkg_deps[file_path]]))
                 dep = pkg_deps[file_path][0]
                 self.assertEqual(dep.attrs["type"], "require")
-                self.assert_(dep.attrs["fmri"], "link1")
+                self.assert_(dep.attrs["fmri"].startswith("pkg:/link1"))
                 self.assertEqual(dep.attrs[self.depend_dp + ".type"], "link")
+
+        def test_bug_18884_1(self):
+                """Test that a file dependency on a link whose target has
+                different content under different variant combinations results
+                in the correct variants (in this case, none) being tagged on the
+                resolved dependency."""
+
+                dep_manf = """ \
+set name=pkg.fmri value=test@1.0
+depend type=require fmri=__TBD pkg.debug.depend.file=ksh93 \
+    pkg.debug.depend.path=usr/bin pkg.debug.depend.reason=test-script.ksh93 \
+    pkg.debug.depend.type=script
+"""
+
+                ksh_manf = """ \
+set name=pkg.fmri value=shell/ksh@1.0
+set name=variant.debug.osnet value=true value=false
+set name=variant.foo value=sparc value=i386
+set name=variant.opensolaris.zone value=global value=nonglobal
+hardlink path=usr/bin/ksh93 target=../../usr/lib/isaexec
+"""
+
+                core_os = """ \
+set name=pkg.fmri value=system/core-os@1.0
+set name=variant.debug.osnet value=true value=false
+set name=variant.opensolaris.zone value=global value=nonglobal
+set name=variant.foo value=sparc value=i386
+file elfarch=sparc elfbits=32 group=bin mode=0555 owner=root path=usr/lib/isaexec pkg.csize=3633 pkg.size=12124 variant.foo=sparc variant.debug.osnet=false
+file elfarch=sparc elfbits=32 group=bin mode=0555 owner=root path=usr/lib/isaexec pkg.csize=4356 pkg.size=13576 variant.foo=sparc variant.debug.osnet=true
+file  elfarch=i386 elfbits=32 group=bin mode=0555 owner=root path=usr/lib/isaexec pkg.csize=3791 pkg.size=9696 variant.foo=i386 variant.debug.osnet=true
+file elfarch=i386 elfbits=32 group=bin mode=0555 owner=root path=usr/lib/isaexec pkg.csize=3137 pkg.size=8208 variant.foo=i386 variant.debug.osnet=false
+"""
+                dep_path = self.make_manifest(dep_manf)
+                ksh_path = self.make_manifest(ksh_manf)
+                cos_path = self.make_manifest(core_os)
+
+                pkg_deps, errs = dependencies.resolve_deps([dep_path,
+                    ksh_path, cos_path], self.api_obj, use_system=False)
+                if errs:
+                        raise RuntimeError("Got the following unexpected "
+                            "errors:\n%s" % "\n".join(["%s" % e for e in errs]))
+                self.assertEqual(len(pkg_deps), 3)
+                self.assertEqual(len(pkg_deps[ksh_path]), 0)
+                self.assertEqual(len(pkg_deps[cos_path]), 0)
+                self.assertEqual(len(pkg_deps[dep_path]), 2,
+                    "Got wrong number of pkgdeps for the file package. "
+                    "Deps were:\n%s" %
+                    "\n".join([str(d) for d in pkg_deps[dep_path]]))
+                for dep in pkg_deps[dep_path]:
+                        self.assert_("variant.foo" not in dep.attrs, str(dep))
+                        self.assert_("variant.debug.osnet" not in
+                            dep.attrs, str(dep))
+                        self.assert_("variant.opensolaris.zone" not in
+                            dep.attrs, str(dep))
+
+        def test_bug_18884_2(self):
+                """Similar test to test_bug_18884_1 except only two variants are
+                in play, not three.  This may make future debugging easier to
+                handle."""
+
+                dep_manf = """ \
+set name=pkg.fmri value=test@1.0
+depend type=require fmri=__TBD pkg.debug.depend.file=ksh93 \
+    pkg.debug.depend.path=usr/bin pkg.debug.depend.reason=test-script.ksh93 \
+    pkg.debug.depend.type=script
+"""
+
+                ksh_manf = """ \
+set name=pkg.fmri value=shell/ksh@1.0
+set name=variant.foo value=sparc value=i386
+set name=variant.opensolaris.zone value=global value=nonglobal
+hardlink path=usr/bin/ksh93 target=../../usr/lib/isaexec
+"""
+
+                core_os = """ \
+set name=pkg.fmri value=system/core-os@1.0
+set name=variant.opensolaris.zone value=global value=nonglobal
+set name=variant.foo value=sparc value=i386
+file elfarch=sparc elfbits=32 group=bin mode=0555 owner=root path=usr/lib/isaexec pkg.csize=3633 pkg.size=12124 variant.foo=sparc
+file elfarch=i386 elfbits=32 group=bin mode=0555 owner=root path=usr/lib/isaexec pkg.csize=3137 pkg.size=8208 variant.foo=i386
+"""
+                dep_path = self.make_manifest(dep_manf)
+                ksh_path = self.make_manifest(ksh_manf)
+                cos_path = self.make_manifest(core_os)
+
+                pkg_deps, errs = dependencies.resolve_deps([dep_path,
+                    ksh_path, cos_path], self.api_obj, use_system=False)
+                if errs:
+                        raise RuntimeError("Got the following unexpected "
+                            "errors:\n%s" % "\n".join(["%s" % e for e in errs]))
+                self.assertEqual(len(pkg_deps), 3)
+                self.assertEqual(len(pkg_deps[ksh_path]), 0)
+                self.assertEqual(len(pkg_deps[cos_path]), 0)
+                self.assertEqual(len(pkg_deps[dep_path]), 2,
+                    "Got wrong number of pkgdeps for the file package. "
+                    "Deps were:\n%s" %
+                    "\n".join([str(d) for d in pkg_deps[dep_path]]))
+                for dep in pkg_deps[dep_path]:
+                        self.assert_("variant.opensolaris.zone" not in
+                            dep.attrs, str(dep))
+                        self.assert_("variant.debug.osnet" not in
+                            dep.attrs, str(dep))
 
 
 if __name__ == "__main__":
