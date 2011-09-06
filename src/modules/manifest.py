@@ -355,7 +355,7 @@ class Manifest(object):
                         # generate actions that contain directories
                         alist = self._cache["manifest.dircache"] = [
                             actions.fromstr(s.strip())
-                            for s in Manifest._gen_dirs_to_str()
+                            for s in self._gen_dirs_to_str()
                         ]
 
                 s = set([
@@ -380,7 +380,7 @@ class Manifest(object):
                         # generate actions that contain mediators
                         alist = self._cache["manifest.mediatorcache"] = [
                             actions.fromstr(s.strip())
-                            for s in Manifest._gen_mediators_to_str()
+                            for s in self._gen_mediators_to_str()
                         ]
 
                 ret = defaultdict(set)

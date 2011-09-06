@@ -217,7 +217,8 @@ class TestPkgMediated(pkg5unittest.SingleDepotTestCase):
                 self.pkgsend_bulk(self.rurl, [
                     getattr(self, p)
                     for p in dir(self)
-                    if p.startswith("pkg_") and isinstance(getattr(self, p), basestring)
+                    if p.startswith("pkg_") and isinstance(getattr(self, p),
+                        basestring)
                 ])
 
         def __assert_mediation_matches(self, expected, mediators=misc.EmptyI):
@@ -225,8 +226,9 @@ class TestPkgMediated(pkg5unittest.SingleDepotTestCase):
                 self.assertEqualDiff(expected, self.output)
 
         def __assert_available_mediation_matches(self, expected,
-            mediators=misc.EmptyI):
-                self.pkg("mediator -H -F tsv -a %s" % " ".join(mediators))
+            mediators=misc.EmptyI, su_wrap=False):
+                self.pkg("mediator -H -F tsv -a %s" % " ".join(mediators),
+                    su_wrap=su_wrap)
                 self.assertEqualDiff(expected, self.output)
 
         def __assert_human_mediation_matches(self, expected):
@@ -234,9 +236,9 @@ class TestPkgMediated(pkg5unittest.SingleDepotTestCase):
                 self.assertEqualDiff(expected, self.output)
 
         def test_00_mediator(self):
-                """Verify set-mediator / unset-mediator function as expected when
-                setting / unsetting values only.  Other tests verify mediation
-                change behaviour.
+                """Verify set-mediator / unset-mediator function as expected
+                when setting / unsetting values only.  Other tests verify
+                mediation change behaviour.
                 """
 
                 self.image_create(self.rurl)
@@ -265,7 +267,8 @@ class TestPkgMediated(pkg5unittest.SingleDepotTestCase):
 
                 # Verify unprivileged user attempting set-mediator results in
                 # graceful failure.
-                self.pkg("set-mediator -vvv -I sendmail mta", exit=1, su_wrap=True)
+                self.pkg("set-mediator -vvv -I sendmail mta", exit=1,
+                    su_wrap=True)
 
                 # Verify mediation can be set and that the parsable output is
                 # correct.
@@ -353,6 +356,13 @@ vi\tvendor\t\tvendor\tnvi\t
 vi\tsystem\t\tsystem\tsvr4\t
 """)
 
+                # Dump image cache before continuing to verify the
+                # information is re-generated and operations succeed.
+                imgdir = self.get_img_api_obj().img.imgdir
+                cdir = os.path.join(imgdir, "cache")
+                assert os.path.exists(cdir)
+                shutil.rmtree(cdir)
+
                 # Test listing specific available mediations.
                 self.__assert_available_mediation_matches("""\
 perl\tsystem\t5.10.0\tsystem\t\t
@@ -360,7 +370,7 @@ perl\tsystem\t5.8.4\tsystem\t\t
 vi\tsite\t\tsite\tvim\t
 vi\tvendor\t\tvendor\tnvi\t
 vi\tsystem\t\tsystem\tsvr4\t
-""", ("perl", "vi"))
+""", ("perl", "vi"), su_wrap=True)
                 self.__assert_available_mediation_matches("""\
 vi\tsite\t\tsite\tvim\t
 vi\tvendor\t\tvendor\tnvi\t
@@ -539,9 +549,9 @@ mta\tsystem\t\tlocal\tnosuchmta\t
 mta\tsystem\t\tsystem\tpostfix\t
 """)
 
-                # Now uninstall all packages, then reinstall them and verify that
-                # postfix was selected for initial install (since user did not
-                # explicitly set a mediation) and that verify passes.
+                # Now uninstall all packages, then reinstall them and verify
+                # that postfix was selected for initial install (since user did
+                # not explicitly set a mediation) and that verify passes.
                 self.pkg("uninstall \*")
                 self.pkg("install -vvv sendmail@1 postfix@1")
                 check_target(gen_mta_links(), "postfix")
@@ -645,9 +655,9 @@ mta\tsystem\t\tsystem\tpostfix\t
                 self.pkg("verify")
 
                 # Install sendmail@1 and postfix@1, then upgrade to sendmail@2
-                # and verify that links point to sendmail due to vendor priority,
-                # and then upgrade to postfix@2 and verify that links point to
-                # postfix due to site priority.
+                # and verify that links point to sendmail due to vendor
+                # priority, and then upgrade to postfix@2 and verify that links
+                # point to postfix due to site priority.
                 self.pkg("install -vvv sendmail@1 postfix@1")
                 check_target(gen_mta_links(), "postfix")
                 self.pkg("update -vvv sendmail@2")
@@ -824,15 +834,16 @@ python\tlocal\t2.6\tlocal\t\t
                 self.pkg("install -vvv python-unladen-swallow-28")
                 check_not_exists(gen_python_links())
                 self.pkg("verify")
-                self.pkg("set-mediator -vvv -V '' -I unladen-swallow@2.8 python")
+                self.pkg("set-mediator -vvv "
+                    "-V '' -I unladen-swallow@2.8 python")
                 check_target(gen_python_links(), "python2.8-unladen-swallow")
                 self.__assert_mediation_matches("""\
 python\tsystem\t2.8\tlocal\tunladen-swallow@2.8\t
 """)
                 self.pkg("verify")
 
-                # Set mediation to unladen-swallow and verify unladen-swallow@2.8
-                # remains selected.
+                # Set mediation to unladen-swallow and verify
+                # unladen-swallow@2.8 remains selected.
                 self.pkg("set-mediator -vvv -I unladen-swallow python")
                 check_target(gen_python_links(), "python2.8-unladen-swallow")
                 self.__assert_mediation_matches("""\
@@ -866,8 +877,8 @@ python\tsystem\t2.7\tlocal\tunladen-swallow@\t
                 self.pkg("verify")
 
                 # Remove links and ensure verify fails for for unladen-swallow
-                # 2.7, but passes for 2.6 and 2.8, and that fix will allow verify
-                # to pass again.
+                # 2.7, but passes for 2.6 and 2.8, and that fix will allow
+                # verify to pass again.
                 remove_links(gen_python_links())
                 self.pkg("verify -v python-unladen-swallow-26 "
                     "python-unladen-swallow-28")
@@ -935,7 +946,7 @@ vi\tsystem\t\tlocal\tvim\t
                 # and then verify will succeed.
                 portable.remove(vi_path)
                 self.pkg("verify svr4-vi") # should pass, because of mediation
-                self.pkg("verify", exit=1) # should fail, because link is missing
+                self.pkg("verify", exit=1) # should fail, because link is gone
                 self.pkg("fix")
                 assert_target(vi_path, vim_path)
                 self.pkg("verify") # should now pass
@@ -954,8 +965,8 @@ vi\tsystem\t\tsystem\tvim\t
 """)
                 self.pkg("verify")
 
-                # Install nvi and verify mediation changes to nvi due to mediator
-                # priority of vendor.
+                # Install nvi and verify mediation changes to nvi due to
+                # mediator priority of vendor.
                 self.pkg("install -vvv nvi@1")
                 assert_target(vi_path, nvi_path)
                 self.__assert_mediation_matches("""\
