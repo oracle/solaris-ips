@@ -2747,8 +2747,46 @@ class TestPkgSignMultiDepot(pkg5unittest.ManyDepotTestCase):
                 repos."""
 
                 plist = self.pkgsend_bulk(self.rurl2, self.example_pkg10)
+                ta_path = os.path.join(self.raw_trust_anchor_dir,
+                    "ta2_cert.pem")
+                sign_args = "-k %(key)s -c %(cert)s -i %(ta)s %(pkg)s" % \
+                    { "key": os.path.join(self.keys_dir, "cs1_ta2_key.pem"),
+                      "cert": os.path.join(self.cs_dir, "cs1_ta2_cert.pem"),
+                      "ta": ta_path,
+                      "pkg": plist[0]
+                    }
+
+                self.pkgsign(self.rurl2, sign_args)
+
+                repo_location = self.dcs[1].get_repodir()
+                self.pkgrecv(self.rurl2, "-d %s example_pkg" % self.rurl1)
+                shutil.rmtree(repo_location)
+                self.pkgrepo("create %s" % repo_location)
+
+                # Add another signature which includes the same chain cert used
+                # in the first signature.
+                sign_args = "-k %(key)s -c %(cert)s -i %(ch1)s -i %(ta)s " \
+                    "%(name)s" % {
+                        "name": plist[0],
+                        "key": os.path.join(self.keys_dir,
+                            "cs1_ch1_ta3_key.pem"),
+                        "cert": os.path.join(self.cs_dir,
+                            "cs1_ch1_ta3_cert.pem"),
+                        "ch1": os.path.join(self.chain_certs_dir,
+                            "ch1_ta3_cert.pem"),
+                        "ta": ta_path,
+                }
+                self.pkgsign(self.rurl2, sign_args)
+                self.pkgrecv(self.rurl2, "-d %s example_pkg" % self.rurl1)
+                shutil.rmtree(repo_location)
+                self.pkgrepo("create %s" % repo_location)
+
+                # Add another signature to further test duplicate chain
+                # certificates as well as having a chain cert that's a signing
+                # certificate in other signatures.
                 sign_args = "-k %(key)s -c %(cert)s -i %(i1)s -i %(i2)s " \
-                    "-i %(i3)s -i %(i4)s -i %(i5)s %(name)s" % {
+                    "-i %(i3)s -i %(i4)s -i %(i5)s -i %(ch1)s -i %(ta)s " \
+                    "-i %(cs1_ch1_ta3)s %(name)s " % {
                         "name": plist[0],
                         "key": os.path.join(self.keys_dir,
                             "cs1_ch5_ta1_key.pem"),
@@ -2764,17 +2802,99 @@ class TestPkgSignMultiDepot(pkg5unittest.ManyDepotTestCase):
                             "ch4_ta1_cert.pem"),
                         "i5": os.path.join(self.chain_certs_dir,
                             "ch5_ta1_cert.pem"),
+                        "ta": ta_path,
+                        "ch1": os.path.join(self.chain_certs_dir,
+                            "ch1_ta3_cert.pem"),
+                        "cs1_ch1_ta3": os.path.join(self.cs_dir,
+                            "cs1_ch1_ta3_cert.pem"),
                 }
                 self.pkgsign(self.rurl2, sign_args)
-
                 self.pkgrecv(self.rurl2, "-d %s example_pkg" % self.rurl1)
 
                 self.pkg_image_create(self.rurl1)
                 self.seed_ta_dir("ta1")
+                self.seed_ta_dir("ta2")
+                self.seed_ta_dir("ta3")
                 self.pkg("set-property signature-policy verify")
 
                 api_obj = self.get_img_api_obj()
                 self._api_install(api_obj, ["example_pkg"])
+
+        def test_sign_pkgrecv_a(self):
+                """Check that signed packages can be archived."""
+
+                plist = self.pkgsend_bulk(self.rurl2, self.example_pkg10)
+
+                ta_path = os.path.join(self.raw_trust_anchor_dir,
+                    "ta2_cert.pem")
+                sign_args = "-k %(key)s -c %(cert)s -i %(ta)s %(pkg)s" % \
+                    { "key": os.path.join(self.keys_dir, "cs1_ta2_key.pem"),
+                      "cert": os.path.join(self.cs_dir, "cs1_ta2_cert.pem"),
+                      "ta": ta_path,
+                      "pkg": plist[0]
+                    }
+
+                self.pkgsign(self.rurl2, sign_args)
+
+                arch_location = os.path.join(self.test_root, "pkg_arch")
+                self.pkgrecv(self.rurl2, "-a -d %s example_pkg" % arch_location)
+                portable.remove(arch_location)
+
+                # Add another signature which includes the same chain cert used
+                # in the first signature.
+                sign_args = "-k %(key)s -c %(cert)s -i %(ch1)s -i %(ta)s " \
+                    "%(name)s" % {
+                        "name": plist[0],
+                        "key": os.path.join(self.keys_dir,
+                            "cs1_ch1_ta3_key.pem"),
+                        "cert": os.path.join(self.cs_dir,
+                            "cs1_ch1_ta3_cert.pem"),
+                        "ch1": os.path.join(self.chain_certs_dir,
+                            "ch1_ta3_cert.pem"),
+                        "ta": ta_path,
+                }
+                self.pkgsign(self.rurl2, sign_args)
+                self.pkgrecv(self.rurl2, "-a -d %s example_pkg" % arch_location)
+                portable.remove(arch_location)
+
+                # Add another signature to further test duplicate chain
+                # certificates as well as having a chain cert that's a signing
+                # certificate in other signatures.
+                sign_args = "-k %(key)s -c %(cert)s -i %(i1)s -i %(i2)s " \
+                    "-i %(i3)s -i %(i4)s -i %(i5)s -i %(ch1)s -i %(ta)s " \
+                    "-i %(cs1_ch1_ta3)s %(name)s " % {
+                        "name": plist[0],
+                        "key": os.path.join(self.keys_dir,
+                            "cs1_ch5_ta1_key.pem"),
+                        "cert": os.path.join(self.cs_dir,
+                            "cs1_ch5_ta1_cert.pem"),
+                        "i1": os.path.join(self.chain_certs_dir,
+                            "ch1_ta1_cert.pem"),
+                        "i2": os.path.join(self.chain_certs_dir,
+                            "ch2_ta1_cert.pem"),
+                        "i3": os.path.join(self.chain_certs_dir,
+                            "ch3_ta1_cert.pem"),
+                        "i4": os.path.join(self.chain_certs_dir,
+                            "ch4_ta1_cert.pem"),
+                        "i5": os.path.join(self.chain_certs_dir,
+                            "ch5_ta1_cert.pem"),
+                        "ta": ta_path,
+                        "ch1": os.path.join(self.chain_certs_dir,
+                            "ch1_ta3_cert.pem"),
+                        "cs1_ch1_ta3": os.path.join(self.cs_dir,
+                            "cs1_ch1_ta3_cert.pem"),
+                }
+                self.pkgsign(self.rurl2, sign_args)
+                self.pkgrecv(self.rurl2, "-a -d %s example_pkg" % arch_location)
+
+                self.pkg_image_create(self.rurl1)
+                self.seed_ta_dir("ta1")
+                self.seed_ta_dir("ta2")
+                self.seed_ta_dir("ta3")
+                self.pkg("set-property signature-policy verify")
+
+                api_obj = self.get_img_api_obj()
+                self.pkg("install -g file://%s example_pkg" % arch_location)
 
         def test_bug_16861_recv(self):
                 """Check that signed obsolete and renamed packages can be

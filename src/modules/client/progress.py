@@ -265,9 +265,15 @@ class ProgressTracker(object):
                             "instead." % (self.dl_goal_nbytes,
                             self.dl_cur_nbytes))
 
-                assert self.dl_cur_npkgs == self.dl_goal_npkgs
-                assert self.dl_cur_nfiles == self.dl_goal_nfiles
-                assert self.dl_cur_nbytes == self.dl_goal_nbytes
+                assert self.dl_cur_npkgs == self.dl_goal_npkgs, \
+                    "Expected %s packages but got %s" % \
+                    (self.dl_goal_npkgs, self.dl_cur_npkgs)
+                assert self.dl_cur_nfiles == self.dl_goal_nfiles, \
+                    "Expected %s files but got %s" % \
+                    (self.dl_goal_nfiles, self.dl_cur_nfiles)
+                assert self.dl_cur_nbytes == self.dl_goal_nbytes, \
+                    "Expected %s bytes but got %s" % \
+                    (self.dl_goal_nbytes, self.dl_cur_nbytes)
 
         def download_get_progress(self):
                 return (self.dl_cur_npkgs, self.dl_cur_nfiles,

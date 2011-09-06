@@ -140,9 +140,15 @@ class SignatureAction(generic.Action):
                 return res
 
         def get_chain_csize(self, chain):
-                found = False
                 for c, s in zip(self.attrs.get("chain", "").split(),
                     self.attrs.get("chain.csizes", "").split()):
+                        if c == chain:
+                                return int(s)
+                return None
+
+        def get_chain_size(self, chain):
+                for c, s in zip(self.attrs.get("chain", "").split(),
+                    self.attrs.get("chain.sizes", "").split()):
                         if c == chain:
                                 return int(s)
                 return None

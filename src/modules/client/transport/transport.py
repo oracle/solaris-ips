@@ -2914,11 +2914,29 @@ class MultiFileNI(MultiFile):
                                 filesz = int(misc.get_pkg_otw_size(action))
                                 self._progtrack.download_add_progress(1, filesz)
                         return
-
                 self.add_hash(hashval, action)
                 if action.name == "signature":
                         for c in action.get_chain_certs():
-                                self.add_hash(c, action)
+                                # file_done does some magical accounting for
+                                # files which may have been downloaded multiple
+                                # times but this accounting breaks when the
+                                # chain certificates are involved.  For now,
+                                # adjusting the pkg size and csize for the
+                                # action associated with the certificates solves
+                                # the problem by working around the special
+                                # accounting.  This fixes the problem because it
+                                # tells file_done that no other data was
+                                # expected for this hash of this action.
+                                a = copy.copy(action)
+                                # Copying the attrs separately is needed because
+                                # otherwise the two copies of the actions share
+                                # the dictionary.
+                                a.attrs = copy.copy(action.attrs)
+                                a.attrs["pkg.size"] = str(
+                                    action.get_chain_size(c))
+                                a.attrs["pkg.csize"] = str(
+                                    action.get_chain_csize(c))
+                                self.add_hash(c, a)
 
         def file_done(self, hashval, current_path):
                 """Tell MFile that the transfer completed successfully."""

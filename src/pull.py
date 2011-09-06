@@ -277,6 +277,9 @@ def add_hashes_to_multi(mfst, multi):
                         getf += 1
                         sendb += int(a.attrs.get("pkg.size", 0))
                         sendcb += int(a.attrs.get("pkg.csize", 0))
+                        if a.name == "signature":
+                                getf += len(a.get_chain_certs())
+                                getb += a.get_action_chain_csize()
         return getb, getf, sendb, sendcb
 
 def prune(fmri_list, all_versions, all_timestamps):
