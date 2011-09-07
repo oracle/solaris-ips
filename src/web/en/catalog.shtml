@@ -123,7 +123,7 @@
         flist = []
         if selected_val and selected_match:
                 ver = selected_match
-                pattern = "*,%s-%s" % (ver.build_release, ver.branch)
+                pattern = "*,%s-%s.*" % (ver.build_release, ver.branch)
                 flist, unmatched = catalog.get_matching_version_fmris(pattern)
         else:
                 flist = [f for f in catalog.fmris()]
