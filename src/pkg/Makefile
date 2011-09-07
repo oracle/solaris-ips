@@ -26,13 +26,18 @@ PKGVERS_BUILTON   = 5.11
 BUILDNUM.cmd      = \
 	hg tags | nawk '$$1 ~ /^in[0-9]*$$/ {print substr($$1, 3) + 1; exit}'
 BUILDNUM          = $(BUILDNUM.cmd:sh)
+UPDATENUM         = 0
+SRUNUM            = 0
+PLATNUM           = 0
+BUILDID           = 0
+NIGHTLYID:sh      = hg parents --template '{rev}'
 CHANGESET.cmd     = hg id -i
 CHANGESET         = $(CHANGESET.cmd:sh)
 CURBUILD.cmd      = \
 	$(PKG) -R / list -H osnet-incorporation | \
 		sed -e 's/.*-0\.\([^ .]*\).*/\1/'
 CURBUILD          = $(CURBUILD.cmd:sh)
-PKGVERS_BRANCH    = 0.$(BUILDNUM)
+PKGVERS_BRANCH    = 0.$(BUILDNUM).$(UPDATENUM).$(SRUNUM).$(PLATNUM).$(BUILDID).$(NIGHTLYID)
 PKGVERS           = $(PKGVERS_COMPONENT),$(PKGVERS_BUILTON)-$(PKGVERS_BRANCH)
 ARCH.cmd          = uname -p
 ARCH              = $(ARCH.cmd:sh)
