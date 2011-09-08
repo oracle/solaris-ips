@@ -423,7 +423,7 @@ def list_inventory(op, api_inst, pargs,
         elif summary:
                 fmt_str = "%-55s %s"
         else:
-                fmt_str = "%-55s %-20s %s"
+                fmt_str = "%-49s %-26s %s"
 
         # Each pattern in pats can be a partial or full FMRI, so
         # extract the individual components.  These patterns are
