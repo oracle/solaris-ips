@@ -156,7 +156,7 @@ msgstr "A barra de menus na parte superior da janela fornece a maior parte da fu
 
 #: package-manager.xml.in:65(para)
 msgid "The tool bar just below the menu bar has buttons on the left that provide some often-used operations. The buttons on the left of the separator have global functionality: Update all packages that have updates available or refresh the list of packages and package status. The buttons on the right of the separator only operate on selected packages."
-msgstr "A barra de ferramentas imediatamente abaixo da barra de menus tem botões à esquerda que fornecem algumas operações mais utilizadas. Os botões à esquerda do separador têm funcionalidade global: Atualize todos os pacotes com atualizações disponíveis ou atualize a lista de pacotes e o status do pacote. Os botões à direita do separador funcionam somente em pacotes selecionados."
+msgstr "A barra de ferramentas imediatamente abaixo da barra de menus tem botões à esquerda que fornecem algumas das operações mais utilizadas. Os botões à esquerda do separador têm funcionalidade global: Atualize todos os pacotes com as atualizações disponíveis ou sincronize a lista de pacotes e o status do pacote. Os botões à direita do separador funcionam somente em pacotes selecionados."
 
 #: package-manager.xml.in:67(para)
 msgid "The Search field on the right of the tool bar helps control the content of the package list pane. See <xref linkend=\"search-pkg\"/>."
@@ -204,7 +204,7 @@ msgstr "É possível reordenar a lista de pacotes clicando nos títulos das colu
 
 #: package-manager.xml.in:87(para)
 msgid "You can use the <guibutton>Refresh</guibutton> button or the <menuchoice><guimenu>Package</guimenu><guimenuitem>Refresh</guimenuitem></menuchoice> menu option to reread repository catalogs and update the list of packages and package status. A refresh also is attempted whenever you open Package Manager."
-msgstr "Você pode usar o botão <guibutton>Atualizar</guibutton> ou a opção de menu <menuchoice><guimenu>Pacote</guimenu><guimenuitem>Atualizar</guimenuitem></menuchoice> para reler catálogos do repositório e atualizar a lista de pacotes e o status do pacote. É possível também tentar fazer uma atualização sempre que você abre o Gerenciador de pacotes."
+msgstr "Você pode usar o botão <guibutton>Sincronizar</guibutton> ou a opção de menu <menuchoice><guimenu>Pacote</guimenu><guimenuitem>Sincronizar</guimenuitem></menuchoice> para reler catálogos do repositório e atualizar a lista de pacotes e o status do pacote. Também é possível tentar fazer uma sincronização sempre que você abre o Gerenciador de pacotes."
 
 #: package-manager.xml.in:88(title)
 msgid "By Publisher"
@@ -440,7 +440,7 @@ msgstr "Uma pesquisa sem pacotes correspondentes não aparece na lista de pesqui
 
 #: package-manager.xml.in:184(para)
 msgid "Selecting the <guibutton>Refresh</guibutton> button or the <menuchoice><guimenu>Package</guimenu><guimenuitem>Refresh</guimenuitem></menuchoice> menu option deletes all recent searches results."
-msgstr "Se você selecionar o botão <guibutton>Atualizar</guibutton> ou a opção de menu<menuchoice><guimenu>Pacote</guimenu><guimenuitem>Atualizar</guimenuitem></menuchoice>, todos os resultados de pesquisas recentes serão excluídos."
+msgstr "Se você selecionar o botão <guibutton>Sincronizar</guibutton> ou a opção de menu<menuchoice><guimenu>Pacote</guimenu><guimenuitem>Sincronizar</guimenuitem></menuchoice>, todos os resultados de pesquisas recentes serão excluídos."
 
 #: package-manager.xml.in:187(title)
 msgid "Showing More Information"
@@ -664,7 +664,7 @@ msgstr "A janela Atualizações é exibida e o processo de atualização é inic
 
 #: package-manager.xml.in:279(para)
 msgid "The system refreshes all catalogs."
-msgstr "O sistema atualiza todos os catálogos."
+msgstr "O sistema sincroniza todos os catálogos."
 
 #: package-manager.xml.in:281(para)
 msgid "The system evaluates all installed packages to determine which packages have updates available."
@@ -892,7 +892,7 @@ msgstr "Se o atributo do adesivo for configurado para um editor, um pacote insta
 
 #: package-manager.xml.in:373(para)
 msgid "A publisher that is disabled is not searched for updates or for packages to install. Catalogs of a disabled publisher are not refreshed. A disabled publisher is not shown on the <guimenu>Publisher</guimenu> drop-down menu."
-msgstr "As atualizações ou pacotes de um editor desativado não são procurados para instalação. Os catálogos de um editor desativado não são atualizados. Um editor desativado não é mostrado no menu drop-down <guimenu>Editor</guimenu>."
+msgstr "Os pacotes ou atualizações de um editor desativado não são procurados para instalação. Os catálogos de um editor desativado não são sincronizados. Um editor desativado não é mostrado no menu drop-down <guimenu>Editor</guimenu>."
 
 #: package-manager.xml.in:374(para)
 msgid "To change the Enabled and Sticky settings for a publisher, perform the following steps:"

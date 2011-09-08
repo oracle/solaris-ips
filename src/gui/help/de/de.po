@@ -128,7 +128,7 @@ msgstr "Suchen, Installieren, Aktualisieren oder Entfernen von IPS-Paketen: weit
 
 #: package-manager.xml.in:51(para)
 msgid "Update your system (update all the packages on your system). See <xref linkend=\"update_all\"/>."
-msgstr "Aktualisieren des Systems (Aktualisierung aller Pakete auf Ihrem System): weitere Informationen unter <xref linkend=\"update_all\"/>."
+msgstr "Aktualisieren des Systems (Updates für alle Pakete auf Ihrem System): weitere Informationen unter <xref linkend=\"update_all\"/>."
 
 #: package-manager.xml.in:53(para)
 msgid "Add, modify, and delete IPS package publishers. See <xref linkend=\"manage-publisher\"/>."
@@ -464,7 +464,7 @@ msgstr "Wenn ein Paket nach der Installation umbenannt wurde, wird der neue Name
 
 #: package-manager.xml.in:192(para)
 msgid "The Versions tab shows a list of versions of this package that are available for you to install. Select a version from the list and click the <guibutton>Install/Update</guibutton> button to the right of the list to install that version. See <xref linkend=\"install-pkg\"/>."
-msgstr "Auf der Registerkarte \"Versionen\" wird eine Liste aller Versionen des Pakets angezeigt, die für Ihre Installation verfügbar sind. Wählen Sie aus der Liste eine Version aus, und klicken Sie rechts neben der Liste auf die Schaltfläche <guibutton>Installation/Aktualisierung</guibutton>, um die gewünschte Version zu installieren. Weitere Informationen finden Sie unter <xref linkend=\"install-pkg\"/>."
+msgstr "Auf der Registerkarte \"Versionen\" wird eine Liste aller Versionen des Pakets angezeigt, die für Ihre Installation verfügbar sind. Wählen Sie aus der Liste eine Version aus, und klicken Sie rechts neben der Liste auf die Schaltfläche <guibutton>Installation/Update</guibutton>, um die gewünschte Version zu installieren. Weitere Informationen finden Sie unter <xref linkend=\"install-pkg\"/>."
 
 #: package-manager.xml.in:193(para)
 msgid "The package details pane is not displayed if the package list pane contains an informational message."
@@ -560,27 +560,27 @@ msgstr "Wenden Sie eine der folgenden Methoden an, um das Paket zu installieren 
 
 #: package-manager.xml.in:229(para)
 msgid "Select the <guibutton>Install/Update</guibutton> button in the tool bar."
-msgstr "Wählen Sie in der Symbolleiste die Schaltfläche <guibutton>Installation/Aktualisierung</guibutton>."
+msgstr "Wählen Sie in der Symbolleiste die Schaltfläche <guibutton>Installation/Update</guibutton>."
 
 #: package-manager.xml.in:231(para)
 msgid "Select the <menuchoice><guimenu>Package</guimenu><guimenuitem>Install/Update</guimenuitem></menuchoice> option from the menu bar."
-msgstr "Wählen Sie in der Menüleiste die Option <menuchoice><guimenu>Paket</guimenu><guimenuitem>Installation/Aktualisierung</guimenuitem></menuchoice>."
+msgstr "Wählen Sie in der Menüleiste die Option <menuchoice><guimenu>Paket</guimenu><guimenuitem>Installation/Update</guimenuitem></menuchoice>."
 
 #: package-manager.xml.in:233(para)
 msgid "Click your right mouse button on the name of a package to display the pop-up <guimenu>Package</guimenu> menu. Then select the <guimenuitem>Install/Update</guimenuitem> option."
-msgstr "Klicken Sie mit der rechten Maustaste auf den Namen des Pakets, um das Popup-Menü <guimenu>Paket</guimenu> anzuzeigen. Wählen Sie dann die Option <guimenuitem>Installation/Aktualisierung</guimenuitem>."
+msgstr "Klicken Sie mit der rechten Maustaste auf den Namen des Pakets, um das Popup-Menü <guimenu>Paket</guimenu> anzuzeigen. Wählen Sie dann die Option <guimenuitem>Installation/Update</guimenuitem>."
 
 #: package-manager.xml.in:235(para)
 msgid "On the Versions tab in the package details pane below the package list pane, select a version from the Version to Install list and click the <guibutton>Install/Update</guibutton> button to the right of the list. The packages in the Version to Install list are available in the repository; they might not be installable. A particular version might not be compatible with other packages that you have installed. If the version that you select is not installable on your system, Package Manager warns you and does not install the package."
-msgstr "Wählen Sie im Paketinformationsbereich unterhalb des Paketlistenbereichs auf der Registerkarte \"Versionen\" in der Liste \"Zu installierende Version\" eine Version aus, und klicken Sie rechts neben der Liste auf die Schaltfläche <guibutton>Installation/Aktualisierung</guibutton>. Die in der Liste \"Zu installierende Version\" aufgeführten Versionen sind im Repository verfügbar und sind möglicherweise nicht installierbar. Eine bestimmte Version ist u. U. nicht mit anderen bereits installierten Paketen kompatibel. Wenn die ausgewählte Version nicht auf Ihrem System installiert werden kann, zeigt der Package Manager eine Warnung an und installiert nicht das Paket."
+msgstr "Wählen Sie im Paketinformationsbereich unterhalb des Paketlistenbereichs auf der Registerkarte \"Versionen\" in der Liste \"Zu installierende Version\" eine Version aus, und klicken Sie rechts neben der Liste auf die Schaltfläche <guibutton>Installation/Update</guibutton>. Die in der Liste \"Zu installierende Version\" aufgeführten Versionen sind im Repository verfügbar und sind möglicherweise nicht installierbar. Eine bestimmte Version ist u. U. nicht mit anderen bereits installierten Paketen kompatibel. Wenn die ausgewählte Version nicht auf Ihrem System installiert werden kann, zeigt der Package Manager eine Warnung an und installiert nicht das Paket."
 
 #: package-manager.xml.in:238(para)
 msgid "If the package is already installed and does not have an update available (see the Status column or the <menuchoice><guimenu>Package</guimenu><guimenuitem>Package Version Info</guimenuitem></menuchoice> option), the <guibutton>Install/Update</guibutton> option is grayed out and not selectable."
-msgstr "Wenn das Paket bereits installiert ist und kein Update für dieses Paket verfügbar ist (siehe dazu Spalte \"Status\" oder Option <menuchoice><guimenu>Paket</guimenu><guimenuitem>Paket-Versionsinformationen</guimenuitem></menuchoice>), ist die Option <guibutton>Installation/Aktualisierung</guibutton> ausgegraut und daher nicht auswählbar."
+msgstr "Wenn das Paket bereits installiert ist und kein Update für dieses Paket verfügbar ist (siehe dazu Spalte \"Status\" oder Option <menuchoice><guimenu>Paket</guimenu><guimenuitem>Paket-Versionsinformationen</guimenuitem></menuchoice>), ist die Option <guibutton>Installation/Update</guibutton> ausgegraut und daher nicht auswählbar."
 
 #: package-manager.xml.in:240(para)
 msgid "The Install/Update Confirmation window is displayed. Packages that are not yet installed are listed in the Install Details pane, and packages that are installed are listed in the Update Details pane for you to review. Select the <guibutton>Proceed</guibutton> button to install or update the listed packages."
-msgstr "Das Fenster \"Installation/Aktualisierung - Bestätigung\" wird angezeigt. Die noch nicht installierten Pakete werden im Bereich \"Installationsdetails\" aufgeführt. Bereits installierte Pakete werden im Bereich \"Aktualisierungsdetails\" übersichtlich aufgeführt. Wählen Sie die Schaltfläche <guibutton>Fortfahren</guibutton>, um die aufgeführten Pakete zu installieren oder zu aktualisieren."
+msgstr "Das Fenster \"Installation/Update - Bestätigung\" wird angezeigt. Die noch nicht installierten Pakete werden im Bereich \"Installationsdetails\" aufgeführt. Bereits installierte Pakete werden im Bereich \"Updatedetails\" übersichtlich aufgeführt. Wählen Sie die Schaltfläche <guibutton>Fortfahren</guibutton>, um die aufgeführten Pakete zu installieren oder zu aktualisieren."
 
 #: package-manager.xml.in:241(para)
 msgid "In some cases a license dialog is displayed and you must accept the license to install the package."
@@ -588,7 +588,7 @@ msgstr "In manchen Fällen wird ein Dialogfeld zur Lizenz angezeigt, die Sie akz
 
 #: package-manager.xml.in:242(para)
 msgid "If an error occurs during package installation, an error dialog is displayed. Messages explain why the install or update failed."
-msgstr "Wenn während der Paketinstallation ein Fehler auftritt, wird ein Fehlerdialogfeld angezeigt. Der Grund für das Fehlschlagen der Installation bzw. Aktualisierung des Pakets wird in Meldungen beschrieben."
+msgstr "Wenn während der Paketinstallation ein Fehler auftritt, wird ein Fehlerdialogfeld angezeigt. Der Grund für das Fehlschlagen der Installation bzw. des Updates wird in Meldungen beschrieben."
 
 #: package-manager.xml.in:246(title)
 msgid "Removing Packages"
@@ -660,7 +660,7 @@ msgstr "Alle Pakete, für die Updates von ihren aktuellen Herausgebern verfügba
 
 #: package-manager.xml.in:278(para)
 msgid "The Updates window displays, and the update process starts:"
-msgstr "Das Fenster \"Updates\" wird angezeigt, und der Aktualisierungsprozess wird gestartet:"
+msgstr "Das Fenster \"Updates\" wird angezeigt, und der Updateprozess wird gestartet:"
 
 #: package-manager.xml.in:279(para)
 msgid "The system refreshes all catalogs."
@@ -676,11 +676,11 @@ msgstr "Wenn für keine Pakete Updates verfügbar sind, wird die Meldung 'Keine 
 
 #: package-manager.xml.in:284(para)
 msgid "If package updates are available, the packages to be updated are listed for your review. This is your last chance to click the <guibutton>Cancel</guibutton> button to abort the update."
-msgstr "Wenn Paketupdates verfügbar sind, werden die zu aktualisierenden Pakete für Sie zum Überprüfen aufgeführt. An dieser Stelle können Sie noch auf <guibutton>Abbrechen</guibutton> klicken, um die Aktualisierung abzubrechen."
+msgstr "Wenn Paketupdates verfügbar sind, werden die zu aktualisierenden Pakete für Sie zum Überprüfen aufgeführt. An dieser Stelle können Sie noch auf <guibutton>Abbrechen</guibutton> klicken, um das Update abzubrechen."
 
 #: package-manager.xml.in:288(para)
 msgid "Click the <guibutton>Proceed</guibutton> button to continue with the update."
-msgstr "Klicken Sie auf die Schaltfläche <guibutton>Fortfahren</guibutton>, um die Aktualisierung fortzusetzen."
+msgstr "Klicken Sie auf die Schaltfläche <guibutton>Fortfahren</guibutton>, um das Update fortzusetzen."
 
 #: package-manager.xml.in:289(para)
 msgid "The system might create a new boot environment (BE), as described in <xref linkend=\"update_all\"/> above, depending on which packages are being updated."
@@ -692,7 +692,7 @@ msgstr "Wenn auf dem System festgestellt wird, dass eine neue BU erforderlich is
 
 #: package-manager.xml.in:291(para)
 msgid "Click <guibutton>Close</guibutton> to cancel the Updates process."
-msgstr "Klicken Sie auf <guibutton>Schließen</guibutton>, um den Aktualisierungsvorgang abzubrechen."
+msgstr "Klicken Sie auf <guibutton>Schließen</guibutton>, um den Updatevorgang abzubrechen."
 
 #: package-manager.xml.in:293(para)
 msgid "Follow the instructions in <xref linkend=\"remove-be\"/> to remove a BE that is no longer needed."
@@ -700,7 +700,7 @@ msgstr "Befolgen Sie die Anweisungen unter <xref linkend=\"remove-be\"/>, um ein
 
 #: package-manager.xml.in:295(para)
 msgid "Select <guibutton>Updates</guibutton> again to restart the Updates process."
-msgstr "Wählen Sie erneut <guibutton>Updates</guibutton>, um den Aktualisierungsvorgang neu zu starten."
+msgstr "Wählen Sie erneut <guibutton>Updates</guibutton>, um den Updatevorgang neu zu starten."
 
 #: package-manager.xml.in:299(para)
 msgid "The system downloads all package updates."
@@ -712,7 +712,7 @@ msgstr "Die Paketupdates werden auf dem System installiert. Wenn eine Klon-BU er
 
 #: package-manager.xml.in:302(para)
 msgid "If an error occurs at any time during the update process, the Details panel is expanded and the details of the error are displayed. An error status indicator is shown next to the failed stage."
-msgstr "Wenn während des Aktualisierungsvorgangs ein Fehler auftritt, wird der Bereich \"Details\" erweitert, um die Fehlerdetails anzuzeigen. Neben der fehlgeschlagenen Phase wird ein Fehlerstatusindikator angezeigt."
+msgstr "Wenn während des Updatevorgangs ein Fehler auftritt, wird der Bereich \"Details\" erweitert, um die Fehlerdetails anzuzeigen. Neben der fehlgeschlagenen Phase wird ein Fehlerstatusindikator angezeigt."
 
 #: package-manager.xml.in:304(para)
 msgid "If the system created a new BE for the update, you can edit the default BE name. When you are satisfied with the BE name, click the <guibutton>Restart Now</guibutton> button to reboot your system immediately. Click the <guibutton>Restart Later</guibutton> button to restart your system at a later time. You must restart to boot into the new BE. The new BE will be your default boot choice. Your current BE will be available as an alternate boot choice."
@@ -1418,7 +1418,7 @@ msgstr "Wenn sich die <filename>.p5i</filename>-Datei auf einem Webserver befind
 
 #: package-manager.xml.in:618(para)
 msgid "The Install/Update window is displayed. The label at the top of the window is: “Package Manager Web Installer/The following will be added to your system:” Then the publishers and packages are listed. Click the <guibutton>Proceed</guibutton> button to continue with the installation."
-msgstr "Das Fenster \"Installation/Aktualisierung\" wird angezeigt. Die Beschriftung des Fensters lautet \"Package Manager Web Installer/Ihrem System wird Folgendes hinzugefügt:\". Anschließend werden die Herausgeber und Pakete aufgeführt. Klicken Sie auf die Schaltfläche <guibutton>Fortfahren</guibutton>, um die Installation fortzusetzen."
+msgstr "Das Fenster \"Installation/Update\" wird angezeigt. Die Beschriftung des Fensters lautet \"Package Manager Web Installer/Ihrem System wird Folgendes hinzugefügt:\". Anschließend werden die Herausgeber und Pakete aufgeführt. Klicken Sie auf die Schaltfläche <guibutton>Fortfahren</guibutton>, um die Installation fortzusetzen."
 
 #: package-manager.xml.in:619(para)
 msgid "If the package publisher is not already configured on your system, the Add Publisher window is displayed. The name and URI of the publisher are already entered."
@@ -1438,7 +1438,7 @@ msgstr "Wenn die Datei <filename>.p5i</filename> Pakete von einem deaktivierten 
 
 #: package-manager.xml.in:627(para)
 msgid "The Install/Update window now looks the same as when you select <guibutton>Install/Update</guibutton> from within Package Manager."
-msgstr "Die Anzeige im Fenster \"Installation/Aktualisierung\" stimmt nun mit der Anzeige überein, die zu sehen ist, wenn Sie das Fenster <guibutton>Installation/Aktualisierung</guibutton> über den Package Manager öffnen."
+msgstr "Die Anzeige im Fenster \"Installation/Update\" stimmt nun mit der Anzeige überein, die zu sehen ist, wenn Sie das Fenster <guibutton>Installation/Update</guibutton> über den Package Manager öffnen."
 
 #: package-manager.xml.in:632(title)
 msgid "Troubleshooting"

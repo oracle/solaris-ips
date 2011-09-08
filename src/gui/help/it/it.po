@@ -156,7 +156,7 @@ msgstr "La barra dei menu nella parte superiore della finestra fornisce la maggi
 
 #: package-manager.xml.in:65(para)
 msgid "The tool bar just below the menu bar has buttons on the left that provide some often-used operations. The buttons on the left of the separator have global functionality: Update all packages that have updates available or refresh the list of packages and package status. The buttons on the right of the separator only operate on selected packages."
-msgstr "La barra degli strumenti immediatamente sotto la barra dei menu è caratterizzata a sinistra da pulsanti che forniscono accesso ad alcune operazioni di uso comune. I pulsanti a sinistra del separatore presentano funzionalità globali: aggiornamento di tutti i pacchetti con aggiornamenti disponibili o aggiornamento dell'elenco dei pacchetti e dello stato del pacchetto. I pulsanti a destra del separatore possono essere utilizzati solo su pacchetti selezionati."
+msgstr "La barra degli strumenti immediatamente sotto la barra dei menu è caratterizzata a sinistra da pulsanti che forniscono accesso ad alcune operazioni di uso comune. I pulsanti a sinistra del separatore presentano funzionalità globali: aggiornamento di tutti i pacchetti con aggiornamenti disponibili o refresh dell'elenco dei pacchetti e dello stato del pacchetto. I pulsanti a destra del separatore possono essere utilizzati solo su pacchetti selezionati."
 
 #: package-manager.xml.in:67(para)
 msgid "The Search field on the right of the tool bar helps control the content of the package list pane. See <xref linkend=\"search-pkg\"/>."
@@ -204,7 +204,7 @@ msgstr "È possibile riordinare l'elenco dei pacchetti facendo clic sulle intest
 
 #: package-manager.xml.in:87(para)
 msgid "You can use the <guibutton>Refresh</guibutton> button or the <menuchoice><guimenu>Package</guimenu><guimenuitem>Refresh</guimenuitem></menuchoice> menu option to reread repository catalogs and update the list of packages and package status. A refresh also is attempted whenever you open Package Manager."
-msgstr "È possibile utilizzare il pulsante <guibutton>Aggiorna</guibutton> o l'opzione di menu <menuchoice><guimenu>Pacchetto</guimenu><guimenuitem>Aggiorna</guimenuitem></menuchoice> per leggere nuovamente i cataloghi del repository e aggiornare l'elenco di pacchetti e relativo stato. Inoltre a ogni apertura di Package Manager, viene eseguito un tentativo di aggiornamento."
+msgstr "È possibile utilizzare il pulsante <guibutton>Refresh</guibutton> o l'opzione di menu <menuchoice><guimenu>Pacchetto</guimenu><guimenuitem>Refresh</guimenuitem></menuchoice> per leggere nuovamente i cataloghi del repository e aggiornare l'elenco di pacchetti e relativo stato. Inoltre a ogni apertura di Package Manager, viene eseguito un tentativo di refresh."
 
 #: package-manager.xml.in:88(title)
 msgid "By Publisher"
@@ -664,7 +664,7 @@ msgstr "Viene visualizzata la finestra Aggiornamenti e viene avviato il processo
 
 #: package-manager.xml.in:279(para)
 msgid "The system refreshes all catalogs."
-msgstr "Tutti i cataloghi vengono riaggiornati tramite il sistema."
+msgstr "Su tutti i cataloghi viene eseguito il refrewsh dal sistema."
 
 #: package-manager.xml.in:281(para)
 msgid "The system evaluates all installed packages to determine which packages have updates available."
