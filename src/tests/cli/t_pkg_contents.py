@@ -214,6 +214,66 @@ class TestPkgContentsBasics(pkg5unittest.SingleDepotTestCase):
 
                 self.assertEqualDiff(expected_res, self.output)
 
+        def test_ranked(self):
+                """Verify that pkg contents -r returns expected results
+                when multiple publishers provide the same package based
+                on publisher search order."""
+
+                # Create an isolated repository for this test
+                repodir = os.path.join(self.test_root, "test-ranked")
+                self.create_repo(repodir)
+                self.pkgrepo("add-publisher -s %s test" % repodir)
+                self.pkgsend_bulk(repodir, self.bronze10)
+
+                self.pkgrepo("add-publisher -s %s test2" % repodir)
+                self.pkgrepo("set -s %s publisher/prefix=test2" % repodir)
+                self.pkgsend_bulk(repodir, self.bronze10)
+
+                self.pkgrepo("add-publisher -s %s test3" % repodir)
+                self.pkgrepo("set -s %s publisher/prefix=test3" % repodir)
+                self.pkgsend_bulk(repodir, self.bronze10)
+
+                # Create a test image.
+                self.image_create()
+                self.pkg("set-publisher -p %s" % repodir)
+
+                # Test should be higher ranked than test2 since the default
+                # for auto-configuration is to use lexical order when
+                # multiple publishers are found.  As such, info -r should
+                # return results for 'test' by default.
+                self.pkg("contents -H -r -t set -o pkg.fmri bronze")
+                self.assert_(self.output.startswith("pkg://test/bronze"))
+                self.assert_("pkg://test2/bronze" not in self.output)
+                self.assert_("pkg://test3/bronze" not in self.output)
+
+                # Verify that if the publisher is specified, that is preferred
+                # over rank.
+                self.pkg("contents -H -r -t set -o pkg.fmri //test2/bronze")
+                self.assert_("pkg://test/bronze" not in self.output)
+                self.assert_(self.output.startswith("pkg://test2/bronze"))
+                self.assert_("pkg://test3/bronze" not in self.output)
+
+                # Verify that if stem is specified with and without publisher,
+                # both matches are listed if the higher-ranked publisher differs
+                # from the publisher specified.
+                self.pkg("contents -H -r -t set -o pkg.fmri //test/bronze "
+                    "bronze")
+                self.assert_(self.output.startswith("pkg://test/bronze"))
+                self.assert_("pkg://test2/bronze" not in self.output)
+                self.assert_("pkg://test3/bronze" not in self.output)
+
+                self.pkg("contents -H -r -t set -o pkg.fmri //test2/bronze "
+                    "bronze")
+                self.assert_(self.output.startswith("pkg://test/bronze"))
+                self.assert_("pkg://test2/bronze" in self.output)
+                self.assert_("pkg://test3/bronze" not in self.output)
+
+                self.pkg("contents -H -r -t set -o pkg.fmri //test3/bronze "
+                    "//test2/bronze bronze")
+                self.assert_(self.output.startswith("pkg://test/bronze"))
+                self.assert_("pkg://test2/bronze" in self.output)
+                self.assert_("pkg://test3/bronze" in self.output)
+
 
 if __name__ == "__main__":
         unittest.main()

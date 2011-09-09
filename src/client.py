@@ -87,7 +87,7 @@ except KeyboardInterrupt:
         import sys
         sys.exit(1)
 
-CLIENT_API_VERSION = 68
+CLIENT_API_VERSION = 69
 PKG_CLIENT_NAME = "pkg"
 
 JUST_UNKNOWN = 0
@@ -3113,7 +3113,7 @@ def info(api_inst, args):
 
         try:
                 ret = api_inst.info(pargs, info_local, info_needed,
-                    repos=origins)
+                    ranked=info_remote, repos=origins)
         except api_errors.ImageFormatUpdateNeeded, e:
                 format_update_error(e)
                 return EXIT_OOPS
@@ -3618,8 +3618,8 @@ def list_contents(api_inst, args):
         notfound = EmptyI
         try:
                 res = api_inst.get_pkg_list(pkg_list, patterns=pargs,
-                    raise_unmatched=True, return_fmris=True, variants=True,
-                    repos=origins)
+                    raise_unmatched=True, ranked=remote, return_fmris=True,
+                    variants=True, repos=origins)
                 manifests = []
 
                 for pfmri, summ, cats, states, pattrs in res:

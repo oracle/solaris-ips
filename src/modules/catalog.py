@@ -703,7 +703,8 @@ class CatalogPart(CatalogPartBase):
                 (pub, stem) as it iterates over the contents of the CatalogPart.
 
                 'pubs' is an optional list of publisher prefixes to restrict
-                the results to.
+                the results to.  If specified, publishers will be sorted in
+                the order given.
 
                 Results are always returned sorted by stem and then by
                 publisher."""
@@ -718,7 +719,19 @@ class CatalogPart(CatalogPartBase):
                         for stem in self.__data[pub]
                 ]
 
-                for entry in sorted(pkg_list):
+                pub_sort = None
+                if pubs:
+                        pos = dict((p, i) for (i, p) in enumerate(pubs))
+                        def pos_sort(a, b):
+                                astem, apub = a.split("!", 1)
+                                bstem, bpub = b.split("!", 1)
+                                res = cmp(astem, bstem)
+                                if res != 0:
+                                        return res
+                                return cmp(pos[apub], pos[bpub])
+                        pub_sort = pos_sort
+
+                for entry in sorted(pkg_list, cmp=pub_sort):
                         stem, pub = entry.split("!", 1)
                         yield pub, stem
 

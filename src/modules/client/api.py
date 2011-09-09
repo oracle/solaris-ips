@@ -77,8 +77,8 @@ from pkg.client.debugvalues import DebugValues
 from pkg.client.pkgdefs import *
 from pkg.smf import NonzeroExitException
 
-CURRENT_API_VERSION = 68
-COMPATIBLE_API_VERSIONS = frozenset([66, 67, CURRENT_API_VERSION])
+CURRENT_API_VERSION = 69
+COMPATIBLE_API_VERSIONS = frozenset([66, 67, 68, CURRENT_API_VERSION])
 CURRENT_P5I_VERSION = 1
 
 # Image type constants.
@@ -2926,7 +2926,7 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
         @_LockedGenerator()
         def get_pkg_list(self, pkg_list, cats=None, collect_attrs=False,
             patterns=misc.EmptyI, pubs=misc.EmptyI, raise_unmatched=False,
-            repos=None, return_fmris=False, variants=False):
+            ranked=False, repos=None, return_fmris=False, variants=False):
                 """A generator function that produces tuples of the form:
 
                     (
@@ -2991,6 +2991,11 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                 (after applying all other filtering and returning all results)
                 didn't match any packages.
 
+                'ranked' is an optional boolean value that indicates whether
+                only the matching package versions from the highest-ranked
+                publisher should be returned.  This option is ignored for
+                patterns that explicitly specify the publisher to match.
+
                 'repos' is a list of URI strings or RepositoryURI objects that
                 represent the locations of package repositories to list packages
                 for.
@@ -3008,12 +3013,12 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
 
                 return self.__get_pkg_list(pkg_list, cats=cats,
                     collect_attrs=collect_attrs, patterns=patterns, pubs=pubs,
-                    raise_unmatched=raise_unmatched, repos=repos,
+                    raise_unmatched=raise_unmatched, ranked=ranked, repos=repos,
                     return_fmris=return_fmris, variants=variants)
 
         def __get_pkg_list(self, pkg_list, cats=None, collect_attrs=False,
             inst_cat=None, known_cat=None, patterns=misc.EmptyI,
-            pubs=misc.EmptyI, raise_unmatched=False, repos=None,
+            pubs=misc.EmptyI, raise_unmatched=False, ranked=False, repos=None,
             return_fmris=False, variants=False):
                 """This is the implementation of get_pkg_list.  The other
                 function is a wrapper that uses locking.  The separation was
@@ -3205,6 +3210,30 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                 # to be filtered.)
                 use_last = newest and not pat_versioned and variants
 
+                if ranked:
+                        # If caller requested results to be ranked by publisher,
+                        # then the list of publishers to return must be passed
+                        # to entry_actions() in rank order.
+                        pub_ranks = self._img.get_publisher_ranks()
+                        if not pubs:
+                                # It's important that the list of possible
+                                # publishers is gleaned from the catalog
+                                # directly and not image configuration so
+                                # that temporary sources (archives, etc.)
+                                # work as expected.
+                                pubs = pkg_cat.publishers()
+                        for p in pubs:
+                                pub_ranks.setdefault(p, (99, (p, False, False)))
+
+                        def pub_order(a, b):
+                                res = cmp(pub_ranks[a], pub_ranks[b])
+                                if res != 0:
+                                        return res
+                                return cmp(a, b)
+
+                        pubs = sorted(pubs, cmp=pub_order)
+
+                ranked_stems = {}
                 for t, entry, actions in pkg_cat.entry_actions(cat_info,
                     cb=filter_cb, excludes=excludes, last=use_last,
                     ordered=True, pubs=pubs):
@@ -3218,6 +3247,15 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                                 # A newer version has already been listed, so
                                 # any additional entries need to be marked for
                                 # omission before continuing.
+                                omit_package = True
+                        elif ranked and not patterns and \
+                            ranked_stems.get(stem, pub) != pub:
+                                # A different version from a higher-ranked
+                                # publisher has been returned already, so skip
+                                # this one.  This can only be done safely at
+                                # this point if no patterns have been specified,
+                                # since publisher-specific patterns override
+                                # ranking behaviour.
                                 omit_package = True
                         else:
                                 nlist[pkg_stem] += 1
@@ -3233,6 +3271,16 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                                         if pat_pub is not None and \
                                             pub != pat_pub:
                                                 # Publisher doesn't match.
+                                                if omit_package is None:
+                                                        omit_package = True
+                                                continue
+                                        elif ranked and not pat_pub and \
+                                            ranked_stems.get(stem, pub) != pub:
+                                                # A different version from a
+                                                # higher-ranked publisher has
+                                                # been returned already, so skip
+                                                # this one since no publisher
+                                                # was specified for the pattern.
                                                 if omit_package is None:
                                                         omit_package = True
                                                 continue
@@ -3463,6 +3511,11 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                                 # applied are the patterns that the package
                                 # matched considered "matching".
                                 matched_pats.update(pkg_matching_pats)
+                        if ranked:
+                                # Only after all other filtering has been
+                                # applied is the stem considered to have been
+                                # a "ranked" match.
+                                ranked_stems.setdefault(stem, pub)
 
                         if return_fmris:
                                 pfmri = fmri.PkgFmri("%s@%s" % (stem, ver),
@@ -3480,7 +3533,8 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                                 raise apx.InventoryException(notfound=notfound)
 
         @_LockedCancelable()
-        def info(self, fmri_strings, local, info_needed, repos=None):
+        def info(self, fmri_strings, local, info_needed, ranked=False,
+            repos=None):
                 """Gathers information about fmris.  fmri_strings is a list
                 of fmri_names for which information is desired.  local
                 determines whether to retrieve the information locally
@@ -3488,6 +3542,11 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                 for the dictionary are the constants specified in the class
                 definition.  The values are lists of PackageInfo objects or
                 strings.
+
+                'ranked' is an optional boolean value that indicates whether
+                only the matching package versions from the highest-ranked
+                publisher should be returned.  This option is ignored for
+                patterns that explicitly specify the publisher to match.
 
                 'repos' is a list of URI strings or RepositoryURI objects that
                 represent the locations of packages to return information for.
@@ -3556,7 +3615,7 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                             ilist, collect_attrs=collect_attrs,
                             inst_cat=inst_cat, known_cat=known_cat,
                             patterns=fmri_strings, raise_unmatched=True,
-                            return_fmris=True, variants=True):
+                            ranked=ranked, return_fmris=True, variants=True):
                                 release = build_release = branch = \
                                     packaging_date = None
 

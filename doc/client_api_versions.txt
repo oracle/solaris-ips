@@ -1,3 +1,12 @@
+Version 69:
+Compatible with clients using versions 66-68.
+
+    pkg.client.api.ImageInterface has changed as follows:
+        * get_pkg_list() and info() now have an optional boolean
+          parameter named 'ranked' that controls whether only
+          packages for the highest-ranked matching publisher should
+          be returned. See 'pydoc pkg.client.api' for details.
+
 Version 68:
 Compatible with clients using versions 66-67.
 
