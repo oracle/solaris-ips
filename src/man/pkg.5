@@ -224,7 +224,7 @@ This attribute is used to handle editable files moving from package to package o
 .ad
 .RS 17n
 .rt  
-This attribute is used to tag editable files that should be reverted as a set. Multiple revert-tag values can be specified. The file reverts to its manifest-defined state when \fBpkg rever\fRt is invoked with any of those tags specified. See \fBpkg\fR(1).
+This attribute is used to tag editable files that should be reverted as a set. Multiple revert-tag values can be specified. The file reverts to its manifest-defined state when \fBpkg revert\fR is invoked with any of those tags specified. See \fBpkg\fR(1).
 .RE
 
 .SS "Directory Actions"
@@ -233,7 +233,7 @@ This attribute is used to tag editable files that should be reverted as a set. M
 The \fBdir\fR action is like the \fBfile\fR action in that it represents a file system object. The \fBdir\fR action represents a directory instead of an ordinary file. The \fBdir\fR action has the same four standard attributes as the \fBfile\fR action, and \fBpath\fR is the key attribute.
 .sp
 .LP
-Directories are reference counted in IPS. When the last package that either explicitly or implicitly references a directory no longer does so, that directory is removed. If that directory contains unpackaged file system objects, those items are moved into \fB$IMAGE_META/lost+found\fR. See the "Files" section for more      information about \fB$IMAGE_META\fR.
+Directories are reference counted in IPS. When the last package that either explicitly or implicitly references a directory no longer does so, that directory is removed. If that directory contains unpackaged file system objects, those items are moved into \fB$IMAGE_META/lost+found\fR. See the "Files" section for more information about \fB$IMAGE_META\fR.
 .sp
 .LP
 To move unpackaged contents into a new directory, the following attribute might be useful:
@@ -898,7 +898,7 @@ Can be set to \fBtrue\fR or \fBfalse\fR. The default value of \fBtrue\fR indicat
 .ad
 .RS 15n
 .rt  
-The number of days between January 1, 1970,  and the  date that  the password was last modified. Default value is empty. See \fBshadow\fR(4).
+The number of days between January 1, 1970, and the date that the password was last modified. Default value is empty. See \fBshadow\fR(4).
 .RE
 
 .sp
@@ -909,7 +909,7 @@ The number of days between January 1, 1970,  and the  date that  the password wa
 .ad
 .RS 15n
 .rt  
-The minimum  number  of  days  required  between password changes. This field must be set to 0 or above to enable password aging. Default value is empty. See \fBshadow\fR(4).
+The minimum number of days required between password changes. This field must be set to 0 or above to enable password aging. Default value is empty. See \fBshadow\fR(4).
 .RE
 
 .sp
@@ -920,7 +920,7 @@ The minimum  number  of  days  required  between password changes. This field mu
 .ad
 .RS 15n
 .rt  
-The maximum  number  of  days  the  password  is valid. Default value is empty. See \fBshadow\fR(4).
+The maximum number of days the password is valid. Default value is empty. See \fBshadow\fR(4).
 .RE
 
 .sp
@@ -942,7 +942,7 @@ The number of days before password expires that the user is warned. See \fBshado
 .ad
 .RS 15n
 .rt  
-The number of days  of  inactivity allowed for that  user. This is counted on a per-machine basis. The information about the last login is taken from the machine's  \fBlastlog\fR file. See \fBshadow\fR(4).
+The number of days of inactivity allowed for that user. This is counted on a per-machine basis. The information about the last login is taken from the machine's \fBlastlog\fR file. See \fBshadow\fR(4).
 .RE
 
 .sp
@@ -1035,7 +1035,7 @@ A freeze is never be lifted automatically by the packaging system. To relax a co
 As detailed above, a publisher is simply a name that package clients use to identify the provider of packages. Publishers can distribute their packages using package repositories and/or package archives. There are two types of repositories currently supported by the package system: origin repositories and mirror repositories.
 .sp
 .LP
-An \fBorigin\fR is a package repository that contains all of the metadata (such     as catalogs, manifests, and search indexes) and content (files) for one or more packages. If multiple origins are configured for a given publisher in an image, the package client API attempts to choose the best origin to retrieve package data from. This is the most common type of repository, and is implicitly created whenever \fBpkgsend\fR or \fBpkgrecv\fR is used on a package repository.
+An \fBorigin\fR is a package repository that contains all of the metadata (such as catalogs, manifests, and search indexes) and content (files) for one or more packages. If multiple origins are configured for a given publisher in an image, the package client API attempts to choose the best origin to retrieve package data from. This is the most common type of repository, and is implicitly created whenever \fBpkgsend\fR or \fBpkgrecv\fR is used on a package repository.
 .sp
 .LP
 A \fBmirror\fR is a package repository that contains only package content (files). If one or more mirrors are configured for a given publisher in an image, the client API prefers the mirrors for package content retrieval and attempts to choose the best one to retrieve package content from. If the mirror is unreachable, does not have the required content, or is slower, the client API retrieves the content from any configured origin repositories. Mirrors are intended for content sharing among a trusted set of clients using the dynamic mirror functionality of \fBpkg.depotd\fR(1M). Mirrors are also intended to be used to authenticate access to package metadata, but distribute the package content without authentication. For example, a client might be configured with an \fBhttps\fR origin that requires an SSL key and certificate pair to access, and with an \fBhttp\fR mirror that provides the package content. In this way, only authorized clients can install or update the packages, while the overhead of authentication for package content retrieval is avoided. A mirror can be created by removing all subdirectories of a repository except those named \fBfile\fR and their parents. An origin repository can be also be provisioned as a mirror by using the mirror mode of \fBpkg.depotd\fR(1M).

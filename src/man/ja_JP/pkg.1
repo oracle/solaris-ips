@@ -1,6 +1,6 @@
 '\" te
 .\" Copyright (c) 2007, 2011, Oracle and/or its affiliates. All rights reserved.
-.TH pkg 1 "2011 年 7 月 28 日" "" ""
+.TH pkg 1 "2011 年 8 月 30 日" "SunOS 5.11" "ユーザーコマンド"
 .SH 名前
 pkg \- Image Packaging System 取得クライアント
 .SH 形式
@@ -17,26 +17,27 @@ pkg \- Image Packaging System 取得クライアント
 .LP
 .nf
 /usr/bin/pkg install [-nvq] [-g \fIpath_or_uri\fR ...] [--accept]
-    [--licenses] [--no-be-activate] [--no-index]
-    [--no-refresh] [--deny-new-be | --require-new-be]
-    [--be-name \fIname\fR] [--reject \fIpkg_fmri_pattern\fR ...]
+    [--licenses] [--no-be-activate] [--no-index] [--no-refresh]
+    [--no-backup-be | --require-backup-be] [--backup-be-name \fIname\fR]
+    [--deny-new-be | --require-new-be] [--be-name \fIname\fR]
+    [--reject \fIpkg_fmri_pattern\fR ...] \fIpkg_fmri_pattern\fR ...
+.fi
+
+.LP
+.nf
+/usr/bin/pkg uninstall [-nvq] [--no-be-activate] [--no-index]
+    [--no-backup-be | --require-backup-be] [--backup-be-name \fIname\fR]
+    [--deny-new-be | --require-new-be] [--be-name \fIname\fR]
     \fIpkg_fmri_pattern\fR ...
 .fi
 
 .LP
 .nf
-/usr/bin/pkg uninstall [-nvq] [--no-be-activate]
-    [--no-index] [--deny-new-be | --require-new-be]
-    [--be-name \fIname\fR] \fIpkg_fmri_pattern\fR ...
-.fi
-
-.LP
-.nf
 /usr/bin/pkg update [-fnvq] [-g \fIpath_or_uri\fR ...] [--accept]
-    [--licenses] [--no-be-activate] [--no-index]
-    [--no-refresh] [--deny-new-be | --require-new-be]
-    [--be-name \fIname\fR] [--reject \fIpkg_fmri_pattern\fR ...]
-    [\fIpkg_fmri_pattern\fR ...]
+    [--licenses] [--no-be-activate] [--no-index] [--no-refresh]
+    [--no-backup-be | --require-backup-be] [--backup-be-name \fIname\fR]
+    [--deny-new-be | --require-new-be] [--be-name \fIname\fR]
+    [--reject \fIpkg_fmri_pattern\fR ...] [\fIpkg_fmri_pattern\fR ...]
 .fi
 
 .LP
@@ -60,7 +61,7 @@ pkg \- Image Packaging System 取得クライアント
 
 .LP
 .nf
-/usr/bin/pkg search [HIaflpr] [-o \fIattribute\fR ...]
+/usr/bin/pkg search [-HIaflpr] [-o \fIattribute\fR ...]
     [-s \fIrepo_uri\fR] \fIquery\fR
 .fi
 
@@ -77,7 +78,8 @@ pkg \- Image Packaging System 取得クライアント
 .LP
 .nf
 /usr/bin/pkg revert [-nv] [--no-be-activate]
-    [--be-name \fIname\fR] [--deny-new-be | --require-new-be]
+    [--no-backup-be | --require-backup-be] [--backup-be-name \fIname\fR]
+    [--deny-new-be | --require-new-be] [--be-name \fIname\fR]
     (--tagged \fItag-name\fR ... | \fIpath-to-file\fR ...)
 .fi
 
@@ -90,13 +92,15 @@ pkg \- Image Packaging System 取得クライアント
 .nf
 usr/bin/pkg set-mediator [-nv] [-I \fIimplementation\fR]
     [-V \fIversion\fR] [--no-be-activate]
-    [--deny-new-be | --require-new-be]
-    [--be-name \fIname\fR] \fImediator\fR ...
+    [--no-backup-be | --require-backup-be] [--backup-be-name \fIname\fR]
+    [--deny-new-be | --require-new-be] [--be-name \fIname\fR]
+    \fImediator\fR ...
 .fi
 
 .LP
 .nf
 /usr/bin/pkg unset-mediator [-nvIV] [--no-be-activate]
+    [--no-backup-be | --require-backup-be] [--backup-be-name \fIname\fR]
     [--deny-new-be | --require-new-be] [--be-name \fIname\fR]
     \fImediator\fR ...
 .fi
@@ -110,8 +114,9 @@ usr/bin/pkg set-mediator [-nv] [-I \fIimplementation\fR]
 .nf
 /usr/bin/pkg change-variant [-nvq] [-g \fIpath_or_uri\fR ...]
     [--accept] [--licenses] [--no-be-activate]
-    [--deny-new-be | --require-new-be]
-    [--be-name \fIname\fR] \fIvariant_spec\fR=\fIinstance\fR ...
+    [--no-backup-be | --require-backup-be] [--backup-be-name \fIname\fR]
+    [--deny-new-be | --require-new-be] [--be-name \fIname\fR]
+    \fIvariant_spec\fR=\fIinstance\fR ...
 .fi
 
 .LP
@@ -123,8 +128,9 @@ usr/bin/pkg set-mediator [-nv] [-I \fIimplementation\fR]
 .nf
 /usr/bin/pkg change-facet [-nvq] [-g \fIpath_or_uri\fR ...]
     [--accept] [--licenses] [--no-be-activate]
-    [--deny-new-be | --require-new-be]
-    [--be-name \fIname\fR] \fIfacet_spec\fR=[True|False|None] ...
+    [--no-backup-be | --require-backup-be] [--backup-be-name \fIname\fR]
+    [--deny-new-be | --require-new-be] [--be-name \fIname\fR] 
+    \fIfacet_spec\fR=[True|False|None] ...
 .fi
 
 .LP
@@ -309,7 +315,7 @@ usr/bin/pkg set-mediator [-nv] [-I \fIimplementation\fR]
 .ne 2
 .mk
 .na
-\fB\fBinstall [\fB-nvq\fR] [\fB-g\fR \fI path_or_uri\fR ...] [\fB--accept\fR] [\fB--licenses\fR] [\fB--no-be-activate\fR] [\fB--no-index\fR] [\fB--no-refresh \fR] [\fB--deny-new-be\fR | \fB--require-new-be\fR] [\fB--be-name\fR \fIname\fR] [\fB--reject\fR \fI pkg_fmri_pattern\fR ...] \fIpkg_fmri_pattern\fR ... \fR\fR
+\fB\fBinstall [\fB-nvq\fR] [\fB-g\fR \fI path_or_uri\fR ...] [\fB--accept\fR] [\fB--licenses\fR] [\fB--no-be-activate\fR] [\fB--no-index\fR] [\fB--no-refresh \fR] [--no-backup-be | --require-backup-be] [--backup-be-name \fI name\fR] [\fB--deny-new-be\fR | \fB--require-new-be\fR] [\fB--be-name\fR \fIname\fR] [\fB--reject\fR \fI pkg_fmri_pattern\fR ...] \fIpkg_fmri_pattern\fR ... \fR\fR
 .ad
 .sp .6
 .RS 4n
@@ -331,15 +337,21 @@ usr/bin/pkg set-mediator [-nv] [-I \fIimplementation\fR]
 .sp
 \fB--licenses\fR を指定すると、この操作の一環としてインストールまたは更新されるパッケージのすべてのライセンスを表示します。
 .sp
+\fB--no-backup-be\fR を指定すると、バックアップブート環境を作成しません。
+.sp
 \fB--no-be-activate\fR を指定すると、ブート環境が作成される場合に、それを次回ブート時にアクティブ BE として設定しません。詳細は、\fBbeadm\fR(1M) を参照してください。
 .sp
 \fB--no-index\fR を指定すると、操作が正常に完了したあとに検索インデックスを更新しません。
 .sp
 \fB--no-refresh\fR を指定すると、入手可能パッケージやその他のメタデータの最新リストを取得するために、イメージのパブリッシャー用のリポジトリへのアクセスを試みません。
 .sp
-\fB--be-name\fR を指定すると、新たに作成されたブート環境の名前を、指定された引数になるように変更します。このオプションは、操作の実行中に新しいブート環境が作成された場合にのみ有効です。\fBbeadm\fR(1M) も参照してください。
+\fB--backup-be-name \fR を指定すると、指定された引数を使用して、作成されたバックアップブート環境に名前を付けます。\fB--backup-be-name\fR を使用すると \fB--require-backup-be\fR が暗黙的に指定されます。\fBbeadm\fR(1M) も参照してください。
 .sp
-\fB--require-new-be\fR を指定すると、常に新しいブート環境を作成します。このオプションを指定しないと、ブート環境は必要な場合に自動的に作成されます。
+\fB--be-name\fR を指定すると、新たに作成されたブート環境の名前を、指定された引数になるように変更します。\fB--be-name\fR を使用すると \fB- -require-new-be\fR が暗黙的に指定されます。\fBbeadm\fR(1M) も参照してください。
+.sp
+\fB--require-backup-be \fR を指定すると、新しいブート環境が作成されない場合に常にバックアップブート環境を作成します。このオプションを指定しないと、イメージポリシーに基づいてバックアップブート環境が作成されます。バックアップブート環境がいつ自動的に作成されるかについての説明は、次の「イメージプロパティー」の \fBbe-policy\fR を参照してください。
+.sp
+\fB--require-new-be\fR を指定すると、常に新しいブート環境を作成します。このオプションを指定しないと、イメージポリシーに基づいてブート環境が作成されます。ブート環境がいつ自動的に作成されるかについての説明は、次の「イメージプロパティー」の \fBbe-policy\fR を参照してください。このオプションを \fB--require-backup-be\fR と組み合わせることはできません。
 .sp
 \fB--deny-new-be\fR を指定すると、新しいブート環境を作成しません。新しいブート環境が必要な場合、この操作は実行されません。
 .sp
@@ -350,7 +362,7 @@ usr/bin/pkg set-mediator [-nv] [-I \fIimplementation\fR]
 .ne 2
 .mk
 .na
-\fB\fBuninstall [\fB-nvq\fR] [\fB--no-be-activate \fR] [\fB--no-index\fR] [\fB--deny-new-be\fR | \fB- -require-new-be\fR] [\fB--be-name\fR \fIname\fR] \fI pkg_fmri_pattern\fR ...\fR\fR
+\fB\fBuninstall [\fB-nvq\fR] [\fB--no-be-activate \fR] [\fB--no-index\fR] [--no-backup-be | --require-backup-be] [--backup-be-name \fI name\fR] [\fB--deny-new-be\fR | \fB--require-new-be \fR] [\fB--be-name\fR \fIname\fR] \fI pkg_fmri_pattern\fR ...\fR\fR
 .ad
 .sp .6
 .RS 4n
@@ -365,7 +377,7 @@ usr/bin/pkg set-mediator [-nv] [-I \fIimplementation\fR]
 .ne 2
 .mk
 .na
-\fB\fBupdate [\fB-fnvq\fR] [\fB-g\fR \fI path_or_uri\fR ...] [\fB--accept\fR] [\fB--licenses\fR] [\fB--no-be-activate\fR] [\fB--no-index\fR] [\fB--no-refresh \fR] [\fB--deny-new-be\fR | \fB--require-new-be\fR] [\fB--be-name\fR \fIname\fR] [\fB--reject\fR \fI pkg_fmri_pattern\fR ...] [\fIpkg_fmri_pattern\fR ...] \fR\fR
+\fB\fBupdate [\fB-fnvq\fR] [\fB-g\fR \fI path_or_uri\fR ...] [\fB--accept\fR] [\fB--licenses\fR] [\fB--no-be-activate\fR] [\fB--no-index\fR] [\fB--no-refresh \fR] [--no-backup-be | --require-backup-be] [--backup-be-name \fIname\fR] [\fB--deny-new-be\fR | \fB--require-new-be\fR] [\fB--be-name\fR \fIname\fR] [\fB--reject\fR \fI pkg_fmri_pattern\fR ...] [\fIpkg_fmri_pattern\fR ...] \fR\fR
 .ad
 .sp .6
 .RS 4n
@@ -418,7 +430,7 @@ x11/wm/fvwm (fvwm.org)      2.6.1-3           i--
 .TP
 .ie t \(bu
 .el o
-\fBO\fR 列の \fBo\fR は、パッケージが廃止されていることを示します。\fBO\fR 列の \fBr\fR は、パッケージの名前が変更されたことを示します (廃止の形態の 1 つ)。
+\fBO\fR 列の \fBo\fR は、パッケージが廃止されていることを示します。\fBO\fR 列の \fBr\fR は、パッケージの名前が変更されたことを示します (廃止の形態の 1 つです)。
 .RE
 \fB-H\fR を指定すると、一覧表示からヘッダーを省略します。
 .sp
@@ -426,7 +438,7 @@ x11/wm/fvwm (fvwm.org)      2.6.1-3           i--
 .sp
 \fB-f\fR および \fB-a\fR を指定した場合、incorporation の制約またはインストール状態に関係なく、すべてのバリアントについてすべてのパッケージのすべてのバージョンを一覧表示します。これらのオプションを使用するとき、パッケージの最新バージョンを明示的に一覧表示するには、\fIpkg_fmri_pattern\fR のバージョン部分に \fBlatest\fR を使用します。たとえば、\fBvim@latest\fR のように指定します。
 .sp
-\fB-g\fR を指定すると、指定されたパッケージリポジトリまたはアーカイブを、操作のためのパッケージデータのソースとして使用します。このオプションは複数回指定できます。\fB-n\fR を指定しない場合、\fB-g\fR を使用すると \fB-a\fR が暗黙的に有効になります。
+\fB-g\fR を指定すると、指定されたパッケージリポジトリまたはアーカイブを、操作のためのパッケージデータのソースとして使用します。このオプションは複数回指定できます。\fB-n\fR を指定しない場合、\fB-g\fR を使用すると \fB-a\fR が暗黙的に指定されます。
 .sp
 \fB-n\fR を指定すると、インストール状態に関係なく、すべての既知のパッケージの最新バージョンを表示します。
 .sp
@@ -449,7 +461,7 @@ x11/wm/fvwm (fvwm.org)      2.6.1-3           i--
 .RS 4n
 パッケージについての情報を人間が判読できる形式で表示します。複数の FMRI パターンを指定できます。パターンを指定しない場合、イメージ内のすべてのインストール済みパッケージについての情報を表示します。
 .sp
-\fB-g\fR を指定すると、指定されたパッケージリポジトリまたはアーカイブを、操作のためのパッケージデータのソースとして使用します。このオプションは複数回指定できます。\fB-g\fR を使用すると \fB-r\fR が暗黙的に有効になります。
+\fB-g\fR を指定すると、指定されたパッケージリポジトリまたはアーカイブを、操作のためのパッケージデータのソースとして使用します。このオプションは複数回指定できます。\fB-g\fR を使用すると \fB-r\fR が暗黙的に指定されます。
 .sp
 \fB-l\fR を指定すると、インストール済みパッケージの情報のみを表示します。これはデフォルトです。
 .sp
@@ -470,7 +482,7 @@ x11/wm/fvwm (fvwm.org)      2.6.1-3           i--
 .sp
 \fB-a\fR を指定すると、名前がオプション引数で指定され、値がオプション引数 (属性名と等号に続く部分) の (glob) パターンに一致する属性を持つアクションに出力を限定します。複数の \fB-a\fR オプションを指定した場合、それらのいずれかに一致するアクションが表示されます。
 .sp
-\fB-g\fR を指定すると、指定されたパッケージリポジトリまたはアーカイブを、操作のためのパッケージデータのソースとして使用します。このオプションは複数回指定できます。\fB-g\fR を使用すると \fB-r\fR が暗黙的に有効になります。
+\fB-g\fR を指定すると、指定されたパッケージリポジトリまたはアーカイブを、操作のためのパッケージデータのソースとして使用します。このオプションは複数回指定できます。\fB-g\fR を使用すると \fB-r\fR が暗黙的に指定されます。
 .sp
 \fB-r\fR を指定すると、最新の入手可能バージョンに基づいてパッケージを照合し、イメージの構成済みパブリッシャーのリポジトリから、現在インストールされていないパッケージの情報を取得します (必要な場合)。このオプションを使用するときは、少なくとも 1 つのパッケージを指定する必要があります。\fB-r\fR を指定しない場合、デフォルトでインストール済みパッケージのみが表示されます。
 .sp
@@ -670,7 +682,7 @@ AND と OR を使用する論理検索がサポートされています。フィ
 .ne 2
 .mk
 .na
-\fB\fBrevert [\fB-nv\fR] [\fB--no-be-activate \fR] [\fB--be-name\fR \fIname\fR] [\fB--deny-new-be \fR | \fB--require-new-be\fR] (\fB--tagged\fR \fI tag-name\fR ... | \fIpath-to-file\fR ...)\fR\fR
+\fB\fBrevert [\fB-nv\fR] [\fB--no-be-activate \fR] [--no-backup-be | --require-backup-be] [--backup-be-name \fIname\fR] [\fB--deny-new-be \fR | \fB--require-new-be\fR] [\fB--be-name\fR \fIname\fR] (\fB--tagged\fR \fItag-name\fR ... | \fIpath-to-file\fR ...)\fR\fR
 .ad
 .sp .6
 .RS 4n
@@ -698,14 +710,14 @@ AND と OR を使用する論理検索がサポートされています。フィ
 .sp
 \fB-F\fR は代替の出力形式を指定します。現時点では \fBtsv\fR (タブ区切り値) のみが有効です。
 .sp
-\fB-H\fR を指定すると、一覧表示からヘッダーを省略します。
+\fB-H\fR が指定されている場合は、リストのヘッダーを省略します。
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fB\fBset-mediator [\fB-nv\fR] [\fB-I\fR \fI implementation\fR] [\fB-V\fR \fIversion\fR] [\fB--no-be-activate\fR] [\fB--deny-new-be\fR | \fB--require-new-be \fR] [\fB--be-name\fR \fIname\fR] \fI mediator\fR ...\fR\fR
+\fB\fBset-mediator [\fB-nv\fR] [\fB-I\fR \fI implementation\fR] [\fB-V\fR \fIversion\fR] [\fB--no-be-activate\fR] [--no-backup-be | --require-backup-be] [--backup-be-name \fI name\fR] [\fB--deny-new-be\fR | \fB--require-new-be \fR] [\fB--be-name\fR \fIname\fR] \fI mediator\fR ...\fR\fR
 .ad
 .sp .6
 .RS 4n
@@ -724,7 +736,7 @@ AND と OR を使用する論理検索がサポートされています。フィ
 .ne 2
 .mk
 .na
-\fB\fBunset-mediator [\fB-nvIV\fR] [\fB--no-be-activate \fR] [\fB--deny-new-be\fR | \fB--require-new-be\fR] [\fB--be-name\fR \fIname\fR] \fImediator \fR ...\fR\fR
+\fB\fBunset-mediator [\fB-nvIV\fR] [\fB--no-be-activate \fR] [--no-backup-be | --require-backup-be] [--backup-be-name \fIname\fR] [\fB--deny-new-be\fR | \fB--require-new-be\fR] [\fB--be-name\fR \fIname\fR] \fImediator \fR ...\fR\fR
 .ad
 .sp .6
 .RS 4n
@@ -747,14 +759,14 @@ AND と OR を使用する論理検索がサポートされています。フィ
 .RS 4n
 すべてのバリアントの、または引数が使用されている場合は指定されたバリアントのみの、現在値を表示します。
 .sp
-\fB-H\fR を指定すると、一覧表示からヘッダーを省略します。
+\fB-H\fR が指定されている場合は、リストのヘッダーを省略します。
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fB\fBchange-variant [\fB-nvq\fR] [\fB-g\fR \fI path_or_uri\fR ...] [\fB--accept\fR] [\fB--licenses\fR] [\fB--no-be-activate\fR] [\fB--deny-new-be\fR | \fB--require-new-be \fR] [\fB--be-name\fR \fIname\fR] \fI variant_spec\fR=\fIinstance\fR ...\fR\fR
+\fB\fBchange-variant [\fB-nvq\fR] [\fB-g\fR \fI path_or_uri\fR ...] [\fB--accept\fR] [\fB--licenses\fR] [\fB--no-be-activate\fR] [--no-backup-be | --require-backup-be] [--backup-be-name \fI name\fR] [\fB--deny-new-be\fR | \fB--require-new-be \fR] [\fB--be-name\fR \fIname\fR] \fI variant_spec\fR=\fIinstance\fR ...\fR\fR
 .ad
 .sp .6
 .RS 4n
@@ -773,14 +785,14 @@ AND と OR を使用する論理検索がサポートされています。フィ
 .RS 4n
 引数を指定しない場合、すべてのファセットの現在値を表示します。引数を指定した場合、各ファセットの真偽を評価して結果を出力します。
 .sp
-\fB-H\fR を指定すると、一覧表示からヘッダーを省略します。
+\fB-H\fR が指定されている場合は、リストのヘッダーを省略します。
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fB\fBchange-facet [\fB-nvq\fR] [\fB-g\fR \fI path_or_uri\fR ...] [\fB--accept\fR] [\fB--licenses\fR] [\fB--no-be-activate\fR] [\fB--deny-new-be\fR | \fB--require-new-be \fR] [\fB--be-name\fR \fIname\fR] \fI facet_spec\fR=[True|False|None] ...\fR\fR
+\fB\fBchange-facet [\fB-nvq\fR] [\fB-g\fR \fI path_or_uri\fR ...] [\fB--accept\fR] [\fB--licenses\fR] [\fB--no-be-activate\fR] [--no-backup-be | --require-backup-be] [--backup-be-name \fI name\fR] [\fB--deny-new-be\fR | \fB--require-new-be \fR] [\fB--be-name\fR \fIname\fR] \fI facet_spec\fR=[True|False|None] ...\fR\fR
 .ad
 .sp .6
 .RS 4n
@@ -1268,6 +1280,67 @@ AND と OR を使用する論理検索がサポートされています。フィ
 .ne 2
 .mk
 .na
+\fB\fBbe-policy\fR\fR
+.ad
+.sp .6
+.RS 4n
+(文字列) パッケージ操作中にいつブート環境が作成されるかを指定します。次の値が許可されます。
+.sp
+.ne 2
+.mk
+.na
+\fB\fBdefault\fR\fR
+.ad
+.RS 14n
+.rt  
+デフォルトの BE 作成ポリシー \fBcreate-backup\fR を適用します。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fBalways-new\fR\fR
+.ad
+.RS 14n
+.rt  
+次のブート時にアクティブに設定されている新しい BE でパッケージ操作を実行するため、すべてのパッケージ操作に対してリブートを必要とします。明示的に要求されないかぎり、バックアップ BE は作成されません。
+.sp
+このポリシーはもっとも安全ですが、リブートしないとパッケージを追加できないため、ほとんどのサイトの要求よりも厳格です。
+.RE
+
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fBcreate-backup\fR\fR
+.ad
+.sp .6
+.RS 4n
+リブートを必要とするパッケージ操作で、新しい BE が作成され、次のブート時にアクティブに設定されます。パッケージが変更されるか、カーネルに影響する可能性のあるコンテンツがインストールされて操作がライブ BE に影響する場合、バックアップ BE は作成されますがアクティブには設定されません。バックアップ BE を明示的に要求することもできます。
+.sp
+このポリシーは、新しくインストールされたソフトウェアによりシステムが不安定になっている場合にのみ潜在的に危険です。この可能性はありますが、比較的まれです。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fBwhen-required\fR\fR
+.ad
+.sp .6
+.RS 4n
+リブートを必要とするパッケージ操作で、新しい BE が作成され、次のブート時にアクティブに設定されます。明示的に要求されないかぎり、バックアップ BE は作成されません。
+.sp
+パッケージの変更によりライブ BE へのこれ以上の変更が不可能になると、フォールバックできる新しい BE がなくなる可能性があるため、このポリシーはもっとも大きな危険を伴います。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
 \fB\fBca-path\fR\fR
 .ad
 .sp .6
@@ -1348,7 +1421,7 @@ AND と OR を使用する論理検索がサポートされています。フィ
 .ad
 .RS 22n
 .rt  
-すべてのマニフェストの署名を無視します。これがデフォルト値です。
+すべてのマニフェストの署名を無視します。
 .RE
 
 .sp
@@ -1359,7 +1432,7 @@ AND と OR を使用する論理検索がサポートされています。フィ
 .ad
 .RS 22n
 .rt  
-署名が含まれているすべてのマニフェストが有効に署名されていることを確認しますが、インストール済みパッケージがすべて署名されている必要はありません。
+署名が含まれているすべてのマニフェストが有効に署名されていることを確認しますが、インストール済みパッケージがすべて署名されている必要はありません。これがデフォルト値です。
 .RE
 
 .sp
@@ -2128,7 +2201,7 @@ HTTP または HTTPS プロキシサーバー。
 .SH 属性
 .sp
 .LP
-次の属性については、\fBattributes\fR(5) のマニュアルページを参照してください。
+次の属性については、\fBattributes\fR(5) を参照してください。
 .sp
 
 .sp

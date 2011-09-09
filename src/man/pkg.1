@@ -62,7 +62,7 @@ pkg \- Image Packaging System retrieval client
 
 .LP
 .nf
-/usr/bin/pkg search [HIaflpr] [-o \fIattribute\fR ...]
+/usr/bin/pkg search [-HIaflpr] [-o \fIattribute\fR ...]
     [-s \fIrepo_uri\fR] \fIquery\fR
 .fi
 
@@ -369,7 +369,7 @@ With \fB--reject\fR, prevent packages with names matching the given pattern from
 .RS 4n
 Removes installed packages that match \fIpkg_fmri_pattern\fR.
 .sp
-If a package is the subject of a group dependency, uninstalling it  places it on the avoid list. See the \fBavoid\fR subcommand below.
+If a package is the subject of a group dependency, uninstalling it places it on the avoid list. See the \fBavoid\fR subcommand below.
 .sp
 For all other options, refer to the \fBinstall\fR command above for usage and their effects.
 .RE

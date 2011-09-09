@@ -1,6 +1,6 @@
 '\" te
 .\" Copyright (c) 2007, 2011, Oracle and/or its affiliates. All rights reserved.
-.TH pkg.depotd 1m "2011 年 7 月 28 日" "SunOS 5.11" "系统管理命令"
+.TH pkg.depotd 1m "2011 年 8 月 30 日" "SunOS 5.11" "系统管理命令"
 .SH 名称
 pkg.depotd \- 映像包管理系统仓库服务器
 .SH 用法概要
@@ -92,11 +92,11 @@ pkg.depotd \- 映像包管理系统仓库服务器
 .ne 2
 .mk
 .na
-\fB\fBpkg/file_root\fR\fR
+\fB\fBpkg/image_root\fR\fR
 .ad
 .sp .6
 .RS 4n
-(\fBastring\fR) 该系统信息库的文件内容的根。如果未定义，则该缺省值为 \fIinst_root\fR/\fI file\fR。
+(\fBastring\fR) 其文件信息将用作文件数据高速缓存的映像的路径。
 .RE
 
 .sp
@@ -365,11 +365,11 @@ mDNS 镜像通常通过与其服务关联的 \fBsmf\fR(5) 属性来配置。可�
 .ne 2
 .mk
 .na
-\fB\fBpkg/file_root\fR\fR
+\fB\fBpkg/image_root\fR\fR
 .ad
-.RS 17n
+.RS 18n
 .rt  
-(\fBastring\fR) 实例应在其中找到其文件内容的文件系统路径。缺省值为 \fB/var/pkg/download\fR。
+(\fBastring\fR) 其文件信息将用作文件数据高速缓存的映像的路径。缺省值为 \fB/\fR。
 .RE
 
 .sp
@@ -378,7 +378,7 @@ mDNS 镜像通常通过与其服务关联的 \fBsmf\fR(5) 属性来配置。可�
 .na
 \fB\fBpkg/port\fR\fR
 .ad
-.RS 17n
+.RS 18n
 .rt  
 (\fBcount\fR) 实例应侦听传入软件包请求的端口号。缺省值为 80。
 .RE
@@ -460,11 +460,11 @@ mDNS 镜像通常通过与其服务关联的 \fBsmf\fR(5) 属性来配置。可�
 .ne 2
 .mk
 .na
-\fB\fB--file-root\fR \fIpath\fR\fR
+\fB\fB--image-root\fR \fIpath\fR\fR
 .ad
 .RS 30n
 .rt  
-请参见上述 \fBpkg/file_root\fR。
+请参见上述 \fBpkg/image_root\fR。
 .RE
 
 .sp
@@ -763,7 +763,7 @@ lw(2.75i) |lw(2.75i)
 .
 属性类型属性值
 _
-可用性\fBpackage/pkg\fR（软件包/pkg）
+可用性\fBpackage/pkg\fR
 _
 接口稳定性Uncommitted（未确定）
 .TE

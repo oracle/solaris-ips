@@ -1,12 +1,12 @@
 '\" te
 .\" Copyright (c) 2007, 2011, Oracle and/or its affiliates. All rights reserved.
-.TH pkgrepo 1 "2011 年 7 月 28 日" "SunOS 5.11" "用户命令"
+.TH pkgrepo 1 "2011 年 8 月 30日" "SunOS 5.11" "用户命令"
 .SH 名称
 pkgrepo \- 映像包管理系统的系统信息库管理实用程序
 .SH 用法概要
 .LP
 .nf
-/usr/bin/pkgrepo create [--version] \fIuri_or_path\fR
+/usr/bin/pkgrepo create [--version \fIver\fR] \fIuri_or_path\fR
 .fi
 
 .LP
@@ -24,6 +24,12 @@ pkgrepo \- 映像包管理系统的系统信息库管理实用程序
 .nf
 /usr/bin/pkgrepo info [-F \fIformat\fR] [-H] [-p \fIpublisher\fR ...]
     -s \fIrepo_uri_or_path\fR
+.fi
+
+.LP
+.nf
+/usr/bin/pkgrepo list [-F \fIformat\fR] [-H] [-p \fIpublisher\fR ...]
+    -s \fIrepo_uri_or_path\fR [\fIpkg_fmri_pattern\fR ...]
 .fi
 
 .LP
@@ -88,7 +94,7 @@ pkgrepo \- 映像包管理系统的系统信息库管理实用程序
 .ne 2
 .mk
 .na
-\fB\fBcreate [\fB--version\fR] \fIuri_or_path \fR\fR\fR
+\fB\fBcreate [\fB--version\fR \fIver\fR] \fI uri_or_path\fR\fR\fR
 .ad
 .sp .6
 .RS 4n
@@ -150,7 +156,7 @@ T}
 .sp
 有关可能的属性的列表以及每个属性的用途和值，请参见下面的 \fBset\fR 子命令。
 .sp
-使用 \fB-F\fR，指定备用输出格式。\fIformat\fR 的唯一值是 \fBtsv\fR（以制表符分隔的值）。
+使用 \fB-F\fR，指定备用输出格式。\fIformat\fR 的值可以是 \fBtsv\fR（以制表符分隔的值）、\fBjson\fR（单行 JavaScript 对象表示法）或 \fBjson-formatted\fR（格式易于阅读的 JavaScript 对象表示法）。
 .sp
 使用 \fB-H\fR，忽略列表的标题。
 .sp
@@ -169,11 +175,32 @@ T}
 .RS 4n
 显示系统信息库已知的软件包发布者的列表。该列表包括每个发布者的软件包数量、最后一次更新发布者的软件包数据的时间以及发布者的软件包数据的状态（例如当前是否处于正在处理状态）。
 .sp
-使用 \fB-F\fR，指定备用输出格式。\fIformat\fR 的唯一值是 \fBtsv\fR（以制表符分隔的值）。
+使用 \fB-F\fR，指定备用输出格式。\fIformat\fR 的值可以是 \fBtsv\fR（以制表符分隔的值）、\fBjson\fR（单行 JavaScript 对象表示法）或 \fBjson-formatted\fR（格式易于阅读的 JavaScript 对象表示法）。
 .sp
 使用 \fB-H\fR，忽略列表的标题。
 .sp
 使用 \fB-p\fR，仅显示给定发布者的数据。如果没有提供该选项，将显示所有发布者的数据。可以多次指定此选项。
+.sp
+使用 \fB-s\fR，对位于给定 URI 或文件系统路径的系统信息库进行操作。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB list [\fB-F\fR \fIformat\fR] [\fB-H\fR] [\fB-p\fR \fIpublisher\fR ...] \fB-s\fR \fI repo_uri_or_path\fR [\fIpkg_fmri_pattern\fR ...]\fR\fR
+.ad
+.sp .6
+.RS 4n
+列出 \fIrepo_uri_or_path\fR 系统信息库中与指定 \fIpkg_fmri_pattern\fR 模式匹配的软件包。如果未指定任何模式，将列出系统信息库中的所有软件包。
+.sp
+在缺省输出中，第一列包含软件包发布者的名称。第二列包含软件包的名称。第三列是显示软件包状态的标志。状态列中的 \fBo\fR 值表示软件包已过时。状态列中的 \fBr\fR 值表示已重命名软件包，但格式已过时。第四列包含软件包的发行版本和分支版本。有关发行版本和分支版本的信息，请参见 \fBpkg\fR(5)。
+.sp
+使用 \fB-F\fR，指定备用输出格式。\fIformat\fR 的唯一值可以是 \fBtsv\fR（以制表符分隔的值）、\fBjson\fR（单行 JavaScript 对象表示法）或 \fBjson-formatted\fR（格式易于阅读的 JavaScript 对象表示法）。
+.sp
+使用 \fB-H\fR，忽略列表的标题。
+.sp
+使用 \fB-p\fR，仅显示给定发布者的软件包。如果没有提供该选项，将显示所有发布者的软件包。可以多次指定此选项。
 .sp
 使用 \fB-s\fR，对位于给定 URI 或文件系统路径的系统信息库进行操作。
 .RE
@@ -682,7 +709,7 @@ lw(2.75i) |lw(2.75i)
 .
 属性类型属性值
 _
-可用性\fBpackage/pkg\fR（软件包/pkg）
+可用性\fBpackage/pkg\fR
 _
 接口稳定性Uncommitted（未确定）
 .TE

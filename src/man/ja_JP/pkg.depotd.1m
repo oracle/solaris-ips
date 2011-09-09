@@ -1,6 +1,6 @@
 '\" te
 .\" Copyright (c) 2007, 2011, Oracle and/or its affiliates. All rights reserved.
-.TH pkg.depotd 1m "2011 年 7 月 28 日" "SunOS 5.11" "システム管理コマンド"
+.TH pkg.depotd 1m "2011 年 8 月 30 日" "SunOS 5.11" "システム管理コマンド"
 .SH 名前
 pkg.depotd \- Image Packaging System の集積サーバー
 .SH 形式
@@ -92,11 +92,11 @@ pkg.depotd \- Image Packaging System の集積サーバー
 .ne 2
 .mk
 .na
-\fB\fBpkg/file_root\fR\fR
+\fB\fBpkg/image_root\fR\fR
 .ad
 .sp .6
 .RS 4n
-(\fBastring\fR) このリポジトリのファイルコンテンツのルート。未定義の場合のデフォルトは \fIinst_root\fR/\fI file\fR です。
+(\fBastring\fR) ファイルデータのキャッシュとして使用されるファイル情報を持つイメージへのパス。
 .RE
 
 .sp
@@ -365,11 +365,11 @@ mDNS ミラーは通常、そのサービスと関連付けられた \fBsmf\fR(5
 .ne 2
 .mk
 .na
-\fB\fBpkg/file_root\fR\fR
+\fB\fBpkg/image_root\fR\fR
 .ad
-.RS 17n
+.RS 18n
 .rt  
-(\fBastring\fR) インスタンスがそのファイルの内容を検索するファイルシステムパス。デフォルト値は \fB/var/pkg/download\fR です。
+(\fBastring\fR) ファイルデータのキャッシュとして使用されるファイル情報を持つイメージへのパス。デフォルト値は \fB/\fR です。
 .RE
 
 .sp
@@ -378,7 +378,7 @@ mDNS ミラーは通常、そのサービスと関連付けられた \fBsmf\fR(5
 .na
 \fB\fBpkg/port\fR\fR
 .ad
-.RS 17n
+.RS 18n
 .rt  
 (\fBcount\fR) 着信するパッケージ要求をインスタンスが待機するポート番号。デフォルト値は 80 です。
 .RE
@@ -460,11 +460,11 @@ mDNS ミラーは通常、そのサービスと関連付けられた \fBsmf\fR(5
 .ne 2
 .mk
 .na
-\fB\fB--file-root\fR \fIpath\fR\fR
+\fB\fB--image-root\fR \fIpath\fR\fR
 .ad
 .RS 30n
 .rt  
-前出の \fBpkg/file_root\fR を参照してください。
+上記の \fBpkg/image_root\fR を参照してください。
 .RE
 
 .sp
@@ -752,7 +752,7 @@ feed_description = example.com's software
 .SH 属性
 .sp
 .LP
-次の属性については、\fBattributes\fR(5) のマニュアルページを参照してください。
+次の属性については、\fBattributes\fR(5) を参照してください。
 .sp
 
 .sp

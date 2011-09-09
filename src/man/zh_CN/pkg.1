@@ -1,6 +1,6 @@
 '\" te
 .\" Copyright (c) 2007, 2011, Oracle and/or its affiliates. All rights reserved.
-.TH pkg 1 "2011 年 7 月 28 日" "" ""
+.TH pkg 1 "2011 年 8 月 30 日" "SunOS 5.11" "用户命令"
 .SH 名称
 pkg \- 映像包管理系统的检索客户端
 .SH 用法概要
@@ -17,26 +17,27 @@ pkg \- 映像包管理系统的检索客户端
 .LP
 .nf
 /usr/bin/pkg install [-nvq] [-g \fIpath_or_uri\fR ...] [--accept]
-    [--licenses] [--no-be-activate] [--no-index]
-    [--no-refresh] [--deny-new-be | --require-new-be]
-    [--be-name \fIname\fR] [--reject \fIpkg_fmri_pattern\fR ...]
+    [--licenses] [--no-be-activate] [--no-index] [--no-refresh]
+    [--no-backup-be | --require-backup-be] [--backup-be-name \fIname\fR]
+    [--deny-new-be | --require-new-be] [--be-name \fIname\fR]
+    [--reject \fIpkg_fmri_pattern\fR ...] \fIpkg_fmri_pattern\fR ...
+.fi
+
+.LP
+.nf
+/usr/bin/pkg uninstall [-nvq] [--no-be-activate] [--no-index]
+    [--no-backup-be | --require-backup-be] [--backup-be-name \fIname\fR]
+    [--deny-new-be | --require-new-be] [--be-name \fIname\fR]
     \fIpkg_fmri_pattern\fR ...
 .fi
 
 .LP
 .nf
-/usr/bin/pkg uninstall [-nvq] [--no-be-activate]
-    [--no-index] [--deny-new-be | --require-new-be]
-    [--be-name \fIname\fR] \fIpkg_fmri_pattern\fR ...
-.fi
-
-.LP
-.nf
 /usr/bin/pkg update [-fnvq] [-g \fIpath_or_uri\fR ...] [--accept]
-    [--licenses] [--no-be-activate] [--no-index]
-    [--no-refresh] [--deny-new-be | --require-new-be]
-    [--be-name \fIname\fR] [--reject \fIpkg_fmri_pattern\fR ...]
-    [\fIpkg_fmri_pattern\fR ...]
+    [--licenses] [--no-be-activate] [--no-index] [--no-refresh]
+    [--no-backup-be | --require-backup-be] [--backup-be-name \fIname\fR]
+    [--deny-new-be | --require-new-be] [--be-name \fIname\fR]
+    [--reject \fIpkg_fmri_pattern\fR ...] [\fIpkg_fmri_pattern\fR ...]
 .fi
 
 .LP
@@ -60,7 +61,7 @@ pkg \- 映像包管理系统的检索客户端
 
 .LP
 .nf
-/usr/bin/pkg search [HIaflpr] [-o \fIattribute\fR ...]
+/usr/bin/pkg search [-HIaflpr] [-o \fIattribute\fR ...]
     [-s \fIrepo_uri\fR] \fIquery\fR
 .fi
 
@@ -77,7 +78,8 @@ pkg \- 映像包管理系统的检索客户端
 .LP
 .nf
 /usr/bin/pkg revert [-nv] [--no-be-activate]
-    [--be-name \fIname\fR] [--deny-new-be | --require-new-be]
+    [--no-backup-be | --require-backup-be] [--backup-be-name \fIname\fR]
+    [--deny-new-be | --require-new-be] [--be-name \fIname\fR]
     (--tagged \fItag-name\fR ... | \fIpath-to-file\fR ...)
 .fi
 
@@ -90,13 +92,15 @@ pkg \- 映像包管理系统的检索客户端
 .nf
 usr/bin/pkg set-mediator [-nv] [-I \fIimplementation\fR]
     [-V \fIversion\fR] [--no-be-activate]
-    [--deny-new-be | --require-new-be]
-    [--be-name \fIname\fR] \fImediator\fR ...
+    [--no-backup-be | --require-backup-be] [--backup-be-name \fIname\fR]
+    [--deny-new-be | --require-new-be] [--be-name \fIname\fR]
+    \fImediator\fR ...
 .fi
 
 .LP
 .nf
 /usr/bin/pkg unset-mediator [-nvIV] [--no-be-activate]
+    [--no-backup-be | --require-backup-be] [--backup-be-name \fIname\fR]
     [--deny-new-be | --require-new-be] [--be-name \fIname\fR]
     \fImediator\fR ...
 .fi
@@ -110,8 +114,9 @@ usr/bin/pkg set-mediator [-nv] [-I \fIimplementation\fR]
 .nf
 /usr/bin/pkg change-variant [-nvq] [-g \fIpath_or_uri\fR ...]
     [--accept] [--licenses] [--no-be-activate]
-    [--deny-new-be | --require-new-be]
-    [--be-name \fIname\fR] \fIvariant_spec\fR=\fIinstance\fR ...
+    [--no-backup-be | --require-backup-be] [--backup-be-name \fIname\fR]
+    [--deny-new-be | --require-new-be] [--be-name \fIname\fR]
+    \fIvariant_spec\fR=\fIinstance\fR ...
 .fi
 
 .LP
@@ -123,8 +128,9 @@ usr/bin/pkg set-mediator [-nv] [-I \fIimplementation\fR]
 .nf
 /usr/bin/pkg change-facet [-nvq] [-g \fIpath_or_uri\fR ...]
     [--accept] [--licenses] [--no-be-activate]
-    [--deny-new-be | --require-new-be]
-    [--be-name \fIname\fR] \fIfacet_spec\fR=[True|False|None] ...
+    [--no-backup-be | --require-backup-be] [--backup-be-name \fIname\fR]
+    [--deny-new-be | --require-new-be] [--be-name \fIname\fR] 
+    \fIfacet_spec\fR=[True|False|None] ...
 .fi
 
 .LP
@@ -309,7 +315,7 @@ usr/bin/pkg set-mediator [-nv] [-I \fIimplementation\fR]
 .ne 2
 .mk
 .na
-\fB\fBinstall [\fB-nvq\fR] [\fB-g\fR\fI path_or_uri\fR ...][\fB--accept\fR] [\fB--licenses\fR] [\fB--no-be-activate\fR] [\fB--no-index\fR] [\fB--no-refresh \fR] [\fB--deny-new-be\fR | \fB--require-new-be\fR] [\fB--be-name\fR\fIname\fR] [\fB--reject\fR\fI pkg_fmri_pattern\fR ...] \fIpkg_fmri_pattern\fR ... \fR\fR
+\fB\fBinstall [\fB-nvq\fR] [\fB-g\fR \fI path_or_uri\fR ...] [\fB--accept\fR] [\fB--licenses\fR] [\fB--no-be-activate\fR] [\fB--no-index\fR] [\fB--no-refresh \fR] [--no-backup-be | --require-backup-be] [--backup-be-name \fI name\fR] [\fB--deny-new-be\fR | \fB--require-new-be\fR] [\fB--be-name\fR \fIname\fR] [\fB--reject\fR \fI pkg_fmri_pattern\fR ...] \fIpkg_fmri_pattern\fR ... \fR\fR
 .ad
 .sp .6
 .RS 4n
@@ -331,15 +337,21 @@ usr/bin/pkg set-mediator [-nv] [-I \fIimplementation\fR]
 .sp
 使用 \fB--licenses\fR 时，会在此操作过程中显示已安装或更新的软件包的所有许可证。
 .sp
+使用 \fB--no-backup-be\fR 时，不会创建备份引导环境。
+.sp
 使用 \fB--no-be-activate\fR 时，如果创建了一个引导环境 (boot environment, BE)，则下次引导时，不会将该 BE 设置为活动 BE。有关更多信息，请参见 \fBbeadm\fR(1M)。
 .sp
 使用 \fB--no-index\fR 时，不会在操作成功完成后更新搜索索引。
 .sp
 使用 \fB--no-refresh\fR 时，不会尝试联系系统信息库来让映像发布者检索最新的可用软件包列表和其他元数据。
 .sp
-使用 \fB--be-name\fR 时，会将新创建的引导环境重命名为给定的参数。只有在操作期间创建新引导环境时，此选项才有效。另请参见 \fBbeadm\fR(1M)。
+使用 \fB--backup-be-name\fR 时，使用给定参数命名创建的备份引导环境。使用 \fB--backup-be-name\fR 意味着 \fB--require-backup-be\fR。另请参见 \fBbeadm\fR(1M)。
 .sp
-使用 \fB--require-new-be\fR 时，始终创建新的引导环境。如果不指定此选项，则根据需要自动创建引导环境。
+使用 \fB--be-name\fR 时，会将新创建的引导环境重命名为给定的参数。使用 \fB--be-name\fR 意味着 \fB--require-new-be\fR。另请参见 \fBbeadm\fR(1M)。
+.sp
+使用 \fB--require-backup-be\fR 时，如果不创建新的引导环境，则始终创建一个备份引导环境。如果不使用该选项，则根据映像策略创建备份引导环境。有关何时自动创建备份引导环境的说明，请参见下面"映像属性"中的 \fBbe-policy\fR。
+.sp
+使用 \fB--require-new-be\fR 时，始终创建新的引导环境。如果不使用该选项，则根据映像策略创建引导环境。有关何时自动创建引导环境的说明，请参见下列"映像属性"中的 \fBbe-policy\fR。该选项不能与 \fB-require-backup-be\fR 结合使用。
 .sp
 使用 \fB--deny-new-be\fR 时，不会创建新的引导环境。如果需要新的引导环境，则不执行此操作。
 .sp
@@ -350,7 +362,7 @@ usr/bin/pkg set-mediator [-nv] [-I \fIimplementation\fR]
 .ne 2
 .mk
 .na
-\fB\fBuninstall [\fB-nvq\fR] [\fB--no-be-activate \fR] [\fB--no-index\fR] [\fB--deny-new-be\fR | \fB- -require-new-be\fR] [\fB--be-name\fR \fIname\fR] \fI pkg_fmri_pattern\fR ...\fR\fR
+\fB\fBuninstall [\fB-nvq\fR] [\fB--no-be-activate \fR] [\fB--no-index\fR] [--no-backup-be | --require-backup-be] [--backup-be-name \fI name\fR] [\fB--deny-new-be\fR | \fB--require-new-be \fR] [\fB--be-name\fR \fIname\fR] \fI pkg_fmri_pattern\fR ...\fR\fR
 .ad
 .sp .6
 .RS 4n
@@ -365,7 +377,7 @@ usr/bin/pkg set-mediator [-nv] [-I \fIimplementation\fR]
 .ne 2
 .mk
 .na
-\fB\fBupdate [\fB-fnvq\fR] [\fB-g\fR\fI path_or_uri\fR ...][\fB--accept\fR] [\fB--licenses\fR] [\fB--no-be-activate\fR] [\fB--no-index\fR] [\fB--no-refresh \fR] [\fB--deny-new-be\fR | \fB--require-new-be\fR] [\fB--be-name\fR\fIname\fR] [\fB--reject\fR\fI pkg_fmri_pattern\fR ...][\fIpkg_fmri_pattern\fR ...] \fR\fR
+\fB\fBupdate [\fB-fnvq\fR] [\fB-g\fR \fI path_or_uri\fR ...] [\fB--accept\fR] [\fB--licenses\fR] [\fB--no-be-activate\fR] [\fB--no-index\fR] [\fB--no-refresh \fR] [--no-backup-be | --require-backup-be] [--backup-be-name \fIname\fR] [\fB--deny-new-be\fR | \fB--require-new-be\fR] [\fB--be-name\fR \fIname\fR] [\fB--reject\fR \fI pkg_fmri_pattern\fR ...] [\fIpkg_fmri_pattern\fR ...] \fR\fR
 .ad
 .sp .6
 .RS 4n
@@ -670,7 +682,7 @@ x11/wm/fvwm (fvwm.org)      2.6.1-3           i--
 .ne 2
 .mk
 .na
-\fB\fBrevert [\fB-nv\fR] [\fB--no-be-activate \fR] [\fB--be-name\fR\fIname\fR] [\fB--deny-new-be \fR | \fB--require-new-be\fR] (\fB--tagged\fR\fI tag-name\fR ...| \fIpath-to-file\fR ...)\fR\fR
+\fB\fBrevert [\fB-nv\fR] [\fB--no-be-activate \fR] [--no-backup-be | --require-backup-be] [--backup-be-name \fIname\fR] [\fB--deny-new-be \fR | \fB--require-new-be\fR] [\fB--be-name\fR \fIname\fR] (\fB--tagged\fR \fItag-name\fR ... | \fIpath-to-file\fR ...)\fR\fR
 .ad
 .sp .6
 .RS 4n
@@ -698,14 +710,14 @@ x11/wm/fvwm (fvwm.org)      2.6.1-3           i--
 .sp
 使用 \fB-F\fR 时，会指定替代输出格式。当前，只有 \fBtsv\fR（Tab Separated Values，制表符分隔值）有效。
 .sp
-使用 \fB-H\fR 时，会省略列表中的标题。
+使用 \fB-H\fR，忽略列表的标题。
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fB\fBset-mediator [\fB-nv\fR] [\fB-I\fR \fI implementation\fR] [\fB-V\fR \fIversion\fR] [\fB--no-be-activate\fR] [\fB--deny-new-be\fR | \fB--require-new-be \fR] [\fB--be-name\fR \fIname\fR] \fI mediator\fR ...\fR\fR
+\fB\fBset-mediator [\fB-nv\fR] [\fB-I\fR \fI implementation\fR] [\fB-V\fR \fIversion\fR] [\fB--no-be-activate\fR] [--no-backup-be | --require-backup-be] [--backup-be-name \fI name\fR] [\fB--deny-new-be\fR | \fB--require-new-be \fR] [\fB--be-name\fR \fIname\fR] \fI mediator\fR ...\fR\fR
 .ad
 .sp .6
 .RS 4n
@@ -724,7 +736,7 @@ x11/wm/fvwm (fvwm.org)      2.6.1-3           i--
 .ne 2
 .mk
 .na
-\fB\fBunset-mediator [\fB-nvIV\fR] [\fB--no-be-activate \fR] [\fB--deny-new-be\fR | \fB--require-new-be\fR] [\fB--be-name\fR \fIname\fR] \fImediator \fR ...\fR\fR
+\fB\fBunset-mediator [\fB-nvIV\fR] [\fB--no-be-activate \fR] [--no-backup-be | --require-backup-be] [--backup-be-name \fIname\fR] [\fB--deny-new-be\fR | \fB--require-new-be\fR] [\fB--be-name\fR \fIname\fR] \fImediator \fR ...\fR\fR
 .ad
 .sp .6
 .RS 4n
@@ -747,14 +759,14 @@ x11/wm/fvwm (fvwm.org)      2.6.1-3           i--
 .RS 4n
 显示所有变体的当前值；如果提供了参数，则仅显示指定变体的当前值。
 .sp
-使用 \fB-H\fR 时，会省略列表中的标题。
+使用 \fB-H\fR，忽略列表的标题。
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fB\fBchange-variant [\fB-nvq\fR] [\fB-g\fR\fI path_or_uri\fR ...][\fB--accept\fR] [\fB--licenses\fR] [\fB--no-be-activate\fR] [\fB--deny-new-be\fR | \fB--require-new-be \fR] [\fB--be-name\fR\fIname\fR] \fI variant_spec\fR=\fIinstance\fR ...\fR\fR
+\fB\fBchange-variant [\fB-nvq\fR] [\fB-g\fR \fI path_or_uri\fR ...] [\fB--accept\fR] [\fB--licenses\fR] [\fB--no-be-activate\fR] [--no-backup-be | --require-backup-be] [--backup-be-name \fI name\fR] [\fB--deny-new-be\fR | \fB--require-new-be \fR] [\fB--be-name\fR \fIname\fR] \fI variant_spec\fR=\fIinstance\fR ...\fR\fR
 .ad
 .sp .6
 .RS 4n
@@ -773,14 +785,14 @@ x11/wm/fvwm (fvwm.org)      2.6.1-3           i--
 .RS 4n
 如果未提供参数，则显示所有侧面的当前值。如果提供了参数，则评估每个侧面将为 true 还是 false，并显示结果。
 .sp
-使用 \fB-H\fR 时，会省略列表中的标题。
+使用 \fB-H\fR，忽略列表的标题。
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fB\fBchange-facet [\fB-nvq\fR] [\fB-g\fR\fI path_or_uri\fR ...][\fB--accept\fR] [\fB--licenses\fR] [\fB--no-be-activate\fR] [\fB--deny-new-be\fR | \fB--require-new-be \fR] [\fB--be-name\fR\fIname\fR] \fI facet_spec\fR=[True|False|None] ...\fR\fR
+\fB\fBchange-facet [\fB-nvq\fR] [\fB-g\fR \fI path_or_uri\fR ...] [\fB--accept\fR] [\fB--licenses\fR] [\fB--no-be-activate\fR] [--no-backup-be | --require-backup-be] [--backup-be-name \fI name\fR] [\fB--deny-new-be\fR | \fB--require-new-be \fR] [\fB--be-name\fR \fIname\fR] \fI facet_spec\fR=[True|False|None] ...\fR\fR
 .ad
 .sp .6
 .RS 4n
@@ -1268,6 +1280,67 @@ x11/wm/fvwm (fvwm.org)      2.6.1-3           i--
 .ne 2
 .mk
 .na
+\fB\fBbe-policy\fR\fR
+.ad
+.sp .6
+.RS 4n
+（字符串）指定在打包操作期间何时创建引导环境。允许使用以下值：
+.sp
+.ne 2
+.mk
+.na
+\fB\fBdefault\fR\fR
+.ad
+.RS 14n
+.rt  
+应用缺省 BE 创建策略 \fBcreate-backup\fR。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fBalways-new\fR\fR
+.ad
+.RS 14n
+.rt  
+所有软件包操作均需要重新引导：在下次引导时在设为活动状态的新 BE 中执行这些操作。除非显式请求，否则不会创建备份 BE。
+.sp
+该策略最为安全，但是它比大多数站点的需要更为严格，因为在不重新引导的情况下无法添加任何软件包。
+.RE
+
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fBcreate-backup\fR\fR
+.ad
+.sp .6
+.RS 4n
+对于需要重新引导的软件包操作，在下一次引导时，将创建一个新的 BE 并将其设置为处于活动状态。如果修改了软件包或安装了可能影响内核的内容，并且该操作影响实时 BE，将创建备份 BE，但不会将其设置为活动状态。也可以显式请求备份 BE。
+.sp
+仅当新安装的软件导致系统不稳定时（有可能发生，但比较少见），该策略才具有潜在风险。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fBwhen-required\fR\fR
+.ad
+.sp .6
+.RS 4n
+对于需要重新引导的软件包操作，在下一次引导时，将创建一个新的 BE 并将其设置为处于活动状态。除非显式请求，否则不会创建备份 BE。
+.sp
+该策略的风险性最高，因为如果对实时 BE 的打包更改使得以后不可再进行更改，则可能没有可回退到的最近 BE。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
 \fB\fBca-path\fR\fR
 .ad
 .sp .6
@@ -1348,7 +1421,7 @@ x11/wm/fvwm (fvwm.org)      2.6.1-3           i--
 .ad
 .RS 22n
 .rt  
-忽略所有清单的签名。这是缺省值。
+忽略所有清单的签名。
 .RE
 
 .sp
@@ -1359,7 +1432,7 @@ x11/wm/fvwm (fvwm.org)      2.6.1-3           i--
 .ad
 .RS 22n
 .rt  
-验证所有具有签名的清单的签名是否有效，但不要求签名所有安装的软件包。
+验证所有具有签名的清单的签名是否有效，但不要求签名所有安装的软件包。这是缺省值。
 .RE
 
 .sp
@@ -1580,7 +1653,7 @@ pkg.fmri    set    solaris/driver/network/bge pkg:/driver/network/bge@0.5.11-0.1
 
 .sp
 .LP
-该标记在软件包 \fBdriver/network/bge\fR 中，既用作代表 \fB/kernel/drv/\fI arch\fR/bge\fR 的文件操作的基名，又用作驱动程序名称。
+该标记在软件包 \fBdriver/network/bge\fR 中，既用作代表 \fB/kernel/drv/\fI arch\fR/bge\fR 的文件操作的根基名称，又用作驱动程序名称。
 
 .LP
 \fB示例 8 \fR搜索依赖于指定软件包的软件包
@@ -2139,7 +2212,7 @@ lw(2.75i) |lw(2.75i)
 .
 属性类型属性值
 _
-可用性\fBpackage/pkg\fR（软件包/pkg）
+可用性\fBpackage/pkg\fR
 _
 接口稳定性Uncommitted（未确定）
 .TE

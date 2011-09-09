@@ -1,12 +1,12 @@
 '\" te
 .\" Copyright (c) 2007, 2011, Oracle and/or its affiliates. All rights reserved.
-.TH pkgrepo 1 "2011 年 7 月 28 日" "SunOS 5.11" "ユーザーコマンド"
+.TH pkgrepo 1 "2011 年 8 月 30 日" "SunOS 5.11" "ユーザーコマンド"
 .SH 名前
 pkgrepo \- Image Packaging System リポジトリ管理ユーティリティー
 .SH 形式
 .LP
 .nf
-/usr/bin/pkgrepo create [--version] \fIuri_or_path\fR
+/usr/bin/pkgrepo create [--version \fIver\fR] \fIuri_or_path\fR
 .fi
 
 .LP
@@ -24,6 +24,12 @@ pkgrepo \- Image Packaging System リポジトリ管理ユーティリティー
 .nf
 /usr/bin/pkgrepo info [-F \fIformat\fR] [-H] [-p \fIpublisher\fR ...]
     -s \fIrepo_uri_or_path\fR
+.fi
+
+.LP
+.nf
+/usr/bin/pkgrepo list [-F \fIformat\fR] [-H] [-p \fIpublisher\fR ...]
+    -s \fIrepo_uri_or_path\fR [\fIpkg_fmri_pattern\fR ...]
 .fi
 
 .LP
@@ -88,7 +94,7 @@ pkgrepo \- Image Packaging System リポジトリ管理ユーティリティー
 .ne 2
 .mk
 .na
-\fB\fBcreate [\fB--version\fR] \fIuri_or_path \fR\fR\fR
+\fB\fBcreate [\fB--version\fR \fIver\fR] \fI uri_or_path\fR\fR\fR
 .ad
 .sp .6
 .RS 4n
@@ -150,7 +156,7 @@ T}
 .sp
 指定できるプロパティーのリスト、および各プロパティーの目的と値については、下の \fBset\fR サブコマンドを参照してください。
 .sp
-\fB-F\fR が指定されている場合は、代替の出力形式を指定します。\fIformat\fR の唯一の値は \fBtsv\fR (タブで区切られた値) です。
+\fB-F\fR が指定されている場合は、代替の出力形式を指定します。\fIformat\fR の値は、\fBtsv\fR (Tab Separated Values)、\fB json\fR (単一行としての JavaScript Object Notation)、または \fBjson-formatted \fR (読みやすい形式にされた JavaScript Object Notation) にできます。
 .sp
 \fB-H\fR が指定されている場合は、リストのヘッダーを省略します。
 .sp
@@ -169,11 +175,32 @@ T}
 .RS 4n
 リポジトリで認識されているパッケージパブリッシャーのリストを表示します。このリストには、パブリッシャーごとのパッケージの数、パブリッシャーのパッケージデータが最後に更新された日時、およびパブリッシャーのパッケージデータのステータス (現在処理されているかどうかなど) が含まれます。
 .sp
-\fB-F\fR が指定されている場合は、代替の出力形式を指定します。\fIformat\fR の唯一の値は \fBtsv\fR (タブで区切られた値) です。
+\fB-F\fR が指定されている場合は、代替の出力形式を指定します。\fIformat\fR の値は、\fBtsv\fR (Tab Separated Values)、\fBjson\fR (単一行としての JavaScript Object Notation)、または \fBjson-formatted\fR (読みやすい形式にされた JavaScript Object Notation) にできます。
 .sp
 \fB-H\fR が指定されている場合は、リストのヘッダーを省略します。
 .sp
 \fB-p\fR が指定されている場合は、指定されたパブリッシャーのデータのみが表示されます。指定されていない場合は、すべてのパブリッシャーのデータが表示されます。このオプションは複数回指定できます。
+.sp
+\fB-s\fR が指定されている場合は、指定された URI またはファイルシステムのパスにあるリポジトリを操作します。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB list [\fB-F\fR \fIformat\fR] [\fB-H\fR] [\fB-p\fR \fIpublisher\fR ...] \fB-s\fR \fI repo_uri_or_path\fR [\fIpkg_fmri_pattern\fR ...]\fR\fR
+.ad
+.sp .6
+.RS 4n
+指定された \fIpkg_fmri_pattern\fR にマッチする \fIrepo_uri_or_path\fR リポジトリのパッケージを一覧表示します。パターンが指定されない場合、リポジトリのすべてのパッケージが一覧表示されます。
+.sp
+デフォルトの出力では、最初の列にパッケージのパブリッシャーの名前が含まれます。2 番目の列にはパッケージの名前が含まれます。3 番目の列には、パッケージのステータスを示すフラグが含まれます。ステータス列の \fBo\fR の値は、パッケージが廃止されていることを示します。ステータス列の \fBr\fR の値は、パッケージの名前が変更されたことを示します (廃止の形態の 1 つです)。4 番目の列には、パッケージのリリースおよびブランチのバージョンが含まれます。リリースバージョンとブランチバージョンについては、\fBpkg\fR(5) を参照してください。
+.sp
+\fB-F\fR が指定されている場合は、代替の出力形式を指定します。\fIformat\fR の値は、\fBtsv\fR (Tab Separated Values)、\fBjson\fR (単一行としての JavaScript Object Notation)、または \fBjson-formatted\fR (読みやすい形式にされた JavaScript Object Notation) にできます。
+.sp
+\fB-H\fR が指定されている場合は、リストのヘッダーを省略します。
+.sp
+\fB-p\fR が指定されている場合は、指定されたパブリッシャーのパッケージのみが表示されます。指定されていない場合は、すべてのパブリッシャーのパッケージが表示されます。このオプションは複数回指定できます。
 .sp
 \fB-s\fR が指定されている場合は、指定された URI またはファイルシステムのパスにあるリポジトリを操作します。
 .RE
@@ -671,7 +698,7 @@ $ \fBpkgrepo add-publisher -s /my/repository example.com\fR
 .SH 属性
 .sp
 .LP
-次の属性については \fBattributes\fR(5) のマニュアルページを参照してください。
+次の属性については、\fBattributes\fR(5) を参照してください。
 .sp
 
 .sp

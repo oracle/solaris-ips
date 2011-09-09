@@ -29,7 +29,7 @@ pkglint \- Image Packaging System package lint
 Manifests for linting can be passed as a space-separated list of local files on the command line, or manifests can be retrieved from a repository.
 .sp
 .LP
-When retrieving manifests from repositories, on first run \fBpkglint\fR creates and populates \fBpkg\fR(5) user images in the specified cache directory. If the \fB-r\fR option is supplied, a user image  named \fIcache_dir\fR\fB/ref_image\fR is created for the reference repository. If the \fB-l\fR option is supplied, a user image named \fIcache_dir\fR\fB/lint_image\fR is created for the lint repository. No content is installed in these images. These images are only used by \fBpkglint\fR to retrieve manifests from the repositories.
+When retrieving manifests from repositories, on first run \fBpkglint\fR creates and populates \fBpkg\fR(5) user images in the specified cache directory. If the \fB-r\fR option is supplied, a user image named \fIcache_dir\fR\fB/ref_image\fR is created for the reference repository. If the \fB-l\fR option is supplied, a user image named \fIcache_dir\fR\fB/lint_image\fR is created for the lint repository. No content is installed in these images. These images are only used by \fBpkglint\fR to retrieve manifests from the repositories.
 .sp
 .LP
 Subsequent invocations of \fBpkglint\fR can reuse the cache directory and can omit any \fB-r\fR or \fB-l\fR arguments.
@@ -115,7 +115,7 @@ Configure the \fBpkglint\fR session using the \fIconfig_file\fR configuration fi
 .ad
 .RS 18n
 .rt  
-Specify a regular expression used to narrow the list of packages to be checked from the lint repository. All manifests from the reference repository are loaded  (assuming they match the value for \fB-b\fR, if supplied), ignoring this pattern.
+Specify a regular expression used to narrow the list of packages to be checked from the lint repository. All manifests from the reference repository are loaded (assuming they match the value for \fB-b\fR, if supplied), ignoring this pattern.
 .RE
 
 .sp
