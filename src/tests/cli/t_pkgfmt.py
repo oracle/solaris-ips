@@ -1010,6 +1010,8 @@ driver name=driver alias="bobcat" clone_perms="driver 0666 root sys" devlink=typ
 # wrapped.
 set name=foo value=bar variant.arch=i386 variant.arch=sparc variant.opensolaris.zone=global variant.opensolaris.zone=nonglobal
 
+set name=pkg.summary value="No dir was harmed in the making of this summary."
+
 # This comment was for set name=pkg.description; its value should remain quoted
 # and on a single, separate line.
 set name=pkg.description \\
@@ -1056,6 +1058,7 @@ set name=pkg.fmri \\
 # and on a single, separate line.
 set name=pkg.description \\
     value='PolicyKit provides an authorization API intended to be used by privileged programs ("mechanisms") offering service to unprivileged programs ("clients") through some form of IPC mechanism such as D-Bus or Unix pipes.'
+set name=pkg.summary value="No dir was harmed in the making of this summary."
 
 # This comment was for set name=foo; its attributes should be reordered and
 # wrapped.
@@ -1161,6 +1164,7 @@ depend fmri=network/ping
 # not be unwrapped even though its first line is > 80 characters.
 set name=pkg.fmri \\
     value=pkg://solaris/package/pkg@0.5.11,5.11-0.163:20110410T074945Z
+set name=pkg.summary value="No dir was harmed in the making of this summary."
 
 # This comment was for set name=pkg.description; its value should remain quoted
 # and on a single, separate line.
@@ -1280,7 +1284,8 @@ depend type=require-any fmri=apple fmri=barge fmri=zoo
                         self.pkgfmt("-f %s %s" % (pfmt, man))
                         with open(man, "rb") as f:
                                 actual = f.read()
-                                self.assertEqualDiff(mfmt, actual)
+                                self.assertEqualDiff(mfmt, actual,
+                                    msg="%s format" % pfmt)
 
                         # Test using environment variable.
                         portable.copyfile(original, man)
@@ -1288,7 +1293,8 @@ depend type=require-any fmri=apple fmri=barge fmri=zoo
                         self.pkgfmt(man)
                         with open(man, "rb") as f:
                                 actual = f.read()
-                                self.assertEqualDiff(mfmt, actual)
+                                self.assertEqualDiff(mfmt, actual,
+                                    msg="%s format" % pfmt)
                 os.environ["PKGFMT_OUTPUT"] = ""
 
                 # Verify pkgfmt exits 1 when any of the manifests named need

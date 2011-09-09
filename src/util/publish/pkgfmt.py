@@ -485,7 +485,7 @@ def write_line(line, fileobj):
                 # Force 'dir' actions to use four spaces at beginning of lines
                 # so they line up with other filesystem actions such as file,
                 # link, etc.
-                output = output.replace("dir ", "dir  ")
+                output = re.sub("^dir ", "dir  ", output)
         print >> fileobj, output
 
 def main_func():

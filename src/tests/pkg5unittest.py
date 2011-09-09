@@ -734,7 +734,8 @@ if __name__ == "__main__":
                 """Reduce runs of spaces down to a single space."""
                 return re.sub(" +", " ", string)
 
-        def assertEqualDiff(self, expected, actual, bound_white_space=False):
+        def assertEqualDiff(self, expected, actual, bound_white_space=False,
+            msg=""):
                 """Compare two strings."""
 
                 if not isinstance(expected, basestring):
@@ -747,8 +748,10 @@ if __name__ == "__main__":
                 if bound_white_space:
                         expected_lines = ["'%s'" % l for l in expected_lines]
                         actual_lines = ["'%s'" % l for l in actual_lines]
-                self.assertEqual(expected, actual,
-                    "Actual output differed from expected output.\n" +
+                if msg:
+                        msg += "\n"
+                self.assertEqual(expected, actual, msg +
+                    "Actual output differed from expected output\n" + msg +
                     "\n".join(difflib.unified_diff(expected_lines, actual_lines,
                         "Expected output", "Actual output", lineterm="")))
 
