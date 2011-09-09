@@ -77,8 +77,8 @@ from pkg.client.debugvalues import DebugValues
 from pkg.client.pkgdefs import *
 from pkg.smf import NonzeroExitException
 
-CURRENT_API_VERSION = 69
-COMPATIBLE_API_VERSIONS = frozenset([66, 67, 68, CURRENT_API_VERSION])
+CURRENT_API_VERSION = 70
+COMPATIBLE_API_VERSIONS = frozenset([66, 67, 68, 69, CURRENT_API_VERSION])
 CURRENT_P5I_VERSION = 1
 
 # Image type constants.
@@ -447,6 +447,12 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                 if not self._img:
                         return None
                 return self._img.image_type(self._img.root)
+
+        @property
+        def is_liveroot(self):
+                """A boolean indicating whether the image to be modified is
+                for the live system root."""
+                return self._img.is_liveroot()
 
         @property
         def is_zone(self):

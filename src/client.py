@@ -87,7 +87,7 @@ except KeyboardInterrupt:
         import sys
         sys.exit(1)
 
-CLIENT_API_VERSION = 69
+CLIENT_API_VERSION = 70
 PKG_CLIENT_NAME = "pkg"
 
 JUST_UNKNOWN = 0
@@ -910,7 +910,8 @@ def __display_plan(api_inst, verbose):
 
         plan = api_inst.describe()
 
-        if not api_inst.is_zone and not plan.is_active_root_be:
+        if api_inst.is_liveroot and not api_inst.is_zone and \
+            not plan.is_active_root_be:
                 # Warn the user since this isn't likely what they wanted.
                 if plan.new_be:
                         logger.warning(_("""\

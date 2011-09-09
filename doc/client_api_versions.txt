@@ -1,3 +1,11 @@
+Version 70:
+Compatible with clients using versions 66-69.
+
+    pkg.client.api.ImageInterface has changed as follows:
+        * A new boolean property named is_liveroot has been added to
+          allow API consumers to determine if the image to be modified
+          is for the live system root.
+
 Version 69:
 Compatible with clients using versions 66-68.
 
