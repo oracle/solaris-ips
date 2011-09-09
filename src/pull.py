@@ -737,19 +737,11 @@ def transfer_pkgs(pargs, target, list_newest, all_versions, all_timestamps,
                             npkgs)
 
                 tracker.evaluate_start(npkgs=npkgs)
-                skipped = False
                 retrieve_list = []
                 while matches:
                         f = matches.pop()
 
                         if republish and targ_cat.get_entry(f):
-                                if not skipped:
-                                        # Ensure a new line is output so message
-                                        # is on separate line from spinner.
-                                        msg("")
-                                msg(_("Skipping %s: already present "
-                                    "at destination") % f)
-                                skipped = True
                                 continue
 
                         m = get_manifest(f, xport_cfg)
