@@ -334,9 +334,14 @@ class FileAction(generic.Action):
                 # Check file contents
                 #
                 try:
+                        # This is a generic mechanism, but only used for libc on
+                        # x86, where the "best" version of libc is lofs-mounted
+                        # on the canonical path, foiling the standard verify
+                        # checks.
+                        is_mtpt = self.attrs.get("mountpoint", "").lower() == "true"
                         elfhash = None
                         elferror = None
-                        if "elfhash" in self.attrs and haveelf:
+                        if "elfhash" in self.attrs and haveelf and not is_mtpt:
                                 #
                                 # It's possible for the elf module to
                                 # throw while computing the hash,
@@ -361,7 +366,7 @@ class FileAction(generic.Action):
                         # matches, it indicates that the content hash algorithm
                         # changed, since obviously the file hash is a superset
                         # of the content hash.
-                        if elfhash is None or elferror:
+                        if (elfhash is None or elferror) and not is_mtpt:
                                 hashvalue, data = misc.get_data_digest(path)
                                 if hashvalue != self.hash:
                                         # Prefer the content hash error message.
