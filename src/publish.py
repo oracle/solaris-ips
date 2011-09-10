@@ -364,12 +364,10 @@ def trans_publish(repo_uri, fargs):
 
         try:
                 pfmri = pkg.fmri.PkgFmri(m["pkg.fmri"], "5.11")
-                if DebugValues["allow-timestamp"]:
-                        # Only include timestamp, etc. if debug value is set.
-                        pkg_name = pfmri.get_fmri()
-                else:
-                        # If not debugging, timestamps are not allowed.
-                        pkg_name = pfmri.get_short_fmri()
+                if not DebugValues["allow-timestamp"]:
+                        # If not debugging, timestamps are ignored.
+                        pfmri.version.timestr = None
+                pkg_name = pfmri.get_fmri()
         except KeyError:
                 error(_("Manifest does not set pkg.fmri"))
                 return 1

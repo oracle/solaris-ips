@@ -1194,6 +1194,8 @@ dir path=foo/bar mode=0755 owner=root group=bin
                         shutil.rmtree(rpath)
 
         def test_22_publish(self):
+                """Verify that pkgsend publish works as expected."""
+
                 rootdir = self.test_root
                 dir_1 = os.path.join(rootdir, "dir_1")
                 dir_2 = os.path.join(rootdir, "dir_2")
@@ -1205,22 +1207,25 @@ dir path=foo/bar mode=0755 owner=root group=bin
                 with open(mfpath, "wb") as mf:
                         mf.write("""file NOHASH mode=0755 owner=root group=bin path=/A
                             file NOHASH mode=0755 owner=root group=bin path=/B
-                            set name=pkg.fmri value=testmultipledirs@1.0
+                            set name=pkg.fmri value=testmultipledirs@1.0,5.10
                             """)
 
                 dhurl = self.dc.get_depot_url()
                 # -s may be specified either as a global option or as a local
                 # option for the publish subcommand.
-                self.pkgsend("", "-s %s publish -d %s -d %s < %s" % (dhurl, dir_1,
-                    dir_2, mfpath))
+                self.pkgsend("", "-s %s publish -d %s -d %s < %s" % (dhurl,
+                    dir_1, dir_2, mfpath))
 
                 self.image_create(dhurl)
                 self.pkg("install testmultipledirs")
+                self.pkg("list -vH testmultipledirs@1.0,5.10")
+                self.assert_("testmultipledirs@1.0,5.10" in self.output)
+
                 self.pkg("verify")
                 self.image_destroy()
 
-                self.pkgsend("", "publish -s %s -d %s -d %s < %s" % (dhurl, dir_1,
-                    dir_2, mfpath))
+                self.pkgsend("", "publish -s %s -d %s -d %s < %s" % (dhurl,
+                    dir_1, dir_2, mfpath))
 
                 self.image_create(dhurl)
                 self.pkg("install testmultipledirs")
