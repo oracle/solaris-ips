@@ -118,18 +118,22 @@ class LicenseAction(generic.Action):
                 try:
                         shasum = misc.gunzip_from_stream(stream, lfile)
                 except zlib.error, e:
-                        raise ActionExecutionError("zlib.error: %s" %
-                            (" ".join([str(a) for a in e.args])))
+                        raise ActionExecutionError(self, details=_("Error "
+                            "decompressing payload: %s") %
+                            (" ".join([str(a) for a in e.args])), error=e)
                 finally:
                         lfile.close()
                         stream.close()
 
                 if shasum != self.hash:
-                        raise ActionExecutionError(_("Action data hash "
-                           "verification failure: expected: %(expected)s "
-                           "computed: %(actual)s action: %(action)s") % {
-                           "expected": self.hash, "actual": shasum,
-                           "action": self })
+                        raise ActionExecutionError(self, details=_("Action "
+                            "data hash verification failure: expected: "
+                            "%(expected)s computed: %(actual)s action: "
+                            "%(action)s") % {
+                                "expected": self.hash,
+                                "actual": shasum,
+                                "action": self
+                            })
 
                 os.chmod(path, misc.PKG_RO_FILE_MODE)
 
