@@ -46,7 +46,7 @@ The third part of the version, which if present must follow a hyphen (\fB-\fR), 
 The fourth part of the version, which if present must follow a colon (:), is a timestamp. The timestamp represents when the package was published.
 .sp
 .LP
-When performing comparisons between versions, no component of the full version is considered unless the components to its left are the same. Thus, "4.3\(hy1" is greater than "4.2-7" because "4.3" is greater than "4.2", and "4.3-3" is greater than "4.3-1" because "3" is greater than "1".
+When performing comparisons between versions, no component of the full version is considered unless the components to its left are the same. Thus, "4.3-1" is greater than "4.2-7" because "4.3" is greater than "4.2", and "4.3-3" is greater than "4.3-1" because "3" is greater than "1".
 .sp
 .LP
 Many parts of the system, when appropriate, abridge FMRIs when displaying them, and accept input in shorter forms to reduce the volume of information displayed or required. Typically, the scheme, publisher, build version, and timestamp can be elided. Sometimes all of the versioning information can be omitted.
@@ -66,7 +66,7 @@ Actions have a simple text representation:
 
 .sp
 .LP
-Names of attributes cannot have whitespace, quotation marks, or equals signs (=) in them. All characters after the first equals sign belong to the value. Values can have all of those, though spaces must be enclosed in single or double quotation marks. Single quotation marks do not need to be escaped inside a string that is enclosed in double quotation marks, and double quotation marks do not need to be escaped inside a string that is enclosed in single quotation marks. A quotation mark can be prefixed with a backslash (\) character to avoid terminating the quoted string. A backslash can be escaped with a backslash.
+Names of attributes cannot have whitespace, quotation marks, or equals signs (=) in them. All characters after the first equals sign belong to the value. Values can have all of those, though spaces must be enclosed in single or double quotation marks. Single quotation marks do not need to be escaped inside a string that is enclosed in double quotation marks, and double quotation marks do not need to be escaped inside a string that is enclosed in single quotation marks. A quotation mark can be prefixed with a backslash (\\) character to avoid terminating the quoted string. A backslash can be escaped with a backslash.
 .sp
 .LP
 Attributes can be named more than once with multiple values. These are treated as unordered lists.
@@ -423,7 +423,7 @@ This specifies privileges used by the driver. A given driver can have more than 
 .ad
 .RS 15n
 .rt  
-This specifies an entry in \fB/etc/devlink.tab\fR. The value is the exact line to go into the file, with tabs denoted by \fB\t\fR. See \fBdevlinks\fR(1M) for more information. A given driver can have more than one \fBdevlink\fR attribute.
+This specifies an entry in \fB/etc/devlink.tab\fR. The value is the exact line to go into the file, with tabs denoted by \fB\\t\fR. See \fBdevlinks\fR(1M) for more information. A given driver can have more than one \fBdevlink\fR attribute.
 .RE
 
 .SS "Depend Actions"
