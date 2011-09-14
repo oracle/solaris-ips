@@ -90,7 +90,9 @@ class TestPkgChangeFacet(pkg5unittest.SingleDepotTestCase):
                 self.pkg("facet -H 'facet.locale*' | egrep False")
                 # install a package and verify
 
-                self.pkg("install pkg_A")
+                self.pkg("install --parsable=0 pkg_A")
+                self.assertEqualParsable(self.output,
+                    add_packages=self.plist)
                 self.pkg("verify")
                 self.pkg("facet")
 

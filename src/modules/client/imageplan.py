@@ -493,7 +493,8 @@ class ImagePlan(object):
                         return
 
                 old_facets = self.image.cfg.facets
-                if new_variants or (new_facets != old_facets):
+                if new_variants or \
+                    (new_facets is not None and new_facets != old_facets):
                         self.__varcets_change = True
                         self.__new_variants = new_variants
                         self.__new_facets   = new_facets
