@@ -2388,12 +2388,13 @@ pkg unset-publisher %s
                 if rev:
                         raise api_errors.RevokedCertificate(cert, rev[1])
 
-        def __check_revocation(self, cert, ca_dict):
+        def __check_revocation(self, cert, ca_dict, use_crls):
                 hsh = self.__hash_cert(cert)
                 if hsh in self.revoked_ca_certs:
                         raise api_errors.RevokedCertificate(cert,
                             "User manually revoked certificate.")
-                self.__check_crls(cert, ca_dict)
+                if use_crls:
+                        self.__check_crls(cert, ca_dict)
 
         def __check_extensions(self, cert, usages, cur_pathlen):
                 """Check whether the critical extensions in this certificate
@@ -2506,8 +2507,7 @@ pkg unset-publisher %s
                 self.__check_extensions(cert, usages, cur_pathlen)
 
                 # Check whether this certificate has been revoked.
-                if use_crls:
-                        self.__check_revocation(cert, ca_dict)
+                self.__check_revocation(cert, ca_dict, use_crls)
 
                 while continue_loop:
                         # If this certificate's CN is in the set of required
@@ -2574,7 +2574,7 @@ pkg unset-publisher %s
                                                             c, CERT_SIGNING_USE,
                                                             cur_pathlen)
                                                         self.__check_revocation(c,
-                                                            ca_dict)
+                                                            ca_dict, use_crls)
                                                 except (api_errors.UnsupportedCriticalExtension, api_errors.RevokedCertificate), e:
                                                         certs_with_problems.append(e)
                                                         problem = True
