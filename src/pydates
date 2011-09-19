@@ -31,7 +31,7 @@ myui = ui()
 repo = localrepository(myui, cmdutil.findrepo(os.getcwd()))
 
 # Match only python files in src/modules.
-matchfn = cmdutil.match(repo, pats=["re:src/modules/.*\.py"])
+matchfn = cmdutil.match(repo, pats=["re:src/modules/.*\.py$"])
 
 # Dummy prep function.
 def prep(ctx, fns):
@@ -45,14 +45,14 @@ manifest = set(
 )
 
 # Find out which files have changed.
-status = repo.dirstate.status(matchfn, [], False, False, False)
+status = repo.status(match=matchfn)
 
 timestamps = {}
 
 # Handle the modified files first: get their timestamps from the filesystem.
 # Remove the filenames from "manifest" so that we don't look for their changeset
 # timestamps in the next loop.
-for f in status[1]:
+for f in status[0] + status[1]:
         if f in manifest:
                 timestamps[f] = \
                     os.stat(os.path.join(repo.root, f)).st_mtime

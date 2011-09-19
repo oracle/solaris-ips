@@ -43,6 +43,7 @@ from distutils.core import setup, Extension
 from distutils.cmd import Command
 from distutils.command.install import install as _install
 from distutils.command.install_data import install_data as _install_data
+from distutils.command.install_lib import install_lib as _install_lib
 from distutils.command.build import build as _build
 from distutils.command.build_ext import build_ext as _build_ext
 from distutils.command.build_py import build_py as _build_py
@@ -612,6 +613,26 @@ class install_func(_install):
                                     os.stat(dst_path).st_mode
                                     | stat.S_IXUSR | stat.S_IXGRP | stat.S_IXOTH)
 
+class install_lib_func(_install_lib):
+        """Remove the target files prior to the standard install_lib procedure
+        if the build_py module has determined that they've actually changed.
+        This may be needed when a module's timestamp goes backwards in time, if
+        a working-directory change is reverted, or an older changeset is checked
+        out.
+        """
+
+        def install(self):
+                build_py = self.get_finalized_command("build_py")
+                prefix_len = len(self.build_dir) + 1
+                for p in build_py.copied:
+                        id_p = os.path.join(self.install_dir, p[prefix_len:])
+                        rm_f(id_p)
+                        if self.compile:
+                                rm_f(id_p + "c")
+                        if self.optimize > 0:
+                                rm_f(id_p + "o")
+                return _install_lib.install(self)
+
 class install_data_func(_install_data):
         """Enhance the standard install_data subcommand to take not only a list
         of filenames, but a list of source and destination filename tuples, for
@@ -860,6 +881,8 @@ class build_py_func(_build_py):
         def __init__(self, dist):
                 ret = _build_py.__init__(self, dist)
 
+                self.copied = []
+
                 # Gather the timestamps of the .py files in the gate, so we can
                 # force the mtimes of the built and delivered copies to be
                 # consistent across builds, causing their corresponding .pyc
@@ -943,6 +966,10 @@ class build_py_func(_build_py):
                         src_mtime = self.timestamps.get(
                             os.path.join("src", infile), self.timestamps["."])
 
+                # Force a copy of the file if the source timestamp is different
+                # from that of the destination, not just if it's newer.  This
+                # allows timestamps in the working directory to regress (for
+                # instance, following the reversion of a change).
                 if dst_mtime != src_mtime:
                         f = self.force
                         self.force = True
@@ -954,8 +981,10 @@ class build_py_func(_build_py):
 
                 # If we copied the file, then we need to go and readjust the
                 # timestamp on the file to match what we have in our database.
+                # Save the filename aside for our version of install_lib.
                 if copied and dst.endswith(".py"):
                         os.utime(dst, (src_mtime, src_mtime))
+                        self.copied.append(dst)
 
                 return dst, copied
 
@@ -1130,6 +1159,7 @@ data_files = web_files
 cmdclasses = {
         'install': install_func,
         'install_data': install_data_func,
+        'install_lib': install_lib_func,
         'build': build_func,
         'build_data': build_data_func,
         'build_ext': build_ext_func,
