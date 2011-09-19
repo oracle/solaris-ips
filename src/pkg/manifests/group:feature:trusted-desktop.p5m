@@ -75,7 +75,6 @@ depend type=group fmri=pkg:/image/gnome-backgrounds
 depend type=group fmri=pkg:/image/viewer/eog
 depend type=group fmri=pkg:/image/viewer/gthumb
 depend type=group fmri=pkg:/library/gnome/gnome-component
-depend type=group fmri=pkg:/library/gnome/print/gnome-print
 depend type=group fmri=pkg:/library/spell-checking/enchant
 depend type=group fmri=pkg:/mail/thunderbird
 depend type=group fmri=pkg:/mail/thunderbird/plugin/thunderbird-lightning

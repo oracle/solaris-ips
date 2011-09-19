@@ -51,12 +51,4 @@
 # Don't need to incorporate the incorporation!
 <transform depend fmri=.*/ips-incorporation@.* -> drop>
 
-#
-# Temporarily drop system/zones/brand/ipkg and its ancestors from the
-# incorporation while they are moved to ON.
-#
-<transform depend fmri=(pkg:/)?SUNWipkg-brand@.* type=incorporate -> drop>
-<transform depend fmri=(pkg:/)?system/zones/brand/ipkg@.* type=incorporate \
-    -> drop>
-
 # vim: ft=pkg5manifest

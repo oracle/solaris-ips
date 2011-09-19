@@ -24,6 +24,12 @@
 #
 
 set name=pkg.fmri value=pkg:/babel_install@0.1,5.11-0.166
+#
+# These old-style "renamed" group packages purposely lack
+# info.classification and pkg.summary set actions.
+#
+set name=pkg.linted.opensolaris.manifest001.1 value=true
+set name=pkg.linted.opensolaris.manifest001.2 value=true
 set name=nopublish.after value=166
 set name=variant.arch value=$(ARCH)
 depend type=require fmri=slim_install

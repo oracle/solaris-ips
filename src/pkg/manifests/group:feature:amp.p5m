@@ -23,13 +23,20 @@
 # Copyright (c) 2011, Oracle and/or its affiliates. All rights reserved.
 #
 
-set name=pkg.fmri value=pkg:/server_install@0.1,5.11-0.166
-#
-# These old-style "renamed" group packages purposely lack
-# info.classification and pkg.summary set actions.
-#
-set name=pkg.linted.opensolaris.manifest001.1 value=true
-set name=pkg.linted.opensolaris.manifest001.2 value=true
-set name=nopublish.after value=166
+set name=pkg.fmri value=pkg:/group/feature/amp@$(PKGVERS)
+set name=pkg.summary \
+    value="AMP (Apache, MySQL, PHP) Deployment Kit for Oracle Solaris"
+set name=pkg.description \
+    value="Provides a set of components for deployment of an AMP (Apache, MySQL, PHP) stack on Oracle Solaris"
+set name=info.classification \
+    value="org.opensolaris.category.2008:Meta Packages/Group Packages" \
+    value="org.opensolaris.category.2008:Web Services/Application and Web Servers"
 set name=variant.arch value=$(ARCH)
-depend type=require fmri=group/system/solaris-large-server
+depend type=group fmri=database/mysql-51
+depend type=group fmri=web/php-52
+depend type=group fmri=web/php-52/extension/php-apc
+depend type=group fmri=web/php-52/extension/php-mysql
+depend type=group fmri=web/server/apache-22
+depend type=group fmri=web/server/apache-22/module/apache-dtrace
+depend type=group fmri=web/server/apache-22/module/apache-fcgid
+depend type=group fmri=web/server/apache-22/module/apache-php5

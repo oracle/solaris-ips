@@ -19,6 +19,7 @@
 #
 # CDDL HEADER END
 #
+
 #
 # Copyright (c) 2009, 2011, Oracle and/or its affiliates. All rights reserved.
 #
@@ -1866,11 +1867,14 @@ def main_func():
                 end_package(curpkg)
                 curpkg = None
 
-        # Generate entire consolidation if we're generating any consolidation
+        #
+        # Generate entire incorporation if we're generating any consolidation
         # incorporations
+        #
         if consolidation_incorporations:
                 curpkg = start_package("entire")
-                curpkg.summary = "incorporation to lock all system packages to same build"
+                curpkg.summary = "Incorporation to lock all system packages " \
+                    "to the same build"
                 curpkg.desc = "This package constrains " \
                     "system package versions to the same build.  WARNING: Proper " \
                     "system update and correct package selection depend on the " \
@@ -1887,7 +1891,9 @@ def main_func():
                     "variant.opensolaris.zone=nonglobal"))
 
                 for incorp in consolidation_incorporations:
-                        action = actions.fromstr("depend fmri=%s type=incorporate" % incorp)
+                        action = actions.fromstr(
+                            "depend fmri=%s type=incorporate "
+                            "facet.version-lock.%s=true" % (incorp, incorp))
                         action.attrs["importer.source"] = "auto-generated"
                         curpkg.actions.append(action)
                         action = actions.fromstr("depend fmri=%s type=require" % incorp)
@@ -1896,10 +1902,13 @@ def main_func():
                         curpkg.actions.append(action)
 
                 for extra in extra_entire_contents:
-                        action = actions.fromstr("depend fmri=%s type=incorporate" % extra)
+                        extra_noversion = extra.split("@")[0] # remove version
+                        action = actions.fromstr(
+                            "depend fmri=%s type=incorporate "
+                            "facet.version-lock.%s=true"
+                            % (extra, extra_noversion))
                         action.attrs["importer.source"] = "command-line"
                         curpkg.actions.append(action)
-                        extra_noversion = extra.split("@")[0] # remove version
                         action = actions.fromstr("depend fmri=%s type=require" % extra_noversion)
                         action.attrs["importer.source"] = "command-line"
                         action.attrs["importer.no-version"] = "true"
