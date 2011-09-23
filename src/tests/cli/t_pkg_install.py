@@ -2631,6 +2631,19 @@ adm:NP:6445::::::
                     close
                 """
 
+                self.devaliasmove10 = """
+                    open devaliasmove@1,5.11
+                    add driver name=zerg alias=pci8086,5555
+                    close
+                """
+
+                self.devaliasmove20 = """
+                    open devaliasmove@2,5.11
+                    add driver name=zerg
+                    add driver name=borg alias=pci8086,5555
+                    close
+                """
+
                 self.badhardlink1 = """
                     open badhardlink1@1.0,5.11-0
                     add hardlink path=foo target=bar
@@ -3160,6 +3173,17 @@ adm:NP:6445::::::
                 self.assert_(",1234" not in dalines[0])
                 self.assert_(",4321" not in dalines[0])
                 self.assert_(",5555" in dalines[0])
+
+        def test_driver_aliases_move(self):
+                """Make sure that an alias can be moved from one driver action
+                to another."""
+
+                self.pkgsend_bulk(self.rurl, [self.devicebase,
+                    self.devaliasmove10, self.devaliasmove20])
+
+                self.image_create(self.rurl)
+                self.pkg("install devicebase devaliasmove@1")
+                self.pkg("update devaliasmove")
 
         def test_uninstall_without_perms(self):
                 """Test for bug 4569"""
