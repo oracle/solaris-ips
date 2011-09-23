@@ -2,3 +2,28 @@
 	Chapter 9 - Using SMF to generate side effects, explains how to
 	use the Service Management Framework to automatically handle
 	any necessary side effects of package installation.
+
+A significant change for package developers between SVR4 packaging and IPS is
+how side effects of package installation are handled.  SVR4 packaging used
+install-time scripting to perform these modifications which proved to be
+problematic for users.  The replacement for part of this functionality is an
+interface with SMF services to carry out the needed changes to the system in a
+reliable and attributable method.
+
+The package developer must determine which actions, when initially installed or
+changed, should cause a side effect to the system.  For each of those actions,
+the package developer needs to determine which existing provides the desired
+side effect, or write a service which provides the needed functionality.
+
+For example, a package which delivers a new service, the foo service, delivers a
+manifest file.  For that service to be available to be used, the manifest-import
+service needs to process the newly delivered manifest file.  In this case, the
+action delivering the manifest file into lib/svc/manifest or var/svc/manifest
+should be tagged with 'restart_fmri=svc:/system/manifest-import:default'.  The
+tag ensures that when the manifest is added, updated, or removed, the
+manifest-import service is restarted causing the foo service to be added,
+updated, or removed.
+
+In addition to restarting a service, it's also possible to refresh a service.
+The 'refresh_fmri' tag allows a service to be refreshed after an action has been
+installed, updated, or removed.

@@ -1,0 +1,81 @@
+	Chapter 8 - Transmogrifications, explains how package manifests
+	can be machine edited to permit the automated annotation and
+	checking of package manifests.
+
+Chapter 4 covers the basics for how to publish packages.  These techniques are
+all that is necessary to publish a package, but when publishing a large package,
+publishing a large number of packages, or publishing packages over a period of
+time, there can be aspects which involve a large time commitment for doing
+repetitive tasks.  For example, one rule that's used when publishing Solaris is
+that all kernel modules should be tagged as requiring a reboot.  One option
+would be to impose this constraint through human examination and intervention
+but that would be costly and likely error prone.  A second option would be to
+write a script or program that would handle tagging these actions.  The
+difficulty here is that to be sure the program tagged actions correctly, it
+would need to parse the actions.  This can certainly be done, but it duplicates
+a lot of functionality already in the IPS framework.  The third, and best,
+option is to use pkgmorgrify, provided by IPS, to transform the package
+manifests in repeatable ways.
+
+When publishing Solaris, we made the assumption that all files delivering in a
+subdirectory named "kernel" should be treated as kernel modules.  This is the
+rule used to do the tagging:
+<transform file path=.*kernel/.+ -> default reboot-needed true>
+
+The rule is enclosed with < and > which indicate the beginning and end of the
+rule.  "transform" refers to the type of rule this rule is. "file" means that
+this rule is for file actions.  "path=.*kernel/.+" means that only file actions
+with a path attribute which matches the regular expression ".*kernel/.+" will be
+transformed.  "->" delimits the selection section from the execution section.
+"default" means that what follows should be added to a matching action unless a
+value for the attribute has already been set.  "reboot-needed" is the attribute
+being set and "true" is the value to which to set that attribute.
+
+As mentioned above, there are two types of rules pkgmogrify understands,
+transform and include.  Transform rules are used to modify actions while include
+rules add cause other files to be processed.  Transform rules consist of two
+parts, the matching part and the operation.  The matching piece can restrict by
+action type and by action attribute values.  The pkgmogrify man page goes into
+detail about how these matching rules work, but the typical uses are for
+selecting actions which deliver to certain areas of the file system.  For
+example, a rule that began like this:
+<transform file dir link hardlink path=usr/bin.* -> ...>
+could be used to ensure that usr/bin and everything delivered inside of it
+defaulted to the correct user or group.  There is a long list of operations
+which pkgmogrify can perform, detailed in the man page, which allow a package
+developer to programmatically add, remove, set, and edit actions' attributes' as
+well as add and remove entire actions.
+
+Transforms are applied in the order they are encountered in a file.  The
+ordering can be used to simplify the matching portions of transforms.  Suppose
+all files delivered in /foo should have a default group of sys, except those
+delivered in /foo/bar, which should have a default group of bin.  It's certainly
+possible to write a complex regular expression which matches all paths that
+begin with /foo, except those that begin with /foo/bar, using the ordering of
+transforms makes it much simpler.  When ordering default transforms, always go
+from most specific to most general, otherwise the latter rules will never be
+used.  In this case, the two rules would look like this:
+<transform file path=foo/bar/.* -> default group bin>
+<transform file path=foo/.* -> default group sys>
+
+Using transforms to add an action using the matching described above would be
+difficult since the package developer would need to find a pattern which matched
+each package delivered once and only once.  Pkgmogrify creates synthetic action
+to help with this issue.  For each manifest pkgmogrify processes which sets the
+pkg.fmri attribute, it creates a "pkg action".  The package developer can match
+against the pkg action as if it was actually in the manifest.  For example,
+suppose a package developer wanted to add to every package an action containing
+the website (foo.com) where the source code for the delivered software can be
+found.  The following transform accomplishes that:
+<transform pkg -> emit set info.source-url=http://foo.com>
+
+Include rules allow transforms to be spread across multiple files and subsets
+reused by different manifests.  Suppose a developer needs to deliver two
+packages A and B.  Both packages should have their source-url set to the same
+url, but only package B should have its files in /etc set to be group sys.  In
+the manifest for package A, an include rule which pulls in the file with the
+source-url transform should be added.  In package B, an include rule which pulls
+in the file containing the file group setting transform should be added.
+Finally, an include rule which pulls in the file with the source-url transform
+should be added to either package B or the file with the transform that sets the
+group.

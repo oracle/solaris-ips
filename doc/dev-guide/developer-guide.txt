@@ -25,7 +25,7 @@ How this book is organized:
 	design philosopy of IPS and its expression as software
 	patterns.
 
-	Chapter 2 - Package lifecycle,provides an overview of the
+	Chapter 2 - Package lifecycle, provides an overview of the
         software package lifecycle with IPS.
 
 	Chapter 3 - IPS Core Concepts, lays out the basic terminology
@@ -64,11 +64,11 @@ How this book is organized:
 	and discusses those cases where package developers should be
 	aware of zones.
 
-	Chapter 14, Solaris and IPS, describes how Oracle use IPS to
+	Chapter 13, Solaris and IPS, describes how Oracle use IPS to
 	package Solaris, and how the various dependency types are used
 	to define working package sets for Solaris.
 
-	Chapter 15, Package Republication, describes how administrators
+	Chapter 14, Package Republication, describes how administrators
 	can modify existing packages if needed for local conditions.
 
         Appendix 1: info.classification scheme definitions.
