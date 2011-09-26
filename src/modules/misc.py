@@ -71,7 +71,7 @@ def get_release_notes_url():
 
         # TBD: replace with a call to api.info() that can return a "release"
         # attribute of form YYYYMM against the SUNWsolnm package
-        return "http://download.oracle.com/docs/cd/E19963-01/"
+        return "http://www.oracle.com/pls/topic/lookup?ctx=E23824&id=SERNS"
 
 def time_to_timestamp(t):
         """convert seconds since epoch to %Y%m%dT%H%M%SZ format"""

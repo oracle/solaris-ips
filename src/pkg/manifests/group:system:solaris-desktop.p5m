@@ -473,6 +473,8 @@ depend type=group fmri=system/storage/removable-media
 depend type=group fmri=system/storage/sas-utilities
 depend type=group fmri=system/system-events
 depend type=group fmri=system/virtual-console
+depend type=group fmri=system/xopen/xcu4
+depend type=group fmri=system/xopen/xcu6
 depend type=group fmri=system/zones
 depend type=group fmri=system/zones/brand/brand-solaris
 depend type=group fmri=system/zones/brand/brand-solaris10

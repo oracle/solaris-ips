@@ -44,7 +44,6 @@ USERLAND_REPO=http://localhost:20005
 L10N_REPO=http://localhost:20006
 DESKTOP_REPO=http://localhost:20007
 CDE_REPO=http://localhost:20008
-FOSS_REPO=http://localhost:20009
 CACAO_REPO=http://localhost:20010
 CNS_REPO=http://localhost:20011
 JDMK_REPO=http://localhost:20012
@@ -67,7 +66,6 @@ INPUT_REPOS = \
     $(L10N_REPO) \
     $(DESKTOP_REPO) \
     $(CDE_REPO) \
-    $(FOSS_REPO) \
     $(CACAO_REPO) \
     $(CNS_REPO) \
     $(JDMK_REPO) \

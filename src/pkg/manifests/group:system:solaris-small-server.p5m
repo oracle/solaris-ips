@@ -192,6 +192,7 @@ depend type=group fmri=release/registration variant.opensolaris.zone=global
 depend type=group fmri=security/nss-utilities
 depend type=group fmri=security/sudo
 depend type=group fmri=security/tcp-wrapper
+depend type=group fmri=service/file-system/nfs
 depend type=group fmri=service/network/smtp/sendmail
 depend type=group fmri=service/network/ssh
 depend type=group fmri=service/network/wpa variant.opensolaris.zone=global
