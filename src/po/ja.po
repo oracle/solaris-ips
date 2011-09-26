@@ -835,7 +835,7 @@ msgstr "インストール済みでない"
 
 #: ../client.py:3161
 msgid "Obsolete"
-msgstr "廃止または互換性がなくなる可能性あり"
+msgstr "廃止"
 
 #: ../client.py:3164
 msgid "Renamed"
@@ -6549,7 +6549,7 @@ msgstr "発行元:"
 
 #: ../modules/gui/misc.py:634 ../modules/gui/misc.py:653
 msgid " (Obsolete)"
-msgstr " (廃止または互換性がなくなる可能性あり)"
+msgstr " (廃止)"
 
 #: ../modules/gui/misc.py:635 ../modules/gui/misc.py:658
 #: ../modules/gui/versioninfo.py:118 ../modules/gui/versioninfo.py:214
