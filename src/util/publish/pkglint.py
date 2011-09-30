@@ -35,12 +35,13 @@ gettext.install("pkg", "/usr/share/locale")
 
 from pkg.client.api_errors import InvalidPackageErrors
 from pkg import VERSION
-from pkg.misc import BUG_URI_CLI, PipeError
+from pkg.misc import PipeError
 
 import pkg.lint.engine as engine
 import pkg.lint.log as log
 import pkg.fmri as fmri
 import pkg.manifest
+import pkg.misc as misc
 
 logger = None
 
@@ -318,13 +319,6 @@ if __name__ == "__main__":
         except SystemExit, _e:
                 raise _e
         except:
-                traceback_str = _("""\n
-This is an internal error in pkg(5) version %(version)s.  Please let the
-developers know about this problem by including the information above (and
-this message) when filing a bug at:
-
-%(bug_uri)s""") % { "version": pkg.VERSION, "bug_uri": BUG_URI_CLI }
-
                 traceback.print_exc()
-                error(traceback_str)
+                error(misc.get_traceback_message())
                 sys.exit(99)

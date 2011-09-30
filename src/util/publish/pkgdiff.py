@@ -33,6 +33,7 @@ import pkg.actions
 import pkg.variant as variant
 import pkg.client.api_errors as apx
 import pkg.manifest as manifest
+import pkg.misc as misc
 from pkg.misc import PipeError
 from collections import defaultdict
 
@@ -321,8 +322,7 @@ if __name__ == "__main__":
                 exit_code = __e
         except Exception, __e:
                 traceback.print_exc()
-                print >> sys.stderr, "pkgdiff: caught %s, %s" % (Exception, __e)
+                error(misc.get_traceback_message(), exitcode=None)
                 exit_code = 99
 
         sys.exit(exit_code)
-

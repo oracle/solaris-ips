@@ -810,7 +810,7 @@ if __name__ == "__main__":
                 exit_code = __e
         except Exception, __e:
                 traceback.print_exc()
-                print >> sys.stderr, "pkgmogrify: caught %s, %s" % (Exception, __e)
+                error(misc.get_traceback_message(), exitcode=None)
                 exit_code = 99
 
         sys.exit(exit_code)

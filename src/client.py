@@ -5967,13 +5967,7 @@ def main_func():
 # so that we can more easily detect these in testing of the CLI commands.
 #
 def handle_errors(func, non_wrap_print=True, *args, **kwargs):
-        traceback_str = _("""\n
-This is an internal error in pkg(5) version %(version)s.  Please let the
-developers know about this problem by including the information above (and
-this message) when filing a bug at:
-
-%(bug_uri)s""") % { "version": pkg.VERSION, "bug_uri": misc.BUG_URI_CLI }
-
+        traceback_str = misc.get_traceback_message()
         try:
                 # Out of memory errors can be raised as EnvironmentErrors with
                 # an errno of ENOMEM, so in order to handle those exceptions

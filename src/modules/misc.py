@@ -61,9 +61,20 @@ PKG_STATE_INSTALLED = 2
 # Constant string used across many modules as a property name.
 SIGNATURE_POLICY = "signature-policy"
 
-# Bug URI Constants
+# Bug URI Constants (deprecated)
 BUG_URI_CLI = "https://defect.opensolaris.org/bz/enter_bug.cgi?product=pkg&component=cli"
 BUG_URI_GUI = "https://defect.opensolaris.org/bz/enter_bug.cgi?product=pkg&component=gui"
+
+# Traceback message.
+def get_traceback_message():
+        """This function returns the standard traceback message.  A function
+        is necessary since the _() call must be done at runtime after locale
+        setup."""
+
+        return _("""\n
+This is an internal error in pkg(5) version %(version)s.  Please log a
+Service Request about this issue including the information above and this
+message.""") % { "version": VERSION }
 
 def get_release_notes_url():
         """Return a release note URL pointing to the correct release notes

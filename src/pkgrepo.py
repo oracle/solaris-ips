@@ -1236,12 +1236,7 @@ def handle_errors(func, *args, **kwargs):
         a message and/or exit with an appropriate return code.
         """
 
-        traceback_str = _("""\n
-This is an internal error in pkg(5) version %(version)s.  Please let the
-developers know about this problem by including the information above (and
-this message) when filing a bug at:
-
-%(bug_uri)s""") % { "version": pkg.VERSION, "bug_uri": misc.BUG_URI_CLI }
+        traceback_str = misc.get_traceback_message()
 
         try:
                 # Out of memory errors can be raised as EnvironmentErrors with
