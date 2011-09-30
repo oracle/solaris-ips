@@ -1129,6 +1129,10 @@ class PkgSolver(object):
                              f
                              for da in self.__get_dependency_actions(fmri,
                                  excludes)
+                             if da.attrs["type"] != "incorporate" and
+                                 da.attrs["type"] != "optional" and
+                                 da.attrs["type"] != "exclude" and
+                                 da.attrs["type"] != "parent"
                              for f in self.__parse_dependency(da, fmri,
                                  dotrim, check_req=True)[1]
                         ])
