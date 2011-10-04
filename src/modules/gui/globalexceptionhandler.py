@@ -19,7 +19,7 @@
 #
 # CDDL HEADER END
 #
-# Copyright (c) 2010, Oracle and/or its affiliates.  All rights reserved.
+# Copyright (c) 2010, 2011, Oracle and/or its affiliates.  All rights reserved.
 #
 
 import sys
@@ -111,18 +111,11 @@ class GlobalExceptionHandler:
                 close_btn = md.add_button(gtk.STOCK_CLOSE, 100)
                 md.set_default_response(100)
 
-                dmsg = _("Please let the developers know about this problem by "
-                    "filing a bug together with the error details listed below at:")
+                dmsg = misc.get_traceback_message()
+                # We remove all \n except the initial one.
+                dmsg = "\n" + dmsg.replace("\n", " ").lstrip()
                 md.format_secondary_text(dmsg)
                 md.set_title(_('Unexpected Error'))
-
-                uri_btn = gtk.LinkButton(misc.BUG_URI_GUI,
-                    "defect.opensolaris.org")
-                uri_btn.set_relief(gtk.RELIEF_NONE)
-                uri_btn.set_size_request(160, -1)
-                align = gtk.Alignment(0, 0, 0, 0)
-                align.set_padding(0, 0, 56, 0)
-                align.add(uri_btn)
 
                 textview = gtk.TextView()
                 textview.show()
@@ -136,7 +129,6 @@ class GlobalExceptionHandler:
                 fr.set_shadow_type(gtk.SHADOW_IN)
                 fr.add(sw)
                 ca = md.get_content_area()
-                ca.pack_start(align, False, False, 0)
                 ca.pack_start(fr)
 
                 textbuffer = textview.get_buffer()
@@ -162,10 +154,6 @@ class GlobalExceptionHandler:
                             _("\nPlease include output from:\n"), "bold")
                         textbuffer.insert(textiter, "$ pkg publisher\n")
 
-                ver = gui_misc.get_version()
-                textbuffer.insert_with_tags_by_name(textiter,
-                    _("\npkg version:\n"), "bold")
-                textbuffer.insert_with_tags_by_name(textiter, ver + "\n", "level1")
                 md.set_size_request(550, 400)
                 md.set_resizable(True)
                 close_btn.grab_focus()

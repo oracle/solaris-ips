@@ -823,10 +823,6 @@ class InstallUpdate(progress.GuiProgressTracker):
                         msg = _("Specifying BE Name not supported.\n")
                         self.__g_error_stage(msg)
                         return
-                except api_errors.ApiException, ex:
-                        msg = str(ex)
-                        self.__g_error_stage(msg)
-                        return
                 # We do want to prompt user to load BE admin if there is
                 # not enough disk space. This error can either come as an
                 # error within API exception, see bug #7642 or as a standalone
@@ -843,6 +839,10 @@ class InstallUpdate(progress.GuiProgressTracker):
                                 self.__handle_nospace_error()
                         else:
                                 self.__handle_error()
+                        return
+                except api_errors.ApiException, ex:
+                        msg = str(ex)
+                        self.__g_error_stage(msg)
                         return
                 except Exception:
                         self.__handle_error()
@@ -1185,14 +1185,12 @@ class InstallUpdate(progress.GuiProgressTracker):
                 gobject.idle_add(self.current_stage_label.set_markup, txt)
                 gobject.idle_add(self.current_stage_icon.set_from_stock,
                     gtk.STOCK_DIALOG_ERROR, gtk.ICON_SIZE_MENU)
-                msg_1 = _("An unknown error occurred in the %s stage.\n"
-                    "Please let the developers know about this problem by "
-                    "filing a bug together with the error details listed below at:\n"
-                    ) % self.current_stage_name
-                msg_2 = "%s\n\n" % misc.BUG_URI_GUI
+                msg_2 = misc.get_traceback_message()
+                msg_2 = msg_2.replace("\n", " ").lstrip()
+                msg_1 = _("An unknown error occurred in the %s stage.\n\n")\
+                    % self.current_stage_name + msg_2
                 self.update_details_text(_("\nError:\n"), "bold")
-                self.update_details_text("%s" % msg_1, "level1")
-                self.update_details_text("%s" % msg_2, "bold", "level2")
+                self.update_details_text("%s\n\n" % msg_1, "level1")
                 if tracebk:
                         msg = _("Exception traceback:\n")
                         self.update_details_text("%s" % msg,
@@ -1201,10 +1199,6 @@ class InstallUpdate(progress.GuiProgressTracker):
                 else:
                         msg = _("No futher information available")
                         self.update_details_text("%s\n" % msg, "level2")
-                msg_3 = _("pkg version: ")
-                self.update_details_text("%s" % msg_3,
-                    "bold","level1")
-                self.update_details_text("%s\n\n" % gui_misc.get_version(), "level2")
                 publisher_header = _("List of configured publishers:")
                 self.update_details_text("%s" % publisher_header,
                     "bold","level1")
