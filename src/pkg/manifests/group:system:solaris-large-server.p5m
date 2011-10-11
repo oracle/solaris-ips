@@ -36,7 +36,6 @@ depend type=group fmri=compress/gzip
 depend type=group fmri=compress/p7zip
 depend type=group fmri=compress/unzip
 depend type=group fmri=compress/zip
-depend type=group fmri=crypto/gnupg
 depend type=group fmri=crypto/pwgen
 depend type=group fmri=developer/build/gnu-make
 depend type=group fmri=developer/build/make

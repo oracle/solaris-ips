@@ -30,12 +30,14 @@
 # publisher names to that specified by the transforms file.
 #
 # There are 3 options:
-#   -b <build>
-#     e.g. -b 136, to make sure to publish only packages from the
-#     specified build.  Packages from any other builds contained in the
-#     repository are simply discarded.  This allows us to ignore
-#     packages obsoleted in a previous build without requiring that
-#     the consolidations strip them.  This option is optional.
+#   -b <branch>
+#     e.g. -b 172.1.2.0.4.5, to make sure to publish only packages from
+#     the specified branch.  Packages from any other branches contained
+#     in the repository are simply discarded.  This allows us to ignore
+#     packages obsoleted in a previous branch without requiring that
+#     the consolidations strip them.  This option is optional.  The
+#     branch version is described in the ../Makefile.buildnum file and
+#     the "nightlyid" portion of the branch version is ignored here.
 #
 #   -d recv_dir
 #     A scratch directory to use for pkgrecv.  If it's not initially
@@ -60,18 +62,18 @@
 
 recv_dir=
 publish_repo=
-only_this_build=
+only_this_branch=
 just_these_pkgs=
 exclude_these_pkgs=
 
 while getopts b:d:j:p:x: opt; do
 	case $opt in
-	b)	only_this_build="$OPTARG";;
+	b)	only_this_branch="$OPTARG";;
 	d)	recv_dir="$OPTARG";;
 	j)	just_these_pkgs="$just_these_pkgs $OPTARG";;
 	p)	publish_repo="$OPTARG";;
 	x)	exclude_these_pkgs="$exclude_these_pkg $OPTARG";;
-	?)	print "Usage: $0: [-b build] -d directory [-j package ...]" \
+	?)	print "Usage: $0: [-b branch] -d directory [-j package ...]" \
 		    "-p publish_repo [-x package ...] input_repos"
 		exit 2;;
 	esac
@@ -80,7 +82,7 @@ shift $(expr $OPTIND - 1)
 
 if [[ -z $recv_dir || -z $publish_repo ]]; then
 	echo "one of the options not specified."
-	print "Usage: $0: [-b build] -d directory [-j package ...]" \
+	print "Usage: $0: [-b branch] -d directory [-j package ...]" \
 	    "-p publish_repo [-x package ...] input_repos"
 	exit 2
 fi
@@ -104,21 +106,29 @@ for repo in $*; do
 		exit 1
 	fi
 
-	# Don't recv packages for other builds if $only_this_build is set.
+	#
+	# Don't recv packages for other branches if $only_this_branch is
+	# set.
+	#
 	modified_pkglist=""
-	if [ ! -z $only_this_build ]; then
+	if [ ! -z $only_this_branch ]; then
 		for pkg in $pkglist; do
-			new=$(echo $pkg | grep -- "-0\.${only_this_build}[.:]")
-			modified_pkglist="$modified_pkglist $new"
+			new=$(echo $pkg | fgrep -- "-0.${only_this_branch%.*}.")
 
 			if [ -z $new ]; then
 				echo "skipping $pkg"
+				continue
 			fi
+			modified_pkglist="$modified_pkglist $new"
 		done
 	else
 		modified_pkglist="$pkglist"
 	fi
 
+	if [ -z $modified_pkglist ]; then
+		echo
+		continue
+	fi
 	echo "pkgrecv -s $repo -d $recv_dir --raw $modified_pkglist"
 	pkgrecv -s $repo -d $recv_dir --raw $modified_pkglist
 	if [ $? -ne 0 ]; then
@@ -127,6 +137,8 @@ for repo in $*; do
 		exit 1
 	fi
 done
+
+echo
 
 #
 # Replace the publisher name as specified by the transforms file and

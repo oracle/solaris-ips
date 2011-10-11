@@ -258,6 +258,8 @@ depend type=group fmri=system/kernel/suspend-resume
 depend type=group fmri=system/keyboard/keyboard-utilities \
     variant.opensolaris.zone=global
 $(sparc_ONLY)depend type=group fmri=system/ldoms variant.opensolaris.zone=global
+$(sparc_ONLY)depend type=group fmri=system/ldoms/ldomsmanager \
+    variant.opensolaris.zone=global
 depend type=group fmri=system/library/iconv/utf-8
 depend type=group fmri=system/library/platform variant.opensolaris.zone=global
 depend type=group fmri=system/library/processor variant.opensolaris.zone=global

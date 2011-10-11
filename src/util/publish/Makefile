@@ -23,6 +23,8 @@
 # Copyright (c) 2009, 2011, Oracle and/or its affiliates. All rights reserved.
 #
 
+include ../Makefile.buildnum
+
 ARCH:sh=	uname -p
 REPO=http://localhost:10000
 MERGEDIR=../../../proto/merge
@@ -116,7 +118,7 @@ publish: $(MERGEDIR)
 
 publish_setpublisher: $(SETPUBLISHERDIR)
 	PATH=$(PROTO)/usr/bin:${PATH} PYTHONPATH=$(PYTHONPATH) \
-	    ./set-publisher.sh $(BUILDID:%=-b %) -d $(SETPUBLISHERDIR) \
+	    ./set-publisher.sh $(BRANCHID:%=-b %) -d $(SETPUBLISHERDIR) \
 	    $(JUST_THESE_PKGS:%=-j %) $(EXCLUDE_THESE_PKGS:%=-x %) -p $(REPO) \
 	    $(INPUT_REPOS)
 
