@@ -1,10 +1,35 @@
+.. CDDL HEADER START
 
+.. The contents of this file are subject to the terms of the
+   Common Development and Distribution License (the "License").
+   You may not use this file except in compliance with the License.
+
+.. You can obtain a copy of the license at usr/src/OPENSOLARIS.LICENSE
+   or http://www.opensolaris.org/os/licensing.
+   See the License for the specific language governing permissions
+   and limitations under the License.
+
+.. When distributing Covered Code, include this CDDL HEADER in each
+   file and include the License file at usr/src/OPENSOLARIS.LICENSE.
+   If applicable, add the following below this CDDL HEADER, with the
+   fields enclosed by brackets "[]" replaced with your own identifying
+   information: Portions Copyright [yyyy] [name of copyright owner]
+
+.. CDDL HEADER END
+
+.. Copyright (c) 2011, Oracle and/or its affiliates. All rights reserved.
+
+Chapter 7
+---------
+
+Variants and Facets
+...................
 
 In this chapter we explore how variant and facets are used in
 IPS to provide different installation options to the end-user.
 
 Variants
---------
+~~~~~~~~
 
 Since Solaris supports multiple architectures, one of the not
 infrequent errors made with the previous packaging system was the
@@ -17,32 +42,35 @@ early on that IPS should directly support installation of a single
 package on multiple architectures.
 
 The mechanism that implements this feature in Solaris is called a
-variant, and it allows the properies of the target image to determine
+variant, and it allows the properties of the target image to determine
 which software components are actually installed.
 
 A variant has two parts: its name, and the list of possible values.
 The variants defined in Solaris 11 FCS are:
 
-  Name	     	      	      Values
-  variant.arch	      	      sparc, i386
-  variant.opensolaris.zone    global, nonglobal
-  variant.debug.*	      true, false
+    ========================    =================
+    Name	     	      	Values
+    ========================    =================
+    variant.arch                sparc, i386
+    variant.opensolaris.zone    global, nonglobal
+    variant.debug.*             true, false
+    ========================    =================
 
 Variants appear in a package as follows: first, a set action that
 defines the name and values, and second, on any action that is
 specific to a variant a tag will appear with the name of the variant
 and the value on which it is installed.  For example, a package that
-delivers /var/ld/64 might include:
+delivers /var/ld/64 might include::
 
-set name=variant.arch value=sparc value=i386
-dir group=bin mode=0755 owner=root path=var/ld
-dir group=bin mode=0755 owner=root path=var/ld/amd64 \
-    variant.arch=i386
-dir group=bin mode=0755 owner=root path=var/ld/sparcv9 \
-    variant.arch=sparc
-link path=var/ld/32 target=.
-link path=var/ld/64 target=sparcv9 variant.arch=sparc
-link path=var/ld/64 target=amd64 variant.arch=i386
+    set name=variant.arch value=sparc value=i386
+    dir group=bin mode=0755 owner=root path=var/ld
+    dir group=bin mode=0755 owner=root path=var/ld/amd64 \
+        variant.arch=i386
+    dir group=bin mode=0755 owner=root path=var/ld/sparcv9 \
+        variant.arch=sparc
+    link path=var/ld/32 target=.
+    link path=var/ld/64 target=sparcv9 variant.arch=sparc
+    link path=var/ld/64 target=amd64 variant.arch=i386
 
 Note that components that are delivered on both sparc and i386 receive
 no variant tag, but those delivered to one architecture or the other
@@ -65,7 +93,7 @@ modifying the packaging system as no practical means currently exist
 for defining a default value for variants in general.  The
 variant.debug.* portion of the variant namespace is predefined to have
 a default version of false; thus, developers can provide debug
-versions of their components, tagged w/ the appropriate variant, and
+versions of their components, tagged with the appropriate variant, and
 users can select that variant if problems arise.  Remember that
 variants are set per-image, so selecting a suitable name that
 is unique at the appropriate resolution for that piece of software 
@@ -82,7 +110,7 @@ packages; note that it will merge across multiple different
 variants at the same time if needed.
 
 Facets
-------
+~~~~~~
 
 Often, package developers have optional portions of their software
 that actually belong with the main body, but some people may not
@@ -112,238 +140,106 @@ facet.doc.man=true in the package manifests.  If an administrator
 decided to remove all documentation that wasn't man pages from the
 system, he could use the pkg change-facet command to set
 
-facet.doc.*=false 
-facet.doc.man=true 
+- facet.doc.*=false 
+- facet.doc.man=true 
 
 and this would occur.  Similarly, if only the German localization
 was wanted, 
 
-facet.locale.*=false
-facet.locale.de=true would yield this result.
+- facet.locale.*=false
+- facet.locale.de=true would yield this result.
 
 Today, if a action contains multiple facet tags, if any of them
 are true the action is installed. We intend to extend the way
 facets work so that package authors can do more complex logic.
 
-The pkg facet command is useful in determing which facets are
+The pkg facet command is useful in determining which facets are
 set in the image.
 
 The package developer can use pkgmogrify to quickly tag his
 man pages, localizations, etc. using regular expressions to
 match the different types of files; this is described in detail
-in chapter 8.
+in *Chapter 8*.
+
+XXX cite facet.version-lock discussion, which should appear in either
+chapter 6 or chapter 13 (probably chapter 6)
+
 
 Solaris facets that may be of use for software developers 
 include:
 
-facet.devel
-facet.doc
-facet.doc.man
-facet.doc.pdf
-facet.doc.info
-facet.doc.html
-facet.locale
-facet.locale.af
-facet.locale.af_ZA
-facet.locale.ar
-facet.locale.ar_AE
-facet.locale.ar_BH
-facet.locale.ar_DZ
-facet.locale.ar_EG
-facet.locale.ar_IQ
-facet.locale.ar_JO
-facet.locale.ar_KW
-facet.locale.ar_LY
-facet.locale.ar_MA
-facet.locale.ar_OM
-facet.locale.ar_QA
-facet.locale.ar_SA
-facet.locale.ar_TN
-facet.locale.ar_YE
-facet.locale.as
-facet.locale.as_IN
-facet.locale.az
-facet.locale.az_AZ
-facet.locale.be
-facet.locale.be_BY
-facet.locale.bg
-facet.locale.bg_BG
-facet.locale.bn
-facet.locale.bn_IN
-facet.locale.bs
-facet.locale.bs_BA
-facet.locale.ca
-facet.locale.ca_ES
-facet.locale.cs
-facet.locale.cs_CZ
-facet.locale.da
-facet.locale.da_DK
-facet.locale.de
-facet.locale.de_AT
-facet.locale.de_BE
-facet.locale.de_CH
-facet.locale.de_DE
-facet.locale.de_LI
-facet.locale.de_LU
-facet.locale.el
-facet.locale.el_CY
-facet.locale.el_GR
-facet.locale.en
-facet.locale.en@boldquot
-facet.locale.en@quot
-facet.locale.en_AU
-facet.locale.en_BW
-facet.locale.en_CA
-facet.locale.en_GB
-facet.locale.en_HK
-facet.locale.en_IE
-facet.locale.en_IN
-facet.locale.en_MT
-facet.locale.en_NZ
-facet.locale.en_PH
-facet.locale.en_SG
-facet.locale.en_US
-facet.locale.en_ZW
-facet.locale.eo
-facet.locale.es
-facet.locale.es_AR
-facet.locale.es_BO
-facet.locale.es_CL
-facet.locale.es_CO
-facet.locale.es_CR
-facet.locale.es_DO
-facet.locale.es_EC
-facet.locale.es_ES
-facet.locale.es_GT
-facet.locale.es_HN
-facet.locale.es_MX
-facet.locale.es_NI
-facet.locale.es_PA
-facet.locale.es_PE
-facet.locale.es_PR
-facet.locale.es_PY
-facet.locale.es_SV
-facet.locale.es_US
-facet.locale.es_UY
-facet.locale.es_VE
-facet.locale.et
-facet.locale.et_EE
-facet.locale.eu
-facet.locale.fi
-facet.locale.fi_FI
-facet.locale.fr
-facet.locale.fr_BE
-facet.locale.fr_CA
-facet.locale.fr_CH
-facet.locale.fr_FR
-facet.locale.fr_LU
-facet.locale.ga
-facet.locale.gl
-facet.locale.gu
-facet.locale.gu_IN
-facet.locale.he
-facet.locale.he_IL
-facet.locale.hi
-facet.locale.hi_IN
-facet.locale.hr
-facet.locale.hr_HR
-facet.locale.hu
-facet.locale.hu_HU
-facet.locale.hy
-facet.locale.hy_AM
-facet.locale.id
-facet.locale.id_ID
-facet.locale.is
-facet.locale.is_IS
-facet.locale.it
-facet.locale.it_CH
-facet.locale.it_IT
-facet.locale.ja
-facet.locale.ja_JP
-facet.locale.ka
-facet.locale.ka_GE
-facet.locale.kk
-facet.locale.kk_KZ
-facet.locale.kn
-facet.locale.kn_IN
-facet.locale.ko
-facet.locale.ko_KR
-facet.locale.ks
-facet.locale.ks_IN
-facet.locale.ku
-facet.locale.ku_TR
-facet.locale.ky
-facet.locale.ky_KG
-facet.locale.lg
-facet.locale.lt
-facet.locale.lt_LT
-facet.locale.lv
-facet.locale.lv_LV
-facet.locale.mk
-facet.locale.mk_MK
-facet.locale.ml
-facet.locale.ml_IN
-facet.locale.mr
-facet.locale.mr_IN
-facet.locale.ms
-facet.locale.ms_MY
-facet.locale.mt
-facet.locale.mt_MT
-facet.locale.nb
-facet.locale.nb_NO
-facet.locale.nl
-facet.locale.nl_BE
-facet.locale.nl_NL
-facet.locale.nn
-facet.locale.nn_NO
-facet.locale.no
-facet.locale.or
-facet.locale.or_IN
-facet.locale.pa
-facet.locale.pa_IN
-facet.locale.pl
-facet.locale.pl_PL
-facet.locale.pt
-facet.locale.pt_BR
-facet.locale.pt_PT
-facet.locale.ro
-facet.locale.ro_RO
-facet.locale.ru
-facet.locale.ru_RU
-facet.locale.ru_UA
-facet.locale.rw
-facet.locale.sa
-facet.locale.sa_IN
-facet.locale.sk
-facet.locale.sk_SK
-facet.locale.sl
-facet.locale.sl_SI
-facet.locale.sq
-facet.locale.sq_AL
-facet.locale.sr
-facet.locale.sr_ME
-facet.locale.sr_RS
-facet.locale.sv
-facet.locale.sv_SE
-facet.locale.ta
-facet.locale.ta_IN
-facet.locale.te
-facet.locale.te_IN
-facet.locale.th
-facet.locale.th_TH
-facet.locale.tr
-facet.locale.tr_TR
-facet.locale.uk
-facet.locale.uk_UA
-facet.locale.vi
-facet.locale.vi_VN
-facet.locale.zh
-facet.locale.zh_CN
-facet.locale.zh_HK
-facet.locale.zh_HK
-facet.locale.zh_SG
-facet.locale.zh_TW
 
+========================  ==================        ==================
+facet.devel               facet.locale.es_AR        facet.locale.lt_LT
+facet.doc                 facet.locale.es_BO        facet.locale.lv
+facet.doc.man             facet.locale.es_CL        facet.locale.lv_LV
+facet.doc.pdf             facet.locale.es_CO        facet.locale.mk
+facet.doc.info            facet.locale.es_CR        facet.locale.mk_MK
+facet.doc.html            facet.locale.es_DO        facet.locale.ml
+facet.locale              facet.locale.es_EC        facet.locale.ml_IN
+facet.locale.af           facet.locale.es_ES        facet.locale.mr
+facet.locale.af_ZA        facet.locale.es_GT        facet.locale.mr_IN
+facet.locale.ar           facet.locale.es_HN        facet.locale.ms
+facet.locale.ar_AE        facet.locale.es_MX        facet.locale.ms_MY
+facet.locale.ar_BH        facet.locale.es_NI        facet.locale.mt
+facet.locale.ar_DZ        facet.locale.es_PA        facet.locale.mt_MT
+facet.locale.ar_EG        facet.locale.es_PE        facet.locale.nb
+facet.locale.ar_IQ        facet.locale.es_PR        facet.locale.nb_NO
+facet.locale.ar_JO        facet.locale.es_PY        facet.locale.nl
+facet.locale.ar_KW        facet.locale.es_SV        facet.locale.nl_BE
+facet.locale.ar_LY        facet.locale.es_US        facet.locale.nl_NL
+facet.locale.ar_MA        facet.locale.es_UY        facet.locale.nn
+facet.locale.ar_OM        facet.locale.es_VE        facet.locale.nn_NO
+facet.locale.ar_QA        facet.locale.et           facet.locale.no
+facet.locale.ar_SA        facet.locale.et_EE        facet.locale.or
+facet.locale.ar_TN        facet.locale.eu           facet.locale.or_IN
+facet.locale.ar_YE        facet.locale.fi           facet.locale.pa
+facet.locale.as           facet.locale.fi_FI        facet.locale.pa_IN
+facet.locale.as_IN        facet.locale.fr           facet.locale.pl
+facet.locale.az           facet.locale.fr_BE        facet.locale.pl_PL
+facet.locale.az_AZ        facet.locale.fr_CA        facet.locale.pt
+facet.locale.be           facet.locale.fr_CH        facet.locale.pt_BR
+facet.locale.be_BY        facet.locale.fr_FR        facet.locale.pt_PT
+facet.locale.bg           facet.locale.fr_LU        facet.locale.ro
+facet.locale.bg_BG        facet.locale.ga           facet.locale.ro_RO
+facet.locale.bn           facet.locale.gl           facet.locale.ru
+facet.locale.bn_IN        facet.locale.gu           facet.locale.ru_RU
+facet.locale.bs           facet.locale.gu_IN        facet.locale.ru_UA
+facet.locale.bs_BA        facet.locale.he           facet.locale.rw
+facet.locale.ca           facet.locale.he_IL        facet.locale.sa
+facet.locale.ca_ES        facet.locale.hi           facet.locale.sa_IN
+facet.locale.cs           facet.locale.hi_IN        facet.locale.sk
+facet.locale.cs_CZ        facet.locale.hr           facet.locale.sk_SK
+facet.locale.da           facet.locale.hr_HR        facet.locale.sl
+facet.locale.da_DK        facet.locale.hu           facet.locale.sl_SI
+facet.locale.de           facet.locale.hu_HU        facet.locale.sq
+facet.locale.de_AT        facet.locale.hy           facet.locale.sq_AL
+facet.locale.de_BE        facet.locale.hy_AM        facet.locale.sr
+facet.locale.de_CH        facet.locale.id           facet.locale.sr_ME
+facet.locale.de_DE        facet.locale.id_ID        facet.locale.sr_RS
+facet.locale.de_LI        facet.locale.is           facet.locale.sv
+facet.locale.de_LU        facet.locale.is_IS        facet.locale.sv_SE
+facet.locale.el           facet.locale.it           facet.locale.ta
+facet.locale.el_CY        facet.locale.it_CH        facet.locale.ta_IN
+facet.locale.el_GR        facet.locale.it_IT        facet.locale.te
+facet.locale.en           facet.locale.ja           facet.locale.te_IN
+facet.locale.en@boldquot  facet.locale.ja_JP        facet.locale.th
+facet.locale.en@quot      facet.locale.ka           facet.locale.th_TH
+facet.locale.en_AU        facet.locale.ka_GE        facet.locale.tr
+facet.locale.en_BW        facet.locale.kk           facet.locale.tr_TR
+facet.locale.en_CA        facet.locale.kk_KZ        facet.locale.uk
+facet.locale.en_GB        facet.locale.kn           facet.locale.uk_UA
+facet.locale.en_HK        facet.locale.kn_IN        facet.locale.vi
+facet.locale.en_IE        facet.locale.ko           facet.locale.vi_VN
+facet.locale.en_IN        facet.locale.ko_KR        facet.locale.zh
+facet.locale.en_MT        facet.locale.ks           facet.locale.zh_CN
+facet.locale.en_NZ        facet.locale.ks_IN        facet.locale.zh_HK
+facet.locale.en_PH        facet.locale.ku           facet.locale.zh_HK
+facet.locale.en_SG        facet.locale.ku_TR        facet.locale.zh_SG
+facet.locale.en_US        facet.locale.ky           facet.locale.zh_TW
+facet.locale.en_ZW        facet.locale.ky_KG
+facet.locale.eo           facet.locale.lg
+========================  ==================        ==================
 
 
 

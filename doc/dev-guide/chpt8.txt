@@ -1,8 +1,34 @@
-	Chapter 8 - Transmogrifications, explains how package manifests
-	can be machine edited to permit the automated annotation and
-	checking of package manifests.
+.. CDDL HEADER START
 
-Chapter 4 covers the basics for how to publish packages.  These techniques are
+.. The contents of this file are subject to the terms of the
+   Common Development and Distribution License (the "License").
+   You may not use this file except in compliance with the License.
+
+.. You can obtain a copy of the license at usr/src/OPENSOLARIS.LICENSE
+   or http://www.opensolaris.org/os/licensing.
+   See the License for the specific language governing permissions
+   and limitations under the License.
+
+.. When distributing Covered Code, include this CDDL HEADER in each
+   file and include the License file at usr/src/OPENSOLARIS.LICENSE.
+   If applicable, add the following below this CDDL HEADER, with the
+   fields enclosed by brackets "[]" replaced with your own identifying
+   information: Portions Copyright [yyyy] [name of copyright owner]
+
+.. CDDL HEADER END
+
+.. Copyright (c) 2011, Oracle and/or its affiliates. All rights reserved.
+
+Chapter 8
+---------
+
+Transmogrifications
+...................
+
+This chapter explains how package manifests can be machine edited to permit the
+automated annotation and checking of package manifests.
+
+*Chapter 4* covers the basics for how to publish packages.  These techniques are
 all that is necessary to publish a package, but when publishing a large package,
 publishing a large number of packages, or publishing packages over a period of
 time, there can be aspects which involve a large time commitment for doing
@@ -14,13 +40,14 @@ write a script or program that would handle tagging these actions.  The
 difficulty here is that to be sure the program tagged actions correctly, it
 would need to parse the actions.  This can certainly be done, but it duplicates
 a lot of functionality already in the IPS framework.  The third, and best,
-option is to use pkgmorgrify, provided by IPS, to transform the package
+option is to use pkgmogrify, provided by IPS, to transform the package
 manifests in repeatable ways.
 
 When publishing Solaris, we made the assumption that all files delivering in a
 subdirectory named "kernel" should be treated as kernel modules.  This is the
-rule used to do the tagging:
-<transform file path=.*kernel/.+ -> default reboot-needed true>
+rule used to do the tagging::
+
+    <transform file path=.*kernel/.+ -> default reboot-needed true>
 
 The rule is enclosed with < and > which indicate the beginning and end of the
 rule.  "transform" refers to the type of rule this rule is. "file" means that
@@ -38,8 +65,10 @@ parts, the matching part and the operation.  The matching piece can restrict by
 action type and by action attribute values.  The pkgmogrify man page goes into
 detail about how these matching rules work, but the typical uses are for
 selecting actions which deliver to certain areas of the file system.  For
-example, a rule that began like this:
-<transform file dir link hardlink path=usr/bin.* -> ...>
+example, a rule that began like this::
+
+    <transform file dir link hardlink path=usr/bin.* -> ...>
+
 could be used to ensure that usr/bin and everything delivered inside of it
 defaulted to the correct user or group.  There is a long list of operations
 which pkgmogrify can perform, detailed in the man page, which allow a package
@@ -54,9 +83,10 @@ possible to write a complex regular expression which matches all paths that
 begin with /foo, except those that begin with /foo/bar, using the ordering of
 transforms makes it much simpler.  When ordering default transforms, always go
 from most specific to most general, otherwise the latter rules will never be
-used.  In this case, the two rules would look like this:
-<transform file path=foo/bar/.* -> default group bin>
-<transform file path=foo/.* -> default group sys>
+used.  In this case, the two rules would look like this::
+
+    <transform file path=foo/bar/.* -> default group bin>
+    <transform file path=foo/.* -> default group sys>
 
 Using transforms to add an action using the matching described above would be
 difficult since the package developer would need to find a pattern which matched
@@ -66,8 +96,9 @@ pkg.fmri attribute, it creates a "pkg action".  The package developer can match
 against the pkg action as if it was actually in the manifest.  For example,
 suppose a package developer wanted to add to every package an action containing
 the website (foo.com) where the source code for the delivered software can be
-found.  The following transform accomplishes that:
-<transform pkg -> emit set info.source-url=http://foo.com>
+found.  The following transform accomplishes that::
+
+    <transform pkg -> emit set info.source-url=http://foo.com>
 
 Include rules allow transforms to be spread across multiple files and subsets
 reused by different manifests.  Suppose a developer needs to deliver two
@@ -79,3 +110,28 @@ in the file containing the file group setting transform should be added.
 Finally, an include rule which pulls in the file with the source-url transform
 should be added to either package B or the file with the transform that sets the
 group.
+
+As a convenience to developers, a set of the transforms that were used when
+packaging Solaris itself are available in /usr/share/pkg/transforms.  At
+the time of writing, these are:
+
+    *developer*
+        sets ``facet.devel`` on *.h header files delivered to /usr/.*/include,
+        archive and lint libraries, ``pkg-config(1)`` data files, and
+        ``autoconf(1)`` macros.
+
+    *documentation*
+        sets a variety of ``facet.doc.*`` facets on documentation files
+
+    *locale*
+        sets a variety of ``facet.locale.*`` facets on files which are
+        locale-specific
+
+    *smf-manifests*
+        adds a ``restart_fmri`` actuator pointing to the
+        ``svc:/system/manifest-import:default`` on any packaged SMF manifests
+        so that the system will import that manifest after the package is
+        installed
+
+
+

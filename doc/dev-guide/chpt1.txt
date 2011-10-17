@@ -1,9 +1,34 @@
+.. CDDL HEADER START
 
+.. The contents of this file are subject to the terms of the
+   Common Development and Distribution License (the "License").
+   You may not use this file except in compliance with the License.
+
+.. You can obtain a copy of the license at usr/src/OPENSOLARIS.LICENSE
+   or http://www.opensolaris.org/os/licensing.
+   See the License for the specific language governing permissions
+   and limitations under the License.
+
+.. When distributing Covered Code, include this CDDL HEADER in each
+   file and include the License file at usr/src/OPENSOLARIS.LICENSE.
+   If applicable, add the following below this CDDL HEADER, with the
+   fields enclosed by brackets "[]" replaced with your own identifying
+   information: Portions Copyright [yyyy] [name of copyright owner]
+
+.. CDDL HEADER END
+
+.. Copyright (c) 2011, Oracle and/or its affiliates. All rights reserved.
+
+Chapter 1
+---------
+
+Design Goals and Concepts
+.........................
 
 This chapter discusses the design goals and concepts behind IPS, and
 lays out some of the implications of those choices.
 
-We desgined IPS to resolve some long-standing issues with existing
+We designed IPS to resolve some long-standing issues with existing
 Solaris mechanisms for software delivery, installation and maintenance
 that had caused significant problems for both Solaris customers and
 Solaris developers/maintainers.  The new packaging system had to do 
@@ -68,7 +93,7 @@ implications:
   sources can be composited to provide a complete set of packages, and
   repositories can be distributed as a single file.  In this manner,
   no single media was ever required to contain all the available
-  software.  In order to support disconnected/firewalledoperations,
+  software.  In order to support disconnected/firewalled operations,
   tools are provided to copy and merge repositories.
 
 * Supporting multiple (possibly competing) software publishers led us
@@ -77,5 +102,217 @@ implications:
   catalog of available packages from a software publisher is part of
   the repository for performance reasons, but it can be regenerated
   from the data contained in the packages at will.
+
+.. raw:: pdf
+
+    PageBreak
+
+Software Self-Assembly
+......................
+
+Given the goals and ideas we have discussed, IPS introduces the general concept
+of *software self-assembly*.
+
+That is, any collection of installed software on a system should be able to
+build itself into a working configuration when that system is booted or by the
+time the packaging operation completes, or at software runtime.
+
+This obviates the need for install-time scripting in IPS, making the
+software responsible for its own configuration, rather than relying on the
+packaging system to perform that configuration on behalf of the software. It
+also allows the packaging system to safely operate on alternate images, such as
+spare boot environments, or offline zone roots.
+
+Several idioms are employed to facilitate software self-assembly:
+
+
+Actions
+~~~~~~~
+
+  *Actions* are the atomic units of software delivery in IPS. Each action
+  delivers a single software object - either a filesystem object, such as a
+  *file*, *directory* or *link*, or a more complex software construct, such as a
+  *user*, *group* or *driver*.   These more complex action types, previously
+  handled by SVR4 class action scripts in older Solaris releases no longer
+  require scripting.
+
+  Actions, grouped together into *packages*, can be installed, updated and
+  removed from both live images as well as offline images.
+
+  While IPS allows for the set of known action types to be extended in the
+  packaging system, during development we have found that the action types
+  delivered at present are sufficient for all packaged software in Solaris.
+  It is not expected that package developers will need to create new action
+  types.
+
+  We will discuss actions in more detail in *Chapter 3*.
+
+
+Composition
+~~~~~~~~~~~
+
+  Rather than maintaining complex configuration files, requiring extensive
+  scripting in order to update each configuration file during packaging
+  operations, IPS encourages package authors to deliver fragments of the
+  complete configuration file.
+
+  The packaged application either accesses those fragments directly when reading
+  its configuration, or the fragments can be assembled into the complete
+  configuration file before reading it.
+
+  A good example of this is the ``/etc/user_attr`` configuration file, used by
+  Solaris to configure extended attributes for roles and users on the system.
+
+  This file is now used for local changes only, and Solaris has been modified
+  to read its complete configuration from the separate files delivered into the
+  directory ``/etc/user_attr.d`` at runtime.  Multiple packages deliver
+  fragments of the complete configuration, with no additional scripting
+  needed when fragments are installed, removed or updated.
+
+  Obviously this requires that the software is written with composition in mind,
+  which isn't always possible.
+
+  An alternative way to support the concept of composition, is for a service to
+  treat the configuration file as volatile, and re-assemble it when when
+  fragments of the configuration are installed, removed, or updated.  Typically,
+  this assembly is performed by an SMF service.  We will discuss this idiom in
+  the next section.
+
+
+Actuators & SMF services
+~~~~~~~~~~~~~~~~~~~~~~~~
+
+  An *actuator* is a tag applied to any *action* delivered by the packaging
+  system that causes a side effect to happen when that action is installed,
+  removed, or updated.
+
+  These side-effects are typically implemented as SMF services.
+
+  We can create SMF services that are responsible for configuring software
+  directly, or constructing configuration files using data delivered in the SMF
+  manifest, or sourced from files installed on the system.
+
+  Since SMF services have a rich syntax to express dependencies, we can ensure
+  that each service only runs when all of its dependencies have been met.
+
+  Solaris includes an SMF milestone,
+  ``svc:/milestone/self-assembly-complete:default`` upon which can any service
+  can add itself as a dependency.  The intention being, that once the booting
+  operating system has reached this milestone, all self-assembly operations
+  have completed and application-services can start.
+
+  *Actuators* are covered in more detail in *Chapter 9*.
+
+
+Designing your package
+......................
+
+XXX This section is lifted from the guide that sch started. It's not quite
+complete yet, but I wanted to include some of the same sort of material we
+used to have in the Application Packaging Developer's Guide, chpt 1.
+
+Many of the good packaging criteria present trade-offs among themselves. It
+will often be difficult to satisfy all requirements equally. These criteria are
+presented in order of importance; however, this sequence is meant to serve as a
+flexible guide depending on the circumstances. Although each of these criteria
+is important, it is up to you to optimize these requirements to produce a good
+set of packages.
+
+Optimize for Client-Server Configurations
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+You should consider the various patterns of software use
+(client and server) when laying out packages. Good packaging
+design divides the affected files to optimize installation of each
+configuration type. For example, for a network protocol implementation,
+it should be possible to install the client without necessarily
+installing the server.
+
+Package by Functional Boundaries
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Packages should be self-contained and distinctly identified with a set of
+functionality. For example, a package containing UFS should contain all UFS
+utilities and be limited to only UFS binaries.
+
+Packages should be organized from a customer's point of view into functional
+units.
+
+Package Along License or Royalty Boundaries
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Put code that requires royalty payments due to contractual agreements or
+that has distinct software license terms in a dedicated package or group
+of packages. Do not to disperse the code into more packages than
+necessary.
+
+Overlap in Packages
+~~~~~~~~~~~~~~~~~~~
+
+When constructing the packages, ensure that duplicate files are eliminated when
+possible. Unnecessary duplication of files results in support and version
+difficulties. If your product has multiple packages, constantly compare the
+contents of these packages for redundancies.
+
+Sizing Considerations
+~~~~~~~~~~~~~~~~~~~~~
+
+Size is package-specific and depends on other criteria. For example, the
+maximum size of /opt should be considered. When possible, a good package should
+not contain only one or two files or contain extremely large numbers of files.
+There are cases where a smaller or larger package might be appropriate to
+satisfy other criteria.
+
+Licensing Considerations for Packages
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+If you are distributing software that uses licensing, there are several things
+you need to consider:
+
+    - Business operations
+    - Communication with users
+    - Technology
+
+Business Operations
+```````````````````
+
+Before you begin distributing licensed software, set up
+your business operations to distribute, price, and track licenses. There are a
+variety of ways to distribute licenses, such as fax, electronic mail, or an 800
+telephone number. You need to choose a method of distribution and set up all
+the necessary processes. You also need to consider whether licenses need to be
+upgraded with the software and how this will be done.
+
+Pricing policy and types of licenses must also be considered. You must consider
+how the product is used and what kinds of licenses your users will need to use
+the product effectively. Single user licenses may not be appropriate for many
+situations.
+
+Communication with Users
+````````````````````````
+
+Before you implement licensing, you need to inform
+your users, particularly if the product has not been licensed in the past.
+
+When you do implement licensing, you may want to consider implementing it
+gradually. The first step would be monitoring the use of licenses, followed by
+warning that the software is being used without a license, and finally, denying
+the use of the software.
+
+Technology
+``````````
+
+If you are going to use a commercial product for licensing, there
+are many things to consider when making your choice. You need to decide what
+your priorities are. For example, is ease of administration and use most
+important? Or is enforcing the licensing policy more important?
+
+You also need to consider whether the software will be used in a heterogeneous
+or homogeneous environment and whether standards are important. You may also
+want to look at the security provided by the product. Is it easy to get around
+the enforcement of licenses?
+
+The issues involved in choosing a commercial product will vary depending on
+the kind of application and your reasons for implementing licensing.
 
 

@@ -1,0 +1,249 @@
+.. CDDL HEADER START
+
+.. The contents of this file are subject to the terms of the
+   Common Development and Distribution License (the "License").
+   You may not use this file except in compliance with the License.
+
+.. You can obtain a copy of the license at usr/src/OPENSOLARIS.LICENSE
+   or http://www.opensolaris.org/os/licensing.
+   See the License for the specific language governing permissions
+   and limitations under the License.
+
+.. When distributing Covered Code, include this CDDL HEADER in each
+   file and include the License file at usr/src/OPENSOLARIS.LICENSE.
+   If applicable, add the following below this CDDL HEADER, with the
+   fields enclosed by brackets "[]" replaced with your own identifying
+   information: Portions Copyright [yyyy] [name of copyright owner]
+
+.. CDDL HEADER END
+
+.. Copyright (c) 2011, Oracle and/or its affiliates. All rights reserved.
+
+
+Appendix 2
+----------
+
+Converting SVR4 Packages to IPS
+...............................
+
+This appendix covers conversion of packages from SVR4 to IPS and highlights some
+aspects of the conversion that should be given special attention.
+
+*Chapter 4* goes into detail on how to package software in IPS.  Developers
+with build environments that currently produce SVR4 packages should convert
+their build processes according to the worked example in that chapter, rather
+than continuing to build SVR4 packages, then performing the conversion to IPS
+packages afterwards.
+
+For ad-hoc conversion of packages from SVR4 to IPS, however, it may be useful
+to describe a suggested approach.
+
+As with *Chapter 4*, the fundamental steps to packaging any software in IPS
+are:
+
+* generate a package manifest
+* add necessary metadata to to the generated manifest
+* evaluate dependencies
+* add any facets or actuators that are needed
+* check the package with pkglint
+* publish the package
+* test the package
+
+These steps remain essentially the same for SVR4 to IPS conversion and we will
+not repeat their explanations. There are a few steps that warrant more
+detail, and we'll cover those in this appendix.
+
+When discussing these steps, we'll use a sample SVR4 package that is similar to
+the IPS package created in *Chapter 4*.
+
+Generate a package manifest
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+``pkgsend generate`` has suppport for scanning several different sources in
+order to generate manifests.  In *Chapter 4*, we used a simple directory as the
+source, but pgksend can also read SVR4 packages, consulting the ``pkgmap`` file
+in that package, rather than the directory inside the package containing
+the files delivered.
+
+While scanning the prototype file, pkgsend also looks for entries that could
+cause problems when converting the package to IPS, reporting those, and
+printing the generated manifest.
+
+For example, we have a sample SVR4 package, with a ``pkginfo`` file::
+
+    VENDOR=My Software Inc.
+    HOTLINE=Please contact your local service provider
+    PKG=MSFTmypkg
+    ARCH=i386
+    DESC=A sample SVR4 package of My Sample Package
+    CATEGORY=system
+    NAME=My Sample Package
+    BASEDIR=/
+    VERSION=11.11,REV=2011.10.17.14.08
+    CLASSES=none manpage
+    PSTAMP=linn20111017132525
+    MSFT_DATA=Some extra package metadata
+
+.. raw:: pdf
+
+    PageBreak
+
+and a corresponding ``prototype`` file::
+
+    i pkginfo
+    i copyright
+    i postinstall
+    d none opt 0755 root bin
+    d none opt/mysoftware 0755 root bin
+    d none opt/mysoftware/lib 0755 root bin
+    f none opt/mysoftware/lib/mylib.so.1 0644 root bin
+    d none opt/mysoftware/bin 0755 root bin
+    f none opt/mysoftware/bin/mycmd 0755 root bin
+    d none opt/mysoftware/man 0755 root bin
+    d none opt/mysoftware/man/man1 0755 root bin
+    f none opt/mysoftware/man/man1/mycmd.1 0644 root bin
+
+When running pkgsend on a the SVR4 package built using these files, we see::
+
+    $ pkgsend generate ./MSFTmypkg | pkgfmt
+    pkgsend generate: ERROR: script present in MSFTmypkg: postinstall
+
+    set name=pkg.summary value="My Sample Package"
+    set name=pkg.description value="A sample SVR4 package of My Sample Package"
+    set name=pkg.send.convert.msft-data value="Some extra package metadata"
+    dir  path=opt owner=root group=sys mode=0755
+    dir  path=opt/mysoftware owner=root group=bin mode=0755
+    dir  path=opt/mysoftware/bin owner=root group=bin mode=0755
+    file reloc/opt/mysoftware/bin/mycmd path=opt/mysoftware/bin/mycmd owner=root \
+        group=bin mode=0755
+    dir  path=opt/mysoftware/lib owner=root group=bin mode=0755
+    file reloc/opt/mysoftware/lib/mylib.so.1 path=opt/mysoftware/lib/mylib.so.1 \
+        owner=root group=bin mode=0644
+    dir  path=opt/mysoftware/man owner=root group=bin mode=0755
+    dir  path=opt/mysoftware/man/man1 owner=root group=bin mode=0755
+    file reloc/opt/mysoftware/man/man1/mycmd.1 \
+        path=opt/mysoftware/man/man1/mycmd.1 owner=root group=bin mode=0644
+    legacy pkg=MSFTmypkg arch=i386 category=system \
+        desc="A sample SVR4 package of My Sample Package" \
+        hotline="Please contact your local service provider" \
+        name="My Sample Package" vendor="My Software Inc." \
+        version=11.11,REV=2011.10.17.14.08
+    license install/copyright license=MSFTmypkg.copyright
+
+There are several things of note in the output above:
+
+    * ``pkg.summary`` and ``pkg.description`` attributes were automatically
+      created, using the data from the ``pkginfo`` file
+
+    * a ``set`` action was generated from the extra parameter in ``pkginfo``
+      file.  These are set beneath the ``pkg.send.convert.*`` namespace, with
+      the intention that developers will use pkgmogrify transforms to convert
+      these to a more appropriate name
+
+    * a ``legacy`` action was generated, using data from the SVR4 pkginfo file
+
+    * a ``license`` action was generated, pointing to the copyright file used
+      in the SVR4 package
+
+    * an error message was emitted pointing to a scripting operation that can't
+      be converted
+
+Checking again, we can see a non-zero return code from pkgsend generate, and
+the error message again::
+
+    $ pkgsend generate  MSFTmypkg > /dev/null
+    pkgsend generate: ERROR: script present in MSFTmypkg: postinstall
+    $ echo $?
+    1
+
+In this case, the package is using a postinstall script, that can't be converted
+directly to an IPS equivalent, so must be manually inspected.
+
+This is the postinstall script in the package::
+
+   #!/usr/bin/sh
+   catman -M /opt/mysoftware/man
+
+and its effects can easily be replaced using a ``restart_fmri`` *actuator*
+pointing to an existing SMF service, ``svc:/application/man-index:default`` as
+described in *Chapter 4*.  Also, see *Chapter 9* for further discussion on
+actuators.
+
+``pkgsend generate`` will also check for the presence of class-action scripts
+and will produce error messages indicating which scripts should be examined.
+
+It is impossible to give examples for every package scripting scenario that a
+developer may encounter when converting SVR4 packages to IPS packages, except to
+note that during development of IPS, our idiom of *software self assembly*,
+discussed in *Chapter 1* was our guide.  There is a good chance that an existing
+*action type* or SMF service will cover the functionality needed.
+
+See *Chapter 3* for details about the *action types* available, and *Chapter 9*
+for a discussion on *actuators*.
+
+
+Check the package with pkglint
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+We'll assume that any additional package metadata has been added to the manifest
+now, and that dependency generation and resolution has been performed as per
+*Chapter 4*.  Our next step, is running pkglint on the package.
+
+A common source of pkglint errors when converting old SVR4 packages, is from
+mis-matched attributes between directories delivered in the SVR4 package and
+those delivered by other publishers on the system.
+
+In this case, we didn't drop the directory action for ``/opt`` from our
+manifest and are attempting to re-deliver it.
+
+Recall that in *Chapter 3*, we discussed the directory action, stating that
+all reference-counted actions must have the same attributes.  When trying to
+install the version of ``mypkg`` that has been generated so far, we would see::
+
+    # pkg install mypkg
+    Creating Plan /
+    pkg install: The requested change to the system attempts to install multiple actions
+    for dir 'opt' with conflicting attributes:
+
+        1 package delivers 'dir group=bin mode=0755 owner=root path=opt':
+            pkg://mypublisher/mypkg@1.0,5.11-0:20111017T020042Z
+        3 packages deliver 'dir group=sys mode=0755 owner=root path=opt':
+            pkg://solaris/developer/build/onbld@0.5.11,5.11-0.175.0.0.0.1.0:20111012T010101Z
+            pkg://solaris/system/core-os@0.5.11,5.11-0.175.0.0.0.1.0:20111012T023456Z
+
+    These packages may not be installed together.  Any non-conflicting set may
+    be, or the packages must be corrected before they can be installed.
+
+We would like to catch that before publishing the package, rather than
+at install-time.  Using pkglint with a reference repository allows us to do
+that::
+
+    XXX need example here
+
+Other considerations
+~~~~~~~~~~~~~~~~~~~~
+
+While it is possible to install SVR4 packages directly on a system running
+IPS, we strongly recommend against this.
+
+Apart from the ``legacy`` action, described in *Chapter 3*, there are no links
+between the two packaging systems, and they do not reference package metadata
+from each other.
+
+IPS has commands like ``pkg verify`` which can determine whether packaged
+content has been installed correctly, however if another packaging system
+legitimately installs packages, false positives could result.
+
+Commands such as ``pkg fix`` or ``pkg revert`` could overwrite files that were
+delivered by a SVR4 package, potentially causing the packaged application
+to malfunction.
+
+Similarly, commands such as ``pkg install`` which normally check for duplicate
+actions, and common attributes on reference-counted actions could also fail to
+detect potential errors when files from a different packaging system conflict.
+
+XXX how's the wording here?
+Given the comprehensive package-developer tool chain in IPS, as well as this
+fallback mechanism to convert SVR4 packages to IPS, we expect that SVR4 packages
+will not be used.
+

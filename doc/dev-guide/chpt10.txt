@@ -1,7 +1,33 @@
+.. CDDL HEADER START
 
-	Chapter 10, Advanced IPS, deals with more complex package
-	upgrade issues, and describe several features in IPS designed
-	to simplify these problems.
+.. The contents of this file are subject to the terms of the
+   Common Development and Distribution License (the "License").
+   You may not use this file except in compliance with the License.
+
+.. You can obtain a copy of the license at usr/src/OPENSOLARIS.LICENSE
+   or http://www.opensolaris.org/os/licensing.
+   See the License for the specific language governing permissions
+   and limitations under the License.
+
+.. When distributing Covered Code, include this CDDL HEADER in each
+   file and include the License file at usr/src/OPENSOLARIS.LICENSE.
+   If applicable, add the following below this CDDL HEADER, with the
+   fields enclosed by brackets "[]" replaced with your own identifying
+   information: Portions Copyright [yyyy] [name of copyright owner]
+
+.. CDDL HEADER END
+
+.. Copyright (c) 2011, Oracle and/or its affiliates. All rights reserved.
+
+Chapter 10
+----------
+
+Advanced IPS
+............
+
+
+This chapter deals with more complex package upgrade issues, and describes
+several features in IPS designed to simplify these problems.
 
 For most upgrade operations, IPS will automatically do exactly what is
 needed to install updated packages.  There are some cases, however,
@@ -17,7 +43,7 @@ due to constraining dependencies is a responsibility of the package
 developer.
 
 Renaming, merging and splitting packages
-----------------------------------------
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Often, the desired breakdown of a software component changes, whether
 because of original mistakes, change in the product or its usage over
@@ -35,7 +61,7 @@ package is published, containing a set action of the form:
 
 set name=pkg.renamed value=true 
 
-and a "require" dependency on the new package. Note that a renamed 
+and a ``require`` dependency on the new package. Note that a renamed
 package may not deliver contents other than depend or set actions.
 
 The new package MUST insure that it cannot be installed at the same
@@ -79,19 +105,19 @@ component pieces installed afterward.  Note that some components may
 be absorbed into existing packages as a merge without problems.
 
 Obsoleting packages
--------------------
+~~~~~~~~~~~~~~~~~~~
 
 Package obsoletion is the mechanism by which packages are emptied of
 contents and are removed from the system.  Such a package does not
-satisfy require dependencies, so a installed package w/ a 'require'
+satisfy require dependencies, so a installed package with a ``require``
 dependency on a package that becomes obsolete will prevent upgrade
 unless a newer version of the installed package is available that does
-not contain the 'require' dependency.
+not contain the ``require`` dependency.
 
 A package is made obsolete by publishing a new version with a set
-action as follows:
+action as follows::
 
-set name=pkg.obsolete value=true
+    set name=pkg.obsolete value=true
 
 with no other contents save possibly for other set actions.
 
@@ -100,7 +126,7 @@ note that users who upgraded through the obsoletion will lose
 this package while those who did not will not.
 
 Preserving editable files during package renaming or path changes
------------------------------------------------------------------
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 One of the more frequent issues is the migration of editable files,
 either in the filesystem or between packages.  IPS attempts to migrate
@@ -110,7 +136,7 @@ altered. However, if the path changes the following must be done for
 the user's customizations to be preserved:
 
 If the file action in the old package does not contain the attribute
-"original_name", it must be added.  Set the value to the original name
+``original_name``, it must be added.  Set the value to the original name
 of the package, followed by a colon and then the path to the file
 without a leading '/'. Once this is present on an editable file, it
 must not be changed; this value acts as a unique identifier for all
@@ -118,7 +144,7 @@ moves going forward so that regardless of the number of versions
 skipped on an upgrade, the user's content is properly preserved.
 
 Moving unpackaged contents on directory removal/rename
----------------------------------------------------------
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Normally, unpackaged contents are salvaged when the containing
 directory is removed because the last reference to it disappears.
@@ -127,24 +153,97 @@ as the removal of the old directory and the creation of a new one.
 If the old directory has unpackaged content such as log files that
 should be moved to the new directory, this may be done with the
 salvage-from attribute if placed on the new directory.  For
-example, suppose we wished to rename a directory from
+example, suppose we wished to rename a directory from::
 
-/opt/mydata/log
+    /opt/mydata/log
 
-to 
+to::
 
-/opt/yourdata/log
+    /opt/yourdata/log
 
 In the same package version that eliminates the former and
-introduces the latter, include 
+introduces the latter, include::
 
-salvage-from=opt/mydata/log
+    salvage-from=opt/mydata/log
 
 on the directory action that creates /opt/yourdata/log. Any 
 unpackaged contents of any time will be migrated to the new location.
 
+Delivering multiple implementations of a given package
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+XXX need a discussion of mediated links here - we referenced this discussion
+from chapter 3, and deferred talking about the attributes below till now.
+
+
+     mediator
+          Specifies the entry in the mediation namespace shared by all
+          pathnames participating in a given mediation group (e.g. ``python``).
+          Link mediation may be performed based on ``mediator-version`` and/or
+          ``mediator-implementation``.  All mediated links for a given pathname
+          must specify the same ``mediator``.  However, not all mediator versions
+          and implementations need to provide a link at a given path.  If a
+          mediation doesn't provide a link, then the link is removed when that
+          mediation is selected.  A mediator, in combination with a specific
+          version and/or implementation represents a *mediation* that can be
+          selected for use by the packaging system.
+          Mediated links are discussed in *Chapter 10*.
+
+     mediator-version
+          Specifies the version (expressed as a dot-separated sequence
+          of non-negative integers) of the interface described by the
+          ``mediator`` attribute.  This attribute is required if ``mediator``
+          is specified and ``mediator-implementation`` is not.  A local
+          system administrator may set the version to use explicitly.  The
+          value specified should generally match the version of the package
+          delivering the link (e.g. ``runtime/python-26`` should use
+          ``mediator-version=2.6``), although this is not required.
+
+     mediator-implementation
+          Specifies the implementation of the mediator for use in addition to
+          or instead of the ``mediator-version``.  Implementation strings are
+          not considered to be ordered and one will be arbitrary selected by
+          pkg(5) if not explicitly specified by a system administrator.
+
+          The value can be a string of arbitrary length composed of alpha-
+          numeric characters and spaces.  If the implementation itself can
+          be or is versioned, then the version should be specified at the
+          end of the string, after a '@' (expressed as a dot-separated
+          sequence of non-negative integers).  If multiple versions of an
+          implementation exist, the default behaviour is to select the
+          implementation with the greatest version.
+
+          If only one instance of an implementation-mediation link at a
+          particular path is installed on a system, then that one will be
+          chosen automatically.  If future links at the path are installed,
+          the link will not be switched unless a vendor, site, or local
+          override applies, or if one of the links is version-mediated.
+
+     mediator-priority
+          When resolving conflicts in mediated links, pkg(5) will normally
+          choose the link with the greatest value of ``mediator-version`` or
+          based on ``mediator-implementation`` if that is not possible.  This
+          attribute is used to specify an override for the normal conflict
+          resolution process.
+
+          If this attribute is not specified, the default mediator selection
+          logic will be applied.
+
+          * If the value is ``vendor``, the link will be preferred over those
+            that do not have a ``mediator-priority`` specified.
+
+          * If the value is ``site``, the link will be preferred over those that
+            have a value of ``vendor`` or that do not have a
+            ``mediator-priority`` specified.
+
+          A local system administrator may override the selection logic
+          described above.
+
+
+XXX the section on /var/share won't make sense till that work gets putback
+
 Delivering directories to be shared across boot environments
-------------------------------------------------------------
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 In general IPS doesn't support delivery of packaged 
 contents to datasets that span boot environments.  This is because
@@ -182,8 +281,4 @@ again.
 
 It is not possible or desirable to create symbolic or hard links 
 in /var/share.
-
-
-
-
 

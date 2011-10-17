@@ -1,29 +1,120 @@
+.. CDDL HEADER START
 
-	Chapter 9 - Using SMF to generate side effects, explains how to
-	use the Service Management Framework to automatically handle
-	any necessary side effects of package installation.
+.. The contents of this file are subject to the terms of the
+   Common Development and Distribution License (the "License").
+   You may not use this file except in compliance with the License.
 
-A significant change for package developers between SVR4 packaging and IPS is
-how side effects of package installation are handled.  SVR4 packaging used
-install-time scripting to perform these modifications which proved to be
-problematic for users.  The replacement for part of this functionality is an
-interface with SMF services to carry out the needed changes to the system in a
-reliable and attributable method.
+.. You can obtain a copy of the license at usr/src/OPENSOLARIS.LICENSE
+   or http://www.opensolaris.org/os/licensing.
+   See the License for the specific language governing permissions
+   and limitations under the License.
+
+.. When distributing Covered Code, include this CDDL HEADER in each
+   file and include the License file at usr/src/OPENSOLARIS.LICENSE.
+   If applicable, add the following below this CDDL HEADER, with the
+   fields enclosed by brackets "[]" replaced with your own identifying
+   information: Portions Copyright [yyyy] [name of copyright owner]
+
+.. CDDL HEADER END
+
+.. Copyright (c) 2011, Oracle and/or its affiliates. All rights reserved.
+
+Chapter 9
+---------
+
+Using SMF to generate side effects
+..................................
+
+This chapter explains how to use the Service Management Framework to
+automatically handle any necessary side effects of package installation.
 
 The package developer must determine which actions, when initially installed or
 changed, should cause a side effect to the system.  For each of those actions,
-the package developer needs to determine which existing provides the desired
-side effect, or write a service which provides the needed functionality.
+the package developer needs to determine which existing service provides the
+desired side effect, or write a new service which provides the needed
+functionality and ensure that service is delivered to the system.
 
-For example, a package which delivers a new service, the foo service, delivers a
-manifest file.  For that service to be available to be used, the manifest-import
-service needs to process the newly delivered manifest file.  In this case, the
-action delivering the manifest file into lib/svc/manifest or var/svc/manifest
-should be tagged with 'restart_fmri=svc:/system/manifest-import:default'.  The
-tag ensures that when the manifest is added, updated, or removed, the
-manifest-import service is restarted causing the foo service to be added,
-updated, or removed.
+When the set of actions has been determined, those actions must be tagged in
+the package manifest with the correct *actuator* in order to cause that side
+effect to be trigged.
 
-In addition to restarting a service, it's also possible to refresh a service.
-The 'refresh_fmri' tag allows a service to be refreshed after an action has been
-installed, updated, or removed.
+As discussed in *Chapter 1* some side effects will be needed to employ the
+*software self-assembly* concept used by Solaris and IPS, but they are not
+limited to this role.
+
+We'll discuss the available actuators in the next section and then provide some
+examples.
+
+Actuators
+~~~~~~~~~
+
+The following tags can be added to any action in a manifest:
+
+reboot-needed
+`````````````
+This actuator takes the value 'true' or 'false', declaring that installation,
+removal or update of the tagged action should require a reboot when IPS is
+operating on a live image.
+
+
+The following actuators are related to SMF services, and are the ones we will
+focus on in this chapter.
+
+SMF actuators
+`````````````
+The actuators take a single SMF FMRI as a value, possibly including globbing
+characters to match multiple FMRIs.  If the same FMRI is tagged by multiple
+actions, possibly across multiple packages being operated on, IPS will only
+trigger that actuator once.
+
+We will list the actuators below:
+
+  disable_fmri
+         A service that should be disabled prior to the package operation
+         being performed
+
+  refresh_fmri
+         A service that should be refreshed after the package operation has
+         completed
+
+  restart_fmri
+         A service that should be restarted after the package operation has
+         completed
+
+  suspend_fmri
+         A service that should be temporarily suspended prior to the package
+         operation and enabled once it has completed
+
+
+Delivering an SMF Service
+~~~~~~~~~~~~~~~~~~~~~~~~~
+
+A common example of needing a side effect, is when a package delivers a new SMF
+service.  The package delivers the SMF manifest file and method script and the
+packaged application requires that the SMF service it delivers must be available
+after package installation.
+
+In older Solaris releases, SVR4 post-install scripting would run an SMF command
+to restart the ``svc:/system/manifest-import:default`` service.
+
+In IPS, the action delivering the manifest file into ``lib/svc/manifest`` or
+``var/svc/manifest`` should instead be tagged with an actuator,
+``restart_fmri=svc:/system/manifest-import:default``.
+
+The actuator ensures that when the manifest is added, updated, or removed, the
+``manifest-import`` service is restarted causing the service delivered by that
+SMF manifest to be added, updated, or removed.
+
+If the package is added to a live-system, this action is performed once all
+packages have been added to the system during that packaging operation.  If the
+package is added to an alternate boot environment, this action is performed
+during the first boot of that boot environment.
+
+
+XXX the following section names are bad, need to rename.  May need more examples
+
+A service that runs once on boot, then deletes itself
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+XXX need content, and look for a good example
+

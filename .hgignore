@@ -21,6 +21,9 @@
 ^doc/guide-main.tex
 ^doc/guide-main.toc
 ^doc/html-out
+^doc/dev-guide/doctools/
+^doc/dev-guide/doctmp/
+^doc/dev-guide/book.txt
 ^src/gui/data/addmoresoftware.desktop$
 ^src/gui/data/packagemanager-info.xml$
 ^src/gui/data/packagemanager-preferences.schemas$

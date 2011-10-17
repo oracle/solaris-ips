@@ -1,7 +1,32 @@
+.. CDDL HEADER START
 
-	Chapter 12, Dealing with Zones, describes how IPS handles zones
-	and discusses those cases where package developers should be
-	aware of zones.
+.. The contents of this file are subject to the terms of the
+   Common Development and Distribution License (the "License").
+   You may not use this file except in compliance with the License.
+
+.. You can obtain a copy of the license at usr/src/OPENSOLARIS.LICENSE
+   or http://www.opensolaris.org/os/licensing.
+   See the License for the specific language governing permissions
+   and limitations under the License.
+
+.. When distributing Covered Code, include this CDDL HEADER in each
+   file and include the License file at usr/src/OPENSOLARIS.LICENSE.
+   If applicable, add the following below this CDDL HEADER, with the
+   fields enclosed by brackets "[]" replaced with your own identifying
+   information: Portions Copyright [yyyy] [name of copyright owner]
+
+.. CDDL HEADER END
+
+.. Copyright (c) 2011, Oracle and/or its affiliates. All rights reserved.
+
+Chapter 12
+----------
+
+Dealing with Zones
+..................
+
+This chapter describes how IPS handles zones and discusses those cases where
+package developers should be aware of zones.
 
 Developing packages which work consistently with zones often involves little to
 no additional work but a few situations call for close attention from
@@ -21,7 +46,7 @@ is in a non-global zone, it is present in the global zone.  If the interface
 spans multiple packages, then the package containing the non-global zone side of
 the interface must contain a parent dependency on the package which delivers the
 global zone side of the interface.  For more details on the parent dependency,
-please see chapter 6.
+please see *Chapter 6*.
 
 If the answer to question two is "all of it" (and that's typically the case)
 then nothing needs to be done to the package to enable it to function properly.
@@ -35,13 +60,15 @@ set name=variant.opensolaris.zone value=global value=nonglobal
 If the answer to question to is "none of it" (for example a package which only
 delivers kernel modules or drivers), then the package should specify that it
 cannot be installed in a zone.  This is done by adding the following action to
-the manifest:
-set name=variant.opensolaris.zone value=global
+the manifest::
+
+    set name=variant.opensolaris.zone value=global
 
 If the answer to question to is "some of it", then things get slightly more
 complicated.  The first step is to state that the package can be installed in
-both global and non-global zones.  Again, the action that states this is:
-set name=variant.opensolaris.zone value=global value=nonglobal
+both global and non-global zones.  Again, the action that states this is::
+
+    set name=variant.opensolaris.zone value=global value=nonglobal
 
 The next step is to identify those actions which are only relevant in either the
 global or non-global zone.  The global-zone-only actions should have the
@@ -77,3 +104,4 @@ make the publisher available to the non-global zone and install and update the
 package from within the zone.  If the zone cannot access the publisher, then
 configuring it in the global zone will work.  In that case, it's still best to
 install and update the package in the non-global zone.
+

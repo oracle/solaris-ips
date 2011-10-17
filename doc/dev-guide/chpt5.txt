@@ -1,11 +1,36 @@
+.. CDDL HEADER START
 
-	Chapter 5
+.. The contents of this file are subject to the terms of the
+   Common Development and Distribution License (the "License").
+   You may not use this file except in compliance with the License.
+
+.. You can obtain a copy of the license at usr/src/OPENSOLARIS.LICENSE
+   or http://www.opensolaris.org/os/licensing.
+   See the License for the specific language governing permissions
+   and limitations under the License.
+
+.. When distributing Covered Code, include this CDDL HEADER in each
+   file and include the License file at usr/src/OPENSOLARIS.LICENSE.
+   If applicable, add the following below this CDDL HEADER, with the
+   fields enclosed by brackets "[]" replaced with your own identifying
+   information: Portions Copyright [yyyy] [name of copyright owner]
+
+.. CDDL HEADER END
+
+.. Copyright (c) 2011, Oracle and/or its affiliates. All rights reserved.
+
+Chapter 5
+---------
+
+Installation, Removal and Updates
+.................................
 
 This chapter describes how the IPS client functions to install,
-update and remove the software installed in an image. Understanding
-basically how pkg(1) works will help administrators and developers
-better understand the various errors that can occur, and allow
-them to more quickly resolve package dependency problems.
+update and remove the software installed in an image.
+
+Understanding basically how pkg(1) works will help administrators and developers
+better understand the various errors that can occur, and allow them to more
+quickly resolve package dependency problems.
 
 
 The following steps are executed when pkg is invoked to modify
@@ -14,7 +39,7 @@ the software installed on the machine.
 1) inputs are error checked.
 
 2) a description of the desired end state of the system is
-   constructed; in the case of an unconstrainted software update this
+   constructed; in the case of an unconstrained software update this
    might be something like "all the packages currently installed, or
    newer versions of them".  In the case of package removal, it would
    be "all the packages currently installed without this one".
@@ -33,7 +58,7 @@ the software installed on the machine.
    is passed to MiniSAT. If MiniSAT cannot find any solution, the
    error handling code attempts to walk the set of installed 
    packages and the attempted operation and print reasons for
-   why each possible choice was eliminated.  If the curently installed
+   why each possible choice was eliminated.  If the currently installed
    set of packages meet the requirements but no other does, pkg will
    report that there is nothing to do.  Since the error message 
    generation and specificity is determined by the inputs to pkg,
@@ -67,7 +92,7 @@ the software installed on the machine.
 
    * directory and link actions are reference counted mediated link
    * processing is done hardlinks are marked for repair if their
-   * target file is updated; this is becaus updating a target of a
+   * target file is updated; this is because updating a target of a
      hardlink in a manner that is safe for currently executing
      processes breaks the hard links.
    * editable files moving between packages are correctly handled
@@ -78,7 +103,7 @@ the software installed on the machine.
    All the currently installed packages are then cross-checked to
    make sure that no packages conflict - two packages do not attempt
    to deliver a file to the same location, directory attributes
-   for the same directory agree between packagts, etc.  If conflicts
+   for the same directory agree between packages, etc.  If conflicts
    exist, these are reported and pkg exits with an error message.
 
    Finally, the action lists are scanned to determine if any
@@ -91,7 +116,7 @@ the software installed on the machine.
    to the download phase.  For each action that requires content,
    we download any required files by hash and cache them.  This
    step may take some time if the amount of content to be 
-   retrieved is large.  Once donwloading is complete, if the
+   retrieved is large.  Once downloading is complete, if the
    change is to be applied to a live system (image is rooted
    at '/') and a reboot is required, the running system is 
    cloned and the target image is switched to the clone.
@@ -104,17 +129,10 @@ the software installed on the machine.
    changes in a single pkg operation are applied to the system at once
    rather than pkg by pkg; this permits packages to depend on each
    other, exchange content, etc safely.  For details on how files
-   are updated, see the description of the file action in chapter 3.
+   are updated, see the description of the file action in *Chapter 3*.
 
-
-10)If we're updating a live system, any pending actuators are executed
-   at this point.  These are typicall SMF service restarts/refreshes.
-   Once these are launched, we update the local search indicies. 
-   Lastly, if neede, we update the boot archive.
-
-
- 
-
-
-
+10) If we're updating a live system, any pending actuators are executed
+    at this point.  These are typically SMF service restarts/refreshes.
+    Once these are launched, we update the local search indicies. 
+    Lastly, if needed, we update the boot archive.
  

@@ -1,5 +1,29 @@
-		Chapter 11 - signing packages.
+.. CDDL HEADER START
 
+.. The contents of this file are subject to the terms of the
+   Common Development and Distribution License (the "License").
+   You may not use this file except in compliance with the License.
+
+.. You can obtain a copy of the license at usr/src/OPENSOLARIS.LICENSE
+   or http://www.opensolaris.org/os/licensing.
+   See the License for the specific language governing permissions
+   and limitations under the License.
+
+.. When distributing Covered Code, include this CDDL HEADER in each
+   file and include the License file at usr/src/OPENSOLARIS.LICENSE.
+   If applicable, add the following below this CDDL HEADER, with the
+   fields enclosed by brackets "[]" replaced with your own identifying
+   information: Portions Copyright [yyyy] [name of copyright owner]
+
+.. CDDL HEADER END
+
+.. Copyright (c) 2011, Oracle and/or its affiliates. All rights reserved.
+
+Chapter 11
+----------
+
+Signing Packages
+................
 
 One important consideration in the design of IPS was being able to
 validate that the software installed on the customer's machine was
@@ -33,12 +57,12 @@ handoffs, with signatures used along the path to indicate completion
 along the way; subsequent steps can optionally remove previous
 signatures at any time without ill-effect.
 
-Signature actions look like this:
+Signature actions look like this::
 
-signature <hash of certificate> algorithm=<signature algorithm> \
-    value=<signature value> \ chain="<hashes of certs needed to
-    validate primary certificate>" \ version=<pkg version of
-    signature>
+    signature <hash of certificate> algorithm=<signature algorithm> \
+        value=<signature value> \ chain="<hashes of certs needed to
+        validate primary certificate>" \ version=<pkg version of
+        signature>
 
 The payload and pkg.chain_certs attributes represent the packaging
 hash of the pem file(s) containing the x.509 certificate(s)
@@ -60,10 +84,10 @@ verification purposes and presents the hash as the signature value.  A
 signature action of this type is indicated by the lack of a payload
 certificate hash.  This type of signature action is verified if the
 image is configured to check signatures.  Its presence however does
-not count as a signature if signatures are required.
+not count as a signature if signatures are required::
 
-signature algorithm=<hash algorithm> value=<hash> \ version=<pkg
-    version of signature>
+    signature algorithm=<hash algorithm> value=<hash> \ version=<pkg
+        version of signature>
 
 Additional signature types (pgp, for example) may be added in the
 future.
@@ -114,12 +138,15 @@ can't be verified or anchored to a trusted certificate, the package will fail to
 install.  What follows are some examples of different failure paths and what can
 be done to resolve them.
 
-Example 1:
--------------------------------------------------------------------------------
-pkg install: The certificate which issued this certificate:/C=US/ST=California/L=Menlo Park/O=pkg5/CN=cs1_ch1_ta3/emailAddress=cs1_ch1_ta3 could not be found. The issuer is:/C=US/ST=California/L=Menlo Park/O=pkg5/CN=ch1_ta3/emailAddress=ch1_ta3
+Example 1::
 
-The package involved is:pkg://test/example_pkg@1.0,5.11-0:20110919T184152Z
--------------------------------------------------------------------------------
+    pkg install: The certificate which issued this certificate:
+    /C=US/ST=California/L=Menlo Park/O=pkg5/CN=cs1_ch1_ta3/emailAddress=cs1_ch1_ta3
+    could not be found. The issuer is:
+    /C=US/ST=California/L=Menlo Park/O=pkg5/CN=ch1_ta3/emailAddress=ch1_ta3
+
+    The package involved is:pkg://test/example_pkg@1.0,5.11-0:20110919T184152Z
+
 The error shown above happens when a certificate in the chain of trust is
 missing or otherwise erroneous.  In this case, there were three certificates in
 the chain of trust when the package was signed.  It was rooted in the trust
@@ -130,11 +157,14 @@ cs1_ch1_ta3, but it couldn't locate the chain certificate, ch1_ta3, so the chain
 of trust could not be established.  The most common cause of this problem is
 failing to provide the right certificate(s) to the -i option of pkgsign.
 
-Example 1a:
--------------------------------------------------------------------------------
-pkg install: The certificate which issued this certificate:/C=US/ST=California/L=Menlo Park/O=pkg5/CN=cs1_cs8_ch1_ta3/emailAddress=cs1_cs8_ch1_ta3 could not be found. The issuer is:/C=US/ST=California/L=Menlo Park/O=pkg5/CN=cs8_ch1_ta3/emailAddress=cs8_ch1_ta3
-The package involved is:pkg://test/example_pkg@1.0,5.11-0:20110919T201101Z
--------------------------------------------------------------------------------
+Example 1a::
+
+    pkg install: The certificate which issued this certificate:
+    /C=US/ST=California/L=Menlo Park/O=pkg5/CN=cs1_cs8_ch1_ta3/emailAddress=cs1_cs8_ch1_ta3
+    could not be found. The issuer is:
+    /C=US/ST=California/L=Menlo Park/O=pkg5/CN=cs8_ch1_ta3/emailAddress=cs8_ch1_ta3
+    The package involved is:pkg://test/example_pkg@1.0,5.11-0:20110919T201101Z
+
 The error shown above is similar to the error in example 1 but has a different
 cause.  In this case, the package was signed using the cs1_cs8_ch1_ta3
 certificate which was signed by the cs8_ch1_ta3 certificate.  The problem is
@@ -146,11 +176,11 @@ certificate.  Since the chain of trust can't be verified from the leaf to the
 root, pkg prevents the package from being installed.
 
 
-Example 2:
--------------------------------------------------------------------------------
-pkg install: Chain was rooted in an untrusted self-signed certificate.
-The package involved is:pkg://test/example_pkg@1.0,5.11-0:20110919T185335Z
--------------------------------------------------------------------------------
+Example 2::
+
+    pkg install: Chain was rooted in an untrusted self-signed certificate.
+    The package involved is:pkg://test/example_pkg@1.0,5.11-0:20110919T185335Z
+
 The error shown above happens when a chain of trust ends in a self-signed
 certificate which isn't trusted by the system.  When a developer creates a chain
 of certificates using openssl for testing, the root certificate is often
@@ -165,12 +195,13 @@ second solution is to approve the self-signed certificate for the publisher
 which offers the package for testing by using the --approve-ca-cert option for
 the set-publisher subcommand to pkg.
 
-Example 3:
--------------------------------------------------------------------------------
-pkg install: A signature in pkg://test/example_pkg@1.0,5.11-0:20110919T195801Z could not be verified for this reason:
-The signature value did not match the expected value. Res: 0
-The signature's hash is 0ce15c572961b7a0413b8390c90b7cac18ee9010
--------------------------------------------------------------------------------
+Example 3::
+
+    pkg install: A signature in pkg://test/example_pkg@1.0,5.11-0:20110919T195801Z
+    could not be verified for this reason:
+    The signature value did not match the expected value. Res: 0
+    The signature's hash is 0ce15c572961b7a0413b8390c90b7cac18ee9010
+
 The error shown above happens when the value on the signature action could not
 be verified using the certificate which the action claims was paired with the
 key used to sign the package.  There are three possible causes for an error like
@@ -184,23 +215,28 @@ weren't a matched pair.  If the certificate given to the -c option of pkgsign
 wasn't created with the key given to the -k option of pkgsign, pkgsign will sign
 the package but the package's signature won't be verified.
 
-Example  4:
--------------------------------------------------------------------------------
-pkg install: The certificate whose subject is /C=US/ST=California/L=Menlo Park/O=pkg5/CN=cs2_ch1_ta3/emailAddress=cs2_ch1_ta3 could not be verified because it uses a critical extension that pkg5 cannot handle yet.
-Extension name:issuerAltName
-Extension value:<EMPTY>
--------------------------------------------------------------------------------
+Example 4::
+
+    pkg install: The certificate whose subject is 
+    /C=US/ST=California/L=Menlo Park/O=pkg5/CN=cs2_ch1_ta3/emailAddress=cs2_ch1_ta3
+    could not be verified because it uses a critical extension that pkg5 cannot
+    handle yet. Extension name:issuerAltName
+    Extension value:<EMPTY>
+
 The error above happens when a certificate in the chain of trust uses a critical
 extension which pkg doesn't understand.  Until pkg learns how to process that
 critical extension, the only solution is to regenerate the certificate without
 the problematic critical extension.
 
-Example 4a:
--------------------------------------------------------------------------------
-pkg install: The certificate whose subject is /C=US/ST=California/L=Menlo Park/O=pkg5/CN=cs5_ch1_ta3/emailAddress=cs5_ch1_ta3 could not be verified because it has an extension with a value that pkg(5) does not understand.
-Extension name:keyUsage
-Extension value:Encipher Only
--------------------------------------------------------------------------------
+Example 4a::
+
+    pkg install: The certificate whose subject is 
+    /C=US/ST=California/L=Menlo Park/O=pkg5/CN=cs5_ch1_ta3/emailAddress=cs5_ch1_ta3
+    could not be verified because it has an extension with a value that pkg(5)
+    does not understand.
+    Extension name:keyUsage
+    Extension value:Encipher Only
+
 The error above is similar to the error in example except that the problem is
 not with an unfamiliar critical extension but with a value that pkg doesn't
 understand for an extension which pkg does understand.  In this case, pkg
@@ -209,19 +245,25 @@ Only."  The error will look the same whether the extension in question is
 critical or not.  The solution until pkg learns about the value in question is
 to remove the value from the extension or remove the extension entirely.
 
-Example 5:
--------------------------------------------------------------------------------
-pkg install: The certificate whose subject is /C=US/ST=California/L=Menlo Park/O=pkg5/CN=ch1_ta3/emailAddress=ch1_ta3 could not be verified because it has been used inappropriately.  The way it is used means that the value for extension keyUsage must include 'DIGITAL SIGNATURE' but the value was 'Certificate Sign, CRL Sign'.
--------------------------------------------------------------------------------
+Example 5::
+
+    pkg install: The certificate whose subject is
+    /C=US/ST=California/L=Menlo Park/O=pkg5/CN=ch1_ta3/emailAddress=ch1_ta3
+    could not be verified because it has been used inappropriately.
+    The way it is used means that the value for extension keyUsage must include
+    'DIGITAL SIGNATURE' but the value was 'Certificate Sign, CRL Sign'.
+
 The error above happens when a certificate has been used for a purpose for which
-it was not autorized.  In this case, the certificate ch1_ta3 has been used to
+it was not authorized.  In this case, the certificate ch1_ta3 has been used to
 sign the package.  It's keyUsage extension means that it's only valid to use
 that certificate to sign other certificates and CRL's.
 
-Example 6:
--------------------------------------------------------------------------------
-pkg install: Certificate /tmp/ips.test.7149/0/image0/var/pkg/publisher/test/certs/0ce15c572961b7a0413b8390c90b7cac18ee9010 has been modified on disk. Its hash value is not what was expected.
--------------------------------------------------------------------------------
+Example 6::
+
+    pkg install: Certificate 
+    /tmp/ips.test.7149/0/image0/var/pkg/publisher/test/certs/0ce15c572961b7a0413b8390c90b7cac18ee9010
+    has been modified on disk. Its hash value is not what was expected.
+
 The error above means what it says.  The certificate at the provided path is
 used to verify the package being installed but the hash of the contents on disk
 don't match what the signature action thought they should be.  This indicates
@@ -231,11 +273,14 @@ redownload the certificate.
 
 
 Example 7:
--------------------------------------------------------------------------------
-pkg install: This certificate was revoked:/C=US/ST=California/L=Menlo Park/O=pkg5/CN=cs1_ch1_ta4/emailAddress=cs1_ch1_ta4 for this reason:
-None
-The package involved is:pkg://test/example_pkg@1.0,5.11-0:20110919T205539Z
--------------------------------------------------------------------------------
+
+    pkg install: This certificate was revoked:
+    /C=US/ST=California/L=Menlo Park/O=pkg5/CN=cs1_ch1_ta4/emailAddress=cs1_ch1_ta4
+    for this reason: None
+    The package involved is: pkg://test/example_pkg@1.0,5.11-0:20110919T205539Z
+
 The error above indicates the certificate in question, which was in the chain of
 trust for the package to be installed, was revoked by the issuer of the
 certificate.
+
+

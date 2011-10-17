@@ -1,8 +1,34 @@
+.. CDDL HEADER START
 
-	Chapter 14, Package Republication, describes how administrators
-	can modify existing packages if needed for local conditions.
+.. The contents of this file are subject to the terms of the
+   Common Development and Distribution License (the "License").
+   You may not use this file except in compliance with the License.
 
-Occasitionally administrators may wish or need to override attributes
+.. You can obtain a copy of the license at usr/src/OPENSOLARIS.LICENSE
+   or http://www.opensolaris.org/os/licensing.
+   See the License for the specific language governing permissions
+   and limitations under the License.
+
+.. When distributing Covered Code, include this CDDL HEADER in each
+   file and include the License file at usr/src/OPENSOLARIS.LICENSE.
+   If applicable, add the following below this CDDL HEADER, with the
+   fields enclosed by brackets "[]" replaced with your own identifying
+   information: Portions Copyright [yyyy] [name of copyright owner]
+
+.. CDDL HEADER END
+
+.. Copyright (c) 2011, Oracle and/or its affiliates. All rights reserved.
+
+Chapter 14
+----------
+
+Package Republication
+.....................
+
+This chapter describes how administrators can modify existing packages if needed
+for local conditions.
+
+Occasionally administrators may wish or need to override attributes
 or modify packages they did not produce.  This may be to replace a
 portion of the package with an internal implementation, or something
 as simple as removing binaries not permitted on systems.  While other
@@ -12,7 +38,7 @@ with the desired modifications; this makes upgrade much easier since
 new versions can be re-published with the same modifications.  It also
 allows the rest of the packaging system to function normally since
 instead of forcing IPS to ignore changes, we just change the
-packages from the begining.
+packages from the beginning.
 
 Of course, running a system with a republished package may cause
 issues with the support organization if any connection is suspected
@@ -29,37 +55,43 @@ The basic steps are as follows:
  2) Use pkgmogrify to modify the manifest in the desired manner.
     In order to prevent problems with machines caching package
     manifests, we always recommend deleting the timestamp from
-    the internal package fmri.
+    the internal package FMRI.
 
     If changes are significant, running the resulting package 
-    through pkglint as shown in chapter 4 is a good idea.
+    through pkglint as shown in *Chapter 4* is a good idea.
 
  3) Republish the package with pkgsend.  Note that this republication
     will strip the package of any signatures that are present; to
     prevent a (harmless) warning message you may wish to remove
     signature actions in the pkgmogrify step.
 
+    If the administrator doesn't have permission to publish to the
+    original source of the package, they can create a repository with
+    ``pkgrepo``, then use ``pkg set-publisher --search-before=<original>``
+    to have the client look for packages from new repository, before
+    falling back to the original publisher.
+
  4) Optionally, sign the package so that internal processes can be 
     followed.
 
 Here's an simple manual example, where we change the pkg.summary field
-to be "IPS has lots of features" instead of whatever was there originally:
+to be "IPS has lots of features" instead of whatever was there originally,
+and republish to our new repository::
 
-  % mkdir republish; cd republish
-  % pkgrecv -d . --raw -s http://pkg.oracle.com/solaris/release package/pkg
-  % cd package*    # package name contains a '/', and is url-encoded.
-  % cd *           # we pulled down just the latest package by default
-  % cat > fix-pkg
-  # change value of pkg.summary
-  <transform set name=pkg.summary -> edit value '.*' "IPS has lots of features">
-  # delete any signature actions
-  <transform signature -> drop>
-  # remove timestamp from fmri so we get our own
-  <transform set name=pkg.fmri -> edit value ":20.+" "">
-  ^D
-  % pkgmogrify manifest fix-pkg > new-manifest
-  % pkgrepo create ./mypkg
-  % pkgrepo -s ./mypkg add-publisher solaris
-  % pkgsend -s ./mypkg publish -d . new-manifest
-
+    $ mkdir republish; cd republish
+    $ pkgrecv -d . --raw -s http://pkg.oracle.com/solaris/release package/pkg
+    $ cd package*    # package name contains a '/', and is url-encoded.
+    $ cd *           # we pulled down just the latest package by default
+    $ cat > fix-pkg
+    # change value of pkg.summary
+    <transform set name=pkg.summary -> edit value '.*' "IPS has lots of features">
+    # delete any signature actions
+    <transform signature -> drop>
+    # remove timestamp from fmri so we get our own
+    <transform set name=pkg.fmri -> edit value ":20.+" "">
+    ^D
+    $ pkgmogrify manifest fix-pkg > new-manifest
+    $ pkgrepo create ./mypkg
+    $ pkgrepo -s ./mypkg add-publisher solaris
+    $ pkgsend -s ./mypkg publish -d . new-manifest
   

@@ -1,0 +1,16 @@
+169c169
+<             get_language (self.language, None)
+---
+>             get_language (self.language)
+173c173
+<                 get_language (language, None)
+---
+>                 get_language (language)
+249c249
+<                 self.docutils_languages[lang] = get_language(lang, None)
+---
+>                 self.docutils_languages[lang] = get_language(lang)
+253c253
+<                          get_language(lang.split('_', 1)[0], None)
+---
+>                          get_language(lang.split('_', 1)[0])
