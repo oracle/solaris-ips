@@ -908,7 +908,7 @@ class _RepoStore(object):
                                 # parts will get written out, but old ones could
                                 # be lost.
                                 shutil.rmtree(tmp_cat_root)
-                                shutil.copytree(old_cat_root, tmp_cat_root)
+                                misc.copytree(old_cat_root, tmp_cat_root)
 
                         # Ensure the permissions on the new temporary catalog
                         # directory are correct.

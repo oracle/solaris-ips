@@ -2611,7 +2611,7 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                                 # Must copy the old catalog data to the new
                                 # destination as only changed files will be
                                 # written.
-                                shutil.copytree(cat.meta_root, cpath)
+                                misc.copytree(cat.meta_root, cpath)
                                 cat.meta_root = cpath
                                 cat.finalize(pfmris=added)
                                 cat.save()
@@ -3672,7 +3672,7 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
 
                 orig = os.path.normpath(os.path.join(self.root, path))
 
-                shutil.move(orig, sdir)
+                misc.move(orig, sdir)
                 # remove current mountpoint from sdir
                 if not full_path:
                         sdir.replace(self.root, "", 1)
@@ -3683,7 +3683,7 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                 "salvage-from" directive... full_dest_path must exist."""
                 source_path = os.path.normpath(os.path.join(self.root, local_spath))
                 for file_name in os.listdir(source_path):
-                        shutil.move(os.path.join(source_path, file_name),
+                        misc.move(os.path.join(source_path, file_name),
                             os.path.join(full_dest_path, file_name))
 
         def temporary_dir(self):

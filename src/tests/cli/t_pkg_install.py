@@ -34,6 +34,7 @@ import os
 import platform
 import re
 import shutil
+import socket
 import stat
 import time
 import unittest
@@ -1539,6 +1540,12 @@ class TestPkgInstallUpgrade(pkg5unittest.SingleDepotTestCase):
             close
         """
 
+        salvage_special = """
+            open salvage-special@1.0
+            add dir path=salvage mode=755 owner=root group=root
+            close
+        """
+
         misc_files1 = [
             "tmp/amber1", "tmp/amber2", "tmp/bronzeA1",  "tmp/bronzeA2",
             "tmp/bronze1", "tmp/bronze2",
@@ -2340,6 +2347,24 @@ adm
                 self.file_exists("var/.migrate-to-shared/mail/foo")
                 self.file_exists("var/.migrate-to-shared/mail/bar")
                 self.file_exists("var/.migrate-to-shared/mail/baz")
+
+        def test_special_salvage(self):
+                """Make sure salvaging directories with special files works as
+                expected."""
+                self.pkgsend_bulk(self.rurl, self.salvage_special)
+                self.image_create(self.rurl, destroy=True, fs=("var",))
+
+                self.pkg("install salvage-special")
+
+                os.mkfifo(os.path.join(self.img_path(), "salvage", "fifo"))
+                sock = socket.socket(socket.AF_UNIX)
+                sock.bind(os.path.join(self.img_path(), "salvage", "socket"))
+                sock.close()
+                # We would also create block and character special files, but
+                # os.mknod() isn't available due to a python configuration bug.
+
+                # This could hang reading fifo, or keel over reading socket.
+                self.pkg("uninstall salvage-special")
 
         def dest_file_valid(self, plist, pkg, src, dest):
                 """Used to verify that the dest item's mode, attrs, timestamp,

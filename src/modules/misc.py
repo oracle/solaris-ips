@@ -35,7 +35,8 @@ import platform
 import re
 import shutil
 import simplejson as json
-import stat
+import socket
+from stat import *
 import struct
 import sys
 import time
@@ -107,6 +108,91 @@ def copyfile(src_path, dst_path):
         except OSError, e:
                 if e.errno != errno.EPERM:
                         raise
+
+def copytree(src, dst):
+        """Rewrite of shutil.copytree() that can handle special files such as
+        FIFOs, sockets, and device nodes.  It re-creates all symlinks rather
+        than copying the data behind them, and supports neither the 'symlinks'
+        nor the 'ignore' keyword arguments of the shutil version.
+        """
+
+        os.makedirs(dst, PKG_DIR_MODE)
+        src_stat = os.stat(src)
+        for name in sorted(os.listdir(src)):
+                s_path = os.path.join(src, name)
+                d_path = os.path.join(dst, name)
+                s = os.lstat(s_path)
+                if S_ISDIR(s.st_mode):
+                        copytree(s_path, d_path)
+                        os.chmod(d_path, S_IMODE(s.st_mode))
+                        os.chown(d_path, s.st_uid, s.st_gid)
+                        os.utime(d_path, (s.st_atime, s.st_mtime))
+                elif S_ISREG(s.st_mode):
+                        shutil.copyfile(s_path, d_path)
+                        os.chmod(d_path, S_IMODE(s.st_mode))
+                        os.chown(d_path, s.st_uid, s.st_gid)
+                        os.utime(d_path, (s.st_atime, s.st_mtime))
+                elif S_ISLNK(s.st_mode):
+                        os.symlink(os.readlink(s_path), d_path)
+                elif S_ISFIFO(s.st_mode):
+                        os.mkfifo(d_path, S_IMODE(s.st_mode))
+                        os.chown(d_path, s.st_uid, s.st_gid)
+                        os.utime(d_path, (s.st_atime, s.st_mtime))
+                elif S_ISSOCK(s.st_mode):
+                        sock = socket.socket(socket.AF_UNIX)
+                        sock.bind(d_path)
+                        sock.close()
+                        os.chown(d_path, s.st_uid, s.st_gid)
+                        os.utime(d_path, (s.st_atime, s.st_mtime))
+                elif S_ISCHR(s.st_mode) or S_ISBLK(s.st_mode):
+                        if hasattr(os, "mknod"):
+                                os.mknod(d_path, mode=s.st_mode,
+                                    device=s.st_dev)
+                                os.chown(d_path, s.st_uid, s.st_gid)
+                                os.utime(d_path, (s.st_atime, s.st_mtime))
+                elif S_IFMT(s.st_mode) == 0xd000: # doors
+                        pass
+                elif S_IFMT(s.st_mode) == 0xe000: # event ports
+                        pass
+                else:
+                        print "unknown file type:", oct(S_IFMT(s.st_mode))
+
+        os.chmod(dst, S_IMODE(src_stat.st_mode))
+        os.chown(dst, src_stat.st_uid, src_stat.st_gid)
+        os.utime(dst, (src_stat.st_atime, src_stat.st_mtime))
+
+def move(src, dst):
+        """Rewrite of shutil.move() that uses our copy of copytree()."""
+
+        # If dst is a directory, then we try to move src into it.
+        if os.path.isdir(dst):
+                dst = os.path.join(dst,
+                    os.path.basename(src).rstrip(os.path.sep))
+
+        try:
+                os.rename(src, dst)
+        except EnvironmentError, e:
+                s = os.lstat(src)
+
+                if e.errno == errno.EXDEV:
+                        if S_ISDIR(s.st_mode):
+                                copytree(src, dst)
+                                shutil.rmtree(src)
+                        else:
+                                shutil.copyfile(src, dst)
+                                os.chmod(dst, S_IMODE(s.st_mode))
+                                os.chown(dst, s.st_uid, s.st_gid)
+                                os.utime(dst, (s.st_atime, s.st_mtime))
+                                os.unlink(src)
+                elif e.errno == errno.EINVAL and S_ISDIR(s.st_mode):
+                        raise shutil.Error, "Cannot move a directory '%s' " \
+                            "into itself '%s'." % (src, dst)
+                elif e.errno == errno.ENOTDIR and S_ISDIR(s.st_mode):
+                        raise shutil.Error, "Destination path '%s' already " \
+                            "exists" % dst
+                else:
+                        raise
+
 def expanddirs(dirs):
         """given a set of directories, return expanded set that includes
         all components"""
@@ -856,10 +942,9 @@ EmptyDict = ImmutableDict()
 # gains on certain files.
 PKG_FILE_BUFSIZ = 128 * 1024
 
-PKG_FILE_MODE = stat.S_IWUSR | stat.S_IRUSR | stat.S_IRGRP | stat.S_IROTH
-PKG_DIR_MODE = (stat.S_IRWXU | stat.S_IRGRP | stat.S_IXGRP | stat.S_IROTH |
-    stat.S_IXOTH)
-PKG_RO_FILE_MODE = stat.S_IRUSR | stat.S_IRGRP | stat.S_IROTH
+PKG_FILE_MODE = S_IWUSR | S_IRUSR | S_IRGRP | S_IROTH
+PKG_DIR_MODE = (S_IRWXU | S_IRGRP | S_IXGRP | S_IROTH | S_IXOTH)
+PKG_RO_FILE_MODE = S_IRUSR | S_IRGRP | S_IROTH
 
 def relpath(path, start="."):
         """Version of relpath to workaround python bug:

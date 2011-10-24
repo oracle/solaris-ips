@@ -1598,7 +1598,21 @@ class Pkg5TestRunner(unittest.TextTestRunner):
                 subprocess.call(cmd)
                 print >> sys.stderr, "All spawned processes should be " \
                     "terminated, now cleaning up directories."
-                shutil.rmtree("/tmp/ips.test.%s" % os.getpid())
+
+                # Terminated test jobs may have mounted filesystems under their
+                # images and not told us about them, so we catch EBUSY, unmount,
+                # and keep trying.
+                finished = False
+                while not finished:
+                        try:
+                                shutil.rmtree("/tmp/ips.test.%s" % os.getpid())
+                        except OSError, e:
+                                if e.errno != errno.EBUSY:
+                                        raise
+                                subprocess.call(["/usr/sbin/umount", e.filename])
+                        else:
+                                finished = True
+
                 print >> sys.stderr, "Directories successfully removed."
                 sys.exit(1)
 
@@ -1927,6 +1941,9 @@ class Pkg5TestSuite(unittest.TestSuite):
                         if persistent_setup:
                                 test.set_debugbuf(rtest.get_debugbuf())
 
+                        for fs in getattr(rtest, "fs", ()):
+                                subprocess.call(["/usr/sbin/umount", fs])
+
                 if persistent_setup:
                         try:
                                 inst.reallytearDown()
@@ -2107,7 +2124,7 @@ class CliTestCase(Pkg5TestCase):
                     PKG_CLIENT_NAME, cmdpath=cmd_path)
                 return res
 
-        def image_create(self, repourl=None, destroy=True, **kwargs):
+        def image_create(self, repourl=None, destroy=True, fs=(), **kwargs):
                 """A convenience wrapper for callers that only need basic image
                 creation functionality.  This wrapper creates a full (as opposed
                 to user) image using the pkg.client.api and returns the related
@@ -2117,12 +2134,25 @@ class CliTestCase(Pkg5TestCase):
                         self.image_destroy()
                 mkdir_eexist_ok(self.img_path())
 
+                self.fs = set()
+
+                force = False
+                for path in fs:
+                        full_path = os.path.join(self.img_path(),
+                            path.lstrip(os.path.sep))
+                        os.makedirs(full_path)
+                        self.cmdline_run("/usr/sbin/mount -F tmpfs swap " +
+                            full_path)
+                        self.fs.add(full_path)
+                        if path.lstrip(os.path.sep) == "var":
+                                force = True
+
                 self.debug("image_create %s" % self.img_path())
                 progtrack = pkg.client.progress.NullProgressTracker()
                 api_inst = pkg.client.api.image_create(PKG_CLIENT_NAME,
                     CLIENT_API_VERSION, self.img_path(),
                     pkg.client.api.IMG_TYPE_ENTIRE, False, repo_uri=repourl,
-                    progtrack=progtrack,
+                    progtrack=progtrack, force=force,
                     **kwargs)
                 return api_inst
 
@@ -2130,7 +2160,7 @@ class CliTestCase(Pkg5TestCase):
             additional_args="", exit=0):
                 """Executes pkg(1) client to create a full (as opposed to user)
                 image; returns exit code of client or raises an exception if
-                exit code doesn't match 'exit' or equals 99.."""
+                exit code doesn't match 'exit' or equals 99."""
 
                 if repourl and prefix is None:
                         prefix = "test"
@@ -2164,6 +2194,9 @@ class CliTestCase(Pkg5TestCase):
                         self.debug("image_destroy %s" % self.img_path())
                         # Make sure we're not in the image.
                         os.chdir(self.test_root)
+                        for path in getattr(self, "fs", set()).copy():
+                                self.cmdline_run("/usr/sbin/umount " + path)
+                                self.fs.remove(path)
                         shutil.rmtree(self.img_path())
 
         def pkg(self, command, exit=0, comment="", prefix="", su_wrap=None,
