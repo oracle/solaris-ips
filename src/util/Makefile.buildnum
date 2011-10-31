@@ -62,7 +62,7 @@ TRUNKID= 175
 # The Solaris Update number.
 # The value must match the update number of the release.
 #
-UPDATENUM= 0
+UPDATENUM= 1
 
 #
 # Support Respository Update number. This is here to reserve space within the

@@ -72,7 +72,8 @@ $(sparc_ONLY)depend type=group fmri=driver/graphics/ast
 $(sparc_ONLY)depend type=group fmri=driver/graphics/efb
 depend type=group fmri=driver/infiniband/connectx
 depend type=group fmri=driver/infiniband/tavor
-$(i386_ONLY)depend type=group fmri=driver/management/bmc
+depend type=group fmri=driver/management/bmc
+depend type=group fmri=driver/management/ipmi
 depend type=group fmri=driver/network/ethernet/afe
 $(i386_ONLY)depend type=group fmri=driver/network/ethernet/amd8111s
 $(i386_ONLY)depend type=group fmri=driver/network/ethernet/atge

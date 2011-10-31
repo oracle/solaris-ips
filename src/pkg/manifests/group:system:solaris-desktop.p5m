@@ -108,7 +108,8 @@ $(i386_ONLY)depend type=group fmri=driver/graphics/nvidia
 depend type=group fmri=driver/graphics/usbvc
 depend type=group fmri=driver/ieee-1394/av1394
 depend type=group fmri=driver/ieee-1394/dcam1394
-$(i386_ONLY)depend type=group fmri=driver/management/bmc
+depend type=group fmri=driver/management/bmc
+depend type=group fmri=driver/management/ipmi
 depend type=group fmri=driver/network/ethernet/afe
 $(i386_ONLY)depend type=group fmri=driver/network/ethernet/amd8111s
 $(i386_ONLY)depend type=group fmri=driver/network/ethernet/atge

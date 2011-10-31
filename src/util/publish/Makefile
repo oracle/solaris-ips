@@ -84,6 +84,7 @@ ON_EXTRA_REPO=http://localhost:30000
 
 ON_EXTRA_CONTENT = \
     driver/management/bmc \
+    driver/management/ipmi \
     driver/storage/ifp \
     driver/storage/isp \
     shell/ksh88
