@@ -22,25 +22,26 @@
 Chapter 9
 ---------
 
-Using SMF to generate side effects
-..................................
+Causing System Change With SMF
+..............................
 
-This chapter explains how to use the Service Management Framework to
-automatically handle any necessary side effects of package installation.
+This chapter explains how to use the Service Management Facility (SMF) to
+automatically handle any necessary system changes that should occur as a result
+of package installation.
 
-The package developer must determine which actions, when initially installed or
-changed, should cause a side effect to the system.  For each of those actions,
-the package developer needs to determine which existing service provides the
-desired side effect, or write a new service which provides the needed
-functionality and ensure that service is delivered to the system.
+The package developer must determine which actions, when initially installed,
+updated or removed should cause a change to the system.  For each of those
+actions, the package developer needs to determine which existing service
+provides the desired system change, or write a new service which provides the
+needed functionality and ensure that service is delivered to the system.
 
 When the set of actions has been determined, those actions must be tagged in
-the package manifest with the correct *actuator* in order to cause that side
-effect to be trigged.
+the package manifest with the correct *actuator* in order to cause that system
+change to occur.
 
-As discussed in *Chapter 1* some side effects will be needed to employ the
-*software self-assembly* concept used by Solaris and IPS, but they are not
-limited to this role.
+As discussed in *Chapter 1*, some system changes are needed to employ the
+*software self-assembly* concept used by Oracle Solaris and IPS, but system
+changes are not limited to this role.
 
 We'll discuss the available actuators in the next section and then provide some
 examples.
@@ -52,57 +53,58 @@ The following tags can be added to any action in a manifest:
 
 reboot-needed
 `````````````
-This actuator takes the value 'true' or 'false', declaring that installation,
-removal or update of the tagged action should require a reboot when IPS is
-operating on a live image.
+This actuator takes the value ``true`` or ``false``. This actuator declares
+that installation, removal or update of the tagged action requires a
+reboot when IPS is operating on a live image.
 
 
 The following actuators are related to SMF services, and are the ones we will
 focus on in this chapter.
 
-SMF actuators
+SMF Actuators
 `````````````
-The actuators take a single SMF FMRI as a value, possibly including globbing
+SMF actuators take a single SMF FMRI as a value, possibly including globbing
 characters to match multiple FMRIs.  If the same FMRI is tagged by multiple
 actions, possibly across multiple packages being operated on, IPS will only
 trigger that actuator once.
 
-We will list the actuators below:
+The following list of SMF actuators describes the effect on the service FMRI
+that is the value of each named actuator:
 
   disable_fmri
-         A service that should be disabled prior to the package operation
+         The given service should be disabled prior to the package operation
          being performed
 
   refresh_fmri
-         A service that should be refreshed after the package operation has
+         The given service should be refreshed after the package operation has
          completed
 
   restart_fmri
-         A service that should be restarted after the package operation has
+         The given service should be restarted after the package operation has
          completed
 
   suspend_fmri
-         A service that should be temporarily suspended prior to the package
+         The given service should be temporarily suspended prior to the package
          operation and enabled once it has completed
 
 
 Delivering an SMF Service
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 
-A common example of needing a side effect, is when a package delivers a new SMF
-service.  The package delivers the SMF manifest file and method script and the
-packaged application requires that the SMF service it delivers must be available
+A package that delivers a new SMF service usually needs a system change.  The
+package delivers the SMF manifest file and method script, and the packaged
+application requires that the SMF service it delivers must be available
 after package installation.
 
-In older Solaris releases, SVR4 post-install scripting would run an SMF command
-to restart the ``svc:/system/manifest-import:default`` service.
+In older Oracle Solaris releases, SVR4 post-install scripting would run an SMF
+command to restart the ``svc:/system/manifest-import:default`` service.
 
 In IPS, the action delivering the manifest file into ``lib/svc/manifest`` or
-``var/svc/manifest`` should instead be tagged with an actuator,
+``var/svc/manifest`` should instead be tagged with the actuator:
 ``restart_fmri=svc:/system/manifest-import:default``.
 
 The actuator ensures that when the manifest is added, updated, or removed, the
-``manifest-import`` service is restarted causing the service delivered by that
+``manifest-import`` service is restarted, causing the service delivered by that
 SMF manifest to be added, updated, or removed.
 
 If the package is added to a live-system, this action is performed once all
@@ -110,11 +112,137 @@ packages have been added to the system during that packaging operation.  If the
 package is added to an alternate boot environment, this action is performed
 during the first boot of that boot environment.
 
+A Service That Runs Once
+~~~~~~~~~~~~~~~~~~~~~~~~
 
-XXX the following section names are bad, need to rename.  May need more examples
+Another common example is a system change that performs one-time configuration
+of the new software environment.
 
-A service that runs once on boot, then deletes itself
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+In the package delivering our application, we would include the following
+actions::
 
-XXX need content, and look for a good example
+    file path=opt/myapplication/bin/run-once.sh owner=root group=sys mode=0755
+    file path=lib/svc/manifest/application/myapplication-run-once.xml owner=root group=sys \
+        mode=0644 restart_fmri=svc:/system/manifest-import:default
+
+The SMF method script for the service could contain anything that is needed to
+further configure our application, or modify the system so that our application
+runs efficiently.  In this example, we'll just have it write a simple log
+message.
+
+Generally, we also want to ensure that the SMF service only performs work if the
+application has not already been configured.
+Another approach would be to package the service separate from the application
+itself, then have the method script remove the package that contains the
+service.
+
+Our method script is::
+
+    #!/usr/bin/sh
+    . /lib/svc/share/smf_include.sh
+    assembled=$(/usr/bin/svcprop -p config/assembled $SMF_FMRI)
+    if [ "$assembled" == "true" ] ; then
+        exit $SMF_EXIT_OK
+    fi
+    svccfg -s $SMF_FMRI setprop config/assembled = true
+    svccfg -s $SMF_FMRI refresh
+    echo "This is output from our run-once method script"
+
+When testing a method script, it is advisable to run ``pkg verify``
+before and after installing the package that runs the actuator.
+Compare the output of each run to ensure that the script doesn't attempt to
+modify any files that are not marked as editable.
+
+.. raw:: pdf
+
+    PageBreak
+
+Our SMF service manifest is::
+
+    <?xml version="1.0"?>
+    <!DOCTYPE service_bundle SYSTEM "/usr/share/lib/xml/dtd/service_bundle.dtd.1">
+
+    <service_bundle type='manifest' name='MyApplication:run-once'>
+
+    <service
+        name='application/myapplication/run-once'
+        type='service'
+        version='1'>
+
+        <single_instance />
+
+        <dependency
+            name='fs-local'
+            grouping='require_all'
+            restart_on='none'
+            type='service'>
+                <service_fmri value='svc:/system/filesystem/local:default' />
+        </dependency>
+
+        <dependent
+                name='myapplication_self-assembly-complete'
+                grouping='optional_all'
+                restart_on='none'>
+                <service_fmri value='svc:/milestone/self-assembly-complete' />
+        </dependent>
+        <instance enabled='true' name='default'>
+                <exec_method
+                    type='method'
+                    name='start'
+                    exec='/opt/myapplication/bin/run-once.sh'
+                    timeout_seconds='0'/>
+
+                <exec_method
+                    type='method'
+                    name='stop'
+                    exec=':true'
+                    timeout_seconds='0'/>
+
+                <property_group name='startd' type='framework'>
+                    <propval name='duration' type='astring' value='transient' />
+                </property_group>
+
+                <property_group name='config' type='application'>
+                    <propval name='assembled' type='boolean' value='false' />
+                </property_group>
+        </instance>
+    </service>
+    </service_bundle>
+
+
+Note that the SMF service has a ``startd/duration`` property set to
+``transient`` so that |svc.startd| doesn't track processes for this service.
+Also note that it adds itself as a dependency to the ``self-assembly-complete``
+system milestone.
+
+
+
+Self-Assembly Hints
+~~~~~~~~~~~~~~~~~~~
+
+Here are some additional hints when writing SMF methods to support
+self-assembly:
+
+Timestamps
+``````````
+In an SMF method script, it can be efficient to use the output of ``ls -t`` on a
+directory of packaged configuration file fragments, using ``head -1`` to select
+the most recently changed version.  The timestamp of this file can be compared
+with the timestamp of the unpackaged configuration file which is compiled from
+those fragments.  This comparison can be used when deciding whether the service
+needs to recompile the configuration file.
+
+This can be useful if the process of compiling a configuration file from those
+fragments is expensive to perform each time the method script runs.
+
+Timeouts
+````````
+In the example SMF service used in this chapter, we had a ``timeout_seconds``
+value of ``0`` for the start method.  This means that SMF will wait indefinitely
+for self-assembly to complete.
+
+Depending on circumstances, developers might want to impose a finite timeout on
+their self-assembly processes, enabling SMF to drop the service to
+``maintenance`` if something goes wrong.  This can assist the developer when
+debugging.
 

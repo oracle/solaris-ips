@@ -22,19 +22,199 @@
 Chapter 13
 ----------
 
-Solaris and IPS
-...............
+How IPS Features Are Used when Packaging the Oracle Solaris OS
+..............................................................
 
-This chapter describes how Oracle use IPS to package Solaris, and how the
-various dependency types are used to define working package sets for Solaris.
+This chapter describes how Oracle uses IPS to package Oracle Solaris, and how
+the various dependency types are used to define working package sets for the OS.
 
-XXX Explain our use of incorporations and version-locks
+We include this chapter to give another concrete example of how IPS can be used
+to manage a complex set of software, and talk about some of the IPS features
+that were used.
 
-XXX Explain the Solaris versioning scheme (cited in Chapter 4) in particular,
-why we went with the very long version strings, eg.
-pkg://solaris/entire@0.5.11,5.11-0.175.0.0.0.0.0:20110927T200857Z
+Versioning
+~~~~~~~~~~
 
-XXX Items below taken from from tags-and-attributes.txt, we may need more here
+In *Chapter 3* we discussed the ``pkg.fmri`` attribute, and talked about the
+different components of the version field, describing how the version field can
+be used to support different models of software development.
+
+This section explains how Oracle Solaris uses the version field, and is provided
+to give an insight into the reasons why a fine-grained versioning scheme can be
+useful.  Developers **do not** have to follow the same versioning scheme as
+Oracle Solaris.
+
+Given a sample package::
+
+    pkg://solaris/system/core-os@0.5.11,5.11-0.175.0.0.0.2.1:20111019T070457Z
+
+This is how the version field ``0.5.11,5.11-0.175.0.0.0.2.1:20111019T070457Z``
+is broken down:
+
+    0.5.11
+        The component version.  For packages that are parts of Oracle Solaris,
+        this is the OS major.minor version.  For packages developed outside,
+        this is the upstream version. For example, the Apache Web Server in the
+        package:
+
+        ``pkg:/web/server/apache-22@2.2.20,5.11-0.175.0.0.0.2.537:20111019T122323Z``
+
+        has the component version 2.2.20.
+
+    5.11
+        This is the build version.  This is used to define the OS release that
+        this package was built for and should always be 5.11 for packages created
+        for Oracle Solaris 11.
+
+    0.175.0.0.0.2.1
+        This is the branch version. Oracle Solaris uses the following notation
+        for the branch version in this release:
+
+            * 0.175: Trunk identifier
+            * 0: Which Oracle Solaris Update this package is part of
+            * 0: The SRU (suppport repository update) number
+            * 0: The platform number, unused at present, but reserved for future use
+            * 2: The build ID, used to indicate the build or respin
+            * 1: The nightly ID
+
+    20111019T070457Z
+        This is the timestamp, defined when the package was published.
+
+
+Incorporations
+~~~~~~~~~~~~~~
+
+Oracle Solaris is delivered by a set of packages, with each group of packages
+constrained by an incorporation.
+
+Each incorporation roughly represents the organization that developed each
+group of packages, though there are some cross-incorporation dependencies
+within the packages themselves.  The following is a list of the incorporation
+packages in Oracle Solaris:
+
+    * ``pkg:/consolidation/SunVTS/SunVTS-incorporation``
+    * ``pkg:/consolidation/X/X-incorporation``
+    * ``pkg:/consolidation/admin/admin-incorporation``
+    * ``pkg:/consolidation/cacao/cacao-incorporation``
+    * ``pkg:/consolidation/cde/cde-incorporation``
+    * ``pkg:/consolidation/cns/cns-incorporation``
+    * ``pkg:/consolidation/dbtg/dbtg-incorporation``
+    * ``pkg:/consolidation/desktop/desktop-incorporation``
+    * ``pkg:/consolidation/desktop/gnome-incorporation``
+    * ``pkg:/consolidation/gfx/gfx-incorporation``
+    * ``pkg:/consolidation/install/install-incorporation``
+    * ``pkg:/consolidation/ips/ips-incorporation``
+    * ``pkg:/consolidation/java/java-incorporation``
+    * ``pkg:/consolidation/jdmk/jdmk-incorporation``
+    * ``pkg:/consolidation/l10n/l10n-incorporation``
+    * ``pkg:/consolidation/ldoms/ldoms-incorporation``
+    * ``pkg:/consolidation/man/man-incorporation``
+    * ``pkg:/consolidation/nspg/nspg-incorporation``
+    * ``pkg:/consolidation/nvidia/nvidia-incorporation``
+    * ``pkg:/consolidation/osnet/osnet-incorporation``
+    * ``pkg:/consolidation/sfw/sfw-incorporation``
+    * ``pkg:/consolidation/sic_team/sic_team-incorporation``
+    * ``pkg:/consolidation/solaris_re/solaris_re-incorporation``
+    * ``pkg:/consolidation/sunpro/sunpro-incorporation``
+    * ``pkg:/consolidation/ub_javavm/ub_javavm-incorporation``
+    * ``pkg:/consolidation/userland/userland-incorporation``
+    * ``pkg:/consolidation/vpanels/vpanels-incorporation``
+    * ``pkg:/consolidation/xvm/xvm-incorporation``
+
+Each of these incorporations includes:
+
+    * general package metadata
+    * ``incorporate`` dependencies, sometimes with ``variant.arch`` variants
+      to denote dependencies that are specific to a given architecture
+    * a ``license`` action that ensures that when the incorporation is
+      installed, a license is displayed
+
+Each of the packages delivered on the system contains a ``require`` dependency
+on one of these incorporations.
+
+Oracle Solaris also includes a special incorporation called ``entire``.
+
+The ``entire`` incorporation constrains all of the individual incorporations
+together to the same build, by including both ``require`` and ``incorporate``
+dependencies on each incorporation package, effectively defining a
+*software surface*, such that all packages of Oracle Solaris get upgraded as a
+single group, or not at all.
+
+
+facet.version-lock.*
+~~~~~~~~~~~~~~~~~~~~
+
+Some of the incorporations, listed above use ``facet.version-lock.*`` facets,
+which were discussed in *Chapter 6*.
+
+For example, looking at the ``pkg:/consolidation/userland/userland-incorporation``
+package, we see::
+
+    .
+    .
+    depend type=incorporate \
+        fmri=pkg:/library/python-2/subversion@1.6.16-0.175.0.0.0.2.537 \
+        facet.version-lock.library/python-2/subversion=true
+    depend type=incorporate \
+        fmri=pkg:/library/security/libassuan@2.0.1-0.175.0.0.0.2.537 \
+        facet.version-lock.library/security/libassuan=true
+    depend type=incorporate \
+        fmri=pkg:/library/security/openssl/openssl-fips-140@1.2-0.175.0.0.0.2.537 \
+        facet.version-lock.library/security/openssl/openssl-fips-140=true
+    depend type=incorporate fmri=pkg:/mail/fetchmail@6.3.21-0.175.0.0.0.2.537 \
+        facet.version-lock.mail/fetchmail=true
+    depend type=incorporate \
+        fmri=pkg:/network/chat/ircii@0.2006.7.25-0.175.0.0.0.2.537 \
+        facet.version-lock.network/chat/ircii=true
+    depend type=incorporate \
+        fmri=pkg:/print/cups/filter/foomatic-db-engine@0.20080903-0.175.0.0.0.2.537 \
+        facet.version-lock.print/cups/filter/foomatic-db-engine=true
+    depend type=incorporate \
+        fmri=pkg:/print/filter/gutenprint@5.2.4-0.175.0.0.0.2.537 \
+        facet.version-lock.print/filter/gutenprint=true
+    depend type=incorporate fmri=pkg:/runtime/erlang@12.2.5-0.175.0.0.0.2.537 \
+        facet.version-lock.runtime/erlang=true
+    .
+    .
+    etc.
+
+enabling the administrator to allow certain packages to float free from the
+constraints of the incorporation package.
+
+Notably, the ``entire`` package also contains version-lock facets, allowing
+specific incorporations to be removed.  However, this can result in a system
+which is not covered by support, and those packages should only be unlocked
+on advice from Oracle support personnel.
+
+.. raw:: pdf
+
+    PageBreak
+
+Group Packages
+~~~~~~~~~~~~~~
+
+Oracle Solaris defines several *group packages* which contain a series
+of ``group`` dependencies (discussed in *Chapter 6*) enabling convenient
+installation of common sets of packages.
+
+The following is a list of the group packages in Oracle Solaris:
+
+    * ``pkg:/group/feature/amp``
+    * ``pkg:/group/feature/developer-gnu``
+    * ``pkg:/group/feature/multi-user-desktop``
+    * ``pkg:/group/feature/storage-avs``
+    * ``pkg:/group/feature/storage-nas``
+    * ``pkg:/group/feature/storage-server``
+    * ``pkg:/group/feature/trusted-desktop``
+    * ``pkg:/group/system/solaris-auto-install``
+    * ``pkg:/group/system/solaris-desktop``
+    * ``pkg:/group/system/solaris-large-server``
+    * ``pkg:/group/system/solaris-small-server``
+
+One group package in particular is interesting, ``solaris-small-server``, as
+it is used in the default AI manifest
+(``/usr/share/auto_install/manifest/zone_default.xml``) used to install
+``solaris(5)`` zones.
 
 
 Informational attributes
@@ -45,7 +225,7 @@ but having a shared convention lowers confusion between publishers and
 users.
 
     info.classification
-       See *Chapter 3* under "Set actions".
+       See *Chapter 3* under "Set actions", and *Appendix A*.
 
     info.keyword
        A list of additional terms that should cause this package to be
@@ -79,39 +259,33 @@ users.
        A changeset ID for the version of the source code contained in
        info.repository-url.
 
-Solaris attributes
-~~~~~~~~~~~~~~~~~~
+Oracle Solaris Attributes
+~~~~~~~~~~~~~~~~~~~~~~~~~
 
     org.opensolaris.arc-caseid
         One or more case identifiers (e.g., PSARC/2008/190) associated with
-        the ARC case or cases associated with the component(s) delivered by
-        the package.
+        the ARC case (Architecture Review Committee) or cases associated with the
+        component delivered by the package.
 
     org.opensolaris.smf.fmri
-        One or more FMRI's representing SMF services delivered by this
-        package.   Automatically generated by pkgdepend(1) for packages
-        containing SMF service manifests.
+        One or more FMRIs representing SMF services delivered by this
+        package.   These attributes are automatically generated by |pkgdepend|
+        for packages containing SMF service manifests.
 
-    opensolaris.zone
-        Obsolete - replaced by variant.opensolaris.zone.
-
-    variant.opensolaris.zone
-        See facets.txt
-
-Solaris tags
-~~~~~~~~~~~~
+Oracle Solaris Tags
+~~~~~~~~~~~~~~~~~~~
 
     variant.opensolaris.zone
         See *Chapter 12*
 
-Organization specific attributes
+Organization Specific Attributes
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-    Organizations wishing to provide a package with additional metadata
+    Organizations wanting to provide a package with additional metadata
     or to amend an existing package's metadata (in a repository that
     they have control over) must use an organization-specific prefix.
     For example, a service organization might introduce
-    "service.example.com,support-level" or
-    "com.example.service,support-level" to describe a level of support
+    ``service.example.com,support-level`` or
+    ``com.example.service,support-level`` to describe a level of support
     for a package and its contents.
 

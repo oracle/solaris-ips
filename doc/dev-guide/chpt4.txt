@@ -27,37 +27,37 @@ Packaging Software with IPS
 
 This chapter describes how to package your software with IPS.  
 
-Packaging software with IPS is often relatively straightforward due to 
-amount of automation that is provided; the goal has been as much
-as possible to avoid repetitive tedium since that seems to be the
-principle cause of most packaging bugs.
+Packaging software with IPS is usually straightforward due to
+amount of automation that is provided.  Automation avoids
+repetitive tedium since that seems to be the principle cause
+of most packaging bugs.
 
 Publication in IPS consists of the following steps:
 
-* generate a package manifest
-* add necessary metadata to to the generated manifest
-* evaluate dependencies
-* add any facets or actuators that are needed
-* check the package with pkglint
-* publish the package
-* test the package
+1. Generate a package manifest.
+2. Add necessary metadata to the generated manifest.
+3. Evaluate dependencies.
+4. Add any facets or actuators that are needed.
+5. Verify the package.
+6. Publish the package.
+7. Test the package.
 
-We'll walk through these steps in the following sections.
+Each step is covered in the following sections.
 
-Generate a package manifest
+Generate a Package Manifest
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-The easiest way to get started is to lay out the software in the
-fashion you wish it installed in a directory.
+The easiest way to get started is to organize the component files into the same
+directory structure that you want on the installed system.
 
-This can be done with install target in Makefiles, or if the software
-you wish to package is already in a tarball, unpacking the tarball
+This can be done with ``install`` target in Makefiles, or if the software
+you want to package is already in a tarball, unpacking the tarball
 into a subdirectory.  For many open source software packages that use
-autoconf(1), setting the DESTDIR environment variable to point to the
-desired prototype area will accomplish this.
+``autoconf(1)``, setting the DESTDIR environment variable to point to the
+desired prototype area accomplishes this.
 
 Suppose your software consists of a binary, a library and a man page,
-and you wish to install this software in a directory under /opt named
+and you want to install this software in a directory under ``/opt`` named
 ``mysoftware``.  You should create a directory (named ``proto`` in the
 examples) in your build area under which your software appears; e.g::
 
@@ -65,9 +65,9 @@ examples) in your build area under which your software appears; e.g::
    proto/opt/mysoftware/bin/mycmd
    proto/opt/mysoftware/man/man1/mycmd.1
 
-Now, let's generate a manifest for this proto area.  We'll pipe it
-through pkgfmt to format the manifest more nicely for humans. Assuming
-that the proto directory is in the current working directory::
+Now, let's generate a manifest for this proto area.  We pipe it
+through |pkgfmt| to format the manifest so that is more readable. Assuming
+that the ``proto`` directory is in the current working directory::
 
   $ pkgsend generate proto | pkgfmt > mypkg.p5m.1
 
@@ -75,7 +75,7 @@ that the proto directory is in the current working directory::
 
     PageBreak
 
-Examining the file, you'll see it contains the following lines::
+Examining the file, you will see it contains the following lines::
 
   dir path=opt group=bin mode=0755 owner=root
   dir path=opt/mysoftware group=bin mode=0755 owner=root
@@ -90,70 +90,66 @@ Examining the file, you'll see it contains the following lines::
   file opt/mysoftware/man/man1/mycmd.1 path=opt/mysoftware/man/man1/mycmd.1 \
       group=bin mode=0644 owner=root
 
-You'll notice that path of the files to be packages appears
-twice - once in the *path=...* attribute, and once as the positional
-second attribute.  The latter describes the path in the proto area,
-the former the location the file is to be installed.  This double
-entry allows one to modify the installation location without requiring
-the proto area to be modified to match; this can save significant
-amounts of effort when repackaging open source software when
-the install locations are defined for another operating system.
+The path of the files to be packaged appears twice in the file action:
 
-Also, note that pkgsend generate has picked defaults for directory
-owners and groups.  In the case of /opt, the defaults are not correct;
-we'll just delete that directory since it's delivered by other packages
-already on the system.
+  * The first word after the word ‘``file``’ describes the location
+    of the file in the proto area.
 
-Add necessary metadata to to the generated manifest
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  * The path in the ‘``path=``’ attribute specifies the location
+    where the file is to be installed.
 
-We also need to define several important pieces of metadata, expressed
-as set actions, that should appear in every package:
+This double entry enables you to modify the installation location without
+modifying the ``proto`` area. This capability can save significant time, for example
+if you repackage software that was designed for installation on a different
+operating system.
 
-* ``pkg.fmri`` defines the name and version of the package as described
-  in *Chapter 3*.  Discussion about version numbering can be seen
-  in *Chapter 5* (XXX huh, not sure what was intended there?) and a
-  description of Solaris versioning can found in *Chapter 13* (XXX that needs
-  content)
+Also, note that ``pkgsend generate`` has applied defaults for directory
+owners and groups.  In the case of ``/opt``, the defaults are not correct;
+we'll just delete that directory, since it's delivered by other packages
+already on the system and |pkg| would not install the package if the
+attributes of ``/opt`` conflicted with those already on the system.
 
-* ``pkg.description`` is a proper description of the contents of the
+
+Add Necessary Metadata to the Generated Manifest
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+A package should define the following metadata.
+See also "Set Actions" in *Chapter 3*.
+
+* ``pkg.fmri`` defines the name and version of the package as described in
+  "Package" in *Chapter 3*. A description of Oracle Solaris versioning can
+  be found in *Chapter 13*
+
+* ``pkg.description`` is a description of the contents of the
   package.
 
 * ``pkg.summary`` is a one-line synopsis of the description.
 
 * ``variant.arch`` enumerates the architectures for which this package
   is suitable.  If the entire package can be installed on any 
-  architecture, this may be omitted.  Producing packages that have
+  architecture, this can be omitted.  Producing packages that have
   different components for different architectures is discussed in
   *Chapter 7*.
 
-* ``info.classification`` is a grouping scheme used by the packagemanager,
-  the IPS GUI, discussed in the previous chapter.  The supported values
-  are shown in *Appendix 1*.  In this case, we pick an arbitrary one
-  for our sample package.  Failure to include this will mean the
-  PackageManager doesn't display the package; this is handy for common
-  infrastructure packages which may not be of direct interest, but
-  instead are depended upon by higher level packages.
+* ``info.classification`` is a grouping scheme used by |packagemanager|,
+  the IPS GUI.  The supported values are shown in *Appendix A*.
+  In this case, we pick an arbitrary one for our sample package.
 
-In addition, we will add a link action to /usr/share/man/index.d pointing to
-our man directory, and will discuss this link when covering *facets* and
+In addition, we will add a link action to ``/usr/share/man/index.d`` pointing to
+our ``man`` directory, and discuss this link when covering *facets* and
 *actuators* later in this chapter.
 
 Rather than modifying the generated manifest directly, we'll use
-pkgmogrify to edit the generated manifest.  A full description
-of how pkgmogrify can be used to modify package manifests may be
+|pkgmogrify| to edit the generated manifest.  A full description
+of how |pkgmogrify| can be used to modify package manifests can be
 found in *Chapter 8*.
 
-In this example we use the macro capability to define the architecture,
-as well as regular expression matching for the directory we want to elide
+In this example the macro capability is used to define the architecture,
+as well as regular expression matching for the directory to elide
 from the manifest.
 
-.. raw:: pdf
-
-    PageBreak
-
-Now we create a small file containing the information we wish to
-add to the manifest, as well as the transform needed to drop the opt
+Now we create a small file containing the information we want to
+add to the manifest, as well as the transform needed to drop the ``opt``
 directory from the manifest::
 
     set name=pkg.fmri value=mypkg@1.0,5.11-0
@@ -166,7 +162,7 @@ directory from the manifest::
     link path=usr/share/man/index.d/mysoftware target=opt/mysoftware/man
     <transform dir path=opt$->drop>
 
-Running pkgmogrify over mypkg.p5m.1 with the above lines in
+Running |pkgmogrify| over ``mypkg.p5m.1`` with the above lines in
 a file named mypkg.mog::
 
     $ pkgmogrify -DARCH=`uname -p` mypkg.p5m.1 mypkg.mog  | pkgfmt > mypkg.p5m.2
@@ -194,81 +190,88 @@ Examining the file we see::
         group=bin mode=0644 owner=root
     link path=usr/share/man/index.d/mysoftware target=../../../../opt/mysoftware/man
 
-Note that the directory action defining "opt" has been removed, and the
-manifest contents from mypkg.mog have been added to our package.
-For now, pkgfmt doesn't add line breaks to strings; this may
-change.
+Note that the directory action defining ``opt`` has been removed, and the
+manifest contents from ``mypkg.mog`` have been added to our package.
 
 
-Evaluate dependencies
+Evaluate Dependencies
 ~~~~~~~~~~~~~~~~~~~~~
 
-IPS allows automatic generation of package dependencies using the ``pkgdepend``
-command.  The *depend* actions that are generated are discussed in *Chapter 3*
-and *Chapter 6*.
+Use the |pkgdepend| command to automatically generate dependencies for the
+package. The generated depend actions are defined in *Chapter 3* and discussed
+further in *Chapter 6*.
 
 Dependency generation is composed of two separate steps:
 
-  * determining the files on which our software depends
-  * determining the packages that contain those files
+  1. Determine the files on which our software depends.
+  2. Determine the packages that contain those files.
 
 These steps are referred to as *dependency generation* and
-*dependency resolution* and performed using the ``generate`` and ``resolve``
-subcommands of pkgdepend, respectively.
+*dependency resolution* and are performed using the ``generate`` and ``resolve``
+subcommands of |pkgdepend|, respectively.
+
+.. raw:: pdf
+
+    PageBreak
 
 First, we'll generate our dependencies::
 
     $ pkgdepend generate -md proto mypkg.p5m.2 | pkgfmt > mypkg.p5m.3
 
+The ``-m`` option causes |pkgdepend| to include the entire manifest in
+its output, and the ``-d`` option passes the ``proto`` directory to the command.
+
 In this new file, we see::
 
-    set name=pkg.fmri value=mypkg@1.0,5.11-0
-    set name=pkg.description \
-        value="This is a full description of all the interesting attributes of this example package."
-    set name=pkg.summary value="This is our example package"
-    set name=info.classification \
-        value=org.opensolaris.category.2008:Applications/Accessories
-    set name=variant.arch value=i386
-    dir path=opt/mysoftware group=bin mode=0755 owner=root
-    dir path=opt/mysoftware/bin group=bin mode=0755 owner=root
-    dir path=opt/mysoftware/lib group=bin mode=0755 owner=root
-    dir path=opt/mysoftware/man group=bin mode=0755 owner=root
-    dir path=opt/mysoftware/man/man1 group=bin mode=0755 owner=root
-    file opt/mysoftware/bin/mycmd path=opt/mysoftware/bin/mycmd group=bin \
-        mode=0755 owner=root
-    file opt/mysoftware/lib/mylib.so.1 path=opt/mysoftware/lib/mylib.so.1 \
-        group=bin mode=0644 owner=root
-    file opt/mysoftware/man/man1/mycmd.1 path=opt/mysoftware/man/man1/mycmd.1 \
-        group=bin mode=0644 owner=root
-    link path=usr/share/man/index.d/mysoftware target=../../../../opt/mysoftware/man
-    depend fmri=__TBD pkg.debug.depend.file=libc.so.1 \
-        pkg.debug.depend.reason=opt/mysoftware/bin/mycmd \
-        pkg.debug.depend.type=elf type=require pkg.debug.depend.path=lib \
-        pkg.debug.depend.path=opt/mysoftware/lib pkg.debug.depend.path=usr/lib
-    depend fmri=__TBD pkg.debug.depend.file=libc.so.1 \
-        pkg.debug.depend.reason=opt/mysoftware/lib/mylib.so.1 \
-        pkg.debug.depend.type=elf type=require pkg.debug.depend.path=lib \
-        pkg.debug.depend.path=usr/lib
+	    set name=pkg.fmri value=mypkg@1.0,5.11-0
+	    set name=pkg.description \
+		value="This is a full description of all the interesting attributes of this example package."
+	    set name=pkg.summary value="This is our example package"
+	    set name=info.classification \
+		value=org.opensolaris.category.2008:Applications/Accessories
+	    set name=variant.arch value=i386
+	    dir path=opt/mysoftware group=bin mode=0755 owner=root
+	    dir path=opt/mysoftware/bin group=bin mode=0755 owner=root
+	    dir path=opt/mysoftware/lib group=bin mode=0755 owner=root
+	    dir path=opt/mysoftware/man group=bin mode=0755 owner=root
+	    dir path=opt/mysoftware/man/man1 group=bin mode=0755 owner=root
+	    file opt/mysoftware/bin/mycmd path=opt/mysoftware/bin/mycmd group=bin \
+		mode=0755 owner=root
+	    file opt/mysoftware/lib/mylib.so.1 path=opt/mysoftware/lib/mylib.so.1 \
+		group=bin mode=0644 owner=root
+	    file opt/mysoftware/man/man1/mycmd.1 path=opt/mysoftware/man/man1/mycmd.1 \
+		group=bin mode=0644 owner=root
+	    link path=usr/share/man/index.d/mysoftware target=../../../../opt/mysoftware/man
+	    depend fmri=__TBD pkg.debug.depend.file=libc.so.1 \
+		pkg.debug.depend.reason=opt/mysoftware/bin/mycmd \
+		pkg.debug.depend.type=elf type=require pkg.debug.depend.path=lib \
+		pkg.debug.depend.path=opt/mysoftware/lib pkg.debug.depend.path=usr/lib
+	    depend fmri=__TBD pkg.debug.depend.file=libc.so.1 \
+		pkg.debug.depend.reason=opt/mysoftware/lib/mylib.so.1 \
+		pkg.debug.depend.type=elf type=require pkg.debug.depend.path=lib \
+		pkg.debug.depend.path=usr/lib
 
-pkgdepend has added notations about a dependency on ``libc.so.1`` by both
+|pkgdepend| has added notations about a dependency on ``libc.so.1`` by both
 ``mylib.so.1`` and ``mycmd``.  Note that the internal dependency between
-``mycmd`` and ``mylib.so.1`` is currently silently elided by pkgdepend.
+``mycmd`` and ``mylib.so.1`` is currently silently elided by |pkgdepend|.
 
-Now we need to resolve these dependencies.  This resolution phase is
-done by examining the packages currently installed on the machine used
-for building the software.  Once again, pkgdepend does this, but this
-time, by default, puts its output in mypkg.p5m.3.res.  Note that this
-takes a while to run as it loads lots of information about the system on
-which it is running.  pkgdepend will resolve many packages at once if
-you wish to amortize this time over all packages; running it on one
-package at a time is not time efficient.
+Now we need to resolve these dependencies.  To resolve dependencies,
+|pkgdepend| examines the packages currently installed on the machine used
+for building the software.  By default, |pkgdepend| puts its output in
+``mypkg.p5m.3.res``.  Note that this takes a while to run as it loads lots of
+information about the system on which it is running.  |pkgdepend| will resolve
+many packages at once if you want to amortize this time over all packages;
+running it on one package at a time is not time efficient.
 
 ::
 
     $ pkgdepend resolve -m mypkg.p5m.3
 
+.. raw:: pdf
 
-After a while, we find in mypkg.p5m.3.res::
+    PageBreak
+
+When this completes, ``mypkg.p5m.3.res`` contains::
 
     set name=pkg.fmri value=mypkg@1.0,5.11-0
     set name=pkg.description \
@@ -289,39 +292,56 @@ After a while, we find in mypkg.p5m.3.res::
     file opt/mysoftware/man/man1/mycmd.1 path=opt/mysoftware/man/man1/mycmd.1 \
         group=bin mode=0644 owner=root
     link path=usr/share/man/index.d/mysoftware target=opt/mysoftware/man
-    depend fmri=pkg:/system/library@0.5.11-0.168 type=require
+    depend fmri=pkg:/system/library@0.5.11,5.11-0.175.0.0.0.2.1 type=require
+
+|pkgdepend| has converted the notation about the file dependency on
+``libc.so.1`` to a package dependency on ``pkg:/system/library`` which delivers
+that file.
+
+We recommended that developers use |pkgdepend| to generate dependencies,
+rather than declaring ``depend`` actions manually.  Manual dependencies can
+become incorrect or unnecessary as the package contents might change over time.
+This could happen, for example, when a file that an application depends on gets
+moved to a different package. Any manually declared dependencies on that package
+would then be out of date.
+
+Some manually declared dependencies might be necessary if |pkgdepend| is unable
+to determine dependencies completely, in which case we recommend that comments
+are added to the manifest to explain the nature of each dependency.
 
 
-Add any facets or actuators that are needed
+Add Any Facets or Actuators That Are Needed
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Facets and actuators are discussed in more detail in *Chapter 7* and
-*Chapter 9*, but briefly, facets allow us to denote actions in a package that
-are optionally installed, and actuators allow us to specify side effects that
-must be triggered when an action in our package is installed, updated, or
-removed.
+*Chapter 9*. Facets allow us to denote actions that are not required but can
+be optionally installed.  Actuators specify system changes that must occur
+when an action in our package is installed, updated, or removed.
 
 Since we are delivering a man page in ``opt/mysoftware/man/man1`` we would
 like to add a facet to indicate that documentation is optional.
 
-We would also like an SMF service, ``svc:/application/man-index:default`` to be
+We would also like an SMF service, ``svc:/application/man-index:default``, to be
 restarted when our package is installed, so that our man page is included in the
-index.
+index.  The 'restart_fmri' actuator can perform that task.
 
 The ``man-index`` service looks in ``/usr/share/man/index.d`` for symbolic
 links to directories containing man pages, adding the target of each link to
 the list of directories it scans, hence our earlier addition of that link to
-our man pages.  This is good example of the *self assembly* idiom that was
-discussed in *Chapter 1*, and is used throughout the packaging of Solaris
+our man pages.  This is a good example of the *self-assembly* idiom that was
+discussed in *Chapter 1*, and is used throughout the packaging of the OS
 itself.
 
-Solaris ships with a set of pkgmogrify transforms that were used to package
-the the operating system, in ``/usr/share/pkg/transforms``.  These transforms
-are discussed in more detail in *Chapter 8*.
+Oracle Solaris ships with a set of |pkgmogrify| transforms that were used to
+package the the operating system, in ``/usr/share/pkg/transforms``.  These
+transforms are discussed in more detail in *Chapter 8*.
 
-The ``documentation`` transform there is closest to what we need here, though
-since we're delivering our man page to ``/opt``, we'll use the ``documentation``
-transform as a guide, and use the following transform instead::
+The file called ``documentation`` contains the transforms that are closest to
+what we need here, though since we're delivering our man page to ``/opt``,
+we'll use the ``documentation`` transforms file as a guide, and use the
+following transforms instead.  These transforms include a regular expression
+``opt/.+/man(/.+)?`` which match all paths beneath ``opt`` that contain a
+``man`` subdirectory::
 
     <transform dir file link hardlink path=opt/.+/man(/.+)? -> \
         default facet.doc.man true>
@@ -350,39 +370,39 @@ to::
         restart_fmri=svc:/application/man-index:default facet.doc.man=true
 
 For efficiency, we could have included this transform when originally adding
-metadata to our package, before running pkgdepend.
+metadata to our package, before running |pkgdepend|.
 
 
-Check the package with pkglint
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Verify the Package
+~~~~~~~~~~~~~~~~~~
 
-The last thing we need to do before publication, is to run pkglint over our
-manifest.  This helps us determine if we've made any errors while writing the
+The last thing we need to do before publication is run |pkglint| on our
+manifest.  This helps us determine whether we've made any errors while writing
 the manifest that we'd like to catch before publication.  Some of the errors
-that pkglint can catch are ones also caught either at publication time, or
+that |pkglint| can catch are ones also caught either at publication time, or
 when a user tries to install a package, but obviously, we'd like to catch
 errors as early as possible in the package authoring process.
 
-There are two modes in which to run pkglint:
-
-  * directly on the manifest itself
-  * on the manifest, also referencing a repository
-
-For developers looking to quickly check the validity of their manifests, using
-the first form is often sufficient.  The second form is recommended to be run at
-*least once* before publication to a repository.
-
-By referencing a repository, pkglint can perform additional checks to ensure
-that if the package will *play well* with other packages in that repository.
-
-For example, pkglint will check that the package doesn't
+For example, |pkglint| checks that the package doesn't
 deliver files already owned by another package, and that all metadata for
 shared, reference-counted actions (such as directories) is consistent across
 packages.
 
-The full list of checks that pkglint performs can be shown with ``pkglint -L``
-and detailed information on how to enable, disable and bypass particular checks
-is given in the pkglint man page.  It also details how to extend pkglint to
+There are two modes in which to run |pkglint|:
+
+  * Directly on the manifest itself
+  * On the manifest, also referencing a repository
+
+For developers who want to quickly check the validity of their manifests, using
+the first form is usually sufficient.  The second form is recommended to be run
+*at least once* before publication to a repository.
+
+By referencing a repository, |pkglint| can perform additional checks to ensure
+that the package interacts well with other packages in that repository.
+
+The full list of checks that |pkglint| performs can be shown with ``pkglint -L``.
+Detailed information on how to enable, disable and bypass particular checks
+is given in the |pkglint| man page.  It also details how to extend |pkglint| to
 run additional checks.
 
 In the case of our test package, we see::
@@ -399,54 +419,71 @@ In the case of our test package, we see::
 These warnings are acceptable for our purposes:
 
   * ``opensolaris.manifest001.1`` is warning us that we haven't declared a tag
-    that is generally only required for bundled Solaris software, so we can
-    ignore this warning.
+    that is generally only required for bundled Oracle Solaris software, so we
+    can ignore this warning.
 
-  * ``pkglint.action005.1`` is warning us that pkglint wasn't able to find a
+  * ``pkglint.action005.1`` is warning us that |pkglint| wasn't able to find a
     package called ``pkg:/system/library@0.5.11-0.168`` which we have generated
-    a dependency on.  Since pkglint was called with just the manifest file as
+    a dependency on.  Since |pkglint| was called with just the manifest file as
     an argument, it does not know which repository that package is present in,
-    hence the warning.  If we were to run pkglint with a ``-r`` flag referencing
-    a repository containing that package, this warning would not be shown.
+    hence the warning.
+
+When |pkglint| is run with a ``-r`` flag referencing a repository containing
+the package that our test package has a dependency on, we see::
+
+    $ pkglint -c ./solaris-reference -r http://pkg.oracle.com/solaris11/release mypkg.p5m.4.res
+    Lint engine setup...
+
+    PHASE                                          ITEMS
+    4                                          4292/4292
+    Starting lint run...
+
+    WARNING opensolaris.manifest001.1 Missing attribute 'org.opensolaris.consolidation' in pkg:/mypkg@1.0,5.11-0
+    $
 
 
-Publish the package
+
+Publish the Package
 ~~~~~~~~~~~~~~~~~~~
 
-Now that our package is created, dependencies are added, and it has been checked
+Now that our package is created, dependencies are added, and it has been
 checked for correctness, we can publish the package.
 
 IPS provides three different ways to deliver a package:
 
-  * publish to a local file-based repository
-  * publish to a remote http-based repository
-  * convert to a .p5p package archive
+  * Publish to a local file-based repository
+  * Publish to a remote HTTP-based repository
+  * Convert to a ``.p5p`` package archive
 
 Generally, publishing to a file-based repository is sufficient while testing
 a package.
 
-If the package needs to be transferred to other machines, converting one or
-more packages to a p5p archive make that convenient.
+If the package needs to be transferred to other machines which cannot access
+the package repositories, converting one or more packages to a package archive
+can be convenient.
 
-XXX how's the wording on the paragraph below?
-
-The package can also be published directly to a http repository, when using
+The package can also be published directly to an HTTP repository, hosted
 on a machine with a read/write instance of ``svc:/application/pkg/server``
-(which in turn runs ``pkg.depotd``).  We do not generally recommend this method
-since there are no authorization/authentication checks when publishing over
-http, though it can be convenient on secure networks.
+(which in turn runs |pkg.depotd|).
 
-Local file repositories
+We do not generally recommend this method of publication since there are no
+authorization/authentication checks on the incoming package when publishing over
+HTTP. Publishing to HTTP repositories can be convenient on secure networks or
+when testing the same package across several machines if NFS or SMB access to
+the file repository is not possible.
+
+Installing packages over HTTP (or preferably HTTPS) is fine, however.
+
+Local File Repositories
 ```````````````````````
 
-The ``pkgrepo`` command can be used to create a local file repository.  We will
-choose a location on our system, create a repository, then set the default
-publisher for that repository::
+|pkgrepo| can be used to create and manage repositories.  We choose a
+location on our system, create a repository, then set the default publisher
+for that repository::
 
-    $ pkgrepo create-repository /scratch/my-repository
     $ pkgrepo create /scratch/my-repository
-    $ pkgrepo -s /scratch/my\-repository set publisher/prefix=mypublisher
-    $ find /scratch/my\-repository/
+    $ pkgrepo -s /scratch/my-repository set publisher/prefix=mypublisher
+    $ find /scratch/my-repository/
     /scratch/my-repository/
     /scratch/my-repository/pkg5.repository
 
@@ -460,18 +497,24 @@ the repository afterwards::
     PUBLISHER   PACKAGES STATUS           UPDATED
     mypublisher 1        online           2011-10-12T03:43:04.117536Z
 
+The file repository can then be served over HTTP or HTTPS using |pkg.depotd|
+if required.
 
-Package archives
+Package Archives
 ````````````````
 
-Package archives, are convenient ways to move groups of packages around.
-We can use the ``pkgrecv`` command to create package archives from package
-repositories, and visa versa.
+Package archives enable you to distribute groups of packages in a single file.
+We can use |pkgrecv| to create package archives from package repositories,
+and vice versa.
+
+Package archives can be easily downloaded from an existing website, copied to
+a USB key or burned to a DVD for installation in cases where a package
+repository is not available.
 
 In the case of our simple file repository above, we can create an archive
 from this repository with the following command::
 
-    $ pkgrecv -s /scratch/my\-repository -a -d myarchive.p5p mypkg
+    $ pkgrecv -s /scratch/my-repository -a -d myarchive.p5p mypkg
     Retrieving packages for publisher mypublisher ...
     Retrieving and evaluating 1 package(s)...
     DOWNLOAD                                  PKGS       FILES    XFER (MB)
@@ -481,36 +524,33 @@ from this repository with the following command::
     ARCHIVE                                             FILES   STORE (MB)
     myarchive.p5p                                       14/14      0.7/0.7
 
-We can list the newest available packages from a repository using pkgrecv::
+We can list the newest available packages from a repository using pkgrepo::
 
-   $ pkgrecv -s /scratch/my\-repository --newest
-   pkg://mypublisher/mypkg@1.0,5.11-0:20111012T033207Z
+   $ pkgrepo -s /scratch/my-repository list '*@latest'
+   PUBLISHER    NAME                          O VERSION
+   mypublisher  mypkg                           1.0,5.11-0:20111012T033207Z
 
 This output can be useful when constructing scripts to create archives with
 the latest versions of all packages from a given repository.
 
-Solaris is limited in its use of package archives at present, in that they
-cannot be used in the global zone for systems that have non-global zones
-configured.
-
-Temporary publishers set with the ``-g`` flag for ``pkg install`` cannot be used
-on systems with child or parent images (non-global zones have a child/parent
-relationship with the global zone) and the
-``svc:/application/pkg/system-repository:default`` service cannot read package
-archives at present.
+Temporary repositories or package archives provided with the ``-g`` flag for
+``pkg install`` and other package operations cannot be used on systems with
+child or parent images (non-global zones have a child/parent relationship with
+the global zone) since the system repository does not get temporarily configured
+with that publisher information.
 
 Package archives can be set as sources of local publishers in non-global zones,
 however.
 
-Test the package
+Test the Package
 ~~~~~~~~~~~~~~~~
 
-Having published our package, we are interested in seeing if it has been
+Having published our package, we are interested in seeing whether it has been
 packaged properly.
 
-In this example, we will ensure that our user has the *Software Installation*
-Profile, then we will add the publisher in our repository to the system and
-proceed to install the package::
+In this example, we ensure that our user has the *Software Installation*
+Profile, in order to be able to install packages without root privileges,
+then we add the publisher in our repository to the system::
 
     $ sudo su
     Password:
@@ -519,12 +559,12 @@ proceed to install the package::
     UX: usermod: myuser is currently logged in, some changes may not take effect
     until next login.
     ^D
-
-::
-
-    $ pfexec pkg set-publisher -p /scratch/my\-repository
+    $ pfexec pkg set-publisher -p /scratch/my-repository
     pkg set-publisher:
       Added publisher(s): mypublisher
+
+You can use ``pkg install`` -nv to see what the install command will do without
+making any changes. The following example actually installs the package::
 
     $ pfexec pkg install mypkg
                Packages to install:  1
@@ -567,9 +607,9 @@ We can then examine the software as it was delivered on the system::
     /opt/mysoftware/man/man1
     /opt/mysoftware/man/man1/mycmd.1
 
-Along with our binaries and man page being installed, the system has also
-generated the man page indexes as a result of our actuator restarting the
-``man-index`` service.
+In addition to the binaries and man page showing up, we can see that the system
+has also generated the man page indexes as a result of our actuator restarting
+the ``man-index`` service.
 
 We can see that ``pkg info`` shows the metadata that we added to our package::
 
@@ -588,11 +628,10 @@ We can see that ``pkg info`` shows the metadata that we added to our package::
               Size: 1.75 MB
               FMRI: pkg://mypublisher/mypkg@1.0,5.11-0:20111012T034303Z
 
-We can also see that ``pkg search`` will return hits when querying for files in
+We can also see that ``pkg search`` returns hits when querying for files in
 our package::
 
     $ pkg search -l mycmd.1
     INDEX      ACTION VALUE                           PACKAGE
     basename   file   opt/mysoftware/man/man1/mycmd.1 pkg:/mypkg@1.0-0
-
 

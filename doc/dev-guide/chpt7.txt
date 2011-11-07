@@ -22,31 +22,29 @@
 Chapter 7
 ---------
 
-Variants and Facets
+Allowing Variations
 ...................
 
-In this chapter we explore how variant and facets are used in
-IPS to provide different installation options to the end-user.
+In this chapter we explore how variants and facets are used in
+IPS to provide different installation options to the end user.
 
 Variants
 ~~~~~~~~
 
-Since Solaris supports multiple architectures, one of the not
-infrequent errors made with the previous packaging system was the
-accidental installation of packages for an incorrect architecture.
-With the introduction of software repositories, the prospect of
-maintaining one set of repositories for each supported architecture
-seemed unappealing to both the IPS development team, and likely ISVs,
-and error prone for customers as well.  As result, it was decided
-early on that IPS should directly support installation of a single
-package on multiple architectures.
+Since Oracle Solaris supports multiple architectures, one common error
+made with the SVR4 packaging system was the accidental installation
+of packages for an incorrect architecture. With the introduction of
+software repositories, the prospect of maintaining a separate
+repository for each supported architecture seemed unappealing
+to ISVs and error prone for customers.  As a result,  IPS supports
+installation of a single package on multiple architectures.
 
-The mechanism that implements this feature in Solaris is called a
-variant, and it allows the properties of the target image to determine
-which software components are actually installed.
+The mechanism that implements this feature is called a
+*variant*.  A variant enables the properties of the target image
+to determine which software components are actually installed.
 
 A variant has two parts: its name, and the list of possible values.
-The variants defined in Solaris 11 FCS are:
+The variants defined in Oracle Solaris 11 are:
 
     ========================    =================
     Name	     	      	Values
@@ -56,11 +54,17 @@ The variants defined in Solaris 11 FCS are:
     variant.debug.*             true, false
     ========================    =================
 
-Variants appear in a package as follows: first, a set action that
-defines the name and values, and second, on any action that is
-specific to a variant a tag will appear with the name of the variant
-and the value on which it is installed.  For example, a package that
-delivers /var/ld/64 might include::
+Variants appear in two places in a package:
+
+  * A ``set`` action names the variant and defines the values that
+    apply to this package.
+
+  * Any action that can only be installed for a subset of the
+    variant values has a tag that specifies the name of the
+    variant and the value on which it is installed.
+
+For example, a package that delivers the symbolic link ``/var/ld/64``
+might include::
 
     set name=variant.arch value=sparc value=i386
     dir group=bin mode=0755 owner=root path=var/ld
@@ -78,49 +82,50 @@ receive the appropriate tag.  It is perfectly reasonable for actions
 to contain multiple tags for different variant names; there might be
 debug and nondebug binaries for both sparc and i386.
 
-In Solaris, kernel components are commonly elided from packages
+In Oracle Solaris, kernel components are commonly elided from packages
 installed in zones, as they serve no useful purpose.  Thus, they are
-marked with the opensolaris.zone variant set to global so that they
+marked with the ``opensolaris.zone`` variant set to ``global`` so that they
 are not installed in non-global zones.  This is typically done in the
-manifest during publication with a pkgmogrify rule.  Thus the packages
+manifest during publication with a |pkgmogrify| rule.  Thus the packages
 from the i386 and sparc builds are already marked for zones.  We then
-use the pkgmerge command to take the packages from the sparc and i386
-builds and merge them together; this is far more reliable and faster 
-than attempting to construct such packages by hand.
+use the |pkgmerge| command to take the packages from the sparc and i386
+builds and merge them together.  This is far more reliable and faster 
+than attempting to construct such packages manually.
 
 In general, it is not practical to define new variants without
-modifying the packaging system as no practical means currently exist
-for defining a default value for variants in general.  The
-variant.debug.* portion of the variant namespace is predefined to have
-a default version of false; thus, developers can provide debug
+modifying the packaging system as no practical means currently exists
+for defining a default value for variants in general.  Package developers
+cannot define new variants at present.
+
+However, the ``variant.debug.*`` portion of the variant namespace is predefined
+to have a default version of ``false``; thus, developers can provide debug
 versions of their components, tagged with the appropriate variant, and
 users can select that variant if problems arise.  Remember that
-variants are set per-image, so selecting a suitable name that
+variants are set per image, so selecting a suitable name that
 is unique at the appropriate resolution for that piece of software 
 is important.
 
-Note that variant tags will be applied to any actions that differ
-between architectures during merging; this includes dependencies, set
-actions, etc.  Packages that are marked as not supporting one of the
-variant values of the current image will not be considered for
-installation.  
+Note that variant tags are applied to any actions that differ between
+architectures during merging; this includes dependencies, ``set`` actions,
+etc.  Packages that are marked as not supporting one of the variant values
+of the current image are not considered for installation.
 
-The pkgmerge(1) man page provides several examples of merging
-packages; note that it will merge across multiple different
-variants at the same time if needed.
+The |pkgmerge| man page provides several examples of merging packages. Note
+that it will merge across multiple different variants at the same time if
+needed.
 
 Facets
 ~~~~~~
 
 Often, package developers have optional portions of their software
-that actually belong with the main body, but some people may not
-wish to install.  Some examples are localization files for different
+that actually belong with the main body, but some people might not
+want to install.  Some examples are localization files for different
 locales, man pages and other documentation, header files needed 
-only by developers or DTrace users, etc.
+only by developers or DTrace users.
 
 Traditionally, such optional content has been placed in separate
-packages with a arbitrarily selected naming convention (such as
-appending -dev or -devel to the package name) allow administrators
+packages with an arbitrarily selected naming convention (such as
+appending ``-dev`` or ``-devel`` to the package name) enabling administrators
 to select the optional content.
 
 This has led to various problems, such as adding a new locale
@@ -128,117 +133,118 @@ for all the software on a system being a rather irritating task,
 as the admin has to discover all the necessary packages by examining
 the lists of available packages.
 
-IPS has implemented a mechanism similar to variants called 'facets' 
+IPS has implemented a mechanism similar to variants called *facets*
 to deal with this problem.  Like variants, facets have a name and
-a value, which is either set to true (the default) or false in the 
-image.  The facet namespace is hierarchal, with matching rules such
-that the longest match wins.  For example, the default value for
-all facets is true; the pkg(1) client implicitly sets facet.* to true.
-Documentation in Solaris packages is tagged with the type of 
-documentation; for example, man pages are tagged with 
-facet.doc.man=true in the package manifests.  If an administrator
-decided to remove all documentation that wasn't man pages from the
-system, he could use the pkg change-facet command to set
+a value. The value is either set to ``true`` or ``false`` in the
+image.  The default value is ``true``. The facet namespace is hierarchal,
+with matching rules such that the longest match wins.
 
-- facet.doc.*=false 
-- facet.doc.man=true 
+For example, the default value for all facets is ``true``; the |pkg| client
+implicitly sets ``facet.*`` to ``true``.
+Documentation in Oracle Solaris packages is tagged with the type of 
+documentation.  For example, man pages are tagged with 
+``facet.doc.man=true`` in the package manifests.
 
-and this would occur.  Similarly, if only the German localization
-was wanted, 
+The following commands include man pages but exclude all other documentation
+from being installed in this image::
 
-- facet.locale.*=false
-- facet.locale.de=true would yield this result.
+    # pkg change-facet facet.doc.*=false
+    # pkg change-facet facet.doc.man=true
 
-Today, if a action contains multiple facet tags, if any of them
-are true the action is installed. We intend to extend the way
-facets work so that package authors can do more complex logic.
+Similarly, the following commands install only the German localization in this
+image::
 
-The pkg facet command is useful in determining which facets are
+    # pkg change-facet facet.locale.*=false
+    # pkg change-facet facet.locale.de=true
+
+If an action contains multiple facet tags, the action is installed if the value
+of any of the facet tags is ``true``.
+
+The ``pkg facet`` command is useful in determining which facets are
 set in the image.
 
-The package developer can use pkgmogrify to quickly tag his
+The package developer can use |pkgmogrify| to quickly tag his
 man pages, localizations, etc. using regular expressions to
-match the different types of files; this is described in detail
+match the different types of files.  This is described in detail
 in *Chapter 8*.
 
-XXX cite facet.version-lock discussion, which should appear in either
-chapter 6 or chapter 13 (probably chapter 6)
+Facets can also be used to manage dependencies, essentially turning
+dependencies on and off, depending on whether the facet is set.  See
+*Chapter 6* for a discussion of ``facet.version-lock.*``.
 
 
-Solaris facets that may be of use for software developers 
-include:
+Oracle Solaris facets that might be of use for software developers include:
 
 
 ========================  ==================        ==================
-facet.devel               facet.locale.es_AR        facet.locale.lt_LT
-facet.doc                 facet.locale.es_BO        facet.locale.lv
-facet.doc.man             facet.locale.es_CL        facet.locale.lv_LV
-facet.doc.pdf             facet.locale.es_CO        facet.locale.mk
-facet.doc.info            facet.locale.es_CR        facet.locale.mk_MK
-facet.doc.html            facet.locale.es_DO        facet.locale.ml
-facet.locale              facet.locale.es_EC        facet.locale.ml_IN
-facet.locale.af           facet.locale.es_ES        facet.locale.mr
-facet.locale.af_ZA        facet.locale.es_GT        facet.locale.mr_IN
-facet.locale.ar           facet.locale.es_HN        facet.locale.ms
-facet.locale.ar_AE        facet.locale.es_MX        facet.locale.ms_MY
-facet.locale.ar_BH        facet.locale.es_NI        facet.locale.mt
-facet.locale.ar_DZ        facet.locale.es_PA        facet.locale.mt_MT
-facet.locale.ar_EG        facet.locale.es_PE        facet.locale.nb
-facet.locale.ar_IQ        facet.locale.es_PR        facet.locale.nb_NO
-facet.locale.ar_JO        facet.locale.es_PY        facet.locale.nl
-facet.locale.ar_KW        facet.locale.es_SV        facet.locale.nl_BE
-facet.locale.ar_LY        facet.locale.es_US        facet.locale.nl_NL
-facet.locale.ar_MA        facet.locale.es_UY        facet.locale.nn
-facet.locale.ar_OM        facet.locale.es_VE        facet.locale.nn_NO
-facet.locale.ar_QA        facet.locale.et           facet.locale.no
-facet.locale.ar_SA        facet.locale.et_EE        facet.locale.or
-facet.locale.ar_TN        facet.locale.eu           facet.locale.or_IN
-facet.locale.ar_YE        facet.locale.fi           facet.locale.pa
-facet.locale.as           facet.locale.fi_FI        facet.locale.pa_IN
-facet.locale.as_IN        facet.locale.fr           facet.locale.pl
-facet.locale.az           facet.locale.fr_BE        facet.locale.pl_PL
-facet.locale.az_AZ        facet.locale.fr_CA        facet.locale.pt
-facet.locale.be           facet.locale.fr_CH        facet.locale.pt_BR
-facet.locale.be_BY        facet.locale.fr_FR        facet.locale.pt_PT
-facet.locale.bg           facet.locale.fr_LU        facet.locale.ro
-facet.locale.bg_BG        facet.locale.ga           facet.locale.ro_RO
-facet.locale.bn           facet.locale.gl           facet.locale.ru
-facet.locale.bn_IN        facet.locale.gu           facet.locale.ru_RU
-facet.locale.bs           facet.locale.gu_IN        facet.locale.ru_UA
-facet.locale.bs_BA        facet.locale.he           facet.locale.rw
-facet.locale.ca           facet.locale.he_IL        facet.locale.sa
-facet.locale.ca_ES        facet.locale.hi           facet.locale.sa_IN
-facet.locale.cs           facet.locale.hi_IN        facet.locale.sk
-facet.locale.cs_CZ        facet.locale.hr           facet.locale.sk_SK
-facet.locale.da           facet.locale.hr_HR        facet.locale.sl
-facet.locale.da_DK        facet.locale.hu           facet.locale.sl_SI
-facet.locale.de           facet.locale.hu_HU        facet.locale.sq
-facet.locale.de_AT        facet.locale.hy           facet.locale.sq_AL
-facet.locale.de_BE        facet.locale.hy_AM        facet.locale.sr
-facet.locale.de_CH        facet.locale.id           facet.locale.sr_ME
-facet.locale.de_DE        facet.locale.id_ID        facet.locale.sr_RS
-facet.locale.de_LI        facet.locale.is           facet.locale.sv
-facet.locale.de_LU        facet.locale.is_IS        facet.locale.sv_SE
-facet.locale.el           facet.locale.it           facet.locale.ta
-facet.locale.el_CY        facet.locale.it_CH        facet.locale.ta_IN
-facet.locale.el_GR        facet.locale.it_IT        facet.locale.te
-facet.locale.en           facet.locale.ja           facet.locale.te_IN
-facet.locale.en@boldquot  facet.locale.ja_JP        facet.locale.th
-facet.locale.en@quot      facet.locale.ka           facet.locale.th_TH
-facet.locale.en_AU        facet.locale.ka_GE        facet.locale.tr
-facet.locale.en_BW        facet.locale.kk           facet.locale.tr_TR
-facet.locale.en_CA        facet.locale.kk_KZ        facet.locale.uk
-facet.locale.en_GB        facet.locale.kn           facet.locale.uk_UA
-facet.locale.en_HK        facet.locale.kn_IN        facet.locale.vi
-facet.locale.en_IE        facet.locale.ko           facet.locale.vi_VN
-facet.locale.en_IN        facet.locale.ko_KR        facet.locale.zh
-facet.locale.en_MT        facet.locale.ks           facet.locale.zh_CN
-facet.locale.en_NZ        facet.locale.ks_IN        facet.locale.zh_HK
-facet.locale.en_PH        facet.locale.ku           facet.locale.zh_HK
-facet.locale.en_SG        facet.locale.ku_TR        facet.locale.zh_SG
-facet.locale.en_US        facet.locale.ky           facet.locale.zh_TW
-facet.locale.en_ZW        facet.locale.ky_KG
-facet.locale.eo           facet.locale.lg
+facet.devel               facet.locale.es_BO        facet.locale.lt_LT
+facet.doc                 facet.locale.es_CL        facet.locale.lv
+facet.doc.man             facet.locale.es_CO        facet.locale.lv_LV
+facet.doc.pdf             facet.locale.es_CR        facet.locale.mk
+facet.doc.info            facet.locale.es_DO        facet.locale.mk_MK
+facet.doc.html            facet.locale.es_EC        facet.locale.ml
+facet.locale              facet.locale.es_ES        facet.locale.ml_IN
+facet.locale.af           facet.locale.es_GT        facet.locale.mr
+facet.locale.af_ZA        facet.locale.es_HN        facet.locale.mr_IN
+facet.locale.ar           facet.locale.es_MX        facet.locale.ms
+facet.locale.ar_AE        facet.locale.es_NI        facet.locale.ms_MY
+facet.locale.ar_BH        facet.locale.es_PA        facet.locale.mt
+facet.locale.ar_DZ        facet.locale.es_PE        facet.locale.mt_MT
+facet.locale.ar_EG        facet.locale.es_PR        facet.locale.nb
+facet.locale.ar_IQ        facet.locale.es_PY        facet.locale.nb_NO
+facet.locale.ar_JO        facet.locale.es_SV        facet.locale.nl
+facet.locale.ar_KW        facet.locale.es_US        facet.locale.nl_BE
+facet.locale.ar_LY        facet.locale.es_UY        facet.locale.nl_NL
+facet.locale.ar_MA        facet.locale.es_VE        facet.locale.nn
+facet.locale.ar_OM        facet.locale.et           facet.locale.nn_NO
+facet.locale.ar_QA        facet.locale.et_EE        facet.locale.no
+facet.locale.ar_SA        facet.locale.eu           facet.locale.or
+facet.locale.ar_TN        facet.locale.fi           facet.locale.or_IN
+facet.locale.ar_YE        facet.locale.fi_FI        facet.locale.pa
+facet.locale.as           facet.locale.fr           facet.locale.pa_IN
+facet.locale.as_IN        facet.locale.fr_BE        facet.locale.pl
+facet.locale.az           facet.locale.fr_CA        facet.locale.pl_PL
+facet.locale.az_AZ        facet.locale.fr_CH        facet.locale.pt
+facet.locale.be           facet.locale.fr_FR        facet.locale.pt_BR
+facet.locale.be_BY        facet.locale.fr_LU        facet.locale.pt_PT
+facet.locale.bg           facet.locale.ga           facet.locale.ro
+facet.locale.bg_BG        facet.locale.gl           facet.locale.ro_RO
+facet.locale.bn           facet.locale.gu           facet.locale.ru
+facet.locale.bn_IN        facet.locale.gu_IN        facet.locale.ru_RU
+facet.locale.bs           facet.locale.he           facet.locale.ru_UA
+facet.locale.bs_BA        facet.locale.he_IL        facet.locale.rw
+facet.locale.ca           facet.locale.hi           facet.locale.sa
+facet.locale.ca_ES        facet.locale.hi_IN        facet.locale.sa_IN
+facet.locale.cs           facet.locale.hr           facet.locale.sk
+facet.locale.cs_CZ        facet.locale.hr_HR        facet.locale.sk_SK
+facet.locale.da           facet.locale.hu           facet.locale.sl
+facet.locale.da_DK        facet.locale.hu_HU        facet.locale.sl_SI
+facet.locale.de           facet.locale.hy           facet.locale.sq
+facet.locale.de_AT        facet.locale.hy_AM        facet.locale.sq_AL
+facet.locale.de_BE        facet.locale.id           facet.locale.sr
+facet.locale.de_CH        facet.locale.id_ID        facet.locale.sr_ME
+facet.locale.de_DE        facet.locale.is           facet.locale.sr_RS
+facet.locale.de_LI        facet.locale.is_IS        facet.locale.sv
+facet.locale.de_LU        facet.locale.it           facet.locale.sv_SE
+facet.locale.el           facet.locale.it_CH        facet.locale.ta
+facet.locale.el_CY        facet.locale.it_IT        facet.locale.ta_IN
+facet.locale.el_GR        facet.locale.ja           facet.locale.te
+facet.locale.en           facet.locale.ja_JP        facet.locale.te_IN
+facet.locale.en_AU        facet.locale.ka           facet.locale.th
+facet.locale.en_BW        facet.locale.ka_GE        facet.locale.th_TH
+facet.locale.en_CA        facet.locale.kk           facet.locale.tr
+facet.locale.en_GB        facet.locale.kk_KZ        facet.locale.tr_TR
+facet.locale.en_HK        facet.locale.kn           facet.locale.uk
+facet.locale.en_IE        facet.locale.kn_IN        facet.locale.uk_UA
+facet.locale.en_IN        facet.locale.ko           facet.locale.vi
+facet.locale.en_MT        facet.locale.ko_KR        facet.locale.vi_VN
+facet.locale.en_NZ        facet.locale.ks           facet.locale.zh
+facet.locale.en_PH        facet.locale.ks_IN        facet.locale.zh_CN
+facet.locale.en_SG        facet.locale.ku           facet.locale.zh_HK
+facet.locale.en_US        facet.locale.ku_TR        facet.locale.zh_HK
+facet.locale.en_ZW        facet.locale.ky           facet.locale.zh_SG
+facet.locale.eo           facet.locale.ky_KG        facet.locale.zh_TW
+facet.locale.es_AR        facet.locale.lg     
 ========================  ==================        ==================
 
 

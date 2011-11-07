@@ -24,76 +24,175 @@ Packaging and Delivering Software with the Image Packaging System
 A developer's guide
 ^^^^^^^^^^^^^^^^^^^
 
+.. raw:: pdf
+
+        Spacer 0 100
+
+.. class:: figure
+
+    |logo|
+
+.. raw:: pdf
+
+        SetPageCounter 0 arabic
+        Spacer 0 450
+
+.. class:: titletable
+
+      +--------------------------+--------------------+
+      |                          |                    |
+      |     |ologo|              |    |version|       |
+      |                          |                    |
+      +--------------------------+--------------------+
+
+.. header::
+
+   .. oddeven::
+
+      .. class:: headertable
+
+      +-----------------------------------------------+
+      |                     .. class:: footerright    |
+      |                                               |
+      |                         ###Section###         |
+      |                                               |
+      +-----------------------------------------------+
+
+
+      .. class:: headertable
+
+      +-----------------------------------------------+
+      | .. class:: footerleft                         |
+      |                                               |
+      |     ###Section###                             |
+      |                                               |
+      +-----------------------------------------------+
+
+
+.. footer::
+
+   .. oddeven::
+
+      .. class:: footertableright
+
+      +------------------------------------------------------+
+      |                                .. class:: pageright  |
+      |                                                      |
+      |                                  ###Page###          |
+      +------------------------------------------------------+
+
+      .. class:: footertableleft
+
+      +---------------------+--------------------------------+
+      | .. class:: pageleft | .. class:: footerleft          |
+      |                     |                                |
+      |    ###Page###       |      ###Title###               |
+      +---------------------+--------------------------------+
+
+
+.. raw:: pdf
+
+    PageBreak oneColumn
+
+::
+
+    Copyright © 2011, Oracle and/or its affiliates. All rights reserved.
+    This document is provided for information purposes only and the
+    contents hereof are subject to change without notice. This document is
+    not warranted to be error-free, nor subject to any other warranties or
+    conditions, whether expressed orally or implied in law, including
+    implied warranties and conditions of merchantability or fitness for a
+    particular purpose. We specifically disclaim any liability with
+    respect to this document and no contractual obligations are formed
+    either directly or indirectly by this document. This document may not
+    be reproduced or transmitted in any form or by any means, electronic
+    or mechanical, for any purpose, without our prior written permission.
+    Oracle and Java are registered trademarks of Oracle and/or its
+    affiliates. Other names may be trademarks of their respective owners.
+
+    Intel and Intel Xeon are trademarks or registered trademarks of Intel
+    Corporation. All SPARC trademarks are used under license and are
+    trademarks or registered trademarks of SPARC International, Inc. AMD,
+    Opteron, the AMD logo, and the AMD Opteron logo are trademarks or
+    registered trademarks of Advanced Micro Devices.  UNIX is a registered
+    trademark licensed through X/Open Company, Ltd. 0611
+
 Preface
 -------
 
+        In Oracle Solaris 11 and onwards, system software is packaged with
+        the Image Packaging System, or IPS.  IPS takes care of
+        installing new software and upgrading that software.
 
-	In Solaris 11 and onwards, system software is packaged with
-	the Image Packaging System, or IPS.  IPS takes care of
-	installing new software and upgrading that software.  This
-	manual is for engineers and advanced administrators who wish
-	to better understand IPS, how to use it to package their own
-	software, and wish to understand how Solaris is packaged with
-	IPS.  Special attention is given to the underlying design
-	concepts and design patterns so that readers can more readily
-	understand and utilize the more advanced features of IPS.
+        This manual is for developers and advanced administrators who want
+        to better understand IPS, how to use it to package their own
+        software, and want to understand how Oracle Solaris is packaged with
+        IPS.
+
+        Special attention is given to the underlying design
+        concepts and design patterns so that readers can more readily
+        understand and utilize the more advanced features of IPS.
 
 How this book is organized
 --------------------------
 
-	**Chapter 1** - IPS Design Goals & Patterns, outlines the basic
-	design philosophy of IPS and its expression as software
-	patterns.
+        **Chapter 1** - *Design Goals and Concepts*, outlines the basic
+        design philosophy of IPS and its expression as software
+        patterns.
 
-	**Chapter 2** - Package lifecycle, provides an overview of the
+        **Chapter 2** - *Package Lifecycle*, provides an overview of the
         software package lifecycle with IPS.
 
-	**Chapter 3** - IPS Core Concepts, lays out the basic terminology
-	and describes the various components that form IPS.
+        **Chapter 3** - *Basic Terminology*, lays out the basic terminology
+        and describes the various components that form IPS.
 
-	**Chapter 4** - Creating simple packages with IPS, gets
-	the new user started constructing their own packages.
+        **Chapter 4** - *Packaging Software with IPS*, gets
+        the new user started constructing their own packages.
 
-	**Chapter 5** - Basic operation of pkg(1).
+        **Chapter 5** - *Installing, Removing, and Updating Software Packages*,
+        shows basic operation of pkg(1).
 
-	**Chapter 6** - Dependencies, explains the different types of IPS
-	dependencies and how they can be used to construct working
-	software systems.
+        **Chapter 6** - *Specifying Dependencies*, explains the different types
+        of IPS dependencies and how they can be used to construct working
+        software systems.
 
-	**Chapter 7** - Handling variations, explains how variants, facets
-	and mediated links are used to allow software publisher to
-	define multiple installation forms for their packages.
+        **Chapter 7** - *Allowing Variations*, explains how variants, facets
+        and mediated links are used to allow software publishers to
+        define multiple installation forms for their packages.
 
-	**Chapter 8** - Transmogrifications, explains how package manifests
-	can be machine edited to permit the automated annotation and
-	checking of package manifests.
+        **Chapter 8** - *Modifying Package Manifests Programmatically*, explains
+        how package manifests can be machine edited to permit the automated
+        annotation and checking of package manifests.
 
-	**Chapter 9** - Using SMF to generate side effects, explains how to
-	use the Service Management Framework to automatically handle
-	any necessary side effects of package installation.
+        **Chapter 9** - *Causing System Change With SMF*, explains how to
+        use the Service Management Facility to automatically handle
+        any necessary system changes that should occur as a result of
+        package installation.
 
-	**Chapter 10**, Advanced Upgrade, deals with more complex package
-	upgrade issues, and describe several features in IPS designed
-	to simplify these problems.
+        **Chapter 10**, *Advanced Update*, deals with more complex package
+        upgrade issues, and describes several features in IPS designed
+        to simplify these problems.
 
-	**Chapter 11**, Package Signing, explains how package signing works
-	and how developers and QA organizations can sign either new
-	or existing, already signed packages.
+        **Chapter 11**, *Signing Packages*, explains how package signing works
+        and how developers and QA organizations can sign either new
+        or existing, already signed packages.
 
-	**Chapter 12**, Dealing with Zones, describes how IPS handles zones
-	and discusses those cases where package developers should be
-	aware of zones.
+        **Chapter 12**, *Handling Non-Global Zones*, describes how IPS handles
+        zones and discusses those cases where package developers should be
+        aware of zones.
 
-	**Chapter 13**, Solaris and IPS, describes how Oracle use IPS to
-	package Solaris, and how the various dependency types are used
-	to define working package sets for Solaris.
+        **Chapter 13**, *How IPS Features Are Used When Packaging the Oracle
+        Solaris OS*, describes how the packages for the operating system are
+        constructed and how the various dependency types in IPS are used to
+        define working package sets.
 
-	**Chapter 14**, Package Republication, describes how administrators
-	can modify existing packages if needed for local conditions.
+        **Chapter 14**, *Republishing Packages*, describes how administrators
+        can modify existing packages if needed for local conditions.
 
-        **Appendix 1**: info.classification scheme definitions.
+        **Appendix A**: *Classifying Packages*, contains info.classification
+        scheme definitions.
 
-        **Appendix 2**: Converting SVR4 packages to IPS, gives an example of
-        converting an SVR4 package to IPS, and highlights some areas that may
+        **Appendix B**: *Converting SVR4 packages to IPS*, gives an example of
+        converting an SVR4 package to IPS, and highlights some areas that might
         need special attention.
 
