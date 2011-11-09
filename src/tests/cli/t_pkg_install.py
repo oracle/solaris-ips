@@ -2494,6 +2494,42 @@ adm:NP:6445::::::
             add dir mode=0755 owner=Kermit group=adm path=/export/home/Kermit
             close """
 
+        csu1 = """
+            open csu1@1.0,5.11-0
+            add legacy arch=i386 category=system desc="core software for a specific instruction-set architecture" hotline="Please contact your local service provider" name="Core Solaris, (Usr)" pkg=SUNWcsu variant.arch=i386 vendor="Oracle Corporation" version=11.11,REV=2009.11.11
+            close
+        """
+
+        csu1_2 = """
+            open csu1@2.0,5.11-0
+            add legacy arch=i386 category=system desc="core software for a specific instruction-set architecture" hotline="Please contact your local service provider" name="Core Solaris, (Usr)" pkg=SUNWcsu variant.arch=i386 vendor="Oracle Corporation" version=11.11,REV=2010.11.11
+            close
+        """
+
+        csu2 = """
+            open csu2@1.0,5.11-0
+            add legacy arch=i386 category=system desc="core software for a specific instruction-set architecture" hotline="Please contact your local service provider" name="Core Solaris, (Usr)" pkg=SUNWcsu variant.arch=i386 vendor="Oracle Corporation" version=11.11,REV=2009.11.11
+            close
+        """
+
+        csu2_2 = """
+            open csu2@2.0,5.11-0
+            add legacy arch=i386 category=system desc="core software for a specific instruction-set architecture" hotline="Please contact your local service provider" name="Core Solaris, (Usr)" pkg=SUNWcsu variant.arch=i386 vendor="Oracle Corporation" version=11.11,REV=2010.11.11
+            close
+        """
+
+        csu3 = """
+            open csu3@1.0,5.11-0
+            add legacy arch=i386 category=system desc="core software for a specific instruction-set architecture" hotline="Please contact your local service provider" name="Core Solaris, (Usr)" pkg=SUNWcsu variant.arch=i386 vendor="Oracle Corporation" version=11.11,REV=2009.11.11
+            close
+        """
+
+        csu3_2 = """
+            open csu3@2.0,5.11-0
+            add legacy arch=i386 category=system desc="core software for a specific instruction-set architecture" hotline="Please contact your local service provider" name="Core Solaris, (Usr)" pkg=SUNWcsu variant.arch=i386 vendor="Oracle Corporation" version=11.11,REV=2010.11.11
+            close
+        """
+
         # some of these are subsets-- "always" and "at-end"-- for performance;
         # we assume that e.g. if a and z work, that bcdef, etc. will too.
         pkg_name_valid_chars = {
@@ -3336,6 +3372,46 @@ adm:NP:6445::::::
                 ino1 = os.stat(os.path.join(self.get_img_path(), "foo")).st_ino
                 ino2 = os.stat(os.path.join(self.get_img_path(), "etc/motd")).st_ino
                 self.assert_(ino1 == ino2)
+
+        def test_legacy(self):
+                self.pkgsend_bulk(self.rurl,
+                    (self.csu1, self.csu1_2, self.csu2, self.csu2_2,
+                    self.csu3, self.csu3_2))
+                self.image_create(self.rurl)
+
+                self.pkg("install csu1@1 csu2@1 csu3@1")
+
+                # Make sure we installed one and only one pkginfo file, and with
+                # the correct information.
+                vsp = self.get_img_file_path("var/sadm/pkg")
+                pi = os.path.join(vsp, "SUNWcsu/pkginfo")
+                pi2 = os.path.join(vsp, "SUNWcsu/pkginfo.2")
+                pi3 = os.path.join(vsp, "SUNWcsu/pkginfo.3")
+                self.assert_(os.path.exists(pi), "pkginfo doesn't exist")
+                self.file_contains(pi, "VERSION=11.11,REV=2009.11.11")
+                self.assert_(not os.path.exists(pi2), "pkginfo.2 exists")
+                self.assert_(not os.path.exists(pi3), "pkginfo.3 exists")
+                # Create the hardlinks as we'd have for the old refcounting
+                # system.
+                os.link(pi, pi2)
+                os.link(pi, pi3)
+
+                # Make sure that upgrading the actions modifies the pkginfo file
+                # correctly, and that the hardlinks go away.
+                self.pkg("update")
+                self.file_contains(pi, "VERSION=11.11,REV=2010.11.11")
+                self.assert_(not os.path.exists(pi2), "pkginfo.2 exists")
+                self.assert_(not os.path.exists(pi3), "pkginfo.3 exists")
+
+                # Start over, but this time "break" the hardlinks.
+                self.pkg("uninstall -vvv \*")
+                self.pkg("install csu1@1 csu2@1 csu3@1")
+                shutil.copy(pi, pi2)
+                shutil.copy(pi, pi3)
+                self.pkg("update")
+                self.file_contains(pi, "VERSION=11.11,REV=2010.11.11")
+                self.assert_(not os.path.exists(pi2), "pkginfo.2 exists")
+                self.assert_(not os.path.exists(pi3), "pkginfo.3 exists")
 
 
 class TestDependencies(pkg5unittest.SingleDepotTestCase):
