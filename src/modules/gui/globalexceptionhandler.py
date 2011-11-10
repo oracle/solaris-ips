@@ -51,7 +51,8 @@ class GlobalExceptionHandler:
                                 self.parent.child.cleanup()
                 trace = StringIO()
                 traceback.print_exception (exctyp, value, tb, None, trace)
-                if exctyp is MemoryError:
+                if exctyp is MemoryError or (isinstance(value, EnvironmentError)
+                    and value.errno == errno.ENOMEM):
                         gobject.idle_add(self.__display_memory_err)
                 else:
                         gobject.idle_add(self.__display_unknown_err_ex, trace)
@@ -84,7 +85,10 @@ class GlobalExceptionHandler:
                         msg_stripped = dmsg.replace("\n", " ")
                         gui_misc.error_occurred(None, msg_stripped, _("Package Manager"),
                             gtk.MESSAGE_ERROR)
-                except MemoryError:
+                except (MemoryError, EnvironmentError), e:
+                        if isinstance(e, EnvironmentError) and \
+                            e.errno != errno.ENOMEM:
+                                raise
                         print dmsg
                 except Exception:
                         pass
