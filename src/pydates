@@ -24,6 +24,7 @@
 import os
 import time
 import mercurial.cmdutil as cmdutil
+import mercurial.match as matchmod
 from mercurial.localrepo import localrepository
 from mercurial.ui import ui
 
@@ -31,7 +32,7 @@ myui = ui()
 repo = localrepository(myui, cmdutil.findrepo(os.getcwd()))
 
 # Match only python files in src/modules.
-matchfn = cmdutil.match(repo, pats=["re:src/modules/.*\.py$"])
+matchfn = matchmod.match(repo.root, os.getcwd(), patterns=["re:src/modules/.*\.py$"])
 
 # Dummy prep function.
 def prep(ctx, fns):
@@ -40,7 +41,7 @@ def prep(ctx, fns):
 # Get the set of matching files in the working directory parent.
 manifest = set(
     f
-    for f in cmdutil.revsingle(repo, ".")
+    for f in repo["."]
     if f.startswith("src/modules/") and f.endswith(".py")
 )
 
