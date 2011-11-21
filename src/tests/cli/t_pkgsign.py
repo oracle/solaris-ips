@@ -76,6 +76,10 @@ class TestPkgSign(pkg5unittest.SingleDepotTestCase):
             add set name='weirdness' value='] [ * ?'
             close """
 
+        example_pkg20 = """
+            open example_pkg@2.0,5.11-0
+            close """
+
         varsig_pkg = """
             open example_pkg@1.0,5.15-0
             add set name=variant.arch value=sparc value=i386
@@ -759,10 +763,6 @@ class TestPkgSign(pkg5unittest.SingleDepotTestCase):
 
                 # Test that not specifying a destination repository fails.
                 self.pkgsign("", "'*'", exit=2)
-
-                # Test that passing two patterns which match the same name
-                # fails.
-                self.pkgsign(self.durl1, "'e*' '*x*'", exit=1)
 
                 # Test that passing a repo that doesn't exist doesn't cause
                 # a traceback.
@@ -2652,6 +2652,29 @@ class TestPkgSign(pkg5unittest.SingleDepotTestCase):
                 self.assert_("signature" not in self.errout)
                 self.pkg("fix")
                 self.assert_("signature" not in self.errout)
+
+        def test_bug_19009(self):
+                plist = self.pkgsend_bulk(self.rurl1,
+                    [self.example_pkg10, self.example_pkg20])
+                sign_args = "-k %(key)s -c %(cert)s -i %(ch1)s %(name)s" % {
+                        "name": " ".join(plist),
+                        "key": os.path.join(self.keys_dir,
+                            "cs1_ch1_ta3_key.pem"),
+                        "cert": os.path.join(self.cs_dir,
+                            "cs1_ch1_ta3_cert.pem"),
+                        "ch1": os.path.join(self.chain_certs_dir,
+                            "ch1_ta3_cert.pem")
+                }
+                self.pkgsign(self.rurl1, sign_args)
+                repo = self.dc.get_repo()
+                for pfmri in plist:
+                        found = False
+                        with open(repo.manifest(pfmri), "rb") as fh:
+                                for l in fh:
+                                        if l.startswith("signature"):
+                                                found = True
+                                                break
+                        self.assert_(found, "%s was not signed." % pfmri)
 
 
 class TestPkgSignMultiDepot(pkg5unittest.ManyDepotTestCase):

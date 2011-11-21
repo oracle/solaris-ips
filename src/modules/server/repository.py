@@ -2602,8 +2602,7 @@ class Repository(object):
                         # Get matching items from target catalog and then
                         # merge the result.
                         mdict, mrefs, munmatched = \
-                            rstore.catalog.get_matching_fmris(patterns,
-                                raise_unmatched=False)
+                            rstore.catalog.get_matching_fmris(patterns)
                         merge(mdict, matching)
                         merge(mrefs, references)
                         if unmatched is None:

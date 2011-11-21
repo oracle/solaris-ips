@@ -467,8 +467,7 @@ def get_matches(src_pub, tracker, xport, pargs, any_unmatched, any_matched,
         if "*" not in pargs and "*@*" not in pargs:
                 try:
                         matches, refs, unmatched = \
-                            src_cat.get_matching_fmris(pargs,
-                            raise_unmatched=False)
+                            src_cat.get_matching_fmris(pargs)
                 except apx.PackageMatchErrors, e:
                         abort(str(e))
 

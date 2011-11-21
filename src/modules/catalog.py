@@ -3114,7 +3114,7 @@ class Catalog(object):
                         # returned.
                         unmatched.update(set(pat_tuples.keys()) - matched_pats)
 
-        def get_matching_fmris(self, patterns, raise_unmatched=True):
+        def get_matching_fmris(self, patterns):
                 """Given a user-specified list of FMRI pattern strings, return
                 a tuple of ('matching', 'references', 'unmatched'), where
                 matching is a dict of matching fmris, references is a dict of
@@ -3136,9 +3136,6 @@ class Catalog(object):
                 set(['unmatched1', 'unmatchedN'])
 
                 'patterns' is the list of package patterns to match.
-
-                'raise_unmatched' is an optional boolean indicating that an
-                exception should be raised if any patterns are not matched.
 
                 Constraint used is always AUTO as per expected UI behavior when
                 determining successor versions.
@@ -3276,22 +3273,16 @@ class Catalog(object):
                                         # for each matching package name
                                         matchdict.setdefault(k, []).append(p)
 
-                for name in matchdict:
-                        if len(matchdict[name]) > 1:
-                                # different pats, same pkg
-                                multispec.append(tuple([name] +
-                                    matchdict[name]))
-
-                if (raise_unmatched and unmatched) or multimatch or multispec:
+                if multimatch:
                         raise api_errors.PackageMatchErrors(
-                            multiple_matches=multimatch,
-                            multispec=multispec,
-                            unmatched_fmris=unmatched)
+                            multiple_matches=multimatch)
 
-                # merge patterns together now that there are no conflicts
+                # Group the matching patterns by package name and allow multiple
+                # fmri matches.
                 proposed_dict = {}
                 for d in ret.values():
-                        proposed_dict.update(d)
+                        for k, l in d.iteritems():
+                                proposed_dict.setdefault(k, []).extend(l)
 
                 # construct references so that we can know which pattern
                 # generated which fmris...

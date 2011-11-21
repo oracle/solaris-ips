@@ -233,7 +233,6 @@ def main_func():
                 all_pats = frozenset(pats)
                 get_all_pubs = False
                 pub_prefs = set()
-                matches = {}
                 # Gather the publishers whose catalogs will be needed.
                 for pat in pats:
                         try:
@@ -251,8 +250,7 @@ def main_func():
                         if not get_all_pubs and p.prefix not in pub_prefs:
                                 continue
                         cat = fetch_catalog(p, xport, temp_root)
-                        ms, tmp1, u = cat.get_matching_fmris(pats,
-                            raise_unmatched=False)
+                        ms, tmp1, u = cat.get_matching_fmris(pats)
                         # Find which patterns matched.
                         matched_pats = all_pats - u
                         # Remove those patterns from the unmatched set.
