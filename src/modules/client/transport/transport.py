@@ -553,7 +553,7 @@ class Transport(object):
 
                 # If captive portal test hasn't been executed, run it
                 # prior to this operation.
-                self._captive_portal_test(ccancel=ccancel)
+                self._captive_portal_test(ccancel=ccancel, alt_repo=alt_repo)
 
                 # For search, prefer remote sources if available.  This allows
                 # consumers to configure both a file-based and network-based set
@@ -657,7 +657,7 @@ class Transport(object):
 
                 # If captive portal test hasn't been executed, run it
                 # prior to this operation.
-                self._captive_portal_test(ccancel=ccancel)
+                self._captive_portal_test(ccancel=ccancel, alt_repo=alt_repo)
 
                 for d in self.__gen_repo(pub, retry_count, origin_only=True,
                     alt_repo=alt_repo):
@@ -793,7 +793,7 @@ class Transport(object):
 
                 # If captive portal test hasn't been executed, run it
                 # prior to this operation.
-                self._captive_portal_test(ccancel=ccancel)
+                self._captive_portal_test(ccancel=ccancel, alt_repo=alt_repo)
 
                 # Check if the download_dir exists.  If it doesn't, create
                 # the directories.
@@ -1198,7 +1198,7 @@ class Transport(object):
 
                 # If captive portal test hasn't been executed, run it
                 # prior to this operation.
-                self._captive_portal_test(ccancel=ccancel)
+                self._captive_portal_test(ccancel=ccancel, alt_repo=alt_repo)
 
                 # Check if the download_dir exists.  If it doesn't create
                 # the directories.
@@ -1279,7 +1279,8 @@ class Transport(object):
                 # If captive portal test hasn't been executed, run it
                 # prior to this operation.
                 try:
-                        self._captive_portal_test(ccancel=ccancel)
+                        self._captive_portal_test(ccancel=ccancel,
+                            alt_repo=alt_repo)
                 except apx.InvalidDepotResponseException:
                         return
 
@@ -1720,7 +1721,8 @@ class Transport(object):
 
                 # If captive portal test hasn't been executed, run it
                 # prior to this operation.
-                self._captive_portal_test(ccancel=mfile.get_ccancel())
+                self._captive_portal_test(ccancel=mfile.get_ccancel(),
+                    alt_repo=mfile.get_alt_repo())
 
                 # Check if the download_dir exists.  If it doesn't create
                 # the directories.
@@ -1782,7 +1784,7 @@ class Transport(object):
 
                 # If captive portal test hasn't been executed, run it
                 # prior to this operation.
-                self._captive_portal_test(ccancel=ccancel)
+                self._captive_portal_test(ccancel=ccancel, alt_repo=alt_repo)
 
                 for d in self.__gen_repo(pub, retry_count, origin_only=True,
                     alt_repo=alt_repo):
@@ -2088,7 +2090,7 @@ class Transport(object):
                 finally:
                         self._lock.release()
 
-        def _captive_portal_test(self, ccancel=None):
+        def _captive_portal_test(self, ccancel=None, alt_repo=None):
                 """Implementation of captive_portal_test."""
 
                 fail = tx.TransportFailures()
@@ -2099,9 +2101,18 @@ class Transport(object):
                 self.__portal_test_executed = True
                 vd = None
 
-                for pub in self.cfg.gen_publishers():
+                pubs = [pub for pub in self.cfg.gen_publishers()]
+                if not pubs and alt_repo:
+                        # Special case -- no configured publishers exist, but
+                        # an alternate package source was specified, so create
+                        # a temporary publisher using alternate repository.
+                        pubs = [publisher.Publisher("temporary",
+                            repository=alt_repo)]
+
+                for pub in pubs:
                         try:
-                                vd = self._get_versions(pub, ccancel=ccancel)
+                                vd = self._get_versions(pub, ccancel=ccancel,
+                                    alt_repo=alt_repo)
                         except tx.TransportException, ex:
                                 # Encountered a transport error while
                                 # trying to contact this publisher.

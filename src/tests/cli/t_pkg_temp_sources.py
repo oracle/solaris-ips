@@ -676,6 +676,31 @@ link path=usr/local/bin/soft-foo target=usr/bin/foo
                 """
 
                 #
+                # Create an image with no configured package sources, and
+                # verify that a package can be installed from a temporary
+                # source.
+                #
+                self.image_create(self.empty_rurl, prefix=None)
+                self.pkg("set-property signature-policy ignore")
+                self.pkg("list -a", exit=1)
+                self.pkg("install -g %s foo" % self.foo_arc)
+
+                #
+                # Create an image with a network-based source, then make that
+                # source unreachable and verify that a package can be installed
+                # from a temporary source.
+                #
+                self.dcs[4].start()
+                self.image_create(self.dcs[4].get_depot_url(), prefix=None)
+                self.dcs[4].stop()
+                self.pkg("set-property signature-policy ignore")
+                self.pkg("list -a")
+                # --no-refresh is required for now because -g combines temporary
+                # sources with configured soures and pkg(5) currently treats
+                # refresh failure as fatal.  See bug 18323.
+                self.pkg("install --no-refresh -g %s foo" % self.foo_arc)
+
+                #
                 # Create an image and verify no packages are known.
                 #
                 self.image_create(self.empty_rurl, prefix=None)

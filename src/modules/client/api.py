@@ -4112,7 +4112,10 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                                 raise
                         except apx.NegativeSearchResult:
                                 continue
-                        except apx.TransportError, e:
+                        except (apx.InvalidDepotResponseException,
+                            apx.TransportError), e:
+                                # Alternate source failed portal test or can't
+                                # be contacted at all.
                                 failed.append((descriptive_name, e))
                                 continue
                         except apx.UnsupportedSearchError, e:
