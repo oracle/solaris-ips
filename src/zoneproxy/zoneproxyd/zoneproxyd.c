@@ -173,13 +173,14 @@ struct proxy_config {
 
 /* global variables */
 int		g_port;
-int		g_door;
+int		g_door = -1;
 int		g_pipe_fd;
 int		g_max_door_thread = DOOR_THREAD_MAX;
 int		g_door_thread_count = 0;
 uint_t		g_proxy_pair_count = 0;
 thread_key_t	g_thr_info_key;
 mutex_t		*g_door_thr_lock;
+cond_t		*g_door_thr_cv;
 mutex_t		*g_listener_lock;
 mutex_t		*g_thr_pool_lock;
 
@@ -831,6 +832,16 @@ static void *
 zpd_door_loop(void *arg)
 {
 	thread_t *tid;
+
+	/*
+	 * If g_door hasn't been set yet, wait for the main thread
+	 * to create the door.
+	 */
+	(void) mutex_lock(g_door_thr_lock);
+	while (g_door == -1) {
+		(void) cond_wait(g_door_thr_cv, g_door_thr_lock);
+	}
+	(void) mutex_unlock(g_door_thr_lock);
 
 	/* Bind to door's private pool */
 	if (door_bind(g_door) < 0) {
@@ -2019,6 +2030,16 @@ main(int argc, char **argv)
 		exit(EXIT_FAILURE);
 	}
 
+	g_door_thr_cv = memalign(DEFAULT_LOCK_ALIGN, sizeof (cond_t));
+	if (g_door_thr_cv == NULL) {
+		(void) fprintf(stderr, "Unable to allocate g_door_thr_cv\n");
+		exit(EXIT_FAILURE);
+	}
+	if (cond_init(g_door_thr_cv, USYNC_THREAD, NULL) < 0) {
+		perror("cond_init");
+		exit(EXIT_FAILURE);
+	}
+
 	g_listener_lock = memalign(DEFAULT_LOCK_ALIGN, sizeof (mutex_t));
 	if (g_listener_lock == NULL) {
 		(void) fprintf(stderr, "Unable to allocate g_listener_lock\n");
@@ -2063,12 +2084,16 @@ main(int argc, char **argv)
 	/* Setup door */
 	(void) door_server_create(zpd_door_create_thread);
 
+	(void) mutex_lock(g_door_thr_lock);
 	g_door = door_create(zpd_door_server, NULL,
 	    DOOR_PRIVATE | DOOR_NO_CANCEL);
 	if (g_door < 0) {
+		(void) mutex_unlock(g_door_thr_lock);
 		perror("door_create");
 		exit(EXIT_FAILURE);
 	}
+	(void) cond_broadcast(g_door_thr_cv);
+	(void) mutex_unlock(g_door_thr_lock);
 
 	/*
 	 * Set a limit on the size of the data that may be passed
@@ -2155,6 +2180,8 @@ main(int argc, char **argv)
 	(void) mutex_destroy(g_door_thr_lock);
 	(void) mutex_destroy(g_listener_lock);
 	(void) mutex_destroy(g_thr_pool_lock);
+	(void) cond_destroy(g_door_thr_cv);
+	free(g_door_thr_cv);
 	free(g_door_thr_lock);
 	free(g_listener_lock);
 	free(g_thr_pool_lock);
