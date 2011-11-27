@@ -81,7 +81,7 @@ PLATNUM= 0
 # Build Identifier. Used to indicate which build (or respin for
 # the development build) of the Solaris Update is being built. 
 #
-BUILDID= 3
+BUILDID= 4
 
 #
 # Nightly build identifier. This is only really used in the branch
