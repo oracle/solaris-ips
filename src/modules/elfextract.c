@@ -468,6 +468,8 @@ getdynamic(int fd)
 
 		switch (gd.d_tag) {
 		case DT_NEEDED:
+		case DT_FILTER:
+		case DT_SUNW_FILTER:
 			if (liblist_add(deps, gd.d_un.d_val) == NULL)
 				goto bad;
 			break;
@@ -477,6 +479,10 @@ getdynamic(int fd)
 		case DT_RUNPATH:
 			runpath = gd.d_un.d_val;
 			break;
+		case DT_POSFLAG_1:
+			if (gd.d_un.d_val & DF_P1_DEFERRED) {
+				t++;
+			}
 		}
 	}
 

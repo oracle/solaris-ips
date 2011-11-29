@@ -27,6 +27,7 @@ if __name__ == "__main__":
         testutils.setup_environment("../../../proto")
 import pkg5unittest
 
+import itertools
 import os
 import subprocess
 import sys
@@ -35,6 +36,7 @@ import unittest
 import pkg.actions as actions
 import pkg.flavor.base as base
 import pkg.flavor.depthlimitedmf as mf
+import pkg.misc as misc
 import pkg.portable as portable
 import pkg.publish.dependencies as dependencies
 
@@ -962,7 +964,13 @@ file NOHASH group=bin mode=0555 owner=root path=c/bin/perl variant.foo=c
                 contents = contents + "\n"
                 self.make_misc_files({ path: contents }, prefix="proto")
 
-        def make_elf(self, run_paths=[], output_path="elf_test", bit64=False):
+        def make_elf(self, run_paths=[], output_path="elf_test", bit64=False,
+            deferred_libs=misc.EmptyI, filter_files=misc.EmptyI,
+            lazy_libs=misc.EmptyI, mapfile=None, no_link=False, obj_files=None,
+            optional_filters=misc.EmptyI, program_text=None, shared_lib=False):
+                assert obj_files is None or program_text is None
+                if obj_files is None and program_text is None:
+                        program_text = "int main(){}\n"
                 out_file = os.path.join(self.test_proto_dir, output_path)
 
                 # Make sure to quote the runpaths, as they may contain tokens
@@ -970,7 +978,19 @@ file NOHASH group=bin mode=0555 owner=root path=c/bin/perl variant.foo=c
                 opts = ["-R'%s'" % rp for rp in run_paths]
                 if bit64:
                         opts.append("-m64")
-                self.c_compile("int main(){}\n", opts, out_file)
+                if shared_lib:
+                        opts.append("-G")
+                if no_link:
+                        opts.append("-c")
+                if mapfile:
+                        opts.append("-M%s" % mapfile)
+                opts.extend(["-F%s" % f for f in filter_files])
+                opts.extend(["-f%s" % f for f in optional_filters])
+                opts.extend(["-z deferred"] +  list(deferred_libs) +
+                    ["-z nodeferred"])
+                opts.extend(["-z lazyload %s" % f for f in lazy_libs])
+                self.c_compile(program_text, opts, out_file,
+                    obj_files=obj_files)
 
                 return out_file[len(self.test_proto_dir)+1:]
 
@@ -1058,6 +1078,155 @@ file NOHASH group=bin mode=0555 owner=root path=c/bin/perl variant.foo=c
                                                                     "\n" % d
                                 res += t
                         raise RuntimeError(res)
+
+        def test_elf_dependency_tags(self):
+                """Testing related to bug 18990 where pkgdepend doesn't handle
+                all types of elf dependencies correctly."""
+
+                # Other places test the basic NEEDED elf depedency.
+
+                manf = """\
+file group=bin mode=0755 owner=sys path=usr/lib/foo.so.1
+"""
+                foo_c = """\
+void bar() {}
+void foo() { bar(); }
+"""
+
+                bar_c = """\
+void bar() {}
+"""
+                mapfile_1 = """\
+$mapfile_version 2
+
+SYMBOL_SCOPE {
+        global:
+                bar { FILTER=bar.so };
+};
+"""
+                mapfile_2 = """\
+$mapfile_version 2
+
+SYMBOL_SCOPE {
+        global:
+                bar { AUXILIARY=xxx.so };
+};
+"""
+                def __check_res(es, ms, pkg_attrs):
+                        self.assertEqual(len(es), 0,
+                            "\n".join([str(d) for d in es]))
+                        self.assertEqual(len(ms), 0,
+                            "\n".join([str(d) for d in ms]))
+                        self.assertEqual(pkg_attrs, {})
+
+                base_dir = os.path.join(self.test_proto_dir, "usr", "lib")
+                foo_path = os.path.join(base_dir, "foo.o")
+                bar_path = os.path.join(base_dir, "bar.so")
+                so_path = os.path.join(base_dir, "foo.so.1")
+                mapfile_1_path = os.path.join(self.test_root, "mapfile_1")
+                mapfile_2_path = os.path.join(self.test_root, "mapfile_2")
+                mp = self.make_manifest(manf)
+
+                self.make_elf(output_path=bar_path, program_text=bar_c,
+                    shared_lib=True)
+                # Test that FILTER dependencies are treated as needed.
+                self.make_elf(output_path=foo_path, no_link=True,
+                    program_text=foo_c)
+                self.make_elf(output_path=so_path, run_paths=[base_dir],
+                    filter_files=[bar_path], shared_lib=True,
+                    obj_files=[foo_path])
+
+                ds, es, ms, pkg_attrs = dependencies.list_implicit_deps(
+                    mp, [self.test_proto_dir], {}, [], convert=False)
+                __check_res(es, ms, pkg_attrs)
+                self.assertEqual(len(ds), 2, "\n".join([str(d) for d in ds]))
+                expected_file_deps = set(["bar.so", "libc.so.1"])
+                found_file_deps = set(itertools.chain.from_iterable(
+                    [d.attrs[DDP + ".file"] for d in ds]))
+                self.assertEqualDiff(expected_file_deps, found_file_deps)
+
+                # Test that SUNW_FILTER dependencies are treated as needed.
+                self.make_file(mapfile_1_path, mapfile_1)
+                self.make_elf(output_path=foo_path, no_link=True,
+                    program_text=foo_c)
+                self.make_elf(output_path=so_path, run_paths=[base_dir],
+                    mapfile=mapfile_1_path, obj_files=[foo_path],
+                    shared_lib=True)
+
+                ds, es, ms, pkg_attrs = dependencies.list_implicit_deps(
+                    mp, [self.test_proto_dir], {}, [], convert=False)
+                __check_res(es, ms, pkg_attrs)
+                self.assertEqual(len(ds), 2, "\n".join([str(d) for d in ds]))
+                expected_file_deps = set(["bar.so", "libc.so.1"])
+                found_file_deps = set(itertools.chain.from_iterable(
+                    [d.attrs[DDP + ".file"] for d in ds]))
+                self.assertEqualDiff(expected_file_deps, found_file_deps)
+
+                # Test that AUXILIARY dependencies are ignored.
+                self.make_elf(output_path=foo_path, no_link=True,
+                    program_text=foo_c)
+                self.make_elf(output_path=so_path, run_paths=[base_dir],
+                    optional_filters=["xxx.so"], obj_files=[foo_path],
+                    shared_lib=True)
+
+                ds, es, ms, pkg_attrs = dependencies.list_implicit_deps(
+                    mp, [self.test_proto_dir], {}, [], convert=False)
+                __check_res(es, ms, pkg_attrs)
+                self.assertEqual(len(ds), 1, "\n".join([str(d) for d in ds]))
+                expected_file_deps = set(["libc.so.1"])
+                found_file_deps = set(itertools.chain.from_iterable(
+                    [d.attrs[DDP + ".file"] for d in ds]))
+                self.assertEqualDiff(expected_file_deps, found_file_deps)
+
+                # Test that SUNW_AUXILIARY dependencies are ignored.
+                self.make_file(mapfile_2_path, mapfile_2)
+                self.make_elf(output_path=foo_path, no_link=True,
+                    program_text=foo_c)
+                self.make_elf(output_path=so_path, run_paths=[base_dir],
+                    mapfile=mapfile_2_path, obj_files=[foo_path],
+                    shared_lib=True)
+
+                ds, es, ms, pkg_attrs = dependencies.list_implicit_deps(
+                    mp, [self.test_proto_dir], {}, [], convert=False)
+                __check_res(es, ms, pkg_attrs)
+                self.assertEqual(len(ds), 1, "\n".join([str(d) for d in ds]))
+                expected_file_deps = set(["libc.so.1"])
+                found_file_deps = set(itertools.chain.from_iterable(
+                    [d.attrs[DDP + ".file"] for d in ds]))
+                self.assertEqualDiff(expected_file_deps, found_file_deps)
+
+                # Test that a NEEDED dependency with a LAZY DEFERRED POSFLAG_1
+                # before it is ignored.
+                self.make_elf(output_path=foo_path, no_link=True,
+                    program_text=foo_c)
+                self.make_elf(output_path=so_path, run_paths=[base_dir],
+                    deferred_libs=[bar_path], shared_lib=True,
+                    obj_files=[foo_path])
+
+                ds, es, ms, pkg_attrs = dependencies.list_implicit_deps(
+                    mp, [self.test_proto_dir], {}, [], convert=False)
+                __check_res(es, ms, pkg_attrs)
+                self.assertEqual(len(ds), 1, "\n".join([str(d) for d in ds]))
+                expected_file_deps = set(["libc.so.1"])
+                found_file_deps = set(itertools.chain.from_iterable(
+                    [d.attrs[DDP + ".file"] for d in ds]))
+                self.assertEqualDiff(expected_file_deps, found_file_deps)
+
+                # Test that a lazy loaded dependency is still required.
+                self.make_elf(output_path=foo_path, no_link=True,
+                    program_text=foo_c)
+                self.make_elf(output_path=so_path, run_paths=[base_dir],
+                    lazy_libs=[bar_path], shared_lib=True,
+                    obj_files=[foo_path])
+
+                ds, es, ms, pkg_attrs = dependencies.list_implicit_deps(
+                    mp, [self.test_proto_dir], {}, [], convert=False)
+                __check_res(es, ms, pkg_attrs)
+                self.assertEqual(len(ds), 2, "\n".join([str(d) for d in ds]))
+                expected_file_deps = set(["bar.so", "libc.so.1"])
+                found_file_deps = set(itertools.chain.from_iterable(
+                    [d.attrs[DDP + ".file"] for d in ds]))
+                self.assertEqualDiff(expected_file_deps, found_file_deps)
 
         def test_opts(self):
                 """Ensure that incorrect arguments or permissions errors don't

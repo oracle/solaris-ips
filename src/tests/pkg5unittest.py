@@ -590,7 +590,7 @@ if __name__ == "__main__":
         #
         # The following are utility functions for use by testcases.
         #
-        def c_compile(self, prog_text, opts, outputfile):
+        def c_compile(self, prog_text, opts, outputfile, obj_files=None):
                 """Given a C program (as a string), compile it into the
                 executable given by outputfile.  Outputfile should be
                 given as a relative path, and will be located below the
@@ -602,17 +602,22 @@ if __name__ == "__main__":
                 # We use a series of likely compilers.  At present we support
                 # this testing with SunStudio.
                 #
+                assert obj_files is not None or prog_text is not None
+                assert obj_files is None or prog_text is None
                 if os.path.dirname(outputfile) != "":
                         try:
                                 os.makedirs(os.path.dirname(outputfile))
                         except OSError, e:
                                 if e.errno != errno.EEXIST:
                                         raise
-                c_fd, c_path = tempfile.mkstemp(suffix=".c",
-                    dir=self.test_root)
-                c_fh = os.fdopen(c_fd, "w")
-                c_fh.write(prog_text)
-                c_fh.close()
+                if prog_text:
+                        c_fd, c_path = tempfile.mkstemp(suffix=".c",
+                            dir=self.test_root)
+                        c_fh = os.fdopen(c_fd, "w")
+                        c_fh.write(prog_text)
+                        c_fh.close()
+                else:
+                        c_path = " ".join(obj_files)
 
                 found = False
                 outpath = os.path.join(self.test_root, outputfile)
@@ -1605,7 +1610,8 @@ class Pkg5TestRunner(unittest.TextTestRunner):
                 finished = False
                 while not finished:
                         try:
-                                shutil.rmtree("/tmp/ips.test.%s" % os.getpid())
+                                shutil.rmtree(os.path.join(g_tempdir,
+                                    "ips.test.%s" % os.getpid()))
                         except OSError, e:
                                 if e.errno != errno.EBUSY:
                                         raise
@@ -1659,7 +1665,12 @@ class Pkg5TestRunner(unittest.TextTestRunner):
 
                 result = _CombinedResult()
                 if not all_tests:
-                        shutil.rmtree("/tmp/ips.test.%s" % os.getpid())
+                        try:
+                                shutil.rmtree(os.path.join(g_tempdir,
+                                    "ips.test.%s" % os.getpid()))
+                        except OSError, e:
+                                if e.errno != errno.ENOENT:
+                                        raise
                         return result
 
                 assert suite_name is not None
@@ -1792,7 +1803,8 @@ class Pkg5TestRunner(unittest.TextTestRunner):
                         finally:
                                 if terminate:
                                         self.__terminate_processes(jobs)
-                                shutil.rmtree("/tmp/ips.test.%s" % os.getpid())
+                                shutil.rmtree(os.path.join(g_tempdir,
+                                    "ips.test.%s" % os.getpid()))
                 return result
 
 
@@ -3199,7 +3211,8 @@ def fakeroot_create():
                 pass
         else:
                 # fakeroot already exists
-                raise RuntimeError("The fakeroot shouldn't already exist.")
+                raise RuntimeError("The fakeroot shouldn't already exist.\n"
+                    "Path is:%s" % cmd_path)
 
         # when creating the fakeroot we want to make sure pkg doesn't
         # touch the real root.
