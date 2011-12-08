@@ -78,23 +78,19 @@ class Variants(dict):
         # Methods which are unique to variants
         def allow_action(self, action):
                 """ determine if variants permit this action """
-                avars = dict((
-                    (k, v)
-                    for k, v in action.attrs.iteritems()
-                    if k[:8] == "variant."
-                ))
 
-                for k, v in avars.iteritems():
-                        # Handle arbitrary debug variants: allow the install
-                        # if the value is "false".
-                        if k not in self.__keyset and \
-                            k[:14] == "variant.debug." and v != "false":
-                                return False
+                for k, v in action.attrs.iteritems():
+                        if k[:8] != "variant.":
+                                continue
+                        sys_v = self.get(k, None)
 
-                        # For all other variants, prevent the install if the
-                        # value doesn't match the system value.  We might want
-                        # to do something different for unknown variants.
-                        if self.get(k, v) != v:
+                        # If the system value and the action variant value
+                        # agree, then the action is allowed.  Otherwise, if the
+                        # system value doesn't exist, check to see if the
+                        # action's variant is a debug variant.  If it is, allow
+                        # the action if the variant value is set to false.
+                        if sys_v != v and (sys_v is not None or
+                            (k[:14] == "variant.debug." and v != "false")):
                                 return False
 
                 return True

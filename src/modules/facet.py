@@ -26,7 +26,7 @@
 # basic facet support
 
 from pkg.misc import EmptyI
-import fnmatch 
+import fnmatch
 
 class Facets(dict):
         # store information on facets; subclass dict 
@@ -126,13 +126,14 @@ class Facets(dict):
                 dict.clear(self)
 
         def allow_action(self, action):
-                """ determine if facets permit this action; if any facets
-                allow it, return True; also return True if no facets are present"""
-                facets = [k for k in action.attrs.keys() if k.startswith("facet.")]
-                
+                """ determine if facets permit this action; if any facets allow
+                it, return True; also return True if no facets are present"""
+
                 ret = True
 
-                for f in facets:
+                for f in action.attrs.keys():
+                        if f[:6] != "facet.":
+                                continue
                         if self[f]:
                                 return True
                         else:

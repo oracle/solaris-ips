@@ -1833,7 +1833,7 @@ class ImagePlan(object):
                                         self.__cbytes_added += \
                                             os.stat(mpath).st_size * 3
                                 except EnvironmentError, e:
-                                        raise apx._convert_error(e)
+                                        raise api_errors._convert_error(e)
                         self.__cbytes_added += cpbytes
                         self.__bytes_added += pbytes
 
