@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2008, 2010, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2008, 2011, Oracle and/or its affiliates. All rights reserved.
 #
 
 # NOTE: This module is inherently posix specific.  Care is taken in the modules
@@ -78,12 +78,7 @@ class CfgFile(object):
         return self.comment_regexp.match(line)
 
     def splitline(self, line):
-        cols = line.split(self.separator)
-
-        if len(cols) != len(self.column_names):
-            raise RuntimeError, "line %s in %s has %d columns" % \
-                (line, self.filename, len(cols))
-        return cols
+        return line.split(self.separator)
 
     def getfilelines(self):
         """ given self, return list of lines to be printed.
@@ -110,9 +105,12 @@ class CfgFile(object):
                         (line, None, lineno)
                 else:
                     cols = self.splitline(line)
-                    dic = dict(zip(self.column_names, cols))
-                    self.index[tuple(dic[k] for k in self.keys)] = \
-                        (line, dic, lineno)
+                    if len(cols) == len(self.column_names):
+                        dic = dict(zip(self.column_names, cols))
+                        self.index[tuple(dic[k] for k in self.keys)] = \
+                            (line, dic, lineno)
+                    else:
+                        self.index[lineno] = (line, None, lineno)
                 lineno += linecnt
             file.close()
             self.needswriting = False
@@ -443,9 +441,10 @@ class UserattrFile(CfgFile):
         """ return tokenized line, with attribute column a dictionary
             w/ lists for values"""
         cols = re.split("(?<=[^\\\\]):", line) #match non-escaped :
+
         if len(cols) != len(self.column_names):
-            raise RuntimeError, "line %s in %s has %d columns rather than %s" % \
-                (line, self.filename, len(cols), len(self.column_names))
+            return cols
+
         attributes=re.split("(?<=[^\\\\]);", cols[4]) # match non escaped ;
 
         d = {}

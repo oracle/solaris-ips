@@ -3028,6 +3028,37 @@ adm:NP:6445::::::
                 self.pkg("install silver@2.0")
                 self.pkg("verify -v")
 
+        def test_upgrade_garbage_passwd(self):
+                self.pkgsend_bulk(self.rurl, (self.basics0, self.singleuser))
+                self.image_create(self.rurl)
+                pwd_path = os.path.join(self.get_img_path(), "etc/passwd")
+
+                # Put a garbage line in /etc/passwd, and make sure we can
+                # install a user, uninstall the user, and preserve the garbage
+                # line.  Once with a blank line in the middle, once with a
+                # non-blank line with too few fields, once with a non-blank line
+                # with too many fields, and once with a blank line at the end.
+                for lineno, garbage in ((3, ""), (3, "garbage"),
+                    (3, ":::::::::"), (100, "")):
+                        garbage += "\n"
+                        self.pkg("install basics")
+                        with file(pwd_path, "r+") as pwd_file:
+                                lines = pwd_file.readlines()
+                                lines[lineno:lineno] = garbage
+                                pwd_file.truncate(0)
+                                pwd_file.seek(0)
+                                pwd_file.writelines(lines)
+                        self.pkg("install singleuser")
+                        with file(pwd_path) as pwd_file:
+                                lines = pwd_file.readlines()
+                                self.assert_(garbage in lines)
+                        self.pkg("uninstall singleuser")
+                        with file(pwd_path) as pwd_file:
+                                lines = pwd_file.readlines()
+                                self.assert_(garbage in lines)
+
+                        self.pkg("uninstall '*'")
+
         def test_user_in_grouplist(self):
                 """If a user is present in a secondary group list when the user
                 is installed, the client shouldn't crash."""
@@ -3040,6 +3071,7 @@ adm:NP:6445::::::
                         lines = group_file.readlines()
                         lines[0] = lines[0][:-1] + "Kermit" + "\n"
                         group_file.truncate(0)
+                        group_file.seek(0)
                         group_file.writelines(lines)
                 self.pkg("install only_user@1.0")
 
