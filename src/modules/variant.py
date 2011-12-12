@@ -266,6 +266,16 @@ class VariantCombinations(object):
                 vc.__combinations = self.__combinations
                 return vc
 
+        def __eq__(self, other):
+                return self.__template == other.__template and \
+                    self.__sat_set == other.__sat_set and \
+                    self.__not_sat_set == other.__not_sat_set and \
+                    self.__simpl_template == other.__simpl_template and \
+                    self.__combinations == other.__combinations
+
+        def __ne__(self, other):
+                return not self.__eq__(other)
+
         def is_empty(self):
                 """Returns whether self was created with any potential variant
                 values."""
@@ -308,6 +318,48 @@ class VariantCombinations(object):
                 res.__not_sat_set &= vc.__sat_set
                 return res
 
+        def separate_satisfied(self, vc):
+                """Find those combinations of variants that are satisfied only
+                in self, in both self and vc, and only in vc."""
+
+                intersect = None
+                only_big = None
+                only_small = None
+
+                if self.is_empty() and vc.is_empty():
+                        return None, self, None
+
+                if vc.__template.issubset(self.__template):
+                        big = self
+                        small = vc
+                elif self.__template.issubset(vc.__template):
+                        big = vc
+                        small = self
+                else:
+                        # If one template isn't a subset of, or identical to,
+                        # the other, then no meaningful comparison can be
+                        # performed.
+                        return self, None, vc
+
+                if big.__sat_set & small.__sat_set:
+                        intersect = VariantCombinations(big.__template, False)
+                        intersect.__sat_set = big.__sat_set & small.__sat_set
+                        intersect.__not_sat_set -= intersect.__sat_set
+
+                if big.__sat_set - small.__sat_set:
+                        only_big = VariantCombinations(big.__template, False)
+                        only_big.__sat_set = big.__sat_set - small.__sat_set
+                        only_big.__not_sat_set -= only_big.__sat_set
+
+                if small.__sat_set - big.__sat_set:
+                        only_small = VariantCombinations(big.__template, False)
+                        only_small.__sat_set = small.__sat_set - big.__sat_set
+                        only_small.__not_sat_set -= only_small.__sat_set
+
+                if big == self:
+                        return only_big, intersect, only_small
+                return only_small, intersect, only_big
+
         def mark_as_satisfied(self, vc):
                 """For all instances in vc, mark those instances as being
                 satisfied.  Returns a boolean indicating whether any changes
@@ -336,7 +388,6 @@ class VariantCombinations(object):
 
                 self.__sat_set |= self.__not_sat_set
                 self.__not_sat_set = set()
-                
 
         def is_satisfied(self):
                 """Returns whether all variant combinations for this package

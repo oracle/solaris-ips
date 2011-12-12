@@ -31,6 +31,7 @@ import os
 import sys
 import unittest
 
+import pkg.actions as actions
 import pkg.client.api as api
 import pkg.actions.depend as depend
 import pkg.client.progress as progress
@@ -144,39 +145,39 @@ depend fmri=__TBD pkg.debug.depend.file=no_such_named_file pkg.debug.depend.path
 
         sat_both = """\
 set name=fmri value=pkg:/sat_both
-file NOHASH path=platform/bar/baz/no_such_named_file
-file NOHASH path=platform/foo/baz/no_such_named_file
+file NOHASH path=platform/bar/baz/no_such_named_file group=sys mode=0600 owner=root
+file NOHASH path=platform/foo/baz/no_such_named_file group=sys mode=0600 owner=root
 """
 
         sat_bar_libc = """\
 set name=fmri value=pkg:/sat_bar_libc
-file NOHASH path=platform/bar/baz/no_such_named_file
+file NOHASH path=platform/bar/baz/no_such_named_file group=sys mode=0600 owner=root
 """
 
         sat_bar_libc2 = """\
 set name=fmri value=pkg:/sat_bar_libc2
-file NOHASH path=platform/bar/baz/no_such_named_file
+file NOHASH path=platform/bar/baz/no_such_named_file group=sys mode=0600 owner=root
 """
 
         sat_foo_libc = """\
 set name=fmri value=pkg:/sat_foo_libc
-file NOHASH path=platform/foo/baz/no_such_named_file
+file NOHASH path=platform/foo/baz/no_such_named_file group=sys mode=0600 owner=root
 """
 
         sat_bar_libc_num_var = """\
 set name=fmri value=pkg:/sat_bar_libc
 set name=variant.num value=one
-file NOHASH path=platform/bar/baz/no_such_named_file
+file NOHASH path=platform/bar/baz/no_such_named_file group=sys mode=0600 owner=root
 """
         sat_foo_libc_num_var = """\
 set name=fmri value=pkg:/sat_foo_libc
 set name=variant.num value=two
-file NOHASH path=platform/foo/baz/no_such_named_file
+file NOHASH path=platform/foo/baz/no_such_named_file group=sys mode=0600 owner=root
 """
         sat_foo_libc_num_var_both = """\
 set name=fmri value=pkg:/sat_foo_libc
 set name=variant.num value=one value=two
-file NOHASH path=platform/foo/baz/no_such_named_file
+file NOHASH path=platform/foo/baz/no_such_named_file group=sys mode=0600 owner=root
 """
 
         multi_file_dep_manf = """\
@@ -522,7 +523,7 @@ link path=usr/lib/l2 target=isaexec
 """
         bug_18172_dest = """\
 set name=pkg.fmri value=dest@0.5.11,5.11-1
-file tmp/foo path=usr/lib/isaexec
+file tmp/foo path=usr/lib/isaexec group=sys mode=0600 owner=root
 """
 
         bug_18173_cs_1 = """\
@@ -537,7 +538,7 @@ close
 
         bug_18173_cs_2 = """\
 set name=pkg.fmri value=cs@0.5.11,5.11-2
-file tmp/foo path=usr/lib/isaexec
+file tmp/foo path=usr/lib/isaexec group=sys mode=0600 owner=root
 """
 
         bug_18173_ksh = """\
@@ -548,7 +549,7 @@ depend fmri=__TBD pkg.debug.depend.file=isaexec pkg.debug.depend.path=usr/lib pk
 
         bug_18173_zones = """\
 set name=pkg.fmri value=zones@0.5.11,5.11-2
-file NOHASH path=usr/lib/brand/shared/dsconvert mode=0755
+file NOHASH path=usr/lib/brand/shared/dsconvert group=sys mode=0755 owner=root
 depend fmri=__TBD pkg.debug.depend.file=ksh pkg.debug.depend.path=usr/bin pkg.debug.depend.reason=usr/lib/brand/shared/dsconvert pkg.debug.depend.type=script type=require
 """
 
@@ -569,7 +570,7 @@ depend fmri=__TBD pkg.debug.depend.file=libc.so.1 pkg.debug.depend.path=lib/64 p
 
         bug_18315_dependee_manf = """ \
 set name=pkg.fmri value=dependee@1,5.11-1
-file NOHASH path=lib/amd64/libc.so.1
+file NOHASH path=lib/amd64/libc.so.1 group=sys mode=0600 owner=root
 """
 
         bug_18315_var_link1_manf = """ \
@@ -599,7 +600,7 @@ depend fmri=__TBD pkg.debug.depend.file=libc.so.1 pkg.debug.depend.path=lib/64 p
 set name=pkg.fmri value=dependee@1,5.11-1
 set name=variant.arch value=i386 value=sparc value=foo
 set name=variant.opensolaris.zone value=global value=nonglobal
-file NOHASH path=lib/amd64/libc.so.1
+file NOHASH path=lib/amd64/libc.so.1 group=sys mode=0600 owner=root
 """
 
         bug_18315_var_link3_manf = """ \
@@ -644,11 +645,8 @@ depend fmri=pkg://// type=require
                 pkg_deps, errs = dependencies.resolve_deps([m1_path],
                     self.api_obj)
                 self.assertEqual(len(errs), 1)
-                err_text = """\
-The package pkg:/badreq@1,5.11 contains depend actions with values in their fmri attributes which are not valid fmris.  The bad values are:
-	pkg:////
-"""
-                self.assertEqualDiff(err_text, str(errs[0]))
+                self.assert_(isinstance(errs[0],
+                    actions.InvalidActionAttributesError))
 
                 bad_require_any_dep_manf = """\
 depend fmri=example_pkg fmri=pkg://////// fmri=pkg://// type=require-any
@@ -657,13 +655,22 @@ depend fmri=example_pkg fmri=pkg://////// fmri=pkg://// type=require-any
                 pkg_deps, errs = dependencies.resolve_deps([m1_path],
                     self.api_obj)
                 self.assertEqual(len(errs), 1)
-                err_text = """\
-The package %s contains depend actions with values in their fmri attributes which are not valid fmris.  The bad values are:
-	pkg:////
-	pkg:////////
+                self.assert_(isinstance(errs[0],
+                    actions.InvalidActionAttributesError))
+
+                bad_variant = """\
+set name=pkg.fmri value=foo@1.0,5.11-1
+set name=variant.num value=one value=two
+depend fmri=pkg:/a@0,5.11-1 type=conditional predicate=pkg:/b@2,5.11-1 variant.nn
 """
-                self.assertEqualDiff(err_text % os.path.basename(m1_path),
-                    str(errs[0]))
+                m1_path = self.make_manifest(bad_variant)
+                pkg_deps, errs = dependencies.resolve_deps([m1_path],
+                    self.api_obj)
+                self.assertEqual(len(errs), 1)
+                self.assert_(isinstance(errs[0],
+                    actions.MalformedActionError),
+                    "Error was of the type. The type was:%s. The error "
+                    "was:\n:%s" % (type(errs[0]), errs[0]))
 
         def test_resolve_permissions(self):
                 """Test that a manifest that pkgdepend resolve can't access
@@ -888,6 +895,8 @@ The package %s contains depend actions with values in their fmri attributes whic
                                         [str(d) for d in pkg_deps[one_dep]]))
                         d = pkg_deps[one_dep][0]
                         self.assertEqual(d.attrs["fmri"], exp_pkg)
+                        self.assertEqual(d.attrs["type"], "require",
+                            "Dependency was:%s" % d)
 
                 col_path = self.make_manifest(self.multi_file_dep_manf)
                 # the following manifest is logically equivalent to col_path
@@ -920,56 +929,40 @@ The package %s contains depend actions with values in their fmri attributes whic
                         __check_results(pkg_deps, errs, "pkg:/sat_pyc",
                             pyc_path, mf_path)
 
-                        # This resolution should fail because files which
-                        # satisfy the dependency are delivered in two packages.
+                        # This resolution should produce require-any
+                        # dependencies because files which satisfy the
+                        # dependency are delivered in two packages.
                         pkg_deps, errs = dependencies.resolve_deps(
                             [mf_path, py_path, pyc_path], self.api_obj)
                         self.assertEqual(len(pkg_deps), 3)
-                        for k in pkg_deps:
-                                if pkg_deps[k]:
-                                        raise RuntimeError("Got the following "
-                                            "unexpected dependencies:\n%s" %
-                                            "\n".join(["%s\n%s" %
-                                                (k,"\n".join([
-                                                    "\t%s" % d for d in pkg_deps[k]]))
-                                                    for k in pkg_deps
-                                                ]))
-                        if len(errs) != 2:
-                                raise RuntimeError("Didn't get two "
-                                    "errors:\n%s" %
+                        if len(errs) != 0:
+                                raise RuntimeError("Unexpected errors:\n%s" %
                                     "\n".join(str(e) for e in errs))
-                        for e in errs:
-                                if isinstance(e,
-                                    dependencies.MultiplePackagesPathError):
-                                        for d in e.res:
-                                                if d.attrs["fmri"] not in \
-                                                    ("pkg:/sat_py",
-                                                    "pkg:/sat_pyc"):
-                                                        raise RuntimeError(
-                                                            "Unexpected "
-                                                            "dependency "
-                                                            "action:%s" % d)
-                                        self.assertEqual(
-                                            e.source.attrs["%s.file" %
-                                                self.depend_dp],
-                                            ["search_storage.py",
-                                            "search_storage.pyc",
-                                            "search_storage/__init__.py"])
-                                        self.assertEqual(
-                                            os.path.basename(mf_path),
-                                            e.pkg_name)
-                                elif isinstance(e,
-                                    dependencies.UnresolvedDependencyError):
-                                        self.assertEqual(e.path, mf_path)
-                                        self.assertEqual(
-                                            e.file_dep.attrs[
-                                                "%s.file" % self.depend_dp],
-                                            ["search_storage.py",
-                                            "search_storage.pyc",
-                                            "search_storage/__init__.py"])
-                                else:
-                                        raise RuntimeError(
-                                            "Unexpected error:%s" % e)
+                        self.assertEqual(len(pkg_deps[py_path]), 0)
+                        self.assertEqual(len(pkg_deps[pyc_path]), 0)
+                        self.assertEqual(len(pkg_deps[mf_path]), 1,
+                            "Didn't get one dependency:\n%s" %
+                            "\n".join([str(d) for d in pkg_deps[mf_path]]))
+                        self.assertEqual(d.attrs["type"], "require-any")
+                        self.assertEqual(set(d.attrs["fmri"]),
+                            set(["pkg:/sat_py", "pkg:/sat_pyc"]))
+
+                        pkg_deps, errs = dependencies.resolve_deps(
+                            [both_path, mf_path, py_path, pyc_path],
+                            self.api_obj)
+                        self.assertEqual(len(pkg_deps), 4)
+                        if len(errs) != 0:
+                                raise RuntimeError("Unexpected errors:\n%s" %
+                                    "\n".join(str(e) for e in errs))
+                        self.assertEqual(len(pkg_deps[py_path]), 0)
+                        self.assertEqual(len(pkg_deps[both_path]), 0)
+                        self.assertEqual(len(pkg_deps[pyc_path]), 0)
+                        self.assertEqual(len(pkg_deps[mf_path]), 1,
+                            "Didn't get one dependency:\n%s" %
+                            "\n".join([str(d) for d in pkg_deps[mf_path]]))
+                        self.assertEqual(d.attrs["type"], "require-any")
+                        self.assertEqual(set(d.attrs["fmri"]), set(
+                            ["pkg:/sat_py", "pkg:/sat_pyc", "pkg:/sat_both"]))
 
         def test_bug_11518(self):
                 """Test that resolving against an installed, cached, manifest
@@ -1082,128 +1075,71 @@ The package %s contains depend actions with values in their fmri attributes whic
                             ("pkg:/sat_foo_libc", "pkg:/sat_bar_libc"):
                                 raise RuntimeError("Unexpected fmri in %s" % d)
 
-                # This resolution should fail because in the case of
-                # variant.num=one, files which satisfy the dependency are
-                # delivered in two packages.
+                # This resolution should result in two, varianted, dependencies.
+                # The first should have variant.num=one and a type of
+                # require-any because in that case files which satisfy the
+                # dependency are delivered in two packages.  The other
+                # dependency should be a require dependency with
+                # variant.num=two.
                 pkg_deps, errs = dependencies.resolve_deps(
                     [col_path_num_var, foo_path_num_var_both, bar_path_num_var],
                     self.api_obj)
                 self.assertEqual(len(pkg_deps), 3)
-                for k in pkg_deps:
-                        if pkg_deps[k]:
-                                raise RuntimeError("Got the following "
-                                    "unexpected dependencies:\n%s" %
-                                    "\n".join(["%s\n%s" %
-                                        (k,"\n".join([
-                                            "\t%s" % d for d in pkg_deps[k]]))
-                                            for k in pkg_deps
-                                        ]))
-                if len(errs) != 2:
-                        raise RuntimeError("Didn't get two errors:\n%s" %
+                if len(errs) != 0:
+                        raise RuntimeError("Got an unexpected error:\n%s" %
                             "\n".join(str(e) for e in errs))
-                for e in errs:
-                        if isinstance(e,
-                            dependencies.MultiplePackagesPathError):
-                                for d in e.res:
-                                        if d.attrs["fmri"] not in \
-                                            ("pkg:/sat_foo_libc",
-                                            "pkg:/sat_bar_libc"):
-                                                raise RuntimeError("Unexpected "
-                                                    "dependency action:%s" % d)
-                                self.assertEqual(
-                                    e.source.attrs["%s.file" % self.depend_dp],
-                                    "no_such_named_file")
-                                self.assertEqual("pkg:/collision_manf",
-                                    e.pkg_name)
-                        elif isinstance(e,
-                            dependencies.UnresolvedDependencyError):
-                                self.assertEqual(e.path, col_path_num_var)
-                                self.assertEqual(
-                                    e.file_dep.attrs[
-                                        "%s.file" % self.depend_dp],
-                                    "no_such_named_file")
+                self.assertEqual(len(pkg_deps[foo_path_num_var_both]), 0)
+                self.assertEqual(len(pkg_deps[bar_path_num_var]), 0)
+                self.assertEqual(len(pkg_deps[col_path_num_var]), 2)
+                have_req_any = False
+                have_require = False
+                for d in pkg_deps[col_path_num_var]:
+                        if d.attrs["type"] == "require-any" and \
+                            set(d.attrs["fmri"]) == \
+                            set(["pkg:/sat_foo_libc", "pkg:/sat_bar_libc"]) and\
+                            d.attrs["variant.num"] == "one":
+                                have_req_any = True
+                        elif d.attrs["type"] == "require" and \
+                            d.attrs["fmri"] == "pkg:/sat_foo_libc" and \
+                            d.attrs["variant.num"] == "two":
+                                have_require = True
                         else:
-                                raise RuntimeError("Unexpected error:%s" % e)
+                                raise RuntimeError("Unexpected dependency:%s" %
+                                    d)
+                self.assert_(have_req_any)
+                self.assert_(have_require)
 
                 # This resolution should fail because files which satisfy the
                 # dependency are being delivered in two packages.
                 pkg_deps, errs = dependencies.resolve_deps(
                     [col_path, bar_path, foo_path], self.api_obj)
                 self.assertEqual(len(pkg_deps), 3)
-                for k in pkg_deps:
-                        if pkg_deps[k]:
-                                raise RuntimeError("Got the following "
-                                    "unexpected dependencies:\n%s" %
-                                    "\n".join(["%s\n%s" %
-                                        (k,"\n".join([
-                                            "\t%s" % d for d in pkg_deps[k]]))
-                                            for k in pkg_deps
-                                        ]))
-                if len(errs) != 2:
-                        raise RuntimeError("Didn't get two errors:\n%s" %
+                if len(errs) != 0:
+                        raise RuntimeError("Got an unexpected error:\n%s" %
                             "\n".join(str(e) for e in errs))
-                for e in errs:
-                        if isinstance(e,
-                            dependencies.MultiplePackagesPathError):
-                                for d in e.res:
-                                        if d.attrs["fmri"] not in \
-                                            ("pkg:/sat_foo_libc",
-                                            "pkg:/sat_bar_libc"):
-                                                raise RuntimeError("Unexpected "
-                                                    "dependency action:%s" % d)
-                                self.assertEqual(
-                                    e.source.attrs["%s.file" % self.depend_dp],
-                                    "no_such_named_file")
-                                self.assertEqual("pkg:/collision_manf",
-                                    e.pkg_name)
-                        elif isinstance(e,
-                            dependencies.UnresolvedDependencyError):
-                                self.assertEqual(e.path, col_path)
-                                self.assertEqual(
-                                    e.file_dep.attrs[
-                                        "%s.file" % self.depend_dp],
-                                    "no_such_named_file")
-                        else:
-                                raise RuntimeError("Unexpected error:%s" % e)
+                self.assertEqual(len(pkg_deps[foo_path]), 0)
+                self.assertEqual(len(pkg_deps[bar_path]), 0)
+                self.assertEqual(len(pkg_deps[col_path]), 1)
+                d = pkg_deps[col_path][0]
+                self.assertEqual(d.attrs["type"], "require-any")
+                self.assertEqual(set(d.attrs["fmri"]),
+                    set(["pkg:/sat_bar_libc", "pkg:/sat_foo_libc"]))
 
                 # This resolution should fail because files which satisfy the
                 # dependency are being delivered in two packages.
                 pkg_deps, errs = dependencies.resolve_deps(
                     [col_path, bar_path, bar2_path], self.api_obj)
                 self.assertEqual(len(pkg_deps), 3)
-                for k in pkg_deps:
-                        if pkg_deps[k]:
-                                raise RuntimeError("Got the following "
-                                    "unexpected dependencies:\n%s" %
-                                    "\n".join(["%s\n%s" %
-                                        (k,"\n".join([
-                                            "\t%s" % d for d in pkg_deps[k]]))
-                                            for k in pkg_deps
-                                        ]))
-                if len(errs) != 2:
-                        raise RuntimeError("Didn't get two errors:\n%s" %
+                if len(errs) != 0:
+                        raise RuntimeError("Got an unexpected error:\n%s" %
                             "\n".join(str(e) for e in errs))
-                for e in errs:
-                        if isinstance(e,
-                            dependencies.AmbiguousPathError):
-                                for d in e.pkgs:
-                                        if str(d) not in \
-                                            ("pkg:/sat_bar_libc",
-                                            "pkg:/sat_bar_libc2"):
-                                                raise RuntimeError("Unexpected "
-                                                    "dependency action:%s" % d)
-                                self.assertEqual(
-                                    e.source.attrs["%s.file" % self.depend_dp],
-                                    "no_such_named_file")
-                        elif isinstance(e,
-                            dependencies.UnresolvedDependencyError):
-                                self.assertEqual(e.path, col_path)
-                                self.assertEqual(
-                                    e.file_dep.attrs[
-                                        "%s.file" % self.depend_dp],
-                                    "no_such_named_file")
-                        else:
-                                raise RuntimeError("Unexpected error:%s" % e)
+                self.assertEqual(len(pkg_deps[bar2_path]), 0)
+                self.assertEqual(len(pkg_deps[bar_path]), 0)
+                self.assertEqual(len(pkg_deps[col_path]), 1)
+                d = pkg_deps[col_path][0]
+                self.assertEqual(d.attrs["type"], "require-any")
+                self.assertEqual(set(d.attrs["fmri"]),
+                    set(["pkg:/sat_bar_libc", "pkg:/sat_bar_libc2"]))
 
         def test_bug_15647(self):
                 """Verify that in cases where both the provided manifests and
@@ -1270,19 +1206,34 @@ The package %s contains depend actions with values in their fmri attributes whic
                 res2_path = self.make_manifest(self.bug_17700_res2)
 
                 pkg_deps, errs = dependencies.resolve_deps([dep_path,
-                    res1_path, res2_path], self.api_obj)
-                for k in pkg_deps:
-                        self.assertEqual(len(pkg_deps[k]), 0,
-                            "Should not have resolved any dependencies instead "
-                            "%s had the following dependencies found:%s" %
-                            (k, "\n".join([str(s) for s in pkg_deps[k]])))
-                self.assertEqual(len(errs), 2, "Should have gotten exactly one "
-                    "error, instead got:%s" % "\n".join([str(s) for s in errs]))
-                for e in errs:
-                        self.assert_(isinstance(e,
-                            dependencies.MultiplePackagesPathError) or
-                            isinstance(e,
-                            dependencies.UnresolvedDependencyError))
+                    res1_path, res2_path], self.api_obj, use_system=False)
+                self.assertEqual(len(pkg_deps), 3)
+                if len(errs) != 0:
+                        raise RuntimeError("Got an unexpected error:\n%s" %
+                            "\n".join(str(e) for e in errs))
+                self.assertEqual(len(pkg_deps[res1_path]), 0)
+                self.assertEqual(len(pkg_deps[res2_path]), 0)
+                self.assertEqual(len(pkg_deps[dep_path]), 1)
+                d = pkg_deps[dep_path][0]
+                self.assertEqual(d.attrs["type"], "require-any")
+                self.assertEqual(set(d.attrs["fmri"]), set([
+                    "pkg:/system/kernel@1.0-1",
+                    "pkg:/system/kernel/platform@1.0-1"]))
+
+                pkg_deps, errs = dependencies.resolve_deps([dep_path,
+                    res1_path, res2_path], self.api_obj, use_system=True)
+                self.assertEqual(len(pkg_deps), 3)
+                if len(errs) != 0:
+                        raise RuntimeError("Got an unexpected error:\n%s" %
+                            "\n".join(str(e) for e in errs))
+                self.assertEqual(len(pkg_deps[res1_path]), 0)
+                self.assertEqual(len(pkg_deps[res2_path]), 0)
+                self.assertEqual(len(pkg_deps[dep_path]), 1)
+                d = pkg_deps[dep_path][0]
+                self.assertEqual(d.attrs["type"], "require-any")
+                self.assertEqual(set(d.attrs["fmri"]), set([
+                    "pkg:/system/kernel@1.0-1",
+                    "pkg:/system/kernel/platform@1.0-1"]))
 
         def test_bug_17756(self):
                 """Test that when a package has manually specified dependencies
@@ -1349,8 +1300,15 @@ depend fmri=pkg2 type=require variant.foo=bar
 
                 manf = ["set name=pkg.fmri value=bug_18019@1.0,5.11-1"]
                 for t in depend.known_types:
-                        manf.append("depend fmri=pkg:/%(type)s@0,5.11-1 "
-                            "type=%(type)s" % {"type": t})
+                        if t == "conditional":
+                                s = "depend fmri=pkg:/%(type)s@0,5.11-1 " \
+                                    "predicate=pkg:/foo@0,5.11-1 " \
+                                    "type=%(type)s" % {"type": t}
+                        else:
+                                s = "depend fmri=pkg:/%(type)s@0,5.11-1 " \
+                                    "type=%(type)s" % {"type": t}
+                        manf.append(s)
+                        
                 manf_path = self.make_manifest("\n".join(manf))
                 self.pkgdepend_resolve("-m %s" % manf_path)
                 res_path = manf_path + ".res"
@@ -1433,8 +1391,12 @@ depend fmri=pkg2 type=require variant.foo=bar
 
                 manf = ["set name=pkg.fmri value=bug_18077@1.0,5.11-1"]
                 for t in depend.known_types:
-                        manf.append("depend fmri=pkg:/foo@0,5.11-1 "
-                            "type=%(type)s" % {"type": t})
+                        if t == "conditional":
+                                s = "depend fmri=pkg:/foo2@0,5.11-1 predicate=pkg:/foo3@0,5.11-1 type=%(type)s" % {"type": t}
+                        else:
+                                s = "depend fmri=pkg:/foo@0,5.11-1 type=%(type)s" % {"type": t}
+
+                        manf.append(s)
                 manf_path = self.make_manifest("\n".join(manf))
                 self.pkgdepend_resolve("-m %s" % manf_path)
                 res_path = manf_path + ".res"
@@ -1873,7 +1835,7 @@ depend fmri=pkg2 type=require variant.foo=bar
                 bug_18318_depender_manf = """ \
 set name=pkg.fmri value=depender@1,5.11-1
 depend fmri=__TBD pkg.debug.depend.file=libc.so.1 pkg.debug.depend.path=lib/64 pkg.depend.reason=usr/bin/binary pkg.debug.depend.type=elf type=require
-depend fmri=link1 type=require
+depend fmri=link1@1-1 type=require
 """
                 l1_path = self.make_manifest(self.bug_18315_link1_manf)
                 l2_path = self.make_manifest(self.bug_18315_link2_manf)
@@ -1900,14 +1862,14 @@ depend fmri=link1 type=require
                                 self.assertEqual(
                                     d.attrs[dependencies.type_prefix], "elf")
                         else:
-                                self.assertEqual(d.attrs["fmri"], "link1")
+                                self.assertEqual(d.attrs["fmri"], "link1@1-1")
 
                 # Test that things work when the order of the require-any and
                 # require dependencies are changed and when the require
                 # dependency is on the second fmri instead of the first.
                 bug_18318_depender_manf = """ \
 set name=pkg.fmri value=depender@1,5.11-1
-depend fmri=link2 type=require
+depend fmri=link2@1-1 type=require
 depend fmri=__TBD pkg.debug.depend.file=libc.so.1 pkg.debug.depend.path=lib/64 pkg.depend.reason=usr/bin/binary pkg.debug.depend.type=elf type=require
 """
                 der_path = self.make_manifest(bug_18318_depender_manf)
@@ -1932,7 +1894,86 @@ depend fmri=__TBD pkg.debug.depend.file=libc.so.1 pkg.debug.depend.path=lib/64 p
                                 self.assertEqual(
                                     d.attrs[dependencies.type_prefix], "elf")
                         else:
-                                self.assertEqual(d.attrs["fmri"], "link2")
+                                self.assertEqual(d.attrs["fmri"], "link2@1-1")
+
+                # Check that the require-any dependency isn't removed when the
+                # require dependency is on an unversioned or lower version than
+                # the require-any.
+                bug_18318_depender_manf = """ \
+set name=pkg.fmri value=depender@1,5.11-1
+depend fmri=__TBD pkg.debug.depend.file=libc.so.1 pkg.debug.depend.path=lib/64 pkg.depend.reason=usr/bin/binary pkg.debug.depend.type=elf type=require
+depend fmri=link1 type=require
+"""
+                l1_path = self.make_manifest(self.bug_18315_link1_manf)
+                l2_path = self.make_manifest(self.bug_18315_link2_manf)
+                der_path = self.make_manifest(bug_18318_depender_manf)
+                dee_path = self.make_manifest(self.bug_18315_dependee_manf)
+
+                pkg_deps, errs = dependencies.resolve_deps(
+                    [l1_path, l2_path, der_path, dee_path], self.api_obj,
+                    use_system=False)
+                if errs:
+                        raise RuntimeError("Got the following unexpected "
+                            "errors:\n%s" % "\n".join(["%s" % e for e in errs]))
+                self.assertEqual(len(pkg_deps), 4)
+                self.assertEqual(len(pkg_deps[l1_path]), 0)
+                self.assertEqual(len(pkg_deps[l2_path]), 0)
+                self.assertEqual(len(pkg_deps[dee_path]), 0)
+                self.assertEqual(len(pkg_deps[der_path]), 3,
+                    "Got wrong number of pkgdeps for the dependent package. "
+                    "Deps were:\n%s" %
+                    "\n".join([str(d) for d in pkg_deps[der_path]]))
+                have_req_any = False
+                for d in pkg_deps[der_path]:
+                        if d.attrs["type"] == "require-any":
+                                self.assertEqual(len(d.attrlist("fmri")), 2)
+                                have_req_any = True
+                        elif d.attrs["fmri"].startswith("pkg:/dependee"):
+                                self.assertEqual(d.attrs["type"], "require")
+                                self.assertEqual(
+                                    d.attrs[dependencies.type_prefix], "elf")
+                        else:
+                                self.assertEqual(d.attrs["type"], "require")
+                                self.assertEqual(d.attrs["fmri"], "link1")
+                have_req_any = True
+
+                bug_18318_depender_manf = """ \
+set name=pkg.fmri value=depender@1,5.11-1
+depend fmri=__TBD pkg.debug.depend.file=libc.so.1 pkg.debug.depend.path=lib/64 pkg.depend.reason=usr/bin/binary pkg.debug.depend.type=elf type=require
+depend fmri=link1@0.1 type=require
+"""
+                l1_path = self.make_manifest(self.bug_18315_link1_manf)
+                l2_path = self.make_manifest(self.bug_18315_link2_manf)
+                der_path = self.make_manifest(bug_18318_depender_manf)
+                dee_path = self.make_manifest(self.bug_18315_dependee_manf)
+
+                pkg_deps, errs = dependencies.resolve_deps(
+                    [l1_path, l2_path, der_path, dee_path], self.api_obj,
+                    use_system=False)
+                if errs:
+                        raise RuntimeError("Got the following unexpected "
+                            "errors:\n%s" % "\n".join(["%s" % e for e in errs]))
+                self.assertEqual(len(pkg_deps), 4)
+                self.assertEqual(len(pkg_deps[l1_path]), 0)
+                self.assertEqual(len(pkg_deps[l2_path]), 0)
+                self.assertEqual(len(pkg_deps[dee_path]), 0)
+                self.assertEqual(len(pkg_deps[der_path]), 3,
+                    "Got wrong number of pkgdeps for the dependent package. "
+                    "Deps were:\n%s" %
+                    "\n".join([str(d) for d in pkg_deps[der_path]]))
+                have_req_any = False
+                for d in pkg_deps[der_path]:
+                        if d.attrs["type"] == "require-any":
+                                self.assertEqual(len(d.attrlist("fmri")), 2)
+                                have_req_any = True
+                        elif d.attrs["fmri"].startswith("pkg:/dependee"):
+                                self.assertEqual(d.attrs["type"], "require")
+                                self.assertEqual(
+                                    d.attrs[dependencies.type_prefix], "elf")
+                        else:
+                                self.assertEqual(d.attrs["type"], "require")
+                                self.assertEqual(d.attrs["fmri"], "link1@0.1")
+                have_req_any = True
 
         def test_bug_18318_2(self):
                 """Test that a manually tagged dependency cancels out
@@ -1943,7 +1984,7 @@ set name=pkg.fmri value=depender@1,5.11-1
 set name=variant.arch value=i386 value=sparc value=foo
 set name=variant.opensolaris.zone value=global value=nonglobal
 depend fmri=__TBD pkg.debug.depend.file=libc.so.1 pkg.debug.depend.path=lib/64 pkg.depend.reason=usr/bin/binary pkg.debug.depend.type=elf type=require
-depend fmri=link1 type=require
+depend fmri=link1@1-1 type=require
 """
                 lv1_path = self.make_manifest(self.bug_18315_var_link1_manf)
                 lv2_path = self.make_manifest(self.bug_18315_var_link2_manf)
@@ -1976,7 +2017,7 @@ depend fmri=link1 type=require
                                 self.assertEqual(
                                     d.attrs[dependencies.type_prefix], "link")
                         else:
-                                self.assertEqual(d.attrs["fmri"],"link1")
+                                self.assertEqual(d.attrs["fmri"],"link1@1-1")
 
         def test_bug_18318_3(self):
                 """Test that a manually tagged dependency with variants cancels
@@ -1987,7 +2028,7 @@ set name=pkg.fmri value=depender@1,5.11-1
 set name=variant.arch value=i386 value=sparc value=foo
 set name=variant.opensolaris.zone value=global value=nonglobal
 depend fmri=__TBD pkg.debug.depend.file=libc.so.1 pkg.debug.depend.path=lib/64 pkg.depend.reason=usr/bin/binary pkg.debug.depend.type=elf type=require
-depend fmri=link1 type=require variant.arch=sparc
+depend fmri=link1@1-1 type=require variant.arch=sparc
 """
                 lv1_path = self.make_manifest(self.bug_18315_var_link1_manf)
                 lv2_path = self.make_manifest(self.bug_18315_var_link2_manf)
@@ -2031,7 +2072,7 @@ depend fmri=link1 type=require variant.arch=sparc
                                 self.assertEqual(
                                     d.attrs[dependencies.type_prefix], "link")
                         else:
-                                self.assertEqual(d.attrs["fmri"], "link1")
+                                self.assertEqual(d.attrs["fmri"], "link1@1-1")
                                 self.assertEqual(d.attrs["type"], "require")
 
                 # Now test with the manual dependency valid when variant.arch is
@@ -2041,7 +2082,7 @@ set name=pkg.fmri value=depender@1,5.11-1
 set name=variant.arch value=i386 value=sparc value=foo
 set name=variant.opensolaris.zone value=global value=nonglobal
 depend fmri=__TBD pkg.debug.depend.file=libc.so.1 pkg.debug.depend.path=lib/64 pkg.depend.reason=usr/bin/binary pkg.debug.depend.type=elf type=require
-depend fmri=link1 type=require variant.arch=i386
+depend fmri=link1@1-1 type=require variant.arch=i386
 """
 
                 der_path = self.make_manifest(bug_18318_var_depender_manf)
@@ -2072,7 +2113,7 @@ depend fmri=link1 type=require variant.arch=i386
                                 self.assertEqual(
                                     d.attrs[dependencies.type_prefix], "link")
                         else:
-                                self.assertEqual(d.attrs["fmri"], "link1")
+                                self.assertEqual(d.attrs["fmri"], "link1@1-1")
                                 self.assertEqual(d.attrs["type"], "require")
 
         def test_bug_18318_4(self):
@@ -2084,8 +2125,8 @@ set name=pkg.fmri value=depender@1,5.11-1
 set name=variant.arch value=i386 value=sparc value=foo
 set name=variant.opensolaris.zone value=global value=nonglobal
 depend fmri=__TBD pkg.debug.depend.file=libc.so.1 pkg.debug.depend.path=lib/64 pkg.depend.reason=usr/bin/binary pkg.debug.depend.type=elf type=require
-depend fmri=link1@2 fmri=link2@2 fmri=link3@2 fmri=link4@2 type=require-any variant.arch=i386
-depend fmri=link2@2 fmri=link3@2 fmri=link4@2 type=require-any
+depend fmri=link1@1 fmri=link2@1 fmri=link3@1 fmri=link4@1 type=require-any variant.arch=i386
+depend fmri=link2@1 fmri=link3@1 fmri=link4@1 type=require-any
 depend fmri=__TBD pkg.debug.depend.reason=usr/bin/bar pkg.debug.depend.file=usr/bin/baz pkg.debug.depend.type=hardlink type=require variant.arch=i386
 """
 
@@ -2095,7 +2136,7 @@ set name=variant.arch value=i386 value=sparc value=foo
 set name=variant.opensolaris.zone value=global value=nonglobal
 link path=lib/64 target=amd64 variant.arch=i386
 link path=lib/64 target=amd64 variant.arch=sparc
-file NOHASH path=usr/bin/baz
+file NOHASH path=usr/bin/baz group=sys mode=0600 owner=root
 """
 
                 lv1_path = self.make_manifest(bug_18318_var_link1_manf)
@@ -2148,8 +2189,8 @@ file NOHASH path=usr/bin/baz
 
                 file_manf = """ \
 set name=pkg.fmri value=file1@1,5.11-1
-file NOHASH path=usr/lib/amd64/lib.so.1
-file NOHASH path=usr/bin/prog
+file NOHASH path=usr/lib/amd64/lib.so.1 group=sys mode=0644 owner=root
+file NOHASH path=usr/bin/prog group=sys mode=0644 owner=root
 depend fmri=__TBD pkg.debug.depend.reason=usr/bin/prog pkg.debug.depend.file=usr/lib/64/lib.so.1 pkg.debug.depend.type=elf type=require
 """
 
@@ -2172,7 +2213,10 @@ link path=usr/lib/64 target=amd64
                     "Deps were:\n%s" %
                     "\n".join([str(d) for d in pkg_deps[file_path]]))
                 dep = pkg_deps[file_path][0]
-                self.assertEqual(dep.attrs["type"], "require")
+                self.assertEqual(dep.attrs["type"], "require",
+                    "type was %s instead of require\ndep:%s" %
+                    (dep.attrs["type"], dep))
+                self.assert_("predicate" not in dep.attrs)
                 self.assert_(dep.attrs["fmri"].startswith("pkg:/link1"))
                 self.assertEqual(dep.attrs[self.depend_dp + ".type"], "link")
 
@@ -2278,6 +2322,1559 @@ file elfarch=i386 elfbits=32 group=bin mode=0555 owner=root path=usr/lib/isaexec
                         self.assert_("variant.debug.osnet" not in
                             dep.attrs, str(dep))
 
+        def test_bug_19009_conditional_collapsing_corner_cases(self):
+                """Check that conditional dependencies are handled correctly in
+                unusual situations."""
 
+                # Check that conditionals are only reduced to required
+                # dependencies if the require dependency specifies a successor
+                # to the predicate fmri.
+                manf = """
+set name=pkg.fmri value=foo@1.0,5.11-1
+depend fmri=pkg:/a@0-1 type=conditional predicate=pkg:/b@2-1
+depend fmri=pkg:/b@1-1 type=require
+"""
+
+                manf_path = self.make_manifest(manf)
+                pkg_deps, errs = dependencies.resolve_deps([manf_path],
+                    self.api_obj, use_system=False)
+                self.assertEqual(len(errs), 0,
+                    "\n".join([str(e) for e in errs]))
+                self.debug("pkg_deps:%s" % pkg_deps,)
+                self.assertEqual(len(pkg_deps), 1)
+                self.assertEqual(len(pkg_deps[manf_path]), 2)
+                for d in pkg_deps[manf_path]:
+                        if d.attrs["fmri"].startswith("pkg:/a"):
+                                self.assertEqual(d.attrs["type"], "conditional")
+
+                # The following tests check that conditional collapsing happens
+                # correctly in the face of variants of conditional and require
+                # dependencies.
+
+                manf = """
+set name=pkg.fmri value=foo@1.0,5.11-1
+set name=variant.num value=one value=two
+depend fmri=pkg:/a@0-1 type=conditional predicate=pkg:/b@2-1
+depend fmri=pkg:/b@2-1 type=require variant.num=two
+"""
+
+                manf_path = self.make_manifest(manf)
+                pkg_deps, errs = dependencies.resolve_deps([manf_path],
+                    self.api_obj, use_system=False)
+                self.assertEqual(len(errs), 0,
+                    "\n".join([str(e) for e in errs]))
+                self.debug("pkg_deps:%s" % pkg_deps,)
+                self.assertEqual(len(pkg_deps), 1)
+                self.assertEqual(len(pkg_deps[manf_path]), 3,
+                    "Expected 3 dependencies got %s. Deps are:\n%s" %
+                    (len(pkg_deps[manf_path]), "\n".join(
+                    [str(s) for s in pkg_deps[manf_path]])))
+                have_req = False
+                have_uncollapsed_cond = False
+                have_collapsed_cond = False
+                for d in pkg_deps[manf_path]:
+                        if d.attrs["fmri"].startswith("pkg:/b"):
+                                self.assertEqual(d.attrs["type"], "require")
+                                self.assertEqual(d.attrs["variant.num"], "two")
+                                have_req = True
+                        elif d.attrs["type"] == "conditional":
+                                self.assertEqual(d.attrs["fmri"],
+                                    "pkg:/a@0-1")
+                                self.assertEqual(d.attrs["variant.num"], "one")
+                                self.assert_("predicate" in d.attrs)
+                                have_uncollapsed_cond = True
+                        else:
+                                self.assertEqual(d.attrs["type"], "require")
+                                self.assertEqual(d.attrs["fmri"],
+                                    "pkg:/a@0-1")
+                                self.assertEqual(d.attrs["variant.num"], "two")
+                                self.assert_("predicate" not in d.attrs)
+                                have_collapsed_cond = True
+                self.assert_(have_req)
+                self.assert_(have_uncollapsed_cond)
+                self.assert_(have_collapsed_cond)
+
+                manf = """
+set name=pkg.fmri value=foo@1.0,5.11-1
+set name=variant.num value=one value=two
+depend fmri=pkg:/a@0-1 type=conditional predicate=pkg:/b@2-1 variant.num=two
+depend fmri=pkg:/b@2-1 type=require
+"""
+
+                manf_path = self.make_manifest(manf)
+                pkg_deps, errs = dependencies.resolve_deps([manf_path],
+                    self.api_obj, use_system=False)
+                self.assertEqual(len(errs), 0,
+                    "\n".join([str(e) for e in errs]))
+                self.debug("pkg_deps:%s" % pkg_deps,)
+                self.assertEqual(len(pkg_deps), 1)
+                self.assertEqual(len(pkg_deps[manf_path]), 2)
+                have_req = False
+                have_collapsed_cond = False
+                for d in pkg_deps[manf_path]:
+                        if d.attrs["fmri"].startswith("pkg:/b"):
+                                self.assertEqual(d.attrs["type"], "require")
+                                have_req = True
+                        else:
+                                self.assertEqual(d.attrs["type"], "require")
+                                self.assertEqual(d.attrs["fmri"],
+                                    "pkg:/a@0-1")
+                                self.assertEqual(d.attrs["variant.num"], "two")
+                                self.assert_("predicate" not in d.attrs)
+                                have_collapsed_cond = True
+                self.assert_(have_req)
+                self.assert_(have_collapsed_cond)
+
+                manf = """
+set name=pkg.fmri value=foo@1.0,5.11-1
+set name=variant.num value=one value=two
+depend fmri=pkg:/a@0-1 type=conditional predicate=pkg:/b@2-1 variant.num=one
+depend fmri=pkg:/b@2-1 type=require variant.num=two
+"""
+
+                manf_path = self.make_manifest(manf)
+                pkg_deps, errs = dependencies.resolve_deps([manf_path],
+                    self.api_obj, use_system=False)
+                self.assertEqual(len(errs), 0,
+                    "\n".join([str(e) for e in errs]))
+                self.debug("pkg_deps:%s" % pkg_deps,)
+                self.assertEqual(len(pkg_deps), 1)
+                self.assertEqual(len(pkg_deps[manf_path]), 2)
+                have_req = False
+                have_uncollapsed_cond = False
+                for d in pkg_deps[manf_path]:
+                        if d.attrs["fmri"].startswith("pkg:/b"):
+                                self.assertEqual(d.attrs["type"], "require")
+                                self.assertEqual(d.attrs["variant.num"], "two")
+                                have_req = True
+                        else:
+                                self.assertEqual(d.attrs["type"], "conditional")
+                                self.assertEqual(d.attrs["fmri"],
+                                    "pkg:/a@0-1")
+                                self.assertEqual(d.attrs["variant.num"], "one")
+                                self.assert_("predicate" in d.attrs)
+                                have_uncollapsed_cond = True
+                self.assert_(have_req)
+                self.assert_(have_uncollapsed_cond)
+
+        def test_bug_19009_collapsing_conditional_to_require_any(self):
+                """Check that conditional dependencies don't get collapsed into
+                require-any dependencies and that manually specified
+                dependencies aren't improperly collapsed."""
+
+                # Check that manually specified conditional dependencies aren't
+                # collapsed into require-any dependencies.
+
+                manf = """
+set name=pkg.fmri value=foo@1.0,5.11-1
+depend fmri=pkg:/a@0-1 type=conditional predicate=pkg:/b@2-1
+depend fmri=pkg:/c@0-1 type=conditional predicate=pkg:/b@2-1
+depend fmri=pkg:/b@2-1 type=require
+"""
+
+                manf_path = self.make_manifest(manf)
+                pkg_deps, errs = dependencies.resolve_deps([manf_path],
+                    self.api_obj, use_system=False)
+                self.assertEqual(len(errs), 0,
+                    "\n".join([str(e) for e in errs]))
+                self.debug("pkg_deps:%s" % pkg_deps,)
+                self.assertEqual(len(pkg_deps), 1)
+                self.assertEqual(len(pkg_deps[manf_path]), 3)
+                have_req = False
+                have_cond_a = False
+                have_cond_c = False
+                for d in pkg_deps[manf_path]:
+                        if d.attrs["fmri"].startswith("pkg:/b"):
+                                self.assertEqual(d.attrs["type"], "require")
+                                have_req = True
+                        elif d.attrs["fmri"].startswith("pkg:/a"):
+                                self.assertEqual(d.attrs["type"], "require")
+                                self.assertEqual(d.attrs["fmri"],
+                                    "pkg:/a@0-1")
+                                have_cond_a = True
+                        else:
+                                self.assertEqual(d.attrs["type"], "require")
+                                self.assertEqual(d.attrs["fmri"],
+                                    "pkg:/c@0-1")
+                                have_cond_c = True
+                self.assert_(have_req)
+                self.assert_(have_cond_a)
+                self.assert_(have_cond_c)
+
+                # Check that manually specified conditional dependencies aren't
+                # collapsed into require-any dependencies even if other
+                # conditional dependencies are being reduced to require-any
+                # dependencies.  If the manual dependencies were not included in
+                # the manifest, then a require dependency on b and a require-any
+                # dependency on a and c would be produced.  Since the manual
+                # conditional dependencies on a and c will reduce to simple
+                # require dependencies on a and c, the require-any dependency on
+                # a and c will be dropped.
+
+                manf = """
+set name=pkg.fmri value=foo@1.0,5.11-1
+depend fmri=pkg:/a@3-1 type=conditional predicate=pkg:/b@2-1
+depend fmri=pkg:/c@3-1 type=conditional predicate=pkg:/b@2-1
+depend fmri=pkg:/b@2-1 type=require
+depend fmri=__TBD pkg.debug.depend.file=var/log/syslog pkg.debug.depend.reason=usr/bar pkg.debug.depend.type=hardlink type=require
+"""
+
+                a_manf = """
+set name=pkg.fmri value=a@0.0,5.11-1
+link path=var/log/syslog target=bar
+"""
+
+                c_manf = """
+set name=pkg.fmri value=c@0.0,5.11-1
+link path=var/log/syslog target=bar
+"""
+
+                b_manf = """
+set name=pkg.fmri value=b@2.0,5.11-1
+file NOHASH group=sys mode=0600 owner=root path=var/log/bar
+"""
+                manf_path = self.make_manifest(manf)
+                a_path = self.make_manifest(a_manf)
+                b_path = self.make_manifest(b_manf)
+                c_path = self.make_manifest(c_manf)
+                pkg_deps, errs = dependencies.resolve_deps(
+                    [manf_path, a_path, b_path, c_path], self.api_obj,
+                    use_system=False)
+                self.assertEqual(len(errs), 0,
+                    "\n".join([str(e) for e in errs]))
+                self.debug("pkg_deps:\n%s" % "\n".join(
+                    [str(d) for d in pkg_deps[manf_path]]))
+                self.assertEqual(len(pkg_deps), 4)
+                self.assertEqual(len(pkg_deps[manf_path]), 4)
+                have_req = 0
+                have_cond_a = False
+                have_cond_c = False
+                for d in pkg_deps[manf_path]:
+                        if d.attrs["fmri"].startswith("pkg:/b"):
+                                self.assertEqual(d.attrs["type"], "require")
+                                have_req += 1
+                        elif d.attrs["fmri"].startswith("pkg:/a"):
+                                self.assertEqual(d.attrs["type"], "require")
+                                self.assertEqual(d.attrs["fmri"],
+                                    "pkg:/a@3-1")
+                                have_cond_a = True
+                        else:
+                                self.assertEqual(d.attrs["type"], "require")
+                                self.assertEqual(d.attrs["fmri"],
+                                    "pkg:/c@3-1")
+                                have_cond_c = True
+                self.assertEqual(have_req, 2)
+                self.assert_(have_cond_a)
+                self.assert_(have_cond_c)
+
+                # Check that an inferred require-any dependency will not be
+                # removed if the require dependencies in the package are at a
+                # lower version of the pacakge.
+
+                manf = """
+set name=pkg.fmri value=foo@1.0,5.11-1
+depend fmri=pkg:/a@0-1 type=conditional predicate=pkg:/b@2-1
+depend fmri=pkg:/c@0-1 type=conditional predicate=pkg:/b@2-1
+depend fmri=pkg:/b@2-1 type=require
+depend fmri=__TBD pkg.debug.depend.file=var/log/syslog pkg.debug.depend.reason=usr/bar pkg.debug.depend.type=hardlink type=require
+"""
+
+                a_manf = """
+set name=pkg.fmri value=a@2,5.11-1
+link path=var/log/syslog target=bar
+"""
+
+                c_manf = """
+set name=pkg.fmri value=c@2,5.11-1
+link path=var/log/syslog target=bar
+"""
+
+                b_manf = """
+set name=pkg.fmri value=b@2.0,5.11-1
+file NOHASH group=sys mode=0600 owner=root path=var/log/bar
+"""
+                manf_path = self.make_manifest(manf)
+                a_path = self.make_manifest(a_manf)
+                b_path = self.make_manifest(b_manf)
+                c_path = self.make_manifest(c_manf)
+                pkg_deps, errs = dependencies.resolve_deps(
+                    [manf_path, a_path, b_path, c_path], self.api_obj,
+                    use_system=False)
+                self.assertEqual(len(errs), 0,
+                    "\n".join([str(e) for e in errs]))
+                self.debug("pkg_deps:\n%s" % "\n".join(
+                    [str(d) for d in pkg_deps[manf_path]]))
+                self.assertEqual(len(pkg_deps), 4)
+                self.assertEqual(len(pkg_deps[manf_path]), 5)
+                have_req = 0
+                have_cond_a = False
+                have_cond_c = False
+                have_req_any = False
+                for d in pkg_deps[manf_path]:
+                        if d.attrs["type"] == "require-any":
+                                self.assertEqual(set(d.attrlist("fmri")),
+                                    set(["pkg:/a@2-1", "pkg:/c@2-1"]))
+                                self.assert_("predicate" not in d.attrs)
+                                have_req_any = True
+                        elif d.attrs["fmri"].startswith("pkg:/b"):
+                                self.assertEqual(d.attrs["type"], "require")
+                                have_req += 1
+                        elif d.attrs["fmri"].startswith("pkg:/a"):
+                                self.assertEqual(d.attrs["type"], "require")
+                                self.assertEqual(d.attrs["fmri"],
+                                    "pkg:/a@0-1")
+                                have_cond_a = True
+                        elif d.attrs["fmri"].startswith("pkg:/c"):
+                                self.assertEqual(d.attrs["type"], "require")
+                                self.assertEqual(d.attrs["fmri"],
+                                    "pkg:/c@0-1")
+                                have_cond_c = True
+                self.assertEqual(have_req, 2)
+                self.assert_(have_cond_a)
+                self.assert_(have_cond_c)
+                self.assert_(have_req_any)
+
+        def __check_19009_results(self, pkg_deps, errs, paths,
+            expected_conditionals, expected_require_any, expected_require,
+            expected_num_deps):
+                """Check that the generated dependencies match the expected
+                dependencies.  This function is designed for tests associated
+                with bug 19009."""
+
+                if errs:
+                        raise RuntimeError("Got the following unexpected "
+                            "errors:\n%s" % "\n".join(["%s" % e for e in errs]))
+                self.assertEqual(len(pkg_deps), len(paths))
+                # Only the first manifest should have any dependencies since the
+                # others only provide files and links.
+                for p in paths[1:]:
+                        self.assertEqual(len(pkg_deps[p]), 0,
+                            "Got unexpected dependencies for %s.  Dependencies "
+                            "are:\n%s" % (p, pkg_deps[p]))
+                deps = pkg_deps[paths[0]]
+                self.debug("Dependencies are:\n%s" %
+                    "\n".join([str(d) for d in deps]))
+                self.assertEqual(len(deps), expected_num_deps,
+                    "Expected %s dependencies got %s. The dependencies "
+                    "were:\n\t%s" % (expected_num_deps, len(deps),
+                    "\n\t".join([str(s) for s in deps])))
+                lec = len(expected_conditionals)
+                lera = len(expected_require_any)
+                ler = len(expected_require)
+                self.debug("ec:%s era:%s er:%s" % (lec, lera, ler))
+                self.assertEqual(expected_num_deps, lec + lera + ler,
+                    "Manually expected %s but the number of dependencies in "
+                    "the expected types was %s. The dependencies were:\n\t%s" %
+                    (len(deps), lec + lera + ler,
+                    "\n\t".join([str(s) for s in deps])))
+
+                found_conditionals = set()
+                found_require = set()
+                found_require_any = set()
+                for d in deps:
+                        if d.attrs["type"] == "require":
+                                found_require.add(d.attrs["fmri"])
+
+                        elif d.attrs["type"] == "require-any":
+                                found_require_any.add(frozenset(
+                                    d.attrs["fmri"]))
+                                self.assert_(len(d.attrlist("fmri")) > 1)
+                        elif d.attrs["type"] == "conditional":
+                                found_conditionals.add((d.attrs["fmri"],
+                                    d.attrs["predicate"]))
+                        else:
+                                raise RuntimeError(
+                                    "Got unexpected dependency:%s" % d)
+
+                self.assertEqualDiff(sorted(expected_conditionals),
+                    sorted(found_conditionals))
+                self.assertEqualDiff(sorted(expected_require),
+                    sorted(found_require))
+                expected_but_not_seen = expected_require_any - found_require_any
+                seen_but_not_expected = found_require_any - expected_require_any
+                self.assertEqualDiff(expected_but_not_seen,
+                    seen_but_not_expected)
+
+        def __construct_19009_info(self, chains):
+                """Many of the tests for bug 19009 are similar.  This function
+                takes a description of the combinations of packages which should
+                satisfy a file dependency and generates a set of manifests to
+                match that desctiption, the dot encoding of the package
+                dependency graph, and the set of expected dependencies of
+                different types needed to represent the package dependencies."""
+
+                expected_conditionals = set()
+                expected_require_any = set()
+                expected_require = set()
+
+                manf_info = {}
+                start_pfmri = None
+                end_pfmris = set()
+                dot_encoding = """\
+digraph G {
+        rankdir=BT;
+        A [shape=box];
+"""
+                spacer = "        "
+                pkg_template = "pkg:/%s@1.0"
+
+                # Collect the set of package names which should deliver a file.
+                for c in chains:
+                        self.assert_(len(c) > 1)
+                        end_pfmris.add(c[-1])
+                # If only a single package delivers a file, then a require
+                # dependency is expected.
+                if len(end_pfmris) == 1:
+                        expected_require.add(pkg_template % end_pfmris.pop())
+                else:
+                        # Otherwise all the package names which ended a chain
+                        # form a require-any dependency.
+                        for p in end_pfmris:
+                                expected_require_any.add(pkg_template % p)
+
+                # Determine what dependencies are needed to represent each chain
+                # of packages.
+                for c in chains:
+                        if start_pfmri is None:
+                                start_pfmri = c[0]
+                        else:
+                                self.assertEqual(c[0], start_pfmri)
+                        dot_encoding += spacer + "->".join(c) + ";\n"
+                        if len(c) > 2:
+                                t = [pkg_template % p for p in c]
+                                for node, child in zip(t[1:], t[2:]):
+                                        if child in expected_require:
+                                                expected_require_any.add(node)
+                                        else:
+                                                expected_conditionals.add(
+                                                    (node, child))
+                        for pth, pfmri in zip(c, c[1:]):
+                                manf_info.setdefault(pfmri, {}).setdefault(
+                                    "path", []).append(pth.lower())
+                        # Triangles indicate packages which deliver a file.
+                        dot_encoding += spacer + c[-1] + " [shape=triangle]\n"
+                        manf_info.setdefault(c[-1], {})["provides_file"] = \
+                            c[-1].lower()
+
+                expected_require_any = set([frozenset(expected_require_any)])
+                dot_encoding += "}"
+                # The first manifest always contains only a file dependency.
+                manfs = ["""\
+set name=pkg.fmri value=%(pfmri)s@1.0
+depend type=require fmri=__TBD pkg.debug.depend.file=%(path)s \\
+    pkg.debug.depend.reason=needs_%(path)s pkg.debug.depend.type=elf
+""" % {"pfmri": start_pfmri, "path":start_pfmri.lower()}]
+
+                # These templates are used to generate the other manifests.
+                template = """\
+set name=pkg.fmri value=%s@1.0
+"""
+                file_template = """\
+file path=%s group=sys mode=0600 owner=root
+"""
+                link_template = """\
+link path=%(path)s target=%(target)s
+"""
+                # Generate each manifest desired.
+                for pfmri, detail in sorted(manf_info.items()):
+                        m = template % pfmri
+                        if "provides_file" in detail:
+                                m += file_template % detail["provides_file"]
+                        for pth in set(detail.get("path", [])):
+                                m += link_template % \
+                                    {"path":pth, "target":pfmri.lower()}
+                        manfs.append(m)
+
+                # Include useful information in the debugging output of the
+                # test.
+                self.debug("To see the link graph of this test use dot on "
+                    "this:\n%s" % dot_encoding)
+                self.debug("The manifests for this test are:")
+                for m in sorted(manfs):
+                        self.debug(m + "\n")
+                self.debug("Expected conditionals are:")
+                for pair in sorted(expected_conditionals):
+                        self.debug("\tfmri:%s\tpredicate:%s" % pair)
+                if len(expected_require_any) > 1:
+                        self.debug("Expected pfmris in require-any are: %s" %
+                            " ".join(sorted(expected_require_any)))
+                if expected_require:
+                        self.debug("Expected pfmri in require is:%s" %
+                            expected_require)
+
+                return manfs, expected_conditionals, expected_require_any, \
+                    expected_require
+
+        def test_bug_19009_inexpressible_1(self):
+                """Check that when resolve a configuration of dependencies that
+                can't be represented using the existing dependency types, an
+                error occurs."""
+
+                chains = [
+                    ("A", "B", "E"),
+                    ("A", "C", "E"),
+                    ("A", "D", "F"),
+                ]
+
+                manfs, expected_conditionals, expected_require_any, \
+                    expected_require = self.__construct_19009_info(chains)
+
+                paths = [self.make_manifest(m) for m in manfs]
+                pkg_deps, errs = dependencies.resolve_deps(paths, self.api_obj,
+                    use_system=False)
+                self.debug("Deps:\n%s" % "\n".join([
+                    str(d) for d in pkg_deps[paths[0]]]))
+                self.assertEqual(len(errs), 1)
+                err = errs[0]
+                self.assertEqual(len(err.conditionals), 1)
+                self.assert_(isinstance(err,
+                    dependencies.NeedConditionalRequireAny))
+                # Check that the exception prints correctly.
+                self.debug(err)
+
+        def test_bug_19009_inexpressible_2(self):
+                """Check that when resolve a configuration of dependencies that
+                can't be represented using the existing dependency types, an
+                error occurs."""
+
+                chains = [
+                    ("A", "B", "E", "G"),
+                    ("A", "C", "E", "G"),
+                    ("A", "D", "F")
+                ]
+
+                manfs, expected_conditionals, expected_require_any, \
+                    expected_require = self.__construct_19009_info(chains)
+
+                paths = [self.make_manifest(m) for m in manfs]
+                pkg_deps, errs = dependencies.resolve_deps(paths, self.api_obj,
+                    use_system=False)
+                self.debug("Deps:\n%s" % "\n".join([
+                    str(d) for d in pkg_deps[paths[0]]]))
+                self.assertEqual(len(errs), 1)
+                err = errs[0]
+                self.assertEqual(len(err.conditionals), 1)
+                self.assert_(isinstance(err,
+                    dependencies.NeedConditionalRequireAny))
+                # Check that the exception prints correctly.
+                self.debug(err)
+
+        def test_bug_19009_inexpressible_3(self):
+                """Check that when resolve a configuration of dependencies that
+                can't be represented using the existing dependency types, an
+                error occurs."""
+
+                chains = [
+                    ("A", "B", "D", "F", "H"),
+                    ("A", "B", "E", "G", "H"),
+                    ("A", "C", "I"),
+                ]
+
+                manfs, expected_conditionals, expected_require_any, \
+                    expected_require = self.__construct_19009_info(chains)
+
+                paths = [self.make_manifest(m) for m in manfs]
+                pkg_deps, errs = dependencies.resolve_deps(paths, self.api_obj,
+                    use_system=False)
+                self.debug("Deps:\n%s" % "\n".join([
+                    str(d) for d in pkg_deps[paths[0]]]))
+                self.assertEqual(len(errs), 1)
+                err = errs[0]
+                self.assertEqual(len(err.conditionals), 1)
+                self.assert_(isinstance(err,
+                    dependencies.NeedConditionalRequireAny))
+                # Check that the exception prints correctly.
+                self.debug(err)
+
+        def test_bug_19009_inexpressible_4(self):
+                """Check that when resolve a configuration of dependencies that
+                can't be represented using the existing dependency types, an
+                error occurs."""
+
+                chains = [
+                    ("A", "B", "D", "F", "I"),
+                    ("A", "B", "E", "H"),
+                    ("A", "C", "G", "I"),
+                ]
+
+                manfs, expected_conditionals, expected_require_any, \
+                    expected_require = self.__construct_19009_info(chains)
+
+                paths = [self.make_manifest(m) for m in manfs]
+                pkg_deps, errs = dependencies.resolve_deps(paths, self.api_obj,
+                    use_system=False)
+                self.debug("Deps:\n%s" % "\n".join([
+                    str(d) for d in pkg_deps[paths[0]]]))
+                self.assertEqual(len(errs), 1)
+                err = errs[0]
+                self.assertEqual(len(err.conditionals), 1)
+                self.assert_(isinstance(err,
+                    dependencies.NeedConditionalRequireAny))
+                # Check that the exception prints correctly.
+                self.debug(err)
+
+        def test_bug_19009_inexpressible_5(self):
+                """Check that when resolve a configuration of dependencies that
+                can't be represented using the existing dependency types, an
+                error occurs."""
+
+                chains = [
+                    ("A", "B", "E"),
+                    ("A", "C", "E"),
+                    ("A", "D"),
+                ]
+
+                manfs, expected_conditionals, expected_require_any, \
+                    expected_require = self.__construct_19009_info(chains)
+
+                paths = [self.make_manifest(m) for m in manfs]
+                pkg_deps, errs = dependencies.resolve_deps(paths, self.api_obj,
+                    use_system=False)
+                self.debug("Deps:\n%s" % "\n".join([
+                    str(d) for d in pkg_deps[paths[0]]]))
+                self.assertEqual(len(errs), 1)
+                err = errs[0]
+                self.assertEqual(len(err.conditionals), 1)
+                self.assert_(isinstance(err,
+                    dependencies.NeedConditionalRequireAny))
+                # Check that the exception prints correctly.
+                self.debug(err)
+
+        def test_bug_19009_inexpressible_with_variants_1(self):
+                """Check that when resolve a configuration of dependencies that
+                can't be represented using the existing dependency types, an
+                error occurs and that the right error happens when variants are
+                involved."""
+
+                chains = [
+                    ("A", "B", "E"),
+                    ("A", "C", "E"),
+                    ("A", "D", "F"),
+                ]
+
+                manfs, expected_conditionals, expected_require_any, \
+                    expected_require = self.__construct_19009_info(chains)
+
+                manfs[0] += "set name=variant.num value=one value=two\n"
+                manfs[1] += "set name=variant.num value=one\n"
+                self.debug("The manifest for package B has been modified to "
+                    "only apply when variant.num is one.")
+
+                paths = [self.make_manifest(m) for m in manfs]
+                pkg_deps, errs = dependencies.resolve_deps(paths, self.api_obj,
+                    use_system=False)
+                self.debug("Deps:\n%s" % "\n".join([
+                    str(d) for d in pkg_deps[paths[0]]]))
+
+                self.assertEqual(len(errs), 1)
+                err = errs[0]
+                self.assert_(isinstance(err,
+                    dependencies.NeedConditionalRequireAny))
+                self.assertEqual(len(err.conditionals), 1)
+                self.assertEqualDiff(sorted(set([
+                    frozenset([("variant.num", "one")])])),
+                    sorted(err.conditionals[0][2].sat_set))
+                # Check that the exception prints correctly.
+                self.debug(err)
+
+        def test_bug_19009_inexpressible_with_variants_2(self):
+                """Check that when resolve a configuration of dependencies that
+                can't be represented using the existing dependency types, an
+                error occurs and that the right error happens when variants are
+                involved."""
+
+                chains = [
+                    ("A", "B", "E"),
+                    ("A", "C", "E"),
+                    ("A", "D", "F"),
+                ]
+
+                manfs, expected_conditionals, expected_require_any, \
+                    expected_require = self.__construct_19009_info(chains)
+
+                manfs[0] += "set name=variant.num value=one value=two\n"
+                manfs[0] += "set name=variant.foo value=bar value=baz\n"
+                manfs[1] += "set name=variant.num value=one\n"
+                manfs[1] += "set name=variant.foo value=bar\n"
+
+                self.debug("The manifest for package B has been modified to "
+                    "only apply when variant.num is one and variant.foo is "
+                    "bar.")
+
+                paths = [self.make_manifest(m) for m in manfs]
+                pkg_deps, errs = dependencies.resolve_deps(paths, self.api_obj,
+                    use_system=False)
+                self.debug("Deps:\n%s" % "\n".join([
+                    str(d) for d in pkg_deps[paths[0]]]))
+                self.assertEqual(len(errs), 1)
+                err = errs[0]
+                self.assert_(isinstance(err,
+                    dependencies.NeedConditionalRequireAny))
+                self.assertEqual(len(err.conditionals), 1)
+                self.assertEqualDiff(sorted(set([
+                    frozenset([("variant.foo", "bar"),
+                        ("variant.num", "one")])])),
+                    sorted(err.conditionals[0][2].sat_set))
+                # Check that the exception prints correctly.
+                self.debug(err)
+
+        def test_bug_19009_inexpressible_with_variants_3(self):
+                """Check that when resolve a configuration of dependencies that
+                can't be represented using the existing dependency types, an
+                error occurs and that the right error happens when variants are
+                involved."""
+
+                chains = [
+                    ("A", "B", "E"),
+                    ("A", "C", "E"),
+                    ("A", "D", "F"),
+                ]
+
+                manfs, expected_conditionals, expected_require_any, \
+                    expected_require = self.__construct_19009_info(chains)
+
+                manfs[0] += "set name=variant.num value=one value=two\n"
+                manfs[0] += "set name=variant.foo value=bar value=baz\n"
+                manfs[1] += "set name=variant.num value=one\n"
+
+                self.debug("The manifest for package B has been modified to "
+                    "only apply when variant.num is one.")
+
+                paths = [self.make_manifest(m) for m in manfs]
+                pkg_deps, errs = dependencies.resolve_deps(paths, self.api_obj,
+                    use_system=False)
+                self.debug("Deps:\n%s" % "\n".join([
+                    str(d) for d in pkg_deps[paths[0]]]))
+                self.assertEqual(len(errs), 1)
+                err = errs[0]
+                self.assert_(isinstance(err,
+                    dependencies.NeedConditionalRequireAny))
+                self.assertEqual(len(err.conditionals), 1)
+                expected_vars = set([
+                    frozenset([("variant.foo", "bar"), ("variant.num", "one")]),
+                    frozenset([("variant.foo", "baz"), ("variant.num", "one")])
+                ])
+                expected_but_not_seen = expected_vars - \
+                    err.conditionals[0][2].sat_set
+                seen_but_not_expected = err.conditionals[0][2].sat_set - \
+                    expected_vars
+                self.assertEqualDiff(expected_but_not_seen,
+                    seen_but_not_expected)
+
+                # Check that the exception prints correctly.
+                self.debug(err)
+                self.assert_("variant.foo" not in str(err))
+
+        def test_bug_19009_no_links_one_variant(self):
+                """Test that resolve correctly handles multiple packages
+                delivering a file which is the target of a file dependency when
+                variants are involved."""
+
+                dep_manf_two_val = """\
+set name=pkg.fmri value=test@1.0
+set name=variant.num value=one value=two
+depend type=require fmri=__TBD pkg.debug.depend.file=foo \
+    pkg.debug.depend.reason=needs_foo pkg.debug.depend.type=elf
+"""
+
+                dep_manf_three_val = """\
+set name=pkg.fmri value=test@1.0
+set name=variant.num value=one value=two value=three
+depend type=require fmri=__TBD pkg.debug.depend.file=foo \
+    pkg.debug.depend.reason=needs_foo pkg.debug.depend.type=elf
+"""
+
+                res1_manf_1 = """\
+set name=pkg.fmri value=res1@1.0
+set name=variant.num value=one
+file group=bin mode=0555 owner=root path=foo
+"""
+
+                res1_manf_13 = """\
+set name=pkg.fmri value=res1@1.0
+set name=variant.num value=one value=three
+file group=bin mode=0555 owner=root path=foo
+"""
+
+                res2_manf_12 = """\
+set name=pkg.fmri value=res2@1.0
+set name=variant.num value=one value=two
+file group=bin mode=0555 owner=root path=foo
+"""
+
+                res3_manf_3 = """\
+set name=pkg.fmri value=res3@1.0
+set name=variant.num value=three
+file group=bin mode=0555 owner=root path=foo
+"""
+
+                res3_manf_23 = """\
+set name=pkg.fmri value=res3@1.0
+set name=variant.num value=two value=three
+file group=bin mode=0555 owner=root path=foo
+"""
+
+                dep_path = self.make_manifest(dep_manf_two_val)
+                res1_path = self.make_manifest(res1_manf_1)
+                res2_path = self.make_manifest(res2_manf_12)
+
+                # Check that one package delivering under all variants and one
+                # delivering under a particular combination works.
+                pkg_deps, errs = dependencies.resolve_deps([dep_path,
+                    res1_path, res2_path], self.api_obj, use_system=False)
+                if errs:
+                        raise RuntimeError("Got the following unexpected "
+                            "errors:\n%s" % "\n".join(["%s" % e for e in errs]))
+                self.assertEqual(len(pkg_deps), 3)
+                self.assertEqual(len(pkg_deps[res1_path]), 0)
+                self.assertEqual(len(pkg_deps[res2_path]), 0)
+                self.assertEqual(len(pkg_deps[dep_path]), 2,
+                    "Got wrong number of pkgdeps for the file package. "
+                    "Deps were:\n%s" %
+                    "\n".join([str(d) for d in pkg_deps[dep_path]]))
+                have_req_any = False
+                have_required = False
+                for d in pkg_deps[dep_path]:
+                        if d.attrs["type"] == "require-any" and \
+                            set(d.attrs["fmri"]) == \
+                            set(["pkg:/res1@1.0", "pkg:/res2@1.0"]) and \
+                            d.attrs["variant.num"] == "one":
+                                have_req_any = True
+                        elif d.attrs["type"] == "require" and \
+                            d.attrs["fmri"] == "pkg:/res2@1.0" and \
+                            d.attrs["variant.num"] == "two":
+                                have_required = True
+                        else:
+                                raise RuntimeError("Unexpected dependency:%s"%
+                                    d)
+                self.assert_(have_req_any)
+                self.assert_(have_required)
+
+                # Check that three packages each delivering under two of three
+                # variant values works.
+                dep_path = self.make_manifest(dep_manf_three_val)
+                res1_path = self.make_manifest(res1_manf_13)
+                res2_path = self.make_manifest(res2_manf_12)
+                res3_path = self.make_manifest(res3_manf_23)
+                pkg_deps, errs = dependencies.resolve_deps([dep_path,
+                    res1_path, res2_path, res3_path], self.api_obj,
+                    use_system=False)
+                if errs:
+                        raise RuntimeError("Got the following unexpected "
+                            "errors:\n%s" % "\n".join(["%s" % e for e in errs]))
+                self.assertEqual(len(pkg_deps), 4)
+                self.assertEqual(len(pkg_deps[res1_path]), 0)
+                self.assertEqual(len(pkg_deps[res2_path]), 0)
+                self.assertEqual(len(pkg_deps[res3_path]), 0)
+                self.assertEqual(len(pkg_deps[dep_path]), 3,
+                    "Got wrong number of pkgdeps for the file package. "
+                    "Deps were:\n%s" %
+                    "\n".join([str(d) for d in pkg_deps[dep_path]]))
+                var_one = False
+                var_two = False
+                var_three = False
+                for d in pkg_deps[dep_path]:
+                        self.assertEqual(d.attrs["type"], "require-any")
+                        if set(d.attrs["fmri"]) == \
+                            set(["pkg:/res1@1.0", "pkg:/res2@1.0"]) and \
+                            d.attrs["variant.num"] == "one":
+                                var_one = True
+                        elif set(d.attrs["fmri"]) == \
+                            set(["pkg:/res2@1.0", "pkg:/res3@1.0"]) and \
+                            d.attrs["variant.num"] == "two":
+                                var_two = True
+                        elif set(d.attrs["fmri"]) == \
+                            set(["pkg:/res1@1.0", "pkg:/res3@1.0"]) and \
+                            d.attrs["variant.num"] == "three":
+                                var_three = True
+                        else:
+                                raise RuntimeError(
+                                    "Unexpected dependency:%s" % d)
+
+        def test_bug_19009_no_links_unvarianted(self):
+                """Test that resolve correctly handles multiple packages
+                delivering a file which is the target of a file dependency."""
+
+                dep_manf = """\
+set name=pkg.fmri value=test@1.0
+depend type=require fmri=__TBD pkg.debug.depend.file=foo \
+    pkg.debug.depend.reason=needs_foo pkg.debug.depend.type=elf
+"""
+
+                res1_manf = """\
+set name=pkg.fmri value=res1@1.0
+file group=bin mode=0555 owner=root path=foo
+"""
+
+                res2_manf = """\
+set name=pkg.fmri value=res2@1.0
+file group=bin mode=0555 owner=root path=foo
+"""
+
+                res3_manf = """\
+set name=pkg.fmri value=res3@1.0
+file group=bin mode=0555 owner=root path=foo
+"""
+
+                dep_path = self.make_manifest(dep_manf)
+                res1_path = self.make_manifest(res1_manf)
+                res2_path = self.make_manifest(res2_manf)
+                res3_path = self.make_manifest(res3_manf)
+
+                # Check that resolving with two packages works...
+                pkg_deps, errs = dependencies.resolve_deps([dep_path,
+                    res1_path, res2_path], self.api_obj, use_system=False)
+                if errs:
+                        raise RuntimeError("Got the following unexpected "
+                            "errors:\n%s" % "\n".join(["%s" % e for e in errs]))
+                self.assertEqual(len(pkg_deps), 3)
+                self.assertEqual(len(pkg_deps[res1_path]), 0)
+                self.assertEqual(len(pkg_deps[res2_path]), 0)
+                self.assertEqual(len(pkg_deps[dep_path]), 1,
+                    "Got wrong number of pkgdeps for the file package. "
+                    "Deps were:\n%s" %
+                    "\n".join([str(d) for d in pkg_deps[dep_path]]))
+                d = pkg_deps[dep_path][0]
+                self.assertEqual(d.attrs["type"], "require-any")
+                self.assertEqual(set(d.attrs["fmri"]),
+                    set(["pkg:/res1@1.0", "pkg:/res2@1.0"]))
+
+                # And that three does as well.
+                pkg_deps, errs = dependencies.resolve_deps([dep_path,
+                    res1_path, res2_path, res3_path], self.api_obj,
+                    use_system=False)
+                if errs:
+                        raise RuntimeError("Got the following unexpected "
+                            "errors:\n%s" % "\n".join(["%s" % e for e in errs]))
+                self.assertEqual(len(pkg_deps), 4)
+                self.assertEqual(len(pkg_deps[res1_path]), 0)
+                self.assertEqual(len(pkg_deps[res2_path]), 0)
+                self.assertEqual(len(pkg_deps[res3_path]), 0)
+                self.assertEqual(len(pkg_deps[dep_path]), 1,
+                    "Got wrong number of pkgdeps for the file package. "
+                    "Deps were:\n%s" %
+                    "\n".join([str(d) for d in pkg_deps[dep_path]]))
+                d = pkg_deps[dep_path][0]
+                self.assertEqual(d.attrs["type"], "require-any")
+                self.assertEqual(set(d.attrs["fmri"]),
+                    set(["pkg:/res1@1.0", "pkg:/res2@1.0", "pkg:/res3@1.0"]))
+
+        def test_bug_19009_remove_paths_1(self):
+                """Test that when a require dependency on one of the packages in
+                the inferred require-any dependency exists, the path to that
+                package is chosen by resolve."""
+
+                chains = [
+                    ("A", "B", "D"),
+                    ("A", "C", "E"),
+                ]
+
+                manfs, expected_conditionals, expected_require_any, \
+                    expected_require = self.__construct_19009_info(chains)
+
+                orig_a_manf = manfs[0]
+                dep_line = "depend fmri=pkg:/D@2.0 type=require\n"
+
+                self.debug("Adding the following line to the manifest for "
+                    "A:\n:%s" % dep_line)
+
+                new_a_manf = orig_a_manf + dep_line
+                paths = [
+                    self.make_manifest(m) for m in ([new_a_manf] + manfs[1:])
+                ]
+                pkg_deps, errs = dependencies.resolve_deps(paths, self.api_obj,
+                    use_system=False)
+
+                expected_require_any = set()
+                expected_conditionals = set()
+                expected_require = set(["pkg:/D@2.0", "pkg:/B@1.0"])
+                self.debug("Because of the additional dependency, there should "
+                    "be two require dependencies and no conditional "
+                    "dependencies.")
+                self.__check_19009_results(pkg_deps, errs, paths,
+                    expected_conditionals, expected_require_any,
+                    expected_require, 2)
+
+        def test_bug_19009_remove_paths_2(self):
+                """Test that when a require dependency on one of the packages in
+                the inferred require-any dependency exists under some variant
+                combinations, the path to that package is chosen by resolve only
+                under those variant combinations."""
+
+                chains = [
+                    ("A", "B", "D"),
+                    ("A", "C", "E"),
+                ]
+
+                manfs, expected_conditionals, expected_require_any, \
+                    expected_require = self.__construct_19009_info(chains)
+
+                orig_a_manf = manfs[0]
+                dep_line = """\
+set name=variant.num value=one value=two
+depend fmri=pkg:/D@2.0 type=require variant.num=one
+"""
+                self.debug("Adding the following lines to the manifest for "
+                    "A:\n:%s" % dep_line)
+
+                new_a_manf = orig_a_manf + dep_line
+                paths = [
+                    self.make_manifest(m) for m in ([new_a_manf] + manfs[1:])
+                ]
+                pkg_deps, errs = dependencies.resolve_deps(paths, self.api_obj,
+                    use_system=False)
+
+                if errs:
+                        raise RuntimeError("Got the following unexpected "
+                            "errors:\n%s" % "\n".join(["%s" % e for e in errs]))
+                self.assertEqual(len(pkg_deps), len(paths))
+                for p in paths[1:]:
+                        self.assertEqual(len(pkg_deps[p]), 0, "Got unexpected "
+                            "dependencies for %s.  Dependencies are:\n%s" %
+                            (p, pkg_deps[p]))
+                deps = pkg_deps[paths[0]]
+                self.debug("Dependencies are:\n%s" % "\n".join(
+                    [str(d) for d in deps]))
+                self.debug("Five dependencies are expected.  Two require "
+                    "dependencies when variant.num=one, and three (one "
+                    "require-any and two conditional) when variant.num=two.")
+                expected_require = set(["pkg:/D@2.0", "pkg:/B@1.0"])
+                self.__check_19009_results(pkg_deps, errs, paths,
+                    expected_conditionals, expected_require_any,
+                    expected_require, 5)
+
+                # Now check the the variants are set correctly on all the
+                # dependencies.
+                for d in deps:
+                        if d.attrs["type"] in ("conditional", "require-any"):
+                                self.assertEqual(
+                                    d.attrs.get("variant.num", None), "two",
+                                    "Bad dependency was:%s" % d)
+                        else:
+                                self.assertEqual(d.attrs["type"], "require")
+                                self.assertEqual(
+                                    d.attrs.get("variant.num", None), "one",
+                                    "Bad dependency was:%s" % d)
+
+        def test_bug_19009_remove_paths_3(self):
+                """Test that when a require dependency on one of the packages in
+                the inferred require-any dependency exists under some variant
+                combinations, the path to that package is chosen by resolve only
+                under those variant combinations."""
+
+                chains = [
+                    ("A", "B", "D", "F"),
+                    ("A", "C", "E", "G"),
+                ]
+
+                manfs, expected_conditionals, expected_require_any, \
+                    expected_require = self.__construct_19009_info(chains)
+
+                orig_a_manf = manfs[0]
+                dep_line = """\
+set name=variant.num value=one value=two
+depend fmri=pkg:/F@2.0 type=require variant.num=one
+"""
+                self.debug("Adding the following lines to the manifest for "
+                    "A:\n%s" % dep_line)
+                new_a_manf = orig_a_manf + dep_line
+                paths = [
+                    self.make_manifest(m) for m in ([new_a_manf] + manfs[1:])
+                ]
+                pkg_deps, errs = dependencies.resolve_deps(paths, self.api_obj,
+                    use_system=False)
+
+                if errs:
+                        raise RuntimeError("Got the following unexpected "
+                            "errors:\n%s" % "\n".join(["%s" % e for e in errs]))
+                self.assertEqual(len(pkg_deps), len(paths))
+                for p in paths[1:]:
+                        self.assertEqual(len(pkg_deps[p]), 0, "Got unexpected "
+                            "dependencies for %s.  Dependencies are:\n%s" %
+                            (p, pkg_deps[p]))
+                deps = pkg_deps[paths[0]]
+                self.debug("Dependencies are:\n%s" % "\n".join(
+                    [str(d) for d in deps]))
+                expected_require = set(["pkg:/B@1.0", "pkg:/D@1.0",
+                    "pkg:/F@2.0"])
+                self.__check_19009_results(pkg_deps, errs, paths,
+                    expected_conditionals, expected_require_any,
+                    expected_require, 8)
+
+                # Now check the the variants are set correctly on all the
+                # dependencies.
+                for d in deps:
+                        if d.attrs["type"] in ("conditional", "require-any"):
+                                self.assertEqual(
+                                    d.attrs.get("variant.num", None), "two",
+                                    "Bad dependency was:%s" % d)
+                        else:
+                                self.assertEqual(d.attrs["type"], "require")
+                                self.assertEqual(
+                                    d.attrs.get("variant.num", None), "one",
+                                    "Bad dependency was:%s" % d)
+
+        def test_bug_19009_remove_paths_4(self):
+                """Test that when a require dependency on one of the packages in
+                the inferred require-any dependency exists under some variant
+                combinations, the path to that package is chosen by resolve only
+                under those variant combinations."""
+
+                chains = [
+                    ("A", "B", "D", "F"),
+                    ("A", "C", "E", "G"),
+                ]
+
+                manfs, expected_conditionals, expected_require_any, \
+                    expected_require = self.__construct_19009_info(chains)
+
+                orig_a_manf = manfs[0]
+                dep_line = """\
+set name=variant.num value=one value=two
+depend fmri=pkg:/F@2.0 type=require variant.num=one
+depend fmri=pkg:/G@2.0 type=require variant.num=two
+"""
+                self.debug("Adding the following lines to the manifest for "
+                    "A:\n%s" % dep_line)
+                new_a_manf = orig_a_manf + dep_line
+                paths = [
+                    self.make_manifest(m) for m in ([new_a_manf] + manfs[1:])
+                ]
+                pkg_deps, errs = dependencies.resolve_deps(paths, self.api_obj,
+                    use_system=False)
+
+                if errs:
+                        raise RuntimeError("Got the following unexpected "
+                            "errors:\n%s" % "\n".join(["%s" % e for e in errs]))
+                self.assertEqual(len(pkg_deps), len(paths))
+                for p in paths[1:]:
+                        self.assertEqual(len(pkg_deps[p]), 0, "Got unexpected "
+                            "dependencies for %s.  Dependencies are:\n%s" %
+                            (p, pkg_deps[p]))
+                deps = pkg_deps[paths[0]]
+                self.debug("Dependencies are:\n%s" % "\n".join(
+                    [str(d) for d in deps]))
+                self.debug("Six require dependencies are expected since all "
+                    "conditional dependencies collapse to require dependencies "
+                    "under one of the two variants.")
+                expected_require_any = set()
+                expected_conditionals = set()
+                expected_require = set(["pkg:/B@1.0", "pkg:/C@1.0",
+                    "pkg:/D@1.0", "pkg:/E@1.0", "pkg:/F@2.0", "pkg:/G@2.0"])
+                self.__check_19009_results(pkg_deps, errs, paths,
+                    expected_conditionals, expected_require_any,
+                    expected_require, 6)
+
+                # Now check the the variants are set correctly on all the
+                # dependencies.
+                for d in deps:
+                        if d.attrs["fmri"] in \
+                            ("pkg:/B@1.0", "pkg:/D@1.0", "pkg:/F@2.0"):
+                                self.assertEqual(
+                                    d.attrs.get("variant.num", None), "one")
+                        elif d.attrs["fmri"] in \
+                            ("pkg:/C@1.0", "pkg:/E@1.0", "pkg:/G@2.0"):
+                                self.assertEqual(
+                                    d.attrs.get("variant.num", None), "two")
+                        else:
+                                raise RuntimeError("Unexpected fmri in "
+                                    "dependency:%s" % d)
+
+        def test_bug_19009_remove_paths_5(self):
+                """Test that when a require dependency on the middle of a
+                dependency chain exists under a particular variant combination,
+                the right thing happens."""
+
+                chains = [
+                    ("A", "B", "D", "F"),
+                    ("A", "C", "E", "G"),
+                ]
+
+                manfs, expected_conditionals, expected_require_any, \
+                    expected_require = self.__construct_19009_info(chains)
+
+                orig_a_manf = manfs[0]
+                dep_line = """\
+set name=variant.num value=one value=two
+depend fmri=pkg:/D@2.0 type=require variant.num=one
+"""
+                self.debug("Adding the following lines to the manifest for "
+                    "A:\n%s" % dep_line)
+                new_a_manf = orig_a_manf + dep_line
+                paths = [
+                    self.make_manifest(m) for m in ([new_a_manf] + manfs[1:])
+                ]
+                pkg_deps, errs = dependencies.resolve_deps(paths, self.api_obj,
+                    use_system=False)
+
+                if errs:
+                        raise RuntimeError("Got the following unexpected "
+                            "errors:\n%s" % "\n".join(["%s" % e for e in errs]))
+                self.assertEqual(len(pkg_deps), len(paths))
+                for p in paths[1:]:
+                        self.assertEqual(len(pkg_deps[p]), 0, "Got unexpected "
+                            "dependencies for %s.  Dependencies are:\n%s" %
+                            (p, pkg_deps[p]))
+                deps = pkg_deps[paths[0]]
+                self.debug("Dependencies are:\n%s" % "\n".join(
+                    [str(d) for d in deps]))
+                self.debug("Seven dependencies are expected:\ntwo require "
+                    "dependencies (on B and D) when variant.num is one\nfour "
+                    "conditional dependencies (B->D, D->F, C->E, E->G) when "
+                    "variant.num is two\none require-any dependency on F and G "
+                    "when variant.num is two")
+                expected_require = set(["pkg:/B@1.0", "pkg:/D@2.0"])
+                self.__check_19009_results(pkg_deps, errs, paths,
+                    expected_conditionals, expected_require_any,
+                    expected_require, 7)
+
+                # Now check the the variants are set correctly on all the
+                # dependencies.
+                for d in deps:
+                        if d.attrs["fmri"] in ("pkg:/C@1.0", "pkg:/E@1.0"):
+                                self.assertEqual(d.attrs["type"], "conditional")
+                                self.assert_("variant.num" not in d.attrs)
+                        elif d.attrs["fmri"] == "pkg:/B@1.0":
+                                if d.attrs["type"] == "conditional":
+                                        self.assertEqual(
+                                            d.attrs.get("variant.num", None),
+                                            "two")
+                                else:
+                                        self.assertEqual(d.attrs["type"],
+                                            "require")
+                                        self.assertEqual(
+                                            d.attrs.get("variant.num", None),
+                                            "one")
+                        elif d.attrs["fmri"] == "pkg:/D@1.0":
+                                self.assertEqual(d.attrs["type"], "conditional")
+                                self.assertEqual(
+                                    d.attrs.get("variant.num", None),
+                                    "two")
+                        elif d.attrs["fmri"] == "pkg:/D@2.0":
+                                self.assertEqual(d.attrs["type"], "require")
+                                self.assertEqual(
+                                    d.attrs.get("variant.num", None), "one")
+                        else:
+                                self.assertEqual(d.attrs["type"], "require-any")
+                                self.assertEqual(set(d.attrs["fmri"]),
+                                    set(["pkg:/F@1.0", "pkg:/G@1.0"]))
+                                self.assert_("variant.num" not in d.attrs)
+
+        def test_bug_19009_remove_paths_6(self):
+                """Test that when a require dependency on the middle of a
+                dependency chain exists, the right thing happens."""
+
+                chains = [
+                    ("A", "B", "D", "F"),
+                    ("A", "C", "E", "G"),
+                ]
+
+                manfs, expected_conditionals, expected_require_any, \
+                    expected_require = self.__construct_19009_info(chains)
+
+                orig_a_manf = manfs[0]
+                dep_line = """\
+set name=variant.num value=one value=two
+depend fmri=pkg:/D@2.0 type=require
+"""
+                self.debug("Adding the following lines to the manifest for "
+                    "A:\n%s" % dep_line)
+                new_a_manf = orig_a_manf + dep_line
+                paths = [
+                    self.make_manifest(m) for m in ([new_a_manf] + manfs[1:])
+                ]
+                pkg_deps, errs = dependencies.resolve_deps(paths, self.api_obj,
+                    use_system=False)
+
+                if errs:
+                        raise RuntimeError("Got the following unexpected "
+                            "errors:\n%s" % "\n".join(["%s" % e for e in errs]))
+                self.assertEqual(len(pkg_deps), len(paths))
+                for p in paths[1:]:
+                        self.assertEqual(len(pkg_deps[p]), 0, "Got unexpected "
+                            "dependencies for %s.  Dependencies are:\n%s" %
+                            (p, pkg_deps[p]))
+                deps = pkg_deps[paths[0]]
+                self.debug("Dependencies are:\n%s" % "\n".join(
+                    [str(d) for d in deps]))
+                self.debug("Five dependencies are expected:\nrequire "
+                    "dependencies on B and D\na require-any dependency on F "
+                    "and G\nconditional dependencies from C to E and E to G.")
+                expected_conditionals.remove(("pkg:/B@1.0", "pkg:/D@1.0"))
+                expected_conditionals.remove(("pkg:/D@1.0", "pkg:/F@1.0"))
+                expected_require = set(["pkg:/B@1.0", "pkg:/D@2.0"])
+                self.__check_19009_results(pkg_deps, errs, paths,
+                    expected_conditionals, expected_require_any,
+                    expected_require, 5)
+
+                # Now check the the variants are set correctly on all the
+                # dependencies.
+                for d in deps:
+                        if d.attrs["fmri"] in ("pkg:/C@1.0", "pkg:/E@1.0"):
+                                self.assertEqual(d.attrs["type"], "conditional")
+                                self.assert_("variant.num" not in d.attrs)
+                        elif d.attrs["fmri"] == "pkg:/B@1.0":
+                                self.assertEqual(d.attrs["type"], "require")
+                                self.assert_("variant.num" not in d.attrs)
+                        elif d.attrs["fmri"] == "pkg:/D@2.0":
+                                self.assertEqual(d.attrs["type"], "require")
+                                self.assert_("variant.num" not in d.attrs)
+                        else:
+                                self.assertEqual(d.attrs["type"], "require-any")
+                                self.assertEqual(set(d.attrs["fmri"]),
+                                    set(["pkg:/F@1.0", "pkg:/G@1.0"]))
+                                self.assert_("variant.num" not in d.attrs)
+
+        def test_bug_19009_simple_1(self):
+                """Check that resolve infers the correct dependencies when more
+                than one package delivers a file which satisfies a file
+                dependency."""
+
+                chains = [
+                    ("A", "B", "D"),
+                    ("A", "C", "E"),
+                ]
+
+                manfs, expected_conditionals, expected_require_any, \
+                    expected_require = self.__construct_19009_info(chains)
+
+                paths = [self.make_manifest(m) for m in manfs]
+                pkg_deps, errs = dependencies.resolve_deps(paths, self.api_obj,
+                    use_system=False)
+                self.__check_19009_results(pkg_deps, errs, paths,
+                    expected_conditionals, expected_require_any,
+                    expected_require, 3)
+
+        def test_bug_19009_simple_2(self):
+                """Check that resolve infers the correct dependencies when more
+                than one package delivers a file which satisfies a file
+                dependency."""
+
+                chains = [
+                    ("A", "B", "E", "H"),
+                    ("A", "C", "F", "I"),
+                    ("A", "D", "G")
+                ]
+
+                manfs, expected_conditionals, expected_require_any, \
+                    expected_require = self.__construct_19009_info(chains)
+
+                paths = [self.make_manifest(m) for m in manfs]
+                pkg_deps, errs = dependencies.resolve_deps(paths, self.api_obj,
+                    use_system=False)
+                self.__check_19009_results(pkg_deps, errs, paths,
+                    expected_conditionals, expected_require_any,
+                    expected_require, 6)
+
+        def test_bug_19009_simple_3(self):
+                """Check that resolve infers the correct dependencies when more
+                than one package delivers a file which satisfies a file
+                dependency."""
+
+                chains = [
+                    ("A", "B", "D", "F"),
+                    ("A", "C", "E", "G"),
+                ]
+
+                manfs, expected_conditionals, expected_require_any, \
+                    expected_require = self.__construct_19009_info(chains)
+
+                paths = [self.make_manifest(m) for m in manfs]
+                pkg_deps, errs = dependencies.resolve_deps(paths, self.api_obj,
+                    use_system=False)
+                self.__check_19009_results(pkg_deps, errs, paths,
+                    expected_conditionals, expected_require_any,
+                    expected_require, 5)
+
+        def test_bug_19009_simple_4(self):
+                """Check that resolve infers the correct dependencies when more
+                than one package delivers a file which satisfies a file
+                dependency."""
+
+                chains = [
+                    ("A", "B", "D", "F"),
+                    ("A", "C", "E", "F"),
+                ]
+
+                manfs, expected_conditionals, expected_require_any, \
+                    expected_require = self.__construct_19009_info(chains)
+
+                paths = [self.make_manifest(m) for m in manfs]
+                pkg_deps, errs = dependencies.resolve_deps(paths, self.api_obj,
+                    use_system=False)
+                self.__check_19009_results(pkg_deps, errs, paths,
+                    expected_conditionals, expected_require_any,
+                    expected_require, 4)
+
+        def test_bug_19009_simple_5(self):
+                """Check that resolve infers the correct dependencies when more
+                than one package delivers a file which satisfies a file
+                dependency.  This test also tests bug 19037."""
+
+                chains = [
+                    ("A", "B", "D", "F"),
+                    ("A", "B", "E", "G"),
+                    ("A", "C", "H"),
+                ]
+
+                manfs, expected_conditionals, expected_require_any, \
+                    expected_require = self.__construct_19009_info(chains)
+
+                paths = [self.make_manifest(m) for m in manfs]
+                pkg_deps, errs = dependencies.resolve_deps(paths, self.api_obj,
+                    use_system=False)
+                self.__check_19009_results(pkg_deps, errs, paths,
+                    expected_conditionals, expected_require_any,
+                    expected_require, 6)
+
+        def test_bug_19009_simple_6(self):
+                """Check that resolve infers the correct dependencies when more
+                than one package delivers a file which satisfies a file
+                dependency."""
+
+                chains = [
+                    ("A", "B", "C", "E"),
+                    ("A", "B", "D", "F"),
+                ]
+
+                manfs, expected_conditionals, expected_require_any, \
+                    expected_require = self.__construct_19009_info(chains)
+
+                paths = [self.make_manifest(m) for m in manfs]
+                pkg_deps, errs = dependencies.resolve_deps(paths, self.api_obj,
+                    use_system=False)
+                self.__check_19009_results(pkg_deps, errs, paths,
+                    expected_conditionals, expected_require_any,
+                    expected_require, 5)
+
+        def test_bug_19009_two_paths(self):
+                """Test that multiple file dependencies don't interact
+                improperly with each other when inferring dependencies."""
+
+                a_manf = """\
+set name=pkg.fmri value=A@1.0
+depend type=require fmri=__TBD pkg.debug.depend.file=a \
+    pkg.debug.depend.reason=needs_a pkg.debug.depend.type=elf
+depend type=require fmri=__TBD pkg.debug.depend.file=a2 \
+    pkg.debug.depend.reason=needs_a pkg.debug.depend.type=elf
+"""
+                b_manf = """\
+set name=pkg.fmri value=B@1.0
+link path=a target=b
+"""
+                c_manf = """\
+set name=pkg.fmri value=C@1.0
+link path=a target=c
+link path=a2 target=c2
+"""
+                d_manf = """\
+set name=pkg.fmri value=D@1.0
+file path=d group=sys mode=0600 owner=root
+link path=b target=d
+"""
+                e_manf = """\
+set name=pkg.fmri value=E@1.0
+file path=e group=sys mode=0600 owner=root
+link path=c target=e
+file path=e2 group=sys mode=0600 owner=root
+link path=c2 target=e2
+"""
+                f_manf = """\
+set name=pkg.fmri value=F@1.0
+link path=a2 target=f2
+"""
+                g_manf = """\
+set name=pkg.fmri value=G@1.0
+file path=g2 group=sys mode=0600 owner=root
+link path=f2 target=g2
+"""
+
+                manfs = [a_manf, b_manf, c_manf, d_manf, e_manf, f_manf, g_manf]
+                paths = [self.make_manifest(m) for m in manfs]
+                pkg_deps, errs = dependencies.resolve_deps(paths, self.api_obj,
+                    use_system=False)
+
+                expected_conditionals = set([("pkg:/B@1.0", "pkg:/D@1.0"),
+                    ("pkg:/C@1.0", "pkg:/E@1.0"), ("pkg:/F@1.0", "pkg:/G@1.0")])
+                expected_require = []
+                expected_require_any = set([
+                    frozenset(["pkg:/D@1.0", "pkg:/E@1.0"]),
+                    frozenset(["pkg:/E@1.0", "pkg:/G@1.0"])])
+                self.__check_19009_results(pkg_deps, errs, paths,
+                    expected_conditionals, expected_require_any,
+                    expected_require, 5)
+
+                a_req_d_manf = a_manf + "depend fmri=pkg:/D@1.0 type=require\n"
+                manfs = [a_req_d_manf, b_manf, c_manf, d_manf, e_manf, f_manf,
+                    g_manf]
+                paths = [self.make_manifest(m) for m in manfs]
+                pkg_deps, errs = dependencies.resolve_deps(paths, self.api_obj,
+                    use_system=False)
+
+                expected_conditionals = set([("pkg:/C@1.0", "pkg:/E@1.0"),
+                    ("pkg:/F@1.0", "pkg:/G@1.0")])
+                expected_require = set(["pkg:/B@1.0", "pkg:/D@1.0"])
+                expected_require_any = set([
+                    frozenset(["pkg:/E@1.0", "pkg:/G@1.0"])])
+                self.__check_19009_results(pkg_deps, errs, paths,
+                    expected_conditionals, expected_require_any,
+                    expected_require, 5)
+
+                a_req_g_manf = a_manf + "depend fmri=pkg:/G@1.0 type=require\n"
+                manfs = [a_req_g_manf, b_manf, c_manf, d_manf, e_manf, f_manf,
+                    g_manf]
+                paths = [self.make_manifest(m) for m in manfs]
+                pkg_deps, errs = dependencies.resolve_deps(paths, self.api_obj,
+                    use_system=False)
+
+                expected_conditionals = set([("pkg:/C@1.0", "pkg:/E@1.0"),
+                    ("pkg:/B@1.0", "pkg:/D@1.0")])
+                expected_require = set(["pkg:/F@1.0", "pkg:/G@1.0"])
+                expected_require_any = set([
+                    frozenset(["pkg:/D@1.0", "pkg:/E@1.0"])])
+                self.__check_19009_results(pkg_deps, errs, paths,
+                    expected_conditionals, expected_require_any,
+                    expected_require, 5)
+
+                a_req_e_manf = a_manf + "depend fmri=pkg:/E@1.0 type=require\n"
+                manfs = [a_req_e_manf, b_manf, c_manf, d_manf, e_manf, f_manf,
+                    g_manf]
+                paths = [self.make_manifest(m) for m in manfs]
+                pkg_deps, errs = dependencies.resolve_deps(paths, self.api_obj,
+                    use_system=False)
+
+                expected_conditionals = set()
+                expected_require = set(["pkg:/C@1.0", "pkg:/E@1.0"])
+                expected_require_any = set()
+                self.__check_19009_results(pkg_deps, errs, paths,
+                    expected_conditionals, expected_require_any,
+                    expected_require, 2)
+
+        def test_bug_19029(self):
+                """Test that a package with an action which doesn't validate
+                causes resolve to fail."""
+
+                manf = """
+set name=pkg.fmri value=foo@1.0,5.11-1
+depend fmri=pkg:/a@0-1 type=conditional
+"""
+                manf_path = self.make_manifest(manf)
+                pkg_deps, errs = dependencies.resolve_deps([manf_path],
+                    self.api_obj, use_system=False)
+                self.assertEqual(len(errs), 1)
+                self.assert_(isinstance(errs[0],
+                    actions.InvalidActionAttributesError))
+
+                manf = """
+set name=pkg.fmri value=foo@1.0,5.11-1
+depend fmri=pkg:/a@0-1 type=conditionalpredicate
+"""
+                manf_path = self.make_manifest(manf)
+                pkg_deps, errs = dependencies.resolve_deps([manf_path],
+                    self.api_obj, use_system=False)
+                self.assertEqual(len(errs), 1)
+                self.assert_(isinstance(errs[0], actions.InvalidActionError))
+
+                
 if __name__ == "__main__":
         unittest.main()

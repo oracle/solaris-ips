@@ -53,6 +53,7 @@ type_prefix = "%s.type" % base.Dependency.DEPEND_DEBUG_PREFIX
 target_prefix = "%s.target" % base.Dependency.DEPEND_DEBUG_PREFIX
 bypassed_prefix = "%s.bypassed" % base.Dependency.DEPEND_DEBUG_PREFIX
 via_links_prefix = "%s.via-links" % base.Dependency.DEPEND_DEBUG_PREFIX
+path_id_prefix = "%s.path-id" % base.Dependency.DEPEND_DEBUG_PREFIX
 
 # A tag used to hold the product of the paths_prefix and files_prefix
 # contents, used when bypassing dependency generation
@@ -63,93 +64,18 @@ Entries = namedtuple("Entries", ["delivered", "installed"])
 # hold items which are part of packages being delivered.  The second, installed,
 # is used to hold items which are part of packages installed on the system.
 
+LinkInfo = namedtuple("LinkInfo", ["path", "pfmri", "nearest_pfmri",
+    "variant_combination", "via_links"])
+# This namedtuple is used to hold the information needed when resolving links.
+# The 'path' is the path of the file that ultimately resolved the link.  The
+# 'pfmri' is the package fmri that delivered 'path.'  The 'nearest_pfmri' is the
+# package that delivered the next element in the link chain.  The
+# 'variant-combination' is the combination of variants under which the link is
+# satisfied.  'via-links' contains the links used to reach 'path.'
+
 class DependencyError(Exception):
         """The parent class for all dependency exceptions."""
         pass
-
-class MultiplePackagesPathError(DependencyError):
-        """This exception is used when a file dependency has paths which cause
-        two or more packages to deliver files which fulfill the dependency under
-        some combination of variants."""
-
-        def __set_pkg_name(self, name):
-                self.__pkg_name = str(name)
-
-        pkg_name = property(lambda self: self.__pkg_name, __set_pkg_name)
-
-        def __init__(self, res, source, vc, pkg_name=None):
-                self.res = res
-                self.source = source
-                self.vc = vc
-                self.pkg_name = pkg_name
-
-        def __str__(self):
-                if self.vc.sat_set and self.pkg_name:
-                        return _("The file dependency %(src)s delivered in "
-                            "package %(pkg)s has paths which resolve to "
-                            "multiple packages under this combination of "
-                            "variants:\n%(vars)s\nThe actions "
-                            "are:\n%(acts)s") % {
-                                "src":self.source,
-                                "acts":"\n".join(
-                                    ["\t%s" % a for a in self.res]),
-                                "vars":"\n".join([
-                                    " ".join([
-                                        ("%s:%s" % (name, val))
-                                        for name, val in grp
-                                    ])
-                                    for grp in self.vc.sat_set]),
-                                "pkg": self.pkg_name
-                            }
-                elif self.vc.sat_set:
-                        return _("The file dependency %(src)s has paths which"
-                            "resolve to multiple packages under this "
-                            "combination of variants:\n%(vars)s\nThe actions "
-                            "are:\n%(acts)s") % {
-                                "src":self.source,
-                                "acts":"\n".join(
-                                    ["\t%s" % a for a in self.res]),
-                                "vars":"\n".join([
-                                    " ".join([
-                                        ("%s:%s" % (name, val))
-                                        for name, val in grp
-                                    ])
-                                    for grp in self.vc.sat_set])
-                            }
-                elif self.pkg_name:
-                        return _("The file dependency %(src)s delivered in "
-                            "%(pkg)s has paths which resolve to multiple "
-                            "packages.\nThe actions are:\n%(acts)s") % {
-                                "src":self.source,
-                                "acts":"\n".join(
-                                ["\t%s" % a for a in self.res]),
-                                "pkg":self.pkg_name
-                            }
-                else:
-                        return _("The file dependency %(src)s has paths which "
-                            "resolve to multiple packages.\nThe actions "
-                            "are:\n%(acts)s") % {
-                                "src":self.source,
-                                "acts":"\n".join(
-                                ["\t%s" % a for a in self.res])
-                            }
-
-class AmbiguousPathError(DependencyError):
-        """This exception is used when multiple packages deliver a path which
-        is depended upon."""
-
-        def __init__(self, pkgs, source):
-                self.pkgs = pkgs
-                self.source = source
-
-        def __str__(self):
-                s_str = "\n" + self.source.pretty_print() + "\n"
-                return _("The file dependency %(src)s depends on a path "
-                    "delivered by multiple packages. Those packages "
-                    "are:%(pkgs)s") % {
-                        "src":s_str,
-                        "pkgs":" ".join([str(p) for p in self.pkgs])
-                    }
 
 class UnresolvedDependencyError(DependencyError):
         """This exception is used when no package delivers a file which is
@@ -201,23 +127,6 @@ class MissingPackageVariantError(DependencyError):
                         "act": self.act_vars,
                         "pkg": self.pkg_vars
                     }
-
-
-class BadDependencyFmri(DependencyError):
-        """This exception is used when dependency actions have text in their
-        fmri attributes which are not valid fmris."""
-
-        def __init__(self, pkg, fmris):
-                self.pkg = pkg
-                self.fmris = fmris
-
-        def __str__(self):
-                return _("The package %(pkg)s contains depend actions with "
-                    "values in their fmri attributes which are not valid "
-                    "fmris.  The bad values are:\n%(fmris)s\n") % {
-                    "pkg": self.pkg,
-                    "fmris": "\n".join(["\t%s" % f for f in sorted(self.fmris)])
-                }
 
 
 class BadPackageFmri(DependencyError):
@@ -272,6 +181,41 @@ class ExtraVariantedDependency(DependencyError):
                             "rvs": s
                         }
 
+class NeedConditionalRequireAny(DependencyError):
+        """This exception is used when pkgdepend would need a dependency which
+        was both require-any and conditional to properly represent the
+        dependency."""
+
+        def __init__(self, conditionals, pkg_vars):
+                self.conditionals = conditionals
+                self.pkg_vct = pkg_vars
+
+        def __str__(self):
+                s = _("""\
+pkgdepend has inferred conditional dependencies with different targets but
+which share a predicate.  pkg(5) can not represent these dependencies.  This
+issue can be resolved by changing the packaging of the links which generated the
+conditional dependencies so that they have different predicates or share the
+same FMRI.  Each pair of problematic conditional dependencies follows: 
+""")
+                for i, (d1, d2, v) in enumerate(self.conditionals):
+                        i += 1
+                        v.simplify(self.pkg_vct)
+                        if v.is_empty() or not v.sat_set:
+                                s += _("Pair %s\n") % i
+                        else:
+                                s += _("Pair %s is only problematic in the "
+                                    "listed variant combinations:") % i
+                                s += "\n\t\t" + "\n\t\t".join([
+                                    " ".join([
+                                        ("%s:%s" % (name, val))
+                                        for name, val in sorted(grp)
+                                    ]) for grp in v.sat_set
+                                ])
+                                s += "\n"
+                        s += d1.pretty_print() + "\n"
+                        s += d2.pretty_print() + "\n"
+                return s
 
 class __NotSubset(DependencyError):
         def __init__(self, diff):
@@ -304,7 +248,7 @@ def list_implicit_deps(file_path, proto_dirs, dyn_tok_conv, run_paths,
         facilitate testing and debugging.
         """
 
-        m, missing_manf_files = __make_manifest(file_path, proto_dirs)
+        m, manifest_errs = __make_manifest(file_path, proto_dirs)
         pkg_vars = m.get_all_variants()
         deps, elist, missing, pkg_attrs = list_implicit_deps_for_manifest(m,
             proto_dirs, pkg_vars, dyn_tok_conv, run_paths,
@@ -316,7 +260,7 @@ def list_implicit_deps(file_path, proto_dirs, dyn_tok_conv, run_paths,
         if convert:
                 deps = convert_to_standard_dep_actions(deps)
 
-        return deps, missing_manf_files + elist + rid_errs, missing, pkg_attrs
+        return deps, manifest_errs + elist + rid_errs, missing, pkg_attrs
 
 def convert_to_standard_dep_actions(deps):
         """Convert pkg.base.Dependency objects to
@@ -634,6 +578,7 @@ def __make_manifest(fp, basedirs=None, load_data=True):
                 raise apx._convert_error(e)
         acts = []
         missing_files = []
+        action_errs = []
         accumulate = ""
         for l in fh:
                 l = l.strip()
@@ -649,23 +594,37 @@ def __make_manifest(fp, basedirs=None, load_data=True):
                         a, local_path, used_bd = actions.internalizestr(l,
                             basedirs=basedirs,
                             load_data=load_data)
+
+                except actions.ActionDataError, e:
+                        new_a, local_path, used_bd = actions.internalizestr(
+                            l, basedirs=basedirs, load_data=False)
+                        if new_a.name == "license":
+                                local_path = None
+                                a = new_a
+                        else:
+                                missing_files.append(base.MissingFile(
+                                    new_a.attrs["path"], basedirs))
+                                continue
+                except actions.ActionError, e:
+                        action_errs.append(e)
+                        continue
+                else:
+                        # If this action has a payload, add the information
+                        # about where that payload file lives to the action.
                         if local_path:
                                 assert portable.PD_LOCAL_PATH not in a.attrs
                                 a.attrs[portable.PD_LOCAL_PATH] = local_path
                                 a.attrs[portable.PD_PROTO_DIR] = used_bd
                                 a.attrs[portable.PD_PROTO_DIR_LIST] = basedirs
+                try:
+                        a.validate()
+                except actions.ActionError, e:
+                        action_errs.append(e)
+                else:
                         acts.append(a)
-                except actions.ActionDataError, e:
-                        new_a, local_path, used_bd = actions.internalizestr(
-                            l, basedirs=basedirs, load_data=False)
-                        if new_a.name == "license":
-                                acts.append(new_a)
-                        else:
-                                missing_files.append(base.MissingFile(
-                                    new_a.attrs["path"], basedirs))
         fh.close()
         m.set_content(content=acts)
-        return m, missing_files
+        return m, missing_files + action_errs
 
 def choose_name(fp, mfst):
         """Find the package name for this manifest.  If it's defined in a set
@@ -688,69 +647,6 @@ def choose_name(fp, mfst):
                         pfmri = None
                 return name, pfmri
         return urllib.unquote(os.path.basename(fp)), None
-
-def helper(lst, file_dep, dep_vars, orig_dep_vars):
-        """Creates the depend actions from lst for the dependency and determines
-        which variants have been accounted for.
-
-        'lst' is a list of fmri, variants pairs. The fmri a package which can
-        satisfy the dependency. The variants are the variants under which it
-        satisfies the dependency.
-
-        'file_dep' is the dependency that needs to be satisfied.
-
-        'dep_vars' is the variants under which 'file_dep' has not yet been
-        satisfied.
-
-        'orig_dep_vars' is the original set of variants under which the
-        dependency must be satisfied."""
-
-        res = []
-        vars = []
-        errs = set()
-        for path, pfmri, delivered_vars, via_links in lst:
-                # If the pfmri package isn't present under any of the variants
-                # where the dependency is, skip it.
-                if not orig_dep_vars.intersects(delivered_vars,
-                    only_not_sat=True):
-                        continue
-                vc = orig_dep_vars.intersection(delivered_vars)
-                vc.mark_all_as_satisfied()
-                for found_vars, found_fmri in vars:
-                        # Because we don't have the concept of one-of
-                        # dependencies, depending on a file which is delivered
-                        # in multiple packages under a set of variants
-                        # prevents automatic resolution of dependencies.
-                        if found_fmri != pfmri and \
-                            found_vars.intersects(delivered_vars):
-                                errs.add(found_fmri)
-                                errs.add(pfmri)
-                # Find the variants under which pfmri is relevant.
-                action_vars = vc
-                # Mark the variants as satisfied so it's possible to know if
-                # all variant combinations have been covered.
-                dep_vars.mark_as_satisfied(delivered_vars)
-                attrs = file_dep.attrs.copy()
-                attrs.update({"fmri":pfmri.get_short_fmri()})
-                # We know which path satisfies this dependency, so remove the
-                # list of files and paths, and replace them with the single path
-                # that works.
-                attrs.pop(paths_prefix, None)
-                attrs.pop(fullpaths_prefix, None)
-                attrs[files_prefix] = [path]
-                if via_links:
-                        via_links.reverse()
-                        attrs[via_links_prefix] = ":".join(via_links)
-                # Add this package as satisfying the dependency.
-                res.append((actions.depend.DependencyAction(**attrs),
-                    action_vars))
-                vars.append((action_vars, pfmri))
-        if errs:
-                # If any packages are in errs, then more than one file delivered
-                # the same path under some configuration of variants. This
-                # situation is unresolvable.
-                raise AmbiguousPathError(errs, file_dep)
-        return res, dep_vars
 
 def make_paths(file_dep):
         """Find all the possible paths which could satisfy the dependency
@@ -815,7 +711,8 @@ def resolve_links(path, files_dict, links, path_vars, file_dep_attrs, index=1):
                         inter = path_vars.intersection(p_vc)
                         inter.mark_all_as_satisfied()
                         tmp_vars.mark_as_satisfied(p_vc)
-                        res_paths.append((path, pfmri, inter, []))
+                        res_paths.append(LinkInfo(path, pfmri, pfmri, inter,
+                            []))
                 # If the path was resolved under all relevant variants, then
                 # we're done.
                 if res_paths and tmp_vars.is_satisfied():
@@ -865,72 +762,51 @@ def resolve_links(path, files_dict, links, path_vars, file_dep_attrs, index=1):
                 # add the paths and the dependencies from links found to the
                 # results.
                 res_links.extend(link_deps)
-                for rec_path, rec_pfmri, rec_vc, via_links in rec_paths:
+                for rec_path, rec_pfmri, nearest_pfmri, rec_vc, via_links in \
+                    rec_paths:
                         via_links.append(path)
                         assert vc_intersection.intersects(rec_vc), \
                             "vc:%s\nvc_intersection:%s" % \
                             (rec_vc, vc_intersection)
                         links_found.setdefault(next_path, []).append(
-                            (link_pfmri, rec_vc))
-                res_paths.extend(rec_paths)
+                            (link_pfmri, nearest_pfmri, rec_vc))
+                        res_paths.append(LinkInfo(rec_path, rec_pfmri,
+                            link_pfmri, rec_vc, via_links))
+
         # Now add in the dependencies for the current link.
         for next_path in links_found.keys():
-
-                # Create a bin for each possible variant combination.
-                vcs = [(vc, []) for vc in path_vars.split_combinations()]
-
-                # For each pfmri which delivers this link, if it intersects with
-                # a variant combination, add it to that combination's bin.
-                for pfmri, pvc in links_found[next_path]:
-                        for vc, l in vcs:
-                                if pvc.intersects(vc):
-                                        l.append(pfmri)
-
-                # Group the variant combinations by their bin of fmris.
-                sort_key = operator.itemgetter(1)
-                for pfmris, group in itertools.groupby(
-                    sorted(vcs, key=sort_key),
-                    key=sort_key):
-
-                        # If pfmris is empty, then no packages delivered the
-                        # link under this combination of variants, so skip it.
-                        if not pfmris:
-                                continue
-
+                cur_deps = group_by_variant_combinations(links_found[next_path])
+                for pfmri_pairs, vc in cur_deps:
                         # Make a copy of path_vars which is unsatisfied, then
                         # mark the specific combinations which are satisfied by
                         # this group of pfmris.
                         dep_vc = path_vars.unsatisfied_copy()
-                        for vc, pfmris in group:
-                                dep_vc.mark_as_satisfied(vc)
-
-                        dep_type = "require-any"
-                        names = [p.get_short_fmri() for p in pfmris]
-                        # If there's only one fmri delivering this link, then
-                        # it's a require dependency, not a require-any.
-                        if len(pfmris) == 1:
-                                dep_type = "require"
-                                names = names[0]
-
-                        attrs = file_dep_attrs.copy()
-                        attrs.update({
-                            "fmri": names,
-                            type_prefix: "link",
-                            target_prefix: next_path,
-                            files_prefix: [path],
-                            "type": dep_type
-                        })
-                        attrs.pop(paths_prefix, None)
-                        attrs.pop(fullpaths_prefix, None)
-
-                        # The dependency is created with the same variants as
-                        # the path.  This works because the set of relevant
-                        # variants is restricted as links are applied so the
-                        # variants used for the path are the intersection of the
-                        # variants for each of the links used to reach the path
-                        # and the variants under which the file is delivered.
-                        res_links.append((
-                            actions.depend.DependencyAction(**attrs), dep_vc))
+                        dep_vc.mark_as_satisfied(vc)
+                        for l_pfmri, r_pfmri in pfmri_pairs:
+                                if l_pfmri == r_pfmri:
+                                        continue
+                                dep_type = "conditional"
+                                attrs = file_dep_attrs.copy()
+                                attrs.update({
+                                    "fmri": l_pfmri.get_short_fmri(),
+                                    "predicate": r_pfmri.get_short_fmri(),
+                                    type_prefix: "link",
+                                    files_prefix: [path],
+                                    "type": dep_type,
+                                })
+                                attrs.pop(paths_prefix, None)
+                                attrs.pop(fullpaths_prefix, None)
+                                # The dependency is created with the same
+                                # variants as the path.  This works because the
+                                # set of relevant variants is restricted as
+                                # links are applied so the variants used for the
+                                # path are the intersection of the variants for
+                                # each of the links used to reach the path and
+                                # the variants under which the file is
+                                # delivered.
+                                res_links.append((
+                                    actions.depend.DependencyAction(**attrs),
+                                    dep_vc))
 
         return res_paths, res_links
 
@@ -958,63 +834,75 @@ def find_package_using_delivered_files(files_dict, links, file_dep, dep_vars,
         res = []
         errs = []
         link_deps = []
-        multiple_path_errs = []
-        multiple_path_pkgs = set()
-        for p in make_paths(file_dep):
+        cur_deps = []
+
+        pths = sorted(make_paths(file_dep))
+        pth_id = ":".join(pths)
+        for p in pths:
                 # If orig_dep_vars is satisfied, then this function should never
                 # have been called.
                 assert(orig_dep_vars.is_empty() or
                     not orig_dep_vars.is_satisfied())
+                # Find the packages which satisfy this path of the file
+                # dependency and the links needed to reach the files which those
+                # packages provide.
                 paths_info, path_deps = resolve_links(os.path.normpath(p),
                     files_dict, links, orig_dep_vars, file_dep.attrs.copy())
                 link_deps.extend(path_deps)
-                try:
-                        new_res, dep_vars = helper(paths_info, file_dep,
-                            dep_vars, orig_dep_vars)
-                except AmbiguousPathError, e:
-                        errs.append(e)
+                cur_deps += paths_info
+        # Because all of the package dependencies are ultimately satisfying the
+        # same file dependency, they should all be grouped together.
+        cur_deps = group_by_variant_combinations([
+            (t.path, t.pfmri, t.via_links, t.variant_combination)
+            for t in cur_deps
+        ])
+
+        for l, vc in cur_deps:
+                dep_vars.mark_as_satisfied(vc)
+                attrs = file_dep.attrs.copy()
+                dep_type = "require-any"
+                # Find the packages which satisify this file dependency.  Using
+                # the short fmri is appropriate for these purposes because
+                # dependencies can never be inferred on different versions of
+                # the same package during a single run of resolve.
+                pfmri_names = sorted(set([
+                    pfmri.get_short_fmri()
+                    for path, pfmri, vl in l
+                ]))
+                paths = sorted(set([
+                    path for path, pfmri, vl in l
+                ]))
+                via_links = []
+                # If only a single package satisfies this dependency, then a
+                # require dependency should be created, otherwise a require-any
+                # is needed.
+                if len(pfmri_names) == 1:
+                        dep_type = "require"
+                        pfmri_names = pfmri_names[0]
+                        via_links = l[0][2]
+                        via_links.reverse()
+                        via_links = ":".join(via_links)
                 else:
-                        if not res:
-                                res = new_res
-                                continue
-                        # If there are previous results, then it's necessary to
-                        # check the new results against the previous results
-                        # to see if different paths for the same dependency are
-                        # satisfied by different packages.
-                        for a, v in res:
-                                for new_a, new_v in new_res:
-                                        if a.attrs["fmri"] == \
-                                            new_a.attrs["fmri"]:
-                                                a.attrs[files_prefix].extend(
-                                                    new_a.attrs[files_prefix])
-                                                continue
-                                        # Check to see if there's a
-                                        # configuration of variants under which
-                                        # both packages can deliver a path which
-                                        # satisfies the dependencies.
-                                        if v.intersects(new_v):
-                                                multiple_path_errs.append((a,
-                                                    new_a,
-                                                    v.intersection(new_v)))
-                                                multiple_path_pkgs.add(a)
-                                                multiple_path_pkgs.add(new_a)
-                                        elif new_v.intersects(v):
-                                                multiple_path_errs.append((a,
-                                                    new_a,
-                                                    new_v.intersection(v)))
-                                                multiple_path_pkgs.add(a)
-                                                multiple_path_pkgs.add(new_a)
-                                        else:
-                                                res.append((new_a, new_v))
+                        for path, pfmri, vl in l:
+                                vl.reverse()
+                                via_links.append(":".join(vl))
+                attrs.pop(paths_prefix, None)
+                attrs.pop(fullpaths_prefix, None)
+                attrs.update({
+                    "type": dep_type,
+                    "fmri": pfmri_names,
+                    files_prefix: paths,
+                })
+                if via_links:
+                        attrs[via_links_prefix] = via_links
+                res.append((actions.depend.DependencyAction(**attrs), vc))
 
-        for a1, a2, vc in multiple_path_errs:
-                errs.append(MultiplePackagesPathError([a1, a2],
-                    file_dep, vc))
-
-        # Extract the actions from res, and only return those which don't have
-        # multiple path errors.
-        return [(a, v) for a, v in res if a not in multiple_path_pkgs] + \
-            link_deps, dep_vars, errs
+        res.extend(link_deps)
+        # Add the path id so that these dependencies analyzed for simplification
+        # as a group.
+        for d, v in res:
+                d.attrs[path_id_prefix] = pth_id
+        return res, dep_vars, errs
 
 def find_package(files, links, file_dep, orig_dep_vars, pkg_vars, use_system):
         """Find the packages which resolve the dependency. It returns a list of
@@ -1071,6 +959,75 @@ def is_file_dependency(act):
             act.attrs.get("fmri", None) == base.Dependency.DUMMY_FMRI and \
             (files_prefix in act.attrs or fullpaths_prefix in act.attrs)
 
+def group_by_variant_combinations(lst):
+        """The goal of this function is to produce the smallest list of (info
+        list, VariantCombinations) tuples which has the following properties:
+
+        1. The intersection between any two satisfied sets of the
+        VariantCombinations must be empty.
+
+        2. If a piece of information was satisfied under a particular
+        combination of variants, that information must be paired with the
+        VariantCombination which has that combination in its satisfied set.
+
+        Note: A piece of information can appear more than once in the result.
+
+        The 'lst' parameter is a list of tuples.  The last item in each tuple
+        must be a VariantCombination. The rest of each tuple is the "piece of
+        information" discussed above."""
+
+        seed = []
+        for item in lst:
+                # Separate the VariantCombination out from the info to be
+                # grouped.
+                i_vc = item[-1]
+                info = item[:-1]
+                # If there's only a single piece of information, then take it
+                # out of a list.
+                if len(info) == 1:
+                        info = info[0]
+                new_res = []
+                for old_info, old_vc in seed:
+                        # If i_vc is None, then variant combinations under which
+                        # 'info' is satisfied have been covered by previous
+                        # old_vc's and info has already been merged in, so just
+                        # finish extending the list with the existing
+                        # information.
+                        if i_vc is None:
+                                new_res.append((old_info, old_vc))
+                                continue
+                        # Check to see how i_vc and old_vc's satisfied sets
+                        # overlap.
+                        only_i, intersect, only_old = \
+                            i_vc.separate_satisfied(old_vc)
+                        assert only_i or intersect or only_old
+                        assert only_i or i_vc.issubset(old_vc, True)
+                        assert only_old or old_vc.issubset(i_vc, True)
+                        assert intersect or (only_i and only_old)
+                        # If there are any variant combinations where old_vc is
+                        # satisfied but i_vc is not, add the VariantCombination
+                        # for those combinations to the list along with the
+                        # old_info.
+                        if only_old:
+                                new_res.append((old_info, only_old))
+                        # If i_vc and old_vc are both satisfied under some
+                        # variant combinations, then add info into the old_info
+                        # under those variant combinations.
+                        if intersect:
+                                tmp = old_info[:]
+                                tmp.append(info)
+                                new_res.append((tmp, intersect))
+                        # The relevant variant combinations to consider now are
+                        # those that didn't overlap with old_vc.
+                        i_vc = only_i
+                # If i_vc is not None, then i_vc was satisfied under some
+                # variant combinations which no other VariantCombination was, so
+                # add it to the list.
+                if i_vc is not None:
+                        new_res.append(([info], i_vc))
+                seed = new_res
+        return seed
+
 def merge_deps(dest, src):
         """Add the information contained in src's attrs to dest."""
 
@@ -1092,6 +1049,339 @@ def merge_deps(dest, src):
                                 t.extend(v)
                                 dest.attrs[k] = t
 
+def __predicate_path_id_attrget(d):
+        # d is a tuple containing two items.  d[0] is the action.  d[1]
+        # is the VariantCombination for this action.  The
+        # VariantCombination isn't useful for our grouping needs.
+        try:
+                return d[0].attrs["predicate"], \
+                    d[0].attrs.get(path_id_prefix, None)
+        except KeyError:
+                raise RuntimeError("Expected this to have a predicate:%s" % \
+                    d[0])
+
+def __collapse_conditionals(deps):
+        """Under certain conditions, conditional dependencies can be transformed
+        into require-any or require dependencies.  This function is responsible
+        for performing the transformation.
+
+        The 'deps' parameter is a list of dependency action and
+        VariantCombination tuples."""
+
+        # Construct a dictionary which maps a package name to a list of
+        # dependencies which require that package.
+        req_dict = {}
+        for d, v in deps:
+                if d.attrs["type"] != "require":
+                        continue
+                t_pfmri = fmri.PkgFmri(d.attrs["fmri"], "5.11")
+                req_dict.setdefault(t_pfmri.get_pkg_stem(include_scheme=False),
+                    []).append((t_pfmri, d, v))
+
+        cond_deps = {}
+        preds_to_process = set()
+        for (predicate, path_id), group in itertools.groupby(sorted(
+            [(d, v) for d, v in deps if d.attrs["type"] == "conditional"],
+            key=__predicate_path_id_attrget), __predicate_path_id_attrget):
+                group = list(group)
+                cond_deps.setdefault(predicate, []).append((path_id, group))
+                preds_to_process.add(predicate)
+
+        new_req_deps = []
+
+        # While there are still require dependencies which might be used to
+        # transform a conditional dependency...
+        while preds_to_process:
+                # Pick a fmri which might be the predicate of a conditional
+                # dependency that could be collapsed.
+                predicate = preds_to_process.pop()
+                t_pfmri = fmri.PkgFmri(predicate, "5.11")
+                t_name = t_pfmri.get_pkg_stem(include_scheme=False)
+                # If there are no require dependencies with that package name as
+                # a target, then there's nothing to do.
+                if t_name not in req_dict:
+                        continue
+                rel_reqs = []
+                # Only require dependencies whose fmri is a successor to the
+                # fmri under consideration are interesting.
+                for req_fmri, d, v in req_dict[t_name]:
+                        if req_fmri.is_successor(t_pfmri):
+                                rel_reqs.append((d, v))
+                if not rel_reqs:
+                        continue
+
+                new_group = []
+                for path_id, group in cond_deps.get(predicate, []):
+                        tmp_deps = []
+                        # Group all of the conditional dependencies inferred for
+                        # path_id by the variant combinations under which
+                        # they're valid.
+                        tmp_deps = group_by_variant_combinations(group)
+
+                        collapse_deps = []
+                        no_collapse = []
+                        # Separate the conditional dependencies into those that
+                        # can be collapsed and those that can't.  If a
+                        # conditional dependency intersects with any of the
+                        # relevant required dependencies found earlier, it can
+                        # be collapsed.
+                        for ds, v in tmp_deps:
+                                for req_d, req_v in rel_reqs:
+                                        only_tmp, intersect, only_req = \
+                                            v.separate_satisfied(req_v)
+                                        assert only_tmp or intersect or only_req
+                                        assert only_tmp or \
+                                            v.issubset(req_v, True)
+                                        assert only_req or v.issubset(v, True)
+                                        assert intersect or \
+                                            (only_tmp and only_req)
+                                        if intersect:
+                                                collapse_deps.append(
+                                                    (ds, intersect))
+                                        v = only_tmp
+                                        if v is None:
+                                                break
+                                if v is not None:
+                                        no_collapse.extend([(d, v) for d in ds])
+
+                        if no_collapse:
+                                new_group.append((path_id, no_collapse))
+
+                        # If path_id is None, then these conditional
+                        # dependencies were not inferred links needed to reach a
+                        # file dependency.  In that case, the conditional
+                        # dependencies can be individually collapsed to require
+                        # dependencies but cannot be collapsed together into a
+                        # require-any dependency.
+                        if path_id is None:
+                                for ds, v in collapse_deps:
+                                        for d in ds:
+                                                res_dep = actions.depend.DependencyAction(**d.attrs)
+                                                del res_dep.attrs["predicate"]
+                                                res_dep.attrs["type"] = \
+                                                    "require"
+                                                new_req_deps.append(
+                                                    (res_dep, v))
+                                                # Since a new require dependency
+                                                # has been created, its possible
+                                                # that conditional dependencies
+                                                # could be collapsed using that,
+                                                # so add the fmri to the
+                                                # predicates to be processed.
+                                                preds_to_process.add(
+                                                    res_dep.attrs["fmri"])
+                                                t_pfmri = fmri.PkgFmri(
+                                                    d.attrs["fmri"], "5.11")
+                                                req_dict.setdefault(
+                                                    t_pfmri.get_pkg_stem(
+                                                        include_scheme=False),
+                                                    []).append(
+                                                        (t_pfmri, res_dep, v))
+                                continue
+
+                        # Since path_id is not None, these conditional
+                        # dependencies were all inferred while trying to satisfy
+                        # a dependency on the same "file."  Since they all have
+                        # the same predicate, they must be collapsed into a
+                        # require-any dependency because each represents a valid
+                        # step through the link path to reach the dependened
+                        # upon file.
+                        for ds, v in collapse_deps:
+                                res_dep = actions.depend.DependencyAction(
+                                    **ds[0].attrs)
+                                for d in ds[1:]:
+                                        merge_deps(res_dep, d)
+                                res_dep.attrs["fmri"] = list(set(
+                                    res_dep.attrlist("fmri")))
+                                if len(res_dep.attrlist("fmri")) > 1:
+                                        res_dep.attrs["type"] = "require-any"
+                                else:
+                                        res_dep.attrs["type"] = "require"
+                                        res_dep.attrs["fmri"] = \
+                                            res_dep.attrs["fmri"][0]
+                                        # Since a new require dependency has
+                                        # been created, its possible that
+                                        # conditional dependencies could be
+                                        # collapsed using that, so add the fmri
+                                        # to the predicates to be processed.
+                                        preds_to_process.add(
+                                            res_dep.attrs["fmri"])
+                                        t_pfmri = fmri.PkgFmri(d.attrs["fmri"],
+                                            "5.11")
+                                        req_dict.setdefault(
+                                            t_pfmri.get_pkg_stem(
+                                                include_scheme=False),
+                                            []).append((t_pfmri, res_dep, v))
+                                del res_dep.attrs["predicate"]
+                                new_req_deps.append((res_dep, v))
+                # Now that all the new require dependencies have been removed,
+                # update the remaining conditional dependencies for this
+                # predicate.
+                if new_group:
+                        cond_deps[predicate] = new_group
+                elif predicate in cond_deps:
+                        del cond_deps[predicate]
+
+        # The result is the original non-conditional dependencies ...
+        res = [(d, v) for d, v in deps if d.attrs["type"] != "conditional"]
+        # plus the new require or require-any dependencies made by collapsing
+        # the conditional dependencies ...
+        res += new_req_deps
+        # plus the conditional dependencies that couldn't be collapsed.
+        for l in cond_deps.values():
+                for path_id, dep_pairs in l:
+                        res.extend(dep_pairs)
+        return res
+
+def __remove_unneeded_require_and_require_any(deps, pkg_fmri):
+        """Drop any unneeded require or require any dependencies and record any
+        dropped require-any dependencies which were inferred."""
+
+        res = []
+        omitted_req_any = {}
+        for cur_dep, cur_vars in deps:
+                if cur_dep.attrs["type"] not in ("require", "require-any"):
+                        res.append((cur_dep, cur_vars))
+                        continue
+
+                cur_fmris = []
+                for f in cur_dep.attrlist("fmri"):
+                        cur_fmris.append(fmri.PkgFmri(f, "5.11"))
+                skip = False
+                # If we're resolving a pkg with a known name ...
+                if pkg_fmri is not None:
+                        for pfmri in cur_fmris:
+                                # Then if this package is a successor to any of
+                                # the packages the dependency requires, then we
+                                # can omit the dependency.
+                                if pkg_fmri.is_successor(pfmri):
+                                        skip = True
+                if skip:
+                        continue
+
+                # If this dependency isn't a require-any dependency, then it
+                # should be included in the output.
+                if cur_dep.attrs["type"] != "require-any":
+                        res.append((cur_dep, cur_vars))
+                        continue
+
+                marked = False
+                # Now the require-any dependency is going to be compared to all
+                # the known require dependencies to see if it can be omitted.
+                # It can be omitted if one of the packages it requires is
+                # already required.  Because a require-any dependency could be
+                # omitted under some, but not all, variant combinations, the
+                # satisfied set of the variant combination of the require-any
+                # dependency is used for bookkeeping.  Each require dependency
+                # which has a successor to one of the packages in the
+                # require-any dependency marks the variant combinations under
+                # which it's valid as unsatisfied in the require-any dependency.
+                # At the end, if the require-any dependency is still satisfied
+                # under any variant combinations, then it's included in the
+                # result.
+                successors = []
+                for comp_dep, comp_vars in deps:
+                        if comp_dep.attrs["type"] != "require":
+                                continue
+                        successor = False
+                        comp_fmri = fmri.PkgFmri(comp_dep.attrs["fmri"], "5.11")
+                        # Check to see whether the package required by the
+                        # require dependency is a successor to any of the
+                        # packages required by the require-any dependency.
+                        for c in cur_fmris:
+                                if comp_fmri.is_successor(c):
+                                        successor = True
+                                        break
+                        if not successor:
+                                continue
+                        # If comp_vars is empty, then no variants have been
+                        # declared for these packages, so having a matching
+                        # require dependency is enough to omit this require-any
+                        # dependency.
+                        only_cur, inter, only_comp = \
+                            cur_vars.separate_satisfied(comp_vars)
+                        if cur_vars.mark_as_unsatisfied(comp_vars) or \
+                            comp_vars.is_empty():
+                                marked = True
+                                successors.append((comp_fmri, inter))
+                # If the require-any dependency was never changed, then include
+                # it.  If it was changed, check whether there are situations
+                # where the require-any dependency is needed.
+                if not marked:
+                        res.append((cur_dep, cur_vars))
+                        continue
+                if cur_vars.sat_set:
+                        res.append((cur_dep, cur_vars))
+                assert successors
+                path_id = cur_dep.attrs.get(path_id_prefix, None)
+                if path_id:
+                        omitted_req_any[path_id] = successors
+        return res, omitted_req_any
+
+def __remove_extraneous_conditionals(deps, omitted_req_any):
+        """Remove conditional dependencies which other dependencies have made
+        unnecessary.  If an inferred require-any dependency was collapsed to a
+        require dependency, then only the conditional dependencies needed to
+        reach the require dependency should be retained."""
+
+        def fmri_attrget(d):
+                return fmri.PkgFmri(d[0].attrs["fmri"], "5.11").get_pkg_stem(
+                    include_scheme=False)
+
+        def path_id_attrget(d):
+                return d[0].attrs.get(path_id_prefix, None)
+
+        req_dict = {}
+        for target, group in itertools.groupby(sorted(
+            [(d, v) for d, v in deps if d.attrs["type"] == "require"],
+            key=fmri_attrget), fmri_attrget):
+                req_dict[target] = list(group)
+
+        needed_cond_deps = []
+        for path_id, group in itertools.groupby(sorted(
+            [(d, v) for d, v in deps if d.attrs["type"] == "conditional"],
+            key=path_id_attrget), path_id_attrget):
+                # Because of how the list was created, each dependency in
+                # successors is not satisfied under the same set of variant
+                # values as any other dependency in successors.
+                successors = omitted_req_any.get(path_id, [])
+                for d, v in group:
+                        # If this conditional dependency was part of a path to a
+                        # require-any dependency which was reduced to a require
+                        # dependency under some combinations of variants, then
+                        # make sure this conditional doesn't apply under those
+                        # combinations of variants.
+                        skip = False
+                        for s_d, s_v in successors:
+                                # If s_v is empty, then s_d applies under all
+                                # variant combinations.
+                                if s_v.is_empty():
+                                        skip = True
+                                        break
+                                v.mark_as_unsatisfied(s_v)
+                        if skip or (not v.is_empty() and not v.sat_set):
+                                continue
+
+                        # If this conditional dependency's fmri is also the fmri
+                        # of a require dependency, then it can be ignored under
+                        # those combinations of variants under which the require
+                        # dependency applies.
+                        d_fmri = fmri.PkgFmri(d.attrs["fmri"], "5.11")
+                        for r_d, r_v in req_dict.get(d_fmri.get_pkg_stem(
+                            include_scheme=False), []):
+                                r_fmri = fmri.PkgFmri(r_d.attrs["fmri"], "5.11")
+                                if not r_fmri.is_successor(d_fmri):
+                                        continue
+                                if r_v.is_empty():
+                                        skip = True
+                                        break
+                                v.mark_as_unsatisfied(r_v)
+                        if not skip and (v.is_empty() or v.sat_set):
+                                needed_cond_deps.append((d, v))
+
+        return [(d, v) for d, v in deps if d.attrs["type"] != "conditional"] + \
+            needed_cond_deps
+
 def combine(deps, pkg_vars, pkg_fmri, pkg_name):
         """Combine duplicate dependency actions.
 
@@ -1112,9 +1402,11 @@ def combine(deps, pkg_vars, pkg_fmri, pkg_name):
                 in pkg.manifest notices."""
 
                 # d is a tuple containing two items.  d[0] is the action.  d[1]
+
                 # is the VariantCombination for this action.  The
                 # VariantCombination isn't useful for our grouping needs.
                 return d[0].name, d[0].attrs.get("type", None), \
+                    d[0].attrs.get("predicate", None), \
                     d[0].attrs.get(d[0].key_attr, id(d[0]))
 
         def add_vars(d, d_vars, pkg_vars):
@@ -1134,13 +1426,48 @@ def combine(deps, pkg_vars, pkg_fmri, pkg_name):
                         res = [d]
                 return res
 
-        res = []
-        req_fmris = []
-        bad_fmris = set()
+        # Transform conditional dependencies into require or require-any
+        # dependencies where possible.
+        res = __collapse_conditionals(deps)
+
         errs = []
 
-        # For each group of dependencies (g) for a particular fmri (k) ...
-        for k, group in itertools.groupby(sorted(deps, key=action_group_key),
+        # Remove require dependencies on this package and require-any
+        # dependencies which are unneeded.
+        res, omitted_require_any = \
+            __remove_unneeded_require_and_require_any(res, pkg_fmri)
+
+        # Now remove all conditionals which are no longer needed.
+        res = __remove_extraneous_conditionals(res, omitted_require_any)
+
+        # There are certain dependency relationships between packages that the
+        # current dependency types can't properly represent.  One is the case
+        # where if A is present then either B or C must be installed.  In this
+        # situation, find_package_using_delivered_files will have inferred a
+        # conditional dependency on B if A is present and another one on C if A
+        # is present.  The following code detects this situation and provides an
+        # error to the user.
+        conflicts = []
+        for (predicate, path_id), group in itertools.groupby(sorted(
+            [(d, v) for d, v in res if d.attrs["type"] == "conditional"],
+            key=__predicate_path_id_attrget), __predicate_path_id_attrget):
+                if not path_id:
+                        continue
+                group = list(group)
+                for i, (d1, v1) in enumerate(group):
+                        for d2, v2 in group[i + 1:]:
+                                only_v1, inter, only_v2 = \
+                                    v1.separate_satisfied(v2)
+                                if (inter.is_empty() or inter.sat_set) and \
+                                    d1.attrs["fmri"] != d2.attrs["fmri"]:
+                                        conflicts.append((d1, d2, inter))
+        if conflicts:
+                errs.append(NeedConditionalRequireAny(conflicts, pkg_vars))
+
+        # For each group of dependencies (g) for a particular fmri (k) merge
+        # together depedencies on the same fmri with different variants.
+        new_res = []
+        for k, group in itertools.groupby(sorted(res, key=action_group_key),
             action_group_key):
                 group = list(group)
                 res_dep = group[0][0]
@@ -1148,83 +1475,15 @@ def combine(deps, pkg_vars, pkg_fmri, pkg_name):
                 for cur_dep, cur_vars in group:
                         merge_deps(res_dep, cur_dep)
                         res_vars.mark_as_satisfied(cur_vars)
-                res.append((res_dep, res_vars))
-        new_res = []
-        for cur_dep, cur_vars in res:
-                if cur_dep.attrs["type"] not in ("require", "require-any"):
-                        new_res.append((cur_dep, cur_vars))
-                        continue
-                cur_fmris = []
-                for f in cur_dep.attrlist("fmri"):
-                        try:
-                                # XXX version requires build string; 5.11 is not
-                                # sane.
-                                cur_fmris.append(fmri.PkgFmri(f, "5.11"))
-                        except fmri.IllegalFmri:
-                                bad_fmris.add(f)
-                skip = False
-                # If we're resolving a pkg with a known name ...
-                if pkg_fmri is not None:
-                        for pfmri in cur_fmris:
-                                # Then if this package is a successor to any of
-                                # the packages the dependency requires, then we
-                                # can omit the dependency.
-                                if pkg_fmri.is_successor(pfmri):
-                                        skip = True
-                if skip:
-                        continue
-                # If this dependency isn't a require-any dependency, then it
-                # should be included in the output.
-                if cur_dep.attrs["type"] != "require-any":
-                        new_res.append((cur_dep, cur_vars))
-                        continue
-                marked = False
-                # Now the require-any dependency is going to be compared to all
-                # the known require dependencies to see if it can be omitted.
-                # It can be omitted if one of the packages it requires is
-                # already required.  Because a require-any dependency could be
-                # omitted under some, but not all, variant combinations, the
-                # satisfied set of the variant combination of the require-any
-                # dependency is used for bookkeeping.  Each require dependency
-                # which has a successor to one of the packages in the
-                # require-any dependency marks the variant combinations under
-                # which it's valid as unsatisfied in the require-any dependency.
-                # At the end, if the require-any dependency is still satisfied
-                # under any variant combinations, then it's included in the
-                # result.
-                for comp_dep, comp_vars in res:
-                        if comp_dep.attrs["type"] != "require":
-                                continue
-                        comp_fmri = fmri.PkgFmri(comp_dep.attrs["fmri"], "5.11")
-                        successor = False
-                        # Check to see whether the package required by the
-                        # require dependency is a successor to any of the
-                        # packages required by the require-any dependency.
-                        for c in cur_fmris:
-                                if c.is_successor(comp_fmri):
-                                        successor = True
-                                        break
-                        if not successor:
-                                continue
-                        # If comp_vars is empty, then no variants have been
-                        # declared for these packages, so having a matching
-                        # require dependency is enough to omit this require-any
-                        # dependency.
-                        if cur_vars.mark_as_unsatisfied(comp_vars) or \
-                            comp_vars.is_empty():
-                                marked = True
-                # If the require-any dependency was never changed, then include
-                # it.  If it was changed, check whether there are situations
-                # where the require-any dependency is needed.
-                if not marked or cur_vars.sat_set:
-                        new_res.append((cur_dep, cur_vars))
-        res = []
-        # Merge the variant information into the depend action.
-        for d, vc in new_res:
-                res.extend(add_vars(d, vc, pkg_vars))
+                new_res.append((res_dep, res_vars))
+        res = new_res
 
-        if bad_fmris:
-                errs.append(BadDependencyFmri(pkg_name, bad_fmris))
+        # Merge the variant information into the depend action.
+        new_res = []
+        for d, vc in res:
+                new_res.extend(add_vars(d, vc, pkg_vars))
+        res = new_res
+
         return res, errs
 
 def split_off_variants(dep, pkg_vars, satisfied=False):
@@ -1316,8 +1575,8 @@ def resolve_deps(manifest_paths, api_inst, prune_attrs=False, use_system=True):
         # files referenced in the manifest that couldn't be found.
         manifests = [
             (mp, choose_name(mp, mfst), mfst, mfst.get_all_variants(),
-            missing_files)
-            for mp, (mfst, missing_files) in
+            manifest_errs)
+            for mp, (mfst, manifest_errs) in
             ((mp, __make_manifest(mp, load_data=False))
             for mp in manifest_paths)
         ]
@@ -1398,14 +1657,14 @@ def resolve_deps(manifest_paths, api_inst, prune_attrs=False, use_system=True):
 
         pkg_deps = {}
         errs = []
-        for mp, (name, pfmri), mfst, pkg_vars, miss_files in manifests:
+        for mp, (name, pfmri), mfst, pkg_vars, manifest_errs in manifests:
                 name_to_use = pfmri or name
                 # The add_fmri_path_mapping function moved the actions it found
                 # into the distro_vars universe of variants, so we need to move
                 # pkg_vars (and by extension the variants on depend actions)
                 # into that universe too.
                 pkg_vars.merge_unknown(distro_vars)
-                errs.extend(miss_files)
+                errs.extend(manifest_errs)
                 if mfst is None:
                         pkg_deps[mp] = None
                         continue

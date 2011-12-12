@@ -258,9 +258,9 @@ file NOHASH group=sys mode=0600 owner=root path=var/log/authlog variant.foo=baz 
 
         two_v_deps_verbose_output = """\
 # %(m1_path)s
-depend fmri=pkg:/s-v-bar pkg.debug.depend.file=var/log/authlog pkg.debug.depend.file=var/log/file2 pkg.debug.depend.reason=baz pkg.debug.depend.type=hardlink type=require
-depend fmri=pkg:/s-v-baz-one pkg.debug.depend.file=var/log/authlog pkg.debug.depend.reason=baz pkg.debug.depend.type=hardlink type=require variant.foo=baz variant.num=one
-depend fmri=pkg:/s-v-baz-two pkg.debug.depend.file=var/log/authlog pkg.debug.depend.reason=baz pkg.debug.depend.type=hardlink type=require variant.foo=baz variant.num=two
+depend fmri=pkg:/s-v-bar pkg.debug.depend.file=var/log/authlog pkg.debug.depend.file=var/log/file2 pkg.debug.depend.path-id=var/log/authlog pkg.debug.depend.path-id=var/log/file2 pkg.debug.depend.reason=baz pkg.debug.depend.type=hardlink type=require
+depend fmri=pkg:/s-v-baz-one pkg.debug.depend.file=var/log/authlog pkg.debug.depend.path-id=var/log/authlog pkg.debug.depend.reason=baz pkg.debug.depend.type=hardlink type=require variant.foo=baz variant.num=one
+depend fmri=pkg:/s-v-baz-two pkg.debug.depend.file=var/log/authlog pkg.debug.depend.path-id=var/log/authlog pkg.debug.depend.reason=baz pkg.debug.depend.type=hardlink type=require variant.foo=baz variant.num=two
 
 
 # %(m2_path)s
@@ -342,12 +342,12 @@ set name=variant.num value=one value=two
 depend fmri=pkg:/hand-dep type=require
 depend fmri=pkg:/s-v-bar@0.1-0.2 type=incorporate
 depend fmri=pkg:/hand-dep@0.1-0.2 type=incorporate
-depend fmri=pkg:/dup-prov pkg.debug.depend.file=var/log/f2 pkg.debug.depend.file=var/log/f1 pkg.debug.depend.reason=b1 pkg.debug.depend.reason=b2 pkg.debug.depend.type=hardlink type=require
-depend fmri=pkg:/s-v-bar pkg.debug.depend.file=var/log/authlog pkg.debug.depend.file=var/log/file2 pkg.debug.depend.reason=baz pkg.debug.depend.type=hardlink type=require
-depend fmri=pkg:/s-v-baz-one pkg.debug.depend.file=var/log/authlog pkg.debug.depend.reason=baz pkg.debug.depend.type=hardlink type=require variant.foo=baz variant.num=one
-depend fmri=pkg:/s-v-baz-two pkg.debug.depend.file=var/log/authlog pkg.debug.depend.reason=baz pkg.debug.depend.type=hardlink type=require variant.foo=baz variant.num=two
-depend fmri=pkg:/sep_vars pkg.debug.depend.file=var/log/f3 pkg.debug.depend.file=var/log/f4 pkg.debug.depend.reason=b3 pkg.debug.depend.type=hardlink type=require
-depend fmri=pkg:/subset-prov pkg.debug.depend.file=var/log/f6 pkg.debug.depend.file=var/log/f5 pkg.debug.depend.reason=b5 pkg.debug.depend.type=hardlink type=require
+depend fmri=pkg:/dup-prov pkg.debug.depend.file=var/log/f2 pkg.debug.depend.file=var/log/f1 pkg.debug.depend.path-id=var/log/f1 pkg.debug.depend.path-id=var/log/f2 pkg.debug.depend.reason=b1 pkg.debug.depend.reason=b2 pkg.debug.depend.type=hardlink type=require
+depend fmri=pkg:/s-v-bar pkg.debug.depend.file=var/log/authlog pkg.debug.depend.file=var/log/file2 pkg.debug.depend.path-id=var/log/authlog pkg.debug.depend.path-id=var/log/file2 pkg.debug.depend.reason=baz pkg.debug.depend.type=hardlink type=require
+depend fmri=pkg:/s-v-baz-one pkg.debug.depend.file=var/log/authlog pkg.debug.depend.path-id=var/log/authlog pkg.debug.depend.reason=baz pkg.debug.depend.type=hardlink type=require variant.foo=baz variant.num=one
+depend fmri=pkg:/s-v-baz-two pkg.debug.depend.file=var/log/authlog pkg.debug.depend.path-id=var/log/authlog pkg.debug.depend.reason=baz pkg.debug.depend.type=hardlink type=require variant.foo=baz variant.num=two
+depend fmri=pkg:/sep_vars pkg.debug.depend.file=var/log/f3 pkg.debug.depend.file=var/log/f4 pkg.debug.depend.path-id=var/log/f3 pkg.debug.depend.path-id=var/log/f4 pkg.debug.depend.reason=b3 pkg.debug.depend.type=hardlink type=require
+depend fmri=pkg:/subset-prov pkg.debug.depend.file=var/log/f6 pkg.debug.depend.file=var/log/f5 pkg.debug.depend.path-id=var/log/f5 pkg.debug.depend.path-id=var/log/f6 pkg.debug.depend.reason=b5 pkg.debug.depend.type=hardlink type=require
 """
 
         payload_elf_sub_error = """\
@@ -844,9 +844,9 @@ file NOHASH group=bin mode=0555 owner=root path=c/bin/perl variant.foo=c
                         else:
                                 self.assertEqual(d.attrs["variant.foo"],
                                     "c")
-                                self.assertEqual(set(
-                                    d.attrs[dependencies.type_prefix]),
-                                    set(["link", "script"]))
+                                self.assertEqual(
+                                    d.attrs[dependencies.type_prefix],
+                                    "script")
 
         def bug_16013_check_res_simple_links(self, deps, errs, a_pth):
                 """A common method used by tests for verifying correct
@@ -915,9 +915,9 @@ file NOHASH group=bin mode=0555 owner=root path=c/bin/perl variant.foo=c
                         else:
                                 self.assertEqual(d.attrs["variant.foo"],
                                     "c")
-                                self.assertEqual(set(
-                                    d.attrs[dependencies.type_prefix]),
-                                    set(["link", "script"]))
+                                self.assertEqual(
+                                    d.attrs[dependencies.type_prefix],
+                                    "script")
 
 
         def setUp(self):
@@ -1419,14 +1419,13 @@ SYMBOL_SCOPE {
 
                 self.pkgdepend_generate("-d %s %s" %
                     (self.test_proto_dir, m_path), exit=1)
-                self.check_res('pkgdepend: Could not parse manifest ' +
-                    '%s because of the following line:\n' % m_path +
-                    nonsense, self.errout)
+                self.debug(self.errout)
+                self.check_res("Malformed action at position: 9:\n" + nonsense +
+                    "\n             ^\n", self.errout)
 
                 self.pkgdepend_resolve("-o %s " % m_path, exit=1)
-                self.check_res("pkgdepend: Could not parse one or "
-                    "more manifests because of the following line:\n" +
-                    nonsense, self.errout)
+                self.check_res("Malformed action at position: 9:\n" + nonsense +
+                    "\n             ^\n", self.errout)
 
         def __run_dyn_tok_test(self, run_paths, replaced_path, dep_args):
                 """Using the provided run paths, produces a elf binary with
@@ -1548,31 +1547,6 @@ SYMBOL_SCOPE {
                 self.check_res(self.miss_payload_manf_error %
                     {"path_pref":self.test_proto_dir}, self.errout)
                 self.check_res("", self.output)
-
-        def test_bug_12896(self):
-                """Test that the errors that happen when multiple packages
-                deliver a dependency are displayed correctly."""
-
-                col_path = self.make_manifest(self.collision_manf)
-                bar_path = self.make_manifest(self.sat_bar_libc)
-                bar2_path = self.make_manifest(self.sat_bar_libc2)
-                foo_path = self.make_manifest(self.sat_foo_libc)
-
-                self.pkgdepend_resolve("-o %s %s %s" %
-                    (col_path, bar_path, foo_path), exit=1)
-                self.check_res("\n\n".join(
-                    ["# %s" % l for l in [col_path, bar_path, foo_path]]),
-                    self.output)
-                self.check_res(self.run_path_errors %
-                    {"unresolved_path": col_path}, self.errout)
-
-                self.pkgdepend_resolve("-o %s %s %s" %
-                    (col_path, bar_path, bar2_path), exit=1)
-                self.check_res("\n\n".join(
-                    ["# %s" % l for l in [col_path, bar_path, bar2_path]]),
-                    self.output)
-                self.check_res(self.amb_path_errors %
-                    {"unresolved_path": col_path}, self.errout)
 
         def test_bug_14116(self):
                 foo_path = self.make_proto_text_file("bar/foo", "#!perl -w\n\n")
@@ -1849,8 +1823,8 @@ SYMBOL_SCOPE {
                             "\n".join([str(s) for s in deps[a_pth]]))
                         d = deps[a_pth][0]
                         self.assertEqual(d.attrs["fmri"], "pkg:/b@0.5.11-0.151")
-                        self.assertEqual(set(d.attrs[dependencies.type_prefix]),
-                            set(["link", "script"]))
+                        self.assertEqual(d.attrs[dependencies.type_prefix],
+                            "script")
                 check_res(deps, errs)
                 self.assertEqual(len(deps[b_pth]), 0,
                     "\n".join([str(s) for s in deps[b_pth]]))
@@ -2074,8 +2048,7 @@ depend fmri=__TBD pkg.debug.depend.file=perl pkg.debug.depend.path=usr/bin pkg.d
                         else:
                                 self.assertEqual(d.attrs["variant.foo"], "c")
                                 self.assertEqual(
-                                    set(d.attrs[dependencies.type_prefix]),
-                                    set(["link", "script"]))
+                                    d.attrs[dependencies.type_prefix], "script")
                 self.assertEqual(len(deps[c_pth]), 0)
                 self.assertEqual(len(deps[b_file_pth]), 0)
                 self.assertEqual(len(deps[b_link_pth]), 0)
@@ -2200,8 +2173,7 @@ file NOHASH group=bin mode=0555 owner=root path=c/bin/perl variant.foo=c
                                 b_yz_link_var.remove(d.attrs["variant.bar"])
                         else:
                                 self.assertEqual(
-                                    set(d.attrs[dependencies.type_prefix]),
-                                    set(["link", "script"]))
+                                    d.attrs[dependencies.type_prefix], "script")
                                 self.assertEqual(d.attrs["variant.foo"], "c")
                                 self.assert_("variant.bar" not in d.attrs)
 
@@ -2309,8 +2281,8 @@ dir group=bin mode=0755 owner=root path=bad_b/bin variant.foo=b
                                 res_fmris.remove(d.attrs["fmri"])
                                 self.assertEqual(d.attrs["variant.foo"], "c")
                                 self.assertEqual(
-                                    set(d.attrs[dependencies.type_prefix]),
-                                    set(["link", "script"]))
+                                    d.attrs[dependencies.type_prefix],
+                                    "script")
                 bad_b_link_check_res(deps, errs)
                 self.assertEqual(len(deps[c_pth]), 0)
 
@@ -2635,6 +2607,22 @@ file NOHASH group=bin mode=0755 owner=root path=etc/file.py \
                         {"bin_ver": "2.6"},
                     self.output)
                 self.check_res("", self.errout)
+
+        def test_bug_19029(self):
+                """Test that a package with an action which doesn't validate
+                causes pkgdepend generate to fail."""
+
+                manf = """
+set name=pkg.fmri value=bug_18019@1.0,5.11-1
+depend fmri=pkg:/a@0,5.11-1 type=conditional
+"""
+                manf_path = self.make_manifest(manf)
+                ds, es, ms, pkg_attrs = dependencies.list_implicit_deps(
+                    manf_path, [self.test_proto_dir], {}, [],
+                    convert=False)
+                self.assertEqual(len(es), 1)
+                self.assert_(isinstance(es[0],
+                    actions.InvalidActionAttributesError))
 
 
 if __name__ == "__main__":
