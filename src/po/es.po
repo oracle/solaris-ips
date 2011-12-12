@@ -4716,13 +4716,13 @@ msgstr "La imagen secundaria '%(cpath)s' está anidada en otra imagen: '%(ipath)
 msgid ""
 "Child image '%(path)s' is not located within the parent's altroot '%(altroot)"
 "s'"
-msgstr "La imagen secundaria '%(path)s' no está ubicada dentro del altroot de la imagen principal '%(altroot) s'"
+msgstr "La imagen secundaria '%(path)s' no está ubicada dentro del altroot de la imagen principal '%(altroot)s'"
 
 #: ../modules/client/api_errors.py:2653
 #, python-format
 msgid ""
 "Child image '%(cpath)s' is not nested within the parent image '%(ppath)s'"
-msgstr "La imagen secundaria '%(cpath)s' no está anidad en la imagen principal '%(ppath) s'"
+msgstr "La imagen secundaria '%(cpath)s' no está anidad en la imagen principal '%(ppath)s'"
 
 #: ../modules/client/api_errors.py:2663
 #, python-format
@@ -4808,7 +4808,7 @@ msgstr "No se puede acceder a la imagen principal en la ruta: %s"
 msgid ""
 "Parent image '%(path)s' is not located within the child's altroot '%(altroot)"
 "s'"
-msgstr "La imagen principal '%(path)s' no está ubicada dentro del altroot de la imagen secundaria '%(altroot) s'"
+msgstr "La imagen principal '%(path)s' no está ubicada dentro del altroot de la imagen secundaria '%(altroot)s'"
 
 #: ../modules/client/api_errors.py:2746
 #, python-format
@@ -4911,7 +4911,7 @@ msgid ""
 "A clone of %(be_name)s exists and has been updated and activated.\n"
 "On the next boot the Boot Environment %(be_name_clone)s will be\n"
 "mounted on '/'.  Reboot when ready to switch to this updated BE.\n"
-msgstr "\n Existe un clon de %(be_name)s y se ha actualizado y activado.\n En el próximo inicio, el entorno de inicio %(be_name_clone)\n se montará en '/'.   Reinicie cuando esté listo para cambiar a este entorno de inicio actualizado.\n"
+msgstr "\n Existe un clon de %(be_name)s y se ha actualizado y activado.\n En el próximo inicio, el entorno de inicio %(be_name_clone)s\n se montará en '/'.   Reinicie cuando esté listo para cambiar a este entorno de inicio actualizado.\n"
 
 #: ../modules/client/bootenv.py:516
 #, python-format

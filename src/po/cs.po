@@ -568,7 +568,7 @@ msgstr "pkg: contents: '%s' odpovídá více balíčkům"
 
 #: ../client.py:2074
 msgid "pkg: contents: no matching actions found in the listed packages"
-msgstr "pkg: contents: '%s' odpovídá více balíčkům"
+msgstr ""
 
 #: ../client.py:2086
 msgid ""

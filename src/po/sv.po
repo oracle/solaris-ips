@@ -508,8 +508,8 @@ msgid ""
 "pkg:/package/pkg' and then retry the %(op)s."
 msgstr ""
        "VARNING: pkg(5) verkar vara föråldrad och bör uppdateras innan\n"
-       "%(op) körs.  Uppdatera pkt(5) med: 'pfexec pkg install\n"
-       "pkg:/package/pkg' och kör sedan %(op) igen."
+       "%(op)s körs.  Uppdatera pkt(5) med: 'pfexec pkg install\n"
+       "pkg:/package/pkg' och kör sedan %(op)s igen."
 
 #: ../client.py:1066
 #, python-format
@@ -6752,9 +6752,6 @@ msgid ""
 "by pkg:/package/pkg. The client version is %(client)s while the library\n"
 "API version is %(api)s"
 msgstr ""
-       "Kommandot pkg verkar inte vara synkroniserat med de bibliotek\n"
-       "by pkg:/package/pkg tillhandahåller. Klientversionen är %(client)s och\n"
-       "API-versionen är %(api)s"
 
 #. The full usage message isn't desired.
 #: ../pkgrepo.py:110

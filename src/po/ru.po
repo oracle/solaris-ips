@@ -3668,7 +3668,7 @@ msgstr "политика устройства '%s' отсутствует в etc
 #: ../modules/actions/driver.py:836
 #, python-format
 msgid "extra device privilege '%s' found in etc/security/extra_privs"
-msgstr "в etc/security/extra_privs найдены дополнительные полномочия устройства"
+msgstr ""
 
 #: ../modules/actions/driver.py:839
 #, python-format

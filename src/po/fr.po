@@ -1002,7 +1002,7 @@ msgid ""
 "Additional details:\n"
 "\n"
 "%(details)s"
-msgstr "Les URI d'origine de '%(pubname)' ne semblent pas pointer vers un référentiel pkg valide.\nVérifiez le localisateur du référentiel et la configuration réseau du client.\nInformations supplémentaires :\n\n%(details)s"
+msgstr "Les URI d'origine de '%(pubname)s' ne semblent pas pointer vers un référentiel pkg valide.\nVérifiez le localisateur du référentiel et la configuration réseau du client.\nInformations supplémentaires :\n\n%(details)s"
 
 #: ../client.py:3826
 #, python-format
@@ -7058,7 +7058,7 @@ msgstr "Afficher les packages dans %(s1)s%(pub)s%(e1)s"
 #: ../modules/gui/startpage.py:323
 #, python-format
 msgid "Go to Search %(s1)sAll Publishers%(e1)s page"
-msgstr "Accéder à la page Rechercher %(s1)Toutes les maisons d'édition%(e1)s"
+msgstr "Accéder à la page Rechercher %(s1)sToutes les maisons d'édition%(e1)s"
 
 #: ../modules/gui/startpage.py:331
 #, python-format

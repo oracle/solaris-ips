@@ -817,7 +817,7 @@ msgid ""
 "\n"
 "%(error)s"
 msgstr ""
-       "URI '% (pub_url)s' tidak muncul untuk menunjuk ke server pkg yang valid. \n"
+       "URI '%(pub_url)s' tidak muncul untuk menunjuk ke server pkg yang valid. \n"
        "Harap periksa alamat server dan konfigurasi jaringan klien. \n"
        "Rincian tambahan:\n"
        "\n"
@@ -2406,8 +2406,6 @@ msgid ""
 "Failure of consistent use of pfexec or gksu when running\n"
 "%s is often a source of this problem."
 msgstr ""
-       "\n"
-       "Kesalahan penggunaan konsisten dari pfexec atau gksu saat dijalankan\n"
 
 #: ../gui/modules/installupdate.py:528
 msgid ""
@@ -2459,8 +2457,6 @@ msgid ""
 "can't be finished. You might want try to fix this\n"
 "problem by restarting %s\n"
 msgstr ""
-       "Ada kesalahan saat instalasi.\n"
-       "Rencana operasi hilang dan operasi\n"
 
 #: ../gui/modules/installupdate.py:558
 #, python-format
@@ -2470,8 +2466,6 @@ msgid ""
 "can't be finished. You might want try to fix this\n"
 "problem by restarting %s\n"
 msgstr ""
-       "Ada kesalah saat instalasi.\n"
-       "Keadaan image tidak tepat dan operasi\n"
 
 #: ../gui/modules/installupdate.py:569
 msgid "Specifying BE Name not supported.\n"
@@ -2940,7 +2934,7 @@ msgstr "Mengubah nama BE, harap tunggu.."
 #: ../gui/modules/uarenamebe.py:143 ../packagemanager.py:722
 #, python-format
 msgid "GUI will not respond to any event! %s. Check declare_signals()"
-msgstr "GUI tidak akan merespon ke event apapun! Periksa declare_signals()"
+msgstr "GUI tidak akan merespon ke event apapun! %s. Periksa declare_signals()"
 
 #: ../gui/modules/uarenamebe.py:220
 #, python-format
@@ -2951,8 +2945,6 @@ msgid ""
 "The following name will be used instead:\n"
 "\t%s"
 msgstr ""
-       "Tidak bisa mengubah nama BE ke:\n"
-       "\t%s\n"
 
 #: ../gui/modules/uarenamebe.py:223
 msgid "BE Name"
@@ -2981,7 +2973,7 @@ msgstr "Nama BE mengandung karakter yang tidak valid."
 #: ../gui/modules/webinstall.py:131
 #, python-format
 msgid "GUI will not respond to any event! %s. Check webinstall.py signals"
-msgstr "GUI tidak akan merespon ke event apapun! Periksa webinstall.py signals()"
+msgstr "GUI tidak akan merespon ke event apapun! %s. Periksa webinstall.py signals()"
 
 #: ../gui/modules/webinstall.py:143
 msgid ""
@@ -3359,7 +3351,7 @@ msgid ""
 "provided catalog update data in '%s'."
 msgstr ""
        "Tidak dapat menentukan pembaruan yang diperlukan untuk katalog saat ini menggunakan"
-       "data update katalog yang disediakan pada '% s'."
+       "data update katalog yang disediakan pada '%s'."
 
 #: ../modules/client/api_errors.py:458
 #, python-format
@@ -3401,7 +3393,7 @@ msgstr "Tipe pembaharuan katalog tidak dikenali '%s'"
 #: ../modules/client/api_errors.py:513
 #, python-format
 msgid "Unrecognized, unknown, or invalid CatalogPart '%s'"
-msgstr "Tidak dikenal, tidak diketahui, atau tidak valid BagianKatalog '% s'"
+msgstr "Tidak dikenal, tidak diketahui, atau tidak valid BagianKatalog '%s'"
 
 #: ../modules/client/api_errors.py:544
 msgid ""
@@ -3892,7 +3884,7 @@ msgstr "Tidak dapat menemukan %s"
 #: ../modules/client/api_errors.py:1404
 #, python-format
 msgid "The signature data for the manifest of the '%s' package is not valid."
-msgstr "Data signatur untuk manifest dari paket '% s' tidak valid."
+msgstr "Data signatur untuk manifest dari paket '%s' tidak valid."
 
 #: ../modules/client/api_errors.py:1406
 msgid "The signature data for the manifest is not valid."
@@ -4190,6 +4182,7 @@ msgstr ""
        "Setelah itu, penerbit yang lama harus dihapus dengan menjalankan \n"
        "perintah berikut sebagai pengguna istimewa: \n"
        "\n"
+       "pkg unset-publisher %s\n"
 
 #: ../modules/file_layout/file_manager.py:73
 #, python-format
@@ -4211,7 +4204,7 @@ msgid ""
 "%s"
 msgstr ""
        "Path berikut ditemukan tetapi tidak dijelaskan untuk salah satu layout yang dikenal:\n"
-       "$s"
+       "%s"
 
 #: ../modules/flavor/base.py:51
 #, python-format
@@ -4482,7 +4475,7 @@ msgid ""
 "unquote_list is %(ul)s.%(s)s"
 msgstr ""
        "Mendapat unquote_list kosong sementara pengindeksan. split_chars adalah %(sc)s dan unquote_list"
-       "adalah %(l)s"
+       "adalah %(ul)s.%(s)s"
 
 #: ../modules/server/api_errors.py:70
 #, python-format
@@ -4616,7 +4609,7 @@ msgstr ""
 #: ../modules/server/transaction.py:72
 #, python-format
 msgid "Unrecognized or malformed data in operation payload: '%s'."
-msgstr "Data tidak dikenal atau cacat dalam operasi payload: '% s'."
+msgstr "Data tidak dikenal atau cacat dalam operasi payload: '%s'."
 
 #: ../modules/server/transaction.py:89
 #, python-format
@@ -4837,7 +4830,7 @@ msgstr "Memuat %(s1)sSearch Help%(e1)s ..."
 #: ../packagemanager.py:1324
 #, python-format
 msgid "View results for %s"
-msgstr "Tilik hasil untuk &s"
+msgstr "Tilik hasil untuk %s"
 
 #: ../packagemanager.py:1383
 msgid "Empty Action not supported"
@@ -5023,9 +5016,11 @@ msgid_plural ""
 msgstr[0] ""
        "Ada satu paket dalam kategori ini, namun tidak terlihat dalam"
        "View pilihan:\n"
+       "<li style='padding-left:7px'><b>%s</b></li>"
 msgstr[1] ""
        "Ada beberapa paket dalam kategori ini, namun mereka tidak"
        "terlihat dalam View pilihan:\n"
+       "<li style='padding-left:7px'><b>%s</b></li>"
 
 #: ../packagemanager.py:2117 ../packagemanager.py:2143
 #, python-format
@@ -5163,7 +5158,7 @@ msgid ""
 "The latest version of %s cannot be installed. It may be possible to do so "
 "after updating your system. Run \"Updates\" to get your system up-to-date."
 msgstr ""
-       "Versi terbaru dari &s tidak dapat terinstal.Dimungkinkan untuk melakukannya"
+       "Versi terbaru dari %s tidak dapat terinstal.Dimungkinkan untuk melakukannya"
        "setelah memperbarui sistem anda. Jalankan \"Perbarui\" untuk mendapatkan sistem yang up-to-date."
 
 #: ../packagemanager.py:3701
@@ -5172,7 +5167,7 @@ msgid ""
 "Cannot upgrade to the latest version of %s. It may be possible to do so "
 "after updating your system. Run \"Updates\" to get your system up-to-date."
 msgstr ""
-       "Tidak dapat upgrade ke versi terbaru dari% s. Dimungkinkan untuk melakukannya"
+       "Tidak dapat upgrade ke versi terbaru dari %s. Dimungkinkan untuk melakukannya"
        "setelah memperbarui sistem anda. Jalankan \"Perbarui\" untuk mendapatkan sistem yang up-to-date."
 
 #: ../packagemanager.py:3721
@@ -5397,7 +5392,7 @@ msgstr ""
 #: ../pkgdep.py:149 ../pkgdep.py:212
 #, python-format
 msgid "The manifest file %s could not be found."
-msgstr "File manifest% s tidak ditemukan."
+msgstr "File manifest %s tidak ditemukan."
 
 #: ../pkgdep.py:153
 #, python-format
@@ -5424,7 +5419,7 @@ msgstr "Output direktori %s bukanlah direktori."
 #: ../pkgdep.py:248
 #, python-format
 msgid "'%s' is not an install image"
-msgstr "'% s' bukan merupakan install image"
+msgstr "'%s' bukan merupakan install image"
 
 #: ../pkgdep.py:254
 msgid "Could not parse one or more manifests because of the "
@@ -5611,57 +5606,57 @@ msgstr ""
 #: ../pull.py:167
 #, python-format
 msgid "Unable to load manifest '%(mpath)s' for package '%(pfmri)s'."
-msgstr "Tidak dapat memuat manifest '% (mpath) s' untuk paket '% (pfmri) s'."
+msgstr "Tidak dapat memuat manifest '%(mpath)s' untuk paket '%(pfmri)s'."
 
 #: ../pull.py:177
 #, python-format
 msgid "Unable to parse manifest '%(mpath)s' for package '%(pfmri)s'"
-msgstr "Tidak dapat menguraikan manifest '% (mpath) s' untuk paket '% (pfmri) s'"
+msgstr "Tidak dapat menguraikan manifest '%(mpath)s' untuk paket '%(pfmri)s'"
 
 #: ../pull.py:188
 #, python-format
 msgid "Unable to write manifest '%(mpath)s' for package '%(pfmri)s'."
-msgstr "Tidak dapat menulis manifest '% (mpath) s' untuk paket '% (pfmri) s'."
+msgstr "Tidak dapat menulis manifest '%(mpath)s' untuk paket '%(pfmri)s'."
 
 #: ../pull.py:235
 #, python-format
 msgid "Unable to retrieve manifest %s from %s: %s"
-msgstr "Tidak dapat mengambil manifest% s dari% s:% s"
+msgstr "Tidak dapat mengambil manifest%s dari %s: %s"
 
 #: ../pull.py:244
 #, python-format
 msgid "Error occurred while reading from: %s"
-msgstr "Kesalahan terjadi ketika membaca dari:% s"
+msgstr "Kesalahan terjadi ketika membaca dari: %s"
 
 #: ../pull.py:448
 #, python-format
 msgid "Unable to retrieve content from: %s"
-msgstr "Tidak dapat mengambil isi dari:% s"
+msgstr "Tidak dapat mengambil isi dari: %s"
 
 #: ../pull.py:480
 #, python-format
 msgid "Unable to extract file: %s"
-msgstr "Tidak dapat mengekstrak berkas:% s"
+msgstr "Tidak dapat mengekstrak berkas: %s"
 
 #: ../pull.py:527
 #, python-format
 msgid "Unable to download catalog from: %s"
-msgstr "Tidak dapat mengunduh katalog dari:% s"
+msgstr "Tidak dapat mengunduh katalog dari: %s"
 
 #: ../pull.py:538
 #, python-format
 msgid "Error: %s while reading from: %s"
-msgstr "Error:% s saat membaca dari:% s"
+msgstr "Error:%s saat membaca dari: %s"
 
 #: ../pull.py:576
 #, python-format
 msgid "Illegal option -- %s"
-msgstr "Pilihan ilegal"
+msgstr "Pilihan ilegal -- %s"
 
 #: ../pull.py:597
 #, python-format
 msgid "Illegal option value -- %s"
-msgstr "Nilai pilihan ilegal -% s"
+msgstr "Nilai pilihan ilegal -- %s"
 
 #: ../pull.py:600
 msgid "a source repository must be provided"
@@ -5686,7 +5681,7 @@ msgid ""
 "or the specified path does not exist.  Please correct the configuration of "
 "the repository or create a new one."
 msgstr ""
-       "Konfigurasi repositori untuk repositori yang terletak di '% s' tidak valid"
+       "Konfigurasi repositori untuk repositori yang terletak di '%s' tidak valid"
        "atau lokasi yang ditetapkan tidak ada. Harap perbaiki konfigurasi"
        "repositori atau membuat yang baru."
 

@@ -4911,7 +4911,7 @@ msgid ""
 "A clone of %(be_name)s exists and has been updated and activated.\n"
 "On the next boot the Boot Environment %(be_name_clone)s will be\n"
 "mounted on '/'.  Reboot when ready to switch to this updated BE.\n"
-msgstr "\nExiste um clone de %(be_name)s que foi atualizado e ativado.\nNa próxima inicialização o ambiente de inicialização %(be_name_clone) será\nmontado em '/'. Reinicialize quando estiver pronto para alternar para este BE atualizado.\n"
+msgstr "\nExiste um clone de %(be_name)s que foi atualizado e ativado.\nNa próxima inicialização o ambiente de inicialização %(be_name_clone)s será\nmontado em '/'. Reinicialize quando estiver pronto para alternar para este BE atualizado.\n"
 
 #: ../modules/client/bootenv.py:516
 #, python-format
