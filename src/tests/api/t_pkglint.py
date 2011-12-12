@@ -87,28 +87,56 @@ file NOHASH path=usr/foo/file mode=0112 owner=root group=staff
 file NOHASH path=usr/foo/bar mode=01 owner=root group=staff
 """
 
-# The errors for this check are pretty unpleasant
 # ERROR pkglint.dupaction008        path usr/sbin/prtdiag is delivered by multiple action types
 #                                   across pkg://opensolaris.org/system/kernel@0.5.11,5.11-0.141
-# ERROR pkglint.dupaction007        path usr/sbin/prtdiag is reference-counted but has different
-#                                   attributes across 2 duplicates: group: sys -> system/kernel
-#                                   elfarch: i386 -> system/kernel pkg.csize: 5490 -> system/kernel
-#                                   chash: 43dbb3e0bc142f399b61d171f926e8f91adcffe2 -> system/kernel
-#                                   mode: 2755 -> system/kernel pkg.size: 13572 -> system/kernel
-#                                   owner: root -> system/kernel
-#                                   elfhash: 64c67b16be970380cd5840dd9753828e0c5ada8c -> system/kernel
-#                                   elfbits: 32 -> system/kernel
 # ERROR pkglint.dupaction001.2      path usr/sbin/prtdiag is a duplicate delivered by
 #                                   pkg://opensolaris.org/system/kernel@0.5.11,5.11-0.141
 #                                   declaring overlapping variants variant.arch
 expected_failures["combo_variants_broken.mf"] = ["pkglint.dupaction008",
-    "pkglint.dupaction007", "pkglint.dupaction001.2"]
+    "pkglint.dupaction001.2"]
 broken_manifests["combo_variants_broken.mf"] = \
 """
 #
 #
-# We deliver prtdiag as a link on one platform, as a file on another
+# We deliver prtdiag as a dir on one platform, as a file on another
 # but have forgotten to set the variant properly on the file action
+#
+set name=pkg.fmri value=pkg://opensolaris.org/system/kernel@0.5.11,5.11-0.141:20100603T215050Z
+set name=org.opensolaris.consolidation value=osnet
+set name=pkg.description value="core kernel software for a specific instruction-set architecture"
+set name=info.classification value=org.opensolaris.category.2008:System/Core
+set name=pkg.summary value="Core Solaris Kernel"
+set name=variant.arch value=i386 value=sparc
+dir path=usr/sbin/prtdiag owner=root group=sys mode=0755 variant.arch=sparc
+file 1d5eac1aab628317f9c088d21e4afda9c754bb76 chash=43dbb3e0bc142f399b61d171f926e8f91adcffe2 elfarch=i386 elfbits=32 elfhash=64c67b16be970380cd5840dd9753828e0c5ada8c group=sys mode=2755 owner=root path=usr/sbin/prtdiag pkg.csize=5490 pkg.size=13572 variant.arch=sparc
+"""
+
+
+
+#ERROR pkglint.dupaction008        path usr/sbin/prtdiag is delivered by multiple
+#                                  action types across
+#                                  pkg://opensolaris.org/system/kernel@0.5.11,5.11-0.141:20100603T215050Z
+#ERROR pkglint.dupaction010.2      path usr/sbin/prtdiag has missing mediator
+#                                  attributes across actions in
+#                                  pkg://opensolaris.org/system/kernel@0.5.11,5.11-0.141:20100603T215050Z
+#ERROR pkglint.dupaction010.1      path usr/sbin/prtdiag uses multiple action
+#                                  types for potentially mediated links across
+#                                  actions in pkg://opensolaris.org/system/kernel@0.5.11,5.11-0.141:20100603T215050Z
+#ERROR pkglint.dupaction001.2      path usr/sbin/prtdiag is a duplicate delivered
+#                                  by pkg://opensolaris.org/system/kernel@0.5.11,5.11-0.141:20100603T215050Z
+#                                  declaring overlapping variants variant.arch=sparc
+
+expected_failures["combo_variants_broken_links.mf"] = ["pkglint.dupaction008",
+    "pkglint.dupaction001.2", "pkglint.dupaction010.1"]
+broken_manifests["combo_variants_broken_links.mf"] = \
+"""
+#
+#
+# We deliver prtdiag as a link on one platform, as a file on another
+# but have forgotten to set the variant properly on the file action.
+# The errors are similar to combo_variants_broken, but becase the user has
+# included links, we don't know whether they intended to use mediated links
+# or not, so we report additional errors.
 #
 set name=pkg.fmri value=pkg://opensolaris.org/system/kernel@0.5.11,5.11-0.141:20100603T215050Z
 set name=org.opensolaris.consolidation value=osnet
@@ -304,12 +332,57 @@ dir group=bin mode=0755 alt=foo owner=root path=usr/lib/X11/fs
 dir group=sys mode=0755 owner=root path=/usr/lib/X11
 """
 
+expected_failures["dup-refcount-diff-types.mf"] = ["pkglint.dupaction008",
+    "pkglint.dupaction010.1"]
+broken_manifests["dup-refcount-diff-types.mf"] = \
+"""
+#
+# we deliver some duplicate ref-counted actions (dir, link, hardlink) with differing
+# types
+#
+set name=pkg.fmri value=pkg://opensolaris.org/pkglint/test@1.1.0,5.11-0.141:20100604T143737Z
+set name=org.opensolaris.consolidation value=osnet
+set name=variant.opensolaris.zone value=global value=nonglobal
+set name=variant.other value=carrots
+set name=variant.arch value=i386 value=sparc
+set name=pkg.description value="Description of pkglint test package"
+set name=description value="Pkglint test package"
+set name=info.classification value=org.opensolaris.category.2008:System/Packaging
+set name=pkg.summary value="Pkglint test package"
+link path=usr/bin/gcc target=foo/gcc-bin1
+hardlink path=usr/bin/gcc target=bar/gcc-bin1
+"""
+
+expected_failures["dup-refcount-legacy.mf"] = ["pkglint.dupaction007"]
+broken_manifests["dup-refcount-legacy.mf"] = \
+"""
+#
+# we deliver two legacy actions with mismatched attributes
+#
+set name=pkg.fmri value=pkg://opensolaris.org/pkglint/test@1.1.0,5.11-0.141:20100604T143737Z
+set name=org.opensolaris.consolidation value=osnet
+set name=variant.opensolaris.zone value=global value=nonglobal
+set name=variant.other value=carrots
+set name=variant.arch value=i386 value=sparc
+set name=pkg.description value="Description of pkglint test package"
+set name=description value="Pkglint test package"
+set name=info.classification value=org.opensolaris.category.2008:System/Packaging
+set name=pkg.summary value="Pkglint test package"
+legacy category=system desc="The Apache HTTP Server Version (usr components)" \
+    hotline="Please contact your local service provider" \
+    name="Apache Web Server (usr)" pkg=SUNWapch22u vendor="Oracle Corporation" \
+    version=11.11.0,REV=2010.05.25.01.00
+legacy category=system desc="The Apache HTTP Server (usr components)" \
+    hotline="Please contact your local service provider" \
+    name="Apache Web Server (usr)" pkg=SUNWapch22u vendor="Oracle Corporation" \
+    version=11.11.0,REV=2010.05.25.01.00
+"""
+
 # 3 errors get reported for this manifest:
 # usr/sbin/fsadmin is delivered by multiple action types across ['pkg://opensolaris.org/pkglint/test@1.1.0,5.11-0.141:20100604T143737Z']
-# usr/sbin/fsadmin is ref-counted but has different attributes across duplicates in [<pkg.fmri.PkgFmri 'pkg://opensolaris.org/pkglint/test@1.1.0,5.11-0.141:20100604T143737Z' at 0x8733e2c>]
 # usr/sbin/fsadmin delivered by [<pkg.fmri.PkgFmri 'pkg://opensolaris.org/pkglint/test@1.1.0,5.11-0.141:20100604T143737Z' at 0x8733e2c>] is a duplicate, declaring overlapping variants ['variant.other']
 expected_failures["dup-types-clashing-vars.mf"] = ["pkglint.dupaction008",
-    "pkglint.dupaction007", "pkglint.dupaction001.1"]
+    "pkglint.dupaction001.1"]
 broken_manifests["dup-types-clashing-vars.mf"] = \
 """
 #
@@ -333,11 +406,8 @@ file nohash group=sys mode=0444 owner=root path=var/svc/manifest/application/x11
 file nohash elfarch=i386 elfbits=32 elfhash=2d5abc9b99e65c52c1afde443e9c5da7a6fcdb1e group=bin mode=0755 owner=root path=usr/bin/xfs pkg.csize=68397 pkg.size=177700 variant.arch=i386
 """
 
-# 2 errors here
-# usr/lib/X11/fs is delivered by multiple action types across ['pkg://opensolaris.org/pkglint/test@1.1.0,5.11-0.141:20100604T143737Z']
-# path usr/lib/X11/fs is ref-counted but has different attributes across duplicates in [<pkg.fmri.PkgFmri 'pkg://opensolaris.org/pkglint/test@1.1.0,5.11-0.141:20100604T143737Z' at 0x87369ec>]
 expected_failures["dup-types.mf"] = ["pkglint.dupaction008",
-    "pkglint.dupaction007"]
+    "pkglint.dupaction010.1"]
 broken_manifests["dup-types.mf"] = \
 """
 #
@@ -845,7 +915,7 @@ expected_failures["linted-dup-attrs.mf"] = ["pkglint001.5", "pkglint.action008",
     "pkglint.manifest007"]
 broken_manifests["linted-dup-attrs.mf"] = \
 """
-# We don't care that usr/bin/ls about the duplicate path attribute
+# We don't care that usr/bin/ls is a duplicate path
 #
 set name=pkg.fmri value=pkg://opensolaris.org/pkglint/TIMFtest@1.1.0,5.11-0.141:20100604T143737Z
 set name=org.opensolaris.consolidation value=osnet
@@ -858,6 +928,26 @@ file path=usr/bin/ls owner=root group=staff mode=755 pkg.linted.pkglint.dupactio
 file path=usr/bin/ls owner=root group=staff mode=755
 """
 
+expected_failures["linted-dup-refcount.mf"] = ["pkglint.action008",
+    "pkglint.action008"]
+broken_manifests["linted-dup-refcount.mf"] = \
+"""
+# We don't care that usr/bin/ls are duplicate links, the only output here
+# should be pkglint.action008, reporting on the use of each linted action.
+# Despite avoiding pkglint(1) errors here, pkg(1) will still refuse to
+# install this manifest due to the duplicate links. Don't say we didn't warn you
+#
+set name=pkg.fmri value=pkg://opensolaris.org/pkglint/TIMFtest@1.1.0,5.11-0.141:20100604T143737Z
+set name=org.opensolaris.consolidation value=osnet
+set name=variant.opensolaris.zone value=global value=nonglobal
+set name=variant.arch value=i386 value=sparc
+set name=pkg.summary value="Summary of pkglint test package"
+set name=info.classification value=org.opensolaris.category.2008:System/Packaging
+link path=usr/bin/ls target=baz pkg.linted.pkglint.dupaction010.2=true
+link path=usr/bin/ls target=bar
+link path=usr/bin/ls target=foo pkg.linted.pkglint.dupaction010.2=true
+"""
+
 expected_failures["no_desc-legacy.mf"] = ["pkglint.action003.1"]
 broken_manifests["no_desc-legacy.mf"] = \
 """
@@ -865,18 +955,15 @@ broken_manifests["no_desc-legacy.mf"] = \
 # We deliver a legacy actions without a required attribute, "desc". Since we
 # can't find the package pointed to by the legacy 'pkg' attribute, we should
 # not complain about those.
-# This package also has no variant.arch attribute, which should be fine since
-# we're not delivering any content with an elfarch attribute, and we're
-# omitting the variant.arch from the legacy actions.
 #
 set name=pkg.fmri value=pkg://opensolaris.org/system/kernel@0.5.11,5.11-0.141:20100603T215050Z
 set name=pkg.description value="core kernel software for a specific instruction-set architecture"
 set name=info.classification value=org.opensolaris.category.2008:System/Core
 set name=pkg.summary value="Core Solaris Kernel"
-# set name=variant.arch value=i386 value=sparc
+set name=variant.arch value=i386 value=sparc
 set name=org.opensolaris.consolidation value=osnet
-legacy arch=i386 category=system hotline="Please contact your local service provider" name="Core Solaris Kernel (Root)" pkg=SUNWckr vendor="Sun Microsystems, Inc." version=11.11,REV=2009.11.11
-legacy arch=sparc category=system desc="core kernel software for a specific instruction-set architecture" hotline="Please contact your local service provider" name="Core Solaris Kernel (Root)" pkg=SUNWckr vendor="Sun Microsystems, Inc." version=11.11,REV=2009.11.11
+legacy variant.arch=i386 arch=i386 category=system hotline="Please contact your local service provider" name="Core Solaris Kernel (Root)" pkg=SUNWckr vendor="Sun Microsystems, Inc." version=11.11,REV=2009.11.11
+legacy variant.arch=sparc arch=sparc category=system desc="core kernel software for a specific instruction-set architecture" hotline="Please contact your local service provider" name="Core Solaris Kernel (Root)" pkg=SUNWckr vendor="Sun Microsystems, Inc." version=11.11,REV=2009.11.11
 """
 
 expected_failures["no_dup-allowed-vars.mf"] = []
@@ -1547,6 +1634,47 @@ file nohash group=sys mode=0444 owner=root path=var/svc/manifest/application/x11
 file nohash elfarch=i386 elfbits=32 elfhash=2d5abc9b99e65c52c1afde443e9c5da7a6fcdb1e group=bin mode=0755 owner=root path=usr/bin/xfs pkg.csize=68397 pkg.size=177700 variant.arch=i386
 """
 
+expected_failures["ignorable-variant.mf"] = []
+broken_manifests["ignorable-variant.mf"] = \
+"""
+#
+# we deliver an undefined, but ignorable variant
+#
+set name=pkg.fmri value=pkg://opensolaris.org/pkglint/test@1.1.0,5.11-0.141:20100604T143737Z
+set name=org.opensolaris.consolidation value=osnet
+set name=variant.opensolaris.zone value=global value=nonglobal
+set name=variant.arch value=i386 value=sparc
+set name=pkg.description value="Description of pkglint test package"
+set name=description value="Pkglint test package"
+set name=info.classification value=org.opensolaris.category.2008:System/Packaging
+set name=pkg.summary value="Pkglint test package"
+dir group=bin mode=0755 owner=root path=usr/lib/X11
+dir group=bin mode=0755 alt=foo owner=root path=usr/lib/X11/fs
+file nohash group=sys mode=0444 owner=root path=var/svc/manifest/application/x11/xfs.xml pkg.csize=1649 pkg.size=3534 restart_fmri=svc:/system/manifest-import:default variant.opensolaris.zone=global
+file nohash variant.debug.osnet=True elfarch=i386 elfbits=32 elfhash=2d5abc9b99e65c52c1afde443e9c5da7a6fcdb1e group=bin mode=0755 owner=root path=usr/bin/xfs pkg.csize=68397 pkg.size=177700 variant.arch=i386
+"""
+
+expected_failures["ignorable-unknown-variant.mf"] = ["pkglint.manifest003.2"]
+broken_manifests["ignorable-unknown-variant.mf"] = \
+"""
+#
+# we try to deliver an action with a variant value we haven't described,
+# as well as an ignorable variant - we should still get an error
+#
+set name=pkg.fmri value=pkg://opensolaris.org/pkglint/test@1.1.0,5.11-0.141:20100604T143737Z
+set name=org.opensolaris.consolidation value=osnet
+set name=variant.opensolaris.zone value=global value=nonglobal
+set name=variant.arch value=i386 value=sparc
+set name=pkg.description value="Description of pkglint test package"
+set name=description value="Pkglint test package"
+set name=info.classification value=org.opensolaris.category.2008:System/Packaging
+set name=pkg.summary value="Pkglint test package"
+dir group=bin mode=0755 owner=root path=usr/lib/X11
+dir group=bin mode=0755 alt=foo owner=root path=usr/lib/X11/fs
+file nohash group=sys mode=0444 owner=root path=var/svc/manifest/application/x11/xfs.xml pkg.csize=1649 pkg.size=3534 restart_fmri=svc:/system/manifest-import:default variant.opensolaris.zone=foo
+file nohash variant.debug.osnet=True elfarch=i386 elfbits=32 elfhash=2d5abc9b99e65c52c1afde443e9c5da7a6fcdb1e group=bin mode=0755 owner=root path=usr/bin/xfs pkg.csize=68397 pkg.size=177700 variant.arch=i386
+"""
+
 expected_failures["unknown.mf"] = ["pkglint.action004"]
 broken_manifests["unknown.mf"] = \
 """
@@ -1658,6 +1786,147 @@ link path=usr/bin/foo4 target=bar disable_fmri=true
 link path=usr/bin/foo5 target=bar reboot_needed=true
 link path=usr/bin/foo6 target=bar clone_perms="* 0666 root root"
 link path=usr/bin/foo7 target=bar original_name=SUNWcar:usr/bin/wazaap
+"""
+
+expected_failures["mediated_links.mf" ] = []
+broken_manifests["mediated_links.mf" ] = \
+"""
+#
+# A perfectly valid manifest that uses mediated links
+#
+set name=pkg.fmri value=pkg://opensolaris.org/pkglint/test@1.0,1.0
+set name=org.opensolaris.consolidation value=osnet
+set name=variant.opensolaris.zone value=global value=nonglobal
+set name=pkg.description value="A pkglint test"
+set name=pkg.summary value="Yet another test"
+set name=variant.arch value=i386 value=sparc
+set name=info.classification value=org.opensolaris.category.2008:System/Packaging
+link path=usr/bin/perl target=usr/perl5/5.6/bin/perl mediator=perl mediator-version=5.6
+link path=usr/bin/perl target=usr/perl5/5.12/bin/perl mediator=perl mediator-version=5.12
+file path=usr/perl5/5.6/bin/perl owner=root group=sys mode=0755
+file path=usr/perl5/5.12/bin/perl owner=root group=sys mode=0755
+"""
+
+expected_failures["mediated_links-dup_file.mf" ] = ["pkglint.dupaction010.1"]
+broken_manifests["mediated_links-dup_file.mf" ] = \
+"""
+#
+# We use mediated links, but also try to deliver a file using the same path as
+# that mediated link
+#
+set name=pkg.fmri value=pkg://opensolaris.org/pkglint/test@1.0,1.0
+set name=org.opensolaris.consolidation value=osnet
+set name=variant.opensolaris.zone value=global value=nonglobal
+set name=pkg.description value="A pkglint test"
+set name=pkg.summary value="Yet another test"
+set name=variant.arch value=i386 value=sparc
+set name=info.classification value=org.opensolaris.category.2008:System/Packaging
+link path=usr/bin/perl target=usr/perl5/5.6/bin/perl mediator=perl mediator-version=5.6
+link path=usr/bin/perl target=usr/perl5/5.12/bin/perl mediator=perl mediator-version=5.12
+file path=usr/perl5/5.6/bin/perl owner=root group=sys mode=0755
+file path=usr/perl5/5.12/bin/perl owner=root group=sys mode=0755
+file path=usr/bin/perl owner=root group=sys mode=0755
+"""
+
+expected_failures["mediated_links-types.mf" ] = ["pkglint.dupaction010.1"]
+broken_manifests["mediated_links-types.mf" ] = \
+"""
+#
+# We use mediated links, but then also try to deliver a directory over that link
+# this is similar to the last test, but ensures that reference-counted
+# duplicates are treated the same way as non-reference counted duplicates.
+#
+set name=pkg.fmri value=pkg://opensolaris.org/pkglint/test@1.0,1.0
+set name=org.opensolaris.consolidation value=osnet
+set name=variant.opensolaris.zone value=global value=nonglobal
+set name=pkg.description value="A pkglint test"
+set name=pkg.summary value="Yet another test"
+set name=variant.arch value=i386 value=sparc
+set name=info.classification value=org.opensolaris.category.2008:System/Packaging
+link path=usr/bin/perl target=usr/perl5/5.6/bin/perl mediator=perl mediator-version=5.6
+link path=usr/bin/perl target=usr/perl5/5.12/bin/perl mediator=perl mediator-version=5.12
+file path=usr/perl5/5.6/bin/perl owner=root group=sys mode=0755
+file path=usr/perl5/5.12/bin/perl owner=root group=sys mode=0755
+dir path=usr/bin/perl owner=root group=sys mode=0755
+"""
+
+expected_failures["mediated_links-variants.mf" ] = []
+broken_manifests["mediated_links-variants.mf" ] = \
+"""
+#
+# We use mediated links, but only in the nonglobal zone, with a file
+# in the global zone
+#
+set name=pkg.fmri value=pkg://opensolaris.org/pkglint/test@1.0,1.0
+set name=org.opensolaris.consolidation value=osnet
+set name=variant.opensolaris.zone value=global value=nonglobal
+set name=pkg.description value="A pkglint test"
+set name=pkg.summary value="Yet another test"
+set name=variant.arch value=i386 value=sparc
+set name=info.classification value=org.opensolaris.category.2008:System/Packaging
+link path=usr/bin/perl target=usr/perl5/5.6/bin/perl mediator=perl mediator-version=5.6 variant.opensolaris.zone=nonglobal
+link path=usr/bin/perl target=usr/perl5/5.12/bin/perl mediator=perl mediator-version=5.12 variant.opensolaris.zone=nonglobal
+file path=usr/perl5/5.6/bin/perl owner=root group=sys mode=0755
+file path=usr/perl5/5.12/bin/perl owner=root group=sys mode=0755
+file path=usr/bin/perl owner=root group=sys mode=0755 variant.opensolaris.zone=global
+"""
+
+expected_failures["mediated_links-missing-mediator.mf" ] = ["pkglint.dupaction010.2"]
+broken_manifests["mediated_links-missing-mediator.mf" ] = \
+"""
+#
+# We're missing mediated link attributes on one of our links
+#
+set name=pkg.fmri value=pkg://opensolaris.org/pkglint/test@1.0,1.0
+set name=org.opensolaris.consolidation value=osnet
+set name=variant.opensolaris.zone value=global value=nonglobal
+set name=pkg.description value="A pkglint test"
+set name=pkg.summary value="Yet another test"
+set name=variant.arch value=i386 value=sparc
+set name=info.classification value=org.opensolaris.category.2008:System/Packaging
+link path=usr/bin/perl target=usr/perl5/5.6/bin/perl mediator=perl mediator-version=5.6
+link path=usr/bin/perl target=usr/perl5/5.12/bin/perl
+file path=usr/perl5/5.6/bin/perl owner=root group=sys mode=0755
+file path=usr/perl5/5.12/bin/perl owner=root group=sys mode=0755
+"""
+
+expected_failures["mediated_links-namespaces.mf" ] = ["pkglint.dupaction010.3"]
+broken_manifests["mediated_links-namespaces.mf" ] = \
+"""
+#
+# Our mediated links deliver the same path to different namespaces
+#
+set name=pkg.fmri value=pkg://opensolaris.org/pkglint/test@1.0,1.0
+set name=org.opensolaris.consolidation value=osnet
+set name=variant.opensolaris.zone value=global value=nonglobal
+set name=pkg.description value="A pkglint test"
+set name=pkg.summary value="Yet another test"
+set name=variant.arch value=i386 value=sparc
+set name=info.classification value=org.opensolaris.category.2008:System/Packaging
+link path=usr/bin/perl target=usr/perl5/5.6/bin/perl mediator=perl mediator-version=5.6
+link path=usr/bin/perl target=usr/perl5/5.12/bin/perl mediator=perl5 mediator-version=5.12
+file path=usr/perl5/5.6/bin/perl owner=root group=sys mode=0755
+file path=usr/perl5/5.12/bin/perl owner=root group=sys mode=0755
+"""
+
+expected_failures["mediated_links-missing-attrs.mf" ] = ["pkglint.action009"]
+broken_manifests["mediated_links-missing-attrs.mf" ] = \
+"""
+#
+# One of our mediated links is missing mediator-version/impl, causing a
+# general action validation error.
+#
+set name=pkg.fmri value=pkg://opensolaris.org/pkglint/test@1.0,1.0
+set name=org.opensolaris.consolidation value=osnet
+set name=variant.opensolaris.zone value=global value=nonglobal
+set name=pkg.description value="A pkglint test"
+set name=pkg.summary value="Yet another test"
+set name=variant.arch value=i386 value=sparc
+set name=info.classification value=org.opensolaris.category.2008:System/Packaging
+link path=usr/bin/perl target=usr/perl5/5.6/bin/perl mediator=perl
+link path=usr/bin/perl target=usr/perl5/5.12/bin/perl mediator=perl mediator-version=5.12
+file path=usr/perl5/5.6/bin/perl owner=root group=sys mode=0755
+file path=usr/perl5/5.12/bin/perl owner=root group=sys mode=0755
 """
 
 class TestLogFormatter(log.LogFormatter):

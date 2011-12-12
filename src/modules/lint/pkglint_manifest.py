@@ -209,7 +209,8 @@ class PkgManifestChecker(base.ManifestChecker):
         def variants(self, manifest, engine, pkglint_id="003"):
                 """Checks for correct use of variant tags.
                 * if variant tags present, matching variant descriptions
-                  exist and are correctly specified
+                  exist and are correctly specified, with the exception of
+                  variant.debug.* variants
                 * All manifests that deliver file actions of a given
                   architecture declare variant.arch
 
@@ -228,6 +229,10 @@ class PkgManifestChecker(base.ManifestChecker):
                 unknown_lint_id = "%s%s.2" % (self.name, pkglint_id)
                 missing_arch_lint_id = "%s%s.3" % (self.name, pkglint_id)
 
+                def ignore_variant(varname):
+                        """check whether we can ignore this variant."""
+                        return varname.startswith("variant.debug")
+
                 for action in manifest.gen_actions():
                         if engine.linted(action=action, manifest=manifest):
                                 continue
@@ -242,11 +247,15 @@ class PkgManifestChecker(base.ManifestChecker):
                                 if not engine.linted(action=action,
                                     manifest=manifest,
                                     lint_id=undefined_lint_id):
+                                        if ignore_variant(k):
+                                                continue
                                         undefined_variants.add(k)
                         for k, v in diff.value_diffs:
                                 if not engine.linted(action=action,
                                     manifest=manifest,
                                     lint_id=unknown_lint_id):
+                                        if ignore_variant(k):
+                                                continue
                                         unknown_variants.add("%s=%s" % (k, v))
 
                 if len(undefined_variants) > 0:

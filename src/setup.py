@@ -698,7 +698,9 @@ def run_cmd(args, swdir, env=None):
 
 def _copy_file_contents(src, dst, buffer_size=16*1024):
         """A clone of distutils.file_util._copy_file_contents() that strips the
-        CDDL text."""
+        CDDL text.  For Python files, we replace the CDDL text with an equal
+        number of empty comment lines so that line numbers match between the
+        source and destination files."""
 
         # Match the lines between and including the CDDL header signposts, as
         # well as empty comment lines before and after, if they exist.
@@ -718,7 +720,22 @@ def _copy_file_contents(src, dst, buffer_size=16*1024):
                                 buf = sfp.read(buffer_size)
                                 if not buf:
                                         break
-                                buf = cddl_re.sub("", buf)
+                                if src.endswith(".py"):
+                                        match = cddl_re.search(buf)
+                                        if match:
+                                                # replace the CDDL expression
+                                                # with the same number of empty
+                                                # comment lines as the cddl_re
+                                                # matched.
+                                                substr = buf[
+                                                    match.start():match.end()]
+                                                count = len(
+                                                    substr.split("\n")) - 2
+                                                blanks = "#\n" * count
+                                                buf = cddl_re.sub("\n" + blanks,
+                                                    buf)
+                                else:
+                                         buf = cddl_re.sub("", buf)
                                 dfp.write(buf)
 
 # Make file_util use our version of _copy_file_contents

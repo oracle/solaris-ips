@@ -79,6 +79,9 @@ class PkgDupActionChecker(base.ActionChecker):
                 self.ref_gids = {}
                 self.lint_gids = {}
 
+                self.ref_legacy_pkgs = {}
+                self.lint_legacy_pkgs = {}
+
                 self.processed_paths = {}
                 self.processed_drivers = {}
                 self.processed_paths = {}
@@ -88,12 +91,14 @@ class PkgDupActionChecker(base.ActionChecker):
                 self.processed_gids = {}
 
                 self.processed_refcount_paths = {}
+                self.processed_refcount_legacy_pkgs = {}
+
                 self.processed_overlays = {}
 
                 # mark which paths we've done duplicate-type checking on
                 self.seen_dup_types = {}
+                self.seen_mediated_links = []
 
-                self.refcounted_actions = [ "dir", "hardlink", "link" ]
                 super(PkgDupActionChecker, self).__init__(config)
 
         def startup(self, engine):
@@ -160,6 +165,8 @@ class PkgDupActionChecker(base.ActionChecker):
                                 continue
                         else:
                                 seed_dict(manifest, "path", self.ref_paths)
+                                seed_dict(manifest, "pkg", self.ref_legacy_pkgs,
+                                    atype="legacy")
                                 seed_dict(manifest, "name", self.ref_drivers,
                                     atype="driver")
                                 seed_dict(manifest, "username",
@@ -179,6 +186,8 @@ class PkgDupActionChecker(base.ActionChecker):
                 for manifest in engine.gen_manifests(engine.lint_api_inst,
                     release=engine.release, pattern=engine.pattern):
                         seed_dict(manifest, "path", self.lint_paths)
+                        seed_dict(manifest, "pkg", self.lint_legacy_pkgs,
+                            atype="legacy")
                         seed_dict(manifest, "name", self.lint_drivers,
                             atype="driver")
                         seed_dict(manifest, "username", self.lint_usernames,
@@ -194,6 +203,8 @@ class PkgDupActionChecker(base.ActionChecker):
 
                 for manifest in engine.lint_manifests:
                         seed_dict(manifest, "path", self.lint_paths)
+                        seed_dict(manifest, "pkg", self.lint_legacy_pkgs,
+                            atype="legacy")
                         seed_dict(manifest, "name", self.lint_drivers,
                             atype="driver")
                         seed_dict(manifest, "username", self.lint_usernames,
@@ -205,6 +216,7 @@ class PkgDupActionChecker(base.ActionChecker):
                             atype="group")
 
                 dup_dictionaries = [(self.lint_paths, self.ref_paths),
+                    (self.lint_legacy_pkgs, self.ref_legacy_pkgs),
                     (self.lint_drivers, self.ref_drivers),
                     (self.lint_usernames, self.ref_usernames),
                     (self.lint_uids, self.ref_uids),
@@ -279,71 +291,98 @@ class PkgDupActionChecker(base.ActionChecker):
                 """Checks that for duplicated reference-counted actions,
                 all attributes in those duplicates are the same."""
 
-                if "path" not in action.attrs:
-                        return
-                if action.name not in self.refcounted_actions:
-                        return
-                p = action.attrs["path"]
-
-                if p in self.ref_paths and len(self.ref_paths[p]) == 1:
+                if not action.refcountable:
                         return
 
-                if p in self.processed_refcount_paths:
-                        return
-
-                lint_id = "%s%s" % (self.name, pkglint_id)
-
-                fmris = set()
-                target = action
-                differences = set()
-                for (pfmri, a) in self.ref_paths[p]:
-                        if engine.linted(action=a, manifest=manifest,
-                            lint_id=lint_id):
+                for attr, ref_dic, processed_dic in [
+                    ("path", self.ref_paths, self.processed_refcount_paths),
+                    ("pkg", self.ref_legacy_pkgs,
+                    self.processed_refcount_legacy_pkgs)]:
+                        p = action.attrs.get(attr, None)
+                        if not p:
                                 continue
-                        fmris.add(pfmri)
-                        for key in a.differences(target):
-                                # we allow certain attribute values to differ.
-                                if key.startswith("variant") or \
-                                    key.startswith("facet") or \
-                                    key.startswith("target") or \
-                                    key.startswith("pkg.linted"):
+
+                        if p in ref_dic and len(ref_dic[p]) == 1:
+                                continue
+
+                        if p in processed_dic:
+                                continue
+
+                        lint_id = "%s%s" % (self.name, pkglint_id)
+
+                        fmris = set()
+                        targ = action
+                        differences = set()
+                        for (pfmri, a) in ref_dic[p]:
+                                if engine.linted(action=a, manifest=manifest,
+                                    lint_id=lint_id):
                                         continue
-                                conflicting_vars, conflicting_actions = \
-                                    self.conflicting_variants([a, target],
-                                        manifest.get_all_variants())
-                                if not conflicting_actions:
-                                        continue
-                                differences.add(key)
-                suspects = []
-                if differences:
-                        for key in sorted(differences):
-                                # a dictionary to map unique values for this key
-                                # the fmris that deliver them
-                                attr = {}
-                                for (pfmri, a) in self.ref_paths[p]:
-                                        if engine.linted(action=a,
-                                            manifest=manifest, lint_id=lint_id):
+                                fmris.add(pfmri)
+
+                                for key in a.differences(targ):
+                                        # we allow certain attribute values to
+                                        # differ. Mediated-link validation is
+                                        # provided by mediated_links(..).
+                                        if key.startswith("variant") or \
+                                            key.startswith("facet") or \
+                                            key.startswith("mediator") or \
+                                            key.startswith("target") or \
+                                            key.startswith("pkg.linted"):
                                                 continue
-                                        if key in a.attrs:
-                                                val = a.attrs[key]
-                                                if val in attr:
-                                                        attr[val].append(pfmri)
-                                                else:
-                                                        attr[val] = [pfmri]
-                                for val in sorted(attr):
-                                        suspects.append("%s: %s -> %s" %
-                                            (key, val,
-                                            " ".join([pfmri.get_name()
-                                            for pfmri in sorted(attr[val])
-                                            ])))
-                        engine.error(_("path %(path)s is reference-counted "
-                            "but has different attributes across %(count)s "
-                            "duplicates: %(suspects)s") %
-                            {"path": p,
-                            "count": len(fmris) + 1,
-                            "suspects": " ".join([key for key in suspects])},
-                            msgid=lint_id, ignore_linted=True)
-                self.processed_refcount_paths[p] = True
+
+                                        conflict_vars, conflict_actions = \
+                                            self.conflicting_variants([a, targ],
+                                                manifest.get_all_variants())
+                                        if not conflict_actions:
+                                                continue
+                                        differences.add(key)
+                        suspects = []
+
+                        if differences:
+                                action_types = set()
+                                for key in sorted(differences):
+                                        # a dictionary to map unique values for
+                                        # this key the fmris that deliver them
+                                        attr = {}
+                                        for (pfmri, a) in ref_dic[p]:
+                                                if engine.linted(action=a,
+                                                    manifest=manifest,
+                                                    lint_id=lint_id):
+                                                        continue
+
+                                                action_types.add(a.name)
+                                                if key in a.attrs:
+                                                        val = a.attrs[key]
+                                                        if val in attr:
+                                                                attr[val].append(pfmri)
+                                                        else:
+                                                                attr[val] = \
+                                                                    [pfmri]
+                                        for val in sorted(attr):
+                                                suspects.append("%s: %s -> %s" %
+                                                    (key, val,
+                                                    " ".join([pfmri.get_name()
+                                                    for pfmri in
+                                                    sorted(attr[val])
+                                                    ])))
+
+                                # if we deliver different action types, that
+                                # gets dealt with by duplicate_path_types().
+                                if len(action_types) != 1:
+                                        processed_dic[p] = True
+                                        continue
+
+                                engine.error(_("%(type)s action for %(attr)s "
+                                    "is reference-counted but has different "
+                                    "attributes across %(count)s duplicates: "
+                                    "%(suspects)s") %
+                                    {"type": action.name,
+                                    "attr": p,
+                                    "count": len(fmris),
+                                    "suspects":
+                                    " ".join([key for key in suspects])},
+                                    msgid=lint_id, ignore_linted=True)
+                        processed_dic[p] = True
 
         duplicate_refcount_path_attrs.pkglint_desc = _(
             "Duplicated reference counted actions should have the same attrs.")
@@ -392,6 +431,10 @@ class PkgDupActionChecker(base.ActionChecker):
                 fmris = set()
                 actions = set()
                 for (pfmri, a) in ref_dic[name]:
+                        # mediated links get ignored here
+                        if a.name in ["link", "hardlink"] and \
+                            "mediator" in a.attrs:
+                                continue
                         actions.add(a)
                         fmris.add(pfmri)
 
@@ -453,11 +496,6 @@ class PkgDupActionChecker(base.ActionChecker):
                 if p in self.seen_dup_types:
                         return
 
-                # we could have a linted action, which would have prevented
-                # us from adding this path to the dictionary.
-                if p not in self.ref_paths:
-                        return
-
                 lint_id = "%s%s" % (self.name, pkglint_id)
                 types = set()
                 fmris = set()
@@ -466,9 +504,16 @@ class PkgDupActionChecker(base.ActionChecker):
                         if engine.linted(action=a, manifest=manifest,
                             lint_id=lint_id):
                                 continue
+                        # we deal with mediated links in mediated_links(..)
+                        # since self.conflicting_variants() would otherwise flag
+                        # these as conflicting
+                        if a.name in ["link", "hardlink"] and \
+                            "mediator" in a.attrs:
+                                continue
                         actions.add(a)
                         types.add(a.name)
                         fmris.add(pfmri)
+
                 if len(types) > 1:
                         conflict_vars, conflict_actions = \
                             self.conflicting_variants(actions,
@@ -504,6 +549,140 @@ class PkgDupActionChecker(base.ActionChecker):
                     only_overlays=True)
 
         overlays.pkglint_desc = _("Overlaying actions should be valid.")
+
+        def mediated_links(self, action, manifest, engine, pkglint_id="010"):
+                """Checks that groups of mediated-links are valid.  We perform
+                minimal validation of mediated links here, since the generic
+                action-validation check, pkglint.action009, will run the
+                validate() method on each action.
+
+                We check that all mediators for a given path are part of the
+                same mediation namespace, and that all links for a given path
+                have a 'mediator' attribute to declare that namespace.  We also
+                check, that if mediators are being used, that all actions
+                deliver the same type of action for that mediated link.
+
+                There is some overlap with duplicate_path_types here,
+                in that duplicate reference-counted actions with a path
+                attribute where that list of actions contains link or hardlink
+                actions will be reported here instead, in case the user simply
+                got the type of action wrong.
+                """
+
+                if action.name not in ["link", "hardlink"]:
+                        return
+
+                # a link without a path will get picked up elsewhere
+                p = action.attrs.get("path", None)
+                if not p:
+                        return
+
+                if p in self.seen_mediated_links:
+                        return
+
+                if len(self.ref_paths[p]) == 1:
+                        return
+
+                ref_mediator = action.attrs.get("mediator", None)
+                different_namespaces = []
+                missing_mediators = []
+
+                types_id = "%s%s.1" % (self.name, pkglint_id)
+                missing_id = "%s%s.2" % (self.name, pkglint_id)
+                diff_id = "%s%s.3" % (self.name, pkglint_id)
+
+                # gather the actions and their fmris that have either
+                # different namespaces, or missing mediators.  We ignore
+                # variants at this point.
+                for pfmri, action in self.ref_paths[p]:
+                        mediator = action.attrs.get("mediator", None)
+                        if not mediator:
+                                if engine.linted(action, lint_id=missing_id):
+                                        continue
+                                missing_mediators.append((pfmri, action))
+                        elif mediator != ref_mediator:
+                                if engine.linted(action, lint_id=diff_id):
+                                        continue
+                                different_namespaces.append((pfmri, action))
+
+                def variant_conflicts(mediator_list, lint_id):
+                        """Look for conflicting variants across the given list,
+                        allowing for pkg.linted values matching lint_id."""
+                        conflicts = []
+                        for pfmri, action in mediator_list:
+                                # compare every action for this path to see if
+                                # we have at least one variant conflict.  We
+                                # need to do this individually since
+                                # conflicting_variants(..) isn't mediator-aware
+                                for pfm, ac in self.ref_paths[p]:
+                                        if ac == action:
+                                                continue
+                                        if engine.linted(ac, lint_id=lint_id):
+                                                continue
+                                        conf_var, conf_ac = \
+                                            self.conflicting_variants(
+                                                [ac, action], {})
+                                        for conf in conf_ac:
+                                                conflicts.append((pfm, conf))
+                        return conflicts
+
+                action_types = set([])
+
+                seen_conflicts = variant_conflicts(different_namespaces,
+                    diff_id)
+                if seen_conflicts:
+                        plist = []
+                        for pfmri, action in seen_conflicts:
+                                plist.append(str(pfmri))
+                                action_types.add((action, pfmri))
+
+                        plist = sorted(set(plist))
+                        engine.error(_("path %(path)s uses different "
+                            "mediator namespaces across actions in "
+                            "%(fmris)s") % {"fmris": " ".join(plist),
+                            "path": p}, msgid=diff_id)
+
+                if missing_mediators:
+                        seen_conflicts = variant_conflicts(missing_mediators,
+                            missing_id)
+                        if seen_conflicts:
+                                plist = []
+                                ac_names = set([])
+                                for pfmri, action in seen_conflicts:
+                                        plist.append(str(pfmri))
+                                        action_types.add((action, pfmri))
+                                        ac_names.add(action.name)
+
+                                # if we have more than one action type, then
+                                # this error would only confuse. A user
+                                # mixing 'dir' and 'link' actions should not
+                                # be advised that adding a 'mediator' attribute
+                                # to their dir action would fix things.
+                                if len(ac_names) == 1:
+                                        plist = sorted(set(plist))
+                                        engine.error(_("path %(path)s has "
+                                            "missing mediator attributes "
+                                            "across actions in %(fmris)s") %
+                                            {"fmris": " ".join(plist),
+                                            "path": p}, msgid=missing_id)
+                
+                if len(set([ac.name for ac, pfmri in action_types])) > 1:
+                        plist = set([])
+                        for ac, pfmri in action_types:
+                                if not engine.linted(ac, lint_id=types_id):
+                                        plist.add(str(pfmri))
+                        if not plist:
+                                self.seen_mediated_links.append(p)
+                                return
+                        plist = sorted(plist)
+                        engine.error(_("path %(path)s uses multiple action "
+                            "types for potentially mediated links across "
+                            "actions in %(fmris)s") % {"fmris": " ".join(plist),
+                            "path": p}, msgid=types_id)
+
+                self.seen_mediated_links.append(p)
+
+        mediated_links.pkglint_desc = _("Mediated-links should be valid.")
 
         def _merge_dict(self, src, target, ignore_pubs=True):
                 """Merges the given src dictionary into the target
