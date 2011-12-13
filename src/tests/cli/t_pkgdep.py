@@ -1814,8 +1814,9 @@ SYMBOL_SCOPE {
 
                 # Test that pkgdep can resolve dependencies through symlinks
                 # in paths at all.
-                deps, errs = dependencies.resolve_deps([a_pth, b_pth], None,
-                    False, False)
+                deps, errs, unused_fmris, external_deps = \
+                    dependencies.resolve_deps([a_pth, b_pth], None, [],
+                        prune_attrs=False)
                 def check_res(deps, errs):
                         self.assertEqual(len(errs), 0,
                             "\n" + "\n\n".join([str(s) for s in errs]))
@@ -1826,12 +1827,17 @@ SYMBOL_SCOPE {
                         self.assertEqual(d.attrs[dependencies.type_prefix],
                             "script")
                 check_res(deps, errs)
+                self.assertEqualDiff(set(), unused_fmris)
+                self.assertEqualDiff(set(), external_deps)
                 self.assertEqual(len(deps[b_pth]), 0,
                     "\n".join([str(s) for s in deps[b_pth]]))
                 self._api_install(api_obj, ["b"])
-                deps, errs = dependencies.resolve_deps([a_pth], api_obj, False,
-                    True)
+                deps, errs, unused_fmris, external_deps = \
+                    dependencies.resolve_deps([a_pth], api_obj, ["*"],
+                        prune_attrs=False)
                 check_res(deps, errs)
+                self.assertEqualDiff(set(), unused_fmris)
+                self.assertEqualDiff(set(["b"]), external_deps)
                 self._api_uninstall(api_obj, ["b"])
 
         def test_bug_16013_packages_delivering_links(self):
@@ -1852,12 +1858,15 @@ SYMBOL_SCOPE {
                 plist = self.pkgsend_with_fmri(b_link2_pth)
                 plist = self.pkgsend_with_fmri(b_file_pth)
 
-                deps, errs = dependencies.resolve_deps(
-                    [a_pth, b_file_pth, b_link_pth, b_link2_pth], None, False,
-                    False)
+                deps, errs, unused_fmris, external_deps = \
+                    dependencies.resolve_deps(
+                        [a_pth, b_file_pth, b_link_pth, b_link2_pth], None, [],
+                        prune_attrs=False)
 
                 self.bug_16013_check_res_simple_links(deps, errs,
                     a_pth)
+                self.assertEqualDiff(set(), unused_fmris)
+                self.assertEqualDiff(set(), external_deps)
                 self.assertEqual(len(deps[b_file_pth]), 0)
                 self.assertEqual(len(deps[b_link_pth]), 0)
 
@@ -1871,10 +1880,14 @@ SYMBOL_SCOPE {
                 b_file_pth = self.make_manifest(self.bug_16013_var_b_file_manf)
                 c_pth = self.make_manifest(self.bug_16013_var_c_manf)
 
-                deps, errs = dependencies.resolve_deps(
-                    [a_pth, b_file_pth, b_link_pth, c_pth], None, False, False)
+                deps, errs, unused_fmris, external_deps = \
+                    dependencies.resolve_deps(
+                        [a_pth, b_file_pth, b_link_pth, c_pth], None, [],
+                        prune_attrs=False)
 
                 self.bug_16013_check_res_variants_base(deps, errs, a_pth)
+                self.assertEqualDiff(set(), unused_fmris)
+                self.assertEqualDiff(set(), external_deps)
                 self.assertEqual(len(deps[c_pth]), 0)
                 self.assertEqual(len(deps[b_file_pth]), 0)
                 self.assertEqual(len(deps[b_link_pth]), 0)
@@ -1895,10 +1908,13 @@ file NOHASH group=bin mode=0555 owner=root path=b/bin/perl variant.foo=c
                 c_pth = self.make_manifest(self.bug_16013_var_c_manf)
 
                 multivar_b_file_pth = self.make_manifest(multivar_b_file_manf)
-                deps, errs = dependencies.resolve_deps(
-                    [a_pth, multivar_b_file_pth, b_link_pth, c_pth], None,
-                    False, False)
+                deps, errs, unused_fmris, external_deps = \
+                    dependencies.resolve_deps(
+                        [a_pth, multivar_b_file_pth, b_link_pth, c_pth], None,
+                        [])
                 self.bug_16013_check_res_variants_base(deps, errs, a_pth)
+                self.assertEqualDiff(set(), unused_fmris)
+                self.assertEqualDiff(set(), external_deps)
                 self.assertEqual(len(deps[c_pth]), 0)
                 self.assertEqual(len(deps[multivar_b_file_pth]), 0)
                 self.assertEqual(len(deps[b_link_pth]), 0)
@@ -1924,11 +1940,13 @@ file NOHASH group=bin mode=0555 owner=root path=usr/bin/perl variant.foo=c
                 b_file_pth = self.make_manifest(self.bug_16013_var_b_file_manf)
                 c_no_link_pth = self.make_manifest(c_no_link_manf)
 
-                deps, errs = dependencies.resolve_deps(
-                    [a_var_b_dep_pth, b_file_pth, b_link_pth, c_no_link_pth],
-                    None, False, False)
+                deps, errs, unused_fmris, external_deps = \
+                    dependencies.resolve_deps([a_var_b_dep_pth, b_file_pth,
+                        b_link_pth, c_no_link_pth], None, [], prune_attrs=False)
                 self.assertEqual(len(errs), 1,
                     "\n\n".join([str(s) for s in errs]))
+                self.assertEqualDiff(set(), unused_fmris)
+                self.assertEqualDiff(set(), external_deps)
                 e = errs[0]
                 self.assertEqual(e.path, a_var_b_dep_pth)
                 self.assertEqual(e.file_dep.attrs[dependencies.files_prefix],
@@ -1976,10 +1994,13 @@ dir group=bin mode=0755 owner=root path=b/bin variant.foo=b
                 b_file_pth = self.make_manifest(self.bug_16013_var_b_file_manf)
                 c_pth = self.make_manifest(self.bug_16013_var_c_manf)
 
-                deps, errs = dependencies.resolve_deps(
-                    [a_pth, b_file_pth, multivar_b_link_pth, c_pth], None,
-                    False, False)
+                deps, errs, unused_fmris, external_deps = \
+                    dependencies.resolve_deps(
+                        [a_pth, b_file_pth, multivar_b_link_pth, c_pth], None,
+                        [], prune_attrs=False)
                 self.bug_16013_check_res_variants_base(deps, errs, a_pth)
+                self.assertEqualDiff(set(), unused_fmris)
+                self.assertEqualDiff(set(), external_deps)
                 self.assertEqual(len(deps[c_pth]), 0)
                 self.assertEqual(len(deps[b_file_pth]), 0)
                 self.assertEqual(len(deps[multivar_b_link_pth]), 0)
@@ -2001,10 +2022,13 @@ dir group=bin mode=0755 owner=root path=b/bin variant.foo=b
                 c_pth = self.make_manifest(self.bug_16013_var_c_manf)
 
                 multivar2_b_link_pth = self.make_manifest(multivar2_b_link_manf)
-                deps, errs = dependencies.resolve_deps(
-                    [a_pth, b_file_pth, multivar2_b_link_pth, c_pth], None,
-                    False, False)
+                deps, errs, unused_fmris, external_deps = \
+                    dependencies.resolve_deps(
+                        [a_pth, b_file_pth, multivar2_b_link_pth, c_pth], None,
+                        [], prune_attrs=False)
                 self.bug_16013_check_res_variants_base(deps, errs, a_pth)
+                self.assertEqualDiff(set(), unused_fmris)
+                self.assertEqualDiff(set(), external_deps)
                 self.assertEqual(len(deps[c_pth]), 0)
                 self.assertEqual(len(deps[b_file_pth]), 0)
                 self.assertEqual(len(deps[multivar2_b_link_pth]), 0)
@@ -2024,11 +2048,14 @@ depend fmri=__TBD pkg.debug.depend.file=perl pkg.debug.depend.path=usr/bin pkg.d
                 b_file_pth = self.make_manifest(self.bug_16013_var_b_file_manf)
                 c_pth = self.make_manifest(self.bug_16013_var_c_manf)
 
-                deps, errs = dependencies.resolve_deps(
-                    [a_var_limited_pth, b_file_pth, b_link_pth, c_pth], None,
-                    False, False)
+                deps, errs, unused_fmris, external_deps = \
+                    dependencies.resolve_deps(
+                        [a_var_limited_pth, b_file_pth, b_link_pth, c_pth],
+                        None, [], prune_attrs=False)
                 self.assertEqual(len(errs), 0,
                     "\n\n".join([str(s) for s in errs]))
+                self.assertEqualDiff(set(), unused_fmris)
+                self.assertEqualDiff(set(), external_deps)
                 self.assertEqual(len(deps[a_var_limited_pth]), 3,
                     "\n".join([str(s) for s in deps[a_var_limited_pth]]))
                 res_fmris = set(["pkg:/b_link@0.5.11-0.151",
@@ -2113,13 +2140,16 @@ file NOHASH group=bin mode=0555 owner=root path=c/bin/perl variant.foo=c
                 twod_b_y_file_pth = self.make_manifest(twod_b_y_file_manf)
                 twod_c_pth = self.make_manifest(twod_c_manf)
 
-                deps, errs = dependencies.resolve_deps(
-                    [twod_a_pth, twod_b_vw_link_pth, twod_b_yz_link_pth,
-                    twod_b_vwx_file_pth, twod_b_y_file_pth, twod_c_pth], None,
-                    False, False)
+                deps, errs, unused_fmris, external_deps = \
+                    dependencies.resolve_deps([twod_a_pth, twod_b_vw_link_pth,
+                        twod_b_yz_link_pth, twod_b_vwx_file_pth,
+                        twod_b_y_file_pth, twod_c_pth], None, [],
+                        prune_attrs=False)
 
                 self.assertEqual(len(errs), 1,
                     "\n\n".join([str(s) for s in errs]))
+                self.assertEqualDiff(set(), unused_fmris)
+                self.assertEqualDiff(set(), external_deps)
                 missing_vcs = []
                 e = errs[0]
                 self.assertEqual(e.path, twod_a_pth)
@@ -2205,49 +2235,68 @@ file NOHASH group=bin mode=0555 owner=root path=c/bin/perl variant.foo=c
 
                 api_obj = self.get_img_api_obj()
                 self._api_install(api_obj, ["c"])
-                deps, errs = dependencies.resolve_deps(
-                    [a_pth, b_file_pth, b_link_pth], api_obj, False, True)
+                deps, errs, unused_fmris, external_deps = \
+                    dependencies.resolve_deps([a_pth, b_file_pth, b_link_pth],
+                        api_obj, ["*"], prune_attrs=False)
                 self.bug_16013_check_res_var_files_links_deps(deps, errs,
                     a_pth)
+                self.assertEqualDiff(set(), unused_fmris)
+                self.assertEqualDiff(set(["c"]), external_deps)
                 self.assertEqual(len(deps[b_file_pth]), 0)
                 self.assertEqual(len(deps[b_link_pth]), 0)
 
                 self._api_install(api_obj, ["b_link"])
-                deps, errs = dependencies.resolve_deps([a_pth, b_file_pth],
-                    api_obj, False, True)
+                deps, errs, unused_fmris, external_deps = \
+                    dependencies.resolve_deps([a_pth, b_file_pth], api_obj,
+                        ["*"], prune_attrs=False)
                 self.bug_16013_check_res_var_files_links_deps(deps, errs,
                     a_pth)
+                self.assertEqualDiff(set(), unused_fmris)
+                self.assertEqualDiff(set(["b_link", "c"]), external_deps)
                 self.assertEqual(len(deps[b_file_pth]), 0)
 
                 self._api_install(api_obj, ["b_file"])
-                deps, errs = dependencies.resolve_deps([a_pth], api_obj, False,
-                    True)
+                deps, errs, unused_fmris, external_deps = \
+                    dependencies.resolve_deps([a_pth], api_obj, ["*"],
+                        prune_attrs=False)
                 self.bug_16013_check_res_var_files_links_deps(deps, errs,
                     a_pth)
+                self.assertEqualDiff(set(), unused_fmris)
+                self.assertEqualDiff(set(["b_file", "b_link", "c"]),
+                    external_deps)
 
                 # Test that delivering installed packages works correctly.
-                deps, errs = dependencies.resolve_deps(
-                    [a_pth, b_file_pth, b_link_pth, c_pth], api_obj, False,
-                    True)
+                deps, errs, unused_fmris, external_deps = \
+                    dependencies.resolve_deps(
+                        [a_pth, b_file_pth, b_link_pth, c_pth], api_obj, ["*"],
+                        prune_attrs=False)
                 self.bug_16013_check_res_var_files_links_deps(deps, errs,
                     a_pth)
+                self.assertEqualDiff(set(), unused_fmris)
+                self.assertEqualDiff(set(), external_deps)
                 self.assertEqual(len(deps[b_file_pth]), 0)
                 self.assertEqual(len(deps[b_link_pth]), 0)
                 self.assertEqual(len(deps[c_pth]), 0)
 
                 # Test more combinations of installed and delivered
                 self._api_uninstall(api_obj, ["c"])
-                deps, errs = dependencies.resolve_deps([a_pth, c_pth], api_obj,
-                    False, True)
+                deps, errs, unused_fmris, external_deps = \
+                    dependencies.resolve_deps([a_pth, c_pth], api_obj, ["*"],
+                        prune_attrs=False)
                 self.bug_16013_check_res_var_files_links_deps(deps, errs,
                     a_pth)
+                self.assertEqualDiff(set(), unused_fmris)
+                self.assertEqualDiff(set(["b_file", "b_link"]), external_deps)
                 self.assertEqual(len(deps[c_pth]), 0)
 
                 self._api_uninstall(api_obj, ["b_link"])
-                deps, errs = dependencies.resolve_deps(
-                    [a_pth, b_link_pth, c_pth], api_obj, False, True)
+                deps, errs, unused_fmris, external_deps = \
+                    dependencies.resolve_deps([a_pth, b_link_pth, c_pth],
+                        api_obj, ["*"], prune_attrs=False)
                 self.bug_16013_check_res_var_files_links_deps(deps, errs,
                     a_pth)
+                self.assertEqualDiff(set(), unused_fmris)
+                self.assertEqualDiff(set(["b_file"]), external_deps)
                 self.assertEqual(len(deps[c_pth]), 0)
                 self.assertEqual(len(deps[b_link_pth]), 0)
 
@@ -2260,8 +2309,9 @@ dir group=bin mode=0755 owner=root path=bad_b/bin variant.foo=b
                 bad_b_link_pth = self.make_manifest(bad_b_link_manf)
                 plist = self.pkgsend_with_fmri(bad_b_link_pth)
                 self._api_install(api_obj, ["b_link"])
-                deps, errs = dependencies.resolve_deps([a_pth, c_pth], api_obj,
-                    False, True)
+                deps, errs, unused_fmris, external_deps = \
+                    dependencies.resolve_deps([a_pth, c_pth], api_obj, ["*"],
+                        prune_attrs=False)
                 def bad_b_link_check_res(deps, errs):
                         self.assertEqual(len(errs), 1,
                             "\n".join([str(s) for s in errs]))
@@ -2284,21 +2334,27 @@ dir group=bin mode=0755 owner=root path=bad_b/bin variant.foo=b
                                     d.attrs[dependencies.type_prefix],
                                     "script")
                 bad_b_link_check_res(deps, errs)
+                self.assertEqualDiff(set(["b_file", "b_link"]), unused_fmris)
+                self.assertEqualDiff(set(), external_deps)
                 self.assertEqual(len(deps[c_pth]), 0)
 
                 # Check that the delivered manifests take priority over the
                 # installed manifests.
-                deps, errs = dependencies.resolve_deps(
-                    [a_pth, b_link_pth, c_pth], api_obj, False, True)
+                deps, errs, unused_fmris, external_deps = \
+                    dependencies.resolve_deps([a_pth, b_link_pth, c_pth],
+                        api_obj, ["*"], prune_attrs=False)
                 self.bug_16013_check_res_var_files_links_deps(deps, errs,
                     a_pth)
+                self.assertEqualDiff(set(), unused_fmris)
+                self.assertEqualDiff(set(["b_file"]), external_deps)
                 self.assertEqual(len(deps[c_pth]), 0)
                 self.assertEqual(len(deps[b_link_pth]), 0)
 
                 self._api_uninstall(api_obj, ["b_link"])
                 self._api_install(api_obj, ["b_link@0.5.11,5.11-0.151"])
-                deps, errs = dependencies.resolve_deps(
-                    [a_pth, bad_b_link_pth, c_pth], api_obj, False, True)
+                deps, errs, unused_fmris, external_deps = \
+                    dependencies.resolve_deps([a_pth, bad_b_link_pth, c_pth],
+                        api_obj, ["*"], prune_attrs=False)
                 bad_b_link_check_res(deps, errs)
                 self.assertEqual(len(deps[c_pth]), 0)
                 self.assertEqual(len(deps[bad_b_link_pth]), 0)
@@ -2505,10 +2561,13 @@ file NOHASH group=bin mode=0755 owner=root path=etc/libc.so.1
 
                 p1 = self.make_manifest(dependent_manf)
                 p2 = self.make_manifest(dependee_manf)
-                deps, errs = dependencies.resolve_deps([p1, p2], None, False,
-                    False)
+                deps, errs, unused_fmris, external_deps = \
+                    dependencies.resolve_deps([p1, p2], None, [],
+                        prune_attrs=False)
                 self.assertEqual(len(errs), 0,
                     "\n" + "\n\n".join([str(s) for s in errs]))
+                self.assertEqualDiff(set(), unused_fmris)
+                self.assertEqualDiff(set(), external_deps)
                 self.assertEqual(len(deps[p1]), 1,
                     "\n".join([str(s) for s in deps[p1]]))
                 d = deps[p1][0]

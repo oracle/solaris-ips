@@ -1,15 +1,3 @@
-#
-# This is a fragment of a pkglintrc file used for the pkg(5) build
-# to acknowledge that some dependencies will be missing at lint
-# runtime.  When used with a reference repository, we expect that
-# these dependencies would be available.
-#
-# If version numbers are missing from the dependencies below, we
-# match all versions of that particular package.  If version
-# numbers are specified, we only match the given version.
-#
-pkglint.action005.1.missing-deps =
-    pkg:/SUNWcs
     pkg:/archiver/gnu-tar
     pkg:/crypto/ca-certificates
     pkg:/desktop/gksu
@@ -19,25 +7,17 @@ pkglint.action005.1.missing-deps =
     pkg:/developer/build/onbld
     pkg:/developer/gnome/gettext
     pkg:/developer/gnome/gnome-doc-utils
-    pkg:/developer/object-file
     pkg:/developer/python/pylint
     pkg:/developer/versioning/mercurial
     pkg:/gnome/config/gconf
     pkg:/gnome/theme/hicolor-icon-theme
-    pkg:/library/python-2/cherrypy
     pkg:/library/python-2/cherrypy-26
-    pkg:/library/python-2/coverage
     pkg:/library/python-2/coverage-26
     pkg:/library/python-2/locale-services
-    pkg:/library/python-2/m2crypto
     pkg:/library/python-2/m2crypto-26
-    pkg:/library/python-2/mako
     pkg:/library/python-2/mako-26
-    pkg:/library/python-2/ply
     pkg:/library/python-2/ply-26
-    pkg:/library/python-2/pybonjour
     pkg:/library/python-2/pybonjour-26
-    pkg:/library/python-2/pycurl
     pkg:/library/python-2/pycurl-26
     pkg:/library/python-2/pygobject-26
     pkg:/library/python-2/pygtk2-26
@@ -51,7 +31,6 @@ pkglint.action005.1.missing-deps =
     pkg:/service/network/dns/mdns
     pkg:/shell/ksh
     pkg:/system/core-os
-    pkg:/system/extended-system-utilities
     pkg:/system/font/xorg/xorg-core
     pkg:/system/header
     pkg:/system/library
@@ -59,9 +38,6 @@ pkglint.action005.1.missing-deps =
     pkg:/system/library/math
     pkg:/system/linker
     pkg:/system/network
-    pkg:/system/zones
-    pkg:/system/zones/brand/solaris
-    pkg:/system/zones/internal
     pkg:/text/gnu-grep
     pkg:/text/tidy
     pkg:/web/server/apache-22

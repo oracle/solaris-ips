@@ -212,13 +212,19 @@ def resolve(args, img_dir):
         suffix = None
         verbose = False
         use_system_to_resolve = True
+        constraint_files = []
+        extra_external_info = False
         try:
-                opts, pargs = getopt.getopt(args, "d:mos:Sv")
+                opts, pargs = getopt.getopt(args, "d:e:Emos:Sv")
         except getopt.GetoptError, e:
                 usage(_("illegal global option -- %s") % e.opt)
         for opt, arg in opts:
                 if opt == "-d":
                         out_dir = arg
+                elif opt == "-e":
+                        constraint_files.append(arg)
+                elif opt == "-E":
+                        extra_external_info = True
                 elif opt == "-m":
                         echo_manifest = True
                 elif opt == "-o":
@@ -269,6 +275,26 @@ def resolve(args, img_dir):
                     "$PKG_IMAGE to the\nlocation of an image."))
                 return 1
 
+        system_patterns = misc.EmptyI
+        if constraint_files:
+                system_patterns = []
+                for f in constraint_files:
+                        try:
+                                with open(f, "rb") as fh:
+                                        for l in fh:
+                                                l = l.strip()
+                                                if l and not l.startswith("#"):
+                                                        system_patterns.append(
+                                                            l)
+                        except EnvironmentError, e:
+                                raise api_errors._convert_error(e)
+                if not system_patterns:
+                        error(_("External package list files were provided but "
+                            "did not contain any fmri patterns."))
+                        return 1
+        elif use_system_to_resolve:
+                system_patterns = ["*"]
+
         # Becuase building an ImageInterface permanently changes the cwd for
         # python, it's necessary to do this step after resolving the paths to
         # the manifests.
@@ -295,9 +321,9 @@ def resolve(args, img_dir):
                 return 1
 
         try:
-                pkg_deps, errs = dependencies.resolve_deps(manifest_paths,
-                    api_inst, prune_attrs=not verbose,
-                    use_system=use_system_to_resolve)
+                pkg_deps, errs, unused_fmris, external_deps = \
+                    dependencies.resolve_deps(manifest_paths, api_inst,
+                        system_patterns, prune_attrs=not verbose)
         except (actions.MalformedActionError, actions.UnknownActionError), e:
                 error(_("Could not parse one or more manifests because of "
                     "the following line:\n%s") % e.actionstr)
@@ -308,7 +334,6 @@ def resolve(args, img_dir):
         except api_errors.ApiException, e:
                 error(e)
                 return 1
-
         ret_code = 0
 
         if output_to_screen:
@@ -320,6 +345,19 @@ def resolve(args, img_dir):
         else:
                 ret_code = pkgdeps_in_place(pkg_deps, manifest_paths, suffix,
                     echo_manifest)
+
+        if extra_external_info:
+                if constraint_files and unused_fmris:
+                        msg(_("\nThe following fmris matched a pattern in a "
+                            "constraint file but were not used in\ndependency "
+                            "resolution:"))
+                        for pfmri in sorted(unused_fmris):
+                                msg("\t%s" % pfmri)
+                if not constraint_files and external_deps:
+                        msg(_("\nThe following fmris had dependencies resolve "
+                            "to them:"))
+                        for pfmri in sorted(external_deps):
+                                msg("\t%s" % pfmri)
 
         for e in errs:
                 if ret_code == 0:
@@ -549,6 +587,9 @@ if __name__ == "__main__":
                      "client": __e.received_version,
                      "api": __e.expected_version
                     })
+                __ret = 1
+        except api_errors.ApiException, e:
+                error(e)
                 __ret = 1
         except RuntimeError, _e:
                 emsg("%s: %s" % (PKG_CLIENT_NAME, _e))

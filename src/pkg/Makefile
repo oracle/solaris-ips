@@ -158,7 +158,7 @@ $(PDIR)/%.dep: $(PDIR)/%.mog
 # Resolve all dependencies at once, providing a single target that publication
 # can use.
 $(PDIR)/.resolved: $(DEPENDED)
-	$(PKGDEPEND) resolve -m $(DEPENDED)
+	$(PKGDEPEND) resolve -e external_deps.txt -m $(DEPENDED)
 	touch $@
 
 # The main publication rule
@@ -189,7 +189,7 @@ check: $(PDIR)/protomanifest $(PDIR)/pkgmanifest
 # If new warnings/errors appear in the lint output, we return an error.
 #
 # To tell pkglint to bypass any potential missing dependencies during
-# the lint run, please edit external_deps.pkglintrc
+# the lint run, please edit external_deps.txt
 lint: repository-metadata
 	@sed -e "s#/usr/share/lib/pkg/opensolaris.org.sections#$(PKGROOT)&#" \
 		< ips-pkglintrc > $(PDIR)/pkglintrc
@@ -208,7 +208,8 @@ lint: repository-metadata
 			-r $(PKGLINT_REF_REPO) -l file://$(PKGDEST)/repo; \
 	fi
 	-@if [ -z "$(PKGLINT_REF_REPO)" ]; then				\
-		cat external_deps.pkglintrc >> $(PDIR)/pkglintrc;	\
+		cat external_deps_fragment.pkglintrc >> $(PDIR)/pkglintrc; \
+		cat external_deps.txt >> $(PDIR)/pkglintrc;	\
 		( $(PKGLINT) -c $(PDIR)/pkglint-cache			\
 			-f $(PDIR)/pkglintrc				\
 			-l file://$(PKGDEST)/repo > /dev/null ) 2>&1 |	\

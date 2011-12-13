@@ -43,6 +43,7 @@ import pkg.flavor.script as script
 import pkg.flavor.smf_manifest as smf_manifest
 import pkg.fmri as fmri
 import pkg.manifest as manifest
+import pkg.misc as misc
 import pkg.portable as portable
 import pkg.variant as variants
 
@@ -1555,7 +1556,15 @@ def add_fmri_path_mapping(files_dict, links_dict, pfmri, mfst,
                 links_dict.setdefault(f.attrs["path"], []).append(
                     (pfmri, vc, f.attrs["target"]))
 
-def resolve_deps(manifest_paths, api_inst, prune_attrs=False, use_system=True):
+def __safe_fmri_parse(txt):
+        dep_name = None
+        try:
+                dep_name = fmri.PkgFmri(txt, "5.11").pkg_name
+        except fmri.IllegalFmri:
+                pass
+        return dep_name
+
+def resolve_deps(manifest_paths, api_inst, system_patterns, prune_attrs=False):
         """For each manifest given, resolve the file dependencies to package
         dependencies. It returns a mapping from manifest_path to a list of
         dependencies and a list of unresolved dependencies.
@@ -1563,6 +1572,9 @@ def resolve_deps(manifest_paths, api_inst, prune_attrs=False, use_system=True):
         'manifest_paths' is a list of paths to the manifests being resolved.
 
         'api_inst' is an ImageInterface which references the current image.
+
+        'system_patterns' is a list of patterns which determines the system
+        packages that are resolved against.
 
         'prune_attrs' is a boolean indicating whether debugging
         attributes should be stripped from returned actions."""
@@ -1600,26 +1612,47 @@ def resolve_deps(manifest_paths, api_inst, prune_attrs=False, use_system=True):
                 act_vct.merge_unknown(pkg_vct)
                 return variants.VariantCombinations(act_vct, satisfied=True)
 
-        if use_system:
+        sys_fmris = set()
+        unmatched_patterns = set()
+        if system_patterns:
                 pkg_list = api_inst.get_pkg_list(
-                    api.ImageInterface.LIST_INSTALLED)
+                        api.ImageInterface.LIST_INSTALLED,
+                        patterns=system_patterns, raise_unmatched=True)
                 tmp_files = {}
                 tmp_links = {}
                 package_vars = {}
                 pkg_cnt = 0
                 # Gather information from installed packages
-                for (pub, stem, ver), summ, cats, states, attrs in pkg_list:
-                        # If this package is being resolved, then that's the
-                        # information to use.
-                        if stem in resolving_pkgs:
-                                continue
-                        pfmri = fmri.PkgFmri("pkg:/%s@%s" % (stem, ver))
-                        mfst = api_inst.get_manifest(pfmri, all_variants=True)
-                        distro_vars.merge_values(mfst.get_all_variants())
-                        package_vars[stem] = mfst.get_all_variants()
-                        add_fmri_path_mapping(tmp_files, tmp_links, pfmri, mfst,
-                            use_template=True)
-                        pkg_cnt += 1
+                # Because get_pkg_list returns a generator, the
+                # InventoryException raised when a pattern has no matches isn't
+                # raised until all the matching patterns have been iterated
+                # over.
+                try:
+                        for (pub, stem, ver), summ, cats, states, attrs in \
+                            pkg_list:
+                                # If this package is being resolved, then that's
+                                # the information to use.
+                                if stem in resolving_pkgs:
+                                        continue
+                                pfmri = fmri.PkgFmri("pkg:/%s@%s" % (stem, ver))
+                                if system_patterns:
+                                        sys_fmris.add(pfmri.pkg_name)
+                                mfst = api_inst.get_manifest(pfmri,
+                                    all_variants=True)
+                                distro_vars.merge_values(
+                                    mfst.get_all_variants())
+                                package_vars[stem] = mfst.get_all_variants()
+                                add_fmri_path_mapping(tmp_files, tmp_links,
+                                    pfmri, mfst, use_template=True)
+                                pkg_cnt += 1
+                except apx.InventoryException, e:
+                        # If "*" didn't match any packages, then the image was
+                        # empty.
+                        try:
+                                e.notfound.remove("*")
+                        except ValueError:
+                                pass
+                        unmatched_patterns.update(e.notfound)
                 del pkg_list
                 # Move all package variants into the same universe.
                 for pkg_vct in package_vars.values():
@@ -1644,7 +1677,8 @@ def resolve_deps(manifest_paths, api_inst, prune_attrs=False, use_system=True):
                         links[pth] = new_val
                 del tmp_links
                 del package_vars
-                                   
+
+        res_fmris = set()
         # Build a list of all files delivered in the manifests being resolved.
         for mp, (name, pfmri), mfst, pkg_vars, miss_files in manifests:
                 try:
@@ -1654,9 +1688,11 @@ def resolve_deps(manifest_paths, api_inst, prune_attrs=False, use_system=True):
                         raise BadPackageFmri(mp, e)
                 add_fmri_path_mapping(files.delivered, links, pfmri, mfst,
                     distro_vars)
+                res_fmris.add(pfmri.pkg_name)
 
         pkg_deps = {}
         errs = []
+        external_deps = set()
         for mp, (name, pfmri), mfst, pkg_vars, manifest_errs in manifests:
                 name_to_use = pfmri or name
                 # The add_fmri_path_mapping function moved the actions it found
@@ -1687,7 +1723,7 @@ def resolve_deps(manifest_paths, api_inst, prune_attrs=False, use_system=True):
 
                 pkg_res = [
                     (d, find_package(files, links, d, d_vars, pkg_vars,
-                        use_system))
+                        bool(system_patterns)))
                     for d, d_vars in ds
                 ]
 
@@ -1731,8 +1767,24 @@ def resolve_deps(manifest_paths, api_inst, prune_attrs=False, use_system=True):
                 deps, combine_errs = combine(deps, pkg_vars, pfmri, name_to_use)
                 errs.extend(combine_errs)
 
+                ext_pfmris = [
+                    pkg_name
+                    for pkg_name in (
+                                 __safe_fmri_parse(pfmri)
+                                 for a in deps
+                                 for pfmri in a.attrlist("fmri")
+                                 if a.attrs["type"] in
+                                 ("conditional", "require", "require-any")
+                             )
+                    if pkg_name is not None
+                    if pkg_name not in res_fmris
+                ]
+                external_deps.update(ext_pfmris)
+                sys_fmris.difference_update(ext_pfmris)
+
                 if prune_attrs:
                         deps = [prune_debug_attrs(d) for d in deps]
                 pkg_deps[mp] = deps
 
-        return pkg_deps, errs
+        sys_fmris.update(unmatched_patterns)
+        return pkg_deps, errs, sys_fmris, external_deps

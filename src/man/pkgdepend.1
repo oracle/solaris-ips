@@ -18,8 +18,8 @@ pkgdepend \- Image Packaging System dependency analyzer
 
 .LP
 .nf
-/usr/bin/pkgdepend resolve [-moSv] [-d \fIoutput_dir\fR]
-    [-s \fIsuffix\fR] \fImanifest_path\fR ...
+/usr/bin/pkgdepend resolve [-EmoSv] [-d \fIoutput_dir\fR]
+    [-e \fIexternal_package_file\fR] [-s \fIsuffix\fR] \fImanifest_path\fR ...
 .fi
 
 .SH DESCRIPTION
@@ -164,7 +164,7 @@ pkg.depend.bypass-generate=this/that
 .ne 2
 .mk
 .na
-\fBresolve\fR [\fB-moSv\fR] [\fB-d\fR \fIoutput_dir\fR] [\fB-s\fR \fIsuffix\fR] \fImanifest_path\fR ...\fR
+\fBresolve\fR [\fB-EmoSv\fR] [\fB-d\fR \fIoutput_dir\fR] [\fB-e\fR \fIexternal_package_file\fR] [\fB-s\fR \fIsuffix\fR] \fImanifest_path\fR ...\fR
 .ad
 .sp .6
 .RS 4n
@@ -175,6 +175,10 @@ With \fB-m\fR, repeat the manifest, with any dependencies produced by the \fBgen
 With \fB-o\fR, write the results to standard output. This option is intended for human consumption. Appending this output to a file might result in an invalid manifest. The \fB-d\fR or \fB-s\fR options are strongly recommended instead of \fB-o\fR for use in a pipe line for manifest processing.
 .sp
 With \fB-d\fR, write the resolved dependencies for each manifest provided in a separate file in \fIoutput_dir\fR. By default, each file has the same base name as the manifest that was the source of the dependencies written to that file.
+.sp
+With \fB-e\fR, only resolve against those packages from the system whose name matches a pattern in one of the \fIexternal_package_files\fR. Cannot be used with \fB-S\fR.
+.sp
+With \fB-E\fR, if \fB-e\fR was used, show those packages expected to be external dependencies that were not. If \fB-e\fR was not used, display the external dependencies of the resolved packages -- the packages, not named on the command line, which are targets of dependencies in the resolved packages.
 .sp
 With \fB-s\fR, for each output file, append \fIsuffix\fR to the base name of the file that was the source of the resolved dependencies. A "." is prepended to \fIsuffix\fR if it is not provided.
 .sp
