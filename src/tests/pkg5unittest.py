@@ -2642,7 +2642,20 @@ class CliTestCase(Pkg5TestCase):
                 self.assertEqual(expected, actual)
 
         def validate_html_file(self, fname, exit=0, comment="",
-            options="-quiet -utf8"):
+            options="-utf8 -quiet", drop_prop_attrs=False):
+                """ Run a html file specified by fname through a html validator
+                    (tidy). The drop_prop_attrs parameter can be used to ignore 
+                    proprietary attributes which would otherwise make tidy fail.
+                """
+                if drop_prop_attrs:
+			tfname = fname + ".tmp"
+			os.rename(fname, tfname)
+			moptions = options + " --drop-proprietary-attributes y"
+                        cmdline = "tidy %s %s > %s" % (moptions, tfname, fname)
+                        self.cmdline_run(cmdline, comment=comment,
+                            coverage=False, exit=exit, raise_error=False)
+			os.unlink(tfname)
+
                 cmdline = "tidy %s %s" % (options, fname)
                 return self.cmdline_run(cmdline, comment=comment,
                     coverage=False, exit=exit)

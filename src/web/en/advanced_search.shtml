@@ -19,8 +19,7 @@
 ##
 ## CDDL HEADER END
 ##
-## Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
-## Use is subject to license terms.
+## Copyright 2009, 2011 Oracle and/or its affiliates. All rights reserved.
 ##
 <%!
         import pkg.query_parser as qp
@@ -87,13 +86,13 @@
         rpp_val = criteria["rpp"]
 %>\
 <form class="search advanced-search" action="advanced_search.shtml">
-        <table summary="Additional criteria to alter how search results are
+        <table role="presentation" summary="Additional criteria to alter how search results are
  obtained and presented.">
                 <tr>
                         <td colspan="3">
                                 <input id="search-field" type="text" size="80"
                                     maxlength="512" name="token"
-                                    value="${token_val | h}"/>
+                                    value="${token_val | h}" title="search field"/>
                         </td>
                 </tr>
                 <tr>

@@ -19,7 +19,7 @@
 ##
 ## CDDL HEADER END
 ##
-## Copyright (c) 2008, 2011, Oracle and/or its affiliates. All rights reserved.
+## Copyright 2008, 2011 Oracle and/or its affiliates. All rights reserved.
 ##
 <%inherit file="layout.shtml"/>\
 <%page args="g_vars"/>\
@@ -66,8 +66,8 @@
                 <form class="search" action="search.shtml">
                         <h2 class="section-title">Search Packages</h2>
                         <p>
-                                <input id="search-field" type="text" size="40"
-                                    maxlength="512" name="token"/>
+                                <input id="search-field" type="text" size="35"
+                                    maxlength="512" name="token" title="search field"/>
                                 <input id="submit-search" type="submit"
                                     name="action" value="Search"/>
                                 <a href="advanced_search.shtml">Advanced Search</a>
@@ -132,7 +132,7 @@ the packages available for it.</p>
         <table class="stats" summary="A summary of information about the
  package repository.">
                 <tr class="first">
-                        <th colspan="2" class="last">
+                        <th colspan="2" scope="row" class="last">
                                 <a id="catalog-feed"
                                     href="../feed"
                                     title="${self.shared.dcval(g_vars, 'pkg_bui', 'feed_name')}"></a>
@@ -140,15 +140,15 @@ the packages available for it.</p>
                         </th>
                 </tr>
                 <tr>
-                        <td class="label">Publisher</td>
+                        <td scope="row" class="label">Publisher</td>
                         <td class="value">${pub.prefix}</td>
                 </tr>
                 <tr>
-                        <td class="label">Packages</td>
+                        <td scope="row" class="label">Packages</td>
                         <td class="value">${catalog.package_count}</td>
                 </tr>
                 <tr>
-                        <td class="label">Last Updated</td>
+                        <td scope="row" class="label">Last Updated</td>
 <%
         if catalog.version == 0:
                 # Note: last_modified() is in local time relative to the

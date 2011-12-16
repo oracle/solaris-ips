@@ -19,8 +19,7 @@
 ##
 ## CDDL HEADER END
 ##
-## Copyright 2010 Sun Microsystems, Inc.  All rights reserved.
-## Use is subject to license terms.
+## Copyright 2010, 2011 Oracle and/or its affiliates. All rights reserved.
 ##
 <%!
         import itertools
@@ -160,7 +159,7 @@
         <p>
                 <input id="search-field" type="text" size="40"
                     maxlength="512" name="token"
-                    value="${token | h}"/>
+                    value="${token | h}" title="search field"/>
                 <input id="submit-search" type="submit"
                     name="action" value="Search"/>
                 <a href="${search_uri | h}">Advanced Search</a>

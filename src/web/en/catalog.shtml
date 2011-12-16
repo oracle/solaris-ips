@@ -19,8 +19,7 @@
 ##
 ## CDDL HEADER END
 ##
-## Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
-## Use is subject to license terms.
+## Copyright 2009, 2011 Oracle and/or its affiliates. All rights reserved.
 ##
 <%!
         import pkg.fmri
@@ -113,7 +112,7 @@
                 <table summary="A list of packages available in the repository
  restricted by the specified listing criteria.">
                         <tr class="first">
-                                <th>Name</th>
+                                <th scope="row">Name</th>
                                 <th>Version</th>
                                 <th>Install</th>
                                 <th>Manifest</th>
@@ -161,7 +160,7 @@
                     anarchy=True), "")))
 %>
                         <tr${rclass}>
-                                <td>
+                                <td scope="row">
                                         <a title="Package Information Summary"
                                             href="${phref}">${pfmri.pkg_name}</a>
                                 </td>
@@ -178,7 +177,7 @@
                         </tr>
 %       endfor
                         <tr class="last">
-                                <td colspan="4">${len(flist)} package(s)</td>
+                                <td colspan="4" scope="row">${len(flist)} package(s)</td>
                         </tr>
                 </table>
 % endif

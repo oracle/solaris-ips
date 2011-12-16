@@ -19,8 +19,7 @@
 ##
 ## CDDL HEADER END
 ##
-## Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
-## Use is subject to license terms.
+## Copyright 2009, 2011 Oracle and/or its affiliates. All rights reserved.
 ##
 <%inherit file="layout.shtml"/>\
 <%page args="g_vars"/>\
@@ -39,14 +38,14 @@
                 <table class="stats" summary="A summary of high-level statistics
  about the package repository's catalog.">
                         <tr class="first">
-                                <th class="last" colspan="2">Catalog</th>
+                                <th scope="row" class="last" colspan="2">Catalog</th>
                         </tr>
                         <tr>
-                                <td class="label">Packages</td>
+                                <td scope="row" class="label">Packages</td>
                                 <td class="value">${catalog.package_count}</td>
                         </tr>
                         <tr>
-                                <td class="label">Last Modified</td>
+                                <td scope="row" class="label">Last Modified</td>
 <%
         # Note: last_modified() is in local time relative to the timezone where
         # catalog was last modified.
@@ -65,15 +64,15 @@
                 <table class="stats" summary="A summary of high-level statistics
  about this depot server.">
                         <tr class="first">
-                                <th class="last" colspan="2">Depot</th>
+                                <th scope="row" class="last" colspan="2">Depot</th>
                         </tr>
                         <tr>
-                                <td class="label">Files served by filelist</td>
+                                <td scope="row" class="label">Files served by filelist</td>
                                 <td class="value">${config.filelist_file_requests}</td>
                         </tr>
 % if not config.mirror:
                         <tr>
-                                <td class="label">In-flight Transactions</td>
+                                <td scope="row" class="label">In-flight Transactions</td>
                                 <td class="value">${config.in_flight_transactions}</td>
                         </tr>
 % endif
@@ -83,25 +82,25 @@
                 <table class="stats" summary="A list of the number of requests
  made to the depot server by operation.">
                         <tr class="first">
-                                <th class="last" colspan="2">Operations</th>
+                                <th scope="row" class="last" colspan="2">Operations</th>
                         </tr>
 % if not config.mirror:
                         <tr>
-                                <td class="label">catalog</td>
+                                <td scope="row" class="label">catalog</td>
                                 <td class="value">${config.catalog_requests}</td>
                         </tr>
 % endif
                         <tr>
-                                <td class="label">file</td>
+                                <td scope="row" class="label">file</td>
                                 <td class="value">${config.file_requests}</td>
                         </tr>
                         <tr>
-                                <td class="label">filelist</td>
+                                <td scope="row" class="label">filelist</td>
                                 <td class="value">${config.filelist_requests}</td>
                         </tr>
 % if not config.mirror:
                         <tr>
-                                <td class="label">manifest</td>
+                                <td scope="row" class="label">manifest</td>
                                 <td class="value">${config.manifest_requests}</td>
                         </tr>
 % endif

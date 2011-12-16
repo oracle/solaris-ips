@@ -19,8 +19,7 @@
  *
  * CDDL HEADER END
  *
- * Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
- * Use is subject to license terms.
+ * Copyright (c) 2009, 2011, Oracle and/or its affiliates. All rights reserved.
  *
  */
 @import url("../../yui-reset-font-grids_base-min.css");
@@ -86,7 +85,7 @@ div.masthead div.menu ul {
         margin-right: 0;
 }
 div.masthead div.menu ul li {
-        border-right: 2px inset #5382A1;
+        border-right: 2px inset #4C7B9A;
         display: inline;
         list-style: none;
         height: 100%;
@@ -110,7 +109,7 @@ div.page-title {
         clear: both;
         display: block;
         font-weight: bold;
-        color: #5382A1;
+        color: #4C7B9A;
 }
 
 /* Body Styles */

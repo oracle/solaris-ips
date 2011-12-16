@@ -729,7 +729,17 @@ class TestDepotOutput(pkg5unittest.SingleDepotTestCase):
                                         fp.write(response.read())
                                         fp.close()
 
-                                        self.validate_html_file(fpath)
+                                        # Because the 'role' attribute used for
+                                        # screen readers and other accessibility 
+                                        # tools isn't part of the official XHTML
+                                        # 1.x standards, it has to be dropped
+                                        # for the document to be validated.
+                                        # Setting 'drop_prop_attrs' to True here
+                                        # does that while ensuring that the 
+                                        # output of the depot is otherwise
+                                        # standards-compliant.
+                                        self.validate_html_file(fpath,
+                                            drop_prop_attrs=True)
 
                                 self.dc.stop()
                                 if unset_method:

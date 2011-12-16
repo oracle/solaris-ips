@@ -19,7 +19,7 @@
  *
  * CDDL HEADER END
  *
- * Copyright 2009, 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2009, 2011 Oracle and/or its affiliates. All rights reserved.
  *
  */
 @import url("../../yui-reset-font-grids_base-min.css");
@@ -322,7 +322,7 @@ form.search a {
         vertical-align: top;
 }
 form.search span.tip {
-        color: silver;
+        color: #606060;
         text-decoration: underline;
 }
 form.search table td.label {
