@@ -6346,7 +6346,7 @@ msgstr[0] "Esaminare il pacchetto che verrà interessato dagli aggiornamenti"
 msgstr[1] "Esaminare i pacchetti che verranno interessati dagli aggiornamenti"
 
 #: ../modules/gui/installupdate.py:1143 ../modules/gui/installupdate.py:1202
-msgid "No futher information available"
+msgid "No further information available"
 msgstr "Non sono disponibili ulteriori informazioni"
 
 #: ../modules/gui/installupdate.py:1147 ../modules/gui/installupdate.py:1193

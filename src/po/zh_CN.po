@@ -6346,7 +6346,7 @@ msgstr[0] "查看将受更新影响的该软件包"
 msgstr[1] "查看将受更新影响的软件包"
 
 #: ../modules/gui/installupdate.py:1143 ../modules/gui/installupdate.py:1202
-msgid "No futher information available"
+msgid "No further information available"
 msgstr "没有进一步的信息可用"
 
 #: ../modules/gui/installupdate.py:1147 ../modules/gui/installupdate.py:1193

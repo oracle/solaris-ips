@@ -1937,7 +1937,7 @@ msgid "Your system have been already updated."
 msgstr ""
 
 #: ../gui/modules/installupdate.py:572 ../gui/modules/installupdate.py:607
-msgid "No futher information available"
+msgid "No further information available"
 msgstr ""
 
 #: ../gui/modules/installupdate.py:575 ../gui/modules/installupdate.py:598

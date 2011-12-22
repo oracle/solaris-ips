@@ -2547,8 +2547,8 @@ msgstr[0] "Review the package which will be affected by Update all"
 msgstr[1] "Review the packages which will be affected by Update all"
 
 #: ../gui/modules/installupdate.py:824 ../gui/modules/installupdate.py:864
-msgid "No futher information available"
-msgstr "No futher information available"
+msgid "No further information available"
+msgstr "No further information available"
 
 #: ../gui/modules/installupdate.py:827 ../gui/modules/installupdate.py:855
 msgid ""

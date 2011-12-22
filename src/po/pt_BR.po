@@ -6346,7 +6346,7 @@ msgstr[0] "Rever o pacote que será afetado pelas atualizações"
 msgstr[1] "Rever os pacotes que serão afetados pelas atualizações"
 
 #: ../modules/gui/installupdate.py:1143 ../modules/gui/installupdate.py:1202
-msgid "No futher information available"
+msgid "No further information available"
 msgstr "Não há mais informações disponíveis"
 
 #: ../modules/gui/installupdate.py:1147 ../modules/gui/installupdate.py:1193

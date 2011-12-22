@@ -2526,7 +2526,7 @@ msgstr[0] "Revisar el paquet el qual estarà afectat per Actualitzar tot"
 msgstr[1] "Revisar els paquets els quals estaran afectats per Actualitzar tot"
 
 #: ../gui/modules/installupdate.py:824 ../gui/modules/installupdate.py:864
-msgid "No futher information available"
+msgid "No further information available"
 msgstr "No hi ha més informació disponible"
 
 #: ../gui/modules/installupdate.py:827 ../gui/modules/installupdate.py:855

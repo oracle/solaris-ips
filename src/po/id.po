@@ -2515,7 +2515,7 @@ msgstr[0] "Review paket yang akan terpengaruh oleh Perbaharui semua"
 msgstr[1] "Review paket-paket yang akan terpengaruh oleh Perbaharui semua"
 
 #: ../gui/modules/installupdate.py:824 ../gui/modules/installupdate.py:864
-msgid "No futher information available"
+msgid "No further information available"
 msgstr "Tidak ada informasi lebih lanjut yang tersedia"
 
 #: ../gui/modules/installupdate.py:827 ../gui/modules/installupdate.py:855

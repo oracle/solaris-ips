@@ -6346,7 +6346,7 @@ msgstr[0] "檢查受更新影響的套裝軟體"
 msgstr[1] "檢查受更新影響的套裝軟體"
 
 #: ../modules/gui/installupdate.py:1143 ../modules/gui/installupdate.py:1202
-msgid "No futher information available"
+msgid "No further information available"
 msgstr "未提供其他資訊"
 
 #: ../modules/gui/installupdate.py:1147 ../modules/gui/installupdate.py:1193

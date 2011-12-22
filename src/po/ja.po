@@ -6346,7 +6346,7 @@ msgstr[0] "「更新」によって影響を受けるパッケージを確認し
 msgstr[1] "「更新」によって影響を受けるパッケージを確認します"
 
 #: ../modules/gui/installupdate.py:1143 ../modules/gui/installupdate.py:1202
-msgid "No futher information available"
+msgid "No further information available"
 msgstr "利用できる詳細情報はありません"
 
 #: ../modules/gui/installupdate.py:1147 ../modules/gui/installupdate.py:1193

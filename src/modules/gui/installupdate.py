@@ -1140,7 +1140,7 @@ class InstallUpdate(progress.GuiProgressTracker):
 
         def __g_error_stage(self, msg):
                 if msg == None or len(msg) == 0:
-                        msg = _("No futher information available")
+                        msg = _("No further information available")
                 self.operations_done = True
                 self.operations_done_ex = True
                 self.stop_bouncing_progress()
@@ -1197,7 +1197,7 @@ class InstallUpdate(progress.GuiProgressTracker):
                             "bold","level1")
                         self.update_details_text("%s\n" % tracebk, "level2")
                 else:
-                        msg = _("No futher information available")
+                        msg = _("No further information available")
                         self.update_details_text("%s\n" % msg, "level2")
                 publisher_header = _("List of configured publishers:")
                 self.update_details_text("%s" % publisher_header,

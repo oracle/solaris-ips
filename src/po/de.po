@@ -6346,7 +6346,7 @@ msgstr[0] "Paket überprüfen, auf das sich die Updates auswirken"
 msgstr[1] "Pakete überprüfen, auf das sich die Updates auswirken"
 
 #: ../modules/gui/installupdate.py:1143 ../modules/gui/installupdate.py:1202
-msgid "No futher information available"
+msgid "No further information available"
 msgstr "Keine weiteren Informationen verfügbar"
 
 #: ../modules/gui/installupdate.py:1147 ../modules/gui/installupdate.py:1193

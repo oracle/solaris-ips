@@ -6346,7 +6346,7 @@ msgstr[0] "Vérifiez le package qui sera affecté par l'opération Mises à jour
 msgstr[1] "Vérifiez les packages qui seront affectés par l'opération Mises à jour"
 
 #: ../modules/gui/installupdate.py:1143 ../modules/gui/installupdate.py:1202
-msgid "No futher information available"
+msgid "No further information available"
 msgstr "Aucune autre information n'est disponible."
 
 #: ../modules/gui/installupdate.py:1147 ../modules/gui/installupdate.py:1193

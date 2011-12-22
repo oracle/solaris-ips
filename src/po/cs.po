@@ -2511,7 +2511,7 @@ msgstr[0] "Zkontrolujte balíčky, které budou dotčeny operací Aktualizovat V
 msgstr[1] "Zkontrolujte balíčky, které budou dotčeny operací Aktualizovat Vše"
 
 #: ../gui/modules/installupdate.py:824 ../gui/modules/installupdate.py:864
-msgid "No futher information available"
+msgid "No further information available"
 msgstr "Žádné další informace nejsou dostupné"
 
 #: ../gui/modules/installupdate.py:827 ../gui/modules/installupdate.py:855
