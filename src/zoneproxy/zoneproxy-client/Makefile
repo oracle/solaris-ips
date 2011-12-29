@@ -29,7 +29,6 @@ include ../Makefile.constants
 
 LDLIBS 				= -lsocket
 CPPFLAGS +=     -mt -D_REENTRANT -D_FILE_OFFSET_BITS=64
-LDFLAGS +=      -zassert-deflib=libthread.so
 
 .KEEP_STATE:
 

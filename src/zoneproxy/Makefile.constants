@@ -33,8 +33,7 @@ LINTFLAGS =	-asxm -u -errtags=yes -s -errsecurity=core -Xc99=%none
 CPPFLAGS =	-D_REENTRANT -I../zoneproxyd 
 CFLAGS =	-errtags=yes -errwarn=%all -features=conststrings -xO4 \
 		-W0,-xglobalstatic -Xa -xc99=%none -xildoff -xspace
-LDFLAGS =	-Bdirect -zassert-deflib=libc.so -zassert-deflib=libsocket.so \
-		-zfatal-warnings -zguidance -zstrip-class=nonalloc
+LDFLAGS =	-Bdirect -zfatal-warnings -zguidance -zstrip-class=nonalloc 
 LDLIBS =
 
 CLEANFILES =	$(PROG) $(OBJS)
