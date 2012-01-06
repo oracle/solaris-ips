@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2008, 2011, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2008, 2012, Oracle and/or its affiliates. All rights reserved.
 #
 
 import testutils
@@ -241,7 +241,7 @@ class TestPkgInstallBasics(pkg5unittest.SingleDepotTestCase):
                 api_inst = self.get_img_api_obj()
                 img_inst = api_inst.img
                 cache_dirs = []
-                for path, readonly, pub in img_inst.get_cachedirs():
+                for path, readonly, pub, layout in img_inst.get_cachedirs():
                         if os.path.exists(path):
                                 cache_dirs.extend(os.listdir(path))
                 self.assertEqual(cache_dirs, [])
@@ -286,7 +286,7 @@ class TestPkgInstallBasics(pkg5unittest.SingleDepotTestCase):
                 api_inst = self.get_img_api_obj()
                 img_inst = api_inst.img
                 cache_dirs = []
-                for path, readonly, pub in img_inst.get_cachedirs():
+                for path, readonly, pub, layout in img_inst.get_cachedirs():
                         if os.path.exists(path):
                                 cache_dirs.extend(os.listdir(path))
                 self.assertEqual(cache_dirs, [])
@@ -301,7 +301,7 @@ class TestPkgInstallBasics(pkg5unittest.SingleDepotTestCase):
                 # install (since flush-content-cache-on-success is True
                 # by default) for packages that have content.
                 cache_dirs = []
-                for path, readonly, pub in img_inst.get_cachedirs():
+                for path, readonly, pub, layout in img_inst.get_cachedirs():
                         if os.path.exists(path):
                                 cache_dirs.extend(os.listdir(path))
                 self.assertNotEqual(cache_dirs, [])
@@ -334,7 +334,7 @@ class TestPkgInstallBasics(pkg5unittest.SingleDepotTestCase):
                 api_inst = self.get_img_api_obj()
                 img_inst = api_inst.img
                 cache_dirs = []
-                for path, readonly, pub in img_inst.get_cachedirs():
+                for path, readonly, pub, layout in img_inst.get_cachedirs():
                         if os.path.exists(path):
                                 cache_dirs.extend(os.listdir(path))
                 self.assertEqual(cache_dirs, [])
@@ -346,7 +346,7 @@ class TestPkgInstallBasics(pkg5unittest.SingleDepotTestCase):
                 # install (since flush-content-cache-on-success is False)
                 # for packages that have content.
                 cache_dirs = []
-                for path, readonly, pub in img_inst.get_cachedirs():
+                for path, readonly, pub, layout in img_inst.get_cachedirs():
                         if os.path.exists(path):
                                 cache_dirs.extend(os.listdir(path))
                 self.assertNotEqual(cache_dirs, [])

@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2009, 2011, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2009, 2012, Oracle and/or its affiliates. All rights reserved.
 #
 
 import cStringIO
@@ -75,12 +75,17 @@ class TransportCfg(object):
                 self.pkg_pub_map = None
                 self.alt_pubs = None
 
-        def add_cache(self, path, pub=None, readonly=True):
+        def add_cache(self, path, layout=None, pub=None, readonly=True):
                 """Adds the directory specified by 'path' as a location to read
                 file data from, and optionally to store to for the specified
                 publisher. 'path' must be a directory created for use with the
                 pkg.file_manager module.  If the cache already exists for the
                 specified 'pub', its 'readonly' status will be updated.
+
+                'layout' is an optional FileManager layout object that indicates
+                how file content in the cache is structured.  If None, the
+                structure will automatically be determined at runtime for each
+                cache lookup request.
 
                 'pub' is an optional publisher prefix to restrict usage of this
                 cache to.  If not provided, it is assumed that file data for any
@@ -131,7 +136,8 @@ class TransportCfg(object):
                 else:
                         # Either no caches exist for this publisher, or this is
                         # a new cache.
-                        pub_caches.append(fm.FileManager(path, readonly))
+                        pub_caches.append(fm.FileManager(path, readonly,
+                            layouts=layout))
 
         def gen_publishers(self):
                 raise NotImplementedError
@@ -263,9 +269,29 @@ class TransportCfg(object):
                                                         # a different publisher,
                                                         # skip it.
                                                         continue
-                                                self.add_cache(rstore.file_root,
-                                                    pub=rstore.publisher,
-                                                    readonly=True)
+
+                                                # Only add caches if they
+                                                # physically exist at this
+                                                # point.  This avoids a storm of
+                                                # ENOENT errors that might occur
+                                                # during transfers for caches
+                                                # that will never exist on-disk.
+                                                # This is especially important
+                                                # for NFS-based repositories as
+                                                # they can significantly degrade
+                                                # transfer performance.  This
+                                                # should be ok as transport will
+                                                # attempt to retrieve any
+                                                # resources that might have been
+                                                # cached here instead and fail
+                                                # gracefully if necessary.
+                                                if os.path.exists(
+                                                    rstore.file_root):
+                                                        self.add_cache(
+                                                            rstore.file_root,
+                                                            layout=rstore.file_layout,
+                                                            pub=rstore.publisher,
+                                                            readonly=True)
                                 except (sr.RepositoryError, apx.ApiException):
                                         # Cache isn't currently valid, so skip
                                         # it for now.  This essentially defers
@@ -347,8 +373,9 @@ class ImageTransportCfg(TransportCfg):
                 TransportCfg.reset_caches(self, shared=True)
 
                 # Then add image-specific cache data after.
-                for path, readonly, pub in self.__img.get_cachedirs():
-                        self.add_cache(path, pub=pub, readonly=readonly)
+                for path, readonly, pub, layout in self.__img.get_cachedirs():
+                        self.add_cache(path, layout=layout, pub=pub,
+                            readonly=readonly)
 
         def __get_user_agent(self):
                 return misc.user_agent_str(self.__img,

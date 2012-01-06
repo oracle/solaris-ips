@@ -19,7 +19,7 @@
 #
 # CDDL HEADER END
 #
-# Copyright (c) 2008, 2011, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2008, 2012, Oracle and/or its affiliates. All rights reserved.
 
 import cStringIO
 import codecs
@@ -42,6 +42,7 @@ import pkg.client.progress as progress
 import pkg.client.publisher as publisher
 import pkg.config as cfg
 import pkg.file_layout.file_manager as file_manager
+import pkg.file_layout.layout as layout
 import pkg.fmri as fmri
 import pkg.indexer as indexer
 import pkg.lockfile as lockfile
@@ -266,13 +267,17 @@ class _RepoStore(object):
         intended only for use by the Repository class.
         """
 
-        def __init__(self, file_root=None, log_obj=None, mirror=False, pub=None,
-            read_only=False, root=None,
+        def __init__(self, file_layout=None, file_root=None, log_obj=None,
+            mirror=False, pub=None, read_only=False, root=None,
             sort_file_max_size=indexer.SORT_FILE_MAX_SIZE, writable_root=None):
                 """Prepare the repository for use."""
 
                 self.__catalog = None
                 self.__catalog_root = None
+                # FileManager supports multiple layouts, but realistically, it
+                # is desirable to only support one per repository format
+                # version.
+                self.__file_layout = file_layout
                 self.__file_root = None
                 self.__in_flight_trans = {}
                 self.__read_only = read_only
@@ -992,7 +997,7 @@ class _RepoStore(object):
                         return
 
                 self.cache_store = file_manager.FileManager(root,
-                    self.read_only)
+                    self.read_only, layouts=self.__file_layout)
 
         def __set_writable_root(self, root):
                 if root:
@@ -1815,6 +1820,7 @@ class _RepoStore(object):
                 return entry is not None
 
         catalog_root = property(lambda self: self.__catalog_root)
+        file_layout = property(lambda self: self.__file_layout)
         file_root = property(lambda self: self.__file_root)
         read_only = property(lambda self: self.__read_only, __set_read_only)
         root = property(lambda self: self.__root)
@@ -1991,13 +1997,14 @@ class Repository(object):
                 def_pub = self.cfg.get_property("publisher", "prefix")
                 if self.version == 4:
                         # For repository versions 4+, there is a repository
-                        # store for the top-level file root...
+                        # store for the top-level file root (and it must
+                        # be in V1 Layout)...
                         froot = self.file_root
                         if not froot:
                                 froot = os.path.join(self.root, "file")
-                        rstore = _RepoStore(file_root=froot,
-                            log_obj=self.log_obj, mirror=self.mirror,
-                            read_only=self.read_only)
+                        rstore = _RepoStore(file_layout=layout.V1Layout(),
+                            file_root=froot, log_obj=self.log_obj,
+                            mirror=self.mirror, read_only=self.read_only)
                         self.__rstores[rstore.publisher] = rstore
 
                         # ...and then one for each publisher if any are known.
@@ -2012,7 +2019,8 @@ class Repository(object):
                 else:
                         # For older repository versions, there is only one
                         # repository store, and it might have an associated
-                        # publisher prefix.
+                        # publisher prefix.  (This might be in a mix of V0 and
+                        # V1 layouts.)
                         rstore = _RepoStore(file_root=self.file_root,
                             log_obj=self.log_obj, pub=def_pub,
                             mirror=self.mirror,
@@ -2171,9 +2179,16 @@ class Repository(object):
                         # Ignore the file root if it's the default one.
                         froot = None
 
-                rstore = _RepoStore(file_root=froot, log_obj=self.log_obj,
-                    mirror=self.mirror, pub=pub, read_only=self.read_only,
-                    root=root,
+                file_layout = None
+                if self.version >= 4:
+                        # For version 4 and newer repositories, assume a V1
+                        # layout for file content.  Older repository formats
+                        # might use a mix of layouts.
+                        file_layout = layout.V1Layout()
+
+                rstore = _RepoStore(file_layout=file_layout, file_root=froot,
+                    log_obj=self.log_obj, mirror=self.mirror, pub=pub,
+                    read_only=self.read_only, root=root,
                     sort_file_max_size=self.__sort_file_max_size,
                     writable_root=writ_root)
                 self.__rstores[pub] = rstore

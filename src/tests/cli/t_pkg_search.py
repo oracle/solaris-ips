@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2008, 2010, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2008, 2012, Oracle and/or its affiliates. All rights reserved.
 #
 
 import testutils
@@ -372,7 +372,7 @@ set name=com.sun.service.incorporated_changes value="6556919 6627937"
                 img = self.get_img_api_obj().img
                 cache_dirs = [
                     path
-                    for path, readonly, pub in img.get_cachedirs()
+                    for path, readonly, pub, layout in img.get_cachedirs()
                 ]
                 for path in cache_dirs:
                         shutil.rmtree(path, ignore_errors=True)

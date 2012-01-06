@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2007, 2011, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2007, 2012, Oracle and/or its affiliates. All rights reserved.
 #
 
 import M2Crypto as m2
@@ -59,6 +59,7 @@ import pkg.client.publisher             as publisher
 import pkg.client.sigpolicy             as sigpolicy
 import pkg.client.transport.transport   as transport
 import pkg.config                       as cfg
+import pkg.file_layout.layout           as fl
 import pkg.fmri
 import pkg.lockfile                     as lockfile
 import pkg.manifest                     as manifest
@@ -1592,23 +1593,33 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                 return [ addslash(l.strip()) for l in file(f) ] + [p]
 
         def get_cachedirs(self):
-                """Returns a list of tuples of the form (dir, readonly, pub)
-                where 'dir' is the absolute path of the cache directory,
+                """Returns a list of tuples of the form (dir, readonly, pub,
+                layout) where 'dir' is the absolute path of the cache directory,
                 'readonly' is a boolean indicating whether the cache can
-                be written to, and 'pub' is the prefix of the publisher that
-                the cache directory should be used for.  If 'pub' is None, the
-                cache directory is intended for all publishers.
+                be written to, 'pub' is the prefix of the publisher that
+                the cache directory should be used for, and 'layout' is a
+                FileManager object used to access file content in the cache.
+                If 'pub' is None, the cache directory is intended for all
+                publishers.  If 'layout' is None, file content layout can
+                vary.
                 """
+
+                file_layout = None
+                if self.version >= 4:
+                        # Assume cache directories are in V1 Layout if image
+                        # format is v4+.
+                        file_layout = fl.V1Layout()
 
                 # Get all readonly cache directories.
                 cdirs = [
-                    (cdir, True, None)
+                    (cdir, True, None, file_layout)
                     for cdir in self.__read_cache_dirs
                 ]
 
                 # Get global write cache directory.
                 if self.__write_cache_dir:
-                        cdirs.append((self.__write_cache_dir, False, None))
+                        cdirs.append((self.__write_cache_dir, False, None,
+                            file_layout))
 
                 # For images newer than version 3, file data can be stored
                 # in the publisher's file root.
@@ -1619,7 +1630,8 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                                 if self.__write_cache_dir or \
                                     self.__write_cache_root:
                                         readonly = True
-                                cdirs.append((froot, readonly, pub.prefix))
+                                cdirs.append((froot, readonly, pub.prefix,
+                                    file_layout))
 
                                 if self.__write_cache_root:
                                         # Cache is a tree structure like
@@ -1627,7 +1639,8 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                                         froot = os.path.join(
                                             self.__write_cache_root, pub.prefix,
                                             "file")
-                                        cdirs.append((froot, False, pub.prefix))
+                                        cdirs.append((froot, False, pub.prefix,
+                                            file_layout))
 
                 return cdirs
 
@@ -3633,7 +3646,7 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                 PKG_CACHEROOT. """
 
                 if self.cfg.get_policy(imageconfig.FLUSH_CONTENT_CACHE):
-                        for path, readonly, pub in self.get_cachedirs():
+                        for path, readonly, pub, layout in self.get_cachedirs():
                                 if readonly or (self.__user_cache_dir and
                                     path.startswith(self.__user_cache_dir)):
                                         continue
