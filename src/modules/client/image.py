@@ -238,6 +238,7 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                 self.__lockfile = None
                 self.__sig_policy = None
                 self.__trust_anchors = None
+                self.__bad_trust_anchors = []
 
                 # cache for presence of boot-archive
                 self.__boot_archive = None
@@ -381,22 +382,41 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                                 pth = os.path.join(trust_anchor_loc, fn)
                                 if os.path.islink(pth):
                                         continue
-                                trusted_ca = m2.X509.load_cert(pth)
-                                # M2Crypto's subject hash doesn't match
-                                # openssl's subject hash so recompute it so all
-                                # hashes are in the same universe.
-                                s = trusted_ca.get_subject().as_hash()
-                                self.__trust_anchors.setdefault(s, [])
-                                self.__trust_anchors[s].append(trusted_ca)
+                                try:
+                                        trusted_ca = m2.X509.load_cert(pth)
+                                except m2.X509.X509Error, e:
+                                        self.__bad_trust_anchors.append(
+                                            (pth, str(e)))
+                                else:
+                                        # M2Crypto's subject hash doesn't match
+                                        # openssl's subject hash so recompute it
+                                        # so all hashes are in the same
+                                        # universe.
+                                        s = trusted_ca.get_subject().as_hash()
+                                        self.__trust_anchors.setdefault(s, [])
+                                        self.__trust_anchors[s].append(
+                                            trusted_ca)
                 for s in pkg_trust_anchors:
                         if s not in self.__trust_anchors:
                                 self.__trust_anchors[s] = pkg_trust_anchors[s]
                 return self.__trust_anchors
 
         @property
+        def bad_trust_anchors(self):
+                """A list of strings decribing errors encountered while parsing
+                trust anchors."""
+
+                return [_("%s is expected to be a certificate but could not be "
+                    "parsed.  The error encountered was:\n\t%s") % (p, e)
+                    for p, e in self.__bad_trust_anchors
+                ]
+
+        @property
         def write_cache_path(self):
                 """The path to the filesystem that holds the write cache--used
-                to compute whether sufficent space is available for downloads."""
+                to compute whether sufficent space is available for
+                downloads."""
+
                 return self.__user_cache_dir or \
                     os.path.join(self.imgdir, IMG_PUB_DIR)
 

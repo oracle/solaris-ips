@@ -2653,7 +2653,7 @@ class TestPkgSign(pkg5unittest.SingleDepotTestCase):
                 self.pkg("fix")
                 self.assert_("signature" not in self.errout)
 
-        def test_bug_19009(self):
+        def test_bug_19055(self):
                 plist = self.pkgsend_bulk(self.rurl1,
                     [self.example_pkg10, self.example_pkg20])
                 sign_args = "-k %(key)s -c %(cert)s -i %(ch1)s %(name)s" % {
@@ -2676,6 +2676,63 @@ class TestPkgSign(pkg5unittest.SingleDepotTestCase):
                                                 break
                         self.assert_(found, "%s was not signed." % pfmri)
 
+        def test_bug_19114_1(self):
+                """Test that an unparsable trust anchor which isn't needed
+                doesn't cause problems."""
+
+                plist = self.pkgsend_bulk(self.rurl1,
+                    [self.example_pkg10])
+                sign_args = "-k %(key)s -c %(cert)s -i %(ch1)s %(name)s" % {
+                        "name": " ".join(plist),
+                        "key": os.path.join(self.keys_dir,
+                            "cs1_ch1_ta3_key.pem"),
+                        "cert": os.path.join(self.cs_dir,
+                            "cs1_ch1_ta3_cert.pem"),
+                        "ch1": os.path.join(self.chain_certs_dir,
+                            "ch1_ta3_cert.pem")
+                }
+                self.pkgsign(self.rurl1, sign_args)
+                self.image_create(self.rurl1)
+                api_obj = self.get_img_api_obj()
+                self.seed_ta_dir("ta3")
+                # Create an empty file in the trust anchor directory
+                fh = open(os.path.join(self.ta_dir, "empty"), "wb")
+                fh.close()
+                # This install should succeed because the trust anchor needed to
+                # verify the certificate is still there.
+                self._api_install(api_obj, ["example_pkg"])
+
+        def test_bug_19114_2(self):
+                """Test that a unparsable trust anchor which is needed during
+                installation triggers the proper exception."""
+
+                plist = self.pkgsend_bulk(self.rurl1,
+                    [self.example_pkg10])
+                sign_args = "-k %(key)s -c %(cert)s -i %(ch1)s %(name)s" % {
+                        "name": " ".join(plist),
+                        "key": os.path.join(self.keys_dir,
+                            "cs1_ch1_ta3_key.pem"),
+                        "cert": os.path.join(self.cs_dir,
+                            "cs1_ch1_ta3_cert.pem"),
+                        "ch1": os.path.join(self.chain_certs_dir,
+                            "ch1_ta3_cert.pem")
+                }
+                self.pkgsign(self.rurl1, sign_args)
+                self.image_create(self.rurl1)
+                api_obj = self.get_img_api_obj()
+                self.seed_ta_dir("ta3")
+                # Replace the trust anchor with an empty file.
+                fh = open(os.path.join(self.ta_dir, "ta3_cert.pem"), "wb")
+                fh.close()
+                # This install should fail because the needed trust anchor has
+                # been emptied.
+                try:
+                        self._api_install(api_obj, ["example_pkg"])
+                except apx.BrokenChain, e:
+                        assert len(e.ext_exs) == 1
+                else:
+                        raise RuntimeError("Didn't get expected exception")
+                self.pkg("install example_pkg", exit=1)
 
 class TestPkgSignMultiDepot(pkg5unittest.ManyDepotTestCase):
         # Tests in this suite use the read only data directory.

@@ -241,6 +241,10 @@ class PkgPlan(object):
                                                 "check-certificate-revocation"))
                                 except apx.SigningException, e:
                                         e.pfmri = self.destination_fmri
+                                        if isinstance(e, apx.BrokenChain):
+                                                e.ext_exs.extend(
+                                                    self.image.bad_trust_anchors
+                                                    )
                                         raise
                 if can_exclude:
                         if self.__destination_mfst is not None:
