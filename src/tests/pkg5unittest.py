@@ -18,7 +18,7 @@
 # CDDL HEADER END
 #
 
-# Copyright (c) 2008, 2011, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2008, 2012, Oracle and/or its affiliates. All rights reserved.
 
 #
 # Define the basic classes that all test cases are inherited from.
@@ -2333,7 +2333,7 @@ class CliTestCase(Pkg5TestCase):
                         published = out
 
                 if retcode == 99:
-                        raise TracebackException(cmdline, out, comment)
+                        raise TracebackException(cmdline, out + errout, comment)
 
                 if retcode != exit:
                         raise UnexpectedExitCodeException(cmdline, exit,

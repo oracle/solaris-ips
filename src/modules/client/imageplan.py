@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2007, 2011, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2007, 2012, Oracle and/or its affiliates. All rights reserved.
 #
 
 from collections import defaultdict, namedtuple
@@ -32,6 +32,7 @@ import os
 import simplejson as json
 import sys
 import traceback
+import weakref
 
 from pkg.client import global_settings
 logger = global_settings.logger
@@ -1046,22 +1047,26 @@ class ImagePlan(object):
                 for pfmri in fmri_set:
                         yield pfmri
 
-        def gen_only_new_installed_pkgs(self):
-                """Generates all the fmris which are being installed (or fixed,
-                etc.)."""
+        def __gen_only_new_installed_info(self):
+                """Generates fmri-manifest pairs for all packages which are
+                being installed (or fixed, etc.)."""
                 assert self.state >= EVALUATED_PKGS
 
                 for p in self.pkg_plans:
                         if p.destination_fmri:
-                                yield p.destination_fmri
+                                assert p.destination_manifest
+                                yield p.destination_fmri, p.destination_manifest
 
-        def gen_outgoing_pkgs(self):
-                """Generates all the fmris which are being removed."""
+        def __gen_outgoing_info(self):
+                """Generates fmri-manifest pairs for all the packages which are
+                being removed."""
                 assert self.state >= EVALUATED_PKGS
 
                 for p in self.pkg_plans:
-                        if p.origin_fmri and p.origin_fmri != p.destination_fmri:
-                                yield p.origin_fmri
+                        if p.origin_fmri and \
+                            p.origin_fmri != p.destination_fmri:
+                                assert p.origin_manifest
+                                yield p.origin_fmri, p.origin_manifest
 
         def gen_new_installed_actions_bytype(self, atype, implicit_dirs=False):
                 """Generates actions of type 'atype' from the packages in the
@@ -1070,19 +1075,23 @@ class ImagePlan(object):
                 return self.__gen_star_actions_bytype(atype,
                     self.gen_new_installed_pkgs, implicit_dirs=implicit_dirs)
 
-        def gen_only_new_installed_actions_bytype(self, atype, implicit_dirs=False):
+        def gen_only_new_installed_actions_bytype(self, atype,
+            implicit_dirs=False, excludes=misc.EmptyI):
                 """Generates actions of type 'atype' from packages being
                 installed."""
 
-                return self.__gen_star_actions_bytype(atype,
-                    self.gen_only_new_installed_pkgs, implicit_dirs=implicit_dirs)
+                return self.__gen_star_actions_bytype_from_extant_manifests(
+                    atype, self.__gen_only_new_installed_info, excludes,
+                    implicit_dirs=implicit_dirs)
 
-        def gen_outgoing_actions_bytype(self, atype, implicit_dirs=False):
+        def gen_outgoing_actions_bytype(self, atype,
+            implicit_dirs=False, excludes=misc.EmptyI):
                 """Generates actions of type 'atype' from packages being
                 removed (not necessarily actions being removed)."""
 
-                return self.__gen_star_actions_bytype(atype,
-                    self.gen_outgoing_pkgs, implicit_dirs=implicit_dirs)
+                return self.__gen_star_actions_bytype_from_extant_manifests(
+                    atype, self.__gen_outgoing_info, excludes,
+                    implicit_dirs=implicit_dirs)
 
         def __gen_star_actions_bytype(self, atype, generator, implicit_dirs=False):
                 """Generate installed actions of type 'atype' from the package
@@ -1110,6 +1119,37 @@ class ImagePlan(object):
                                 for d in m.get_directories(self.__new_excludes):
                                         if d not in dirs:
                                                 yield da(path=d, implicit="true"), pfmri
+
+        def __gen_star_actions_bytype_from_extant_manifests(self, atype,
+            generator, excludes, implicit_dirs=False):
+                """Generate installed actions of type 'atype' from the package
+                manifests emitted by 'generator'.  'excludes' is a list of
+                variants and facets which should be excluded from the actions
+                generated.  If 'implicit_dirs' is True, then when 'atype' is
+                'dir', directories only implicitly delivered in the image will
+                be emitted as well."""
+
+                assert self.state >= EVALUATED_PKGS
+
+                # Don't bother accounting for implicit directories if we're not
+                # looking for them.
+                if implicit_dirs and atype != "dir":
+                        implicit_dirs = False
+
+                for pfmri, m in generator():
+                        dirs = set() # Keep track of explicit dirs
+                        for act in m.gen_actions_by_type(atype,
+                            excludes):
+                                if implicit_dirs:
+                                        dirs.add(act.attrs["path"])
+                                yield act, pfmri
+
+                        if implicit_dirs:
+                                da = pkg.actions.directory.DirectoryAction
+                                for d in m.get_directories(excludes):
+                                        if d not in dirs:
+                                                yield da(path=d,
+                                                    implicit="true"), pfmri
 
         def __get_directories(self):
                 """ return set of all directories in target image """
@@ -1481,6 +1521,214 @@ class ImagePlan(object):
 
                 return True
 
+        def __seed(self, gen_func, action_classes, excludes):
+                """Build a mapping from action keys to action, pfmri tuples for
+                a set of action types.
+
+                The 'gen_func' is a function which takes an action type and
+                'implicit_dirs' and returns action-pfmri pairs.
+
+                The 'action_classes' parameter is a list of action types."""
+
+                d = {}
+                for klass in action_classes:
+                        for a, pfmri in \
+                            gen_func(klass.name, implicit_dirs=True,
+                            excludes=excludes):
+                                self.__progtrack.evaluate_progress()
+                                d.setdefault(a.attrs[klass.key_attr],
+                                    []).append((a, pfmri))
+                return d
+
+        def __update_old(self, new, old, offset_dict, action_classes, sf,
+            gone_fmris, fmri_dict):
+                """Update the 'old' dictionary with all actions from the action
+                cache which could conflict with the newly actions delivered
+                actions contained in 'new.'
+
+                The 'offset_dict' parameter contains a mapping from key to
+                offsets into the actions.stripped file and the number of lines
+                to read.
+
+                The 'action_classes' parameter contains the list of action types
+                where one action can conflict with another action.
+
+                The 'sf' parameter is the actions.stripped file from which we
+                read the actual actions indicated by the offset dictionary
+                'offset_dict.'
+
+                The 'gone_fmris' parameter contains a set of strings
+                representing the packages which are being removed from the
+                system.
+
+                The 'fmri_dict' parameter is a cache of previously built PkgFmri
+                objects which is used so the same string isn't translated into
+                the same PkgFmri object multiple times."""
+
+                build_release = self.image.attrs["Build-Release"]
+
+                for key in set(itertools.chain(new.iterkeys(), old.keys())):
+                        offsets = []
+                        for klass in action_classes:
+                                offset = offset_dict.get((klass.name, key),
+                                    None)
+                                if offset is not None:
+                                        offsets.append(offset)
+
+                        for offset, cnt in offsets:
+                                sf.seek(offset)
+                                pns = None
+                                for i, line in enumerate(sf, start=1):
+                                        if i > cnt:
+                                                break
+                                        fmristr, actstr = \
+                                            line.rstrip().split(None, 1)
+                                        if fmristr in gone_fmris:
+                                                continue
+                                        act = pkg.actions.fromstr(actstr)
+                                        assert act.attrs[act.key_attr] == key
+                                        assert pns is None or \
+                                            act.namespace_group == pns
+                                        pns = act.namespace_group
+
+                                        try:
+                                                pfmri = fmri_dict[fmristr]
+                                        except KeyError:
+                                                pfmri = pkg.fmri.PkgFmri(
+                                                    fmristr,
+                                                    build_release)
+                                                fmri_dict[fmristr] = pfmri
+                                        old.setdefault(key, []).append(
+                                            (act, pfmri))
+
+        def __update_new(self, new, old, offset_dict, action_classes, sf,
+            gone_fmris, fmri_dict):
+                """Update 'new' with all the actions from the action cache which
+                are staying on the system and could conflict with the newly
+                installed actions.
+
+                The 'offset_dict' parameter contains a mapping from key to
+                offsets into the actions.stripped file and the number of lines
+                to read.
+
+                The 'action_classes' parameter contains the list of action types
+                where one action can conflict with another action.
+
+                The 'sf' parameter is the actions.stripped file from which we
+                read the actual actions indicated by the offset dictionary
+                'offset_dict.'
+
+                The 'gone_fmris' parameter contains a set of strings
+                representing the packages which are being removed from the
+                system.
+
+                The 'fmri_dict' parameter is a cache of previously built PkgFmri
+                objects which is used so the same string isn't translated into
+                the same PkgFmri object multiple times."""
+
+                # If we're not changing any fmris, as in the case of a
+                # change-facet/variant, revert, fix, or set-mediator, then we
+                # need to skip modifying new, as it'll just end up with
+                # incorrect duplicates.
+                if self.planned_op in (self.PLANNED_FIX,
+                    self.PLANNED_VARIANT, self.PLANNED_REVERT,
+                    self.PLANNED_MEDIATOR):
+                        return
+
+                build_release = self.image.attrs["Build-Release"]
+
+                for key in old.iterkeys():
+                        offsets = []
+                        for klass in action_classes:
+                                offset = offset_dict.get((klass.name, key),
+                                    None)
+                                if offset is not None:
+                                        offsets.append(offset)
+
+                        for offset, cnt in offsets:
+                                sf.seek(offset)
+                                pns = None
+                                for i, line in enumerate(sf, start=1):
+                                        if i > cnt:
+                                                break
+                                        fmristr, actstr = line.rstrip().split(
+                                            None, 1)
+                                        if fmristr in gone_fmris:
+                                                continue
+                                        act = pkg.actions.fromstr(actstr)
+                                        assert act.attrs[act.key_attr] == key
+                                        assert pns is None or \
+                                            act.namespace_group == pns
+                                        pns = act.namespace_group
+
+                                        try:
+                                                pfmri = fmri_dict[fmristr]
+                                        except KeyError:
+                                                pfmri = pkg.fmri.PkgFmri(
+                                                    fmristr, build_release)
+                                                fmri_dict[fmristr] = pfmri
+                                        new.setdefault(key, []).append(
+                                            (act, pfmri))
+
+        def __check_conflicts(self, new, old, offset_dict, action_classes, ns,
+            errs):
+                """Check all the newly installed actions for conflicts with
+                existing actions."""
+
+                for key, actions in new.iteritems():
+                        oactions = old.get(key, [])
+
+                        self.__progtrack.evaluate_progress()
+
+                        if len(actions) == 1 and len(oactions) < 2:
+                                continue
+
+                        # Actions delivering to the same point in a
+                        # namespace group's namespace should have the
+                        # same type.
+                        if type(ns) != int:
+                                if self.__process_conflicts(key,
+                                    self.__check_inconsistent_types,
+                                    actions, oactions,
+                                    api_errors.InconsistentActionTypeError,
+                                    errs):
+                                        continue
+
+                        # By virtue of the above check, all actions at
+                        # this point in this namespace are the same.
+                        assert(len(set(a[0].name for a in actions)) <= 1)
+                        assert(len(set(a[0].name for a in oactions)) <= 1)
+
+                        # Multiple non-refcountable actions delivered to
+                        # the same name is an error.
+                        if not actions[0][0].refcountable and \
+                            actions[0][0].globally_identical:
+                                if self.__process_conflicts(key,
+                                    self.__check_duplicate_actions,
+                                    actions, oactions,
+                                    api_errors.DuplicateActionError,
+                                    errs):
+                                        continue
+
+                        # Multiple refcountable but globally unique
+                        # actions delivered to the same name must be
+                        # identical.
+                        elif actions[0][0].globally_identical:
+                                if self.__process_conflicts(key,
+                                    self.__check_inconsistent_attrs,
+                                    actions, oactions,
+                                    api_errors.InconsistentActionAttributeError,
+                                    errs):
+                                        continue
+
+        def __clear_pkg_plans(self):
+                """Now that we're done reading the manifests, we can clear them
+                from the pkgplans."""
+
+                for p in self.pkg_plans:
+                        p.clear_dest_manifest()
+                        p.clear_origin_manifest()
+
         def __find_all_conflicts(self):
                 """Find all instances of conflicting actions.
 
@@ -1506,6 +1754,22 @@ class ImagePlan(object):
                 if DebugValues["broken-conflicting-action-handling"]:
                         return
 
+                errs = []
+
+                # Using strings instead of PkgFmri objects in sets allows for
+                # much faster performance.
+                new_fmris = set((str(s) for s in self.gen_new_installed_pkgs()))
+
+                # If we're removing all packages, there won't be any conflicts.
+                if not new_fmris:
+                        return
+
+                old_fmris = set((
+                    str(s) for s in self.image.gen_installed_pkgs()
+                ))
+                gone_fmris = old_fmris - new_fmris
+
+
                 # Group action types by namespace groups
                 kf = operator.attrgetter("namespace_group")
                 types = sorted(pkg.actions.types.itervalues(), key=kf)
@@ -1515,160 +1779,51 @@ class ImagePlan(object):
                     for ns, action_classes in itertools.groupby(types, kf)
                 )
 
-                errs = []
-
-                old_fmris = set(self.image.gen_installed_pkgs())
-                new_fmris = set(self.gen_new_installed_pkgs())
-                gone_fmris = old_fmris - new_fmris
-
-                # If we're removing all packages, there won't be any conflicts.
-                if not new_fmris:
-                        return
-
                 # Load information about the actions currently on the system.
-                actdict = self.image._load_actdict()
+                offset_dict = self.image._load_actdict()
                 sf = self.image._get_stripped_actions_file()
 
+                fmri_dict = weakref.WeakValueDictionary()
                 # Iterate over action types in namespace groups first; our first
                 # check should be for action type consistency.
                 for ns, action_classes in namespace_dict.iteritems():
                         # There's no sense in checking actions which have no
                         # limits
-                        if all(not c.globally_identical for c in action_classes):
+                        if all(not c.globally_identical
+                            for c in action_classes):
                                 continue
 
                         # The 'new' dict contains information about the system
                         # as it will be.  We start by accumulating actions from
                         # the manifests of the packages being installed.
-                        new = {}
-                        for klass in action_classes:
-                                for a, pfmri in self.gen_only_new_installed_actions_bytype(klass.name, implicit_dirs=True):
-                                        self.__progtrack.evaluate_progress()
-                                        new.setdefault(a.attrs[klass.key_attr], []).append((a, pfmri))
+                        new = self.__seed(
+                            self.gen_only_new_installed_actions_bytype,
+                            action_classes, self.__new_excludes)
 
                         # The 'old' dict contains information about the system
                         # as it is now.  We start by accumulating actions from
                         # the manifests of the packages being removed.
-                        old = {}
-                        for klass in action_classes:
-                                for a, pfmri in self.gen_outgoing_actions_bytype(klass.name, implicit_dirs=True):
-                                        self.__progtrack.evaluate_progress()
-                                        old.setdefault(a.attrs[klass.key_attr], []).append((a, pfmri))
+                        old = self.__seed(self.gen_outgoing_actions_bytype,
+                            action_classes, self.__old_excludes)
 
                         # Update 'old' with all actions from the action cache
                         # which could conflict with the new actions being
                         # installed, or with actions already installed, but not
                         # getting removed.
-                        for key in set(itertools.chain(new.iterkeys(), old.keys())):
-                                offsets = []
-                                for klass in action_classes:
-                                        offset = actdict.get((klass.name, key), None)
-                                        if offset is not None:
-                                                offsets.append(offset)
-
-                                for offset in offsets:
-                                        sf.seek(offset)
-                                        pns = None
-                                        for line in sf:
-                                                fmristr, actstr = line.rstrip().split(None, 1)
-                                                act = pkg.actions.fromstr(actstr)
-                                                if act.attrs[act.key_attr] != key:
-                                                        break
-                                                if pns is not None and \
-                                                    act.namespace_group != pns:
-                                                        break
-                                                pns = act.namespace_group
-                                                pfmri = pkg.fmri.PkgFmri(fmristr, "5.11")
-                                                if pfmri not in gone_fmris:
-                                                        old.setdefault(key, []).append((act, pfmri))
+                        self.__update_old(new, old, offset_dict, action_classes,
+                            sf, gone_fmris, fmri_dict)
 
                         # Now update 'new' with all actions from the action
                         # cache which are staying on the system, and could
                         # conflict with the actions being installed.
-                        for key in old.iterkeys():
-                                # If we're not changing any fmris, as in the
-                                # case of a change-facet/variant, revert, fix,
-                                # or set-mediator, then we need to skip modifying
-                                # new, as it'll just end up with incorrect
-                                # duplicates.
-                                if self.planned_op in (self.PLANNED_FIX,
-                                    self.PLANNED_VARIANT, self.PLANNED_REVERT,
-                                    self.PLANNED_MEDIATOR):
-                                        break
-                                offsets = []
-                                for klass in action_classes:
-                                        offset = actdict.get((klass.name, key), None)
-                                        if offset is not None:
-                                                offsets.append(offset)
+                        self.__update_new(new, old, offset_dict, action_classes,
+                            sf, gone_fmris, fmri_dict)
 
-                                for offset in offsets:
-                                        sf.seek(offset)
-                                        pns = None
-                                        for line in sf:
-                                                fmristr, actstr = line.rstrip().split(None, 1)
-                                                act = pkg.actions.fromstr(actstr)
-                                                if act.attrs[act.key_attr] != key:
-                                                        break
-                                                if pns is not None and \
-                                                    act.namespace_group != pns:
-                                                        break
-                                                pns = act.namespace_group
-                                                pfmri = pkg.fmri.PkgFmri(fmristr, "5.11")
-                                                if pfmri not in gone_fmris:
-                                                        new.setdefault(key, []).append((act, pfmri))
+                        self.__check_conflicts(new, old, offset_dict,
+                            action_classes, ns, errs)
 
-                        for key, actions in new.iteritems():
-                                offsets = []
-                                for klass in action_classes:
-                                        offset = actdict.get((klass.name, key), None)
-                                        if offset is not None:
-                                                offsets.append(offset)
-
-                                oactions = old.get(key, [])
-
-                                self.__progtrack.evaluate_progress()
-
-                                if len(actions) == 1 and len(oactions) < 2:
-                                        continue
-
-                                # Actions delivering to the same point in a
-                                # namespace group's namespace should have the
-                                # same type.
-                                if type(ns) != int:
-                                        if self.__process_conflicts(key,
-                                            self.__check_inconsistent_types,
-                                            actions, oactions,
-                                            api_errors.InconsistentActionTypeError,
-                                            errs):
-                                                continue
-
-                                # By virtue of the above check, all actions at
-                                # this point in this namespace are the same.
-                                assert(len(set(a[0].name for a in actions)) <= 1)
-                                assert(len(set(a[0].name for a in oactions)) <= 1)
-
-                                # Multiple non-refcountable actions delivered to
-                                # the same name is an error.
-                                if not actions[0][0].refcountable and \
-                                    actions[0][0].globally_identical:
-                                        if self.__process_conflicts(key,
-                                            self.__check_duplicate_actions,
-                                            actions, oactions,
-                                            api_errors.DuplicateActionError,
-                                            errs):
-                                                continue
-
-                                # Multiple refcountable but globally unique
-                                # actions delivered to the same name must be
-                                # identical.
-                                elif actions[0][0].globally_identical:
-                                        if self.__process_conflicts(key,
-                                            self.__check_inconsistent_attrs,
-                                            actions, oactions,
-                                            api_errors.InconsistentActionAttributeError,
-                                            errs):
-                                                continue
-
+                del fmri_dict
+                self.__clear_pkg_plans()
                 sf.close()
                 self.__evaluate_fixups()
 
@@ -1710,11 +1865,11 @@ class ImagePlan(object):
                 self.__cached_actions[(name, key)] = d
                 return self.__cached_actions[(name, key)]
 
-        def __get_manifest(self, pfmri, intent, all_variants=False):
+        def __get_manifest(self, pfmri, intent, use_excludes=False):
                 """Return manifest for pfmri"""
                 if pfmri:
                         return self.image.get_manifest(pfmri,
-                            all_variants=all_variants or self.__varcets_change,
+                            use_excludes=use_excludes or self.__varcets_change,
                             intent=intent)
                 else:
                         return manifest.NullFactoredManifest
@@ -1912,16 +2067,34 @@ class ImagePlan(object):
                 # No longer needed.
                 del prefetch_mfsts
 
+                same_excludes = self.__old_excludes == self.__new_excludes
+
                 for oldfmri, old_in, newfmri, new_in in eval_list:
                         pp = pkgplan.PkgPlan(self.image, self.__progtrack,
                             self.__check_cancel)
 
-                        pp.propose(
-                            oldfmri, self.__get_manifest(oldfmri, old_in),
-                            newfmri, self.__get_manifest(newfmri, new_in,
-                            all_variants=True))
+                        if oldfmri == newfmri:
+                                # When creating intent, we always prefer to send
+                                # the new intent over old intent (see
+                                # __create_intent), so it's not necessary to
+                                # touch the old manifest in this situation.
+                                m = self.__get_manifest(newfmri, new_in,
+                                    use_excludes=True)
+                                pp.propose(
+                                    oldfmri, m,
+                                    newfmri, m)
+                                can_exclude = same_excludes
+                        else:
+                                pp.propose(
+                                    oldfmri,
+                                    self.__get_manifest(oldfmri, old_in),
+                                    newfmri,
+                                    self.__get_manifest(newfmri, new_in,
+                                    use_excludes=True))
+                                can_exclude = True
 
-                        pp.evaluate(self.__old_excludes, self.__new_excludes)
+                        pp.evaluate(self.__old_excludes, self.__new_excludes,
+                            can_exclude=can_exclude)
 
                         self.pkg_plans.append(pp)
                         pp = None

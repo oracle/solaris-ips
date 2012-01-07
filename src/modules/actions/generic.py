@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2007, 2011, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2007, 2012, Oracle and/or its affiliates. All rights reserved.
 #
 
 """module describing a generic packaging object
@@ -681,9 +681,9 @@ class Action(object):
                 facets = []
 
                 for k in self.attrs.iterkeys():
-                        if k.startswith("variant."):
+                        if k[:8] == "variant.":
                                 variants.append(k)
-                        if k.startswith("facet."):
+                        if k[:6] == "facet.":
                                 facets.append(k)
                 return variants, facets
 

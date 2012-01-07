@@ -6751,6 +6751,27 @@ adm
             close
         """
 
+        pkg_tripledupfilea = """
+            open tripledupfilea@0,5.11-0
+            add set name=variant.foo value=one
+            add file tmp/file1 path=file owner=root group=other mode=0755
+            close
+        """
+
+        pkg_tripledupfileb = """
+            open tripledupfileb@0,5.11-0
+            add set name=variant.foo value=one value=two
+            add file tmp/file2 path=file owner=root group=other mode=0755
+            close
+        """
+
+        pkg_tripledupfilec = """
+            open tripledupfilec@0,5.11-0
+            add set name=variant.foo value=one value=two
+            add file tmp/file3 path=file owner=root group=other mode=0755
+            close
+        """
+
         misc_files = ["tmp/file1", "tmp/file2", "tmp/file3"]
 
         # Keep the depots around for the duration of the entire class
@@ -7436,6 +7457,20 @@ adm
                 self.pkg("change-facet devel=false")
                 self.pkg("install dupfilesf4")
                 self.pkg("change-facet devel=true", exit=1)
+
+        def test_change_variant_removes_package(self):
+                """Test that a change-variant that removes a package and
+                improves but doesn't fix a conflicting action situation is
+                allowed."""
+
+                self.image_create(self.rurl, variants={"variant.foo": "one"})
+                self.pkg("install tripledupfileb")
+                self.pkg("-D broken-conflicting-action-handling=1 install "
+                    "tripledupfilec")
+                self.pkg("-D broken-conflicting-action-handling=1 install "
+                    "tripledupfilea")
+                self.pkg("change-variant variant.foo=two")
+                self.pkg("change-variant variant.foo=one", exit=1)
 
         def dir_exists(self, path, mode=None, owner=None, group=None):
                 dir_path = os.path.join(self.get_img_path(), path)

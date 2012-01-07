@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2007, 2011, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2007, 2012, Oracle and/or its affiliates. All rights reserved.
 #
 
 import time
@@ -134,6 +134,13 @@ class PkgSolver(object):
                 self.__obs_set = None           #
                 self.__reject_set = set()       # set of stems we're rejecting
 
+                # Internal cache of created fmri objects.  Used so that the same
+                # PkgFmri doesn't need to be created more than once.  This isn't
+                # a weakref dictionary because in two of the four places where
+                # PkgFmri's are created, the name is extracted and the PkgFmri
+                # object is immediately discarded.
+                self.__fmridict = {}
+
                 assert isinstance(parent_pkgs, (type(None), frozenset))
                 self.__parent_pkgs = parent_pkgs
                 self.__parent_dict = dict()
@@ -194,6 +201,7 @@ class PkgSolver(object):
                 self.__start_time = None
                 self.__dep_dict = None
                 self.__dependents = None
+                self.__fmridict = {}
 
                 if DebugValues["plan"]:
                         # Remaining data must be kept.
@@ -832,13 +840,19 @@ class PkgSolver(object):
                 members works."""
 
                 solution_stems = set(f.pkg_name for f in solution)
-                tracked_stems = set([
-                    pkg.fmri.PkgFmri(a.attrs["fmri"], "5.11").pkg_name
-                    for fmri in solution
-                    for a in self.__get_dependency_actions(fmri, excludes=excludes,
-                        trim_invalid=False)
-                    if a.attrs["type"] == "group"
-                ])
+                tracked_stems = set()
+                for fmri in solution:
+                        for a in self.__get_dependency_actions(fmri,
+                            excludes=excludes, trim_invalid=False):
+                                if a.attrs["type"] != "group":
+                                        continue
+                                t = a.attrs["fmri"]
+                                try:
+                                        tmp = self.__fmridict[t]
+                                except KeyError:
+                                        tmp = pkg.fmri.PkgFmri(t)
+                                        self.__fmridict[t] = tmp
+                                tracked_stems.add(tmp.pkg_name)
 
                 self.__avoid_set |= (tracked_stems - solution_stems)
 
@@ -1159,8 +1173,8 @@ class PkgSolver(object):
 
                 fmris_by_name = dict(((pfmri.pkg_name, pfmri) for pfmri in fmris))
 
-                # figure out which renamed fmris have dependencies; compute transitively
-                # so we can handle multiple renames
+                # figure out which renamed fmris have dependencies; compute
+                # transitively so we can handle multiple renames
 
                 needs_processing = set(fmris) - renamed_fmris
                 already_processed = set()
@@ -1168,17 +1182,29 @@ class PkgSolver(object):
                 while needs_processing:
                         pfmri = needs_processing.pop()
                         already_processed.add(pfmri)
-                        for da in self.__get_dependency_actions(pfmri, excludes):
-                                if da.attrs["type"] not in ["incorporate", "optional", "origin"]:
+                        for da in self.__get_dependency_actions(
+                            pfmri, excludes):
+                                if da.attrs["type"] not in \
+                                    ("incorporate", "optional", "origin"):
                                         for f in da.attrlist("fmri"):
-                                                name = pkg.fmri.PkgFmri(f, "5.11").pkg_name
+                                                try:
+                                                        tmp = self.__fmridict[f]
+                                                except KeyError:
+                                                        tmp = pkg.fmri.PkgFmri(
+                                                            f, "5.11")
+                                                        self.__fmridict[f] = tmp
+                                                name = tmp.pkg_name
                                                 if name not in fmris_by_name:
                                                         continue
                                                 new_fmri = fmris_by_name[name]
-                                                # since new_fmri will not be treated as renamed, make sure
-                                                # we check any dependencies it has
-                                                if new_fmri not in already_processed:
-                                                        needs_processing.add(new_fmri)
+                                                # since new_fmri will not be
+                                                # treated as renamed, make sure
+                                                # we check any dependencies it
+                                                # has
+                                                if new_fmri not in \
+                                                    already_processed:
+                                                        needs_processing.add(
+                                                            new_fmri)
                                                 renamed_fmris.discard(new_fmri)
                 return set(fmris) - renamed_fmris
 
@@ -1267,7 +1293,15 @@ class PkgSolver(object):
                 conditional_list, dependency_type, required)"""
 
                 dtype = dependency_action.attrs["type"]
-                fmris = [pkg.fmri.PkgFmri(f, "5.11") for f in dependency_action.attrlist("fmri")]
+                fmris = []
+                for fmristr in dependency_action.attrlist("fmri"):
+                        try:
+                                fmri = self.__fmridict[fmristr]
+                        except KeyError:
+                                fmri = pkg.fmri.PkgFmri(fmristr, "5.11")
+                                self.__fmridict[fmristr] = fmri
+                        fmris.append(fmri)
+
                 fmri = fmris[0]
 
                 required = True     # true if match is required for containing pkg
@@ -1705,8 +1739,17 @@ class PkgSolver(object):
                             [catalog.Catalog.DEPENDENCY],
                             excludes=excludes):
                                 if d.name == "depend":
-                                        fmris = [pkg.fmri.PkgFmri(fl, "5.11") for fl in
-                                            d.attrlist("fmri")]
+                                        fmris = []
+                                        for fl in d.attrlist("fmri"):
+                                                try:
+                                                        tmp = self.__fmridict[
+                                                            fl]
+                                                except KeyError:
+                                                        tmp = pkg.fmri.PkgFmri(
+                                                            fl, "5.11")
+                                                        self.__fmridict[fl] = \
+                                                            tmp
+                                                fmris.append(tmp)
                                         if d.attrs["type"] == "incorporate":
                                                 incorps.add(f.pkg_name)
                                                 pkg_cons.setdefault(f, []).append(fmris[0])

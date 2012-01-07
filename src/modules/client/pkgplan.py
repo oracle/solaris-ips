@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2007, 2011, Oracle and/or its affiliates.  All rights reserved.
+# Copyright (c) 2007, 2012, Oracle and/or its affiliates.  All rights reserved.
 #
 
 import itertools
@@ -207,7 +207,8 @@ class PkgPlan(object):
                 if self.destination_fmri:
                         fmri_set.add(self.destination_fmri)
 
-        def evaluate(self, old_excludes=EmptyI, new_excludes=EmptyI):
+        def evaluate(self, old_excludes=EmptyI, new_excludes=EmptyI,
+            can_exclude=False):
                 """Determine the actions required to transition the package."""
 
                 # If new actions are being installed, check the destination
@@ -238,11 +239,18 @@ class PkgPlan(object):
                                             dest_pub, self.image.trust_anchors,
                                             self.image.cfg.get_policy(
                                                 "check-certificate-revocation"))
-                                        self.__destination_mfst.exclude_content(
-                                            new_excludes)
                                 except apx.SigningException, e:
                                         e.pfmri = self.destination_fmri
                                         raise
+                if can_exclude:
+                        if self.__destination_mfst is not None:
+                                self.__destination_mfst.exclude_content(
+                                    new_excludes)
+                        if self.__origin_mfst is not None and \
+                            self.__destination_mfst != self.__origin_mfst:
+                                self.__origin_mfst.exclude_content(old_excludes)
+                        old_excludes = EmptyI
+                        new_excludes = EmptyI
 
                 self.actions = self.__destination_mfst.difference(
                     self.__origin_mfst, old_excludes, new_excludes)
@@ -257,9 +265,6 @@ class PkgPlan(object):
                 # destination manifest when it isn't needed.
                 origin_dirs = expanddirs(self.__origin_mfst.get_directories(
                     old_excludes))
-
-                # No longer needed.
-                self.__origin_mfst = None
 
                 # Manifest.get_directories() returns implicit directories, which
                 # means that this computation ends up re-adding all the explicit
@@ -278,9 +283,6 @@ class PkgPlan(object):
                 self.pkg_summary = \
                     self.__destination_mfst.get("pkg.summary",
                     self.__destination_mfst.get("description", "none provided"))
-
-                # No longer needed.
-                self.__destination_mfst = None
 
                 # Add any install repair actions to the update list
                 self.actions.changed.extend(self.__repair_actions.get("install",
@@ -526,3 +528,17 @@ class PkgPlan(object):
                         return
 
                 self.image.recover(spath, full_destination)
+
+        @property
+        def destination_manifest(self):
+                return self.__destination_mfst
+
+        def clear_dest_manifest(self):
+                self.__destination_mfst = None
+
+        @property
+        def origin_manifest(self):
+                return self.__origin_mfst
+
+        def clear_origin_manifest(self):
+                self.__origin_mfst = None

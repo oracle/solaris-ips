@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2007, 2011, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2007, 2012, Oracle and/or its affiliates. All rights reserved.
 #
 
 from collections import namedtuple, defaultdict
@@ -90,6 +90,7 @@ class Manifest(object):
                 self.attributes = {} # package-wide attributes
                 self.signatures = EmptyDict
                 self._cache = {}
+                self.excludes = EmptyI
 
         def __str__(self):
                 r = ""
@@ -349,6 +350,9 @@ class Manifest(object):
                 """ return a list of directories implicitly or
                 explicitly referenced by this object"""
 
+                if self.excludes == excludes:
+                        excludes = EmptyI
+                assert excludes == EmptyI or self.excludes == EmptyI
                 try:
                         alist = self._cache["manifest.dircache"]
                 except KeyError:
@@ -374,6 +378,9 @@ class Manifest(object):
                 version, implementation).
                 """
 
+                if self.excludes == excludes:
+                        excludes = EmptyI
+                assert excludes == EmptyI or self.excludes == EmptyI
                 try:
                         alist = self._cache["manifest.mediatorcache"]
                 except KeyError:
@@ -410,6 +417,10 @@ class Manifest(object):
 
         def gen_actions(self, excludes=EmptyI):
                 """Generate actions in manifest through ordered callable list"""
+
+                if self.excludes == excludes:
+                        excludes = EmptyI
+                assert excludes == EmptyI or self.excludes == EmptyI
                 for a in self.actions:
                         for c in excludes:
                                 if not c(a):
@@ -420,6 +431,10 @@ class Manifest(object):
         def gen_actions_by_type(self, atype, excludes=EmptyI):
                 """Generate actions in the manifest of type "type"
                 through ordered callable list"""
+
+                if self.excludes == excludes:
+                        excludes = EmptyI
+                assert excludes == EmptyI or self.excludes == EmptyI
                 for a in self.actions_bytype.get(atype, []):
                         for c in excludes:
                                 if not c(a):
@@ -430,6 +445,7 @@ class Manifest(object):
         def gen_actions_by_types(self, atypes, excludes=EmptyI):
                 """Generate actions in the manifest of types "atypes"
                 through ordered callable list."""
+
                 for atype in atypes:
                         for a in self.gen_actions_by_type(atype,
                             excludes=excludes):
@@ -510,8 +526,9 @@ class Manifest(object):
                 representation of the manifest or an iterable of
                 action objects.
 
-                'excludes' is an optional list of variants to exclude from the
-                manifest.
+                'excludes' is optional.  If provided it must be a length two
+                list with the variants to be excluded as the first element and
+                the facets to be exclduded as the second element.
 
                 'pathname' is an optional filename containing the location of
                 the manifest content.
@@ -555,6 +572,10 @@ class Manifest(object):
 
                 for action in content:
                         self.add_action(action, excludes)
+                self.excludes = excludes
+                # Make sure that either no excludes were provided or that both
+                # variants and facet excludes were.
+                assert len(self.excludes) in (0, 2)
 
         def exclude_content(self, excludes):
                 """Remove any actions from the manifest which should be
@@ -879,8 +900,9 @@ class FactoredManifest(Manifest):
                 'contents' is an optional string to use as the contents of the
                 manifest if a cached copy does not already exist.
 
-                'excludes' is an optional list of excludes to apply to the
-                manifest after loading.
+                'excludes' is optional.  If provided it must be a length two
+                list with the variants to be excluded as the first element and
+                the facets to be exclduded as the second element.
 
                 'pathname' is an optional string containing the pathname of a
                 manifest.  If not provided, it is assumed that the manifest is
@@ -893,7 +915,9 @@ class FactoredManifest(Manifest):
                 Manifest.__init__(self, fmri)
                 self.__cache_root = cache_root
                 self.__pathname = pathname
-                self.excludes = excludes
+                # Make sure that either no excludes were provided or that both
+                # variants and facet excludes were.
+                assert len(self.excludes) in (0, 2)
                 self.loaded = False
 
                 # Do we have a cached copy?
@@ -1210,6 +1234,15 @@ class EmptyFactoredManifest(Manifest):
         @staticmethod
         def get_directories(excludes):
                 return []
+
+        def exclude_content(self, *args, **kwargs):
+                # This method is overridden so that self.excludes is never set
+                # on the singleton NullFactoredManifest.
+                return
+
+        def set_content(self, *args, **kwargs):
+                raise RuntimeError("Cannot call set_content on an "
+                    "EmptyFactoredManifest")
 
 NullFactoredManifest = EmptyFactoredManifest()
 

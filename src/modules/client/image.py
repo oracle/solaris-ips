@@ -258,6 +258,10 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                 # dependency but removed because obsolete
                 self.__group_obsolete = None
 
+                # The action dictionary that's returned by __load_actdict.
+                self.__actdict = None
+                self.__actdict_timestamp = None
+
                 self.__property_overrides = { "property": props }
 
                 # Transport operations for this image
@@ -2180,7 +2184,7 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                         sig_pol = self.signature_policy.combine(
                             pub.signature_policy)
 
-                manf = self.get_manifest(fmri, all_variants=True)
+                manf = self.get_manifest(fmri, use_excludes=True)
                 sigs = list(manf.gen_actions_by_type("signature",
                     self.list_excludes()))
                 if sig_pol and (sigs or sig_pol.name != "ignore"):
@@ -2311,7 +2315,7 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                         logger.info("Repairing: %-50s" % fmri.get_pkg_stem())
                         # Need to get all variants otherwise evaluating the
                         # pkgplan will fail in signature verification.
-                        m = self.get_manifest(fmri, all_variants=True)
+                        m = self.get_manifest(fmri, use_excludes=True)
                         pp = pkgplan.PkgPlan(self, progtrack, lambda: False)
                         pp.propose_repair(fmri, m, actions, [])
                         pp.evaluate(self.list_excludes(), self.list_excludes())
@@ -2450,18 +2454,19 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                             intent, pub=alt_pub)
                 return ret
 
-        def get_manifest(self, fmri, all_variants=False, intent=None,
+        def get_manifest(self, fmri, use_excludes=False, intent=None,
             alt_pub=None):
                 """return manifest; uses cached version if available.
-                all_variants controls whether manifest contains actions
+                use_excludes controls whether manifest contains actions
                 for all variants"""
 
                 # Normally elide other arch variants, facets
 
-                if all_variants:
+                if use_excludes:
                         excludes = EmptyI
                 else:
-                        excludes = [ self.cfg.variants.allow_action ]
+                        excludes = [self.cfg.variants.allow_action,
+                            self.cfg.facets.allow_action]
 
                 try:
                         m = self.__get_manifest(fmri, excludes=excludes,
@@ -2711,7 +2716,7 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                 entry = cat.get_entry(f)
                 states = entry["metadata"]["states"]
                 if self.PKG_STATE_V1 not in states:
-                        return self.get_manifest(f, all_variants=True)
+                        return self.get_manifest(f, use_excludes=True)
                 return
 
         def __get_catalog(self, name):
@@ -3398,6 +3403,8 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                 given offset and read until you hit an action that doesn't
                 match."""
 
+                self.__actdict = None
+                self.__actdict_timestamp = None
                 stripped_path = os.path.join(self.__action_cache_dir,
                     "actions.stripped")
                 offsets_path = os.path.join(self.__action_cache_dir,
@@ -3409,7 +3416,7 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                 from heapq import heappush, heappop
 
                 for pfmri in self.gen_installed_pkgs():
-                        m = self.get_manifest(pfmri, all_variants=True)
+                        m = self.get_manifest(pfmri, use_excludes=True)
                         for act in m.gen_actions(excludes):
                                 if not act.globally_identical:
                                         continue
@@ -3437,21 +3444,43 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                         of = os.fdopen(of, "wb")
 
                         # We need to make sure the files are coordinated.
-                        t = int(time.time())
-                        sf.write("VERSION 1\n%s\n" % t)
-                        of.write("VERSION 1\n%s\n" % t)
+                        timestamp = int(time.time())
+                        sf.write("VERSION 1\n%s\n" % timestamp)
+                        of.write("VERSION 2\n%s\n" % timestamp)
 
-                        last_name, last_key = None, None
+                        last_name, last_key, last_offset = None, None, sf.tell()
+                        cnt = 0
                         while heap:
                                 item = heappop(heap)
                                 fmri, act = item[2:]
-                                offset = sf.tell()
-                                sf.write("%s %s\n" % (fmri, act))
                                 key = act.attrs[act.key_attr]
                                 if act.name != last_name or key != last_key:
-                                        of.write("%s %s %s\n" % (act.name, offset, key))
-                                        actdict[(act.name, key)] = offset
-                                        last_name, last_key = act.name, key
+                                        if last_name is None:
+                                                assert last_key is None
+                                                cnt += 1
+                                                last_name = act.name
+                                                last_key = key
+                                        else:
+                                                assert cnt > 0
+                                                of.write("%s %s %s %s\n" %
+                                                    (last_name, last_offset,
+                                                    cnt, last_key))
+                                                actdict[(last_name, last_key)] = last_offset, cnt
+                                                last_name, last_key, last_offset = \
+                                                    act.name, key, sf.tell()
+                                                cnt = 1
+                                else:
+                                        cnt += 1
+                                sf.write("%s %s\n" % (fmri, act))
+                        if last_name is not None:
+                                assert last_key is not None
+                                assert last_offset is not None
+                                assert cnt > 0
+                                of.write("%s %s %s %s\n" %
+                                    (last_name, last_offset, cnt, last_key))
+                                actdict[(last_name, last_key)] = \
+                                    last_offset, cnt
+
                         sf.close()
                         of.close()
                         os.chmod(sp, misc.PKG_FILE_MODE)
@@ -3463,7 +3492,7 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                         except:
                                 if isinstance(e, KeyboardInterrupt):
                                         raise
-                                return actdict
+                                return actdict, timestamp
                         if isinstance(e, KeyboardInterrupt):
                                 raise
                         return
@@ -3474,7 +3503,7 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                 try:
                         portable.rename(sp, stripped_path)
                         portable.rename(op, offsets_path)
-                        return actdict
+                        return actdict, timestamp
                 except EnvironmentError, e:
                         if e.errno == errno.EACCES or e.errno == errno.EROFS:
                                 self.__action_cache_dir = self.temporary_dir()
@@ -3484,7 +3513,7 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                                     self.__action_cache_dir, "actions.offsets")
                                 portable.rename(sp, stripped_path)
                                 portable.rename(op, offsets_path)
-                                return actdict
+                                return actdict, timestamp
                         try:
                                 os.unlink(stripped_path)
                                 os.unlink(offsets_path)
@@ -3496,42 +3525,53 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                 and return the dictionary mapping action name and key value to
                 offset."""
 
-                actdict = {}
-
                 try:
                         of = open(os.path.join(self.__action_cache_dir,
                             "actions.offsets"), "rb")
                 except IOError, e:
                         if e.errno != errno.ENOENT:
                                 raise
-
-                        actdict = self._create_fast_lookups()
+                        actdict, otimestamp = self._create_fast_lookups()
                         if actdict is not None:
+                                self.__actdict = actdict
+                                self.__actdict_timestamp = otimestamp
                                 return actdict
 
                 # Make sure the files are paired, and try to create them if not.
                 oversion = of.readline().rstrip()
                 otimestamp = of.readline().rstrip()
-                sversion, stimestamp = self._get_stripped_actions_file(internal=True)
+
+                if self.__actdict and otimestamp == self.__actdict_timestamp:
+                        return self.__actdict
+
+                sversion, stimestamp = self._get_stripped_actions_file(
+                    internal=True)
 
                 # If we recognize neither file's version or their timestamps
                 # don't match, then we blow them away and try again.
-                if oversion != "VERSION 1" or sversion != "VERSION 1" or \
+                if oversion != "VERSION 2" or sversion != "VERSION 1" or \
                     stimestamp != otimestamp:
                         of.close()
-                        actdict = self._create_fast_lookups()
+                        actdict, otimestamp = self._create_fast_lookups()
                         if actdict is not None:
+                                self.__actdict = actdict
+                                self.__actdict_timestamp = otimestamp
                                 return actdict
                         of = file(os.path.join(self.__action_cache_dir,
                             "actions.offsets"), "rb")
                         oversion = of.readline().rstrip()
                         otimestamp = of.readline().rstrip()
 
+                actdict = {}
+
                 for line in of:
-                        actname, offset, key_attr = line.rstrip().split(None, 2)
-                        actdict[(actname, key_attr)] = int(offset)
+                        actname, offset, cnt, key_attr = \
+                            line.rstrip().split(None, 3)
+                        actdict[(actname, key_attr)] = (int(offset), int(cnt))
 
                 of.close()
+                self.__actdict = actdict
+                self.__actdict_timestamp = otimestamp
                 return actdict
 
         def _get_stripped_actions_file(self, internal=False):

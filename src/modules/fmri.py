@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2007, 2011, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2007, 2012, Oracle and/or its affiliates. All rights reserved.
 #
 
 import fnmatch
@@ -112,7 +112,7 @@ class PkgFmri(object):
         # Stored in a class variable so that subclasses can override
         valid_pkg_name = g_valid_pkg_name
 
-        __slots__ = ["version", "publisher", "pkg_name", "_hash"]
+        __slots__ = ["version", "publisher", "pkg_name", "_hash", "__weakref__"]
 
         def __init__(self, fmri, build_release=None, publisher=None):
                 fmri = fmri.rstrip()

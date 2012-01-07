@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2008, 2011, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2008, 2012, Oracle and/or its affiliates. All rights reserved.
 #
 
 """This module provides the supported, documented interface for clients to
@@ -4253,7 +4253,8 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                 """Returns the Manifest object for the given package FMRI.
 
                 'all_variants' is an optional boolean value indicating whther
-                the manifest should include metadata for all variants.
+                the manifest should include metadata for all variants and
+                facets.
 
                 'repos' is a list of URI strings or RepositoryURI objects that
                 represent the locations of additional sources of package data to
@@ -4266,7 +4267,7 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                             self.__get_alt_pkg_data(repos)
                         alt_pub = pkg_pub_map.get(pfmri.publisher, {}).get(
                             pfmri.pkg_name, {}).get(str(pfmri.version), None)
-                return self._img.get_manifest(pfmri, all_variants=all_variants,
+                return self._img.get_manifest(pfmri, use_excludes=all_variants,
                     alt_pub=alt_pub)
 
         @staticmethod

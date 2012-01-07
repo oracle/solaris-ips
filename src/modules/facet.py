@@ -20,13 +20,15 @@
 # CDDL HEADER END
 #
 
-# Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
-# Use is subject to license terms.
+#
+# Copyright (c) 2007, 2012, Oracle and/or its affiliates. All rights reserved.
+#
 
 # basic facet support
 
 from pkg.misc import EmptyI
 import fnmatch
+import re
 
 class Facets(dict):
         # store information on facets; subclass dict 
@@ -39,6 +41,7 @@ class Facets(dict):
         def __init__(self, init=EmptyI):
                 dict.__init__(self)
                 self.__keylist = []
+                self.__res = {}
                 for i in init:
                         self[i] = init[i]
 
@@ -60,6 +63,8 @@ class Facets(dict):
                         self.__keylist.append(item)
                         self.__keylist.sort(cmp=lambda x, y: len(y) - len(x))
                 dict.__setitem__(self, item, value)
+                self.__res[item] = re.compile(fnmatch.translate(item))
+
 
         def __getitem__(self, item):
                 """implement facet lookup algorithm here"""
@@ -69,7 +74,7 @@ class Facets(dict):
                 if item in self:
                         return dict.__getitem__(self, item)
                 for k in self.__keylist:
-                        if fnmatch.fnmatch(item, k):
+                        if self.__res[k].match(item):
                                 return dict.__getitem__(self, k)
 
                 return True # be inclusive
@@ -77,12 +82,14 @@ class Facets(dict):
         def __delitem__(self, item):
                 dict.__delitem__(self, item)
                 self.__keylist.remove(item)
+                del self.__res[item]
 
         def pop(self, item, *args, **kwargs):
                 assert len(args) == 0 or (len(args) == 1 and
                     "default" not in kwargs)
                 try:
                         self.__keylist.remove(item)
+                        del self.__res[item]
                 except ValueError:
                         if not args and "default" not in kwargs:
                                 raise
@@ -94,6 +101,7 @@ class Facets(dict):
         def popitem(self):
                 popped = dict.popitem(self)
                 self.__keylist.remove(popped[0])
+                del self.__res[popped]
                 return popped
 
         def setdefault(self, item, default=None):
@@ -123,6 +131,7 @@ class Facets(dict):
 
         def clear(self):
                 self.__keylist = []
+                self.__res = []
                 dict.clear(self)
 
         def allow_action(self, action):
