@@ -226,10 +226,16 @@ class TestPkgPublisherBasics(pkg5unittest.SingleDepotTestCase):
 
                 self.pkg("set-publisher --no-refresh --set-property "
                     "signature-policy=ignore test1")
+                self.pkg("publisher test1")
+                self.assert_("signature-policy = ignore" in self.output)
                 self.pkg("set-publisher --no-refresh --set-property foo=bar "
                     "test1")
+                self.pkg("publisher test1")
+                self.assert_("foo = bar" in self.output)
                 self.pkg("set-publisher --no-refresh  --remove-property-value "
                     "foo=baz test1", exit=1)
+                self.pkg("publisher test1")
+                self.assert_("foo = bar" in self.output)
                 self.pkg("set-publisher --no-refresh  --set-property "
                     "signature-policy=require-names test1", exit=1)
                 self.pkg("set-publisher --no-refresh --remove-property-value "
@@ -395,6 +401,31 @@ class TestPkgPublisherBasics(pkg5unittest.SingleDepotTestCase):
                                             "%s and %s as revoked certs. "
                                             "Output was:\n%s" % (rev1_h,
                                             rev2_h, self.output))
+
+        def test_publisher_properties(self):
+                """Test that properties set on publishers are correctly
+                displayed in the output of pkg publisher <publisher name>."""
+
+                self.image_create(self.rurl)
+                self.pkg("publisher test")
+                self.assert_("Properties:" not in self.output)
+
+                self.pkg("set-publisher --set-property foo=bar test")
+                self.pkg("publisher test")
+                self.assert_("Properties:" in self.output)
+                self.assert_("foo = bar" in self.output)
+
+                self.pkg("set-publisher --set-property "
+                    "signature-policy=require-names --add-property-value "
+                    "signature-required-names=n1 test")
+                self.pkg("publisher test")
+                self.assert_("signature-policy = require-names" in self.output)
+                self.assert_("signature-required-names = n1" in self.output)
+
+                self.pkg("set-publisher --add-property-value "
+                    "signature-required-names=n2 test")
+                self.pkg("publisher test")
+                self.assert_("signature-required-names = n1, n2" in self.output)
 
 
 class TestPkgPublisherMany(pkg5unittest.ManyDepotTestCase):

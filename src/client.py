@@ -4707,13 +4707,18 @@ def publisher_list(api_inst, args):
                                 msg(_("              Enabled:"), _("No"))
                         else:
                                 msg(_("              Enabled:"), _("Yes"))
-                        msg(_("     Signature Policy:"), pub.signature_policy.name)
-                        if "signature-required-names" in pub.properties:
-                                names = pub.properties["signature-required-names"]
-                                if names:
-                                        msg(_("  Sig. Required Names:"), names[0])
-                                        for n in names[1:]:
-                                                msg(_("                     :"), n)
+                        pub_items = sorted(pub.properties.iteritems())
+                        property_padding = "                      "
+                        properties_displayed = False
+                        for k, v in pub_items:
+                                if not v:
+                                        continue
+                                if not properties_displayed:
+                                        msg(_("           Properties:"))
+                                        properties_displayed = True
+                                if not isinstance(v, basestring):
+                                        v = ", ".join(sorted(v))
+                                msg(property_padding, k + " =", str(v))
         return retcode
 
 def property_add_value(api_inst, args):
