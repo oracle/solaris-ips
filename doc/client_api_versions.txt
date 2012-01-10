@@ -1,3 +1,11 @@
+Version 71:
+Compatible with clients using versions 66-70.
+
+    pkg.client.api_errors has changed as follows:
+
+        * Added UnprivilegedUserError to indicate when the current user
+          does not have sufficient privileges to modify the image.
+
 Version 70:
 Compatible with clients using versions 66-69.
 

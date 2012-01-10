@@ -380,6 +380,16 @@ class FileInUseException(PermissionsException):
                     "operation again.") % self.path
 
 
+class UnprivilegedUserError(PermissionsException):
+        def __init__(self, path):
+                PermissionsException.__init__(self, path)
+
+        def __str__(self):
+                return _("Insufficient access to complete the requested "
+                    "operation.\nPlease try the operation again as a "
+                    "privileged user.")
+
+
 class ReadOnlyFileSystemException(PermissionsException):
         """Used to indicate that the operation was attempted on a
         read-only filesystem"""

@@ -87,7 +87,7 @@ except KeyboardInterrupt:
         import sys
         sys.exit(1)
 
-CLIENT_API_VERSION = 70
+CLIENT_API_VERSION = 71
 PKG_CLIENT_NAME = "pkg"
 
 JUST_UNKNOWN = 0
@@ -1475,11 +1475,11 @@ Cannot remove '%s' due to the following packages that depend on it:"""
                         return EXIT_BADOPT
                 return EXIT_OOPS
 
-        if e_type in (api_errors.CertificateError,
+        if isinstance(e, (api_errors.CertificateError,
             api_errors.UnknownErrors,
             api_errors.PermissionsException,
             api_errors.InvalidPropertyValue,
-            api_errors.InvalidResourceLocation):
+            api_errors.InvalidResourceLocation)):
                 # Prepend a newline because otherwise the exception will
                 # be printed on the same line as the spinner.
                 error("\n" + str(e), cmd=op)

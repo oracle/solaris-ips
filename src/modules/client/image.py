@@ -488,7 +488,7 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                         if e.errno == errno.ENOENT:
                                 return
                         if e.errno == errno.EACCES:
-                                exc = apx.PermissionsException(e.filename)
+                                exc = apx.UnprivilegedUserError(e.filename)
                         elif e.errno == errno.EROFS:
                                 exc = apx.ReadOnlyFileSystemException(
                                     e.filename)

@@ -77,8 +77,8 @@ from pkg.client.debugvalues import DebugValues
 from pkg.client.pkgdefs import *
 from pkg.smf import NonzeroExitException
 
-CURRENT_API_VERSION = 70
-COMPATIBLE_API_VERSIONS = frozenset([66, 67, 68, 69, CURRENT_API_VERSION])
+CURRENT_API_VERSION = 71
+COMPATIBLE_API_VERSIONS = frozenset([66, 67, 68, 69, 70, CURRENT_API_VERSION])
 CURRENT_P5I_VERSION = 1
 
 # Image type constants.
