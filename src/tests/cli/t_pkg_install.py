@@ -6772,6 +6772,16 @@ adm
             close
         """
 
+        pkg_variantedtypes = """
+            open vpath@0,5.11-0
+            add set name=variant.foo value=one value=two
+            add dir group=bin mode=0755 owner=root path=boot/platform \
+                variant.foo=two
+            add link path=boot/platform target=../platform variant.foo=one
+
+            close
+        """
+
         misc_files = ["tmp/file1", "tmp/file2", "tmp/file3"]
 
         # Keep the depots around for the duration of the entire class
@@ -7607,6 +7617,14 @@ adm
                 # Two dependencies of different types on an identical versioned
                 # fmri
                 self.pkg("install dupdepend4")
+
+        def test_varianted_types(self):
+                """Test that actions which would otherwise conflict but are
+                delivered under different variants don't conflict."""
+
+                self.pkg_image_create(repourl=self.rurl,
+                    additional_args="--variant foo=one")
+                self.pkg("install vpath")
 
 
 if __name__ == "__main__":

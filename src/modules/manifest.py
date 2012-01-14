@@ -528,7 +528,7 @@ class Manifest(object):
 
                 'excludes' is optional.  If provided it must be a length two
                 list with the variants to be excluded as the first element and
-                the facets to be exclduded as the second element.
+                the facets to be excluded as the second element.
 
                 'pathname' is an optional filename containing the location of
                 the manifest content.
@@ -546,6 +546,7 @@ class Manifest(object):
                 self.variants = {}
                 self.facets = {}
                 self.attributes = {}
+                self._cache = {}
 
                 # So we could build up here the type/key_attr dictionaries like
                 # sdict and odict in difference() above, and have that be our
@@ -1065,8 +1066,12 @@ class FactoredManifest(Manifest):
                 try:
                         with open(mpath, "rb") as f:
                                 self._cache[name] = [
-                                    actions.fromstr(s.strip())
-                                    for s in f
+                                    a for a in
+                                    (
+                                        actions.fromstr(s.strip())
+                                        for s in f
+                                    )
+                                    if a.include_this(self.excludes)
                                 ]
                 except EnvironmentError, e:
                         raise apx._convert_error(e)
@@ -1090,7 +1095,7 @@ class FactoredManifest(Manifest):
                                 yield a
                         return
 
-                # This checks if we've already written out the factorerd
+                # This checks if we've already written out the factored
                 # manifest files.  If so, we'll use it, and if not, then
                 # we'll load the full manifest.
                 mpath = self.__cache_path("manifest.dircache")
@@ -1105,6 +1110,10 @@ class FactoredManifest(Manifest):
                             excludes):
                                 yield a
                 else:
+                        if excludes == EmptyI:
+                                excludes = self.excludes
+                        assert excludes == self.excludes or \
+                            self.excludes == EmptyI
                         # we have a cached copy - use it
                         mpath = self.__cache_path("manifest.%s" % atype)
 

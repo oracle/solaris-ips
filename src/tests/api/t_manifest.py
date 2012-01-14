@@ -21,7 +21,7 @@
 # CDDL HEADER END
 #
 
-# Copyright (c) 2008, 2011, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2008, 2012, Oracle and/or its affiliates. All rights reserved.
 
 import unittest
 import tempfile
@@ -35,6 +35,7 @@ import pkg.client.api_errors as api_errors
 import pkg.manifest as manifest
 import pkg.actions as actions
 import pkg.fmri as fmri
+import pkg.variant as variant
 
 # Set the path so that modules above can be found
 path_to_parent = os.path.join(os.path.dirname(__file__), "..")
@@ -385,6 +386,31 @@ dir mode=0755 owner=bin group=sys path=usr
                 output2 = "".join(m2.as_lines())
                 self.assertEqualDiff(output1, output2)
                 self.assertEqualDiff(m1.signatures, m2.signatures)
+
+
+class TestFactoredManifest(pkg5unittest.Pkg5TestCase):
+
+        def setUp(self):
+                pkg5unittest.Pkg5TestCase.setUp(self)
+                self.cache_dir = tempfile.mkdtemp()
+
+        def test_cached_gen_actions_by_type(self):
+                """Test that when a factored manifest generates actions by type
+                from its cached source, it takes the excluded content into
+                account."""
+
+                contents = """\
+                    set name=pkg.fmri value=pkg:/bar@1
+                    set name=variant.foo value=one value=two
+                    dir path=one group=sys owner=root variant.foo=one
+                    dir path=two group=sys owner=root variant.foo=two
+                """
+                m1 = manifest.FactoredManifest("bar@1", self.cache_dir,
+                    contents=contents)
+                self.assertEqual(len(list(m1.gen_actions_by_type("dir"))), 2)
+                v = variant.Variants({"variant.foo":"one"})
+                m1.exclude_content([v.allow_action, lambda x: True])
+                self.assertEqual(len(list(m1.gen_actions_by_type("dir"))), 1)
 
 
 if __name__ == "__main__":
