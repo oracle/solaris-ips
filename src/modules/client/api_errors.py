@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2008, 2011, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2008, 2012, Oracle and/or its affiliates. All rights reserved.
 #
 
 import errno
@@ -977,7 +977,7 @@ class BadCatalogPermissions(CatalogError):
         def __str__(self):
                 msg = _("The following catalog files have incorrect "
                     "permissions:\n")
-                for f in self._args:
+                for f in self.data:
                         fname, emode, fmode = f
                         msg += _("\t%(fname)s: expected mode: %(emode)s, found "
                             "mode: %(fmode)s\n") % { "fname": fname,
