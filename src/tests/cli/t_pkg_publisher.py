@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2008, 2011, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2008, 2012, Oracle and/or its affiliates. All rights reserved.
 #
 
 import testutils
@@ -266,6 +266,11 @@ class TestPkgPublisherBasics(pkg5unittest.SingleDepotTestCase):
                     self.bogus_url, exit=1)
                 self.pkg("set-publisher -O ftp://%s2 test2" % self.bogus_url,
                     exit=1)
+
+                # Verify single character in hostname is valid publisher
+                self.pkg("set-publisher --no-refresh -g http://a/ a")
+                self.pkg("set-publisher --no-refresh -g http://a.example.com " \
+                    "a.example.com")
 
         def test_missing_perms(self):
                 """Bug 2393"""

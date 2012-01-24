@@ -222,7 +222,11 @@ def user_agent_str(img, client_name):
 
         return useragent
 
-_hostname_re = re.compile("^[a-zA-Z0-9\[](?:[a-zA-Z0-9\-:]*[a-zA-Z0-9:\]]+\.?)*$")
+# Valid hostname can be : HOSTNAME or IPv4 addr or IPV6 addr
+_hostname_re = re.compile(r"""^(?:[a-zA-Z0-9\-]+[a-zA-Z0-9\-\.]*
+                   |(?:\d{1,3}\.){3}\d{3}
+                   |\[([a-fA-F0-9\.]*:){,7}[a-fA-F0-9\.]+\])$""", re.X)
+
 _invalid_host_chars = re.compile(".*[^a-zA-Z0-9\-\.:\[\]]+")
 _valid_proto = ["file", "http", "https"]
 
