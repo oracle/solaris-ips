@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2010, 2011, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2010, 2012, Oracle and/or its affiliates. All rights reserved.
 #
 # Visible changes to classes here require an update to
 # doc/client_api_versions.txt and/or doc/server_api_versions.txt.
@@ -29,7 +29,7 @@
 """Contains API functions and classes common to both pkg.client.api and
 pkg.server.api."""
 
-import pkg.client.image  as image
+import pkg.client.pkgdefs as pkgdefs
 import pkg.fmri as fmri
 import pkg.misc as misc
 
@@ -114,13 +114,13 @@ class PackageInfo(object):
         # available.
         INCORPORATED = -2
         EXCLUDES = -3
-        KNOWN = image.Image.PKG_STATE_KNOWN
-        INSTALLED = image.Image.PKG_STATE_INSTALLED
-        UPGRADABLE = image.Image.PKG_STATE_UPGRADABLE
-        OBSOLETE = image.Image.PKG_STATE_OBSOLETE
-        RENAMED = image.Image.PKG_STATE_RENAMED
-        UNSUPPORTED = image.Image.PKG_STATE_UNSUPPORTED
-        FROZEN = image.Image.PKG_STATE_FROZEN
+        KNOWN = pkgdefs.PKG_STATE_KNOWN
+        INSTALLED = pkgdefs.PKG_STATE_INSTALLED
+        UPGRADABLE = pkgdefs.PKG_STATE_UPGRADABLE
+        OBSOLETE = pkgdefs.PKG_STATE_OBSOLETE
+        RENAMED = pkgdefs.PKG_STATE_RENAMED
+        UNSUPPORTED = pkgdefs.PKG_STATE_UNSUPPORTED
+        FROZEN = pkgdefs.PKG_STATE_FROZEN
 
         __NUM_PROPS = 13
         IDENTITY, SUMMARY, CATEGORIES, STATE, SIZE, LICENSES, LINKS, \

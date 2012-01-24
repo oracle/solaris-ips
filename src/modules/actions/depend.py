@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2007, 2011, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2007, 2012, Oracle and/or its affiliates. All rights reserved.
 #
 
 
@@ -32,7 +32,9 @@ relationship between the package containing the action and another package.
 """
 
 import generic
+
 import pkg.actions
+import pkg.client.pkgdefs as pkgdefs
 import pkg.fmri
 import pkg.version
 
@@ -172,7 +174,7 @@ class DependencyAction(generic.Action):
                             "dep_type": ctype, "dep_val": max_fmri,
                             "inst_ver": installed_version })
                         return errors
-                if required and image.PKG_STATE_OBSOLETE in \
+                if required and pkgdefs.PKG_STATE_OBSOLETE in \
                     image.get_pkg_state(installed_version):
                         errors.append(
                             _("%s dependency on an obsolete package (%s);"

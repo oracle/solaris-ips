@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2010, 2011, Oracle and/or its affiliates.  All rights reserved.
+# Copyright (c) 2010, 2012, Oracle and/or its affiliates. All rights reserved.
 #
 
 PKG_CLIENT_NAME = "pkgrepo"
@@ -58,6 +58,7 @@ from pkg.misc import msg, PipeError
 import pkg
 import pkg.catalog
 import pkg.client.api_errors as apx
+import pkg.client.pkgdefs as pkgdefs
 import pkg.client.progress
 import pkg.client.publisher as publisher
 import pkg.client.transport.transport as transport
@@ -819,9 +820,11 @@ def subcmd_list(conf, args):
                                 state = None
                                 if out_format == "default" or \
                                     out_format == "tsv":
-                                        if cat.PKG_STATE_OBSOLETE in states:
+                                        if pkgdefs.PKG_STATE_OBSOLETE in \
+                                            states:
                                                 state = "o"
-                                        elif cat.PKG_STATE_RENAMED in states:
+                                        elif pkgdefs.PKG_STATE_RENAMED in \
+                                            states:
                                                 state = "r"
 
                                 ret = {

@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2008, 2011, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2008, 2012, Oracle and/or its affiliates. All rights reserved.
 #
 
 import testutils
@@ -33,6 +33,7 @@ import cStringIO
 import os
 import pkg.client.api as api
 import pkg.client.api_errors as api_errors
+import pkg.client.pkgdefs as pkgdefs
 import pkg.facet as facet
 import pkg.fmri as fmri
 import sys
@@ -340,8 +341,8 @@ class TestPkgApi(pkg5unittest.SingleDepotTestCase):
                 kcat = img.get_catalog(img.IMG_CATALOG_KNOWN)
                 entry = [e for f, e in kcat.entries()][0]
                 states = entry["metadata"]["states"]
-                self.assert_(img.PKG_STATE_V1 in states)
-                self.assert_(img.PKG_STATE_V0 not in states)
+                self.assert_(pkgdefs.PKG_STATE_V1 in states)
+                self.assert_(pkgdefs.PKG_STATE_V0 not in states)
 
                 # Next, disable v1 catalog for the depot and force a client
                 # refresh.  Only v0 state should be present.
@@ -361,8 +362,8 @@ class TestPkgApi(pkg5unittest.SingleDepotTestCase):
                 kcat = img.get_catalog(img.IMG_CATALOG_KNOWN)
                 entry = [e for f, e in kcat.entries()][0]
                 states = entry["metadata"]["states"]
-                self.assert_(img.PKG_STATE_V1 not in states)
-                self.assert_(img.PKG_STATE_V0 in states)
+                self.assert_(pkgdefs.PKG_STATE_V1 not in states)
+                self.assert_(pkgdefs.PKG_STATE_V0 in states)
 
                 # Verify that there is no dependency information present
                 # in the known or installed catalog.
@@ -413,8 +414,8 @@ class TestPkgApi(pkg5unittest.SingleDepotTestCase):
                 for cat in kcat, icat:
                         entry = [e for f, e in cat.entries()][0]
                         states = entry["metadata"]["states"]
-                        self.assert_(img.PKG_STATE_INSTALLED in states)
-                        self.assert_(img.PKG_STATE_V0 in states)
+                        self.assert_(pkgdefs.PKG_STATE_INSTALLED in states)
+                        self.assert_(pkgdefs.PKG_STATE_V0 in states)
 
                 # Finally, transition back to v1 catalog.  This requires
                 # creating a new api object since transport will think that
@@ -440,8 +441,8 @@ class TestPkgApi(pkg5unittest.SingleDepotTestCase):
                 # Verify state info.
                 for f, entry in kcat.entries():
                         states = entry["metadata"]["states"]
-                        self.assert_(img.PKG_STATE_V1 in states)
-                        self.assert_(img.PKG_STATE_V0 not in states)
+                        self.assert_(pkgdefs.PKG_STATE_V1 in states)
+                        self.assert_(pkgdefs.PKG_STATE_V0 not in states)
 
                 # Verify that there is dependency information present
                 # in the known and installed catalog.
@@ -467,7 +468,7 @@ class TestPkgApi(pkg5unittest.SingleDepotTestCase):
 
                         for f, bentry in src_base.entries():
                                 states = bentry["metadata"]["states"]
-                                if img.PKG_STATE_INSTALLED not in states:
+                                if pkgdefs.PKG_STATE_INSTALLED not in states:
                                         continue
 
                                 for name in src.parts:

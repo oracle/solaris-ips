@@ -57,6 +57,7 @@ import pkg.client.imageconfig as imgcfg
 import pkg.client.imageplan as ip
 import pkg.client.imagetypes as imgtypes
 import pkg.client.indexer as indexer
+import pkg.client.pkgdefs as pkgdefs
 import pkg.client.publisher as publisher
 import pkg.client.query_parser as query_p
 import pkg.fmri as fmri
@@ -2701,7 +2702,7 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                         inst_stems = {}
                         for t, entry in img_inst_cat.tuple_entries():
                                 states = entry["metadata"]["states"]
-                                if self._img.PKG_STATE_INSTALLED not in states:
+                                if pkgdefs.PKG_STATE_INSTALLED not in states:
                                         continue
                                 pub, stem, ver = t
                                 inst_stems.setdefault(pub, {})
@@ -2794,25 +2795,25 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                                         # package state information and/or
                                         # other metadata.
                                         mdata = entry["metadata"] = {}
-                                        states = [self._img.PKG_STATE_KNOWN,
-                                            self._img.PKG_STATE_ALT_SOURCE]
+                                        states = [pkgdefs.PKG_STATE_KNOWN,
+                                            pkgdefs.PKG_STATE_ALT_SOURCE]
                                         if cat_ver == 0:
                                                 states.append(
-                                                    self._img.PKG_STATE_V0)
+                                                    pkgdefs.PKG_STATE_V0)
                                         else:
                                                 # Assume V1 catalog source.
                                                 states.append(
-                                                    self._img.PKG_STATE_V1)
+                                                    pkgdefs.PKG_STATE_V1)
 
                                         if installed:
                                                 states.append(
-                                                    self._img.PKG_STATE_INSTALLED)
+                                                    pkgdefs.PKG_STATE_INSTALLED)
 
                                         nver, snver = newest.get(stem,
                                             (None, None))
                                         if snver is not None and ver != snver:
                                                 states.append(
-                                                    self._img.PKG_STATE_UPGRADABLE)
+                                                    pkgdefs.PKG_STATE_UPGRADABLE)
 
                                         # Determine if package is obsolete or
                                         # has been renamed and mark with
@@ -2850,13 +2851,13 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
 
                                                         if act.attrs["name"] == "pkg.obsolete":
                                                                 states.append(
-                                                                    self._img.PKG_STATE_OBSOLETE)
+                                                                    pkgdefs.PKG_STATE_OBSOLETE)
                                                         elif act.attrs["name"] == "pkg.renamed":
                                                                 if not act.include_this(
                                                                     excludes):
                                                                         continue
                                                                 states.append(
-                                                                    self._img.PKG_STATE_RENAMED)
+                                                                    pkgdefs.PKG_STATE_RENAMED)
 
                                         mdata["states"] = states
 
@@ -3129,8 +3130,8 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
 
                 def check_state(t, entry):
                         states = entry["metadata"]["states"]
-                        pkgi = self._img.PKG_STATE_INSTALLED in states
-                        pkgu = self._img.PKG_STATE_UPGRADABLE in states
+                        pkgi = pkgdefs.PKG_STATE_INSTALLED in states
+                        pkgu = pkgdefs.PKG_STATE_UPGRADABLE in states
                         pub, stem, ver = t
 
                         if upgradable:
@@ -3382,7 +3383,7 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
 
                         omit_var = False
                         states = entry["metadata"]["states"]
-                        pkgi = self._img.PKG_STATE_INSTALLED in states
+                        pkgi = pkgdefs.PKG_STATE_INSTALLED in states
                         ddm = lambda: collections.defaultdict(list)
                         attrs = collections.defaultdict(ddm)
                         try:

@@ -3872,7 +3872,7 @@ class ImagePlan(object):
                                                                 # this package later.
                                                                 continue
 
-                                                        if self.image.PKG_STATE_RENAMED in states and \
+                                                        if pkgdefs.PKG_STATE_RENAMED in states and \
                                                             a.name == "depend" and \
                                                             a.attrs["type"] == "require":
                                                                 ren_deps.append(pkg.fmri.PkgFmri(
@@ -3910,9 +3910,9 @@ class ImagePlan(object):
                                                 ret[pat].setdefault(f.pkg_name,
                                                     []).append(f)
                                                 states = metadata["metadata"]["states"]
-                                                if self.image.PKG_STATE_OBSOLETE in states:
+                                                if pkgdefs.PKG_STATE_OBSOLETE in states:
                                                         obsolete_fmris.append(f)
-                                                if self.image.PKG_STATE_RENAMED in states:
+                                                if pkgdefs.PKG_STATE_RENAMED in states:
                                                         renamed_fmris[f] = ren_deps
 
                 # remove multiple matches if all versions are obsolete

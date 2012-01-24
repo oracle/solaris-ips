@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2009, 2011, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2009, 2012, Oracle and/or its affiliates. All rights reserved.
 #
 
 #
@@ -57,6 +57,7 @@ logger = global_settings.logger
 import pkg.catalog
 import pkg.client.api_errors as api_errors
 import pkg.client.sigpolicy as sigpolicy
+import pkg.client.pkgdefs as pkgdefs
 import pkg.misc as misc
 import pkg.portable as portable
 import pkg.server.catalog as old_catalog
@@ -1386,10 +1387,6 @@ pkg unset-publisher %s
                 # Mark all operations as occurring at this time.
                 op_time = dt.datetime.utcnow()
 
-                # Copied from pkg.client.image.Image to avoid circular
-                # dependency.
-                PKG_STATE_V0 = 6
-
                 for origin, opath in opaths:
                         src_cat = pkg.catalog.Catalog(meta_root=opath,
                             read_only=True)
@@ -1464,7 +1461,8 @@ pkg unset-publisher %s
 
                                         states = entry["metadata"]["states"]
                                         if src_cat.version == 0:
-                                                states.append(PKG_STATE_V0)
+                                                states.append(
+                                                    pkgdefs.PKG_STATE_V0)
 
                 # Now go back and trim each entry to minimize footprint.  This
                 # ensures each package entry only has state and source info
@@ -1485,7 +1483,7 @@ pkg unset-publisher %s
                                 del mdata["states"]
                         elif len(mdata["states"]) > 1:
                                 # Ensure only one instance of state value.
-                                mdata["states"] = [PKG_STATE_V0]
+                                mdata["states"] = [pkgdefs.PKG_STATE_V0]
                         if not mdata:
                                 mdata = None
                         ncat.update_entry(mdata, pub=pub, stem=stem, ver=ver)

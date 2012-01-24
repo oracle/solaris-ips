@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2011, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2011, 2012, Oracle and/or its affiliates. All rights reserved.
 #
 
 """
@@ -111,3 +111,50 @@ api_stage_values  = frozenset([
     API_STAGE_PREPARE,
     API_STAGE_EXECUTE,
 ])
+
+#
+# Please note that the values of these PKG_STATE constants should not
+# be changed as it would invalidate existing catalog data stored in the
+# image.  This means that if a constant is removed, the values of the
+# other constants should not change, etc.
+#
+# This state indicates that a package is present in a repository
+# catalog.
+
+PKG_STATE_KNOWN = 0
+# This is a transitory state used to indicate that a package is no
+# longer present in a repository catalog; it is only used to clear
+# PKG_STATE_KNOWN.
+PKG_STATE_UNKNOWN = 1
+
+# This state indicates that a package is installed.
+PKG_STATE_INSTALLED = 2
+
+# This is a transitory state used to indicate that a package is no
+# longer installed; it is only used to clear PKG_STATE_INSTALLED.
+PKG_STATE_UNINSTALLED = 3
+PKG_STATE_UPGRADABLE = 4
+
+# These states are used to indicate the package's related catalog
+# version.  This is helpful to consumers of the catalog data so that
+# they can be aware of what metadata may not immediately available
+# (require manifest retrieval) based on the catalog version.
+PKG_STATE_V0 = 6
+PKG_STATE_V1 = 7
+
+PKG_STATE_OBSOLETE = 8
+PKG_STATE_RENAMED = 9
+
+# These states are used to indicate why a package was rejected and
+# is not available for packaging operations.
+PKG_STATE_UNSUPPORTED = 10      # Package contains invalid or
+                                # unsupported metadata.
+
+# This state indicates that this package is frozen.
+PKG_STATE_FROZEN = 11
+
+# This is a transitory state used for temporary package sources to
+# indicate that the package entry should be removed if it does not
+# also have PKG_STATE_INSTALLED.  This state must not be written
+# to disk.
+PKG_STATE_ALT_SOURCE = 99

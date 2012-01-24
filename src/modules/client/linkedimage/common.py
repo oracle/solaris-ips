@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2011, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2011, 2012, Oracle and/or its affiliates. All rights reserved.
 #
 
 """
@@ -1947,8 +1947,8 @@ class LinkedImage(object):
                         # eliminate renamed or obsoleted fmris
                         entry = cat.get_entry(pfmri)
                         state = entry["metadata"]["states"]
-                        if self.__img.PKG_STATE_OBSOLETE in state or \
-                            self.__img.PKG_STATE_RENAMED in state:
+                        if pkgdefs.PKG_STATE_OBSOLETE in state or \
+                            pkgdefs.PKG_STATE_RENAMED in state:
                                 rm_fmris |= set([pfmri])
                                 continue
 

@@ -20,7 +20,7 @@
 # CDDL HEADER END
 #
 
-# Copyright (c) 2007, 2011, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2007, 2012, Oracle and/or its affiliates. All rights reserved.
 
 import OpenSSL.crypto as osc
 import cStringIO
@@ -55,9 +55,6 @@ from pkg.pkggzip import PkgGzipFile
 
 # Minimum number of days to issue warning before a certificate expires
 MIN_WARN_DAYS = datetime.timedelta(days=30)
-
-# Copied from image.py as image.py can't be imported here (circular reference).
-PKG_STATE_INSTALLED = 2
 
 # Constant string used across many modules as a property name.
 SIGNATURE_POLICY = "signature-policy"

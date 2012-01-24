@@ -19,7 +19,7 @@
 #
 # CDDL HEADER END
 #
-# Copyright (c) 2007, 2011, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2007, 2012, Oracle and/or its affiliates. All rights reserved.
 
 """Interfaces and implementation for the Catalog object, as well as functions
 that operate on lists of package FMRIs."""
@@ -39,6 +39,7 @@ import threading
 
 import pkg.actions
 import pkg.client.api_errors as api_errors
+import pkg.client.pkgdefs as pkgdefs
 import pkg.fmri as fmri
 import pkg.misc as misc
 import pkg.portable as portable
@@ -1296,7 +1297,6 @@ class Catalog(object):
 
         # Class Constants
         DEPENDENCY, SUMMARY = range(2)
-        PKG_STATE_OBSOLETE, PKG_STATE_RENAMED, PKG_STATE_UNSUPPORTED = range(3)
 
         def __init__(self, batch_mode=False, meta_root=None, log_updates=False,
             manifest_cb=None, read_only=False, sign=True):
@@ -3073,17 +3073,17 @@ class Catalog(object):
                                         if atname == "pkg.renamed":
                                                 if atvalue == "true":
                                                         states.add(
-                                                            self.PKG_STATE_RENAMED)
+                                                            pkgdefs.PKG_STATE_RENAMED)
                                                 continue
                                         if atname == "pkg.obsolete":
                                                 if atvalue == "true":
                                                         states.add(
-                                                            self.PKG_STATE_OBSOLETE)
+                                                            pkgdefs.PKG_STATE_OBSOLETE)
                                                 continue
                         except api_errors.InvalidPackageErrors:
                                 # Ignore errors for packages that have invalid
                                 # or unsupported metadata.
-                                states.add(self.PKG_STATE_UNSUPPORTED)
+                                states.add(pkgdefs.PKG_STATE_UNSUPPORTED)
 
                         if omit_package:
                                 # Package didn't match criteria; skip it.

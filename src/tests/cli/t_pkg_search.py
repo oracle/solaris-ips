@@ -37,6 +37,7 @@ import unittest
 import urllib2
 
 import pkg.catalog as catalog
+import pkg.client.pkgdefs as pkgdefs
 import pkg.fmri as fmri
 
 
@@ -589,9 +590,7 @@ set name=com.sun.service.incorporated_changes value="6556919 6627937"
                 img = self.get_img_api_obj().img
                 istate_dir = os.path.join(img._statedir, "installed")
                 cat = catalog.Catalog(meta_root=istate_dir)
-                # Value of PKG_STATE_INSTALLED in image.py is 2.
-                # Value of __PKG_STATE_PREFERRED in image.py is 5.
-                mdata = { "states": [2, 5] }
+                mdata = { "states": [pkgdefs.PKG_STATE_INSTALLED] }
                 bfmri = self.bogus_fmri.copy()
                 bfmri.set_publisher("test")
                 cat.add_package(bfmri, metadata=mdata)
