@@ -19,7 +19,7 @@
 #
 # CDDL HEADER END
 #
-# Copyright (c) 2009, 2010, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2009, 2012, Oracle and/or its affiliates. All rights reserved.
 #
 
 import pkg.gui.misc as gui_misc
@@ -179,9 +179,8 @@ class RenameBeAfterUpdateAll:
                 msgbox.run()
                 msgbox.destroy()
 
-        @staticmethod
-        def __on_ua_completed_dialog_delete_event(widget, event):
-                return True
+        def __on_ua_completed_dialog_delete_event(self, widget, event):
+                self.__proceed_after_update()
 
         def __proceed_after_update(self, reboot=False):
                 orig_name = self.__get_activated_be_name()
@@ -338,4 +337,4 @@ class RenameBeAfterUpdateAll:
 
         @staticmethod
         def __on_ua_help_button_clicked(widget):
-                gui_misc.display_help("intro-be")
+                gui_misc.display_help("um_info")

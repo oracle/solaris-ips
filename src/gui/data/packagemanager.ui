@@ -6831,7 +6831,6 @@ Jyothi Srinath &lt;jyothi.srinath@oracle.com&gt;</property>
   <object class="GtkDialog" id="confirmdialog">
     <property name="border_width">5</property>
     <property name="title" translatable="yes">Confirmation</property>
-    <property name="resizable">False</property>
     <property name="modal">True</property>
     <property name="window_position">center-on-parent</property>
     <property name="type_hint">dialog</property>
