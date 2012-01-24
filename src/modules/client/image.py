@@ -3429,9 +3429,18 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                     "actions.stripped")
                 offsets_path = os.path.join(self.__action_cache_dir,
                     "actions.offsets")
+                conflicting_keys_path = os.path.join(self.__action_cache_dir,
+                    "keys.conflicting")
 
                 excludes = self.list_excludes()
                 heap = []
+
+                # nsd is the "name-space dictionary."  It maps action name
+                # spaces (see action.generic for more information) to
+                # dictionaries which map keys to pairs which contain an action
+                # with that key and the pfmri of the package which delivered the
+                # action.
+                nsd = {}
 
                 from heapq import heappush, heappop
 
@@ -3453,20 +3462,33 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                                                 del act.attrs[key]
                                 heappush(heap, (act.name,
                                     act.attrs[act.key_attr], pfmri, act))
+                                nsd.setdefault(act.namespace_group, {})
+                                nsd[act.namespace_group].setdefault(
+                                    act.attrs[act.key_attr], [])
+                                nsd[act.namespace_group][
+                                    act.attrs[act.key_attr]].append((
+                                    act, pfmri))
 
                 # Don't worry if we can't write the temporary files.
                 try:
                         actdict = {}
                         sf, sp = self.temporary_file(close=False)
                         of, op = self.temporary_file(close=False)
+                        bf, bp = self.temporary_file(close=False)
 
                         sf = os.fdopen(sf, "wb")
                         of = os.fdopen(of, "wb")
+                        bf = os.fdopen(bf, "wb")
 
                         # We need to make sure the files are coordinated.
                         timestamp = int(time.time())
                         sf.write("VERSION 1\n%s\n" % timestamp)
                         of.write("VERSION 2\n%s\n" % timestamp)
+                        # The conflicting keys file doesn't need a timestamp
+                        # because it's not coordinated with the stripped or
+                        # offsets files and the result of loading it isn't
+                        # reused by this class.
+                        bf.write("VERSION 1\n")
 
                         last_name, last_key, last_offset = None, None, sf.tell()
                         cnt = 0
@@ -3501,14 +3523,21 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                                 actdict[(last_name, last_key)] = \
                                     last_offset, cnt
 
+                        bad_keys = imageplan.ImagePlan._check_actions(nsd)
+                        for k in sorted(bad_keys):
+                                bf.write("%s\n" % k)
+
                         sf.close()
                         of.close()
+                        bf.close()
                         os.chmod(sp, misc.PKG_FILE_MODE)
                         os.chmod(op, misc.PKG_FILE_MODE)
+                        os.chmod(bp, misc.PKG_FILE_MODE)
                 except BaseException, e:
                         try:
                                 os.unlink(sp)
                                 os.unlink(op)
+                                os.unlink(bp)
                         except:
                                 if isinstance(e, KeyboardInterrupt):
                                         raise
@@ -3523,6 +3552,7 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                 try:
                         portable.rename(sp, stripped_path)
                         portable.rename(op, offsets_path)
+                        portable.rename(bp, conflicting_keys_path)
                         return actdict, timestamp
                 except EnvironmentError, e:
                         if e.errno == errno.EACCES or e.errno == errno.EROFS:
@@ -3531,12 +3561,16 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                                     self.__action_cache_dir, "actions.stripped")
                                 offsets_path = os.path.join(
                                     self.__action_cache_dir, "actions.offsets")
+                                conflicting_keys_path = os.path.join(
+                                    self.__action_cache_dir, "keys.conflicting")
                                 portable.rename(sp, stripped_path)
                                 portable.rename(op, offsets_path)
+                                portable.rename(bp, conflicting_keys_path)
                                 return actdict, timestamp
                         try:
                                 os.unlink(stripped_path)
                                 os.unlink(offsets_path)
+                                os.unlink(conflicting_keys_path)
                         except:
                                 pass
 
@@ -3607,6 +3641,22 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                         return sversion, stimestamp
 
                 return sf
+
+        def _load_conflicting_keys(self):
+                """Load the list of keys which have conflicting actions in the
+                existing image.  If no such list exists, then return None."""
+
+                pth = os.path.join(self.__action_cache_dir, "keys.conflicting")
+                try:
+                        with open(pth, "rb") as fh:
+                                version = fh.readline().rstrip()
+                                if version != "VERSION 1":
+                                        return None
+                                return set(l.rstrip() for l in fh)
+                except EnvironmentError, e:
+                        if e.errno == errno.ENOENT:
+                                return None
+                        raise
 
         def gen_installed_actions_bytype(self, atype, implicit_dirs=False):
                 """Iterates through the installed actions of type 'atype'.  If

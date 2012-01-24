@@ -1203,7 +1203,8 @@ class ImagePlan(object):
                         ))
                 return self.__legacy
 
-        def __check_inconsistent_types(self, actions, oactions):
+        @staticmethod
+        def __check_inconsistent_types(actions, oactions):
                 """Check whether multiple action types within a namespace group
                 deliver to a given name in that space."""
 
@@ -1258,7 +1259,8 @@ class ImagePlan(object):
 
                 return "error", actions
 
-        def __check_duplicate_actions(self, actions, oactions):
+        @staticmethod
+        def __check_duplicate_actions(actions, oactions):
                 """Check whether we deliver more than one action with a given
                 key attribute value if only a single action of that type and
                 value may be delivered."""
@@ -1311,8 +1313,8 @@ class ImagePlan(object):
                         if overlayable and overlay:
                                 # Found both an overlayable action and the
                                 # action that overlays it.
-                                errors = self.__find_inconsistent_attrs(actions,
-                                    ignore=["preserve"])
+                                errors = ImagePlan.__find_inconsistent_attrs(
+                                    actions, ignore=["preserve"])
                                 if errors:
                                         # overlay is not permitted if unique
                                         # attributes (except 'preserve') are
@@ -1384,12 +1386,13 @@ class ImagePlan(object):
 
                 return problems
 
-        def __check_inconsistent_attrs(self, actions, oactions):
+        @staticmethod
+        def __check_inconsistent_attrs(actions, oactions):
                 """Check whether we have non-identical actions delivering to the
                 same point in their namespace."""
 
-                nproblems = self.__find_inconsistent_attrs(actions)
-                oproblems = self.__find_inconsistent_attrs(oactions)
+                nproblems = ImagePlan.__find_inconsistent_attrs(actions)
+                oproblems = ImagePlan.__find_inconsistent_attrs(oactions)
 
                 # If we end up with more problems than we started with, we
                 # should error out.  If we end up with the same number as
@@ -1670,7 +1673,111 @@ class ImagePlan(object):
                                         new.setdefault(key, []).append(
                                             (act, pfmri))
 
-        def __check_conflicts(self, new, old, offset_dict, action_classes, ns,
+        def __fast_check(self, new, old, ns):
+                """Check whether actions being added and removed are
+                sufficiently similar that further conflict checking on those
+                actions isn't needed.
+
+                The 'new' parameter is a dictionary mapping keys to the incoming
+                actions with that as a key.  The incoming actions are actions
+                delivered by packages which are being installed or updated to.
+
+                The 'old' parameter is a dictionary mapping keys to the outgoing
+                actions with that as a key.  The outgoing actions are actions
+                delivered by packages which are being removed or updated from.
+
+                The 'ns' parameter is the action namespace for the actions in
+                'new' and 'old'."""
+
+                # .keys() is being used because we're removing keys from the
+                # dictionary as we go.
+                for key in new.keys():
+                        actions = new[key]
+                        assert len(actions) > 0
+                        oactions = old.get(key, [])
+                        # If new actions are being installed, then we need to do
+                        # the full conflict checking.
+                        if len(oactions) == 0:
+                                continue
+
+                        unmatched_old_actions = set(range(0, len(oactions)))
+
+                        # If the action isn't refcountable and there's more than
+                        # one action, that's an error so we let
+                        # __check_conflicts handle it.
+                        if not actions[0][0].refcountable and \
+                            actions[0][0].globally_identical and \
+                            len(actions) > 1:
+                                continue
+
+                        # Check that each incoming action has a match in the
+                        # outgoing actions.
+                        next_key = False
+                        for act, pfmri in actions:
+                                matched = False
+                                # Compare this action with each outgoing action.
+                                for i, (oact, opfmri) in enumerate(oactions):
+                                        if act.name != oact.name:
+                                                continue
+                                        # Check whether all attributes which
+                                        # need to be unique are identical for
+                                        # these two actions.
+                                        if all((
+                                            act.attrs.get(a, None) ==
+                                                oact.attrs.get(a, None)
+                                            for a in act.unique_attrs
+                                        )):
+                                                matched = True
+                                                break
+
+                                # If this action didn't have a match in the old
+                                # action, then this key needs full conflict
+                                # checking so move on to the next key.
+                                if not matched:
+                                        next_key = True
+                                        break
+                                unmatched_old_actions.discard(i)
+                        if next_key:
+                                continue
+
+                        # Check that each outgoing action has a match in the
+                        # incoming actions.
+                        for i, (oact, opfmri) in enumerate(oactions):
+                                if i not in unmatched_old_actions:
+                                        continue
+                                matched = False
+                                for act, pfmri in actions:
+                                        if act.name != oact.name:
+                                                continue
+                                        if all((
+                                            act.attrs.get(a, None) ==
+                                                oact.attrs.get(a, None)
+                                            for a in act.unique_attrs
+                                        )):
+                                                matched = True
+                                                break
+                                if not matched:
+                                        next_key = True
+                                        break
+                                unmatched_old_actions.discard(i)
+                        if next_key or unmatched_old_actions:
+                                continue
+                        # We know that each incoming action matches at least one
+                        # outgoing action and each outgoing action matches at
+                        # least one incoming action, so no further conflict
+                        # checking is needed.
+                        del new[key]
+                        del old[key]
+
+                # .keys() is being used because we're removing keys from the
+                # dictionary as we go.
+                for key in old.keys():
+                        # If actions that aren't in conflict are being removed,
+                        # then nothing more needs to be done.
+                        if key not in new:
+                                del old[key]
+
+        def __check_conflicts(self, new, old, action_classes, ns,
             errs):
                 """Check all the newly installed actions for conflicts with
                 existing actions."""
@@ -1720,6 +1827,39 @@ class ImagePlan(object):
                                     api_errors.InconsistentActionAttributeError,
                                     errs):
                                         continue
+
+        @staticmethod
+        def _check_actions(nsd):
+                """Return the keys in the namespace dictionary ('nsd') which
+                map to actions that conflict with each other."""
+
+                def noop(*args):
+                        return None
+
+                bad_keys = set()
+                for ns, key_dict in nsd.iteritems():
+                        if type(ns) != int:
+                                type_func = ImagePlan.__check_inconsistent_types
+                        else:
+                                type_func = noop
+                        for key, actions in key_dict.iteritems():
+                                if len(actions) == 1:
+                                        continue
+                                if type_func(actions, []) is not None:
+                                        bad_keys.add(key)
+                                        continue
+                                if not actions[0][0].refcountable and \
+                                    actions[0][0].globally_identical:
+                                        if ImagePlan.__check_duplicate_actions(
+                                            actions, []) is not None:
+                                                bad_keys.add(key)
+                                                continue
+                                elif actions[0][0].globally_identical and \
+                                    ImagePlan.__check_inconsistent_attrs(
+                                    actions, []) is not None:
+                                        bad_keys.add(key)
+                                        continue
+                return bad_keys
 
         def __clear_pkg_plans(self):
                 """Now that we're done reading the manifests, we can clear them
@@ -1783,6 +1923,9 @@ class ImagePlan(object):
                 offset_dict = self.image._load_actdict()
                 sf = self.image._get_stripped_actions_file()
 
+                conflict_clean_image = \
+                    self.image._load_conflicting_keys() == set()
+
                 fmri_dict = weakref.WeakValueDictionary()
                 # Iterate over action types in namespace groups first; our first
                 # check should be for action type consistency.
@@ -1806,6 +1949,9 @@ class ImagePlan(object):
                         old = self.__seed(self.gen_outgoing_actions_bytype,
                             action_classes, self.__old_excludes)
 
+                        if conflict_clean_image:
+                                self.__fast_check(new, old, ns)
+
                         # Update 'old' with all actions from the action cache
                         # which could conflict with the new actions being
                         # installed, or with actions already installed, but not
@@ -1819,8 +1965,8 @@ class ImagePlan(object):
                         self.__update_new(new, old, offset_dict, action_classes,
                             sf, gone_fmris, fmri_dict)
 
-                        self.__check_conflicts(new, old, offset_dict,
-                            action_classes, ns, errs)
+                        self.__check_conflicts(new, old, action_classes, ns,
+                            errs)
 
                 del fmri_dict
                 self.__clear_pkg_plans()
