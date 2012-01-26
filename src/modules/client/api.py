@@ -470,6 +470,13 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
         def __set_progresstracker(self, value):
                 self._activity_lock.acquire()
                 self.__progresstracker = value
+
+                # tell the progress tracker about this image's name
+                lin = None
+                if self._img.linked.ischild():
+                        lin = self._img.linked.child_name
+                self.__progresstracker.set_linked_name(lin)
+
                 self._activity_lock.release()
 
         progresstracker = property(lambda self: self.__progresstracker,

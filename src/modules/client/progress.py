@@ -907,7 +907,6 @@ class FancyUNIXProgressTracker(ProgressTracker):
                             "current": self.refresh_cur_pub_cnt,
                             "total": self.refresh_pub_cnt,
                             "publisher": self.refresh_cur_pub }
-                        msg = "%s%s" % (self.msg_prefix, msg)
                         self.curstrlen = len(msg)
                         print "%s" % msg,
                         self.needs_cr = True
@@ -926,7 +925,6 @@ class FancyUNIXProgressTracker(ProgressTracker):
                 self.__generic_done()
 
                 msg = _("Creating Plan")
-                msg = "%s%s" % (self.msg_prefix, msg)
 
                 self.curstrlen = len(msg)
                 try:
@@ -948,7 +946,6 @@ class FancyUNIXProgressTracker(ProgressTracker):
                         print self.cr,
                         msg = _("Creating Plan %c") % self.spinner_chars[
                             self.spinner]
-                        msg = "%s%s" % (self.msg_prefix, msg)
 
                         self.curstrlen = len(msg)
                         print "%s" % msg,
@@ -1248,7 +1245,6 @@ class FancyUNIXProgressTracker(ProgressTracker):
                 self.last_print_time = 0
                 try:
                         msg = _("Optimizing Index...")
-                        msg = "%s%s" % (self.msg_prefix, msg)
 
                         print msg
                         sys.stdout.flush()
