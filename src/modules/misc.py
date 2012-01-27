@@ -143,8 +143,7 @@ def copytree(src, dst):
                         os.utime(d_path, (s.st_atime, s.st_mtime))
                 elif S_ISCHR(s.st_mode) or S_ISBLK(s.st_mode):
                         if hasattr(os, "mknod"):
-                                os.mknod(d_path, mode=s.st_mode,
-                                    device=s.st_dev)
+                                os.mknod(d_path, s.st_mode, s.st_dev)
                                 os.chown(d_path, s.st_uid, s.st_gid)
                                 os.utime(d_path, (s.st_atime, s.st_mtime))
                 elif S_IFMT(s.st_mode) == 0xd000: # doors

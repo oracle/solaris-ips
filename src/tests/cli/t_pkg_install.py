@@ -2360,8 +2360,12 @@ adm
                 sock = socket.socket(socket.AF_UNIX)
                 sock.bind(os.path.join(self.img_path(), "salvage", "socket"))
                 sock.close()
-                # We would also create block and character special files, but
-                # os.mknod() isn't available due to a python configuration bug.
+                # We also test block and character special files, but only if
+                # os.mknod() is available, which it isn't always.
+                if hasattr(os, "mknod"):
+                        st = os.stat("/dev/null")
+                        os.mknod(os.path.join(self.img_path(), "salvage",
+                            "node"), st.st_mode, st.st_dev)
 
                 # This could hang reading fifo, or keel over reading socket.
                 self.pkg("uninstall salvage-special")
