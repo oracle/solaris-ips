@@ -25,8 +25,10 @@
 #
 
 from collections import defaultdict, namedtuple
+import contextlib
 import errno
 import itertools
+import mmap
 import operator
 import os
 import simplejson as json
@@ -1581,11 +1583,16 @@ class ImagePlan(object):
                         for offset, cnt in offsets:
                                 sf.seek(offset)
                                 pns = None
-                                for i, line in enumerate(sf, start=1):
+                                i = 0
+                                while 1:
+                                        line = sf.readline()
+                                        i += 1
                                         if i > cnt:
                                                 break
-                                        fmristr, actstr = \
-                                            line.rstrip().split(None, 1)
+                                        line = line.rstrip()
+                                        if line == "":
+                                                break
+                                        fmristr, actstr = line.split(None, 1)
                                         if fmristr in gone_fmris:
                                                 continue
                                         act = pkg.actions.fromstr(actstr)
@@ -1651,8 +1658,14 @@ class ImagePlan(object):
                         for offset, cnt in offsets:
                                 sf.seek(offset)
                                 pns = None
-                                for i, line in enumerate(sf, start=1):
+                                i = 0
+                                while 1:
+                                        line = sf.readline()
+                                        i += 1
                                         if i > cnt:
+                                                break
+                                        line = line.rstrip()
+                                        if line == "":
                                                 break
                                         fmristr, actstr = line.rstrip().split(
                                             None, 1)
@@ -1952,18 +1965,25 @@ class ImagePlan(object):
                         if conflict_clean_image:
                                 self.__fast_check(new, old, ns)
 
-                        # Update 'old' with all actions from the action cache
-                        # which could conflict with the new actions being
-                        # installed, or with actions already installed, but not
-                        # getting removed.
-                        self.__update_old(new, old, offset_dict, action_classes,
-                            sf, gone_fmris, fmri_dict)
+                        with contextlib.closing(mmap.mmap(sf.fileno(), 0,
+                            access=mmap.ACCESS_READ)) as msf:
+                                # Skip file header.
+                                msf.readline()
+                                msf.readline()
 
-                        # Now update 'new' with all actions from the action
-                        # cache which are staying on the system, and could
-                        # conflict with the actions being installed.
-                        self.__update_new(new, old, offset_dict, action_classes,
-                            sf, gone_fmris, fmri_dict)
+                                # Update 'old' with all actions from the action
+                                # cache which could conflict with the new
+                                # actions being installed, or with actions
+                                # already installed, but not getting removed.
+                                self.__update_old(new, old, offset_dict,
+                                    action_classes, msf, gone_fmris, fmri_dict)
+
+                                # Now update 'new' with all actions from the
+                                # action cache which are staying on the system,
+                                # and could conflict with the actions being
+                                # installed.
+                                self.__update_new(new, old, offset_dict,
+                                    action_classes, msf, gone_fmris, fmri_dict)
 
                         self.__check_conflicts(new, old, action_classes, ns,
                             errs)
