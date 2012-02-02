@@ -39,6 +39,7 @@
     pkg:/system/linker
     pkg:/system/network
     pkg:/text/gnu-grep
+    pkg:/text/locale
     pkg:/text/tidy
     pkg:/web/server/apache-22
     pkg:/web/wget
