@@ -76,7 +76,7 @@ $(SUBDIRS): FRC
 
 # Use the bits we just built to create the packages.
 packages: install pylint
-	@cd pkg; pwd; $(MAKE) $(TARGET) check svr4_test \
+	@cd pkg; pwd; $(MAKE) $(TARGET) check \
 		PATH=$$(hg root)/proto/root_$$(uname -p)/usr/bin:$$PATH \
 		PYTHONPATH=$$(hg root)/proto/root_$$(uname -p)/usr/lib/python2.6/vendor-packages
 
