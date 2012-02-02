@@ -1,7 +1,0 @@
-package gnome/file-manager/nautilus/extension/nautilus-sendto
-consolidation "gnome"
-classification "Desktop (GNOME)/File Managers"
-import SUNWnautilus-sendto
-import SUNWnautilus-sendto-devel
-import SUNWnautilus-sendto-root
-end package

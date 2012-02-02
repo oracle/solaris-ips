@@ -1,5 +1,0 @@
-package SUNWtgnome-l10n-ui-ko
-consolidation "gnome_l10n"
-classification "Desktop (GNOME)/Trusted Extensions"
-import SUNWtgnome-l10n-ui-ko
-end package

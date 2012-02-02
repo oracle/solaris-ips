@@ -1,5 +1,0 @@
-package FSWxorg-fonts-syriac
-consolidation "X"
-depend SUNWfont-misc-meltho
-renamed 130
-end package

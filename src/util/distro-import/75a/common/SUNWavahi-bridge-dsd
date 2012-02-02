@@ -1,6 +1,0 @@
-package SUNWavahi-bridge-dsd
-classification "Applications/Internet"
-import SUNWavahi-bridge-dsd
-import SUNWavahi-bridge-dsd-devel
-import SUNWavahi-bridge-dsd-root
-end package

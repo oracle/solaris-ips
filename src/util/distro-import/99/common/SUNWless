@@ -1,5 +1,0 @@
-package SUNWless
-classification "Development/GNU"
-import SUNWless
-version 418
-end package

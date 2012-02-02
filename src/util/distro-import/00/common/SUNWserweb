@@ -1,5 +1,0 @@
-package SUNWserweb
-consolidation "sfw"
-classification "System/Services"
-import SUNWserweb
-end package

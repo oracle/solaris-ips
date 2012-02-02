@@ -1,4 +1,0 @@
-package SUNWcqhpc
-import SUNWcqhpc
-add driver name=cpqhpc alias=pcie11,a2f7 alias=pcie11,a2fa alias=pcie11,a2f8 alias=pcie11,a2f9 alias=pcie11,a0f7
-end package

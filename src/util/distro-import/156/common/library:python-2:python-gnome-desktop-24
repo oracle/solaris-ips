@@ -1,9 +1,0 @@
-package library/python-2/python-gnome-desktop-24
-consolidation "gnome"
-obsoleted 156
-end package
-
-package SUNWgnome-python-desktop
-consolidation "gnome"
-obsoleted 156
-end package

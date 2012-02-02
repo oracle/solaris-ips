@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2009, 2010, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2009, 2012, Oracle and/or its affiliates. All rights reserved.
 #
 
 import testutils
@@ -40,8 +40,6 @@ import urllib
 import urlparse
 import unittest
 import zlib
-
-path_to_pub_util = "../util/publish"
 
 
 class TestUtilMerge(pkg5unittest.ManyDepotTestCase):
@@ -135,6 +133,7 @@ class TestUtilMerge(pkg5unittest.ManyDepotTestCase):
                     self.amber20, self.bronze10, self.bronze20))
 
                 self.merge_dir = tempfile.mkdtemp(dir=self.test_root)
+                repo.repository_create(self.merge_dir)
 
         @staticmethod
         def get_repo(uri):
@@ -159,11 +158,9 @@ class TestUtilMerge(pkg5unittest.ManyDepotTestCase):
                         flist.append(f)
 
                 self.merge([
-                    "-r",
                     "-d %s" % self.merge_dir,
-                    "-v sparc,%s" % self.durl1,
-                    "-v i386,%s" % self.durl2,
-                    "arch",
+                    "-s arch=sparc,%s" % self.durl1,
+                    "-s arch=i386,%s" % self.durl2,
                     " ".join(pkg_names),
                 ])
 
@@ -207,8 +204,8 @@ class TestUtilMerge(pkg5unittest.ManyDepotTestCase):
                 # Now load the manifest file for each package and verify that
                 # the merged manifest matches expectations.
                 for f in nlist:
-                        mpath = os.path.join(self.merge_dir, f.pkg_name,
-                            "manifest")
+                        mpath = os.path.join(self.merge_dir, "publisher",
+                            "os.org", "pkg", f.get_dir_path())
 
                         m = open(mpath, "rb")
                         returned = "".join(sorted(l for l in m))

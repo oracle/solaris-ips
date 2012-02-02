@@ -1,6 +1,0 @@
-package SUNWscim-tables-korean
-consolidation "l10n"
-classification "System/Internationalization"
-import SUNWscim-tables-korean
-version 0.5.7
-end package

@@ -1,7 +1,0 @@
-package SUNWgnome-print
-consolidation "gnome"
-classification "Desktop (GNOME)/Libraries"
-import SUNWgnome-print
-import SUNWgnome-print-devel
-import SUNWgnome-print-root
-end package

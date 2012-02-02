@@ -1,6 +1,0 @@
-package SUNWgnome-a11y-mousetweaks
-consolidation "gnome"
-classification "Applications/Universal Access"
-import SUNWgnome-a11y-mousetweaks
-import SUNWgnome-a11y-mousetweaks-root
-end package

@@ -1,7 +1,0 @@
-package SUNWkrb
-consolidation "osnet"
-classification "System/Security"
-import SUNWkrbu
-import SUNWkrbr
-depend SUNWgssc
-end package

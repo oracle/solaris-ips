@@ -1,5 +1,0 @@
-package SUNWxorg-compatlinks
-consolidation "X"
-classification "System/X11"
-import SUNWxorg-compatlinks
-end package

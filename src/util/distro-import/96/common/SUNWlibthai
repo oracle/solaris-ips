@@ -1,7 +1,0 @@
-package SUNWlibthai
-consolidation "l10n"
-classification "System/Localizations"
-import SUNWlibthai
-import SUNWlibthai-devel
-version 0.1.9
-end package

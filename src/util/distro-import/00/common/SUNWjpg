@@ -1,6 +1,0 @@
-package SUNWjpg
-consolidation "gnome"
-classification "System/Multimedia Libraries"
-import SUNWjpg
-import SUNWjpg-devel
-end package

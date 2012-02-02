@@ -1,5 +1,0 @@
-package SUNWjre-config-plugin
-consolidation "gnome"
-classification "Applications/Plug-ins and Run-times"
-import SUNWjre-config-plugin
-end package

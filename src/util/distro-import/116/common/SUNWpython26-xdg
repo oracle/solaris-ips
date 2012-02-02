@@ -1,5 +1,0 @@
-package SUNWpython26-xdg
-consolidation "gnome"
-classification "Development/Python"
-import SUNWpython26-xdg
-end package

@@ -1,9 +1,0 @@
-package SUNWudaplt
-consolidation "osnet"
-classification "System/Hardware"
-import SUNWudapltu
-import SUNWudapltr
-
-add driver name=daplt \
-    perms="* 0644 root sys"
-end package

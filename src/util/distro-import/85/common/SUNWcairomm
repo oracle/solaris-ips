@@ -1,6 +1,0 @@
-package SUNWcairomm
-consolidation "gnome"
-classification "Desktop (GNOME)/Libraries"
-import SUNWcairomm
-import SUNWcairomm-devel
-end package

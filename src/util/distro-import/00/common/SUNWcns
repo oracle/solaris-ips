@@ -1,6 +1,0 @@
-package SUNWcns
-consolidation "osnet"
-classification "System/Services"
-import SUNWcnsu
-import SUNWcnsr
-end package

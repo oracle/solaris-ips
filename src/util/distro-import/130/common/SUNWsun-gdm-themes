@@ -1,5 +1,0 @@
-package SUNWsun-gdm-themes
-consolidation "gnome"
-classification "Desktop (GNOME)/Theming"
-import SUNWsun-gdm-themes
-end package

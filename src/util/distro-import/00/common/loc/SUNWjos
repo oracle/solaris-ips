@@ -1,5 +1,0 @@
-package SUNWjos
-consolidation "l10n"
-classification "System/Localizations"
-import SUNWjos
-end package

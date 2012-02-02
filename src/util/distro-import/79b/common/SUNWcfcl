@@ -1,8 +1,0 @@
-package SUNWcfcl
-classification "System/Libraries"
-import SUNWcfcl
-import SUNWcfclr
-from ./SUNWfixes import
-etc/hba.conf
-end import
-end package

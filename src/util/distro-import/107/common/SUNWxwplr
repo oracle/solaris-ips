@@ -1,9 +1,0 @@
-package SUNWxwplr
-classification "System/X11"
-import SUNWxwplr exclude var/svc/manifest/application/x11/xvnc-inetd.xml
-$(sparc_ONLY)drop var/svc/manifest/application/x11/x11-server.xml
-$(sparc_ONLY)add file x11-server.xml \
-$(sparc_ONLY)	path=var/svc/manifest/application/x11/x11-server.xml \
-$(sparc_ONLY)	mode=0444 owner=root group=sys \
-$(sparc_ONLY)	restart_fmri=svc:/system/manifest-import:default
-end package

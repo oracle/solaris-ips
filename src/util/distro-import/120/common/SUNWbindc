@@ -1,5 +1,0 @@
-package SUNWbindc
-classification "Applications/Internet"
-import SUNWbindc
-version 9.6.1
-end package

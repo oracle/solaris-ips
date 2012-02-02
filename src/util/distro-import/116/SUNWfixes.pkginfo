@@ -1,8 +1,0 @@
-PKG=SUNWfixes
-NAME=hack
-ARCH=i386
-VERSION=1.0
-CATEGORY=system
-DESC=file updates for new packaging system
-BASEDIR=/
-CLASSES=none

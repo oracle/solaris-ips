@@ -1,6 +1,0 @@
-package SUNWndmp
-consolidation "osnet"
-classification "System/Services"
-import SUNWndmpu
-import SUNWndmpr
-end package

@@ -1,5 +1,0 @@
-package SUNWvdisk
-consolidation "xvm"
-classification "Applications/System Utilities"
-import SUNWvdisk
-end package

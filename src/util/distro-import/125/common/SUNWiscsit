@@ -1,9 +1,0 @@
-package SUNWiscsit
-consolidation "osnet"
-classification "System/Hardware"
-import SUNWiscsitr
-import SUNWiscsitu
-
-add driver name=iscsit \
-    perms="* 0600 root sys"
-end package

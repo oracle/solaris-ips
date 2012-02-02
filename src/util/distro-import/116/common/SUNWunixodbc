@@ -1,7 +1,0 @@
-package SUNWunixodbc
-consolidation "sfw"
-classification "Development/Databases"
-import SUNWunixodbc
-import SUNWunixodbcr
-version 2.2.14
-end package

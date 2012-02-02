@@ -1,6 +1,0 @@
-package SUNWafb
-classification "Drivers/Display"
-import SUNWafb.u
-import SUNWafbr
-add driver name=afb perms="* 0666 root sys" alias=SUNW,afb
-end package

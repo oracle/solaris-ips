@@ -1,7 +1,0 @@
-package SUNWpen
-consolidation "sfw"
-classification "Applications/Internet"
-import SUNWpen
-import SUNWpenr
-version 0.18.0
-end package

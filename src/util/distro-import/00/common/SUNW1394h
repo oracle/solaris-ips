@@ -1,5 +1,0 @@
-package SUNW1394h
-consolidation "osnet"
-classification "Development/System"
-import SUNW1394h
-end package

@@ -1,5 +1,0 @@
-package SUNWnetcat
-consolidation "osnet"
-classification "Applications/Internet"
-import SUNWnetcat
-end package

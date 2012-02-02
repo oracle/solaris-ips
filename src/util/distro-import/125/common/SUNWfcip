@@ -1,8 +1,0 @@
-package SUNWfcip
-consolidation "osnet"
-classification "Drivers/Ports"
-import SUNWfcip
-
-add driver name=fcip \
-    perms="* 0600 root sys"
-end package

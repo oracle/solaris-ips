@@ -1,8 +1,0 @@
-package SUNWapch22m-proxy-html
-consolidation "sfw"
-classification "Web Services/Application and Web Servers"
-import SUNWapch22m-proxy-html
-import SUNWapch22r-proxy-html
-depend SUNWapch22m-xml2enc
-version 3.1.1
-end package

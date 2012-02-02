@@ -1,6 +1,0 @@
-package library/libproxy/libproxy-gnome
-consolidation "gnome"
-classification "System/Libraries"
-import SUNWlibproxy-gnome
-version 0.3.1
-end package

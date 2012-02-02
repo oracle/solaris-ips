@@ -1,6 +1,0 @@
-package SUNWTk
-consolidation "sfw"
-classification "Development/Other Languages"
-import SUNWTk
-version 8.4.18
-end package

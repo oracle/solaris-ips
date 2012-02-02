@@ -1,4 +1,0 @@
-package SUNWmptsas
-classification "Drivers/Storage"
-import SUNWmptsas
-end package

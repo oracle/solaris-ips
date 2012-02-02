@@ -1,5 +1,0 @@
-package SUNWlibcanberra
-classification "System/Multimedia Libraries"
-import SUNWlibcanberra
-import SUNWlibcanberra-devel
-end package

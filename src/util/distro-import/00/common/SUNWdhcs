@@ -1,9 +1,0 @@
-package SUNWdhcs
-consolidation "osnet"
-classification "System/Services"
-import SUNWdhcsu
-import SUNWdhcsr
-depend SUNWdhcm
-depend SUNWbip
-depend SUNWj6rt
-end package

@@ -1,5 +1,0 @@
-package SUNWrdc
-import SUNWrdcu
-import SUNWrdcr
-add driver name=rdc perms="* 0666 root sys" privs=sys_devices privs=sys_config
-end package

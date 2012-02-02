@@ -1,6 +1,0 @@
-package SUNWdbus
-consolidation "gnome"
-classification "System/Services"
-import SUNWdbus
-import SUNWdbus-root
-end package

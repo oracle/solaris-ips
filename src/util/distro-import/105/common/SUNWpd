@@ -1,8 +1,0 @@
-package SUNWpd
-classification "Drivers/Other Peripherals"
-import SUNWpd
-$(i386_ONLY)add driver name=glm class=scsi perms="* 0755 root sys" \
-$(i386_ONLY)	alias=pci1000,b
-$(sparc_ONLY)add driver name=ecpp perms="* 0666 root sys" \
-$(sparc_ONLY)	alias=pnpALI,1533,3 alias=ns87317-ecpp
-end package

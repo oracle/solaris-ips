@@ -1,4 +1,0 @@
-package SUNWscp
-import SUNWscpu
-import SUNWscpr
-end package

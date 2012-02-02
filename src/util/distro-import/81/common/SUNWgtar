@@ -1,5 +1,0 @@
-package SUNWgtar
-classification "Development/GNU"
-import SUNWgtar
-version 1.17
-end package

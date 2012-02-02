@@ -1,6 +1,0 @@
-package SUNWgnome-intranet-applets
-consolidation "gnome"
-classification "Applications/Panels and Applets"
-import SUNWgnome-intranet-applets
-import SUNWgnome-intranet-applets-root
-end package

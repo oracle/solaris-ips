@@ -1,5 +1,0 @@
-package SUNWzfskr
-consolidation "osnet"
-depend SUNWzfs
-renamed 130
-end package

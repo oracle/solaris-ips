@@ -1,6 +1,0 @@
-package SUNWevolution-libs
-consolidation "gnome"
-classification "Applications/Internet"
-import SUNWevolution-libs
-import SUNWevolution-libs-devel
-end package

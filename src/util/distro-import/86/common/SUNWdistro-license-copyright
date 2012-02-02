@@ -1,5 +1,0 @@
-package SUNWdistro-license-copyright
-consolidation "solaris_re"
-classification "System/Core"
-import SUNWdistro-license
-end package

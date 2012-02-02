@@ -1,6 +1,0 @@
-package SUNWrdiff-backup
-consolidation "sfw"
-classification "Applications/System Utilities"
-import SUNWrdiff-backup
-version 1.2.1
-end package

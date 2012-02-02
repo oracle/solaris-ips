@@ -1,8 +1,0 @@
-package SUNWgpch
-consolidation "sfw"
-classification "Development/GNU"
-import SUNWgpch
-add link path=usr/bin/patch target=gpatch
-add link path=usr/share/man/man1/patch.1 target=gpatch.1
-version 2.5.9
-end package

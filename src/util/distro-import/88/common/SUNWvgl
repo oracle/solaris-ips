@@ -1,6 +1,0 @@
-package SUNWvgl
-consolidation "gfx"
-classification "System/Hardware"
-import SUNWvgl
-version 2.1
-end package

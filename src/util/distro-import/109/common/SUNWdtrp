@@ -1,5 +1,0 @@
-package SUNWdtrp
-classification "Development/System"
-import SUNWdtrp
-add driver name=dcpc
-end package

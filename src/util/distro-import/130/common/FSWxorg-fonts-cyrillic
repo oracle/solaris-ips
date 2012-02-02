@@ -1,5 +1,0 @@
-package FSWxorg-fonts-cyrillic
-consolidation "X"
-depend SUNWfont-xorg-cyrillic
-renamed 130
-end package

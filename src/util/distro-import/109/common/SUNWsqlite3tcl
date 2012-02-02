@@ -1,5 +1,0 @@
-package SUNWsqlite3tcl
-classification "Development/Databases"
-import SUNWsqlite3tcl
-version 3.6.7
-end package

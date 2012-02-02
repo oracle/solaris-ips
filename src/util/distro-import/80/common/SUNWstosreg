@@ -1,5 +1,0 @@
-package SUNWstosreg
-consolidation "install"
-classification "System/Core"
-import SUNWstosreg
-end package

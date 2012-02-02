@@ -1,7 +1,0 @@
-package SUNWlogilab-astng
-consolidation "sfw"
-classification "Development/Python"
-import SUNWlogilab-astng
-depend SUNWlogilab-common
-version 0.19.0
-end package

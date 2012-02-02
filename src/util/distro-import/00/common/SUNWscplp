@@ -1,5 +1,0 @@
-package SUNWscplp
-consolidation "osnet"
-classification "System/Printing"
-import SUNWscplp
-end package

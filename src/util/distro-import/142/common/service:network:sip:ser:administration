@@ -1,9 +1,0 @@
-package service/network/sip/ser/administration
-consolidation "sfw"
-obsoleted 142
-end package
-
-package SUNWserweb
-consolidation "sfw"
-obsoleted 142
-end package

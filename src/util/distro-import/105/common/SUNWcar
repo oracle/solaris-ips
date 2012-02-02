@@ -1,9 +1,0 @@
-package SUNWcar
-consolidation "osnet"
-classification "System/Core"
-$(i386_ONLY)import SUNWcar.i
-$(i386_ONLY)import SUNWcarx.i
-$(sparc_ONLY)import SUNWcar.u exclude etc/flash/precreation/caplib
-$(sparc_ONLY)import SUNWcar.v
-$(sparc_ONLY)import SUNWcart200.v
-end package

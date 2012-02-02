@@ -1,6 +1,0 @@
-package SUNWrelaxngDatatype
-consolidation "sfw"
-classification "Development/Java"
-import SUNWrelaxngDatatype
-version 1.0
-end package

@@ -1,8 +1,0 @@
-package SUNWxwdxm
-consolidation "X"
-classification "System/X11"
-import SUNWxwdxm exclude usr/openwin
-# Obsolete - replaced by /usr/openwin -> X11 symlink
-drop usr/openwin/lib
-drop usr/openwin/lib/libdpstkXm.so.5
-end package

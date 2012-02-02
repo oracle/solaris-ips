@@ -1,5 +1,0 @@
-package SUNWgnome-img-editor-help-ko
-consolidation "gnome_l10n"
-classification "Applications/Graphics and Imaging"
-import SUNWgnome-img-editor-help-ko
-end package

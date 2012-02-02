@@ -1,4 +1,0 @@
-package SUNWxorg-xkb
-classification "System/X11"
-import SUNWxorg-xkb
-end package

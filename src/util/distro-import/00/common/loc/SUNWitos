@@ -1,5 +1,0 @@
-package SUNWitos
-consolidation "l10n"
-classification "System/Localizations"
-import SUNWitos
-end package

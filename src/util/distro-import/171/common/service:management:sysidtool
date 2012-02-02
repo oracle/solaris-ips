@@ -1,9 +1,0 @@
-package service/management/sysidtool
-consolidation "admin"
-obsoleted 171
-end package
-
-package SUNWadmr
-consolidation "admin"
-obsoleted 171
-end package

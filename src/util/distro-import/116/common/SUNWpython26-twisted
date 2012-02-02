@@ -1,7 +1,0 @@
-package SUNWpython26-twisted
-consolidation "gnome"
-classification "Development/Python"
-import SUNWpython26-twisted
-depend SUNWPython26
-depend SUNWpython26-zope-interface
-end package

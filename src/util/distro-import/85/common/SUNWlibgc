@@ -1,6 +1,0 @@
-package SUNWlibgc
-consolidation "gnome"
-classification "Development/C++"
-import SUNWlibgc
-import SUNWlibgc-devel
-end package

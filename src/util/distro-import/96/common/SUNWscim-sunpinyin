@@ -1,6 +1,0 @@
-package SUNWscim-sunpinyin
-consolidation "l10n"
-classification "System/Internationalization"
-import SUNWscim-sunpinyin
-version 1.0
-end package

@@ -1,6 +1,0 @@
-package SUNWsigcpp
-consolidation "gnome"
-classification "Development/C++"
-import SUNWsigcpp
-import SUNWsigcpp-devel
-end package

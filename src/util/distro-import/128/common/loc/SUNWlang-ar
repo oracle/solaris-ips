@@ -1,6 +1,0 @@
-package SUNWlang-ar
-consolidation "l10n"
-classification "System/Localizations"
-import SUNWlang-ar
-depend SUNWlang-arEG
-end package

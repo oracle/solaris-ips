@@ -1,5 +1,0 @@
-package SUNWsprot
-consolidation "sunpro"
-classification "Development/Source Code Management"
-import SUNWsprot
-end package

@@ -550,11 +550,6 @@ def gen_actions(files, timestamp_files, target_files, minimal=False, visitors=[]
                                 else:
                                         action.attrs.pop("timestamp", None)
 
-                        if action.name == "license":
-                                # The bundle code provides this for the importer,
-                                # but it is unnecessary in all other cases.
-                                action.attrs.pop("path", None)
-
                         if minimal:
                                 # pkgsend import needs attributes such as size
                                 # retained so that the publication modules know

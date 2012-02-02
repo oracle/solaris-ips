@@ -1,5 +1,0 @@
-package SUNWugen
-classification "Drivers/Ports"
-import SUNWugen
-add driver name=ugen perms="* 0644 root sys"
-end package

@@ -1,6 +1,0 @@
-package SUNWmrtg
-consolidation "sfw"
-classification "Applications/Internet"
-import SUNWmrtg
-version 2.16.2
-end package

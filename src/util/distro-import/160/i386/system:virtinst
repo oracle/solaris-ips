@@ -1,9 +1,0 @@
-package system/virtinst
-consolidation "xvm"
-obsoleted 160
-end package
-
-package SUNWvirtinst
-consolidation "xvm"
-obsoleted 160
-end package

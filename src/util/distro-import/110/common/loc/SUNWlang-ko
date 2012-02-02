@@ -1,6 +1,0 @@
-package SUNWlang-ko
-consolidation "l10n"
-classification "System/Localizations"
-import SUNWlang-ko
-depend SUNWlang-common
-end package

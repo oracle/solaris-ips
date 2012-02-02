@@ -1,6 +1,0 @@
-package SUNWlibunique
-consolidation "gnome"
-classification "System/Libraries"
-import SUNWlibunique
-import SUNWlibunique-devel
-end package

@@ -1,6 +1,0 @@
-package SUNWmysql-python26
-consolidation "gnome"
-classification "Development/Databases"
-import SUNWmysql-python26
-depend SUNWmysql51
-end package

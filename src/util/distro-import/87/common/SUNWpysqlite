@@ -1,6 +1,0 @@
-package SUNWpysqlite
-consolidation "gnome"
-classification "Development/Databases"
-import SUNWpysqlite
-version 2.4.1
-end package

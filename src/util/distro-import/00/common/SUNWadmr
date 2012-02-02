@@ -1,5 +1,0 @@
-package SUNWadmr
-consolidation "install"
-classification "System/Administration and Configuration"
-import SUNWadmr
-end package

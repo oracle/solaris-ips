@@ -1,7 +1,0 @@
-package SUNWnet-snmp-addons
-consolidation "sfw"
-classification "System/Enterprise Management"
-import SUNWnet-snmp-addons
-version 5.4.1
-depend SUNWnet-snmp-core
-end package

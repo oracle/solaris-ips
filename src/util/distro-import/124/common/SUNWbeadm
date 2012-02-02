@@ -1,9 +1,0 @@
-package SUNWbeadm
-consolidation "install"
-classification "System/Core"
-import SUNWbeadm
-add file exec_attr.SUNWbeadm path=etc/security/exec_attr mode=0644 \
-	owner=root group=sys preserve=true
-add file prof_attr.SUNWbeadm path=etc/security/prof_attr mode=0644 \
-	owner=root group=sys preserve=true
-end package

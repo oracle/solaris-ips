@@ -1,5 +1,0 @@
-package SUNWidnd
-consolidation "l10n"
-classification "System/Internationalization"
-import SUNWidnd
-end package

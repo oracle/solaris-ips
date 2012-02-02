@@ -1,5 +1,0 @@
-package SUNWblueprint
-consolidation "gnome"
-classification "Desktop (GNOME)/Theming"
-import SUNWblueprint
-end package

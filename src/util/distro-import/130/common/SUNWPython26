@@ -1,7 +1,0 @@
-package SUNWPython26
-consolidation "gnome"
-classification "Development/Python"
-import SUNWPython26
-import SUNWPython26-devel
-version 2.6.4
-end package

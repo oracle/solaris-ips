@@ -1,5 +1,0 @@
-package SUNWisolc
-consolidation "l10n"
-classification "System/Text Tools"
-import SUNWisolc
-end package

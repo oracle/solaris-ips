@@ -1,5 +1,0 @@
-package SUNWgnome-menu-editor
-consolidation "gnome"
-classification "Applications/Configuration and Preferences"
-import SUNWgnome-menu-editor
-end package

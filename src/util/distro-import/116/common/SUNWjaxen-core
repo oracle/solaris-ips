@@ -1,6 +1,0 @@
-package SUNWjaxen-core
-consolidation "sfw"
-classification "Development/Java"
-import SUNWjaxen-core
-version 1.1.1
-end package

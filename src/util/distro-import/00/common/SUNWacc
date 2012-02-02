@@ -1,6 +1,0 @@
-package SUNWacc
-consolidation "osnet"
-classification "System/Administration and Configuration"
-import SUNWaccu
-import SUNWaccr
-end package

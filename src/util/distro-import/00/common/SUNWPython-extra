@@ -1,5 +1,0 @@
-package SUNWPython-extra
-consolidation "gnome"
-classification "Development/Python"
-import SUNWPython-extra
-end package

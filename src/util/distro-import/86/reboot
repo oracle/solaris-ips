@@ -1,6 +1,0 @@
-# tag kernel binaries as needing reboot
-chattr_glob kernel/* type file reboot_needed=true
-chattr_glob kernel/*.conf type file reboot_needed=false
-chattr_glob platform/* type file reboot_needed=true
-chattr_glob platform/*.conf type file reboot_needed=false
-# See SUNWcsl for tags for other libraries

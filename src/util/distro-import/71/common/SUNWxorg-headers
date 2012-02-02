@@ -1,5 +1,0 @@
-package SUNWxorg-headers
-# XKBsrv.h is removed to work around 6594768, fixed in 73.
-import SUNWxorg-headers
-drop usr/X11/include/X11/extensions/XKBsrv.h
-end package

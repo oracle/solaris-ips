@@ -1,6 +1,0 @@
-package SUNWlibsdl
-consolidation "gnome"
-classification "System/Libraries"
-import SUNWlibsdl
-import SUNWlibsdl-devel
-end package

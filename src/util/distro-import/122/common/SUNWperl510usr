@@ -1,6 +1,0 @@
-package SUNWperl510usr
-consolidation "sfw"
-classification "Development/Perl"
-import SUNWperl510usr
-version 5.10.0
-end package

@@ -1,5 +1,0 @@
-package SUNWqlcu
-consolidation "osnet"
-classification "System/Hardware"
-import SUNWqlcu
-end package

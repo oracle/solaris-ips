@@ -1,5 +1,0 @@
-package SUNWgnome-dtstart
-consolidation "gnome"
-depend SUNWdesktop-startup
-renamed 130
-end package

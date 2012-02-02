@@ -1,6 +1,0 @@
-package SUNWust
-classification "System/Core"
-import SUNWusat10.v
-import SUNWust1.v
-import SUNWust2.v
-end package

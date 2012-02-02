@@ -1,5 +1,0 @@
-package SUNWpostgr-pl
-classification "Development/Databases"
-import SUNWpostgr-pl
-version 8.1.11
-end package

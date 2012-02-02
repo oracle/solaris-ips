@@ -1,7 +1,0 @@
-package SUNWpango
-consolidation "gnome"
-classification "Desktop (GNOME)/Libraries"
-import SUNWpango
-import SUNWpango-devel
-import SUNWpango-root
-end package

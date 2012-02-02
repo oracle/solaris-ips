@@ -1,6 +1,0 @@
-package network/open-fabrics
-consolidation "sfw"
-classification "System/Administration and Configuration"
-import SUNWofusr
-version 1.3
-end package

@@ -1,9 +1,0 @@
-package library/desktop/gobject/gir-repository
-consolidation "gnome"
-obsoleted 152
-end package
-
-package SUNWgir-repository
-consolidation "gnome"
-obsoleted 152
-end package

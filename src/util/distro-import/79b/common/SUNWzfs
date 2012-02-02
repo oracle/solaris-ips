@@ -1,5 +1,0 @@
-package SUNWzfs
-classification "System/File System"
-import SUNWzfsu
-import SUNWzfsr
-end package

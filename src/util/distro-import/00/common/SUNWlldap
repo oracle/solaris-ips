@@ -1,5 +1,0 @@
-package SUNWlldap
-consolidation "osnet"
-classification "System/Libraries"
-import SUNWlldap
-end package

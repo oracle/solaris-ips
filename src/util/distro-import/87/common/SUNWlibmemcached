@@ -1,6 +1,0 @@
-package SUNWlibmemcached
-consolidation "sfw"
-classification "System/Libraries"
-import SUNWlibmemcached
-version 0.16
-end package

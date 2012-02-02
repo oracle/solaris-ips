@@ -1,6 +1,0 @@
-package SUNWrmvolmgr
-consolidation "osnet"
-classification "System/Media"
-import SUNWrmvolmgr
-import SUNWrmvolmgrr
-end package

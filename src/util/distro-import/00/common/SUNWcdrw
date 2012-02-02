@@ -1,5 +1,0 @@
-package SUNWcdrw
-consolidation "osnet"
-classification "System/Media"
-import SUNWcdrw
-end package

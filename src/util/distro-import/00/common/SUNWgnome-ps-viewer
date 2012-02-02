@@ -1,5 +1,0 @@
-package SUNWgnome-ps-viewer
-consolidation "gnome"
-classification "Applications/Office"
-import SUNWgnome-ps-viewer
-end package

@@ -1,6 +1,0 @@
-package SUNWgnu-emacs
-consolidation "sfw"
-classification "Development/Editors"
-import SUNWgnu-emacs
-version 23.1
-end package

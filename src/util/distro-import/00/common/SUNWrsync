@@ -1,5 +1,0 @@
-package SUNWrsync
-classification "Applications/System Utilities"
-import SUNWrsync
-version 2.6.9
-end package

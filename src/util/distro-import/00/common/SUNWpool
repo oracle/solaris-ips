@@ -1,5 +1,0 @@
-package SUNWpool
-classification "System/Core"
-import SUNWpool
-import SUNWpoolr
-end package

@@ -1,6 +1,0 @@
-package SUNWlibhangul
-consolidation "l10n"
-classification "System/Localizations"
-import SUNWlibhangul
-import SUNWlibhangul-devel
-end package

@@ -1,7 +1,0 @@
-package SUNWpciaccess
-consolidation "X"
-classification "System/Hardware"
-import SUNWpciaccess
-depend_path /usr/share/hwdata/pci.ids
-version 0.10.9
-end package

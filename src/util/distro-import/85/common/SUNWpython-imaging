@@ -1,5 +1,0 @@
-package SUNWpython-imaging
-consolidation "gnome"
-classification "Development/Python"
-import SUNWpython-imaging
-end package

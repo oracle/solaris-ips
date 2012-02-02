@@ -1,6 +1,0 @@
-package SUNWibus-table-data-yong
-consolidation "l10n"
-classification "System/Internationalization"
-import SUNWibus-table-data-yong
-version 1.1.0
-end package

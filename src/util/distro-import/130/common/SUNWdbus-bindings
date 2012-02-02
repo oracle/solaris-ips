@@ -1,6 +1,0 @@
-package SUNWdbus-bindings
-consolidation "gnome"
-depend SUNWdbus-glib
-depend SUNWdbus-python24
-renamed 130
-end package

@@ -1,5 +1,0 @@
-package SUNWsqlite3
-classification "System/Databases"
-import SUNWsqlite3
-version 3.6.7
-end package

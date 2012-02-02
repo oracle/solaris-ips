@@ -1,9 +1,0 @@
-package SUNW1394
-consolidation "osnet"
-classification "System/Hardware"
-import SUNW1394
-
-add driver name=hci1394 \
-    perms="* 0600 root sys" \
-    alias="pciclass,0c0010"
-end package

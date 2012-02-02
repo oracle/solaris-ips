@@ -1,6 +1,0 @@
-package SUNWphp524doc
-consolidation "sfw"
-version 5.2.4
-depend SUNWphp52d
-renamed 130
-end package

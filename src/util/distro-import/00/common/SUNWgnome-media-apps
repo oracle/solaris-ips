@@ -1,7 +1,0 @@
-package SUNWgnome-media-apps
-consolidation "gnome"
-classification "Applications/Sound and Video"
-import SUNWgnome-media-apps
-import SUNWgnome-media-apps-devel
-import SUNWgnome-media-apps-root
-end package

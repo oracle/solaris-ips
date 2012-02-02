@@ -1,5 +1,0 @@
-package SUNWqlc
-classification "Drivers/Ports"
-import SUNWqlc
-add driver name=qlc class=fibre-channel perms="* 0600 root sys" alias=pci1077,2200 alias=pci1077,2300 alias=pci1077,2312 alias=pci1077,2422 alias=pciex1077,2432 alias=pciex1077,5432 alias=pciex1077,2532
-end package

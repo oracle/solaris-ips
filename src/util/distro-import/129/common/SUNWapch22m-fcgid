@@ -1,7 +1,0 @@
-package SUNWapch22m-fcgid
-consolidation "sfw"
-classification "Web Services/Application and Web Servers"
-import SUNWapch22m-fcgid
-import SUNWapch22r-fcgid
-version 2.3.4
-end package

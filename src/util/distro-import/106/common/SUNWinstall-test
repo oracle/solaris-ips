@@ -1,5 +1,0 @@
-package SUNWinstall-test
-consolidation "install"
-classification "System/Administration and Configuration"
-import SUNWinstall-test
-end package

@@ -1,7 +1,0 @@
-package SUNWsimplewbem
-consolidation "sfw"
-classification "System/Enterprise Management"
-import SUNWsimplewbem
-version 1.2.4
-depend SUNWcimserver
-end package

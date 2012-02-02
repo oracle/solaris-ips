@@ -1,6 +1,0 @@
-package SUNWp7zip
-consolidation "sfw"
-classification "System/Core"
-import SUNWp7zip
-version 4.55
-end package

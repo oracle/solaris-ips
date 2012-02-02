@@ -1,5 +1,0 @@
-package SUNWfcmdb
-consolidation "osnet"
-classification "System/Hardware"
-import SUNWfcmdb
-end package

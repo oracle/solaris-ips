@@ -1,6 +1,0 @@
-package SUNWgnome-config-editor
-consolidation "gnome"
-classification "Applications/Configuration and Preferences"
-import SUNWgnome-config-editor
-import SUNWgnome-config-editor-root
-end package

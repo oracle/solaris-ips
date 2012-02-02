@@ -1,5 +1,0 @@
-package SUNWtls
-consolidation "sic_team"
-classification "System/Security"
-import SUNWtls
-end package

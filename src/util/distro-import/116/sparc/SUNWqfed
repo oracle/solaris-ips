@@ -1,5 +1,0 @@
-package SUNWqfed
-classification "Drivers/Networking"
-import SUNWqfed
-add driver name=qfe alias=SUNW,qfe
-end package

@@ -1,5 +1,0 @@
-package SUNWdialog
-consolidation "gnome"
-classification "Applications/System Utilities"
-import SUNWdialog
-end package

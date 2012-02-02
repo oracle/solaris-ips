@@ -1,5 +1,0 @@
-package SUNWipc
-consolidation "osnet"
-classification "System/Core"
-import SUNWipc
-end package

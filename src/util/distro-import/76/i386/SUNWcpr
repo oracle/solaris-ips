@@ -1,5 +1,0 @@
-package SUNWcpr
-classification "System/Hardware"
-import SUNWcpr.i
-add driver name=srn
-end package

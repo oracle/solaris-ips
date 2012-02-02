@@ -1,6 +1,0 @@
-package SUNWapch22m-security
-classification "Web Services/Application and Web Servers"
-import SUNWapch22m-security
-import SUNWapch22r-security
-version 2.5.7
-end package

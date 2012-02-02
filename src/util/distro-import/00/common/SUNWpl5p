@@ -1,5 +1,0 @@
-package SUNWpl5p
-classification "Development/Perl"
-import SUNWpl5p
-version 5.6.1
-end package

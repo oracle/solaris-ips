@@ -1,6 +1,0 @@
-package SUNWgamin
-consolidation "gnome"
-classification "System/Libraries"
-import SUNWgamin
-import SUNWgamin-devel
-end package

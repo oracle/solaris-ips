@@ -1,6 +1,0 @@
-package SUNWevolution-data-server
-consolidation "gnome"
-classification "Applications/Internet"
-import SUNWevolution-data-server
-import SUNWevolution-data-server-devel
-end package

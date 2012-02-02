@@ -1,4 +1,0 @@
-package SUNWipkg
-import SUNWipkg
-depend SUNWpython-cherrypy@3.1.0
-end package

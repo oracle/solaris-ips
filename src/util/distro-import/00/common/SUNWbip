@@ -1,6 +1,0 @@
-package SUNWbip
-consolidation "osnet"
-classification "Applications/System Utilities"
-import SUNWbip
-import SUNWbipr
-end package

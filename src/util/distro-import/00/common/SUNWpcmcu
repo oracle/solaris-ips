@@ -1,5 +1,0 @@
-package SUNWpcmcu
-consolidation "osnet"
-classification "System/Hardware"
-import SUNWpcmcu
-end package

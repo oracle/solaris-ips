@@ -1,7 +1,0 @@
-package FSWxorg-fonts-syriac
-consolidation "X"
-classification "System/Fonts"
-import FSWxorg-fonts-syriac
-add link path=etc/X11/fontpath.d/syriac:pri=61 \
-	target=../../../usr/X11/lib/X11/fonts/syriac
-end package

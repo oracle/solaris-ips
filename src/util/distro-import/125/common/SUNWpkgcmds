@@ -1,6 +1,0 @@
-package SUNWpkgcmds
-consolidation "osnet"
-classification "System/Packaging"
-import SUNWpkgcmdsu
-import SUNWpkgcmdsr
-end package

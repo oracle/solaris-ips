@@ -1,4 +1,0 @@
-package SUNWluxd
-classification "Drivers/Storage"
-import SUNWluxd.u
-end package

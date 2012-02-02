@@ -1,8 +1,0 @@
-package SUNWfreeipmi
-consolidation "sfw"
-classification "System/Hardware"
-import SUNWfreeipmir
-import SUNWfreeipmiu
-depend SUNWesu
-version 0.7.7
-end package

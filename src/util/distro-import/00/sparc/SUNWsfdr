@@ -1,6 +1,0 @@
-package SUNWsfdr
-consolidation "osnet"
-classification "System/Enterprise Management"
-import SUNWsfdr.u
-import SUNWsfdrr.u
-end package

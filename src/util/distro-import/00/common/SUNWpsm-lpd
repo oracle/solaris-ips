@@ -1,5 +1,0 @@
-package SUNWpsm-lpd
-consolidation "osnet"
-classification "System/Printing"
-import SUNWpsm-lpd
-end package

@@ -1,5 +1,0 @@
-package SUNWsmbfskr
-consolidation "osnet"
-depend SUNWsmbfs
-renamed 130
-end package

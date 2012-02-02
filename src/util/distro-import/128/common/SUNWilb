@@ -1,6 +1,0 @@
-package SUNWilb
-consolidation "osnet"
-classification "System/Administration and Configuration"
-import SUNWilb
-import SUNWilbr
-end package

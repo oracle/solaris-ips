@@ -1,6 +1,0 @@
-package SUNWudapl
-consolidation "osnet"
-classification "System/Libraries"
-import SUNWudaplu
-import SUNWudaplr
-end package

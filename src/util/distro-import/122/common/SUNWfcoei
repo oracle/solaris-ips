@@ -1,5 +1,0 @@
-package SUNWfcoei
-classification "Drivers/Storage"
-import SUNWfcoei
-add driver name=fcoei perms="* 0600 root sys"
-end package

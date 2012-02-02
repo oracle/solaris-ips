@@ -1,7 +1,0 @@
-package SUNWslocate
-consolidation "gnome"
-classification "Applications/System Utilities"
-import SUNWslocate
-import SUNWslocate-root
-add group groupname=slocate gid=95
-end package

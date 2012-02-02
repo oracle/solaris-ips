@@ -1,5 +1,0 @@
-package SUNWauto-install-common
-consolidation "install"
-classification "System/Administration and Configuration"
-import SUNWauto-install-common
-end package

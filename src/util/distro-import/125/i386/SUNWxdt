@@ -1,7 +1,0 @@
-package SUNWxdt
-consolidation "osnet"
-classification "Development/System"
-import SUNWxdt
-
-add driver name=xdt
-end package

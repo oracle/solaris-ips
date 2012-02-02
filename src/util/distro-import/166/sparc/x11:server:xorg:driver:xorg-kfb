@@ -1,9 +1,0 @@
-package x11/server/xorg/driver/xorg-kfb
-consolidation "smcc"
-obsoleted 166
-end package
-
-package SUNWkfbw
-consolidation "smcc"
-obsoleted 166
-end package

@@ -1,5 +1,0 @@
-package FSWxorg-fonts-jiskan
-consolidation "X"
-depend SUNWfont-jis-misc
-renamed 130
-end package

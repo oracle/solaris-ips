@@ -1,5 +1,0 @@
-package SUNWnmap
-classification "System/Administration and Configuration"
-import SUNWnmap
-version 4.20
-end package

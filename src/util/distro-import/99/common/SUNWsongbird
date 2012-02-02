@@ -1,6 +1,0 @@
-package SUNWsongbird
-classification "Applications/Sound and Video"
-import SUNWsongbird
-add link path=usr/lib/songbird-0.7.0/xulrunner/libnssckbi.so \
-	target=../../firefox/libnssckbi.so
-end package

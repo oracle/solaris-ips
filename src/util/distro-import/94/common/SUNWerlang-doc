@@ -1,6 +1,0 @@
-package SUNWerlang-doc
-consolidation "sfw"
-classification "Development/Other Languages"
-import SUNWerlang-doc
-version 12.1.1
-end package

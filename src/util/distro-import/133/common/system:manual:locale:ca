@@ -1,5 +1,0 @@
-package system/manual/locale/ca
-consolidation "l10n"
-classification "System/Text Tools"
-import SUNWman-l10n-ca
-end package

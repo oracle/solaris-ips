@@ -1,6 +1,0 @@
-package SUNWpostgr-83-tcl
-consolidation "sfw"
-classification "Development/Databases"
-import SUNWpostgr-83-tcl
-version 1.5
-end package

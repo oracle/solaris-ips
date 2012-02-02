@@ -1,6 +1,0 @@
-package SUNWlibproxy
-consolidation "gnome"
-classification "System/Libraries"
-import SUNWlibproxy
-import SUNWlibproxy-devel
-end package

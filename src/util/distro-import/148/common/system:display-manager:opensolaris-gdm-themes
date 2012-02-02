@@ -1,9 +1,0 @@
-package system/display-manager/opensolaris-gdm-themes
-consolidation "gnome"
-obsoleted 148
-end package
-
-package SUNWopensolaris-gdm-themes
-consolidation "gnome"
-obsoleted 148
-end package

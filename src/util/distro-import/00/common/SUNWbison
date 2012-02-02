@@ -1,6 +1,0 @@
-package SUNWbison
-consolidation "sfw"
-classification "Development/Other Languages"
-import SUNWbison
-version 2.3
-end package

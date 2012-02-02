@@ -1,5 +1,0 @@
-package SUNWtsclient
-consolidation "gnome"
-classification "Applications/Internet"
-import SUNWtsclient
-end package

@@ -1,6 +1,0 @@
-package SUNWpostgr-83-server
-classification "System/Databases"
-import SUNWpostgr-83-server
-import SUNWpostgr-83-server-data-root
-version 8.3.4
-end package

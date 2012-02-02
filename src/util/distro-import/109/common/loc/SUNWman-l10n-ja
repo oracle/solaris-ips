@@ -1,6 +1,0 @@
-package SUNWman-l10n-ja
-consolidation "l10n"
-classification "System/Text Tools"
-import SUNWman-l10n-ja
-depend SUNWjdoc
-end package

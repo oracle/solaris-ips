@@ -1,8 +1,0 @@
-package SUNWluxl
-consolidation "osnet"
-classification "Drivers/Storage"
-import SUNWluxl
-
-add driver name=socal \
-    alias=SUNW,socal
-end package

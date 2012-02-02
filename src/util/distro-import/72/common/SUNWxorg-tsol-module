@@ -1,5 +1,0 @@
-package SUNWxorg-tsol-module
-consolidation "X"
-classification "System/Trusted"
-import SUNWxorg-tsol-module
-end package

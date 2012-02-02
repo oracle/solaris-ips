@@ -1,5 +1,0 @@
-package SUNWpostgr-82-contrib
-classification "System/Databases"
-import SUNWpostgr-82-contrib
-version 8.2.13
-end package

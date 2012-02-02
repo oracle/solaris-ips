@@ -1,7 +1,0 @@
-package SUNWevolution
-consolidation "gnome"
-classification "Applications/Internet"
-import SUNWevolution
-import SUNWevolution-devel
-import SUNWevolution-root
-end package

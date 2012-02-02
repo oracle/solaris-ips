@@ -1,5 +1,0 @@
-package SUNWesu
-consolidation "osnet"
-classification "System/Core"
-import SUNWesu
-end package

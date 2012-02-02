@@ -1,6 +1,0 @@
-package SUNWmysql-python
-classification "Development/Databases"
-import SUNWmysql-python
-depend SUNWPython
-depend SUNWmysql5
-end package

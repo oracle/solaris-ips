@@ -1,5 +1,0 @@
-package SUNWcdhcm
-consolidation "l10n"
-classification "System/Services"
-import SUNWcdhcm
-end package

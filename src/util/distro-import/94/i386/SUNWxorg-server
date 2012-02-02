@@ -1,8 +1,0 @@
-package SUNWxorg-server
-classification "System/X11"
-import SUNWxorg-server exclude usr/X11/lib/X11/fonts/100dpi usr/X11/lib/X11/fonts/75dpi usr/X11/lib/X11/fonts/misc
-depend SUNWxorg-xkb
-depend SUNWxsvc
-drop usr/X11/lib/X11/fonts/F3bitmaps
-drop usr/X11/lib/X11/fonts/TrueType
-end package

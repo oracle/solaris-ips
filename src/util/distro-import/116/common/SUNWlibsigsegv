@@ -1,6 +1,0 @@
-package SUNWlibsigsegv
-consolidation "sfw"
-classification "System/Libraries"
-import SUNWlibsigsegv
-version 2.6
-end package

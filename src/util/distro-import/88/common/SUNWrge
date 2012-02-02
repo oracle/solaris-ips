@@ -1,5 +1,0 @@
-package SUNWrge
-classification "Drivers/Networking"
-import SUNWrge
-add driver name=rge perms="* 0666 root sys" clone_perms="0666 root sys" alias=pci10ec,8169 alias=pci10ec,8168 alias=pci10ec,8167 alias=pci16ec,116 alias=pci10ec,8136 alias=pciex10ec,8136
-end package

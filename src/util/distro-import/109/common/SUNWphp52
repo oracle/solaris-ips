@@ -1,6 +1,0 @@
-package SUNWphp52
-classification "Development/PHP"
-import SUNWphp52r
-import SUNWphp52u
-version 5.2.8
-end package

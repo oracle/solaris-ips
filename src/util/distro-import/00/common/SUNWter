@@ -1,5 +1,0 @@
-package SUNWter
-consolidation "osnet"
-classification "System/Core"
-import SUNWter
-end package

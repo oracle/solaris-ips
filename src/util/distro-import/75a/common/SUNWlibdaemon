@@ -1,6 +1,0 @@
-package SUNWlibdaemon
-consolidation "gnome"
-classification "System/Libraries"
-import SUNWlibdaemon
-import SUNWlibdaemon-devel
-end package

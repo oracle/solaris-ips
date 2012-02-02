@@ -1,6 +1,0 @@
-package SUNWpsh
-import SUNWpsh
-# BEGIN NON-REDISTRIBUTABLE
-drop usr/include/sys/sbpro.h
-# END NON-REDISTRIBUTABLE
-end package

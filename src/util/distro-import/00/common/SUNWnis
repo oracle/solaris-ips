@@ -1,6 +1,0 @@
-package SUNWnis
-consolidation "osnet"
-classification "System/Administration and Configuration"
-import SUNWnisu
-import SUNWnisr
-end package

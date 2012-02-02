@@ -1,7 +1,0 @@
-package SUNWconman
-consolidation "sfw"
-classification "Applications/System Utilities"
-import SUNWconmanr
-import SUNWconmanu
-version 0.2.4.1
-end package

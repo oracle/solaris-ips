@@ -1,7 +1,0 @@
-package SUNWgnome-a11y-libs
-consolidation "gnome"
-classification "Applications/Universal Access"
-import SUNWgnome-a11y-libs
-import SUNWgnome-a11y-libs-devel
-import SUNWgnome-a11y-libs-root
-end package

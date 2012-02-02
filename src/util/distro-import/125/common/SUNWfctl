@@ -1,8 +1,0 @@
-package SUNWfctl
-consolidation "osnet"
-classification "Drivers/Storage"
-import SUNWfctl
-
-add driver name=fp \
-    perms="* 0600 root sys"
-end package

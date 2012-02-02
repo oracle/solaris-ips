@@ -1,5 +1,0 @@
-package SUNWauda
-consolidation "osnet"
-classification "System/Media"
-import SUNWauda
-end package

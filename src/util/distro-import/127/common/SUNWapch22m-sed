@@ -1,7 +1,0 @@
-package SUNWapch22m-sed
-consolidation "sfw"
-classification "Web Services/Application and Web Servers"
-import SUNWapch22m-sed
-import SUNWapch22r-sed
-version 2.2.14
-end package

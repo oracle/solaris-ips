@@ -1,6 +1,0 @@
-package SUNWfs
-consolidation "osnet"
-classification "System/Administration and Configuration"
-import SUNWfsr
-import SUNWfsu
-end package

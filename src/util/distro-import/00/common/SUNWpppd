@@ -1,6 +1,0 @@
-package SUNWpppd
-classification "Drivers/Networking"
-import SUNWpppd
-import SUNWpppdu
-import SUNWpppdr
-end package

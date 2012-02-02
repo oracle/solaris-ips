@@ -1,8 +1,0 @@
-package SUNWgnu-automake-19
-consolidation "sfw"
-classification "Development/GNU"
-import SUNWgnu-automake-19
-depend SUNWgm4
-depend SUNWperl584core
-version 1.9.6
-end package

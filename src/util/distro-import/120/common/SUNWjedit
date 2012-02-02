@@ -1,6 +1,0 @@
-package SUNWjedit
-consolidation "sfw"
-classification "Development/Editors"
-import SUNWjedit
-version 4.3
-end package

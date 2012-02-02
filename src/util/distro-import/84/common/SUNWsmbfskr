@@ -1,4 +1,0 @@
-package SUNWsmbfskr
-import SUNWsmbfskr
-add driver name=nsmb perms="* 0666 root sys"
-end package

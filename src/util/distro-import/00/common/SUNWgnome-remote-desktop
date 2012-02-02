@@ -1,6 +1,0 @@
-package SUNWgnome-remote-desktop
-consolidation "gnome"
-classification "System/X11"
-import SUNWgnome-remote-desktop
-import SUNWgnome-remote-desktop-root
-end package

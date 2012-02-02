@@ -1,5 +1,0 @@
-package SUNWsfe
-classification "Drivers/Networking"
-import SUNWsfe
-add driver name=sfe perms="* 0666 root root" alias=pci1039,900 alias=pci100b,20 alias=pci1039,7016
-end package

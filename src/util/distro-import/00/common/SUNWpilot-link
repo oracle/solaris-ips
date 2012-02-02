@@ -1,6 +1,0 @@
-package SUNWpilot-link
-consolidation "gnome"
-classification "Applications/System Utilities"
-import SUNWpilot-link
-import SUNWpilot-link-devel
-end package

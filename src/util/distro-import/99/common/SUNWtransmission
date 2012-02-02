@@ -1,5 +1,0 @@
-package SUNWtransmission
-consolidation "gnome"
-classification "Applications/Internet"
-import SUNWtransmission
-end package

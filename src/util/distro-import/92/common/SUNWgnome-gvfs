@@ -1,6 +1,0 @@
-package SUNWgnome-gvfs
-consolidation "gnome"
-classification "Desktop (GNOME)/Libraries"
-import SUNWgnome-gvfs
-depend_path /usr/bin/less
-end package

@@ -1,6 +1,0 @@
-package SUNWmrxvt
-consolidation "sfw"
-classification "Applications/System Utilities"
-import SUNWmrxvt
-version 0.5.4
-end package

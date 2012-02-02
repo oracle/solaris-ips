@@ -1,5 +1,0 @@
-package SUNWipf
-classification "Applications/System Utilities"
-import SUNWipfu
-import SUNWipfr
-end package

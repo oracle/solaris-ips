@@ -1,6 +1,0 @@
-package SUNWgnome-ui-designer
-consolidation "gnome"
-classification "Development/GNOME and GTK+"
-import SUNWgnome-ui-designer
-import SUNWgnome-ui-designer-devel
-end package

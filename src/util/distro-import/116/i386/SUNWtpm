@@ -1,6 +1,0 @@
-package SUNWtpm
-classification "Drivers/Other Peripherals"
-import SUNWtpm
-add driver name=tpm perms="* 0600 root sys" \
-	devlink="type=ddi_pseudo;name=tpm\t\D"
-end package

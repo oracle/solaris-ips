@@ -1,5 +1,0 @@
-package SUNWxwsvr
-consolidation "X"
-depend SUNWxscreensaver
-renamed 130
-end package

@@ -1,6 +1,0 @@
-package SUNWgtkspell
-consolidation "gnome"
-classification "Applications/Accessories"
-import SUNWgtkspell
-import SUNWgtkspell-devel
-end package

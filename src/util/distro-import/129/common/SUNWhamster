@@ -1,8 +1,0 @@
-package SUNWhamster
-consolidation "gnome"
-classification "Applications/Panels and Applets"
-import SUNWhamster
-import SUNWhamster-root
-depend SUNWdbus-python26
-depend SUNWgnome-python26-desktop
-end package

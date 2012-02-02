@@ -1,8 +1,0 @@
-package SUNWnfsc
-consolidation "osnet"
-classification "System/File System"
-import SUNWnfscu
-import SUNWnfscr
-import SUNWnfsckr
-depend SUNWrsgk
-end package

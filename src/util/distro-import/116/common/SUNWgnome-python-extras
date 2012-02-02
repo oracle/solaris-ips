@@ -1,7 +1,0 @@
-package SUNWgnome-python-extras
-consolidation "gnome"
-classification "Development/Python"
-import SUNWgnome-python-extras
-import SUNWgnome-python-extras-devel
-depend SUNWgnome-python-libs
-end package

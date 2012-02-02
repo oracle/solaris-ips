@@ -1,7 +1,0 @@
-package package/varianted_actions
-add set name=variant.opensolaris.zone value=global value=nonglobal
-add file /etc/passwd mode=644 owner=root group=root path=/foo/bar \
-    variant.opensolaris.zone=global
-add file /etc/passwd mode=644 owner=root group=root path=/foo/bar \
-    pkg.depend.bypass-generate=foo variant.opensolaris.zone=global
-end package

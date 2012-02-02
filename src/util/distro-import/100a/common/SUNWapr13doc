@@ -1,6 +1,0 @@
-package SUNWapr13doc
-consolidation "sfw"
-classification "Web Services/Application and Web Servers"
-import SUNWapr13doc
-version 1.3
-end package

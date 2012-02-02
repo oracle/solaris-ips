@@ -1,6 +1,0 @@
-package SUNWipmi
-classification "System/Hardware"
-import SUNWipmi
-import SUNWipmir
-version 1.8.8
-end package

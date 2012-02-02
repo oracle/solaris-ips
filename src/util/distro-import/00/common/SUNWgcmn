@@ -1,5 +1,0 @@
-package SUNWgcmn
-consolidation "sfw"
-classification "Development/GNU"
-import SUNWgcmn
-end package

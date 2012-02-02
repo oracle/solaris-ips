@@ -1,6 +1,0 @@
-package SUNWs10brand
-consolidation "osnet"
-classification "System/Virtualization"
-import SUNWs10brandr
-import SUNWs10brandu
-end package

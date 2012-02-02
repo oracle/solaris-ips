@@ -1,7 +1,0 @@
-package SUNWwxwidgets
-consolidation "sfw"
-classification "Desktop (GNOME)/Libraries"
-import SUNWwxwidgets
-import SUNWwxwidgets-devel
-version 2.8.10
-end package

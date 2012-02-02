@@ -1,5 +1,0 @@
-package SUNWdesktop-other-l10n-zhCN
-consolidation "gnome_l10n"
-classification "Desktop (GNOME)/Localizations"
-import SUNWdesktop-other-l10n-zhCN
-end package

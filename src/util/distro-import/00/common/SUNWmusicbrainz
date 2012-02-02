@@ -1,6 +1,0 @@
-package SUNWmusicbrainz
-consolidation "gnome"
-classification "System/Multimedia Libraries"
-import SUNWmusicbrainz
-import SUNWmusicbrainz-devel
-end package

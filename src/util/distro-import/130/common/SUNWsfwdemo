@@ -1,5 +1,0 @@
-package SUNWsfwdemo
-consolidation "sfw"
-depend SUNWnet-snmp-doc
-renamed 130
-end package

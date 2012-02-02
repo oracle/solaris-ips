@@ -1,8 +1,0 @@
-package SUNWphp52-memcache
-consolidation "sfw"
-classification "Development/PHP"
-import SUNWphp52r-memcache
-import SUNWphp52u-memcache
-depend SUNWphp52
-version 2.2.5
-end package

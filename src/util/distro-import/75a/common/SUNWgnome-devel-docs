@@ -1,5 +1,0 @@
-package SUNWgnome-devel-docs
-consolidation "gnome"
-classification "Development/GNOME and GTK+"
-import SUNWgnome-devel-docs
-end package

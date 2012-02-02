@@ -1,5 +1,0 @@
-package SUNWesxwsvr
-consolidation "l10n"
-classification "System/X11"
-import SUNWesxwsvr
-end package

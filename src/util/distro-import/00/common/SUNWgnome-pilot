@@ -1,7 +1,0 @@
-package SUNWgnome-pilot
-consolidation "gnome"
-classification "Applications/Accessories"
-import SUNWgnome-pilot
-import SUNWgnome-pilot-devel
-import SUNWgnome-pilot-root
-end package

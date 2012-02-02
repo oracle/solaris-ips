@@ -1,6 +1,0 @@
-package SUNWlibcroco
-consolidation "gnome"
-classification "System/Libraries"
-import SUNWlibcroco
-import SUNWlibcroco-devel
-end package

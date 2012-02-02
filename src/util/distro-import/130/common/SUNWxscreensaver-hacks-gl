@@ -1,5 +1,0 @@
-package SUNWxscreensaver-hacks-gl
-consolidation "gnome"
-classification "System/X11"
-import SUNWxscreensaver-hacks-gl
-end package

@@ -1,7 +1,0 @@
-package SUNWps
-consolidation "osnet"
-classification "System/Printing"
-import SUNWpsu
-import SUNWpsr
-chattr etc/printers.conf original_name=SUNWpc:etc/printers.conf
-end package

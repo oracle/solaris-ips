@@ -1,6 +1,0 @@
-package SUNWyp
-consolidation "osnet"
-classification "System/Administration and Configuration"
-import SUNWypu
-import SUNWypr
-end package

@@ -1,5 +1,0 @@
-package SUNWperl-authen-pam
-consolidation "gnome"
-classification "Development/Perl"
-import SUNWperl-authen-pam
-end package

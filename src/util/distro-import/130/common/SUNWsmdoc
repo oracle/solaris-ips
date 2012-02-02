@@ -1,6 +1,0 @@
-package SUNWsmdoc
-consolidation "sfw"
-depend SUNWnet-snmp-doc
-version 5.0.9
-renamed 130
-end package

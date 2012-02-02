@@ -1,4 +1,0 @@
-package SUNWhea
-import SUNWhea
-add link path=usr/include/tcpd.h target=../sfw/include/tcpd.h
-end package

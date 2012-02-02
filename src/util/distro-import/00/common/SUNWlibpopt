@@ -1,6 +1,0 @@
-package SUNWlibpopt
-consolidation "gnome"
-classification "System/Libraries"
-import SUNWlibpopt
-import SUNWlibpopt-devel
-end package

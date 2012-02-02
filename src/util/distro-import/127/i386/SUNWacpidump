@@ -1,6 +1,0 @@
-package SUNWacpidump
-consolidation "sfw"
-classification "System/Administration and Configuration"
-import SUNWacpidump
-version 0.2007.11.16
-end package

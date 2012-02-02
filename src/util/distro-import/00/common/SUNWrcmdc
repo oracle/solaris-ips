@@ -1,5 +1,0 @@
-package SUNWrcmdc
-consolidation "osnet"
-classification "System/Core"
-import SUNWrcmdc
-end package

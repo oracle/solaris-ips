@@ -1,5 +1,0 @@
-package SUNWopensolaris-gdm-themes
-consolidation "gnome"
-classification "Desktop (GNOME)/Theming"
-import SUNWopensolaris-gdm-themes
-end package

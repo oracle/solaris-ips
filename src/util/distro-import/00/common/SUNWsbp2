@@ -1,5 +1,0 @@
-package SUNWsbp2
-consolidation "osnet"
-classification "System/Hardware"
-import SUNWsbp2
-end package

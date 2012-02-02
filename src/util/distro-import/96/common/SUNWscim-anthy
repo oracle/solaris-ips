@@ -1,6 +1,0 @@
-package SUNWscim-anthy
-consolidation "l10n"
-classification "System/Internationalization"
-import SUNWscim-anthy
-version 1.2.4
-end package

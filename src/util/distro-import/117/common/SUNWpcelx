@@ -1,9 +1,0 @@
-package SUNWpcelx
-classification "Drivers/Networking"
-import SUNWpcelx
-add driver name=pcelx perms="* 0666 root sys" clone_perms="0666 root sys" \
-	alias=pccard101,556 \
-	alias=pccard101,574 \
-	alias=pccard101,589 \
-	alias=pccard101,562,0
-end package

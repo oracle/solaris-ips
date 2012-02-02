@@ -1,8 +1,0 @@
-package SUNWvia823x
-consolidation "osnet"
-classification "Drivers/Media"
-import SUNWvia823x
-
-add driver name=audiovia823x \
-    alias="pci1106,3059"
-end package

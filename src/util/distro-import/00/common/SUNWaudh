@@ -1,7 +1,0 @@
-package SUNWaudh
-classification "System/Media"
-import SUNWaudh
-# BEGIN NON-REDISTRIBUTABLE
-drop usr/include/sys/audio/audioens.h
-# END NON-REDISTRIBUTABLE
-end package

@@ -1,6 +1,0 @@
-package library/desktop/libxklavier
-consolidation "gnome"
-classification "Desktop (GNOME)/Libraries"
-import SUNWlibxklavier
-import SUNWlibxklavier-devel
-end package

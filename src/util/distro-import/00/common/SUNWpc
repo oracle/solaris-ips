@@ -1,6 +1,0 @@
-package SUNWpc
-consolidation "osnet"
-classification "System/Printing"
-import SUNWpcu
-import SUNWpcr
-end package

@@ -1,5 +1,0 @@
-package SUNWpgadmin3
-classification "System/Databases"
-import SUNWpgadmin3
-version 1.8.4
-end package

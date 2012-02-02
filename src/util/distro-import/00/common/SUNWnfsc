@@ -1,5 +1,0 @@
-package SUNWnfsc
-classification "System/File System"
-import SUNWnfscu
-import SUNWnfscr
-end package

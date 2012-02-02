@@ -1,6 +1,0 @@
-package SUNWlinks
-consolidation "sfw"
-classification "Applications/Internet"
-import SUNWlinks
-version 1.0
-end package

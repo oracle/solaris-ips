@@ -1,6 +1,0 @@
-package SUNWpicl
-consolidation "osnet"
-classification "System/Core"
-import SUNWpiclr
-import SUNWpiclu
-end package

@@ -1,5 +1,0 @@
-package SUNWpostgr-contrib
-classification "System/Databases"
-import SUNWpostgr-contrib
-version 8.1.11
-end package

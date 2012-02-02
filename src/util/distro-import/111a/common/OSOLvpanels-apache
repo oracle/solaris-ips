@@ -1,8 +1,0 @@
-package OSOLvpanels-apache
-consolidation "vpanels"
-classification "Applications/Configuration and Preferences"
-import OSOLvpin-apache
-depend OSOLvpanels
-depend SUNWapch22
-depend SUNWapch22m-php52
-end package

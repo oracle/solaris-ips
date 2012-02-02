@@ -1,5 +1,0 @@
-package SUNWxsane
-consolidation "gnome"
-classification "Applications/System Utilities"
-import SUNWxsane
-end package

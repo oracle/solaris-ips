@@ -1,7 +1,0 @@
-package SUNWftp
-consolidation "osnet"
-classification "System/Core"
-import SUNWftpu
-# base package will deliver etc/ftpd/ftpusers
-import SUNWftpr exclude etc/ftpd/ftpusers
-end package

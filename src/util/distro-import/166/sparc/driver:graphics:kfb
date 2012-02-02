@@ -1,9 +1,0 @@
-package driver/graphics/kfb
-consolidation "smcc"
-obsoleted 166
-end package
-
-package SUNWkfb
-consolidation "smcc"
-obsoleted 166
-end package

@@ -1,9 +1,0 @@
-package SUNWiopc
-classification "System/Core"
-import SUNWiopc.u
-import SUNWiopc.v
-add driver name=fpc perms="* 0666 root sys"
-add driver name=n2piupc perms="* 0666 root sys" \
-	alias=SUNW,n2piu-pr \
-	alias=SUNW,vfpiu-pr
-end package

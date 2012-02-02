@@ -1,5 +1,0 @@
-package SUNWsmdoc
-classification "System/Enterprise Management"
-import SUNWsmdoc
-version 5.0.9
-end package

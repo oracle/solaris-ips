@@ -1,6 +1,0 @@
-package SUNWgrails
-consolidation "sfw"
-classification "Web Services/Application and Web Servers"
-import SUNWgrails
-version 1.0.3
-end package

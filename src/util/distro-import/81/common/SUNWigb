@@ -1,4 +1,0 @@
-package SUNWigb
-import SUNWigb
-add driver name=igb alias=pciex8086,10a7 alias=pciex8086,10a9 alias=pciex8086,10d6
-end package

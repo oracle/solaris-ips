@@ -1,7 +1,0 @@
-package SUNWapch22m-dtrace
-consolidation "sfw"
-classification "Development/System"
-import SUNWapch22m-dtrace
-import SUNWapch22r-dtrace
-version 0.3.1
-end package

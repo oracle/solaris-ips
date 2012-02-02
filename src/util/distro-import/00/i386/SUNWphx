@@ -1,7 +1,0 @@
-package SUNWphx
-import SUNWphx
-# BEGIN NON-REDISTRIBUTABLE
-drop kernel/misc/amd64/phx
-drop kernel/misc/phx
-# END NON-REDISTRIBUTABLE
-end package

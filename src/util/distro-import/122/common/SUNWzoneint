@@ -1,5 +1,0 @@
-package SUNWzoneint
-consolidation "osnet"
-classification "Development/System"
-import SUNWzoneint
-end package

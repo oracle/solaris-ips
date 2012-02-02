@@ -73,10 +73,6 @@ from pkg.client.debugvalues import DebugValues
 EmptyI = tuple()
 EmptyDict = dict()
 
-# relative to our proto area
-path_to_pub_util = "../../src/util/publish"
-path_to_distro_import_utils = "../../src/util/distro-import"
-
 #
 # These are initialized by pkg5testenv.setup_environment.
 #
@@ -2435,9 +2431,7 @@ class CliTestCase(Pkg5TestCase):
                 return plist
 
         def merge(self, args=EmptyI, exit=0):
-                pub_utils = os.path.join(g_proto_area, path_to_pub_util)
-                prog = os.path.join(pub_utils, "merge.py")
-                cmd = "%s %s" % (prog, " ".join(args))
+                cmd = "%s/usr/bin/pkgmerge %s" % (g_proto_area, " ".join(args))
                 self.cmdline_run(cmd, exit=exit)
 
         def sysrepo(self, args, exit=0, out=False, stderr=False, comment="",
@@ -2761,13 +2755,6 @@ class CliTestCase(Pkg5TestCase):
                 if not ready:
                         raise RuntimeError("Repository readiness "
                             "timeout exceeded.")
-
-        def importer(self, args=EmptyI, out=False, stderr=False, exit=0):
-                distro_import_utils = os.path.join(g_proto_area,
-                    path_to_distro_import_utils)
-                prog = os.path.join(distro_import_utils, "importer.py")
-                cmd = "%s %s" % (prog, " ".join(args))
-                return self.cmdline_run(cmd, out=out, stderr=stderr, exit=exit)
 
         def _api_attach(self, api_obj, catch_wsie=True, **kwargs):
                 self.debug("attach: %s" % str(kwargs))

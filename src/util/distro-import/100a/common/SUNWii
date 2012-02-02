@@ -1,8 +1,0 @@
-package SUNWii
-classification "System/Enterprise Management"
-import SUNWiiu
-import SUNWiir
-add driver name=ii perms="* 0666 root sys" privs=sys_devices privs=sys_config \
-	devlink="type=ddi_pseudo;name=ii\t\D"
-depend SUNWspsv
-end package

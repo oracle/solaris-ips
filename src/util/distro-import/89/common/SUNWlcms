@@ -1,6 +1,0 @@
-package SUNWlcms
-consolidation "sfw"
-classification "System/Administration and Configuration"
-import SUNWlcms
-version 1.17
-end package

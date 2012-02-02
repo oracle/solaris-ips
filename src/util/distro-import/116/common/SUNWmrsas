@@ -1,7 +1,0 @@
-package SUNWmrsas
-classification "Drivers/Storage"
-import SUNWmrsas
-add driver name=mr_sas class=scsi-self-identifying \
-	alias=pciex1000,78 \
-	alias=pciex1000,79
-end package

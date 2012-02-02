@@ -1,7 +1,0 @@
-package SUNWgnome-character-map
-consolidation "gnome"
-classification "Applications/System Utilities"
-import SUNWgnome-character-map
-import SUNWgnome-character-map-devel
-import SUNWgnome-character-map-root
-end package

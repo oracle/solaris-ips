@@ -1,4 +1,0 @@
-package SUNWcar
-classification "System/Core"
-import SUNWcar.i
-end package

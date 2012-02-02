@@ -1,5 +1,0 @@
-package SUNWrrdtool
-consolidation "gnome"
-classification "Applications/System Utilities"
-import SUNWrrdtool
-end package

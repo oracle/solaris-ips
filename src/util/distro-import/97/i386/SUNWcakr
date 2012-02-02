@@ -1,7 +1,0 @@
-package SUNWcakr
-classification "System/Core"
-import SUNWcakr.i
-add driver name=intel_nb5000 alias=pci8086,25d8 alias=pci8086,25d4 alias=pci8086,25c0 alias=pci8086,25d0 alias=pci8086,3600 alias=pci8086,4000 alias=pci8086,4001 alias=pci8086,4003
-add driver name=acpippm
-add driver name=intel_nhm alias=pci8086,3423
-end package

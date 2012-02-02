@@ -1,8 +1,0 @@
-package SUNWvirtinst
-consolidation "xvm"
-classification "System/Virtualization"
-import SUNWvirtinst
-depend SUNWlibvirt
-depend SUNWurlgrabber
-depend SUNWxvm
-end package

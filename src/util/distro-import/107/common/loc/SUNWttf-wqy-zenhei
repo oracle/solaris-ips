@@ -1,7 +1,0 @@
-package SUNWttf-wqy-zenhei
-consolidation "l10n"
-classification "System/Fonts"
-import SUNWttf-wqy-zenhei exclude usr/openwin
-chattr_glob * edit path usr/openwin usr/X11
-import SUNWttf-wqy-zenhei-root
-end package

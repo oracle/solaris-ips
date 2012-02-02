@@ -1,7 +1,0 @@
-package SUNWisns
-consolidation "osnet"
-classification "System/Hardware"
-import SUNWisns
-import SUNWisnsadm
-import SUNWisnsr
-end package

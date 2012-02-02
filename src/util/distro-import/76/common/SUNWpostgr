@@ -1,5 +1,0 @@
-package SUNWpostgr
-import SUNWpostgr
-import SUNWpostgr-devel
-version 8.1.10
-end package

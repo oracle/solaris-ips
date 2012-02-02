@@ -1,6 +1,0 @@
-package SUNWwireshark
-classification "Applications/Internet"
-import SUNWwireshark
-import SUNWwiresharkr
-version 1.2.1
-end package

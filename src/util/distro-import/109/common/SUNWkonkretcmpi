@@ -1,7 +1,0 @@
-package SUNWkonkretcmpi
-consolidation "sfw"
-classification "Development/C"
-import SUNWkonkretcmpi
-version 0.8.7
-depend SUNWcimserver
-end package

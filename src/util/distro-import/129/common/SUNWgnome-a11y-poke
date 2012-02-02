@@ -1,9 +1,0 @@
-package SUNWgnome-a11y-poke
-consolidation "gnome"
-classification "Applications/Universal Access"
-import SUNWgnome-a11y-poke
-import SUNWgnome-a11y-poke-root
-depend SUNWIPython
-depend SUNWgnome-python26-desktop
-depend SUNWgnome-python26-libs
-end package

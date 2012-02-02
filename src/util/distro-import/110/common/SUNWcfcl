@@ -1,9 +1,0 @@
-package SUNWcfcl
-consolidation "osnet"
-classification "System/Libraries"
-import SUNWcfcl
-import SUNWcfclr
-add file hba.conf path=etc/hba.conf mode=0644 owner=root group=bin \
-	preserve=true
-depend SUNWfchba
-end package

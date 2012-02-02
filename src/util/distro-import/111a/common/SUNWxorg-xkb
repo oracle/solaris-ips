@@ -1,5 +1,0 @@
-package SUNWxorg-xkb
-classification "System/X11"
-import SUNWxorg-xkb
-add link path=usr/X11/lib/X11/xkb/rules/base target=xorg
-end package

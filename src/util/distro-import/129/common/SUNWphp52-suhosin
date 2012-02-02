@@ -1,8 +1,0 @@
-package SUNWphp52-suhosin
-consolidation "sfw"
-classification "Development/PHP"
-import SUNWphp52r-suhosin
-import SUNWphp52u-suhosin
-depend SUNWphp52
-version 0.9.29
-end package

@@ -1,6 +1,0 @@
-package SUNWapch22
-classification "Web Services/Application and Web Servers"
-import SUNWapch22u
-import SUNWapch22r
-version 2.2.9
-end package

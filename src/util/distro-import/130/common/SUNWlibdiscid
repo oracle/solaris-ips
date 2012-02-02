@@ -1,6 +1,0 @@
-package SUNWlibdiscid
-consolidation "gnome"
-classification "System/Multimedia Libraries"
-import SUNWlibdiscid
-import SUNWlibdiscid-devel
-end package

@@ -1,6 +1,0 @@
-package SUNWgzip
-consolidation "sfw"
-classification "Applications/System Utilities"
-import SUNWgzip
-version 1.3.5
-end package

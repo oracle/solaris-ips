@@ -1,4 +1,0 @@
-package SUNWpython-cherrypy
-classification "Development/Python"
-import ../../../packages/i386/SUNWpython-cherrypy
-end package

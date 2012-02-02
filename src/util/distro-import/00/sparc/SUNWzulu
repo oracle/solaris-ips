@@ -1,6 +1,0 @@
-package SUNWzulu
-classification "Drivers/Display"
-import SUNWzulu.u
-add driver name=zulu perms="* 0666 root sys" alias=SUNW,zulu
-import SUNWzulur
-end package

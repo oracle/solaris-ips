@@ -1,6 +1,0 @@
-package SUNWgnu-readline
-consolidation "sfw"
-classification "System/Libraries"
-import SUNWgnu-readline
-version 5.2
-end package

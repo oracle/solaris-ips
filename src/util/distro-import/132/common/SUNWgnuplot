@@ -1,6 +1,0 @@
-package SUNWgnuplot
-consolidation "sfw"
-classification "Applications/Graphics and Imaging"
-import SUNWgnuplot
-version 4.2.6
-end package

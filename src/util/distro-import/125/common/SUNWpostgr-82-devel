@@ -1,6 +1,0 @@
-package SUNWpostgr-82-devel
-consolidation "sfw"
-classification "Development/Databases"
-import SUNWpostgr-82-devel
-version 8.2.14
-end package

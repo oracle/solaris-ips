@@ -1,5 +1,0 @@
-package SUNWbcp
-consolidation "osnet"
-classification "System/Core"
-import SUNWbcp
-end package

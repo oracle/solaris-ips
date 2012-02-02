@@ -1,7 +1,0 @@
-package SUNWpgbouncer-pg83
-consolidation "sfw"
-classification "System/Administration and Configuration"
-import SUNWpgbouncer-pg83-config
-import SUNWpgbouncer-pg83-server
-version 1.1.2
-end package

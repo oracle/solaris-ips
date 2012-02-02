@@ -1,5 +1,0 @@
-package SUNWprd
-consolidation "sic_team"
-classification "Development/System"
-import SUNWprd
-end package

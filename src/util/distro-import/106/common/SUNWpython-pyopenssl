@@ -1,6 +1,0 @@
-package SUNWpython-pyopenssl
-consolidation "sfw"
-classification "Development/Python"
-import SUNWpython-pyopenssl
-version 0.8
-end package

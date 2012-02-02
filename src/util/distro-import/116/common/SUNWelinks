@@ -1,6 +1,0 @@
-package SUNWelinks
-consolidation "sfw"
-classification "Applications/Internet"
-import SUNWelinks
-version 0.11.6
-end package

@@ -1,6 +1,0 @@
-package SUNWpostgr-82-client
-consolidation "sfw"
-classification "System/Databases"
-import SUNWpostgr-82-client
-version 8.2.14
-end package

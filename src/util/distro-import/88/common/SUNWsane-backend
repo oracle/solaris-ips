@@ -1,7 +1,0 @@
-package SUNWsane-backend
-consolidation "sfw"
-classification "System/Libraries"
-import SUNWsane-backendu
-import SUNWsane-backendr
-version 1.0.19
-end package

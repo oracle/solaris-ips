@@ -1,6 +1,0 @@
-package SUNWpython-mako
-consolidation "ips"
-classification "Development/Python"
-import SUNWpython-mako
-version 0.2.2
-end package

@@ -1,6 +1,0 @@
-package SUNWlibtorrent
-consolidation "sfw"
-classification "System/Libraries"
-import SUNWlibtorrent
-version 0.12.2
-end package

@@ -1,6 +1,0 @@
-package SUNWpostgr-82-jdbc
-consolidation "sfw"
-classification "System/Databases"
-import SUNWpostgr-82-jdbc
-version 8.2.504
-end package

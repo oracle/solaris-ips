@@ -1,7 +1,0 @@
-package SUNWxorg-server
-classification "System/X11"
-import SUNWxorg-server
-version 1.5.3
-depend SUNWxorg-xkb
-$(i386_ONLY)depend SUNWxsvc
-end package

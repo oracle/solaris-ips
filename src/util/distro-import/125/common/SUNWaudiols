@@ -1,8 +1,0 @@
-package SUNWaudiols
-consolidation "osnet"
-classification "Drivers/Media"
-import SUNWaudiols
-
-add driver name=audiols \
-    alias="pci1102,7"
-end package

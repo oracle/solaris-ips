@@ -1,8 +1,0 @@
-package SUNWlxml
-consolidation "sfw"
-classification "System/Libraries"
-import SUNWlxml
-import SUNWlxml-devel
-import SUNWlxmlr
-version 2.7.6
-end package

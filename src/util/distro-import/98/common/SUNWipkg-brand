@@ -1,8 +1,0 @@
-package SUNWipkg-brand
-consolidation "ips"
-classification "System/Packaging"
-import SUNWipkg-brand
-depend SUNWesu
-depend SUNWipkg
-depend SUNWzone
-end package

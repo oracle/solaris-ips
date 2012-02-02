@@ -1,5 +1,0 @@
-package SUNWfbc
-consolidation "smcc"
-classification "Drivers/Display"
-import SUNWfbc
-end package

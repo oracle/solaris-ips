@@ -1,7 +1,0 @@
-package SUNWgnome-pdf-viewer
-consolidation "gnome"
-classification "Applications/Office"
-import SUNWgnome-pdf-viewer
-import SUNWgnome-pdf-viewer-devel
-import SUNWgnome-pdf-viewer-root
-end package

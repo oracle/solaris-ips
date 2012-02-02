@@ -1,7 +1,0 @@
-package SUNWsaaj
-consolidation "sfw"
-classification "Development/Java"
-import SUNWsaaj
-depend SUNWactivation
-version 1.3.2
-end package

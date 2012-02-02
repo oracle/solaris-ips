@@ -1,9 +1,0 @@
-package system/management/sysidtool
-consolidation "admin"
-obsoleted 171
-end package
-
-package SUNWadmap
-consolidation "admin"
-obsoleted 171
-end package

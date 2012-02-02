@@ -1,6 +1,0 @@
-package SUNWnet-snmp-doc
-consolidation "sfw"
-classification "System/Enterprise Management"
-import SUNWnet-snmp-doc
-version 5.4.1
-end package

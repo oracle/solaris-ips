@@ -1,9 +1,0 @@
-package library/python-2/ctypes-24
-consolidation "gnome"
-obsoleted 162
-end package
-
-package SUNWpython24-ctypes
-consolidation "gnome"
-obsoleted 162
-end package

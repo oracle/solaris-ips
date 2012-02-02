@@ -1,5 +1,0 @@
-package SUNWlibusb
-consolidation "sfw"
-classification "System/Libraries"
-import SUNWlibusb
-end package

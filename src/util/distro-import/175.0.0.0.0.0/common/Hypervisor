@@ -1,9 +1,0 @@
-package system/xvm
-consolidation "xvm"
-obsoleted 160
-end package
-
-package xvm
-consolidation "xvm"
-obsoleted 160
-end package

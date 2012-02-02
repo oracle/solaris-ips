@@ -1,6 +1,0 @@
-package SUNWdosbox
-consolidation "sfw"
-classification "Applications/System Utilities"
-import SUNWdosbox
-version 0.73
-end package

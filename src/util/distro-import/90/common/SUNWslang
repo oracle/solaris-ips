@@ -1,7 +1,0 @@
-package SUNWslang
-consolidation "sfw"
-classification "Development/Other Languages"
-import SUNWslang
-import SUNWslangr
-version 2.1.3
-end package

@@ -1,6 +1,0 @@
-package SUNWmda
-consolidation "osnet"
-classification "System/Core"
-import SUNWmdau
-import SUNWmdar
-end package

@@ -1,5 +1,0 @@
-package SUNWsacom
-consolidation "osnet"
-classification "System/Enterprise Management"
-import SUNWsacom
-end package

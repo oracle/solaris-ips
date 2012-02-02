@@ -1,5 +1,0 @@
-package NVDAcg
-classification "Applications/Graphics and Imaging"
-import NVDAcg
-version 2.1
-end package

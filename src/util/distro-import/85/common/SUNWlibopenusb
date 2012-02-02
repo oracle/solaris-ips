@@ -1,6 +1,0 @@
-package SUNWlibopenusb
-consolidation "sfw"
-classification "System/Libraries"
-import SUNWlibopenusb
-version 1.0.1
-end package

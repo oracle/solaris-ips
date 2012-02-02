@@ -1,5 +1,0 @@
-package SUNWosdem
-consolidation "osnet"
-classification "System/Core"
-import SUNWosdem
-end package

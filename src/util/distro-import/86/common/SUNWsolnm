@@ -1,5 +1,0 @@
-package SUNWsolnm
-consolidation "solaris_re"
-classification "System/Core"
-import SUNWsolnm
-end package

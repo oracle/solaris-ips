@@ -1,6 +1,0 @@
-package SUNWperl584core
-consolidation "osnet"
-classification "Development/Perl"
-import SUNWperl584core
-version 5.8.4
-end package

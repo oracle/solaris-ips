@@ -1,9 +1,0 @@
-package library/python-2/cssutils-24
-consolidation "gnome"
-obsoleted 156
-end package
-
-package SUNWpython24-cssutils
-consolidation "gnome"
-obsoleted 156
-end package

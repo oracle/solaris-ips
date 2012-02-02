@@ -1,6 +1,0 @@
-package SUNWlibpcap
-consolidation "sfw"
-classification "System/Libraries"
-import SUNWlibpcap
-version 0.9.8
-end package

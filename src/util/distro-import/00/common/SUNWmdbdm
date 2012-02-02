@@ -1,5 +1,0 @@
-package SUNWmdbdm
-consolidation "osnet"
-classification "Development/System"
-import SUNWmdbdm
-end package

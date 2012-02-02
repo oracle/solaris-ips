@@ -1,9 +1,0 @@
-package SUNWpamsc
-import SUNWpamsc
-# BEGIN NON-REDISTRIBUTABLE
-drop usr/lib/security/pam_smartcard.so
-drop usr/lib/security/pam_smartcard.so.1
-drop usr/lib/security/sparcv9/pam_smartcard.so
-drop usr/lib/security/sparcv9/pam_smartcard.so.1
-# END NON-REDISTRIBUTABLE
-end package

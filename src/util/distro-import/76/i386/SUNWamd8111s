@@ -1,5 +1,0 @@
-package SUNWamd8111s
-classification "Drivers/Networking"
-import SUNWamd8111s
-add driver name=amd8111s alias=pci1022,7462
-end package

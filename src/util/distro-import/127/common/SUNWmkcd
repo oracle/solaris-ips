@@ -1,7 +1,0 @@
-package SUNWmkcd
-consolidation "sfw"
-classification "System/Hardware"
-import SUNWmkcd
-import SUNWmkcdr
-version 2.1.1.63
-end package

@@ -1,5 +1,0 @@
-package SUNWrmodr
-consolidation "osnet"
-depend SUNWrmod
-renamed 130
-end package

@@ -1,9 +1,0 @@
-package system/storage/vdiskadm
-consolidation "xvm"
-obsoleted 160
-end package
-
-package SUNWvdisk
-consolidation "xvm"
-obsoleted 160
-end package

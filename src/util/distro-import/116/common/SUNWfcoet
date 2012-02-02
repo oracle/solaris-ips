@@ -1,5 +1,0 @@
-package SUNWfcoet
-classification "Drivers/Storage"
-import SUNWfcoet
-add driver name=fcoet perms="* 0600 root sys"
-end package

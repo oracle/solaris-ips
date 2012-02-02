@@ -1,5 +1,0 @@
-package SUNWxorg-clientlibs
-consolidation "X"
-classification "Development/X11"
-import SUNWxorg-clientlibs
-end package

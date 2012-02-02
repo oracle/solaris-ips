@@ -1,6 +1,0 @@
-package SUNWlibart
-consolidation "gnome"
-classification "Desktop (GNOME)/Libraries"
-import SUNWlibart
-import SUNWlibart-devel
-end package

@@ -1,6 +1,0 @@
-package SUNWphp524
-import SUNWphp524usr
-import SUNWphp524root
-version 5.2.4
-depend SUNWphp524core
-end package

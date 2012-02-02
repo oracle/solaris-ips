@@ -1,6 +1,0 @@
-package SUNWgocr
-consolidation "sfw"
-classification "Applications/Graphics and Imaging"
-import SUNWgocr
-version 0.46
-end package

@@ -1,4 +1,0 @@
-package SUNWacroread
-import SUNWacroread
-add link path=usr/bin/acroread target=../sfw/bin/acroread
-end package

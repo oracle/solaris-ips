@@ -1,5 +1,0 @@
-package FSWxorg-fonts-ethiopic
-consolidation "X"
-depend SUNWfont-misc-ethiopic
-renamed 130
-end package

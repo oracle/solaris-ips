@@ -1,6 +1,0 @@
-package SUNWttf-ipafont-mincho
-consolidation "l10n"
-classification "System/Fonts"
-import SUNWttf-ipafont-mincho
-depend SUNWttf-ipafont
-end package

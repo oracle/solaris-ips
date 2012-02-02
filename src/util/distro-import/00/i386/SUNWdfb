@@ -1,4 +1,0 @@
-package SUNWdfb
-classification "Drivers/Display"
-import SUNWdfb.i
-end package

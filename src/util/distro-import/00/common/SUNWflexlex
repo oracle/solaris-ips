@@ -1,6 +1,0 @@
-package SUNWflexlex
-classification "Development/Other Languages"
-import SUNWflexlex
-version 2.5.33
-depend SUNWgm4
-end package

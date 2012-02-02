@@ -1,9 +1,0 @@
-package SUNWxsvc
-consolidation "osnet"
-classification "System/X11"
-import SUNWxsvc
-
-add driver name=xsvc \
-    devlink="type=ddi_pseudo;name=xsvc\t\M0"
-
-end package

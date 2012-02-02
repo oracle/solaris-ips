@@ -1,5 +1,0 @@
-package SUNWgdb
-import SUNWgdb
-version 6.3
-add link path=usr/bin/gdb target=../sfw/bin/gdb
-end package

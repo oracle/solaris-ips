@@ -1,9 +1,0 @@
-package SUNWiscsidm
-consolidation "osnet"
-classification "System/Hardware"
-import SUNWiscsidmr
-import SUNWiscsidmu
-
-add driver name=iser \
-    perms="* 0600 root sys"
-end package

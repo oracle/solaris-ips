@@ -1,5 +1,0 @@
-package SUNWmv88sx
-classification "Drivers/Ports"
-import SUNWmv88sx
-add driver name=marvell88sx perms="* 0644 root sys" class=scsi-self-identifying alias=pci11ab,5081 alias=pci11ab,5080 alias=pci11ab,5041 alias=pci11ab,5040 alias=pci11ab,6041.9 alias=pci11ab,6081.9
-end package

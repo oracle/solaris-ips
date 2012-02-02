@@ -1,7 +1,0 @@
-package library/desktop/libgee
-consolidation "gnome"
-classification "Development/GNOME and GTK+"
-import SUNWlibgee
-import SUNWlibgee-devel
-version 0.6.0
-end package

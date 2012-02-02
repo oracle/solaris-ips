@@ -1,6 +1,0 @@
-package SUNWgnome-a11y-gok
-consolidation "gnome"
-classification "Applications/Universal Access"
-import SUNWgnome-a11y-gok
-import SUNWgnome-a11y-gok-root
-end package

@@ -1,5 +1,0 @@
-package SUNWdia
-consolidation "gnome"
-classification "Applications/Graphics and Imaging"
-import SUNWdia
-end package

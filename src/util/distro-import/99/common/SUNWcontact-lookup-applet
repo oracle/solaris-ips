@@ -1,5 +1,0 @@
-package SUNWcontact-lookup-applet
-consolidation "gnome"
-classification "Applications/Panels and Applets"
-import SUNWcontact-lookup-applet
-end package

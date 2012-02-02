@@ -1,6 +1,0 @@
-package SUNWobby
-consolidation "gnome"
-classification "Development/System"
-import SUNWobby
-import SUNWobby-devel
-end package

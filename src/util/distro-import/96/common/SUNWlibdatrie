@@ -1,7 +1,0 @@
-package SUNWlibdatrie
-consolidation "l10n"
-classification "System/Localizations"
-import SUNWlibdatrie
-import SUNWlibdatrie-devel
-version 0.1.2
-end package

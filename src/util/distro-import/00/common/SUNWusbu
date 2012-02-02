@@ -1,5 +1,0 @@
-package SUNWusbu
-consolidation "osnet"
-classification "System/Hardware"
-import SUNWusbu
-end package

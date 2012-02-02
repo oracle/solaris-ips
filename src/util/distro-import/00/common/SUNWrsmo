@@ -1,5 +1,0 @@
-package SUNWrsmo
-consolidation "osnet"
-classification "System/Hardware"
-import SUNWrsmo
-end package

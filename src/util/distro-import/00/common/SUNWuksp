@@ -1,5 +1,0 @@
-package SUNWuksp
-classification "Drivers/Ports"
-import SUNWuksp
-add driver name=usbsksp perms="* 0666 root sys" alias=usb6cd,12a alias=usb6cd,11a alias=usb6cd,121 alias=usb6cd,131
-end package

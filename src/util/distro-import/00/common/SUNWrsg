@@ -1,5 +1,0 @@
-package SUNWrsg
-consolidation "osnet"
-classification "System/Libraries"
-import SUNWrsg
-end package

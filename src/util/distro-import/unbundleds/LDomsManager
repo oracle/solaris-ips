@@ -1,6 +1,0 @@
-package system/ldoms/ldomsmanager
-classification "System/Virtualization"
-import SUNWldm.v
-import SUNWldmp2v
-version 1.3
-end package

@@ -1,7 +1,0 @@
-package SUNWlibanthy
-consolidation "l10n"
-classification "System/Localizations"
-import SUNWlibanthy
-import SUNWlibanthy-devel
-import SUNWlibanthy-root
-end package

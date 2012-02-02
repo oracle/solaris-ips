@@ -1,7 +1,0 @@
-package SUNWjdom
-consolidation "sfw"
-classification "Development/Java"
-import SUNWjdom
-depend SUNWjaxen-core
-version 1.1
-end package

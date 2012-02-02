@@ -1,9 +1,0 @@
-package system/library/sysidtool
-consolidation "admin"
-obsoleted 171
-end package
-
-package SUNWadmlib-sysid
-consolidation "admin"
-obsoleted 171
-end package

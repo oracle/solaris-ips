@@ -1,7 +1,0 @@
-package SUNWmysql-base
-consolidation "sfw"
-classification "System/Databases"
-summary "MySQL Database Management System (Base)"
-add group groupname=mysql gid=70
-add user username=mysql password=NP uid=70 group=mysql gcos-field="MySQL Reserved UID" ftpuser=false
-end package

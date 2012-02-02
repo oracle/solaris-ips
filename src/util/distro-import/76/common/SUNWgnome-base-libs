@@ -1,9 +1,0 @@
-package SUNWgnome-base-libs
-classification "Desktop (GNOME)/Libraries"
-import SUNWgnome-base-libs
-import SUNWgnome-base-libs-devel
-import SUNWgnome-base-libs-root
-drop etc/$(ARCH64)/gtk-2.0/gtk.immodules
-drop etc/gtk-2.0/gtk.immodules
-depend SUNWuiu8
-end package

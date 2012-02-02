@@ -1,9 +1,0 @@
-package SUNWxvnc
-classification "System/X11"
-import SUNWxvnc
-version 4.1.2
-from SUNWxwplr import
-var/svc/manifest/application/x11/xvnc-inetd.xml
-end import
-depend SUNWxorg-xkb
-end package

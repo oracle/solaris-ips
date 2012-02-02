@@ -1,6 +1,0 @@
-package SUNWdcs
-consolidation "osnet"
-classification "System/Core"
-import SUNWdcsr
-import SUNWdcsu
-end package

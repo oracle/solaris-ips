@@ -1,9 +1,0 @@
-package SUNWlibtool
-consolidation "sfw"
-classification "Development/GNU"
-import SUNWlibtool
-depend SUNWbash
-depend SUNWltdl
-depend SUNWxcu4
-version 1.5.22
-end package

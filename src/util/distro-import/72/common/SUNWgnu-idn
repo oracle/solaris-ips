@@ -1,5 +1,0 @@
-package SUNWgnu-idn
-classification "System/Libraries"
-import SUNWgnu-idn
-version 0.6.8
-end package

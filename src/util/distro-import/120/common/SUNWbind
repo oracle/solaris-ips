@@ -1,6 +1,0 @@
-package SUNWbind
-classification "System/Services"
-import SUNWbind
-import SUNWbindr
-version 9.6.1
-end package

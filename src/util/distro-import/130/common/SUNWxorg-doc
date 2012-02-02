@@ -1,6 +1,0 @@
-package SUNWxorg-doc
-consolidation "X"
-depend SUNWxorg-graphics-ddx
-depend SUNWxorg-server
-renamed 130
-end package

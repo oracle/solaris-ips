@@ -1,7 +1,0 @@
-package SUNWibus-chewing
-consolidation "l10n"
-classification "System/Internationalization"
-import SUNWibus-chewing
-import SUNWibus-chewing-root
-version 1.1.0
-end package

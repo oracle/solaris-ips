@@ -1,5 +1,0 @@
-package SUNWmyspell-dictionary-cs
-consolidation "gnome_l10n"
-classification "System/Localizations"
-import SUNWmyspell-dictionary-cs
-end package

@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2008, 2011, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2008, 2012, Oracle and/or its affiliates. All rights reserved.
 #
 
 import json
@@ -360,14 +360,11 @@ if __name__ == "__main__":
             time_estimates)
         cli_suite = find_tests("cli", onlyval, startattest, output,
             time_estimates)
-        distro_suite = find_tests("distro-import", onlyval, startattest, output,
-            time_estimates)
 
         suites = []
         suites.append(api_suite)
         if ostype == "posix":
                 suites.append(cli_suite)
-                suites.append(distro_suite)
                 if enable_gui_tests:
                         try:
                                 import gui.testutils

@@ -1,6 +1,0 @@
-package SUNWpython26-setuptools
-consolidation "gnome"
-classification "Development/Python"
-import SUNWpython26-setuptools
-depend SUNWPython26
-end package

@@ -1,6 +1,0 @@
-package SUNWspeex
-consolidation "gnome"
-classification "System/Multimedia Libraries"
-import SUNWspeex
-import SUNWspeex-devel
-end package

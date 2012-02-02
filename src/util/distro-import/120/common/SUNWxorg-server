@@ -1,7 +1,0 @@
-package SUNWxorg-server
-classification "System/X11"
-import SUNWxorg-server
-depend_path /usr/X11/lib/X11/xkb/rules/base
-$(i386_ONLY)depend_path /platform/i86pc/kernel/drv/xsvc
-version 1.6.2
-end package

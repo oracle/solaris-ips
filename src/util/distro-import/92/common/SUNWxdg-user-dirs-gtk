@@ -1,6 +1,0 @@
-package SUNWxdg-user-dirs-gtk
-consolidation "gnome"
-classification "Applications/System Utilities"
-import SUNWxdg-user-dirs-gtk
-import SUNWxdg-user-dirs-gtk-root
-end package

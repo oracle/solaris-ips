@@ -1,8 +1,0 @@
-package SUNWImperius
-consolidation "sfw"
-classification "Development/Other Languages"
-import SUNWImperius
-depend SUNWSblimCimClient
-depend SUNWantlr2
-version 1.0.0
-end package

@@ -1,6 +1,0 @@
-package SUNWurtw
-classification "Drivers/Networking"
-import SUNWurtw
-add driver name=urtw perms="* 0666 root sys" clone_perms="0666 root sys" \
-	alias=usb846,6a00
-end package

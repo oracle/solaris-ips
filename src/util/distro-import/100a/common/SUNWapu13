@@ -1,6 +1,0 @@
-package SUNWapu13
-classification "Web Services/Application and Web Servers"
-import SUNWapu13dev
-import SUNWapu13lib
-version 1.3.4
-end package

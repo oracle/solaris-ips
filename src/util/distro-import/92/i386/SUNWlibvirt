@@ -1,6 +1,0 @@
-package SUNWlibvirt
-consolidation "xvm"
-classification "System/Libraries"
-import SUNWlibvirt
-import SUNWlibvirtr
-end package

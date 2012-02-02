@@ -1,4 +1,0 @@
-package SUNWpython-cherrypy
-classification "Development/Python"
-import ../../../packages/sparc/SUNWpython-cherrypy
-end package

@@ -1,9 +1,0 @@
-package SUNWkdc
-consolidation "osnet"
-classification "System/Security"
-import SUNWkdcu
-import SUNWkdcr
-depend SUNWlldap
-depend SUNWrsg
-depend SUNWsmbs
-end package

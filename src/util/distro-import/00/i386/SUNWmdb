@@ -1,5 +1,0 @@
-package SUNWmdb
-classification "Development/System"
-import SUNWmdb
-import SUNWmdbr
-end package

@@ -1,5 +1,0 @@
-package SUNWpixman
-classification "System/Libraries"
-import SUNWpixman
-version 0.12.0
-end package

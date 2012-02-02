@@ -1,7 +1,0 @@
-package SUNWxom
-consolidation "sfw"
-classification "Development/Java"
-import SUNWxom
-depend SUNWjaxen-core
-version 1.1
-end package

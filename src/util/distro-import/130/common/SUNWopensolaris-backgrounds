@@ -1,5 +1,0 @@
-package SUNWopensolaris-backgrounds
-consolidation "gnome"
-classification "Desktop (GNOME)/Theming"
-import SUNWopensolaris-backgrounds
-end package

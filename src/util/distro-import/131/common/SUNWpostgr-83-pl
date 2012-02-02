@@ -1,6 +1,0 @@
-package SUNWpostgr-83-pl
-consolidation "sfw"
-classification "Development/Databases"
-import SUNWpostgr-83-pl
-version 8.3.9
-end package

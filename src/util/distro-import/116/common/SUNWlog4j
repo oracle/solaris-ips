@@ -1,6 +1,0 @@
-package SUNWlog4j
-consolidation "sfw"
-classification "Development/Java"
-import SUNWlog4j
-version 1.2.15
-end package

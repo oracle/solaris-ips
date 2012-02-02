@@ -1,5 +1,0 @@
-package SUNWqos
-consolidation "osnet"
-classification "System/Core"
-import SUNWqos
-end package

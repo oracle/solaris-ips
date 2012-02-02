@@ -1,5 +1,0 @@
-package SUNWctpls
-consolidation "l10n"
-classification "System/Internationalization"
-import SUNWctpls
-end package

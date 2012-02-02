@@ -1,7 +1,0 @@
-package SUNWopensp
-consolidation "gnome"
-classification "System/Text Tools"
-import SUNWopensp
-import SUNWopensp-devel
-import SUNWopensp-root
-end package

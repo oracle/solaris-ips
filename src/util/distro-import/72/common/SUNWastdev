@@ -1,5 +1,0 @@
-package SUNWastdev
-consolidation "osnet"
-classification "System/Software Management"
-import SUNWastdev
-end package

@@ -1,5 +1,0 @@
-package SUNWscsa1394
-classification "Drivers/Ports"
-import SUNWscsa1394
-add driver name=scsa1394 perms="* 0666 root sys" alias=firewire00609e,010483
-end package

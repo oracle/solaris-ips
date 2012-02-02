@@ -1,4 +1,0 @@
-package SUNWkvm
-classification "System/Core"
-import SUNWkvm.i
-end package

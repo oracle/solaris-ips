@@ -1,8 +1,0 @@
-#
-# As there isn't currently a way to delete packages on upgrade, create an
-# empty package which will cause the previous contents of the package to
-# be deleted when the empty version is installed.
-#
-package SUNWzuluc
-consolidation "smcc"
-end package

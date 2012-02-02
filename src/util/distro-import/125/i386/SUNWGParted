@@ -1,5 +1,0 @@
-package SUNWGParted
-consolidation "gnome"
-classification "System/Administration and Configuration"
-import SUNWGParted
-end package

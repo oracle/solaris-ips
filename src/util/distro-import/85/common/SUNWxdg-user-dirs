@@ -1,7 +1,0 @@
-package SUNWxdg-user-dirs
-consolidation "gnome"
-classification "Applications/System Utilities"
-import SUNWxdg-user-dirs
-import SUNWxdg-user-dirs-root
-depend_path /usr/bin/file
-end package

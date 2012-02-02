@@ -1,5 +1,0 @@
-package SUNWgnome-dtstart
-classification "Desktop (GNOME)/Scripts"
-import SUNWgnome-dtstart
-depend_path /usr/bin/linc-cleanup-sockets
-end package

@@ -1,6 +1,0 @@
-package SUNWfetchmail
-consolidation "sfw"
-classification "Applications/Internet"
-import SUNWfetchmail
-version 6.3.13
-end package

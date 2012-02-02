@@ -1,4 +1,0 @@
-package SUNWcadp
-import SUNWcadp
-add driver name=cadp class=scsi alias=pci9005,a180 alias=pci9005,e100 alias=pci9005,f500 alias=pci9005,5f alias=pci9005,1f alias=pci9005,a100 alias=pci9005,2180
-end package

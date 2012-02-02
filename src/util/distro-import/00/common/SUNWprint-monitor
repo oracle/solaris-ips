@@ -1,6 +1,0 @@
-package SUNWprint-monitor
-consolidation "gnome"
-classification "System/Printing"
-import SUNWprint-monitor
-import SUNWprint-monitor-root
-end package

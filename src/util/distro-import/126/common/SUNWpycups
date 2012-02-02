@@ -1,6 +1,0 @@
-package SUNWpycups
-consolidation "sfw"
-classification "System/Printing"
-import SUNWpycups
-version 1.9.46
-end package

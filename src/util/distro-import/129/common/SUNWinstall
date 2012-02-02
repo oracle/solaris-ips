@@ -1,7 +1,0 @@
-package SUNWinstall
-consolidation "install"
-classification "System/Administration and Configuration"
-import SUNWinstall
-depend SUNWbeadm
-depend SUNWPython26-extra
-end package

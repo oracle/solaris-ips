@@ -1,6 +1,0 @@
-package SUNWsysbench
-consolidation "sfw"
-classification "Development/System"
-import SUNWsysbench
-version 0.4.12
-end package

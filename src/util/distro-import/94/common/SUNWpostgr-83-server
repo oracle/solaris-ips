@@ -1,5 +1,0 @@
-package SUNWpostgr-83-server
-import SUNWpostgr-83-server
-import SUNWpostgr-83-server-data-root
-version 8.3.3
-end package

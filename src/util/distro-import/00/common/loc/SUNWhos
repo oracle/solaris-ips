@@ -1,5 +1,0 @@
-package SUNWhos
-consolidation "l10n"
-classification "System/Localizations"
-import SUNWhos
-end package

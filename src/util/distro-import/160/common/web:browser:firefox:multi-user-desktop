@@ -1,5 +1,0 @@
-package web/browser/firefox/multi-user-desktop
-consolidation "gnome"
-classification "Applications/Configuration and Preferences"
-import SUNWfirefox-multi-user-desktop
-end package

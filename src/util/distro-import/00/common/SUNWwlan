@@ -1,6 +1,0 @@
-package SUNWwlan
-consolidation "osnet"
-classification "System/Administration and Configuration"
-import SUNWwlanu
-import SUNWwlanr
-end package

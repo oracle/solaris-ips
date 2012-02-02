@@ -1,8 +1,0 @@
-package SUNWphp52-xdebug
-consolidation "sfw"
-classification "Development/PHP"
-import SUNWphp52r-xdebug
-import SUNWphp52u-xdebug
-depend SUNWphp52
-version 2.0.5
-end package

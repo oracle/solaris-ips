@@ -1,9 +1,0 @@
-package system/locale/no-extra
-consolidation "l10n"
-obsoleted 147
-end package
-
-package SUNWlang-no-extra
-consolidation "l10n"
-obsoleted 147
-end package

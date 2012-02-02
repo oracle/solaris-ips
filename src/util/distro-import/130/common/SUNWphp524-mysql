@@ -1,6 +1,0 @@
-package SUNWphp524-mysql
-consolidation "sfw"
-version 5.2.4
-depend SUNWphp52-mysql
-renamed 130
-end package

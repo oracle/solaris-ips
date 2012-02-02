@@ -1,5 +1,0 @@
-package SUNWvscan
-classification "System/Services"
-import SUNWvscanu
-import SUNWvscanr
-end package

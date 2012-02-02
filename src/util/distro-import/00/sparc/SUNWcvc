@@ -1,5 +1,0 @@
-package SUNWcvc
-classification "System/Core"
-import SUNWcvc.u
-import SUNWcvcr.u
-end package

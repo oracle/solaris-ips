@@ -1,4 +1,0 @@
-package SUNWpcmcu
-consolidation "osnet"
-obsoleted 130
-end package

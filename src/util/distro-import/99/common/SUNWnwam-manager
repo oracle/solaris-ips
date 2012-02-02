@@ -1,6 +1,0 @@
-package SUNWnwam-manager
-consolidation "gnome"
-classification "System/Administration and Configuration"
-import SUNWnwam-manager
-import SUNWnwam-manager-root
-end package

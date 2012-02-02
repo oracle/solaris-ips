@@ -1,6 +1,0 @@
-package SUNWfftw2
-consolidation "sfw"
-classification "Development/High Performance Computing"
-import SUNWfftw2
-version 2.1.5
-end package

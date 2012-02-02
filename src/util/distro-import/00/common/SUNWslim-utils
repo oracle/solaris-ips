@@ -1,3 +1,0 @@
-package SUNWslim-utils
-import SUNWslim-utils exclude var/svc/profile/generic_limited_net.xml var/svc/profile/generic_open.xml
-end package

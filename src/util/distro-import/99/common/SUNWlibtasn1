@@ -1,6 +1,0 @@
-package SUNWlibtasn1
-consolidation "gnome"
-classification "System/Libraries"
-import SUNWlibtasn1
-import SUNWlibtasn1-devel
-end package

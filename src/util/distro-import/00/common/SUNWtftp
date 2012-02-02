@@ -1,6 +1,0 @@
-package SUNWtftp
-consolidation "osnet"
-classification "Applications/System Utilities"
-import SUNWtftp
-import SUNWtftpr
-end package

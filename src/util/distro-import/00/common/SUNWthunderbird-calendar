@@ -1,5 +1,0 @@
-package SUNWthunderbird-calendar
-consolidation "gnome"
-classification "Applications/Internet"
-import SUNWthunderbird-calendar
-end package

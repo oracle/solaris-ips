@@ -1,5 +1,0 @@
-package SUNWconsolekit-pam
-consolidation "gnome"
-classification "Desktop (GNOME)/Sessions"
-import SUNWconsolekit-pam
-end package

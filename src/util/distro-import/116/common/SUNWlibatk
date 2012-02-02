@@ -1,6 +1,0 @@
-package SUNWlibatk
-consolidation "gnome"
-classification "Desktop (GNOME)/Libraries"
-import SUNWlibatk
-import SUNWlibatk-devel
-end package

@@ -1,6 +1,0 @@
-package SUNWtgnome-tsol-libs
-consolidation "gnome"
-classification "Desktop (GNOME)/Trusted Extensions"
-import SUNWtgnome-tsol-libs
-import SUNWtgnome-tsol-libs-devel
-end package

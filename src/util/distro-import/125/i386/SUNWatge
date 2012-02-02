@@ -1,8 +1,0 @@
-package SUNWatge
-consolidation "osnet"
-classification "Drivers/Networking"
-import SUNWatge
-
-add driver name=atge \
-    alias="pciex1969,1026"
-end package

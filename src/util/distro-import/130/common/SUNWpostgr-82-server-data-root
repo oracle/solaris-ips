@@ -1,6 +1,0 @@
-package SUNWpostgr-82-server-data-root
-consolidation "sfw"
-version 8.2.6
-depend SUNWpostgr-82-server
-renamed 130
-end package

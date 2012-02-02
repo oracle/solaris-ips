@@ -1,6 +1,0 @@
-package SUNWspawn-fcgi
-consolidation "sfw"
-classification "Web Services/Application and Web Servers"
-import SUNWspawn-fcgi
-version 1.6.3
-end package

@@ -1,5 +1,0 @@
-package SUNWrpm
-consolidation "sfw"
-classification "System/Packaging"
-import SUNWrpm
-end package

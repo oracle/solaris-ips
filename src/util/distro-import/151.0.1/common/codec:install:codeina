@@ -1,9 +1,0 @@
-package codec/install/codeina
-consolidation "gnome"
-obsoleted 151.0.1
-end package
-
-package SUNWcodeina
-consolidation "gnome"
-obsoleted 151.0.1
-end package

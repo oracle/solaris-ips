@@ -1,7 +1,0 @@
-package SUNWflexlex
-consolidation "sfw"
-classification "Development/Other Languages"
-import SUNWflexlex
-version 2.5.35
-depend SUNWgm4
-end package

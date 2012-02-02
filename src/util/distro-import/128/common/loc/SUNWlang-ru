@@ -1,6 +1,0 @@
-package SUNWlang-ru
-consolidation "l10n"
-classification "System/Localizations"
-import SUNWlang-ru
-depend SUNWlang-ruRU
-end package

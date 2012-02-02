@@ -1,9 +1,0 @@
-package SUNWgrub
-classification "System/Core"
-import SUNWgrub
-version 0.95
-drop boot/grub/splash.xpm.gz
-from SUNWfixes import
-boot/grub/splash.xpm.gz
-end import
-end package

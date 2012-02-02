@@ -1,5 +1,0 @@
-package SUNWgnome-commander
-consolidation "gnome"
-classification "Desktop (GNOME)/File Managers"
-import SUNWgnome-commander
-end package

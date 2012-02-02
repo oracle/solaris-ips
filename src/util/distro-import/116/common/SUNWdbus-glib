@@ -1,7 +1,0 @@
-package SUNWdbus-glib
-consolidation "gnome"
-classification "System/Libraries"
-import SUNWdbus-glib
-import SUNWdbus-glib-devel
-depend_path /usr/lib/pkgconfig/dbus-1.pc
-end package

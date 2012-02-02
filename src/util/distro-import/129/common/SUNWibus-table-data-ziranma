@@ -1,7 +1,0 @@
-package SUNWibus-table-data-ziranma
-consolidation "l10n"
-classification "System/Internationalization"
-import SUNWibus-table-data-ziranma
-depend SUNWibus-table
-version 1.2.0
-end package

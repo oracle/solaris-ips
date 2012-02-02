@@ -1,5 +1,0 @@
-package system/install/text-install
-consolidation "install"
-classification "System/Administration and Configuration"
-import SUNWtext-install
-end package

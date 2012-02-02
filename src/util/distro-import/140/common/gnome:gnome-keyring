@@ -1,7 +1,0 @@
-package gnome/gnome-keyring
-consolidation "gnome"
-classification "Desktop (GNOME)/Sessions"
-import SUNWgnome-keyring
-import SUNWgnome-keyring-devel
-import SUNWgnome-keyring-root
-end package

@@ -1,9 +1,0 @@
-package SUNWpm
-consolidation "osnet"
-classification "System/Administration and Configuration"
-import SUNWpmu
-import SUNWpmr
-
-add driver name=pm \
-    perms="* 0666 root sys"
-end package

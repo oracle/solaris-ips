@@ -1,7 +1,0 @@
-package SUNWipmi
-consolidation "sfw"
-classification "System/Hardware"
-import SUNWipmi
-import SUNWipmir
-version 1.8.10
-end package

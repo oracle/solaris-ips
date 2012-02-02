@@ -1,6 +1,0 @@
-package SUNWstardict
-consolidation "gnome_l10n"
-classification "Applications/Accessories"
-import SUNWstardict
-import SUNWstardict-root
-end package

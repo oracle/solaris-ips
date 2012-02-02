@@ -1,5 +1,0 @@
-package SUNWthunderbird
-consolidation "gnome"
-classification "Applications/Internet"
-import SUNWthunderbird
-end package

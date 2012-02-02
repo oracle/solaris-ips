@@ -1,5 +1,0 @@
-package SUNWbart
-consolidation "osnet"
-classification "System/Administration and Configuration"
-import SUNWbart
-end package

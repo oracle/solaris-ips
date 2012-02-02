@@ -1,5 +1,0 @@
-package SUNWgir-repository
-consolidation "gnome"
-classification "Development/GNOME and GTK+"
-import SUNWgir-repository
-end package

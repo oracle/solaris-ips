@@ -1,6 +1,0 @@
-package SUNWsound-exchange
-consolidation "sfw"
-classification "Applications/Sound and Video"
-import SUNWsound-exchange
-version 14.3.0
-end package

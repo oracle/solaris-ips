@@ -1,6 +1,0 @@
-package SUNWpython-notify
-consolidation "gnome"
-classification "Development/Python"
-import SUNWpython-notify
-import SUNWpython-notify-devel
-end package

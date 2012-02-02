@@ -1,7 +1,0 @@
-package SUNWckr
-classification "System/Core"
-import SUNWckr
-# BEGIN NON-REDISTRIBUTABLE
-drop kernel/drv/sparcv9/isp
-# END NON-REDISTRIBUTABLE
-end package

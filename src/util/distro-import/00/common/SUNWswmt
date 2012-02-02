@@ -1,5 +1,0 @@
-package SUNWswmt
-classification "System/Administration and Configuration"
-import SUNWswmt
-import SUNWinstall-patch-utils-root
-end package

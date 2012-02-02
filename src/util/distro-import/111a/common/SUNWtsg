@@ -1,8 +1,0 @@
-package SUNWtsg
-consolidation "osnet"
-classification "System/Trusted"
-import SUNWtsg
-drop etc/zones/SUNWtsoldef.xml
-add file SUNWtsoldef.xml path=etc/zones/SUNWtsoldef.xml mode=0444 \
-	owner=root group=bin
-end package

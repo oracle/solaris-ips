@@ -1,6 +1,0 @@
-package SUNWlxml-python26
-consolidation "sfw"
-classification "Development/Python"
-import SUNWlxml-python26
-version 2.7.6
-end package

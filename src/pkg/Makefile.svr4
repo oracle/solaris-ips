@@ -18,7 +18,7 @@
 #
 # CDDL HEADER END
 #
-# Copyright (c) 2010, 2011, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2010, 2012, Oracle and/or its affiliates. All rights reserved.
 #
 
 # Create SVr4 packages.
@@ -30,15 +30,9 @@ include Makefile
 SVR4_NAMES.cmd    = $(PKGMOGRIFY) -O /dev/null $(MANIFESTS:%=manifests/%) transforms/svr4-names
 SVR4_NAMES        = $(SVR4_NAMES.cmd:sh)
 
-SVR4_TEST_NAMES   = SUNWipkg SUNWipkg-gui
-
 # Main SVr4 packaging target
 _svr4: $(SVR4_NAMES:%=$(PKGDEST)/svr4/%/pkgmap)
 	pkgtrans $(PKGDEST)/svr4 pkg5-$$(hg id -i).pkg $(SVR4_NAMES)
-
-# A cut down target used to only build the SVR4 packages, used for testing
-_svr4_test: $(SVR4_TEST_NAMES:%=$(PKGDEST)/svr4/%/pkgmap)
-	pkgtrans $(PKGDEST)/svr4 pkg5-$$(hg id -i).pkg $(SVR4_TEST_NAMES)
 
 $(PKGDEST)/svr4:
 	mkdir -p $@

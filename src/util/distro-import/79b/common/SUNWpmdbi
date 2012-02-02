@@ -1,6 +1,0 @@
-package SUNWpmdbi
-consolidation "sfw"
-classification "Development/Perl"
-import SUNWpmdbi
-version 1.58
-end package

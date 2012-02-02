@@ -1,7 +1,0 @@
-package SUNWmysql
-classification "System/Databases"
-import SUNWmysqlu
-import SUNWmysqlr
-version 4.0.24
-depend SUNWmysql-base
-end package

@@ -1,9 +1,0 @@
-package SUNWpacket
-consolidation "osnet"
-classification "Drivers/Networking"
-import SUNWpacketu exclude usr
-import SUNWpacketh
-
-add driver name=bpf \
-    perms="bpf 0666 root sys"
-end package

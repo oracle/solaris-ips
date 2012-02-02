@@ -1,5 +1,0 @@
-package SUNWesos
-consolidation "l10n"
-classification "System/Localizations"
-import SUNWesos
-end package

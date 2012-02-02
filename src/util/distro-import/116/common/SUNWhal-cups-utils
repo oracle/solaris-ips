@@ -1,8 +1,0 @@
-package SUNWhal-cups-utils
-consolidation "sfw"
-classification "System/Printing"
-import SUNWhal-cups-utils
-import SUNWhal-cups-utilsr
-depend SUNWcups-manager
-version 0.6.19
-end package

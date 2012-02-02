@@ -1,8 +1,0 @@
-package SUNWidn
-consolidation "osnet"
-classification "System/Administration and Configuration"
-import SUNWidn.u
-
-add driver name=idn \
-    alias="SUNW,idn"
-end package

@@ -1,5 +1,0 @@
-package SUNWpostgr-83-devel
-classification "Development/Databases"
-import SUNWpostgr-83-devel
-version 8.3.6
-end package

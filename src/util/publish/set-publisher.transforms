@@ -1,1 +1,0 @@
-<transform set name=pkg.fmri -> edit value pkg://[^/]+/ pkg://solaris/>

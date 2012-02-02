@@ -1,7 +1,0 @@
-package SUNWwget
-consolidation "sfw"
-classification "Applications/Internet"
-import SUNWwgetu
-import SUNWwgetr
-version 1.12
-end package

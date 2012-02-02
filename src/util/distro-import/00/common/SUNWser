@@ -1,8 +1,0 @@
-package SUNWser
-classification "System/Services"
-import SUNWseru
-import SUNWserr
-version 0.8.12
-add link path=usr/sbin/ser target=../sfw/sbin/ser
-add link path=usr/sbin/serctl target=../sfw/sbin/serctl
-end package

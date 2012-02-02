@@ -1,6 +1,0 @@
-package SUNWsmedia
-consolidation "osnet"
-classification "System/Libraries"
-import SUNWsmedia
-import SUNWsmediar
-end package

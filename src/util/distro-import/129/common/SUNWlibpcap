@@ -1,7 +1,0 @@
-package SUNWlibpcap
-consolidation "sfw"
-classification "System/Libraries"
-import SUNWlibpcap
-depend SUNWpacket
-version 1.0.0
-end package

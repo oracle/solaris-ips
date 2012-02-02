@@ -1,5 +1,0 @@
-package SUNWgnome-camera
-classification "Applications/Graphics and Imaging"
-import SUNWgnome-camera
-import SUNWgnome-camera-devel
-end package

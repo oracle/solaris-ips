@@ -1,5 +1,0 @@
-package SUNWpostgr-83-client
-classification "System/Databases"
-import SUNWpostgr-83-client
-version 8.3.7
-end package

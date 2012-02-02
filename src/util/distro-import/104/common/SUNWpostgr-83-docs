@@ -1,5 +1,0 @@
-package SUNWpostgr-83-docs
-classification "System/Databases"
-import SUNWpostgr-83-docs
-version 8.3.5
-end package

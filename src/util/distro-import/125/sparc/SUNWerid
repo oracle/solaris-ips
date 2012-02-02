@@ -1,9 +1,0 @@
-package SUNWerid
-consolidation "osnet"
-classification "Drivers/Networking"
-import SUNWerid
-
-add driver name=eri \
-    clone_perms="0666 root sys" \
-    alias="pci108e,1101"
-end package

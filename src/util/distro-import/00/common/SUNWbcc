@@ -1,6 +1,0 @@
-package SUNWbcc
-consolidation "sfw"
-classification "Development/Other Languages"
-import SUNWbcc
-version 0.16.17
-end package

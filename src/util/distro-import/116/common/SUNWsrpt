@@ -1,6 +1,0 @@
-package SUNWsrpt
-classification "Drivers/Storage"
-import SUNWsrptr
-import SUNWsrptu
-add driver name=srpt perms="* 0644 root sys"
-end package

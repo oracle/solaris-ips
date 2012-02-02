@@ -1,8 +1,0 @@
-package SUNWxwdv
-consolidation "osnet"
-classification "System/X11"
-import SUNWxwdv
-
-add driver name=winlock \
-    perms="* 0666 root sys"
-end package

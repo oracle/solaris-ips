@@ -1,6 +1,0 @@
-package SUNWgm4
-consolidation "sfw"
-classification "Development/GNU"
-import SUNWgm4
-version 1.4.12
-end package

@@ -1,5 +1,0 @@
-package SUNWgrubS
-classification "System/Core"
-import SUNWgrubS
-version 0.95
-end package

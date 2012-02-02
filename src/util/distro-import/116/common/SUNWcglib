@@ -1,7 +1,0 @@
-package SUNWcglib
-consolidation "sfw"
-classification "Development/Java"
-import SUNWcglib
-depend SUNWjarjar
-version 2.2
-end package

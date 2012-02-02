@@ -1,7 +1,0 @@
-package SUNWrss-glx
-consolidation "gnome"
-classification "System/X11"
-import SUNWrss-glx
-depend_path /usr/X11/lib/xscreensaver/bin/xscreensaver-gl-helper
-version 0.90
-end package

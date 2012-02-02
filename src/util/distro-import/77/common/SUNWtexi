@@ -1,6 +1,0 @@
-package SUNWtexi
-consolidation "sfw"
-classification "Development/GNU"
-import SUNWtexi
-version 4.7
-end package

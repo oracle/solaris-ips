@@ -1,6 +1,0 @@
-package SUNWperl-pmtools
-consolidation "sfw"
-classification "Development/Perl"
-import SUNWperl-pmtools
-version 1.10
-end package

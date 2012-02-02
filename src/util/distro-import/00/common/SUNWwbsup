@@ -1,5 +1,0 @@
-package SUNWwbsup
-consolidation "osnet"
-classification "System/Core"
-import SUNWwbsup
-end package

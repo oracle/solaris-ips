@@ -1,6 +1,0 @@
-package SUNWcompiz
-classification "Desktop (GNOME)/Window Managers"
-import SUNWcompiz
-import SUNWcompiz-devel
-import SUNWcompiz-root
-end package

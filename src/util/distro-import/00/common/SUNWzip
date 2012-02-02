@@ -1,6 +1,0 @@
-package SUNWzip
-consolidation "sfw"
-classification "Applications/System Utilities"
-import SUNWzip
-version 2.32
-end package

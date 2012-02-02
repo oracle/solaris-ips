@@ -1,5 +1,0 @@
-package SUNWsmmgr
-classification "System/Administration and Configuration"
-import SUNWsmmgr
-version 5.0.9
-end package

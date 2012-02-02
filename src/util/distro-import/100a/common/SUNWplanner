@@ -1,7 +1,0 @@
-package SUNWplanner
-consolidation "gnome"
-classification "Applications/Office"
-import SUNWplanner
-import SUNWplanner-devel
-import SUNWplanner-root
-end package

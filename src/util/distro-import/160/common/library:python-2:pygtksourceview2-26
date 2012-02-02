@@ -1,6 +1,0 @@
-package library/python-2/pygtksourceview2-26
-consolidation "gnome"
-classification "Development/Python"
-import SUNWpygtksourceview26
-import SUNWpygtksourceview26-devel
-end package

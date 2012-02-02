@@ -1,6 +1,0 @@
-package SUNWguile
-consolidation "sfw"
-classification "Development/Other Languages"
-import SUNWguile
-version 1.8.4
-end package

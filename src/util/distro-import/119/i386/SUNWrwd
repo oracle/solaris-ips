@@ -1,6 +1,0 @@
-package SUNWrwd
-classification "Drivers/Networking"
-import SUNWrwd
-add driver name=rwd perms="* 0666 root sys" clone_perms="0666 root sys" \
-	alias=pci1814,401
-end package

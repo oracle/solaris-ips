@@ -1,7 +1,0 @@
-package SUNWnmap
-consolidation "sfw"
-classification "System/Administration and Configuration"
-import SUNWnmap
-version 4.75
-depend SUNWpysqlite
-end package

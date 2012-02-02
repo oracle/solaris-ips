@@ -1,6 +1,0 @@
-package SUNWhal
-consolidation "osnet"
-classification "System/Hardware"
-import SUNWhal
-import SUNWhalr
-end package

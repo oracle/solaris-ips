@@ -1,9 +1,0 @@
-package SUNWpkgcmds
-classification "System/Packaging"
-import SUNWpkgcmdsu
-import SUNWpkgcmdsr
-from SUNWswmt import
-usr/sadm/install/scripts/i.CONFIG.prsv
-usr/sadm/install/scripts/i.preserve
-end import
-end package

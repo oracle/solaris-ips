@@ -1,8 +1,0 @@
-package SUNWhmd
-classification "Drivers/Networking"
-import SUNWhmd
-$(i386_ONLY)add driver name=hme alias=pci108e,1001
-$(sparc_ONLY)add driver name=fas class=scsi perms="devctl 0600 root sys" \
-$(sparc_ONLY)	alias=SUNW,fas
-$(sparc_ONLY)add driver name=hme alias=SUNW,hme
-end package

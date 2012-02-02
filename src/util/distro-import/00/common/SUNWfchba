@@ -1,6 +1,0 @@
-package SUNWfchba
-consolidation "osnet"
-classification "System/Libraries"
-import SUNWfchba
-import SUNWfchbar
-end package

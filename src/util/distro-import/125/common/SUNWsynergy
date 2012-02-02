@@ -1,6 +1,0 @@
-package SUNWsynergy
-consolidation "X"
-classification "System/X11"
-import SUNWsynergy
-version 1.3.1
-end package

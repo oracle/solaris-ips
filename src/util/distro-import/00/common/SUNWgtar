@@ -1,8 +1,0 @@
-package SUNWgtar
-import SUNWgtar
-version 1.14
-add link path=usr/bin/gtar target=../sfw/bin/gtar
-add dir path=usr/gnu mode=0755 owner=root group=bin
-add dir path=usr/gnu/bin mode=0755 owner=root group=bin
-add link path=usr/gnu/bin/tar target=../../sfw/bin/gtar
-end package

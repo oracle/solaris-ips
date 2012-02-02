@@ -1,5 +1,0 @@
-package SUNWswmt
-consolidation "install"
-depend SUNWpkgcmds
-renamed 130
-end package

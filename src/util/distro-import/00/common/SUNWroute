@@ -1,6 +1,0 @@
-package SUNWroute
-consolidation "osnet"
-classification "System/Core"
-import SUNWroute
-import SUNWroutr
-end package

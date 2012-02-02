@@ -1,5 +1,0 @@
-package SUNWibdma
-consolidation "osnet"
-classification "System/Hardware"
-import SUNWibdmar
-end package

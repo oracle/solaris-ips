@@ -1,5 +1,0 @@
-package SUNWdpl
-consolidation "osnet"
-classification "Development/System"
-import SUNWdpl
-end package

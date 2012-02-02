@@ -1,5 +1,0 @@
-package SUNWgnome-internet-applets
-consolidation "gnome"
-classification "Applications/Panels and Applets"
-import SUNWgnome-internet-applets
-end package

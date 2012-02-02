@@ -1,6 +1,0 @@
-package SUNWtop
-consolidation "sfw"
-classification "Applications/System Utilities"
-import SUNWtop
-version 3.8
-end package

@@ -1,6 +1,0 @@
-package SUNWgnome-search-tool
-consolidation "gnome"
-classification "Applications/Accessories"
-import SUNWgnome-search-tool
-import SUNWgnome-search-tool-root
-end package

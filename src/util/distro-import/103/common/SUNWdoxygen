@@ -1,6 +1,0 @@
-package SUNWdoxygen
-consolidation "sfw"
-classification "Development/Distribution Tools"
-import SUNWdoxygen
-version 1.5.7.1
-end package

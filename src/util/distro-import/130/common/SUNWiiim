@@ -1,4 +1,0 @@
-package SUNWiiim
-depend SUNWiiimf
-renamed 130
-end package

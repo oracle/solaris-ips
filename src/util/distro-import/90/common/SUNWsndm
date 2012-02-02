@@ -1,7 +1,0 @@
-package SUNWsndm
-consolidation "osnet"
-classification "System/Core"
-import SUNWsndmu
-import SUNWsndmr
-version 8.14.3
-end package

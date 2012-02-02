@@ -1,6 +1,0 @@
-package SUNWbvi
-consolidation "sfw"
-classification "Development/Editors"
-import SUNWbvi
-version 1.3.2
-end package

@@ -1,6 +1,0 @@
-package SUNWdmgt
-consolidation "osnet"
-classification "System/Administration and Configuration"
-import SUNWdmgtu
-import SUNWdmgtr
-end package

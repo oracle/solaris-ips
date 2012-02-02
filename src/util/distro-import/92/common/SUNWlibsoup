@@ -1,6 +1,0 @@
-package SUNWlibsoup
-consolidation "gnome"
-classification "System/Libraries"
-import SUNWlibsoup
-import SUNWlibsoup-devel
-end package

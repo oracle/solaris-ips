@@ -1,6 +1,0 @@
-package SUNWgpch
-consolidation "sfw"
-classification "Development/GNU"
-import SUNWgpch
-version 2.5.9
-end package

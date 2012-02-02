@@ -1,9 +1,0 @@
-package SUNWimac
-consolidation "osnet"
-classification "System/Libraries"
-import SUNWimac
-import SUNWimacr
-add file ima.conf path=etc/ima.conf mode=0644 owner=root group=bin \
-	preserve=true
-depend SUNWima
-end package

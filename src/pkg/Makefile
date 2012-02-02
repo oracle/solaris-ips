@@ -18,7 +18,7 @@
 #
 # CDDL HEADER END
 #
-# Copyright (c) 2010, 2011, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2010, 2012, Oracle and/or its affiliates. All rights reserved.
 #
 
 PKGVERS_COMPONENT = 0.5.11
@@ -115,11 +115,6 @@ clobber: clean
 # Pass SVr4 package production off to its own makefile
 svr4:
 	$(MAKE) -f Makefile.svr4 _svr4
-
-# A target used to only build the SVR4 packages needed for
-# the test suite
-svr4_test:
-	$(MAKE) -f Makefile.svr4 _svr4_test
 
 $(PDIR):
 	mkdir -p $@

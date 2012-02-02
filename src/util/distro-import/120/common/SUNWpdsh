@@ -1,6 +1,0 @@
-package SUNWpdsh
-consolidation "sfw"
-classification "Applications/System Utilities"
-import SUNWpdsh
-version 2.18
-end package

@@ -1,6 +1,0 @@
-package SUNWlibconfuse
-consolidation "sfw"
-classification "System/Libraries"
-import SUNWlibconfuse
-version 2.6
-end package

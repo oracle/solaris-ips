@@ -1,6 +1,0 @@
-package SUNWIPython
-consolidation "gnome"
-classification "Development/Python"
-import SUNWIPython
-depend SUNWpython26-twisted
-end package

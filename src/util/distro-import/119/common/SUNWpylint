@@ -1,8 +1,0 @@
-package SUNWpylint
-consolidation "sfw"
-classification "Development/Python"
-import SUNWpylint
-depend SUNWlogilab-astng
-depend SUNWlogilab-common
-version 0.18.0
-end package

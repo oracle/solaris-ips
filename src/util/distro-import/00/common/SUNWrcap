@@ -1,6 +1,0 @@
-package SUNWrcap
-consolidation "osnet"
-classification "System/Core"
-import SUNWrcapu
-import SUNWrcapr
-end package

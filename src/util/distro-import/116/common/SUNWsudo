@@ -1,7 +1,0 @@
-package SUNWsudo
-consolidation "sfw"
-classification "Applications/System Utilities"
-import SUNWsudor
-import SUNWsudou
-version 1.7.0
-end package

@@ -1,5 +1,0 @@
-package SUNWdhcsb
-consolidation "osnet"
-classification "System/Services"
-import SUNWdhcsb
-end package

@@ -1,6 +1,0 @@
-package SUNWpostgr-libpqxx
-consolidation "sfw"
-classification "Development/Databases"
-import SUNWpostgr-libpqxx
-version 3.0.2
-end package

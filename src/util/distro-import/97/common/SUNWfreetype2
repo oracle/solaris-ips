@@ -1,5 +1,0 @@
-package SUNWfreetype2
-classification "System/Libraries"
-import SUNWfreetype2
-version 2.3.7
-end package

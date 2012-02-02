@@ -1,6 +1,0 @@
-package SUNWevolution-exchange
-consolidation "gnome"
-classification "Applications/Internet"
-import SUNWevolution-exchange
-import SUNWevolution-exchange-root
-end package

@@ -1,6 +1,0 @@
-package SUNWsvn-java
-consolidation "sfw"
-classification "Development/Source Code Management"
-import SUNWsvn-java
-version 1.6.5
-end package

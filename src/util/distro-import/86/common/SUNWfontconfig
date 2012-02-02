@@ -1,6 +1,0 @@
-package SUNWfontconfig
-classification "System/Libraries"
-import SUNWfontconfig
-import SUNWfontconfig-root
-version 2.5.0
-end package

@@ -1,7 +1,0 @@
-package SUNWstringtemplate
-consolidation "sfw"
-classification "Development/Java"
-import SUNWstringtemplate
-depend SUNWantlr2
-version 3.2
-end package

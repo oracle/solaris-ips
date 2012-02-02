@@ -1,7 +1,0 @@
-package SUNWgnome-media
-consolidation "gnome"
-classification "System/Multimedia Libraries"
-import SUNWgnome-media
-import SUNWgnome-media-devel
-import SUNWgnome-media-root
-end package

@@ -1,7 +1,0 @@
-package SUNWsmagt
-consolidation "sfw"
-depend SUNWnet-snmp-addons
-depend SUNWnet-snmp-core
-version 5.0.9
-renamed 130
-end package

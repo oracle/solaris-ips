@@ -1,9 +1,0 @@
-package library/python-2/python-mysql-24
-consolidation "gnome"
-obsoleted 162
-end package
-
-package SUNWmysql-python
-consolidation "gnome"
-obsoleted 162
-end package

@@ -1,8 +1,0 @@
-package SUNWqfed
-consolidation "osnet"
-classification "Drivers/Networking"
-import SUNWqfed
-
-add driver name=qfe \
-    alias="SUNW,qfe"
-end package

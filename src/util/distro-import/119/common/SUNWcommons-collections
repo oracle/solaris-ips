@@ -1,7 +1,0 @@
-package SUNWcommons-collections
-consolidation "sfw"
-classification "Development/Java"
-import SUNWcommons-collections
-depend SUNWjunit
-version 3.2.1
-end package

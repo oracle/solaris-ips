@@ -1,4 +1,0 @@
-package FSWxorg-clientlibs
-depend SUNWxwplt
-renamed 130
-end package

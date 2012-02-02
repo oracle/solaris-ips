@@ -1,5 +1,0 @@
-package SUNWxdg-utils
-consolidation "gnome"
-classification "Applications/System Utilities"
-import SUNWxdg-utils
-end package

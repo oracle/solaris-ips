@@ -1,6 +1,0 @@
-package SUNWgsfst
-consolidation "sfw"
-classification "System/Fonts"
-import SUNWgsfst
-version 6.0
-end package

@@ -1,6 +1,0 @@
-package SUNWjettison
-consolidation "sfw"
-classification "Development/Java"
-import SUNWjettison
-version 1.0
-end package

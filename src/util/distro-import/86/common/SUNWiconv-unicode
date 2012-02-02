@@ -1,5 +1,0 @@
-package SUNWiconv-unicode
-consolidation "l10n"
-classification "System/Internationalization"
-import SUNWiconv-unicode
-end package

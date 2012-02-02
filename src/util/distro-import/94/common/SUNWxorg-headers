@@ -1,7 +1,0 @@
-package SUNWxorg-headers
-consolidation "X"
-classification "Development/X11"
-import SUNWxorg-headers
-depend SUNWhea
-depend SUNWxwinc
-end package

@@ -1,6 +1,0 @@
-package SUNWiiimf
-consolidation "l10n"
-classification "System/Internationalization"
-import SUNWiiimf
-import SUNWiiimf-root
-end package

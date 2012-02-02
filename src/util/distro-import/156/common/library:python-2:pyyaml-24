@@ -1,9 +1,0 @@
-package library/python-2/pyyaml-24
-consolidation "gnome"
-obsoleted 156
-end package
-
-package SUNWpyyaml24
-consolidation "gnome"
-obsoleted 156
-end package

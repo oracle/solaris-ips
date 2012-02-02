@@ -1,7 +1,0 @@
-package SUNWaconf
-classification "Development/GNU"
-import SUNWaconf
-depend SUNWgm4
-depend SUNWperl584core
-version 2.61
-end package

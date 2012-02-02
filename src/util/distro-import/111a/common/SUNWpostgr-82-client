@@ -1,5 +1,0 @@
-package SUNWpostgr-82-client
-classification "System/Databases"
-import SUNWpostgr-82-client
-version 8.2.13
-end package

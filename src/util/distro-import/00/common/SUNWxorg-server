@@ -1,4 +1,0 @@
-package SUNWxorg-server
-import SUNWxorg-server
-chattr usr/X11/lib/X11/fonts group=bin
-end package

@@ -1,8 +1,0 @@
-package SUNWaconf
-consolidation "sfw"
-classification "Development/GNU"
-import SUNWaconf
-depend SUNWgm4
-depend SUNWperl584core
-version 2.63
-end package

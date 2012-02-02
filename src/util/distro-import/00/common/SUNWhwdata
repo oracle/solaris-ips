@@ -1,5 +1,0 @@
-package SUNWhwdata
-consolidation "osnet"
-classification "System/Hardware"
-import SUNWhwdata
-end package

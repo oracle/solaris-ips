@@ -1,6 +1,0 @@
-package SUNWm17n-contrib
-consolidation "l10n"
-classification "System/Internationalization"
-import SUNWm17n-contrib
-depend SUNWm17n
-end package

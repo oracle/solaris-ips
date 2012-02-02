@@ -1,6 +1,0 @@
-package SUNWlibgtop
-consolidation "gnome"
-classification "System/Libraries"
-import SUNWlibgtop
-import SUNWlibgtop-devel
-end package

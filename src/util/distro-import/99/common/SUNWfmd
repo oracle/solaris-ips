@@ -1,6 +1,0 @@
-package SUNWfmd
-classification "System/Administration and Configuration"
-import SUNWfmd
-import SUNWfmdr
-add driver name=fm perms="* 0644 root sys"
-end package

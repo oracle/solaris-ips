@@ -1,6 +1,0 @@
-package SUNWprocmail
-consolidation "sfw"
-classification "Applications/Internet"
-import SUNWprocmail
-version 3.22
-end package

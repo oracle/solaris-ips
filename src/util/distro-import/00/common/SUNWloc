@@ -1,5 +1,0 @@
-package SUNWloc
-consolidation "osnet"
-classification "System/Localizations"
-import SUNWloc
-end package

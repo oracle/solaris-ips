@@ -1,6 +1,0 @@
-package SUNWpostgr-82-tcl
-consolidation "sfw"
-classification "System/Databases"
-import SUNWpostgr-82-tcl
-version 1.5
-end package

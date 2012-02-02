@@ -1,5 +1,0 @@
-package SUNWaudiovia97
-classification "Drivers/Media"
-import SUNWaudiovia97
-add driver name=audiovia97 alias=pci1106,3058
-end package

@@ -1,5 +1,0 @@
-package SUNWtack
-consolidation "gnome"
-classification "Applications/System Utilities"
-import SUNWtack
-end package

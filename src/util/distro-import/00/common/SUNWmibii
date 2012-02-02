@@ -1,5 +1,0 @@
-package SUNWmibii
-consolidation "osnet"
-classification "System/Enterprise Management"
-import SUNWmibii
-end package

@@ -1,6 +1,0 @@
-package SUNWcpc
-classification "System/Core"
-$(i386_ONLY)import SUNWcpc.i
-$(sparc_ONLY)import SUNWcpc.u
-$(sparc_ONLY)import SUNWcpc.v
-end package

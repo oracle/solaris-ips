@@ -1,8 +1,0 @@
-package SUNWdesktop-cache
-classification "System/Services"
-import SUNWdesktop-cache
-depend SUNWgnome-desktop-prefs
-depend_path /usr/bin/gconftool-2
-depend_path /usr/bin/gtk-update-icon-cache
-depend_path /usr/bin/update-mime-database
-end package

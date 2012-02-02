@@ -1,5 +1,0 @@
-package SUNWfontconfig-docs
-classification "Development/X11"
-import SUNWfontconfig-docs
-version 2.5.0
-end package

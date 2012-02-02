@@ -1,5 +1,0 @@
-package SUNWpconsole
-classification "Applications/System Utilities"
-import SUNWpconsole
-version 1.0
-end package

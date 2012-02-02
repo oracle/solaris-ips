@@ -1,5 +1,0 @@
-package SUNWfros
-consolidation "l10n"
-classification "System/Localizations"
-import SUNWfros
-end package

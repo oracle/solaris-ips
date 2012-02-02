@@ -1,8 +1,0 @@
-package SUNWant
-consolidation "sfw"
-classification "Development/Distribution Tools"
-import SUNWant
-depend SUNWj6dev
-depend SUNWj6rt
-version 1.7.1
-end package

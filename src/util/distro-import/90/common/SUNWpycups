@@ -1,5 +1,0 @@
-package SUNWpycups
-classification "System/Printing"
-import SUNWpycups
-version 1.9.38
-end package

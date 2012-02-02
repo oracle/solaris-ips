@@ -1,5 +1,0 @@
-package SUNWpostgr-docs
-consolidation "sfw"
-version 8.1.11
-obsoleted 130
-end package

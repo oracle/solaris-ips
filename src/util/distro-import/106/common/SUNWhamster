@@ -1,8 +1,0 @@
-package SUNWhamster
-consolidation "gnome"
-classification "Applications/Panels and Applets"
-import SUNWhamster
-import SUNWhamster-root
-depend SUNWgnome-python-desktop
-depend SUNWpysqlite
-end package

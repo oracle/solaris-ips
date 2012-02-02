@@ -1,5 +1,0 @@
-package SUNWgtkperf
-consolidation "gnome"
-classification "Development/GNOME and GTK+"
-import SUNWgtkperf
-end package

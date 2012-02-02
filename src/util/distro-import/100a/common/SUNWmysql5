@@ -1,8 +1,0 @@
-package SUNWmysql5
-classification "System/Databases"
-import SUNWmysql5u
-import SUNWmysql5r
-version 5.0.67
-depend SUNWmysql-base
-depend SUNWperl584core
-end package

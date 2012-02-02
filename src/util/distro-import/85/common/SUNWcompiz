@@ -1,5 +1,0 @@
-package SUNWcompiz
-import SUNWcompiz
-import SUNWcompiz-devel exclude usr/X11/include/X11/Xregion.h usr/lib/pkgconfig/ice.pc usr/lib/pkgconfig/sm.pc
-import SUNWcompiz-root
-end package

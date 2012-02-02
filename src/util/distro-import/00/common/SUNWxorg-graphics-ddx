@@ -1,5 +1,0 @@
-package SUNWxorg-graphics-ddx
-consolidation "X"
-classification "Drivers/Display"
-import SUNWxorg-graphics-ddx
-end package

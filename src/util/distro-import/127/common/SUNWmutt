@@ -1,7 +1,0 @@
-package SUNWmutt
-consolidation "sfw"
-classification "Applications/Internet"
-import SUNWmutt
-import SUNWmuttr
-version 1.5.20
-end package

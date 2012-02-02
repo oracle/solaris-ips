@@ -1,6 +1,0 @@
-package SUNWlibosip2
-consolidation "sfw"
-classification "System/Libraries"
-import SUNWlibosip2
-version 3.3.0
-end package

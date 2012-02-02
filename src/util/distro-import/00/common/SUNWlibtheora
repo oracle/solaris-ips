@@ -1,6 +1,0 @@
-package SUNWlibtheora
-consolidation "gnome"
-classification "System/Multimedia Libraries"
-import SUNWlibtheora
-import SUNWlibtheora-devel
-end package

@@ -1,5 +1,0 @@
-package FSWxorg-fonts-vera
-consolidation "X"
-depend SUNWttf-bitstream-vera
-renamed 130
-end package

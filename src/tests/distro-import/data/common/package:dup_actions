@@ -1,5 +1,0 @@
-package package/varianted_actions
-add set name=variant.opensolaris.zone value=global value=nonglobal
-add file /etc/passwd mode=644 owner=root group=root path=/foo/bar
-add dir mode=644 owner=root group=root path=/foo/bar
-end package

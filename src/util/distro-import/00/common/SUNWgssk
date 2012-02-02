@@ -1,5 +1,0 @@
-package SUNWgssk
-consolidation "osnet"
-classification "System/Security"
-import SUNWgssk
-end package

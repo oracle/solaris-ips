@@ -1,7 +1,0 @@
-package SUNWpostgr-common
-consolidation "sfw"
-classification "System/Databases"
-import SUNWpostgr-common
-import SUNWpostgr-common-root
-version 8.4.1
-end package

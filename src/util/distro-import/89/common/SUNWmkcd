@@ -1,6 +1,0 @@
-package SUNWmkcd
-classification "System/Hardware"
-import SUNWmkcd
-import SUNWmkcdr
-version 2.1.1.38
-end package

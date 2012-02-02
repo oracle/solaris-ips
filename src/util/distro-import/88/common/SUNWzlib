@@ -1,7 +1,0 @@
-package SUNWzlib
-consolidation "sfw"
-classification "System/Libraries"
-import SUNWzlib
-import SUNWzlibr
-version 1.2.3
-end package

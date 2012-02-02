@@ -1,6 +1,0 @@
-package SUNWgscr
-consolidation "sfw"
-version 8.15.1
-depend SUNWghostscript
-renamed 130
-end package

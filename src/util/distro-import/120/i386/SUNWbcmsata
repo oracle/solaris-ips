@@ -1,6 +1,0 @@
-package SUNWbcmsata
-classification "Drivers/Storage"
-import SUNWbcmsata
-add driver name=bcm_sata perms="* 0644 root sys" class=scsi-self-identifying \
-	alias=pci1166,24a
-end package

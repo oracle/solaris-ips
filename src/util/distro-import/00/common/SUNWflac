@@ -1,6 +1,0 @@
-package SUNWflac
-consolidation "gnome"
-classification "System/Multimedia Libraries"
-import SUNWflac
-import SUNWflac-devel
-end package

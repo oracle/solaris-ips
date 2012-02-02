@@ -1,5 +1,0 @@
-package SUNWlang-en-extra
-consolidation "l10n"
-classification "System/Localizations"
-import SUNWlang-en-extra
-end package

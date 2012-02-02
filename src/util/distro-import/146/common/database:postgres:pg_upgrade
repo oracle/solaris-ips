@@ -1,9 +1,0 @@
-package database/postgres/pg_upgrade
-consolidation "sfw"
-obsoleted 146
-end package
-
-package SUNWpostgr-upgrade
-consolidation "sfw"
-obsoleted 146
-end package

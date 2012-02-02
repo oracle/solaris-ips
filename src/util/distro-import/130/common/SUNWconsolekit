@@ -1,7 +1,0 @@
-package SUNWconsolekit
-consolidation "gnome"
-classification "Desktop (GNOME)/Sessions"
-import SUNWconsolekit
-import SUNWconsolekit-devel
-import SUNWconsolekit-root
-end package

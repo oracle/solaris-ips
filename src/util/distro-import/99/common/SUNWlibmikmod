@@ -1,6 +1,0 @@
-package SUNWlibmikmod
-consolidation "gnome"
-classification "System/Libraries"
-import SUNWlibmikmod
-import SUNWlibmikmod-devel
-end package

@@ -1,6 +1,0 @@
-package SUNWlibsexy
-consolidation "gnome"
-classification "Desktop (GNOME)/Libraries"
-import SUNWlibsexy
-import SUNWlibsexy-devel
-end package

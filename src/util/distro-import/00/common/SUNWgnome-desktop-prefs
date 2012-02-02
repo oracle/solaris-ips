@@ -1,7 +1,0 @@
-package SUNWgnome-desktop-prefs
-consolidation "gnome"
-classification "Applications/Configuration and Preferences"
-import SUNWgnome-desktop-prefs
-import SUNWgnome-desktop-prefs-devel
-import SUNWgnome-desktop-prefs-root
-end package

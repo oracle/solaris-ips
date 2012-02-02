@@ -1,5 +1,0 @@
-package SUNWgdb
-classification "Development/System"
-import SUNWgdb
-version 6.3
-end package

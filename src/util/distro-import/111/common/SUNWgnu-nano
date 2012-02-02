@@ -1,6 +1,0 @@
-package SUNWgnu-nano
-consolidation "sfw"
-classification "System/Text Tools"
-import SUNWgnu-nano
-version 2.0.9
-end package

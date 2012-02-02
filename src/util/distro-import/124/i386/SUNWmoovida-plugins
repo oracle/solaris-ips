@@ -1,5 +1,0 @@
-package SUNWmoovida-plugins
-consolidation "gnome"
-classification "Applications/Sound and Video"
-import SUNWmoovida-plugins
-end package

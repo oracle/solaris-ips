@@ -1,6 +1,0 @@
-package SUNWgnome-python26-libs
-consolidation "gnome"
-classification "Development/Python"
-import SUNWgnome-python26-libs
-import SUNWgnome-python26-libs-devel
-end package

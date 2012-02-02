@@ -1,7 +1,0 @@
-package SUNWgnome-audio
-consolidation "gnome"
-classification "System/Multimedia Libraries"
-import SUNWgnome-audio
-import SUNWgnome-audio-devel
-import SUNWgnome-audio-root
-end package

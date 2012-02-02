@@ -1,5 +1,0 @@
-package SUNWgst-python
-classification "Development/Python"
-import SUNWgst-python
-depend SUNWgnome-python-libs
-end package

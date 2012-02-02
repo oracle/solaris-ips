@@ -1,5 +1,0 @@
-package SUNWiiimf-ko-hangul
-consolidation "l10n"
-classification "System/Internationalization"
-import SUNWiiimf-ko-hangul
-end package

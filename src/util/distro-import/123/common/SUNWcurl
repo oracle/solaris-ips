@@ -1,6 +1,0 @@
-package SUNWcurl
-consolidation "sfw"
-classification "System/Libraries"
-import SUNWcurl
-version 7.19.5
-end package

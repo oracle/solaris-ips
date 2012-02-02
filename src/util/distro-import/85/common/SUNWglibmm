@@ -1,6 +1,0 @@
-package SUNWglibmm
-consolidation "gnome"
-classification "Desktop (GNOME)/Libraries"
-import SUNWglibmm
-import SUNWglibmm-devel
-end package

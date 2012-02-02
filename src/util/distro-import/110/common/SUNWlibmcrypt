@@ -1,6 +1,0 @@
-package SUNWlibmcrypt
-consolidation "sfw"
-classification "System/Libraries"
-import SUNWlibmcrypt
-version 2.5.8
-end package

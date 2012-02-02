@@ -1,5 +1,0 @@
-package SUNWtcat
-import SUNWtcatu
-import SUNWtcatr
-version 5.5.25
-end package

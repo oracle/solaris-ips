@@ -1,5 +1,0 @@
-package SUNWgnome-print-papi
-consolidation "gnome"
-classification "Desktop (GNOME)/Libraries"
-import SUNWgnome-print-papi
-end package

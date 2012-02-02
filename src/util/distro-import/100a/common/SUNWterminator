@@ -1,6 +1,0 @@
-package SUNWterminator
-consolidation "gnome"
-classification "Applications/System Utilities"
-import SUNWterminator
-depend SUNWgnome-python-libs
-end package

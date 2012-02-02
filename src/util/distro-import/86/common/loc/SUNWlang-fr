@@ -1,6 +1,0 @@
-package SUNWlang-fr
-consolidation "l10n"
-classification "System/Localizations"
-import SUNWlang-fr
-depend SUNWlang-frFR
-end package

@@ -1,5 +1,0 @@
-package SUNWpostgr-82-devel
-classification "Development/Databases"
-import SUNWpostgr-82-devel
-version 8.2.11
-end package

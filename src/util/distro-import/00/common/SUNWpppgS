@@ -1,5 +1,0 @@
-package SUNWpppgS
-consolidation "osnet"
-classification "Development/GNU"
-import SUNWpppgS
-end package

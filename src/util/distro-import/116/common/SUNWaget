@@ -1,6 +1,0 @@
-package SUNWaget
-consolidation "sfw"
-classification "Applications/Internet"
-import SUNWaget
-version 0.4.1
-end package

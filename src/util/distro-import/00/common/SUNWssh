@@ -1,6 +1,0 @@
-package SUNWssh
-consolidation "osnet"
-classification "System/Security"
-import SUNWsshu
-import SUNWsshr
-end package

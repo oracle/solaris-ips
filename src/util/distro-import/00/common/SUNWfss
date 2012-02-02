@@ -1,5 +1,0 @@
-package SUNWfss
-consolidation "osnet"
-classification "System/Core"
-import SUNWfss
-end package

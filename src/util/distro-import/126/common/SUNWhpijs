@@ -1,6 +1,0 @@
-package SUNWhpijs
-consolidation "sfw"
-classification "System/Printing"
-import SUNWhpijs
-version 3.9.8
-end package

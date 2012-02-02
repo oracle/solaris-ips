@@ -1,5 +1,0 @@
-package SUNWtgnome-xagent
-consolidation "gnome"
-classification "Desktop (GNOME)/Trusted Extensions"
-import SUNWtgnome-xagent
-end package

@@ -1,5 +1,0 @@
-package SUNWadmlib-sysid
-consolidation "install"
-classification "System/Libraries"
-import SUNWadmlib-sysid
-end package

@@ -1,6 +1,0 @@
-package SUNWgimpprint
-import SUNWgimpprint
-version 4.2.6
-add link path=usr/bin/escputil target=../sfw/bin/escputil
-add link path=usr/bin/gimpprint-config target=../sfw/bin/gimpprint-config
-end package

@@ -1,6 +1,0 @@
-package SUNWvts
-consolidation "SunVTS"
-classification "System/Hardware"
-import SUNWvts
-import SUNWvtsr
-end package

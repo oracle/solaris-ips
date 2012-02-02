@@ -1,6 +1,0 @@
-package SUNWcairo
-consolidation "gnome"
-classification "Desktop (GNOME)/Libraries"
-import SUNWcairo
-import SUNWcairo-devel
-end package

@@ -1,6 +1,0 @@
-package SUNWtcat-examples
-consolidation "sfw"
-classification "Web Services/Application and Web Servers"
-import SUNWtcat-examples
-version 6.0.20
-end package

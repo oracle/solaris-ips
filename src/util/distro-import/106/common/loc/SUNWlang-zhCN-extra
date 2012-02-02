@@ -1,7 +1,0 @@
-package SUNWlang-zhCN-extra
-consolidation "l10n"
-classification "System/Localizations"
-import SUNWlang-zhCN-extra
-depend SUNWiconv-extra
-depend SUNWiconv-unicode
-end package

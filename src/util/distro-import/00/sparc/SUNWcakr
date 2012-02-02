@@ -1,5 +1,0 @@
-package SUNWcakr
-classification "System/Core"
-import SUNWcakr.u
-import SUNWcakr.v
-end package

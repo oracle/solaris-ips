@@ -1,5 +1,0 @@
-package SUNWxorg-devel-docs
-consolidation "X"
-depend SUNWxwpmn
-renamed 130
-end package

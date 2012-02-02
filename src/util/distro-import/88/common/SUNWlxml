@@ -1,9 +1,0 @@
-package SUNWlxml
-consolidation "sfw"
-classification "System/Libraries"
-import SUNWlxml
-import SUNWlxml-devel
-import SUNWlxml-python
-import SUNWlxmlr
-version 2.6.31
-end package

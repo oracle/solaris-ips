@@ -1,7 +1,0 @@
-package SUNWstunnel
-consolidation "sfw"
-classification "System/Security"
-import SUNWstunnelr
-import SUNWstunnelu
-version 4.25
-end package

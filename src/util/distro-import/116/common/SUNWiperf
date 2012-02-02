@@ -1,6 +1,0 @@
-package SUNWiperf
-consolidation "sfw"
-classification "Applications/System Utilities"
-import SUNWiperf
-version 2.0.4
-end package

@@ -1,6 +1,0 @@
-package SUNWpostrun
-consolidation "gnome"
-classification "Applications/System Utilities"
-import SUNWpostrun
-import SUNWpostrun-root
-end package

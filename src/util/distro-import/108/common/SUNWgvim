@@ -1,7 +1,0 @@
-package SUNWgvim
-consolidation "sfw"
-classification "Development/Editors"
-import SUNWgvim
-version 7.2.84
-depend SUNWvim
-end package

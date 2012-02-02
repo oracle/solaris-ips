@@ -1,6 +1,0 @@
-package SUNWpcmci
-import SUNWpcmci
-add driver name=pcs
-add driver name=pcic class=pcmcia alias=pciclass,060500 alias=pciclass,060700
-add driver name=pem perms="* 0666 bin bin"
-end package

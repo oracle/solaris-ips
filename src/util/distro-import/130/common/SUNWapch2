@@ -1,5 +1,0 @@
-package SUNWapch2
-version 2.2.3
-depend SUNWapch22
-renamed 130
-end package

@@ -1,6 +1,0 @@
-package SUNWj6man
-consolidation "ub_javavm"
-classification "Development/Java"
-import SUNWj6man
-add license DLJ/LICENSE license=SUNWj6man.DLJ
-end package

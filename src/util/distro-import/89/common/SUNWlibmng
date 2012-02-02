@@ -1,6 +1,0 @@
-package SUNWlibmng
-consolidation "sfw"
-classification "System/Libraries"
-import SUNWlibmng
-version 1.0.10
-end package

@@ -1,4 +1,0 @@
-package SUNWftp
-import SUNWftpu
-import SUNWftpr
-end package

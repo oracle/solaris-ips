@@ -1,6 +1,0 @@
-package SUNWjanino
-consolidation "sfw"
-classification "Development/Java"
-import SUNWjanino
-version 2.5.10
-end package

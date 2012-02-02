@@ -1,7 +1,0 @@
-package SUNWgnome-cd-burner
-consolidation "gnome"
-classification "Applications/System Utilities"
-import SUNWgnome-cd-burner
-import SUNWgnome-cd-burner-devel
-import SUNWgnome-cd-burner-root
-end package

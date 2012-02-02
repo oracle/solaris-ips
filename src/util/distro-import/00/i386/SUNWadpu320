@@ -1,5 +1,0 @@
-package SUNWadpu320
-classification "Drivers/Ports"
-import SUNWadpu320
-add driver name=adpu320 class=scsi perms="adpu320ctl 0666 root root" alias=pci9005,8000 alias=pci9005,800f.9005.5f alias=pci9005,8010 alias=pci9005,8011 alias=pci9005,8012 alias=pci9005,8014 alias=pci9005,8015 alias=pci9005,8016 alias=pci9005,8017 alias=pci9005,801d alias=pci9005,801e alias=pci9005,801f alias=pci9005,808f
-end package

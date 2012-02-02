@@ -1,4 +1,0 @@
-package SUNWadp
-import SUNWadp
-add driver name=adp class=scsi alias=pci9004,7078 alias=pci9004,7178 alias=pci9004,7278 alias=pci9004,7478 alias=pci9004,7578 alias=pci9004,8078 alias=pci9004,8178 alias=pci9004,8278 alias=pci9004,8478 alias=pci9004,8578 alias=pci9004,5078 alias=pci9004,5578 alias=pci9004,6078 alias=pci9004,6075 alias=pci9004,6178 alias=pci9004,6278 alias=pci9004,7860 alias=pci9004,7880 alias=pci9004,7881 alias=pci9004,7884 alias=pci9004,7891 alias=pci9004,7892 alias=pci9004,7895
-end package

@@ -1,9 +1,0 @@
-package library/python-2/python-zope-interface-24
-consolidation "gnome"
-obsoleted 162
-end package
-
-package SUNWpython-zope-interface
-consolidation "gnome"
-obsoleted 162
-end package

@@ -1,6 +1,0 @@
-package SUNWxwpmn
-classification "Development/X11"
-import SUNWxwpmn exclude usr/openwin
-# Redistributable but not yet moved to /usr/X11 in Nevada
-chattr_glob * edit path usr/openwin usr/X11
-end package

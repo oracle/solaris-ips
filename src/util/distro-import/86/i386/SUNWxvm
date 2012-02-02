@@ -1,7 +1,0 @@
-package SUNWxvm
-import SUNWxvmh
-import SUNWxvmhvm
-import SUNWxvmr
-import SUNWxvmu
-version 3.1
-end package

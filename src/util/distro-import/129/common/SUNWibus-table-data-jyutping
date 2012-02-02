@@ -1,7 +1,0 @@
-package SUNWibus-table-data-jyutping
-consolidation "l10n"
-classification "System/Internationalization"
-import SUNWibus-table-data-jyutping
-depend SUNWibus-table
-version 1.2.0
-end package

@@ -1,6 +1,0 @@
-package SUNWbinutils
-consolidation "sfw"
-classification "Development/GNU"
-import SUNWbinutils
-version 2.19
-end package

@@ -1,6 +1,0 @@
-package SUNWquagga
-classification "System/Administration and Configuration"
-import SUNWquaggau
-import SUNWquaggar
-version 0.99.8
-end package

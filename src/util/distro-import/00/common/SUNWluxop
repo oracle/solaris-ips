@@ -1,5 +1,0 @@
-package SUNWluxop
-consolidation "osnet"
-classification "System/Enterprise Management"
-import SUNWluxop
-end package

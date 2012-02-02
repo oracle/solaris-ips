@@ -1,7 +1,0 @@
-package SUNWperl584man
-consolidation "man"
-classification "Development/Perl"
-import SUNWperl584man
-add license Artistic license=SUNWperl584man.Artistic
-version 5.8.4
-end package

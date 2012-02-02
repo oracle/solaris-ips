@@ -1,5 +1,0 @@
-package SUNWpstl
-consolidation "osnet"
-classification "Development/System"
-import SUNWpstl.u
-end package

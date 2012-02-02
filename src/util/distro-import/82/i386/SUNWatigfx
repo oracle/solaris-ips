@@ -1,5 +1,0 @@
-package SUNWatigfx
-classification "Drivers/Display"
-import SUNWatigfx
-add driver name=atiatom perms="* 0644 root sys" alias=pci1002,4752
-end package

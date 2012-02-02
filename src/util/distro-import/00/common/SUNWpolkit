@@ -1,5 +1,0 @@
-package SUNWpolkit
-consolidation "osnet"
-classification "System/Administration and Configuration"
-import SUNWpolkit
-end package

@@ -1,7 +1,0 @@
-package developer/vala
-consolidation "gnome"
-classification "Development/Other Languages"
-import SUNWvala
-import SUNWvala-devel
-version 0.8.1
-end package

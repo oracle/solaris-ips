@@ -1,4 +1,0 @@
-package SKfp
-import SKfp
-add driver name=skfp class=pci perms="* 0666 root sys" alias=pci1148,4000 alias=pci1148,5521 alias=pci1148,5522 alias=pci1148,5541 alias=pci1148,5543 alias=pci1148,5544 alias=pci1148,5821 alias=pci1148,5822 alias=pci1148,5841 alias=pci1148,5843 alias=pci1148,5844 alias=pcie11,b03b alias=pcie11,b03c alias=pcie11,b03d alias=pcie11,b03e alias=pcie11,b03f
-end package

@@ -1,6 +1,0 @@
-package SUNWlibm
-consolidation "sunpro"
-classification "System/Libraries"
-import SUNWlibm
-import SUNWlibmr
-end package

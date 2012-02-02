@@ -1,5 +1,0 @@
-package SUNWzsh
-classification "System/Shells"
-import SUNWzsh
-version 4.3.4
-end package

@@ -1,6 +1,0 @@
-package SUNWlynx
-consolidation "gnome"
-classification "Applications/Internet"
-import SUNWlynx
-import SUNWlynx-root
-end package

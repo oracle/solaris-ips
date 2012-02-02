@@ -197,11 +197,8 @@ class SolarisPackageDirBundle(pkg.bundle.Bundle):
                         act = hardlink.HardLinkAction(path=mapline.pathname,
                             target=mapline.target)
                 elif mapline.type == "i" and mapline.pathname == "copyright":
-                        # XXX path is set there because the importer relies on
-                        # it; when the importer dies, this can too.
                         act = license.LicenseAction(data,
-                            license="%s.copyright" % self.pkgname,
-                            path=mapline.pathname)
+                            license="%s.copyright" % self.pkgname)
                         if act.hash == "NOHASH" and \
                             isinstance(data, basestring) and \
                             data.startswith(self.filename):

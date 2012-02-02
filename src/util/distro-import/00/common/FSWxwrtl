@@ -1,6 +1,0 @@
-package FSWxwrtl
-import FSWxwrtl
-add link path=usr/lib/amd64/libXinerama.so.1 target=../../X11/lib/64/libXinerama.so.1
-add link path=usr/lib/libX11.so.5 target=../X11/lib/libX11.so.6
-add link path=usr/lib/libXinerama.so.1 target=../X11/lib/libXinerama.so.1
-end package

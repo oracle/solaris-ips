@@ -1,5 +1,0 @@
-package SUNWgnome-l10ndocument-extra
-consolidation "gnome_l10n"
-classification "Desktop (GNOME)/Localizations"
-import SUNWgnome-l10ndocument-extra
-end package

@@ -1,5 +1,0 @@
-package system/locale/nb-extra
-consolidation "l10n"
-classification "System/Localizations"
-import SUNWlang-nb-extra
-end package

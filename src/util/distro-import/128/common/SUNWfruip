@@ -1,6 +1,0 @@
-package SUNWfruip
-consolidation "osnet"
-classification "System/Administration and Configuration"
-$(i386_ONLY)import SUNWfruip.i
-$(sparc_ONLY)import SUNWfruip.u
-end package

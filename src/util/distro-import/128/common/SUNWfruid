@@ -1,5 +1,0 @@
-package SUNWfruid
-consolidation "osnet"
-classification "System/Administration and Configuration"
-import SUNWfruid
-end package

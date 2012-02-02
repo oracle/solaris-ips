@@ -1,6 +1,0 @@
-package SUNWgrubS
-consolidation "osnet"
-classification "System/Core"
-import SUNWgrubS
-version 0.97
-end package

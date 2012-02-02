@@ -1,6 +1,0 @@
-package SUNWgnome-terminal-java
-consolidation "gnome"
-classification "Development/Java"
-import SUNWgnome-terminal-java
-import SUNWgnome-terminal-java-devel
-end package
