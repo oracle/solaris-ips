@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2011, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2011, 2012, Oracle and/or its affiliates. All rights reserved.
 #
 
 import testutils
@@ -151,10 +151,28 @@ class TestApiLinked(pkg5unittest.ManyDepotTestCase):
             "@1.1,5.11-144:19700101T000000Z", # old build
             "@1.0,5.11-144:19700101T000000Z", # oldest
         ]
-        p_files = [
+        p_files1 = [
             "tmp/bar",
             "tmp/baz",
+            "tmp/dricon2_da",
+            "tmp/dricon_n2m",
+            "license.txt",
         ]
+
+        p_files2 = {
+            "tmp/passwd": """\
+root:x:0:0::/root:/usr/bin/bash
+""",
+            "tmp/shadow": """\
+root:9EIfTNBp9elws:13817::::::
+""",
+            "tmp/group":
+"""
+root::0:
+sys::3:root
+adm::4:root
+""",
+        }
 
         # generate packages that don't need to be synced
         p_foo1_name_gen = "foo1"
@@ -264,6 +282,49 @@ class TestApiLinked(pkg5unittest.ManyDepotTestCase):
             close\n"""
         p_all.append(p_data)
 
+        # generate packages that do need to be synced
+        p_sync5_name_gen = "sync5"
+        p_sync5_name = dict()
+        for i, v in zip(range(len(vers)), vers):
+                p_sync5_name[i] = p_sync5_name_gen + v
+                p_data = "open %s\n" % p_sync5_name[i]
+                p_data += "add depend type=parent fmri=%s\n" % \
+                    pkg.actions.depend.DEPEND_SELF
+
+                p_data += """
+                    add dir path=etc mode=0755 owner=root group=root
+                    add file tmp/group path=etc/group mode=0644 owner=root group=sys preserve=true
+                    add file tmp/passwd path=etc/passwd mode=0644 owner=root group=sys preserve=true
+                    add file tmp/shadow path=etc/shadow mode=0600 owner=root group=sys preserve=true
+                    """
+
+                if i != 1:
+                        p_data += """
+                            close\n"""
+                        p_all.append(p_data)
+                        continue
+
+                # package 1 should contain one of every action type
+                # (we already have a dependency action)
+                p_data += """
+                    add set name=variant.arch value=i386 value=sparc
+                    add dir path=var mode=0755 owner=root group=root
+                    add link path=var/run target=../system/volatile
+                    add dir mode=0755 owner=root group=root path=system
+                    add dir mode=0755 owner=root group=root path=system/volatile
+                    add dir path=tmp mode=0755 owner=root group=root
+                    add file tmp/dricon2_da path=etc/driver_aliases mode=0644 owner=root group=sys preserve=true
+                    add file tmp/dricon_n2m path=etc/name_to_major mode=0644 owner=root group=sys preserve=true
+                    add driver name=zigit alias=pci8086,1234
+                    add hardlink path=etc/hardlink target=driver_aliases
+                    add legacy arch=i386 category=system desc="core software for a specific instruction-set architecture" hotline="Please contact your local service provider" name="Core Solaris, (Usr)" pkg=SUNWcsu variant.arch=i386 vendor="Oracle Corporation" version=11.11,REV=2009.11.11
+
+                    add group groupname=muppets
+                    add user username=Kermit group=adm home-dir=/export/home/Kermit
+                    add license license="Foo" path=license.txt must-display=True must-accept=True
+                    close\n"""
+                p_all.append(p_data)
+
         def setUp(self):
                 self.i_count = 5
                 pkg5unittest.ManyDepotTestCase.setUp(self,
@@ -271,7 +332,8 @@ class TestApiLinked(pkg5unittest.ManyDepotTestCase):
                     image_count=self.i_count)
 
                 # create files that go in packages
-                self.make_misc_files(self.p_files)
+                self.make_misc_files(self.p_files1)
+                self.make_misc_files(self.p_files2)
 
                 # get repo urls
                 self.rurl1 = self.dcs[1].get_repo_url()
@@ -1195,6 +1257,30 @@ packages known:
                 self._children_attach(0, [2], reject_list=[pkg])
                 assert len(self._list_inst_packages(api_objs[2])) == 0
 
+        def test_action_serialization(self):
+                """Verify that all actions can be serialized to disk and
+                reloaded successfully when updating a child image."""
+
+                api_objs = self._imgs_create(2)
+
+                # install an empty synced package into the images
+                self._api_install(api_objs[0], [self.p_sync5_name[2]])
+                self._api_install(api_objs[1], [self.p_sync5_name[2]])
+
+                # link the images
+                self._children_attach(0, [1])
+
+                # update the synced package in the parent so it delivers some
+                # content.  this will cause us to implicitly recurse into the
+                # child and serialize the child update plans to disk, which
+                # should serialize out all the new actions to disk (there by
+                # verifying that they get serialized and re-loaded correctly.)
+                self._api_install(api_objs[0], [self.p_sync5_name[1]],
+                    show_licenses=True, accept_licenses=True)
+
+                # update the synced package in the parent again so it delivers
+                # no content.
+                self._api_install(api_objs[0], [self.p_sync5_name[0]])
 
 if __name__ == "__main__":
         unittest.main()

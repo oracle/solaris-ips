@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2009, 2011, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2009, 2012, Oracle and/or its affiliates. All rights reserved.
 #
 
 import os
@@ -441,30 +441,6 @@ class SignatureAction(generic.Action):
                         raise apx.AlmostIdentical(hsh,
                             self.attrs["algorithm"], self.attrs["version"])
                 return False
-        def __getstate__(self):
-                """This object doesn't have a default __dict__, instead it
-                stores its contents via __slots__.  Hence, this routine must
-                be provide to translate this object's contents into a
-                dictionary for pickling"""
-
-                pstate = generic.Action.__getstate__(self)
-                state = {}
-                for name in SignatureAction.__slots__:
-                        if not hasattr(self, name):
-                                continue
-                        state[name] = getattr(self, name)
-                return (state, pstate)
-
-        def __setstate__(self, state):
-                """This object doesn't have a default __dict__, instead it
-                stores its contents via __slots__.  Hence, this routine must
-                be provide to translate a pickled dictionary copy of this
-                object's contents into a real in-memory object."""
-
-                (state, pstate) = state
-                generic.Action.__setstate__(self, pstate)
-                for name in state:
-                        setattr(self, name, state[name])
 
         def validate(self, fmri=None):
                 """Performs additional validation of action attributes that

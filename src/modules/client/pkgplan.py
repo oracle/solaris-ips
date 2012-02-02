@@ -21,11 +21,11 @@
 #
 
 #
-# Copyright (c) 2007, 2012, Oracle and/or its affiliates.  All rights reserved.
+# Copyright (c) 2007, 2012, Oracle and/or its affiliates. All rights reserved.
 #
 
+import copy
 import itertools
-import cPickle as pickle
 
 from pkg.client import global_settings
 logger = global_settings.logger
@@ -47,14 +47,23 @@ class PkgPlan(object):
         """
 
         __slots__ = [
-            "actions", "check_cancelation", "destination_fmri", "image",
-            "origin_fmri", "pkg_summary", "__destination_mfst",
-            "__license_status", "__origin_mfst", "__progtrack",
-            "__repair_actions", "__xferfiles", "__xfersize",
-            "_autofix_pkgs", "__executed"
+            "__destination_mfst",
+            "__executed",
+            "__license_status",
+            "__origin_mfst",
+            "__repair_actions",
+            "__xferfiles",
+            "__xfersize",
+            "_autofix_pkgs",
+            "_hash",
+            "actions",
+            "destination_fmri",
+            "image",
+            "origin_fmri",
+            "pkg_summary",
         ]
 
-        def __init__(self, image, progtrack, check_cancelation):
+        def __init__(self, image=None):
                 self.destination_fmri = None
                 self.__destination_mfst = manifest.NullFactoredManifest
 
@@ -62,13 +71,11 @@ class PkgPlan(object):
                 self.__origin_mfst = manifest.NullFactoredManifest
 
                 self.actions = manifest.ManifestDifference([], [], [])
-                self.check_cancelation = check_cancelation
                 self.image = image
                 self.pkg_summary = None
 
                 self.__executed = False
                 self.__license_status = {}
-                self.__progtrack = progtrack
                 self.__repair_actions = {}
                 self.__xferfiles = -1
                 self.__xfersize = -1
@@ -95,56 +102,35 @@ class PkgPlan(object):
                     "displayed": False,
                 }
 
-        @staticmethod
-        def __pickle_actions(actions):
-                """Return a list of pickled actions."""
-                action_list = []
-                for pair in actions:
-                        newpair = [None, None]
-                        if pair[0]:
-                                newpair[0] = pickle.dumps(pair[0])
-                        if pair[1]:
-                                newpair[1] = pickle.dumps(pair[1])
-                        action_list.append(newpair)
-                return action_list
-
-        @staticmethod
-        def __unpickle_actions(pickled_actions):
-                """Return a list of unpickled actions."""
-                action_list = []
-                for pair in pickled_actions:
-                        newpair = [None, None]
-                        if pair[0]:
-                                newpair[0] = pickle.loads(str(pair[0]))
-                        if pair[1]:
-                                newpair[1] = pickle.loads(str(pair[1]))
-                        action_list.append(newpair)
-                return action_list
-
         def setstate(self, state):
                 """Update the state of this object using the contents of
                 the supplied dictionary."""
 
                 import pkg.fmri
 
-                # if there is no origin, don't allocate an fmri obj
-                if state["src"]:
-                        state["src"] = pkg.fmri.PkgFmri(state["src"])
+                # convert fmri strings into objects
+                for i in ["src", "dst"]:
+                        if state[i] is not None:
+                                state[i] = pkg.fmri.PkgFmri(state[i])
 
-                # if there is no destination, don't allocate an fmri obj
-                if state["dst"]:
-                        state["dst"] = pkg.fmri.PkgFmri(state["dst"])
+                # convert lists into tuples/sets
+                # convert action object list into string list
+                for i in ["added", "changed", "removed"]:
+                        for j in range(len(state[i])):
+                                src, dst = state[i][j]
+                                if src is not None:
+                                        src = pkg.actions.fromstr(src)
+                                if dst is not None:
+                                        dst = pkg.actions.fromstr(dst)
+                                state[i][j] = (src, dst)
 
                 self.origin_fmri = state["src"]
                 self.destination_fmri = state["dst"]
                 self.pkg_summary = state["summary"]
-                self.actions = manifest.ManifestDifference([], [], [])
-                self.actions.added.extend(
-                    self.__unpickle_actions(state["add"]))
-                self.actions.changed.extend(
-                    self.__unpickle_actions(state["change"]))
-                self.actions.removed.extend(
-                    self.__unpickle_actions(state["remove"]))
+                self.actions = manifest.ManifestDifference(
+                    state["added"], state["changed"], state["removed"])
+
+                # update the license actions associated with this package
                 for src, dest in itertools.chain(self.gen_update_actions(),
                     self.gen_install_actions()):
                         if dest.name == "license":
@@ -152,15 +138,32 @@ class PkgPlan(object):
 
         def getstate(self):
                 """Returns a dictionary containing the state of this object
-                so that it can be easily stored using JSON, pickle, etc."""
+                so that it can be easily stored using JSON."""
 
                 state = {}
                 state["src"] = self.origin_fmri
                 state["dst"] = self.destination_fmri
                 state["summary"] = self.pkg_summary
-                state["add"] = self.__pickle_actions(self.actions.added)
-                state["change"] = self.__pickle_actions(self.actions.changed)
-                state["remove"] = self.__pickle_actions(self.actions.removed)
+                state["added"] = copy.copy(self.actions.added)
+                state["changed"] = copy.copy(self.actions.changed)
+                state["removed"] = copy.copy(self.actions.removed)
+
+                # convert fmri objects into strings
+                for i in ["src", "dst"]:
+                        if isinstance(state[i], pkg.fmri.PkgFmri):
+                                state[i] = str(state[i])
+
+                # convert tuples/sets into lists
+                # convert actions objects into strings
+                for i in ["added", "changed", "removed"]:
+                        for j in range(len(state[i])):
+                                src, dst = state[i][j]
+                                if src is not None:
+                                        src = str(src)
+                                if dst is not None:
+                                        dst = str(dst)
+                                state[i][j] = [src, dst]
+
                 return state
 
         def propose(self, of, om, df, dm):
@@ -416,14 +419,14 @@ class PkgPlan(object):
                         else:
                                 src.preremove(self)
 
-        def download(self):
+        def download(self, progtrack, check_cancel):
                 """Download data for any actions that need it."""
-                self.__progtrack.download_start_pkg(self.get_xfername())
+                progtrack.download_start_pkg(self.get_xfername())
                 mfile = self.image.transport.multi_file(self.destination_fmri,
-                    self.__progtrack, self.check_cancelation)
+                    progtrack, check_cancel)
 
                 if mfile is None:
-                        self.__progtrack.download_end_pkg()
+                        progtrack.download_end_pkg()
                         return
 
                 for src, dest in itertools.chain(*self.actions):
@@ -431,7 +434,7 @@ class PkgPlan(object):
                                 mfile.add_action(dest)
 
                 mfile.wait_files()
-                self.__progtrack.download_end_pkg()
+                progtrack.download_end_pkg()
 
         def gen_install_actions(self):
                 for src, dest in self.actions.added:

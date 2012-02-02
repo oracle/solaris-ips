@@ -728,9 +728,7 @@ class ImagePlan(object):
                                                 mediated.append(act)
 
                                 if mediated:
-                                        pp = pkgplan.PkgPlan(self.image,
-                                            self.__progtrack,
-                                            self.__check_cancel)
+                                        pp = pkgplan.PkgPlan(self.image)
                                         pp.propose_repair(f, m, mediated,
                                             misc.EmptyI)
                                         pp.evaluate(self.__new_excludes,
@@ -960,8 +958,7 @@ class ImagePlan(object):
                                 if act.replace_required == True:
                                         needs_change.append(act)
                         if needs_change:
-                                pp = pkgplan.PkgPlan(self.image,
-                                    self.__progtrack, self.__check_cancel)
+                                pp = pkgplan.PkgPlan(self.image)
                                 pp.propose_repair(f, m, needs_change,
                                     misc.EmptyI)
                                 pp.evaluate(self.__new_excludes,
@@ -1426,8 +1423,7 @@ class ImagePlan(object):
                 if pp is None:
                         # XXX The lambda: False is temporary until fix is moved
                         # into the API and self.__check_cancel can be used.
-                        pp = pkgplan.PkgPlan(self.image, self.__progtrack,
-                            lambda: False)
+                        pp = pkgplan.PkgPlan(self.image)
                         if inst_action:
                                 install = [inst_action]
                                 remove = []
@@ -2236,8 +2232,7 @@ class ImagePlan(object):
                 same_excludes = self.__old_excludes == self.__new_excludes
 
                 for oldfmri, old_in, newfmri, new_in in eval_list:
-                        pp = pkgplan.PkgPlan(self.image, self.__progtrack,
-                            self.__check_cancel)
+                        pp = pkgplan.PkgPlan(self.image)
 
                         if oldfmri == newfmri:
                                 # When creating intent, we always prefer to send
@@ -3184,7 +3179,8 @@ class ImagePlan(object):
 
                         try:
                                 for p in self.pkg_plans:
-                                        p.download()
+                                        p.download(self.__progtrack,
+                                            self.__check_cancel)
                         except EnvironmentError, e:
                                 if e.errno == errno.EACCES:
                                         raise api_errors.PermissionsException(
@@ -4206,8 +4202,7 @@ class ImagePlan(object):
                 elif filename == STATE_FILE_ACTIONS:
                         pkg_plans = []
                         for item in data:
-                                pp = pkgplan.PkgPlan(self.image,
-                                    self.__progtrack, self.__check_cancel)
+                                pp = pkgplan.PkgPlan(self.image)
                                 pp.setstate(item)
                                 pkg_plans.append(pp)
                         return pkg_plans

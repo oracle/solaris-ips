@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2010, 2011, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2010, 2012, Oracle and/or its affiliates. All rights reserved.
 #
 
 """module describing a driver packaging object.
@@ -94,28 +94,6 @@ class DriverAction(generic.Action):
                 self.__class__.add_drv = usr_sbin + "add_drv"
                 self.__class__.rem_drv = usr_sbin + "rem_drv"
                 self.__class__.update_drv = usr_sbin + "update_drv"
-
-        def __getstate__(self):
-                """This object doesn't have a default __dict__, instead it
-                stores its contents via __slots__.  Hence, this routine must
-                be provide to translate this object's contents into a
-                dictionary for pickling"""
-
-                pstate = generic.Action.__getstate__(self)
-                return (None, pstate)
-
-        def __setstate__(self, state):
-                """This object doesn't have a default __dict__, instead it
-                stores its contents via __slots__.  Hence, this routine must
-                be provide to translate a pickled dictionary copy of this
-                object's contents into a real in-memory object."""
-
-                (state, pstate) = state
-                assert state == None
-                generic.Action.__setstate__(self, pstate)
-
-                if not self.__class__.usr_sbin:
-                        self.__usr_sbin_init()
 
         @staticmethod
         def __call(args, fmt, fmtargs):

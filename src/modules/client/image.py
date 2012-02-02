@@ -2293,7 +2293,7 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                         # Need to get all variants otherwise evaluating the
                         # pkgplan will fail in signature verification.
                         m = self.get_manifest(fmri, use_excludes=True)
-                        pp = pkgplan.PkgPlan(self, progtrack, lambda: False)
+                        pp = pkgplan.PkgPlan(self)
                         pp.propose_repair(fmri, m, actions, [])
                         pp.evaluate(self.list_excludes(), self.list_excludes())
                         pps.append(pp)

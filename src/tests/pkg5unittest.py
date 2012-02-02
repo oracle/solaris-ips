@@ -2774,11 +2774,19 @@ class CliTestCase(Pkg5TestCase):
                         continue
                 self._api_finish(api_obj, catch_wsie=catch_wsie)
 
-        def _api_install(self, api_obj, pkg_list, catch_wsie=True, **kwargs):
+        def _api_install(self, api_obj, pkg_list, catch_wsie=True,
+            show_licenses=False, accept_licenses=False, **kwargs):
                 self.debug("install %s" % " ".join(pkg_list))
+
+                if accept_licenses:
+                        kwargs["accept"] = True
+
                 for pd in api_obj.gen_plan_install(pkg_list, **kwargs):
                         continue
-                self._api_finish(api_obj, catch_wsie=catch_wsie)
+
+                self._api_finish(api_obj, catch_wsie=catch_wsie,
+                    show_licenses=show_licenses,
+                    accept_licenses=accept_licenses)
 
         def _api_uninstall(self, api_obj, pkg_list, catch_wsie=True, **kwargs):
                 self.debug("uninstall %s" % " ".join(pkg_list))
@@ -2798,7 +2806,19 @@ class CliTestCase(Pkg5TestCase):
                         continue
                 self._api_finish(api_obj, catch_wsie=catch_wsie)
 
-        def _api_finish(self, api_obj, catch_wsie=True):
+        def _api_finish(self, api_obj, catch_wsie=True,
+            show_licenses=False, accept_licenses=False):
+
+                plan = api_obj.describe()
+                if plan:
+                        # update licenses displayed and/or accepted state
+                        for pfmri, src, dest, accepted, displayed in \
+                            plan.get_licenses():
+                                api_obj.set_plan_license_status(pfmri,
+                                    dest.license,
+                                    displayed=show_licenses,
+                                    accepted=accept_licenses)
+
                 api_obj.prepare()
                 try:
                         api_obj.execute_plan()
