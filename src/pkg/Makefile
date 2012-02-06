@@ -23,20 +23,16 @@
 
 PKGVERS_COMPONENT = 0.5.11
 PKGVERS_BUILTON   = 5.11
-BUILDNUM.cmd      = \
-	hg tags | nawk '$$1 ~ /^in[0-9]*$$/ {print substr($$1, 3) + 1; exit}'
-BUILDNUM          = $(BUILDNUM.cmd:sh)
-UPDATENUM         = 0
+BUILDNUM          = 175
+UPDATENUM         = 1
 SRUNUM            = 0
 PLATNUM           = 0
-BUILDID           = 0
+BUILDID.cmd       = \
+	hg tags | nawk '$$1 ~ /^s11u$(UPDATENUM)b[0-9]*/ {print substr($$1, 7) + 0; exit}'
+BUILDID           = $(BUILDID.cmd:sh)
 NIGHTLYID:sh      = hg parents --template '{rev}'
 CHANGESET.cmd     = hg id -i
 CHANGESET         = $(CHANGESET.cmd:sh)
-CURBUILD.cmd      = \
-	$(PKG) -R / list -H osnet-incorporation | \
-		sed -e 's/.*-0\.\([^ .]*\).*/\1/'
-CURBUILD          = $(CURBUILD.cmd:sh)
 PKGVERS_BRANCH    = 0.$(BUILDNUM).$(UPDATENUM).$(SRUNUM).$(PLATNUM).$(BUILDID).$(NIGHTLYID)
 PKGVERS           = $(PKGVERS_COMPONENT),$(PKGVERS_BUILTON)-$(PKGVERS_BRANCH)
 ARCH.cmd          = uname -p
@@ -53,6 +49,8 @@ PKGPUBLISHER      = pkg5-nightly
 
 POUND_SIGN:sh     = echo \\043
 PUBLISHALL        = $(POUND_SIGN)
+# This won't work if we obsolete a package in an update build, but shouldn't be
+# necessary after we stop publishing duplicate packages.
 MANIFESTS.cmd     = \
 	cd manifests; \
 	buildnum=$(BUILDNUM); \
@@ -61,8 +59,8 @@ MANIFESTS.cmd     = \
 		[[ $$build -ge $${buildnum%%.*} ]] && echo $$name; \
 	done | sed -e 's/:/\\:/g' ; exit 0
 MANIFESTS         = $(MANIFESTS.cmd:sh)
-$(PUBLISHALL)MANIFESTS:sh      = \
-	(cd manifests; print *.p5m | sed -e 's/:/\\:/g')
+ALL_MANIFESTS:sh  = (cd manifests; print *.p5m | sed -e 's/:/\\:/g')
+$(PUBLISHALL)MANIFESTS:sh      = $(ALL_MANIFESTS)
 PKGCMDENV         = \
 	PATH=$(PKGROOT)/usr/bin:/usr/sbin:/usr/bin \
 		PYTHONPATH=$(PKGROOT)/usr/lib/python2.6/vendor-packages
@@ -73,6 +71,7 @@ PKGMOGRIFY        = $(PKGCMDENV) pkgmogrify
 PKGREPO           = $(PKGCMDENV) pkgrepo
 PKGSEND           = $(PKGCMDENV) pkgsend
 MOGRIFESTS        = $(MANIFESTS:%.p5m=$(PDIR)/%.mog)
+ALL_MOGRIFESTS    = $(ALL_MANIFESTS:%.p5m=$(PDIR)/%.mog)
 PUBLIFESTS        = $(MANIFESTS:%.p5m=$(PDIR)/%.pub)
 DEPENDED          = $(MANIFESTS:%.p5m=$(PDIR)/%.dep)
 INCORP            = consolidation\:ips\:ips-incorporation
@@ -96,7 +95,6 @@ PKGMOG_DEFVALS    = \
 	PKGVERS_BRANCH=$(PKGVERS_BRANCH) \
 	PKGVERS=$(PKGVERS) \
 	REV=$(REV) \
-	CURBUILD_BRANCH=0.$(CURBUILD) \
 	PYDIR=usr/lib/python2.6 \
 	PYDIRVP=usr/lib/python2.6/vendor-packages \
 	CHANGESET=$(CHANGESET)
@@ -135,11 +133,11 @@ $(PKGDEST)/repo:
 # because we need to incorporate obsolete and renamed packages, even if we
 # choose not to continue republishing them.
 $(PDIR)/$(INCORP).mog: manifests/$(INCORP).p5m $(PDIR) \
-	$(MOGRIFESTS:$(PDIR)/$(INCORP).mog=)
+	$(ALL_MOGRIFESTS:$(PDIR)/$(INCORP).mog=)
 	$(PKGMOGRIFY) -I transforms defaults incorp2 manifests/$(INCORP).p5m | \
 		$(PKGMOGRIFY) $(PKGMOG_DEFINES) -D DEPTYPE=incorporate \
 		-I transforms -O $@ /dev/stdin incorp \
-		$(MOGRIFESTS:$(PDIR)/$(INCORP).mog=)
+		$(ALL_MOGRIFESTS:$(PDIR)/$(INCORP).mog=)
 
 # The main mogrification rule
 $(PDIR)/%.mog: manifests/%.p5m $(PM_TRANSFORMS:%=transforms/%) $(PDIR) \
