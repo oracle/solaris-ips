@@ -2123,11 +2123,13 @@ class CliTestCase(Pkg5TestCase):
 
                 return os.path.join(self.img_path(), relpath)
 
-        def get_img_api_obj(self, cmd_path=None, ii=None):
+        def get_img_api_obj(self, cmd_path=None, ii=None, img_path=None):
                 progresstracker = pkg.client.progress.NullProgressTracker()
                 if not cmd_path:
                         cmd_path = os.path.join(self.img_path(), "pkg")
-                res = pkg.client.api.ImageInterface(self.img_path(ii=ii),
+                if not img_path:
+                        img_path = self.img_path(ii=ii)
+                res = pkg.client.api.ImageInterface(img_path,
                     CLIENT_API_VERSION, progresstracker, lambda x: False,
                     PKG_CLIENT_NAME, cmdpath=cmd_path)
                 return res

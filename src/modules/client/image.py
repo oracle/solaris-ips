@@ -4305,7 +4305,7 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                         if useimg:
                                 img = newimg
 
-                pfmri = img.get_version_installed(self.strtofmri("package/pkg"))
+                pfmri = img.get_version_installed(img.strtofmri("package/pkg"))
                 if not pfmri or \
                     not pkgdefs.PKG_STATE_UPGRADABLE in img.get_pkg_state(pfmri):
                         # If no version of the package system is installed or a
@@ -4313,7 +4313,7 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                         # "up-to-date".
                         return True
 
-                inc_fmri = img.get_version_installed(self.strtofmri(
+                inc_fmri = img.get_version_installed(img.strtofmri(
                     "consolidation/ips/ips-incorporation"))
                 if inc_fmri:
                         # If the ips-incorporation is installed (it should be
@@ -4322,14 +4322,14 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                         # newer versions are allowed by the incorporation.
 
                         # Find the version at which package/pkg is incorporated.
-                        cat = self.get_catalog(self.IMG_CATALOG_KNOWN)
+                        cat = img.get_catalog(img.IMG_CATALOG_KNOWN)
                         inc_ver = None
                         for act in cat.get_entry_actions(inc_fmri, [cat.DEPENDENCY],
-                            excludes=self.list_excludes()):
+                            excludes=img.list_excludes()):
                                 if act.name == "depend" and \
                                     act.attrs["type"] == "incorporate" and \
                                     act.attrs["fmri"].startswith("package/pkg"):
-                                        inc_ver = self.strtofmri(
+                                        inc_ver = img.strtofmri(
                                             act.attrs["fmri"]).version
                                         break
 

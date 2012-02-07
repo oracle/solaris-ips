@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2008, 2011, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2008, 2012, Oracle and/or its affiliates. All rights reserved.
 #
 
 import testutils
@@ -163,13 +163,24 @@ class TestPkgApiInstall(pkg5unittest.SingleDepotTestCase):
             close """
 
         corepkgs = """
+            open consolidation/ips/ips-incorporation@1.0,5.11-0
+            add depend type=incorporate fmri=package/pkg@1
+            close
+            open consolidation/ips/ips-incorporation@2.0,5.11-0
+            add depend type=incorporate fmri=package/pkg@2.0
+            close
             open package/pkg@1.0,5.11-0
+            add depend type=require fmri=consolidation/ips/ips-incorporation
+            close
+            open package/pkg@1.1,5.11-0
+            add depend type=require fmri=consolidation/ips/ips-incorporation
             close
             open package/pkg@2.0,5.11-0
+            add depend type=require fmri=consolidation/ips/ips-incorporation
             close
             open SUNWipkg@1.0,5.11-0
             close
-            open SUNWipkg@2.0,5.11-0
+            open SUNWipkg@1.1,5.11-0
             close
             open SUNWcs@1.0,5.11-0
             close
@@ -593,7 +604,7 @@ class TestPkgApiInstall(pkg5unittest.SingleDepotTestCase):
                 api_obj.reset()
                 self.__do_uninstall(api_obj, ["*"])
                 api_obj.reset()
-                self.__do_install(api_obj, ["foo@1.0", "SUNWcs", "package/pkg@2.0"])
+                self.__do_install(api_obj, ["foo@1.0", "SUNWcs", "package/pkg@1.1"])
                 api_obj.reset()
                 for pd in api_obj.gen_plan_update():
                         continue
@@ -632,13 +643,42 @@ class TestPkgApiInstall(pkg5unittest.SingleDepotTestCase):
                 for pd in api_obj.gen_plan_update():
                         continue
 
+                # Verify that if a newer version of package/pkg is available
+                # but not allowed by the currently installed ips-incorporation
+                # that the client up-to-date check succeeds.
+                self.__do_uninstall(api_obj, ["*"])
+                self.__do_install(api_obj, ["release/name@2.0", "package/pkg@1.1"])
+                api_obj.reset()
+                for pd in api_obj.gen_plan_update():
+                        pass
+
+                # Verify that if the image pkg is executed from has a client
+                # with a newer version installed than what is available in the
+                # image being operated on that the update check will not fail.
+                self.__do_update(api_obj, ["ips-incorporation@1.0", "pkg@1.0"])
+
+                idir = os.path.join(self.test_root, "pkg-mismatch")
+                self.pkg("image-create -F -p %s %s" % (self.rurl, idir))
+
+                mis_api_obj = self.get_img_api_obj(img_path=idir)
+                self.__do_install(mis_api_obj, ["release/name@2.0", "package/pkg@2.0"])
+                # The version found in the image pkg is being executed from must
+                # not be available in the image being operated on.  Removing the
+                # publisher is the easiest way to accomplish that.
+                self.pkg("-R %s unset-publisher test" % idir)
+
+                mis_api_obj.reset()
+                self.assertRaises(api_errors.IpkgOutOfDateException,
+                    lambda *args, **kwargs: list(
+                        mis_api_obj.gen_plan_update(*args, **kwargs)))
+
                 # Verify that if the installed version of pkg is from an
                 # unconfigured publisher and is newer than what is available
                 # that the update check will not fail.
 
                 # First, install package/pkg again.
                 self.__do_install(api_obj,
-                    ["foo@1.0", "SUNWcs", "package/pkg@2.0"])
+                    ["foo@1.0", "SUNWcs", "package/pkg@1.1"])
 
                 # Next, create a repository with an older version of pkg,
                 # and a newer version of foo.
