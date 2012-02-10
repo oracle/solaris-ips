@@ -36,6 +36,7 @@ import platform
 import shutil
 import simplejson as json
 import stat
+import sys
 import tempfile
 import time
 import urllib
@@ -3435,7 +3436,9 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                                     act.attrs[act.key_attr]].append((
                                     act, pfmri))
 
-                # Don't worry if we can't write the temporary files.
+                # If we can't write the temporary files, then there's no point
+                # in producing actdict because it depends on a synchronized
+                # stripped actions file.
                 try:
                         actdict = {}
                         sf, sp = self.temporary_file(close=False)
@@ -3505,21 +3508,18 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                                 os.unlink(op)
                                 os.unlink(bp)
                         except:
-                                if isinstance(e, KeyboardInterrupt):
-                                        raise
-                                return actdict, timestamp
-                        if isinstance(e, KeyboardInterrupt):
-                                raise
-                        return
+                                pass
+                        raise
 
                 # Finally, rename the temporary files into their final place.
                 # If we have any problems, do our best to remove them, and we'll
                 # try to recreate them on the read-side.
                 try:
+                        if not os.path.exists(self.__action_cache_dir):
+                                os.makedirs(self.__action_cache_dir)
                         portable.rename(sp, stripped_path)
                         portable.rename(op, offsets_path)
                         portable.rename(bp, conflicting_keys_path)
-                        return actdict, timestamp
                 except EnvironmentError, e:
                         if e.errno == errno.EACCES or e.errno == errno.EROFS:
                                 self.__action_cache_dir = self.temporary_dir()
@@ -3532,13 +3532,16 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                                 portable.rename(sp, stripped_path)
                                 portable.rename(op, offsets_path)
                                 portable.rename(bp, conflicting_keys_path)
-                                return actdict, timestamp
-                        try:
-                                os.unlink(stripped_path)
-                                os.unlink(offsets_path)
-                                os.unlink(conflicting_keys_path)
-                        except:
-                                pass
+                        else:
+                                exc_info = sys.exc_info()
+                                try:
+                                        os.unlink(stripped_path)
+                                        os.unlink(offsets_path)
+                                        os.unlink(conflicting_keys_path)
+                                except:
+                                        pass
+                                raise exc_info[0], exc_info[1], exc_info[2]
+                return actdict, timestamp
 
         def _load_actdict(self):
                 """Read the file of offsets created in _create_fast_lookups()
@@ -3552,15 +3555,18 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                         if e.errno != errno.ENOENT:
                                 raise
                         actdict, otimestamp = self._create_fast_lookups()
-                        if actdict is not None:
-                                self.__actdict = actdict
-                                self.__actdict_timestamp = otimestamp
-                                return actdict
+                        assert actdict is not None
+                        self.__actdict = actdict
+                        self.__actdict_timestamp = otimestamp
+                        return actdict
 
                 # Make sure the files are paired, and try to create them if not.
                 oversion = of.readline().rstrip()
                 otimestamp = of.readline().rstrip()
 
+                # The original action.offsets file existed and had the same
+                # timestamp as the stored actdict, so that actdict can be
+                # reused.
                 if self.__actdict and otimestamp == self.__actdict_timestamp:
                         return self.__actdict
 
@@ -3573,15 +3579,16 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                     stimestamp != otimestamp:
                         of.close()
                         actdict, otimestamp = self._create_fast_lookups()
-                        if actdict is not None:
-                                self.__actdict = actdict
-                                self.__actdict_timestamp = otimestamp
-                                return actdict
-                        of = file(os.path.join(self.__action_cache_dir,
-                            "actions.offsets"), "rb")
-                        oversion = of.readline().rstrip()
-                        otimestamp = of.readline().rstrip()
+                        assert actdict is not None
+                        self.__actdict = actdict
+                        self.__actdict_timestamp = otimestamp
+                        return actdict
 
+                # At this point, the original actions.offsets file existed, no
+                # actdict was saved in the image, the versions matched what was
+                # expected, and the timestamps of the actions.offsets and
+                # actions.stripped files matched, so the actions.offsets file is
+                # parsed to generate actdict.
                 actdict = {}
 
                 for line in of:

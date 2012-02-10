@@ -121,8 +121,19 @@ class TestPkgChangeFacet(pkg5unittest.SingleDepotTestCase):
                 cache_dir = os.path.join(self.get_img_api_obj().img.imgdir,
                     "cache", "publisher")
                 shutil.rmtree(cache_dir)
-                self.pkg("change-facet --no-refresh -n --parsable=0 wombat=false",
-                    su_wrap=True)
+                self.pkg("change-facet --no-refresh -n --parsable=0 "
+                    "wombat=false", su_wrap=True)
+                self.assertEqualParsable(self.output,
+                    affect_packages=self.plist,
+                    change_facets=[["facet.wombat", False]])
+
+                # Again, but this time after removing the cache directory
+                # entirely.
+                cache_dir = os.path.join(self.get_img_api_obj().img.imgdir,
+                    "cache")
+                shutil.rmtree(cache_dir)
+                self.pkg("change-facet --no-refresh -n --parsable=0 "
+                    "wombat=false", su_wrap=True)
                 self.assertEqualParsable(self.output,
                     affect_packages=self.plist,
                     change_facets=[["facet.wombat", False]])
