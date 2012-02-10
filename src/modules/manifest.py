@@ -918,7 +918,7 @@ class FactoredManifest(Manifest):
                 self.__pathname = pathname
                 # Make sure that either no excludes were provided or that both
                 # variants and facet excludes were.
-                assert len(self.excludes) in (0, 2)
+                assert len(excludes) in (0, 2)
                 self.loaded = False
 
                 # Do we have a cached copy?
@@ -932,7 +932,7 @@ class FactoredManifest(Manifest):
                         self.__finiload()
                         if self.__storeback():
                                 self.__unload()
-                        elif excludes:
+                        if excludes:
                                 self.exclude_content(excludes)
                         return
 
@@ -945,9 +945,11 @@ class FactoredManifest(Manifest):
                         self.__load()
                         if self.__storeback():
                                 self.__unload()
-                        elif excludes:
+                        if excludes:
                                 self.excludes = excludes
                                 self.__load()
+                        return
+                self.exclude_content(excludes)
 
         def __cache_path(self, name):
                 return os.path.join(self.__cache_root, name)

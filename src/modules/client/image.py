@@ -2161,7 +2161,7 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                         sig_pol = self.signature_policy.combine(
                             pub.signature_policy)
 
-                manf = self.get_manifest(fmri, use_excludes=True)
+                manf = self.get_manifest(fmri, ignore_excludes=True)
                 sigs = list(manf.gen_actions_by_type("signature",
                     self.list_excludes()))
                 if sig_pol and (sigs or sig_pol.name != "ignore"):
@@ -2292,7 +2292,7 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                         logger.info("Repairing: %-50s" % fmri.get_pkg_stem())
                         # Need to get all variants otherwise evaluating the
                         # pkgplan will fail in signature verification.
-                        m = self.get_manifest(fmri, use_excludes=True)
+                        m = self.get_manifest(fmri, ignore_excludes=True)
                         pp = pkgplan.PkgPlan(self)
                         pp.propose_repair(fmri, m, actions, [])
                         pp.evaluate(self.list_excludes(), self.list_excludes())
@@ -2431,15 +2431,21 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                             intent, pub=alt_pub)
                 return ret
 
-        def get_manifest(self, fmri, use_excludes=False, intent=None,
+        def get_manifest(self, fmri, ignore_excludes=False, intent=None,
             alt_pub=None):
                 """return manifest; uses cached version if available.
-                use_excludes controls whether manifest contains actions
-                for all variants"""
+                ignore_excludes controls whether manifest contains actions
+                for all variants
+
+                If 'ignore_excludes' is set to True, then all actions in the
+                manifest are included, regardless of variant or facet tags.  If
+                set to False, then the variants and facets currently set in the
+                image will be applied, potentially filtering out some of the
+                actions."""
 
                 # Normally elide other arch variants, facets
 
-                if use_excludes:
+                if ignore_excludes:
                         excludes = EmptyI
                 else:
                         excludes = [self.cfg.variants.allow_action,
@@ -2693,7 +2699,7 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                 entry = cat.get_entry(f)
                 states = entry["metadata"]["states"]
                 if pkgdefs.PKG_STATE_V1 not in states:
-                        return self.get_manifest(f, use_excludes=True)
+                        return self.get_manifest(f, ignore_excludes=True)
                 return
 
         def __get_catalog(self, name):
@@ -3405,7 +3411,7 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                 from heapq import heappush, heappop
 
                 for pfmri in self.gen_installed_pkgs():
-                        m = self.get_manifest(pfmri, use_excludes=True)
+                        m = self.get_manifest(pfmri, ignore_excludes=True)
                         for act in m.gen_actions(excludes):
                                 if not act.globally_identical:
                                         continue

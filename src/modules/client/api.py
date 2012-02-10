@@ -4275,8 +4275,8 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                             self.__get_alt_pkg_data(repos)
                         alt_pub = pkg_pub_map.get(pfmri.publisher, {}).get(
                             pfmri.pkg_name, {}).get(str(pfmri.version), None)
-                return self._img.get_manifest(pfmri, use_excludes=all_variants,
-                    alt_pub=alt_pub)
+                return self._img.get_manifest(pfmri,
+                    ignore_excludes=all_variants, alt_pub=alt_pub)
 
         @staticmethod
         def validate_response(res, v):

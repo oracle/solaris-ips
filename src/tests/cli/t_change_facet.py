@@ -29,6 +29,7 @@ import pkg5unittest
 
 import os
 import errno
+import shutil
 import unittest
 
 
@@ -47,6 +48,7 @@ class TestPkgChangeFacet(pkg5unittest.SingleDepotTestCase):
         add file tmp/facets_6 mode=0555 owner=root group=bin path=6 facet.locale.nl_NA=True
         add file tmp/facets_7 mode=0555 owner=root group=bin path=7 facet.locale.nl_ZA=True
         add file tmp/facets_8 mode=0555 owner=root group=bin path=8 facet.has/some/slashes=true
+        add link path=test target=1
         close"""
 
         misc_files = [
@@ -105,6 +107,25 @@ class TestPkgChangeFacet(pkg5unittest.SingleDepotTestCase):
                 self.assert_file_is_there("5", negate=True)
                 self.assert_file_is_there("6", negate=True)
                 self.assert_file_is_there("7", negate=True)
+
+                # verify that a non-existent facet can be set when other facets
+                # are in effect
+                self.pkg("change-facet -n --parsable=0 wombat=false")
+                self.assertEqualParsable(self.output,
+                    affect_packages=self.plist,
+                    change_facets=[["facet.wombat", False]])
+
+                # Again, but this time after removing the publisher cache data
+                # and as an unprivileged user to verify that cached manifest
+                # data doesn't affect operation.
+                cache_dir = os.path.join(self.get_img_api_obj().img.imgdir,
+                    "cache", "publisher")
+                shutil.rmtree(cache_dir)
+                self.pkg("change-facet --no-refresh -n --parsable=0 wombat=false",
+                    su_wrap=True)
+                self.assertEqualParsable(self.output,
+                    affect_packages=self.plist,
+                    change_facets=[["facet.wombat", False]])
 
                 # change to pick up another file w/ two tags and test the
                 # parsable output

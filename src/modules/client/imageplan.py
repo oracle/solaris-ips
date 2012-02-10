@@ -1106,7 +1106,7 @@ class ImagePlan(object):
                         implicit_dirs = False
 
                 for pfmri in generator():
-                        m = self.image.get_manifest(pfmri)
+                        m = self.image.get_manifest(pfmri, ignore_excludes=True)
                         dirs = set() # Keep track of explicit dirs
                         for act in m.gen_actions_by_type(atype,
                             self.__new_excludes):
@@ -2027,11 +2027,12 @@ class ImagePlan(object):
                 self.__cached_actions[(name, key)] = d
                 return self.__cached_actions[(name, key)]
 
-        def __get_manifest(self, pfmri, intent, use_excludes=False):
+        def __get_manifest(self, pfmri, intent, ignore_excludes=False):
                 """Return manifest for pfmri"""
                 if pfmri:
                         return self.image.get_manifest(pfmri,
-                            use_excludes=use_excludes or self.__varcets_change,
+                            ignore_excludes=ignore_excludes or
+                            self.__varcets_change,
                             intent=intent)
                 else:
                         return manifest.NullFactoredManifest
@@ -2240,7 +2241,7 @@ class ImagePlan(object):
                                 # __create_intent), so it's not necessary to
                                 # touch the old manifest in this situation.
                                 m = self.__get_manifest(newfmri, new_in,
-                                    use_excludes=True)
+                                    ignore_excludes=True)
                                 pp.propose(
                                     oldfmri, m,
                                     newfmri, m)
@@ -2251,7 +2252,7 @@ class ImagePlan(object):
                                     self.__get_manifest(oldfmri, old_in),
                                     newfmri,
                                     self.__get_manifest(newfmri, new_in,
-                                    use_excludes=True))
+                                    ignore_excludes=True))
                                 can_exclude = True
 
                         pp.evaluate(self.__old_excludes, self.__new_excludes,
