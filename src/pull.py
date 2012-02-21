@@ -260,10 +260,9 @@ def _get_dependencies(s, pfmri, xport_cfg, tracker):
                                 _get_dependencies(s, new_fmri, xport_cfg, tracker)
         return s
 
-def add_hashes_to_multi(mfst, multi):
-        """Takes a manifest and a multi object. Adds the hashes to the multi
-        object, returns (get_bytes, get_files, send_bytes, send_comp_bytes)
-        tuple."""
+def get_sizes(mfst):
+        """Takes a manifest and return
+        (get_bytes, get_files, send_bytes, send_comp_bytes) tuple."""
 
         getb = 0
         getf = 0
@@ -272,7 +271,6 @@ def add_hashes_to_multi(mfst, multi):
 
         for a in mfst.gen_actions():
                 if a.has_payload:
-                        multi.add_action(a)
                         getb += get_pkg_otw_size(a)
                         getf += 1
                         sendb += int(a.attrs.get("pkg.size", 0))
@@ -281,6 +279,14 @@ def add_hashes_to_multi(mfst, multi):
                                 getf += len(a.get_chain_certs())
                                 getb += a.get_action_chain_csize()
         return getb, getf, sendb, sendcb
+
+def add_hashes_to_multi(mfst, multi):
+        """Takes a manifest and a multi object and adds the hashes to the multi
+        object."""
+
+        for a in mfst.gen_actions():
+                if a.has_payload:
+                        multi.add_action(a)
 
 def prune(fmri_list, all_versions, all_timestamps):
         """Returns a filtered version of fmri_list based on the provided
@@ -548,16 +554,9 @@ def archive_pkgs(pargs, target, list_newest, all_versions, all_timestamps,
                             npkgs)
 
                 tracker.evaluate_start(npkgs=npkgs)
-                retrieve_list = []
-                while matches:
-                        f = matches.pop()
-
+                for f in matches:
                         m = get_manifest(f, xport_cfg)
-                        pkgdir = xport_cfg.get_pkg_dir(f)
-                        mfile = xport.multi_file_ni(src_pub, pkgdir,
-                            progtrack=tracker)
-
-                        getb, getf, arcb, arccb = add_hashes_to_multi(m, mfile)
+                        getb, getf, arcb, arccb = get_sizes(m)
                         get_bytes += getb
                         get_files += getf
 
@@ -574,15 +573,12 @@ def archive_pkgs(pargs, target, list_newest, all_versions, all_timestamps,
                         except EnvironmentError, e:
                                 raise apx._convert_error(e)
 
-                        retrieve_list.append((f, mfile))
-                        if not dry_run:
-                                archive_list.append((f, m.pathname, pkgdir))
                         tracker.evaluate_progress(fmri=f)
 
                 tracker.evaluate_done()
 
                 # Next, retrieve the content for this publisher's packages.
-                tracker.download_set_goal(len(retrieve_list), get_files,
+                tracker.download_set_goal(len(matches), get_files,
                     get_bytes)
 
                 if dry_run:
@@ -595,13 +591,20 @@ def archive_pkgs(pargs, target, list_newest, all_versions, all_timestamps,
                         continue
 
                 processed = 0
-                while retrieve_list:
-                        f, mfile = retrieve_list.pop()
+                for f in matches:
                         tracker.download_start_pkg(f.pkg_name)
+                        pkgdir = xport_cfg.get_pkg_dir(f)
+                        mfile = xport.multi_file_ni(src_pub, pkgdir,
+                            progtrack=tracker)
+                        m = get_manifest(f, xport_cfg)
+                        add_hashes_to_multi(m, mfile)
 
                         if mfile:
                                 download_start = True
                                 mfile.wait_files()
+
+                        if not dry_run:
+                                archive_list.append((f, m.pathname, pkgdir))
 
                         # Nothing more to do for this package.
                         tracker.download_end_pkg()
@@ -729,6 +732,7 @@ def transfer_pkgs(pargs, target, list_newest, all_versions, all_timestamps,
                 # sizes.
                 npkgs = len(matches)
                 get_bytes = 0
+                get_files = 0
                 send_bytes = 0
 
                 if not recursive:
@@ -736,34 +740,30 @@ def transfer_pkgs(pargs, target, list_newest, all_versions, all_timestamps,
                             npkgs)
 
                 tracker.evaluate_start(npkgs=npkgs)
-                retrieve_list = []
+
+                pkgs_to_get = []
                 while matches:
                         f = matches.pop()
-
                         if republish and targ_cat.get_entry(f):
                                 continue
+                        pkgs_to_get.append(f)
 
                         m = get_manifest(f, xport_cfg)
-                        pkgdir = xport_cfg.get_pkg_dir(f)
-                        mfile = xport.multi_file_ni(src_pub, pkgdir,
-                            not keep_compressed, tracker)
          
-                        getb, getf, sendb, sendcb = add_hashes_to_multi(m,
-                            mfile)
+                        getb, getf, sendb, sendcb = get_sizes(m)
                         get_bytes += getb
+                        get_files += getf
                         if republish:
                                 # For now, normal republication always uses
                                 # uncompressed data as already compressed data
                                 # is not supported for publication.
                                 send_bytes += sendb
 
-                        retrieve_list.append((f, mfile))
-
                         tracker.evaluate_progress(fmri=f)
                 tracker.evaluate_done()
 
                 # Next, retrieve and store the content for each package.
-                tracker.republish_set_goal(len(retrieve_list), get_bytes,
+                tracker.republish_set_goal(get_files, get_bytes,
                     send_bytes)
 
                 if dry_run:
@@ -772,9 +772,14 @@ def transfer_pkgs(pargs, target, list_newest, all_versions, all_timestamps,
                         continue
 
                 processed = 0
-                while retrieve_list:
-                        f, mfile = retrieve_list.pop()
+                while pkgs_to_get:
+                        f = pkgs_to_get.pop()
                         tracker.republish_start_pkg(f.pkg_name)
+                        pkgdir = xport_cfg.get_pkg_dir(f)
+                        mfile = xport.multi_file_ni(src_pub, pkgdir,
+                            not keep_compressed, tracker)
+                        m = get_manifest(f, xport_cfg)
+                        add_hashes_to_multi(m, mfile)
 
                         if mfile:
                                 download_start = True
@@ -784,8 +789,6 @@ def transfer_pkgs(pargs, target, list_newest, all_versions, all_timestamps,
                                 # Nothing more to do for this package.
                                 tracker.republish_end_pkg()
                                 continue
-
-                        m = get_manifest(f, xport_cfg)
 
                         # Get first line of original manifest so that inclusion
                         # of the scheme can be determined.
