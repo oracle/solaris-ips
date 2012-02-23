@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2008, 2011, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2008, 2012, Oracle and/or its affiliates. All rights reserved.
 #
 
 import testutils
@@ -636,6 +636,12 @@ class TestPkgrecvMulti(pkg5unittest.ManyDepotTestCase):
                         cat = repo.get_catalog(pub=pfx)
                         returned.extend(str(f) for f in cat.fmris())
                 self.assertEqualDiff(expected, sorted(returned))
+
+                # Attempt a dry-run to receive a package archive.
+                # We should not have the archive created in this case.
+                arc_path = os.path.join(self.test_root, "dry-run.p5p")
+                self.pkgrecv(self.durl3, "-n -a -d %s \*" % arc_path)
+                self.assertFalse(os.path.exists(arc_path))
 
 
 if __name__ == "__main__":

@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2008, 2011, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2008, 2012, Oracle and/or its affiliates. All rights reserved.
 #
 
 import calendar
@@ -513,7 +513,8 @@ def archive_pkgs(pargs, target, list_newest, all_versions, all_timestamps,
 
         # Open the archive early so that permissions failures, etc. can be
         # detected before actual work is started.
-        pkg_arc = pkg.p5p.Archive(target, mode="w")
+        if not dry_run:
+                pkg_arc = pkg.p5p.Archive(target, mode="w")
 
         basedir = tempfile.mkdtemp(dir=temp_root,
             prefix=global_settings.client_name + "-")
