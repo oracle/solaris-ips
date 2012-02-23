@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2009, 2011, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2009, 2012, Oracle and/or its affiliates. All rights reserved.
 #
 
 import cStringIO
@@ -287,6 +287,54 @@ class TransportRepo(object):
                         reqlist.append(req)
 
                 return reqlist
+
+	@staticmethod
+	def _analyze_server_error(error_header):
+		""" Decode the X-Ipkg-Error header which is appended by the 
+		module doing entitlement checks on the server side. Let the user
+		know why they can't access the repository. """
+
+		ENTITLEMENT_ERROR = "ENT"
+		LICENSE_ERROR = "LIC"
+		SERVER_ERROR = "SVR"
+
+		entitlement_err_msg = """
+This account is not entitled to access this repository. Ensure that the correct 
+certificate is being used and that the support contract for the product being 
+accessed is still valid. 
+"""
+
+		license_err_msg = """
+The license agreement required to access this repository has not been 
+accepted yet or the license agreement for the product has changed. Please go to
+https://pkg-register.oracle.com and accept the license for the product you are 
+trying to access.
+"""
+
+		server_err_msg = """
+Repository access is currently unavailable due to service issues. Please retry
+later or contact your customer service representative. 
+"""
+
+		msg = ""
+
+		# multiple errors possible (e.g. license and entitlement not ok)
+		error_codes = error_header.split(",")
+
+		for e in error_codes:
+			code = e.strip().upper()
+			
+			if code == ENTITLEMENT_ERROR:
+				 msg += entitlement_err_msg
+			elif code == LICENSE_ERROR:
+				msg += license_err_msg
+			elif code == SERVER_ERROR:
+				msg += server_err_msg
+
+		if msg == "":
+			return None
+
+		return msg
 
 
 class HTTPRepo(TransportRepo):
@@ -654,10 +702,33 @@ class HTTPRepo(TransportRepo):
 
         def get_versions(self, header=None, ccancel=None):
                 """Query the repo for versions information.
-                Returns a fileobject."""
+                Returns a fileobject. If server returns 401 (Unauthorized)
+		check for presence of X-IPkg-Error header and decode."""
 
                 requesturl = self.__get_request_url("versions/0/")
-                return self._fetch_url(requesturl, header, ccancel=ccancel)
+                fobj = self._fetch_url(requesturl, header, ccancel=ccancel, 
+		    failonerror=False)
+
+                try:
+			# Bogus request to trigger 
+			# StreamingFileObj.__fill_buffer(), otherwise the 
+			# TransportProtoError won't be raised here. We can't
+			# use .read() since this will empty the data buffer.
+			fobj.getheader("octopus", None)
+		except tx.TransportProtoError, e:
+			if e.code == httplib.UNAUTHORIZED:
+				exc_type, exc_value, exc_tb = sys.exc_info()
+				try:
+					e.details = self._analyze_server_error(
+                                             fobj.getheader("X-IPkg-Error",
+					     None))
+				except:
+					# If analysis fails, raise original
+                                        # exception.
+                                        raise exc_value, None, exc_tb
+			raise
+
+		return fobj
 
         def has_version_data(self):
                 """Returns true if this repo knows its version information."""
