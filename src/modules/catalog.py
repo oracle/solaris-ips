@@ -516,8 +516,8 @@ class CatalogPart(CatalogPartBase):
 
                 for pub, stem, entry in self.__iter_entries(last=last,
                     ordered=ordered, pubs=pubs):
-                        f = fmri.PkgFmri("%s@%s" % (stem, entry["version"]),
-                            publisher=pub)
+                        f = fmri.PkgFmri(name=stem, publisher=pub,
+                            version=entry["version"])
                         if cb is None or cb(f, entry):
                                 yield f, entry
 
@@ -538,8 +538,8 @@ class CatalogPart(CatalogPartBase):
                         ver_list = self.__data[pub].get(name, ())
                         for entry in ver_list:
                                 sver = entry["version"]
-                                pfmri = fmri.PkgFmri("%s@%s" % (name,
-                                    sver), publisher=pub)
+                                pfmri = fmri.PkgFmri(name=name, publisher=pub,
+                                    version=sver)
 
                                 versions[sver] = pfmri.version
                                 entries.setdefault(sver, [])
@@ -576,8 +576,8 @@ class CatalogPart(CatalogPartBase):
                 if objects:
                         for pub, stem, entry in self.__iter_entries(last=last,
                             ordered=ordered, pubs=pubs):
-                                yield fmri.PkgFmri("%s@%s" % (stem,
-                                    entry["version"]), publisher=pub)
+                                yield fmri.PkgFmri(name=stem, publisher=pub,
+                                    version=entry["version"])
                         return
 
                 for pub, stem, entry in self.__iter_entries(last=last,
@@ -605,8 +605,8 @@ class CatalogPart(CatalogPartBase):
 
                         for entry in ver_list:
                                 sver = entry["version"]
-                                pfmri = fmri.PkgFmri("%s@%s" % (name,
-                                    sver), publisher=pub)
+                                pfmri = fmri.PkgFmri(name=name, publisher=pub,
+                                    version=sver)
 
                                 versions[sver] = pfmri.version
                                 entries.setdefault(sver, [])
@@ -1060,8 +1060,8 @@ class CatalogUpdate(CatalogPartBase):
                                 if key.startswith("catalog."):
                                         mdata[key] = entry[key]
                         op_time = basic_ts_to_datetime(entry["op-time"])
-                        pfmri = fmri.PkgFmri("%s@%s" % (stem, entry["version"]),
-                            publisher=pub)
+                        pfmri = fmri.PkgFmri(name=stem, publisher=pub,
+                            version=entry["version"])
                         return (pfmri, entry["op-type"], op_time, mdata)
 
                 for pub in self.publishers():
@@ -1368,14 +1368,15 @@ class Catalog(object):
                 for f, entry in self.__entries(cb=cb, info_needed=info_needed,
                     locales=locales, last_version=last_version,
                     ordered=ordered, pubs=pubs):
-                        if "actions" in entry:
+                        try:
                                 yield f, self.__gen_actions(f, entry["actions"],
                                     excludes)
-                        elif self.__manifest_cb:
-                                yield f, self.__gen_lazy_actions(f, info_needed,
-                                    locales, excludes)
-                        else:
-                                yield f, EmptyI
+                        except KeyError:
+                                if self.__manifest_cb:
+                                        yield f, self.__gen_lazy_actions(f,
+                                            info_needed, locales, excludes)
+                                else:
+                                        yield f, EmptyI
 
         def __append(self, src, cb=None, pfmri=None, pubs=EmptyI):
                 """Private version; caller responsible for locking."""
@@ -1588,8 +1589,8 @@ class Catalog(object):
                                 if not isinstance(pfmri, fmri.PkgFmri):
                                         # pfmri is assumed to be a FMRI tuple.
                                         pub, stem, ver = pfmri
-                                        pfmri = fmri.PkgFmri("%s@%s" % (stem,
-                                            ver), publisher=pub)
+                                        pfmri = fmri.PkgFmri(name=stem,
+                                            publisher=pub, version=ver)
                                 e.fmri = pfmri
                                 errors.append(e)
                                 continue
@@ -1800,7 +1801,8 @@ class Catalog(object):
                                         npat = fmri.MatchingPkgFmri(pat_stem,
                                             brelease)
                                 else:
-                                        npat = fmri.PkgFmri(pat_stem, brelease)
+                                        npat = fmri.PkgFmri(pat_stem,
+                                            brelease)
 
                                 if not pat_ver:
                                         # Do nothing.
@@ -2554,19 +2556,20 @@ class Catalog(object):
                 for r, entry in self.__entries(cb=cb, info_needed=info_needed,
                     locales=locales, last_version=last, ordered=ordered,
                     pubs=pubs, tuples=True):
-                        if "actions" in entry:
+                        try:
                                 yield (r, entry,
                                     self.__gen_actions(r, entry["actions"],
                                     excludes))
-                        elif self.__manifest_cb:
-                                pub, stem, ver = r
-                                f = fmri.PkgFmri("%s@%s" % (stem, ver),
-                                    publisher=pub)
-                                yield (r, entry,
-                                    self.__gen_lazy_actions(f, info_needed,
-                                    locales, excludes))
-                        else:
-                                yield r, entry, EmptyI
+                        except KeyError:
+                                if self.__manifest_cb:
+                                        pub, stem, ver = r
+                                        f = fmri.PkgFmri(name=stem, publisher=pub,
+                                            version=ver)
+                                        yield (r, entry,
+                                            self.__gen_lazy_actions(f, info_needed,
+                                            locales, excludes))
+                                else:
+                                        yield r, entry, EmptyI
 
         @property
         def exists(self):
@@ -2773,14 +2776,15 @@ class Catalog(object):
                 if entry is None:
                         raise api_errors.UnknownCatalogEntry(pfmri.get_fmri())
 
-                if "actions" in entry:
+                try:
                         return self.__gen_actions(pfmri, entry["actions"],
                             excludes)
-                elif self.__manifest_cb:
-                        return self.__gen_lazy_actions(pfmri, info_needed,
-                            locales, excludes)
-                else:
-                        return EmptyI
+                except KeyError:
+                        if self.__manifest_cb:
+                                return self.__gen_lazy_actions(pfmri,
+                                    info_needed, locales, excludes)
+                        else:
+                                return EmptyI
 
         def get_entry_all_variants(self, pfmri):
                 """A generator function that yields tuples of the format
@@ -2793,13 +2797,14 @@ class Catalog(object):
                 if entry is None:
                         raise api_errors.UnknownCatalogEntry(pfmri.get_fmri())
 
-                if "actions" in entry:
+                try:
                         actions = self.__gen_actions(pfmri, entry["actions"])
-                elif self.__manifest_cb:
-                        actions = self.__gen_lazy_actions(pfmri,
-                            info_needed)
-                else:
-                        return
+                except KeyError:
+                        if self.__manifest_cb:
+                                actions = self.__gen_lazy_actions(pfmri,
+                                    info_needed)
+                        else:
+                                return
 
                 for a in actions:
                         if a.name != "set":
@@ -3099,8 +3104,8 @@ class Catalog(object):
 
                         # Return the requested package data.
                         if return_fmris:
-                                pfmri = fmri.PkgFmri("%s@%s" % (stem, ver),
-                                    build_release=brelease, publisher=pub)
+                                pfmri = fmri.PkgFmri(build_release=brelease,
+                                    name=stem, publisher=pub, version=ver)
                                 yield (pfmri, states, attrs)
                         else:
                                 yield (t, states, attrs)
@@ -3747,8 +3752,8 @@ class Catalog(object):
                 base = self.get_part(self.__BASE_PART, must_exist=True)
                 if base is None:
                         if not pfmri:
-                                pfmri = fmri.PkgFmri("%s@%s" % (stem, ver),
-                                    publisher=pub)
+                                pfmri = fmri.PkgFmri(name=stem, publisher=pub,
+                                    version=ver)
                         raise api_errors.UnknownCatalogEntry(pfmri.get_fmri())
 
                 # get_entry returns the actual catalog entry, so updating it
@@ -3756,8 +3761,8 @@ class Catalog(object):
                 entry = base.get_entry(pfmri=pfmri, pub=pub, stem=stem, ver=ver)
                 if entry is None:
                         if not pfmri:
-                                pfmri = fmri.PkgFmri("%s@%s" % (stem, ver),
-                                    publisher=pub)
+                                pfmri = fmri.PkgFmri(name=stem, publisher=pub,
+                                    version=ver)
                         raise api_errors.UnknownCatalogEntry(pfmri.get_fmri())
                 if metadata is None:
                         if "metadata" in entry:
@@ -3993,8 +3998,8 @@ def extract_matching_fmris(pkgs, patterns=None, matcher=None,
                 else:
                         assert pattern != None
                         # XXX "5.11" here needs to be saner
-                        tuples[pattern] = \
-                            fmri.PkgFmri(pattern, "5.11").tuple()
+                        tuples[pattern] = fmri.PkgFmri(fmri=pattern,
+                            build_release="5.11").tuple()
 
         def by_pattern(p):
                 cat_pub, cat_name = p.tuple()[:2]

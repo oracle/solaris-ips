@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2009, 2011, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2009, 2012, Oracle and/or its affiliates. All rights reserved.
 #
 
 import os
@@ -121,6 +121,11 @@ class Dependency(depend.DependencyAction):
                 ])
 
                 attrs.update(action.get_variant_template())
+                # Only lists are permitted for multi-value action attributes.
+                for k, v in attrs.items():
+                        if isinstance(v, set):
+                                attrs[k] = list(v)
+
                 depend.DependencyAction.__init__(self, **attrs)
 
         def is_error(self):

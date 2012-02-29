@@ -20,7 +20,7 @@
 # CDDL HEADER END
 #
 
-# Copyright (c) 2009, 2011, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2009, 2012, Oracle and/or its affiliates. All rights reserved.
 
 import testutils
 if __name__ == "__main__":
@@ -1414,18 +1414,19 @@ SYMBOL_SCOPE {
                 """ pkgdep should gracefully deal with a non-manifest """
 
                 m_path = None
+                atype = "This"
                 nonsense = "This is a nonsense manifest"
                 m_path = self.make_manifest(nonsense)
 
                 self.pkgdepend_generate("-d %s %s" %
                     (self.test_proto_dir, m_path), exit=1)
                 self.debug(self.errout)
-                self.check_res("Malformed action at position: 9:\n" + nonsense +
-                    "\n             ^\n", self.errout)
+                self.check_res("unknown action type '%s' in action '%s'" %
+                    (atype, nonsense), self.errout)
 
                 self.pkgdepend_resolve("-o %s " % m_path, exit=1)
-                self.check_res("Malformed action at position: 9:\n" + nonsense +
-                    "\n             ^\n", self.errout)
+                self.check_res("unknown action type '%s' in action '%s'" %
+                    (atype, nonsense), self.errout)
 
         def __run_dyn_tok_test(self, run_paths, replaced_path, dep_args):
                 """Using the provided run paths, produces a elf binary with

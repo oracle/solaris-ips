@@ -21,13 +21,15 @@
 #
 
 #
-# Copyright (c) 2007, 2011, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2007, 2012, Oracle and/or its affiliates. All rights reserved.
 #
 
 import calendar
 import datetime
 import time
 import weakref
+
+from itertools import izip
 
 CONSTRAINT_NONE = 0
 CONSTRAINT_AUTO = 50
@@ -76,12 +78,10 @@ class DotSequence(list):
                 return x
 
         def __new__(cls, dotstring):
-                ds = DotSequence.__dotseq_pool.get(dotstring, None)
-                if ds is not None:
-                        return ds
-
-                ds = list.__new__(cls)
-                cls.__dotseq_pool[dotstring] = ds
+                ds = DotSequence.__dotseq_pool.get(dotstring)
+                if ds is None:
+                        cls.__dotseq_pool[dotstring] = ds = \
+                            list.__new__(cls)
                 return ds
 
         def __init__(self, dotstring):
@@ -113,7 +113,7 @@ class DotSequence(list):
                 if len(self) > len(other):
                         return False
 
-                for a, b in zip(self, other):
+                for a, b in izip(self, other):
                         if a != b:
                                 return False
                 return True
@@ -219,7 +219,7 @@ class MatchingDotSequence(DotSequence):
                 if len(self) > len(other):
                         return False
 
-                for a, b in zip(self, other):
+                for a, b in izip(self, other):
                         if a != b:
                                 return False
                 return True

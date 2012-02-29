@@ -96,17 +96,18 @@ class DependencyAction(generic.Action):
 
         name = "depend"
         key_attr = "fmri"
+        ordinality = generic._orderdict[name]
 
         def __init__(self, data=None, **attrs):
                 generic.Action.__init__(self, data, **attrs)
-                if "type" not in self.attrs:
+                try:
+                        if self.attrs["type"] not in known_types:
+                                raise pkg.actions.InvalidActionError(str(self),
+                                    _("Unknown type (%s) in depend action") %
+                                    self.attrs["type"])
+                except KeyError:
                         raise pkg.actions.InvalidActionError(
                             str(self), _("Missing type attribute"))
-
-                if self.attrs["type"] not in known_types:
-                        raise pkg.actions.InvalidActionError(str(self),
-                            _("Unknown type (%s) in depend action") %
-                            self.attrs["type"])
 
         def __check_parent_installed(self, image, fmri):
 

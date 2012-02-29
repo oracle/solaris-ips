@@ -20,9 +20,9 @@
 # CDDL HEADER END
 #
 
+
 #
-# Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
-# Use is subject to license terms.
+# Copyright (c) 2008, 2012, Oracle and/or its affiliates. All rights reserved.
 #
 
 #
@@ -94,9 +94,14 @@ f1 = version.Version("5.11-0.72", "0.5.11")""",
         """hash(f1)"""
         ],
 
-        [ "fmri create", 50000,
+        [ "fmri create (string)", 50000,
         """import pkg.fmri as fmri""",
         """f = fmri.PkgFmri("pkg://origin/SUNWxwssu@0.5.11,5.11-0.72:20070921T203926Z")"""
+        ],
+
+        [ "fmri create (parts)", 50000,
+        """import pkg.fmri as fmri""",
+        """f = fmri.PkgFmri(build_release="5.11", publisher="origin", name="SUNWxwssu", version="0.5.11,5.11-0.72:20070921T203926Z")"""
         ],
 
         [ "fmri create (no tstamp)", 50000,

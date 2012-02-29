@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2008, 2011, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2008, 2012, Oracle and/or its affiliates. All rights reserved.
 #
 
 """module describing a user packaging object
@@ -48,6 +48,7 @@ class UserAction(generic.Action):
         name = "user"
         key_attr = "username"
         globally_identical = True
+        ordinality = generic._orderdict[name]
 
         # if these values are different on disk than in action
         # prefer on-disk version

@@ -41,22 +41,25 @@ class AttributeAction(generic.Action):
 
         name = "set"
         key_attr = "name"
+        ordinality = generic._orderdict[name]
 
         def __init__(self, data=None, **attrs):
                 generic.Action.__init__(self, data, **attrs)
 
-                # For convenience, we allow people to express attributes as
-                # "<name>=<value>", rather than "name=<name> value=<value>", but
-                # we always convert to the latter.
                 try:
-                        if len(attrs) == 1:
-                                self.attrs["name"], self.attrs["value"] = \
-                                    self.attrs.popitem()
+                        self.attrs["name"]
+                        self.attrs["value"]
                 except KeyError:
-                        # Let error check below deal with this.
-                        pass
-
-                if "name" not in self.attrs or "value" not in self.attrs:
+                        # For convenience, we allow people to express attributes as
+                        # "<name>=<value>", rather than "name=<name> value=<value>", but
+                        # we always convert to the latter.
+                        try:
+                                if len(attrs) == 1:
+                                        self.attrs["name"], self.attrs["value"] = \
+                                            self.attrs.popitem()
+                                        return
+                        except KeyError:
+                                pass
                         raise pkg.actions.InvalidActionError(str(self),
                             'Missing "name" or "value" attribute')
 

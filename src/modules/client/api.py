@@ -3536,8 +3536,8 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                                 ranked_stems.setdefault(stem, pub)
 
                         if return_fmris:
-                                pfmri = fmri.PkgFmri("%s@%s" % (stem, ver),
-                                    build_release=brelease, publisher=pub)
+                                pfmri = fmri.PkgFmri(build_release=brelease,
+                                    name=stem, publisher=pub, version=ver)
                                 yield (pfmri, summ, pcats, states, attrs)
                         else:
                                 yield (t, summ, pcats, states, attrs)

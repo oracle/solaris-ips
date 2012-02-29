@@ -3125,8 +3125,8 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                                     pub=pub, stem=stem, ver=ver)
                                 nipart.add(metadata=entry, op_time=op_time,
                                     pub=pub, stem=stem, ver=ver)
-                                final_fmris.append(pkg.fmri.PkgFmri(
-                                    "%s@%s" % (stem, ver), publisher=pub))
+                                final_fmris.append(pkg.fmri.PkgFmri(name=stem,
+                                    publisher=pub, version=ver))
 
                 # Save the new catalogs.
                 for cat in kcat, icat:

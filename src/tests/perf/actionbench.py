@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2008, 2011, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2008, 2012, Oracle and/or its affiliates. All rights reserved.
 #
 
 #
@@ -75,15 +75,15 @@ a2 = actions.fromstr("dir group=bin mode=0755 owner=root path=usr/lib/libzonecfg
         setup3 = """
 class superc(object):
         def __cmp__(a, b):
-                return cmp(a.ord, b.ord)
+                return cmp(a.ordinality, b.ordinality)
 
 class aa(superc):
         def __init__(self):
-                self.ord = 1    
+                self.ordinality = 1    
                 
 class bb(superc):
         def __init__(self):
-                self.ord = 2
+                self.ordinality = 2
                 
 a = aa()
 b = bb()

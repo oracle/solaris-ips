@@ -101,11 +101,6 @@ depend type=optional fmri=pkg:/library/libc
 file fff555ff9 mode=0555 owner=sch group=staff path=/usr/bin/i386/sort isa=i386
 """
 
-                self.m6_contents = """\
-dir owner=root path=usr/bin group=bin mode=0755 variant.opensolaris.zone=global variant.opensolaris.zone=nonglobal
-"""
-
-
         def test_set_content1(self):
                 """ ASSERT: manifest string repr reflects its construction """
 
@@ -139,13 +134,6 @@ dir owner=root path=usr/bin group=bin mode=0755 variant.opensolaris.zone=global 
                 output = list(m.as_lines())[0].rstrip()
                 self.assertEqual(bstr, output)
                 self.assert_(isinstance(output, str))
-
-        def test_variants(self):
-                """Make sure we reject multiple instances of the same
-                variant."""
-
-                self.assertRaises(actions.InvalidActionError,
-                    self.m1.set_content, self.m6_contents)
 
         def test_diffs1(self):
                 """ humanized_differences runs to completion """

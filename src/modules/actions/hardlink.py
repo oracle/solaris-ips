@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2007, 2011, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2007, 2012, Oracle and/or its affiliates. All rights reserved.
 #
 
 """module describing a (hard) link packaging object
@@ -30,6 +30,7 @@ This module contains the HardLinkAction class, which represents a hardlink-type
 packaging object."""
 
 import errno
+import generic
 import link
 import os
 import stat
@@ -43,10 +44,7 @@ class HardLinkAction(link.LinkAction):
         __slots__ = []
 
         name = "hardlink"
-
-        # Tells parent class that leading slash should not be stripped
-        # from "path" attribute.
-        _strip_path = False
+        ordinality = generic._orderdict[name]
 
         def get_target_path(self):
                 """ return a path for target that is relative to image"""

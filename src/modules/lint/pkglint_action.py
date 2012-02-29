@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2010, 2011, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2010, 2012, Oracle and/or its affiliates. All rights reserved.
 #
 
 from pkg.lint.engine import lint_fmri_successor
@@ -129,7 +129,12 @@ class PkgDupActionChecker(base.ActionChecker):
 
                                 variants = action.get_variant_template()
                                 variants.merge_unknown(pkg_vars)
-                                action.attrs.update(variants)
+                                # Action attributes must be lists or strings.
+                                for k, v in variants.iteritems():
+                                        if isinstance(v, set):
+                                                action.attrs[k] = list(v)
+                                        else:
+                                                action.attrs[k] = v
 
                                 p = action.attrs[attr]
                                 if p not in dic:

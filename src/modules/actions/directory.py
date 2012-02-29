@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2007, 2011, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2007, 2012, Oracle and/or its affiliates. All rights reserved.
 #
 
 """module describing a directory packaging object
@@ -48,6 +48,7 @@ class DirectoryAction(generic.Action):
         globally_identical = True
         refcountable = True
         namespace_group = "path"
+        ordinality = generic._orderdict[name]
 
         def compare(self, other):
                 return cmp(self.attrs["path"], other.attrs["path"])

@@ -26,9 +26,11 @@
 
 # basic facet support
 
+from pkg._varcet import _allow_facet
 from pkg.misc import EmptyI
 import fnmatch
 import re
+import types
 
 class Facets(dict):
         # store information on facets; subclass dict 
@@ -68,6 +70,9 @@ class Facets(dict):
 
         def __getitem__(self, item):
                 """implement facet lookup algorithm here"""
+                # Note that _allow_facet bypasses __getitem__ for performance
+                # reasons; if __getitem__ changes, _allow_facet in _varcet.c
+                # must also be updated.
                 if not item.startswith("facet."):
                         raise KeyError, "key must start w/ facet."
 
@@ -83,6 +88,9 @@ class Facets(dict):
                 dict.__delitem__(self, item)
                 self.__keylist.remove(item)
                 del self.__res[item]
+
+        # allow_action is provided as a native function (see end of class
+        # declaration).
 
         def pop(self, item, *args, **kwargs):
                 assert len(args) == 0 or (len(args) == 1 and
@@ -134,18 +142,4 @@ class Facets(dict):
                 self.__res = []
                 dict.clear(self)
 
-        def allow_action(self, action):
-                """ determine if facets permit this action; if any facets allow
-                it, return True; also return True if no facets are present"""
-
-                ret = True
-
-                for f in action.attrs.keys():
-                        if f[:6] != "facet.":
-                                continue
-                        if self[f]:
-                                return True
-                        else:
-                                ret = False
-
-                return ret
+Facets.allow_action = types.MethodType(_allow_facet, None, Facets)

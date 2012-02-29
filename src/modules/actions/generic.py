@@ -37,14 +37,22 @@ try:
         os.SEEK_SET
 except AttributeError:
         os.SEEK_SET, os.SEEK_CUR, os.SEEK_END = range(3)
+import stat
+import types
+
+import _common
 import pkg.actions
 import pkg.client.api_errors as apx
 import pkg.portable as portable
 import pkg.variant as variant
-import stat
 
-# Used to define sort order between action types.
-_ORDER_DICT_LIST = [
+# Directories must precede all filesystem object actions; hardlinks must follow
+# all filesystem object actions (except links).  Note that user and group
+# actions precede file actions (so that the system permits chown'ing them to
+# users and groups that may be delivered during the same operation); this
+# implies that /etc/group and /etc/passwd file ownership needs to be part of
+# initial contents of those files.
+_orderdict = dict((k, i) for i, k in enumerate((
     "set",
     "depend",
     "group",
@@ -55,9 +63,10 @@ _ORDER_DICT_LIST = [
     "link",
     "driver",
     "unknown",
+    "license",
     "legacy",
     "signature"
-]
+)))
 
 # EmptyI for argument defaults; no import to avoid pkg.misc dependency.
 EmptyI = tuple()
@@ -119,7 +128,7 @@ class Action(object):
         files.
         """
 
-        __slots__ = ["attrs", "data", "ord"]
+        __slots__ = ["attrs", "data"]
 
         # 'name' is the name of the action, as specified in a manifest.
         name = "generic"
@@ -140,110 +149,23 @@ class Action(object):
         # the sole members of their group, this is set to a non-None value for
         # subclasses by the NSG metaclass.
         namespace_group = None
+        # 'ordinality' is a numeric value that is used during action comparison
+        # to determine action sorting.
+        ordinality = _orderdict["unknown"]
         # 'unique_attrs' is a tuple listing the attributes which must be
         # identical in order for an action to be safely delivered multiple times
         # (for those that can be).
         unique_attrs = ()
-
-        # the following establishes the sort order between action types.
-        # Directories must precede all
-        # filesystem-modifying actions; hardlinks must follow all
-        # filesystem-modifying actions.  Note that usr/group actions
-        # precede file actions; this implies that /etc/group and /etc/passwd
-        # file ownership needs to be part of initial contents of those files
-        orderdict = {}
-        unknown = 0
 
         # The version of signature used.
         sig_version = 0
         # Most types of actions do not have a payload.
         has_payload = False
 
-        # By default, leading slashes should be stripped from "path" attribute.
-        _strip_path = True
-
         __metaclass__ = NSG
 
-        def loadorderdict(self):
-                self.orderdict.update(dict((
-                    (pkg.actions.types[t], i)
-                    for i, t in enumerate(_ORDER_DICT_LIST)
-                )))
-                self.__class__.unknown = \
-                    self.orderdict[pkg.actions.types["unknown"]]
-
-        def __init__(self, data=None, **attrs):
-                """Action constructor.
-
-                The optional 'data' argument may be either a string, a file-like
-                object, or a callable.  If it is a string, then it will be
-                substituted with a callable that will return an open handle to
-                the file represented by the string.  Otherwise, if it is not
-                already a callable, it is assumed to be a file-like object, and
-                will be substituted with a callable that will return the object.
-                If it is a callable, it will not be replaced at all.
-
-                Any remaining named arguments will be treated as attributes.
-                """
-
-                if not self.orderdict:
-                        self.loadorderdict()
-
-
-                # A try/except is used here instead of get() as it is
-                # consistently 2% faster.
-                try:
-                        self.ord = self.orderdict[type(self)]
-                except KeyError:
-                        self.ord = self.unknown
-
-                self.attrs = attrs
-
-                # Since this is a hot path, avoid a function call unless
-                # absolutely necessary.
-                if data is None:
-                        self.data = None
-                else:
-                        self.set_data(data)
-
-                if not self.key_attr:
-                        # Nothing more to do.
-                        return
-
-                # Test if method only string object will have is defined to
-                # determine if key attribute has been specified multiple times.
-                try:
-                        self.attrs[self.key_attr].decode
-                except KeyError:
-                        if self.name == "set" or self.name == "signature":
-                                # Special case for set and signature actions
-                                # since they allow two forms of syntax.
-                                return
-                        raise pkg.actions.InvalidActionError(str(self),
-                           _("no value specified for key attribute '%s'") %
-                           self.key_attr)
-                except AttributeError:
-                       if self.name != "depend" or \
-                           self.attrs.get("type") != "require-any":
-                                # Assume list since fromstr() will only ever
-                                # provide a string or list and decode method
-                                # wasn't found.  This is much faster than
-                                # checking isinstance or 'type() ==' in
-                                # a hot path.
-                                raise pkg.actions.InvalidActionError(str(self),
-                                   _("%s attribute may only be specified "
-                                   "once") % self.key_attr)
-
-                if self._strip_path:
-                        # Strip leading slash from path if requested.
-                        try:
-                                self.attrs["path"] = \
-                                    self.attrs["path"].lstrip("/")
-                        except KeyError:
-                                return
-                        if not self.attrs["path"]:
-                                raise pkg.actions.InvalidActionError(
-                                    str(self), _("Empty path attribute"))
+        # __init__ is provided as a native function (see end of class
+        # declaration).
 
         def set_data(self, data):
                 """This function sets the data field of the action.
@@ -330,18 +252,33 @@ class Action(object):
                 computed.  This may need to be done externally.
                 """
 
+                sattrs = self.attrs.keys()
                 out = self.name
-                if hasattr(self, "hash") and self.hash is not None:
-                        if "=" not in self.hash:
-                                out += " " + self.hash
-                        else:
-                                self.attrs["hash"] = self.hash
+                try:
+                        h = self.hash
+                        if h:
+                                if "=" not in h:
+                                        out += " " + h
+                                else:
+                                        sattrs.append("hash")
+                except AttributeError:
+                        # No hash to stash.
+                        pass
 
                 # Sort so that we get consistent action attribute ordering.
                 # We pay a performance penalty to do so, but it seems worth it.
-                for k in sorted(self.attrs.keys()):
-                        v = self.attrs[k]
-                        if isinstance(v, list) or isinstance(v, set):
+                sattrs.sort()
+
+                for k in sattrs:
+                        try:
+                               v = self.attrs[k]
+                        except KeyError:
+                                # If we can't find the attribute, it must be the
+                                # hash. 'h' will only be in scope if the block
+                                # at the start succeeded.
+                                v = h
+
+                        if type(v) is list:
                                 out += " " + " ".join([
                                     "=".join((k, quote_attr_value(lmt)))
                                     for lmt in v
@@ -356,10 +293,6 @@ class Action(object):
                                             v.replace("\"", "\\\"") + "\""
                         else:
                                 out += " " + k + "=" + v
-
-                # If we have a hash attribute, it's because we added it above;
-                # get rid of it now.
-                self.attrs.pop("hash", None)
 
                 return out
 
@@ -402,7 +335,7 @@ class Action(object):
                 # We pay a performance penalty to do so, but it seems worth it.
                 for k in sorted(self.attrs.keys()):
                         v = self.attrs[k]
-                        if isinstance(v, list) or isinstance(v, set):
+                        if type(v) is list:
                                 out += " " + " ".join([
                                     "%s=%s" % (k, q(lmt)) for lmt in sorted(v)
                                 ])
@@ -439,20 +372,16 @@ class Action(object):
                 """Compare actions for ordering.  The ordinality of a
                    given action is computed and stored at action
                    initialization."""
-                if not isinstance(other, Action):
-                        return NotImplemented
 
-                res = cmp(self.ord, other.ord)
-
+                res = cmp(self.ordinality, other.ordinality)
                 if res == 0:
                         return self.compare(other) # often subclassed
-
                 return res
 
         def compare(self, other):
                 return cmp(id(self), id(other))
 
-        def different(self, other):
+        def different(self, other, cmp_hash=True):
                 """Returns True if other represents a non-ignorable change from
                 self.
 
@@ -463,25 +392,35 @@ class Action(object):
 
                 # We could ignore key_attr, or possibly assert that it's the
                 # same.
-                sset = set(self.attrs.keys())
-                oset = set(other.attrs.keys())
+                sattrs = self.attrs
+                oattrs = other.attrs
+                sset = set(sattrs.iterkeys())
+                oset = set(oattrs.iterkeys())
                 if sset.symmetric_difference(oset):
                         return True
 
-                for a in self.attrs:
-                        x = self.attrs[a]
-                        y = other.attrs[a]
-                        if isinstance(x, list) and \
-                            isinstance(y, list):
-                                if sorted(x) != sorted(y):
+                for a, x in sattrs.iteritems():
+                        y = oattrs[a]
+                        if x != y:
+                                if len(x) == len(y) and \
+                                    type(x) is list and type(y) is list:
+                                        if sorted(x) != sorted(y):
+                                                return True
+                                else:
                                         return True
-                        elif x != y:
-                                return True
 
-                if hasattr(self, "hash"):
-                        assert(hasattr(other, "hash"))
-                        if self.hash != other.hash:
-                                return True
+                if cmp_hash:
+                        shash = ohash = None
+                        try:
+                                shash = self.hash
+                                ohash = other.hash
+                                if shash != other.hash:
+                                        return True
+                        except AttributeError:
+                                if shash or ohash:
+                                        raise AssertionError("attempt to "
+                                            "compare a %s action to a %s "
+                                            "action") % (self.name, other.name)
 
                 return False
 
@@ -655,15 +594,12 @@ class Action(object):
                 """Return the names of any facet or variant tags in this
                 action."""
 
-                variants = []
-                facets = []
-
-                for k in self.attrs.iterkeys():
-                        if k[:8] == "variant.":
-                                variants.append(k)
-                        if k[:6] == "facet.":
-                                facets.append(k)
-                return variants, facets
+                # Hot path; grab reference to attrs and use list comprehensions
+                # to construct the results.  This is faster than iterating over
+                # attrs once and appending to two lists separately.
+                attrs = self.attrs
+                return [k for k in attrs if k[:8] == "variant."], \
+                    [k for k in attrs if k[:6] == "facet."]
 
         def get_variant_template(self):
                 """Return the VariantCombinationTemplate that the variant tags
@@ -953,11 +889,13 @@ class Action(object):
 
         def attrlist(self, name):
                 """return list containing value of named attribute."""
-                value = self.attrs.get(name, [])
-                if isinstance(value, list):
-                        return value
-                else:
-                        return [ value ]
+                try:
+                        value = self.attrs[name]
+                except KeyError:
+                        return [] 
+                if type(value) is not list:
+                        return [value]
+                return value
 
         def directory_references(self):
                 """Returns references to paths in action."""
@@ -1096,9 +1034,8 @@ class Action(object):
                 errors = []
                 for attr in self.attrs:
                         if ((attr.startswith("facet.") or
-                            attr.startswith("variant.") or
                             attr == "reboot-needed" or attr in single_attrs) and
-                            isinstance(self.attrs[attr], list)):
+                            type(self.attrs[attr]) is list):
                                 errors.append((attr, _("%s may only be "
                                     "specified once") % attr))
                         elif attr in numeric_attrs:
@@ -1163,3 +1100,5 @@ class Action(object):
                     "try again.") % locals()
                 raise apx.ActionExecutionError(self, details=err_txt,
                     fmri=fmri)
+
+Action.__init__ = types.MethodType(_common._generic_init, None, Action)

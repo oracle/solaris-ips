@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2008, 2011, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2008, 2012, Oracle and/or its affiliates. All rights reserved.
 #
 
 import testutils
@@ -131,6 +131,17 @@ Incorrect attribute list.
                 action.fromstr("file 12345 name=\"foo\"  value=bar path=/tmp/foo")
 
                 action.fromstr("signature 12345 algorithm=foo")
+
+                # For convenience, we allow set actions to be expressed as
+                # "<name>=<value>", rather than "name=<name> value=<value>", but
+                # we always convert to the latter.  Verify that both forms are
+                # parsed as expected.
+                a = action.fromstr("set pkg.obsolete=true")
+                a2 = action.fromstr("set name=pkg.obsolete value=true")
+                self.assertEqual(str(a), str(a2))
+                self.assertAttributes(a, ["name", "value"])
+                self.assertAttributeValue(a, "name", "pkg.obsolete")
+                self.assertAttributeValue(a, "value", "true")
 
                 # Single quoted value
                 a = action.fromstr("file 12345 name='foo' value=bar path=/tmp/foo")
@@ -347,9 +358,12 @@ Incorrect attribute list.
                 # Unknown action type
                 self.assertRaises(action.UnknownActionError, action.fromstr,
                     "moop bar=baz")
+                self.assertRaises(action.UnknownActionError, action.fromstr,
+                    "setbar=baz quux=quark")
 
-                # Nothing but the action type
+                # Nothing but the action type or type is malformed.
                 self.assertMalformed("moop")
+                self.assertMalformed("setbar=baz")
 
                 # Bad quoting: missing close quote
                 self.assertMalformed("file 12345 path=/tmp/foo name=\"foo bar")
@@ -457,7 +471,7 @@ Incorrect attribute list.
                 # Verify multiple values for file attributes are rejected.
                 for attr in ("pkg.size", "pkg.csize", "chash", "preserve",
                     "overlay", "elfhash", "original_name", "facet.doc",
-                    "variant.count", "owner", "group"):
+                    "owner", "group"):
                         nact = "file path=/usr/bin/foo owner=root group=root " \
                             "mode=0555 %(attr)s=1 %(attr)s=2 %(attr)s=3" % {
                             "attr": attr }

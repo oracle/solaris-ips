@@ -19,7 +19,7 @@
 #
 # CDDL HEADER END
 #
-# Copyright (c) 2008, 2011, Oracle and/or its affiliates.  All rights reserved.
+# Copyright (c) 2008, 2012, Oracle and/or its affiliates. All rights reserved.
 #
 
 import errno
@@ -422,6 +422,12 @@ arch_srcs = [
 _actions_srcs = [
         'modules/actions/_actions.c'
         ]
+_actcomm_srcs = [
+        'modules/actions/_common.c'
+        ]
+_varcet_srcs = [
+        'modules/_varcet.c'
+        ]
 solver_srcs = [
         'modules/solver/solver.c',
         'modules/solver/py_solver.c'
@@ -516,6 +522,14 @@ class clint_func(Command):
                             ["%s%s" % ("-I", k) for k in include_dirs] + \
                             ['-I' + self.escape(get_python_inc())] + \
                             _actions_srcs
+                        _actcommcmd = ['lint'] + lint_flags + \
+                            ["%s%s" % ("-I", k) for k in include_dirs] + \
+                            ['-I' + self.escape(get_python_inc())] + \
+                            _actcomm_srcs
+                        _varcetcmd = ['lint'] + lint_flags + \
+                            ["%s%s" % ("-I", k) for k in include_dirs] + \
+                            ['-I' + self.escape(get_python_inc())] + \
+                            _varcet_srcs
                         pspawncmd = ['lint'] + lint_flags + ['-D_FILE_OFFSET_BITS=64'] + \
                             ["%s%s" % ("-I", k) for k in include_dirs] + \
                             ['-I' + self.escape(get_python_inc())] + \
@@ -531,6 +545,10 @@ class clint_func(Command):
                         os.system(" ".join(elfcmd))
                         print(" ".join(_actionscmd))
                         os.system(" ".join(_actionscmd))
+                        print(" ".join(_actcommcmd))
+                        os.system(" ".join(_actcommcmd))
+                        print(" ".join(_varcetcmd))
+                        os.system(" ".join(_varcetcmd))
                         print(" ".join(pspawncmd))
                         os.system(" ".join(pspawncmd))
                         print(" ".join(syscallatcmd))
@@ -1158,6 +1176,20 @@ ext_modules = [
         Extension(
                 'actions._actions',
                 _actions_srcs,
+                include_dirs = include_dirs,
+                extra_compile_args = compile_args,
+                extra_link_args = link_args
+                ),
+        Extension(
+                'actions._common',
+                _actcomm_srcs,
+                include_dirs = include_dirs,
+                extra_compile_args = compile_args,
+                extra_link_args = link_args
+                ),
+        Extension(
+                '_varcet',
+                _varcet_srcs,
                 include_dirs = include_dirs,
                 extra_compile_args = compile_args,
                 extra_link_args = link_args

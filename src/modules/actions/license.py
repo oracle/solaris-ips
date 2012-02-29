@@ -54,6 +54,7 @@ class LicenseAction(generic.Action):
         reverse_indices = ("license", )
         refcountable = True
         globally_identical = True
+        ordinality = generic._orderdict[name]
 
         has_payload = True
 

@@ -36,6 +36,7 @@ import pkg.solver
 import pkg.version           as version
 
 from collections import defaultdict
+from itertools import chain
 from pkg.client.debugvalues import DebugValues
 from pkg.misc import EmptyI, EmptyDict, N_
 
@@ -96,9 +97,9 @@ class PkgSolver(object):
                 self.__req_pkg_names = set()    # package names that must be
                                                 # present in solution by spec.
                 for f in self.__installed_fmris: # record only sticky pubs
-                        pub = f.get_publisher()
+                        pub = f.publisher
                         if self.__pub_ranks[pub][1]:
-                                self.__publisher[f.pkg_name] = f.get_publisher()
+                                self.__publisher[f.pkg_name] = pub
 
                 self.__id2fmri = {} 		# map ids -> fmris
                 self.__fmri2id = {} 		# and reverse
@@ -114,6 +115,7 @@ class PkgSolver(object):
                 self.__variants = variants      # variants supported by image
 
                 self.__cache = {}
+                self.__depcache = {}
                 self.__trimdone = False         # indicate we're finished
                                                 # trimming
                 self.__fmri_state = {}          # cache of obsolete, renamed
@@ -125,7 +127,6 @@ class PkgSolver(object):
                 self.__variables   = 0
                 self.__timings = []
                 self.__start_time = 0
-                self.__dep_dict = {}
                 self.__inc_list = []
                 self.__dependents = None
                 self.__root_fmris = None        # set of fmris installed in root image;
@@ -196,10 +197,10 @@ class PkgSolver(object):
                 self.__variant_dict = None
                 self.__variants = None
                 self.__cache = None
+                self.__depcache = None
                 self.__trimdone = None
                 self.__fmri_state = None
                 self.__start_time = None
-                self.__dep_dict = None
                 self.__dependents = None
                 self.__fmridict = {}
 
@@ -293,7 +294,7 @@ class PkgSolver(object):
                                 self.__mark_pub_trimmed(name)
                         else:
                                 self.__publisher[name] = \
-                                    proposed_dict[name][0].get_publisher()
+                                    proposed_dict[name][0].publisher
 
                 self.__removal_fmris |= set([
                     self.__installed_dict[name]
@@ -990,29 +991,120 @@ class PkgSolver(object):
                 """Returns tuple of set of fmris that are matched within
                 CONSTRAINT.NONE of specified version and set of remaining
                 fmris."""
-                return self.__comb_common(fmri, dotrim,
-                    version.CONSTRAINT_NONE, obsolete_ok)
+
+                if dotrim or not obsolete_ok or not fmri.version or \
+                    not fmri.version.timestr:
+                        return self.__comb_common(fmri, dotrim,
+                            version.CONSTRAINT_NONE, obsolete_ok)
+
+                # In the case that a precise version (down to timestamp) is
+                # provided, no trimming is being done, and obsoletes are ok, the
+                # set of matching FMRIs can be determined without using version
+                # comparison because the solver caches catalog FMRIs in
+                # ascending version order.
+
+                # determine if the data is cacheable or cached:
+                tp = (fmri, dotrim, version.CONSTRAINT_NONE, obsolete_ok)
+                try:
+                        return self.__cache[tp]
+                except KeyError:
+                        pass
+
+                mver = fmri.version
+                all_fmris = self.__get_catalog_fmris(fmri.pkg_name)
+                all_fmris.reverse()
+
+                # frozensets are used so callers don't inadvertently
+                # update these sets (which may be cached).  Iteration is
+                # performed in descending version order with the
+                # assumption that systems are generally up-to-date so it
+                # should be faster to start at the end and look for the
+                # older version.
+                last_ver = None
+                for i, f in enumerate(all_fmris):
+                        if mver == f.version:
+                                last_ver = i
+                                continue
+                        elif last_ver is not None:
+                                break
+
+                if last_ver is not None:
+                        matching = frozenset(all_fmris[:last_ver + 1])
+                        remaining = frozenset(all_fmris[last_ver + 1:])
+                else:
+                        matching = frozenset()
+                        remaining = frozenset(all_fmris)
+
+                # if we haven't finished trimming, don't cache this
+                if not self.__trimdone:
+                        return matching, remaining
+
+                # cache the result
+                self.__cache[tp] = (matching, remaining)
+                return self.__cache[tp]
 
         def __comb_common(self, fmri, dotrim, constraint, obsolete_ok):
                 """Underlying impl. of other comb routines"""
+
                 tp = (fmri, dotrim, constraint, obsolete_ok) # cache index
                 # determine if the data is cacheable or cached:
                 if (not self.__trimdone and dotrim) or tp not in self.__cache:
-
                         # use frozensets so callers don't inadvertently update
                         # these sets (which may be cached).
-                        all_fmris = set(self.__get_catalog_fmris(fmri.pkg_name))
-                        matching = frozenset([
-                            f
-                            for f in all_fmris
-                            if f not in self.__trim_dict or not dotrim
-                            if not fmri.version or
-                                fmri.version == f.version or
-                                f.version.is_successor(fmri.version,
-                                    constraint=constraint)
-                            if obsolete_ok or not self.__fmri_is_obsolete(f)
-                        ])
-                        remaining = frozenset(all_fmris - matching)
+                        all_fmris = self.__get_catalog_fmris(fmri.pkg_name)
+                        mver = fmri.version
+                        if not mver:
+                                matching = frozenset((
+                                    f
+                                    for f in all_fmris
+                                    if not dotrim or f not in self.__trim_dict
+                                    if obsolete_ok or not self.__fmri_is_obsolete(f)
+                                ))
+                                remaining = frozenset(set(all_fmris) - matching)
+                        else:
+                                all_fmris.reverse()
+
+                                # Iteration is performed in descending version
+                                # order with the assumption that systems are
+                                # generally up-to-date so it should be faster to
+                                # start at the end and look for the oldest
+                                # version that matches.
+                                first_ver = None
+                                last_ver = None
+                                for i, f in enumerate(all_fmris):
+                                        fver = f.version
+                                        if (fver.is_successor(mver,
+                                            constraint=constraint) or \
+                                                fver == mver):
+                                                if first_ver is None:
+                                                        first_ver = i
+                                                last_ver = i
+                                        elif last_ver is not None:
+                                                break
+
+                                if last_ver is not None:
+                                        # Oddly enough, it's a little bit faster
+                                        # to iterate through the slice of
+                                        # all_fmris again and store matches here
+                                        # instead of above.  Perhaps variable
+                                        # scoping overhead is to blame?
+                                        matching = []
+                                        remaining = []
+                                        for f in all_fmris[first_ver:last_ver + 1]:
+                                                if ((not dotrim or
+                                                    f not in self.__trim_dict) and
+                                                    (obsolete_ok or not
+                                                        self.__fmri_is_obsolete(f))):
+                                                        matching.append(f)
+                                                else:
+                                                        remaining.append(f)
+                                        matching = frozenset(matching)
+                                        remaining = frozenset(chain(remaining,
+                                            all_fmris[:first_ver],
+                                            all_fmris[last_ver + 1:]))
+                                else:
+                                        matching = frozenset()
+                                        remaining = frozenset(all_fmris)
 
                         # if we haven't finished trimming, don't cache this
                         if not self.__trimdone:
@@ -1032,7 +1124,7 @@ class PkgSolver(object):
                 else:
                         # we're going to return the older packages, so we need
                         # to make sure that any trimmed packages are removed
-                        # from the matching set and added to the nom-matching
+                        # from the matching set and added to the non-matching
                         # ones.
                         trimmed_older = set([
                                 f
@@ -1086,13 +1178,18 @@ class PkgSolver(object):
                 """Return list of all dependency actions for this fmri"""
 
                 try:
-                        return [
+                        return self.__depcache[fmri]
+                except KeyError:
+                        pass
+
+                try:
+                        self.__depcache[fmri] = [
                             a
                             for a in self.__catalog.get_entry_actions(fmri,
                             [catalog.Catalog.DEPENDENCY], excludes=excludes)
                             if a.name == "depend"
                         ]
-
+                        return self.__depcache[fmri]
                 except api_errors.InvalidPackageErrors:
                         if trim_invalid:
                                 # Trim package entries that have unparseable
@@ -1831,7 +1928,7 @@ class PkgSolver(object):
                 else:
                         # order by pub_rank; choose highest possible tier for
                         # pkgs; guard against unconfigured publishers in known catalog
-                        pubs_found = list(set([f.get_publisher() for f in fmri_list]))
+                        pubs_found = set((f.publisher for f in fmri_list))
                         ranked = sorted([
                                         (self.__pub_ranks[p][0], p)
                                         for p in pubs_found
@@ -1846,27 +1943,19 @@ class PkgSolver(object):
                         else:
                                 reason = N_("Package publisher is ranked lower in search order")
 
-                # generate a dictionary, indexed by version, of acceptable fmris
-                for f in fmri_list:
-                        if f.get_publisher() in acceptable_pubs:
-                                version_dict.setdefault(f.version, []).append(f)
-
                 # allow installed packages to co-exist to meet dependency reqs.
                 # in case new publisher not proper superset of original.
                 # avoid multiple publishers w/ the exact same fmri to prevent
                 # thrashing in the solver due to many equiv. solutions.
-
-                inst_f = self.__installed_dict.get(pkg_name, None)
-
-                if inst_f:
-                        version_dict[inst_f.version] = [inst_f]
-
-                acceptable_list = []
-                for l in version_dict.values():
-                        acceptable_list.extend(l)
-
-                for f in set(fmri_list) - set(acceptable_list):
-                        self.__trim(f, reason)
+                inst_f = self.__installed_dict.get(pkg_name)
+                self.__trim((
+                    f
+                    for f in fmri_list
+                    if (f.publisher not in acceptable_pubs and
+                            (not inst_f or f != inst_f)) or
+                        (inst_f and f.publisher != inst_f.publisher and
+                            f.version == inst_f.version)
+                ), reason)
 
         # routines to manage the trim dictionary
         # trim dictionary contains the reasons an fmri was rejected for consideration

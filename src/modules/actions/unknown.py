@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2008, 2011, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2008, 2012, Oracle and/or its affiliates. All rights reserved.
 #
 
 """module describing a unknown packaging object
@@ -39,3 +39,4 @@ class UnknownAction(generic.Action):
         __slots__ = []
 
         name = "unknown"
+        ordinality = generic._orderdict[name]

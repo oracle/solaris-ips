@@ -45,6 +45,7 @@ class DriverAction(generic.Action):
         name = "driver"
         key_attr = "name"
         globally_identical = True
+        ordinality = generic._orderdict[name]
 
         usr_sbin = None
         add_drv = None

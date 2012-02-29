@@ -1102,19 +1102,22 @@ class ImagePlan(object):
 
                 # Don't bother accounting for implicit directories if we're not
                 # looking for them.
-                if implicit_dirs and atype != "dir":
-                        implicit_dirs = False
-
+                if implicit_dirs:
+                        if atype != "dir":
+                                implicit_dirs = False
+                        else:
+                                da = pkg.actions.directory.DirectoryAction
+ 
                 for pfmri in generator():
                         m = self.image.get_manifest(pfmri, ignore_excludes=True)
-                        dirs = set() # Keep track of explicit dirs
+                        if implicit_dirs:
+                                dirs = set() # Keep track of explicit dirs
                         for act in m.gen_actions_by_type(atype,
                             self.__new_excludes):
                                 if implicit_dirs:
                                         dirs.add(act.attrs["path"])
                                 yield act, pfmri
                         if implicit_dirs:
-                                da = pkg.actions.directory.DirectoryAction
                                 for d in m.get_directories(self.__new_excludes):
                                         if d not in dirs:
                                                 yield da(path=d, implicit="true"), pfmri
@@ -1132,11 +1135,15 @@ class ImagePlan(object):
 
                 # Don't bother accounting for implicit directories if we're not
                 # looking for them.
-                if implicit_dirs and atype != "dir":
-                        implicit_dirs = False
+                if implicit_dirs:
+                        if atype != "dir":
+                                implicit_dirs = False
+                        else:
+                                da = pkg.actions.directory.DirectoryAction
 
                 for pfmri, m in generator():
-                        dirs = set() # Keep track of explicit dirs
+                        if implicit_dirs:
+                                dirs = set() # Keep track of explicit dirs
                         for act in m.gen_actions_by_type(atype,
                             excludes):
                                 if implicit_dirs:
@@ -1144,7 +1151,6 @@ class ImagePlan(object):
                                 yield act, pfmri
 
                         if implicit_dirs:
-                                da = pkg.actions.directory.DirectoryAction
                                 for d in m.get_directories(excludes):
                                         if d not in dirs:
                                                 yield da(path=d,
@@ -1154,15 +1160,19 @@ class ImagePlan(object):
                 """ return set of all directories in target image """
                 # always consider var and the image directory fixed in image...
                 if self.__directories == None:
-                        dirs = set([self.image.imgdir.rstrip("/"),
-                                    "var",
-                                    "var/sadm",
-                                    "var/sadm/install"])
-                        dirs.update((
+                        # It's faster to build a large set and make a small
+                        # update to it than to do the reverse.
+                        dirs = set((
                             os.path.normpath(d[0].attrs["path"])
                             for d in self.gen_new_installed_actions_bytype("dir",
                                 implicit_dirs=True)
                         ))
+                        dirs.update([
+                            self.image.imgdir.rstrip("/"),
+                            "var",
+                            "var/sadm",
+                            "var/sadm/install"
+                        ])
                         self.__directories = dirs
                 return self.__directories
 
@@ -1533,10 +1543,10 @@ class ImagePlan(object):
 
                 d = {}
                 for klass in action_classes:
+                        self.__progtrack.evaluate_progress()
                         for a, pfmri in \
                             gen_func(klass.name, implicit_dirs=True,
                             excludes=excludes):
-                                self.__progtrack.evaluate_progress()
                                 d.setdefault(a.attrs[klass.key_attr],
                                     []).append((a, pfmri))
                 return d
@@ -1706,7 +1716,7 @@ class ImagePlan(object):
                         oactions = old.get(key, [])
                         # If new actions are being installed, then we need to do
                         # the full conflict checking.
-                        if len(oactions) == 0:
+                        if not oactions:
                                 continue
 
                         unmatched_old_actions = set(range(0, len(oactions)))
@@ -1714,8 +1724,9 @@ class ImagePlan(object):
                         # If the action isn't refcountable and there's more than
                         # one action, that's an error so we let
                         # __check_conflicts handle it.
-                        if not actions[0][0].refcountable and \
-                            actions[0][0].globally_identical and \
+                        entry = actions[0][0]
+                        if not entry.refcountable and \
+                            entry.globally_identical and \
                             len(actions) > 1:
                                 continue
 
@@ -1724,16 +1735,18 @@ class ImagePlan(object):
                         next_key = False
                         for act, pfmri in actions:
                                 matched = False
+                                aname = act.name
+                                aattrs = act.attrs
                                 # Compare this action with each outgoing action.
                                 for i, (oact, opfmri) in enumerate(oactions):
-                                        if act.name != oact.name:
+                                        if aname != oact.name:
                                                 continue
                                         # Check whether all attributes which
                                         # need to be unique are identical for
                                         # these two actions.
+                                        oattrs = oact.attrs
                                         if all((
-                                            act.attrs.get(a, None) ==
-                                                oact.attrs.get(a, None)
+                                            aattrs.get(a) == oattrs.get(a)
                                             for a in act.unique_attrs
                                         )):
                                                 matched = True
@@ -1759,8 +1772,8 @@ class ImagePlan(object):
                                         if act.name != oact.name:
                                                 continue
                                         if all((
-                                            act.attrs.get(a, None) ==
-                                                oact.attrs.get(a, None)
+                                            act.attrs.get(a) ==
+                                                oact.attrs.get(a)
                                             for a in act.unique_attrs
                                         )):
                                                 matched = True
@@ -1817,8 +1830,8 @@ class ImagePlan(object):
 
                         # Multiple non-refcountable actions delivered to
                         # the same name is an error.
-                        if not actions[0][0].refcountable and \
-                            actions[0][0].globally_identical:
+                        entry = actions[0][0]
+                        if not entry.refcountable and entry.globally_identical:
                                 if self.__process_conflicts(key,
                                     self.__check_duplicate_actions,
                                     actions, oactions,
@@ -1829,7 +1842,7 @@ class ImagePlan(object):
                         # Multiple refcountable but globally unique
                         # actions delivered to the same name must be
                         # identical.
-                        elif actions[0][0].globally_identical:
+                        elif entry.globally_identical:
                                 if self.__process_conflicts(key,
                                     self.__check_inconsistent_attrs,
                                     actions, oactions,
@@ -3027,9 +3040,11 @@ class ImagePlan(object):
                 self.update_actions.extend(l_refresh)
 
                 # sort actions to match needed processing order
-                self.removal_actions.sort(key = lambda obj:obj[1], reverse=True)
-                self.update_actions.sort(key = lambda obj:obj[2])
-                self.install_actions.sort(key = lambda obj:obj[2])
+                remsort = operator.itemgetter(1)
+                addsort = operator.itemgetter(2)
+                self.removal_actions.sort(key=remsort, reverse=True)
+                self.update_actions.sort(key=addsort)
+                self.install_actions.sort(key=addsort)
 
                 # Pre-calculate size of data retrieval for preexecute().
                 npkgs = nfiles = nbytes = 0

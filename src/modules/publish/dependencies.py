@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2009, 2011, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2009, 2012, Oracle and/or its affiliates. All rights reserved.
 #
 
 import copy
@@ -267,15 +267,25 @@ def convert_to_standard_dep_actions(deps):
         """Convert pkg.base.Dependency objects to
         pkg.actions.dependency.Dependency objects."""
 
+        def norm_attrs(a):
+                """Normalize attribute values as lists instead of sets; only
+                lists are permitted for multi-value action attributes."""
+                for k, v in a.items():
+                        if isinstance(v, set):
+                                a[k] = list(v)
+
         res = []
         for d in deps:
                 tmp = []
                 for c in d.dep_vars.not_sat_set:
                         attrs = d.attrs.copy()
                         attrs.update(c)
+                        norm_attrs(attrs)
                         tmp.append(actions.depend.DependencyAction(**attrs))
                 if not tmp:
-                        tmp.append(actions.depend.DependencyAction(**d.attrs))
+                        attrs = d.attrs.copy()
+                        norm_attrs(attrs)
+                        tmp.append(actions.depend.DependencyAction(**attrs))
                 res.extend(tmp)
         return res
 

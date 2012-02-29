@@ -20,7 +20,7 @@
  */
 
 /*
- * Copyright (c) 2008, 2011, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2008, 2012, Oracle and/or its affiliates. All rights reserved.
  */
 
 #include <Python.h>
@@ -29,40 +29,47 @@
 
 static PyObject *MalformedActionError;
 static PyObject *InvalidActionError;
+static PyObject *UnknownActionError;
+static PyObject *aclass_attribute;
+static PyObject *aclass_depend;
+static PyObject *aclass_directory;
+static PyObject *aclass_driver;
+static PyObject *aclass_file;
+static PyObject *aclass_group;
+static PyObject *aclass_hardlink;
+static PyObject *aclass_legacy;
+static PyObject *aclass_license;
+static PyObject *aclass_link;
+static PyObject *aclass_signature;
+static PyObject *aclass_unknown;
+static PyObject *aclass_user;
 
-static char *notident = "hash attribute not identical to positional hash";
+static const char *notident = "hash attribute not identical to positional hash";
 
-static int
+static inline int
 add_to_attrs(PyObject *attrs, PyObject *key, PyObject *attr)
 {
-	int contains, ret;
+	int ret;
+	PyObject *list;
+	PyObject *av = PyDict_GetItem(attrs, key);
 
-	contains = PyDict_Contains(attrs, key);
-	if (contains == 0) {
+	if (av == NULL)
 		return (PyDict_SetItem(attrs, key, attr));
-	} else if (contains == 1) {
-		PyObject *av = PyDict_GetItem(attrs, key);
-		Py_INCREF(av);
-		if (PyList_Check(av)) {
-			ret = PyList_Append(av, attr);
-			Py_DECREF(av);
-			return (ret);
-		} else {
-			PyObject *list;
-			if ((list = PyList_New(2)) == NULL)
-				return (-1);
-			PyList_SET_ITEM(list, 0, av);
-			Py_INCREF(attr);
-			PyList_SET_ITEM(list, 1, attr);
-			ret = PyDict_SetItem(attrs, key, list);
-			Py_DECREF(list);
-			return (ret);
-		}
-	} else if (contains == -1)
+
+	if (PyList_CheckExact(av))
+		return (PyList_Append(av, attr));
+
+	if ((list = PyList_New(2)) == NULL)
 		return (-1);
 
-	/* Shouldn't ever get here */
-	return (0);
+	/* PyList_SET_ITEM steals references. */
+	Py_INCREF(av);
+	PyList_SET_ITEM(list, 0, av);
+	Py_INCREF(attr);
+	PyList_SET_ITEM(list, 1, attr);
+	ret = PyDict_SetItem(attrs, key, list);
+	Py_DECREF(list);
+	return (ret);
 }
 
 static void
@@ -89,28 +96,30 @@ set_invaliderr(const char *str, const char *msg)
 
 /*ARGSUSED*/
 static PyObject *
-_fromstr(PyObject *self, PyObject *args)
+fromstr(PyObject *self, PyObject *args, PyObject *kwdict)
 {
 	char *s = NULL;
 	char *str = NULL;
 	char *hashstr = NULL;
 	char *keystr = NULL;
 	int *slashmap = NULL;
-	int strl;
+	int strl, typestrl;
 	int i, ks, vs, keysize;
 	int smlen, smpos;
 	char quote;
-	PyObject *type = NULL;
+	PyObject *act_args = NULL;
+	PyObject *act_class = NULL;
+	PyObject *act_data = NULL;
+	PyObject *action = NULL;
 	PyObject *hash = NULL;
 	PyObject *attrs = NULL;
-	PyObject *ret = NULL;
 	PyObject *key = NULL;
 	PyObject *attr = NULL;
 	enum {
-		KEY,    /* key            */
-		UQVAL,  /* unquoted value */
-		QVAL,   /* quoted value   */
-		WS      /* whitespace     */
+		KEY,	/* key			*/
+		UQVAL,	/* unquoted value	*/
+		QVAL,	/* quoted value		*/
+		WS	/* whitespace		*/
 	} state;
 
 	/*
@@ -119,16 +128,25 @@ _fromstr(PyObject *self, PyObject *args)
 	 * malformed() or invalid().  Failure to order this properly will cause
 	 * corruption of the exception messages.
 	 */
-#define malformed(msg) set_malformederr(str, i, (msg))
-#define invalid(msg) set_invaliderr(str, (msg))
-#define CLEANUP_REFS \
+#define	malformed(msg) set_malformederr(str, i, (msg))
+#define	invalid(msg) set_invaliderr(str, (msg))
+#define	CLEANUP_REFS \
 	PyMem_Free(str);\
 	Py_XDECREF(key);\
-	Py_XDECREF(type);\
 	Py_XDECREF(attr);\
 	Py_XDECREF(attrs);\
 	Py_XDECREF(hash);\
 	free(hashstr);
+
+	/*
+	 * Positional arguments must be included in the keyword argument list in
+	 * the order you want them to be assigned.  (A subtle point missing from
+	 * the Python documentation.)
+	 */
+	static char *kwlist[] = { "string", "data", NULL };
+
+	/* Assume data=None by default. */
+	act_data = Py_None;
 
 	/*
 	 * The action string is currently assumed to be a stream of bytes that
@@ -136,8 +154,8 @@ _fromstr(PyObject *self, PyObject *args)
 	 * object provided is a Unicode object, string object, or a character
 	 * buffer.
 	 */
-	if (PyArg_ParseTuple(args, "et#", "utf-8", &str, &strl) == 0) {
-		PyErr_SetString(PyExc_ValueError, "could not parse argument");
+	if (PyArg_ParseTupleAndKeywords(args, kwdict, "et#|O:fromstr", kwlist,
+	    "utf-8", &str, &strl, &act_data) == 0) {
 		return (NULL);
 	}
 
@@ -150,18 +168,70 @@ _fromstr(PyObject *self, PyObject *args)
 		return (NULL);
 	}
 
-	if ((type = PyString_FromStringAndSize(str, s - str)) == NULL) {
+	/*
+	 * The comparisons here are ordered by frequency in which actions are
+	 * most likely to be encountered in usage by the client grouped by
+	 * length.  Yes, a cheap hack to squeeze a tiny bit of additional
+	 * performance out.
+	 */
+	typestrl = s - str;
+	if (typestrl == 4) {
+		if (strncmp(str, "file", 4) == 0)
+			act_class = aclass_file;
+		else if (strncmp(str, "link", 4) == 0)
+			act_class = aclass_link;
+		else if (strncmp(str, "user", 4) == 0)
+			act_class = aclass_user;
+	} else if (typestrl == 6) {
+		if (strncmp(str, "depend", 6) == 0)
+			act_class = aclass_depend;
+		else if (strncmp(str, "driver", 6) == 0)
+			act_class = aclass_driver;
+		else if (strncmp(str, "legacy", 6) == 0)
+			act_class = aclass_legacy;
+	} else if (typestrl == 3) {
+		if (strncmp(str, "set", 3) == 0)
+			act_class = aclass_attribute;
+		else if (strncmp(str, "dir", 3) == 0)
+			act_class = aclass_directory;
+	} else if (typestrl == 8) {
+		if (strncmp(str, "hardlink", 8) == 0)
+			act_class = aclass_hardlink;
+	} else if (typestrl == 7) {
+		if (strncmp(str, "license", 7) == 0)
+			act_class = aclass_license;
+		else if (strncmp(str, "unknown", 7) == 0)
+			act_class = aclass_unknown;
+	} else if (typestrl == 9) {
+		if (strncmp(str, "signature", 9) == 0)
+			act_class = aclass_signature;
+	} else if (typestrl == 5) {
+		if (strncmp(str, "group", 5) == 0)
+			act_class = aclass_group;
+	}
+
+	if (act_class == NULL) {
+		if ((act_args = Py_BuildValue("s#s#", str, strl,
+		    str, typestrl)) != NULL) {
+			PyErr_SetObject(UnknownActionError, act_args);
+			Py_DECREF(act_args);
+			PyMem_Free(str);
+			return (NULL);
+		}
+
+		/*
+		 * Unable to build argument list for exception; so raise
+		 * general type exception instead.
+		 */
+		PyErr_SetString(PyExc_TypeError, "unknown action type");
 		PyMem_Free(str);
 		return (NULL);
 	}
 
-	PyString_InternInPlace(&type);
-
-	ks = vs = s - str;
+	ks = vs = typestrl;
 	state = WS;
 	if ((attrs = PyDict_New()) == NULL) {
 		PyMem_Free(str);
-		Py_DECREF(type);
 		return (NULL);
 	}
 	for (i = s - str; str[i]; i++) {
@@ -174,10 +244,9 @@ _fromstr(PyObject *self, PyObject *args)
 					malformed("whitespace in key");
 					CLEANUP_REFS;
 					return (NULL);
-				}
-				else {
+				} else {
 					if ((hash = PyString_FromStringAndSize(
-						keystr, keysize)) == NULL) {
+					    keystr, keysize)) == NULL) {
 						CLEANUP_REFS;
 						return (NULL);
 					}
@@ -186,13 +255,13 @@ _fromstr(PyObject *self, PyObject *args)
 				}
 			} else if (str[i] == '=') {
 				if ((key = PyString_FromStringAndSize(
-					keystr, keysize)) == NULL) {
+				    keystr, keysize)) == NULL) {
 					CLEANUP_REFS;
 					return (NULL);
 				}
 
 				if (keysize == 4 && strncmp(keystr, "data",
-					keysize) == 0) {
+				    keysize) == 0) {
 					invalid("invalid key: 'data'");
 					CLEANUP_REFS;
 					return (NULL);
@@ -208,8 +277,7 @@ _fromstr(PyObject *self, PyObject *args)
 					malformed("impossible: missing key");
 					CLEANUP_REFS;
 					return (NULL);
-				}
-				else if (++i == strl) {
+				} else if (++i == strl) {
 					malformed("missing value");
 					CLEANUP_REFS;
 					return (NULL);
@@ -222,8 +290,7 @@ _fromstr(PyObject *self, PyObject *args)
 					malformed("missing value");
 					CLEANUP_REFS;
 					return (NULL);
-				}
-				else {
+				} else {
 					state = UQVAL;
 					vs = i;
 				}
@@ -243,7 +310,7 @@ _fromstr(PyObject *self, PyObject *args)
 				 */
 				if (slashmap == NULL) {
 					smlen = 16;
-					slashmap = calloc(smlen, sizeof(int));
+					slashmap = calloc(smlen, sizeof (int));
 					if (slashmap == NULL) {
 						PyMem_Free(str);
 						return (PyErr_NoMemory());
@@ -258,7 +325,7 @@ _fromstr(PyObject *self, PyObject *args)
 				} else if (smpos == smlen - 1) {
 					smlen *= 2;
 					slashmap = realloc(slashmap,
-						smlen * sizeof(int));
+					    smlen * sizeof (int));
 					if (slashmap == NULL) {
 						PyMem_Free(str);
 						return (PyErr_NoMemory());
@@ -304,7 +371,7 @@ _fromstr(PyObject *self, PyObject *args)
 					slashmap = NULL;
 
 					if ((attr = PyString_FromStringAndSize(
-						sattr, attrlen - o)) == NULL) {
+					    sattr, attrlen - o)) == NULL) {
 						free(sattr);
 						CLEANUP_REFS;
 						return (NULL);
@@ -319,7 +386,7 @@ _fromstr(PyObject *self, PyObject *args)
 					}
 				}
 
-				if (!strncmp(keystr, "hash=", 5)) {
+				if (strncmp(keystr, "hash=", 5) == 0) {
 					char *as = PyString_AsString(attr);
 					if (hashstr && strcmp(as, hashstr)) {
 						invalid(notident);
@@ -330,7 +397,8 @@ _fromstr(PyObject *self, PyObject *args)
 					attr = NULL;
 				} else {
 					PyString_InternInPlace(&attr);
-					if (add_to_attrs(attrs, key, attr) == -1) {
+					if (add_to_attrs(attrs, key,
+					    attr) == -1) {
 						CLEANUP_REFS;
 						return (NULL);
 					}
@@ -340,8 +408,9 @@ _fromstr(PyObject *self, PyObject *args)
 			if (str[i] == ' ' || str[i] == '\t') {
 				state = WS;
 				Py_XDECREF(attr);
-				attr = PyString_FromStringAndSize(&str[vs], i - vs);
-				if (!strncmp(keystr, "hash=", 5)) {
+				attr = PyString_FromStringAndSize(&str[vs],
+				    i - vs);
+				if (strncmp(keystr, "hash=", 5) == 0) {
 					char *as = PyString_AsString(attr);
 					if (hashstr && strcmp(as, hashstr)) {
 						invalid(notident);
@@ -352,7 +421,8 @@ _fromstr(PyObject *self, PyObject *args)
 					attr = NULL;
 				} else {
 					PyString_InternInPlace(&attr);
-					if (add_to_attrs(attrs, key, attr) == -1) {
+					if (add_to_attrs(attrs, key,
+					    attr) == -1) {
 						CLEANUP_REFS;
 						return (NULL);
 					}
@@ -371,24 +441,14 @@ _fromstr(PyObject *self, PyObject *args)
 		}
 	}
 
-	if (state == QVAL) {
-		if (slashmap != NULL)
-			free(slashmap);
-
-		malformed("unfinished quoted value");
-		CLEANUP_REFS;
-		return (NULL);
-	}
-	if (state == KEY) {
-		malformed("missing value");
-		CLEANUP_REFS;
-		return (NULL);
-	}
-
+	/*
+	 * UQVAL is the most frequently encountered end-state, so check that
+	 * first to avoid unnecessary state comparisons.
+	 */
 	if (state == UQVAL) {
 		Py_XDECREF(attr);
 		attr = PyString_FromStringAndSize(&str[vs], i - vs);
-		if (!strncmp(keystr, "hash=", 5)) {
+		if (strncmp(keystr, "hash=", 5) == 0) {
 			char *as = PyString_AsString(attr);
 			if (hashstr && strcmp(as, hashstr)) {
 				invalid(notident);
@@ -404,33 +464,77 @@ _fromstr(PyObject *self, PyObject *args)
 				return (NULL);
 			}
 		}
+	} else if (state == QVAL) {
+		if (slashmap != NULL)
+			free(slashmap);
+
+		malformed("unfinished quoted value");
+		CLEANUP_REFS;
+		return (NULL);
+	} else if (state == KEY) {
+		malformed("missing value");
+		CLEANUP_REFS;
+		return (NULL);
 	}
 
 	PyMem_Free(str);
-	if (hash == NULL)
-		hash = Py_None;
-
-	ret = Py_BuildValue("OOO", type, hash, attrs);
 	Py_XDECREF(key);
 	Py_XDECREF(attr);
-	Py_DECREF(type);
+
+	/*
+	 * Action parsing is done; now build the list of arguments to construct
+	 * the object for it.
+	 */
+	if ((act_args = Py_BuildValue("(O)", act_data)) == NULL) {
+		if (hash != NULL && hash != Py_None)
+			Py_DECREF(hash);
+		Py_DECREF(attrs);
+		return (NULL);
+	}
+
+	/*
+	 * Using the cached action class assigned earlier based on the type,
+	 * call the action constructor, set the hash attribute, and then return
+	 * the new action object.
+	 */
+	action = PyObject_Call(act_class, act_args, attrs);
+	Py_DECREF(act_args);
 	Py_DECREF(attrs);
-	if (hash != Py_None)
+	if (action == NULL) {
+		if (hash != NULL && hash != Py_None)
+			Py_DECREF(hash);
+		return (NULL);
+	}
+
+	if (hash != NULL && hash != Py_None) {
+		if (PyObject_SetAttrString(action, "hash", hash) == -1) {
+			Py_DECREF(hash);
+			Py_DECREF(action);
+			return (NULL);
+		}
 		Py_DECREF(hash);
-	return (ret);
+	}
+
+	return (action);
 }
 
 static PyMethodDef methods[] = {
-	{ "_fromstr", _fromstr, METH_VARARGS },
-	{ NULL, NULL }
+	{ "fromstr", (PyCFunction)fromstr, METH_VARARGS | METH_KEYWORDS },
+	{ NULL, NULL, 0, NULL }
 };
 
 PyMODINIT_FUNC
 init_actions(void)
 {
-	PyObject *sys, *pkg_actions;
-	PyObject *sys_modules;
+	PyObject *action_types = NULL;
+	PyObject *pkg_actions = NULL;
+	PyObject *sys = NULL;
+	PyObject *sys_modules = NULL;
 
+	/*
+	 * Note that module initialization functions are void and may not return
+	 * a value.  However, they should set an exception if appropriate.
+	 */
 	if (Py_InitModule("_actions", methods) == NULL)
 		return;
 
@@ -449,14 +553,68 @@ init_actions(void)
 		return;
 
 	if ((pkg_actions = PyDict_GetItemString(sys_modules, "pkg.actions"))
-		== NULL) {
+	    == NULL) {
 		/* No exception is set */
 		PyErr_SetString(PyExc_KeyError, "pkg.actions");
+		Py_DECREF(sys_modules);
+		return;
+	}
+	Py_DECREF(sys_modules);
+
+	/*
+	 * Each reference is DECREF'd after retrieval as Python 2.x doesn't
+	 * provide a module shutdown/cleanup hook.  Since these references are
+	 * guaranteed to stay around until the module is unloaded, DECREF'ing
+	 * them now ensures that garbage cleanup will work as expected during
+	 * process exit.  This applies to the action type caching below as well.
+	 */
+	MalformedActionError = \
+	    PyObject_GetAttrString(pkg_actions, "MalformedActionError");
+	Py_DECREF(MalformedActionError);
+	InvalidActionError = \
+	    PyObject_GetAttrString(pkg_actions, "InvalidActionError");
+	Py_DECREF(InvalidActionError);
+	UnknownActionError = \
+	    PyObject_GetAttrString(pkg_actions, "UnknownActionError");
+	Py_DECREF(UnknownActionError);
+
+	/*
+	 * Retrieve the list of action types and then store a reference to each
+	 * class for use during action construction.  (This allows avoiding the
+	 * overhead of retrieving a new reference for each action constructed.)
+	 */
+	if ((action_types = PyObject_GetAttrString(pkg_actions,
+	    "types")) == NULL) {
+		PyErr_SetString(PyExc_KeyError, "pkg.actions.types missing!");
 		return;
 	}
 
-	MalformedActionError = \
-		PyObject_GetAttrString(pkg_actions, "MalformedActionError");
-	InvalidActionError = \
-		PyObject_GetAttrString(pkg_actions, "InvalidActionError");
+	/*
+	 * cache_class borrows the references to the action type objects; this
+	 * is safe as they should remain valid as long as the module is loaded.
+	 * (PyDict_GetItem* doesn't return a new reference.)
+	 */
+#define	cache_class(cache_var, name) \
+	if ((cache_var = PyDict_GetItemString(action_types, name)) == NULL) { \
+		PyErr_SetString(PyExc_KeyError, \
+		    "Action type class missing: " name); \
+		Py_DECREF(action_types); \
+		return; \
+	}
+
+	cache_class(aclass_attribute, "set");
+	cache_class(aclass_depend, "depend");
+	cache_class(aclass_directory, "dir");
+	cache_class(aclass_driver, "driver");
+	cache_class(aclass_file, "file");
+	cache_class(aclass_group, "group");
+	cache_class(aclass_hardlink, "hardlink");
+	cache_class(aclass_legacy, "legacy");
+	cache_class(aclass_license, "license");
+	cache_class(aclass_link, "link");
+	cache_class(aclass_signature, "signature");
+	cache_class(aclass_unknown, "unknown");
+	cache_class(aclass_user, "user");
+
+	Py_DECREF(action_types);
 }

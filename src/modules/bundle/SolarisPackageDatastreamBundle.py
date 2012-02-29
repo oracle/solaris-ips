@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2007, 2011, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2007, 2012, Oracle and/or its affiliates. All rights reserved.
 #
 
 import os
@@ -166,7 +166,7 @@ class SolarisPackageDatastreamBundle(SolarisPackageDirBundle):
                         act = hardlink.HardLinkAction(path=mapline.pathname,
                             target=mapline.target)
                 elif mapline.type == "i" and mapline.pathname == "copyright":
-                        act = license.LicenseAction(data=ci.extractfile(),
+                        act = license.LicenseAction(ci.extractfile(),
                             license="%s.copyright" % self.pkgname)
                         act.hash = "install/copyright"
                 elif mapline.type == "i":

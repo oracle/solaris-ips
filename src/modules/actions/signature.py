@@ -45,6 +45,7 @@ class SignatureAction(generic.Action):
 
         name = "signature"
         key_attr = "value"
+        ordinality = generic._orderdict[name]
 
         def __init__(self, data, **attrs):
                 generic.Action.__init__(self, data, **attrs)

@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2007, 2011, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2007, 2012, Oracle and/or its affiliates. All rights reserved.
 #
 
 import os
@@ -281,7 +281,7 @@ class SolarisPackageDirBundle(pkg.bundle.Bundle):
                                 name = name.replace("_", "-")
                                 legacy_attrs[name] = pkginfo[key]
 
-                actions.append(LegacyAction(data=None, **legacy_attrs))
+                actions.append(LegacyAction(**legacy_attrs))
 
                 if "DESC" in pkginfo:
                         actions.append(AttributeAction(name="pkg.description",

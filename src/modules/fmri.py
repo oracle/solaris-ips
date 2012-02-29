@@ -114,37 +114,45 @@ class PkgFmri(object):
 
         __slots__ = ["version", "publisher", "pkg_name", "_hash", "__weakref__"]
 
-        def __init__(self, fmri, build_release=None, publisher=None):
-                fmri = fmri.rstrip()
+        def __init__(self, fmri=None, build_release=None, publisher=None,
+            name=None, version=None):
+                if fmri is not None:
+                        fmri = fmri.rstrip()
 
-                veridx, nameidx, pubidx = PkgFmri._gen_fmri_indexes(fmri)
+                        veridx, nameidx, pubidx = \
+                            PkgFmri._gen_fmri_indexes(fmri)
 
-                if veridx != None:
-                        try:
-                                self.version = Version(fmri[veridx + 1:],
-                                    build_release)
-                        except VersionError, iv:
-                                raise IllegalFmri(fmri, IllegalFmri.BAD_VERSION,
-                                    nested_exc=iv)
+                        if pubidx != None:
+                                # Always use publisher information provided in
+                                # FMRI string.  (It could be ""; pkg:///name is
+                                # valid.)
+                                publisher = fmri[pubidx:nameidx - 1]
 
+                        if veridx != None:
+                                self.pkg_name = fmri[nameidx:veridx]
+                                try:
+                                        self.version = Version(
+                                            fmri[veridx + 1:], build_release)
+                                except VersionError, iv:
+                                        raise IllegalFmri(fmri,
+                                            IllegalFmri.BAD_VERSION,
+                                            nested_exc=iv)
+                        else:
+                                self.pkg_name = fmri[nameidx:]
+                                self.version = None
                 else:
-                        self.version = veridx = None
-
-                if pubidx != None:
-                        # Always use publisher information provided in FMRI
-                        # string.  (It could be ""; pkg:///name is valid.)
-                        publisher = fmri[pubidx:nameidx - 1]
+                        # pkg_name and version must be explicitly set.
+                        self.pkg_name = name
+                        if version:
+                                self.version = Version(version, build_release)
+                        else:
+                                self.version = None
 
                 # Ensure publisher is always None if one was not specified.
                 if publisher:
                         self.publisher = publisher
                 else:
                         self.publisher = None
-
-                if veridx != None:
-                        self.pkg_name = fmri[nameidx:veridx]
-                else:
-                        self.pkg_name = fmri[nameidx:]
 
                 if not self.pkg_name:
                         raise IllegalFmri(fmri, IllegalFmri.SYNTAX_ERROR,

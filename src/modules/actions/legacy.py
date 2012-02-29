@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2007, 2011, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2007, 2012, Oracle and/or its affiliates. All rights reserved.
 #
 
 """module describing a legacy packaging object
@@ -50,6 +50,7 @@ class LegacyAction(generic.Action):
             "version", "basedir", "pkginst", "pstamp", "sunw_prodvers")
         refcountable = True
         globally_identical = True
+        ordinality = generic._orderdict[name]
 
         def directory_references(self):
                 return [os.path.normpath(os.path.join("var/sadm/pkg",

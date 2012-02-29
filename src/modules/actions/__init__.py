@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2007, 2011, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2007, 2012, Oracle and/or its affiliates. All rights reserved.
 #
 
 """
@@ -113,13 +113,14 @@ class MalformedActionError(ActionError):
                 marker = " " * (4 + self.position) + "^"
                 if hasattr(self, "fmri") and self.fmri is not None:
                         return _("Malformed action in package '%(fmri)s' at "
-                            "position: %(pos)d:\n    %(action)s\n"
+                            "position: %(pos)d: %(error)s:\n    %(action)s\n"
                             "%(marker)s") % { "fmri": self.fmri,
                             "pos": self.position, "action": self.actionstr,
-                            "marker": marker }
-                return _("Malformed action at position: %(pos)d:\n    "
+                            "marker": marker, "error": self.errorstr }
+                return _("Malformed action at position: %(pos)d: %(error)s:\n    "
                     "%(action)s\n%(marker)s") % { "pos": self.position,
-                    "action": self.actionstr, "marker": marker }
+                    "action": self.actionstr, "marker": marker,
+                    "error": self.errorstr }
 
 
 class ActionDataError(ActionError):
@@ -153,6 +154,32 @@ class InvalidActionError(ActionError):
                         "action": self.actionstr, "error": self.errorstr }
 
 
+class MissingKeyAttributeError(InvalidActionError):
+        """Used to indicate that an action's key attribute is missing."""
+
+        def __init__(self, *args):
+                InvalidActionError.__init__(self, str(args[0]),
+                    _("no value specified for key attribute '%s'") % args[1])
+
+
+class KeyAttributeMultiValueError(InvalidActionError):
+        """Used to indicate that an action's key attribute was specified
+        multiple times for an action that expects it only once."""
+
+        def __init__(self, *args):
+                InvalidActionError.__init__(self, str(args[0]),
+                    _("%s attribute may only be specified once") % args[1])
+
+
+class InvalidPathAttributeError(InvalidActionError):
+        """Used to indicate that an action's path attribute value was either
+        empty, '/', or not a string."""
+
+        def __init__(self, *args):
+                InvalidActionError.__init__(self, str(args[0]),
+                    _("Empty or invalid path attribute"))
+
+
 class InvalidActionAttributesError(ActionError):
         """Used to indicate that one or more action attributes were invalid."""
 
@@ -184,33 +211,16 @@ class InvalidActionAttributesError(ActionError):
                     "act_errors": act_errors }
 
 
-from _actions import _fromstr
+# This must be imported *after* all of the exception classes are defined as
+# _actions module init needs the exception objects.
+from _actions import fromstr
 
 def attrsfromstr(string):
         """Create an attribute dict given a string w/ key=value pairs.
 
         Raises MalformedActionError if the attributes have syntactic problems.
         """
-        return _fromstr("bogus %s" % string)[2]
-
-def fromstr(string, data=None):
-        """Create an action instance based on a str() representation of an
-        action.
-
-        Raises UnknownActionError if the action type is unknown.
-        Raises MalformedActionError if the action has other syntactic problems.
-        """
-
-        atype, ahash, attr_dict = _fromstr(string)
-
-        if atype not in types:
-                raise UnknownActionError(string, atype)
-
-        action = types[atype](data=data, **attr_dict)
-        if ahash:
-                action.hash = ahash
-
-        return action
+        return fromstr("unknown %s" % string).attrs
 
 def internalizelist(atype, args, ahash=None, basedirs=None):
         """Create an action instance based on a sequence of "key=value" strings.
@@ -281,7 +291,7 @@ def internalizelist(atype, args, ahash=None, basedirs=None):
                 raise InvalidActionError(astr,
                         "%s action cannot have a 'data' attribute" % atype)
 
-        action = types[atype](data=None, **attrs)
+        action = types[atype](**attrs)
         if ahash:
                 action.hash = ahash
 

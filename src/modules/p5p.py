@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2011, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2011, 2012, Oracle and/or its affiliates. All rights reserved.
 #
 
 import atexit
@@ -798,8 +798,8 @@ class Archive(object):
                                 ignored, stem, ver = name.rsplit("/", 2)
                                 stem = urllib.unquote(stem)
                                 ver = urllib.unquote(ver)
-                                pfmri = pkg.fmri.PkgFmri("%s@%s" % (stem, ver),
-                                    publisher=pub)
+                                pfmri = pkg.fmri.PkgFmri(name=stem,
+                                    publisher=pub, version=ver)
 
                                 fobj = self.get_file(name)
                                 m = pkg.manifest.Manifest(pfmri=pfmri)

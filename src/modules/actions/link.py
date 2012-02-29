@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2007, 2011, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2007, 2012, Oracle and/or its affiliates. All rights reserved.
 #
 
 """module describing a (symbolic) link packaging object
@@ -51,6 +51,7 @@ class LinkAction(generic.Action):
         globally_identical = True
         refcountable = True
         namespace_group = "path"
+        ordinality = generic._orderdict[name]
 
         def install(self, pkgplan, orig):
                 """Client-side method that installs a link."""

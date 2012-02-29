@@ -29,7 +29,8 @@ import errno
 import hashlib
 import os
 import tempfile
-from itertools import groupby, chain, repeat
+from itertools import groupby, chain, repeat, izip
+from operator import itemgetter
 
 import pkg.actions as actions
 import pkg.client.api_errors as apx
@@ -83,13 +84,13 @@ class Manifest(object):
         def __init__(self, pfmri=None):
                 self.fmri = pfmri
 
+                self._cache = {}
+                self._facets = None     # facets seen in package
+                self._variants = None   # variants seen in package
                 self.actions = []
                 self.actions_bytype = {}
-                self.variants = {}   # variants seen in package
-                self.facets = {}     # facets seen in package
                 self.attributes = {} # package-wide attributes
                 self.signatures = EmptyDict
-                self._cache = {}
                 self.excludes = EmptyI
 
         def __str__(self):
@@ -136,10 +137,9 @@ class Manifest(object):
 
                 def hashify(v):
                         """handle key values that may be lists"""
-                        if isinstance(v, list):
-                                return frozenset(v)
-                        else:
+                        if type(v) is not list:
                                 return v
+                        return frozenset(v)
 
                 sdict = dict(
                     ((a.name, hashify(a.attrs.get(a.key_attr, id(a)))), a)
@@ -150,8 +150,8 @@ class Manifest(object):
                     for a in origin.gen_actions(origin_exclude)
                 )
 
-                sset = set(sdict.keys())
-                oset = set(odict.keys())
+                sset = set(sdict.iterkeys())
+                oset = set(odict.iterkeys())
 
                 added = [(None, sdict[i]) for i in sset - oset]
                 removed = [(odict[i], None) for i in oset - sset]
@@ -167,11 +167,11 @@ class Manifest(object):
                 # sorted list?
 
                 # singlesort = lambda x: x[0] or x[1]
-                addsort = lambda x: x[1]
-                remsort = lambda x: x[0]
-                removed.sort(key = remsort, reverse = True)
-                added.sort(key = addsort)
-                changed.sort(key = addsort)
+                addsort = itemgetter(1)
+                remsort = itemgetter(0)
+                removed.sort(key=remsort, reverse=True)
+                added.sort(key=addsort)
+                changed.sort(key=addsort)
 
                 return ManifestDifference(added, changed, removed)
 
@@ -358,14 +358,14 @@ class Manifest(object):
                 except KeyError:
                         # generate actions that contain directories
                         alist = self._cache["manifest.dircache"] = [
-                            actions.fromstr(s.strip())
+                            actions.fromstr(s.rstrip())
                             for s in self._gen_dirs_to_str()
                         ]
 
                 s = set([
                     a.attrs["path"]
                     for a in alist
-                    if a.include_this(excludes)
+                    if not excludes or a.include_this(excludes)
                 ])
 
                 return list(s)
@@ -386,7 +386,7 @@ class Manifest(object):
                 except KeyError:
                         # generate actions that contain mediators
                         alist = self._cache["manifest.mediatorcache"] = [
-                            actions.fromstr(s.strip())
+                            actions.fromstr(s.rstrip())
                             for s in self._gen_mediators_to_str()
                         ]
 
@@ -394,7 +394,7 @@ class Manifest(object):
                 for attrs in (
                     act.attrs
                     for act in alist
-                    if act.include_this(excludes)):
+                    if not excludes or act.include_this(excludes)):
                         med_ver = attrs.get("mediator-version")
                         if med_ver:
                                 try:
@@ -543,8 +543,8 @@ class Manifest(object):
 
                 self.actions = []
                 self.actions_bytype = {}
-                self.variants = {}
-                self.facets = {}
+                self._variants = None
+                self._facets = None
                 self.attributes = {}
                 self._cache = {}
 
@@ -594,45 +594,39 @@ class Manifest(object):
                 The "excludes" parameter is the variants to exclude from the
                 manifest."""
 
-                # XXX handle legacy transition issues; not needed after
-                # 2009.06 release & republication are complete.
-                if "opensolaris.zone" in action.attrs and \
-                    "variant.opensolaris.zone" not in action.attrs:
-                        action.attrs["variant.opensolaris.zone"] = \
-                            action.attrs["opensolaris.zone"]
+                attrs = action.attrs
+                aname = action.name
 
-                if action.name == "set" and action.attrs["name"] == "authority":
+                # XXX handle legacy transition issues; not needed once support
+                # for upgrading images from older releases (< build 151) has
+                # been removed.
+                if "opensolaris.zone" in attrs and \
+                    "variant.opensolaris.zone" not in attrs:
+                        attrs["variant.opensolaris.zone"] = \
+                            attrs["opensolaris.zone"]
+
+                if aname == "set" and attrs["name"] == "authority":
                         # Translate old action to new.
-                        action.attrs["name"] = "publisher"
+                        attrs["name"] = "publisher"
 
-                if action.attrs.has_key("path"):
-                        np = action.attrs["path"].lstrip(os.path.sep)
-                        action.attrs["path"] = np
-
-                if not action.include_this(excludes):
+                if excludes and not action.include_this(excludes):
                         return
+
+                if self._variants:
+                        # Reset facet/variant cache if needed (if one is set,
+                        # then both are set, so only need to check for one).
+                        self._facets = None
+                        self._variants = None
 
                 self.actions.append(action)
-                self.actions_bytype.setdefault(action.name, []).append(action)
+                try:
+                        self.actions_bytype[aname].append(action)
+                except KeyError:
+                        self.actions_bytype.setdefault(aname, []).append(action)
 
                 # add any set actions to attributes
-                if action.name == "set":
+                if aname == "set":
                         self.fill_attributes(action)
-                # append any variants and facets to manifest dict
-                v_list, f_list = action.get_varcet_keys()
-
-                if not (v_list or f_list):
-                        return
-
-                try:
-                        for v, d in zip(v_list, repeat(self.variants)) \
-                            + zip(f_list, repeat(self.facets)):
-                                d.setdefault(v, set()).add(action.attrs[v])
-                except TypeError:
-                        # Lists can't be set elements.
-                        raise actions.InvalidActionError(action,
-                            _("%(forv)s '%(v)s' specified multiple times") %
-                            {"forv": v.split(".", 1)[0], "v": v})
 
         def fill_attributes(self, action):
                 """Fill attribute array w/ set action contents."""
@@ -710,7 +704,8 @@ class Manifest(object):
                                         log((_("%(fp)s:\n%(e)s") %
                                             { "fp": file_path, "e": e }))
                                 else:
-                                        if action.include_this(excludes):
+                                        if not excludes or \
+                                            action.include_this(excludes):
                                                 if action.attrs.has_key("path"):
                                                         np = action.attrs["path"].lstrip(os.path.sep)
                                                         action.attrs["path"] = \
@@ -857,6 +852,44 @@ class Manifest(object):
                         size += a.get_size()
                 return size
 
+        def __load_varcets(self):
+                """Private helper function to populate list of facets and
+                variants on-demand."""
+
+                self._facets = {}
+                self._variants = {}
+                for action in self.gen_actions():
+                        # append any variants and facets to manifest dict
+                        attrs = action.attrs
+                        v_list, f_list = action.get_varcet_keys()
+
+                        if not (v_list or f_list):
+                                continue
+
+                        try:
+                                for v, d in chain(
+                                    izip(v_list, repeat(self._variants)),
+                                    izip(f_list, repeat(self._facets))):
+                                        try:
+                                                d[v].add(attrs[v])
+                                        except KeyError:
+                                                d[v] = set([attrs[v]])
+                        except TypeError:
+                                # Lists can't be set elements.
+                                raise actions.InvalidActionError(action,
+                                    _("%(forv)s '%(v)s' specified multiple times") %
+                                    {"forv": v.split(".", 1)[0], "v": v})
+
+        def __get_facets(self):
+                if self._facets is None:
+                        self.__load_varcets()
+                return self._facets
+
+        def __get_variants(self):
+                if self._variants is None:
+                        self.__load_varcets()
+                return self._variants
+
         def __getitem__(self, key):
                 """Return the value for the package attribute 'key'."""
                 return self.attributes[key]
@@ -875,6 +908,9 @@ class Manifest(object):
 
         def __contains__(self, key):
                 return key in self.attributes
+
+        facets = property(lambda self: self.__get_facets())
+        variants = property(lambda self: self.__get_variants())
 
 null = Manifest()
 
@@ -964,8 +1000,8 @@ class FactoredManifest(Manifest):
                 when downloading new manifests"""
                 self.actions = []
                 self.actions_bytype = {}
-                self.variants = {}
-                self.facets = {}
+                self._variants = None
+                self._facets = None
                 self.attributes = {}
                 self.loaded = False
 
@@ -1070,10 +1106,11 @@ class FactoredManifest(Manifest):
                                 self._cache[name] = [
                                     a for a in
                                     (
-                                        actions.fromstr(s.strip())
+                                        actions.fromstr(s.rstrip())
                                         for s in f
                                     )
-                                    if a.include_this(self.excludes)
+                                    if not self.excludes or
+                                        a.include_this(self.excludes)
                                 ]
                 except EnvironmentError, e:
                         raise apx._convert_error(e)
@@ -1122,12 +1159,12 @@ class FactoredManifest(Manifest):
                         if not os.path.exists(mpath):
                                 return # no such action in this manifest
 
-                        f = file(mpath)
-                        for l in f:
-                                a = actions.fromstr(l.strip())
-                                if a.include_this(excludes):
-                                        yield a
-                        f.close()
+                        with open(mpath, "rb") as f:
+                                for l in f:
+                                        a = actions.fromstr(l.rstrip())
+                                        if not excludes or \
+                                            a.include_this(excludes):
+                                                yield a
 
         def gen_mediators(self, excludes):
                 """A generator function that yields set actions expressing the
@@ -1143,12 +1180,12 @@ class FactoredManifest(Manifest):
                 mpath = self.__cache_path("manifest.set")
                 if not os.path.exists(mpath):
                         return False
-                f = file(mpath)
-                for l in f:
-                        a = actions.fromstr(l.strip())
-                        if a.include_this(self.excludes):
-                                self.fill_attributes(a)
-                f.close()
+                with open(mpath, "rb") as f:
+                        for l in f:
+                                a = actions.fromstr(l.rstrip())
+                                if not self.excludes or \
+                                    a.include_this(self.excludes):
+                                        self.fill_attributes(a)
                 return True
 
         def __getitem__(self, key):

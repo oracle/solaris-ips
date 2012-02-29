@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2009, 2011, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2009, 2012, Oracle and/or its affiliates. All rights reserved.
 #
 
 import getopt
@@ -204,7 +204,7 @@ def main_func():
                         if res:
                                 return res
                 else:
-                        res = cmp(a.ord, b.ord)
+                        res = cmp(a.ordinality, b.ordinality)
                         if res:
                                 return res
                 return cmp(str(a), str(b))

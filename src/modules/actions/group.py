@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2008, 2011, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2008, 2012, Oracle and/or its affiliates. All rights reserved.
 #
 
 """module describing a user packaging object
@@ -50,9 +50,7 @@ class GroupAction(generic.Action):
         name = "group"
         key_attr = "groupname"
         globally_identical = True
-
-        def __init__(self, data=None, **attrs):
-                generic.Action.__init__(self, data, **attrs)
+        ordinality = generic._orderdict[name]
 
         def extract(self, attrlist):
                 """ return a dictionary containing attrs in attr list

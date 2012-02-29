@@ -21,15 +21,17 @@
 #
 
 #
-# Copyright (c) 2009, 2011, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2009, 2012, Oracle and/or its affiliates. All rights reserved.
 #
 
 # basic variant support
 
 import copy
 import itertools
-from collections import namedtuple
+import types
 
+from collections import namedtuple
+from pkg._varcet import _allow_variant
 from pkg.misc import EmptyI
 
 class Variants(dict):
@@ -49,6 +51,9 @@ class Variants(dict):
         def __delitem__(self, item):
                 dict.__delitem__(self, item)
                 self.__keyset.remove(item)
+
+        # allow_action is provided as a native function (see end of class
+        # declaration).
 
         def pop(self, item, default=None):
                 self.__keyset.discard(item)
@@ -75,25 +80,8 @@ class Variants(dict):
                 self.__keyset = set()
                 dict.clear(self)
 
-        # Methods which are unique to variants
-        def allow_action(self, action):
-                """ determine if variants permit this action """
+Variants.allow_action = types.MethodType(_allow_variant, None, Variants)
 
-                for k, v in action.attrs.iteritems():
-                        if k[:8] != "variant.":
-                                continue
-                        sys_v = self.get(k, None)
-
-                        # If the system value and the action variant value
-                        # agree, then the action is allowed.  Otherwise, if the
-                        # system value doesn't exist, check to see if the
-                        # action's variant is a debug variant.  If it is, allow
-                        # the action if the variant value is set to false.
-                        if sys_v != v and (sys_v is not None or
-                            (k[:14] == "variant.debug." and v != "false")):
-                                return False
-
-                return True
 
 # The two classes which follow are used during dependency calculation when
 # actions have variants, or the packages they're contained in do.  The
