@@ -2471,6 +2471,10 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                                                 tgt = fmri.PkgFmri(
                                                     a.attrs["fmri"], brelease)
                                                 tver = tgt.version
+                                                # incorporates without a version
+                                                # should be ignored.
+                                                if not tver:
+                                                        continue
                                                 over = inc_vers.get(
                                                     tgt.pkg_name, None)
 
@@ -4201,6 +4205,10 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                                 tgt = fmri.PkgFmri(
                                     a.attrs["fmri"], brelease)
                                 tver = tgt.version
+                                # incorporates without a version should be
+                                # ignored.
+                                if not tver:
+                                        continue
                                 over = inc_vers.get(
                                     tgt.pkg_name, None)
 

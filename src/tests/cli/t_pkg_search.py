@@ -69,6 +69,11 @@ class TestPkgSearchBasics(pkg5unittest.SingleDepotTestCase):
             add depend fmri=example_pkg@1.0,5.11-0 type=incorporate
             close """
 
+        nover_incorp_pkg10 = """
+            open nover_incorp_pkg@1.0,5.11-0
+            add depend fmri=incorp_pkg type=incorporate
+            close """
+
         dup_lines_pkg10 = """
             open dup_lines@1.0,5.11-0
             add set name=com.sun.service.incorporated_changes value="aa abc a a"
@@ -640,6 +645,29 @@ set name=com.sun.service.incorporated_changes value="6556919 6627937"
                 self._search_op(True, '/bin', res_11_action)
                 self._search_op(True, '/bin', res_both_actions,
                     prune_versions=False)
+
+        def test_versionless_incorp(self):
+                """Test that versionless incorporates are ignored by search when
+                restricting results to incorporated packages (see bug 7149895).
+                """
+
+                durl = self.dc.get_depot_url()
+                self.pkgsend_bulk(durl, (self.incorp_pkg10,
+                    self.nover_incorp_pkg10))
+
+                self.image_create(durl)
+
+                res = set([
+                    self.headers,
+                    "pkg.fmri    set    test/incorp_pkg pkg:/incorp_pkg@1.0-0\n",
+                    "incorporate depend incorp_pkg      pkg:/nover_incorp_pkg@1.0-0\n",
+                ])
+
+                self.pkg("install incorp_pkg nover_incorp_pkg")
+                self._search_op(True, 'incorp_pkg', res)
+
+                self.pkg("uninstall nover_incorp_pkg")
+                self._search_op(True, 'incorp_pkg', res)
 
         def test_bug_7835(self):
                 """Check that installing a package in a non-empty image

@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2009, 2011, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2009, 2012, Oracle and/or its affiliates. All rights reserved.
 #
 
 import testutils
@@ -219,6 +219,10 @@ add set name=pkg.description value="%(desc)s"
                         elif stem == "entire":
                                 pkg_data += "add depend type=incorporate " \
                                     "fmri=apple@1.2-0\n"
+                                # versionless incorporate dependencies should
+                                # be ignored.
+                                pkg_data += "add depend type=incorporate " \
+                                    "fmri=corge\n"
                                 pkg_data += "add depend type=incorporate " \
                                     "fmri=qux@1.0\n"
                                 pkg_data += "add depend type=incorporate " \
