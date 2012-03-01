@@ -20,7 +20,7 @@
 #
 
 #
-# Copyright (c) 2011, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2011, 2012, Oracle and/or its affiliates. All rights reserved.
 #
 
 set name=pkg.fmri value=pkg:/group/system/solaris-desktop@$(PKGVERS)
@@ -92,7 +92,6 @@ depend type=group fmri=driver/audio/audiols
 depend type=group fmri=driver/audio/audiop16x
 $(i386_ONLY)depend type=group fmri=driver/audio/audiosolo
 $(i386_ONLY)depend type=group fmri=driver/audio/audiovia823x
-$(sparc_ONLY)depend type=group fmri=driver/cpu/us
 depend type=group fmri=driver/crypto/dca
 $(sparc_ONLY)depend type=group fmri=driver/crypto/n2cp
 depend type=group fmri=driver/crypto/tpm
@@ -421,7 +420,6 @@ $(i386_ONLY)depend type=group fmri=system/kernel/i86pc/fipe
 $(i386_ONLY)depend type=group fmri=system/kernel/i86pc/ioat
 $(sparc_ONLY)depend type=group fmri=system/kernel/io-performance-counters
 depend type=group fmri=system/kernel/platform
-$(sparc_ONLY)depend type=group fmri=system/kernel/platform/netra
 depend type=group fmri=system/kernel/power
 depend type=group fmri=system/kernel/suspend-resume
 depend type=group fmri=system/keyboard/kbd_mode

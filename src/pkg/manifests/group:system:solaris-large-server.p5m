@@ -50,7 +50,6 @@ depend type=group fmri=diagnostic/snoop
 depend type=group fmri=diagnostic/spray
 depend type=group fmri=diagnostic/tcpdump
 depend type=group fmri=diagnostic/top
-$(sparc_ONLY)depend type=group fmri=driver/cpu/us
 depend type=group fmri=driver/crypto/dca
 $(sparc_ONLY)depend type=group fmri=driver/crypto/n2cp
 depend type=group fmri=driver/crypto/tpm
@@ -296,19 +295,10 @@ depend type=group fmri=system/kernel
 depend type=group fmri=system/kernel/cpu-counters
 $(sparc_ONLY)depend type=group fmri=system/kernel/cpu/sun4v
 $(i386_ONLY)depend type=group fmri=system/kernel/dynamic-reconfiguration/i86pc
-$(sparc_ONLY)depend type=group \
-    fmri=system/kernel/dynamic-reconfiguration/sun-fire-15000
-$(sparc_ONLY)depend type=group \
-    fmri=system/kernel/dynamic-reconfiguration/sun-fire-880
-$(sparc_ONLY)depend type=group \
-    fmri=system/kernel/dynamic-reconfiguration/ultra-enterprise-10000
 $(i386_ONLY)depend type=group fmri=system/kernel/i86pc/fipe
 $(i386_ONLY)depend type=group fmri=system/kernel/i86pc/ioat
-$(sparc_ONLY)depend type=group \
-    fmri=system/kernel/inter-domain/ultra-enterprise-10000
 $(sparc_ONLY)depend type=group fmri=system/kernel/io-performance-counters
 depend type=group fmri=system/kernel/platform
-$(sparc_ONLY)depend type=group fmri=system/kernel/platform/netra
 depend type=group fmri=system/kernel/power
 depend type=group fmri=system/kernel/suspend-resume
 depend type=group fmri=system/keyboard/keyboard-utilities
@@ -333,7 +323,6 @@ depend type=group fmri=system/management/snmp/net-snmp/documentation
 depend type=group fmri=system/manual
 depend type=group fmri=system/manual/locale
 depend type=group fmri=system/network
-$(sparc_ONLY)depend type=group fmri=system/network-console
 depend type=group fmri=system/network/bpf
 depend type=group fmri=system/network/nis
 depend type=group fmri=system/network/ppp
