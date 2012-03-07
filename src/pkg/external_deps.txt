@@ -28,6 +28,7 @@
     pkg:/library/python-2/simplejson-26
     pkg:/package/svr4
     pkg:/runtime/python-26
+    pkg:/runtime/python-27
     pkg:/service/network/dns/mdns
     pkg:/shell/ksh
     pkg:/system/core-os

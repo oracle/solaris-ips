@@ -555,6 +555,10 @@ from pkg.misc import EmptyI
 file NOHASH group=bin mode=0755 owner=root path=usr/lib/python%(py_ver)s/vendor-packages/pkg/client/indexer.py \
 """
 
+        pyver_test_manf_1_run_path = """\
+file NOHASH group=bin mode=0755 owner=root path=usr/lib/python%(py_ver)s/vendor-packages/pkg/client/indexer.py pkg.depend.runpath=$PKGDEPEND_RUNPATH \
+"""
+
         pyver_test_manf_1_non_ex = """\
 file NOHASH group=bin mode=0644 owner=root path=usr/lib/python%(py_ver)s/vendor-packages/pkg/client/indexer.py \
 """
@@ -683,21 +687,22 @@ depend fmri=pkg:/satisfying_manf type=require variant.foo=baz
                     "reason": reason
                 }
 
-        pyver_24_script_full_manf_1 = """\
-file NOHASH group=bin mode=0755 owner=root path=%(reason)s
+        pyver_27_script_full_manf_1 = """\
+file NOHASH group=bin mode=0755 owner=root path=%(reason)s %(run_path)s
 depend fmri=%(dummy_fmri)s %(pfx)s.file=python%(bin_ver)s %(pfx)s.path=usr/bin %(pfx)s.reason=%(reason)s %(pfx)s.type=script type=require
 """ % {
     "pfx": base.Dependency.DEPEND_DEBUG_PREFIX,
     "dummy_fmri": base.Dependency.DUMMY_FMRI,
     "reason": "%(reason)s",
-    "bin_ver": "%(bin_ver)s"
+    "bin_ver": "%(bin_ver)s",
+    "run_path": "%(run_path)s"
 }
 
         def pyver_res_full_manf_1(self, ver, proto, reason, include_os=False):
                 """Build the full manifest results for the pyver tests."""
 
-                if ver == "2.4":
-                        tmp = self.pyver_24_script_full_manf_1
+                if ver == "2.7":
+                        tmp = self.pyver_27_script_full_manf_1
                 else:
                         raise RuntimeError("Unexcepted version for "
                             "pyver_res_full_manf_1 %s" % ver)
@@ -712,16 +717,59 @@ file NOHASH group=bin mode=0444 owner=root path=usr/lib/python%(py_ver)s/vendor-
 file NOHASH group=bin mode=0755 owner=root path=usr/bin/python
 """
 
-        pyver_resolve_results = """
-depend fmri=pkg:/%(res_manf)s %(pfx)s.file=usr/lib/python%(py_ver)s/vendor-packages/pkg/indexer.py %(pfx)s.file=usr/lib/python%(py_ver)s/vendor-packages/pkg/misc.py %(pfx)s.file=usr/lib/python%(py_ver)s/vendor-packages/pkg/__init__.py %(pfx)s.file=usr/bin/python %(pfx)s.file=usr/lib/python%(py_ver)s/lib-tk/pkg/search_storage.py %(pfx)s.reason=usr/lib/python%(py_ver)s/vendor-packages/pkg/client/indexer.py %(pfx)s.type=script %(pfx)s.type=python type=require
-"""
+        def make_pyver_resolve_results(self, proto_area):
+                """Generate the expected results when resolving a manifest which
+                contains a file with a non-default version of python."""
 
+                suffixes = (".py", ".pyc", ".pyo", ".so", "/__init__.py",
+                    "module.so")
+                files = ["indexer", "misc", "search_storage"]
+
+                # These are the paths to the files which the package depends on.
+                # __init__ isn't part of files because it's not in the path-id.
+                # search_storage.py is handled separately because it's delivered
+                # in a different location than the other files, so it needs a
+                # different path attached to it.
+                rel_paths = [
+                    "usr/lib/python%(py_ver)s/vendor-packages/pkg/" + f + ".py"
+                    for f in files + ["__init__"] if f != "search_storage"
+                ] + ["usr/bin/python",
+                    "usr/lib/python%(py_ver)s/lib-tk/pkg/search_storage.py"]
+
+                # Find the potential locations an imported python module might
+                # be found.
+                vps = self.get_ver_paths("2.7", proto_area) + \
+                    ["usr/lib/python2.7/vendor-packages/pkg/client"]
+                vps = [vp.lstrip("/") + "/pkg/" for vp in vps]
+
+                # Produce the expected dependency.  The package name will be
+                # filled in by the caller of this function.  The pdd.file
+                # attributes are taken from rel_paths.  Path-id is an pkgdepend
+                # internal attribute which allows it to know which dependencies
+                # where merged together to form a particular final dependency.
+                # The __init__.py file follows a different pattern than the
+                # other files, so it's handled separately.
+                return "depend fmri=pkg:/%(res_manf)s " + \
+                    " ".join(["%(pfx)s.file=" + rp for rp in rel_paths]) + \
+                    " " + " ".join(["%(pfx)s.path-id=" + ":".join(sorted([
+                        proto_str + f + s
+                        for proto_str in vps
+                        for s in suffixes
+                        ]))
+                        for f in files
+                    ]) + " %(pfx)s.path-id=" + ":".join(sorted(
+                        [vp + "__init__.py" for vp in vps])) + \
+                    " %(pfx)s.path-id=usr/bin/python " + \
+                    "%(pfx)s.reason=usr/lib/python%(py_ver)s/" + \
+                    "vendor-packages/pkg/client/indexer.py " + \
+                    "%(pfx)s.type=script %(pfx)s.type=python type=require"
+        
         pyver_mismatch_results = """\
-depend fmri=%(dummy_fmri)s %(pfx)s.file=python2.6 %(pfx)s.path=usr/bin %(pfx)s.reason=usr/lib/python2.4/vendor-packages/pkg/client/indexer.py %(pfx)s.type=script type=require
+depend fmri=%(dummy_fmri)s %(pfx)s.file=python2.6 %(pfx)s.path=usr/bin %(pfx)s.reason=usr/lib/python2.7/vendor-packages/pkg/client/indexer.py %(pfx)s.type=script type=require
 """ % {"pfx":base.Dependency.DEPEND_DEBUG_PREFIX, "dummy_fmri":base.Dependency.DUMMY_FMRI}
 
         pyver_mismatch_errs = """
-The file to be installed at usr/lib/python2.4/vendor-packages/pkg/client/indexer.py declares a python version of 2.6.  However, the path suggests that the version should be 2.4.  The text of the file can be found at %s/usr/lib/python2.4/vendor-packages/pkg/client/indexer.py
+The file to be installed at usr/lib/python2.7/vendor-packages/pkg/client/indexer.py declares a python version of 2.6.  However, the path suggests that the version should be 2.7.  The text of the file can be found at %s/usr/lib/python2.7/vendor-packages/pkg/client/indexer.py
 """
 
         pyver_unspecified_ver_err = """
@@ -2683,6 +2731,207 @@ depend fmri=pkg:/a@0,5.11-1 type=conditional
                 self.assertEqual(len(es), 1)
                 self.assert_(isinstance(es[0],
                     actions.InvalidActionAttributesError))
+
+        def test_python_combinations(self):
+                """Test that each line in the following table is accounted for
+                by a test case.
+
+                There are three conditions which determine whether python
+                dependency analysis is performed on a file with python in its
+                #! line.
+                1) Is the file executable.
+                    (Represented in the table below by X)
+                2) Is the file installed into a directory which provides
+                    information about what version of python should be used
+                    for it.
+                    (Represented by D)
+                3) Does the first line of the file include a specific version
+                    of python.
+                    (Represented by F)
+
+                Conditions || Perform Analysis
+                 X  D  F   || Y, if F and D disagree, display a warning in the
+                           ||     output and use D to analyze the file.
+                 X  D !F   || Y
+                 X !D  F   || Y
+                 X !D !F   || N, and display a warning in the output.
+                !X  D  F   || Y
+                !X  D !F   || Y
+                !X !D  F   || N
+                !X !D !F   || N
+                """
+
+                # The test for line 1 with matching versions is done by
+                # test_bug_13059.
+
+                # Test line 1 (X D F) with mismatched versions.
+                tp = self.make_manifest(self.pyver_test_manf_1 %
+                    {"py_ver":"2.7"})
+                fp = "usr/lib/python2.7/vendor-packages/pkg/client/indexer.py"
+                self.make_proto_text_file(fp, self.pyver_python_text % "2.6")
+                self.pkgdepend_generate("-d %s %s" % (self.test_proto_dir, tp),
+                     exit=1)
+                self.check_res(self.pyver_mismatch_results +
+                    self.make_pyver_python_res("2.7", self.test_proto_dir, fp,
+                        include_os=True) % {"bin_ver": "2.6"},
+                    self.output)
+                self.check_res(self.pyver_mismatch_errs % self.test_proto_dir,
+                    self.errout)
+
+                # Test line 2 (X D !F)
+                tp = self.make_manifest(self.pyver_test_manf_1 %
+                    {"py_ver":"2.7"})
+                fp = "usr/lib/python2.7/vendor-packages/pkg/client/indexer.py"
+                self.make_proto_text_file(fp, self.pyver_python_text % "")
+                self.pkgdepend_generate("-m -d %s %s" %
+                    (self.test_proto_dir, tp))
+                self.check_res(
+                    self.pyver_res_full_manf_1("2.7", self.test_proto_dir, fp,
+                        include_os=True) % \
+                        {"reason": fp, "bin_ver": "", "run_path":""},
+                    self.output)
+                self.check_res("", self.errout)
+
+                # Test line 3 (X !D F)
+                tp = self.make_manifest(self.py_in_usr_bin_manf)
+                fp = "usr/bin/pkg"
+                self.make_proto_text_file(fp, self.pyver_python_text % "2.7")
+                self.pkgdepend_generate("-m -d %s %s" %
+                    (self.test_proto_dir, tp))
+                self.check_res(
+                    self.pyver_res_full_manf_1("2.7", self.test_proto_dir, fp,
+                        include_os=True) % \
+                        {"reason": fp, "bin_ver": "2.7", "run_path":""},
+                    self.output)
+                self.check_res("", self.errout)
+
+                # Test line 4 (X !D !F)
+                tp = self.make_manifest(self.py_in_usr_bin_manf)
+                fp = "usr/bin/pkg"
+                self.make_proto_text_file(fp, self.pyver_python_text % "")
+                self.pkgdepend_generate("-m -d %s %s" %
+                    (self.test_proto_dir, tp), exit=1)
+                self.check_res(
+                    self.pyver_27_script_full_manf_1 %
+                        {"reason": fp, "bin_ver": "", "run_path":""},
+                    self.output)
+                self.check_res(self.pyver_unspecified_ver_err %
+                    self.test_proto_dir, self.errout)
+
+                # Test line 5 (!X D F)
+                tp = self.make_manifest(self.pyver_test_manf_1_non_ex %
+                    {"py_ver":"2.7"})
+                fp = "usr/lib/python2.7/vendor-packages/pkg/client/indexer.py"
+                self.make_proto_text_file(fp, self.pyver_python_text % "2.6")
+                self.pkgdepend_generate("-d %s %s" % (self.test_proto_dir, tp))
+                self.check_res(
+                    self.make_pyver_python_res("2.7", self.test_proto_dir, fp,
+                        include_os=True),
+                    self.output)
+                self.check_res("", self.errout)
+
+                # Test line 6 (!X D !F)
+                tp = self.make_manifest(self.pyver_test_manf_1_non_ex %
+                    {"py_ver":"2.7"})
+                fp = "usr/lib/python2.7/vendor-packages/pkg/client/indexer.py"
+                self.make_proto_text_file(fp, self.pyver_python_text % "")
+                self.pkgdepend_generate("-d %s %s" % (self.test_proto_dir, tp))
+                self.check_res(
+                    self.make_pyver_python_res("2.7", self.test_proto_dir, fp,
+                        include_os=True),
+                    self.output)
+                self.check_res("", self.errout)
+
+                # Test line 7 (!X !D F)
+                tp = self.make_manifest(self.py_in_usr_bin_manf_non_ex)
+                fp = "usr/bin/pkg"
+                self.make_proto_text_file(fp, self.pyver_python_text % "2.7")
+                self.pkgdepend_generate("-d %s %s" % (self.test_proto_dir, tp))
+                self.check_res("", self.output)
+                self.check_res("", self.errout)
+
+                # Test line 8 (!X !D !F)
+                tp = self.make_manifest(self.py_in_usr_bin_manf_non_ex)
+                fp = "usr/bin/pkg"
+                self.make_proto_text_file(fp, self.pyver_python_text % "")
+                self.pkgdepend_generate("-d %s %s" % (self.test_proto_dir, tp))
+                self.check_res("", self.output)
+                self.check_res("", self.errout)
+
+        def test_bug_13059(self):
+                """Test that python modules written for a version of python
+                other than the current system version are analyzed correctly."""
+
+                py_ver = "2.7"
+
+                # Set up the files for generate.
+                tp = self.make_manifest(
+                    self.pyver_test_manf_1 % {"py_ver":py_ver})
+                fp = "usr/lib/python%s/vendor-packages/pkg/" \
+                    "client/indexer.py" % py_ver
+                self.make_proto_text_file(fp, self.python_text)
+
+                # Run generate and check the output.
+                self.pkgdepend_generate("-m -d %s %s" %
+                    (self.test_proto_dir, tp))
+                self.check_res(
+                    self.pyver_res_full_manf_1(py_ver,
+                        self.test_proto_dir, fp) %
+                        {"bin_ver": "", "reason":fp, "run_path":""},
+                    self.output)
+                self.check_res("", self.errout)
+
+                # Take the output from the run and make it a file
+                # for the resolver to use.
+                dependency_mp = self.make_manifest(self.output)
+                provider_mp = self.make_manifest(
+                    self.pyver_resolve_dep_manf % {"py_ver":py_ver})
+
+                # Run resolver and check the output.
+                self.pkgdepend_resolve(
+                    "-v %s %s" % (dependency_mp, provider_mp))
+                self.check_res("", self.output)
+                self.check_res("", self.errout)
+                dependency_res_p = dependency_mp + ".res"
+                provider_res_p = provider_mp + ".res"
+                lines = self.__read_file(dependency_res_p)
+                self.check_res(self.make_pyver_resolve_results(
+                    pkg5unittest.g_proto_area) % {
+                        "res_manf": os.path.basename(provider_mp),
+                        "pfx":
+                            base.Dependency.DEPEND_DEBUG_PREFIX,
+                        "py_ver": py_ver,
+                        "reason": fp
+                    }, lines)
+                lines = self.__read_file(provider_res_p)
+                self.check_res("", lines)
+
+                # Clean up
+                portable.remove(dependency_res_p)
+                portable.remove(provider_res_p)
+
+                # Now test that generating dependencies when runpaths
+                # have been set works.
+                tp = self.make_manifest(
+                    self.pyver_test_manf_1_run_path % {"py_ver":py_ver})
+                fp = "usr/lib/python%s/vendor-packages/pkg/" \
+                    "client/indexer.py" % py_ver
+                self.make_proto_text_file(fp, self.python_text)
+
+                # Run generate and check the output.
+                self.pkgdepend_generate("-m -d %s %s" %
+                    (self.test_proto_dir, tp))
+                self.check_res(
+                    self.pyver_res_full_manf_1(py_ver,
+                        self.test_proto_dir, fp) %
+                        {
+                            "bin_ver": "",
+                            "reason":fp,
+                            "run_path":\
+                                "pkg.depend.runpath=$PKGDEPEND_RUNPATH"
+                        },
+                    self.output)
+                self.check_res("", self.errout)
 
 
 if __name__ == "__main__":

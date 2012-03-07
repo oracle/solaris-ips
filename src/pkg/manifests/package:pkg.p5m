@@ -118,6 +118,7 @@ file path=$(PYDIRVP)/pkg/flavor/__init__.py
 file path=$(PYDIRVP)/pkg/flavor/base.py
 file path=$(PYDIRVP)/pkg/flavor/depthlimitedmf.py
 file path=$(PYDIRVP)/pkg/flavor/depthlimitedmf24.py
+file path=$(PYDIRVP)/pkg/flavor/depthlimitedmf27.py
 file path=$(PYDIRVP)/pkg/flavor/elf.py
 file path=$(PYDIRVP)/pkg/flavor/hardlink.py
 file path=$(PYDIRVP)/pkg/flavor/python.py
