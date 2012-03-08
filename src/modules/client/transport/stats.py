@@ -315,6 +315,14 @@ class RepoStats(object):
                     self.__decayable_err
 
         @property
+        def content_errors(self):
+                """Return the number of content errors that the client has
+                encountered while trying to perform operation on this
+                repository."""
+
+                return self.__content_err
+
+        @property
         def num_connect(self):
                 """Return the number of times that the host has had a
                 connection established.  This is less than or equal to the

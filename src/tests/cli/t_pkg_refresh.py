@@ -596,6 +596,8 @@ class TestPkgRefreshMulti(pkg5unittest.ManyDepotTestCase):
                 expected = [
                     { "CACHE-CONTROL": "no-cache" },
                     { "CACHE-CONTROL": "no-cache" },
+                    { "PRAGMA": "no-cache" },
+                    { "PRAGMA": "no-cache" }
                 ]
                 self.assertEqualDiff(entries, expected)
 

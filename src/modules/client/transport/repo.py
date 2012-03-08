@@ -204,6 +204,13 @@ class TransportRepo(object):
 
                 raise NotImplementedError
 
+        def build_refetch_header(self, header):
+                """Based on existing header contents, build a header that
+                should be used for a subsequent retry when fetching content
+                from the repository."""
+
+                raise NotImplementedError
+
         @staticmethod
         def _annotate_exceptions(errors, mapping=None):
                 """Walk a list of transport errors, examine the
@@ -504,6 +511,7 @@ class HTTPRepo(TransportRepo):
                         headers["Cache-Control"] = "max-age=0"
                 if redownload:
                         headers["Cache-Control"] = "no-cache"
+                        headers["Pragma"] = "no-cache"
                 if header:
                         headers.update(header)
                 if progtrack:
@@ -1010,6 +1018,24 @@ class HTTPRepo(TransportRepo):
                 resp.read()
 
                 return True
+
+        def build_refetch_header(self, header):
+                """For HTTP requests that have failed due to corrupt content,
+                if that request didn't specify 'Cache-control: no-cache' in
+                its headers then we can try the request with that additional
+                header, which can help where a web cache is serving corrupt
+                content.
+
+                This method returns True if the headers passed haven't got
+                "Cache-Control: no-cache" set, adding that header.  Otherwise
+                it returns False.
+                """
+
+                if header.get("Cache-Control", "") != "no-cache":
+                        header["Cache-Control"] = "no-cache"
+                        header["Pragma"] = "no-cache"
+                        return header
+                return header
 
 
 class HTTPSRepo(HTTPRepo):
@@ -1723,6 +1749,12 @@ class _FilesystemRepo(TransportRepo):
 
                 return True
 
+        def build_refetch_header(self, header):
+                """Pointless to attempt refetch of corrupt content for
+                this protocol."""
+
+                return header
+
 class _ArchiveRepo(TransportRepo):
         """Private implementation of transport repository logic for repositories
         contained within an archive.
@@ -1987,6 +2019,11 @@ class _ArchiveRepo(TransportRepo):
         def touch_manifest(self, mfst, header=None, ccancel=None, pub=None):
                 """No-op."""
                 return True
+
+        def build_refetch_header(self, header):
+                """Pointless to attempt refetch of corrupt content for
+                  this protocol."""
+                return header
 
 
 class FileRepo(object):

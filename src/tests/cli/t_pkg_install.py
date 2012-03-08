@@ -38,6 +38,7 @@ import socket
 import stat
 import time
 import unittest
+import urllib2
 
 import pkg.actions
 import pkg.fmri as fmri
@@ -742,6 +743,203 @@ class TestPkgInstallBasics(pkg5unittest.SingleDepotTestCase):
                 afobj.write("set name=pkg.summary value=\"banana\"\n")
                 afobj.close()
                 self.pkg("install a16189", exit=1)
+
+        def test_corrupt_web_cache(self):
+                """Make sure the client can detect corrupt content being served
+                to it from a corrupt web cache, modifying its requests to
+                retrieve correct content."""
+
+                # Depot required for this test since we want to corrupt
+                # a downstream cache serving this content
+                self.dc.start()
+                fmris = self.pkgsend_bulk(self.durl, self.foo11)
+                # we need to record just the version string of foo in order
+                # to properly quote it later.
+                foo_version = fmris[0].split("@")[1]
+                self.image_create(self.durl)
+
+                # we use the system repository as a convenient way to setup
+                # a caching proxy
+                self.sysrepo("")
+                sc_runtime_dir = os.path.join(self.test_root, "sysrepo_runtime")
+                sc_conf = os.path.join(sc_runtime_dir, "sysrepo_httpd.conf")
+                sc_cache = os.path.join(self.test_root, "sysrepo_cache")
+
+                # ensure pkg5srv can write cache content
+                os.chmod(sc_cache, 0777)
+
+                sysrepo_port = self.next_free_port
+                self.next_free_port += 1
+                sc = pkg5unittest.SysrepoController(sc_conf,
+                    sysrepo_port, sc_runtime_dir, testcase=self)
+                sc.start()
+
+                sysrepo_url = "http://localhost:%s" % sysrepo_port
+
+                saved_pkg_sysrepo_env = os.environ.get("PKG_SYSREPO_URL")
+                os.environ["PKG_SYSREPO_URL"] = sysrepo_url
+
+                # create an image, installing a package, to warm up the webcache
+                self.image_create(props={"use-system-repo": True})
+                self.pkg("install foo@1.1")
+                self.pkg("uninstall foo")
+
+                # now recreate the image.  image_create calls image_destroy,
+                # thereby cleaning any cached content in the image.
+                self.image_create(props={"use-system-repo": True})
+
+                def corrupt_path(path, value="noodles\n", rename=False):
+                        """Given a path, corrupt its contents."""
+                        self.assert_(os.path.exists(path))
+                        if rename:                                
+                                os.rename(path, path + ".not-corrupt")
+                                open(path, "wb").write(value)
+                        else:
+                                df = open(path, "wb")
+                                df.write(value)
+                                df.close()
+
+                def corrupt_cache(cache_dir):
+                        """Given an apache cache, corrupt it's contents."""
+
+                        for dirpath, dirname, filenames in os.walk(cache_dir):
+                                for name in filenames:
+                                        if name.endswith(".header"):
+                                                data = name.replace(".header",
+                                                    ".data")
+                                                corrupt_path(os.path.join(
+                                                    dirpath, data))
+                # corrupt our web cache
+                corrupt_cache(sc_cache)
+
+                urls = [
+                    # we need to quote the version carefully to use exactly the
+                    # format pkg(1) uses - two logically identical urls that
+                    # differ only by the way they're quoted are treated by
+                    # Apache as separate cacheable resources.
+                    "%s/test/manifest/0/foo@%s" % (self.durl, urllib2.quote(
+                    foo_version)),
+                    "%s/test/file/1/8535c15c49cbe1e7cb1a0bf8ff87e512abed66f8" %
+                    self.durl,
+                    "%s/test/catalog/1/catalog.attrs" % self.durl,
+                    "%s/test/catalog/1/catalog.base.C" % self.durl
+                ]
+
+                proxy_handler = urllib2.ProxyHandler({"http": sysrepo_url})
+                proxy_opener = urllib2.build_opener(proxy_handler)
+
+                # validate that our cache is returning corrupt urls.
+                for url in urls:
+                        # we should get clean content when we don't use the
+                        # cache
+                        u = urllib2.urlopen(url)
+                        content = u.readlines()
+                        self.assert_(content != ["noodles\n"],
+                            "Unexpected content from depot")
+
+                        # get the corrupted version, and verify it is broken
+                        req = urllib2.Request(url)
+                        u = proxy_opener.open(req)
+                        content = u.readlines()
+
+                        self.assert_(content == ["noodles\n"],
+                            "Expected noodles, got %s for %s" % (content, url))
+
+                # the following should work, as pkg should retry requests
+                # where it has detected corrupt contents with a
+                # "Cache-Control: no-cache" header.
+                self.pkg("refresh --full")
+                self.pkg("contents -rm foo@1.1")
+                self.pkg("install foo@1.1")
+
+                # since the cache has been refreshed, we should see valid
+                # contents when going through the proxy now.
+                for url in urls:
+                        req = urllib2.Request(url)
+                        u = proxy_opener.open(req)
+                        content = u.readlines()
+                        self.assert_(content != ["noodles\n"],
+                            "Unexpected content from depot")
+
+                # ensure that when we actually corrupt the repository
+                # as well as the cache, we do detect the errors properly.
+                corrupt_cache(sc_cache)
+                repodir = self.dc.get_repodir()
+
+                prefix = "publisher/test"
+                self.image_create(props={"use-system-repo": True})
+
+                # When we corrupt the files in the repository, we intentionally
+                # corrupt them with different contents than the the cache,
+                # allowing us to check the error messages being printed by the
+                # transport subsystem.
+
+                filepath = os.path.join(repodir,
+                    "%s/file/85/8535c15c49cbe1e7cb1a0bf8ff87e512abed66f8" %
+                    prefix)
+                mfpath = os.path.join(repodir, "%s/pkg/foo/%s" % (prefix,
+                    urllib2.quote(foo_version)))
+                catpath = os.path.join(repodir, "%s/catalog/catalog.base.C" %
+                    prefix)
+
+                try:
+                        # first corrupt the file
+                        corrupt_path(filepath, value="spaghetti\n", rename=True)
+                        self.pkg("install foo@1.1", stderr=True, exit=1)
+                        os.rename(filepath + ".not-corrupt", filepath)
+
+                        # we should be getting two hash errors, one from the
+                        # cache, one from the repo. The one from the repo should
+                        # repeat
+                        self.assert_(
+                            "1: Invalid contentpath lib/libc.so.1: chash" in
+                            self.errout)
+                        self.assert_(
+                            "2: Invalid contentpath lib/libc.so.1: chash" in
+                            self.errout)
+                        self.assert_("(happened 3 times)" in self.errout)
+
+                        # now corrupt the manifest (we have to re-corrupt the
+                        # cache, since attempting to install foo above would
+                        # have caused the cache to refetch the valid manifest
+                        # from the repo) and remove the version of the manifest
+                        # cached in the image.
+                        corrupt_cache(sc_cache)
+                        corrupt_path(mfpath, value="spaghetti\n", rename=True)
+                        shutil.rmtree(os.path.join(self.img_path(),
+                            "var/pkg/publisher/test/pkg"))
+                        self.pkg("contents -rm foo@1.1", stderr=True, exit=1)
+                        os.rename(mfpath + ".not-corrupt", mfpath)
+                
+                        # we should get two hash errors, one from the cache, one
+                        # from the repo - the one from the repo should repeat.
+                        self.assert_(
+                            "1: Invalid content: manifest hash failure" in
+                            self.errout)
+                        self.assert_("2: Invalid content: manifest hash failure"
+                            in self.errout)
+                        self.assert_("(happened 3 times)" in self.errout)
+
+                        # finally, corrupt the catalog. Given we've asked for a
+                        # full refresh, we retrieve the upstream version only.
+                        corrupt_path(catpath, value="spaghetti\n", rename=True)
+                        self.pkg("refresh --full", stderr=True, exit=1)
+                        self.assert_("catalog.base.C' is invalid." in
+                            self.errout)
+                        os.rename(catpath + ".not-corrupt", catpath)
+
+                finally:
+                        # make sure we clean up any corrupt repo contents.
+                        for path in [filepath, mfpath, catpath]:
+                                not_corrupt = path + ".not-corrupt"
+                                if os.path.exists(not_corrupt):
+                                        os.rename(not_corrupt, path)
+
+                        sc.stop()
+                        if saved_pkg_sysrepo_env:
+                                os.environ["PKG_SYSREPO_URL"] = \
+                                    saved_pkg_sysrepo_env
+
 
 class TestPkgInstallUpdateReject(pkg5unittest.SingleDepotTestCase):
         """Test --reject option to pkg update/install"""
