@@ -1206,7 +1206,7 @@ class _Pkg5TestResult(unittest._TextTestResult):
                 For now, we'll record this as a success, but also save the
                 reason why we wanted to skip this test"""
                 self.addSuccess(test)
-                self.skips.append((test, err))
+                self.skips.append((str(test), err))
 
         def addPersistentSetupError(self, test, err):
                 errtype, errval = err[:2]

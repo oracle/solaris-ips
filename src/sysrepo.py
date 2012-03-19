@@ -19,7 +19,7 @@
 #
 # CDDL HEADER END
 #
-# Copyright (c) 2011, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2011, 2012, Oracle and/or its affiliates. All rights reserved.
 
 import atexit
 import errno
@@ -286,6 +286,21 @@ def _get_publisher_info(api_inst, http_timeout):
                         no_uri_pubs.append(prefix)
         return uri_pub_map, no_uri_pubs
 
+def _chown_cache_dir(dir):
+        """Sets ownership for cache directory as pkg5srv:bin"""
+
+        uid = portable.get_user_by_name(SYSREPO_USER, None, False)
+        gid = portable.get_group_by_name("bin", None, False)
+        try:
+                os.chown(dir, uid, gid)
+        except OSError, err:
+                if not os.environ.get("PKG5_TEST_ENV", None):
+                        raise SysrepoException(
+                            _("Unable to chown to %(user)s:%(group)s: "
+                            "%(err)s") %
+                            {"user": SYSREPO_USER, "group": "bin",
+                            "err": err})
+
 def _write_httpd_conf(runtime_dir, log_dir, template_dir, host, port, cache_dir,
     cache_size, uri_pub_map, http_proxy, https_proxy):
         """Writes the apache configuration for the system repository."""
@@ -302,9 +317,14 @@ def _write_httpd_conf(runtime_dir, log_dir, template_dir, host, port, cache_dir,
                         if os.path.exists(dir) and not os.path.isdir(dir):
                                 raise SysrepoException(
                                     _("%s is not a directory") % dir)
+
                 for dir in dirs:
                         try:
-                                os.makedirs(dir, 0700)
+                                os.makedirs(dir, 0755)
+                                # set pkg5srv:bin as ownership for cache
+                                # directory.
+                                if dir == cache_dir:
+                                        _chown_cache_dir(dir)
                         except OSError, err:
                                 if err.errno != errno.EEXIST:
                                         raise

@@ -20,19 +20,26 @@
 # CDDL HEADER END
 #
 
-# Copyright (c) 2011, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2011, 2012, Oracle and/or its affiliates. All rights reserved.
 
 import testutils
 if __name__ == "__main__":
         testutils.setup_environment("../../../proto")
 import pkg5unittest
 
+import errno
 import hashlib
 import os
 import os.path
 import unittest
 import urllib2
 import shutil
+import stat
+import time
+
+import pkg.portable as portable
+
+SYSREPO_USER = "pkg5srv"
 
 class TestBasicSysrepoCli(pkg5unittest.CliTestCase):
         """Some basic tests checking that we can deal with all of our arguments
@@ -455,6 +462,62 @@ class TestDetailedSysrepoCli(pkg5unittest.ManyDepotTestCase):
                             self.sysrepo(arg)
                             for d in directives:
                                     self.file_contains(self.default_sc_conf, d)
+
+        def test_12_cache_dir_permissions(self):
+                """Our cache_dir permissions and ownership are verified"""
+
+                exp_uid = portable.get_user_by_name(SYSREPO_USER, None, False)
+                self.image_create(prefix="test1", repourl=self.durl1)
+
+                cache_dir = os.path.join(self.test_root, "t_sysrepo_cache")
+                # first verify that the user running the test has permissions
+                try:
+                        os.mkdir(cache_dir)
+                        os.chown(cache_dir, exp_uid, 1)
+                        os.rmdir(cache_dir)
+                except OSError, e:
+                        if e.errno == errno.EPERM:
+                                raise pkg5unittest.TestSkippedException(
+                                    "User running test does not have "
+                                    "permissions to chown to uid %s" % exp_uid)
+                        raise
+
+                # Run sysrepo to create cache directory
+                port = self.next_free_port
+                self.sysrepo("-R %s -c %s -p %s" % (self.get_img_path(),
+                    cache_dir, port))
+
+                self._start_sysrepo()
+                self.sc.stop()
+
+                # Remove cache directory
+                os.rmdir(cache_dir)
+
+                # Again run sysrepo and then verify permissions
+                cache_dir = os.path.join(self.test_root, "t_sysrepo_cache")
+                port = self.next_free_port
+                self.sysrepo("-R %s -c %s -p %s" % (self.get_img_path(),
+                    cache_dir, port))
+                self._start_sysrepo()
+
+                # Wait for service to come online. Try for 30 seconds.
+                count = 0
+                while (count < 10):
+                        time.sleep(3)
+                        count = count + 1
+                        if (os.access(cache_dir, os.F_OK)):
+                                break
+
+                # Verify cache directory exists.
+                self.assertTrue(os.access(cache_dir, os.F_OK))
+
+                filemode = stat.S_IMODE(os.stat(cache_dir).st_mode)
+                self.assertEqualDiff(0755, filemode)
+                uid = os.stat(cache_dir)[4]
+                exp_uid = portable.get_user_by_name(SYSREPO_USER, None, False)
+                self.assertEqualDiff(exp_uid, uid)
+
+                self.sc.stop()
 
 if __name__ == "__main__":
         unittest.main()
