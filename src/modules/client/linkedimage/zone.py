@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2011, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2011, 2012, Oracle and/or its affiliates. All rights reserved.
 #
 
 """
@@ -53,6 +53,7 @@ ZONE_GLOBAL                  = "global"
 
 ZONE_STATE_STR_CONFIGURED    = "configured"
 ZONE_STATE_STR_INCOMPLETE    = "incomplete"
+ZONE_STATE_STR_UNAVAILABLE   = "unavailable"
 ZONE_STATE_STR_INSTALLED     = "installed"
 ZONE_STATE_STR_READY         = "ready"
 ZONE_STATE_STR_MOUNTED       = "mounted"
