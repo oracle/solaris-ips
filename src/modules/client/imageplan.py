@@ -716,10 +716,11 @@ class ImagePlan(object):
                         # Determine which packages will be affected.
                         for f in self.image.gen_installed_pkgs():
                                 self.__progtrack.evaluate_progress()
-                                m = self.image.get_manifest(f)
+                                m = self.image.get_manifest(f,
+                                    ignore_excludes=True)
                                 mediated = []
                                 for act in m.gen_actions_by_types(("hardlink",
-                                    "link")):
+                                    "link"), excludes=self.__new_excludes):
                                         try:
                                                 mediator = act.attrs["mediator"]
                                         except KeyError:
@@ -732,7 +733,8 @@ class ImagePlan(object):
                                         pp.propose_repair(f, m, mediated,
                                             misc.EmptyI)
                                         pp.evaluate(self.__new_excludes,
-                                            self.__new_excludes)
+                                            self.__new_excludes,
+                                            can_exclude=True)
                                         self.pkg_plans.append(pp)
                 else:
                         # Only the source property is being updated for
@@ -905,7 +907,8 @@ class ImagePlan(object):
                         tag_set = set(args)
                         for f in self.image.gen_installed_pkgs():
                                 self.__progtrack.evaluate_progress()
-                                m = self.image.get_manifest(f)
+                                m = self.image.get_manifest(f,
+                                    ignore_excludes=True)
                                 for act in m.gen_actions_by_type("file",
                                     self.__new_excludes):
                                         if "revert-tag" in act.attrs and \
@@ -920,7 +923,8 @@ class ImagePlan(object):
                         overlaypaths = set()
                         for f in self.image.gen_installed_pkgs():
                                 self.__progtrack.evaluate_progress()
-                                m = self.image.get_manifest(f)
+                                m = self.image.get_manifest(f,
+                                    ignore_excludes=True)
                                 for act in m.gen_actions_by_type("file",
                                     self.__new_excludes):
                                         path = act.attrs["path"]
@@ -962,7 +966,8 @@ class ImagePlan(object):
                                 pp.propose_repair(f, m, needs_change,
                                     misc.EmptyI)
                                 pp.evaluate(self.__new_excludes,
-                                    self.__new_excludes)
+                                    self.__new_excludes,
+                                    can_exclude=True)
                                 self.pkg_plans.append(pp)
 
                 self.__fmri_changes = []

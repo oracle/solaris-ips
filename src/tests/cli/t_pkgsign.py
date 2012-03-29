@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2010, 2011, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2010, 2012, Oracle and/or its affiliates. All rights reserved.
 #
 
 import testutils
@@ -2733,6 +2733,108 @@ class TestPkgSign(pkg5unittest.SingleDepotTestCase):
                 else:
                         raise RuntimeError("Didn't get expected exception")
                 self.pkg("install example_pkg", exit=1)
+
+        def test_signed_mediators(self):
+                """Test that packages with mediated links and other varianted
+                actions work correctly when signed."""
+
+                bar = """\
+set name=pkg.fmri value=bar@1.7
+set name=variant.num value=one value=two
+link mediator=foobar mediator-version=1.7 path=usr/foobar target=whee1.7
+"""
+
+                foo = """\
+set name=pkg.fmri value=foo@1.6
+set name=variant.num value=one value=two
+set name=foo value=bar variant.arch=one
+link mediator=foobar mediator-version=1.6 path=usr/foobar target=whee1.6
+"""
+
+                foo_pth = self.make_manifest(foo)
+                bar_pth = self.make_manifest(bar)
+                self.make_misc_files(["tmp/foo"])
+                self.pkgsend(self.rurl1, "publish -d %s %s" %
+                    (self.test_root, foo_pth))
+                self.pkgsend(self.rurl1, "publish -d %s %s" %
+                    (self.test_root, bar_pth))
+                chain_cert_path = os.path.join(self.chain_certs_dir,
+                    "ch1_ta3_cert.pem")
+                ta_cert_path = os.path.join(self.raw_trust_anchor_dir,
+                    "ta3_cert.pem")
+                sign_args = "-k %(key)s -c %(cert)s -i %(ch1)s '*'" % {
+                        "key": os.path.join(self.keys_dir,
+                            "cs1_ch1_ta3_key.pem"),
+                        "cert": os.path.join(self.cs_dir,
+                            "cs1_ch1_ta3_cert.pem"),
+                        "ch1": chain_cert_path
+                }
+                self.pkgsign(self.rurl1, sign_args)
+                self.image_create(self.rurl1, variants={"variant.num":"one"})
+                self.seed_ta_dir("ta3")
+                self.pkg("install foo bar")
+                self.pkg("set-mediator -V 1.6 foobar")
+
+        def test_reverting_signed_packages(self):
+                """Test that reverting signed packages with variants works."""
+
+                b = """\
+set name=pkg.fmri value=B@1.0,5.11-0
+set name=variant.num value=one value=two
+file tmp/foo mode=0555 owner=root group=bin path=etc/fileB revert-tag=bob
+dir mode=0755 owner=root group=bin path=etc variant.num=two
+"""
+
+                c = """\
+set name=pkg.fmri value=C@1.0,5.11-0
+set name=variant.num value=one value=two
+file tmp/foo mode=0555 owner=root group=bin path=etc2/fileC revert-tag=bob variant.num=two
+dir mode=0755 owner=root group=bin path=etc2 variant.num=two
+"""
+
+                b_pth = self.make_manifest(b)
+                c_pth = self.make_manifest(c)
+                self.make_misc_files(["tmp/foo"])
+                self.pkgsend(self.rurl1, "publish -d %s %s" %
+                    (self.test_root, b_pth))
+                self.pkgsend(self.rurl1, "publish -d %s %s" %
+                    (self.test_root, c_pth))
+                chain_cert_path = os.path.join(self.chain_certs_dir,
+                    "ch1_ta3_cert.pem")
+                ta_cert_path = os.path.join(self.raw_trust_anchor_dir,
+                    "ta3_cert.pem")
+                sign_args = "-k %(key)s -c %(cert)s -i %(ch1)s '*'" % {
+                        "key": os.path.join(self.keys_dir,
+                            "cs1_ch1_ta3_key.pem"),
+                        "cert": os.path.join(self.cs_dir,
+                            "cs1_ch1_ta3_cert.pem"),
+                        "ch1": chain_cert_path
+                }
+                self.pkgsign(self.rurl1, sign_args)
+                self.image_create(self.rurl1, variants={"variant.num":"one"})
+                self.seed_ta_dir("ta3")
+                self.pkg("install B")
+                self.pkg("verify B")
+                # Now test reverting by file.
+                with open(
+                    os.path.join(self.get_img_path(), "etc/fileB"), "wb") as fh:
+                        fh.write("\n")
+                self.pkg("verify B", exit=1)
+                self.pkg("revert /etc/fileB")
+                self.pkg("verify B")
+                # Now test reverting by tag since that's a separate code path in
+                # ImagePlan.plan_revert.
+                with open(
+                    os.path.join(self.get_img_path(), "etc/fileB"), "wb") as fh:
+                        fh.write("\n")
+                self.pkg("verify B", exit=1)
+                self.pkg("revert --tagged bob")
+                self.pkg("verify B")
+                # Now test reverting a file that's delivered in another variant.
+                self.pkg("install C")
+                self.pkg("verify C")
+                self.pkg("revert etc2/fileC", exit=1)
+
 
 class TestPkgSignMultiDepot(pkg5unittest.ManyDepotTestCase):
         # Tests in this suite use the read only data directory.
