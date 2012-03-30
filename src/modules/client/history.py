@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2008, 2010, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2008, 2012, Oracle and/or its affiliates. All rights reserved.
 #
 
 import copy
@@ -376,11 +376,15 @@ class History(object):
                         # Discard it now that it is no longer needed.
                         del ops[-1]
 
-        def __init__(self, root_dir=".", filename=None):
+        def __init__(self, root_dir=".", filename=None, uuid_be_dic=None):
                 """'root_dir' should be the path of the directory where the
                 history directory can be found (or created if it doesn't
                 exist).  'filename' should be the name of an XML file
                 containing serialized history information to load.
+                'uuid_be_dic', if supplied, should be a dictionary of BE uuid
+                information, as produced by
+                pkg.client.bootenv.BootEnv.get_uuid_be_dic(), otherwise that
+                method is called each time a History object is created.
                 """
                 # Since this is a read-only attribute normally, we have to
                 # bypass our setattr override by calling object.
@@ -392,7 +396,7 @@ class History(object):
 
                 self.root_dir = root_dir
                 if filename:
-                        self.__load(filename)
+                        self.__load(filename, uuid_be_dic=uuid_be_dic)
 
         def __str__(self):
                 ops = self.__operations
@@ -511,7 +515,7 @@ class History(object):
 
                 return op
 
-        def __load(self, filename):
+        def __load(self, filename, uuid_be_dic=None):
                 """Loads the history from a file located in self.path/history/
                 {filename}.  The file should contain a serialized history
                 object in XML format.
@@ -521,7 +525,8 @@ class History(object):
                 self.clear()
 
                 try:
-                        uuid_be_dic = bootenv.BootEnv.get_uuid_be_dic()
+                        if not uuid_be_dic:
+                                uuid_be_dic = bootenv.BootEnv.get_uuid_be_dic()
                 except apx.ApiException, e:
                         uuid_be_dic = {}
 

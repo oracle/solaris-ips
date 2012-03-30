@@ -1947,12 +1947,18 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                 if limit:
                         limit *= -1
                         entries = entries[limit:]
+
+                try:
+                        uuid_be_dic = bootenv.BootEnv.get_uuid_be_dic()
+                except apx.ApiException, e:
+                        uuid_be_dic = {}
+
                 for entry in entries:
                         # Yield each history entry object as it is loaded.
                         try:
                                 yield history.History(
                                     root_dir=self._img.history.root_dir,
-                                    filename=entry)
+                                    filename=entry, uuid_be_dic=uuid_be_dic)
                         except apx.HistoryLoadException, e:
                                 if e.parse_failure:
                                         # Ignore corrupt entries.
