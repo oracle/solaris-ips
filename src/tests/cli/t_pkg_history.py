@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2008, 2011, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2008, 2012, Oracle and/or its affiliates. All rights reserved.
 #
 
 import testutils
@@ -29,13 +29,14 @@ if __name__ == "__main__":
         testutils.setup_environment("../../../proto")
 import pkg5unittest
 
+import datetime
 import os
 import random
 import re
 import shutil
 import time
 import unittest
-
+import xml.etree.ElementTree
 
 class TestPkgHistory(pkg5unittest.ManyDepotTestCase):
         # Only start/stop the depot once (instead of for every test)
@@ -546,18 +547,25 @@ class TestPkgHistory(pkg5unittest.ManyDepotTestCase):
                 dirlist = os.listdir(history_dir)
                 dirlist.sort()
 
-                # create a new history xml file, changing its start time to
-                # 2009
+                # get the latest history file, and write another copy of it
+                # with an artificial start and end timestamp.
                 latest = os.path.join(history_dir, dirlist[-1])
+
+                tree = xml.etree.ElementTree.parse(latest)
+                root = tree.getroot()
+                operation = root.find("operation")
+                operation.attrib["start_time"] = \
+                    datetime.datetime.utcfromtimestamp(0).strftime(
+                    "%Y%m%dT%H%M%SZ")
+                operation.attrib["end_time"] = "20120229T000000Z"
+
                 new_file = re.sub(".xml", "99.xml", latest)
                 outfile = file(os.path.join(history_dir, new_file), "w")
-                for line in file(latest):
-                        out = re.sub("start_time=\"20..", "start_time=\"2009",
-                            line)
-                        outfile.write(out)
+                outfile.write(xml.etree.ElementTree.tostring(root))
                 outfile.close()
 
-                self.pkg("history -n 1")
+                self.pkg("history -n 1 -o time")
+                self.assert_("369576:0:0" in self.output)
 
 if __name__ == "__main__":
         unittest.main()
