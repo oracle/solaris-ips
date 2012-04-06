@@ -19,7 +19,7 @@
 ##
 ## CDDL HEADER END
 ##
-## Copyright (c) 2008, 2010, Oracle and/or its affiliates. All rights reserved.
+## Copyright (c) 2008, 2012, Oracle and/or its affiliates. All rights reserved.
 ##
 <%!
         import pkg.server.api as api
@@ -27,7 +27,7 @@
 <%namespace name="shared" file="../shared.shtml" inheritable="True"/>\
 <%page args="g_vars"/>\
 <%
-        CLIENT_API_VERSION = 11
+        CLIENT_API_VERSION = 12
         base = g_vars["base"]
         catalog = api.CatalogInterface(CLIENT_API_VERSION, base)
         config = api.ConfigInterface(CLIENT_API_VERSION, base)

@@ -19,14 +19,14 @@
 ##
 ## CDDL HEADER END
 ##
-## Copyright (c) 2008, 2011, Oracle and/or its affiliates. All rights reserved.
+## Copyright (c) 2008, 2012, Oracle and/or its affiliates. All rights reserved.
 ##
 <%!
         import os.path
         import pkg.server.api as api
         import pkg.server.api_errors as api_errors
 
-        CLIENT_API_VERSION = 11
+        CLIENT_API_VERSION = 12
 %>\
 <%page args="g_vars"/>\
 <%

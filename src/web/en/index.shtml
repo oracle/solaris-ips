@@ -19,7 +19,7 @@
 ##
 ## CDDL HEADER END
 ##
-## Copyright 2008, 2011 Oracle and/or its affiliates. All rights reserved.
+## Copyright 2008, 2012 Oracle and/or its affiliates. All rights reserved.
 ##
 <%inherit file="layout.shtml"/>\
 <%page args="g_vars"/>\
@@ -77,6 +77,10 @@
 % if not config.mirror and request.publisher:
 <%
         versions = self.shared.get_releases(g_vars)
+        if versions:
+                # Add an "All" selection so that user can view entire catalog.
+                versions.insert(0, ("", "", "All"))
+
         selected_version = request.params.get("version", None)
         selected_match = False
         for v in versions:
@@ -88,7 +92,7 @@
                 # Either a version wasn't already selected, or the version
                 # provided didn't match a valid one, so default to the first in
                 # the list.
-                selected_version = versions[0][1]
+                selected_version = versions[1][1]
 %>
 %       if versions:
                 <form action="catalog.shtml">

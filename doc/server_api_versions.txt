@@ -1,3 +1,40 @@
+Version 12:
+    Incompatible with clients using versions 0-11.
+
+    pkg.server.api changed as follows:
+        * New constants 'PKG_STATE_RENAMED' and 'PKG_STATE_OBSOLETE' were
+          added to assist in determining package state information returned
+          from functions to the CatalogInterface class.
+
+        * The fmris() function of CatalogInterface now has an 'ordered'
+          parameter to control whether FMRIs are returned in ascending name,
+          descending version order.
+
+        * A new function named 'gen_allowed_packages' was added to
+          CatalogInterface to determine a list of packages allowed based on
+          the FMRI of a package that incorporates other packages.
+
+        * A new function named 'gen_packages' was added to
+          CatalogInterface as a replacement for the removed functions
+          get_matching_version_fmris() and get_matching_pattern_fmris().  It
+	  provides superior filtering capabilities and includes package state
+	  and attribute information.
+
+Version 11:
+    Incompatible with clients using versions 0-10.
+
+    pkg.server.api changed as follows:
+        * A new property named 'version' was added to the CatalogInterface
+          class to expose the version format of the catalog.
+
+        * The 'rename_requests' property was removed from the ConfigInterface
+          class as the stat it represented was for functionality that was
+          never implemented.
+
+        * A new property named 'publisher' that returns the Publisher
+          object for the publisher related to the request was added to the
+          RequestInterface class.
+
 Version 10:
     Incompatible with clients using versions 0-9.
 

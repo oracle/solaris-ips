@@ -19,7 +19,7 @@
 ##
 ## CDDL HEADER END
 ##
-## Copyright 2009, 2011 Oracle and/or its affiliates. All rights reserved.
+## Copyright 2009, 2012 Oracle and/or its affiliates. All rights reserved.
 ##
 <%!
         import pkg.fmri
@@ -46,20 +46,31 @@
 % else:
 <%
         versions = self.shared.get_releases(g_vars)
+        if versions:
+                # Add an "All" selection so that user can view entire catalog.
+                versions.insert(0, ("", "", "All"))
+
         selected_val = request.params.get("version", None)
         show_all_versions = request.params.get("show_all_versions", None)
+        show_obsolete = request.params.get("show_obsolete", None)
+        show_renamed = request.params.get("show_renamed", None)
         selected_match = None
-        for v in versions:
-                ver, val, label = v
-                if selected_val == val:
-                        selected_match = ver
+        selected_pkg = None
+        if selected_val:
+                for v in versions:
+                        ver, val, label = v
+                        if selected_val == val:
+                                selected_match = ver
+                                selected_pkg = val.split("@")[0]
+                                break
 
-        if versions and (not selected_val or not selected_match):
+        if versions and selected_val != "" and not selected_match:
                 # Either a version wasn't already selected, or the version
                 # provided didn't match a valid one, so default to the first in
                 # the list.
-                selected_match = versions[0][0]
-                selected_val = versions[0][1]
+                selected_match = versions[1][0]
+                selected_val = versions[1][1]
+                selected_pkg = selected_val.split("@")[0]
 %>
 %       if versions:
                 <form action="catalog.shtml">
@@ -89,6 +100,22 @@
                                 <label for="show-all-versions" title="By
  default, only the latest versions of packages are shown.  To show all versions,
  check this checkbox.">Show all versions</label>
+                                <input id="show-obsolete" type="checkbox"
+%                       if show_obsolete:
+                                    checked="checked"
+%                       endif
+                                    name="show_obsolete" value="1"/>
+                                <label for="show-obsolete" title="By
+ default, obsolete packages are not shown.  To show obsolete
+ packages, check this checkbox.">Show obsolete packages</label>
+                                <input id="show-renamed" type="checkbox"
+%                       if show_renamed:
+                                    checked="checked"
+%                       endif
+                                    name="show_renamed" value="1"/>
+                                <label for="show-renamed" title="By
+ default, renamed packages are not shown.  To show renamed
+ packages, check this checkbox.">Show renamed packages</label>
                         </p>
                 </form>
 %       else:
@@ -102,6 +129,22 @@
                                 <label for="show-all-versions" title="By
  default, only the latest versions of packages are shown.  To show all versions,
  check this checkbox and click Refresh.">Show all versions</label>
+                                <input id="show-obsolete" type="checkbox"
+%                       if show_obsolete:
+                                    checked="checked"
+%                       endif
+                                    name="show_obsolete" value="1"/>
+                                <label for="show-obsolete" title="By
+ default, obsolete packages are not shown.  To show obsolete
+ packages, check this checkbox.">Show obsolete packages</label>
+                                <input id="show-renamed" type="checkbox"
+%                       if show_renamed:
+                                    checked="checked"
+%                       endif
+                                    name="show_renamed" value="1"/>
+                                <label for="show-renamed" title="By
+ default, renamed packages are not shown.  To show renamed
+ packages, check this checkbox.">Show renamed packages</label>
                                 <input id="submit-browse" type="submit"
                                     name="action" value="Refresh"/>
                         </p>
@@ -122,27 +165,65 @@
         flist = []
         if selected_val and selected_match:
                 ver = selected_match
-                pattern = "*,%s-%s.*" % (ver.build_release, ver.branch)
-                flist, unmatched = catalog.get_matching_version_fmris(pattern)
+                pfmri = pkg.fmri.PkgFmri(name=selected_pkg,
+                    publisher=request.publisher.prefix,
+                    version=str(ver))
+                flist = catalog.gen_allowed_packages([pfmri])
         else:
-                flist = [f for f in catalog.fmris()]
-                flist.sort(reverse=True)
+                # Entries need to be in descending version order.
+                flist = (
+                    (pfmri, states)
+                    for (pfmri, states, attrs) in catalog.gen_packages(
+                        return_fmris=True)
+                )
 
-        found = {}
-        if not show_all_versions:
-                nlist = []
-                for f in flist:
-                         if f.pkg_name not in found:
-                                 found[f.pkg_name] = True
-                                 nlist.append(f)
-                flist = nlist
-                nlist = None
-        flist.sort()
- 
+        found = set()
+        omit_stems = set()
         rclass = None
+        total = 0
 %>
-%       for pfmri in flist:
-<%
+%       for pfmri, states in flist:
+        <%
+                pkg_name = pfmri.pkg_name
+                if not show_all_versions and pkg_name in found:
+                        continue
+
+                # For renames and obsoletes, only use package state for the
+                # latest version.
+                if states:
+                        # The pkg_name should only be added to the list of stems
+                        # to omit if the latest version of the package listed is
+                        # renamed or obsolete.  If not all versions are being
+                        # shown, then this is the latest version.
+                        if not (show_renamed or show_obsolete):
+                                # Only possible states are OBSOLETE or RENAMED.
+                                if not show_all_versions or \
+                                    pkg_name not in found:
+                                        omit_stems.add(pkg_name)
+                                        found.add(pkg_name)
+                                continue
+                        if not show_obsolete and \
+                            catalog.PKG_STATE_OBSOLETE in states:
+                                if not show_all_versions or \
+                                    pkg_name not in found:
+                                        omit_stems.add(pkg_name)
+                                        found.add(pkg_name)
+                                continue
+                        if not show_renamed and \
+                            catalog.PKG_STATE_RENAMED in states:
+                                if not show_all_versions or \
+                                    pkg_name not in found:
+                                        omit_stems.add(pkg_name)
+                                        found.add(pkg_name)
+                                continue
+
+                if show_all_versions and pkg_name in omit_stems:
+                        # Terminal version found that is allowed by selected
+                        # filter criteria; so omit all versions of that package.
+                        continue
+
+                found.add(pkg_name)
+                total += 1
                 if rclass is None or rclass == ' class="odd"':
                         rclass = ""
                 else:
@@ -166,9 +247,13 @@
                                 </td>
                                 <td>${pfmri.version}</td>
                                 <td>
+%               if not show_obsolete or catalog.PKG_STATE_OBSOLETE not in states:
                                         <a class="p5i"
                                             title="Launch the Package Manager and install this package"
                                             href="${p5ihref}">Install</a>
+%               else:
+                                        &nbsp;
+%               endif
                                 </td>
                                 <td>
                                         <a title="Package Manifest"
@@ -177,7 +262,7 @@
                         </tr>
 %       endfor
                         <tr class="last">
-                                <td colspan="4" scope="row">${len(flist)} package(s)</td>
+                                <td colspan="4" scope="row">${total} package(s)</td>
                         </tr>
                 </table>
 % endif

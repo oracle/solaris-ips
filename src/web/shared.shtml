@@ -19,7 +19,7 @@
 ##
 ## CDDL HEADER END
 ##
-## Copyright (c) 2008, 2010, Oracle and/or its affiliates. All rights reserved.
+## Copyright (c) 2008, 2012, Oracle and/or its affiliates. All rights reserved.
 ##
 <%!
         import operator
@@ -47,12 +47,10 @@
 <%def name="get_releases(g_vars)"><%
         catalog = g_vars["catalog"]
         request = g_vars["request"]
-        flist, unmatched = catalog.get_matching_pattern_fmris("entire")
         versions = {}
-        for f in flist:
-                ver_string = "%s,%s-%s" % (f.version.release, f.version.release,
-                    f.version.branch)
-
+	for f, states, attrs in catalog.gen_packages(patterns=["/entire",
+	    "/solaris"],
+            return_fmris=True):
                 br = str(f.version.branch).replace(".", "").strip()
                 ver_label = "%s-%s" % (f.version.release, f.version.branch)
                 if br == "086":
@@ -61,7 +59,11 @@
                         ver_label = "2008.11 (%s)" % ver_label
                 elif br == "0111":
                         ver_label = "2009.06 (%s)" % ver_label
-                versions[ver_string] = (f.version, ver_string, ver_label)
+
+                entry = "%s@%s,%s-%s" % (f.pkg_name, f.version.release,
+                    f.version.build_release, f.version.branch)
+
+                versions[entry] = (f.version, entry, ver_label)
 
         return [
                 ver[1] for ver in
