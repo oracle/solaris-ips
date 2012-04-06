@@ -264,7 +264,7 @@ class CatalogInterface(_Interface):
                 try:
                         cat = self._depot.repo.get_catalog(self._pub)
                 except srepo.RepositoryMirrorError:
-                        return
+                        return iter(())
 
                 return cat.gen_packages(collect_attrs=collect_attrs,
                     matched=matched, patterns=patterns, pubs=pubs,
