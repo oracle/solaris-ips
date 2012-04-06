@@ -2674,7 +2674,8 @@ class ImagePlan(object):
                 self.pd.state = plandesc.MERGED_OK
                 pt.plan_done(pt.PLAN_ACTION_MERGE)
 
-                self.__find_all_conflicts()
+                if not self.nothingtodo():
+                        self.__find_all_conflicts()
 
                 pt.plan_start(pt.PLAN_ACTION_CONSOLIDATE)
                 ConsolidationEntry = namedtuple("ConsolidationEntry", "idx id")
@@ -3018,7 +3019,8 @@ class ImagePlan(object):
         def nothingtodo(self):
                 """Test whether this image plan contains any work to do """
 
-                if self.pd.state == plandesc.EVALUATED_PKGS:
+                if self.pd.state in [plandesc.EVALUATED_PKGS,
+                    plandesc.MERGED_OK]:
                         return not (self.pd._fmri_changes or
                             self.pd._new_variants or
                             (self.pd._new_facets is not None) or
@@ -3029,6 +3031,8 @@ class ImagePlan(object):
                             self.pd._new_variants or
                             (self.pd._new_facets is not None) or
                             self.pd._mediators_change)
+                assert 0, "Shouldn't call nothingtodo() for state = %d" % \
+                    self.pd.state
 
         def preexecute(self):
                 """Invoke the evaluated image plan
