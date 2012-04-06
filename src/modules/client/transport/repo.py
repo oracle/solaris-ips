@@ -615,7 +615,8 @@ class HTTPRepo(TransportRepo):
                         urlmapping[url] = fmri
                         fn = os.path.join(dest, f)
                         self._add_file_url(url, filepath=fn, header=h,
-                            progtrack=progtrack, progclass=progclass)
+                            compress=True, progtrack=progtrack,
+                            progclass=progclass)
 
                 # Compute urllist from keys in mapping
                 urllist = urlmapping.keys()
