@@ -19,7 +19,7 @@
  * CDDL HEADER END
  */
 /*
- * Copyright (c) 2011, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2011, 2012 Oracle and/or its affiliates. All rights reserved.
  */
 
 /*
@@ -105,6 +105,5 @@ main(int argc, char *argv[])
 
 	notify_zoneproxyd(zoneid, remove);
 
-	exit(0);
 	return 0;
 }
