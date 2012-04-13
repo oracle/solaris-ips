@@ -20,7 +20,7 @@
 # CDDL HEADER END
 #
 
-# Copyright (c) 2009, 2011, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2009, 2012, Oracle and/or its affiliates. All rights reserved.
 
 import testutils
 if __name__ == "__main__":
@@ -68,7 +68,7 @@ class TestDependencyAnalyzer(pkg5unittest.Pkg5TestCase):
             "script_path": "lib/svc/method/svc-pkg-depot",
             "syslog_path": "var/log/syslog",
             "py_mod_path": "usr/lib/python2.6/vendor-packages/cProfile.py",
-            "py_mod_path24": "usr/lib/python2.4/vendor-packages/cProfile.py"
+            "py_mod_path27": "usr/lib/python2.7/vendor-packages/cProfile.py"
         }
 
         smf_paths = {
@@ -132,7 +132,7 @@ file NOHASH group=bin mode=0755 owner=root path=%(pkg_path)s
 
         python_mod_manf = """ \
 file NOHASH group=bin mode=0755 owner=root path=%(py_mod_path)s
-file NOHASH group=bin mode=0755 owner=root path=%(py_mod_path24)s
+file NOHASH group=bin mode=0755 owner=root path=%(py_mod_path27)s
 """ % paths
 
         relative_ext_depender_manf = """ \
@@ -1334,7 +1334,7 @@ file NOHASH group=sys mode=0755 owner=root path=%(runpath_mod_test_path)s
                 we try to import __main__"""
 
                 t_path = self.make_manifest(self.python_mod_manf)
-                self.make_python_test_files(2.4)
+                self.make_python_test_files(2.7)
                 self.make_python_test_files(2.6)
 
                 ds, es, ms, pkg_attrs = dependencies.list_implicit_deps(t_path,
@@ -1423,7 +1423,7 @@ file NOHASH group=sys mode=0755 owner=root path=%(runpath_mod_test_path)s
                 syntax error doesn't cause a traceback."""
 
                 t_path = self.make_manifest(self.python_mod_manf)
-                self.make_broken_python_test_file(2.4)
+                self.make_broken_python_test_file(2.7)
                 self.make_broken_python_test_file(2.6)
                 ds, es, ms, pkg_attrs = dependencies.list_implicit_deps(t_path,
                     [self.proto_dir], {}, [], convert=False)
@@ -1681,7 +1681,7 @@ file NOHASH group=sys mode=0755 owner=root path=%(runpath_mod_test_path)s
                 str(elf.UnsupportedDynamicToken("/proto_path", "/install",
                     "run_path", "tok"))
                 str(py.PythonModuleMissingPath("foo", "bar"))
-                str(py.PythonMismatchedVersion("2.4", "2.6", "foo", "bar"))
+                str(py.PythonMismatchedVersion("2.7", "2.6", "foo", "bar"))
                 str(py.PythonSubprocessError(2, "foo", "bar"))
                 str(py.PythonSubprocessBadLine("cmd", ["l1", "l2"]))
                 mi = dlmf.ModuleInfo("name", ["/d1", "/d2"])
