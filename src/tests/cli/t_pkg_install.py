@@ -3479,6 +3479,7 @@ adm:NP:6445::::::
                 self.image_create(self.rurl)
                 self.pkg("install devicebase devaliasmove@1")
                 self.pkg("update devaliasmove")
+                self.assert_("pci8086,5555" not in self.output)
 
         def test_uninstall_without_perms(self):
                 """Test for bug 4569"""

@@ -40,6 +40,7 @@ from pkg.client import global_settings
 logger = global_settings.logger
 
 import pkg.actions
+import pkg.actions.driver as driver
 import pkg.catalog
 import pkg.client.actuator as actuator
 import pkg.client.api_errors as api_errors
@@ -181,6 +182,7 @@ class ImagePlan(object):
                 self.__changed_facets = {}
                 self.__removed_facets = set()
                 self.__varcets_change = False
+                self.__rm_aliases = {}
                 self.__match_inst = {} # dict of fmri -> pattern
                 self.__match_rm = {} # dict of fmri -> pattern
                 self.__match_update = {} # dict of fmri -> pattern
@@ -2710,6 +2712,7 @@ class ImagePlan(object):
                 self.__progtrack.evaluate_progress()
 
                 self.update_actions = []
+                self.__rm_aliases = {}
                 for p in self.pkg_plans:
                         for src, dest in p.gen_update_actions():
                                 if dest.name == "user":
@@ -2718,6 +2721,14 @@ class ImagePlan(object):
                                 elif dest.name == "group":
                                         self.added_groups[dest.attrs["groupname"]] = \
                                             p.destination_fmri
+                                elif dest.name == "driver" and src:
+                                        rm = \
+                                            set(src.attrlist("alias")) - \
+                                            set(dest.attrlist("alias"))
+                                        if rm:
+                                                self.__rm_aliases.setdefault(
+                                                    dest.attrs["name"],
+                                                    set()).update(rm)
                                 self.update_actions.append(ActionPlan(p, src,
                                     dest))
                 self.__progtrack.evaluate_progress()
@@ -3277,14 +3288,19 @@ class ImagePlan(object):
                 #    other.  Clearly, all the removals must be done first,
                 #    followed by the installs and updates.
                 #
-                # 2) Installs of new actions must preceed updates of existing
+                # 2) Installs of new actions must precede updates of existing
                 # ones.
                 #
-                #    In order to accomodate changes of file ownership of
+                #    In order to accommodate changes of file ownership of
                 #    existing files to a newly created user, it is necessary
-                #    for the installation of that user to preceed the update of
+                #    for the installation of that user to precede the update of
                 #    files to reflect their new ownership.
                 #
+                #    The exception to this rule is driver actions.  Aliases of
+                #    existing drivers which are going to be removed must be
+                #    removed before any new drivers are installed or updated.
+                #    This prevents an error if an alias is moving from one
+                #    driver to another.
 
                 if self.nothingtodo():
                         self.state = EXECUTED_OK
@@ -3312,6 +3328,15 @@ class ImagePlan(object):
                                         p.execute_removal(src, dest)
                                         self.__progtrack.actions_add_progress()
                                 self.__progtrack.actions_done()
+
+                                # Update driver alias database to reflect the
+                                # aliases drivers have lost in the new image.
+                                # This prevents two drivers from ever attempting
+                                # to have the same alias at the same time.
+                                for name, aliases in \
+                                    self.__rm_aliases.iteritems():
+                                        driver.DriverAction.remove_aliases(name,
+                                            aliases, self.image)
 
                                 # Done with removals; discard them so memory can
                                 # be re-used.
