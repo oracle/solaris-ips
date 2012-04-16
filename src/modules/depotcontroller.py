@@ -233,7 +233,8 @@ class DepotController(object):
                 try:
                         repourl = urlparse.urljoin(self.get_depot_url(),
                             "versions/0")
-                        urllib2.urlopen(repourl)
+                        url = urllib2.urlopen(repourl)
+                        url.close()
                 except urllib2.HTTPError, e:
                         # Server returns NOT_MODIFIED if catalog is up
                         # to date
@@ -373,9 +374,14 @@ class DepotController(object):
                         while (time.time() - begintime) <= 40.0:
                                 rc = self.__depot_handle.poll()
                                 if rc is not None:
+                                        err = ""
+                                        with open(self.__logpath, "r", 0) as \
+                                            errf:
+                                                err = errf.read()
                                         raise DepotStateException("Depot exited "
-                                            "unexpectedly while starting "
-                                            "(exit code %d)" % rc)
+                                            "with exit code %d unexpectedly "
+                                            "while starting.  Output follows:\n"
+                                            "%s\n" % (rc, err))
 
                                 if self.is_alive():
                                         contact = True

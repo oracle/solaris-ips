@@ -1215,7 +1215,7 @@ class _Pkg5TestResult(unittest._TextTestResult):
 
                 res = "# ERROR during persistent setup for %s\n" % test.id()
                 res += "# As a result, all test cases in this class will " \
-                    "result in errors."
+                    "result in errors!\n#\n"
 
                 if errtype in ELIDABLE_ERRORS:
                         res += "#   " + str(errval)
