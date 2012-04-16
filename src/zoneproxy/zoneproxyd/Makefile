@@ -19,7 +19,7 @@
 # CDDL HEADER END
 #
 #
-# Copyright (c) 2010, 2011, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2010, 2012, Oracle and/or its affiliates. All rights reserved.
 #
 
 PROG =	zoneproxyd
@@ -34,7 +34,8 @@ ROOTHDR =	$(ROOTHDIR)/$(HDR)
 CLOBBERFILES +=	$(ROOTHDR)
 
 LDLIBS +=	-lcontract -lsocket -lumem -lscf
-CPPFLAGS +=	-mt -D_REENTRANT -D_FILE_OFFSET_BITS=64
+CPPFLAGS +=	-D_REENTRANT -D_FILE_OFFSET_BITS=64
+CFLAGS +=	-mt
 LINTFLAGS +=	-erroff=E_SEC_CREAT_WITHOUT_EXCL -U__PRAGMA_REDEFINE_EXTNAME
 
 .KEEP_STATE:

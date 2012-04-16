@@ -19,7 +19,7 @@
  * CDDL HEADER END
  */
 /*
- * Copyright (c) 2010, 2011, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2010, 2012, Oracle and/or its affiliates. All rights reserved.
  */
 
 /*
@@ -101,10 +101,10 @@
 #define	TIMEOUT_COUNT			4
 #define	MAX_FDS_DEFAULT			6000
 
-#define	SYSREPO_FMRI    "svc:/application/pkg/system-repository:default"
-#define	SYSREPO_PG      "config"
-#define	SYSREPO_HOST    "host"
-#define	SYSREPO_PORT    "port"
+#define	SYSREPO_FMRI	"svc:/application/pkg/system-repository:default"
+#define	SYSREPO_PG	"config"
+#define	SYSREPO_HOST	"host"
+#define	SYSREPO_PORT	"port"
 #define	DEFAULT_HOST	"127.0.0.1"
 #define	DEFAULT_PORT	"1008"
 
@@ -608,7 +608,7 @@ check_connect(struct proxy_pair *pair)
 	int error;
 	socklen_t len;
 
-	len = sizeof(error);
+	len = sizeof (error);
 
 	if (getsockopt(pair->pp_writefd, SOL_SOCKET, SO_ERROR, &error,
 	    &len) < 0) {
@@ -722,7 +722,7 @@ listen_func(struct proxy_listener *listener, port_event_t *ev)
 
 	/* If proxy config has changed, pull the new info into the listener. */
 	if (g_proxy_config->pc_gen > listener->pl_gen) {
-		mutex_lock(&g_proxy_config->pc_lock);
+		(void) mutex_lock(&g_proxy_config->pc_lock);
 		free(listener->pl_proxy_host);
 		free(listener->pl_proxy_port);
 		listener->pl_proxy_host = strdup(g_proxy_config->pc_proxy_host);
@@ -734,7 +734,7 @@ listen_func(struct proxy_listener *listener, port_event_t *ev)
 			exit(EXIT_FAILURE);
 		}
 		listener->pl_gen = g_proxy_config->pc_gen;
-		mutex_unlock(&g_proxy_config->pc_lock);
+		(void) mutex_unlock(&g_proxy_config->pc_lock);
 	}
 
 	if ((err_code = getaddrinfo(listener->pl_proxy_host,
@@ -1280,7 +1280,7 @@ zpd_perm_check(int cmd, zoneid_t zid)
 		if (uzid != zid) {
 			return (-1);
 		}
-		return(0);
+		return (0);
 	case ZP_CMD_ZONE_ADDED:
 	case ZP_CMD_ZONE_REMOVED:
 		if (uzid != 0) {
@@ -1805,7 +1805,7 @@ config_read(struct proxy_config *pc)
 		goto fail;
 	}
 
-	mutex_lock(&pc->pc_lock);
+	(void) mutex_lock(&pc->pc_lock);
 
 	if (scf_handle_bind(pc->pc_hdl) != 0) {
 		(void) fprintf(stderr, "scf_handle_bind failed; %s\n",
@@ -1876,11 +1876,11 @@ config_read(struct proxy_config *pc)
 	pc->pc_proxy_host = host;
 	pc->pc_proxy_port = port;
 	pc->pc_gen++;
-	mutex_unlock(&pc->pc_lock);
+	(void) mutex_unlock(&pc->pc_lock);
 	return (0);
 
 fail:
-	mutex_unlock(&pc->pc_lock);
+	(void) mutex_unlock(&pc->pc_lock);
 	free(host);
 	free(port);
 	return (-1);
@@ -1924,25 +1924,25 @@ main(int argc, char **argv)
 	sigset_t blockset;
 	struct rlimit rlp = {0};
 
-        while ((rc = getopt(argc, argv, "s:")) != -1) {
-                switch (rc) {
-                case 's':
-                        proxystr = optarg;
-                        break;
-                case ':':
-                        (void) fprintf(stderr, "Option -%c requires operand\n",
-                            optopt);
-                        usage();
-                        break;
-                case '?':
-                        (void) fprintf(stderr, "Unrecognized option -%c\n",
-                            optopt);
-                        usage();
-                        break;
-                default:
-                        break;
-                }
-        }
+	while ((rc = getopt(argc, argv, "s:")) != -1) {
+		switch (rc) {
+		case 's':
+			proxystr = optarg;
+			break;
+		case ':':
+			(void) fprintf(stderr, "Option -%c requires operand\n",
+			    optopt);
+			usage();
+			break;
+		case '?':
+			(void) fprintf(stderr, "Unrecognized option -%c\n",
+			    optopt);
+			usage();
+			break;
+		default:
+			break;
+		}
+	}
 
 	g_config_smf = (proxystr == NULL) ? B_TRUE : B_FALSE;
 

@@ -19,7 +19,7 @@
  * CDDL HEADER END
  */
 /*
- * Copyright (c) 2010, 2011, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2010, 2012, Oracle and/or its affiliates. All rights reserved.
  * Use is subject to license terms.
  */
 
@@ -30,16 +30,16 @@
 extern "C" {
 #endif
 
-#define ZP_DOOR_PATH "/system/volatile/zoneproxy_door"
+#define	ZP_DOOR_PATH "/system/volatile/zoneproxy_door"
 
 
 #define	ZP_CMD_NEW_LISTENER	1
 #define	ZP_CMD_REMOVE_LISTENER	2
 #define	ZP_CMD_ZONE_ADDED	3
-#define ZP_CMD_ZONE_REMOVED	4
+#define	ZP_CMD_ZONE_REMOVED	4
 #define	ZP_CMD_PING		5
 
-#define ZP_STATUS_OK		0
+#define	ZP_STATUS_OK		0
 #define	ZP_STATUS_PERMISSION	1
 #define	ZP_STATUS_INVALID	2
 #define	ZP_STATUS_ERROR		3

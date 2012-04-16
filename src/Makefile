@@ -20,7 +20,7 @@
 #
 
 #
-# Copyright (c) 2007, 2011, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2007, 2012, Oracle and/or its affiliates. All rights reserved.
 #
 
 PYTHON = /usr/bin/python2.6
@@ -60,9 +60,11 @@ install: $(SUBDIRS)
 
 lint:
 	$(PYTHON) setup.py lint
+	@cd zoneproxy; pwd; make lint
 
 clint:
 	$(PYTHON) setup.py clint
+	@cd zoneproxy; pwd; make lint
 
 pylint:
 	$(PYTHON) setup.py pylint

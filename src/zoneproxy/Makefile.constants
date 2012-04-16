@@ -19,7 +19,7 @@
 # CDDL HEADER END
 #
 #
-# Copyright (c) 2011, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2011, 2012, Oracle and/or its affiliates. All rights reserved.
 #
 
 INSTALL =	/usr/bin/python2.6 ../../setup.py installfile
@@ -29,7 +29,8 @@ PROTO_AREA:sh =	echo $(hg root)/proto/root_$(uname -p)
 ZONES_LIBDIR =	$(PROTO_AREA)/usr/lib/zones
 ZONES_PROG =	$(PROG:%=$(ZONES_LIBDIR)/%)
 
-LINTFLAGS =	-asxm -u -errtags=yes -s -errsecurity=core -Xc99=%none
+LINTFLAGS =	-asxm -u -errwarn=%all -errtags=yes -s -errsecurity=core \
+		-Xc99=%none
 CPPFLAGS =	-D_REENTRANT -I../zoneproxyd 
 CFLAGS =	-errtags=yes -errwarn=%all -features=conststrings -xO4 \
 		-W0,-xglobalstatic -Xa -xc99=%none -xildoff -xspace

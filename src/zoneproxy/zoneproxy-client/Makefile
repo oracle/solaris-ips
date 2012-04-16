@@ -19,7 +19,7 @@
 # CDDL HEADER END
 #
 #
-# Copyright (c) 2011, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2011, 2012, Oracle and/or its affiliates. All rights reserved.
 #
 
 PROG =		zoneproxy-client
@@ -27,8 +27,9 @@ SRCS =		zoneproxy-client.c
 
 include ../Makefile.constants
 
-LDLIBS 				= -lsocket
-CPPFLAGS +=     -mt -D_REENTRANT -D_FILE_OFFSET_BITS=64
+LDLIBS =	-lsocket
+CPPFLAGS +=	-D_REENTRANT -D_FILE_OFFSET_BITS=64
+CFLAGS += 	-mt
 
 .KEEP_STATE:
 

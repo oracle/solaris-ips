@@ -19,7 +19,7 @@
  * CDDL HEADER END
  */
 /*
- * Copyright (c) 2010, 2011, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2010, 2012, Oracle and/or its affiliates. All rights reserved.
  */
 
 #include <door.h>
@@ -46,8 +46,8 @@
 #include <sys/wait.h>
 
 #define	EXIT_DAEMON_TERM	3
-#define SLEEP_INTERVAL		15
-#define SLEEP_DURATION		180
+#define	SLEEP_INTERVAL		15
+#define	SLEEP_DURATION		180
 
 static int g_pipe_fd;
 
@@ -61,7 +61,7 @@ s_handler(void)
 	int do_exit = 0;
 	sigset_t wait_sigs;
 
-	sigfillset(&wait_sigs);
+	(void) sigfillset(&wait_sigs);
 
 	while (do_exit == 0) {
 		if ((sig = sigwait(&wait_sigs)) < 0)
@@ -536,7 +536,7 @@ main(int argc, char **argv)
 
 	daemonize_ready(0);
 
-	sigfillset(&main_ss);
+	(void) sigfillset(&main_ss);
 
 	if (thr_sigsetmask(SIG_BLOCK, &main_ss, NULL) < 0) {
 		perror("thr_sigsetmask");
