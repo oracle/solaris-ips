@@ -2089,14 +2089,14 @@ class PkgSolver(object):
                                 installed = self.__root_fmris.get(
                                     req_fmri.pkg_name, None)
                                 reason = (N_("Installed version in root image "
-                                    "is too old for origin dependency %s"),
+                                    "is too old for origin dependency {0}"),
                                     (req_fmri,))
                         else:
                                 installed = self.__installed_dict.get(
                                     req_fmri.pkg_name, None)
                                 reason = (N_("Installed version in image "
                                     "being upgraded is too old for origin "
-                                    "dependency %s"), (req_fmri,))
+                                    "dependency {0}"), (req_fmri,))
 
                         # assumption is that for root-image, publishers align;
                         # otherwise these sorts of cross-environment
