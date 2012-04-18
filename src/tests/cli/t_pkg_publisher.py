@@ -43,6 +43,18 @@ class TestPkgPublisherBasics(pkg5unittest.SingleDepotTestCase):
         # Tests in this suite use the read only data directory.
         need_ro_data = True
 
+        # Dummy package
+        foo1 = """
+            open foo@1,5.11-0
+            close """
+
+        def setUp(self):
+                # This test suite needs actual depots.
+                pkg5unittest.SingleDepotTestCase.setUp(self, start_depot=True)
+
+                self.durl1 = self.dcs[1].get_depot_url()
+                self.pkgsend_bulk(self.durl1, self.foo1)
+
         def test_pkg_publisher_bogus_opts(self):
                 """ pkg bogus option checks """
 
@@ -432,6 +444,17 @@ class TestPkgPublisherBasics(pkg5unittest.SingleDepotTestCase):
                 self.pkg("publisher test")
                 self.assert_("signature-required-names = n1, n2" in self.output)
 
+        def test_bug_7141684(self):
+                """Test that pkg(1) client does not traceback if no publisher
+                configured and we try to get preferred publisher"""
+
+                self.image_create()
+                self.pkg("publisher -P", exit=0)
+
+                self.pkg("set-publisher -g %s test" % self.durl1)
+                self.pkg("install foo")
+                self.pkg("unset-publisher test")
+                self.pkg("publisher -P", exit=0)
 
 class TestPkgPublisherMany(pkg5unittest.ManyDepotTestCase):
         # Only start/stop the depot once (instead of for every test)
