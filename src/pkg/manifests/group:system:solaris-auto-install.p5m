@@ -53,6 +53,7 @@ depend type=group fmri=driver/fc/qlc
 $(sparc_ONLY)depend type=group fmri=driver/fc/socal
 $(sparc_ONLY)depend type=group fmri=driver/graphics/ast
 $(sparc_ONLY)depend type=group fmri=driver/graphics/efb
+$(sparc_ONLY)depend type=group fmri=driver/graphics/mga
 depend type=group fmri=driver/infiniband/connectx
 depend type=group fmri=driver/management/bmc
 depend type=group fmri=driver/management/ipmi

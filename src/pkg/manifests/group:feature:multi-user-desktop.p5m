@@ -20,7 +20,7 @@
 #
 
 #
-# Copyright (c) 2011, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2011, 2012, Oracle and/or its affiliates. All rights reserved.
 #
 
 set name=pkg.fmri value=pkg:/group/feature/multi-user-desktop@$(PKGVERS)
@@ -167,6 +167,7 @@ depend type=group fmri=system/font/xorg/xorg-core
 $(sparc_ONLY)depend type=group fmri=system/graphics/fbconfig
 $(sparc_ONLY)depend type=group fmri=system/graphics/fbconfig/fbconfig-ast
 $(sparc_ONLY)depend type=group fmri=system/graphics/fbconfig/fbconfig-efb
+$(sparc_ONLY)depend type=group fmri=system/graphics/fbconfig/fbconfig-mga
 depend type=group fmri=system/input-method/ibus
 depend type=group fmri=system/input-method/ibus/anthy
 depend type=group fmri=system/input-method/ibus/chewing
