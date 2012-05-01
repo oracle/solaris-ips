@@ -48,7 +48,7 @@ class TestPkgVariants(pkg5unittest.SingleDepotTestCase):
         add file tmp/bronze_zone/etc/sparc_global mode=0555 owner=root group=bin path=etc/zone_arch variant.arch=sparc variant.opensolaris.zone=global
         add file tmp/bronze_zone/etc/i386_global mode=0555 owner=root group=bin path=etc/zone_arch variant.arch=i386 variant.opensolaris.zone=global
         add file tmp/bronze_zone/etc/zos_global mode=0555 owner=root group=bin path=etc/zone_arch variant.arch=zos variant.opensolaris.zone=global
-        add file tmp/bronze_zone/false mode=0555 owner=root group=bin path=etc/isdebug variant.debug.kernel=false 
+        add file tmp/bronze_zone/false mode=0555 owner=root group=bin path=etc/isdebug variant.debug.kernel=false
         add file tmp/bronze_zone/true mode=0555 owner=root group=bin path=etc/isdebug variant.debug.kernel=true
         close"""
 
@@ -75,7 +75,17 @@ class TestPkgVariants(pkg5unittest.SingleDepotTestCase):
         add set name=variant.mumble value=false
         close"""
 
-        misc_files = [ 
+        i386_pkg = """
+        open i386_pkg@1.0,5.11-0
+        add set name=variant.arch value=i386
+        close"""
+
+        i386_pkg_indirect = """
+        open i386_pkg_indirect@1.0,5.11-0
+        add depend type=require fmri=pkg:/i386_pkg@1.0,5.11-0
+        close"""
+
+        misc_files = [
             "tmp/bronze_sparc/etc/motd",
             "tmp/bronze_i386/etc/motd",
             "tmp/bronze_zos/etc/motd",
@@ -126,6 +136,23 @@ class TestPkgVariants(pkg5unittest.SingleDepotTestCase):
                 self.pkg("info mumblefratz@1.0", exit=1)
                 self.pkg("info mumblefratz@2.0")
 
+        def test_variant_4_indirect(self):
+                """Verify that we can't indirectly install a package tagged
+                with a variant that doesn't match ours."""
+
+                self.pkgsend_bulk(self.rurl, self.i386_pkg)
+                self.pkgsend_bulk(self.rurl, self.i386_pkg_indirect)
+
+                self.image_create(self.rurl,
+                    variants={ "variant.arch": "sparc" })
+
+                # we should not be able to install an i386 package directly
+                self.pkg("install i386_pkg", exit=1)
+
+                # we should not be able to install an i386 package indirectly
+                self.pkg("install i386_pkg_indirect", exit=1)
+
+
         def test_old_zones_pkgs(self):
                 self.__test_common("variant.opensolaris.zone",
                     "opensolaris.zone")
@@ -141,7 +168,7 @@ class TestPkgVariants(pkg5unittest.SingleDepotTestCase):
                 self.__vtest(self.rurl, "i386", "nonglobal", "false")
                 self.__vtest(self.rurl, "zos", "nonglobal", "false")
 
-                self.pkg_image_create(self.rurl, 
+                self.pkg_image_create(self.rurl,
                     additional_args="--variant variant.arch=%s" % "sparc")
                 self.pkg("install silver", exit=1)
 
@@ -154,7 +181,7 @@ class TestPkgVariants(pkg5unittest.SingleDepotTestCase):
                         do_isdebug = ""
                         is_debug = "false"
 
-                self.pkg_image_create(depot, 
+                self.pkg_image_create(depot,
                     additional_args="--variant variant.arch=%s --variant variant.opensolaris.zone=%s %s" % (
                     arch, zone, do_isdebug))
                 self.pkg("install bronze")

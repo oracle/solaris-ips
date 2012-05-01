@@ -305,7 +305,8 @@ class FileAction(generic.Action):
                             "expected": int(self.attrs["pkg.size"]) })
 
                 if "preserve" in self.attrs:
-                        return errors, warnings, info
+                        if args["verbose"] == False or lstat is None:
+                                return errors, warnings, info
 
                 if args["forever"] != True:
                         return errors, warnings, info
@@ -350,7 +351,11 @@ class FileAction(generic.Action):
                                 hashvalue, data = misc.get_data_digest(path)
                                 if hashvalue != self.hash:
                                         # Prefer the content hash error message.
-                                        if elferror:
+                                        if "preserve" in self.attrs:
+                                                info.append(_(
+                                                    "editable file has" 
+                                                    " been changed"))
+                                        elif elferror:
                                                 errors.append(elferror)
                                         else:
                                                 errors.append(_("Hash: "

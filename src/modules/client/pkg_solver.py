@@ -296,10 +296,19 @@ class PkgSolver(object):
                                 self.__publisher[name] = \
                                     proposed_dict[name][0].publisher
 
+
+                # figure out fmris to be removed from image
+                # we may have installed wrong variants by
+                # mistake due to dependencies; remove them quietly
+
                 self.__removal_fmris |= set([
                     self.__installed_dict[name]
                     for name in reject_set
                     if name in self.__installed_dict
+                ] + [
+                    f
+                    for f in self.__installed_fmris
+                    if not self.__trim_nonmatching_variants(f)
                 ])
 
                 # remove packages to be installed from avoid_set
@@ -437,14 +446,15 @@ class PkgSolver(object):
                 possible_set.update(self.__generate_dependency_closure(
                     possible_set, excludes=excludes))
 
-                # remove any possibles that must be excluded because of
-                # origin and parent dependencies
-                for f in possible_set.copy():
-                        if not self.__trim_nonmatching_origins(f, excludes):
-                                possible_set.remove(f)
-                        elif not self.__trim_nonmatching_parents(f, excludes):
-                                possible_set.remove(f)
+                # trim any non-matching variants, origins or parents
+                for f in possible_set:
+                        if self.__trim_nonmatching_parents(f, excludes):
+                                if self.__trim_nonmatching_variants(f):
+                                        self.__trim_nonmatching_origins(f,
+                                            excludes)
 
+                # remove all trimmed fmris from consideration
+                possible_set.difference_update(self.__trim_dict.iterkeys())
                 # remove any versions from proposed_dict that are in trim_dict
                 # as trim dict has been updated w/ missing dependencies
                 self.__timeit("phase 8")
@@ -649,10 +659,18 @@ class PkgSolver(object):
                 self.__progtrack.evaluate_progress()
                 self.__timeit()
 
+                # figure out fmris to be removed from image
+                # we may have installed wrong variants by
+                # mistake due to dependencies; remove them quietly
+
                 self.__removal_fmris = frozenset([
                     self.__installed_dict[name]
                     for name in reject_set
                     if name in self.__installed_dict
+                ] + [
+                    f
+                    for f in self.__installed_fmris
+                    if not self.__trim_nonmatching_variants(f)
                 ])
                 self.__reject_set = reject_set
 
@@ -698,13 +716,15 @@ class PkgSolver(object):
                 possible_set.update(self.__generate_dependency_closure(
                     possible_set, excludes=excludes))
 
-                # remove any possibles that must be excluded because of
-                # origin and parent dependencies
-                for f in possible_set.copy():
-                        if not self.__trim_nonmatching_origins(f, excludes):
-                                possible_set.remove(f)
-                        elif not self.__trim_nonmatching_parents(f, excludes):
-                                possible_set.remove(f)
+                # trim any non-matching origins or parents
+                for f in possible_set:
+                        if self.__trim_nonmatching_parents(f, excludes):
+                                if self.__trim_nonmatching_variants(f):
+                                        self.__trim_nonmatching_origins(f,
+                                            excludes)
+
+                # remove all trimmed fmris from consideration
+                possible_set.difference_update(self.__trim_dict.iterkeys())
 
                 self.__timeit("phase 3")
 
@@ -1982,6 +2002,7 @@ class PkgSolver(object):
 
         def __trim_nonmatching_variants(self, fmri):
                 vd = self.__get_variant_dict(fmri)
+                reason = ""
 
                 for v in self.__variants.keys():
                         if v in vd and self.__variants[v] not in vd[v]:
@@ -1991,6 +2012,7 @@ class PkgSolver(object):
                                         reason = (N_("Package doesn't support image variant {0}"), (v,))
 
                                 self.__trim(fmri, reason)
+                return reason == ""
 
         def __trim_nonmatching_parents1(self, pkg_fmri, fmri):
                 if fmri in self.__parent_pkgs:
