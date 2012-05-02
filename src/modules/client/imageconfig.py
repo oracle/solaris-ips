@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2007, 2011, Oracle and/or its affiliates.  All rights reserved.
+# Copyright (c) 2007, 2012, Oracle and/or its affiliates.  All rights reserved.
 #
 
 import errno
@@ -822,11 +822,14 @@ class NullSystemPublisher(object):
         """Dummy system publisher object for use when an image doesn't use a
         system publisher."""
 
-        __supported_props = ("publisher-search-order", "property.proxied-urls")
+        __supported_props = ("publisher-search-order", "property.proxied-urls",
+            SIGNATURE_POLICY, "signature-required-names")
 
         def __init__(self):
                 self.publishers = {}
                 self.__props = dict([(p, []) for p in self.__supported_props])
+                self.__props[SIGNATURE_POLICY] = \
+                    default_policies[SIGNATURE_POLICY]
 
         def write(self):
                 return
@@ -843,8 +846,38 @@ class NullSystemPublisher(object):
         def set_property(self, section, name, value):
                 if section == "property" and name in self.__supported_props:
                         self.__props[name] = value
+                        self.__validate_properties()
                         return
                 raise NotImplementedError()
+
+        def __validate_properties(self):
+                """Check that properties are consistent with each other."""
+
+                try:
+                        polval = self.get_property("property", SIGNATURE_POLICY)
+                except cfg.PropertyConfigError:
+                        # If it hasn't been set yet, there's nothing to
+                        # validate.
+                        return
+
+                if polval == "require-names":
+                        signames = self.get_property("property",
+                            "signature-required-names")
+                        if not signames:
+                                raise apx.InvalidPropertyValue(_(
+                                    "At least one name must be provided for "
+                                    "the signature-required-names policy."))
+
+        def set_properties(self, properties):
+                """Set multiple properties at one time."""
+
+                if properties.keys() != ["property"]:
+                        raise NotImplementedError
+                props = properties["property"]
+                if not all(k in self.__supported_props for k in props):
+                        raise NotImplementedError()
+                self.__props.update(props)
+                self.__validate_properties()
 
 
 class BlendedConfig(object):
@@ -878,6 +911,12 @@ class BlendedConfig(object):
                         old_sysconfig = ImageConfig(syscfg_path, None)
                 else:
                         old_sysconfig = NullSystemPublisher()
+
+                # A tuple of properties whose value should be taken from the
+                # system repository configuration and not the image
+                # configuration.
+                self.__system_override_properties = (SIGNATURE_POLICY,
+                    "signature-required-names")
 
                 write_sys_cfg = True
                 if use_system_pub:
@@ -969,8 +1008,25 @@ class BlendedConfig(object):
                                 self.sys_cfg.set_property("property",
                                     "publisher-search-order",
                                     props["publisher-search-order"])
+                                # A dictionary is used to change both of these
+                                # properties at once since setting the
+                                # signature-policy to require-names without
+                                # having any require-names set will cause
+                                # property validation to fail.
+                                d = {}
+                                if SIGNATURE_POLICY in props:
+                                        d.setdefault("property", {})[
+                                            SIGNATURE_POLICY] = props[
+                                            SIGNATURE_POLICY]
+                                if "signature-required-names" in props:
+                                        d.setdefault("property", {})[
+                                            "signature-required-names"] = props[
+                                            "signature-required-names"]
+                                if d:
+                                        self.sys_cfg.set_properties(d)
                 else:
                         self.sys_cfg = NullSystemPublisher()
+                        self.__system_override_properties = ()
 
                 self.__publishers, self.added_pubs, self.removed_pubs = \
                     self.__merge_publishers(self.img_cfg, self.sys_cfg,
@@ -982,7 +1038,7 @@ class BlendedConfig(object):
             proxy_url, write_sys_cfg):
                 """This funcion merges an old publisher configuration from the
                 system repository with the new publisher configuration from the
-                system repository.  It retuns a tuple containing a dictionary
+                system repository.  It returns a tuple containing a dictionary
                 mapping prefix to publisher, the publisher objects for the newly
                 added system publishers, and the publisher objects for the
                 system publishers which were removed.
@@ -998,9 +1054,6 @@ class BlendedConfig(object):
 
                 The 'old_sysconfig' parameter is ImageConfig object containing
                 the previous publisher configuration from the system repository.
-
-                The 'use_system_pub' parameter is a boolean which indicates
-                whether the system publisher should be used.
 
                 The 'proxy_url' parameter is the url for the system repository.
 
@@ -1154,6 +1207,9 @@ class BlendedConfig(object):
                                 p not in img_pubs
                         ]
                         return enabled_sys_pubs + img_pubs + disabled_sys_pubs
+                if section == "property" and name in \
+                    self.__system_override_properties:
+                        return self.sys_cfg.get_property(section, name)
                 return self.img_cfg.get_property(section, name)
 
         def remove_property(self, *args, **kwargs):

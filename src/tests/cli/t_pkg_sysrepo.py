@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2011, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2011, 2012 Oracle and/or its affiliates. All rights reserved.
 #
 
 import testutils
@@ -47,7 +47,8 @@ class PC(object):
         depots and https apache instances needed by the tests."""
 
         def __init__(self, url, sticky=True, mirrors=misc.EmptyI, https=False,
-            server_ta=None, client_ta=None, disabled=False, name=None):
+            server_ta=None, client_ta=None, disabled=False, name=None,
+            sig_pol=None, req_names=None):
                 assert (https and server_ta and client_ta) or \
                     not (https or server_ta or client_ta)
                 assert not disabled or name
@@ -59,6 +60,8 @@ class PC(object):
                 self.client_ta = client_ta
                 self.disabled = disabled
                 self.name = name
+                self.signature_policy = sig_pol
+                self.required_names = req_names
 
 class TestSysrepo(pkg5unittest.ManyDepotTestCase):
         # Tests in this suite use the read only data directory.
@@ -162,57 +165,108 @@ test4\ttrue\ttrue\ttrue\t\t\t
                 self.apache_confs = {}
 
                 # Establish the different publisher configurations that tests
-                # will need.
+                # will need.  self.configs is a dictionary that maps config
+                # names to tuples of (image properties, PC objects).  The image
+                # properties are stored in a dictionary that maps the name of
+                # the property to the value.  The list of PC objects represent
+                # the configuration of each publisher.
+                #
+                # The self.configs dictionary is used to create images who
+                # configuration is used by pkg.sysrepo to create the
+                # configuration files needed to set up a system-repository
+                # instance for that image.
                 self.configs = {
-                    "all-access": ([
+                    "all-access": ({}, [
                         PC(self.durl1),
                         PC(self.durl2, sticky=False),
                         PC(self.durl3),
                         PC(None, name="test4")]),
-                    "all-access-f": ([
+                    "all-access-f": ({}, [
                         PC(self.rurl1),
                         PC(self.rurl2, sticky=False),
                         PC(self.rurl3)]),
-                    "disabled": ([
+                    "disabled": ({}, [
                         PC(self.durl1, disabled=True, name="test1"),
                         PC(self.durl2, sticky=False),
                         PC(self.durl3)]),
-                    "https-access": ([
+                    "https-access": ({}, [
                         PC(self.durl1, https=True, server_ta="ta11",
                             client_ta="ta6"),
                         PC(self.durl2, sticky=False, https=True,
                             server_ta="ta7", client_ta="ta8"),
                         PC(self.durl3, https=True, server_ta="ta9",
                             client_ta="ta10")]),
-                    "mirror-access": ([
+                    "mirror-access": ({}, [
                         PC(self.durl1, mirrors=[("test1", self.rurl1)]),
                         PC(self.durl2, sticky=False,
                             mirrors=[("test12", self.rurl2)]),
                         PC(self.durl3, mirrors=[("test3", self.rurl3)])]),
-                    "mirror-access-f": ([
+                    "mirror-access-f": ({}, [
                         PC(self.rurl1, mirrors=[("test1", self.durl1)]),
                         PC(self.rurl2, sticky=False,
                             mirrors=[("test12", self.durl2)]),
                         PC(self.rurl3, mirrors=[("test3", self.durl3)])]),
-                    "mirror-access-user": ([
+                    "mirror-access-user": ({}, [
                         PC(self.durl1, mirrors=[("test1", self.rurl1)]),
                         PC(self.durl2, sticky=False),
                         PC(self.durl3, mirrors=[("test3", self.rurl3)])]),
-                    "none": [],
-                    "test1": ([PC(self.durl1)]),
-                    "test1-test12": ([
+                    "none": ({}, []),
+                    "test1": ({}, [PC(self.durl1)]),
+                    "test1-test12": ({}, [
                         PC(self.durl1),
                         PC(self.durl2, sticky=False)]),
-                    "test1-test3": ([
+                    "test1-test3": ({}, [
                         PC(self.durl1),
                         PC(self.durl3)]),
-                    "test12": ([
+                    "test12": ({}, [
                         PC(self.durl2, sticky=False)]),
-                    "test12-test3": ([
+                    "test12-test3": ({}, [
                         PC(self.durl2, sticky=False),
                         PC(self.durl3)]),
-                    "test3": ([PC(self.durl3)]),
-                    "nourl": ([PC(None, name="test4")])
+                    "test3": ({}, [PC(self.durl3)]),
+                    "nourl": ({}, [PC(None, name="test4")]),
+                    "img-sig-ignore": ({"signature-policy": "ignore"}, [
+                        PC(self.rurl1),
+                        PC(self.rurl2, sticky=False),
+                        PC(self.rurl3)]),
+                    "img-sig-require": (
+                        {"signature-policy": "require-signatures"}, [
+                        PC(self.rurl1),
+                        PC(self.rurl2, sticky=False),
+                        PC(self.rurl3)]),
+                    "img-sig-req-names": ({
+                            "signature-policy": "require-names",
+                            "signature-required-names": ["cs1_ch1_ta3"]
+                        }, [
+                        PC(self.rurl1),
+                        PC(self.rurl2, sticky=False),
+                        PC(self.rurl3)]),
+                    "pub-sig-ignore": ({}, [
+                        PC(self.rurl1, sig_pol="ignore"),
+                        PC(self.rurl2, sticky=False,
+                            sig_pol="ignore"),
+                        PC(self.rurl3, sig_pol="ignore")]),
+                    "pub-sig-require": ({}, [
+                        PC(self.rurl1, sig_pol="require-signatures"),
+                        PC(self.rurl2, sticky=False,
+                            sig_pol="require-signatures"),
+                        PC(self.rurl3, sig_pol="require-signatures")]),
+                    "pub-sig-reqnames": ({}, [
+                        PC(self.rurl1, sig_pol="require-names",
+                            req_names="cs1_ch1_ta3"),
+                        PC(self.rurl2, sticky=False,
+                            sig_pol="require-names", req_names=["cs1_ch1_ta3"]),
+                        PC(self.rurl3, sig_pol="require-names",
+                            req_names="cs1_ch1_ta3")]),
+                    "pub-sig-mixed": ({}, [
+                        PC(self.rurl1, sig_pol="require-signatures"),
+                        PC(self.rurl2, sticky=False),
+                        PC(self.rurl3, sig_pol="verify")]),
+                    "img-pub-sig-mixed": ({"signature-policy": "ignore"}, [
+                        PC(self.rurl1, sig_pol="require-signatures"),
+                        PC(self.rurl2, sticky=False, sig_pol="require-names",
+                            req_names=["cs1_ch1_ta3", "foo", "bar", "baz"]),
+                        PC(self.rurl3, sig_pol="ignore")]),
                 }
 
                 # Config needed for https apache instances.
@@ -288,8 +342,8 @@ test4\ttrue\ttrue\ttrue\t\t\t
                 if isinstance(names, basestring):
                         names = [names]
                 for name in names:
-                        pcs = self.configs[name]
-                        self.image_create()
+                        props, pcs = self.configs[name]
+                        self.image_create(props=props)
                         for pc in pcs:
                                 cmd = "set-publisher"
                                 if not pc.sticky:
@@ -323,6 +377,14 @@ test4\ttrue\ttrue\ttrue\t\t\t
                                                     pc.client_ta),
                                                 "url": ac.url,
                                             }
+                                if pc.signature_policy:
+                                        cmd += " --set-property " \
+                                            "signature-policy=%s" % \
+                                            pc.signature_policy
+                                if pc.required_names:
+                                        cmd += " --set-property " \
+                                            "signature-required-names='%s'" % \
+                                            pc.required_names
                                 self.pkg(cmd, debug_smf=False)
                                 for pub, m in pc.mirrors:
                                         self.pkg(
@@ -352,6 +414,7 @@ test4\ttrue\ttrue\ttrue\t\t\t
                         self.apache_confs[name] = os.path.join(self.test_root,
                             "apache-conf", name, "sysrepo_httpd.conf")
                         self.__configured_names.append(name)
+                        self.pkg("property")
                         self.image_destroy()
 
         def __set_responses(self, name, update_conf=True):
@@ -1411,6 +1474,209 @@ PUBLISHER\tSTICKY\tSYSPUB\tENABLED\tTYPE\tSTATUS\tURI
                 self.__check_publisher_info(expected, su_wrap=True)
                 self.pkg("property", su_wrap=True)
                 self.pkg("install foo", su_wrap=True, exit=1)
+
+        def test_signature_policy_1(self):
+                """Test that the image signature policy of ignore is propagated
+                by the system-repository."""
+
+                conf_name = "img-sig-ignore"
+                self.__prep_configuration([conf_name])
+                self.__set_responses(conf_name)
+                self.sc = pkg5unittest.SysrepoController(
+                    self.apache_confs[conf_name], self.sysrepo_port,
+                    self.common_config_dir, testcase=self)
+                self.sc.start()
+                api_obj = self.image_create(props={"use-system-repo": True})
+
+                self.pkg("property -H signature-policy", su_wrap=True)
+                self.assertEqualDiff("signature-policy ignore",
+                    self.output.strip())
+                self.pkg("property -H signature-policy")
+                self.assertEqualDiff("signature-policy ignore",
+                    self.output.strip())
+
+        def test_signature_policy_2(self):
+                """Test that the image signature policy of require is propagated
+                by the system-repository."""
+
+                conf_name = "img-sig-require"
+                self.__prep_configuration([conf_name])
+                self.__set_responses(conf_name)
+                self.sc = pkg5unittest.SysrepoController(
+                    self.apache_confs[conf_name], self.sysrepo_port,
+                    self.common_config_dir, testcase=self)
+                self.sc.start()
+                api_obj = self.image_create(props={"use-system-repo": True})
+
+                self.pkg("property -H signature-policy")
+                self.assertEqualDiff("signature-policy require-signatures",
+                    self.output.strip())
+                self.pkg("property -H signature-policy", su_wrap=True)
+                self.assertEqualDiff("signature-policy require-signatures",
+                    self.output.strip())
+
+        def test_signature_policy_3(self):
+                """Test that the image signature policy of require-names and the
+                corresponding required names are propagated by the
+                system-repository."""
+
+                conf_name = "img-sig-req-names"
+                self.__prep_configuration([conf_name])
+                self.__set_responses(conf_name)
+                self.sc = pkg5unittest.SysrepoController(
+                    self.apache_confs[conf_name], self.sysrepo_port,
+                    self.common_config_dir, testcase=self)
+                self.sc.start()
+
+                api_obj = self.image_create(props={"use-system-repo": True})
+
+                self.pkg("property -H signature-policy", su_wrap=True)
+                self.assertEqualDiff("signature-policy require-names",
+                    self.output.strip())
+                self.pkg("property -H signature-required-names", su_wrap=True)
+                self.assertEqualDiff("signature-required-names ['cs1_ch1_ta3']",
+                    self.output.strip())
+                self.pkg("property -H signature-policy")
+                self.assertEqualDiff("signature-policy require-names",
+                    self.output.strip())
+                self.pkg("property -H signature-required-names")
+                self.assertEqualDiff("signature-required-names ['cs1_ch1_ta3']",
+                    self.output.strip())
+
+        def test_signature_policy_4(self):
+                """Test that the publisher signature policies of ignore are
+                propagated by the system-repository."""
+
+                conf_name = "pub-sig-ignore"
+                self.__prep_configuration([conf_name])
+                self.__set_responses(conf_name)
+                self.sc = pkg5unittest.SysrepoController(
+                    self.apache_confs[conf_name], self.sysrepo_port,
+                    self.common_config_dir, testcase=self)
+                self.sc.start()
+                api_obj = self.image_create(props={"use-system-repo": True})
+
+                self.pkg("publisher test1", su_wrap=True)
+                self.assert_("signature-policy = ignore" in self.output)
+                pubs = api_obj.get_publishers()
+                for p in pubs:
+                        self.assertEqualDiff(
+                            p.prefix + ":" + p.properties["signature-policy"],
+                            p.prefix + ":" + "ignore")
+
+        def test_signature_policy_5(self):
+                """Test that the publisher signature policies of
+                require-signatures are propagated by the system-repository."""
+
+                conf_name = "pub-sig-require"
+                self.__prep_configuration([conf_name])
+                self.__set_responses(conf_name)
+                self.sc = pkg5unittest.SysrepoController(
+                    self.apache_confs[conf_name], self.sysrepo_port,
+                    self.common_config_dir, testcase=self)
+                self.sc.start()
+                api_obj = self.image_create(props={"use-system-repo": True})
+
+                pubs = api_obj.get_publishers()
+                for p in pubs:
+                        self.assertEqualDiff(
+                            p.prefix + ":" + p.properties["signature-policy"],
+                            p.prefix + ":" + "require-signatures")
+
+        def test_signature_policy_6(self):
+                """Test that publishers signature policies of require-names and
+                the corresponding required names are propagated by the
+                system-repository."""
+
+                conf_name = "pub-sig-reqnames"
+                self.__prep_configuration([conf_name])
+                self.__set_responses(conf_name)
+                self.sc = pkg5unittest.SysrepoController(
+                    self.apache_confs[conf_name], self.sysrepo_port,
+                    self.common_config_dir, testcase=self)
+                self.sc.start()
+
+                api_obj = self.image_create(props={"use-system-repo": True})
+
+                pubs = api_obj.get_publishers()
+                for p in pubs:
+                        self.assertEqualDiff(
+                            p.prefix + ":" + p.properties["signature-policy"],
+                            p.prefix + ":" + "require-names")
+                        self.assertEqualDiff(
+                            p.prefix + ":" +
+                            " ".join(p.properties["signature-required-names"]),
+                            p.prefix + ":" + "cs1_ch1_ta3")
+
+        def test_signature_policy_7(self):
+                """Test that a mixture of publisher signature policies are
+                correctly propagated."""
+
+                conf_name = "pub-sig-mixed"
+                self.__prep_configuration([conf_name])
+                self.__set_responses(conf_name)
+                self.sc = pkg5unittest.SysrepoController(
+                    self.apache_confs[conf_name], self.sysrepo_port,
+                    self.common_config_dir, testcase=self)
+                self.sc.start()
+                api_obj = self.image_create(props={"use-system-repo": True})
+
+                pubs = api_obj.get_publishers()
+                for p in pubs:
+                        if p.prefix == "test1":
+                                self.assertEqualDiff(
+                                    p.prefix + ":" +
+                                    p.properties["signature-policy"],
+                                    p.prefix + ":" + "require-signatures")
+                        elif p.prefix == "test12":
+                                self.assert_("signature-policy" not in
+                                    p.properties)
+                        else:
+                                self.assertEqualDiff(
+                                    p.prefix + ":" +
+                                    p.properties["signature-policy"],
+                                    p.prefix + ":" + "verify")
+
+        def test_signature_policy_8(self):
+                """Test that a mixture of image and publisher signature policies
+                are correctly propagated."""
+
+                conf_name = "img-pub-sig-mixed"
+                self.__prep_configuration([conf_name])
+                self.__set_responses(conf_name)
+                self.sc = pkg5unittest.SysrepoController(
+                    self.apache_confs[conf_name], self.sysrepo_port,
+                    self.common_config_dir, testcase=self)
+                self.sc.start()
+
+                api_obj = self.image_create(props={"use-system-repo": True})
+
+                self.pkg("property -H signature-policy")
+                self.assertEqualDiff("signature-policy ignore",
+                    self.output.strip())
+
+                pubs = api_obj.get_publishers()
+                for p in pubs:
+                        if p.prefix == "test1":
+                                self.assertEqualDiff(
+                                    p.prefix + ":" +
+                                    p.properties["signature-policy"],
+                                    p.prefix + ":" + "require-signatures")
+                        elif p.prefix == "test12":
+                                self.assertEqualDiff(
+                                    p.prefix + ":" +
+                                    p.properties["signature-policy"],
+                                    p.prefix + ":" + "require-names")
+                                self.assertEqualDiff(
+                                    p.prefix + ":" +
+                                    " ".join(p.properties[
+                                        "signature-required-names"]),
+                                    p.prefix + ":" + "cs1_ch1_ta3 foo bar baz")
+                        else:
+                                self.assertEqualDiff(
+                                    p.prefix + ":" +
+                                    p.properties["signature-policy"],
+                                    p.prefix + ":" + "ignore")
 
 
         __smf_cmds_template = { \

@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2011, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2011, 2012 Oracle and/or its affiliates. All rights reserved.
 #
 
 import copy
@@ -34,6 +34,8 @@ import simplejson as json
 import urllib
 import urllib2
 import urlparse
+
+from pkg.client.imageconfig import DEF_TOKEN
 
 CURRENT_VERSION = 0
 
@@ -97,6 +99,12 @@ def parse(proxy_host, data):
                             sticky=sticky)
                         pub.properties["proxied-urls"] = \
                             p.get("proxied-urls", [])
+                        v = p.get("signature-policy")
+                        if v is not None:
+                                pub.properties["signature-policy"] = v
+                        v = p.get("signature-required-names")
+                        if v is not None:
+                                pub.properties["signature-required-names"] = v
 
                         r = p.get("repository", None)
                         if r:
@@ -126,6 +134,16 @@ def parse(proxy_host, data):
 
                 props["publisher-search-order"] = \
                     dump_struct["image_properties"]["publisher-search-order"]
+
+                sig_pol = dump_struct["image_properties"].get(
+                    "signature-policy")
+                if sig_pol is not None:
+                        props["signature-policy"] = sig_pol
+
+                req_names = dump_struct["image_properties"].get(
+                    "signature-required-names")
+                if req_names is not None:
+                        props["signature-required-names"] = req_names
         except (api_errors.PublisherError, TypeError, ValueError), e:
                 raise api_errors.InvalidP5SFile(str(e))
         return pubs, props
@@ -213,6 +231,16 @@ def write(fileobj, pubs, cfg):
                     "repository": d,
                     "sticky": p.sticky,
                 }
+
+                sp = p.properties.get("signature-policy")
+                if sp and sp != DEF_TOKEN:
+                    dpub["signature-policy"] = sp
+
+                srn = p.properties.get("signature-required-names")
+                if srn:
+                    dpub["signature-required-names"] = \
+                        p.properties["signature-required-names"]
+
                 dpubs.append(dpub)
                 prefixes.add(p.prefix)
 
@@ -220,6 +248,15 @@ def write(fileobj, pubs, cfg):
             p for p in cfg.get_property("property", "publisher-search-order")
             if p in prefixes
         ]
+
+        sig_pol = cfg.get_property("property", "signature-policy")
+        if sig_pol != DEF_TOKEN:
+                dump_struct["image_properties"]["signature-policy"] = sig_pol
+
+        req_names = cfg.get_property("property", "signature-required-names")
+        if req_names:
+                dump_struct["image_properties"]["signature-required-names"] = \
+                    req_names
 
         json.dump(dump_struct, fileobj, ensure_ascii=False,
             allow_nan=False, indent=2, sort_keys=True)
