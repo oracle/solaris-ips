@@ -504,7 +504,8 @@ class Indexer(object):
                                     "than old_min_token:%s" %
                                     (min_token, old_min_token))
                         old_min_token = min_token
-                        yield min_token, res
+                        if min_token != "":
+                                yield min_token, res
                 return
 
         def _update_index(self, dicts, out_dir):

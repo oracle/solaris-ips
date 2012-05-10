@@ -39,6 +39,7 @@ import urllib2
 import pkg.catalog as catalog
 import pkg.client.pkgdefs as pkgdefs
 import pkg.fmri as fmri
+import pkg.indexer as indexer
 
 
 class TestPkgSearchBasics(pkg5unittest.SingleDepotTestCase):
@@ -96,6 +97,36 @@ depend fmri=XML-Atom-Entry
 set name=com.sun.service.incorporated_changes value="6556919 6627937"
 """
         bogus_fmri = fmri.PkgFmri("bogus_pkg@1.0,5.11-0:20090326T233451Z")
+
+        empty_attr_pkg10 = """
+open empty@1.0,5.11-0
+add set name=pkg.fmri value=pkg:/empty@1.0 attr1=''
+add set name=empty_set value=''
+add depend fmri=example_pkg@1.0 type=optional attr2=''
+add file tmp/group attr3='' mode=0555 owner=root group=bin path=etc/group
+add file tmp/passwd attr3='' mode=0555 owner=root group=bin path=etc/passwd
+add file tmp/shadow attr3='' mode=0555 owner=root group=bin path=etc/shadow
+add dir mode=0755 attr4='' owner=root group=bin path=/empty_dir
+add group groupname=foo gid=87 attr5=''
+add user username=fozzie group=foo uid=123 attr6=''
+add link target=bin/example_path path=link attr7=''
+close
+"""
+
+        empty_attr_pkg10_templ = """
+open empty%(ver)s@1.0,5.11-0
+add set name=pkg.fmri value=pkg:/empty%(ver)s@1.0 attr1=''
+add set name=empty_set value=''
+add depend fmri=example_pkg@1.0 type=optional attr2=''
+add file tmp/group attr3='' mode=0555 owner=root group=bin path=etc/group%(ver)s
+add file tmp/passwd attr3='' mode=0555 owner=root group=bin path=etc/passwd%(ver)s
+add file tmp/shadow attr3='' mode=0555 owner=root group=bin path=etc/shadow%(ver)s
+add dir mode=0755 attr4='' owner=root group=bin path=/empty_dir
+add group groupname=foo%(ver)s gid=%(ver)s attr5=''
+add user username=fozzie%(ver)s group=foo uid=%(ver)s attr6=''
+add link target=bin/example_path path=link attr7=''
+close
+"""
 
         headers = "INDEX ACTION VALUE PACKAGE\n"
         pkg_headers = "PACKAGE PUBLISHER\n"
@@ -220,7 +251,31 @@ set name=com.sun.service.incorporated_changes value="6556919 6627937"
             'com.sun.service.incorporated_changes set       6556919 6627937                   pkg:/bogus_pkg@1.0-0\n'
         ])
 
-        misc_files = { "tmp/example_file": "magic" }
+        misc_files = {
+            "tmp/example_file": "magic",
+            "tmp/passwd": """\
+root:x:0:0::/root:/usr/bin/bash
+daemon:x:1:1::/:
+bin:x:2:2::/usr/bin:
+sys:x:3:3::/:
+adm:x:4:4:Admin:/var/adm:
+""",
+            "tmp/group": """\
+root::0:
+other::1:root
+bin::2:root,daemon
+sys::3:root,bin,adm
+adm::4:root,daemon
+""",
+            "tmp/shadow": """\
+root:9EIfTNBp9elws:13817::::::
+daemon:NP:6445::::::
+bin:NP:6445::::::
+sys:NP:6445::::::
+adm:NP:6445::::::
+""",
+            }
+
 
         res_local_pkg_ret_pkg = set([
             pkg_headers,
@@ -299,7 +354,8 @@ set name=com.sun.service.incorporated_changes value="6556919 6627937"
                 self.assert_(correct_answer == proposed_answer)
 
         def _search_op(self, remote, token, test_value, case_sensitive=False,
-            return_actions=True, exit=0, su_wrap=False, prune_versions=True):
+            return_actions=True, exit=0, su_wrap=False, prune_versions=True,
+            headers=True):
                 outfile = os.path.join(self.test_root, "res")
                 if remote:
                         token = "-r " + token
@@ -313,6 +369,8 @@ set name=com.sun.service.incorporated_changes value="6556919 6627937"
                         token = "-p " + token
                 if not prune_versions:
                         token = "-f " + token
+                if not headers:
+                        token = "-H " + token
                 self.pkg("search " + token + " > " + outfile, exit=exit)
                 res_list = (open(outfile, "rb")).readlines()
                 self._check(set(res_list), test_value)
@@ -807,6 +865,73 @@ set name=com.sun.service.incorporated_changes value="6556919 6627937"
 
                 self.pkg("search -l -a -o pkg.shortfmri,action.key 'a'")
                 self.assertEqual(len(self.output.splitlines()), 4)
+
+        def __run_empty_attrs_searches(self, remote):
+                expected = set(["basename\tfile\tetc/group\tpkg:/empty@1.0\n"])
+                self._search_op(remote=remote, token="group",
+                    test_value=expected, headers=False)
+
+                expected = set(["pkg.fmri\tset\ttest/empty\t"
+                    "pkg:/empty@1.0"])
+                self._search_op(remote=remote, token="empty",
+                    test_value=expected, headers=False)
+
+                expected = set(["name\tuser\tfozzie\tpkg:/empty@1.0"])
+                self._search_op(remote=remote, token="fozzie",
+                    test_value=expected, headers=False)
+
+                expected = set(["name\tgroup\tfoo\tpkg:/empty@1.0"])
+                self._search_op(remote=remote, token="foo",
+                    test_value=expected, headers=False)
+
+                expected = set(["path\tlink\tlink\tpkg:/empty@1.0"])
+                self._search_op(remote=remote, token="/link",
+                    test_value=expected, headers=False)
+
+                expected = set(["path\tdir\tempty_dir\tpkg:/empty@1.0"])
+                self._search_op(remote=remote, token="/empty_dir",
+                    test_value=expected, headers=False)
+
+                expected = set(["optional\tdepend\texample_pkg@1.0\t"
+                    "pkg:/empty@1.0"])
+                self._search_op(remote=remote, token="example_pkg",
+                    test_value=expected, headers=False)
+
+        def test_empty_attrs_new(self):
+                """Check that attributes that can have empty values don't break
+                indexing or search when they're added to an empty index."""
+
+                rurl = self.dc.get_repo_url()
+                durl = self.dc.get_depot_url()
+                self.pkgsend_bulk(rurl, self.empty_attr_pkg10)
+
+                self.image_create(durl)
+
+                self.__run_empty_attrs_searches(remote=True)
+                self.pkg("install empty")
+                self.__run_empty_attrs_searches(remote=False)
+
+        def test_empty_attrs_additional(self):
+                """Check that attributes that can have empty values don't break
+                indexing or search when they're being added to an existing
+                index."""
+
+                rurl = self.dc.get_repo_url()
+                durl = self.dc.get_depot_url()
+                self.pkgsend_bulk(rurl, self.fat_pkg10)
+                self.pkgsend_bulk(rurl, self.empty_attr_pkg10)
+
+                self.image_create(durl)
+
+                self.__run_empty_attrs_searches(remote=True)
+                self.pkg("install fat")
+                self.pkg("install empty")
+                self.__run_empty_attrs_searches(remote=False)
+                for i in range(0, indexer.MAX_ADDED_NUMBER_PACKAGES + 1):
+                        self.pkgsend_bulk(durl, self.empty_attr_pkg10_templ %
+                            {"ver": i})
+                self.pkg("install 'empty*'")
+                self.pkg("search 'empty*'")
 
 
 if __name__ == "__main__":
