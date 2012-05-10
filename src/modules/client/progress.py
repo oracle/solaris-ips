@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2008, 2011, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2008, 2012, Oracle and/or its affiliates. All rights reserved.
 #
 
 import errno
@@ -366,8 +366,30 @@ class ProgressTracker(object):
                 if self.send_goal_nbytes != 0:
                         self.republish_output()
 
-        def republish_done(self):
+        def republish_done(self, dry_run=False, assert_mismatch=True):
                 """ Call when all downloading is finished """
+
+                assert not dry_run or assert_mismatch
+                if not dry_run:
+                        assert self.item_cur_nitems == self.item_goal_nitems, \
+                            "Expected %s packages but got %s" % \
+                            (self.item_goal_nitems, self.item_cur_nitems)
+                        if assert_mismatch:
+                                # Merge uses the per package tracking for get
+                                # and send bytes, so only check those if we're
+                                # not merging or doing another operation that
+                                # uses per package tracking.
+                                assert self.dl_cur_nbytes == \
+                                    self.dl_goal_nbytes, \
+                                    "Expected to download %s bytes but got " \
+                                    "%s" % \
+                                    (self.dl_goal_nbytes, self.dl_cur_nbytes)
+                                assert self.send_cur_nbytes == \
+                                    self.send_goal_nbytes, \
+                                    "Expected to send %s bytes but got %s" % \
+                                    (self.send_goal_nbytes,
+                                    self.send_cur_nbytes)
+
                 if self.item_goal_nitems != 0:
                         self.republish_output_done()
 

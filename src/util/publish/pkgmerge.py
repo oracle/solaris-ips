@@ -20,7 +20,7 @@
 # CDDL HEADER END
 
 #
-# Copyright (c) 2011, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2011, 2012, Oracle and/or its affiliates. All rights reserved.
 #
 
 try:
@@ -453,7 +453,7 @@ def main_func():
                 # Dump retrieved package data after each republication.
                 shutil.rmtree(pkgdir)
 
-        tracker.republish_done()
+        tracker.republish_done(assert_mismatch=False)
         tracker.reset()
 
         return 0

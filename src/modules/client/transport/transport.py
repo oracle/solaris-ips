@@ -2306,13 +2306,19 @@ class Transport(object):
 
                 return mfile
 
-        def _action_cached(self, action, pub):
+        def _action_cached(self, action, pub, in_hash=None):
                 """If a file with the name action.hash is cached,
                 and if it has the same content hash as action.chash,
                 then return the path to the file.  If the file can't
-                be found, return None."""
+                be found, return None.
+
+                The in_hash parameter allows an alternative hash to be used to
+                check if this action is cached.  This is used for actions which
+                have more than one effective payload."""
 
                 hashval = action.hash
+                if in_hash:
+                        hashval = in_hash
                 for cache in self.cfg.get_caches(pub=pub, readonly=True):
                         cache_path = cache.lookup(hashval)
                         try:
@@ -2324,7 +2330,6 @@ class Transport(object):
                                 # hash of the action, verify will have already
                                 # purged the item from the cache.
                                 pass
-
                 return None
 
         @staticmethod
@@ -3009,10 +3014,19 @@ class MultiFileNI(MultiFile):
                         if self._progtrack:
                                 filesz = int(misc.get_pkg_otw_size(action))
                                 self._progtrack.download_add_progress(1, filesz)
-                        return
-                self.add_hash(hashval, action)
+                else:
+                        self.add_hash(hashval, action)
                 if action.name == "signature":
                         for c in action.get_chain_certs():
+                                cpath = self._transport._action_cached(action,
+                                    self.get_publisher(), in_hash=c)
+                                if cpath:
+                                        self._final_copy(c, cpath)
+                                        if self._progtrack:
+                                                self._progtrack.download_add_progress(
+                                                    1, int(
+                                                    action.get_chain_csize(c)))
+                                        continue
                                 # file_done does some magical accounting for
                                 # files which may have been downloaded multiple
                                 # times but this accounting breaks when the

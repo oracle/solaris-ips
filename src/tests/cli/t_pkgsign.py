@@ -33,16 +33,19 @@ import os
 import re
 import shutil
 import sys
+import tempfile
 import unittest
 
 import pkg.actions as action
 import pkg.actions.signature as signature
 import pkg.client.api_errors as apx
 import pkg.fmri as fmri
+import pkg.misc as misc
 import pkg.portable as portable
 import M2Crypto as m2
 
 from pkg.client.debugvalues import DebugValues
+from pkg.pkggzip import PkgGzipFile
 
 obsolete_pkg = """
     open obs@1.0,5.11-0
@@ -3001,6 +3004,124 @@ class TestPkgSignMultiDepot(pkg5unittest.ManyDepotTestCase):
 
                 api_obj = self.get_img_api_obj()
                 self._api_install(api_obj, ["example_pkg"])
+
+        def test_sign_pkgrecv_delivered_cert(self):
+                """Check that if a cache directory contains the payload for a
+                signature action with intermediate certificates but nothing
+                else, pkgrecv still works."""
+
+                manf = """
+open a@1,5.11-0
+close
+"""
+                self.pkgsend_bulk(self.rurl2, manf)
+
+                cert_path = os.path.join(self.cs_dir, "cs1_ta2_cert.pem")
+                ta_path = os.path.join(self.raw_trust_anchor_dir,
+                    "ta2_cert.pem")
+                sign_args = "-k %(key)s -c %(cert)s -i %(ta)s %(pkg)s" % \
+                    { "key": os.path.join(self.keys_dir, "cs1_ta2_key.pem"),
+                      "cert": cert_path,
+                      "ta": ta_path,
+                      "pkg": "a"
+                    }
+
+                self.pkgsign(self.rurl2, sign_args)
+
+                # Artificially fill the cache directory with a gzipped version
+                # of the transformed certificate file, as if pkgrecv had put it
+                # there itself.
+                repo_location = self.dcs[1].get_repodir()
+                cache_dir = os.path.join(self.test_root, "cache")
+                os.mkdir(cache_dir)
+                cert = m2.X509.load_cert(cert_path)
+                fd, new_cert = tempfile.mkstemp(dir=self.test_root)
+                with os.fdopen(fd, "wb") as fh:
+                        fh.write(cert.as_pem())
+                file_name = misc.get_data_digest(new_cert)[0]
+                subdir = os.path.join(cache_dir, file_name[:2])
+                os.mkdir(subdir)
+                fp = os.path.join(subdir, file_name)
+                fh = PkgGzipFile(fp, "wb")
+                fh.write(cert.as_pem())
+                fh.close()
+
+                self.pkgrecv(self.rurl2, "-c %s -d %s '*'" %
+                    (cache_dir, self.rurl1))
+
+        def test_sign_pkgrecv_delivered_intermediate_cert(self):
+                """Check that if a cache directory contains an intermediate file
+                for a signature action with intermediate certificates but
+                nothing else, pkgrecv still works."""
+
+                manf = """
+open a@1,5.11-0
+close
+"""
+                self.pkgsend_bulk(self.rurl2, manf)
+
+                ta_path = os.path.join(self.raw_trust_anchor_dir,
+                    "ta2_cert.pem")
+                sign_args = "-k %(key)s -c %(cert)s -i %(ta)s %(pkg)s" % \
+                    { "key": os.path.join(self.keys_dir, "cs1_ta2_key.pem"),
+                      "cert": os.path.join(self.cs_dir, "cs1_ta2_cert.pem"),
+                      "ta": ta_path,
+                      "pkg": "a"
+                    }
+
+                self.pkgsign(self.rurl2, sign_args)
+
+                # Artificially fill the cache directory with a gzipped version
+                # of the transformed certificate file, as if pkgrecv had put it
+                # there itself.
+                repo_location = self.dcs[1].get_repodir()
+                cache_dir = os.path.join(self.test_root, "cache")
+                os.mkdir(cache_dir)
+                cert = m2.X509.load_cert(ta_path)
+                fd, new_cert = tempfile.mkstemp(dir=self.test_root)
+                with os.fdopen(fd, "wb") as fh:
+                        fh.write(cert.as_pem())
+                file_name = misc.get_data_digest(new_cert)[0]
+                subdir = os.path.join(cache_dir, file_name[:2])
+                os.mkdir(subdir)
+                fp = os.path.join(subdir, file_name)
+                fh = PkgGzipFile(fp, "wb")
+                fh.write(cert.as_pem())
+                fh.close()
+
+                self.pkgrecv(self.rurl2, "-c %s -d %s '*'" %
+                    (cache_dir, self.rurl1))
+
+        def test_sign_pkgrecv_cache_sign_interaction(self):
+                """Check that if a cache directory is used and multiple packages
+                are signed with the same certificates and intermediate
+                certificates are involved, pkgrecv continues to work."""
+
+                manf = """
+open a@1,5.11-0
+close
+"""
+                self.pkgsend_bulk(self.rurl2, manf)
+                manf = """
+open b@1,5.11-0
+close
+"""
+                self.pkgsend_bulk(self.rurl2, manf)
+
+                ta_path = os.path.join(self.raw_trust_anchor_dir,
+                    "ta2_cert.pem")
+                sign_args = "-k %(key)s -c %(cert)s -i %(ta)s %(pkg)s" % \
+                    { "key": os.path.join(self.keys_dir, "cs1_ta2_key.pem"),
+                      "cert": os.path.join(self.cs_dir, "cs1_ta2_cert.pem"),
+                      "ta": ta_path,
+                      "pkg": "'*'"
+                    }
+
+                self.pkgsign(self.rurl2, sign_args)
+
+                cache_dir = os.path.join(self.test_root, "cache")
+                self.pkgrecv(self.rurl2, "-c %s -d %s '*'" %
+                    (cache_dir, self.rurl1))
 
         def test_sign_pkgrecv_a(self):
                 """Check that signed packages can be archived."""

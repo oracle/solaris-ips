@@ -643,6 +643,34 @@ class TestPkgrecvMulti(pkg5unittest.ManyDepotTestCase):
                 self.pkgrecv(self.durl3, "-n -a -d %s \*" % arc_path)
                 self.assertFalse(os.path.exists(arc_path))
 
+        def test_9_dryruns(self):
+                """Test that the dry run option to pkgrecv works as expected."""
+
+                f = fmri.PkgFmri(self.published[3], None)
+
+                rpth = tempfile.mkdtemp(dir=self.test_root)
+                self.pkgrepo("create %s" % rpth)
+                expected = ["pkg5.repository"]
+                self.pkgrecv(self.durl1, "-n -d %s %s" % (rpth, f))
+                self.assertEqualDiff(expected, os.listdir(rpth))
+
+                self.pkgrecv(self.durl1, "-r -n -d %s %s" % (rpth, f))
+                self.assertEqualDiff(expected, os.listdir(rpth))
+
+                arc_path = os.path.join(self.test_root, "test.p5p")
+                self.pkgrecv(self.durl1, "-a -n -d %s \*" % arc_path)
+                self.assert_(not os.path.exists(arc_path))
+
+                # --raw actually populates the destination with manifests even
+                # with -n, so just check that it exits 0.
+                self.pkgrecv(self.durl1, "--raw -n -d %s %s" %
+                    (self.tempdir, f))
+
+                # --raw actually populates the destination with manifests even
+                # with -n, so just check that it exits 0.
+                self.pkgrecv(self.durl1, "--raw -r -n -d %s %s" %
+                    (self.tempdir, f))
+
 
 if __name__ == "__main__":
         unittest.main()

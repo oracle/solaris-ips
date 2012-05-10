@@ -746,6 +746,7 @@ def transfer_pkgs(pargs, target, list_newest, all_versions, all_timestamps,
                 while matches:
                         f = matches.pop()
                         if republish and targ_cat.get_entry(f):
+                                tracker.evaluate_progress(fmri=f)
                                 continue
                         pkgs_to_get.append(f)
 
@@ -764,17 +765,18 @@ def transfer_pkgs(pargs, target, list_newest, all_versions, all_timestamps,
                 tracker.evaluate_done()
 
                 # Next, retrieve and store the content for each package.
-                tracker.republish_set_goal(get_files, get_bytes,
+                tracker.republish_set_goal(len(pkgs_to_get), get_bytes,
                     send_bytes)
 
                 if dry_run:
-                        tracker.republish_done()
+                        tracker.republish_done(dry_run=True)
                         cleanup()
                         continue
 
+                
                 processed = 0
-                while pkgs_to_get:
-                        f = pkgs_to_get.pop()
+                pkgs_to_get = sorted(pkgs_to_get)
+                for f in pkgs_to_get:
                         tracker.republish_start_pkg(f.pkg_name)
                         pkgdir = xport_cfg.get_pkg_dir(f)
                         mfile = xport.multi_file_ni(src_pub, pkgdir,
