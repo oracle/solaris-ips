@@ -20,7 +20,7 @@
 # CDDL HEADER END
 #
 
-# Copyright (c) 2009, 2011, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2009, 2012, Oracle and/or its affiliates. All rights reserved.
 
 import testutils
 if __name__ == "__main__":
@@ -98,7 +98,7 @@ class TestPkgChangeFacet(pkg5unittest.SingleDepotTestCase):
                 self.pkg("verify")
                 self.pkg("facet")
 
-                # make sure it delivers it's files as appropriate
+                # make sure it delivers its files as appropriate
                 self.assert_file_is_there("0")
                 self.assert_file_is_there("1")
                 self.assert_file_is_there("2")
@@ -178,6 +178,38 @@ class TestPkgChangeFacet(pkg5unittest.SingleDepotTestCase):
 
                 for i in range(8):
                         self.assert_file_is_there("%d" % i, negate=(i != 0))
+
+                # Verify that an action with multiple facets will be installed
+                # if at least one is implicitly true even when the first facet
+                # evaluated matches an explicit wildcard facet set to false.
+
+                # This test relies on Python iterating over the action
+                # attributes dictionary such that facet.locale.nl_ZA is
+                # evaluated first.  (There's no way to influence that and the
+                # order seems 100% consistent for now.)
+                self.pkg("change-facet --parsable=0 'facet.locale*=None' "
+                    "'facet.locale.*=false' facet.locale.fr_CA=true");
+                self.assertEqualParsable(self.output,
+                    affect_packages=self.plist,
+                    change_facets=[
+                        ["facet.locale*", None],
+                        ["facet.locale.*", False],
+                        ["facet.locale.fr_CA", True]
+                    ])
+                self.assert_file_is_there("4")
+
+                # This test is merely here so that if the evaluation order is
+                # reversed for some reason that expected results are still seen.
+                self.pkg("change-facet --parsable=0 'facet.locale.*=None' "
+                    "facet.locale.fr_*=false facet.locale.fr_CA=None");
+                self.assertEqualParsable(self.output,
+                    affect_packages=self.plist,
+                    change_facets=[
+                        ["facet.locale.*", None],
+                        ["facet.locale.fr_*", False],
+                        ["facet.locale.fr_CA", None]
+                    ])
+                self.assert_file_is_there("4")
 
         def test_removing_facets(self):
                 self.image_create()

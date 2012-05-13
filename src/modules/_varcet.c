@@ -95,6 +95,15 @@ _allow_facet(PyObject *self, PyObject *args)
 					    facets, key);
 
 					Py_DECREF(match);
+
+					if (fval == Py_False)
+						goto next_facet;
+
+					/*
+					 * If wildcard facet value cannot be
+					 * retrieved or is True, cleanup and
+					 * return.
+					 */
 					CLEANUP_FREFS;
 					if (fval == NULL)
 						return (NULL);
@@ -113,7 +122,12 @@ _allow_facet(PyObject *self, PyObject *args)
 			Py_RETURN_TRUE;
 		}
 
-		/* Facets are currently OR'd. */
+next_facet:
+		/*
+		 * Facets are currently OR'd; if this facet (or its wildcard
+		 * match) wasn't explicitly set to True, evaluate the next
+		 * facet.
+		 */
 		ret = Py_False;
 	}
 
