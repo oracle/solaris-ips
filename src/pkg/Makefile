@@ -28,17 +28,16 @@ UPDATENUM         = 1
 SRUNUM            = 0
 PLATNUM           = 0
 BUILDID.cmd       = \
-	hg tags | nawk '$$1 ~ /^s11u$(UPDATENUM)b[0-9]*/ {print substr($$1, 7) + 0; exit}'
+	hg tags | \
+	nawk '$$1 ~ /^s11u$(UPDATENUM)b[0-9]*/ {print substr($$1, 7) + 0; exit}'
 BUILDID           = $(BUILDID.cmd:sh)
 NIGHTLYID:sh      = hg parents --template '{rev}'
-CHANGESET.cmd     = hg id -i
-CHANGESET         = $(CHANGESET.cmd:sh)
-PKGVERS_BRANCH    = 0.$(BUILDNUM).$(UPDATENUM).$(SRUNUM).$(PLATNUM).$(BUILDID).$(NIGHTLYID)
+CHANGESET:sh      = hg id -i
+PKGVERS_BRANCH    = \
+	0.$(BUILDNUM).$(UPDATENUM).$(SRUNUM).$(PLATNUM).$(BUILDID).$(NIGHTLYID)
 PKGVERS           = $(PKGVERS_COMPONENT),$(PKGVERS_BUILTON)-$(PKGVERS_BRANCH)
-ARCH.cmd          = uname -p
-ARCH              = $(ARCH.cmd:sh)
-REV.cmd           = date +%Y.%m.%d.%H.%M.%S
-REV               = $(REV.cmd:sh)
+ARCH              = $(TARGET_ARCH:-%=%)
+REV:sh            = date +%Y.%m.%d.%H.%M.%S
 
 PDIR              = pkgtmp
 PWD:sh            = pwd
@@ -57,13 +56,17 @@ MANIFESTS.cmd     = \
 	m=$$($(PKGMOGRIFY) -O /dev/null *.p5m ../transforms/nopublish); \
 	echo "$$m" | while read name build; do \
 		[[ $$build -ge $${buildnum%%.*} ]] && echo $$name; \
-	done | sed -e 's/:/\\:/g' ; exit 0
+	done | sed -e 's/:/\\:/g'; \
+	exit 0
 MANIFESTS         = $(MANIFESTS.cmd:sh)
-ALL_MANIFESTS:sh  = (cd manifests; print *.p5m | sed -e 's/:/\\:/g')
-$(PUBLISHALL)MANIFESTS:sh      = $(ALL_MANIFESTS)
+ALL_MANIFESTS:sh  = \
+	cd manifests; \
+	print *.p5m | sed -e 's/:/\\:/g'; \
+	exit 0
+$(PUBLISHALL)MANIFESTS      = $(ALL_MANIFESTS)
 PKGCMDENV         = \
 	PATH=$(PKGROOT)/usr/bin:/usr/sbin:/usr/bin \
-		PYTHONPATH=$(PKGROOT)/usr/lib/python2.6/vendor-packages
+	    PYTHONPATH=$(PKGROOT)/usr/lib/python2.6/vendor-packages
 PKG               = $(PKGCMDENV) pkg
 PKGDEPEND         = $(PKGCMDENV) pkgdepend
 PKGLINT           = $(PKGCMDENV) pkglint
@@ -78,15 +81,15 @@ INCORP            = consolidation\:ips\:ips-incorporation
 
 PM_TRANSFORMS     = defaults
 
-i386_DEFINES=       \
+i386_DEFINES      = \
 	i386_ONLY=''    \
 	sparc_ONLY=$(POUND_SIGN)
 
-sparc_DEFINES=      \
+sparc_DEFINES     = \
 	i386_ONLY=$(POUND_SIGN) \
 	sparc_ONLY=''
 
-ARCH_DEFINES=$($(ARCH)_DEFINES)
+ARCH_DEFINES      = $($(ARCH)_DEFINES)
 
 PKGMOG_DEFVALS    = \
 	ARCH=$(ARCH) \
@@ -183,7 +186,7 @@ check: $(PDIR)/protomanifest $(PDIR)/pkgmanifest
 #
 # To tell pkglint to bypass any potential missing dependencies during
 # the lint run, please edit external_deps.txt
-lint: repository-metadata
+lint: repository-metadata $(PDIR)
 	@sed -e "s#/usr/share/lib/pkg/opensolaris.org.sections#$(PKGROOT)&#" \
 		< ips-pkglintrc > $(PDIR)/pkglintrc
 

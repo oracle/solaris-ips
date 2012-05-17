@@ -23,6 +23,23 @@
 # Copyright (c) 2011, 2012, Oracle and/or its affiliates. All rights reserved.
 #
 
+#
+# The following packages (among others) currently have "parent"
+# dependencies with an FMRI of "self" to ensure the package is kept
+# consistent between the global and non-global zones. These packages for
+# now are tagged for the global zone only so that installation of this
+# group package in a non-global zone doesn't produce an error if the
+# package isn't installed in the global zone.
+#
+<transform depend fmri=developer/driver($|/) -> \
+    default variant.opensolaris.zone global>
+<transform depend fmri=driver($|/) -> default variant.opensolaris.zone global>
+<transform depend fmri=system/io($|/) -> \
+    default variant.opensolaris.zone global>
+<transform depend fmri=system/kernel($|/) -> \
+    default variant.opensolaris.zone global>
+<transform depend fmri=system/storage($|/) -> \
+    default variant.opensolaris.zone global>
 set name=pkg.fmri value=pkg:/group/system/solaris-large-server@$(PKGVERS)
 set name=pkg.summary value="Oracle Solaris Large Server"
 set name=pkg.description \
@@ -35,17 +52,19 @@ depend type=group fmri=compress/bzip2
 depend type=group fmri=compress/gzip
 depend type=group fmri=compress/p7zip
 depend type=group fmri=compress/unzip
+depend type=group fmri=compress/xz
 depend type=group fmri=compress/zip
 depend type=group fmri=crypto/pwgen
 depend type=group fmri=developer/build/gnu-make
 depend type=group fmri=developer/build/make
 depend type=group fmri=developer/debug/mdb
-$(i386_ONLY)depend type=group fmri=diagnostic/acpidump
+$(i386_ONLY)depend type=group fmri=diagnostic/acpidump \
+    variant.opensolaris.zone=global
 depend type=group fmri=diagnostic/cpu-counters
-depend type=group fmri=diagnostic/ddu/text
-depend type=group fmri=diagnostic/latencytop
-depend type=group fmri=diagnostic/powertop
-depend type=group fmri=diagnostic/scanpci
+depend type=group fmri=diagnostic/ddu/text variant.opensolaris.zone=global
+depend type=group fmri=diagnostic/latencytop variant.opensolaris.zone=global
+depend type=group fmri=diagnostic/powertop variant.opensolaris.zone=global
+depend type=group fmri=diagnostic/scanpci variant.opensolaris.zone=global
 depend type=group fmri=diagnostic/snoop
 depend type=group fmri=diagnostic/spray
 depend type=group fmri=diagnostic/tcpdump
@@ -172,7 +191,7 @@ depend type=group fmri=file/slocate
 depend type=group fmri=install/installadm
 depend type=group fmri=install/js2ai
 depend type=group fmri=media/cdrtools
-depend type=group fmri=media/cdrw
+depend type=group fmri=media/cdrw variant.opensolaris.zone=global
 depend type=group fmri=media/dvd+rw-tools
 depend type=group fmri=media/xorriso
 depend type=group fmri=naming/ldap
@@ -197,14 +216,14 @@ depend type=group fmri=package/svr4
 depend type=group fmri=print/cups
 depend type=group fmri=print/cups/filter/foomatic-db
 depend type=group fmri=print/cups/filter/foomatic-db-engine
-depend type=group fmri=print/cups/hal-cups-utils
+depend type=group fmri=print/cups/hal-cups-utils variant.opensolaris.zone=global
 depend type=group fmri=print/filter/a2ps
 depend type=group fmri=print/filter/hplip
 depend type=group fmri=print/lp/filter/foomatic-rip
 depend type=group fmri=print/psutils
 depend type=group fmri=release/name
 depend type=group fmri=release/notices
-depend type=group fmri=release/registration
+depend type=group fmri=release/registration variant.opensolaris.zone=global
 depend type=group fmri=security/bart
 depend type=group fmri=security/nss-utilities
 depend type=group fmri=security/sudo
@@ -227,10 +246,12 @@ depend type=group fmri=service/network/ssh
 depend type=group fmri=service/network/talk
 depend type=group fmri=service/network/telnet
 depend type=group fmri=service/network/tftp
-depend type=group fmri=service/network/wpa
+depend type=group fmri=service/network/wpa variant.opensolaris.zone=global
 depend type=group fmri=service/security/gss
 depend type=group fmri=service/security/kerberos-5
-$(sparc_ONLY)depend type=group fmri=service/security/key-management/sparc-enterprise
+$(sparc_ONLY)depend type=group \
+    fmri=service/security/key-management/sparc-enterprise \
+    variant.opensolaris.zone=global
 depend type=group fmri=service/storage/rmt
 depend type=group fmri=shell/bash
 depend type=group fmri=shell/expect
@@ -239,25 +260,31 @@ depend type=group fmri=shell/pipe-viewer
 depend type=group fmri=shell/tcsh
 depend type=group fmri=shell/which
 depend type=group fmri=shell/zsh
-$(sparc_ONLY)depend type=group fmri=storage/library/network-array
 depend type=group fmri=system/accounting/legacy-accounting
 depend type=group fmri=system/boot-environment-utilities
-depend type=group fmri=system/boot/grub
+depend type=group fmri=system/boot/grub variant.opensolaris.zone=global
 depend type=group fmri=system/boot/wanboot
 depend type=group fmri=system/core-os
 depend type=group fmri=system/data/terminfo
 depend type=group fmri=system/data/terminfo/terminfo-core
 depend type=group fmri=system/data/timezone
-depend type=group fmri=system/device-administration
-$(sparc_ONLY)depend type=group fmri=system/domain-configuration/sparc-enterprise
+depend type=group fmri=system/device-administration \
+    variant.opensolaris.zone=global
 $(sparc_ONLY)depend type=group \
-    fmri=system/domain-service-processor-protocol/sparc-enterprise
+    fmri=system/domain-configuration/sparc-enterprise \
+    variant.opensolaris.zone=global
+$(sparc_ONLY)depend type=group \
+    fmri=system/domain-service-processor-protocol/sparc-enterprise \
+    variant.opensolaris.zone=global
 depend type=group fmri=system/dtrace
 depend type=group fmri=system/dtrace/dtrace-toolkit
-depend type=group fmri=system/dynamic-reconfiguration
-$(sparc_ONLY)depend type=group fmri=system/embedded-fcode-interpreter
+depend type=group fmri=system/dynamic-reconfiguration \
+    variant.opensolaris.zone=global
+$(sparc_ONLY)depend type=group fmri=system/embedded-fcode-interpreter \
+    variant.opensolaris.zone=global
 depend type=group fmri=system/fault-management
-depend type=group fmri=system/fault-management/asr-notify
+depend type=group fmri=system/fault-management/asr-notify \
+    variant.opensolaris.zone=global
 depend type=group fmri=system/fault-management/smtp-notify
 depend type=group fmri=system/fault-management/snmp-notify
 depend type=group fmri=system/file-system/autofs
@@ -267,10 +294,11 @@ depend type=group fmri=system/file-system/pcfs
 depend type=group fmri=system/file-system/udfs
 depend type=group fmri=system/file-system/ufs
 depend type=group fmri=system/file-system/zfs
-depend type=group fmri=system/firmware-utilities
-$(sparc_ONLY)depend type=group fmri=system/floating-point-scrubber
-depend type=group fmri=system/fru-id
-depend type=group fmri=system/hal
+depend type=group fmri=system/firmware-utilities variant.opensolaris.zone=global
+$(sparc_ONLY)depend type=group fmri=system/floating-point-scrubber \
+    variant.opensolaris.zone=global
+depend type=group fmri=system/fru-id variant.opensolaris.zone=global
+depend type=group fmri=system/hal variant.opensolaris.zone=global
 depend type=group fmri=system/install/configuration
 depend type=group fmri=system/install/locale
 depend type=group fmri=system/install/tests
@@ -302,40 +330,52 @@ $(sparc_ONLY)depend type=group fmri=system/kernel/io-performance-counters
 depend type=group fmri=system/kernel/platform
 depend type=group fmri=system/kernel/power
 depend type=group fmri=system/kernel/suspend-resume
-depend type=group fmri=system/keyboard/keyboard-utilities
-$(sparc_ONLY)depend type=group fmri=system/ldoms
-$(sparc_ONLY)depend type=group fmri=system/ldoms/ldomsmanager
+depend type=group fmri=system/keyboard/keyboard-utilities \
+    variant.opensolaris.zone=global
+$(sparc_ONLY)depend type=group fmri=system/ldoms variant.opensolaris.zone=global
+$(sparc_ONLY)depend type=group fmri=system/ldoms/ldomsmanager \
+    variant.opensolaris.zone=global
 depend type=group fmri=system/library/iconv/utf-8
-depend type=group fmri=system/library/platform
-depend type=group fmri=system/library/processor
+depend type=group fmri=system/library/platform variant.opensolaris.zone=global
+depend type=group fmri=system/library/processor variant.opensolaris.zone=global
 depend type=group fmri=system/linker
 depend type=group fmri=system/locale
-depend type=group fmri=system/management/ilomconfig
-$(i386_ONLY)depend type=group fmri=system/management/intel-amt
-depend type=group fmri=system/management/ipmitool
-depend type=group fmri=system/management/ocm
-depend type=group fmri=system/management/rad
-depend type=group fmri=system/management/rad/client/rad-java
-depend type=group fmri=system/management/rad/client/rad-python
-depend type=group fmri=system/management/rad/module/rad-smf
+depend type=group fmri=system/management/ilomconfig \
+    variant.opensolaris.zone=global
+$(i386_ONLY)depend type=group fmri=system/management/intel-amt \
+    variant.opensolaris.zone=global
+depend type=group fmri=system/management/ipmitool \
+    variant.opensolaris.zone=global
+depend type=group fmri=system/management/ocm variant.opensolaris.zone=global
+depend type=group fmri=system/management/rad variant.opensolaris.zone=global
+depend type=group fmri=system/management/rad/client/rad-java \
+    variant.opensolaris.zone=global
+depend type=group fmri=system/management/rad/client/rad-python \
+    variant.opensolaris.zone=global
+depend type=group fmri=system/management/rad/module/rad-smf \
+    variant.opensolaris.zone=global
+depend type=group fmri=system/management/rad/module/rad-usermgr \
+    variant.opensolaris.zone=global
 depend type=group fmri=system/management/snmp/net-snmp
 depend type=group fmri=system/management/snmp/net-snmp/addons
 depend type=group fmri=system/management/snmp/net-snmp/documentation
 depend type=group fmri=system/manual
 depend type=group fmri=system/manual/locale
 depend type=group fmri=system/network
-depend type=group fmri=system/network/bpf
+depend type=group fmri=system/network/bpf variant.opensolaris.zone=global
 depend type=group fmri=system/network/nis
-depend type=group fmri=system/network/ppp
+depend type=group fmri=system/network/ppp variant.opensolaris.zone=global
 depend type=group fmri=system/network/ppp/pppdump
-depend type=group fmri=system/network/ppp/tunnel
+depend type=group fmri=system/network/ppp/tunnel variant.opensolaris.zone=global
 depend type=group fmri=system/network/routing
-depend type=group fmri=system/picl
+depend type=group fmri=system/picl variant.opensolaris.zone=global
 depend type=group fmri=system/prerequisite/gnu
-depend type=group fmri=system/resource-mgmt/dynamic-resource-pools
+depend type=group fmri=system/resource-mgmt/dynamic-resource-pools \
+    variant.opensolaris.zone=global
 depend type=group fmri=system/resource-mgmt/resource-caps
-depend type=group fmri=system/resource-mgmt/resource-pools
-depend type=group fmri=system/scheduler/fss
+depend type=group fmri=system/resource-mgmt/resource-pools \
+    variant.opensolaris.zone=global
+depend type=group fmri=system/scheduler/fss variant.opensolaris.zone=global
 depend type=group fmri=system/storage/fc-utilities
 depend type=group fmri=system/storage/fcoe
 depend type=group fmri=system/storage/fcoe/fcoe-initiator
@@ -346,13 +386,14 @@ depend type=group fmri=system/storage/multipath-utilities
 depend type=group fmri=system/storage/raid-utilities
 depend type=group fmri=system/storage/removable-media
 depend type=group fmri=system/storage/sas-utilities
-depend type=group fmri=system/system-events
-depend type=group fmri=system/virtual-console
+depend type=group fmri=system/system-events variant.opensolaris.zone=global
+depend type=group fmri=system/virtual-console variant.opensolaris.zone=global
 depend type=group fmri=system/xopen/xcu4
 depend type=group fmri=system/xopen/xcu6
 depend type=group fmri=system/zones
 depend type=group fmri=system/zones/brand/brand-solaris
-depend type=group fmri=system/zones/brand/brand-solaris10
+depend type=group fmri=system/zones/brand/brand-solaris10 \
+    variant.opensolaris.zone=global
 depend type=group fmri=terminal/luit
 depend type=group fmri=terminal/resize
 depend type=group fmri=terminal/screen

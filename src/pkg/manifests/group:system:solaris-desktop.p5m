@@ -40,6 +40,7 @@ depend type=group fmri=compress/bzip2
 depend type=group fmri=compress/gzip
 depend type=group fmri=compress/p7zip
 depend type=group fmri=compress/unzip
+depend type=group fmri=compress/xz
 depend type=group fmri=compress/zip
 depend type=group fmri=crypto/gnupg
 depend type=group fmri=crypto/pwgen
@@ -351,7 +352,6 @@ depend type=group fmri=shell/pipe-viewer
 depend type=group fmri=shell/tcsh
 depend type=group fmri=shell/which
 depend type=group fmri=shell/zsh
-$(sparc_ONLY)depend type=group fmri=storage/library/network-array
 depend type=group fmri=system/accounting/legacy-accounting
 depend type=group fmri=system/boot-environment-utilities
 depend type=group fmri=system/boot/grub
@@ -441,6 +441,7 @@ depend type=group fmri=system/management/rad
 depend type=group fmri=system/management/rad/client/rad-java
 depend type=group fmri=system/management/rad/client/rad-python
 depend type=group fmri=system/management/rad/module/rad-smf
+depend type=group fmri=system/management/rad/module/rad-usermgr
 depend type=group fmri=system/management/snmp/net-snmp
 depend type=group fmri=system/management/snmp/net-snmp/addons
 depend type=group fmri=system/management/snmp/net-snmp/documentation

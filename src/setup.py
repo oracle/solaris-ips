@@ -507,34 +507,40 @@ class clint_func(Command):
                 return astring.replace(' ', '\\ ')
 
         def run(self):
-                # assumes lint is on the $PATH
+                if "LINT" in os.environ and os.environ["LINT"] != "":
+                        lint = [os.environ["LINT"]]
+                else:
+                        lint = ['lint']
                 if osname == 'sunos' or osname == "linux":
-                        archcmd = ['lint'] + lint_flags + ['-D_FILE_OFFSET_BITS=64'] + \
+                        archcmd = lint + lint_flags + \
+                            ['-D_FILE_OFFSET_BITS=64'] + \
                             ["%s%s" % ("-I", k) for k in include_dirs] + \
                             ['-I' + self.escape(get_python_inc())] + \
                             arch_srcs
-                        elfcmd = ['lint'] + lint_flags + \
+                        elfcmd = lint + lint_flags + \
                             ["%s%s" % ("-I", k) for k in include_dirs] + \
                             ['-I' + self.escape(get_python_inc())] + \
                             ["%s%s" % ("-l", k) for k in elf_libraries] + \
                             elf_srcs
-                        _actionscmd = ['lint'] + lint_flags + \
+                        _actionscmd = lint + lint_flags + \
                             ["%s%s" % ("-I", k) for k in include_dirs] + \
                             ['-I' + self.escape(get_python_inc())] + \
                             _actions_srcs
-                        _actcommcmd = ['lint'] + lint_flags + \
+                        _actcommcmd = lint + lint_flags + \
                             ["%s%s" % ("-I", k) for k in include_dirs] + \
                             ['-I' + self.escape(get_python_inc())] + \
                             _actcomm_srcs
-                        _varcetcmd = ['lint'] + lint_flags + \
+                        _varcetcmd = lint + lint_flags + \
                             ["%s%s" % ("-I", k) for k in include_dirs] + \
                             ['-I' + self.escape(get_python_inc())] + \
                             _varcet_srcs
-                        pspawncmd = ['lint'] + lint_flags + ['-D_FILE_OFFSET_BITS=64'] + \
+                        pspawncmd = lint + lint_flags + \
+                            ['-D_FILE_OFFSET_BITS=64'] + \
                             ["%s%s" % ("-I", k) for k in include_dirs] + \
                             ['-I' + self.escape(get_python_inc())] + \
                             pspawn_srcs
-                        syscallatcmd = ['lint'] + lint_flags + ['-D_FILE_OFFSET_BITS=64'] + \
+                        syscallatcmd = lint + lint_flags + \
+                            ['-D_FILE_OFFSET_BITS=64'] + \
                             ["%s%s" % ("-I", k) for k in include_dirs] + \
                             ['-I' + self.escape(get_python_inc())] + \
                             syscallat_srcs

@@ -34,6 +34,7 @@ depend type=group fmri=compress/bzip2
 depend type=group fmri=compress/gzip
 depend type=group fmri=compress/p7zip
 depend type=group fmri=compress/unzip
+depend type=group fmri=compress/xz
 depend type=group fmri=compress/zip
 depend type=group fmri=developer/debug/mdb
 $(i386_ONLY)depend type=group fmri=diagnostic/acpidump
@@ -185,7 +186,6 @@ depend type=group fmri=service/security/gss
 depend type=group fmri=service/security/kerberos-5
 depend type=group fmri=shell/bash
 depend type=group fmri=shell/ksh
-$(sparc_ONLY)depend type=group fmri=storage/library/network-array
 depend type=group fmri=system/boot-environment-utilities
 depend type=group fmri=system/boot/grub
 depend type=group fmri=system/boot/wanboot

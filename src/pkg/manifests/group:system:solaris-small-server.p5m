@@ -51,6 +51,7 @@ depend type=group fmri=compress/bzip2
 depend type=group fmri=compress/gzip
 depend type=group fmri=compress/p7zip
 depend type=group fmri=compress/unzip
+depend type=group fmri=compress/xz
 depend type=group fmri=compress/zip
 depend type=group fmri=developer/debug/mdb
 $(i386_ONLY)depend type=group fmri=diagnostic/acpidump \
@@ -200,8 +201,6 @@ depend type=group fmri=service/security/gss
 depend type=group fmri=service/security/kerberos-5
 depend type=group fmri=shell/bash
 depend type=group fmri=shell/ksh
-$(sparc_ONLY)depend type=group fmri=storage/library/network-array \
-    variant.opensolaris.zone=global
 depend type=group fmri=system/boot-environment-utilities
 depend type=group fmri=system/boot/grub variant.opensolaris.zone=global
 depend type=group fmri=system/core-os
@@ -277,6 +276,8 @@ depend type=group fmri=system/management/rad/client/rad-java \
 depend type=group fmri=system/management/rad/client/rad-python \
     variant.opensolaris.zone=global
 depend type=group fmri=system/management/rad/module/rad-smf \
+    variant.opensolaris.zone=global
+depend type=group fmri=system/management/rad/module/rad-usermgr \
     variant.opensolaris.zone=global
 depend type=group fmri=system/manual
 depend type=group fmri=system/manual/locale
