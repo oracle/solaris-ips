@@ -34,6 +34,7 @@ import os
 import random
 import re
 import shutil
+import subprocess
 import time
 import unittest
 import xml.etree.ElementTree
@@ -566,6 +567,23 @@ class TestPkgHistory(pkg5unittest.ManyDepotTestCase):
 
                 self.pkg("history -n 1 -o time")
                 self.assert_("369576:0:0" in self.output)
+
+        def test_14_history_unicode_locale(self):
+                """Verify we can get history when unicode locale is set"""
+
+                # If pkg history run when below locales set, it fails.
+                unicode_locales = ["fr_FR.UTF-8", "zh_TW.UTF-8", "zh_CN.UTF-8",
+                    "ko_KR.UTF-8", "ja_JP.UTF-8"]
+                p = subprocess.Popen(["/usr/bin/locale", "-a"],
+                    stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+                lines = p.stdout.readlines()
+                locale_list = [i.rstrip() for i in lines]
+                unicode_list = list(set(locale_list) & set(unicode_locales))
+                self.assert_(unicode_list, "You must have one of the "
+                    " following locales installed for this test to succeed: "
+                    + ", ".join(unicode_locales))
+                env = { "LC_ALL": unicode_list[0] }
+                self.pkg("history", env_arg=env)
 
 if __name__ == "__main__":
         unittest.main()

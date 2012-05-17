@@ -2211,7 +2211,7 @@ class CliTestCase(Pkg5TestCase):
 
         def pkg(self, command, exit=0, comment="", prefix="", su_wrap=None,
             out=False, stderr=False, cmd_path=None, use_img_root=True,
-            debug_smf=True):
+            debug_smf=True, env_arg=None):
                 if debug_smf and "smf_cmds_dir" not in command:
                         command = "--debug smf_cmds_dir=%s %s" % \
                             (DebugValues["smf_cmds_dir"], command)
@@ -2222,7 +2222,8 @@ class CliTestCase(Pkg5TestCase):
                         cmd_path = self.pkg_cmdpath
                 cmdline = "%s %s" % (cmd_path, command)
                 return self.cmdline_run(cmdline, exit=exit, comment=comment,
-                    prefix=prefix, su_wrap=su_wrap, out=out, stderr=stderr)
+                    prefix=prefix, su_wrap=su_wrap, out=out, stderr=stderr,
+                    env_arg=env_arg)
 
         def pkgdepend_resolve(self, args, exit=0, comment="", su_wrap=False):
                 ops = ""
