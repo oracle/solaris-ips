@@ -35,6 +35,7 @@ import pkg
 import pkg.client.api_errors as apx
 import pkg.client.publisher
 import pkg.fmri
+import pkg.manifest
 import pkg.misc
 import pkg.portable
 import pkg.p5i
@@ -293,7 +294,7 @@ class Archive(object):
         CURRENT_VERSION = 0
         COMPATIBLE_VERSIONS = (0,)
 
-        def __init__(self, pathname, mode="r"):
+        def __init__(self, pathname, mode="r", archive_index=None):
                 """'pathname' is the absolute path of the archive file to create
                 or read from.
 
@@ -301,6 +302,11 @@ class Archive(object):
                 opened for reading or writing, which is indicated by 'r' and 'w'
                 respectively.  An archive opened for writing may not be used for
                 any extraction operations, and must not already exist.
+
+                'archive_index', if supplied is the dictionary returned by
+                self.get_index(), allowing multiple Archive objects to be open,
+                sharing the same index object, for efficient use of memory.
+                Using an existing archive_index requires mode='r'.
                 """
 
                 assert os.path.isabs(pathname)
@@ -323,6 +329,8 @@ class Archive(object):
                 if "w" in mode:
                         # Don't allow overwrite of existing archive.
                         assert not os.path.exists(self.__arc_name)
+                        # Ensure we're not sharing an index object.
+                        assert not archive_index
 
                 try:
                         self.__arc_file = open(self.__arc_name, arc_mode,
@@ -363,6 +371,14 @@ class Archive(object):
                                 # Archive is empty.
                                 raise InvalidArchive(self.__arc_name)
 
+                        # If we have an archive_index use that and return
+                        # immediately.  We assume that the caller has obtained
+                        # the index from an exising Archive object,
+                        # and will have validated the version of that archive.
+                        if archive_index:
+                                self.__extract_offsets = archive_index
+                                return
+
                         if not member.name.startswith(self.__idx_pfx) or \
                             not member.name.endswith(self.__idx_sfx):
                                 return
@@ -402,9 +418,10 @@ class Archive(object):
 
                         # Load archive index.
                         try:
-                                self.__index = ArchiveIndex(idxfn, mode="r",
-                                    version=self.__idx_ver)
-                                for name, offset in self.__index.offsets():
+                                self.__index = ArchiveIndex(idxfn,
+                                    mode="r", version=self.__idx_ver)
+                                for name, offset in \
+                                    self.__index.offsets():
                                         self.__extract_offsets[name] = \
                                             index_offset + offset
                         except InvalidArchiveIndex:
@@ -1008,8 +1025,13 @@ class Archive(object):
                         self.__arc_file.seek(offset)
                         tfile.offset = offset
 
-                        # Get the tarinfo object needed to extract the file.
-                        member = tf.TarInfo.fromtarfile(tfile)
+                        try:
+                                # Get the tarinfo object needed to extract the
+                                # file.
+                                member = tf.TarInfo.fromtarfile(tfile)
+                        except tf.TarError:
+                                # Read error encountered.
+                                raise InvalidArchive(self.__arc_name)
                 elif self.__extract_offsets:
                         # Assume there is no such archive member if extract
                         # offsets are known, but the item can't be found.
@@ -1023,6 +1045,17 @@ class Archive(object):
                         return tfile.extractfile(member)
                 except KeyError:
                         raise UnknownArchiveFiles(self.__arc_name, [src])
+
+        def get_index(self):
+                """Returns the index, and extract_offsets from an Archive
+                opened in read-only mode, allowing additional Archive objects
+                to reuse the index, in a memory-efficient manner."""
+                assert not self.__closed and "r" in self.__mode
+                if not self.__extract_offsets:
+                        # If the extraction index doesn't exist, scan the
+                        # complete archive and build one.
+                        self.__find_extract_offsets()
+                return self.__extract_offsets
 
         def get_package_file(self, fhash, pub=None):
                 """Returns the first package file matching the given hash as a

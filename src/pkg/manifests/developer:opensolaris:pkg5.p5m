@@ -50,3 +50,4 @@ depend type=require fmri=pkg:/system/linker
 depend type=require fmri=pkg:/text/locale
 depend type=require fmri=pkg:/text/tidy
 depend type=require fmri=pkg:/web/server/apache-22
+depend type=require fmri=pkg:/web/server/apache-22/module/apache-wsgi-26

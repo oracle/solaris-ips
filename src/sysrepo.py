@@ -48,6 +48,7 @@ import pkg.client.progress as progress
 import pkg.client.api_errors as apx
 import pkg.misc as misc
 import pkg.portable as portable
+import pkg.p5p as p5p
 
 logger = global_settings.logger
 orig_cwd = None
@@ -252,26 +253,30 @@ def _get_publisher_info(api_inst, http_timeout):
                     http_timeout)
 
                 for uri in uri_list:
-                        # we don't support p5p archives, only directory-based
-                        # repositories.  We also don't support file repositories
-                        # of < version 4.
+                        # we only support p5p files and directory-based
+                        # repositories of >= version 4.
                         if uri.startswith("file:"):
                                 urlresult = urllib2.urlparse.urlparse(uri)
                                 if not os.path.exists(urlresult.path):
                                         raise SysrepoException(
                                             _("file repository %s does not "
                                             "exist or is not accessible") % uri)
-                                if not os.path.isdir(urlresult.path):
-                                        raise SysrepoException(
-                                            _("p5p-based file repository %s "
-                                            "cannot be proxied.") % uri)
-                                if not os.path.exists(os.path.join(
+                                if os.path.isdir(urlresult.path) and \
+                                    not os.path.exists(os.path.join(
                                     urlresult.path, "pkg5.repository")):
                                         raise SysrepoException(
                                             _("file repository %s cannot be "
                                             "proxied. Only file "
                                             "repositories of version 4 or "
                                             "later are supported.") % uri)
+                                if not os.path.isdir(urlresult.path):
+                                        try:
+                                                p5p.Archive(urlresult.path)
+                                        except p5p.InvalidArchive:
+                                                raise SysrepoException(
+                                                    _("unable to read p5p "
+                                                    "archive file at %s") %
+                                                    urlresult.path)
 
                         hash = _uri_hash(uri)
                         cert = repo_uri.ssl_cert
@@ -368,13 +373,19 @@ def _write_httpd_conf(runtime_dir, log_dir, template_dir, host, port, cache_dir,
 
                 httpd_conf_template_path = os.path.join(template_dir,
                     SYSREPO_HTTP_TEMPLATE)
+
+                # we're disabling unicode here because we want Mako to
+                # passthrough any filesystem path names, whatever the
+                # original encoding.
                 httpd_conf_template = Template(
-                    filename=httpd_conf_template_path)
+                    filename=httpd_conf_template_path,
+                    disable_unicode=True)
 
                 # our template expects cache size expressed in Kb
                 httpd_conf_text = httpd_conf_template.render(
                     sysrepo_log_dir=log_dir,
                     sysrepo_runtime_dir=runtime_dir,
+                    sysrepo_template_dir=template_dir,
                     uri_pub_map=uri_pub_map,
                     ipv6_addr="::1",
                     host=host,
@@ -385,7 +396,7 @@ def _write_httpd_conf(runtime_dir, log_dir, template_dir, host, port, cache_dir,
                     https_proxy=https_proxy)
                 httpd_conf_path = os.path.join(runtime_dir,
                     SYSREPO_HTTP_FILENAME)
-                httpd_conf_file = file(httpd_conf_path, "w")
+                httpd_conf_file = file(httpd_conf_path, "wb")
                 httpd_conf_file.write(httpd_conf_text)
                 httpd_conf_file.close()
         except socket.gaierror, err:
@@ -436,10 +447,10 @@ def _write_publisher_response(uri_pub_map, htdocs_path, template_dir):
                 # build a version of our uri_pub_map, keyed by publisher
                 pub_uri_map = {}
                 for uri in uri_pub_map:
-                        for (pub, key, cert, hash) in uri_pub_map[uri]:
+                        for (pub, cert, key, hash) in uri_pub_map[uri]:
                                 if pub not in pub_uri_map:
                                         pub_uri_map[pub] = []
-                                pub_uri_map[pub].append((uri, key, cert, hash))
+                                pub_uri_map[pub].append((uri, cert, key, hash))
 
                 publisher_template_path = os.path.join(template_dir,
                     SYSREPO_PUB_TEMPLATE)

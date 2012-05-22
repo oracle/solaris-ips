@@ -4,7 +4,9 @@
 # file.
 #
 </%doc>
-<%      context.write("""
+<%
+      import os.path
+      context.write("""
 #
 # This is an automatically generated file for the IPS system publisher, and
 # should not be modified directly.  Changes made to this file will be
@@ -57,6 +59,18 @@ LoadModule mime_module libexec/64/mod_mime.so
 LoadModule dir_module libexec/64/mod_dir.so
 LoadModule alias_module libexec/64/mod_alias.so
 LoadModule rewrite_module libexec/64/mod_rewrite.so
+
+LoadModule env_module libexec/64/mod_env.so
+LoadModule wsgi_module libexec/64/mod_wsgi-2.6.so
+# We only alias a specific script, not all files in ${sysrepo_template_dir}
+WSGIScriptAlias /wsgi_p5p ${sysrepo_template_dir}/sysrepo_p5p.py
+WSGIDaemonProcess sysrepo processes=1 threads=21 user=pkg5srv group=pkg5srv display-name=pkg5_sysrepo inactivity-timeout=120
+WSGIProcessGroup sysrepo
+WSGISocketPrefix ${sysrepo_runtime_dir}/wsgi
+# don't accept requests over 100k
+LimitRequestBody 102400
+# ensure our wsgi application can get its runtime directory
+SetEnv SYSREPO_RUNTIME_DIR ${sysrepo_runtime_dir}
 
 #
 # If you wish httpd to run as a different user or group, you must run
@@ -157,6 +171,14 @@ DocumentRoot "${sysrepo_runtime_dir}/htdocs"
     Order allow,deny
     Allow from 127.0.0.1
 
+</Directory>
+
+# Allow access to wsgi scripts under ${sysrepo_template_dir}
+<Directory ${sysrepo_template_dir}>
+    SetHandler wsgi-script
+    WSGIProcessGroup sysrepo
+    Options ExecCGI
+    Allow from 127.0.0.1
 </Directory>
 
 #
@@ -338,12 +360,27 @@ SSLProxyProtocol all
                         # publisher-specific publisher/0, response, then stop.
                         </%doc>
 <%
+                        # File and p5p-based repositories get our static
+                        # versions and publisher responses
                         context.write("RewriteRule ^/%(pub)s/%(hash)s/versions/0 "
                             "/versions/0/index.html [L,NE]\n" % locals())
                         context.write("RewriteRule ^/%(pub)s/%(hash)s/publisher/0 "
-                            "/%(pub)s/%(hash)s/publisher/0/index.html [L,NE]" % locals())
-%><%doc>
+                            "/%(pub)s/%(hash)s/publisher/0/index.html [L,NE]\n" % locals())
+                        # A p5p archive repository
+                        if os.path.isfile(uri.replace("file:", "")):
 
+                                repo_path = "/%s" % uri.replace("file:", "").lstrip("/")
+                                context.write("# %s %s\n" % (uri, hash))
+                                # We 'passthrough' (PT), letting our
+                                # WSGIScriptAlias pick up the request from here.
+                                context.write("RewriteRule /%(pub)s/%(hash)s/(.*) "
+                                    "/wsgi_p5p?pub=%(pub)s&hash=%(hash)s&path=$1 [NE,PT]\n" %
+                                    locals())
+                                context.write("SetEnv %(hash)s %(repo_path)s\n" %
+                                    locals())
+                                continue
+%><%doc>
+                        # We have a file-based repository
                         # Modify the catalog and manifest URLs, then
                         # 'passthrough' (PT), letting the Alias below rewrite
                         # the URL instead.
@@ -401,34 +438,35 @@ SSLProxyProtocol all
         % endfor uri
 % endfor pub
 
-# any non-file-based repositories get our local versions and syspub responses
-RewriteRule ^.*/versions/0/?$ - [L]
-RewriteRule ^.*/syspub/0/?$ - [L]
-# allow for 'OPTIONS * HTTP/1.0' requests
-RewriteCond %{REQUEST_METHOD} OPTIONS [NC]
-RewriteRule \* - [L] 
-# catch all, denying everything
-RewriteRule ^.*$ - [R=404]
-
 % for uri in reversed(sorted(uri_pub_map.keys())):
         % for pub, cert_path, key_path, hash in uri_pub_map[uri]:
                 <%doc>
                 # Create an alias for the file repository under ${pub}
                 </%doc>
-                % if uri.startswith("file:"):
-                        <% repo_path = uri.replace("file:", "") %>
-# a file repository alias to serve ${uri} content.
-<Directory "${repo_path}">
-    AllowOverride None
-    Order allow,deny
-    Allow from 127.0.0.1
-</Directory>
-                                % if cache_dir != None:
+                % if uri.startswith("file:") and os.path.isdir(uri.replace("file:", "")):
+<%
+                      repo_path = "/%s" % uri.replace("file:", "").lstrip("/")
+                      context.write("# a file repository alias to serve %(uri)s content.\n"
+                          "<Directory \"%(repo_path)s\">\n"
+                          "    AllowOverride None\n"
+                          "    Order allow,deny\n"
+                          "    Allow from 127.0.0.1\n"
+                          "</Directory>\n" % locals())
+%>
+                      % if cache_dir != None:
 CacheDisable /${pub}/${hash}/publisher/0
 CacheDisable /${pub}/${hash}/versions/0
-                                % endif
+                      % endif
 Alias /${pub}/${hash} ${repo_path}
                 % endif
         % endfor uri
 % endfor pub
 
+# any non-file-based repositories get our local versions and syspub responses
+RewriteRule ^.*/versions/0/?$ - [L]
+RewriteRule ^.*/syspub/0/?$ - [L]
+# allow for 'OPTIONS * HTTP/1.0' requests
+RewriteCond %{REQUEST_METHOD} OPTIONS [NC]
+RewriteRule \* - [L]
+# catch all, denying everything
+RewriteRule ^.*$ - [R=404]

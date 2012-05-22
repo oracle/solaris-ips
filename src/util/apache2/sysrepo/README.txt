@@ -33,3 +33,7 @@ The files in this directory are as follows:
 					reference_httpd.conf file in this
 					directory.
 
+./sysrepo_p5p.py			A WSGI application, used to serve
+                                        the contents of .p5p archives to
+                                        system_repository clients.
+

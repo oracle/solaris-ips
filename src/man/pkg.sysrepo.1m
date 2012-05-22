@@ -23,7 +23,7 @@ The system repository is responsible for providing access to the package reposit
 The system repository is primarily used in the global zone to allow non-global zones to access the repositories configured in the global zone. The SMF services \fBsvc:/application/pkg/zones-proxyd\fR and \fBsvc:/application/pkg/zones-proxy-client\fR are responsible for providing the transport between non-global zones and the global zone. This transport is only used by \fBpkg\fR(5).
 .sp
 .LP
-Note that only http, https, and v4 file repositories are supported. p5p-based file repositories or older file repository formats are not supported. See \fBpkgrepo\fR(1) for more information about repository versions.
+Note that only http, https, p5p and v4 file repositories are supported. Older file repository formats are not supported. See \fBpkgrepo\fR(1) for more information about repository versions.
 .SH OPTIONS
 .sp
 .LP

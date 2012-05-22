@@ -34,9 +34,11 @@ set name=variant.arch value=$(ARCH)
 dir  path=$(PYDIR)
 dir  path=$(PYDIRVP)
 dir  path=$(PYDIRVP)/pkg
+dir  path=$(PYDIRVP)/pkg/64
 file path=$(PYDIRVP)/pkg-0.1-py2.6.egg-info
 file path=$(PYDIRVP)/pkg/__init__.py
 file path=$(PYDIRVP)/pkg/_varcet.so
+file path=$(PYDIRVP)/pkg/64/_varcet.so
 dir  path=$(PYDIRVP)/pkg/actions
 file path=$(PYDIRVP)/pkg/actions/__init__.py
 file path=$(PYDIRVP)/pkg/actions/_actions.so
@@ -55,6 +57,12 @@ file path=$(PYDIRVP)/pkg/actions/link.py
 file path=$(PYDIRVP)/pkg/actions/signature.py
 file path=$(PYDIRVP)/pkg/actions/unknown.py
 file path=$(PYDIRVP)/pkg/actions/user.py
+# We ship a 64-bit version of _actions.so because it's
+# needed by the sysrepo_p5p which is a mod_wsgi application
+# that runs in a 64-bit apache instance.
+dir  path=$(PYDIRVP)/pkg/actions/64
+file path=$(PYDIRVP)/pkg/actions/64/_actions.so
+file path=$(PYDIRVP)/pkg/actions/64/_common.so
 file path=$(PYDIRVP)/pkg/altroot.py
 file path=$(PYDIRVP)/pkg/api_common.py
 file path=$(PYDIRVP)/pkg/arch.so

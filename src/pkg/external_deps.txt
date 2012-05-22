@@ -43,4 +43,5 @@
     pkg:/text/locale
     pkg:/text/tidy
     pkg:/web/server/apache-22
+    pkg:/web/server/apache-22/module/apache-wsgi-26
     pkg:/web/wget

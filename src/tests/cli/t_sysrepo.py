@@ -1,4 +1,5 @@
 #!/usr/bin/python
+# -*- coding: utf-8 -*-
 #
 # CDDL HEADER START
 #
@@ -29,8 +30,11 @@ import pkg5unittest
 
 import errno
 import hashlib
+import imp
 import os
 import os.path
+import pkg.p5p
+import shutil
 import unittest
 import urllib2
 import shutil
@@ -205,6 +209,11 @@ class TestDetailedSysrepoCli(pkg5unittest.ManyDepotTestCase):
         sample_pkg = """
             open sample@1.0,5.11-0
             add file tmp/sample_file mode=0444 owner=root group=bin path=/usr/bin/sample
+            close"""
+
+        new_pkg = """
+            open new@1.0,5.11-0
+            add file tmp/sample_file mode=0444 owner=root group=bin path=/usr/bin/new
             close"""
 
         misc_files = ["tmp/sample_file"]
@@ -385,7 +394,8 @@ class TestDetailedSysrepoCli(pkg5unittest.ManyDepotTestCase):
                 self.sc.stop()
 
         def test_8_file_publisher(self):
-                """A proxied file publisher works as a normal file publisher."""
+                """A proxied file publisher works as a normal file publisher,
+                including package archives"""
                 #
                 # The standard system publisher client code does not use the
                 # "publisher/0" response, so we need this test to exercise that.
@@ -397,9 +407,16 @@ class TestDetailedSysrepoCli(pkg5unittest.ManyDepotTestCase):
                 urlresult = urllib2.urlparse.urlparse(self.rurl1)
                 symlink_path = os.path.join(self.test_root, "repo_symlink")
                 os.symlink(urlresult.path, symlink_path)
-                symlinked_url="file://%s" % symlink_path
+                symlinked_url = "file://%s" % symlink_path
 
-                for file_url in [self.rurl1, symlinked_url]:
+                # create a p5p archive
+                p5p_path = os.path.join(self.test_root,
+                    "test_8_file_publisher_archive.p5p")
+                p5p_url = "file://%s" % p5p_path
+                self.pkgrecv(server_url=self.durl1, command="-a -d %s sample" %
+                    p5p_path)
+
+                for file_url in [self.rurl1, symlinked_url, p5p_url]:
                         self.image_create(prefix="test1", repourl=self.durl1)
                         self.pkg("set-publisher -g %s test1" % file_url)
                         self.sysrepo("")
@@ -411,23 +428,20 @@ class TestDetailedSysrepoCli(pkg5unittest.ManyDepotTestCase):
                         self.pkg_image_create(prefix="test1", repourl=url)
                         self.pkg("install sample")
                         self.pkg("contents -rm sample")
-                        # the sysrepo doesn't support search operations for file repos
+                        # the sysrepo doesn't support search ops for file repos
                         self.pkg("search -r sample", exit=1)
                         self.sc.stop()
 
         def test_9_unsupported_publishers(self):
-                """Ensure we fail when asked to proxy p5p or < v4 file repos"""
+                """Ensure we fail when asked to proxy < v4 file repos"""
 
                 v3_repo_root = os.path.join(self.test_root, "sysrepo_test_9")
                 os.mkdir(v3_repo_root)
                 v3_repo_path = os.path.join(v3_repo_root, "repo")
-                p5a_path = os.path.join(v3_repo_root, "archive.p5p")
-                self.pkgrecv(server_url=self.durl1, command="-a -d %s sample" %
-                    p5a_path)
 
                 self.pkgrepo("create --version 3 %s" % v3_repo_path)
                 self.pkgrepo("-s %s set publisher/prefix=foo" % v3_repo_path)
-                for path in [p5a_path, v3_repo_path]:
+                for path in [v3_repo_path]:
                         self.image_create(repourl="file://%s" % path)
                         self.sysrepo("-R %s" % self.img_path(), exit=1)
 
@@ -518,6 +532,320 @@ class TestDetailedSysrepoCli(pkg5unittest.ManyDepotTestCase):
                 self.assertEqualDiff(exp_uid, uid)
 
                 self.sc.stop()
+
+        def test_13_changing_p5p(self):
+                """Ensure that when a p5p file changes from beneath us, or
+                disappears, the system repository and any pkg(5) clients
+                react correctly."""
+
+                # create a p5p archive
+                p5p_path = os.path.join(self.test_root,
+                    "test_12_changing_p5p_archive.p5p")
+                p5p_url = "file://%s" % p5p_path
+                self.pkgrecv(server_url=self.durl1, command="-a -d %s sample" %
+                    p5p_path)
+
+                # configure an image from which to generate a sysrepo config
+                self.image_create(prefix="test1", repourl=self.durl1)
+                self.pkg("set-publisher -g %s test1" % p5p_url)
+                self.sysrepo("")
+                self._start_sysrepo()
+
+                # create an image which uses the system publisher
+                hash = hashlib.sha1(p5p_url.rstrip("/")).hexdigest()
+                url = "http://localhost:%(port)s/test1/%(hash)s/" % \
+                    {"port": self.sysrepo_port, "hash": hash}
+
+                self.debug("using %s as repo url" % url)
+                self.pkg_image_create(prefix="test1", repourl=url)
+                self.pkg("install sample")
+
+                # modify the p5p file - publish a new package and an
+                # update of the existing package, then recreate the p5p file.
+                self.pkgsend_bulk(self.durl1, self.new_pkg)
+                self.pkgsend_bulk(self.durl1, self.sample_pkg)
+                os.unlink(p5p_path)
+                self.pkgrecv(server_url=self.durl1,
+                    command="-a -d %s sample new" % p5p_path)
+
+                # ensure we can install our new packages through the system
+                # publisher url
+                self.pkg("install new")
+                self.pkg("publisher")
+
+                # remove the p5p file, which should still allow us to uninstall
+                renamed_p5p_path = p5p_path + ".renamed"
+                os.rename(p5p_path, renamed_p5p_path)
+                self.pkg("uninstall new")
+
+                # ensure we can't install the packages or perform operations
+                # that require the p5p file to be present
+                self.pkg("install new", exit=1)
+                self.pkg("contents -rm new", exit=1)
+
+                # replace the p5p file, and ensure the client can install again
+                os.rename(renamed_p5p_path, p5p_path)
+                self.pkg("install new")
+                self.pkg("contents -rm new")
+
+                self.sc.stop()
+
+        def test_13_bad_input(self):
+                """Tests the system repository with some bad input: wrong
+                paths, unicode in urls, and some very long urls to ensure
+                the responses are as expected."""
+                # create a p5p archive
+                p5p_path = os.path.join(self.test_root,
+                    "test_13_bad_input.p5p")
+                p5p_url = "file://%s" % p5p_path
+                self.pkgrecv(server_url=self.durl1, command="-a -d %s sample" %
+                    p5p_path)
+                p5p_hash = hashlib.sha1(p5p_url.rstrip("/")).hexdigest()
+                file_url = self.dcs[2].get_repo_url()
+                file_hash = hashlib.sha1(file_url.rstrip("/")).hexdigest()
+
+                # configure an image from which to generate a sysrepo config
+                self.image_create(prefix="test1", repourl=self.durl1)
+
+                self.pkg("set-publisher -p %s" % file_url)
+                self.pkg("set-publisher -g %s test1" % p5p_url)
+                self.sysrepo("")
+                self._start_sysrepo()
+
+                # some incorrect urls
+                queries_404 = [
+                    "noodles"
+                    "/versions/1"
+                    "/"
+                ]
+
+                # a place to store some long urls
+                queries_414 = []
+
+                # add urls and some unicode.  We test a file repository,
+                # which makes sure Apache can deal with the URLs appropriately,
+                # as well as a p5p repository, exercising our mod_wsgi app.
+                for hsh, pub in [("test1", p5p_hash), ("test2", file_hash)]:
+                        queries_404.append("%s/%s/catalog/1/ΰŇﺇ⊂⏣⊅ℇ" %
+                            (pub, hsh))
+                        queries_404.append("%s/%s/catalog/1/%s" %
+                            (pub, hsh, "f" + "u" * 1000))
+                        queries_414.append("%s/%s/catalog/1/%s" %
+                            (pub, hsh, "f" * 900000 + "u"))
+
+                def test_response(part, code):
+                        """Given a url substring and an expected error code,
+                        check that the system repository returns that code
+                        for a url constructed from that part."""
+                        url = "http://localhost:%s/%s" % \
+                            (self.sysrepo_port, part)
+                        try:
+                                resp =  urllib2.urlopen(url, None, None)
+                        except urllib2.HTTPError, e:
+                                if e.code != code:
+                                        self.assert_(False,
+                                            "url %s returned: %s" % (url, e))
+
+                for url_part in queries_404:
+                        test_response(url_part, 404)
+                for url_part in queries_414:
+                        test_response(url_part, 414)
+                self.sc.stop()
+
+        def test_14_unicode(self):
+                """Tests the system repository with some unicode paths to p5p
+                files."""
+                unicode_str = "ΰŇﺇ⊂⏣⊅ℇ"
+                unicode_dir = os.path.join(self.test_root, unicode_str)
+                os.mkdir(unicode_dir)
+
+                # create paths to p5p files, using unicode dir or file names
+                p5p_unicode_dir = os.path.join(unicode_dir,
+                    "test_14_unicode.p5p")
+                p5p_unicode_file = os.path.join(self.test_root,
+                    "%s.p5p" % unicode_str)
+
+                for p5p_path in [p5p_unicode_dir, p5p_unicode_file]:
+                        p5p_url = "file://%s" % p5p_path
+                        self.pkgrecv(server_url=self.durl1,
+                            command="-a -d %s sample" % p5p_path)
+                        p5p_hash = hashlib.sha1(p5p_url.rstrip("/")).hexdigest()
+
+                        self.image_create()
+                        self.pkg("set-publisher -p %s" % p5p_url)
+
+                        self.sysrepo("")
+                        self._start_sysrepo()
+
+                        # ensure we can get content from the p5p file
+                        for path in ["catalog/1/catalog.attrs",
+                            "catalog/1/catalog.base.C",
+                            "file/1/f5da841b7c3601be5629bb8aef928437de7d534e"]:
+                                url = "http://localhost:%s/test1/%s/%s" % \
+                                    (self.sysrepo_port, p5p_hash, path)
+                                resp = urllib2.urlopen(url, None, None)
+                                self.debug(resp.readlines())
+
+                        self.sc.stop()
+
+class TestP5pWsgi(pkg5unittest.SingleDepotTestCase):
+        """A class to directly exercise the p4p mod_wsgi application outside
+        of Apache and the system repository itself.
+
+        By calling the web application directly, we have a little more
+        flexibility when writing tests.  Other system-repository tests will
+        exercise much of the mod_wsgi configuration and framework, but these
+        tests will be easier to debug and faster to run.
+
+        Note that since we call the web application directly, the web app can
+        intentionally emit some tracebacks to stderr, which will be seen by
+        the test framework."""
+
+        persistent_setup = False
+
+        sample_pkg = """
+            open sample@1.0,5.11-0
+            add file tmp/sample_file mode=0444 owner=root group=bin path=/usr/bin/sample
+            close"""
+
+        new_pkg = """
+            open new@1.0,5.11-0
+            add file tmp/sample_file mode=0444 owner=root group=bin path=/usr/bin/new
+            close"""
+
+        misc_files = { "tmp/sample_file": "carrots" }
+
+        def setUp(self):
+                pkg5unittest.SingleDepotTestCase.setUp(self, start_depot=True)
+                self.image_create()
+
+                # we have to dynamically load the mod_wsgi webapp, since it
+                # lives outside our normal search path
+                mod_name = "sysrepo_p5p"
+                src_name = "%s.py" % mod_name
+                sysrepo_p5p_file = file(os.path.join(self.template_dir,
+                    src_name))
+                self.sysrepo_p5p = imp.load_module(mod_name, sysrepo_p5p_file,
+                    src_name, ("py", "r", imp.PY_SOURCE))
+
+                # now create a simple p5p file that we can use in our tests
+                self.make_misc_files(self.misc_files)
+                self.pkgsend_bulk(self.durl, self.sample_pkg)
+                self.pkgsend_bulk(self.durl, self.new_pkg)
+
+                self.p5p_path = os.path.join(self.test_root,
+                    "mod_wsgi_archive.p5p")
+
+                self.pkgrecv(server_url=self.durl,
+                    command="-a -d %s sample new" % self.p5p_path)
+                self.http_status = ""
+
+        def test_queries(self):
+                """Ensure that we return proper HTTP response codes."""
+
+                def start_response(status, response_headers, exc_info=None):
+                        """A dummy response function, used to capture output"""
+                        self.http_status = status
+
+                environ = {}
+                hsh = "123abcdef"
+                environ["SYSREPO_RUNTIME_DIR"] = self.test_root
+                environ["PKG5_TEST_ENV"] = "True"
+                environ[hsh] = self.p5p_path
+
+                def test_query_responses(queries, code, expect_content=False):
+                        """Given a list of queries, and a string we expect to
+                        appear in each response, invoke the wsgi application
+                        with each query and check response codes.  Also check
+                        that content was returned or not."""
+
+                        for query in queries:
+                                seen_content = False
+                                environ["QUERY_STRING"] = urllib2.unquote(query)
+                                self.http_status = ""
+                                for item in self.sysrepo_p5p.application(
+                                    environ, start_response):
+                                        seen_content = item
+
+                                self.assert_(code in self.http_status,
+                                    "Query %s response did not contain %s: %s" %
+                                    (query, code, self.http_status))
+                                if expect_content:
+                                        self.assert_(seen_content,
+                                            "No content returned for %s" %
+                                            query)
+                                else:
+                                        self.assertFalse(seen_content,
+                                            "Unexpected content for %s" % query)
+
+                # the easiest way to get the name of one of the manifests
+                # in the archive is to look for it in the index
+                archive = pkg.p5p.Archive(self.p5p_path)
+                idx = archive.get_index()
+                mf = None
+                for item in idx.keys():
+                        if item.startswith("publisher/test/pkg/new/"):
+                                mf = item.replace(
+                                    "publisher/test/pkg/new/", "new@")
+                archive.close()
+
+                queries_200 = [
+                    # valid file, matches the hash of the content in misc_files
+                    "pub=test&hash=%s&path=file/1/f890d49474e943dc07a766c21d2bf35d6e527e89" % hsh,
+                    # valid catalog parts
+                    "pub=test&hash=%s&path=catalog/1/catalog.attrs" % hsh,
+                    "pub=test&hash=%s&path=catalog/1/catalog.base.C" % hsh,
+                    # valid manifest
+                    "pub=test&hash=%s&path=manifest/0/%s" % (hsh, mf)
+                ]
+
+                queries_404 = [
+                    # wrong path
+                    "pub=test&hash=%s&path=catalog/1/catalog.attrsX" % hsh,
+                    # invalid publisher
+                    "pub=WRONG&hash=%s&path=catalog/1/catalog.attrs" % hsh,
+                    # incorrect path
+                    "pub=test&hash=%s&path=file/1/12u3yt123123" % hsh,
+                    # incorrect path (where the first path component is unknown)
+                    "pub=test&hash=%s&path=carrots/1/12u3yt123123" % hsh,
+                    # incorrect manifest, with an unknown package name
+                    "pub=test&hash=%s&path=manifest/0/foo%s" % (hsh, mf),
+                    # incorrect manifest, with an illegal FMRI
+                    "pub=test&hash=%s&path=manifest/0/%sfoo" % (hsh, mf)
+                ]
+
+                queries_400 = [
+                    # missing publisher (while p5p files can return content
+                    # despite no publisher, our mod_wsgi app requires a
+                    # publisher)
+                    "hash=%s&path=catalog/1/catalog.attrs" % hsh,
+                    # missing path
+                    "pub=test&hash=%s" % hsh,
+                    # malformed query
+                    "&&???&&&",
+                    # no hash key
+                    "pub=test&hashX=%s&path=catalog/1/catalog.attrs" % hsh,
+                    # unknown hash value
+                    "pub=test&hash=carrots&path=catalog/1/catalog.attrs"
+                ]
+
+                test_query_responses(queries_200, "200", expect_content=True)
+                test_query_responses(queries_400, "400")
+                test_query_responses(queries_404, "404")
+
+                # generally we try to shield users from internal server errors,
+                # however in the case of a missing p5p file on the server
+                # this seems like the right thing to do, rather than to return
+                # a 404.
+                # The end result for pkg client with 500 or a 404 code is the
+                # same, but the former will result in more useful information
+                # in the system-repository error_log.
+                os.unlink(self.p5p_path)
+                queries_500 = queries_200 + queries_404
+                test_query_responses(queries_500, "500")
+                # despite the missing p5p file, we should still get 400 errors
+                test_query_responses(queries_400, "400")
+
 
 if __name__ == "__main__":
         unittest.main()

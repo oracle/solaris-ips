@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2011, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2011, 2012, Oracle and/or its affiliates. All rights reserved.
 #
 
 import testutils
@@ -486,11 +486,13 @@ class TestP5P(pkg5unittest.SingleDepotTestCase):
                 dm.set_content(pathname=target, signatures=True)
                 self.assertEqualDiff(sm.signatures, dm.signatures)
 
-        def __verify_extract(self, repo, arc_path, hashes, ext_dir):
+        def __verify_extract(self, repo, arc_path, hashes, ext_dir,
+            archive_index=None):
                 """Helper method to test extraction and retrieval functionality.
                 """
 
-                arc = pkg.p5p.Archive(arc_path, mode="r")
+                arc = pkg.p5p.Archive(arc_path, mode="r",
+                    archive_index=archive_index)
 
                 #
                 # Verify behaviour of extract_package_manifest().
@@ -539,7 +541,8 @@ class TestP5P(pkg5unittest.SingleDepotTestCase):
                 # Verify behaviour of extract_package_files().
                 #
                 arc.close()
-                arc = pkg.p5p.Archive(arc_path, mode="r")
+                arc = pkg.p5p.Archive(arc_path, mode="r",
+                    archive_index=archive_index)
                 shutil.rmtree(ext_dir)
 
                 # Test unknown hashes.
@@ -571,7 +574,8 @@ class TestP5P(pkg5unittest.SingleDepotTestCase):
                 # Verify behaviour of extract_to().
                 #
                 arc.close()
-                arc = pkg.p5p.Archive(arc_path, mode="r")
+                arc = pkg.p5p.Archive(arc_path, mode="r",
+                    archive_index=archive_index)
                 shutil.rmtree(ext_dir)
 
                 # Test unknown file.
@@ -626,7 +630,8 @@ class TestP5P(pkg5unittest.SingleDepotTestCase):
                 # Verify behaviour of get_file().
                 #
                 arc.close()
-                arc = pkg.p5p.Archive(arc_path, mode="r")
+                arc = pkg.p5p.Archive(arc_path, mode="r",
+                     archive_index=archive_index)
 
                 # Test behaviour for non-existent file.
                 self.assertRaisesStringify(pkg.p5p.UnknownArchiveFiles,
@@ -643,7 +648,8 @@ class TestP5P(pkg5unittest.SingleDepotTestCase):
                 # Verify behaviour of get_package_file().
                 #
                 arc.close()
-                arc = pkg.p5p.Archive(arc_path, mode="r")
+                arc = pkg.p5p.Archive(arc_path, mode="r",
+                    archive_index=archive_index)
 
                 # Test behaviour when specifying publisher.
                 nullf = open(os.devnull, "wb")
@@ -664,7 +670,8 @@ class TestP5P(pkg5unittest.SingleDepotTestCase):
                 # Verify behaviour of get_package_manifest().
                 #
                 arc.close()
-                arc = pkg.p5p.Archive(arc_path, mode="r")
+                arc = pkg.p5p.Archive(arc_path, mode="r",
+                    archive_index=archive_index)
 
                 # Test bad FMRI.
                 self.assertRaises(pkg.fmri.IllegalFmri,
@@ -689,7 +696,8 @@ class TestP5P(pkg5unittest.SingleDepotTestCase):
                 # Verify behaviour of extract_catalog1().
                 #
                 arc.close()
-                arc = pkg.p5p.Archive(arc_path, mode="r")
+                arc = pkg.p5p.Archive(arc_path, mode="r",
+                    archive_index=archive_index)
                 ext_tmp_dir = tempfile.mkdtemp(dir=self.test_root)
                 def verify_catalog(pub, pfmris):
                         for pname in ("catalog.attrs", "catalog.base.C",
@@ -815,7 +823,7 @@ class TestP5P(pkg5unittest.SingleDepotTestCase):
                 arc = ptf.PkgTarFile(name=arc_path, mode="r")
                 arc.extractall(ext_dir)
                 arc.close()
-       
+
                 # Now verify archive can still be used when index file
                 # is omitted.
                 os.unlink(arc_path)
@@ -829,6 +837,30 @@ class TestP5P(pkg5unittest.SingleDepotTestCase):
                 # Verify pkg(5) archive class extraction behaviour using
                 # the new archive.
                 arc = self.__verify_extract(repo, arc_path, hashes, ext_dir)
+                arc.close()
+
+                # Save an index for later.
+                arc = pkg.p5p.Archive(arc_path, mode="r")
+                saved_index = arc.get_index()
+                arc.close()
+
+                # Verify we can extract the archive reusing an index.
+                arc = self.__verify_extract(repo, arc_path, hashes, ext_dir,
+                    archive_index=saved_index)
+                arc.close()
+
+                # Verify we throw an assert when opening a p5p in write mode.
+                self.assertRaisesStringify(AssertionError, pkg.p5p.Archive,
+                    arc_path, mode="w", archive_index=saved_index)
+
+                # Verify we can't extract archive members using a corrupted
+                # index.
+                arc = pkg.p5p.Archive(arc_path, mode="r",
+                    archive_index={"cats": 1234L})
+                self.assertRaisesStringify(pkg.p5p.ArchiveErrors,
+                    arc.extract_catalog1, "catalog.attrs", ext_dir)
+                self.assertRaisesStringify(pkg.p5p.ArchiveErrors,
+                    arc.extract_package_files, hashes, ext_dir)
                 arc.close()
 
         def test_05_invalid(self):
@@ -983,6 +1015,14 @@ class TestP5P(pkg5unittest.SingleDepotTestCase):
                     pkg.p5p.Archive, arc_path, mode="r")
                 os.unlink(arc_path)
 
+        def test_06_get_index(self):
+                """Verify we can't retrieve an index from an archive opened
+                in write-mode."""
+                arc_path = os.path.join(self.test_root, "index.p5p")
+                arc = pkg.p5p.Archive(arc_path, mode="w")
+                self.assertRaisesStringify(AssertionError, arc.get_index)
+                arc.close()
+                os.unlink(arc_path)
 
 if __name__ == "__main__":
         unittest.main()
