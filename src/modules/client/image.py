@@ -669,6 +669,15 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                 self.cfg.write()
                 self.__load_publisher_ssl()
 
+                # Remove the old the pkg.sysrepo(1M) cache, if present.
+                cache_path = os.path.join(self.root,
+                    global_settings.sysrepo_pub_cache_path)
+                try:
+                        portable.remove(cache_path)
+                except EnvironmentError, e:
+                        if e.errno != errno.ENOENT:
+                                raise apx._convert_error(e)
+
                 if self.is_liveroot() and \
                     smf.get_state(
                         "svc:/application/pkg/system-repository:default") in \

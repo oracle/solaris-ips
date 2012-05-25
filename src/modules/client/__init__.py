@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2007, 2011, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2007, 2012, Oracle and/or its affiliates. All rights reserved.
 #
 
 import copy
@@ -75,6 +75,11 @@ class GlobalSettings(object):
                 # Maximum number of transient errors before we abort an
                 # endpoint.
                 self.pkg_client_max_consecutive_error_default = 4
+
+                # The location within the image of the cache for pkg.sysrepo(1M)
+                self.sysrepo_pub_cache_path = \
+                    "var/cache/pkg/sysrepo_pub_cache.dat"
+
                 try:
                         # Maximum number of timeouts before client gives up.
                         self.PKG_CLIENT_MAX_TIMEOUT = int(os.environ.get(

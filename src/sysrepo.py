@@ -30,7 +30,9 @@ import locale
 import logging
 import os
 import shutil
+import simplejson
 import socket
+import stat
 import sys
 import traceback
 import urllib2
@@ -192,9 +194,15 @@ def _get_image(image_dir):
 
 def _follow_redirects(uri_list, http_timeout):
         """ Follow HTTP redirects from servers.  Needed so that we can create
-        RewriteRules for all repository URLs that pkg clients may encounter."""
+        RewriteRules for all repository URLs that pkg clients may encounter.
+
+        We return a sorted list of URIs that were found having followed all
+        redirects in 'uri_list'.  We also return a boolean, True if we timed out
+        when following any of the URIs.
+        """
 
         ret_uris = set(uri_list)
+        timed_out = False
 
         class SysrepoRedirectHandler(urllib2.HTTPRedirectHandler):
                 """ A HTTPRedirectHandler that saves URIs we've been
@@ -225,21 +233,181 @@ def _follow_redirects(uri_list, http_timeout):
                         # could become available at a later date.
                         msg(_("WARNING: unable to access %(uri)s when checking "
                             "for redirects: %(err)s") % locals())
-        return sorted(list(ret_uris))
+                        timed_out = True
 
-def _get_publisher_info(api_inst, http_timeout):
+        return sorted(list(ret_uris)), timed_out
+
+def __validate_pub_info(pub_info, no_uri_pubs, api_inst):
+        """Determine if pub_info and no_uri_pubs objects, which may have been
+        decoded from a json representation are valid, raising a SysrepoException
+        if they are not.
+
+        We use the api_inst to sanity-check that all publishers configured in
+        the image are represented in pub_info or no_uri_pubs, and that their
+        URIs are present.
+
+        SysrepoExceptions are raised with developer-oriented debug messages
+        which are not to be translated or shown to users.
+        """
+
+        # validate the structure of the pub_info object
+        if not isinstance(pub_info, dict):
+                raise SysrepoException("%s is not a dict" % pub_info)
+        for uri in pub_info:
+                if not isinstance(uri, basestring):
+                        raise SysrepoException("%s is not a basestring" % uri)
+                uri_info = pub_info[uri]
+                if not isinstance(uri_info, list):
+                        raise SysrepoException("%s is not a list" % uri_info)
+                for props in uri_info:
+                        if len(props) != 4:
+                                raise SysrepoException("%s does not have 4 "
+                                    "items" % props)
+                        # props [0] and [3] must be strings
+                        if not isinstance(props[0], basestring) or \
+                            not isinstance(props[3], basestring):
+                                raise SysrepoException("indices 0 and 3 of %s "
+                                    "are not basestrings" % props)
+        # validate the structure of the no_uri_pubs object
+        if not isinstance(no_uri_pubs, list):
+                raise SysrepoException("%s is not a list" % no_uri_pubs)
+        for item in no_uri_pubs:
+                if not isinstance(item, basestring):
+                        raise SysrepoException("%s is not a basestring" % item)
+
+        # check that we have entries for each URI for each publisher.
+        # (we may have more URIs than these, due to server-side http redirects
+        # that are not reflected as origins or mirrors in the image itself)
+        for pub in api_inst.get_publishers():
+                if pub.disabled:
+                        continue
+                repo = pub.repository
+                for uri in repo.mirrors + repo.origins:
+                        uri_key = uri.uri.rstrip("/")
+                        if uri_key not in pub_info:
+                                raise SysrepoException("%s is not in %s" %
+                                    (uri_key, pub_info))
+                if repo.mirrors + repo.origins == []:
+                        if pub.prefix not in no_uri_pubs:
+                                raise SysrepoException("%s is not in %s" %
+                                    (pub.prefix, no_uri_pubs))
+        return
+
+def _load_publisher_info(api_inst, image_dir):
+        """Loads information about the publishers configured for the
+        given ImageInterface from image_dir in a format identical to that
+        returned by _get_publisher_info(..)  that is, a dictionary mapping
+        URIs to a list of lists. An exampe entry might be:
+            pub_info[uri] = [[prefix, cert, key, hash of the uri], ... ]
+
+        and a list of publishers which have no origin or mirror URIs.
+
+        If the cache doesn't exist, or is in a format we don't recognise, or
+        we've managed to determine that it's stale, we return None, None
+        indicating that the publisher_info must be rebuilt.
+        """
+        pub_info = None
+        no_uri_pubs = None
+        cache_path = os.path.join(image_dir,
+            pkg.client.global_settings.sysrepo_pub_cache_path)
+        try:
+                try:
+                        st_cache = os.lstat(cache_path)
+                except OSError, e:
+                        if e.errno == errno.ENOENT:
+                                return None, None
+                        else:
+                                raise
+
+                # the cache must be a regular file
+                if not stat.S_ISREG(st_cache.st_mode):
+                        raise IOError("not a regular file")
+
+                with open(cache_path, "r") as cache_file:
+                        try:
+                                pub_info_tuple = simplejson.load(cache_file)
+                        except simplejson.JSONDecodeError:
+                                error(_("Invalid config cache file at %s "
+                                    "generating fresh configuration.") %
+                                    cache_path)
+                                return None, None
+
+                        if len(pub_info_tuple) != 2:
+                                error(_("Invalid config cache at %s "
+                                    "generating fresh configuration.") %
+                                    cache_path)
+                                return None, None
+
+                        pub_info, no_uri_pubs = pub_info_tuple
+                        # sanity-check the cached configuration
+                        try:
+                                __validate_pub_info(pub_info, no_uri_pubs,
+                                    api_inst)
+                        except SysrepoException, e:
+                                error(_("Invalid config cache at %s "
+                                    "generating fresh configuration.") %
+                                    cache_path)
+                                return None, None
+
+        # If we have any problems loading the publisher info, we explain why.
+        except IOError, e:
+                error(_("Unable to load config from %(cache_path)s: %(e)s") %
+                    locals())
+                return None, None
+
+        return pub_info, no_uri_pubs
+
+def _store_publisher_info(uri_pub_map, no_uri_pubs, image_dir):
+        """Stores a given pair of (uri_pub_map, no_uri_pubs) objects to a
+        configuration cache file beneath image_dir."""
+        cache_path = os.path.join(image_dir,
+            pkg.client.global_settings.sysrepo_pub_cache_path)
+        cache_dir = os.path.dirname(cache_path)
+        try:
+                if not os.path.exists(cache_dir):
+                        os.makedirs(cache_dir, 0700)
+                try:
+                        # if the cache exists, it must be a file
+                        st_cache = os.lstat(cache_path)
+                        if not stat.S_ISREG(st_cache.st_mode):
+                                raise IOError("not a regular file")
+                except OSError:
+                        pass
+
+                with open(cache_path, "wb") as cache_file:
+                        simplejson.dump((uri_pub_map, no_uri_pubs), cache_file,
+                            indent=True)
+                        os.chmod(cache_path, 0600)
+        except IOError, e:
+                error(_("Unable to store config to %(cache_path)s: %(e)s") %
+                    locals())
+
+def _get_publisher_info(api_inst, http_timeout, image_dir):
         """Returns information about the publishers configured for the given
         ImageInterface.
 
-        The first item returned is a map of uris to tuples, (prefix, cert, key,
-        hash of the uri)
+        The first item returned is a map of uris to a list of lists of the form
+        [[prefix, cert, key, hash of the uri], ... ]
 
         The second item returned is a list of publisher prefixes which specify
-        no uris."""
+        no uris.
+
+        Where possible, we attempt to load cached publisher information, but if
+        that cached information is stale or unavailable, we fall back to
+        querying the image for the publisher information, verifying repository
+        URIs and checking for redirects and write that information to the
+        cache."""
+
+        # the cache gets deleted by pkg.client.image.Image.save_config()
+        # any time publisher configuration changes are made.
+        uri_pub_map, no_uri_pubs = _load_publisher_info(api_inst, image_dir)
+        if uri_pub_map:
+                return uri_pub_map, no_uri_pubs
 
         # build a map of URI to (pub.prefix, cert, key, hash) tuples
         uri_pub_map = {}
         no_uri_pubs = []
+        timed_out = False
 
         for pub in api_inst.get_publishers():
                 if pub.disabled:
@@ -247,7 +415,7 @@ def _get_publisher_info(api_inst, http_timeout):
 
                 prefix = pub.prefix
                 repo = pub.repository
-                uri_list = _follow_redirects(
+                uri_list, timed_out = _follow_redirects(
                     [repo_uri.uri.rstrip("/")
                     for repo_uri in repo.mirrors + repo.origins],
                     http_timeout)
@@ -282,13 +450,18 @@ def _get_publisher_info(api_inst, http_timeout):
                         cert = repo_uri.ssl_cert
                         key = repo_uri.ssl_key
                         if uri in uri_pub_map:
-                                uri_pub_map[uri].append((prefix, cert, key,
-                                    hash))
+                                uri_pub_map[uri].append([prefix, cert, key,
+                                    hash])
                         else:
-                                uri_pub_map[uri] = [(prefix, cert, key, hash)]
+                                uri_pub_map[uri] = [[prefix, cert, key, hash]]
 
                 if not repo.mirrors + repo.origins:
                         no_uri_pubs.append(prefix)
+
+        # if we weren't able to follow all redirects, then we don't write a new
+        # cache, because it could be incomplete.
+        if not timed_out:
+                _store_publisher_info(uri_pub_map, no_uri_pubs, image_dir)
         return uri_pub_map, no_uri_pubs
 
 def _chown_cache_dir(dir):
@@ -543,8 +716,6 @@ def refresh_conf(image_root="/", port=None, runtime_dir=None,
     log_dir=None, template_dir=None, host="127.0.0.1", cache_dir=None,
     cache_size=1024, http_timeout=3, http_proxy=None, https_proxy=None):
         """Creates a new configuration for the system repository.
-        That is, it copies /var/pkg/pkg5.image file the htdocs
-        directory and creates an apache .conf file.
 
         TODO: a way to map only given zones to given publishers
         """
@@ -562,7 +733,7 @@ def refresh_conf(image_root="/", port=None, runtime_dir=None,
                 try:
                         api_inst = _get_image(image_root)
                         uri_pub_map, no_uri_pubs = _get_publisher_info(api_inst,
-                            http_timeout)
+                            http_timeout, api_inst.root)
                 except SysrepoException, err:
                         raise SysrepoException(
                             _("unable to get publisher information: %s") %

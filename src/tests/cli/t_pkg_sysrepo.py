@@ -335,7 +335,19 @@ test4\ttrue\ttrue\ttrue\t\t\t
                 ac.start()
                 return ac
 
-        def __prep_configuration(self, names, port=None):
+        def __prep_configuration(self, names, port=None,
+            use_config_cache=False):
+                """Prepare the system repository configuration given either
+                a string corresponding to a key in self.configs, or a list
+                of keys.
+
+                'port' if used overrides the default port to be used.
+
+                'use_config_cache' causes us to call pkg.sysrepo twice for each
+                configuration, ensuring that we use the pkg.sysrepo config
+                cached in var/cache/pkg for the actual configuration.
+                """
+
                 if not port:
                         port = self.sysrepo_port
                 self.__configured_names = []
@@ -392,6 +404,18 @@ test4\ttrue\ttrue\ttrue\t\t\t
                                 if pc.disabled:
                                         self.pkg("set-publisher -d %s" %
                                             pc.name)
+
+                        if use_config_cache:
+                                # Call self.sysrepo so that a config cache is
+                                # created.  The subsequent call to self.sysrepo
+                                # will use that cache to build the Apache
+                                # configuration.
+                                self.sysrepo("-l %(log_locs)s -p %(port)s "
+                                    "-r %(common_serve)s" % {
+                                        "log_locs": self.apache_log_dir,
+                                        "port": port,
+                                        "common_serve": self.common_config_dir
+                                    })
 
                         self.sysrepo("-l %(log_locs)s -p %(port)s "
                             "-r %(common_serve)s" % {
@@ -475,8 +499,20 @@ test4\ttrue\ttrue\ttrue\t\t\t
                 """Test that an image with no publishers can be created and that
                 it can pick up its publisher configuration from the system
                 repository."""
+                self.base_01_basics()
 
-                self.__prep_configuration("all-access")
+        def test_01a_basics(self):
+                """Tests that an image with no publishers can be created and
+                that it can pick up its publisher configuration from the system
+                repository when we're using a cached pkg.sysrepo config."""
+                self.base_01_basics(use_config_cache=True)
+
+        def base_01_basics(self, use_config_cache=False):
+                """Implementation of test_01_basics, parameterizing
+                use_config_cache"""
+
+                self.__prep_configuration("all-access",
+                    use_config_cache=use_config_cache)
                 self.__set_responses("all-access")
                 self.sc = pkg5unittest.SysrepoController(
                     self.apache_confs["all-access"], self.sysrepo_port,
@@ -1316,10 +1352,21 @@ test3\ttrue\ttrue\ttrue\tmirror\tonline\thttp://localhost:%(port)s/test3/%(hash3
 }
                 self.__check_publisher_info(expected)
 
-        def test_11_https_repos(self):
+        def test_11_https_repos(self, use_config_cache=False):
                 """Test that https repos are proxied correctly."""
+                self.base_11_https_repos()
 
-                self.__prep_configuration(["https-access", "none"])
+        def test_11a_https_repos(self):
+                """Ensure https configurations are created properly when
+                using a cached configuration."""
+                self.base_11_https_repos(use_config_cache=True)
+
+        def base_11_https_repos(self, use_config_cache=False):
+                """Implementation of test_11_https_repos, parameterizing
+                use_config_cache."""
+
+                self.__prep_configuration(["https-access", "none"],
+                    use_config_cache=use_config_cache)
                 self.__set_responses("https-access")
                 self.sc = pkg5unittest.SysrepoController(
                     self.apache_confs["https-access"], self.sysrepo_port,
@@ -1353,8 +1400,19 @@ PUBLISHER\tSTICKY\tSYSPUB\tENABLED\tTYPE\tSTATUS\tURI
         def test_12_disabled_repos(self):
                 """Test that repos which are disabled in the global zone do not
                 create problems."""
+                self.base_12_disabled_repos()
 
-                self.__prep_configuration(["disabled"])
+        def test_12a_disabled_repos(self):
+                """Ensure disable configurations are created properly when
+                using a cached configuration."""
+                self.base_12_disabled_repos(use_config_cache=True)
+
+        def base_12_disabled_repos(self, use_config_cache=False):
+                """Implementation of test_12_disabled_repos, parameterizing
+                use_config_cache."""
+
+                self.__prep_configuration(["disabled"],
+                    use_config_cache=use_config_cache)
                 self.__set_responses("disabled")
                 self.sc = pkg5unittest.SysrepoController(
                     self.apache_confs["disabled"], self.sysrepo_port,
@@ -1371,8 +1429,19 @@ test3\ttrue\ttrue\ttrue\torigin\tonline\tproxy://%(durl3)s/
         def test_13_no_url(self):
                 """Test that publishers with no urls are allowed as syspubs
                 and that we can add/remove origins."""
+                self.base_13_no_url()
 
-                self.__prep_configuration(["nourl"])
+        def test_13a_no_url(self):
+                """Test that publishers which use no url are allowed as syspubs
+                when using cached configurations."""
+                self.base_13_no_url(use_config_cache=True)
+
+        def base_13_no_url(self, use_config_cache=False):
+                """Implementation of test_13[a]_no_url, parameterizing
+                use_config_cache."""
+
+                self.__prep_configuration(["nourl"],
+                    use_config_cache=use_config_cache)
                 self.__set_responses("nourl")
                 self.sc = pkg5unittest.SysrepoController(
                     self.apache_confs["nourl"], self.sysrepo_port,

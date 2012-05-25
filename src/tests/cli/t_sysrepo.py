@@ -38,6 +38,7 @@ import shutil
 import unittest
 import urllib2
 import shutil
+import simplejson
 import stat
 import time
 
@@ -590,7 +591,7 @@ class TestDetailedSysrepoCli(pkg5unittest.ManyDepotTestCase):
 
                 self.sc.stop()
 
-        def test_13_bad_input(self):
+        def test_14_bad_input(self):
                 """Tests the system repository with some bad input: wrong
                 paths, unicode in urls, and some very long urls to ensure
                 the responses are as expected."""
@@ -652,7 +653,7 @@ class TestDetailedSysrepoCli(pkg5unittest.ManyDepotTestCase):
                         test_response(url_part, 414)
                 self.sc.stop()
 
-        def test_14_unicode(self):
+        def test_15_unicode(self):
                 """Tests the system repository with some unicode paths to p5p
                 files."""
                 unicode_str = "ΰŇﺇ⊂⏣⊅ℇ"
@@ -687,6 +688,145 @@ class TestDetailedSysrepoCli(pkg5unittest.ManyDepotTestCase):
                                 self.debug(resp.readlines())
 
                         self.sc.stop()
+
+        def test_16_config_cache(self):
+                """We can load/store our configuration cache correctly."""
+
+                cache_path = "var/cache/pkg/sysrepo_pub_cache.dat"
+                full_cache_path = os.path.join(self.get_img_path(), cache_path)
+                sysrepo_runtime_dir = os.path.join(self.test_root,
+                    "sysrepo_runtime")
+                sysrepo_conf = os.path.join(sysrepo_runtime_dir,
+                    "sysrepo_httpd.conf")
+
+                # a basic check that the config cache looks sane
+                self.image_create(prefix="test1", repourl=self.durl1)
+                self.file_doesnt_exist(cache_path)
+
+                self.sysrepo("", stderr=True)
+                self.assert_("Unable to load config" not in self.output)
+                self.assert_("Unable to store config" not in self.output)
+                self.file_exists(cache_path)
+                self.file_contains(sysrepo_conf, self.durl1)
+                self.file_remove(cache_path)
+
+                # install some sample packages to our image, just to ensure
+                # that sysrepo doesn't mind, and cache creation works
+                self.pkg("install sample")
+                self.sysrepo("", stderr=True)
+                self.assert_("Unable to load config" not in self.output)
+                self.assert_("Unable to store config" not in self.output)
+                self.file_exists(cache_path)
+                self.file_contains(sysrepo_conf, self.durl1)
+                self.file_remove(cache_path)
+
+                # ensure we get warnings when we can't load/store the config
+                os.makedirs(full_cache_path)
+                self.sysrepo("", stderr=True)
+                self.assert_("Unable to load config" in self.errout)
+                self.assert_("Unable to store config" in self.errout)
+                self.file_contains(sysrepo_conf, self.durl1)
+                os.rmdir(full_cache_path)
+
+                # ensure we get warnings when loading a corrupt cache
+                self.sysrepo("")
+                self.file_append(cache_path, "noodles")
+                self.sysrepo("", stderr=True)
+                self.assert_("Invalid config cache file at" in self.errout)
+                # we should have overwritten the corrupt cache, so check again
+                self.sysrepo("", stderr=True)
+                self.assert_("Invalid config cache file at" not in self.errout)
+                self.file_contains(cache_path, self.durl1)
+                self.file_remove(cache_path)
+
+                # ensure that despite valid JSON in the cache, we still
+                # treat it as corrupt, and clobber the old cache
+                rubbish = {"food preference": "I like noodles."}
+                other = ["nonsense here"]
+                with file(full_cache_path, "wb") as cache_file:
+                        simplejson.dump((rubbish, other), cache_file)
+                self.sysrepo("", stderr=True)
+                self.assert_("Invalid config cache at" in self.errout)
+                self.file_doesnt_contain(cache_path, "noodles")
+                self.file_contains(cache_path, self.durl1)
+                self.file_contains(sysrepo_conf, self.durl1)
+
+                # ensure we get a new cache on publisher modification
+                self.file_doesnt_contain(cache_path, self.rurl1)
+                self.pkg("set-publisher -g %s test1" % self.rurl1)
+                self.file_doesnt_exist(cache_path)
+                self.sysrepo("")
+                self.file_contains(cache_path, self.rurl1)
+                self.file_contains(cache_path, self.durl1)
+
+                # record the last modification time of the cache
+                st_cache = os.lstat(full_cache_path)
+                mtime = st_cache.st_mtime
+
+                # no image modification, so no new config file
+                self.sysrepo("")
+                self.assert_(mtime == os.lstat(full_cache_path).st_mtime,
+                    "Changed mtime of cache despite no image config change")
+
+                # load the config from the cache, remove a URI then save
+                # it - despite being well-formed, the cache doesn't contain the
+                # same configuration as the image, simulating an older version
+                # of pkg(1) having changed publisher configuration.
+                with file(full_cache_path, "rb") as cache_file:
+                        uri_pub_map, no_uri_pubs = simplejson.load(cache_file)
+
+                with file(full_cache_path, "wb") as cache_file:
+                        del uri_pub_map[self.durl1]
+                        simplejson.dump((uri_pub_map, no_uri_pubs), cache_file,
+                            indent=True)
+                # make sure we've definitely broken it
+                self.file_doesnt_contain(cache_path, self.durl1)
+
+                # we expect an 'invalid config cache' message, and a new cache
+                # written with correct content.
+                self.sysrepo("", stderr=True)
+                self.assert_("Invalid config cache at" in self.errout)
+                self.file_contains(cache_path, self.durl1)
+                self.sysrepo("")
+
+                # rename the cache file, then symlink it
+                os.rename(full_cache_path, full_cache_path + ".new")
+                os.symlink(full_cache_path + ".new", full_cache_path)
+                self.pkg("set-publisher -G %s test1" % self.durl1)
+                # by running pkg set-publisher, we should have removed the
+                # symlink
+                self.file_doesnt_exist(cache_path)
+                # replace the symlink
+                os.symlink(full_cache_path + ".new", full_cache_path)
+
+                self.sysrepo("", stderr=True)
+                self.assert_("Unable to load config" in self.errout)
+                self.assert_("not a regular file" in self.errout)
+                self.assert_("Unable to store config" in self.errout)
+                # our symlinked cache should be untouched, and still contain
+                # rurl1, despite it being absent from our actual configuration.
+                self.file_contains(cache_path, self.durl1)
+                self.file_doesnt_contain(sysrepo_conf, self.durl1)
+
+                # check that an image with no publishers works
+                self.pkg("unset-publisher test1")
+                self.pkg("publisher", out=True, stderr=True)
+                self.file_doesnt_exist(cache_path)
+                self.sysrepo("", stderr=True)
+                self.assert_("Unable to load config" not in self.output)
+                self.assert_("Unable to store config" not in self.output)
+                self.file_doesnt_contain(sysrepo_conf, self.durl1)
+
+                # check that removing packages doesn't impact the cache
+                self.pkg("uninstall sample")
+                self.sysrepo("", stderr=True)
+                self.assert_("Unable to load config" not in self.output)
+                self.assert_("Unable to store config" not in self.output)
+                self.file_remove(cache_path)
+                self.sysrepo("", stderr=True)
+                self.assert_("Unable to load config" not in self.output)
+                self.assert_("Unable to store config" not in self.output)
+
 
 class TestP5pWsgi(pkg5unittest.SingleDepotTestCase):
         """A class to directly exercise the p4p mod_wsgi application outside
