@@ -1,1667 +1,1667 @@
 msgid ""
-msgstr "Project-Id-Version: PACKAGE VERSION\nPOT-Creation-Date: 2011-07-01 18:37+0900\nPO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\nLast-Translator: FULL NAME <EMAIL@ADDRESS>\nLanguage-Team: LANGUAGE <LL@li.org>\nMIME-Version: 1.0\nContent-Type: text/plain; charset=UTF-8\nContent-Transfer-Encoding: 8bit\n"
+msgstr "Project-Id-Version: PACKAGE VERSION\nPOT-Creation-Date: 2012-03-30 15:24+0900\nPO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\nLast-Translator: FULL NAME <EMAIL@ADDRESS>\nLanguage-Team: LANGUAGE <LL@li.org>\nMIME-Version: 1.0\nContent-Type: text/plain; charset=UTF-8\nContent-Transfer-Encoding: 8bit\n"
 
-#: package-manager.xml.in:4(title)
+#: gui/help/C/package-manager.xml:3(title)
 msgid "<trademark class=\"registered\">Oracle</trademark> Solaris 11 Package Manager Online Help"
 msgstr "<trademark class=\"registered\">Oracle</trademark> Solaris 11 软件包管理器联机帮助"
 
-#: package-manager.xml.in:5(firstname)
+#: gui/help/C/package-manager.xml:4(firstname)
 msgid "Oracle"
 msgstr "Oracle"
 
-#: package-manager.xml.in:6(surname)
+#: gui/help/C/package-manager.xml:5(surname)
 msgid "Corporation"
 msgstr "Corporation"
 
-#: package-manager.xml.in:9(releaseinfo)
+#: gui/help/C/package-manager.xml:8(releaseinfo)
 msgid "Oracle Solaris 11"
 msgstr "Oracle Solaris 11"
 
-#: package-manager.xml.in:10(pubdate)
+#: gui/help/C/package-manager.xml:9(pubdate)
 msgid "June 2011"
 msgstr "2011 年 6 月"
 
-#: package-manager.xml.in:11(publishername)
+#: gui/help/C/package-manager.xml:10(publishername)
 msgid "Oracle Corporation"
 msgstr "Oracle Corporation"
 
-#: package-manager.xml.in:12(street)
+#: gui/help/C/package-manager.xml:11(street)
 msgid "500 Oracle Parkway"
 msgstr "500 Oracle Parkway"
 
-#: package-manager.xml.in:13(city)
+#: gui/help/C/package-manager.xml:12(city)
 msgid "Redwood City"
 msgstr "Redwood City"
 
-#: package-manager.xml.in:14(state)
+#: gui/help/C/package-manager.xml:13(state)
 msgid "CA"
 msgstr "CA"
 
-#: package-manager.xml.in:15(postcode)
+#: gui/help/C/package-manager.xml:14(postcode)
 msgid "94065"
 msgstr "94065"
 
-#: package-manager.xml.in:16(country)
+#: gui/help/C/package-manager.xml:15(country)
 msgid "U.S.A."
 msgstr "U.S.A."
 
-#: package-manager.xml.in:19(year)
+#: gui/help/C/package-manager.xml:18(year)
 msgid "2008, 2011"
 msgstr "2008, 2011"
 
-#: package-manager.xml.in:20(para)
+#: gui/help/C/package-manager.xml:19(para)
 msgid "This software and related documentation are provided under a license agreement containing restrictions on use and disclosure and are protected by intellectual property laws. Except as expressly permitted in your license agreement or allowed by law, you may not use, copy, reproduce, translate, broadcast, modify, license, transmit, distribute, exhibit, perform, publish, or display any part, in any form, or by any means. Reverse engineering, disassembly, or decompilation of this software, unless required by law for interoperability, is prohibited."
 msgstr "本软件和相关文档是根据许可证协议提供的，该许可证协议中规定了关于使用和公开本软件和相关文档的各种限制，并受知识产权法的保护。除非在许可证协议中明确许可或适用法律明确授权，否则不得以任何形式、任何方式使用、拷贝、复制、翻译、广播、修改、授权、传播、分发、展示、执行、发布或显示本软件和相关文档的任何部分。除非法律要求实现互操作，否则严禁对本软件进行逆向工程设计、反汇编或反编译。"
 
-#: package-manager.xml.in:21(para)
+#: gui/help/C/package-manager.xml:20(para)
 msgid "The information contained herein is subject to change without notice and is not warranted to be error-free. If you find any errors, please report them to us in writing."
 msgstr "此文档所含信息可能随时被修改，恕不另行通知，我们不保证该信息没有错误。如果贵方发现任何问题，请书面通知我们。"
 
-#: package-manager.xml.in:22(para)
+#: gui/help/C/package-manager.xml:21(para)
 msgid "If this is software or related software documentation that is delivered to the U.S. Government or anyone licensing it on behalf of the U.S. Government, the following notice is applicable:"
 msgstr "如果将本软件或相关文档交付给美国政府，或者交付给以美国政府名义获得许可证的任何机构，必须符合以下规定："
 
-#: package-manager.xml.in:23(para)
+#: gui/help/C/package-manager.xml:22(para)
 msgid "U.S. GOVERNMENT RIGHTS Programs, software, databases, and related documentation and technical data delivered to U.S. Government customers are “commercial computer software” or “commercial technical data” pursuant to the applicable Federal Acquisition Regulation and agency-specific supplemental regulations. As such, the use, duplication, disclosure, modification, and adaptation shall be subject to the restrictions and license terms set forth in the applicable Government contract, and, to the extent applicable by the terms of the Government contract, the additional rights set forth in FAR 52.227-19, Commercial Computer Software License (December 2007). Oracle America, Inc., 500 Oracle Parkway, Redwood City, CA 94065."
 msgstr "U.S. GOVERNMENT RIGHTS Programs, software, databases, and related documentation and technical data delivered to U.S. Government customers are \"commercial computer software\" or \"commercial technical data\" pursuant to the applicable Federal Acquisition Regulation and agency-specific supplemental regulations.As such, the use, duplication, disclosure, modification, and adaptation shall be subject to the restrictions and license terms set forth in the applicable Government contract, and, to the extent applicable by the terms of the Government contract, the additional rights set forth in FAR 52.227-19, Commercial Computer Software License (December 2007).Oracle America, Inc., 500 Oracle Parkway, Redwood City, CA 94065."
 
-#: package-manager.xml.in:24(para)
+#: gui/help/C/package-manager.xml:23(para)
 msgid "This software or hardware is developed for general use in a variety of information management applications. It is not developed or intended for use in any inherently dangerous applications, including applications which may create a risk of personal injury. If you use this software or hardware in dangerous applications, then you shall be responsible to take all appropriate fail-safe, backup, redundancy, and other measures to ensure its safe use. Oracle Corporation and its affiliates disclaim any liability for any damages caused by use of this software or hardware in dangerous applications."
 msgstr "本软件或硬件是为了在各种信息管理应用领域内的一般使用而开发的。它不应被应用于任何存在危险或潜在危险的应用领域，也不是为此而开发的，其中包括可能会产生人身伤害的应用领域。如果在危险应用领域内使用本软件或硬件，贵方应负责采取所有适当的防范措施，包括备份、冗余和其它确保安全使用本软件或硬件的措施。对于因在危险应用领域内使用本软件或硬件所造成的一切损失或损害，Oracle Corporation 及其附属公司概不负责。"
 
-#: package-manager.xml.in:25(para)
+#: gui/help/C/package-manager.xml:24(para)
 msgid "Oracle and Java are registered trademarks of Oracle and/or its affiliates. Other names may be trademarks of their respective owners."
 msgstr "Oracle 和 Java 是Oracle 和/或其附属公司的注册商标。其他名称可能是各自所有者的商标。"
 
-#: package-manager.xml.in:26(para)
+#: gui/help/C/package-manager.xml:25(para)
 msgid "AMD, Opteron, the AMD logo, and the AMD Opteron logo are trademarks or registered trademarks of Advanced Micro Devices. Intel and Intel Xeon are trademarks or registered trademarks of Intel Corporation. All SPARC trademarks are used under license and are trademarks or registered trademarks of SPARC International, Inc. UNIX is a registered trademark licensed through X/Open Company, Ltd."
 msgstr "AMD、Opteron、AMD 徽标以及 AMD Opteron 徽标是Advanced Micro Devices 的商标或注册商标。Intel 和 Intel Xeon是Intel Corporation 的商标或注册商标。所有SPARC 商标均是 SPARC International, Inc 的商标或注册商标，并应按照许可证的规定使用。UNIX 是通过 X/Open Company, Ltd 授权的注册商标。"
 
-#: package-manager.xml.in:27(para)
+#: gui/help/C/package-manager.xml:26(para)
 msgid "This software or hardware and documentation may provide access to or information on content, products, and services from third parties. Oracle Corporation and its affiliates are not responsible for and expressly disclaim all warranties of any kind with respect to third-party content, products, and services. Oracle Corporation and its affiliates will not be responsible for any loss, costs, or damages incurred due to your access to or use of third-party content, products, or services."
 msgstr "本软件或硬件以及文档可能提供了访问第三方内容、产品和服务的方式或有关这些内容、产品和服务的信息。对于第三方内容、产品和服务，Oracle Corporation 及其附属公司明确表示不承担任何种类的担保，亦不对其承担任何责任。对于因访问或使用第三方内容、产品或服务所造成的任何损失、成本或损害，Oracle Corporation 及其附属公司概不负责。"
 
 
-#: package-manager.xml.in:38(title)
+#: gui/help/C/package-manager.xml:37(title)
 msgid "About Package Manager"
 msgstr "关于软件包管理器"
 
-#: package-manager.xml.in:39(para)
+#: gui/help/C/package-manager.xml:38(para)
 msgid "Package Manager is a graphical user interface (GUI) for the Oracle Solaris Image Packaging System (IPS)."
 msgstr "软件包管理器是 Oracle Solaris 映像包管理系统 (Image Packaging System, IPS) 的一个图形用户界面 (graphical user interface, GUI)。"
 
-#: package-manager.xml.in:40(para)
+#: gui/help/C/package-manager.xml:39(para)
 msgid "See the <xref linkend=\"glossary\"/> for definitions of terms used in this document."
 msgstr "有关本文档中所使用术语的定义，请参见<xref linkend=\"glossary\"/>。"
 
-#: package-manager.xml.in:41(title)
+#: gui/help/C/package-manager.xml:40(title)
 msgid "Oracle Solaris Image Packaging System"
 msgstr "Oracle Solaris 映像包管理系统"
 
-#: package-manager.xml.in:42(para)
+#: gui/help/C/package-manager.xml:41(para)
 msgid "Oracle Solaris Image Packaging System (IPS) is a software delivery system that interacts with a package repository on a network. IPS is a framework that provides software lifecycle management capabilities, including software installation, upgrade, and removal."
 msgstr "Oracle Solaris 映像包管理系统 (Image Packaging System, IPS) 是一个软件交付系统，它与网络上的软件包系统信息库进行交互。IPS 是一个提供软件生命周期管理功能（包括软件安装、升级和删除）的框架。"
 
-#: package-manager.xml.in:43(para)
+#: gui/help/C/package-manager.xml:42(para)
 msgid "After you install the Oracle Solaris operating system, you might find that some of the software you want to use is not available. This software probably is available in an IPS package repository. You can use Package Manager or the <literal>pkg</literal>(1M) command to download and install packages from a package repository."
 msgstr "在安装 Oracle Solaris 操作系统后，您可能会发现您想使用的某个软件没有提供。该软件可能存在于某个 IPS 软件包系统信息库中。您可以使用软件包管理器或 <literal>pkg</literal>(1M) 命令从软件包系统信息库下载并安装软件包。"
 
-#: package-manager.xml.in:44(para)
+#: gui/help/C/package-manager.xml:43(para)
 msgid "IPS also enables you to create a copy of an existing IPS package repository, create your own IPS package repository, and publish your own IPS packages. For more information about IPS, see the Oracle Solaris 11 Information Library. Go to <literal>download.oracle.com</literal>, select Documentation Index on the left, select Systems Software, select Oracle Solaris 11, and select View Library. See especially <citetitle>Adding and Updating Oracle Solaris 11 Software Packages</citetitle>."
 msgstr "通过 IPS，您还可以创建现有 IPS 软件包系统信息库的副本，创建您自己的 IPS 软件包系统信息库，以及发布您自己的 IPS 软件包。有关 IPS 的更多信息，请参见 Oracle Solaris 11 信息库。转到 <literal>download.oracle.com</literal>，在左侧选择 \"Documentation Index\"（文档索引），选择 \"Systems Software\"（系统软件），选择 \"Oracle Solaris 11\"，然后选择 \"View Library\"（查看库）。请专门参见 <citetitle>Adding and Updating Oracle Solaris 11 Software Packages</citetitle>（添加并更新 Oracle Solaris 11 软件包）。"
 
-#: package-manager.xml.in:46(title)
+#: gui/help/C/package-manager.xml:45(title)
 msgid "Package Manager"
 msgstr "软件包管理器"
 
-#: package-manager.xml.in:47(para)
+#: gui/help/C/package-manager.xml:46(para)
 msgid "Package Manager provides a subset of the functionality offered by the IPS command-line interface."
 msgstr "软件包管理器提供了 IPS 命令行界面所提供的一部分功能。"
 
-#: package-manager.xml.in:48(para)
+#: gui/help/C/package-manager.xml:47(para)
 msgid "Package Manager enables you to perform the following tasks:"
 msgstr "通过软件包管理器，您可以执行以下任务："
 
-#: package-manager.xml.in:49(para)
+#: gui/help/C/package-manager.xml:48(para)
 msgid "Find, install, update, and remove IPS packages. See <xref linkend=\"manage-pkg\"/>."
 msgstr "查找、安装、更新和删除 IPS 软件包。请参见<xref linkend=\"manage-pkg\"/>。"
 
-#: package-manager.xml.in:51(para)
+#: gui/help/C/package-manager.xml:50(para)
 msgid "Update your system (update all the packages on your system). See <xref linkend=\"update_all\"/>."
 msgstr "更新您的系统（更新您系统上的所有软件包）。请参见<xref linkend=\"update_all\"/>。"
 
-#: package-manager.xml.in:53(para)
+#: gui/help/C/package-manager.xml:52(para)
 msgid "Add, modify, and delete IPS package publishers. See <xref linkend=\"manage-publisher\"/>."
 msgstr "添加、修改和删除 IPS 软件包发布者。请参见<xref linkend=\"manage-publisher\"/>。"
 
-#: package-manager.xml.in:55(para)
+#: gui/help/C/package-manager.xml:54(para)
 msgid "List, rename, delete, and manage boot environments. See <xref linkend=\"manage-be\"/>."
 msgstr "列出、重命名、删除和管理引导环境。请参见<xref linkend=\"manage-be\"/>。"
 
-#: package-manager.xml.in:57(para)
+#: gui/help/C/package-manager.xml:56(para)
 msgid "Create a WebInstall installation file (<filename>.p5i</filename>). See <xref linkend=\"webinstall\"/>."
 msgstr "创建 WebInstall 安装文件 (<filename>.p5i</filename>)。请参见 <xref linkend=\"webinstall\"/>。"
 
-#: package-manager.xml.in:60(para)
+#: gui/help/C/package-manager.xml:59(para)
 msgid "This documentation refers to the following features of the Package Manager window:"
 msgstr "本文档介绍了软件包管理器窗口的下列功能："
 
-#: package-manager.xml.in:61(para)
+#: gui/help/C/package-manager.xml:60(para)
 msgid "The large pane in the center of the window is the package list pane. Sometimes this pane shows informational messages, but usually this pane contains a list of packages."
 msgstr "位于窗口中央的大窗格是软件包列表窗格。有时候该窗格显示提示性消息，但通常情况下该窗格包含一个软件包列表。"
 
-#: package-manager.xml.in:63(para)
+#: gui/help/C/package-manager.xml:62(para)
 msgid "The menu bar at the top of the window provides most Package Manager functionality."
 msgstr "窗口顶部的菜单栏提供了大部分的软件包管理器功能"
 
-#: package-manager.xml.in:65(para)
+#: gui/help/C/package-manager.xml:64(para)
 msgid "The tool bar just below the menu bar has buttons on the left that provide some often-used operations. The buttons on the left of the separator have global functionality: Update all packages that have updates available or refresh the list of packages and package status. The buttons on the right of the separator only operate on selected packages."
 msgstr "在紧挨菜单栏下方的工具栏中，左侧的按钮提供了一些常用的操作。分隔条左侧的按钮具有全局功能：更新具有可用更新的所有软件包或者刷新软件包列表和软件包状态。分隔条右侧的按钮只针对选定的软件包执行操作。"
 
-#: package-manager.xml.in:67(para)
+#: gui/help/C/package-manager.xml:66(para)
 msgid "The Search field on the right of the tool bar helps control the content of the package list pane. See <xref linkend=\"search-pkg\"/>."
 msgstr "工具栏右侧的“搜索”字段可帮助控制软件包列表窗格的内容。请参见<xref linkend=\"search-pkg\"/>。"
 
-#: package-manager.xml.in:69(para)
+#: gui/help/C/package-manager.xml:68(para)
 msgid "The <guimenu>Publisher</guimenu> drop-down menu below the buttons helps control the content of the package list pane and also enables you to add a new publisher. See <xref linkend=\"list-pkg\"/> “By Publisher.”"
 msgstr "按钮下方的<guimenu>发布者</guimenu>下拉式菜单可帮助控制软件包列表窗格的内容，还允许您添加新的发布者。请参见<xref linkend=\"list-pkg\"/>“按发布者”。"
 
-#: package-manager.xml.in:71(para)
+#: gui/help/C/package-manager.xml:70(para)
 msgid "The <guimenu>View</guimenu> drop-down menu below the Search field helps control the content of the package list pane. See Listing Packages “By Package Status.”"
 msgstr "“搜索”字段下方的<guimenu>视图</guimenu>下拉式菜单可帮助控制软件包列表窗格的内容。请参见“按软件包状态”列出软件包。"
 
-#: package-manager.xml.in:73(para)
+#: gui/help/C/package-manager.xml:72(para)
 msgid "The category pane below the <guimenu>Publisher</guimenu> menu helps control the content of the package list pane. See Listing Packages “By Category.”"
 msgstr "<guimenu>发布者</guimenu>菜单下方的类别窗格可帮助控制软件包列表窗格的内容。请参见“按类别”列出软件包。"
 
-#: package-manager.xml.in:75(para)
+#: gui/help/C/package-manager.xml:74(para)
 msgid "Below the list of software categories is a list of searches that you have performed in this session."
 msgstr "软件类别列表的下方是您在此次会话中已执行的搜索的列表。"
 
-#: package-manager.xml.in:77(para)
+#: gui/help/C/package-manager.xml:76(para)
 msgid "Below the package list pane is the package details pane. See <xref linkend=\"package-version\"/>."
 msgstr "软件包列表窗格下方是软件包详细信息窗格。请参见<xref linkend=\"package-version\"/>。"
 
-#: package-manager.xml.in:82(title)
+#: gui/help/C/package-manager.xml:81(title)
 msgid "Managing Packages"
 msgstr "管理软件包"
 
-#: package-manager.xml.in:83(para)
+#: gui/help/C/package-manager.xml:82(para)
 msgid "You can list packages according to various criteria. You can install, update, and remove packages."
 msgstr "您可以根据各种条件列出软件包。您可以安装、更新和删除软件包。"
 
-#: package-manager.xml.in:84(title)
+#: gui/help/C/package-manager.xml:83(title)
 msgid "Listing Packages"
 msgstr "列出软件包"
 
-#: package-manager.xml.in:85(para)
+#: gui/help/C/package-manager.xml:84(para)
 msgid "The list of packages in the Package Manager list pane is affected by the selections you make in the <guimenu>Publisher</guimenu> drop-down menu, the <guimenu>View</guimenu> drop-down menu, the categories pane, and the Search field."
 msgstr "您在<guimenu>发布者</guimenu>下拉式菜单、<guimenu>视图</guimenu>下拉式菜单、类别窗格和“搜索”字段中所做的选择会影响软件包管理器列表窗格中的软件列表。"
 
-#: package-manager.xml.in:86(para)
+#: gui/help/C/package-manager.xml:85(para)
 msgid "You can reorder the package list by clicking the column headings."
 msgstr "您可以通过单击列标题对软件包列表进行重新排序。"
 
-#: package-manager.xml.in:87(para)
+#: gui/help/C/package-manager.xml:86(para)
 msgid "You can use the <guibutton>Refresh</guibutton> button or the <menuchoice><guimenu>Package</guimenu><guimenuitem>Refresh</guimenuitem></menuchoice> menu option to reread repository catalogs and update the list of packages and package status. A refresh also is attempted whenever you open Package Manager."
 msgstr "您可以使用<guibutton>刷新</guibutton>按钮或<menuchoice><guimenu>软件包</guimenu><guimenuitem>刷新</guimenuitem></menuchoice>菜单选项来重新读取系统信息库目录并更新软件包列表和软件包状态。在每次打开软件包管理器时也会尝试刷新。"
 
-#: package-manager.xml.in:88(title)
+#: gui/help/C/package-manager.xml:87(title)
 msgid "By Publisher"
 msgstr "按发布者"
 
-#: package-manager.xml.in:89(para)
+#: gui/help/C/package-manager.xml:88(para)
 msgid "The <guimenu>Publisher</guimenu> drop-down menu enables you to list packages according to publisher."
 msgstr "通过<guimenu>发布者</guimenu>下拉式菜单，您可以按发布者列出软件包。"
 
-#: package-manager.xml.in:90(para)
+#: gui/help/C/package-manager.xml:89(para)
 msgid "The top of the menu lists the name of each publisher that you have added using the Add Publisher dialog or using the <literal>pkg</literal> command. When you select one of these publishers, the package list pane shows only packages that are available from that selected publisher. The package list pane shows only the Name, Status, and Summary columns because the publisher is the same for every package."
 msgstr "菜单顶部列出了您使用“添加发布者”对话框或使用 <literal>pkg</literal> 命令已添加的每个发布者的名称。当您选中其中一个发布者时，软件包列表窗格将仅显示来自该选定发布者的软件包。软件包列表窗格将仅显示“名称”、“状态”和“摘要”列，因为每个软件包的发布者都是相同的。"
 
-#: package-manager.xml.in:92(para)
+#: gui/help/C/package-manager.xml:91(para)
 msgid "<guimenuitem>All Publishers</guimenuitem> — Shows packages from all publishers in the package list pane. The package list pane shows columns Name, Status, Publisher, and Summary."
 msgstr "<guimenuitem>所有发布者</guimenuitem> - 在软件包列表窗格中显示来自所有发布者的软件包。软件包列表窗格显示“名称”、“状态”、“发布者”和“摘要”列。"
 
-#: package-manager.xml.in:93(para)
+#: gui/help/C/package-manager.xml:92(para)
 msgid "Example: To list all media device drivers that have updates available from all publishers, select <guimenuitem>All Publishers</guimenuitem> from the <guimenu>Publisher</guimenu> menu, select the <menuchoice><guimenu>Drivers</guimenu><guimenuitem>Media</guimenuitem></menuchoice> category, and select <guimenuitem>Updates</guimenuitem> from the <guimenu>View</guimenu> menu."
 msgstr "示例：要列出来自所有发布者的有更新可用的所有媒体设备驱动程序，请从<guimenu>发布者</guimenu>菜单中选择<guimenuitem>所有发布者</guimenuitem>，选择<menuchoice><guimenu>驱动程序</guimenu><guimenuitem>媒体</guimenuitem></menuchoice>类别，并从<guimenu>视图</guimenu>菜单中选择<guimenuitem>更新</guimenuitem>。"
 
-#: package-manager.xml.in:95(para)
+#: gui/help/C/package-manager.xml:94(para)
 msgid "<guimenuitem>All Installed Packages</guimenuitem> — Shows all packages that are installed from all publishers."
 msgstr "<guimenuitem>所有已安装的软件包</guimenuitem> - 显示来自所有发布者的所有已安装的软件包。"
 
-#: package-manager.xml.in:96(para)
+#: gui/help/C/package-manager.xml:95(para)
 msgid "Example: To list all the font packages that are currently installed from the <literal>solaris</literal> publisher, select <guimenuitem>All Installed Packages</guimenuitem> from the <guimenu>Publisher</guimenu> menu, select the <menuchoice><guimenu>System</guimenu><guimenuitem>Fonts</guimenuitem></menuchoice> category, click on the Publisher column heading to sort the list by Publisher, and scroll down to the <literal>solaris</literal> entries."
 msgstr "示例：要列出来自 <literal>solaris</literal> 发布者的当前已安装的字体软件包，请从<guimenu>发布者</guimenu>菜单中选择<guimenuitem>所有已安装的软件包</guimenuitem>，选择<menuchoice><guimenu>系统</guimenu><guimenuitem>字体</guimenuitem></menuchoice>类别，单击“发布者”列标题以按发布者对列表进行排序，然后滚动到 <literal>solaris</literal> 条目。"
 
-#: package-manager.xml.in:98(para)
+#: gui/help/C/package-manager.xml:97(para)
 msgid "<guimenuitem>All Publishers (Search)</guimenuitem> — Shows an informational message in the package list pane instead of a list of packages. The message lists all publishers that you have configured and reminds you how to view all packages from those publishers. See <xref linkend=\"search-pkg\"/> for information about searching with <guimenuitem>All Publishers (Search)</guimenuitem>."
 msgstr "<guimenuitem>所有发布者（搜索）</guimenuitem> - 在软件包列表窗格中显示一条提示性消息而不是软件包列表。该消息列出您已配置的所有发布者并提醒您如何查看来自那些发布者的所有软件包。有关使用<guimenuitem>所有发布者（搜索）</guimenuitem>进行搜索的信息，请参见<xref linkend=\"search-pkg\"/>。"
 
-#: package-manager.xml.in:100(para)
+#: gui/help/C/package-manager.xml:99(para)
 msgid "<guimenuitem>Add...</guimenuitem> — Opens the Add Publisher window."
 msgstr "<guimenuitem>添加...</guimenuitem> - 打开“添加发布者”窗口。"
 
-#: package-manager.xml.in:104(title)
+#: gui/help/C/package-manager.xml:103(title)
 msgid "By Package Status"
 msgstr "按软件包状态"
 
-#: package-manager.xml.in:105(para)
+#: gui/help/C/package-manager.xml:104(para)
 msgid "The <guimenu>View</guimenu> drop-down menu enables you to list packages according to package status. Package status can be installed, not installed, or an update is available. The icons displayed on the <guimenu>View</guimenu> menu match the icons displayed in the Status column of the package list pane."
 msgstr "通过<guimenu>视图</guimenu>下拉式菜单，您可以按软件包状态列出软件包。软件包状态可以是已安装、未安装或有更新可用。<guimenu>视图</guimenu>菜单上显示的图标与软件包列表窗格的“状态”列中显示的图标相匹配。"
 
-#: package-manager.xml.in:106(para)
+#: gui/help/C/package-manager.xml:105(para)
 msgid "<guimenuitem>All Packages</guimenuitem> — Shows all packages available from the selected publisher in the selected category or matching the specified search string."
 msgstr "<guimenuitem>所有软件包</guimenuitem> - 显示来自选定发布者的属于选定类别或与指定搜索字符串匹配的所有可用软件包。"
 
-#: package-manager.xml.in:107(para)
+#: gui/help/C/package-manager.xml:106(para)
 msgid "Example: To list all web services packages from the <literal>solaris</literal> publisher that are installed, not installed, or have updates available, select <literal>solaris</literal> from the <guimenu>Publisher</guimenu> menu, select the <menuchoice><guimenu>Web Services</guimenu></menuchoice> category, and select <guimenuitem>All Packages</guimenuitem> from the <guimenu>View</guimenu> menu."
 msgstr "示例：要列出来自 <literal>solaris</literal> 发布者的所有 web 服务软件包（包括已安装的、未安装的和有可用更新的），请从<guimenu>发布者</guimenu>菜单中选择 <literal>solaris</literal>，选择 <menuchoice><guimenu>Web 服务</guimenu></menuchoice>类别，并从<guimenu>视图</guimenu>菜单中选择<guimenuitem>所有软件包</guimenuitem>。"
 
-#: package-manager.xml.in:110(para)
+#: gui/help/C/package-manager.xml:109(para)
 msgid "<guimenuitem>Installed Packages</guimenuitem> — Shows all installed packages from the selected publisher in the selected category or matching the specified search string. See also the <menuchoice><guimenu>Publisher</guimenu><guimenuitem>All Installed Packages</guimenuitem></menuchoice> option."
 msgstr "<guimenuitem>已安装的软件包</guimenuitem> - 显示来自选定发布者的属于选定类别或与指定搜索字符串匹配的所有已安装的软件包。另请参见<menuchoice><guimenu>发布者</guimenu><guimenuitem>所有已安装的软件包</guimenuitem></menuchoice>选项。"
 
-#: package-manager.xml.in:111(para)
+#: gui/help/C/package-manager.xml:110(para)
 msgid "Example: To list only the web server packages that are installed from the <literal>solaris</literal> publisher, select <literal>solaris</literal> from the <guimenu>Publisher</guimenu> menu, select the <menuchoice><guimenu>Web Services</guimenu></menuchoice> category, and select <guimenuitem>Installed Packages</guimenuitem> from the <guimenu>View</guimenu> menu."
 msgstr "示例：要仅列出来自 <literal>solaris</literal> 发布者的已安装的 web 服务器软件包，请从<guimenu>发布者</guimenu>菜单中选择 <literal>solaris</literal>，选择 <menuchoice><guimenu>Web 服务</guimenu></menuchoice> 类别，并从<guimenu>视图</guimenu>菜单中选择<guimenuitem>已安装的软件包</guimenuitem>。"
 
-#: package-manager.xml.in:113(para)
+#: gui/help/C/package-manager.xml:112(para)
 msgid "<guimenuitem>Updates</guimenuitem> — Shows all packages from the selected publisher in the selected category or matching the specified search string that have updates available."
 msgstr "<guimenuitem>更新</guimenuitem> - 显示来自选定发布者的属于选定类别或与指定搜索字符串匹配且有更新可用的所有软件包。"
 
-#: package-manager.xml.in:114(para)
+#: gui/help/C/package-manager.xml:113(para)
 msgid "Example: To list all device drivers that have updates available from all publishers, select <guimenuitem>All Publishers</guimenuitem> from the <guimenu>Publisher</guimenu> menu, select the <guimenu>Drivers</guimenu> category, and select <guimenuitem>Updates</guimenuitem> from the <guimenu>View</guimenu> menu."
 msgstr "示例：要列出来自所有发布者的有更新可用的所有设备驱动程序，请从<guimenu>发布者</guimenu>菜单中选择<guimenuitem>所有发布者</guimenuitem>，选择<guimenu>驱动程序</guimenu>类别，并从<guimenu>视图</guimenu>菜单中选择<guimenuitem>更新</guimenuitem>。"
 
-#: package-manager.xml.in:116(para)
+#: gui/help/C/package-manager.xml:115(para)
 msgid "<guimenuitem>Not Installed Packages</guimenuitem> — Shows all packages from the selected publisher in the selected category or matching the specified search string that are not installed."
 msgstr "<guimenuitem>未安装的软件包</guimenuitem> - 显示来自选定发布者的属于选定类别或与指定搜索字符串匹配的所有未安装的软件包。"
 
-#: package-manager.xml.in:117(para)
+#: gui/help/C/package-manager.xml:116(para)
 msgid "Example: To list all the font packages that are currently not installed from the <literal>solaris</literal> publisher, select <literal>solaris</literal> from the <guimenu>Publisher</guimenu> menu, select the <menuchoice><guimenu>System</guimenu><guimenuitem>Fonts</guimenuitem></menuchoice> category, and then select <guimenuitem>Not Installed Packages</guimenuitem> from the <guimenu>View</guimenu> menu."
 msgstr "示例：要列出来自 <literal>solaris</literal> 发布者的当前未安装的所有字体软件包，请从<guimenu>发布者</guimenu>菜单中选择 <literal>solaris</literal>，选择<menuchoice><guimenu>系统</guimenu><guimenuitem>字体</guimenuitem></menuchoice>类别，并从<guimenu>视图</guimenu>菜单中选择<guimenuitem>未安装的软件包</guimenuitem>。"
 
-#: package-manager.xml.in:119(para)
+#: gui/help/C/package-manager.xml:118(para)
 msgid "<guimenuitem>Selected Packages</guimenuitem> — Lists all packages that are currently selected. See <xref linkend=\"select-pkg\"/>."
 msgstr "<guimenuitem>选定的软件包</guimenuitem> - 列出当前选定的所有软件包。请参见<xref linkend=\"select-pkg\"/>。"
 
-#: package-manager.xml.in:123(title)
+#: gui/help/C/package-manager.xml:122(title)
 msgid "By Category"
 msgstr "按类别"
 
-#: package-manager.xml.in:124(para)
+#: gui/help/C/package-manager.xml:123(para)
 msgid "You can browse the available packages by type of software in the category pane on the left side of the Package Manager window. Click a category name to show subcategories. Packages in the selected category or subcategory are listed in the package list pane according to the selected publisher and package status and the specified search criteria."
 msgstr "您可以在软件包管理器窗口左侧的类别窗格中按软件类型浏览可用的软件包。单击某个类别名称可显示子类别。选定的类别或子类别中的软件包将根据选定的发布者和软件包状态以及指定的搜索条件在软件包列表窗格中列出。"
 
-#: package-manager.xml.in:125(para)
+#: gui/help/C/package-manager.xml:124(para)
 msgid "In addition to named types of software, the categories pane also enables you to select <guimenuitem>All Categories</guimenuitem> and <guimenuitem>Recent Searches</guimenuitem>. See <xref linkend=\"search-pkg\"/> “Repeat a Previous Search” for information about <guimenuitem>Recent Searches</guimenuitem>."
 msgstr "除了指定类型的软件外，类别窗格还允许您选择<guimenuitem>所有类别</guimenuitem>和<guimenuitem>最近的搜索</guimenuitem>。有关<guimenuitem>最近的搜索</guimenuitem>的信息，请参见<xref linkend=\"search-pkg\"/>“重复以前的搜索”。"
 
-#: package-manager.xml.in:128(title)
+#: gui/help/C/package-manager.xml:127(title)
 msgid "Searching for Packages"
 msgstr "搜索软件包"
 
-#: package-manager.xml.in:129(para)
+#: gui/help/C/package-manager.xml:128(para)
 msgid "Use one of the following two methods to search for packages:"
 msgstr "可使用下列两种方法之一来搜索软件包："
 
-#: package-manager.xml.in:130(para)
+#: gui/help/C/package-manager.xml:129(para)
 msgid "Focus on the package list pane (for example, select <menuchoice><guimenu>Edit</guimenu><guimenuitem>Go to package list</guimenuitem></menuchoice> and start typing. As you type, matches are identified among the packages currently listed in the package list pane."
 msgstr "聚焦到软件包列表窗格上（例如，选择<menuchoice><guimenu>编辑</guimenu><guimenuitem>转到软件包列表</guimenuitem></menuchoice>并开始键入）。在键入时，将从软件包列表窗格中当前列出的软件包中识别出匹配项。"
 
-#: package-manager.xml.in:132(para)
+#: gui/help/C/package-manager.xml:131(para)
 msgid "Use the Search field in the tool bar."
 msgstr "使用工具栏中的“搜索”字段。"
 
-#: package-manager.xml.in:135(title)
+#: gui/help/C/package-manager.xml:134(title)
 msgid "Enter a Search String"
 msgstr "输入搜索字符串"
 
-#: package-manager.xml.in:136(para)
+#: gui/help/C/package-manager.xml:135(para)
 msgid "Enter a string in the Search field and then press the Enter key or click the magnifying glass icon to the right of the Search field."
 msgstr "在“搜索”字段中输入一个字符串，然后按 Enter 键或单击“搜索”字段右侧的放大镜图标。"
 
-#: package-manager.xml.in:137(para)
+#: gui/help/C/package-manager.xml:136(para)
 msgid "<guimenu>Publisher</guimenu> menu selection — Package Manager searches for the search string in the information about each package from a particular publisher or from all publishers, according to what you have selected on the <guimenu> Publisher</guimenu> menu."
 msgstr "<guimenu>发布者</guimenu>菜单选定项 - 软件包管理器根据您在<guimenu>发布者</guimenu>菜单中所做的选择，在来自特定发布者或所有发布者的每个软件包的相关信息中搜索该搜索字符串。"
 
-#: package-manager.xml.in:138(para)
+#: gui/help/C/package-manager.xml:137(para)
 msgid "Search results are the same whether you select <guimenuitem>All Publishers</guimenuitem> or <guimenuitem>All Publishers (Search)</guimenuitem>. The difference is that using <guimenuitem>All Publishers (Search)</guimenuitem> is faster because you avoid the delay to load data from all publishers that you incur when you select <guimenuitem>All Publishers</guimenuitem>. With <guimenuitem>All Publishers (Search)</guimenuitem>, the search is performed on all publishers without loading data from all publishers in the package list pane."
 msgstr "无论您选择<guimenuitem>所有发布者</guimenuitem>还是选择<guimenuitem>所有发布者（搜索）</guimenuitem>，搜索结果都是一样的。使用<guimenuitem>所有发布者（搜索）</guimenuitem>的不同之处是速度更快，因为这避免了选择<guimenuitem>所有发布者</guimenuitem>时因加载来自所有发布者的数据而发生的延迟。使用<guimenuitem>所有发布者（搜索）</guimenuitem>时，针对所有发布者执行搜索而不在软件包列表窗格中加载来自所有发布者的数据。"
 
-#: package-manager.xml.in:140(para)
+#: gui/help/C/package-manager.xml:139(para)
 msgid "<guimenu>View</guimenu> menu selection — Search results are displayed in the package list pane according to the package status selected on the <guimenu>View</guimenu> menu. You can display different subsets of the same search results in the package list pane by changing the <guimenu>View</guimenu> menu selection without redoing the search."
 msgstr "<guimenu>视图</guimenu>菜单选定项 - 根据在<guimenu>视图</guimenu>菜单上选定的软件包状态，在软件包列表窗格中显示搜索结果。通过更改<guimenu>视图</guimenu>菜单选定项，无需重新搜索，即可在软件包列表窗格中显示同一搜索结果的不同子集。"
 
-#: package-manager.xml.in:143(para)
+#: gui/help/C/package-manager.xml:142(para)
 msgid "Package Manager searches package information including name, summary, description, category, and names of files contained within the package. Only exact matches are found if you do not use wild cards."
 msgstr "软件包管理器搜索的软件包信息包括名称、摘要、描述、类别以及软件包中包含的文件的名称。如果您未使用通配符，则只查找完全匹配项。"
 
-#: package-manager.xml.in:144(literal)
+#: gui/help/C/package-manager.xml:143(literal)
 msgid "AND"
 msgstr "AND"
 
-#: package-manager.xml.in:145(para)
+#: gui/help/C/package-manager.xml:144(para)
 msgid "When search terms are separated by spaces or by <literal>AND</literal>, Package Manager searches for packages that contain <emphasis role=\"strong\">all</emphasis> of the search terms. This is the default search behavior."
 msgstr "当搜索词条由空格或 <literal>AND</literal> 运算符分隔时，软件包管理器将搜索包含<emphasis role=\"strong\">所有</emphasis>这些搜索词条的软件包。这是缺省搜索行为。"
 
-#: package-manager.xml.in:146(para)
+#: gui/help/C/package-manager.xml:145(para)
 msgid "Example: If the search string is <literal>python book</literal> or <literal>python AND book</literal>, the search results include only packages that contain <emphasis>both</emphasis><literal>python</literal><emphasis>and</emphasis><literal>book</literal> in their package information. For example, the package <literal>diveintopython</literal>, a book about Python programming, would appear in the search results, but the package <literal>python-26</literal> would not."
 msgstr "示例：如果搜索字符串是 <literal>python book</literal> 或 <literal>python AND book</literal>，则搜索结果将仅包括其软件包信息中<emphasis>同时</emphasis>包含 <literal>python</literal> <emphasis>和</emphasis> <literal>book</literal> 的软件包。例如，软件包 <literal>diveintopython</literal> (a book about Python programming) 将出现在搜索结果中，但软件包 <literal>python-26</literal> 将不会出现。"
 
-#: package-manager.xml.in:149(term)
+#: gui/help/C/package-manager.xml:148(term)
 msgid "Double quotation marks"
 msgstr "双引号"
 
-#: package-manager.xml.in:150(para)
+#: gui/help/C/package-manager.xml:149(para)
 msgid "Enclose the search term in double quotation marks to match that search term exactly."
 msgstr "将搜索词条括在双引号中指示要与该搜索词条完全匹配。"
 
-#: package-manager.xml.in:151(para)
+#: gui/help/C/package-manager.xml:150(para)
 msgid "Example: <literal>\"ethernet driver\"</literal> in double quotation marks matches <literal>Fast Ethernet Driver</literal> but does not match <literal>Ethernet Adapter Driver</literal>."
 msgstr "示例：括在双引号中的 <literal>\"ethernet driver\"</literal> 将匹配 <literal>Fast Ethernet Driver</literal> 但不匹配 <literal>Ethernet Adapter Driver</literal>。"
 
-#: package-manager.xml.in:154(term)
+#: gui/help/C/package-manager.xml:153(term)
 msgid "Wild card"
 msgstr "通配符"
 
-#: package-manager.xml.in:155(para)
+#: gui/help/C/package-manager.xml:154(para)
 msgid "You can use the <literal>*</literal> wild card in your search string. Using wild cards can be slower."
 msgstr "您可以在搜索字符串中使用 <literal>*</literal> 通配符。使用通配符时搜索速度可能较慢。"
 
-#: package-manager.xml.in:156(para)
+#: gui/help/C/package-manager.xml:155(para)
 msgid "Example: <literal>802.11*</literal> matches <literal>802.11b/g</literal> and <literal>802.11a/b/g</literal>."
 msgstr "示例：<literal>802.11*</literal> 将匹配 <literal>802.11b/g</literal> 和 <literal>802.11a/b/g</literal>。"
 
-#: package-manager.xml.in:157(para)
+#: gui/help/C/package-manager.xml:156(para)
 msgid "Note that <literal>802.11*</literal> does not match <literal>IEEE802.11b/g</literal>. To match <literal>IEEE802.11b/g</literal>, use search string <literal>*802.11*</literal>."
 msgstr "请注意，<literal>802.11*</literal> 不匹配 <literal>IEEE802.11b/g</literal>。要匹配 <literal>IEEE802.11b/g</literal>，请使用搜索字符串 <literal>*802.11*</literal>。"
 
-#: package-manager.xml.in:160(literal)
+#: gui/help/C/package-manager.xml:159(literal)
 msgid "OR"
 msgstr "OR"
 
-#: package-manager.xml.in:161(para)
+#: gui/help/C/package-manager.xml:160(para)
 msgid "When search terms are separated by <literal>OR</literal>, Package Manager searches for packages that contain <emphasis role=\"strong\">any</emphasis> of the search terms."
 msgstr "当搜索词条由 <literal>OR</literal> 运算符分隔时，软件包管理器将搜索包含这些搜索词条中<emphasis role=\"strong\">任一项</emphasis>的软件包。"
 
-#: package-manager.xml.in:162(para)
+#: gui/help/C/package-manager.xml:161(para)
 msgid "Example: <literal>python OR book</literal> matches all packages that contain <literal>python</literal> in their package information and all packages that contain <literal>book</literal> in their package information."
 msgstr "示例：<literal>python OR book</literal> 将匹配其软件包信息中包含 <literal>python</literal> 的所有软件包和其软件包信息中包含 <literal>book</literal> 的所有软件包。"
 
-#: package-manager.xml.in:166(para)
+#: gui/help/C/package-manager.xml:165(para)
 msgid "You can combine these search string modifiers. You can use AND, OR, doublt quotation marks, and * all in one search string."
 msgstr "您可以组合使用这些搜索字符串修饰符。您可以在一个搜索字符串中同时使用 AND、OR、双引号和 *。"
 
-#: package-manager.xml.in:168(title)
+#: gui/help/C/package-manager.xml:167(title)
 msgid "Clear the Search Field"
 msgstr "清除“搜索”字段"
 
-#: package-manager.xml.in:169(para)
+#: gui/help/C/package-manager.xml:168(para)
 msgid "To clear both the search string and the list of search results, use the Search field or the Edit menu."
 msgstr "要同时清除搜索字符串和搜索结果列表，请使用“搜索”字段或“编辑”菜单。"
 
-#: package-manager.xml.in:170(para)
+#: gui/help/C/package-manager.xml:169(para)
 msgid "In the Search field, click the <literal>X</literal> icon."
 msgstr "在“搜索”字段中，单击 <literal>X</literal> 图标。"
 
-#: package-manager.xml.in:172(para)
+#: gui/help/C/package-manager.xml:171(para)
 msgid "On the <guimenu>Edit</guimenu> menu, select the <guimenuitem>Clear Search</guimenuitem> option."
 msgstr "在<guimenu>编辑</guimenu>菜单上，选择<guimenuitem>清除搜索</guimenuitem>选项。"
 
-#: package-manager.xml.in:176(title)
+#: gui/help/C/package-manager.xml:175(title)
 msgid "Cancel the Search"
 msgstr "取消搜索"
 
-#: package-manager.xml.in:177(para)
+#: gui/help/C/package-manager.xml:176(para)
 msgid "During a search operation, a busy bar displays at the right end of the status bar at the bottom of the Package Manager window. On the right end of the busy bar is an <literal>X</literal> icon. Click the <literal>X</literal> icon in the busy bar to cancel the search in progress."
 msgstr "在执行搜索操作期间，一个繁忙条会显示在软件包管理器窗口底部的状态栏的右端。在繁忙条的右端是一个 <literal>X</literal> 图标。单击繁忙条中的 <literal>X</literal> 图标可取消正在进行的搜索。"
 
-#: package-manager.xml.in:179(title)
+#: gui/help/C/package-manager.xml:178(title)
 msgid "Redisplay Previous Search Results"
 msgstr "重新显示以前的搜索结果"
 
-#: package-manager.xml.in:180(para)
+#: gui/help/C/package-manager.xml:179(para)
 msgid "Results from searches that you have already performed during the current Package Manager session are saved in <guimenuitem>Recent Searches</guimenuitem> in the categories pane."
 msgstr "在当前软件包管理器会话中已执行的搜索的结果保存在类别窗格的<guimenuitem>最近的搜索</guimenuitem>中。"
 
-#: package-manager.xml.in:181(para)
+#: gui/help/C/package-manager.xml:180(para)
 msgid "Select the <guimenuitem>Recent Searches</guimenuitem> label in the categories pane to display an informational message in the package list pane. The package list pane shows the list of previous search results. Click a \"results\" link to redisplay those results."
 msgstr "在类别窗格中选择<guimenuitem>最近的搜索</guimenuitem>标签会在软件包列表窗格中显示一条提示性消息。软件包列表窗格中显示之前的搜索结果列表。单击“结果”链接可重新显示那些结果。"
 
-#: package-manager.xml.in:182(para)
+#: gui/help/C/package-manager.xml:181(para)
 msgid "Select the arrow to the left of the <guimenuitem>Recent Searches</guimenuitem> label to expand or hide the list of previous search results in the categories pane. Select an item in the list of recent searches to redisplay those search results."
 msgstr "选择<guimenuitem>最近的搜索</guimenuitem>标签左侧的箭头可在类别窗格中展开或隐藏以前的搜索结果列表。选择最近的搜索列表中的某个项目可重新显示那些搜索结果。"
 
-#: package-manager.xml.in:183(para)
+#: gui/help/C/package-manager.xml:182(para)
 msgid "A search that matched no packages does not appear in the recent searches list."
 msgstr "与任何软件包都不匹配的搜索不会出现在最近的搜索列表中。"
 
-#: package-manager.xml.in:184(para)
+#: gui/help/C/package-manager.xml:183(para)
 msgid "Selecting the <guibutton>Refresh</guibutton> button or the <menuchoice><guimenu>Package</guimenu><guimenuitem>Refresh</guimenuitem></menuchoice> menu option deletes all recent searches results."
 msgstr "选择<guibutton>刷新</guibutton>按钮或<menuchoice><guimenu>软件包</guimenu><guimenuitem>刷新</guimenuitem></menuchoice>菜单选项可删除所有最近的搜索结果。"
 
-#: package-manager.xml.in:187(title)
+#: gui/help/C/package-manager.xml:186(title)
 msgid "Showing More Information"
 msgstr "显示更多信息"
 
-#: package-manager.xml.in:188(para)
+#: gui/help/C/package-manager.xml:187(para)
 msgid "See more information about a package in the package details pane or on the Package Version Info dialog."
 msgstr "可在软件包详细信息窗格或“软件包版本信息”对话框中查看有关某个软件包的更多信息。"
 
-#: package-manager.xml.in:189(title)
+#: gui/help/C/package-manager.xml:188(title)
 msgid "Package Details Pane"
 msgstr "软件包详细信息窗格"
 
-#: package-manager.xml.in:190(para)
+#: gui/help/C/package-manager.xml:189(para)
 msgid "To show more information about a package, click your left mouse button to highlight the package in the package list. The package details pane below the package list pane shows information such as the latest version available from this publisher, the size of the package, the files in the package, dependencies, and license terms."
 msgstr "要显示有关某个软件包的更多信息，请单击鼠标左键以在软件包列表中突出显示该软件包。软件包列表窗格下方的软件包详细信息窗格显示了来自该发布者的最新可用版本、软件包大小、软件包中的文件、依赖关系和许可条款等信息。"
 
-#: package-manager.xml.in:191(para)
+#: gui/help/C/package-manager.xml:190(para)
 msgid "If a package has been renamed since it was installed, the Renamed To field on the General tab shows the new name of the package."
 msgstr "如果某个软件包自安装后已重命名，则“常规”选项卡上的“已重命名为”字段会显示该软件包的新名称。"
 
-#: package-manager.xml.in:192(para)
+#: gui/help/C/package-manager.xml:191(para)
 msgid "The Versions tab shows a list of versions of this package that are available for you to install. Select a version from the list and click the <guibutton>Install/Update</guibutton> button to the right of the list to install that version. See <xref linkend=\"install-pkg\"/>."
 msgstr "“版本”选项卡显示了供您安装的该软件包的所有版本列表。从列表中选择某个版本并单击列表右侧的<guibutton>安装/更新</guibutton>按钮可安装该版本。请参见<xref linkend=\"install-pkg\"/>。"
 
-#: package-manager.xml.in:193(para)
+#: gui/help/C/package-manager.xml:192(para)
 msgid "The package details pane is not displayed if the package list pane contains an informational message."
 msgstr "如果软件包列表窗格包含一条提示性消息，则不会显示软件包详细信息窗格。"
 
-#: package-manager.xml.in:195(title)
+#: gui/help/C/package-manager.xml:194(title)
 msgid "Package Version Info Dialog"
 msgstr "“软件包版本信息”对话框"
 
-#: package-manager.xml.in:196(para)
+#: gui/help/C/package-manager.xml:195(para)
 msgid "Click your right mouse button on a package in the package list to pop up the <guimenu>Package</guimenu> menu."
 msgstr "在软件包列表中的某个软件包上单击鼠标右键可弹出<guimenu>软件包</guimenu>菜单。"
 
-#: package-manager.xml.in:197(para)
+#: gui/help/C/package-manager.xml:196(para)
 msgid "Select the <menuchoice><guimenu>Package</guimenu><guimenuitem>Package Version Info</guimenuitem></menuchoice> menu option either from the pop-up menu or from the menu bar to display a separate window that shows the version of the package that is installed and the latest version that you can install or upgrade to if applicable."
 msgstr "从弹出菜单或菜单栏选择<menuchoice><guimenu>软件包</guimenu><guimenuitem>软件包版本信息</guimenuitem></menuchoice>菜单选项可显示一个单独的窗口，其中显示了已安装的软件包版本，以及您可以安装或更新到的最新版本（如果适用）。"
 
-#: package-manager.xml.in:200(title)
+#: gui/help/C/package-manager.xml:199(title)
 msgid "Selecting Packages"
 msgstr "选择软件包"
 
-#: package-manager.xml.in:201(para)
+#: gui/help/C/package-manager.xml:200(para)
 msgid "Selected packages can be installed, updated, or removed. To select a package, use the package list pane or the <guimenu>Edit</guimenu> menu."
 msgstr "可以安装、更新或删除所选择的软件包。要选择某个软件包，请使用软件包列表窗格或使用<guimenu>编辑</guimenu>菜单。"
 
-#: package-manager.xml.in:202(para)
+#: gui/help/C/package-manager.xml:201(para)
 msgid "In the package list pane, do one of the following actions to select a package. You can select multiple packages."
 msgstr "在软件包列表窗格中，可执行下列操作之一来选择某个软件包。您可以选择多个软件包。"
 
-#: package-manager.xml.in:203(para)
+#: gui/help/C/package-manager.xml:202(para)
 msgid "Click the box to the left of the package name. Click the box again to deselect the package."
 msgstr "单击软件包名称左侧的框。再次单击该框可取消选择软件包。"
 
-#: package-manager.xml.in:205(para)
+#: gui/help/C/package-manager.xml:204(para)
 msgid "Click the package name one time to highlight the package. Then double-click the highlighted package to select the package. Double-click again to deselect the package."
 msgstr "单击一次软件包名称可突出显示软件包。然后双击突出显示的软件包可选择该软件包。再次双击可取消选择软件包。"
 
-#: package-manager.xml.in:207(para)
+#: gui/help/C/package-manager.xml:206(para)
 msgid "Click the checkbox icon in the column heading to select all packages that are currently listed in the package list pane. Click the checkbox icon again to deselect all packages currently listed in the package list pane."
 msgstr "单击列标题中的复选框图标可选择当前列出在软件包列表窗格中的所有软件包。再次单击该复选框图标可取消选择当前列出在软件包列表窗格中的所有软件包。"
 
-#: package-manager.xml.in:210(para)
+#: gui/help/C/package-manager.xml:209(para)
 msgid "The <guimenu>Edit</guimenu> menu has the following options for selecting packages:"
 msgstr "<guimenu>编辑</guimenu>菜单具有用于选择软件包的以下选项："
 
-#: package-manager.xml.in:211(para)
+#: gui/help/C/package-manager.xml:210(para)
 msgid "<guimenuitem>Select All</guimenuitem> — Selects all packages that are currently listed in the package list pane."
 msgstr "<guimenuitem>全选</guimenuitem> - 选择当前列出在软件包列表窗格中的所有软件包。"
 
-#: package-manager.xml.in:213(para)
+#: gui/help/C/package-manager.xml:212(para)
 msgid "<guimenuitem>Select Updates</guimenuitem> — Selects all packages that are currently listed in the package list pane that have updates available."
 msgstr "<guimenuitem>选择更新</guimenuitem> - 选择当前列出在软件包列表窗格中有更新可用的所有软件包。"
 
-#: package-manager.xml.in:215(para)
+#: gui/help/C/package-manager.xml:214(para)
 msgid "<guimenuitem>Deselect All</guimenuitem> — Deselects all packages that are currently listed in the package list pane."
 msgstr "<guimenuitem>取消全选</guimenuitem> - 取消选择当前列出在软件包列表窗格中的所有软件包。"
 
-#: package-manager.xml.in:218(para)
+#: gui/help/C/package-manager.xml:217(para)
 msgid "In all cases when you select a package, packages that were previously selected are still selected."
 msgstr "在任何情况下，当您选择某个软件包时，以前选定的软件包仍然处于选定状态。"
 
-#: package-manager.xml.in:219(para)
+#: gui/help/C/package-manager.xml:218(para)
 msgid "The number of packages currently listed in the package list pane and the number of those packages that are selected are shown on the left side of the status bar at the bottom of the Package Manager window."
 msgstr "当前列出在软件包列表窗格中的所有软件包的数目和所选择的那些软件包的数目显示在软件包管理器窗口底部状态栏的左侧。"
 
-#: package-manager.xml.in:220(para)
+#: gui/help/C/package-manager.xml:219(para)
 msgid "Select the <menuchoice><guimenu>Publisher</guimenu><guimenuitem>All Publishers</guimenuitem></menuchoice> option, the <guimenuitem>All Categories</guimenuitem> category, and the <menuchoice><guimenu>View</guimenu><guimenuitem>Selected Packages</guimenuitem></menuchoice> option to list all selected packages from all publishers in the package list pane."
 msgstr "选择<menuchoice><guimenu>发布者</guimenu><guimenuitem>所有发布者</guimenuitem></menuchoice>选项、<guimenuitem>所有类别</guimenuitem>类别以及<menuchoice><guimenu>视图</guimenu><guimenuitem>选定的软件包</guimenuitem></menuchoice>选项可在软件包列表窗格中列出来自所有发布者的所有选定的软件包。"
 
-#: package-manager.xml.in:221(para)
+#: gui/help/C/package-manager.xml:220(para)
 msgid "A package can be highlighted but not selected. When a package is highlighted, detailed information about that package is displayed in the package details pane below the package list pane. When a package is selected, a check mark displays in the box to the left of the package name. If you want to install, update, or delete a package, make sure a check mark appears in the selection box for that package."
 msgstr "可以突出显示某个软件包但不选择它。当突出显示某个软件包时，有关该软件包的详细信息将显示在软件包列表窗格下方的软件包详细信息窗格中。当选定某个软件包时，在该软件包名称左侧的框中会显示一个复选标记。如果您要安装、更新或删除某个软件包，请确保该软件包的选择框中显示有一个复选标记。"
 
-#: package-manager.xml.in:223(title)
+#: gui/help/C/package-manager.xml:222(title)
 msgid "Installing and Updating Packages"
 msgstr "安装和更新软件包"
 
-#: package-manager.xml.in:224(para)
+#: gui/help/C/package-manager.xml:223(para)
 msgid "Before you install or update, check your Optional Components preference settings. Select the <menuchoice><guimenu>Edit</guimenu><guimenuitem>Preferences</guimenuitem></menuchoice> option. In the Preferences window, select the Optional Components tab. By default, Install all languages, Install all development files, and Install all documentation are selected. You can save space in your installation by selecting a subset of languages to install or deselecting development files, for example. Click the OK button to save your changes. These settings apply to all installed packages as well as future package installations and updates."
 msgstr "在安装或更新之前，请检查“可选组件”首选项设置。选择<menuchoice><guimenu>编辑</guimenu><guimenuitem>首选项</guimenuitem></menuchoice>选项。在“首选项”窗口中，选择“可选组件”选项卡。缺省情况下，“安装所有语言”、“安装所有开发文件”和“安装所有文档”处于选定状态。例如，您可以选择只安装某个语言子集或取消选择开发文件来节省安装空间。单击“确定”按钮保存所做的更改。这些设置将应用于所有已安装的软件包以及将来的软件包安装和更新。"
 
-#: package-manager.xml.in:225(para)
+#: gui/help/C/package-manager.xml:224(para)
 msgid "Perform the following steps to install or update a package:"
 msgstr "执行以下步骤来安装或更新软件包："
 
-#: package-manager.xml.in:226(para) package-manager.xml.in:248(para)
+#: gui/help/C/package-manager.xml:225(para) gui/help/C/package-manager.xml:247(para)
 msgid "Select the package. See <xref linkend=\"select-pkg\"/>."
 msgstr "选择软件包。请参见<xref linkend=\"select-pkg\"/>。"
 
-#: package-manager.xml.in:228(para)
+#: gui/help/C/package-manager.xml:227(para)
 msgid "Use one of the following methods to install or update the package:"
 msgstr "可使用下列方法之一来安装或更新软件包："
 
-#: package-manager.xml.in:229(para)
+#: gui/help/C/package-manager.xml:228(para)
 msgid "Select the <guibutton>Install/Update</guibutton> button in the tool bar."
 msgstr "在工具栏中选择<guibutton>安装/更新</guibutton>按钮。"
 
-#: package-manager.xml.in:231(para)
+#: gui/help/C/package-manager.xml:230(para)
 msgid "Select the <menuchoice><guimenu>Package</guimenu><guimenuitem>Install/Update</guimenuitem></menuchoice> option from the menu bar."
 msgstr "从菜单栏中选择<menuchoice><guimenu>软件包</guimenu><guimenuitem>安装/更新</guimenuitem></menuchoice>选项。"
 
-#: package-manager.xml.in:233(para)
+#: gui/help/C/package-manager.xml:232(para)
 msgid "Click your right mouse button on the name of a package to display the pop-up <guimenu>Package</guimenu> menu. Then select the <guimenuitem>Install/Update</guimenuitem> option."
 msgstr "在软件包名称上单击鼠标右键以显示<guimenu>软件包</guimenu>弹出式菜单，然后选择<guimenuitem>安装/更新</guimenuitem>选项。"
 
-#: package-manager.xml.in:235(para)
+#: gui/help/C/package-manager.xml:234(para)
 msgid "On the Versions tab in the package details pane below the package list pane, select a version from the Version to Install list and click the <guibutton>Install/Update</guibutton> button to the right of the list. The packages in the Version to Install list are available in the repository; they might not be installable. A particular version might not be compatible with other packages that you have installed. If the version that you select is not installable on your system, Package Manager warns you and does not install the package."
 msgstr "在软件包列表窗格下方的软件包详细信息窗格中，在“版本”选项卡上，从“要安装的版本”列表中选择一个版本并单击该列表右侧的<guibutton>安装/更新</guibutton>按钮。“要安装的版本”列表中的软件包是系统信息库可提供的；它们有可能不可安装。某个特定的版本有可能与您已安装的其他软件包不兼容。如果您选择的版本不可安装在您的系统上，则软件包管理器会向您发出警告，且不会安装该软件包。"
 
-#: package-manager.xml.in:238(para)
+#: gui/help/C/package-manager.xml:237(para)
 msgid "If the package is already installed and does not have an update available (see the Status column or the <menuchoice><guimenu>Package</guimenu><guimenuitem>Package Version Info</guimenuitem></menuchoice> option), the <guibutton>Install/Update</guibutton> option is grayed out and not selectable."
 msgstr "如果软件包已安装且没有更新可用（请参见“状态”列或<menuchoice><guimenu>软件包</guimenu><guimenuitem>软件包版本信息</guimenuitem></menuchoice>选项），则<guibutton>安装/更新</guibutton>选项处于灰显状态且不可选择。"
 
-#: package-manager.xml.in:240(para)
+#: gui/help/C/package-manager.xml:239(para)
 msgid "The Install/Update Confirmation window is displayed. Packages that are not yet installed are listed in the Install Details pane, and packages that are installed are listed in the Update Details pane for you to review. Select the <guibutton>Proceed</guibutton> button to install or update the listed packages."
 msgstr "“安装/更新确认”窗口随即显示。尚未安装的软件包列出在“安装详细信息”窗格中且已安装的软件包列出在“更新详细信息”窗格中供您复查。选择<guibutton>继续</guibutton>按钮将安装或更新所列出的软件包。"
 
-#: package-manager.xml.in:241(para)
+#: gui/help/C/package-manager.xml:240(para)
 msgid "In some cases a license dialog is displayed and you must accept the license to install the package."
 msgstr "在某些情况下会显示一个许可对话框，您必须接受该许可才能安装软件包。"
 
-#: package-manager.xml.in:242(para)
+#: gui/help/C/package-manager.xml:241(para)
 msgid "If an error occurs during package installation, an error dialog is displayed. Messages explain why the install or update failed."
 msgstr "如果在软件包安装期间发生错误，则会显示一个错误对话框，其中的消息会解释安装或更新为何失败。"
 
-#: package-manager.xml.in:246(title)
+#: gui/help/C/package-manager.xml:245(title)
 msgid "Removing Packages"
 msgstr "删除软件包"
 
-#: package-manager.xml.in:247(para)
+#: gui/help/C/package-manager.xml:246(para)
 msgid "Perform the following steps to remove a package:"
 msgstr "执行以下步骤来删除软件包："
 
-#: package-manager.xml.in:250(para)
+#: gui/help/C/package-manager.xml:249(para)
 msgid "Use one of the following methods to remove the package:"
 msgstr "可使用下列方法之一来删除软件包："
 
-#: package-manager.xml.in:251(para)
+#: gui/help/C/package-manager.xml:250(para)
 msgid "Select the <guibutton>Remove</guibutton> button in the tool bar."
 msgstr "在工具栏中选择<guibutton>删除</guibutton>按钮。"
 
-#: package-manager.xml.in:253(para)
+#: gui/help/C/package-manager.xml:252(para)
 msgid "Select the <menuchoice><guimenu>Package</guimenu><guimenuitem>Remove</guimenuitem></menuchoice> option from the menu bar."
 msgstr "从菜单栏中选择<menuchoice><guimenu>软件包</guimenu><guimenuitem>删除</guimenuitem></menuchoice>选项。"
 
-#: package-manager.xml.in:255(para)
+#: gui/help/C/package-manager.xml:254(para)
 msgid "Click your right mouse button on the name of a package to display the pop-up <guimenu>Package</guimenu> menu. Then select the <guimenuitem>Remove</guimenuitem> option."
 msgstr "在软件包名称上单击鼠标右键以显示<guimenu>软件包</guimenu>弹出式菜单，然后选择<guimenuitem>删除</guimenuitem>选项。"
 
-#: package-manager.xml.in:258(para)
+#: gui/help/C/package-manager.xml:257(para)
 msgid "If the package is not installed, the Remove option is grayed out and not selectable."
 msgstr "如果软件包未安装，则“删除”选项处于灰显状态且不可选择。"
 
-#: package-manager.xml.in:260(para)
+#: gui/help/C/package-manager.xml:259(para)
 msgid "The Remove Confirmation window is displayed. Packages to be removed are listed in the Remove Details pane for you to review. Select the <guibutton>Proceed</guibutton> button to remove the listed packages."
 msgstr "“删除确认”窗口随即显示。要删除的软件包列出在“删除详细信息”窗格中供您复查。选择<guibutton>继续</guibutton>按钮将删除列出的软件包。"
 
-#: package-manager.xml.in:261(para)
+#: gui/help/C/package-manager.xml:260(para)
 msgid "If a package cannot be removed because other packages depend on it, you can select the <guibutton>Remove Continue</guibutton> option to attempt to remove any remaining packages that you originally selected for removal."
 msgstr "如果某个软件包因其他软件包依赖于它而无法删除，您可以选择<guibutton>继续删除</guibutton>选项来尝试删除您最初选定的要删除的任何其余软件。"
 
-#: package-manager.xml.in:266(title)
+#: gui/help/C/package-manager.xml:265(title)
 msgid "Updating Your System"
 msgstr "更新系统"
 
-#: package-manager.xml.in:267(para)
+#: gui/help/C/package-manager.xml:266(para)
 msgid "When certain key packages such as some drivers and other kernel components are updated, the system performs the following actions:"
 msgstr "当更新某些关键的软件包（例如某些驱动程序和其他内核组件）时，系统将执行以下操作："
 
-#: package-manager.xml.in:268(para)
+#: gui/help/C/package-manager.xml:267(para)
 msgid "Creates a clone of the current boot environment (BE)."
 msgstr "创建当前引导环境 (boot environment, BE) 的克隆。"
 
-#: package-manager.xml.in:270(para)
+#: gui/help/C/package-manager.xml:269(para)
 msgid "Updates the packages in the clone, and does not update any packages in the current BE."
 msgstr "更新克隆中的软件包，且不更新当前 BE 中的任何软件包。"
 
-#: package-manager.xml.in:272(para)
+#: gui/help/C/package-manager.xml:271(para)
 msgid "Sets the new BE to be the default boot choice the next time the system is rebooted. The current BE remains as an alternate boot choice."
 msgstr "将新的 BE 设置为下次重新引导系统时的缺省引导选项。当前 BE 保留为一个备用引导选项。"
 
-#: package-manager.xml.in:275(title)
+#: gui/help/C/package-manager.xml:274(title)
 msgid "Updating All Packages"
 msgstr "更新所有软件包"
 
-#: package-manager.xml.in:276(para)
+#: gui/help/C/package-manager.xml:275(para)
 msgid "When you select the <guibutton>Updates</guibutton> button in the tool bar or the <menuchoice><guimenu>Package</guimenu><guimenuitem>Updates</guimenuitem></menuchoice> menu option, Package Manager updates all installed packages that have updates available."
 msgstr "当您在工具栏中选择<guibutton>更新</guibutton>按钮或者选择<menuchoice><guimenu>软件包</guimenu><guimenuitem>更新</guimenuitem></menuchoice>菜单选项时，软件包管理器将更新有更新可用的所有已安装的软件包。"
 
-#: package-manager.xml.in:277(para)
+#: gui/help/C/package-manager.xml:276(para)
 msgid "All packages that have updates available from their current publisher are updated. If a package has an update available from a different publisher in your publisher list, that package is updated only if its current publisher is configured as non-sticky. If its current publisher is configured as sticky, then that package is not updated."
 msgstr "凡是可从其当前发布者获得更新的软件包都将被更新。如果某个软件包的可用更新来自发布者列表中的其他发布者，则只有其当前发布者配置为非粘性时，该软件包才会更新。如果其当前发布者配置为粘性，则该软件包不会更新。"
 
-#: package-manager.xml.in:278(para)
+#: gui/help/C/package-manager.xml:277(para)
 msgid "The Updates window displays, and the update process starts:"
 msgstr "“更新”窗口随即显示，更新过程启动："
 
-#: package-manager.xml.in:279(para)
+#: gui/help/C/package-manager.xml:278(para)
 msgid "The system refreshes all catalogs."
 msgstr "系统将刷新所有目录。"
 
-#: package-manager.xml.in:281(para)
+#: gui/help/C/package-manager.xml:280(para)
 msgid "The system evaluates all installed packages to determine which packages have updates available."
 msgstr "系统对所有已安装的软件包进行评估以确定哪些软件包有更新可用。"
 
-#: package-manager.xml.in:282(para)
+#: gui/help/C/package-manager.xml:281(para)
 msgid "If no packages have updates available, the message “No Updates Available” is displayed and processing stops."
 msgstr "如果没有任何软件包有更新可用，则会显示消息“无更新可用”且处理停止。"
 
-#: package-manager.xml.in:284(para)
+#: gui/help/C/package-manager.xml:283(para)
 msgid "If package updates are available, the packages to be updated are listed for your review. This is your last chance to click the <guibutton>Cancel</guibutton> button to abort the update."
 msgstr "如果有软件包更新可用，则会列出要更新的软件包供您复查。这是您通过单击<guibutton>取消</guibutton>按钮中止更新的最后机会。"
 
-#: package-manager.xml.in:288(para)
+#: gui/help/C/package-manager.xml:287(para)
 msgid "Click the <guibutton>Proceed</guibutton> button to continue with the update."
 msgstr "单击<guibutton>继续</guibutton>按钮将继续更新。"
 
-#: package-manager.xml.in:289(para)
+#: gui/help/C/package-manager.xml:288(para)
 msgid "The system might create a new boot environment (BE), as described in <xref linkend=\"update_all\"/> above, depending on which packages are being updated."
 msgstr "系统可能会创建一个新的引导环境 (boot environment, BE)，如前文中的<xref linkend=\"update_all\"/>所述，具体取决于要更新的是哪些软件包。"
 
-#: package-manager.xml.in:290(para)
+#: gui/help/C/package-manager.xml:289(para)
 msgid "If the system determined that a new BE is required but was not able to create a new BE, an error message is displayed. If the problem is not enough disk space, perform the following steps:"
 msgstr "如果系统确定需要一个新 BE 但无法创建新 BE，则会显示一条错误消息。如果问题是磁盘空间不足，请执行以下步骤："
 
-#: package-manager.xml.in:291(para)
+#: gui/help/C/package-manager.xml:290(para)
 msgid "Click <guibutton>Close</guibutton> to cancel the Updates process."
 msgstr "单击<guibutton>关闭</guibutton>以取消更新过程。"
 
-#: package-manager.xml.in:293(para)
+#: gui/help/C/package-manager.xml:292(para)
 msgid "Follow the instructions in <xref linkend=\"remove-be\"/> to remove a BE that is no longer needed."
 msgstr "按照<xref linkend=\"remove-be\"/>中的说明删除不再需要的 BE。"
 
-#: package-manager.xml.in:295(para)
+#: gui/help/C/package-manager.xml:294(para)
 msgid "Select <guibutton>Updates</guibutton> again to restart the Updates process."
 msgstr "再次选择<guibutton>更新</guibutton>以重新启动更新过程。"
 
-#: package-manager.xml.in:299(para)
+#: gui/help/C/package-manager.xml:298(para)
 msgid "The system downloads all package updates."
 msgstr "系统下载所有软件包更新。"
 
-#: package-manager.xml.in:301(para)
+#: gui/help/C/package-manager.xml:300(para)
 msgid "The system installs the package updates. If a cloned BE was created, the updates are installed in the clone. If no clone was created, the updates are installed in the current BE."
 msgstr "系统安装软件包更新。如果创建了一个克隆的 BE，则更新将安装在该克隆 BE 中。如果没有创建克隆 BE，则更新将安装在当前的 BE 中。"
 
-#: package-manager.xml.in:302(para)
+#: gui/help/C/package-manager.xml:301(para)
 msgid "If an error occurs at any time during the update process, the Details panel is expanded and the details of the error are displayed. An error status indicator is shown next to the failed stage."
 msgstr "如果在更新过程中的任何时候出现错误，“详细信息”面板将会展开，并且将显示错误的详细信息。错误状态指示符将显示在失败的阶段旁边。"
 
-#: package-manager.xml.in:304(para)
+#: gui/help/C/package-manager.xml:303(para)
 msgid "If the system created a new BE for the update, you can edit the default BE name. When you are satisfied with the BE name, click the <guibutton>Restart Now</guibutton> button to reboot your system immediately. Click the <guibutton>Restart Later</guibutton> button to restart your system at a later time. You must restart to boot into the new BE. The new BE will be your default boot choice. Your current BE will be available as an alternate boot choice."
 msgstr "如果系统创建了一个用于更新的新 BE，则您可以编辑缺省的 BE 名称。在您对 BE 名称满意后，单击<guibutton>立即重新启动</guibutton>按钮可立即重新引导您的系统。单击<guibutton>稍后重新启动</guibutton>按钮可在稍后的某个时间重新启动您的系统。您必须重新启动才能引导到新 BE。新 BE 将成为您的缺省引导选项。您的当前 BE 可用作备用引导选项。"
 
-#: package-manager.xml.in:308(title)
+#: gui/help/C/package-manager.xml:307(title)
 msgid "Using Update Manager"
 msgstr "使用更新管理器"
 
-#: package-manager.xml.in:309(para)
+#: gui/help/C/package-manager.xml:308(para)
 msgid "You can open Update Manager from a system notification or from the desktop menu bar. Update Manager executes the same process as described above in <xref linkend=\"um_info\"/>."
 msgstr "您可以从某个系统通知或者从桌面菜单栏打开更新管理器。更新管理器执行与前文中的<xref linkend=\"um_info\"/>所述过程相同的过程。"
 
-#: package-manager.xml.in:310(title)
+#: gui/help/C/package-manager.xml:309(title)
 msgid "Software Updates Notification"
 msgstr "软件更新通知"
 
-#: package-manager.xml.in:311(para)
+#: gui/help/C/package-manager.xml:310(para)
 msgid "The system periodically checks whether updates are available for any of your installed packages. If the system detects that updates are available, an Updates Available notification icon and popup are displayed in the system notification tray. Click the notification icon to open Update Manager."
 msgstr "系统会定期检查是否有更新可供任何已安装的软件包使用。如果系统检测到有更新可用，则会在系统通知栏中显示一个“有更新可用”通知图标和弹出窗口。单击通知图标可打开更新管理器。"
 
-#: package-manager.xml.in:313(title)
+#: gui/help/C/package-manager.xml:312(title)
 msgid "Desktop System Menu"
 msgstr "桌面系统菜单"
 
-#: package-manager.xml.in:314(para)
+#: gui/help/C/package-manager.xml:313(para)
 msgid "Select <menuchoice><guimenu>System</guimenu><guisubmenu>Administration</guisubmenu><guimenuitem>Update Manager</guimenuitem></menuchoice> from the menu bar on the desktop to open Update Manager."
 msgstr "从桌面上的菜单栏选择<menuchoice><guimenu>系统</guimenu><guisubmenu>管理</guisubmenu><guimenuitem>更新管理器</guimenuitem></menuchoice>以打开更新管理器。"
 
-#: package-manager.xml.in:318(title)
+#: gui/help/C/package-manager.xml:317(title)
 msgid "Managing Publishers"
 msgstr "管理发布者"
 
-#: package-manager.xml.in:319(para)
+#: gui/help/C/package-manager.xml:318(para)
 msgid "You can add, modify, and remove IPS package publishers. You can change the priority of a publisher, change the enabled and sticky settings, change the publisher alias, add or remove a publisher origin, and add or remove a publisher mirror. You can manage keys, certificates, and signature policy."
 msgstr "您可以添加、修改和删除 IPS 软件包发布者。您可以更改发布者的优先级、更改“已启用”和“粘性”设置、更改发布者别名、添加或删除发布者源，以及添加或删除发布者镜像。您可以管理密钥、证书和签名策略。"
 
-#: package-manager.xml.in:320(para)
+#: gui/help/C/package-manager.xml:319(para)
 msgid "Note that system publishers are an exception. System publishers can only be viewed in the Manage Publishers window. System publishers cannot be removed or modified, and you cannot change their priority. See <xref linkend=\"glossary\"/>. The Details pane indicates whether the selected publisher is a system publisher."
 msgstr "请注意，系统发布者是个例外。在“管理发布者”窗口中，系统发布者仅可供查看。系统发布者无法删除或修改，您无法更改其优先级。请参见<xref linkend=\"glossary\"/>。“详细信息”窗格指示选定的发布者是否为系统发布者。"
 
-#: package-manager.xml.in:321(title)
+#: gui/help/C/package-manager.xml:320(title)
 msgid "Adding Publishers"
 msgstr "添加发布者"
 
-#: package-manager.xml.in:322(para)
+#: gui/help/C/package-manager.xml:321(para)
 msgid "To add an IPS package publisher, use the Add Publisher window. To open the Add Publisher window, do one of the following actions:"
 msgstr "要添加某个 IPS 软件包发布者，请使用“添加发布者”窗口。要打开“添加发布者”窗口，请执行下列操作之一："
 
-#: package-manager.xml.in:323(para)
+#: gui/help/C/package-manager.xml:322(para)
 msgid "Select the <guimenuitem>Add</guimenuitem> option from the <guimenu>Publisher</guimenu> drop-down menu."
 msgstr "从<guimenu>发布者</guimenu>下拉式菜单中选择<guimenuitem>添加</guimenuitem>选项。"
 
-#: package-manager.xml.in:325(para)
+#: gui/help/C/package-manager.xml:324(para)
 msgid "Select the <menuchoice><guimenu>File</guimenu><guimenuitem>Add Publisher</guimenuitem></menuchoice> menu option."
 msgstr "选择<menuchoice><guimenu>文件</guimenu><guimenuitem>添加发布者</guimenuitem></menuchoice>菜单选项。"
 
-#: package-manager.xml.in:327(para)
+#: gui/help/C/package-manager.xml:326(para)
 msgid "Select the <menuchoice><guimenu>File</guimenu><guimenuitem>Manage Publishers</guimenuitem></menuchoice> menu option. In the Manage Publishers window, select the <guibutton>Add</guibutton> button."
 msgstr "选择<menuchoice><guimenu>文件</guimenu><guimenuitem>管理发布者</guimenuitem></menuchoice>菜单选项。在“管理发布者”窗口中，选择<guibutton>添加</guibutton>按钮。"
 
-#: package-manager.xml.in:330(para)
+#: gui/help/C/package-manager.xml:329(para)
 msgid "In the Add Publisher window, perform the following steps to add an IPS package publisher:"
 msgstr "在“添加发布者”窗口中，执行以下步骤来添加某个 IPS 软件包发布者："
 
-#: package-manager.xml.in:331(para)
+#: gui/help/C/package-manager.xml:330(para)
 msgid "In the URI field, enter the URI of the publisher. The URI is a network location such as <literal>http://pkg.oracle.com/solaris/release/</literal> or <literal>http://localhost:5555</literal>."
 msgstr "在 URI 字段中，输入发布者的 URI。该 URI 是一个网络位置，例如 <literal>http://pkg.oracle.com/solaris/release/</literal> 或 <literal>http://localhost:5555</literal>。"
 
-#: package-manager.xml.in:333(para)
+#: gui/help/C/package-manager.xml:332(para)
 msgid "In the Alias field, you can enter an alternate name for this publisher."
 msgstr "在“别名”字段中，您可以为该发布者输入另一个名称。"
 
-#: package-manager.xml.in:335(para)
+#: gui/help/C/package-manager.xml:334(para)
 msgid "Click the <guibutton>Add</guibutton> button."
 msgstr "单击<guibutton>添加</guibutton>按钮。"
 
-#: package-manager.xml.in:337(para)
+#: gui/help/C/package-manager.xml:336(para)
 msgid "The Adding Publisher dialog is displayed. Click <guibutton>Cancel</guibutton> to cancel the process. Click Details to view verbose information."
 msgstr "“添加发布者”对话框随即显示。单击<guibutton>取消</guibutton>可取消该过程。单击“详细信息”可查看详细信息。"
 
-#: package-manager.xml.in:338(para)
+#: gui/help/C/package-manager.xml:337(para)
 msgid "If the new publisher is added successfully, the Adding Publisher Complete dialog is displayed and shows the new publisher name, alias, and URI."
 msgstr "如果成功添加了新发布者，则会显示“添加发布者完成”对话框，其中会显示新发布者的名称、别名和 URI。"
 
-#: package-manager.xml.in:340(para)
+#: gui/help/C/package-manager.xml:339(para)
 msgid "If the new publisher is not added, the Publisher Error dialog is displayed with information about the problem."
 msgstr "如果没有添加新发布者，则会显示“发布者错误”对话框，其中会显示问题的相关信息。"
 
-#: package-manager.xml.in:345(para)
+#: gui/help/C/package-manager.xml:344(para)
 msgid "The new publisher is the last publisher listed in the Manage Publishers window and is enabled and sticky."
 msgstr "新发布者列在“管理发布者”窗口中的最后一位，并且设置为“已启用”和“粘性”。"
 
-#: package-manager.xml.in:346(para)
+#: gui/help/C/package-manager.xml:345(para)
 msgid "See <xref linkend=\"modify-publisher\"/> for information about changing the priority of the new publisher, changing the enabled and sticky settings, changing the publisher alias, adding a publisher origin, setting an SSL key and certificate, adding a publisher mirror, and managing publisher certificates and signature policy."
 msgstr "有关更改新发布者的优先级、更改“已启用”和“粘性”设置、更改发布者别名、添加发布者源、设置 SSL 密钥和证书、添加发布者镜像、以及管理发布者证书和签名策略方面的信息，请参见<xref linkend=\"modify-publisher\"/>。"
 
-#: package-manager.xml.in:348(title)
+#: gui/help/C/package-manager.xml:347(title)
 msgid "Modifying Publishers"
 msgstr "修改发布者"
 
-#: package-manager.xml.in:349(para)
+#: gui/help/C/package-manager.xml:348(para)
 msgid "To modify the attributes of a publisher, select the <menuchoice><guimenu>File</guimenu><guimenuitem>Manage Publishers</guimenuitem></menuchoice> menu option. Currently configured publishers are listed in the Manage Publishers window."
 msgstr "要修改发布者的属性，请选择<menuchoice><guimenu>文件</guimenu><guimenuitem>管理发布者</guimenuitem></menuchoice>菜单选项。当前已配置的发布者列出在“管理发布者”窗口中。"
 
-#: package-manager.xml.in:350(para)
+#: gui/help/C/package-manager.xml:349(para)
 msgid "In the Manage Publishers window you can change the priority of a publisher, enable or disable a publisher, set the publisher to be sticky or non-sticky, and remove a publisher. See <xref linkend=\"priority-stickiness\"/> and <xref linkend=\"remove-publisher\"/>."
 msgstr "在“管理发布者”窗口中，您可以更改发布者的优先级、启用或禁用发布者、将发布者设置为粘性或非粘性，以及删除发布者。请参见<xref linkend=\"priority-stickiness\"/>和<xref linkend=\"remove-publisher\"/>。"
 
-#: package-manager.xml.in:351(para)
+#: gui/help/C/package-manager.xml:350(para)
 msgid "Click the <guibutton>Modify</guibutton> button to open the Modify Publisher window. In the Modify Publisher window you can change the publisher alias, add or remove a publisher origin, add or remove a publisher mirror, set an SSL key and certificate, and manage publisher certificates and signature policy. See <xref linkend=\"origin-mirror\"/> and <xref linkend=\"pub-security\"/>."
 msgstr "单击<guibutton>修改</guibutton>按钮以打开“修改发布者”窗口。在“修改发布者”窗口中，您可以更改发布者别名、添加或删除发布者源、添加或删除发布者镜像、设置 SSL 密钥和证书，以及管理发布者证书和签名策略。请参见<xref linkend=\"origin-mirror\"/>和<xref linkend=\"pub-security\"/>。"
 
-#: package-manager.xml.in:352(title)
+#: gui/help/C/package-manager.xml:351(title)
 msgid "Changing Priority and Stickiness"
 msgstr "更改优先级和粘性"
 
-#: package-manager.xml.in:353(para)
+#: gui/help/C/package-manager.xml:352(para)
 msgid "Select the <menuchoice><guimenu>File</guimenu><guimenuitem>Manage Publishers</guimenuitem></menuchoice> menu option to display the Manage Publishers window."
 msgstr "选择<menuchoice><guimenu>文件</guimenu><guimenuitem>管理发布者</guimenuitem></menuchoice>菜单选项以显示“管理发布者”窗口。"
 
-#: package-manager.xml.in:354(title)
+#: gui/help/C/package-manager.xml:353(title)
 msgid "Publisher Priority"
 msgstr "发布者优先级"
 
-#: package-manager.xml.in:355(para)
+#: gui/help/C/package-manager.xml:354(para)
 msgid "Publishers are listed in priority order in the Manage Publishers window. The publisher at the top of the list is the highest priority publisher. The publisher at the bottom of the list is the lowest priority publisher."
 msgstr "发布者按优先级顺序列出在“管理发布者”窗口中。列表顶部的发布者是优先级最高的发布者。列表底部的发布者是优先级最低的发布者。"
 
-#: package-manager.xml.in:356(para)
+#: gui/help/C/package-manager.xml:355(para)
 msgid "The publisher at the top of the list is also known as the preferred publisher."
 msgstr "位于列表顶部的发布者也称为首选发布者。"
 
-#: package-manager.xml.in:357(para)
+#: gui/help/C/package-manager.xml:356(para)
 msgid "The preferred publisher cannot be disabled or removed."
 msgstr "无法禁用或删除首选发布者。"
 
-#: package-manager.xml.in:358(para)
+#: gui/help/C/package-manager.xml:357(para)
 msgid "When you search for packages and do not specify a publisher, the catalogs of higher priority publishers are searched first."
 msgstr "当您搜索软件包并且未指定发布者时，将首先搜索较高优先级发布者的目录。"
 
-#: package-manager.xml.in:359(para)
+#: gui/help/C/package-manager.xml:358(para)
 msgid "When you update a package that was installed from a non-sticky publisher, the catalogs of higher priority publishers are searched first for updates."
 msgstr "更新从非粘性发布者安装的软件包时，将首先搜索较高优先级发布者的目录来查找更新。"
 
-#: package-manager.xml.in:361(para)
+#: gui/help/C/package-manager.xml:360(para)
 msgid "To change the priority of a publisher, perform the following steps:"
 msgstr "要更改发布者的优先级，请执行以下步骤："
 
-#: package-manager.xml.in:362(para)
+#: gui/help/C/package-manager.xml:361(para)
 msgid "Click to highlight a publisher row in the list in the Manage Publishers window."
 msgstr "在“管理发布者”窗口的列表中单击，突出显示某个发布者行。"
 
-#: package-manager.xml.in:364(para)
+#: gui/help/C/package-manager.xml:363(para)
 msgid "Click the <guibutton>Up</guibutton> and <guibutton>Down</guibutton> buttons to the right of the publisher list to increase or reduce the priority of the selected publisher. The selected publisher listing moves up and down in the list to show its new priority."
 msgstr "单击发布者列表右侧的<guibutton>向上</guibutton>和<guibutton>向下</guibutton>按钮以提高或降低选定发布者的优先级。选定发布者条目将在列表中上移或下移以反映其新优先级。"
 
-#: package-manager.xml.in:365(para)
+#: gui/help/C/package-manager.xml:364(para)
 msgid "If the selected publisher is a system publisher, then the <guibutton>Up</guibutton> and <guibutton>Down</guibutton> buttons are disabled. You cannot change the priority of a system publisher. Because you cannot change the priority of a system publisher, you cannot lower the priority of the publisher that is the next higher priority above a system publisher, and you cannot raise the priority of a publisher that is the next lower priority below a system publisher."
 msgstr "如果选定发布者是一个系统发布者，则<guibutton>向上</guibutton>和<guibutton>向下</guibutton>按钮处于禁用状态。您无法更改系统发布者的优先级。因为您无法更改系统发布者的优先级，所以您无法降低其优先级只比系统发布者高一个级别的发布者的优先级，也无法提高其优先级只比系统发布者低一个级别的发布者的优先级。"
 
-#: package-manager.xml.in:366(para) package-manager.xml.in:379(para) package-manager.xml.in:457(para) package-manager.xml.in:482(para) package-manager.xml.in:500(para) package-manager.xml.in:513(para) package-manager.xml.in:527(para)
+#: gui/help/C/package-manager.xml:365(para) gui/help/C/package-manager.xml:378(para) gui/help/C/package-manager.xml:456(para) gui/help/C/package-manager.xml:481(para) gui/help/C/package-manager.xml:499(para) gui/help/C/package-manager.xml:512(para) gui/help/C/package-manager.xml:526(para)
 msgid "Click the <guibutton>OK</guibutton> button at the bottom of the Manage Publishers window."
 msgstr "单击“管理发布者”窗口底部的<guibutton>确定</guibutton>按钮。"
 
-#: package-manager.xml.in:370(title)
+#: gui/help/C/package-manager.xml:369(title)
 msgid "Enabled and Sticky"
 msgstr "“已启用”和“粘性”"
 
-#: package-manager.xml.in:371(para)
+#: gui/help/C/package-manager.xml:370(para)
 msgid "When you add a publisher, the enabled and sticky attributes are set by default. The preferred publisher (see <xref linkend=\"set-pub-order\"/> above) cannot be disabled. A system publisher cannot be disabled, and the sticky setting of a system publisher cannot be changed. All other enabled and sticky settings can be changed."
 msgstr "在您添加发布者时，会缺省设置“已启用”和“粘性”属性。首选发布者（请参见前文中的<xref linkend=\"set-pub-order\"/>）无法禁用。系统发布者无法禁用，且系统发布者的“粘性”设置无法更改。所有其他“已启用”和“粘性”设置可以更改。"
 
-#: package-manager.xml.in:372(para)
+#: gui/help/C/package-manager.xml:371(para)
 msgid "If the sticky attribute is set for a publisher, then a package that was installed from that publisher cannot be updated from a different publisher. If the sticky attribute is not set for a publisher, then that publisher is non-sticky. If a publisher is non-sticky, then a package that originally came from that publisher can be updated from another publisher. A different publisher might have a newer version of a package than the original publisher of the package. If you want to update to that newer version, the original publisher needs to be non-sticky. Also, if a lower priority publisher is non-sticky, then higher-priority publishers will be searched first for updates for packages installed from that non-sticky publisher."
 msgstr "如果为某个发布者设置了“粘性”属性，则无法从其他发布者更新从该发布者安装的软件包。如果没有为某个发布者设置“粘性”属性，则该发布者是非粘性的。如果某个发布者是非粘性的，则可以从其他发布者更新最初来自该发布者的软件包。其他发布者可能有比软件包的原始发布者较新的软件包版本。如果您希望更新到该较新的版本，则原始发布者需要是非粘性的。另外，如果某个较低优先级的发布者是非粘性的，则在为从该非粘性发布者安装的软件包查找更新时，将首先搜索较高优先级的发布者。"
 
-#: package-manager.xml.in:373(para)
+#: gui/help/C/package-manager.xml:372(para)
 msgid "A publisher that is disabled is not searched for updates or for packages to install. Catalogs of a disabled publisher are not refreshed. A disabled publisher is not shown on the <guimenu>Publisher</guimenu> drop-down menu."
 msgstr "查找更新或要安装的软件包时，不会搜索已禁用的发布者。已禁用的发布者的目录不会刷新。已禁用的发布者不会显示在<guimenu>发布者</guimenu>下拉式菜单中。"
 
-#: package-manager.xml.in:374(para)
+#: gui/help/C/package-manager.xml:373(para)
 msgid "To change the Enabled and Sticky settings for a publisher, perform the following steps:"
 msgstr "要更改发布者的“已启用”和“粘性”设置，请执行以下步骤："
 
-#: package-manager.xml.in:375(para) package-manager.xml.in:385(para) package-manager.xml.in:464(para) package-manager.xml.in:520(para)
+#: gui/help/C/package-manager.xml:374(para) gui/help/C/package-manager.xml:384(para) gui/help/C/package-manager.xml:463(para) gui/help/C/package-manager.xml:519(para)
 msgid "Select the <menuchoice><guimenu>File</guimenu><guimenuitem>Manage Publishers</guimenuitem></menuchoice> menu option to open the Manage Publishers window."
 msgstr "选择<menuchoice><guimenu>文件</guimenu><guimenuitem>管理发布者</guimenuitem></menuchoice>菜单选项以打开“管理发布者”窗口。"
 
-#: package-manager.xml.in:377(para)
+#: gui/help/C/package-manager.xml:376(para)
 msgid "Click an Enabled box or a Sticky box to toggle its setting."
 msgstr "单击“已启用”框或“粘性”框以切换其设置。"
 
-#: package-manager.xml.in:384(title)
+#: gui/help/C/package-manager.xml:383(title)
 msgid "Changing Alias, Origins, and Mirrors"
 msgstr "更改别名、源和镜像"
 
-#: package-manager.xml.in:387(para)
+#: gui/help/C/package-manager.xml:386(para)
 msgid "Select the publisher you want to modify. The Details pane below the publisher list in the Manage Publishers window displays the current origins for the selected publisher."
 msgstr "选择您要修改的发布者。“管理发布者”窗口中发布者列表下方的“详细信息”窗格显示选定发布者的当前源。"
 
-#: package-manager.xml.in:389(para)
+#: gui/help/C/package-manager.xml:388(para)
 msgid "Click the <guibutton>Modify</guibutton> button to the right of the publisher list to open the Modify Publisher window."
 msgstr "单击发布者列表右侧的<guibutton>修改</guibutton>按钮以打开“修改发布者”窗口。"
 
-#: package-manager.xml.in:390(para)
+#: gui/help/C/package-manager.xml:389(para)
 msgid "If the selected publisher is a system publisher, the <guibutton>Modify</guibutton> button is disabled. The Details pane indicates that the selected publisher is a system publisher and displays a message that this publisher cannot be modified or removed."
 msgstr "如果选定发布者是一个系统发布者，则<guibutton>修改</guibutton>按钮处于禁用状态。“详细信息”窗格将指出选定的发布者是系统发布者并将显示一条消息来指明该发布者无法修改或删除。"
 
-#: package-manager.xml.in:392(para)
+#: gui/help/C/package-manager.xml:391(para)
 msgid "Select the General tab to modify the publisher alias, add and remove origins, and add and remove mirrors."
 msgstr "选择“常规”选项卡可修改发布者别名、添加和删除源，以及添加和删除镜像。"
 
-#: package-manager.xml.in:394(title)
+#: gui/help/C/package-manager.xml:393(title)
 msgid "Publisher Alias"
 msgstr "发布者别名"
 
-#: package-manager.xml.in:395(para)
+#: gui/help/C/package-manager.xml:394(para)
 msgid "The publisher alias is another name for the publisher. The alias name is used in the <guimenu>Publisher</guimenu> drop-down menu and in the package list pane."
 msgstr "发布者别名是发布者的另一个名称。别名用于<guimenu>发布者</guimenu>下拉式菜单和软件包列表窗格。"
 
-#: package-manager.xml.in:396(para)
+#: gui/help/C/package-manager.xml:395(para)
 msgid "To change the alias of this publisher, perform the following steps:"
 msgstr "要更改该发布者的别名，请执行以下步骤："
 
-#: package-manager.xml.in:397(para)
+#: gui/help/C/package-manager.xml:396(para)
 msgid "On the General tab of the Modify Publisher window, enter a new name in the Alias field."
 msgstr "在“修改发布者”窗口的“常规”选项卡上，在“别名”字段中输入一个新名称。"
 
-#: package-manager.xml.in:399(para) package-manager.xml.in:427(para) package-manager.xml.in:455(para) package-manager.xml.in:481(para) package-manager.xml.in:499(para) package-manager.xml.in:512(para)
+#: gui/help/C/package-manager.xml:398(para) gui/help/C/package-manager.xml:426(para) gui/help/C/package-manager.xml:454(para) gui/help/C/package-manager.xml:480(para) gui/help/C/package-manager.xml:498(para) gui/help/C/package-manager.xml:511(para)
 msgid "Click the <guibutton>OK</guibutton> button at the bottom of the Modify Publisher window."
 msgstr "单击“修改发布者”窗口底部的<guibutton>确定</guibutton>按钮。"
 
-#: package-manager.xml.in:401(para)
+#: gui/help/C/package-manager.xml:400(para)
 msgid "The publisher alias has changed in the Manage Publishers window. Click the <guibutton>OK</guibutton> button at the bottom of the Manage Publishers window."
 msgstr "“管理发布者”窗口中的发布者别名已更改。单击“管理发布者”窗口底部的<guibutton>确定</guibutton>按钮。"
 
-#: package-manager.xml.in:405(title)
+#: gui/help/C/package-manager.xml:404(title)
 msgid "Publisher Origins"
 msgstr "发布者源"
 
-#: package-manager.xml.in:406(para)
+#: gui/help/C/package-manager.xml:405(para)
 msgid "An origin is the location of an IPS package repository or archive that contains both package metadata (package manifests and catalogs) and package content (package files)."
 msgstr "源是同时包含软件包元数据（软件包清单和目录）和软件包内容（软件包文件）的 IPS 软件包系统信息库或归档所在的位置。"
 
-#: package-manager.xml.in:407(para)
+#: gui/help/C/package-manager.xml:406(para)
 msgid "An origin value is the URI of an IPS package repository."
 msgstr "源的值是 IPS 软件包系统信息库的 URI。"
 
-#: package-manager.xml.in:408(para)
+#: gui/help/C/package-manager.xml:407(para)
 msgid "To change, add, or remove an origin for this publisher, perform the following steps:"
 msgstr "要为该发布者更改、添加或删除源，请执行以下步骤："
 
-#: package-manager.xml.in:409(para) package-manager.xml.in:436(para)
+#: gui/help/C/package-manager.xml:408(para) gui/help/C/package-manager.xml:435(para)
 msgid "Select the General tab of the Modify Publisher window."
 msgstr "选择“修改发布者”窗口的“常规”选项卡。"
 
-#: package-manager.xml.in:410(para)
+#: gui/help/C/package-manager.xml:409(para)
 msgid "Add an origin."
 msgstr "添加源。"
 
-#: package-manager.xml.in:411(para)
+#: gui/help/C/package-manager.xml:410(para)
 msgid "In the Origin field, enter the URI of the new origin you want to associate with this publisher."
 msgstr "在“源”字段中，输入您要与该发布者关联的新源的 URI。"
 
-#: package-manager.xml.in:412(para)
+#: gui/help/C/package-manager.xml:411(para)
 msgid "Click the <guibutton>Add</guibutton> button. The new URI is added to the list below the Origin field."
 msgstr "单击<guibutton>添加</guibutton>按钮。新 URI 将添加到“源”字段下方的列表中。"
 
-#: package-manager.xml.in:415(para)
+#: gui/help/C/package-manager.xml:414(para)
 msgid "Remove an origin."
 msgstr "删除源。"
 
-#: package-manager.xml.in:416(para)
+#: gui/help/C/package-manager.xml:415(para)
 msgid "In the list below the Origin field, select the URI you want to delete."
 msgstr "在“源”字段下方的列表中，选择您要删除的 URI。"
 
-#: package-manager.xml.in:417(para)
+#: gui/help/C/package-manager.xml:416(para)
 msgid "Click the <guibutton>Remove</guibutton> button. The selected URI is removed from the list. If only one origin is defined for this publisher, you cannot remove that origin."
 msgstr "单击<guibutton>删除</guibutton>按钮。选定的 URI 将从列表中删除。如果仅为该发布者定义了一个源，则无法删除该源。"
 
-#: package-manager.xml.in:420(para)
+#: gui/help/C/package-manager.xml:419(para)
 msgid "Change an origin."
 msgstr "更改源。"
 
-#: package-manager.xml.in:421(para)
+#: gui/help/C/package-manager.xml:420(para)
 msgid "Add the new origin."
 msgstr "添加新的源。"
 
-#: package-manager.xml.in:422(para)
+#: gui/help/C/package-manager.xml:421(para)
 msgid "Delete the origin you want to change."
 msgstr "删除您要更改的源。"
 
-#: package-manager.xml.in:429(para)
+#: gui/help/C/package-manager.xml:428(para)
 msgid "The origin changes are reflected in the Details pane in the Manage Publishers window. Click the <guibutton>OK</guibutton> button at the bottom of the Manage Publishers window."
 msgstr "源的更改将反映在“管理发布者”窗口中的“详细信息”窗格中。单击“管理发布者”窗口底部的<guibutton>确定</guibutton>按钮。"
 
-#: package-manager.xml.in:433(title)
+#: gui/help/C/package-manager.xml:432(title)
 msgid "Publisher Mirrors"
 msgstr "发布者镜像"
 
-#: package-manager.xml.in:434(para)
+#: gui/help/C/package-manager.xml:433(para)
 msgid "A mirror is a location of an IPS package repository that contains only package content (package files). A mirror does not contain package metadata (package manifests and catalogs). Mirrors provide a subset of the data that origins provide. Mirrors can be used only for downloading package files. Package metadata is downloaded from the origin. IPS clients access the origin to obtain a publisher's catalog, even when the clients download package content from a mirror."
 msgstr "镜像是仅包含软件包内容（软件包文件）的 IPS 软件包系统信息库所在的位置。镜像不包含软件包元数据（软件包清单和目录）。镜像提供的数据是源所提供数据的一个子集。镜像仅可用于下载软件包文件。软件包元数据从源下载。IPS 客户机访问源来获取发布者的目录，即使该客户机从镜像下载软件包内容时也是如此。"
 
-#: package-manager.xml.in:435(para)
+#: gui/help/C/package-manager.xml:434(para)
 msgid "To add, remove, or change a mirror for this publisher, perform the following steps:"
 msgstr "要为该发布者添加、删除或更改镜像，请执行以下步骤："
 
-#: package-manager.xml.in:437(para)
+#: gui/help/C/package-manager.xml:436(para)
 msgid "Click the Mirrors label to display the Mirror field and the list of mirrors."
 msgstr "单击“镜像”标签以显示“镜像”字段和镜像列表。"
 
-#: package-manager.xml.in:438(para)
+#: gui/help/C/package-manager.xml:437(para)
 msgid "Add a mirror."
 msgstr "添加镜像。"
 
-#: package-manager.xml.in:439(para)
+#: gui/help/C/package-manager.xml:438(para)
 msgid "In the Mirror field, enter the URI of the new mirror you want to associate with this publisher."
 msgstr "在“镜像”字段中，输入您要与该发布者关联的新镜像的 URI。"
 
-#: package-manager.xml.in:440(para)
+#: gui/help/C/package-manager.xml:439(para)
 msgid "Click the <guibutton>Add</guibutton> button. The new URI is added to the list below the Mirror field."
 msgstr "单击<guibutton>添加</guibutton>按钮。新 URI 将添加到“镜像”字段下方的列表中。"
 
-#: package-manager.xml.in:443(para)
+#: gui/help/C/package-manager.xml:442(para)
 msgid "Remove a mirror."
 msgstr "删除镜像。"
 
-#: package-manager.xml.in:444(para)
+#: gui/help/C/package-manager.xml:443(para)
 msgid "In the list below the Mirror field, select the URI you want to delete."
 msgstr "在“镜像”字段下方的列表中，选择您要删除的 URI。"
 
-#: package-manager.xml.in:445(para)
+#: gui/help/C/package-manager.xml:444(para)
 msgid "Click the <guibutton>Remove</guibutton> button. The selected URI is removed from the list."
 msgstr "单击<guibutton>删除</guibutton>按钮。选定的 URI 将从列表中删除。"
 
-#: package-manager.xml.in:448(para)
+#: gui/help/C/package-manager.xml:447(para)
 msgid "Change a mirror."
 msgstr "更改镜像。"
 
-#: package-manager.xml.in:449(para)
+#: gui/help/C/package-manager.xml:448(para)
 msgid "Delete the mirror you want to change."
 msgstr "删除您要更改的镜像。"
 
-#: package-manager.xml.in:450(para)
+#: gui/help/C/package-manager.xml:449(para)
 msgid "Add a new mirror."
 msgstr "添加一个新镜像。"
 
-#: package-manager.xml.in:462(title)
+#: gui/help/C/package-manager.xml:461(title)
 msgid "Managing Publisher Security"
 msgstr "管理发布者安全性"
 
-#: package-manager.xml.in:463(para)
+#: gui/help/C/package-manager.xml:462(para)
 msgid "Certificates are used to verify that packages have been appropriately signed before being installed, depending on the signature policy of the image or the publisher, whichever is more restrictive."
 msgstr "证书用于在安装软件包之前验证其是否已正确地签名，验证根据的是映像或发布者的签名策略（取两者中限制性更强者）。"
 
-#: package-manager.xml.in:466(para)
+#: gui/help/C/package-manager.xml:465(para)
 msgid "Select the publisher whose security you want to modify."
 msgstr "选择要修改其安全性的发布者。"
 
-#: package-manager.xml.in:468(para)
+#: gui/help/C/package-manager.xml:467(para)
 msgid "Click the <guibutton>Modify</guibutton> button to the right of the publisher list to open the Modify Publisher window. The publisher that was selected in the Manage Publishers window is listed in the title of the Modify Publisher window."
 msgstr "单击发布者列表右侧的<guibutton>修改</guibutton>按钮以打开“修改发布者”窗口。在“管理发布者”窗口中选定的发布者将在“修改发布者”窗口的标题中列出。"
 
-#: package-manager.xml.in:469(para)
+#: gui/help/C/package-manager.xml:468(para)
 msgid "Select the General tab to add the SSL key and SSL certificate if a publisher has a secure origin."
 msgstr "如果发布者具有安全的源，可选择“常规”选项卡来添加 SSL 密钥和 SSL 证书。"
 
-#: package-manager.xml.in:470(para)
+#: gui/help/C/package-manager.xml:469(para)
 msgid "Select the Certificates tab to manage certificates for this publisher."
 msgstr "选择“证书”选项卡可管理该发布者的证书。"
 
-#: package-manager.xml.in:471(para)
+#: gui/help/C/package-manager.xml:470(para)
 msgid "Select the Signature Policy tab to manage signature policy for this publisher."
 msgstr "选择“签名策略”选项卡可管理该发布者的签名策略。"
 
-#: package-manager.xml.in:475(title)
+#: gui/help/C/package-manager.xml:474(title)
 msgid "Adding SSL Keys and Certificates"
 msgstr "添加 SSL 密钥和证书"
 
-#: package-manager.xml.in:476(para)
+#: gui/help/C/package-manager.xml:475(para)
 msgid "If a publisher has a secure origin, add the SSL key and SSL certificate for the publisher."
 msgstr "如果发布者具有安全的源，需要为该发布者添加 SSL 密钥和 SSL 证书。"
 
-#: package-manager.xml.in:477(para)
+#: gui/help/C/package-manager.xml:476(para)
 msgid "Click the General tab of the Modify Publisher window."
 msgstr "单击“修改发布者”窗口的“常规”选项卡。"
 
-#: package-manager.xml.in:478(para)
+#: gui/help/C/package-manager.xml:477(para)
 msgid "Click the SSL Key and Certificate label to display the SSL Key field and the SSL Certificate field."
 msgstr "单击“SSL 密钥和证书”标签以显示“SSL 密钥”字段和“SSL 证书”字段。"
 
-#: package-manager.xml.in:479(para)
+#: gui/help/C/package-manager.xml:478(para)
 msgid "Click the <guibutton>Browse</guibutton> button to the right of the SSL Key field to select the SSL Key file."
 msgstr "单击“SSL 密钥”字段右侧的<guibutton>浏览</guibutton>按钮来选择 SSL 密钥文件。"
 
-#: package-manager.xml.in:480(para)
+#: gui/help/C/package-manager.xml:479(para)
 msgid "Click the <guibutton>Browse</guibutton> button to the right of the SSL Certificate field to select the SSL Certificate file."
 msgstr "单击“SSL 证书”字段右侧的<guibutton>浏览</guibutton>按钮来选择 SSL 证书文件。"
 
-#: package-manager.xml.in:485(title)
+#: gui/help/C/package-manager.xml:484(title)
 msgid "Managing Certificates"
 msgstr "管理证书"
 
-#: package-manager.xml.in:486(para)
+#: gui/help/C/package-manager.xml:485(para)
 msgid "Click the Certificates tab of the Modify Publisher window."
 msgstr "单击“修改发布者”窗口的“证书”选项卡。"
 
-#: package-manager.xml.in:487(para)
+#: gui/help/C/package-manager.xml:486(para)
 msgid "Use the buttons below the list of certificates to add a certificate or to remove, revoke, or reinstate the certificate that is currently selected in the list."
 msgstr "使用证书列表下方的按钮来添加证书或者删除、吊销或恢复当前在列表中选定的证书。"
 
-#: package-manager.xml.in:488(para)
+#: gui/help/C/package-manager.xml:487(para)
 msgid "Note that any actions you take in the Modify Publisher window are applied to the selected publisher's certificates only after you click the <guibutton>OK</guibutton> button at the bottom of the Modify Publisher window. If you click the <guibutton>Cancel</guibutton> button, no changes are applied."
 msgstr "请注意，您在“修改发布者”窗口中采取的任何操作只有在您单击“修改发布者”窗口底部的<guibutton>确定</guibutton>按钮后才会应用于选定发布者的证书。如果您单击<guibutton>取消</guibutton>按钮，则不会应用任何更改。"
 
-#: package-manager.xml.in:489(para)
+#: gui/help/C/package-manager.xml:488(para)
 msgid "<guibutton>Add</guibutton>. Add a new publisher certificate for the publisher listed in the Modify Publisher window title. In the Add Publisher Certificate window, browse to select the certificate (<tt>.pem</tt>) file. Click the <guibutton>OK</guibutton> button at the bottom of the Add Publisher Certificate window. The newly added certificate is selected in the certificates list in the Certificates tab of the Modify Publisher window. The details pane indicates that this certificate is \"marked to be added.\" This certificate will be added after you click the <guibutton>OK</guibutton> button on the Modify Publisher window."
 msgstr "<guibutton>添加</guibutton>。为“修改发布者”窗口标题中列出的发布者添加新的发布者证书。在“添加发布者证书”窗口中，浏览以选择证书 (<tt>.pem</tt>) 文件。单击“添加发布者证书”窗口底部的<guibutton>确定</guibutton>按钮。新添加的证书在“修改发布者”窗口的“证书”选项卡中的证书列表中处于选定状态。详细信息窗格指示该证书被标为要添加的证书。在您单击“修改发布者”窗口中的<guibutton>确定</guibutton>按钮后，将添加该证书。"
 
-#: package-manager.xml.in:492(para)
+#: gui/help/C/package-manager.xml:491(para)
 msgid "In the list of certificates for this publisher, select the certificate you want to modify or whose details you want to check. Details about the selected certificate are shown below the list of certificates and row of buttons. Note that an expired certificate can still be Approved and used to validate signed packages that were published (not necessarily installed) before the certificate expired."
 msgstr "在该发布者的证书列表中，选择您要进行修改或要检查其详细信息的证书。有关选定证书的详细信息将显示在证书列表和按钮行的下方。请注意，已过期的证书可能仍然处于“已批准”状态且可用来验证在证书过期之前发布的（不需要是已安装的）已签名软件包。"
 
-#: package-manager.xml.in:493(para)
+#: gui/help/C/package-manager.xml:492(para)
 msgid "Click the headings of the list of certificates to resort the list. The Organization and Name columns are resizable."
 msgstr "单击证书列表的标题可以对列表进行重新排序。“组织”和“名称”列的大小可调整。"
 
-#: package-manager.xml.in:494(para)
+#: gui/help/C/package-manager.xml:493(para)
 msgid "<guibutton>Remove</guibutton>. Remove the certificate that is currently selected in the certificates list."
 msgstr "<guibutton>删除</guibutton>。删除当前在证书列表中选定的证书。"
 
-#: package-manager.xml.in:495(para)
+#: gui/help/C/package-manager.xml:494(para)
 msgid "<guibutton>Revoke</guibutton>. If the certificate currently selected in the certificates list is Approved, click the <guibutton>Revoke</guibutton> button to treat this certificate as revoked. In the certificates list, the Status of this certificate changes to Revoked. This change is applied to the certificate after you click the <guibutton>OK</guibutton> button on the Modify Publisher window."
 msgstr "<guibutton>吊销</guibutton>。如果证书列表中当前选定的证书属于“已批准”，单击<guibutton>吊销</guibutton>按钮可将其设为已吊销。在证书列表中，该证书的“状态”更改为“已吊销”。在您单击“修改发布者”窗口中的<guibutton>确定</guibutton>按钮后，该更改将应用于证书。"
 
-#: package-manager.xml.in:496(para)
+#: gui/help/C/package-manager.xml:495(para)
 msgid "<guibutton>Reinstate</guibutton>. If the certificate currently selected in the certificates list is Revoked, click the <guibutton>Reinstate</guibutton> button to treat this certificate as approved. The details pane indicates that this certificate is \"marked to be reinstated.\" This certificate will be reinstated after you click the <guibutton>OK</guibutton> button on the Modify Publisher window."
 msgstr "<guibutton>恢复</guibutton>。如果证书列表中当前选定的证书属于“已吊销”，单击<guibutton>恢复</guibutton>按钮可将其设为已批准。详细信息窗格指示该证书被标为要恢复的证书。在您单击“修改发布者”窗口中的<guibutton>确定</guibutton>按钮后，将恢复该证书。"
 
-#: package-manager.xml.in:503(title)
+#: gui/help/C/package-manager.xml:502(title)
 msgid "Managing Signature Policy"
 msgstr "管理签名策略"
 
-#: package-manager.xml.in:504(para)
+#: gui/help/C/package-manager.xml:503(para)
 msgid "Click the Signature Policy tab of the Modify Publisher window."
 msgstr "单击“修改发布者”窗口的“签名策略”选项卡。"
 
-#: package-manager.xml.in:505(para)
+#: gui/help/C/package-manager.xml:504(para)
 msgid "Use the buttons on the Signature Policy tab to set the signature policy to use when installing packages from the publisher listed in the Modify Publisher window title."
 msgstr "使用“签名策略”选项卡上的按钮来设置当安装来自“修改发布者”窗口标题中列出的发布者的软件包时要使用的签名策略。"
 
-#: package-manager.xml.in:506(para)
+#: gui/help/C/package-manager.xml:505(para)
 msgid "To set the global signature policy, use the Signature Policy tab of the Preferences window (see <xref linkend=\"img-sig-policy\"/>)."
 msgstr "要设置全局签名策略，请使用“首选项”窗口的“签名策略”选项卡。（请参见<xref linkend=\"img-sig-policy\"/>）。"
 
-#: package-manager.xml.in:507(para)
+#: gui/help/C/package-manager.xml:506(para)
 msgid "Signatures are ignored: Ignore signatures for all packages."
 msgstr "签名被忽略：对所有软件包都忽略签名。"
 
-#: package-manager.xml.in:508(para)
+#: gui/help/C/package-manager.xml:507(para)
 msgid "Signatures are optional, but must be valid if provided: Verify that all packages with signatures are validly signed, but do not require all installed packages to be signed."
 msgstr "签名是可选的，但如果提供则必须有效：验证具有签名的所有软件包的签名是否有效，但不要求所有已安装的软件包都具有签名。"
 
-#: package-manager.xml.in:509(para)
+#: gui/help/C/package-manager.xml:508(para)
 msgid "One or more valid signatures are required: Require that all newly installed packages have at least one valid signature."
 msgstr "需要一个或多个有效签名：要求所有新安装的软件包至少具有一个有效签名。"
 
-#: package-manager.xml.in:510(para)
+#: gui/help/C/package-manager.xml:509(para)
 msgid "Signatures are required and the certificate name must include the name or names specified in the text field when validating the signatures of a package. If more than one name is specified, the names must be comma-separated."
 msgstr "签名是必需的，并且验证软件包的签名时，证书名称必须包括文本字段中指定的一个或多个名称。如果指定多个名称，则名称之间必须以逗号分隔。"
 
-#: package-manager.xml.in:518(title)
+#: gui/help/C/package-manager.xml:517(title)
 msgid "Removing Publishers"
 msgstr "删除发布者"
 
-#: package-manager.xml.in:519(para)
+#: gui/help/C/package-manager.xml:518(para)
 msgid "Perform the following steps to remove a publisher:"
 msgstr "执行以下步骤来删除发布者："
 
-#: package-manager.xml.in:522(para)
+#: gui/help/C/package-manager.xml:521(para)
 msgid "Select the publisher that you want to remove."
 msgstr "选择要删除的发布者。"
 
-#: package-manager.xml.in:524(para)
+#: gui/help/C/package-manager.xml:523(para)
 msgid "Click the <guibutton>Remove</guibutton> button to the right of the publisher list."
 msgstr "单击发布者列表右侧的<guibutton>删除</guibutton>按钮。"
 
-#: package-manager.xml.in:525(para)
+#: gui/help/C/package-manager.xml:524(para)
 msgid "If the selected publisher is a system publisher, the <guibutton>Remove</guibutton> button is disabled. The Details pane indicates that the selected publisher is a system publisher and displays a message that this publisher cannot be modified or removed."
 msgstr "如果选定发布者是一个系统发布者，则<guibutton>删除</guibutton>按钮处于禁用状态。“详细信息”窗格将指出选定的发布者是系统发布者并将显示一条消息来指明该发布者无法修改或删除。"
 
-#: package-manager.xml.in:532(title)
+#: gui/help/C/package-manager.xml:531(title)
 msgid "Managing Boot Environments"
 msgstr "管理引导环境"
 
-#: package-manager.xml.in:533(para)
+#: gui/help/C/package-manager.xml:532(para)
 msgid "A boot environment (BE) is a bootable image. You can maintain multiple BEs on your Oracle Solaris system. One BE is the default BE at startup or reboot. Other BEs are available as alternate boot selections. The BE you are booted into is the active BE."
 msgstr "引导环境 (boot environment, BE) 是可引导的映像。您可以在 Oracle Solaris 系统中维护多个 BE。其中一个 BE 是启动或重新引导时的缺省 BE。其他 BE 用作备用引导选项。所引导的 BE 将成为活动 BE。"
 
-#: package-manager.xml.in:534(para)
+#: gui/help/C/package-manager.xml:533(para)
 msgid "You can use the <literal>beadm</literal>(1) command to create, rename, mount, unmount, activate, or destroy BEs. For complete information about BEs, see <citetitle>Creating and Managing Boot Environments After Installation</citetitle>."
 msgstr "您可以使用 <literal>beadm</literal>(1) 命令来创建、重命名、挂载、卸载、激活或销毁 BE。有关 BE 的完整信息，请参见<citetitle>Creating and Managing Boot Environments After Installation</citetitle>（在安装后创建和管理引导环境）。"
 
-#: package-manager.xml.in:535(para)
+#: gui/help/C/package-manager.xml:534(para)
 msgid "Package Manager provides a subset of the functionality that the <literal>beadm</literal>(1) command provides. Use the Package Manager <menuchoice><guimenu>File</guimenu><guimenuitem>Manage Boot Environments</guimenuitem></menuchoice> option to open the Manage Boot Environments window. The Manage Boot Environments window lists the BEs on this system and enables you to activate, rename, and delete those BEs as described below."
 msgstr "软件包管理器提供了 <literal>beadm</literal>(1) 命令所提供的功能的一个子集。使用软件包管理器<menuchoice><guimenu>文件</guimenu><guimenuitem>管理引导环境</guimenuitem></menuchoice>选项可打开“管理引导环境”窗口。“管理引导环境”窗口列出了该系统上的 BE，您可以在该窗口中激活、重命名和删除这些 BE，方法如下文中所述。"
 
-#: package-manager.xml.in:536(title)
+#: gui/help/C/package-manager.xml:535(title)
 msgid "Creating a BE"
 msgstr "创建 BE"
 
-#: package-manager.xml.in:537(para)
+#: gui/help/C/package-manager.xml:536(para)
 msgid "A new BE is automatically created when you do one of the following actions:"
 msgstr "当您执行下列操作之一时会自动创建一个新的 BE："
 
-#: package-manager.xml.in:538(para)
+#: gui/help/C/package-manager.xml:537(para)
 msgid "Install the Oracle Solaris OS."
 msgstr "安装 Oracle Solaris 操作系统。"
 
-#: package-manager.xml.in:540(para)
+#: gui/help/C/package-manager.xml:539(para)
 msgid "Install or update particular key system packages such as some drivers and other kernel components."
 msgstr "安装或更新特定关键系统软件包，例如某些驱动程序和其他内核组件。"
 
-#: package-manager.xml.in:542(para)
+#: gui/help/C/package-manager.xml:541(para)
 msgid "Use the <literal>beadm create</literal> command."
 msgstr "使用 <literal>beadm create</literal> 命令。"
 
-#: package-manager.xml.in:545(para)
+#: gui/help/C/package-manager.xml:544(para)
 msgid "Often a new BE is created when you execute the <literal>pkg update</literal> command or use the <guibutton>Updates</guibutton> button to update all packages that have updates available."
 msgstr "当您执行 <literal>pkg update</literal> 命令或使用<guibutton>更新</guibutton>按钮来更新有更新可用的所有软件包时通常会创建一个新 BE。"
 
-#: package-manager.xml.in:547(title)
+#: gui/help/C/package-manager.xml:546(title)
 msgid "Activating a BE"
 msgstr "激活 BE"
 
-#: package-manager.xml.in:548(para)
+#: gui/help/C/package-manager.xml:547(para)
 msgid "Select the <menuchoice><guimenu>File</guimenu><guimenuitem>Manage Boot Environments</guimenuitem></menuchoice> menu option to open the Manage Boot Environments window. Each BE is listed in the window. The BE that you are currently booted into shows a check mark to the left of the BE name."
 msgstr "选择<menuchoice><guimenu>文件</guimenu><guimenuitem>管理引导环境</guimenuitem></menuchoice>菜单选项以打开“管理引导环境”窗口。每个 BE 都列在该窗口中。当前所引导的 BE 在其 BE 名称左侧显示有一个复选标记。"
 
-#: package-manager.xml.in:549(para)
+#: gui/help/C/package-manager.xml:548(para)
 msgid "To specify a different BE to be the default active BE after the next reboot, perform the following steps:"
 msgstr "要指定另一个 BE 成为下次重新引导后的缺省活动 BE，请执行以下步骤："
 
-#: package-manager.xml.in:550(para)
+#: gui/help/C/package-manager.xml:549(para)
 msgid "Select the <guibutton>Active on Reboot</guibutton> button for the BE that you want to be the default active BE after the next reboot."
 msgstr "对于要使其在下次引导后成为缺省活动 BE 的 BE，选择其对应的<guibutton>重新引导时处于活动状态</guibutton>按钮。"
 
-#: package-manager.xml.in:552(para) package-manager.xml.in:565(para) package-manager.xml.in:577(para)
+#: gui/help/C/package-manager.xml:551(para) gui/help/C/package-manager.xml:564(para) gui/help/C/package-manager.xml:576(para)
 msgid "Select the <guibutton>OK</guibutton> button in the Manage Boot Environments window."
 msgstr "在“管理引导环境”窗口中选择<guibutton>确定</guibutton>按钮。"
 
-#: package-manager.xml.in:556(title)
+#: gui/help/C/package-manager.xml:555(title)
 msgid "Renaming a BE"
 msgstr "重命名 BE"
 
-#: package-manager.xml.in:557(para)
+#: gui/help/C/package-manager.xml:556(para)
 msgid "Select the <menuchoice><guimenu>File</guimenu><guimenuitem>Manage Boot Environments</guimenuitem></menuchoice> menu option to open the Manage Boot Environments window. Each BE is listed in the window."
 msgstr "选择<menuchoice><guimenu>文件</guimenu><guimenuitem>管理引导环境</guimenuitem></menuchoice>菜单选项以打开“管理引导环境”窗口。每个 BE 都列在该窗口中。"
 
-#: package-manager.xml.in:558(para)
+#: gui/help/C/package-manager.xml:557(para)
 msgid "You cannot rename the currently active BE."
 msgstr "您无法重命名当前处于活动状态的 BE。"
 
-#: package-manager.xml.in:559(para)
+#: gui/help/C/package-manager.xml:558(para)
 msgid "You cannot rename a BE that you have marked for deletion."
 msgstr "无法重命名您标为待删除的 BE。"
 
-#: package-manager.xml.in:560(para)
+#: gui/help/C/package-manager.xml:559(para)
 msgid "To rename a BE, perform the following steps:"
 msgstr "要重命名某个 BE，请执行以下步骤："
 
-#: package-manager.xml.in:561(para)
+#: gui/help/C/package-manager.xml:560(para)
 msgid "Double-click the name of the BE that you want to rename. The name field becomes editable."
 msgstr "双击您要重命名的 BE 的名称。名称字段将变为可编辑的。"
 
-#: package-manager.xml.in:563(para)
+#: gui/help/C/package-manager.xml:562(para)
 msgid "Enter the new name."
 msgstr "输入新名称。"
 
-#: package-manager.xml.in:569(title)
+#: gui/help/C/package-manager.xml:568(title)
 msgid "Removing a BE"
 msgstr "删除 BE"
 
-#: package-manager.xml.in:570(para)
+#: gui/help/C/package-manager.xml:569(para)
 msgid "Select the <menuchoice><guimenu>File</guimenu><guimenuitem>Manage Boot Environments</guimenuitem></menuchoice> menu option to open the Manage Boot Environments window. Each BE is listed in the window. The right-most column in the window is the Delete column."
 msgstr "选择<menuchoice><guimenu>文件</guimenu><guimenuitem>管理引导环境</guimenuitem></menuchoice>菜单选项以打开“管理引导环境”窗口。每个 BE 都列在该窗口中。该窗口中最右侧的列是“删除”列。"
 
-#: package-manager.xml.in:571(para)
+#: gui/help/C/package-manager.xml:570(para)
 msgid "The middle column in the Manage Boot Environments window shows the size of the BE. You might want to remove a BE to free some space on your storage device."
 msgstr "“管理引导环境”窗口中的中间列显示了 BE 的大小。您可能想要删除某个 BE 以释放存储设备上的一些空间。"
 
-#: package-manager.xml.in:572(para)
+#: gui/help/C/package-manager.xml:571(para)
 msgid "You cannot delete the currently active BE."
 msgstr "您无法删除当前处于活动状态的 BE。"
 
-#: package-manager.xml.in:573(para)
+#: gui/help/C/package-manager.xml:572(para)
 msgid "You cannot delete a BE that you have renamed."
 msgstr "无法删除您已重命名的 BE。"
 
-#: package-manager.xml.in:574(para)
+#: gui/help/C/package-manager.xml:573(para)
 msgid "To delete a BE, perform the following steps:"
 msgstr "要删除某个 BE，请执行以下步骤："
 
-#: package-manager.xml.in:575(para)
+#: gui/help/C/package-manager.xml:574(para)
 msgid "Select the <guibutton>Delete</guibutton> box for the BE that you want to delete."
 msgstr "选择您要删除的 BE 所对应的<guibutton>删除</guibutton>框。"
 
-#: package-manager.xml.in:582(title)
+#: gui/help/C/package-manager.xml:581(title)
 msgid "Working With WebInstall"
 msgstr "使用 WebInstall"
 
-#: package-manager.xml.in:583(para)
+#: gui/help/C/package-manager.xml:582(para)
 msgid "Package Manager supports installing packages using a simple one-click WebInstall process. The WebInstall process uses a <filename>.p5i</filename> file. A <filename>.p5i</filename> file contains information to add publishers and add packages that can be installed from these publishers. The information in the <filename>.p5i</filename> file is read and used by the WebInstall process."
 msgstr "软件包管理器支持使用简单的单击 WebInstall 进程来安装软件包。WebInstall 进程使用一个 <filename>.p5i</filename> 文件。<filename>.p5i</filename> 文件包含添加发布者以及添加可从这些发布者安装的软件包所需的信息。<filename>.p5i</filename> 文件中的信息由 WebInstall 进程读取并使用。"
 
-#: package-manager.xml.in:584(title)
+#: gui/help/C/package-manager.xml:583(title)
 msgid "Exporting Files Using WebInstall"
 msgstr "使用 WebInstall 导出文件"
 
-#: package-manager.xml.in:585(para)
+#: gui/help/C/package-manager.xml:584(para)
 msgid "If you want other users to be able to install packages that you have installed on your system, you can export the installation instructions for those package files using the WebInstall process. A <filename>.p5i</filename> file consisting of installation instructions for those packages and publishers to be installed is created."
 msgstr "如果希望其他用户能够安装已在您的系统上安装的软件包，可以使用 WebInstall 进程导出那些软件包的安装说明。这会创建一个 <filename>.p5i</filename> 文件，其中包含要安装的那些软件包和发布者的安装说明。"
 
-#: package-manager.xml.in:586(para)
+#: gui/help/C/package-manager.xml:585(para)
 msgid "To export the installation instructions for your selected packages and their publishers to a <filename>.p5i</filename> file, perform the following steps:"
 msgstr "要将您选定的软件包及其发布者的安装说明导出到一个 <filename>.p5i</filename> 文件中，请执行以下步骤："
 
-#: package-manager.xml.in:587(para)
+#: gui/help/C/package-manager.xml:586(para)
 msgid "From the <guimenu>Publisher</guimenu> drop-down menu, select the publisher from which you want to include the packages in the <filename>.p5i</filename> file."
 msgstr "从<guimenu>发布者</guimenu>下拉式菜单中，选择您要将其软件包包括在 <filename>.p5i</filename> 文件中的发布者。"
 
-#: package-manager.xml.in:589(para)
+#: gui/help/C/package-manager.xml:588(para)
 msgid "In the package list pane, select the package whose installation instructions you want to distribute."
 msgstr "在软件包列表窗格中，选择您要分发其安装说明的软件包。"
 
-#: package-manager.xml.in:591(para)
+#: gui/help/C/package-manager.xml:590(para)
 msgid "Click <menuchoice><guisubmenu>File</guisubmenu><guimenuitem>Export Selections</guimenuitem></menuchoice> to display the Export Selections Confirmation window."
 msgstr "单击<menuchoice><guisubmenu>文件</guisubmenu><guimenuitem>导出选定项</guimenuitem></menuchoice>，以显示“导出选定项确认”窗口。"
 
-#: package-manager.xml.in:593(para)
+#: gui/help/C/package-manager.xml:592(para)
 msgid "Click the <guibutton>OK</guibutton> button to confirm the selections. The Export Selections window is displayed."
 msgstr "单击<guibutton>确定</guibutton>按钮以确认选定项。“导出选定项”窗口随即显示。"
 
-#: package-manager.xml.in:595(para)
+#: gui/help/C/package-manager.xml:594(para)
 msgid "A default name for the <filename>p5i</filename> file with the extension <filename>.p5i</filename> is provided. You can change this file name, but do not change the extension."
 msgstr "系统为 <filename>p5i</filename> 文件提供了一个扩展名为 <filename>.p5i</filename> 的缺省名称。您可以更改该文件名，但不要更改扩展名。"
 
-#: package-manager.xml.in:597(para)
+#: gui/help/C/package-manager.xml:596(para)
 msgid "A default location for the <filename>p5i</filename> file is provided. You can change the location. If you use the <guibutton>Browse</guibutton> button, you can select the <filename>p5i Files</filename> option from the drop-down menu at the bottom right hand side of the Export Selections window to display only <filename>.p5i</filename> files in the file list."
 msgstr "系统提供了 <filename>p5i</filename> 文件的缺省位置。您可以更改该位置。如果您使用<guibutton>浏览</guibutton>按钮，可以从“导出选定项”窗口右下角的下拉式菜单中选择 <filename>p5i 文件</filename>选项以仅在文件列表中显示 <filename>.p5i</filename> 文件。"
 
-#: package-manager.xml.in:599(para)
+#: gui/help/C/package-manager.xml:598(para)
 msgid "Click the <guibutton>Save</guibutton> button to save the file name and location."
 msgstr "单击<guibutton>保存</guibutton>按钮以保存文件名和位置。"
 
-#: package-manager.xml.in:603(title)
+#: gui/help/C/package-manager.xml:602(title)
 msgid "Using WebInstall to Add Publishers and Install Packages"
 msgstr "使用 WebInstall 添加发布者和安装软件包"
 
-#: package-manager.xml.in:604(para)
+#: gui/help/C/package-manager.xml:603(para)
 msgid "The WebInstall process enables you to install packages through a <filename>p5i</filename> file."
 msgstr "WebInstall 进程允许您通过 <filename>p5i</filename> 文件安装软件包。"
 
-#: package-manager.xml.in:605(para)
+#: gui/help/C/package-manager.xml:604(para)
 msgid "Locate the <filename>.p5i</filename> file. This file might be on your desktop or on a web site."
 msgstr "找到 <filename>.p5i</filename> 文件。该文件可能位于您的桌面上，也可能位于某个 Web 站点上。"
 
-#: package-manager.xml.in:607(para)
+#: gui/help/C/package-manager.xml:606(para)
 msgid "Use one of the following methods to start Package Manager in WebInstall mode:"
 msgstr "使用下列方法之一在 WebInstall 模式下启动软件包管理器："
 
-#: package-manager.xml.in:608(para)
+#: gui/help/C/package-manager.xml:607(para)
 msgid "Click on a <filename>.p5i</filename> file on your desktop. The associated application (Package Manager Web Installer) is launched."
 msgstr "单击桌面上的 <filename>.p5i</filename> 文件。关联的应用程序（软件包管理器 Web 安装程序）随即启动。"
 
-#: package-manager.xml.in:610(para)
+#: gui/help/C/package-manager.xml:609(para)
 msgid "Start Package Manager from the command line along with a path to the <filename>.p5i</filename> file. For example, enter the following command:"
 msgstr "从命令行启动软件包管理器，并附上 <filename>.p5i</filename> 文件的路径。例如，输入以下命令："
 
-#: package-manager.xml.in:611(replaceable)
+#: gui/help/C/package-manager.xml:610(replaceable)
 msgid "path_to_p5i_file/file.p5i"
 msgstr "path_to_p5i_file/file.p5i"
 
-#: package-manager.xml.in:611(userinput)
+#: gui/help/C/package-manager.xml:610(userinput)
 #, no-wrap
 msgid "packagemanager/<placeholder-1/>"
 msgstr "packagemanager/<placeholder-1/>"
 
-#: package-manager.xml.in:611(screen)
+#: gui/help/C/package-manager.xml:610(screen)
 #, no-wrap
 msgid "# <placeholder-1/>"
 msgstr "# <placeholder-1/>"
 
-#: package-manager.xml.in:613(para)
+#: gui/help/C/package-manager.xml:612(para)
 msgid "Go to a URL location that contains a link to <filename>.p5i</filename> file. The <filename>.p5i</filename> file must be located on a web server that has registered this MIME type."
 msgstr "转到指向 <filename>.p5i</filename> 文件的链接所在的 URL 位置。<filename>.p5i</filename> 文件必须位于已注册了该 MIME 类型的一个 Web 服务器上。"
 
-#: package-manager.xml.in:614(para)
+#: gui/help/C/package-manager.xml:613(para)
 msgid "If the <filename>.p5i</filename> is located on a web server that has not registered this MIME type, save the <filename>.p5i</filename> file to your desktop and then click on it to launch WebInstall."
 msgstr "如果 <filename>.p5i</filename> 位于尚未注册该 MIME 类型的 Web 服务器上，请将 <filename>.p5i</filename> 文件保存到桌面，然后单击该文件以启动 WebInstall。"
 
-#: package-manager.xml.in:618(para)
+#: gui/help/C/package-manager.xml:617(para)
 msgid "The Install/Update window is displayed. The label at the top of the window is: “Package Manager Web Installer/The following will be added to your system:” Then the publishers and packages are listed. Click the <guibutton>Proceed</guibutton> button to continue with the installation."
 msgstr "“安装/更新”窗口随即显示。该窗口顶部的标签为：“软件包管理器 Web 安装程序/以下项将添加到您的系统中：”，然后列出发布者和软件包。单击<guibutton>继续</guibutton>按钮继续安装。"
 
-#: package-manager.xml.in:619(para)
+#: gui/help/C/package-manager.xml:618(para)
 msgid "If the package publisher is not already configured on your system, the Add Publisher window is displayed. The name and URI of the publisher are already entered."
 msgstr "如果您的系统上尚未配置该软件包发布者，则会显示“添加发布者”窗口，其中已输入了该发布者的名称和 URI。"
 
-#: package-manager.xml.in:620(para)
+#: gui/help/C/package-manager.xml:619(para)
 msgid "If the publishers to be added are secure publishers, an SSL key and certificate are required. Browse to locate the SSL Key and SSL Certificate on your system."
 msgstr "如果要添加的发布者是安全发布者，则需要提供 SSL 密钥和证书。请在系统中浏览以找到 SSL 密钥和 SSL 证书。"
 
-#: package-manager.xml.in:621(para)
+#: gui/help/C/package-manager.xml:620(para)
 msgid "The Adding Publisher Complete dialog displays if the publisher is added successfully. Click the <guibutton>OK</guibutton> button to continue with the installation."
 msgstr "如果成功添加了发布者，则会显示“添加发布者完成”对话框。单击<guibutton>确定</guibutton>按钮继续安装。"
 
-#: package-manager.xml.in:623(para)
+#: gui/help/C/package-manager.xml:622(para)
 msgid "If a <filename>.p5i</filename> file contains packages from a disabled publisher, WebInstall opens up an Enable Publisher dialog. Use this dialog to enable the publisher so that you can install the packages."
 msgstr "如果 <filename>.p5i</filename> 文件包含来自被禁用的发布者的软件包，WebInstall 将打开一个“启用发布者”对话框。可使用该对话框启用该发布者以便您可以安装软件包。"
 
-#: package-manager.xml.in:627(para)
+#: gui/help/C/package-manager.xml:626(para)
 msgid "The Install/Update window now looks the same as when you select <guibutton>Install/Update</guibutton> from within Package Manager."
 msgstr "“安装/更新”窗口现在看起来与您从软件包管理器中选择<guibutton>安装/更新</guibutton>时相同。"
 
-#: package-manager.xml.in:632(title)
+#: gui/help/C/package-manager.xml:631(title)
 msgid "Troubleshooting"
 msgstr "故障排除"
 
-#: package-manager.xml.in:633(para)
+#: gui/help/C/package-manager.xml:632(para)
 msgid "Error, warning, and informational messages are saved to a log so that you can review them at any time."
 msgstr "错误、警告和提示性消息会保存到日志中以便您可以随时查看。"
 
-#: package-manager.xml.in:634(title)
+#: gui/help/C/package-manager.xml:633(title)
 msgid "Viewing Message Logs"
 msgstr "查看消息日志"
 
-#: package-manager.xml.in:635(para)
+#: gui/help/C/package-manager.xml:634(para)
 msgid "Select the <menuchoice><guimenu>View</guimenu><guimenuitem>Logs</guimenuitem></menuchoice> menu option to open the Logs window. The Logs window displays error, warning, and informational messages from Package Manager and Update Manager."
 msgstr "选择<menuchoice><guimenu>视图</guimenu><guimenuitem>日志</guimenuitem></menuchoice>菜单选项以打开“日志”窗口。“日志”窗口显示来自软件包管理器和更新管理器的错误、警告和提示性消息。"
 
-#: package-manager.xml.in:636(para)
+#: gui/help/C/package-manager.xml:635(para)
 msgid "Select the <guibutton>Clear</guibutton> button at the bottom of the Logs window to delete all the messages."
 msgstr "选择“日志”窗口底部的<guibutton>清除</guibutton>按钮可删除所有消息。"
 
-#: package-manager.xml.in:637(para)
+#: gui/help/C/package-manager.xml:636(para)
 msgid "If an error or warning is logged, a yellow triangle is displayed on the left side of the status bar. Click the yellow triangle to display the Logs window."
 msgstr "如果记录了错误或警告，则在状态栏的左侧会显示一个黄色三角形。单击该黄色三角形可显示“日志”窗口。"
 
-#: package-manager.xml.in:640(title)
+#: gui/help/C/package-manager.xml:639(title)
 msgid "Setting Preferences"
 msgstr "设置首选项"
 
-#: package-manager.xml.in:641(para)
+#: gui/help/C/package-manager.xml:640(para)
 msgid "Use the <menuchoice><guimenu>Edit</guimenu><guimenuitem>Preferences</guimenuitem></menuchoice> menu option to change some of the Package Manager user interface settings."
 msgstr "使用<menuchoice><guimenu>编辑</guimenu><guimenuitem>首选项</guimenuitem></menuchoice>菜单选项可更改软件包管理器的某些用户界面设置。"
 
-#: package-manager.xml.in:642(para)
+#: gui/help/C/package-manager.xml:641(para)
 msgid "The Preferences window has three tabs:"
 msgstr "“首选项”窗口有三个选项卡："
 
-#: package-manager.xml.in:643(para)
+#: gui/help/C/package-manager.xml:642(para)
 msgid "The General tab enables you to set exit preferences and confirmation dialog preferences."
 msgstr "“常规”选项卡，用于设置退出首选项和确认对话框首选项。"
 
-#: package-manager.xml.in:644(para)
+#: gui/help/C/package-manager.xml:643(para)
 msgid "The Optional Components tab enables you to set preferences for which optional package components to install when you install or update a package."
 msgstr "“可选组件”选项卡，用于设置有关在安装或更新软件包时要安装哪些可选软件包组件的首选项。"
 
-#: package-manager.xml.in:645(para)
+#: gui/help/C/package-manager.xml:644(para)
 msgid "The Signature Policy tab enables you to set signature policy for this image."
 msgstr "“签名策略”选项卡，用于设置该映像的签名策略。"
 
-#: package-manager.xml.in:647(title)
+#: gui/help/C/package-manager.xml:646(title)
 msgid "Exit Preferences"
 msgstr "退出首选项"
 
-#: package-manager.xml.in:648(para) package-manager.xml.in:661(para)
+#: gui/help/C/package-manager.xml:647(para) gui/help/C/package-manager.xml:660(para)
 msgid "Select the <menuchoice><guimenu>Edit</guimenu><guimenuitem>Preferences</guimenuitem></menuchoice> option and select the General tab."
 msgstr "选择<menuchoice><guimenu>编辑</guimenu><guimenuitem>首选项</guimenuitem></menuchoice>选项，然后选择“常规”选项卡。"
 
-#: package-manager.xml.in:649(para)
+#: gui/help/C/package-manager.xml:648(para)
 msgid "If the “Remember current state on exit” box is checked, Package Manager saves the following settings and restores them the next time you start Package Manager:"
 msgstr "如果选中了“退出时记住当前状态”框，软件包管理器会保存以下设置并在您下次启动软件包管理器时恢复它们："
 
-#: package-manager.xml.in:650(para)
+#: gui/help/C/package-manager.xml:649(para)
 msgid "<emphasis role=\"strong\">Vertical and horizontal separators</emphasis> — Widths and heights of the panes in the window"
 msgstr "<emphasis role=\"strong\">垂直分隔条和水平分隔条</emphasis> - 窗口中窗格的宽度和高度"
 
-#: package-manager.xml.in:652(para)
+#: gui/help/C/package-manager.xml:651(para)
 msgid "<emphasis role=\"strong\">Window size</emphasis> — Overall size of the Package Manager window"
 msgstr "<emphasis role=\"strong\">窗口大小</emphasis> – 软件包管理器窗口的总体大小"
 
-#: package-manager.xml.in:654(para)
+#: gui/help/C/package-manager.xml:653(para)
 msgid "<emphasis role=\"strong\">Publisher option</emphasis> — The publisher or other option that is selected in the <guimenu>Publisher</guimenu> drop-down menu when Package Manager is closed"
 msgstr "<emphasis role=\"strong\">发布者选项</emphasis> - 当软件包管理器关闭时在<guimenu>发布者</guimenu>下拉式菜单中选定的发布者或其他选项"
 
-#: package-manager.xml.in:656(para)
+#: gui/help/C/package-manager.xml:655(para)
 msgid "<emphasis role=\"strong\">Categories</emphasis> — The selected category and the expanded and collapsed categories for each publisher"
 msgstr "<emphasis role=\"strong\">类别</emphasis> - 针对每个发布者的选定类别以及展开和折叠的类别"
 
-#: package-manager.xml.in:660(title)
+#: gui/help/C/package-manager.xml:659(title)
 msgid "Confirmation Dialog Preferences"
 msgstr "确认对话框首选项"
 
-#: package-manager.xml.in:662(para)
+#: gui/help/C/package-manager.xml:661(para)
 msgid "When a package is installed, updated, or removed, a confirmation dialog is displayed that shows the list of packages and the action to be performed. If you do not want to see these confirmation dialogs, uncheck these selections in the Preferences window."
 msgstr "当安装、更新或删除软件包时，会显示一个确认对话框，其中显示了软件包列表和要执行的操作。如果您不希望看到这些确认对话框，可以在“首选项”窗口中取消选中这些选项。"
 
-#: package-manager.xml.in:663(para)
+#: gui/help/C/package-manager.xml:662(para)
 msgid "Clicking the “Do not show this confirmation dialog again” check box in a particular confirmation dialog also unsets this preference for that dialog."
 msgstr "在特定的确认对话框中单击“请不要再次显示此确认对话框”复选框也会为该对话框取消设置该首选项。"
 
-#: package-manager.xml.in:665(title)
+#: gui/help/C/package-manager.xml:664(title)
 msgid "Signature Policy Preferences"
 msgstr "签名策略首选项"
 
-#: package-manager.xml.in:666(para)
+#: gui/help/C/package-manager.xml:665(para)
 msgid "Use the buttons on the Signature Policy tab to ignore or require signatures when installing packages in this image. To set signature policy for specific publishers, select the publisher in the Manage Publishers window, click the <guibutton>Modify</guibutton> button, and use the Signature Policy tab of the Modify Publisher window."
 msgstr "使用“签名策略”选项卡上的按钮可设置安装该映像中的软件包时忽略或要求签名。要为特定发布者设置签名策略，请在“管理发布者”窗口中选择发布者，单击<guibutton>修改</guibutton>按钮，然后使用“修改发布者”窗口的“签名策略”选项卡。"
 
-#: package-manager.xml.in:667(para)
+#: gui/help/C/package-manager.xml:666(para)
 msgid "The choices for image signature policy are the same as the choices for publisher signature policy except that the settings apply to all packages installed in the image, not just to packages installed from a particular publisher. See <xref linkend=\"pub-sig-policy\"/>."
 msgstr "为映像签名策略提供的选项与为发布者签名策略提供的选项是相同的，但是这些设置应用于映像中安装的所有软件包，而不是仅应用于从特定发布者安装的软件包。请参见<xref linkend=\"pub-sig-policy\"/>。"
 
-#: package-manager.xml.in:669(title)
+#: gui/help/C/package-manager.xml:668(title)
 msgid "Optional Component Preferences Language Choices"
 msgstr "可选组件首选项语言选项"
 
-#: package-manager.xml.in:670(para) package-manager.xml.in:677(para)
+#: gui/help/C/package-manager.xml:669(para) gui/help/C/package-manager.xml:676(para)
 msgid "Select the <menuchoice><guimenu>Edit</guimenu><guimenuitem>Preferences</guimenuitem></menuchoice> option and select the Optional Components tab."
 msgstr "选择<menuchoice><guimenu>编辑</guimenu><guimenuitem>首选项</guimenuitem></menuchoice>选项，然后选择“可选组件”选项卡。"
 
-#: package-manager.xml.in:671(para)
+#: gui/help/C/package-manager.xml:670(para)
 msgid "By default, Install all languages is selected under Language choices for any package. You can save space in your installation by selecting a subset of languages to install."
 msgstr "缺省情况下，任何软件包的“语言”选项下都选中了“安装所有语言”。您可以通过选择仅安装部分语言来节省安装空间。"
 
-#: package-manager.xml.in:672(para)
+#: gui/help/C/package-manager.xml:671(para)
 msgid "When Install only these languages is selected, you can click the checkbox icon in the left most column heading of the language list to select all languages. Click the column heading again to deselect all languages. Click the Language and Territory column headings to sort the list."
 msgstr "当选中“仅安装这些语言”时，您可以单击语言列表的最左侧列标题中的复选框图标来选择所有语言。再次单击该列标题可以取消选择所有语言。单击“语言”和“地区”列标题可对列表进行排序。"
 
-#: package-manager.xml.in:673(para) package-manager.xml.in:679(para)
+#: gui/help/C/package-manager.xml:672(para) gui/help/C/package-manager.xml:678(para)
 msgid "Click the OK button to save your changes. These settings apply to currently installed packages as well as future package installations and updates. The image is updated as necessary to install or remove optional package components based on the new settings."
 msgstr "单击“确定”按钮保存所做的更改。这些设置将应用于当前已安装的软件包以及将来的软件包安装和更新。映像将根据需要进行更新，以基于新设置安装或删除可选的软件包组件。"
 
-#: package-manager.xml.in:674(para)
+#: gui/help/C/package-manager.xml:673(para)
 msgid "If you have previously updated your image to include only a subset of languages, Install only these languages is the default selection in this window, and that language list is grayed out if you select the Install all languages option."
 msgstr "如果您之前已将您的映像更新为只包括部分语言，则“仅安装这些语言”是该窗口中的缺省选定项；如果您选择了“安装所有语言”选项，则语言列表处于灰显状态。"
 
-#: package-manager.xml.in:676(title)
+#: gui/help/C/package-manager.xml:675(title)
 msgid "Other Optional Component Preferences"
 msgstr "其他可选组件首选项"
 
-#: package-manager.xml.in:678(para)
+#: gui/help/C/package-manager.xml:677(para)
 msgid "By default, Install all development files and Install all documentation are selected under Other component choices. You can save space in your installation by deselecting development files or documentation."
 msgstr "缺省情况下，在“其他”组件选项下选中了“安装所有开发文件”和“安装所有文档”。您可以通过取消选择开发文件或文档来节省安装空间。"
 
-#: package-manager.xml.in:682(title)
+#: gui/help/C/package-manager.xml:681(title)
 msgid "Glossary"
 msgstr "词汇表"
 
-#: package-manager.xml.in:683(glossterm)
+#: gui/help/C/package-manager.xml:682(glossterm)
 msgid "alias"
 msgstr "别名"
 
-#: package-manager.xml.in:684(para)
+#: gui/help/C/package-manager.xml:683(para)
 msgid "Another name for a publisher."
 msgstr "发布者的另一个名称。"
 
-#: package-manager.xml.in:687(glossterm)
+#: gui/help/C/package-manager.xml:686(glossterm)
 msgid "boot environment (BE)"
 msgstr "引导环境 (boot environment, BE)"
 
-#: package-manager.xml.in:688(para)
+#: gui/help/C/package-manager.xml:687(para)
 msgid "An instance of a bootable Oracle Solaris environment. The root file system and all other file systems of the boot environment that contain system software are required to be ZFS datasets."
 msgstr "可引导的 Oracle Solaris 环境的实例。引导环境的根文件系统和所有包含系统软件的其他文件系统必须是 ZFS 数据集。"
 
-#: package-manager.xml.in:689(para)
+#: gui/help/C/package-manager.xml:688(para)
 msgid "The active boot environment is the one that is currently booted. A system can have many boot environments. You can select the one you want to boot into when you reboot."
 msgstr "活动引导环境是当前所引导的那个引导环境。一个系统可以具有许多引导环境。在重新引导时您可以选择要引导到的引导环境。"
 
-#: package-manager.xml.in:692(glossterm)
+#: gui/help/C/package-manager.xml:691(glossterm)
 msgid "clone"
 msgstr "克隆"
 
-#: package-manager.xml.in:693(para)
+#: gui/help/C/package-manager.xml:692(para)
 msgid "An exact copy."
 msgstr "完全相同的副本。"
 
-#: package-manager.xml.in:694(para)
+#: gui/help/C/package-manager.xml:693(para)
 msgid "A clone could be an exact copy of an operating system, a file system, or a volume. This copy has 100% compatibility with the original."
 msgstr "克隆可以是某个操作系统、文件系统或卷的完全相同的副本。此副本与其原版 100% 兼容。"
 
-#: package-manager.xml.in:697(glossterm)
+#: gui/help/C/package-manager.xml:696(glossterm)
 msgid "dataset"
 msgstr "数据集"
 
-#: package-manager.xml.in:698(para)
+#: gui/help/C/package-manager.xml:697(para)
 msgid "A generic name for the following ZFS entities: clones, file systems, snapshots, or volumes. Each dataset is identified by a unique name in the ZFS namespace."
 msgstr "以下 ZFS 实体的通用名称：克隆、文件系统、快照或卷。每个数据集都由 ZFS 名称空间中的唯一名称标识。"
 
-#: package-manager.xml.in:701(glossterm)
+#: gui/help/C/package-manager.xml:700(glossterm)
 msgid "image"
 msgstr "映像"
 
-#: package-manager.xml.in:702(para)
+#: gui/help/C/package-manager.xml:701(para)
 msgid "A collection of operating system software in a package that can be booted and installed."
 msgstr "软件包中可以引导和安装的操作系统软件的集合。"
 
-#: package-manager.xml.in:703(para)
+#: gui/help/C/package-manager.xml:702(para)
 msgid "A location on your system where packages and their associated files, directories, links, and dependencies can be installed."
 msgstr "系统中的一个位置，可以在该位置安装软件包及其关联文件、目录、链接和相关项。"
 
-#: package-manager.xml.in:706(glossterm)
+#: gui/help/C/package-manager.xml:705(glossterm)
 msgid "origin"
 msgstr "源"
 
-#: package-manager.xml.in:707(para)
+#: gui/help/C/package-manager.xml:706(para)
 msgid "A package server to which a publisher publishes packages."
 msgstr "发布者在其上发布软件包的软件包服务器。"
 
-#: package-manager.xml.in:710(glossterm)
+#: gui/help/C/package-manager.xml:709(glossterm)
 msgid "package"
 msgstr "软件包"
 
-#: package-manager.xml.in:711(para)
+#: gui/help/C/package-manager.xml:710(para)
 msgid "A collection of files, directories, links, drivers, and dependencies in a defined format."
 msgstr "某种已定义格式的文件、目录、链接、驱动程序和相关项的集合。"
 
-#: package-manager.xml.in:714(glossterm)
+#: gui/help/C/package-manager.xml:713(glossterm)
 msgid "publisher"
 msgstr "发布者"
 
-#: package-manager.xml.in:715(para)
+#: gui/help/C/package-manager.xml:714(para)
 msgid "A person, group, or corporation that designs, creates, and publishes a package to a package server. The package server in turn serves the packages from the (default) publisher, for downloading purposes."
 msgstr "设计、创建软件包并将其发布到软件包服务器的人、组或公司。然后该软件包服务器能提供来自（缺省）发布者的软件包以供下载使用。"
 
-#: package-manager.xml.in:718(glossterm)
+#: gui/help/C/package-manager.xml:717(glossterm)
 msgid "system publisher"
 msgstr "系统发布者"
 
-#: package-manager.xml.in:719(para)
+#: gui/help/C/package-manager.xml:718(para)
 msgid "System publishers are special publishers used in linked images and non-global zones in particular, to ensure that certain packages stay in sync with the global zone. The global zone constrains packages within the non-global zones by configuring these special system publishers in the non-global zone. They are special because the non-global zones cannot make certain changes to them including removing, disabling, modifying, or changing their priority."
 msgstr "系统发布者是在链接映像中尤其是在非全局区域中使用的特殊发布者，用以确保特定的软件包与全局区域保持同步。全局区域通过在非全局区域中配置这些特殊的系统发布者来对非全局区域中的软件包进行限制。这类发布者之所以特殊，是因为非全局区域无法对其进行某些更改，包括删除、禁用、修改或者更改其优先级。"
 
 #. Put one translator per line, in the form of NAME <EMAIL>, YEAR1, YEAR2
-#: package-manager.xml.in:0(None)
+#: gui/help/C/package-manager.xml:0(None)
 msgid "translator-credits"
 msgstr "Oracle Corporation"
 

@@ -1,1667 +1,1667 @@
 msgid ""
-msgstr "Project-Id-Version: PACKAGE VERSION\nPOT-Creation-Date: 2011-07-01 18:37+0900\nPO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\nLast-Translator: FULL NAME <EMAIL@ADDRESS>\nLanguage-Team: LANGUAGE <LL@li.org>\nMIME-Version: 1.0\nContent-Type: text/plain; charset=UTF-8\nContent-Transfer-Encoding: 8bit\n"
+msgstr "Project-Id-Version: PACKAGE VERSION\nPOT-Creation-Date: 2012-03-30 15:24+0900\nPO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\nLast-Translator: FULL NAME <EMAIL@ADDRESS>\nLanguage-Team: LANGUAGE <LL@li.org>\nMIME-Version: 1.0\nContent-Type: text/plain; charset=UTF-8\nContent-Transfer-Encoding: 8bit\n"
 
-#: package-manager.xml.in:4(title)
+#: gui/help/C/package-manager.xml:3(title)
 msgid "<trademark class=\"registered\">Oracle</trademark> Solaris 11 Package Manager Online Help"
 msgstr "<trademark class=\"registered\">Oracle</trademark> Solaris 11 패키지 관리자 온라인 도움말"
 
-#: package-manager.xml.in:5(firstname)
+#: gui/help/C/package-manager.xml:4(firstname)
 msgid "Oracle"
 msgstr "Oracle"
 
-#: package-manager.xml.in:6(surname)
+#: gui/help/C/package-manager.xml:5(surname)
 msgid "Corporation"
 msgstr "Corporation"
 
-#: package-manager.xml.in:9(releaseinfo)
+#: gui/help/C/package-manager.xml:8(releaseinfo)
 msgid "Oracle Solaris 11"
 msgstr "Oracle Solaris 11"
 
-#: package-manager.xml.in:10(pubdate)
+#: gui/help/C/package-manager.xml:9(pubdate)
 msgid "June 2011"
 msgstr "2011년 6월"
 
-#: package-manager.xml.in:11(publishername)
+#: gui/help/C/package-manager.xml:10(publishername)
 msgid "Oracle Corporation"
 msgstr "Oracle Corporation"
 
-#: package-manager.xml.in:12(street)
+#: gui/help/C/package-manager.xml:11(street)
 msgid "500 Oracle Parkway"
 msgstr "500 Oracle Parkway"
 
-#: package-manager.xml.in:13(city)
+#: gui/help/C/package-manager.xml:12(city)
 msgid "Redwood City"
 msgstr "Redwood City"
 
-#: package-manager.xml.in:14(state)
+#: gui/help/C/package-manager.xml:13(state)
 msgid "CA"
 msgstr "CA"
 
-#: package-manager.xml.in:15(postcode)
+#: gui/help/C/package-manager.xml:14(postcode)
 msgid "94065"
 msgstr "94065"
 
-#: package-manager.xml.in:16(country)
+#: gui/help/C/package-manager.xml:15(country)
 msgid "U.S.A."
 msgstr "U.S.A."
 
-#: package-manager.xml.in:19(year)
+#: gui/help/C/package-manager.xml:18(year)
 msgid "2008, 2011"
 msgstr "2008, 2011"
 
-#: package-manager.xml.in:20(para)
+#: gui/help/C/package-manager.xml:19(para)
 msgid "This software and related documentation are provided under a license agreement containing restrictions on use and disclosure and are protected by intellectual property laws. Except as expressly permitted in your license agreement or allowed by law, you may not use, copy, reproduce, translate, broadcast, modify, license, transmit, distribute, exhibit, perform, publish, or display any part, in any form, or by any means. Reverse engineering, disassembly, or decompilation of this software, unless required by law for interoperability, is prohibited."
 msgstr "본 소프트웨어와 관련 문서는 사용 제한 및 기밀 유지 규정을 포함하는 라이센스 계약서에 의거해 제공되며, 지적 재산법에 의해 보호됩니다. 라이센스 계약서 상에 명시적으로 허용되어 있는 경우나 법규에 의해 허용된 경우를 제외하고, 어떠한 부분도 복사, 재생, 번역, 방송, 수정, 라이센스, 전송, 배포, 진열, 실행, 발행, 또는 전시될 수 없습니다. 본 소프트웨어를 리버스 엔지니어링, 디스어셈블리 또는 디컴파일하는 것은 상호 운용에 대한 법규에 의해 명시된 경우를 제외하고는 금지되어 있습니다."
 
-#: package-manager.xml.in:21(para)
+#: gui/help/C/package-manager.xml:20(para)
 msgid "The information contained herein is subject to change without notice and is not warranted to be error-free. If you find any errors, please report them to us in writing."
 msgstr "이 안의 내용은 사전 공지 없이 변경될 수 있으며 오류가 존재하지 않음을 보증하지 않습니다. 만일 오류를 발견하면 서면으로 통지해 주기 바랍니다."
 
-#: package-manager.xml.in:22(para)
+#: gui/help/C/package-manager.xml:21(para)
 msgid "If this is software or related software documentation that is delivered to the U.S. Government or anyone licensing it on behalf of the U.S. Government, the following notice is applicable:"
 msgstr "만일 본 소프트웨어나 관련 문서를 미국 정부나 또는 미국 정부를 대신하여 라이센스한 개인이나 법인에게 배송하는 경우, 다음 공지 사항이 적용됩니다."
 
-#: package-manager.xml.in:23(para)
+#: gui/help/C/package-manager.xml:22(para)
 msgid "U.S. GOVERNMENT RIGHTS Programs, software, databases, and related documentation and technical data delivered to U.S. Government customers are “commercial computer software” or “commercial technical data” pursuant to the applicable Federal Acquisition Regulation and agency-specific supplemental regulations. As such, the use, duplication, disclosure, modification, and adaptation shall be subject to the restrictions and license terms set forth in the applicable Government contract, and, to the extent applicable by the terms of the Government contract, the additional rights set forth in FAR 52.227-19, Commercial Computer Software License (December 2007). Oracle America, Inc., 500 Oracle Parkway, Redwood City, CA 94065."
 msgstr "U.S. GOVERNMENT RIGHTS Programs, software, databases, and related documentation and technical data delivered to U.S. Government customers are \"commercial computer software\" or \"commercial technical data\" pursuant to the applicable Federal Acquisition Regulation and agency-specific supplemental regulations. As such, the use, duplication, disclosure, modification, and adaptation shall be subject to the restrictions and license terms set forth in the applicable Government contract, and, to the extent applicable by the terms of the Government contract, the additional rights set forth in FAR 52.227-19, Commercial Computer Software License (December 2007). Oracle America, Inc., 500 Oracle Parkway, Redwood City, CA 94065."
 
-#: package-manager.xml.in:24(para)
+#: gui/help/C/package-manager.xml:23(para)
 msgid "This software or hardware is developed for general use in a variety of information management applications. It is not developed or intended for use in any inherently dangerous applications, including applications which may create a risk of personal injury. If you use this software or hardware in dangerous applications, then you shall be responsible to take all appropriate fail-safe, backup, redundancy, and other measures to ensure its safe use. Oracle Corporation and its affiliates disclaim any liability for any damages caused by use of this software or hardware in dangerous applications."
 msgstr "본 소프트웨어 혹은 하드웨어는 다양한 정보 관리 애플리케이션의 일반적인 사용을 목적으로 개발되었습니다. 본 소프트웨어 혹은 하드웨어는 개인적인 상해를 초래할 수 있는 애플리케이션을 포함한 본질적으로 위험한 애플리케이션에서 사용할 목적으로 개발되거나 그 용도로 사용될 수 없습니다. 만일 본 소프트웨어 혹은 하드웨어를 위험한 애플리케이션에서 사용할 경우, 라이센스 사용자는 해당 애플리케이션의 안전한 사용을 위해 모든 적절한 비상-안전, 백업, 대비 및 기타 조치를 반드시 취해야 합니다. Oracle Corporation과 그 자회사는 본 소프트웨어 혹은 하드웨어를 위험한 애플리케이션에서의 사용으로 인해 발생하는 어떠한 손해에 대해서도 책임지지 않습니다."
 
-#: package-manager.xml.in:25(para)
+#: gui/help/C/package-manager.xml:24(para)
 msgid "Oracle and Java are registered trademarks of Oracle and/or its affiliates. Other names may be trademarks of their respective owners."
 msgstr "Oracle과 Java는 Oracle Corporation 및/또는 그 자회사의 등록 상표입니다. 기타의 명칭들은 각 해당 명칭을 소유한 회사의 상표일 수 있습니다."
 
-#: package-manager.xml.in:26(para)
+#: gui/help/C/package-manager.xml:25(para)
 msgid "AMD, Opteron, the AMD logo, and the AMD Opteron logo are trademarks or registered trademarks of Advanced Micro Devices. Intel and Intel Xeon are trademarks or registered trademarks of Intel Corporation. All SPARC trademarks are used under license and are trademarks or registered trademarks of SPARC International, Inc. UNIX is a registered trademark licensed through X/Open Company, Ltd."
 msgstr "AMD, Opteron, AMD 로고, 및AMD Opteron 로고는 Advanced Micro Devices의 상표 내지는 등록 상표입니다. Intel 및 Intel Xeon Intel Corporation의 등록 상표입니다. SPARC 상표 일체는 라이센스에 의거하여 사용되며SPARC International, Inc.의 상표 내지는 등록 상표입니다. UNIX는 X/Open Company, Ltd.를 통해 라이센스된 등록상표입니다."
 
-#: package-manager.xml.in:27(para)
+#: gui/help/C/package-manager.xml:26(para)
 msgid "This software or hardware and documentation may provide access to or information on content, products, and services from third parties. Oracle Corporation and its affiliates are not responsible for and expressly disclaim all warranties of any kind with respect to third-party content, products, and services. Oracle Corporation and its affiliates will not be responsible for any loss, costs, or damages incurred due to your access to or use of third-party content, products, or services."
 msgstr "본 소프트웨어 혹은 하드웨어와 관련문서(설명서)는 제 3자로부터 제공되는 컨텐츠, 제품 및 서비스에 접속할 수 있거나 정보를 제공합니다. Oracle Corporation과 그 자회사는 제 3자의 컨텐츠, 제품 및 서비스와 관련하여 어떠한 책임도 지지 않으며 명시적으로 모든 보증에 대해서도 책임을 지지 않습니다. Oracle Corporation과 그 자회사는 제 3자의 컨텐츠, 제품 및 서비스에 접속하거나 사용으로 인해 초래되는 어떠한 손실, 비용 또는 손해에 대해 어떠한 책임도 지지 않습니다."
 
 
-#: package-manager.xml.in:38(title)
+#: gui/help/C/package-manager.xml:37(title)
 msgid "About Package Manager"
 msgstr "패키지 관리자 정보"
 
-#: package-manager.xml.in:39(para)
+#: gui/help/C/package-manager.xml:38(para)
 msgid "Package Manager is a graphical user interface (GUI) for the Oracle Solaris Image Packaging System (IPS)."
 msgstr "패키지 관리자는 Oracle Solaris IPS(이미지 패키징 시스템)용 GUI(그래픽 사용자 인터페이스)입니다."
 
-#: package-manager.xml.in:40(para)
+#: gui/help/C/package-manager.xml:39(para)
 msgid "See the <xref linkend=\"glossary\"/> for definitions of terms used in this document."
 msgstr "이 문서에서 사용되는 용어의 정의는 <xref linkend=\"glossary\"/>를 참조하십시오."
 
-#: package-manager.xml.in:41(title)
+#: gui/help/C/package-manager.xml:40(title)
 msgid "Oracle Solaris Image Packaging System"
 msgstr "Oracle Solaris 이미지 패키징 시스템"
 
-#: package-manager.xml.in:42(para)
+#: gui/help/C/package-manager.xml:41(para)
 msgid "Oracle Solaris Image Packaging System (IPS) is a software delivery system that interacts with a package repository on a network. IPS is a framework that provides software lifecycle management capabilities, including software installation, upgrade, and removal."
 msgstr "Oracle Solaris IPS(이미지 패키징 시스템)는 네트워크의 패키지 저장소와 상호 작용하는 소프트웨어 전달 시스템입니다. IPS는 소프트웨어 설치, 업그레이드 및 제거를 비롯하여 소프트웨어 수명 주기 관리 기능을 제공하는 프레임워크입니다."
 
-#: package-manager.xml.in:43(para)
+#: gui/help/C/package-manager.xml:42(para)
 msgid "After you install the Oracle Solaris operating system, you might find that some of the software you want to use is not available. This software probably is available in an IPS package repository. You can use Package Manager or the <literal>pkg</literal>(1M) command to download and install packages from a package repository."
 msgstr "Oracle Solaris 운영 체제를 설치한 후 사용하려는 일부 소프트웨어를 사용하지 못할 수 있습니다. 대개는 IPS 패키지 저장소에서 이 소프트웨어를 사용할 수 있습니다. 패키지 관리자 또는 <literal>pkg</literal>(1M) 명령을 사용하여 패키지 저장소에서 패키지를 다운로드하여 설치할 수 있습니다."
 
-#: package-manager.xml.in:44(para)
+#: gui/help/C/package-manager.xml:43(para)
 msgid "IPS also enables you to create a copy of an existing IPS package repository, create your own IPS package repository, and publish your own IPS packages. For more information about IPS, see the Oracle Solaris 11 Information Library. Go to <literal>download.oracle.com</literal>, select Documentation Index on the left, select Systems Software, select Oracle Solaris 11, and select View Library. See especially <citetitle>Adding and Updating Oracle Solaris 11 Software Packages</citetitle>."
 msgstr "IPS를 통해 기존 IPS 패키지 저장소의 복사본을 만들고, 고유의 IPS 패키지 저장소를 만들고, 고유의 IPS 패키지를 게시할 수도 있습니다. IPS에 대한 자세한 내용은 Oracle Solaris 11 Information Library를 참조하십시오. <literal>download.oracle.com</literal>으로 이동하여 왼쪽에 있는 Documentation Index를 선택하고 Systems Software, Oracle Solaris 11, View Library를 차례로 선택하십시오. 특히 <citetitle>Adding and Updating Oracle Solaris 11 Software Packages</citetitle>를 참조하십시오."
 
-#: package-manager.xml.in:46(title)
+#: gui/help/C/package-manager.xml:45(title)
 msgid "Package Manager"
 msgstr "패키지 관리자"
 
-#: package-manager.xml.in:47(para)
+#: gui/help/C/package-manager.xml:46(para)
 msgid "Package Manager provides a subset of the functionality offered by the IPS command-line interface."
 msgstr "패키지 관리자는 IPS 명령줄 인터페이스에서 제공하는 기능 중 일부를 제공합니다."
 
-#: package-manager.xml.in:48(para)
+#: gui/help/C/package-manager.xml:47(para)
 msgid "Package Manager enables you to perform the following tasks:"
 msgstr "패키지 관리자를 사용하면 다음 작업을 수행할 수 있습니다."
 
-#: package-manager.xml.in:49(para)
+#: gui/help/C/package-manager.xml:48(para)
 msgid "Find, install, update, and remove IPS packages. See <xref linkend=\"manage-pkg\"/>."
 msgstr "IPS 패키지 검색, 설치, 업데이트 및 제거. <xref linkend=\"manage-pkg\"/> 참조"
 
-#: package-manager.xml.in:51(para)
+#: gui/help/C/package-manager.xml:50(para)
 msgid "Update your system (update all the packages on your system). See <xref linkend=\"update_all\"/>."
 msgstr "시스템 업데이트(시스템의 모든 패키지를 업데이트). <xref linkend=\"update_all\"/> 참조하"
 
-#: package-manager.xml.in:53(para)
+#: gui/help/C/package-manager.xml:52(para)
 msgid "Add, modify, and delete IPS package publishers. See <xref linkend=\"manage-publisher\"/>."
 msgstr "IPS 패키지 게시자 추가, 수정 및 삭제. <xref linkend=\"manage-publisher\"/> 참조"
 
-#: package-manager.xml.in:55(para)
+#: gui/help/C/package-manager.xml:54(para)
 msgid "List, rename, delete, and manage boot environments. See <xref linkend=\"manage-be\"/>."
 msgstr "부트 환경 나열, 이름 변경, 삭제 및 관리. <xref linkend=\"manage-be\"/> 참조"
 
-#: package-manager.xml.in:57(para)
+#: gui/help/C/package-manager.xml:56(para)
 msgid "Create a WebInstall installation file (<filename>.p5i</filename>). See <xref linkend=\"webinstall\"/>."
 msgstr "WebInstall 설치 파일(<filename>.p5i</filename>) 만들기. <xref linkend=\"webinstall\"/> 참조"
 
-#: package-manager.xml.in:60(para)
+#: gui/help/C/package-manager.xml:59(para)
 msgid "This documentation refers to the following features of the Package Manager window:"
 msgstr "이 설명서에서는 패키지 관리자 창의 다음 기능을 다룹니다."
 
-#: package-manager.xml.in:61(para)
+#: gui/help/C/package-manager.xml:60(para)
 msgid "The large pane in the center of the window is the package list pane. Sometimes this pane shows informational messages, but usually this pane contains a list of packages."
 msgstr "창 가운데에 있는 큰 창은 패키지 목록 창입니다. 이 창에 정보 메시지가 표시되는 경우도 있지만 일반적으로는 패키지 목록이 표시됩니다."
 
-#: package-manager.xml.in:63(para)
+#: gui/help/C/package-manager.xml:62(para)
 msgid "The menu bar at the top of the window provides most Package Manager functionality."
 msgstr "창 위쪽의 메뉴 표시줄은 패키지 관리자의 거의 모든 기능을 제공합니다."
 
-#: package-manager.xml.in:65(para)
+#: gui/help/C/package-manager.xml:64(para)
 msgid "The tool bar just below the menu bar has buttons on the left that provide some often-used operations. The buttons on the left of the separator have global functionality: Update all packages that have updates available or refresh the list of packages and package status. The buttons on the right of the separator only operate on selected packages."
 msgstr "메뉴 표시줄 아래에 있는 도구 모음의 왼쪽에는 자주 사용되는 몇 가지 작업을 제공하는 버튼이 있습니다. 구분선 왼쪽의 버튼은 전역 기능(업데이트를 사용할 수 있는 모든 패키지 업데이트 또는 패키지 목록 및 패키지 상태 새로 고침)을 수행합니다. 구분선 오른쪽의 버튼은 선택된 패키지에 대해서만 작동합니다."
 
-#: package-manager.xml.in:67(para)
+#: gui/help/C/package-manager.xml:66(para)
 msgid "The Search field on the right of the tool bar helps control the content of the package list pane. See <xref linkend=\"search-pkg\"/>."
 msgstr "도구 모음 오른쪽의 검색 필드는 패키지 목록 창의 컨텐츠를 제어하는 데 유용합니다. <xref linkend=\"search-pkg\"/> 참조"
 
-#: package-manager.xml.in:69(para)
+#: gui/help/C/package-manager.xml:68(para)
 msgid "The <guimenu>Publisher</guimenu> drop-down menu below the buttons helps control the content of the package list pane and also enables you to add a new publisher. See <xref linkend=\"list-pkg\"/> “By Publisher.”"
 msgstr "버튼 아래의 <guimenu>게시자</guimenu> 드롭다운 메뉴는 패키지 목록 창의 컨텐츠를 제어하는 데 유용하며 새 게시자를 추가하는 데도 사용할 수 있습니다. <xref linkend=\"list-pkg\"/> \"게시자별\" 참조"
 
-#: package-manager.xml.in:71(para)
+#: gui/help/C/package-manager.xml:70(para)
 msgid "The <guimenu>View</guimenu> drop-down menu below the Search field helps control the content of the package list pane. See Listing Packages “By Package Status.”"
 msgstr "검색 필드 아래의 <guimenu>보기</guimenu> 드롭다운 메뉴는 패키지 목록 창의 컨텐츠를 제어하는 데 유용합니다. \"패키지 상태별\" 패키지 나열 참조"
 
-#: package-manager.xml.in:73(para)
+#: gui/help/C/package-manager.xml:72(para)
 msgid "The category pane below the <guimenu>Publisher</guimenu> menu helps control the content of the package list pane. See Listing Packages “By Category.”"
 msgstr "<guimenu>게시자</guimenu> 메뉴 아래의 범주 창은 패키지 목록 창의 컨텐츠를 제어하는 데 유용합니다. \"범주별\" 패키지 나열 참조"
 
-#: package-manager.xml.in:75(para)
+#: gui/help/C/package-manager.xml:74(para)
 msgid "Below the list of software categories is a list of searches that you have performed in this session."
 msgstr "소프트웨어 범주 목록 아래에는 이 세션에서 수행한 검색 목록이 표시됩니다."
 
-#: package-manager.xml.in:77(para)
+#: gui/help/C/package-manager.xml:76(para)
 msgid "Below the package list pane is the package details pane. See <xref linkend=\"package-version\"/>."
 msgstr "패키지 목록 창 아래에는 패키지 세부 정보 창이 표시됩니다. <xref linkend=\"package-version\"/> 참조"
 
-#: package-manager.xml.in:82(title)
+#: gui/help/C/package-manager.xml:81(title)
 msgid "Managing Packages"
 msgstr "패키지 관리"
 
-#: package-manager.xml.in:83(para)
+#: gui/help/C/package-manager.xml:82(para)
 msgid "You can list packages according to various criteria. You can install, update, and remove packages."
 msgstr "다양한 조건에 따라 패키지를 나열할 수 있으며, 패키지를 설치, 업데이트 및 제거할 수 있습니다."
 
-#: package-manager.xml.in:84(title)
+#: gui/help/C/package-manager.xml:83(title)
 msgid "Listing Packages"
 msgstr "패키지 나열"
 
-#: package-manager.xml.in:85(para)
+#: gui/help/C/package-manager.xml:84(para)
 msgid "The list of packages in the Package Manager list pane is affected by the selections you make in the <guimenu>Publisher</guimenu> drop-down menu, the <guimenu>View</guimenu> drop-down menu, the categories pane, and the Search field."
 msgstr "패키지 관리자 목록 창의 패키지 목록은 <guimenu>게시자</guimenu> 드롭다운 메뉴, <guimenu>보기</guimenu> 드롭다운 메뉴, 범주 창 및 검색 필드에서 선택한 내용에 따라 달라집니다."
 
-#: package-manager.xml.in:86(para)
+#: gui/help/C/package-manager.xml:85(para)
 msgid "You can reorder the package list by clicking the column headings."
 msgstr "열 제목을 눌러 패키지 목록의 순서를 재지정할 수 있습니다."
 
-#: package-manager.xml.in:87(para)
+#: gui/help/C/package-manager.xml:86(para)
 msgid "You can use the <guibutton>Refresh</guibutton> button or the <menuchoice><guimenu>Package</guimenu><guimenuitem>Refresh</guimenuitem></menuchoice> menu option to reread repository catalogs and update the list of packages and package status. A refresh also is attempted whenever you open Package Manager."
 msgstr "<guibutton>새로 고침</guibutton> 버튼 또는 <menuchoice><guimenu>패키지</guimenu><guimenuitem>새로 고침</guimenuitem></menuchoice> 메뉴 옵션을 사용하여 저장소 카탈로그를 다시 읽고 패키지 목록 및 패키지 상태를 업데이트할 수 있습니다. 또한 새로 고침은 패키지 관리자를 열 때마다 시도됩니다."
 
-#: package-manager.xml.in:88(title)
+#: gui/help/C/package-manager.xml:87(title)
 msgid "By Publisher"
 msgstr "게시자별"
 
-#: package-manager.xml.in:89(para)
+#: gui/help/C/package-manager.xml:88(para)
 msgid "The <guimenu>Publisher</guimenu> drop-down menu enables you to list packages according to publisher."
 msgstr "<guimenu>게시자</guimenu> 드롭다운 메뉴를 통해 게시자에 따라 패키지를 나열할 수 있습니다."
 
-#: package-manager.xml.in:90(para)
+#: gui/help/C/package-manager.xml:89(para)
 msgid "The top of the menu lists the name of each publisher that you have added using the Add Publisher dialog or using the <literal>pkg</literal> command. When you select one of these publishers, the package list pane shows only packages that are available from that selected publisher. The package list pane shows only the Name, Status, and Summary columns because the publisher is the same for every package."
 msgstr "메뉴 위쪽에는 게시자 추가 대화 상자를 사용하거나 <literal>pkg</literal> 명령을 사용하여 추가한 각 게시자의 이름이 나열됩니다. 해당 게시자 중 하나를 선택하면 선택한 해당 게시자로부터 사용 가능한 패키지만 패키지 목록 창에 표시됩니다. 이 경우 모든 패키지에 대한 게시자가 동일하므로 패키지 목록 창에는 이름, 상태 및 요약 열만 표시됩니다."
 
-#: package-manager.xml.in:92(para)
+#: gui/help/C/package-manager.xml:91(para)
 msgid "<guimenuitem>All Publishers</guimenuitem> — Shows packages from all publishers in the package list pane. The package list pane shows columns Name, Status, Publisher, and Summary."
 msgstr "<guimenuitem>모든 게시자</guimenuitem> — 패키지 목록 창에 모든 게시자의 패키지를 표시합니다. 패키지 목록 창에는 이름, 상태, 게시자 및 요약 열이 표시됩니다."
 
-#: package-manager.xml.in:93(para)
+#: gui/help/C/package-manager.xml:92(para)
 msgid "Example: To list all media device drivers that have updates available from all publishers, select <guimenuitem>All Publishers</guimenuitem> from the <guimenu>Publisher</guimenu> menu, select the <menuchoice><guimenu>Drivers</guimenu><guimenuitem>Media</guimenuitem></menuchoice> category, and select <guimenuitem>Updates</guimenuitem> from the <guimenu>View</guimenu> menu."
 msgstr "예: 모든 게시자로부터 업데이트를 사용할 수 있는 매체 장치 드라이버를 모두 나열하려면 <guimenu>게시자</guimenu> 메뉴에서 <guimenuitem>모든 게시자</guimenuitem>를 선택하고 <menuchoice><guimenu>드라이버</guimenu><guimenuitem>매체</guimenuitem></menuchoice> 범주를 선택한 다음 <guimenu>보기</guimenu> 메뉴에서 <guimenuitem>업데이트</guimenuitem>를 선택합니다."
 
-#: package-manager.xml.in:95(para)
+#: gui/help/C/package-manager.xml:94(para)
 msgid "<guimenuitem>All Installed Packages</guimenuitem> — Shows all packages that are installed from all publishers."
 msgstr "<guimenuitem>설치된 모든 패키지</guimenuitem> — 모든 게시자로부터 설치된 패키지를 모두 표시합니다."
 
-#: package-manager.xml.in:96(para)
+#: gui/help/C/package-manager.xml:95(para)
 msgid "Example: To list all the font packages that are currently installed from the <literal>solaris</literal> publisher, select <guimenuitem>All Installed Packages</guimenuitem> from the <guimenu>Publisher</guimenu> menu, select the <menuchoice><guimenu>System</guimenu><guimenuitem>Fonts</guimenuitem></menuchoice> category, click on the Publisher column heading to sort the list by Publisher, and scroll down to the <literal>solaris</literal> entries."
 msgstr "예: 현재 <literal>solaris</literal> 게시자로부터 설치된 글꼴 패키지를 모두 나열하려면 <guimenu>게시자</guimenu> 메뉴에서 <guimenuitem>설치된 모든 패키지</guimenuitem>를 선택하고 <menuchoice><guimenu>시스템</guimenu><guimenuitem>글꼴</guimenuitem></menuchoice> 범주를 선택한 다음 게시자 열 제목을 눌러 목록을 게시자별로 정렬하고 <literal>solaris</literal> 항목이 표시될 때까지 아래로 스크롤합니다."
 
-#: package-manager.xml.in:98(para)
+#: gui/help/C/package-manager.xml:97(para)
 msgid "<guimenuitem>All Publishers (Search)</guimenuitem> — Shows an informational message in the package list pane instead of a list of packages. The message lists all publishers that you have configured and reminds you how to view all packages from those publishers. See <xref linkend=\"search-pkg\"/> for information about searching with <guimenuitem>All Publishers (Search)</guimenuitem>."
 msgstr "<guimenuitem>모든 게시자(검색)</guimenuitem> — 패키지 목록 창에 패키지 목록 대신 정보 메시지를 표시합니다. 메시지에는 구성한 모든 게시자가 나열되며 해당 게시자의 모든 패키지를 확인할 수 있는 방법이 표시됩니다. <guimenuitem>모든 게시자(검색)</guimenuitem>를 사용하는 검색에 대한 자세한 내용은 <xref linkend=\"search-pkg\"/>을 참조하십시오."
 
-#: package-manager.xml.in:100(para)
+#: gui/help/C/package-manager.xml:99(para)
 msgid "<guimenuitem>Add...</guimenuitem> — Opens the Add Publisher window."
 msgstr "<guimenuitem>추가...</guimenuitem> — 게시자 추가 창을 엽니다."
 
-#: package-manager.xml.in:104(title)
+#: gui/help/C/package-manager.xml:103(title)
 msgid "By Package Status"
 msgstr "패키지 상태별"
 
-#: package-manager.xml.in:105(para)
+#: gui/help/C/package-manager.xml:104(para)
 msgid "The <guimenu>View</guimenu> drop-down menu enables you to list packages according to package status. Package status can be installed, not installed, or an update is available. The icons displayed on the <guimenu>View</guimenu> menu match the icons displayed in the Status column of the package list pane."
 msgstr "<guimenu>보기</guimenu> 드롭다운 메뉴를 통해 패키지 상태에 따라 패키지를 나열할 수 있습니다. 패키지 상태는 설치됨, 설치되지 않음, 업데이트를 사용할 수 있음일 수 있습니다. <guimenu>보기</guimenu> 메뉴에 표시되는 아이콘은 패키지 목록 창의 상태 열에 표시되는 아이콘과 동일합니다."
 
-#: package-manager.xml.in:106(para)
+#: gui/help/C/package-manager.xml:105(para)
 msgid "<guimenuitem>All Packages</guimenuitem> — Shows all packages available from the selected publisher in the selected category or matching the specified search string."
 msgstr "<guimenuitem>모든 패키지</guimenuitem> — 선택된 범주 내 선택된 게시자로부터 사용 가능한 모든 패키지 또는 지정된 검색 문자열과 일치하는 모든 패키지를 표시합니다."
 
-#: package-manager.xml.in:107(para)
+#: gui/help/C/package-manager.xml:106(para)
 msgid "Example: To list all web services packages from the <literal>solaris</literal> publisher that are installed, not installed, or have updates available, select <literal>solaris</literal> from the <guimenu>Publisher</guimenu> menu, select the <menuchoice><guimenu>Web Services</guimenu></menuchoice> category, and select <guimenuitem>All Packages</guimenuitem> from the <guimenu>View</guimenu> menu."
 msgstr "예: <literal>solaris</literal> 게시자로부터 설치된 웹 서비스 패키지, 설치되지 않은 웹 서비스 패키지, 업데이트를 사용할 수 있는 웹 서비스 패키지를 모두 나열하려면 <guimenu>게시자</guimenu> 메뉴에서 <literal>solaris</literal>를 선택하고 <menuchoice><guimenu>웹 서비스</guimenu></menuchoice> 범주를 선택한 다음 <guimenu>보기</guimenu> 메뉴에서 <guimenuitem>모든 패키지</guimenuitem>를 선택합니다."
 
-#: package-manager.xml.in:110(para)
+#: gui/help/C/package-manager.xml:109(para)
 msgid "<guimenuitem>Installed Packages</guimenuitem> — Shows all installed packages from the selected publisher in the selected category or matching the specified search string. See also the <menuchoice><guimenu>Publisher</guimenu><guimenuitem>All Installed Packages</guimenuitem></menuchoice> option."
 msgstr "<guimenuitem>설치된 패키지</guimenuitem> — 선택된 범주 내 선택된 게시자로부터 설치된 모든 패키지 또는 지정된 검색 문자열과 일치하는 설치된 모든 패키지를 표시합니다. <menuchoice><guimenu>게시자</guimenu><guimenuitem>설치된 모든 패키지</guimenuitem></menuchoice> 옵션을 참조하십시오."
 
-#: package-manager.xml.in:111(para)
+#: gui/help/C/package-manager.xml:110(para)
 msgid "Example: To list only the web server packages that are installed from the <literal>solaris</literal> publisher, select <literal>solaris</literal> from the <guimenu>Publisher</guimenu> menu, select the <menuchoice><guimenu>Web Services</guimenu></menuchoice> category, and select <guimenuitem>Installed Packages</guimenuitem> from the <guimenu>View</guimenu> menu."
 msgstr "예: <literal>solaris</literal> 게시자로부터 설치된 웹 서버 패키지만 나열하려면 <guimenu>게시자</guimenu> 메뉴에서 <literal>solaris</literal>를 선택하고 <menuchoice><guimenu>웹 서비스</guimenu></menuchoice> 범주를 선택한 다음 <guimenu>보기</guimenu> 메뉴에서 <guimenuitem>설치된 패키지</guimenuitem>를 선택합니다."
 
-#: package-manager.xml.in:113(para)
+#: gui/help/C/package-manager.xml:112(para)
 msgid "<guimenuitem>Updates</guimenuitem> — Shows all packages from the selected publisher in the selected category or matching the specified search string that have updates available."
 msgstr "<guimenuitem>업데이트</guimenuitem> — 선택된 범주 내 선택된 게시자로부터 업데이트를 사용할 수 있는 모든 패키지 또는 지정된 검색 문자열과 일치하는 업데이트를 사용할 수 있는 모든 패키지를 표시합니다."
 
-#: package-manager.xml.in:114(para)
+#: gui/help/C/package-manager.xml:113(para)
 msgid "Example: To list all device drivers that have updates available from all publishers, select <guimenuitem>All Publishers</guimenuitem> from the <guimenu>Publisher</guimenu> menu, select the <guimenu>Drivers</guimenu> category, and select <guimenuitem>Updates</guimenuitem> from the <guimenu>View</guimenu> menu."
 msgstr "예: 모든 게시자로부터 업데이트를 사용할 수 있는 장치 드라이버를 모두 나열하려면 <guimenu>게시자</guimenu> 메뉴에서 <guimenuitem>모든 게시자</guimenuitem>를 선택하고 <guimenu>드라이버</guimenu> 범주를 선택한 다음 <guimenu>보기</guimenu> 메뉴에서 <guimenuitem>업데이트</guimenuitem>를 선택합니다."
 
-#: package-manager.xml.in:116(para)
+#: gui/help/C/package-manager.xml:115(para)
 msgid "<guimenuitem>Not Installed Packages</guimenuitem> — Shows all packages from the selected publisher in the selected category or matching the specified search string that are not installed."
 msgstr "<guimenuitem>설치되지 않은 패키지</guimenuitem> — 선택된 범주 내 선택된 게시자로부터 설치되지 않은 모든 패키지 또는 지정된 검색 문자열과 일치하는 설치되지 않은 모든 패키지를 표시합니다."
 
-#: package-manager.xml.in:117(para)
+#: gui/help/C/package-manager.xml:116(para)
 msgid "Example: To list all the font packages that are currently not installed from the <literal>solaris</literal> publisher, select <literal>solaris</literal> from the <guimenu>Publisher</guimenu> menu, select the <menuchoice><guimenu>System</guimenu><guimenuitem>Fonts</guimenuitem></menuchoice> category, and then select <guimenuitem>Not Installed Packages</guimenuitem> from the <guimenu>View</guimenu> menu."
 msgstr "예: 현재 <literal>solaris</literal> 게시자로부터 설치되지 않은 글꼴 패키지를 모두 나열하려면 <guimenu>게시자</guimenu> 메뉴에서 <literal>solaris</literal>를 선택하고 <menuchoice><guimenu>시스템</guimenu><guimenuitem>글꼴</guimenuitem></menuchoice> 범주를 선택한 다음 <guimenu>보기</guimenu> 메뉴에서 <guimenuitem>설치되지 않은 패키지</guimenuitem>를 선택합니다."
 
-#: package-manager.xml.in:119(para)
+#: gui/help/C/package-manager.xml:118(para)
 msgid "<guimenuitem>Selected Packages</guimenuitem> — Lists all packages that are currently selected. See <xref linkend=\"select-pkg\"/>."
 msgstr "<guimenuitem>선택된 패키지</guimenuitem> — 현재 선택된 모든 패키지를 나열합니다. <xref linkend=\"select-pkg\"/>을 참조하십시오."
 
-#: package-manager.xml.in:123(title)
+#: gui/help/C/package-manager.xml:122(title)
 msgid "By Category"
 msgstr "범주별"
 
-#: package-manager.xml.in:124(para)
+#: gui/help/C/package-manager.xml:123(para)
 msgid "You can browse the available packages by type of software in the category pane on the left side of the Package Manager window. Click a category name to show subcategories. Packages in the selected category or subcategory are listed in the package list pane according to the selected publisher and package status and the specified search criteria."
 msgstr "패키지 관리자 창 왼쪽에 있는 범주 창에서 소프트웨어 유형별로 사용 가능한 패키지를 찾아볼 수 있습니다. 하위 범주를 표시하려면 범주 이름을 누릅니다. 선택된 게시자 및 패키지 상태와 지정된 검색 조건에 따라 선택된 범주 또는 하위 범주의 패키지가 패키지 목록 창에 나열됩니다."
 
-#: package-manager.xml.in:125(para)
+#: gui/help/C/package-manager.xml:124(para)
 msgid "In addition to named types of software, the categories pane also enables you to select <guimenuitem>All Categories</guimenuitem> and <guimenuitem>Recent Searches</guimenuitem>. See <xref linkend=\"search-pkg\"/> “Repeat a Previous Search” for information about <guimenuitem>Recent Searches</guimenuitem>."
 msgstr "범주 창에서는 소프트웨어 유형을 지정할 수도 있지만 <guimenuitem>모든 범주</guimenuitem> 및 <guimenuitem>최근 검색</guimenuitem>을 선택할 수도 있습니다. <guimenuitem>최근 검색</guimenuitem>에 대한 자세한 내용은 <xref linkend=\"search-pkg\"/> \"이전 검색 반복\"을 참조하십시오."
 
-#: package-manager.xml.in:128(title)
+#: gui/help/C/package-manager.xml:127(title)
 msgid "Searching for Packages"
 msgstr "패키지 검색"
 
-#: package-manager.xml.in:129(para)
+#: gui/help/C/package-manager.xml:128(para)
 msgid "Use one of the following two methods to search for packages:"
 msgstr "다음 두 가지 방법 중 하나로 패키지를 검색할 수 있습니다."
 
-#: package-manager.xml.in:130(para)
+#: gui/help/C/package-manager.xml:129(para)
 msgid "Focus on the package list pane (for example, select <menuchoice><guimenu>Edit</guimenu><guimenuitem>Go to package list</guimenuitem></menuchoice> and start typing. As you type, matches are identified among the packages currently listed in the package list pane."
 msgstr "패키지 목록 창에서 포커스를 설정합니다. 예를 들어, <menuchoice><guimenu>편집</guimenu><guimenuitem>패키지 목록으로 이동</guimenuitem></menuchoice>을 선택하고 입력을 시작합니다. 입력하는 내용에 따라 현재 패키지 목록 창에 나열된 패키지 중에서 일치 항목이 식별됩니다."
 
-#: package-manager.xml.in:132(para)
+#: gui/help/C/package-manager.xml:131(para)
 msgid "Use the Search field in the tool bar."
 msgstr "도구 모음의 검색 필드를 사용합니다."
 
-#: package-manager.xml.in:135(title)
+#: gui/help/C/package-manager.xml:134(title)
 msgid "Enter a Search String"
 msgstr "검색 문자열 입력"
 
-#: package-manager.xml.in:136(para)
+#: gui/help/C/package-manager.xml:135(para)
 msgid "Enter a string in the Search field and then press the Enter key or click the magnifying glass icon to the right of the Search field."
 msgstr "검색 필드에 문자열을 입력한 다음 Enter 키를 누르거나 검색 필드 오른쪽에 있는 돋보기 아이콘을 누릅니다."
 
-#: package-manager.xml.in:137(para)
+#: gui/help/C/package-manager.xml:136(para)
 msgid "<guimenu>Publisher</guimenu> menu selection — Package Manager searches for the search string in the information about each package from a particular publisher or from all publishers, according to what you have selected on the <guimenu> Publisher</guimenu> menu."
 msgstr "<guimenu>게시자</guimenu> 메뉴 선택 — <guimenu>게시자</guimenu> 메뉴에서 선택한 내용에 따라 패키지 관리자가 특정 게시자 또는 모든 게시자의 각 패키지에 대한 정보에서 검색 문자열을 검색합니다."
 
-#: package-manager.xml.in:138(para)
+#: gui/help/C/package-manager.xml:137(para)
 msgid "Search results are the same whether you select <guimenuitem>All Publishers</guimenuitem> or <guimenuitem>All Publishers (Search)</guimenuitem>. The difference is that using <guimenuitem>All Publishers (Search)</guimenuitem> is faster because you avoid the delay to load data from all publishers that you incur when you select <guimenuitem>All Publishers</guimenuitem>. With <guimenuitem>All Publishers (Search)</guimenuitem>, the search is performed on all publishers without loading data from all publishers in the package list pane."
 msgstr "<guimenuitem>모든 게시자</guimenuitem>를 선택하든 <guimenuitem>모든 게시자(검색)</guimenuitem>를 선택하든 검색 결과는 동일합니다. <guimenuitem>모든 게시자(검색)</guimenuitem>를 사용하는 것이 더 빠르다는 것만 다릅니다. <guimenuitem>모든 게시자</guimenuitem>를 선택할 때는 모든 게시자의 데이터가 로드되어 지연이 발생하기 때문입니다. <guimenuitem>모든 게시자(검색)</guimenuitem>를 사용하면 패키지 목록 창에 나열되는 모든 게시자의 데이터를 로드하지 않고 모든 게시자에 대해 검색이 수행됩니다."
 
-#: package-manager.xml.in:140(para)
+#: gui/help/C/package-manager.xml:139(para)
 msgid "<guimenu>View</guimenu> menu selection — Search results are displayed in the package list pane according to the package status selected on the <guimenu>View</guimenu> menu. You can display different subsets of the same search results in the package list pane by changing the <guimenu>View</guimenu> menu selection without redoing the search."
 msgstr "<guimenu>보기</guimenu> 메뉴 선택 — <guimenu>보기</guimenu> 메뉴에서 선택된 패키지 상태에 따라 검색 결과가 패키지 목록 창에 표시됩니다. 검색을 다시 실행하지 않고 <guimenu>보기</guimenu> 메뉴 선택을 변경하여 패키지 목록 창에 동일한 검색 결과의 다른 일부분을 표시할 수 있습니다."
 
-#: package-manager.xml.in:143(para)
+#: gui/help/C/package-manager.xml:142(para)
 msgid "Package Manager searches package information including name, summary, description, category, and names of files contained within the package. Only exact matches are found if you do not use wild cards."
 msgstr "패키지 관리자는 이름, 요약, 설명, 범주, 패키지 내에 포함된 파일 이름 등의 패키지 정보를 검색합니다. 와일드카드를 사용하지 않을 경우 정확한 일치 항목만 검색됩니다."
 
-#: package-manager.xml.in:144(literal)
+#: gui/help/C/package-manager.xml:143(literal)
 msgid "AND"
 msgstr "AND"
 
-#: package-manager.xml.in:145(para)
+#: gui/help/C/package-manager.xml:144(para)
 msgid "When search terms are separated by spaces or by <literal>AND</literal>, Package Manager searches for packages that contain <emphasis role=\"strong\">all</emphasis> of the search terms. This is the default search behavior."
 msgstr "검색 용어를 공백이나 <literal>AND</literal>로 구분하면 패키지 관리자는 검색 용어를 <emphasis role=\"strong\">모두</emphasis> 포함하는 패키지를 검색합니다. 이 동작이 기본 검색 동작입니다."
 
-#: package-manager.xml.in:146(para)
+#: gui/help/C/package-manager.xml:145(para)
 msgid "Example: If the search string is <literal>python book</literal> or <literal>python AND book</literal>, the search results include only packages that contain <emphasis>both</emphasis><literal>python</literal><emphasis>and</emphasis><literal>book</literal> in their package information. For example, the package <literal>diveintopython</literal>, a book about Python programming, would appear in the search results, but the package <literal>python-26</literal> would not."
 msgstr "예: 검색 문자열이 <literal>python book</literal> 또는 <literal>python AND book</literal>이면 검색 결과에는 패키지 정보에 <literal>python</literal><emphasis>과</emphasis> <literal>book</literal>이 <emphasis>모두</emphasis> 들어 있는 패키지만 포함됩니다. 예를 들어, Python 프로그래밍에 대한 북인 <literal>diveintopython</literal> 패키지는 검색 결과에 나타나지만 <literal>python-26</literal>은 나타나지 않습니다."
 
-#: package-manager.xml.in:149(term)
+#: gui/help/C/package-manager.xml:148(term)
 msgid "Double quotation marks"
 msgstr "큰따옴표"
 
-#: package-manager.xml.in:150(para)
+#: gui/help/C/package-manager.xml:149(para)
 msgid "Enclose the search term in double quotation marks to match that search term exactly."
 msgstr "해당 검색 용어와 정확히 일치하도록 검색 용어를 큰따옴표로 묶습니다."
 
-#: package-manager.xml.in:151(para)
+#: gui/help/C/package-manager.xml:150(para)
 msgid "Example: <literal>\"ethernet driver\"</literal> in double quotation marks matches <literal>Fast Ethernet Driver</literal> but does not match <literal>Ethernet Adapter Driver</literal>."
 msgstr "예: 큰따옴표로 묶인 <literal>\"ethernet driver\"</literal>의 경우 <literal>Fast Ethernet Driver</literal>와는 일치하지만 <literal>Ethernet Adapter Driver</literal>와는 일치하지 않습니다."
 
-#: package-manager.xml.in:154(term)
+#: gui/help/C/package-manager.xml:153(term)
 msgid "Wild card"
 msgstr "와일드카드"
 
-#: package-manager.xml.in:155(para)
+#: gui/help/C/package-manager.xml:154(para)
 msgid "You can use the <literal>*</literal> wild card in your search string. Using wild cards can be slower."
 msgstr "검색 문자열에 <literal>*</literal> 와일드카드를 사용할 수 있습니다. 와일드카드를 사용할 경우 검색 속도가 느려질 수 있습니다."
 
-#: package-manager.xml.in:156(para)
+#: gui/help/C/package-manager.xml:155(para)
 msgid "Example: <literal>802.11*</literal> matches <literal>802.11b/g</literal> and <literal>802.11a/b/g</literal>."
 msgstr "예: <literal>802.11*</literal>는 <literal>802.11b/g</literal> 및 <literal>802.11a/b/g</literal>와 일치합니다."
 
-#: package-manager.xml.in:157(para)
+#: gui/help/C/package-manager.xml:156(para)
 msgid "Note that <literal>802.11*</literal> does not match <literal>IEEE802.11b/g</literal>. To match <literal>IEEE802.11b/g</literal>, use search string <literal>*802.11*</literal>."
 msgstr "<literal>802.11*</literal>는 <literal>IEEE802.11b/g</literal>와 일치하지 않습니다. <literal>IEEE802.11b/g</literal>와 일치시키려면 검색 문자열로 <literal>*802.11*</literal>를 사용하십시오."
 
-#: package-manager.xml.in:160(literal)
+#: gui/help/C/package-manager.xml:159(literal)
 msgid "OR"
 msgstr "OR"
 
-#: package-manager.xml.in:161(para)
+#: gui/help/C/package-manager.xml:160(para)
 msgid "When search terms are separated by <literal>OR</literal>, Package Manager searches for packages that contain <emphasis role=\"strong\">any</emphasis> of the search terms."
 msgstr "검색 용어를 <literal>OR</literal>로 구분하면 패키지 관리자는 검색 용어 중 <emphasis role=\"strong\">임의</emphasis>의 하나를 포함하는 패키지를 검색합니다."
 
-#: package-manager.xml.in:162(para)
+#: gui/help/C/package-manager.xml:161(para)
 msgid "Example: <literal>python OR book</literal> matches all packages that contain <literal>python</literal> in their package information and all packages that contain <literal>book</literal> in their package information."
 msgstr "예: <literal>python OR book</literal>은 패키지 정보에 <literal>python</literal>이 들어 있는 모든 패키지와 패키지 정보에 <literal>book</literal>이 들어 있는 모든 패키지와 일치합니다."
 
-#: package-manager.xml.in:166(para)
+#: gui/help/C/package-manager.xml:165(para)
 msgid "You can combine these search string modifiers. You can use AND, OR, doublt quotation marks, and * all in one search string."
 msgstr "이러한 검색 문자열 수정자를 함께 사용할 수 있습니다. 즉, 하나의 검색 문자열에서 AND와 OR, 큰따옴표, *를 모두 사용할 수 있습니다."
 
-#: package-manager.xml.in:168(title)
+#: gui/help/C/package-manager.xml:167(title)
 msgid "Clear the Search Field"
 msgstr "검색 필드 지우기"
 
-#: package-manager.xml.in:169(para)
+#: gui/help/C/package-manager.xml:168(para)
 msgid "To clear both the search string and the list of search results, use the Search field or the Edit menu."
 msgstr "검색 문자열과 검색 결과 목록을 모두 지우려면 검색 필드 또는 편집 메뉴를 사용합니다."
 
-#: package-manager.xml.in:170(para)
+#: gui/help/C/package-manager.xml:169(para)
 msgid "In the Search field, click the <literal>X</literal> icon."
 msgstr "검색 필드에서 <literal>X</literal> 아이콘을 누릅니다."
 
-#: package-manager.xml.in:172(para)
+#: gui/help/C/package-manager.xml:171(para)
 msgid "On the <guimenu>Edit</guimenu> menu, select the <guimenuitem>Clear Search</guimenuitem> option."
 msgstr "<guimenu>편집</guimenu> 메뉴에서 <guimenuitem>검색 지우기</guimenuitem> 옵션을 선택합니다."
 
-#: package-manager.xml.in:176(title)
+#: gui/help/C/package-manager.xml:175(title)
 msgid "Cancel the Search"
 msgstr "검색 취소"
 
-#: package-manager.xml.in:177(para)
+#: gui/help/C/package-manager.xml:176(para)
 msgid "During a search operation, a busy bar displays at the right end of the status bar at the bottom of the Package Manager window. On the right end of the busy bar is an <literal>X</literal> icon. Click the <literal>X</literal> icon in the busy bar to cancel the search in progress."
 msgstr "검색 작업 중에는 패키지 관리자 창 아래쪽에 있는 상태 표시줄의 오른쪽 끝에 사용 중 표시줄이 표시됩니다. 사용 중 표시줄의 오른쪽 끝에는 <literal>X</literal> 아이콘이 표시됩니다. 진행 중인 검색을 취소하려면 사용 중 표시줄의 <literal>X</literal> 아이콘을 누릅니다."
 
-#: package-manager.xml.in:179(title)
+#: gui/help/C/package-manager.xml:178(title)
 msgid "Redisplay Previous Search Results"
 msgstr "이전 검색 결과 다시 표시"
 
-#: package-manager.xml.in:180(para)
+#: gui/help/C/package-manager.xml:179(para)
 msgid "Results from searches that you have already performed during the current Package Manager session are saved in <guimenuitem>Recent Searches</guimenuitem> in the categories pane."
 msgstr "현재 패키지 관리자 세션 중 이미 수행한 검색의 결과가 범주 창의 <guimenuitem>최근 검색</guimenuitem>에 저장되어 있습니다."
 
-#: package-manager.xml.in:181(para)
+#: gui/help/C/package-manager.xml:180(para)
 msgid "Select the <guimenuitem>Recent Searches</guimenuitem> label in the categories pane to display an informational message in the package list pane. The package list pane shows the list of previous search results. Click a \"results\" link to redisplay those results."
 msgstr "패키지 목록 창에 정보 메시지를 표시하려면 범주 창에서 <guimenuitem>최근 검색</guimenuitem> 레이블을 선택합니다. 그러면 패키지 목록 창에 이전 검색 결과 목록이 표시됩니다. 해당 결과를 다시 표시하려면 \"결과\" 링크를 누릅니다."
 
-#: package-manager.xml.in:182(para)
+#: gui/help/C/package-manager.xml:181(para)
 msgid "Select the arrow to the left of the <guimenuitem>Recent Searches</guimenuitem> label to expand or hide the list of previous search results in the categories pane. Select an item in the list of recent searches to redisplay those search results."
 msgstr "범주 창에서 이전 검색 결과 목록을 확장하거나 숨기려면 <guimenuitem>최근 검색</guimenuitem> 레이블 왼쪽에 있는 화살표를 선택합니다. 해당 검색 결과를 다시 표시하려면 최근 검색 목록에서 항목을 선택합니다."
 
-#: package-manager.xml.in:183(para)
+#: gui/help/C/package-manager.xml:182(para)
 msgid "A search that matched no packages does not appear in the recent searches list."
 msgstr "일치하는 패키지가 없는 검색은 최근 검색 목록에 나타나지 않습니다."
 
-#: package-manager.xml.in:184(para)
+#: gui/help/C/package-manager.xml:183(para)
 msgid "Selecting the <guibutton>Refresh</guibutton> button or the <menuchoice><guimenu>Package</guimenu><guimenuitem>Refresh</guimenuitem></menuchoice> menu option deletes all recent searches results."
 msgstr "<guibutton>새로 고침</guibutton> 버튼 또는 <menuchoice><guimenu>패키지</guimenu><guimenuitem>새로 고침</guimenuitem></menuchoice> 메뉴 옵션을 선택하면 최근 검색 결과가 모두 삭제됩니다."
 
-#: package-manager.xml.in:187(title)
+#: gui/help/C/package-manager.xml:186(title)
 msgid "Showing More Information"
 msgstr "추가 정보 표시"
 
-#: package-manager.xml.in:188(para)
+#: gui/help/C/package-manager.xml:187(para)
 msgid "See more information about a package in the package details pane or on the Package Version Info dialog."
 msgstr "패키지 세부 정보 창 또는 패키지 버전 정보 대화 상자에서 패키지에 대한 추가 정보를 확인합니다."
 
-#: package-manager.xml.in:189(title)
+#: gui/help/C/package-manager.xml:188(title)
 msgid "Package Details Pane"
 msgstr "패키지 세부 정보 창"
 
-#: package-manager.xml.in:190(para)
+#: gui/help/C/package-manager.xml:189(para)
 msgid "To show more information about a package, click your left mouse button to highlight the package in the package list. The package details pane below the package list pane shows information such as the latest version available from this publisher, the size of the package, the files in the package, dependencies, and license terms."
 msgstr "패키지에 대한 추가 정보를 표시하려면 패키지 목록의 패키지를 마우스 왼쪽 버튼으로 눌러 강조 표시합니다. 패키지 목록 창 아래의 패키지 세부 정보 창에 해당 게시자로부터 사용 가능한 최신 버전, 패키지 크기, 패키지 파일, 종속성, 라이센스 조건 등의 정보가 표시됩니다."
 
-#: package-manager.xml.in:191(para)
+#: gui/help/C/package-manager.xml:190(para)
 msgid "If a package has been renamed since it was installed, the Renamed To field on the General tab shows the new name of the package."
 msgstr "패키지가 설치된 후 패키지의 이름이 바뀐 경우 일반 탭의 다음으로 이름 변경 필드에 패키지의 새 이름이 표시됩니다."
 
-#: package-manager.xml.in:192(para)
+#: gui/help/C/package-manager.xml:191(para)
 msgid "The Versions tab shows a list of versions of this package that are available for you to install. Select a version from the list and click the <guibutton>Install/Update</guibutton> button to the right of the list to install that version. See <xref linkend=\"install-pkg\"/>."
 msgstr "버전 탭에는 설치할 수 있는 패키지 버전 목록이 표시됩니다. 버전을 설치하려면 목록에서 해당 버전을 선택하고 목록 오른쪽에 있는 <guibutton>설치/업데이트</guibutton> 버튼을 누릅니다. <xref linkend=\"install-pkg\"/>를 참조하십시오."
 
-#: package-manager.xml.in:193(para)
+#: gui/help/C/package-manager.xml:192(para)
 msgid "The package details pane is not displayed if the package list pane contains an informational message."
 msgstr "패키지 목록 창에 정보 메시지가 표시되는 경우 패키지 세부 정보 창이 표시되지 않습니다."
 
-#: package-manager.xml.in:195(title)
+#: gui/help/C/package-manager.xml:194(title)
 msgid "Package Version Info Dialog"
 msgstr "패키지 버전 정보 대화 상자"
 
-#: package-manager.xml.in:196(para)
+#: gui/help/C/package-manager.xml:195(para)
 msgid "Click your right mouse button on a package in the package list to pop up the <guimenu>Package</guimenu> menu."
 msgstr "<guimenu>패키지</guimenu> 메뉴를 팝업하려면 패키지 목록의 패키지를 마우스 오른쪽 버튼으로 누릅니다."
 
-#: package-manager.xml.in:197(para)
+#: gui/help/C/package-manager.xml:196(para)
 msgid "Select the <menuchoice><guimenu>Package</guimenu><guimenuitem>Package Version Info</guimenuitem></menuchoice> menu option either from the pop-up menu or from the menu bar to display a separate window that shows the version of the package that is installed and the latest version that you can install or upgrade to if applicable."
 msgstr "설치된 패키지의 버전과 설치 또는 업그레이드할 수 있는 최신 버전(해당하는 경우)을 보여 주는 별도의 창을 표시하려면 팝업 메뉴 또는 메뉴 표시줄에서 <menuchoice><guimenu>패키지</guimenu><guimenuitem>패키지 버전 정보</guimenuitem></menuchoice> 메뉴 옵션을 선택합니다."
 
-#: package-manager.xml.in:200(title)
+#: gui/help/C/package-manager.xml:199(title)
 msgid "Selecting Packages"
 msgstr "패키지 선택"
 
-#: package-manager.xml.in:201(para)
+#: gui/help/C/package-manager.xml:200(para)
 msgid "Selected packages can be installed, updated, or removed. To select a package, use the package list pane or the <guimenu>Edit</guimenu> menu."
 msgstr "선택된 패키지를 설치, 업데이트 또는 제거할 수 있습니다. 패키지를 선택하려면 패키지 목록 창 또는<guimenu>편집</guimenu> 메뉴를 사용합니다."
 
-#: package-manager.xml.in:202(para)
+#: gui/help/C/package-manager.xml:201(para)
 msgid "In the package list pane, do one of the following actions to select a package. You can select multiple packages."
 msgstr "패키지를 선택하려면 패키지 목록 창에서 다음 작업 중 하나를 수행합니다. 패키지를 여러 개 선택할 수 있습니다."
 
-#: package-manager.xml.in:203(para)
+#: gui/help/C/package-manager.xml:202(para)
 msgid "Click the box to the left of the package name. Click the box again to deselect the package."
 msgstr "패키지 이름 왼쪽에 있는 상자를 누릅니다. 상자를 다시 누르면 패키지의 선택이 해제됩니다."
 
-#: package-manager.xml.in:205(para)
+#: gui/help/C/package-manager.xml:204(para)
 msgid "Click the package name one time to highlight the package. Then double-click the highlighted package to select the package. Double-click again to deselect the package."
 msgstr "패키지 이름을 한 번 눌러 패키지를 강조 표시합니다. 그런 다음 강조 표시된 패키지를 두 번 눌러 패키지를 선택합니다. 패키지를 다시 두 번 누르면 패키지의 선택이 해제됩니다."
 
-#: package-manager.xml.in:207(para)
+#: gui/help/C/package-manager.xml:206(para)
 msgid "Click the checkbox icon in the column heading to select all packages that are currently listed in the package list pane. Click the checkbox icon again to deselect all packages currently listed in the package list pane."
 msgstr "열 제목의 확인란 아이콘을 눌러 현재 패키지 목록 창에 나열된 모든 패키지를 선택합니다. 확인란 아이콘을 다시 누르면 현재 패키지 목록 창에 나열된 모든 패키지의 선택이 해제됩니다."
 
-#: package-manager.xml.in:210(para)
+#: gui/help/C/package-manager.xml:209(para)
 msgid "The <guimenu>Edit</guimenu> menu has the following options for selecting packages:"
 msgstr "<guimenu>편집</guimenu> 메뉴에는 다음과 같은 패키지 선택 옵션이 있습니다."
 
-#: package-manager.xml.in:211(para)
+#: gui/help/C/package-manager.xml:210(para)
 msgid "<guimenuitem>Select All</guimenuitem> — Selects all packages that are currently listed in the package list pane."
 msgstr "<guimenuitem>모두 선택</guimenuitem> — 현재 패키지 목록 창에 나열된 모든 패키지를 선택합니다."
 
-#: package-manager.xml.in:213(para)
+#: gui/help/C/package-manager.xml:212(para)
 msgid "<guimenuitem>Select Updates</guimenuitem> — Selects all packages that are currently listed in the package list pane that have updates available."
 msgstr "<guimenuitem>업데이트 선택</guimenuitem> — 현재 패키지 목록 창에 나열된 패키지 중 업데이트를 사용할 수 있는 모든 패키지를 선택합니다."
 
-#: package-manager.xml.in:215(para)
+#: gui/help/C/package-manager.xml:214(para)
 msgid "<guimenuitem>Deselect All</guimenuitem> — Deselects all packages that are currently listed in the package list pane."
 msgstr "<guimenuitem>모두 선택 해제</guimenuitem> — 현재 패키지 목록 창에 나열된 모든 패키지의 선택을 해제합니다."
 
-#: package-manager.xml.in:218(para)
+#: gui/help/C/package-manager.xml:217(para)
 msgid "In all cases when you select a package, packages that were previously selected are still selected."
 msgstr "패키지를 선택할 때는 항상 이전에 선택한 패키지가 선택된 상태로 표시됩니다."
 
-#: package-manager.xml.in:219(para)
+#: gui/help/C/package-manager.xml:218(para)
 msgid "The number of packages currently listed in the package list pane and the number of those packages that are selected are shown on the left side of the status bar at the bottom of the Package Manager window."
 msgstr "현재 패키지 목록 창에 나열된 패키지 수와 선택된 패키지 수가 패키지 관리자 창 아래쪽에 있는 상태 표시줄 왼쪽에 표시됩니다."
 
-#: package-manager.xml.in:220(para)
+#: gui/help/C/package-manager.xml:219(para)
 msgid "Select the <menuchoice><guimenu>Publisher</guimenu><guimenuitem>All Publishers</guimenuitem></menuchoice> option, the <guimenuitem>All Categories</guimenuitem> category, and the <menuchoice><guimenu>View</guimenu><guimenuitem>Selected Packages</guimenuitem></menuchoice> option to list all selected packages from all publishers in the package list pane."
 msgstr "패키지 목록 창의 모든 게시자로부터 선택된 패키지를 모두 나열하려면 <menuchoice><guimenu>게시자</guimenu><guimenuitem>모든 게시자</guimenuitem></menuchoice> 옵션을 선택하고 <guimenuitem>모든 범주</guimenuitem> 범주, <menuchoice><guimenu>보기</guimenu><guimenuitem>선택된 패키지</guimenuitem></menuchoice> 옵션을 선택합니다."
 
-#: package-manager.xml.in:221(para)
+#: gui/help/C/package-manager.xml:220(para)
 msgid "A package can be highlighted but not selected. When a package is highlighted, detailed information about that package is displayed in the package details pane below the package list pane. When a package is selected, a check mark displays in the box to the left of the package name. If you want to install, update, or delete a package, make sure a check mark appears in the selection box for that package."
 msgstr "패키지가 강조 표시될 수 있지만 선택되지 않습니다. 패키지가 강조 표시되면 해당 패키지에 대한 세부 정보가 패키지 목록 창 아래의 패키지 세부 정보 창에 표시됩니다. 패키지가 선택되면 패키지 이름 왼쪽의 상자에 확인 표시가 나타납니다. 패키지를 설치, 업데이트 또는 삭제하려면 해당 패키지에 대한 선택 상자에 확인 표시가 나타나는지 확인합니다."
 
-#: package-manager.xml.in:223(title)
+#: gui/help/C/package-manager.xml:222(title)
 msgid "Installing and Updating Packages"
 msgstr "패키지 설치 및 업데이트"
 
-#: package-manager.xml.in:224(para)
+#: gui/help/C/package-manager.xml:223(para)
 msgid "Before you install or update, check your Optional Components preference settings. Select the <menuchoice><guimenu>Edit</guimenu><guimenuitem>Preferences</guimenuitem></menuchoice> option. In the Preferences window, select the Optional Components tab. By default, Install all languages, Install all development files, and Install all documentation are selected. You can save space in your installation by selecting a subset of languages to install or deselecting development files, for example. Click the OK button to save your changes. These settings apply to all installed packages as well as future package installations and updates."
 msgstr "설치 또는 업데이트 전에 선택적 구성 요소 기본 설정을 확인합니다. <menuchoice><guimenu>편집</guimenu><guimenuitem>기본 설정</guimenuitem></menuchoice> 옵션을 선택합니다. 기본 설정 창에서 선택적 구성 요소 탭을 선택합니다. 기본적으로 모든 언어 설치, 모든 개발 파일 설치 및 모든 설명서 설치가 선택되어 있습니다. 설치할 언어 중 일부만 선택하거나 개발 파일의 선택을 해제하는 등으로 설치 공간을 절약할 수 있습니다. 변경 사항을 저장하려면 확인 버튼을 누릅니다. 이러한 설정은 설치된 모든 패키지와 후속 패키지 설치 및 업데이트에 적용됩니다."
 
-#: package-manager.xml.in:225(para)
+#: gui/help/C/package-manager.xml:224(para)
 msgid "Perform the following steps to install or update a package:"
 msgstr "패키지를 설치 또는 업데이트하려면 다음 단계를 수행합니다."
 
-#: package-manager.xml.in:226(para) package-manager.xml.in:248(para)
+#: gui/help/C/package-manager.xml:225(para) gui/help/C/package-manager.xml:247(para)
 msgid "Select the package. See <xref linkend=\"select-pkg\"/>."
 msgstr "패키지를 선택합니다. <xref linkend=\"select-pkg\"/>을 참조하십시오."
 
-#: package-manager.xml.in:228(para)
+#: gui/help/C/package-manager.xml:227(para)
 msgid "Use one of the following methods to install or update the package:"
 msgstr "다음 방법 중 하나로 패키지를 설치 또는 업데이트합니다."
 
-#: package-manager.xml.in:229(para)
+#: gui/help/C/package-manager.xml:228(para)
 msgid "Select the <guibutton>Install/Update</guibutton> button in the tool bar."
 msgstr "도구 모음에서 <guibutton>설치/업데이트</guibutton> 버튼을 선택합니다."
 
-#: package-manager.xml.in:231(para)
+#: gui/help/C/package-manager.xml:230(para)
 msgid "Select the <menuchoice><guimenu>Package</guimenu><guimenuitem>Install/Update</guimenuitem></menuchoice> option from the menu bar."
 msgstr "메뉴 표시줄에서 <menuchoice><guimenu>패키지</guimenu><guimenuitem>설치/업데이트</guimenuitem></menuchoice> 옵션을 선택합니다."
 
-#: package-manager.xml.in:233(para)
+#: gui/help/C/package-manager.xml:232(para)
 msgid "Click your right mouse button on the name of a package to display the pop-up <guimenu>Package</guimenu> menu. Then select the <guimenuitem>Install/Update</guimenuitem> option."
 msgstr "패키지 이름을 마우스 오른쪽 버튼으로 눌러 팝업 <guimenu>패키지</guimenu> 메뉴를 표시합니다. 그런 다음 <guimenuitem>설치/업데이트</guimenuitem> 옵션을 선택합니다."
 
-#: package-manager.xml.in:235(para)
+#: gui/help/C/package-manager.xml:234(para)
 msgid "On the Versions tab in the package details pane below the package list pane, select a version from the Version to Install list and click the <guibutton>Install/Update</guibutton> button to the right of the list. The packages in the Version to Install list are available in the repository; they might not be installable. A particular version might not be compatible with other packages that you have installed. If the version that you select is not installable on your system, Package Manager warns you and does not install the package."
 msgstr "패키지 목록 창 아래쪽 패키지 세부 정보 창에 있는 버전 탭의 설치할 버전 목록에서 버전을 선택하고 목록 오른쪽에 있는 <guibutton>설치/업데이트</guibutton> 버튼을 누릅니다. 저장소에서 설치할 버전 목록의 패키지를 사용할 수 있지만 설치하지 못할 수 있습니다. 특정 버전은 설치된 다른 패키지와 호환되지 않을 수 있습니다. 선택한 버전을 시스템에 설치할 수 없을 경우 패키지 관리자가 경고 메시지를 표시하고 패키지를 설치하지 않습니다."
 
-#: package-manager.xml.in:238(para)
+#: gui/help/C/package-manager.xml:237(para)
 msgid "If the package is already installed and does not have an update available (see the Status column or the <menuchoice><guimenu>Package</guimenu><guimenuitem>Package Version Info</guimenuitem></menuchoice> option), the <guibutton>Install/Update</guibutton> option is grayed out and not selectable."
 msgstr "패키지가 이미 설치되어 있으며 사용할 수 있는 업데이트가 없을 경우(상태 열 또는 <menuchoice><guimenu>패키지</guimenu><guimenuitem>패키지 버전 정보</guimenuitem></menuchoice> 옵션 참조) <guibutton>설치/업데이트</guibutton> 옵션이 비활성화되어 해당 옵션을 선택할 수 없습니다."
 
-#: package-manager.xml.in:240(para)
+#: gui/help/C/package-manager.xml:239(para)
 msgid "The Install/Update Confirmation window is displayed. Packages that are not yet installed are listed in the Install Details pane, and packages that are installed are listed in the Update Details pane for you to review. Select the <guibutton>Proceed</guibutton> button to install or update the listed packages."
 msgstr "설치/업데이트 확인 창이 표시됩니다. 검토를 위해 아직 설치되지 않은 패키지는 설치 세부 정보 창에 나열되며 설치된 패키지는 업데이트 세부 정보 창에 나열됩니다. <guibutton>진행</guibutton> 버튼을 선택하여 나열된 패키지를 선택 또는 업데이트합니다."
 
-#: package-manager.xml.in:241(para)
+#: gui/help/C/package-manager.xml:240(para)
 msgid "In some cases a license dialog is displayed and you must accept the license to install the package."
 msgstr "라이센스 대화 상자가 표시되는 경우 패키지를 설치하려면 라이센스에 동의해야 합니다."
 
-#: package-manager.xml.in:242(para)
+#: gui/help/C/package-manager.xml:241(para)
 msgid "If an error occurs during package installation, an error dialog is displayed. Messages explain why the install or update failed."
 msgstr "패키지를 설치하는 중 오류가 발생하면 오류 대화 상자가 표시됩니다. 메시지에는 설치 또는 업데이트 실패 원인이 설명됩니다."
 
-#: package-manager.xml.in:246(title)
+#: gui/help/C/package-manager.xml:245(title)
 msgid "Removing Packages"
 msgstr "패키지 제거"
 
-#: package-manager.xml.in:247(para)
+#: gui/help/C/package-manager.xml:246(para)
 msgid "Perform the following steps to remove a package:"
 msgstr "다음 단계를 수행하여 패키지를 제거합니다."
 
-#: package-manager.xml.in:250(para)
+#: gui/help/C/package-manager.xml:249(para)
 msgid "Use one of the following methods to remove the package:"
 msgstr "다음 방법 중 하나로 패키지를 제거합니다."
 
-#: package-manager.xml.in:251(para)
+#: gui/help/C/package-manager.xml:250(para)
 msgid "Select the <guibutton>Remove</guibutton> button in the tool bar."
 msgstr "도구 모음에서 <guibutton>제거</guibutton> 버튼을 선택합니다."
 
-#: package-manager.xml.in:253(para)
+#: gui/help/C/package-manager.xml:252(para)
 msgid "Select the <menuchoice><guimenu>Package</guimenu><guimenuitem>Remove</guimenuitem></menuchoice> option from the menu bar."
 msgstr "메뉴 표시줄에서 <menuchoice><guimenu>패키지</guimenu><guimenuitem>제거</guimenuitem></menuchoice> 옵션을 선택합니다."
 
-#: package-manager.xml.in:255(para)
+#: gui/help/C/package-manager.xml:254(para)
 msgid "Click your right mouse button on the name of a package to display the pop-up <guimenu>Package</guimenu> menu. Then select the <guimenuitem>Remove</guimenuitem> option."
 msgstr "패키지 이름을 마우스 오른쪽 버튼으로 눌러 팝업 <guimenu>패키지</guimenu> 메뉴를 표시합니다. 그런 다음 <guimenuitem>제거</guimenuitem> 옵션을 선택합니다."
 
-#: package-manager.xml.in:258(para)
+#: gui/help/C/package-manager.xml:257(para)
 msgid "If the package is not installed, the Remove option is grayed out and not selectable."
 msgstr "패키지가 설치되지 않은 경우 제거 옵션이 비활성화되어 해당 옵션을 선택할 수 없습니다."
 
-#: package-manager.xml.in:260(para)
+#: gui/help/C/package-manager.xml:259(para)
 msgid "The Remove Confirmation window is displayed. Packages to be removed are listed in the Remove Details pane for you to review. Select the <guibutton>Proceed</guibutton> button to remove the listed packages."
 msgstr "제거 확인 창이 표시됩니다. 검토를 위해 제거할 패키지가 제거 세부 정보 창에 나열됩니다. <guibutton>진행</guibutton> 버튼을 선택하여 나열된 패키지를 제거합니다."
 
-#: package-manager.xml.in:261(para)
+#: gui/help/C/package-manager.xml:260(para)
 msgid "If a package cannot be removed because other packages depend on it, you can select the <guibutton>Remove Continue</guibutton> option to attempt to remove any remaining packages that you originally selected for removal."
 msgstr "다른 패키지가 종속되어 있어 패키지를 제거할 수 없을 경우 <guibutton>제거 계속</guibutton> 옵션을 선택하여 원래 제거 대상으로 선택한 나머지 패키지를 모두 제거할 수 있습니다."
 
-#: package-manager.xml.in:266(title)
+#: gui/help/C/package-manager.xml:265(title)
 msgid "Updating Your System"
 msgstr "시스템 업데이트"
 
-#: package-manager.xml.in:267(para)
+#: gui/help/C/package-manager.xml:266(para)
 msgid "When certain key packages such as some drivers and other kernel components are updated, the system performs the following actions:"
 msgstr "중요한 특정 패키지(예: 일부 드라이버 및 기타 커널 구성 요소)가 업데이트되면 시스템에서 다음 작업을 수행합니다."
 
-#: package-manager.xml.in:268(para)
+#: gui/help/C/package-manager.xml:267(para)
 msgid "Creates a clone of the current boot environment (BE)."
 msgstr "현재 BE(부트 환경)의 복제본을 만듭니다."
 
-#: package-manager.xml.in:270(para)
+#: gui/help/C/package-manager.xml:269(para)
 msgid "Updates the packages in the clone, and does not update any packages in the current BE."
 msgstr "복제본의 패키지는 업데이트하고 현재 BE의 패키지는 업데이트하지 않습니다."
 
-#: package-manager.xml.in:272(para)
+#: gui/help/C/package-manager.xml:271(para)
 msgid "Sets the new BE to be the default boot choice the next time the system is rebooted. The current BE remains as an alternate boot choice."
 msgstr "다음 번에 시스템이 재부트될 때 새 BE가 기본 부트 옵션으로 지정되도록 설정합니다. 현재 BE는 대체 부트 옵션으로 유지됩니다."
 
-#: package-manager.xml.in:275(title)
+#: gui/help/C/package-manager.xml:274(title)
 msgid "Updating All Packages"
 msgstr "모든 패키지 업데이트"
 
-#: package-manager.xml.in:276(para)
+#: gui/help/C/package-manager.xml:275(para)
 msgid "When you select the <guibutton>Updates</guibutton> button in the tool bar or the <menuchoice><guimenu>Package</guimenu><guimenuitem>Updates</guimenuitem></menuchoice> menu option, Package Manager updates all installed packages that have updates available."
 msgstr "도구 모음의 <guibutton>업데이트</guibutton> 버튼 또는 <menuchoice><guimenu>패키지</guimenu><guimenuitem>업데이트</guimenuitem></menuchoice> 메뉴 옵션을 선택하면 패키지 관리자가 업데이트를 사용할 수 있는 설치된 모든 패키지를 업데이트합니다."
 
-#: package-manager.xml.in:277(para)
+#: gui/help/C/package-manager.xml:276(para)
 msgid "All packages that have updates available from their current publisher are updated. If a package has an update available from a different publisher in your publisher list, that package is updated only if its current publisher is configured as non-sticky. If its current publisher is configured as sticky, then that package is not updated."
 msgstr "현재 게시자로부터 업데이트를 사용할 수 있는 모든 패키지가 업데이트됩니다. 게시자 목록의 다른 게시자로부터 패키지의 업데이트를 사용할 수 있으면, 현재 게시자가 비고정으로 구성된 경우에만 해당 패키지가 업데이트되고, 현재 게시자가 고정으로 구성된 경우 해당 패키지가 업데이트되지 않습니다."
 
-#: package-manager.xml.in:278(para)
+#: gui/help/C/package-manager.xml:277(para)
 msgid "The Updates window displays, and the update process starts:"
 msgstr "업데이트 창이 표시되고 업데이트 프로세스가 시작됩니다."
 
-#: package-manager.xml.in:279(para)
+#: gui/help/C/package-manager.xml:278(para)
 msgid "The system refreshes all catalogs."
 msgstr "시스템이 모든 카탈로그를 새로 고칩니다."
 
-#: package-manager.xml.in:281(para)
+#: gui/help/C/package-manager.xml:280(para)
 msgid "The system evaluates all installed packages to determine which packages have updates available."
 msgstr "시스템이 설치된 모든 패키지를 평가하여 업데이트를 사용할 수 있는 패키지를 확인합니다."
 
-#: package-manager.xml.in:282(para)
+#: gui/help/C/package-manager.xml:281(para)
 msgid "If no packages have updates available, the message “No Updates Available” is displayed and processing stops."
 msgstr "업데이트를 사용할 수 있는 패키지가 없을 경우 \"사용 가능한 업데이트 없음\" 메시지가 표시되고 처리가 중지됩니다."
 
-#: package-manager.xml.in:284(para)
+#: gui/help/C/package-manager.xml:283(para)
 msgid "If package updates are available, the packages to be updated are listed for your review. This is your last chance to click the <guibutton>Cancel</guibutton> button to abort the update."
 msgstr "패키지 업데이트를 사용할 수 있을 경우 검토를 위해 업데이트할 패키지가 나열됩니다. 후속 단계부터는 더 이상 <guibutton>취소</guibutton> 버튼을 눌러 업데이트를 중단할 수 없습니다."
 
-#: package-manager.xml.in:288(para)
+#: gui/help/C/package-manager.xml:287(para)
 msgid "Click the <guibutton>Proceed</guibutton> button to continue with the update."
 msgstr "<guibutton>진행</guibutton> 버튼을 눌러 업데이트를 계속합니다."
 
-#: package-manager.xml.in:289(para)
+#: gui/help/C/package-manager.xml:288(para)
 msgid "The system might create a new boot environment (BE), as described in <xref linkend=\"update_all\"/> above, depending on which packages are being updated."
 msgstr "위의 <xref linkend=\"update_all\"/>에 설명된 대로 업데이트 중인 패키지에 따라 시스템이 새 BE(부트 환경)를 만들 수 있습니다."
 
-#: package-manager.xml.in:290(para)
+#: gui/help/C/package-manager.xml:289(para)
 msgid "If the system determined that a new BE is required but was not able to create a new BE, an error message is displayed. If the problem is not enough disk space, perform the following steps:"
 msgstr "새 BE가 필요한 것으로 확인되었지만 새 BE를 만들 수 없을 경우 오류 메시지가 표시됩니다. 디스크 공간 부족 문제일 경우 다음 단계를 수행합니다."
 
-#: package-manager.xml.in:291(para)
+#: gui/help/C/package-manager.xml:290(para)
 msgid "Click <guibutton>Close</guibutton> to cancel the Updates process."
 msgstr "<guibutton>닫기</guibutton>를 눌러 업데이트 프로세스를 취소합니다."
 
-#: package-manager.xml.in:293(para)
+#: gui/help/C/package-manager.xml:292(para)
 msgid "Follow the instructions in <xref linkend=\"remove-be\"/> to remove a BE that is no longer needed."
 msgstr "<xref linkend=\"remove-be\"/>의 지침에 따라 더 이상 필요하지 않은 BE를 제거합니다."
 
-#: package-manager.xml.in:295(para)
+#: gui/help/C/package-manager.xml:294(para)
 msgid "Select <guibutton>Updates</guibutton> again to restart the Updates process."
 msgstr "<guibutton>업데이트</guibutton>를 다시 선택하여 업데이트 프로세스를 다시 시작합니다."
 
-#: package-manager.xml.in:299(para)
+#: gui/help/C/package-manager.xml:298(para)
 msgid "The system downloads all package updates."
 msgstr "시스템이 모든 패키지 업데이트를 다운로드합니다."
 
-#: package-manager.xml.in:301(para)
+#: gui/help/C/package-manager.xml:300(para)
 msgid "The system installs the package updates. If a cloned BE was created, the updates are installed in the clone. If no clone was created, the updates are installed in the current BE."
 msgstr "시스템이 패키지 업데이트를 설치합니다. 복제된 BE가 만들어진 경우 업데이트가 복제본에 설치되며, 복제본이 만들어지지 않은 경우 업데이트가 현재 BE에 설치됩니다."
 
-#: package-manager.xml.in:302(para)
+#: gui/help/C/package-manager.xml:301(para)
 msgid "If an error occurs at any time during the update process, the Details panel is expanded and the details of the error are displayed. An error status indicator is shown next to the failed stage."
 msgstr "업데이트 프로세스 중 오류가 발생하면 세부 정보 패널이 확장되고 오류 세부 정보가 표시됩니다. 실패한 단계 옆에 오류 상태 표시기가 나타납니다."
 
-#: package-manager.xml.in:304(para)
+#: gui/help/C/package-manager.xml:303(para)
 msgid "If the system created a new BE for the update, you can edit the default BE name. When you are satisfied with the BE name, click the <guibutton>Restart Now</guibutton> button to reboot your system immediately. Click the <guibutton>Restart Later</guibutton> button to restart your system at a later time. You must restart to boot into the new BE. The new BE will be your default boot choice. Your current BE will be available as an alternate boot choice."
 msgstr "시스템이 업데이트를 위해 새 BE를 만든 경우 기본 BE 이름을 편집할 수 있습니다. 기본 BE 이름을 그대로 사용하려면 <guibutton>지금 재시작</guibutton> 버튼을 눌러 시스템을 즉시 재부트합니다. 시스템을 나중에 다시 시작하려면 <guibutton>다음에 재시작</guibutton> 버튼을 누릅니다. 새 BE로 부트하려면 다시 시작해야 합니다. 새 BE가 기본 부트 옵션으로 설정되고, 현재 BE가 대체 부트 옵션으로 제공됩니다."
 
-#: package-manager.xml.in:308(title)
+#: gui/help/C/package-manager.xml:307(title)
 msgid "Using Update Manager"
 msgstr "업데이트 관리자 사용"
 
-#: package-manager.xml.in:309(para)
+#: gui/help/C/package-manager.xml:308(para)
 msgid "You can open Update Manager from a system notification or from the desktop menu bar. Update Manager executes the same process as described above in <xref linkend=\"um_info\"/>."
 msgstr "시스템 알림 또는 데스크탑 메뉴 표시줄에서 업데이트 관리자를 열 수 있습니다. 업데이트 관리자는 위의 <xref linkend=\"um_info\"/>에 설명된 것과 동일한 프로세스를 실행합니다."
 
-#: package-manager.xml.in:310(title)
+#: gui/help/C/package-manager.xml:309(title)
 msgid "Software Updates Notification"
 msgstr "소프트웨어 업데이트 알림"
 
-#: package-manager.xml.in:311(para)
+#: gui/help/C/package-manager.xml:310(para)
 msgid "The system periodically checks whether updates are available for any of your installed packages. If the system detects that updates are available, an Updates Available notification icon and popup are displayed in the system notification tray. Click the notification icon to open Update Manager."
 msgstr "시스템은 설치된 패키지에 대한 업데이트를 사용할 수 있는지 여부를 주기적으로 확인합니다. 시스템이 업데이트를 사용할 수 있는 것으로 감지하면 업데이트를 사용할 수 있음 알림 아이콘과 팝업이 시스템 알림 트레이에 표시됩니다. 알림 아이콘을 누르면 업데이트 관리자가 열립니다."
 
-#: package-manager.xml.in:313(title)
+#: gui/help/C/package-manager.xml:312(title)
 msgid "Desktop System Menu"
 msgstr "데스크탑 시스템 메뉴"
 
-#: package-manager.xml.in:314(para)
+#: gui/help/C/package-manager.xml:313(para)
 msgid "Select <menuchoice><guimenu>System</guimenu><guisubmenu>Administration</guisubmenu><guimenuitem>Update Manager</guimenuitem></menuchoice> from the menu bar on the desktop to open Update Manager."
 msgstr "업데이트 관리자를 열려면 데스크탑 메뉴 표시줄에서<menuchoice><guimenu>시스템</guimenu><guisubmenu>관리</guisubmenu><guimenuitem>업데이트 관리자</guimenuitem></menuchoice>를 선택합니다."
 
-#: package-manager.xml.in:318(title)
+#: gui/help/C/package-manager.xml:317(title)
 msgid "Managing Publishers"
 msgstr "게시자 관리"
 
-#: package-manager.xml.in:319(para)
+#: gui/help/C/package-manager.xml:318(para)
 msgid "You can add, modify, and remove IPS package publishers. You can change the priority of a publisher, change the enabled and sticky settings, change the publisher alias, add or remove a publisher origin, and add or remove a publisher mirror. You can manage keys, certificates, and signature policy."
 msgstr "IPS 패키지 게시자를 추가, 수정 및 제거할 수 있습니다. 게시자의 우선 순위를 변경하고, 사용 및 고정 설정을 변경하고, 게시자 별칭을 변경하고, 게시자 원본을 추가 또는 제거하고, 게시자 미러를 추가 또는 제거할 수 있습니다. 키, 인증서 및 서명 정책을 관리할 수도 있습니다."
 
-#: package-manager.xml.in:320(para)
+#: gui/help/C/package-manager.xml:319(para)
 msgid "Note that system publishers are an exception. System publishers can only be viewed in the Manage Publishers window. System publishers cannot be removed or modified, and you cannot change their priority. See <xref linkend=\"glossary\"/>. The Details pane indicates whether the selected publisher is a system publisher."
 msgstr "시스템 게시자는 예외입니다. 시스템 게시자는 게시자 관리 창에서만 확인할 수 있습니다. 시스템 게시자는 제거 또는 수정할 수 없으며 시스템 게시자의 우선 순위는 변경할 수 없습니다. <xref linkend=\"glossary\"/>를 참조하십시오. 세부 정보 창에 선택된 게시자가 시스템 게시자인지 여부가 표시됩니다."
 
-#: package-manager.xml.in:321(title)
+#: gui/help/C/package-manager.xml:320(title)
 msgid "Adding Publishers"
 msgstr "게시자 추가"
 
-#: package-manager.xml.in:322(para)
+#: gui/help/C/package-manager.xml:321(para)
 msgid "To add an IPS package publisher, use the Add Publisher window. To open the Add Publisher window, do one of the following actions:"
 msgstr "IPS 패키지 게시자를 추가하려면 게시자 추가 창을 사용합니다. 게시자 추가 창을 열려면 다음 작업 중 하나를 수행합니다."
 
-#: package-manager.xml.in:323(para)
+#: gui/help/C/package-manager.xml:322(para)
 msgid "Select the <guimenuitem>Add</guimenuitem> option from the <guimenu>Publisher</guimenu> drop-down menu."
 msgstr "<guimenu>게시자</guimenu> 드롭다운 메뉴에서 <guimenuitem>추가</guimenuitem> 옵션을 선택합니다."
 
-#: package-manager.xml.in:325(para)
+#: gui/help/C/package-manager.xml:324(para)
 msgid "Select the <menuchoice><guimenu>File</guimenu><guimenuitem>Add Publisher</guimenuitem></menuchoice> menu option."
 msgstr "<menuchoice><guimenu>파일</guimenu><guimenuitem>게시자 추가</guimenuitem></menuchoice> 메뉴 옵션을 선택합니다."
 
-#: package-manager.xml.in:327(para)
+#: gui/help/C/package-manager.xml:326(para)
 msgid "Select the <menuchoice><guimenu>File</guimenu><guimenuitem>Manage Publishers</guimenuitem></menuchoice> menu option. In the Manage Publishers window, select the <guibutton>Add</guibutton> button."
 msgstr "<menuchoice><guimenu>파일</guimenu><guimenuitem>게시자 관리</guimenuitem></menuchoice> 메뉴 옵션을 선택합니다. 게시자 관리 창에서 <guibutton>추가</guibutton> 버튼을 선택합니다."
 
-#: package-manager.xml.in:330(para)
+#: gui/help/C/package-manager.xml:329(para)
 msgid "In the Add Publisher window, perform the following steps to add an IPS package publisher:"
 msgstr "게시자 추가 창에서 다음 단계를 수행하여 IPS 패키지 게시자를 추가합니다."
 
-#: package-manager.xml.in:331(para)
+#: gui/help/C/package-manager.xml:330(para)
 msgid "In the URI field, enter the URI of the publisher. The URI is a network location such as <literal>http://pkg.oracle.com/solaris/release/</literal> or <literal>http://localhost:5555</literal>."
 msgstr "URI 필드에 게시자 URI를 입력합니다. URI는 네트워크 위치(예: <literal>http://pkg.oracle.com/solaris/release/</literal> 또는 <literal>http://localhost:5555</literal>)입니다."
 
-#: package-manager.xml.in:333(para)
+#: gui/help/C/package-manager.xml:332(para)
 msgid "In the Alias field, you can enter an alternate name for this publisher."
 msgstr "별칭 필드에 이 게시자에 대한 대체 이름을 입력할 수 있습니다."
 
-#: package-manager.xml.in:335(para)
+#: gui/help/C/package-manager.xml:334(para)
 msgid "Click the <guibutton>Add</guibutton> button."
 msgstr "<guibutton>추가</guibutton> 버튼을 누릅니다."
 
-#: package-manager.xml.in:337(para)
+#: gui/help/C/package-manager.xml:336(para)
 msgid "The Adding Publisher dialog is displayed. Click <guibutton>Cancel</guibutton> to cancel the process. Click Details to view verbose information."
 msgstr "게시자 추가 대화 상자가 표시됩니다. 프로세스를 취소하려면 <guibutton>취소</guibutton>를 누르고, 자세한 정보를 표시하려면 세부 정보를 누릅니다."
 
-#: package-manager.xml.in:338(para)
+#: gui/help/C/package-manager.xml:337(para)
 msgid "If the new publisher is added successfully, the Adding Publisher Complete dialog is displayed and shows the new publisher name, alias, and URI."
 msgstr "새 게시자가 성공적으로 추가된 경우 새 게시자 이름, 별칭 및 URI를 나타내는 게시자 추가 완료 대화 상자가 표시됩니다."
 
-#: package-manager.xml.in:340(para)
+#: gui/help/C/package-manager.xml:339(para)
 msgid "If the new publisher is not added, the Publisher Error dialog is displayed with information about the problem."
 msgstr "새 게시자가 추가되지 않은 경우 문제에 대한 정보를 나타내는 게시자 오류 대화 상자가 표시됩니다."
 
-#: package-manager.xml.in:345(para)
+#: gui/help/C/package-manager.xml:344(para)
 msgid "The new publisher is the last publisher listed in the Manage Publishers window and is enabled and sticky."
 msgstr "새 게시자는 게시자 관리 창에 마지막 게시자로 나열되며 사용으로 설정되고 고정으로 지정됩니다."
 
-#: package-manager.xml.in:346(para)
+#: gui/help/C/package-manager.xml:345(para)
 msgid "See <xref linkend=\"modify-publisher\"/> for information about changing the priority of the new publisher, changing the enabled and sticky settings, changing the publisher alias, adding a publisher origin, setting an SSL key and certificate, adding a publisher mirror, and managing publisher certificates and signature policy."
 msgstr "새 게시자의 우선 순위 변경, 사용 및 고정 설정 변경, 게시자 별칭 변경, 게시자 원본 추가, SSL 키 및 인증서 설정, 게시자 미러 추가, 게시자 인증서 및 서명 정책 추가에 대한 자세한 내용은 <xref linkend=\"modify-publisher\"/>을 참조하십시오."
 
-#: package-manager.xml.in:348(title)
+#: gui/help/C/package-manager.xml:347(title)
 msgid "Modifying Publishers"
 msgstr "게시자 수정"
 
-#: package-manager.xml.in:349(para)
+#: gui/help/C/package-manager.xml:348(para)
 msgid "To modify the attributes of a publisher, select the <menuchoice><guimenu>File</guimenu><guimenuitem>Manage Publishers</guimenuitem></menuchoice> menu option. Currently configured publishers are listed in the Manage Publishers window."
 msgstr "게시자 속성을 수정하려면 <menuchoice><guimenu>파일</guimenu><guimenuitem>게시자 관리</guimenuitem></menuchoice> 메뉴 옵션을 선택합니다. 현재 구성된 게시자가 게시자 관리 창에 나열됩니다."
 
-#: package-manager.xml.in:350(para)
+#: gui/help/C/package-manager.xml:349(para)
 msgid "In the Manage Publishers window you can change the priority of a publisher, enable or disable a publisher, set the publisher to be sticky or non-sticky, and remove a publisher. See <xref linkend=\"priority-stickiness\"/> and <xref linkend=\"remove-publisher\"/>."
 msgstr "게시자 관리 창에서 게시자의 우선 순위를 변경하고, 게시자를 사용 또는 사용 안함으로 설정하고, 게시자를 고정 또는 비고정으로 설정하고, 게시자를 제거할 수 있습니다. <xref linkend=\"priority-stickiness\"/> 및 <xref linkend=\"remove-publisher\"/>를 참조하십시오."
 
-#: package-manager.xml.in:351(para)
+#: gui/help/C/package-manager.xml:350(para)
 msgid "Click the <guibutton>Modify</guibutton> button to open the Modify Publisher window. In the Modify Publisher window you can change the publisher alias, add or remove a publisher origin, add or remove a publisher mirror, set an SSL key and certificate, and manage publisher certificates and signature policy. See <xref linkend=\"origin-mirror\"/> and <xref linkend=\"pub-security\"/>."
 msgstr "게시자 수정 창을 열려면 <guibutton>수정</guibutton> 버튼을 누릅니다. 게시자 수정 창에서 게시자 별칭을 변경하고, 게시자 원본을 추가 또는 제거하고, 게시자 미러를 추가 또는 제거하고, SSL 키 및 인증서를 설정하고, 게시자 인증서 및 서명 정책을 관리할 수 있습니다. <xref linkend=\"origin-mirror\"/> 및 <xref linkend=\"pub-security\"/>을 참조하십시오."
 
-#: package-manager.xml.in:352(title)
+#: gui/help/C/package-manager.xml:351(title)
 msgid "Changing Priority and Stickiness"
 msgstr "우선 순위 및 고착성 변경"
 
-#: package-manager.xml.in:353(para)
+#: gui/help/C/package-manager.xml:352(para)
 msgid "Select the <menuchoice><guimenu>File</guimenu><guimenuitem>Manage Publishers</guimenuitem></menuchoice> menu option to display the Manage Publishers window."
 msgstr "게시자 관리 창을 표시하려면 <menuchoice><guimenu>파일</guimenu><guimenuitem>게시자 관리</guimenuitem></menuchoice> 메뉴 옵션을 선택합니다."
 
-#: package-manager.xml.in:354(title)
+#: gui/help/C/package-manager.xml:353(title)
 msgid "Publisher Priority"
 msgstr "게시자 우선 순위"
 
-#: package-manager.xml.in:355(para)
+#: gui/help/C/package-manager.xml:354(para)
 msgid "Publishers are listed in priority order in the Manage Publishers window. The publisher at the top of the list is the highest priority publisher. The publisher at the bottom of the list is the lowest priority publisher."
 msgstr "게시자는 게시자 관리 창에 우선 순위대로 나열됩니다. 우선 순위가 가장 높은 게시자가 목록 위쪽에 표시되고, 우선 순위가 가장 낮은 게시지가 목록 아래쪽에 표시됩니다."
 
-#: package-manager.xml.in:356(para)
+#: gui/help/C/package-manager.xml:355(para)
 msgid "The publisher at the top of the list is also known as the preferred publisher."
 msgstr "목록 위쪽에 있는 게시자를 기본 게시자라고 하기도 합니다."
 
-#: package-manager.xml.in:357(para)
+#: gui/help/C/package-manager.xml:356(para)
 msgid "The preferred publisher cannot be disabled or removed."
 msgstr "기본 게시자는 사용 안함으로 설정하거나 제거할 수 없습니다."
 
-#: package-manager.xml.in:358(para)
+#: gui/help/C/package-manager.xml:357(para)
 msgid "When you search for packages and do not specify a publisher, the catalogs of higher priority publishers are searched first."
 msgstr "패키지를 검색할 때 게시자를 지정하지 않을 경우 우선 순위가 더 높은 게시자의 카탈로그가 먼저 검색됩니다."
 
-#: package-manager.xml.in:359(para)
+#: gui/help/C/package-manager.xml:358(para)
 msgid "When you update a package that was installed from a non-sticky publisher, the catalogs of higher priority publishers are searched first for updates."
 msgstr "비고정 게시자로부터 설치된 패키지를 업데이트하면 우선 순위가 더 높은 게시자의 카탈로그가 업데이트를 위해 먼저 검색됩니다."
 
-#: package-manager.xml.in:361(para)
+#: gui/help/C/package-manager.xml:360(para)
 msgid "To change the priority of a publisher, perform the following steps:"
 msgstr "게시자의 우선 순위를 변경하려면 다음 단계를 수행합니다."
 
-#: package-manager.xml.in:362(para)
+#: gui/help/C/package-manager.xml:361(para)
 msgid "Click to highlight a publisher row in the list in the Manage Publishers window."
 msgstr "게시자 관리 창의 목록에서 게시자 행을 눌러 강조 표시됩니다."
 
-#: package-manager.xml.in:364(para)
+#: gui/help/C/package-manager.xml:363(para)
 msgid "Click the <guibutton>Up</guibutton> and <guibutton>Down</guibutton> buttons to the right of the publisher list to increase or reduce the priority of the selected publisher. The selected publisher listing moves up and down in the list to show its new priority."
 msgstr "게시자 목록 오른쪽에 있는 <guibutton>위쪽</guibutton> 및 <guibutton>아래쪽</guibutton> 버튼을 눌러 선택된 게시자의 우선 순위를 높이거나 낮춥니다. 새 우선 순위에 따라 나열되는 선택된 게시자가 목록 위쪽/아래쪽으로 이동됩니다."
 
-#: package-manager.xml.in:365(para)
+#: gui/help/C/package-manager.xml:364(para)
 msgid "If the selected publisher is a system publisher, then the <guibutton>Up</guibutton> and <guibutton>Down</guibutton> buttons are disabled. You cannot change the priority of a system publisher. Because you cannot change the priority of a system publisher, you cannot lower the priority of the publisher that is the next higher priority above a system publisher, and you cannot raise the priority of a publisher that is the next lower priority below a system publisher."
 msgstr "선택된 게시자가 시스템 게시자일 경우 <guibutton>위쪽</guibutton> 및 <guibutton>아래쪽</guibutton> 버튼이 사용 안함으로 설정됩니다. 시스템 게시자의 우선 순위는 변경할 수 없습니다. 시스템 게시자의 우선 순위는 변경할 수 없으므로 시스템 게시자보다 우선 순위가 한 단계 높은 게시자의 우선 순위를 낮출 수 없으며 시스템 게시자보다 우선 순위가 한 단계 낮은 게시자의 우선 순위를 높일 수 없습니다."
 
-#: package-manager.xml.in:366(para) package-manager.xml.in:379(para) package-manager.xml.in:457(para) package-manager.xml.in:482(para) package-manager.xml.in:500(para) package-manager.xml.in:513(para) package-manager.xml.in:527(para)
+#: gui/help/C/package-manager.xml:365(para) gui/help/C/package-manager.xml:378(para) gui/help/C/package-manager.xml:456(para) gui/help/C/package-manager.xml:481(para) gui/help/C/package-manager.xml:499(para) gui/help/C/package-manager.xml:512(para) gui/help/C/package-manager.xml:526(para)
 msgid "Click the <guibutton>OK</guibutton> button at the bottom of the Manage Publishers window."
 msgstr "게시자 관리 창 아래쪽에 있는 <guibutton>확인</guibutton> 버튼을 누릅니다."
 
-#: package-manager.xml.in:370(title)
+#: gui/help/C/package-manager.xml:369(title)
 msgid "Enabled and Sticky"
 msgstr "사용 및 고정"
 
-#: package-manager.xml.in:371(para)
+#: gui/help/C/package-manager.xml:370(para)
 msgid "When you add a publisher, the enabled and sticky attributes are set by default. The preferred publisher (see <xref linkend=\"set-pub-order\"/> above) cannot be disabled. A system publisher cannot be disabled, and the sticky setting of a system publisher cannot be changed. All other enabled and sticky settings can be changed."
 msgstr "게시자를 추가하면 기본적으로 사용 및 고정 속성이 설정됩니다. 기본 게시자(<xref linkend=\"set-pub-order\"/> 참조)는 사용 안함으로 설정할 수 없습니다. 시스템 게시자도 사용 안함으로 설정할 수 없으며, 시스템 게시자의 고정 설정도 변경할 수 없습니다. 기타 모든 사용 및 고정 설정은 변경할 수 있습니다."
 
-#: package-manager.xml.in:372(para)
+#: gui/help/C/package-manager.xml:371(para)
 msgid "If the sticky attribute is set for a publisher, then a package that was installed from that publisher cannot be updated from a different publisher. If the sticky attribute is not set for a publisher, then that publisher is non-sticky. If a publisher is non-sticky, then a package that originally came from that publisher can be updated from another publisher. A different publisher might have a newer version of a package than the original publisher of the package. If you want to update to that newer version, the original publisher needs to be non-sticky. Also, if a lower priority publisher is non-sticky, then higher-priority publishers will be searched first for updates for packages installed from that non-sticky publisher."
 msgstr "게시자에 대한 고정 속성을 설정하면 해당 게시자로부터 설치된 패키지를 다른 게시자로부터 업데이트할 수 없습니다. 게시자에 대한 고정 속성을 설정하지 않으면 해당 게시자가 비고정으로 설정됩니다. 게시자가 비고정일 경우 원래 해당 게시자로부터 온 패키지를 다른 게시자로부터 업데이트할 수 있습니다. 다른 게시자가 원래 패키지 게시자보다 최신 패키지 버전을 가지고 있는 경우가 있습니다. 이때 해당 최신 버전으로 업데이트하려면 원래 게시자를 비고정으로 설정해야 합니다. 또한 우선 순위가 더 낮은 게시자가 비고정일 경우 우선 순위가 더 높은 게시자가 비고정 게시자로부터 설치된 패키지의 업데이트를 위해 먼저 검색됩니다."
 
-#: package-manager.xml.in:373(para)
+#: gui/help/C/package-manager.xml:372(para)
 msgid "A publisher that is disabled is not searched for updates or for packages to install. Catalogs of a disabled publisher are not refreshed. A disabled publisher is not shown on the <guimenu>Publisher</guimenu> drop-down menu."
 msgstr "사용 안함으로 설정된 게시자는 업데이트 또는 설치할 패키지를 위해 검색되지 않으며, 사용 안함으로 설정된 게시자의 카탈로그는 새로 고쳐지지 않습니다. 사용 안함으로 설정된 게시자는 <guimenu>게시자</guimenu> 드롭다운 메뉴에 표시되지 않습니다."
 
-#: package-manager.xml.in:374(para)
+#: gui/help/C/package-manager.xml:373(para)
 msgid "To change the Enabled and Sticky settings for a publisher, perform the following steps:"
 msgstr "게시자에 대한 사용 및 고정 설정을 변경하려면 다음 단계를 수행합니다."
 
-#: package-manager.xml.in:375(para) package-manager.xml.in:385(para) package-manager.xml.in:464(para) package-manager.xml.in:520(para)
+#: gui/help/C/package-manager.xml:374(para) gui/help/C/package-manager.xml:384(para) gui/help/C/package-manager.xml:463(para) gui/help/C/package-manager.xml:519(para)
 msgid "Select the <menuchoice><guimenu>File</guimenu><guimenuitem>Manage Publishers</guimenuitem></menuchoice> menu option to open the Manage Publishers window."
 msgstr "<menuchoice><guimenu>파일</guimenu><guimenuitem>게시자 관리</guimenuitem></menuchoice> 메뉴 옵션을 선택하여 게시자 관리 창을 엽니다."
 
-#: package-manager.xml.in:377(para)
+#: gui/help/C/package-manager.xml:376(para)
 msgid "Click an Enabled box or a Sticky box to toggle its setting."
 msgstr "사용 상자 또는 고정 상자를 눌러 설정을 토글합니다."
 
-#: package-manager.xml.in:384(title)
+#: gui/help/C/package-manager.xml:383(title)
 msgid "Changing Alias, Origins, and Mirrors"
 msgstr "별칭, 원본 및 미러 변경"
 
-#: package-manager.xml.in:387(para)
+#: gui/help/C/package-manager.xml:386(para)
 msgid "Select the publisher you want to modify. The Details pane below the publisher list in the Manage Publishers window displays the current origins for the selected publisher."
 msgstr "수정할 게시자를 선택합니다. 게시자 관리 창에서 게시자 목록 아래의 세부 정보 창에 선택된 게시자에 대한 현재 원본이 표시됩니다."
 
-#: package-manager.xml.in:389(para)
+#: gui/help/C/package-manager.xml:388(para)
 msgid "Click the <guibutton>Modify</guibutton> button to the right of the publisher list to open the Modify Publisher window."
 msgstr "게시자 목록 오른쪽에 있는 <guibutton>수정</guibutton> 버튼을 눌러 게시자 수정 창을 엽니다."
 
-#: package-manager.xml.in:390(para)
+#: gui/help/C/package-manager.xml:389(para)
 msgid "If the selected publisher is a system publisher, the <guibutton>Modify</guibutton> button is disabled. The Details pane indicates that the selected publisher is a system publisher and displays a message that this publisher cannot be modified or removed."
 msgstr "선택된 게시자가 시스템 게시자일 경우 <guibutton>수정</guibutton> 버튼이 사용 안함으로 설정됩니다. 세부 정보 창에 선택된 게시자가 시스템 게시자인 것으로 나타나며 이 게시자를 수정 또는 제거할 수 없음을 알리는 메시지가 표시됩니다."
 
-#: package-manager.xml.in:392(para)
+#: gui/help/C/package-manager.xml:391(para)
 msgid "Select the General tab to modify the publisher alias, add and remove origins, and add and remove mirrors."
 msgstr "일반 탭을 선택하여 게시자 별칭을 수정하고, 원본을 추가 및 제거하고, 미러를 추가 및 제거합니다."
 
-#: package-manager.xml.in:394(title)
+#: gui/help/C/package-manager.xml:393(title)
 msgid "Publisher Alias"
 msgstr "게시자 별칭"
 
-#: package-manager.xml.in:395(para)
+#: gui/help/C/package-manager.xml:394(para)
 msgid "The publisher alias is another name for the publisher. The alias name is used in the <guimenu>Publisher</guimenu> drop-down menu and in the package list pane."
 msgstr "게시자 별칭은 게시자의 다른 이름입니다. 별칭 이름은 <guimenu>게시자</guimenu> 드롭다운 메뉴와 패키지 목록 창에서 사용됩니다."
 
-#: package-manager.xml.in:396(para)
+#: gui/help/C/package-manager.xml:395(para)
 msgid "To change the alias of this publisher, perform the following steps:"
 msgstr "이 게시자의 별칭을 변경하려면 다음 단계를 수행합니다."
 
-#: package-manager.xml.in:397(para)
+#: gui/help/C/package-manager.xml:396(para)
 msgid "On the General tab of the Modify Publisher window, enter a new name in the Alias field."
 msgstr "게시자 수정 창의 일반 탭에서 별칭 필드에 새 이름을 입력합니다."
 
-#: package-manager.xml.in:399(para) package-manager.xml.in:427(para) package-manager.xml.in:455(para) package-manager.xml.in:481(para) package-manager.xml.in:499(para) package-manager.xml.in:512(para)
+#: gui/help/C/package-manager.xml:398(para) gui/help/C/package-manager.xml:426(para) gui/help/C/package-manager.xml:454(para) gui/help/C/package-manager.xml:480(para) gui/help/C/package-manager.xml:498(para) gui/help/C/package-manager.xml:511(para)
 msgid "Click the <guibutton>OK</guibutton> button at the bottom of the Modify Publisher window."
 msgstr "게시자 수정 창 아래쪽에 있는 <guibutton>확인</guibutton> 버튼을 누릅니다."
 
-#: package-manager.xml.in:401(para)
+#: gui/help/C/package-manager.xml:400(para)
 msgid "The publisher alias has changed in the Manage Publishers window. Click the <guibutton>OK</guibutton> button at the bottom of the Manage Publishers window."
 msgstr "게시자 별칭이 게시자 관리 창에서 변경되었습니다. 게시자 관리 창 아래쪽에 있는 <guibutton>확인</guibutton> 버튼을 누릅니다."
 
-#: package-manager.xml.in:405(title)
+#: gui/help/C/package-manager.xml:404(title)
 msgid "Publisher Origins"
 msgstr "게시자 원본"
 
-#: package-manager.xml.in:406(para)
+#: gui/help/C/package-manager.xml:405(para)
 msgid "An origin is the location of an IPS package repository or archive that contains both package metadata (package manifests and catalogs) and package content (package files)."
 msgstr "원본은 패키지 메타 데이터(패키지 매니페스트 및 카탈로그)와 패키지 내용(패키지 파일)을 모두 포함하는 IPS 패키지 저장소 또는 아카이브의 위치입니다."
 
-#: package-manager.xml.in:407(para)
+#: gui/help/C/package-manager.xml:406(para)
 msgid "An origin value is the URI of an IPS package repository."
 msgstr "원본 값은 IPS 패키지 저장소의 URI입니다."
 
-#: package-manager.xml.in:408(para)
+#: gui/help/C/package-manager.xml:407(para)
 msgid "To change, add, or remove an origin for this publisher, perform the following steps:"
 msgstr "이 게시자의 원본을 변경, 추가 또는 제거하려면 다음 단계를 수행합니다."
 
-#: package-manager.xml.in:409(para) package-manager.xml.in:436(para)
+#: gui/help/C/package-manager.xml:408(para) gui/help/C/package-manager.xml:435(para)
 msgid "Select the General tab of the Modify Publisher window."
 msgstr "게시자 수정 창의 일반 탭을 선택합니다."
 
-#: package-manager.xml.in:410(para)
+#: gui/help/C/package-manager.xml:409(para)
 msgid "Add an origin."
 msgstr "원본을 추가합니다."
 
-#: package-manager.xml.in:411(para)
+#: gui/help/C/package-manager.xml:410(para)
 msgid "In the Origin field, enter the URI of the new origin you want to associate with this publisher."
 msgstr "원본 필드에 이 게시자와 연결할 새 원본의 URI를 입력합니다."
 
-#: package-manager.xml.in:412(para)
+#: gui/help/C/package-manager.xml:411(para)
 msgid "Click the <guibutton>Add</guibutton> button. The new URI is added to the list below the Origin field."
 msgstr "<guibutton>추가</guibutton> 버튼을 누릅니다. 그러면 새 URI가 원본 필드 아래의 목록에 추가됩니다."
 
-#: package-manager.xml.in:415(para)
+#: gui/help/C/package-manager.xml:414(para)
 msgid "Remove an origin."
 msgstr "원본을 제거합니다."
 
-#: package-manager.xml.in:416(para)
+#: gui/help/C/package-manager.xml:415(para)
 msgid "In the list below the Origin field, select the URI you want to delete."
 msgstr "원본 필드 아래의 목록에서 삭제할 URI를 선택합니다."
 
-#: package-manager.xml.in:417(para)
+#: gui/help/C/package-manager.xml:416(para)
 msgid "Click the <guibutton>Remove</guibutton> button. The selected URI is removed from the list. If only one origin is defined for this publisher, you cannot remove that origin."
 msgstr "<guibutton>제거</guibutton> 버튼을 누릅니다. 그러면 선택된 URI가 목록에서 제거됩니다. 이 게시자에 대한 원본이 하나만 정의된 경우 해당 원본을 제거할 수 없습니다."
 
-#: package-manager.xml.in:420(para)
+#: gui/help/C/package-manager.xml:419(para)
 msgid "Change an origin."
 msgstr "원본을 변경합니다."
 
-#: package-manager.xml.in:421(para)
+#: gui/help/C/package-manager.xml:420(para)
 msgid "Add the new origin."
 msgstr "새 원본을 추가합니다."
 
-#: package-manager.xml.in:422(para)
+#: gui/help/C/package-manager.xml:421(para)
 msgid "Delete the origin you want to change."
 msgstr "변경할 원본을 삭제합니다."
 
-#: package-manager.xml.in:429(para)
+#: gui/help/C/package-manager.xml:428(para)
 msgid "The origin changes are reflected in the Details pane in the Manage Publishers window. Click the <guibutton>OK</guibutton> button at the bottom of the Manage Publishers window."
 msgstr "원본 변경 사항이 게시자 관리 창의 세부 정보 창에 반영됩니다. 게시자 관리 창 아래쪽에 있는 <guibutton>확인</guibutton> 버튼을 누릅니다."
 
-#: package-manager.xml.in:433(title)
+#: gui/help/C/package-manager.xml:432(title)
 msgid "Publisher Mirrors"
 msgstr "게시자 미러"
 
-#: package-manager.xml.in:434(para)
+#: gui/help/C/package-manager.xml:433(para)
 msgid "A mirror is a location of an IPS package repository that contains only package content (package files). A mirror does not contain package metadata (package manifests and catalogs). Mirrors provide a subset of the data that origins provide. Mirrors can be used only for downloading package files. Package metadata is downloaded from the origin. IPS clients access the origin to obtain a publisher's catalog, even when the clients download package content from a mirror."
 msgstr "미러는 패키지 내용(패키지 파일)만 포함하는 IPS 패키지 저장소의 위치입니다. 미러에는 패키지 메타 데이터(패키지 매니페스트 및 카탈로그)가 포함되지 않습니다. 미러는 원본이 제공하는 데이터 중 일부만 제공합니다. 미러는 패키지 파일 다운로드에만 사용할 수 있습니다. 패키지 메타 데이터는 원본에서 다운로드됩니다. IPS 클라이언트는 클라이언트가 미러에서 패키지 내용을 다운로드하는 경우에도 원본에 액세스하여 게시자의 카탈로그를 가져옵니다."
 
-#: package-manager.xml.in:435(para)
+#: gui/help/C/package-manager.xml:434(para)
 msgid "To add, remove, or change a mirror for this publisher, perform the following steps:"
 msgstr "이 게시자에 대한 미러를 추가, 제거 또는 변경하려면 다음 단계를 수행합니다."
 
-#: package-manager.xml.in:437(para)
+#: gui/help/C/package-manager.xml:436(para)
 msgid "Click the Mirrors label to display the Mirror field and the list of mirrors."
 msgstr "미러 레이블을 눌러 미러 필드 및 미러 목록을 표시합니다."
 
-#: package-manager.xml.in:438(para)
+#: gui/help/C/package-manager.xml:437(para)
 msgid "Add a mirror."
 msgstr "미러를 추가합니다."
 
-#: package-manager.xml.in:439(para)
+#: gui/help/C/package-manager.xml:438(para)
 msgid "In the Mirror field, enter the URI of the new mirror you want to associate with this publisher."
 msgstr "미러 필드에 이 게시자와 연결할 새 미러의 URI를 입력합니다."
 
-#: package-manager.xml.in:440(para)
+#: gui/help/C/package-manager.xml:439(para)
 msgid "Click the <guibutton>Add</guibutton> button. The new URI is added to the list below the Mirror field."
 msgstr "<guibutton>추가</guibutton> 버튼을 누릅니다. 그러면 새 URI가 미러 필드 아래의 목록에 추가됩니다."
 
-#: package-manager.xml.in:443(para)
+#: gui/help/C/package-manager.xml:442(para)
 msgid "Remove a mirror."
 msgstr "미러를 제거합니다."
 
-#: package-manager.xml.in:444(para)
+#: gui/help/C/package-manager.xml:443(para)
 msgid "In the list below the Mirror field, select the URI you want to delete."
 msgstr "미러 필드 아래의 목록에서 삭제할 URI를 선택합니다."
 
-#: package-manager.xml.in:445(para)
+#: gui/help/C/package-manager.xml:444(para)
 msgid "Click the <guibutton>Remove</guibutton> button. The selected URI is removed from the list."
 msgstr "<guibutton>제거</guibutton> 버튼을 누릅니다. 그러면 선택된 URI가 목록에서 제거됩니다."
 
-#: package-manager.xml.in:448(para)
+#: gui/help/C/package-manager.xml:447(para)
 msgid "Change a mirror."
 msgstr "미러를 변경합니다."
 
-#: package-manager.xml.in:449(para)
+#: gui/help/C/package-manager.xml:448(para)
 msgid "Delete the mirror you want to change."
 msgstr "변경할 미러를 삭제합니다."
 
-#: package-manager.xml.in:450(para)
+#: gui/help/C/package-manager.xml:449(para)
 msgid "Add a new mirror."
 msgstr "새 미러를 추가합니다."
 
-#: package-manager.xml.in:462(title)
+#: gui/help/C/package-manager.xml:461(title)
 msgid "Managing Publisher Security"
 msgstr "게시자 보안 관리"
 
-#: package-manager.xml.in:463(para)
+#: gui/help/C/package-manager.xml:462(para)
 msgid "Certificates are used to verify that packages have been appropriately signed before being installed, depending on the signature policy of the image or the publisher, whichever is more restrictive."
 msgstr "인증서는 이미지 또는 게시자의 서명 정책 중 더 제한적인 서명 정책에 따라 패키지 설치 전 패키지가 적절히 서명되었는지 확인하는 데 사용됩니다."
 
-#: package-manager.xml.in:466(para)
+#: gui/help/C/package-manager.xml:465(para)
 msgid "Select the publisher whose security you want to modify."
 msgstr "보안을 수정할 게시자를 선택합니다."
 
-#: package-manager.xml.in:468(para)
+#: gui/help/C/package-manager.xml:467(para)
 msgid "Click the <guibutton>Modify</guibutton> button to the right of the publisher list to open the Modify Publisher window. The publisher that was selected in the Manage Publishers window is listed in the title of the Modify Publisher window."
 msgstr "게시자 목록 오른쪽에 있는 <guibutton>수정</guibutton> 버튼을 눌러 게시자 수정 창을 엽니다. 그러면 게시자 관리 창에서 선택된 게시자가 게시자 수정 창 제목에 나열됩니다."
 
-#: package-manager.xml.in:469(para)
+#: gui/help/C/package-manager.xml:468(para)
 msgid "Select the General tab to add the SSL key and SSL certificate if a publisher has a secure origin."
 msgstr "게시자가 보안 원본을 가진 경우 일반 탭을 선택하여 SSL 키 및 SSL 인증서를 추가합니다."
 
-#: package-manager.xml.in:470(para)
+#: gui/help/C/package-manager.xml:469(para)
 msgid "Select the Certificates tab to manage certificates for this publisher."
 msgstr "인증서 탭을 선택하여 이 게시자에 대한 인증서를 관리합니다."
 
-#: package-manager.xml.in:471(para)
+#: gui/help/C/package-manager.xml:470(para)
 msgid "Select the Signature Policy tab to manage signature policy for this publisher."
 msgstr "서명 정책 탭을 선택하여 이 게시자에 대한 서명 정책을 관리합니다."
 
-#: package-manager.xml.in:475(title)
+#: gui/help/C/package-manager.xml:474(title)
 msgid "Adding SSL Keys and Certificates"
 msgstr "SSL 키 및 인증서 추가"
 
-#: package-manager.xml.in:476(para)
+#: gui/help/C/package-manager.xml:475(para)
 msgid "If a publisher has a secure origin, add the SSL key and SSL certificate for the publisher."
 msgstr "게시자가 보안 원본을 가진 경우 게시자에 대한 SSL 키 및 SSL 인증서를 추가합니다."
 
-#: package-manager.xml.in:477(para)
+#: gui/help/C/package-manager.xml:476(para)
 msgid "Click the General tab of the Modify Publisher window."
 msgstr "게시자 수정 창의 일반 탭을 누릅니다."
 
-#: package-manager.xml.in:478(para)
+#: gui/help/C/package-manager.xml:477(para)
 msgid "Click the SSL Key and Certificate label to display the SSL Key field and the SSL Certificate field."
 msgstr "SSL 키 및 인증서 레이블을 눌러 SSL 키 필드 및 SSL 인증서 필드를 표시합니다."
 
-#: package-manager.xml.in:479(para)
+#: gui/help/C/package-manager.xml:478(para)
 msgid "Click the <guibutton>Browse</guibutton> button to the right of the SSL Key field to select the SSL Key file."
 msgstr "SSL 키 필드 오른쪽에 있는 <guibutton>찾아보기</guibutton> 버튼을 눌러 SSL 키 파일을 선택합니다."
 
-#: package-manager.xml.in:480(para)
+#: gui/help/C/package-manager.xml:479(para)
 msgid "Click the <guibutton>Browse</guibutton> button to the right of the SSL Certificate field to select the SSL Certificate file."
 msgstr "SSL 인증서 필드 오른쪽에 있는 <guibutton>찾아보기</guibutton> 버튼을 눌러 SSL 인증서 파일을 선택합니다."
 
-#: package-manager.xml.in:485(title)
+#: gui/help/C/package-manager.xml:484(title)
 msgid "Managing Certificates"
 msgstr "인증서 관리"
 
-#: package-manager.xml.in:486(para)
+#: gui/help/C/package-manager.xml:485(para)
 msgid "Click the Certificates tab of the Modify Publisher window."
 msgstr "게시자 수정 창의 인증서 탭을 누릅니다."
 
-#: package-manager.xml.in:487(para)
+#: gui/help/C/package-manager.xml:486(para)
 msgid "Use the buttons below the list of certificates to add a certificate or to remove, revoke, or reinstate the certificate that is currently selected in the list."
 msgstr "인증서 목록 아래의 버튼을 사용하여 인증서를 추가하거나 현재 목록에서 선택된 인증서를 제거, 해지 또는 복구합니다."
 
-#: package-manager.xml.in:488(para)
+#: gui/help/C/package-manager.xml:487(para)
 msgid "Note that any actions you take in the Modify Publisher window are applied to the selected publisher's certificates only after you click the <guibutton>OK</guibutton> button at the bottom of the Modify Publisher window. If you click the <guibutton>Cancel</guibutton> button, no changes are applied."
 msgstr "게시자 수정 창에서 수행하는 작업은 게시자 수정 창 아래쪽에 있는 <guibutton>확인</guibutton> 버튼을 누른 후에만 선택된 게시자의 인증서에 적용됩니다. <guibutton>취소</guibutton> 버튼을 누르면 변경 사항이 적용되지 않습니다."
 
-#: package-manager.xml.in:489(para)
+#: gui/help/C/package-manager.xml:488(para)
 msgid "<guibutton>Add</guibutton>. Add a new publisher certificate for the publisher listed in the Modify Publisher window title. In the Add Publisher Certificate window, browse to select the certificate (<tt>.pem</tt>) file. Click the <guibutton>OK</guibutton> button at the bottom of the Add Publisher Certificate window. The newly added certificate is selected in the certificates list in the Certificates tab of the Modify Publisher window. The details pane indicates that this certificate is \"marked to be added.\" This certificate will be added after you click the <guibutton>OK</guibutton> button on the Modify Publisher window."
 msgstr "<guibutton>추가</guibutton>. 게시자 수정 창 제목에 나열되는 게시자에 대한 새 게시자 인증서를 추가합니다. 게시자 인증서 추가 창에서 인증서(<tt>.pem</tt>) 파일을 찾아 선택합니다. 게시자 인증서 추가 창 아래쪽에 있는 <guibutton>확인</guibutton> 버튼을 누릅니다. 그러면 새로 추가된 인증서가 게시자 수정 창의 인증서 탭에 있는 인증서 목록에서 선택됩니다. 세부 정보 창에 이 인증서가 \"추가 대상으로 표시\"된 것으로 나타납니다. 게시자 수정 창에서 <guibutton>확인</guibutton> 버튼을 누르면 이 인증서가 추가됩니다."
 
-#: package-manager.xml.in:492(para)
+#: gui/help/C/package-manager.xml:491(para)
 msgid "In the list of certificates for this publisher, select the certificate you want to modify or whose details you want to check. Details about the selected certificate are shown below the list of certificates and row of buttons. Note that an expired certificate can still be Approved and used to validate signed packages that were published (not necessarily installed) before the certificate expired."
 msgstr "이 게시자에 대한 인증서 목록에서 수정할 인증서 또는 세부 정보를 확인할 인증서를 선택합니다. 선택된 인증서에 대한 세부 정보가 인증서 목록 및 버튼 행 아래에 표시됩니다. 만료된 인증서가 계속 승인됨 상태일 수 있으며 인증서 만료 전 게시되었던(설치되지 않아도 됨) 서명된 패키지를 검증하는 데 사용될 수 있습니다."
 
-#: package-manager.xml.in:493(para)
+#: gui/help/C/package-manager.xml:492(para)
 msgid "Click the headings of the list of certificates to resort the list. The Organization and Name columns are resizable."
 msgstr "인증서 목록 제목을 눌러 목록을 다시 정렬합니다. 조직 및 이름 열의 크기를 조정할 수 있습니다."
 
-#: package-manager.xml.in:494(para)
+#: gui/help/C/package-manager.xml:493(para)
 msgid "<guibutton>Remove</guibutton>. Remove the certificate that is currently selected in the certificates list."
 msgstr "<guibutton>제거</guibutton>. 현재 인증서 목록에서 선택된 인증서를 제거합니다."
 
-#: package-manager.xml.in:495(para)
+#: gui/help/C/package-manager.xml:494(para)
 msgid "<guibutton>Revoke</guibutton>. If the certificate currently selected in the certificates list is Approved, click the <guibutton>Revoke</guibutton> button to treat this certificate as revoked. In the certificates list, the Status of this certificate changes to Revoked. This change is applied to the certificate after you click the <guibutton>OK</guibutton> button on the Modify Publisher window."
 msgstr "<guibutton>해지</guibutton>. 현재 인증서 목록에서 선택된 인증서가 승인됨이면 <guibutton>해지</guibutton> 버튼을 눌러 이 인증서를 해지됨 상태로 처리합니다. 인증서 목록에서 이 인증서의 상태가 해지됨으로 변경됩니다. 게시자 수정 창에서 <guibutton>확인</guibutton> 버튼을 누르면 이 변경 사항이 인증서에 적용됩니다."
 
-#: package-manager.xml.in:496(para)
+#: gui/help/C/package-manager.xml:495(para)
 msgid "<guibutton>Reinstate</guibutton>. If the certificate currently selected in the certificates list is Revoked, click the <guibutton>Reinstate</guibutton> button to treat this certificate as approved. The details pane indicates that this certificate is \"marked to be reinstated.\" This certificate will be reinstated after you click the <guibutton>OK</guibutton> button on the Modify Publisher window."
 msgstr "<guibutton>복구</guibutton>. 현재 인증서 목록에서 선택된 인증서가 해지됨이면 <guibutton>복구</guibutton> 버튼을 눌러 이 인증서를 승인됨 상태로 처리합니다. 세부 정보 창에 이 인증서가 \"복구 대상으로 표시\"된 것으로 나타납니다. 게시자 수정 창에서 <guibutton>확인</guibutton> 버튼을 누르면 이 인증서가 복구됩니다."
 
-#: package-manager.xml.in:503(title)
+#: gui/help/C/package-manager.xml:502(title)
 msgid "Managing Signature Policy"
 msgstr "서명 정책 관리"
 
-#: package-manager.xml.in:504(para)
+#: gui/help/C/package-manager.xml:503(para)
 msgid "Click the Signature Policy tab of the Modify Publisher window."
 msgstr "게시자 수정 창의 서명 정책 탭을 누릅니다."
 
-#: package-manager.xml.in:505(para)
+#: gui/help/C/package-manager.xml:504(para)
 msgid "Use the buttons on the Signature Policy tab to set the signature policy to use when installing packages from the publisher listed in the Modify Publisher window title."
 msgstr "서명 정책 탭의 버튼을 사용하여 게시자 수정 창 제목에 나열되는 게시자의 패키지를 설치할 때 사용할 서명 정책을 설정합니다."
 
-#: package-manager.xml.in:506(para)
+#: gui/help/C/package-manager.xml:505(para)
 msgid "To set the global signature policy, use the Signature Policy tab of the Preferences window (see <xref linkend=\"img-sig-policy\"/>)."
 msgstr "전역 서명 정책을 설정하려면 기본 설정 창의 서명 정책 탭을 사용합니다(<xref linkend=\"img-sig-policy\"/> 참조)."
 
-#: package-manager.xml.in:507(para)
+#: gui/help/C/package-manager.xml:506(para)
 msgid "Signatures are ignored: Ignore signatures for all packages."
 msgstr "서명이 무시됨: 모든 패키지에 대한 서명을 무시합니다."
 
-#: package-manager.xml.in:508(para)
+#: gui/help/C/package-manager.xml:507(para)
 msgid "Signatures are optional, but must be valid if provided: Verify that all packages with signatures are validly signed, but do not require all installed packages to be signed."
 msgstr "서명이 선택 사항이지만 제공할 경우 유효해야 함: 서명이 있는 모든 패키지가 유효하게 서명되었는지 확인하되 설치된 모든 패키지를 서명할 필요는 없습니다."
 
-#: package-manager.xml.in:509(para)
+#: gui/help/C/package-manager.xml:508(para)
 msgid "One or more valid signatures are required: Require that all newly installed packages have at least one valid signature."
 msgstr "하나 이상의 유효한 서명이 필요함: 새로 설치된 모든 패키지의 서명이 하나 이상 유효해야 합니다."
 
-#: package-manager.xml.in:510(para)
+#: gui/help/C/package-manager.xml:509(para)
 msgid "Signatures are required and the certificate name must include the name or names specified in the text field when validating the signatures of a package. If more than one name is specified, the names must be comma-separated."
 msgstr "서명이 필요하며 패키지 서명을 검증할 때 텍스트 필드에 지정된 이름이 인증서 이름에 포함되어야 합니다. 지정된 이름이 두 개 이상일 경우 이름은 쉼표로 구분되어야 합니다."
 
-#: package-manager.xml.in:518(title)
+#: gui/help/C/package-manager.xml:517(title)
 msgid "Removing Publishers"
 msgstr "게시자 제거"
 
-#: package-manager.xml.in:519(para)
+#: gui/help/C/package-manager.xml:518(para)
 msgid "Perform the following steps to remove a publisher:"
 msgstr "다음 단계를 수행하여 게시자를 제거합니다."
 
-#: package-manager.xml.in:522(para)
+#: gui/help/C/package-manager.xml:521(para)
 msgid "Select the publisher that you want to remove."
 msgstr "제거할 게시자를 선택합니다."
 
-#: package-manager.xml.in:524(para)
+#: gui/help/C/package-manager.xml:523(para)
 msgid "Click the <guibutton>Remove</guibutton> button to the right of the publisher list."
 msgstr "게시자 목록 오른쪽에 있는 <guibutton>제거</guibutton> 버튼을 누릅니다."
 
-#: package-manager.xml.in:525(para)
+#: gui/help/C/package-manager.xml:524(para)
 msgid "If the selected publisher is a system publisher, the <guibutton>Remove</guibutton> button is disabled. The Details pane indicates that the selected publisher is a system publisher and displays a message that this publisher cannot be modified or removed."
 msgstr "선택된 게시자가 시스템 게시자일 경우 <guibutton>제거</guibutton> 버튼이 사용 안함으로 설정됩니다. 세부 정보 창에 선택된 게시자가 시스템 게시자인 것으로 나타나며 이 게시자를 수정 또는 제거할 수 없음을 알리는 메시지가 표시됩니다."
 
-#: package-manager.xml.in:532(title)
+#: gui/help/C/package-manager.xml:531(title)
 msgid "Managing Boot Environments"
 msgstr "부트 환경 관리"
 
-#: package-manager.xml.in:533(para)
+#: gui/help/C/package-manager.xml:532(para)
 msgid "A boot environment (BE) is a bootable image. You can maintain multiple BEs on your Oracle Solaris system. One BE is the default BE at startup or reboot. Other BEs are available as alternate boot selections. The BE you are booted into is the active BE."
 msgstr "BE(부트)는 부트 가능 이미지입니다. Oracle Solaris 시스템에서 여러 개의 BE를 유지 관리할 수 있습니다. 하나의 BE가 시작 또는 재부트 시 기본 BE로 사용되며, 다른 BE는 대체 부트 옵션으로 제공됩니다. 부트한 BE가 활성 BE입니다."
 
-#: package-manager.xml.in:534(para)
+#: gui/help/C/package-manager.xml:533(para)
 msgid "You can use the <literal>beadm</literal>(1) command to create, rename, mount, unmount, activate, or destroy BEs. For complete information about BEs, see <citetitle>Creating and Managing Boot Environments After Installation</citetitle>."
 msgstr "<literal>beadm</literal>(1) 명령을 사용하여 BE를 만들거나, 마운트, 마운트 해제, 활성화 또는 삭제하거나 이름을 바꿀 수 있습니다. BE에 대한 자세한 내용은 <citetitle>Creating and Managing Boot Environments After Installation</citetitle>를 참조하십시오."
 
-#: package-manager.xml.in:535(para)
+#: gui/help/C/package-manager.xml:534(para)
 msgid "Package Manager provides a subset of the functionality that the <literal>beadm</literal>(1) command provides. Use the Package Manager <menuchoice><guimenu>File</guimenu><guimenuitem>Manage Boot Environments</guimenuitem></menuchoice> option to open the Manage Boot Environments window. The Manage Boot Environments window lists the BEs on this system and enables you to activate, rename, and delete those BEs as described below."
 msgstr "패키지 관리자는 <literal>beadm</literal>(1) 명령이 제공하는 기능 중 일부를 제공합니다. 패키지 관리자 <menuchoice><guimenu>파일</guimenu><guimenuitem>부트 환경 관리</guimenuitem></menuchoice> 옵션을 사용하여 부트 환경 관리 창을 열 수 있습니다. 부트 환경 관리 창에는 이 시스템의 BE가 나열되며 이 창에서 아래 설명된 대로 해당 BE를 활성화 및 삭제하고 이름을 바꿀 수 있습니다."
 
-#: package-manager.xml.in:536(title)
+#: gui/help/C/package-manager.xml:535(title)
 msgid "Creating a BE"
 msgstr "BE 만들기"
 
-#: package-manager.xml.in:537(para)
+#: gui/help/C/package-manager.xml:536(para)
 msgid "A new BE is automatically created when you do one of the following actions:"
 msgstr "다음 작업 중 하나를 수행하면 새 BE가 자동으로 만들어집니다."
 
-#: package-manager.xml.in:538(para)
+#: gui/help/C/package-manager.xml:537(para)
 msgid "Install the Oracle Solaris OS."
 msgstr "Oracle Solaris OS를 설치합니다."
 
-#: package-manager.xml.in:540(para)
+#: gui/help/C/package-manager.xml:539(para)
 msgid "Install or update particular key system packages such as some drivers and other kernel components."
 msgstr "중요한 특정 시스템 패키지(예: 일부 드라이버 및 기타 커널 구성 요소)를 설치 또는 업데이트합니다."
 
-#: package-manager.xml.in:542(para)
+#: gui/help/C/package-manager.xml:541(para)
 msgid "Use the <literal>beadm create</literal> command."
 msgstr "<literal>beadm create</literal> 명령을 사용합니다."
 
-#: package-manager.xml.in:545(para)
+#: gui/help/C/package-manager.xml:544(para)
 msgid "Often a new BE is created when you execute the <literal>pkg update</literal> command or use the <guibutton>Updates</guibutton> button to update all packages that have updates available."
 msgstr "<literal>pkg update</literal> 명령을 실행하거나 <guibutton>업데이트</guibutton> 버튼을 사용하여 업데이트를 사용할 수 있는 모든 패키지를 업데이트하는 경우 새 BE가 만들어지기도 합니다."
 
-#: package-manager.xml.in:547(title)
+#: gui/help/C/package-manager.xml:546(title)
 msgid "Activating a BE"
 msgstr "BE 활성화"
 
-#: package-manager.xml.in:548(para)
+#: gui/help/C/package-manager.xml:547(para)
 msgid "Select the <menuchoice><guimenu>File</guimenu><guimenuitem>Manage Boot Environments</guimenuitem></menuchoice> menu option to open the Manage Boot Environments window. Each BE is listed in the window. The BE that you are currently booted into shows a check mark to the left of the BE name."
 msgstr "<menuchoice><guimenu>파일</guimenu><guimenuitem>부트 환경 관리</guimenuitem></menuchoice> 메뉴 옵션을 선택하여 부트 환경 관리 창을 엽니다. 각 BE가 창에 나열됩니다. 현재 부트한 BE의 경우 BE 이름 왼쪽에 확인 표시가 나타납니다."
 
-#: package-manager.xml.in:549(para)
+#: gui/help/C/package-manager.xml:548(para)
 msgid "To specify a different BE to be the default active BE after the next reboot, perform the following steps:"
 msgstr "다음 번 재부트 후 다른 BE가 기본 활성 BE로 사용되도록 지정하려면 다음 단계를 수행합니다."
 
-#: package-manager.xml.in:550(para)
+#: gui/help/C/package-manager.xml:549(para)
 msgid "Select the <guibutton>Active on Reboot</guibutton> button for the BE that you want to be the default active BE after the next reboot."
 msgstr "다음 번 재부트 후 기본 활성 BE로 사용할 BE에 대해 <guibutton>재부트 시 활성</guibutton> 버튼을 선택합니다."
 
-#: package-manager.xml.in:552(para) package-manager.xml.in:565(para) package-manager.xml.in:577(para)
+#: gui/help/C/package-manager.xml:551(para) gui/help/C/package-manager.xml:564(para) gui/help/C/package-manager.xml:576(para)
 msgid "Select the <guibutton>OK</guibutton> button in the Manage Boot Environments window."
 msgstr "부트 환경 관리 창에서 <guibutton>확인</guibutton> 버튼을 선택합니다."
 
-#: package-manager.xml.in:556(title)
+#: gui/help/C/package-manager.xml:555(title)
 msgid "Renaming a BE"
 msgstr "BE 이름 바꾸기"
 
-#: package-manager.xml.in:557(para)
+#: gui/help/C/package-manager.xml:556(para)
 msgid "Select the <menuchoice><guimenu>File</guimenu><guimenuitem>Manage Boot Environments</guimenuitem></menuchoice> menu option to open the Manage Boot Environments window. Each BE is listed in the window."
 msgstr "<menuchoice><guimenu>파일</guimenu><guimenuitem>부트 환경 관리</guimenuitem></menuchoice> 메뉴 옵션을 선택하여 부트 환경 관리 창을 엽니다. 각 BE가 창에 나열됩니다."
 
-#: package-manager.xml.in:558(para)
+#: gui/help/C/package-manager.xml:557(para)
 msgid "You cannot rename the currently active BE."
 msgstr "현재 활성 BE의 이름을 바꿀 수 없습니다."
 
-#: package-manager.xml.in:559(para)
+#: gui/help/C/package-manager.xml:558(para)
 msgid "You cannot rename a BE that you have marked for deletion."
 msgstr "삭제 대상으로 표시한 BE의 이름을 바꿀 수 없습니다."
 
-#: package-manager.xml.in:560(para)
+#: gui/help/C/package-manager.xml:559(para)
 msgid "To rename a BE, perform the following steps:"
 msgstr "BE의 이름을 바꾸려면 다음 단계를 수행합니다."
 
-#: package-manager.xml.in:561(para)
+#: gui/help/C/package-manager.xml:560(para)
 msgid "Double-click the name of the BE that you want to rename. The name field becomes editable."
 msgstr "이름을 바꿀 BE의 이름을 두 번 누릅니다. 그러면 이름 필드가 편집 가능 필드로 바뀝니다."
 
-#: package-manager.xml.in:563(para)
+#: gui/help/C/package-manager.xml:562(para)
 msgid "Enter the new name."
 msgstr "새 이름을 입력합니다."
 
-#: package-manager.xml.in:569(title)
+#: gui/help/C/package-manager.xml:568(title)
 msgid "Removing a BE"
 msgstr "BE 제거"
 
-#: package-manager.xml.in:570(para)
+#: gui/help/C/package-manager.xml:569(para)
 msgid "Select the <menuchoice><guimenu>File</guimenu><guimenuitem>Manage Boot Environments</guimenuitem></menuchoice> menu option to open the Manage Boot Environments window. Each BE is listed in the window. The right-most column in the window is the Delete column."
 msgstr "<menuchoice><guimenu>파일</guimenu><guimenuitem>부트 환경 관리</guimenuitem></menuchoice> 메뉴 옵션을 선택하여 부트 환경 관리 창을 엽니다. 각 BE가 창에 나열됩니다. 창의 맨 오른쪽 열은 삭제 열입니다."
 
-#: package-manager.xml.in:571(para)
+#: gui/help/C/package-manager.xml:570(para)
 msgid "The middle column in the Manage Boot Environments window shows the size of the BE. You might want to remove a BE to free some space on your storage device."
 msgstr "부트 환경 관리 창의 가운데 열에는 BE 크기가 표시됩니다. 저장소 장치의 공간을 확보하기 위해 BE를 제거할 수 있습니다."
 
-#: package-manager.xml.in:572(para)
+#: gui/help/C/package-manager.xml:571(para)
 msgid "You cannot delete the currently active BE."
 msgstr "현재 활성 BE를 삭제할 수 없습니다."
 
-#: package-manager.xml.in:573(para)
+#: gui/help/C/package-manager.xml:572(para)
 msgid "You cannot delete a BE that you have renamed."
 msgstr "이름을 바꾼 BE를 삭제할 수 없습니다."
 
-#: package-manager.xml.in:574(para)
+#: gui/help/C/package-manager.xml:573(para)
 msgid "To delete a BE, perform the following steps:"
 msgstr "BE를 삭제하려면 다음 단계를 수행합니다."
 
-#: package-manager.xml.in:575(para)
+#: gui/help/C/package-manager.xml:574(para)
 msgid "Select the <guibutton>Delete</guibutton> box for the BE that you want to delete."
 msgstr "삭제할 BE에 대한 <guibutton>삭제</guibutton> 상자를 선택합니다."
 
-#: package-manager.xml.in:582(title)
+#: gui/help/C/package-manager.xml:581(title)
 msgid "Working With WebInstall"
 msgstr "WebInstall 작업"
 
-#: package-manager.xml.in:583(para)
+#: gui/help/C/package-manager.xml:582(para)
 msgid "Package Manager supports installing packages using a simple one-click WebInstall process. The WebInstall process uses a <filename>.p5i</filename> file. A <filename>.p5i</filename> file contains information to add publishers and add packages that can be installed from these publishers. The information in the <filename>.p5i</filename> file is read and used by the WebInstall process."
 msgstr "패키지 관리자는 한 번만 누르는 간단한 WebInstall 프로세스를 사용하여 패키지를 설치할 수 있도록 지원합니다. WebInstall 프로세스에는 <filename>.p5i</filename> 파일이 사용됩니다. <filename>.p5i</filename> 파일에는 게시자를 추가하고 해당 게시자로부터 설치할 수 있는 패키지를 추가하는 데 필요한 정보가 포함되어 있습니다. WebInstall 프로세스가 <filename>.p5i</filename> 파일의 정보를 읽고 사용합니다."
 
-#: package-manager.xml.in:584(title)
+#: gui/help/C/package-manager.xml:583(title)
 msgid "Exporting Files Using WebInstall"
 msgstr "WebInstall을 사용하여 파일 내보내기"
 
-#: package-manager.xml.in:585(para)
+#: gui/help/C/package-manager.xml:584(para)
 msgid "If you want other users to be able to install packages that you have installed on your system, you can export the installation instructions for those package files using the WebInstall process. A <filename>.p5i</filename> file consisting of installation instructions for those packages and publishers to be installed is created."
 msgstr "시스템에 설치한 패키지를 다른 사용자가 설치할 수 있도록 하려는 경우 WebInstall 프로세스를 사용하여 해당 패키지 파일에 대한 설치 지침을 내보낼 수 있습니다. 해당 패키지 및 게시자 설치를 위한 설치 지침으로 구성된 <filename>.p5i</filename> 파일이 만들어집니다."
 
-#: package-manager.xml.in:586(para)
+#: gui/help/C/package-manager.xml:585(para)
 msgid "To export the installation instructions for your selected packages and their publishers to a <filename>.p5i</filename> file, perform the following steps:"
 msgstr "선택한 패키지 및 패키지 게시자에 대한 설치 지침을 <filename>.p5i</filename> 파일로 내보내려면 다음 단계를 수행합니다."
 
-#: package-manager.xml.in:587(para)
+#: gui/help/C/package-manager.xml:586(para)
 msgid "From the <guimenu>Publisher</guimenu> drop-down menu, select the publisher from which you want to include the packages in the <filename>.p5i</filename> file."
 msgstr "<guimenu>게시자</guimenu> 드롭다운 메뉴에서 패키지를 <filename>.p5i</filename> 파일에 포함시킬 게시자를 선택합니다."
 
-#: package-manager.xml.in:589(para)
+#: gui/help/C/package-manager.xml:588(para)
 msgid "In the package list pane, select the package whose installation instructions you want to distribute."
 msgstr "패키지 목록 창에서 설치 지침을 배포할 패키지를 선택합니다."
 
-#: package-manager.xml.in:591(para)
+#: gui/help/C/package-manager.xml:590(para)
 msgid "Click <menuchoice><guisubmenu>File</guisubmenu><guimenuitem>Export Selections</guimenuitem></menuchoice> to display the Export Selections Confirmation window."
 msgstr "<menuchoice><guisubmenu>파일</guisubmenu><guimenuitem>선택 항목 내보내기</guimenuitem></menuchoice>를 눌러 선택 항목 내보내기 확인 창을 표시합니다."
 
-#: package-manager.xml.in:593(para)
+#: gui/help/C/package-manager.xml:592(para)
 msgid "Click the <guibutton>OK</guibutton> button to confirm the selections. The Export Selections window is displayed."
 msgstr "<guibutton>확인</guibutton> 버튼을 눌러 선택 항목을 확인합니다. 선택 항목 내보내기 창이 표시됩니다."
 
-#: package-manager.xml.in:595(para)
+#: gui/help/C/package-manager.xml:594(para)
 msgid "A default name for the <filename>p5i</filename> file with the extension <filename>.p5i</filename> is provided. You can change this file name, but do not change the extension."
 msgstr "확장자가 <filename>.p5i</filename>인 <filename>p5i</filename> 파일의 기본 이름이 제공됩니다. 이 이름은 변경할 수 있지만 확장자는 변경할 수 없습니다."
 
-#: package-manager.xml.in:597(para)
+#: gui/help/C/package-manager.xml:596(para)
 msgid "A default location for the <filename>p5i</filename> file is provided. You can change the location. If you use the <guibutton>Browse</guibutton> button, you can select the <filename>p5i Files</filename> option from the drop-down menu at the bottom right hand side of the Export Selections window to display only <filename>.p5i</filename> files in the file list."
 msgstr "<filename>p5i</filename> 파일의 기본 위치가 제공됩니다. 위치를 변경할 수 있습니다. <guibutton>찾아보기</guibutton> 버튼을 사용할 경우 선택 항목 내보내기 창 오른쪽 아래에 있는 드롭다운 메뉴에서 <filename>p5i 파일</filename> 옵션을 선택하여 파일 목록에 <filename>.p5i</filename> 파일만 표시할 수 있습니다."
 
-#: package-manager.xml.in:599(para)
+#: gui/help/C/package-manager.xml:598(para)
 msgid "Click the <guibutton>Save</guibutton> button to save the file name and location."
 msgstr "<guibutton>저장</guibutton> 버튼을 눌러 파일 이름 및 위치를 저장합니다."
 
-#: package-manager.xml.in:603(title)
+#: gui/help/C/package-manager.xml:602(title)
 msgid "Using WebInstall to Add Publishers and Install Packages"
 msgstr "WebInstall을 사용하여 게시자 추가 및 패키지 설치"
 
-#: package-manager.xml.in:604(para)
+#: gui/help/C/package-manager.xml:603(para)
 msgid "The WebInstall process enables you to install packages through a <filename>p5i</filename> file."
 msgstr "WebInstall 프로세스를 사용하면 <filename>p5i</filename> 파일을 통해 패키지를 설치할 수 있습니다."
 
-#: package-manager.xml.in:605(para)
+#: gui/help/C/package-manager.xml:604(para)
 msgid "Locate the <filename>.p5i</filename> file. This file might be on your desktop or on a web site."
 msgstr "<filename>.p5i</filename> 파일을 찾습니다. 이 파일은 사용자의 데스크탑 또는 웹 사이트에 있을 수 있습니다."
 
-#: package-manager.xml.in:607(para)
+#: gui/help/C/package-manager.xml:606(para)
 msgid "Use one of the following methods to start Package Manager in WebInstall mode:"
 msgstr "다음 방법 중 하나로 패키지 관리자를 WebInstall 모드로 시작합니다."
 
-#: package-manager.xml.in:608(para)
+#: gui/help/C/package-manager.xml:607(para)
 msgid "Click on a <filename>.p5i</filename> file on your desktop. The associated application (Package Manager Web Installer) is launched."
 msgstr "데스크탑에서 <filename>.p5i</filename> 파일을 누릅니다. 그러면 연결된 응용 프로그램(패키지 관리자 웹 설치 프로그램)이 시작됩니다."
 
-#: package-manager.xml.in:610(para)
+#: gui/help/C/package-manager.xml:609(para)
 msgid "Start Package Manager from the command line along with a path to the <filename>.p5i</filename> file. For example, enter the following command:"
 msgstr "명령줄에서 <filename>.p5i</filename> 파일에 대한 경로와 함께 패키지 관리자를 시작합니다. 예를 들어, 다음 명령을 입력합니다."
 
-#: package-manager.xml.in:611(replaceable)
+#: gui/help/C/package-manager.xml:610(replaceable)
 msgid "path_to_p5i_file/file.p5i"
 msgstr "path_to_p5i_file/file.p5i"
 
-#: package-manager.xml.in:611(userinput)
+#: gui/help/C/package-manager.xml:610(userinput)
 #, no-wrap
 msgid "packagemanager/<placeholder-1/>"
 msgstr "packagemanager/<placeholder-1/>"
 
-#: package-manager.xml.in:611(screen)
+#: gui/help/C/package-manager.xml:610(screen)
 #, no-wrap
 msgid "# <placeholder-1/>"
 msgstr "# <placeholder-1/>"
 
-#: package-manager.xml.in:613(para)
+#: gui/help/C/package-manager.xml:612(para)
 msgid "Go to a URL location that contains a link to <filename>.p5i</filename> file. The <filename>.p5i</filename> file must be located on a web server that has registered this MIME type."
 msgstr "<filename>.p5i</filename> 파일에 대한 링크가 있는 URL 위치로 이동합니다. <filename>.p5i</filename> 파일은 이 MIME 유형을 등록한 웹 서버에 있어야 합니다."
 
-#: package-manager.xml.in:614(para)
+#: gui/help/C/package-manager.xml:613(para)
 msgid "If the <filename>.p5i</filename> is located on a web server that has not registered this MIME type, save the <filename>.p5i</filename> file to your desktop and then click on it to launch WebInstall."
 msgstr "<filename>.p5i</filename>가 이 MIME 유형을 등록하지 않은 웹 서버에 있을 경우 <filename>.p5i</filename> 파일을 데스크탑에 저장한 다음 WebInstall을 눌러 시작합니다."
 
-#: package-manager.xml.in:618(para)
+#: gui/help/C/package-manager.xml:617(para)
 msgid "The Install/Update window is displayed. The label at the top of the window is: “Package Manager Web Installer/The following will be added to your system:” Then the publishers and packages are listed. Click the <guibutton>Proceed</guibutton> button to continue with the installation."
 msgstr "설치/업데이트 창이 표시됩니다. 창 위쪽에 \"패키지 관리자 웹 설치 프로그램/다음의 내용들이 여러분의 시스템에 추가됩니다.\"라는 레이블이 표시됩니다. 그런 다음 게시자 및 패키지가 나열됩니다. <guibutton>진행</guibutton> 버튼을 눌러 설치를 계속합니다."
 
-#: package-manager.xml.in:619(para)
+#: gui/help/C/package-manager.xml:618(para)
 msgid "If the package publisher is not already configured on your system, the Add Publisher window is displayed. The name and URI of the publisher are already entered."
 msgstr "패키지 게시자가 시스템에 구성되지 않은 경우 게시자의 이름 및 URI가 이미 입력된 상태로 게시자 추가 창이 표시됩니다."
 
-#: package-manager.xml.in:620(para)
+#: gui/help/C/package-manager.xml:619(para)
 msgid "If the publishers to be added are secure publishers, an SSL key and certificate are required. Browse to locate the SSL Key and SSL Certificate on your system."
 msgstr "추가할 게시자가 보안 게시자일 경우 SSL 키 및 인증서가 필요합니다. 찾아보기를 눌러 시스템에서 SSL 키 및 SSL 인증서를 찾습니다."
 
-#: package-manager.xml.in:621(para)
+#: gui/help/C/package-manager.xml:620(para)
 msgid "The Adding Publisher Complete dialog displays if the publisher is added successfully. Click the <guibutton>OK</guibutton> button to continue with the installation."
 msgstr "게시자가 성공적으로 추가된 경우 게시자 추가 완료 대화 상자가 표시됩니다. <guibutton>확인</guibutton> 버튼을 눌러 설치를 계속합니다."
 
-#: package-manager.xml.in:623(para)
+#: gui/help/C/package-manager.xml:622(para)
 msgid "If a <filename>.p5i</filename> file contains packages from a disabled publisher, WebInstall opens up an Enable Publisher dialog. Use this dialog to enable the publisher so that you can install the packages."
 msgstr "<filename>.p5i</filename> 파일에 사용 안함으로 설정된 게시자의 패키지가 있을 경우 WebInstall이 게시자 사용 대화 상자를 엽니다. 이 대화 상자에서 패키지를 설치할 수 있도록 게시자를 사용으로 설정할 수 있습니다."
 
-#: package-manager.xml.in:627(para)
+#: gui/help/C/package-manager.xml:626(para)
 msgid "The Install/Update window now looks the same as when you select <guibutton>Install/Update</guibutton> from within Package Manager."
 msgstr "패키지 관리자에서 <guibutton>설치/업데이트</guibutton>를 선택할 때와 동일하게 설치/업데이트 창이 표시됩니다."
 
-#: package-manager.xml.in:632(title)
+#: gui/help/C/package-manager.xml:631(title)
 msgid "Troubleshooting"
 msgstr "문제 해결"
 
-#: package-manager.xml.in:633(para)
+#: gui/help/C/package-manager.xml:632(para)
 msgid "Error, warning, and informational messages are saved to a log so that you can review them at any time."
 msgstr "언제든지 검토할 수 있도록 오류, 경고 및 정보 메시지가 로그에 저장됩니다."
 
-#: package-manager.xml.in:634(title)
+#: gui/help/C/package-manager.xml:633(title)
 msgid "Viewing Message Logs"
 msgstr "메시지 로그 보기"
 
-#: package-manager.xml.in:635(para)
+#: gui/help/C/package-manager.xml:634(para)
 msgid "Select the <menuchoice><guimenu>View</guimenu><guimenuitem>Logs</guimenuitem></menuchoice> menu option to open the Logs window. The Logs window displays error, warning, and informational messages from Package Manager and Update Manager."
 msgstr "<menuchoice><guimenu>보기</guimenu><guimenuitem>로그</guimenuitem></menuchoice> 메뉴 옵션을 선택하여 로그 창을 엽니다. 그러면 로그 창에 패키지 관리자 및 업데이트 관리자의 오류, 경고 및 정보 메시지가 표시됩니다."
 
-#: package-manager.xml.in:636(para)
+#: gui/help/C/package-manager.xml:635(para)
 msgid "Select the <guibutton>Clear</guibutton> button at the bottom of the Logs window to delete all the messages."
 msgstr "로그 창 아래쪽에 있는 <guibutton>지우기</guibutton> 버튼을 선택하면 모든 메시지가 삭제됩니다."
 
-#: package-manager.xml.in:637(para)
+#: gui/help/C/package-manager.xml:636(para)
 msgid "If an error or warning is logged, a yellow triangle is displayed on the left side of the status bar. Click the yellow triangle to display the Logs window."
 msgstr "오류 또는 경고가 기록되면 상태 표시줄 왼쪽에 노란색 삼각형이 표시됩니다. 노란색 삼각형을 누르면 로그 창이 표시됩니다."
 
-#: package-manager.xml.in:640(title)
+#: gui/help/C/package-manager.xml:639(title)
 msgid "Setting Preferences"
 msgstr "기본 설정"
 
-#: package-manager.xml.in:641(para)
+#: gui/help/C/package-manager.xml:640(para)
 msgid "Use the <menuchoice><guimenu>Edit</guimenu><guimenuitem>Preferences</guimenuitem></menuchoice> menu option to change some of the Package Manager user interface settings."
 msgstr "<menuchoice><guimenu>편집</guimenu><guimenuitem>기본 설정</guimenuitem></menuchoice> 메뉴 옵션을 사용하여 패키지 관리자 사용자 인터페이스 설정 중 일부를 변경합니다."
 
-#: package-manager.xml.in:642(para)
+#: gui/help/C/package-manager.xml:641(para)
 msgid "The Preferences window has three tabs:"
 msgstr "기본 설정] 창의 세 가지 탭은 다음과 같습니다."
 
-#: package-manager.xml.in:643(para)
+#: gui/help/C/package-manager.xml:642(para)
 msgid "The General tab enables you to set exit preferences and confirmation dialog preferences."
 msgstr "일반 탭에서는 종료 기본 설정 및 확인 대화 상자 기본 설정을 구성할 수 있습니다."
 
-#: package-manager.xml.in:644(para)
+#: gui/help/C/package-manager.xml:643(para)
 msgid "The Optional Components tab enables you to set preferences for which optional package components to install when you install or update a package."
 msgstr "선택적 구성 요소 탭에서는 패키지를 설치 또는 업데이트할 때 설치할 선택적 패키지 구성 요소에 대한 기본 설정을 구성할 수 있습니다."
 
-#: package-manager.xml.in:645(para)
+#: gui/help/C/package-manager.xml:644(para)
 msgid "The Signature Policy tab enables you to set signature policy for this image."
 msgstr "서명 정책 탭에서는 이 이미지에 대한 서명 정책을 설정할 수 있습니다."
 
-#: package-manager.xml.in:647(title)
+#: gui/help/C/package-manager.xml:646(title)
 msgid "Exit Preferences"
 msgstr "종료 기본 설정"
 
-#: package-manager.xml.in:648(para) package-manager.xml.in:661(para)
+#: gui/help/C/package-manager.xml:647(para) gui/help/C/package-manager.xml:660(para)
 msgid "Select the <menuchoice><guimenu>Edit</guimenu><guimenuitem>Preferences</guimenuitem></menuchoice> option and select the General tab."
 msgstr "<menuchoice><guimenu>편집</guimenu><guimenuitem>기본 설정</guimenuitem></menuchoice> 옵션을 선택하고 일반 탭을 선택합니다."
 
-#: package-manager.xml.in:649(para)
+#: gui/help/C/package-manager.xml:648(para)
 msgid "If the “Remember current state on exit” box is checked, Package Manager saves the following settings and restores them the next time you start Package Manager:"
 msgstr "\"종료 시 현재 상태 저장\" 상자가 선택된 경우 패키지 관리자가 다음 설정을 저장하여 다음 번에 패키지 관리자를 시작할 때 복원합니다."
 
-#: package-manager.xml.in:650(para)
+#: gui/help/C/package-manager.xml:649(para)
 msgid "<emphasis role=\"strong\">Vertical and horizontal separators</emphasis> — Widths and heights of the panes in the window"
 msgstr "<emphasis role=\"strong\">세로 및 가로 구분선</emphasis> — 창에 있는 창의 너비 및 높이"
 
-#: package-manager.xml.in:652(para)
+#: gui/help/C/package-manager.xml:651(para)
 msgid "<emphasis role=\"strong\">Window size</emphasis> — Overall size of the Package Manager window"
 msgstr "<emphasis role=\"strong\">창 크기</emphasis> — 패키지 관리자 창의 전체 크기"
 
-#: package-manager.xml.in:654(para)
+#: gui/help/C/package-manager.xml:653(para)
 msgid "<emphasis role=\"strong\">Publisher option</emphasis> — The publisher or other option that is selected in the <guimenu>Publisher</guimenu> drop-down menu when Package Manager is closed"
 msgstr "<emphasis role=\"strong\">게시자 옵션</emphasis> — 패키지 관리자를 닫을 때 <guimenu>게시자</guimenu> 드롭다운 메뉴에서 선택된 게시자 또는 기타 옵션"
 
-#: package-manager.xml.in:656(para)
+#: gui/help/C/package-manager.xml:655(para)
 msgid "<emphasis role=\"strong\">Categories</emphasis> — The selected category and the expanded and collapsed categories for each publisher"
 msgstr "<emphasis role=\"strong\">범주</emphasis> — 각 게시자에 대해 선택된 범주 및 확장/축소된 범주"
 
-#: package-manager.xml.in:660(title)
+#: gui/help/C/package-manager.xml:659(title)
 msgid "Confirmation Dialog Preferences"
 msgstr "확인 대화 상자 기본 설정"
 
-#: package-manager.xml.in:662(para)
+#: gui/help/C/package-manager.xml:661(para)
 msgid "When a package is installed, updated, or removed, a confirmation dialog is displayed that shows the list of packages and the action to be performed. If you do not want to see these confirmation dialogs, uncheck these selections in the Preferences window."
 msgstr "패키지가 설치, 업데이트 또는 제거되면 패키지 목록 및 수행할 작업을 나타내는 확인 대화 상자가 표시됩니다. 이러한 확인 대화 상자를 표시하지 않으려면 기본 설정 창에서 해당 선택 항목의 선택을 취소합니다."
 
-#: package-manager.xml.in:663(para)
+#: gui/help/C/package-manager.xml:662(para)
 msgid "Clicking the “Do not show this confirmation dialog again” check box in a particular confirmation dialog also unsets this preference for that dialog."
 msgstr "특정 확인 대화 상자에서 \"이 확인 대화 상자를 다시 표시하지 않음\" 확인란을 누르면 해당 대화 상자에 대해 이 기본 설정이 해제됩니다."
 
-#: package-manager.xml.in:665(title)
+#: gui/help/C/package-manager.xml:664(title)
 msgid "Signature Policy Preferences"
 msgstr "서명 정책 기본 설정"
 
-#: package-manager.xml.in:666(para)
+#: gui/help/C/package-manager.xml:665(para)
 msgid "Use the buttons on the Signature Policy tab to ignore or require signatures when installing packages in this image. To set signature policy for specific publishers, select the publisher in the Manage Publishers window, click the <guibutton>Modify</guibutton> button, and use the Signature Policy tab of the Modify Publisher window."
 msgstr "서명 정책 탭의 버튼을 사용하여 이 이미지에 패키지를 설치할 때 서명을 무시하거나 요구합니다. 특정 게시자에 대한 서명 정책을 설정하려면 게시자 관리 창에서 게시자를 선택하고 <guibutton>수정</guibutton> 버튼을 누른 다음 게시자 수정 창의 서명 정책 탭을 사용합니다."
 
-#: package-manager.xml.in:667(para)
+#: gui/help/C/package-manager.xml:666(para)
 msgid "The choices for image signature policy are the same as the choices for publisher signature policy except that the settings apply to all packages installed in the image, not just to packages installed from a particular publisher. See <xref linkend=\"pub-sig-policy\"/>."
 msgstr "이미지 서명 정책에 대한 선택 항목은 설정이 특정 게시자로부터 설치된 패키지가 아닌 이미지에 설치된 모든 패키지에 적용된다는 점을 제외하고 게시자 서명 정책에 대한 선택 항목과 동일합니다. <xref linkend=\"pub-sig-policy\"/>을 참조하십시오."
 
-#: package-manager.xml.in:669(title)
+#: gui/help/C/package-manager.xml:668(title)
 msgid "Optional Component Preferences Language Choices"
 msgstr "선택적 구성 요소 기본 설정 언어 선택"
 
-#: package-manager.xml.in:670(para) package-manager.xml.in:677(para)
+#: gui/help/C/package-manager.xml:669(para) gui/help/C/package-manager.xml:676(para)
 msgid "Select the <menuchoice><guimenu>Edit</guimenu><guimenuitem>Preferences</guimenuitem></menuchoice> option and select the Optional Components tab."
 msgstr "<menuchoice><guimenu>편집</guimenu><guimenuitem>기본 설정</guimenuitem></menuchoice> 옵션을 선택하고 선택적 구성 요소 탭을 선택합니다."
 
-#: package-manager.xml.in:671(para)
+#: gui/help/C/package-manager.xml:670(para)
 msgid "By default, Install all languages is selected under Language choices for any package. You can save space in your installation by selecting a subset of languages to install."
 msgstr "기본적으로 패키지에 대한 언어 선택 항목에서 모든 언어 설치가 선택되어 있습니다. 설치할 언어 중 일부만 선택하여 설치 공간을 절약할 수 있습니다."
 
-#: package-manager.xml.in:672(para)
+#: gui/help/C/package-manager.xml:671(para)
 msgid "When Install only these languages is selected, you can click the checkbox icon in the left most column heading of the language list to select all languages. Click the column heading again to deselect all languages. Click the Language and Territory column headings to sort the list."
 msgstr "다음 언어만 설치가 선택된 경우 언어 목록의 열 제목 맨 왼쪽에 있는 확인란 아이콘을 눌러 모든 언어를 선택할 수 있습니다. 열 제목을 다시 누르면 모든 언어의 선택이 해제됩니다. 목록을 정렬하려면 언어 및 영역 열 제목을 누릅니다."
 
-#: package-manager.xml.in:673(para) package-manager.xml.in:679(para)
+#: gui/help/C/package-manager.xml:672(para) gui/help/C/package-manager.xml:678(para)
 msgid "Click the OK button to save your changes. These settings apply to currently installed packages as well as future package installations and updates. The image is updated as necessary to install or remove optional package components based on the new settings."
 msgstr "확인 버튼을 눌러 변경 사항을 저장합니다. 그러면 현재 설치된 패키지와 후속 패키지 설치 및 업데이트에 해당 설정이 적용됩니다. 새 설정을 기반으로 선택적 패키지 구성 요소를 설치 또는 제거할 때 필요에 따라 이미지가 업데이트됩니다."
 
-#: package-manager.xml.in:674(para)
+#: gui/help/C/package-manager.xml:673(para)
 msgid "If you have previously updated your image to include only a subset of languages, Install only these languages is the default selection in this window, and that language list is grayed out if you select the Install all languages option."
 msgstr "언어 중 일부만 포함되도록 이전에 이미지를 업데이트한 경우 기본적으로 이 창에서 다음 언어만 설치가 선택되며 모든 언어 설치 옵션을 선택할 경우 해당 언어 목록이 비활성화됩니다."
 
-#: package-manager.xml.in:676(title)
+#: gui/help/C/package-manager.xml:675(title)
 msgid "Other Optional Component Preferences"
 msgstr "기타 선택적 구성 요소 기본 설정"
 
-#: package-manager.xml.in:678(para)
+#: gui/help/C/package-manager.xml:677(para)
 msgid "By default, Install all development files and Install all documentation are selected under Other component choices. You can save space in your installation by deselecting development files or documentation."
 msgstr "기본적으로 기타 구성 요소 선택 항목에서 모든 개발 파일 설치 및 모든 설명서 설치가 선택되어 있습니다. 개발 파일 또는 설명서의 선택을 해제하여 설치 공간을 절약할 수 있습니다."
 
-#: package-manager.xml.in:682(title)
+#: gui/help/C/package-manager.xml:681(title)
 msgid "Glossary"
 msgstr "용어"
 
-#: package-manager.xml.in:683(glossterm)
+#: gui/help/C/package-manager.xml:682(glossterm)
 msgid "alias"
 msgstr "별칭"
 
-#: package-manager.xml.in:684(para)
+#: gui/help/C/package-manager.xml:683(para)
 msgid "Another name for a publisher."
 msgstr "게시자의 다른 이름입니다."
 
-#: package-manager.xml.in:687(glossterm)
+#: gui/help/C/package-manager.xml:686(glossterm)
 msgid "boot environment (BE)"
 msgstr "BE(부트 환경)"
 
-#: package-manager.xml.in:688(para)
+#: gui/help/C/package-manager.xml:687(para)
 msgid "An instance of a bootable Oracle Solaris environment. The root file system and all other file systems of the boot environment that contain system software are required to be ZFS datasets."
 msgstr "부트 가능 Oracle Solaris 환경의 인스턴스입니다. 시스템 소프트웨어를 포함하는 부트 환경의 루트 파일 시스템 및 기타 모든 파일 시스템이 ZFS 데이터 집합이어야 합니다."
 
-#: package-manager.xml.in:689(para)
+#: gui/help/C/package-manager.xml:688(para)
 msgid "The active boot environment is the one that is currently booted. A system can have many boot environments. You can select the one you want to boot into when you reboot."
 msgstr "활성 부트 환경은 현재 부트된 부트 환경입니다. 시스템에는 여러 부트 환경이 있을 수 있으며, 재부트할 때 부트할 환경을 선택할 수 있습니다."
 
-#: package-manager.xml.in:692(glossterm)
+#: gui/help/C/package-manager.xml:691(glossterm)
 msgid "clone"
 msgstr "복제본"
 
-#: package-manager.xml.in:693(para)
+#: gui/help/C/package-manager.xml:692(para)
 msgid "An exact copy."
 msgstr "정확히 일치하는 복사본입니다."
 
-#: package-manager.xml.in:694(para)
+#: gui/help/C/package-manager.xml:693(para)
 msgid "A clone could be an exact copy of an operating system, a file system, or a volume. This copy has 100% compatibility with the original."
 msgstr "복제본은 운영 체제, 파일 시스템 또는 볼륨과 정확히 일치하는 복사본일 수 있습니다. 이 복사본은 원본과 100% 호환됩니다."
 
-#: package-manager.xml.in:697(glossterm)
+#: gui/help/C/package-manager.xml:696(glossterm)
 msgid "dataset"
 msgstr "데이터 세트"
 
-#: package-manager.xml.in:698(para)
+#: gui/help/C/package-manager.xml:697(para)
 msgid "A generic name for the following ZFS entities: clones, file systems, snapshots, or volumes. Each dataset is identified by a unique name in the ZFS namespace."
 msgstr "복제본, 파일 시스템, 스냅샷, 볼륨 등의 ZFS 엔티티에 대한 일반 이름입니다. 각 데이터 세트는 ZFS 이름 공간에서 고유 이름으로 식별됩니다."
 
-#: package-manager.xml.in:701(glossterm)
+#: gui/help/C/package-manager.xml:700(glossterm)
 msgid "image"
 msgstr "이미지"
 
-#: package-manager.xml.in:702(para)
+#: gui/help/C/package-manager.xml:701(para)
 msgid "A collection of operating system software in a package that can be booted and installed."
 msgstr "부트 및 설치 가능한 패키지의 운영 체제 소프트웨어 모음입니다."
 
-#: package-manager.xml.in:703(para)
+#: gui/help/C/package-manager.xml:702(para)
 msgid "A location on your system where packages and their associated files, directories, links, and dependencies can be installed."
 msgstr "패키지, 패키지와 연결된 파일, 디렉토리, 링크 및 종속성을 설치할 수 있는 시스템의 위치입니다."
 
-#: package-manager.xml.in:706(glossterm)
+#: gui/help/C/package-manager.xml:705(glossterm)
 msgid "origin"
 msgstr "원본"
 
-#: package-manager.xml.in:707(para)
+#: gui/help/C/package-manager.xml:706(para)
 msgid "A package server to which a publisher publishes packages."
 msgstr "게시자가 패키지를 게시하는 패키지 서버입니다."
 
-#: package-manager.xml.in:710(glossterm)
+#: gui/help/C/package-manager.xml:709(glossterm)
 msgid "package"
 msgstr "패키지"
 
-#: package-manager.xml.in:711(para)
+#: gui/help/C/package-manager.xml:710(para)
 msgid "A collection of files, directories, links, drivers, and dependencies in a defined format."
 msgstr "파일, 디렉토리, 링크, 드라이버 및 종속성의 모음으로서 정의된 형식을 따릅니다."
 
-#: package-manager.xml.in:714(glossterm)
+#: gui/help/C/package-manager.xml:713(glossterm)
 msgid "publisher"
 msgstr "게시자"
 
-#: package-manager.xml.in:715(para)
+#: gui/help/C/package-manager.xml:714(para)
 msgid "A person, group, or corporation that designs, creates, and publishes a package to a package server. The package server in turn serves the packages from the (default) publisher, for downloading purposes."
 msgstr "패키지를 설계하고 만들며 패키지 서버에 게시하는 개인, 그룹 또는 회사입니다. 패키지 서버는 (기본) 게시자의 패키지를 다운로드용으로 제공합니다."
 
-#: package-manager.xml.in:718(glossterm)
+#: gui/help/C/package-manager.xml:717(glossterm)
 msgid "system publisher"
 msgstr "시스템 게시자"
 
-#: package-manager.xml.in:719(para)
+#: gui/help/C/package-manager.xml:718(para)
 msgid "System publishers are special publishers used in linked images and non-global zones in particular, to ensure that certain packages stay in sync with the global zone. The global zone constrains packages within the non-global zones by configuring these special system publishers in the non-global zone. They are special because the non-global zones cannot make certain changes to them including removing, disabling, modifying, or changing their priority."
 msgstr "시스템 게시자는 특정 패키지가 전역 영역과 동기화된 상태로 유지되도록 하기 위해 링크된 이미지, 특히 비전역 영역에서 사용되는 특수한 게시자입니다. 전역 영역은 비전역 영역에서 특수한 시스템 게시자를 구성하여 비전역 영역에서 패키지를 제약합니다. 비전역 영역은 우선 순위 제거, 사용 안함으로 설정, 수정 또는 변경을 비롯하여 특정 변경 사항을 적용할 수 없으므로 시스템 게시자가 특수하게 사용됩니다."
 
 #. Put one translator per line, in the form of NAME <EMAIL>, YEAR1, YEAR2
-#: package-manager.xml.in:0(None)
+#: gui/help/C/package-manager.xml:0(None)
 msgid "translator-credits"
 msgstr "Oracle Corporation"
 
