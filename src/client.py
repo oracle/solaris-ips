@@ -2319,7 +2319,7 @@ def update(op, api_inst, pargs,
 
         api_inst.set_stage(stage)
 
-        if res and "*" not in pargs and "*@*" not in pargs:
+        if res:
                 # If there are specific installed packages to update,
                 # then take only those packages to the latest version
                 # allowed by the patterns specified.  (The versions
@@ -2327,8 +2327,8 @@ def update(op, api_inst, pargs,
                 pkgs_update = pargs
                 review_release_notes = False
         else:
-                # If no packages were specified, or '*' was one of the
-                # patterns provided, attempt to update all installed packages.
+                # If no packages were specified, attempt to update all installed
+                # packages.
                 pkgs_update = None
                 review_release_notes = True
 

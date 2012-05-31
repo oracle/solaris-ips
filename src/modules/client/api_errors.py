@@ -574,8 +574,8 @@ for the current image's architecture, zone type, and/or other variant:""")
                                         res.append(error)
 
                 if self.multispec:
-                        s = _("The following different patterns specify the "
-                              "same package(s):")
+                        s = _("The following patterns specify different "
+                            "versions of the same package(s):")
                         res += [s]
                         for t in self.multispec:
                                 res += [

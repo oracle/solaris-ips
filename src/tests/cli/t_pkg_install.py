@@ -1267,6 +1267,176 @@ class TestPkgInstallAmbiguousPatterns(pkg5unittest.SingleDepotTestCase):
                 self.pkg("install foo", exit=1)
 
 
+class TestPkgInstallOverlappingPatterns(pkg5unittest.SingleDepotTestCase):
+
+        a_1 = """
+            open a@1.0,5.11-0
+            close """
+
+        pub2_a_1 = """
+            open pkg://pub2/a@1.0,5.11-0
+            close """
+
+        a_11 = """
+            open a@1.1,5.11-0
+            close """
+
+        a_2 = """
+            open a@2.0,5.11-0
+            close """
+
+        pub2_a_2 = """
+            open pkg://pub2/a@2.0,5.11-0
+            close """
+
+        a_3 = """
+            open a@3.0,5.11-0
+            close """
+
+        aa_1 = """
+            open aa@1.0,5.11-0
+            close """
+
+        afoo_1 = """
+            open a/foo@1.0,5.11-0
+            close """
+
+        bfoo_1 = """
+            open b/foo@1.0,5.11-0
+            close """
+
+        fooa_1 = """
+            open foo/a@1.0,5.11-0
+            close """
+
+        foob_1 = """
+            open foo/b@1.0,5.11-0
+            close """
+
+        def test_overlapping_one_package_available(self):
+                self.pkgsend_bulk(self.rurl, self.a_1)
+                api_inst = self.image_create(self.rurl)
+
+                self._api_install(api_inst, ["a@1", "a@1"], noexecute=True)
+                self._api_install(api_inst, ["a@1", "a@1.0"], noexecute=True)
+                self._api_install(api_inst, ["a@1", "pkg://test/a@1"],
+                    noexecute=True)
+                self._api_install(api_inst, ["a*@1", "pkg:/*a@1"],
+                    noexecute=True)
+                self._api_install(api_inst, ["a*@1", "a@1"], noexecute=True)
+                self._api_install(api_inst, ["a@1", "pkg://test/a*@1"],
+                    noexecute=True)
+                # This fails because a*@2 matches no patterns on its own.
+                self.pkg("install -n 'a*@2' 'a@1'", exit=1)
+
+        def test_overlapping_conflicting_versions_no_wildcard_match(self):
+                self.pkgsend_bulk(self.rurl, self.a_1 + self.a_2)
+                api_inst = self.image_create(self.rurl)
+
+                self.pkg("install -n a@1 a@2", exit=1)
+                self.pkg("install -n a@2 pkg://test/a@1", exit=1)
+                self.pkg("install -n 'a*@2' 'pkg:/*a@1'", exit=1)
+
+                # This is allowed because a*@1 matches published packages, even
+                # though the packages it matches aren't installed in the image.
+                self._api_install(api_inst, ["a*@1", "a@2"])
+                self.pkg("list a@2")
+                self._api_uninstall(api_inst, ["a"])
+
+                self._api_install(api_inst, ["a@1", "pkg://test/a*@2"])
+                self.pkg("list a@1")
+                self._api_uninstall(api_inst, ["a"])
+
+                self.pkgsend_bulk(self.rurl, self.a_3)
+                self._api_install(api_inst, ["a*@1", "*a@2", "a@3"])
+                self.pkg("list a@3")
+                self._api_uninstall(api_inst, ["a"])
+
+                self._api_install(api_inst, ["a*@1", "*a@2", "a@latest"])
+                self.pkg("list a@3")
+                self._api_uninstall(api_inst, ["a"])
+
+                self.pkgsend_bulk(self.rurl, self.a_11)
+                self.pkg("install a@1.1 a@1.0", exit=1)
+                self._api_install(api_inst, ["a@1", "a@1.0", "a*@1.1"])
+                self.pkg("list a@1.0")
+                self._api_uninstall(api_inst, ["a"])
+
+                self._api_install(api_inst, ["*", "a@1.0"])
+                self.pkg("list a@1.0")
+                self._api_uninstall(api_inst, ["a"])
+
+        def test_overlapping_multiple_packages(self):
+                self.pkgsend_bulk(self.rurl, self.a_1 + self.a_2 + self.aa_1 +
+                    self.afoo_1 + self.bfoo_1 + self.fooa_1 + self.foob_1)
+                api_inst = self.image_create(self.rurl)
+
+                self.pkg("install '*a@1' 'a*@2'", exit=1)
+
+                self._api_install(api_inst, ["a*@1", "a@2"])
+                self.pkg("list -Hv")
+                self.assertEqual(len(self.output.splitlines()), 3)
+                self.assert_("a@2" in self.output)
+                self._api_uninstall(api_inst, ["a", "aa", "a/foo"])
+
+                self._api_install(api_inst, ["/a@1", "a*@2", "*foo*@1"])
+                self.pkg("list -Hv")
+                self.assertEqual(len(self.output.splitlines()), 5)
+                self.assert_("a@1" in self.output)
+                self._api_uninstall(api_inst,
+                    ["/a", "a/foo", "b/foo", "foo/a", "foo/b"])
+
+        def test_overlapping_multiple_publishers(self):
+                self.pkgsend_bulk(self.rurl, self.a_1 + self.pub2_a_2)
+                api_inst = self.image_create(self.rurl)
+
+                self._api_install(api_inst, ["a*@1", "pkg://pub2/a@2"],
+                    noexecute=True)
+                self._api_install(api_inst, ["a@1", "pkg://pub2/a*@2"],
+                    noexecute=True)
+                self._api_install(api_inst, ["a@1", "pkg://pub2/*@2"],
+                    noexecute=True)
+                self.pkg("install -n 'pkg://test/a*@1' 'pkg://pub2/*a@2'",
+                    exit=1)
+                self.pkg("install -n 'pkg://test/a@1' 'pkg://pub2/a@2'",
+                    exit=1)
+                self.pkg("install -n 'a@1' 'pkg://pub2/a@2'", exit=1)
+
+                self.pkgsend_bulk(self.rurl, self.pub2_a_1)
+                self._api_install(api_inst, ["a@1", "pkg://pub2/a@1"])
+                self.pkg("list -Hv 'pkg://pub2/*'")
+                self.assertEqual(len(self.output.splitlines()), 1)
+                self.assert_("a@1" in self.output)
+                self._api_uninstall(api_inst, ["a"])
+
+                self._api_install(api_inst, ["a@1", "pkg://test/a@1"])
+                self.pkg("list -Hv 'pkg://test/*'")
+                self.assertEqual(len(self.output.splitlines()), 1)
+                self.assert_("a@1" in self.output)
+                self._api_uninstall(api_inst, ["a"])
+
+                self._api_install(api_inst, ["a*@1", "pkg://pub2/*@2"])
+                self.pkg("list -Hv 'pkg://pub2/*'")
+                self.assertEqual(len(self.output.splitlines()), 1)
+                self.assert_("a@2" in self.output)
+                self._api_uninstall(api_inst, ["a"])
+
+                self._api_install(api_inst,
+                    ["pkg://test/a@1", "pkg://pub2/*@2"])
+                self.pkg("list -Hv 'pkg://test/*'")
+                self.assertEqual(len(self.output.splitlines()), 1)
+                self.assert_("a@1" in self.output)
+                self._api_uninstall(api_inst, ["a"])
+
+                # This intentionally doesn't use api_install to check for
+                # special handling of '*' in client.py.
+                self.pkg("install '*' 'pkg://pub2/*@2'")
+                self.pkg("list -Hv 'pkg://pub2/*'")
+                self.assertEqual(len(self.output.splitlines()), 1)
+                self.assert_("a@2" in self.output)
+                self._api_uninstall(api_inst, ["a"])
+
+
 class TestPkgInstallCircularDependencies(pkg5unittest.SingleDepotTestCase):
         # Only start/stop the depot once (instead of for every test)
         persistent_setup = True

@@ -3746,8 +3746,9 @@ class ImagePlan(object):
 
                 Routine raises PlanCreationException if errors occur: it is
                 illegal to specify multiple different patterns that match the
-                same pkg name.  Only patterns that contain wildcards are allowed
-                to match multiple packages.
+                same pkg name unless exactly one of those patterns contained no
+                wildcards.  Only patterns that contain wildcards are allowed to
+                match multiple packages.
 
                 FMRI lists are trimmed by publisher, either by pattern
                 specification, installed version or publisher ranking (in that
@@ -3897,14 +3898,6 @@ class ImagePlan(object):
                                                 fpub = f.publisher
                                                 if pub and pub != fpub:
                                                         continue # specified pubs conflict
-                                                elif not pub and match_type != self.MATCH_INST_VERSIONS and \
-                                                    name in installed_pubs and \
-                                                    pub_ranks[installed_pubs[name]][1] \
-                                                    == True and installed_pubs[name] != \
-                                                    fpub:
-                                                        rejected_pubs.setdefault(pat,
-                                                            set()).add(fpub)
-                                                        continue # installed sticky pub
                                                 elif match_type == self.MATCH_INST_STEMS and \
                                                     f.pkg_name not in installed_pkgs:
                                                         # Matched stem is not
@@ -3919,6 +3912,9 @@ class ImagePlan(object):
                                                 states = metadata["metadata"]["states"]
                                                 ren_deps = []
                                                 omit_package = False
+                                                # Check for renamed packages and
+                                                # that the package matches the
+                                                # image's variants.
                                                 for astr in metadata.get("actions",
                                                     misc.EmptyI):
                                                         try:
@@ -3971,6 +3967,18 @@ class ImagePlan(object):
 
                                                 ret[pat].setdefault(f.pkg_name,
                                                     []).append(f)
+
+                                                if not pub and match_type != self.MATCH_INST_VERSIONS and \
+                                                    name in installed_pubs and \
+                                                    pub_ranks[installed_pubs[name]][1] \
+                                                    == True and installed_pubs[name] != \
+                                                    fpub:
+                                                        # Fmri publisher
+                                                        # filtering is handled
+                                                        # later.
+                                                        rejected_pubs.setdefault(pat,
+                                                            set()).add(fpub)
+
                                                 states = metadata["metadata"]["states"]
                                                 if pkgdefs.PKG_STATE_OBSOLETE in states:
                                                         obsolete_fmris.append(f)
@@ -4014,14 +4022,13 @@ class ImagePlan(object):
                                                 del ret[p][pkg_name]
 
                 # Determine match failures.
+                # matchdict maps package stems to input patterns.
                 matchdict = {}
                 for p in patterns:
                         l = len(ret[p])
                         if l == 0: # no matches at all
                                 if p in rejected_vars:
                                         wrongvar.add(p)
-                                elif p in rejected_pubs:
-                                        wrongpub.append((p, rejected_pubs[p]))
                                 elif p in rejected_pats:
                                         exclpats.append(p)
                                 else:
@@ -4035,15 +4042,82 @@ class ImagePlan(object):
                                 ])))
                         else:
                                 # single match or wildcard
-                                for k in ret[p].keys():
+                                for k, pfmris in ret[p].iteritems():
                                         # for each matching package name
-                                        matchdict.setdefault(k, []).append(p)
+                                        matchdict.setdefault(k, []).append(
+                                            (p, pfmris))
 
-                for name in matchdict:
-                        if len(matchdict[name]) > 1:
-                                # different pats, same pkg
+                proposed_dict = {}
+                for name, lst in matchdict.iteritems():
+                        nwc_ps = [
+                            (p, set(pfmris))
+                            for p, pfmris in lst
+                            if p not in wildcard_patterns
+                        ]
+                        pub_named = False
+                        # If there are any non-wildcarded patterns that match
+                        # this package name, prefer the fmris they selected over
+                        # any the wildcarded patterns selected.
+                        if nwc_ps:
+                                rel_ps = nwc_ps
+                                # Remove the wildcarded patterns that match this
+                                # package from the result dictionary.
+                                for p, pfmris in lst:
+                                        if p not in wildcard_patterns:
+                                                if p.startswith("pkg://") or \
+                                                    p.startswith("//"):
+                                                        pub_named = True
+                                                        break
+                        else:
+                                tmp_ps = [
+                                    (p, set(pfmris))
+                                    for p, pfmris in lst
+                                    if p in wildcard_patterns
+                                ]
+                                # If wildcarded package names then compare
+                                # patterns to see if any specify a particular
+                                # publisher.  If they do, prefer the package
+                                # from that publisher.
+                                rel_ps = [
+                                    (p, set(pfmris))
+                                    for p, pfmris in tmp_ps
+                                    if p.startswith("pkg://") or
+                                    p.startswith("//")
+                                ]
+                                if rel_ps:
+                                        pub_named = True
+                                else:
+                                        rel_ps = tmp_ps
+
+                        # Find the intersection of versions which matched all
+                        # the relevant patterns.
+                        common_pfmris = rel_ps[0][1]
+                        for p, vs in rel_ps[1:]:
+                                common_pfmris &= vs
+                        # If none of the patterns specified a particular
+                        # publisher and the package in question is installed
+                        # from a sticky publisher, then remove all pfmris which
+                        # have a different publisher.
+                        inst_pub = installed_pubs.get(name)
+                        stripped_by_publisher = False
+                        if not pub_named and common_pfmris and \
+                            match_type != self.MATCH_INST_VERSIONS and \
+                            inst_pub and pub_ranks[inst_pub][1] == True:
+                                common_pfmris = set(
+                                    p for p in common_pfmris
+                                    if p.publisher == inst_pub
+                                )
+                                stripped_by_publisher = True
+                        if common_pfmris:
+                                # The solver depends on these being in sorted
+                                # order.
+                                proposed_dict[name] = sorted(common_pfmris)
+                        elif stripped_by_publisher:
+                                for p, vs in rel_ps:
+                                        wrongpub.append((p, rejected_pubs[p]))
+                        else:
                                 multispec.append(tuple([name] +
-                                    matchdict[name]))
+                                    [p for p, vs in rel_ps]))
 
                 if match_type != self.MATCH_ALL:
                         not_installed, nonmatch = nonmatch, not_installed
@@ -4059,11 +4133,6 @@ class ImagePlan(object):
                             missing_matches=not_installed, multispec=multispec,
                             wrong_publishers=wrongpub, wrong_variants=wrongvar,
                             rejected_pats=exclpats)
-
-                # merge patterns together now that there are no conflicts
-                proposed_dict = {}
-                for d in ret.values():
-                        proposed_dict.update(d)
 
                 # eliminate lower ranked publishers
                 if match_type != self.MATCH_INST_VERSIONS:

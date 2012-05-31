@@ -20,7 +20,7 @@
 # CDDL HEADER END
 #
 
-# Copyright (c) 2008, 2011, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2008, 2012, Oracle and/or its affiliates. All rights reserved.
 
 import testutils
 if __name__ == "__main__":
@@ -272,6 +272,133 @@ class TestImageUpdate(pkg5unittest.ManyDepotTestCase):
                 self.pkg("update foo@1.1", exit=1)
                 self.assert_("test1" in self.errout)
 
+
+class TestPkgUpdateOverlappingPatterns(pkg5unittest.SingleDepotTestCase):
+
+        a_1 = """
+            open a@1.0,5.11-0
+            close """
+
+        pub2_a_1 = """
+            open pkg://pub2/a@1.0,5.11-0
+            close """
+
+        a_11 = """
+            open a@1.1,5.11-0
+            close """
+
+        a_2 = """
+            open a@2.0,5.11-0
+            close """
+
+        pub2_a_2 = """
+            open pkg://pub2/a@2.0,5.11-0
+            close """
+
+        a_3 = """
+            open a@3.0,5.11-0
+            close """
+
+        aa_1 = """
+            open aa@1.0,5.11-0
+            close """
+
+        aa_2 = """
+            open aa@2.0,5.11-0
+            close """
+
+        afoo_1 = """
+            open a/foo@1.0,5.11-0
+            close """
+
+        bfoo_1 = """
+            open b/foo@1.0,5.11-0
+            close """
+
+        fooa_1 = """
+            open foo/a@1.0,5.11-0
+            close """
+
+        foob_1 = """
+            open foo/b@1.0,5.11-0
+            close """
+
+        def test_overlapping_patterns_one_stem_update(self):
+                self.pkgsend_bulk(self.rurl, self.a_1 + self.a_2 + self.a_11)
+                api_inst = self.image_create(self.rurl)
+
+                self._api_install(api_inst, ["a@1.0"])
+                self._api_update(api_inst, pkgs_update=["a@latest", "a@2"],
+                    noexecute=True)
+                self.pkg("update a@1.1 a@2", exit=1)
+
+        def test_overlapping_patterns_multi_stems_update(self):
+                self.pkgsend_bulk(self.rurl, self.a_1 + self.a_11 + self.a_2 +
+                    self.aa_1 + self.aa_2)
+                api_inst = self.image_create(self.rurl)
+
+                self._api_install(api_inst, ["a@1.0", "aa@1.0"])
+                self._api_update(api_inst, pkgs_update=["*", "a@1.1"])
+                self.pkg("list aa@2.0 a@1.1")
+                self._api_uninstall(api_inst, ["*"])
+
+                self._api_install(api_inst, ["a@1.0", "aa@1.0"])
+                self._api_update(api_inst, pkgs_update=["*", "a@1.1", "a*@2"])
+                self.pkg("list aa@2.0 a@1.1")
+                self._api_uninstall(api_inst, ["*"])
+
+        def test_overlapping_patterns_multi_publisher_update(self):
+                self.pkgsend_bulk(self.rurl, self.a_1 + self.a_2 +
+                    self.aa_1 + self.aa_2 + self.pub2_a_1 + self.pub2_a_2)
+                api_inst = self.image_create(self.rurl)
+                self.pkg("set-publisher -P test")
+
+                # Test that naming a specific publisher and stem will override
+                # the general wildcard.
+                self._api_install(api_inst, ["a@1", "aa@1"])
+                self.pkg("update '*' 'pkg://pub2/a@1'")
+                self.pkg("list -Hv pkg://pub2/a@1 pkg://test/aa@2")
+                self._api_uninstall(api_inst, ["*"])
+
+                # Test that naming a specific publisher will correctly change
+                # the publisher of the installed package.
+                self._api_install(api_inst, ["a@1", "aa@1"])
+                self.pkg("update 'pkg://pub2/*@1'")
+                self.pkg("list -Hv pkg://pub2/a@1 pkg://test/aa@1")
+                self._api_uninstall(api_inst, ["*"])
+
+                # Test that a specific publisher and stem will override an
+                # unspecified publisher with a specific stem.
+                self._api_install(api_inst, ["a@1"])
+                self.pkg("update 'a@1' 'pkg://pub2/a@1'")
+                self.pkg("list -Hv pkg://pub2/a@1")
+                self.pkg("update 'a@2' '//test/a@2'")
+                self.pkg("list -Hv pkg://test/a@2")
+                self._api_uninstall(api_inst, ["*"])
+
+                self._api_install(api_inst, ["a@1"])
+                self.pkg("update 'a@1' 'pkg://pub2/a@2'", exit=1)
+                self._api_uninstall(api_inst, ["*"])
+
+                # Test that a specific publisher with a wildcard will override a
+                # unspecified publisher with a wildcard.
+                self._api_install(api_inst, ["a@1", "aa@1"])
+                self.pkg("update '*' 'pkg://pub2/*@1'")
+                self.pkg("list -Hv pkg://pub2/a@1 pkg://test/aa@2")
+                self._api_uninstall(api_inst, ["*"])
+
+                # Test that a specific stem without a specific publisher
+                # overrides a specific publisher without a specific stem.
+                self._api_install(api_inst, ["a@1", "aa@1"])
+                self.pkg("update '*' 'pkg://pub2/*@1' 'a@2'")
+                self.pkg("list -Hv pkg://test/a@2 pkg://test/aa@2")
+                self._api_uninstall(api_inst, ["*"])
+
+                # Test that conflicting publishers results in an error.
+                self._api_install(api_inst, ["a@1", "aa@1"])
+                self.pkg("update '*' 'pkg://pub2/a@1' 'pkg://test/a@2'", exit=1)
+                self.pkg("update '*' 'pkg://pub2/*@1' 'pkg://test/*@2'", exit=1)
+                self._api_uninstall(api_inst, ["*"])
 
 if __name__ == "__main__":
         unittest.main()

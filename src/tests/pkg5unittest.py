@@ -2778,14 +2778,19 @@ class CliTestCase(Pkg5TestCase):
                 self._api_finish(api_obj, catch_wsie=catch_wsie)
 
         def _api_install(self, api_obj, pkg_list, catch_wsie=True,
-            show_licenses=False, accept_licenses=False, **kwargs):
+            show_licenses=False, accept_licenses=False, noexecute=False,
+            **kwargs):
                 self.debug("install %s" % " ".join(pkg_list))
 
                 if accept_licenses:
                         kwargs["accept"] = True
 
-                for pd in api_obj.gen_plan_install(pkg_list, **kwargs):
+                for pd in api_obj.gen_plan_install(pkg_list,
+                    noexecute=noexecute, **kwargs):
                         continue
+
+                if noexecute:
+                        return
 
                 self._api_finish(api_obj, catch_wsie=catch_wsie,
                     show_licenses=show_licenses,
@@ -2797,10 +2802,14 @@ class CliTestCase(Pkg5TestCase):
                         continue
                 self._api_finish(api_obj, catch_wsie=catch_wsie)
 
-        def _api_update(self, api_obj, catch_wsie=True, **kwargs):
+        def _api_update(self, api_obj, catch_wsie=True, noexecute=False,
+            **kwargs):
                 self.debug("planning update")
-                for pd in api_obj.gen_plan_update(**kwargs):
+                for pd in api_obj.gen_plan_update(noexecute=noexecute,
+                    **kwargs):
                         continue
+                if noexecute:
+                        return
                 self._api_finish(api_obj, catch_wsie=catch_wsie)
 
         def _api_change_varcets(self, api_obj, catch_wsie=True, **kwargs):
