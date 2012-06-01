@@ -83,6 +83,20 @@ class InvalidDependBypassValue(DependencyAnalysisError):
                     "Invalid pkg.depend.bypass-generate value %(val)s: "
                     "%(err)s") % {"val": self.value, "err": self.error}
 
+
+class InvalidPublishingDependency(DependencyAnalysisError):
+        """Exception that is raised when base_names or run_paths as well as
+        full_paths are specified for a PublishingDependency."""
+
+        def __init__(self, error):
+                self.error = error
+                Exception.__init__(self)
+
+        def __str__(self):
+                return _(
+                    "Invalid publishing dependency: %s") % self.error
+
+
 class Dependency(depend.DependencyAction):
         """Base, abstract class to represent the dependencies a dependency
         generator can produce."""
@@ -202,7 +216,7 @@ class PublishingDependency(Dependency):
         """
 
         def __init__(self, action, base_names, run_paths, pkg_vars, proto_dir,
-            kind):
+            kind, full_paths=None):
                 """Construct a PublishingDependency object.
 
                 'action' is the action which produced this dependency.
@@ -220,10 +234,32 @@ class PublishingDependency(Dependency):
                 meaningless for a particular PublishingDependency.
 
                 'kind' is the kind of dependency that this is.
+
+                'full_paths' if not None, is used instead of the combination of
+                'base_names' and 'run_paths' when defining dependencies where
+                exact paths to files matter (for example, SMF dependencies which
+                are satisfied by more than one SMF manifest are not searched for
+                using the manifest base_name in a list of run_paths, unlike
+                python modules, which use $PYTHONPATH.)  Specifying full_paths
+                as well as base_names/run_paths combinations is not allowed.
                 """
 
+                if full_paths and (base_names or run_paths):
+                        # this should never happen, as consumers should always
+                        # construct PublishingDependency objects using either
+                        # full_paths or a combination of base_names and
+                        # run_paths.
+                        raise InvalidPublishingDependency(
+                            "A dependency was specified using full_paths=%s as "
+                            "well as base_names=%s and run_paths=%s" %
+                            (full_paths, base_names, run_paths))
+
                 self.base_names = sorted(base_names)
-                self.full_paths = []
+
+                if full_paths == None:
+                        self.full_paths = []
+                else:
+                        self.full_paths = full_paths
 
                 if proto_dir is None:
                         self.run_paths = sorted(run_paths)
@@ -237,11 +273,17 @@ class PublishingDependency(Dependency):
                             for rp in run_paths
                         ])
 
-                attrs = {
-                    "%s.file" % self.DEPEND_DEBUG_PREFIX: self.base_names,
-                    "%s.path" % self.DEPEND_DEBUG_PREFIX: self.run_paths,
-                    "%s.type" % self.DEPEND_DEBUG_PREFIX: kind
-                }
+                attrs = {"%s.type" % self.DEPEND_DEBUG_PREFIX: kind}
+                if self.full_paths:
+                        attrs["%s.fullpath" % self.DEPEND_DEBUG_PREFIX] = \
+                            self.full_paths
+                else:
+                        attrs.update({
+                            "%s.file" %
+                            self.DEPEND_DEBUG_PREFIX: self.base_names,
+                            "%s.path" %
+                            self.DEPEND_DEBUG_PREFIX: self.run_paths,
+                        })
 
                 Dependency.__init__(self, action, pkg_vars, proto_dir, attrs)
 

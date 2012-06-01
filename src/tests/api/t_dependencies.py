@@ -77,12 +77,16 @@ class TestDependencyAnalyzer(pkg5unittest.Pkg5TestCase):
             "delete": "var/svc/manifest/delete-service.xml",
             "delivered_many_nodeps":
                 "var/svc/manifest/delivered-many-nodeps.xml",
+            "delivered_many_nodeps_alt":
+                "var/svc/manifest/delivered-many-nodeps-alt.xml",
             "foreign_many_nodeps":
                 "var/svc/manifest/foreign-many-nodeps.xml",
             "foreign_single_nodeps":
                 "var/svc/manifest/foreign-single-nodeps.xml",
+            "service_general": "var/svc/manifest/service-general.xml",
             "service_many": "var/svc/manifest/service-many.xml",
             "service_single": "var/svc/manifest/service-single.xml",
+            "service_single_specific": "var/svc/manifest/service-specific.xml",
             "service_unknown": "var/svc/manifest/service-single-unknown.xml"
         }
 
@@ -209,9 +213,9 @@ class Foo(object):
             "svc:/application/pkg5test/service-default:default" ]
 
         smf_known_deps["svc:/application/pkg5test/service-default"] = \
-            ["svc:/application/pkg5test/delivered-many"]
+            ["svc:/application/pkg5test/delivered-many:nodeps"]
         smf_known_deps["svc:/application/pkg5test/service-default:default"] = \
-            ["svc:/application/pkg5test/delivered-many"]
+            ["svc:/application/pkg5test/delivered-many:nodeps"]
 
         smf_manifest_text = {}
         smf_manifest_text["service_single"] = \
@@ -221,11 +225,151 @@ class Foo(object):
 
 <!-- we deliver:
   svc:/application/pkg5test/service-default
-      (deps: svc:/application/pkg5test/delivered-many)
+      (deps: svc:/application/pkg5test/delivered-many:nodeps)
   svc:/application/pkg5test/service-default:default
 -->
 <service
 	name='application/pkg5test/service-default'
+	type='service'
+	version='0.1'>
+
+	<dependency
+		name="delivered-service"
+		grouping="require_all"
+		restart_on="none"
+		type="service">
+		<service_fmri value="svc:/application/pkg5test/delivered-many:nodeps" />
+	</dependency>
+
+        <!-- We should not pick this up as an IPS dependency -->
+        <dependency
+                name="my-path"
+                grouping="require_all"
+                restart_on="none"
+                type="path">
+                <service_fmri value="/var/foo/something.conf" />
+        </dependency>
+
+	<create_default_instance enabled='true' />
+	<single_instance/>
+	<exec_method
+		type='method'
+		name='start'
+		exec=':true'
+		timeout_seconds='60'>
+		<method_context>
+			<method_credential user='root' group='root' />
+		</method_context>
+	</exec_method>
+
+	<exec_method
+		type='method'
+		name='stop'
+		exec=':true'
+		timeout_seconds='60'>
+		<method_context>
+			<method_credential user='root' group='root' />
+		</method_context>
+	</exec_method>
+</service>
+</service_bundle>
+"""
+
+        smf_fmris["service_single_specific"] = [ \
+            "svc:/application/pkg5test/service-specific",
+            "svc:/application/pkg5test/service-specific:default" ]
+
+        smf_known_deps["svc:/application/pkg5test/service-specific"] = \
+            ["svc:/application/pkg5test/delivered-many:nodeps",
+            "svc:/application/pkg5test/delivered-many:nodeps2"]
+        smf_known_deps["svc:/application/pkg5test/service-specific:default"] = \
+            ["svc:/application/pkg5test/delivered-many:nodeps",
+            "svc:/application/pkg5test/delivered-many:nodeps2"]
+
+        smf_manifest_text["service_single_specific"] = \
+"""<?xml version="1.0"?>
+<!DOCTYPE service_bundle SYSTEM "/usr/share/lib/xml/dtd/service_bundle.dtd.1">
+<service_bundle type='manifest' name='service-default'>
+
+<!-- we deliver:
+  svc:/application/pkg5test/service-specific
+      (deps: svc:/application/pkg5test/delivered-many:nodeps,
+       svc:/application/pkg5test/delivered-many:nodeps1)
+  svc:/application/pkg5test/service-default:default
+
+  This manifest checks that we can create multiple dependencies that each must
+  be satisfied, unlink 'service_single' which specifies a service-level
+  dependency, one instance of which would satisfy the dependency.
+-->
+<service
+	name='application/pkg5test/service-specific'
+	type='service'
+	version='0.1'>
+
+	<dependency
+		name="delivered-service"
+		grouping="require_all"
+		restart_on="none"
+		type="service">
+		<service_fmri value="svc:/application/pkg5test/delivered-many:nodeps" />
+                <service_fmri value="svc:/application/pkg5test/delivered-many:nodeps2" />
+	</dependency>
+
+        <!-- We should not pick this up as an IPS dependency -->
+        <dependency
+                name="my-path"
+                grouping="require_all"
+                restart_on="none"
+                type="path">
+                <service_fmri value="/var/foo/something.conf" />
+        </dependency>
+
+	<create_default_instance enabled='true' />
+	<single_instance/>
+	<exec_method
+		type='method'
+		name='start'
+		exec=':true'
+		timeout_seconds='60'>
+		<method_context>
+			<method_credential user='root' group='root' />
+		</method_context>
+	</exec_method>
+
+	<exec_method
+		type='method'
+		name='stop'
+		exec=':true'
+		timeout_seconds='60'>
+		<method_context>
+			<method_credential user='root' group='root' />
+		</method_context>
+	</exec_method>
+</service>
+</service_bundle>
+"""
+
+        smf_fmris["service_general"] = [ \
+            "svc:/application/pkg5test/service-general",
+            "svc:/application/pkg5test/service-general:default" ]
+
+        smf_known_deps["svc:/application/pkg5test/service-general"] = \
+            ["svc:/application/pkg5test/delivered-many"]
+        smf_known_deps["svc:/application/pkg5test/service-general:default"] = \
+            ["svc:/application/pkg5test/delivered-many"]
+
+        smf_manifest_text["service_general"] = \
+"""<?xml version="1.0"?>
+<!DOCTYPE service_bundle SYSTEM "/usr/share/lib/xml/dtd/service_bundle.dtd.1">
+<service_bundle type='manifest' name='service-general'>
+
+<!-- we deliver:
+  svc:/application/pkg5test/service-general
+      (deps: svc:/application/pkg5test/delivered-many, )
+  svc:/application/pkg5test/service-default:default
+-->
+<service
+	name='application/pkg5test/service-general'
 	type='service'
 	version='0.1'>
 
@@ -368,13 +512,13 @@ class Foo(object):
 
 
         smf_known_deps["svc:/application/pkg5test/service-unknown"] = \
-            ["svc:/application/pkg5test/delivered-many",
+            ["svc:/application/pkg5test/delivered-many:nodeps",
             "svc:/application/pkg5test/unknown-service"]
         smf_known_deps["svc:/application/pkg5test/service-unknown:default"] = \
-            ["svc:/application/pkg5test/delivered-many",
+            ["svc:/application/pkg5test/delivered-many:nodeps",
             "svc:/application/pkg5test/unknown-service"]
         smf_known_deps["svc:/application/pkg5test/service-unknown:one"] = \
-            ["svc:/application/pkg5test/delivered-many",
+            ["svc:/application/pkg5test/delivered-many:nodeps",
             "svc:/application/pkg5test/unknown-service",
             "svc:/application/pkg5test/another-unknown:default"]
 
@@ -385,13 +529,13 @@ class Foo(object):
 
 <!-- we deliver:
   svc:/application/pkg5test/service-unknown
-      (deps: svc:/application/pkg5test/delivered-many
+      (deps: svc:/application/pkg5test/delivered-many:nodeps
              svc:/application/pkg5test/unknown-service
   svc:/application/pkg5test/service-unknown:default
-      (deps: svc:/application/pkg5test/delivered-many
+      (deps: svc:/application/pkg5test/delivered-many:nodeps
              svc:/application/pkg5test/unknown-service)
   svc:/application/pkg5test/service-unknown:one
-      (deps: svc:/application/pkg5test/delivered-many
+      (deps: svc:/application/pkg5test/delivered-many:nodeps
              svc:/application/pkg5test/unknown-service
              svc:/application/pkg5test/another-unknown:default)
 -->
@@ -405,7 +549,7 @@ class Foo(object):
 		grouping="require_all"
 		restart_on="none"
 		type="service">
-		<service_fmri value="svc:/application/pkg5test/delivered-many" />
+		<service_fmri value="svc:/application/pkg5test/delivered-many:nodeps" />
 	</dependency>
 
 
@@ -507,6 +651,56 @@ None of these services or instances declare any dependencies.
 
 	<instance name="nodeps" enabled="true" />
 	<instance name='nodeps1' enabled='false' />
+</service>
+</service_bundle>
+"""
+
+        smf_known_deps["svc:/application/pkg5test/delivered-many"] = []
+        smf_known_deps["svc:/application/pkg5test/delivered-many:nodeps2"] = []
+        smf_known_deps["svc:/application/pkg5test/delivered-many:nodeps3"] = []
+
+        smf_manifest_text["delivered_many_nodeps_alt"] = \
+"""<?xml version="1.0"?>
+<!DOCTYPE service_bundle SYSTEM "/usr/share/lib/xml/dtd/service_bundle.dtd.1">
+<service_bundle type='manifest' name='default-service-many'>
+<!-- we deliver alternative instances of the "delivered-many" service.
+
+svc:/application/pkg5test/delivered-many
+svc:/application/pkg5test/delivered-many:nodeps2
+svc:/application/pkg5test/delivered-many:nodeps3
+
+None of these services or instances declare any dependencies.
+
+-->
+<service
+	name='application/pkg5test/delivered-many'
+	type='service'
+	version='0.1'>
+
+	<single_instance />
+
+	<exec_method
+		type='method'
+		name='start'
+		exec=':true'
+		timeout_seconds='60'>
+		<method_context>
+			<method_credential user='root' group='root' />
+		</method_context>
+	</exec_method>
+
+	<exec_method
+		type='method'
+		name='stop'
+		exec=':true'
+		timeout_seconds='60'>
+		<method_context>
+			<method_credential user='root' group='root' />
+		</method_context>
+	</exec_method>
+
+	<instance name="nodeps2" enabled="true" />
+	<instance name='nodeps3' enabled='false' />
 </service>
 </service_bundle>
 """
@@ -720,6 +914,33 @@ None of these services or instances declare any dependencies.
 
         int_smf_manf = """\
 file NOHASH group=sys mode=0644 owner=root path=%(service_single)s
+file NOHASH group=sys mode=0644 owner=root path=%(delivered_many_nodeps)s
+""" % paths
+
+        # service_general depends on a service, instances of which are delivered
+        # by both of the other SMF manifests
+        int_req_svc_smf_manf = """\
+file NOHASH group=sys mode=0644 owner=root path=%(service_general)s
+file NOHASH group=sys mode=0644 owner=root path=%(delivered_many_nodeps_alt)s
+file NOHASH group=sys mode=0644 owner=root path=%(delivered_many_nodeps)s
+""" % paths
+
+        # a bypassed version of the above, to ensure that the use of
+        # full_paths by SMFManifestDependency when multiple files are
+        # depended on still works.
+        bypassed_int_req_svc_smf_manf = """\
+file NOHASH group=sys mode=0644 owner=root path=%(service_general)s \
+    pkg.depend.bypass-generate=.*var/svc/manifest/delivered-many-nodeps-alt.xml
+file NOHASH group=sys mode=0644 owner=root path=%(delivered_many_nodeps_alt)s
+file NOHASH group=sys mode=0644 owner=root path=%(delivered_many_nodeps)s
+""" % paths
+
+
+        # service_specific depends on instances delivered by both of the
+        # other SMF manifests
+        int_req_inst_smf_manf = """\
+file NOHASH group=sys mode=0644 owner=root path=%(service_single_specific)s
+file NOHASH group=sys mode=0644 owner=root path=%(delivered_many_nodeps_alt)s
 file NOHASH group=sys mode=0644 owner=root path=%(delivered_many_nodeps)s
 """ % paths
 
@@ -2097,6 +2318,109 @@ file NOHASH group=sys mode=0755 owner=root path=%(runpath_mod_test_path)s
                     len(ds))
                 self.check_smf_fmris(pkg_attrs, self.smf_fmris["delete"] +
                     self.smf_fmris["foreign_single_nodeps"], "delete")
+
+        def test_req_any_smf_manifest(self):
+                """We can generate dependencies that can be turned into
+                require-any dependencies.
+
+                In this test, we generate dependencies on three different SMF
+                manifests:
+
+                The first has a single service-level dependency that is
+                satisfied by two instances, delivered by two separate SMF
+                manifests, generating a single dependency that can be turned
+                into a require-any depend action.
+
+                The second has two instance-level dependencies that are also
+                delivered by two separate SMF manifests, and should generate two
+                require dependencies (because we're being specific about which
+                instances we depend on, rather than depending on any instance
+                of that service, as in the first case, above)
+
+                The last is a version of the first, with a bypass attribute, to
+                ensure that we correctly process bypasses when generating
+                multiple dependencies. (SMFManifestDependency doesn't use
+                base_names/run_paths when multiple SMF manifests are found as
+                dependencies, but instead specifies full_paths directly, which
+                are modified by the bypass-generation code)
+                """
+
+                self.make_smf_test_files()
+
+                # Test the first case: service dependencies satisfied by
+                # multiple SMF manifests.
+                t_path = self.make_manifest(self.int_req_svc_smf_manf)
+
+                ds, es, ms, pkg_attrs = dependencies.list_implicit_deps(
+                    t_path, [self.proto_dir], {}, [],
+                    remove_internal_deps=False, convert=False)
+                self.assert_(len(es) == 0, "Detected %s error(s), expected 0" %
+                    len(es))
+                self.assert_(len(ds) == 1, "Expected 1 dependency when "
+                    "depending on a service, got %s" % len(ds))
+                # ensure the dependencies are correct.
+                self.assert_(set(ds[0].full_paths) == set([
+                    self.paths["delivered_many_nodeps"],
+                    self.paths["delivered_many_nodeps_alt"]]),
+                    "Expected two separate full_path entries, got %s" %
+                    ds[0].full_paths)
+
+                # for SMF dependencies on services that are satisfied by
+                # multiple instances in separate files, we should have no
+                # run_paths or base_names
+                self.assert_(ds[0].run_paths == [])
+                self.assert_(ds[0].base_names == [])
+
+                # Test the second case: specific dependencies on instances
+                # satisfied by multiple (different) SMF manifests.
+                t_path = self.make_manifest(self.int_req_inst_smf_manf)
+                ds, es, ms, pkg_attrs = dependencies.list_implicit_deps(
+                    t_path, [self.proto_dir], {}, [],
+                    remove_internal_deps=False, convert=False)
+                self.assert_(len(es) == 0, "Detected %s error(s), expected 0" %
+                    len(es))
+                self.assert_(len(ds) == 2, "Expected 2 dependencies, got %s" %
+                    len(ds))
+
+                seen_nodeps3 = False
+                seen_nodeps = False
+                for d in ds:
+                        # ensure the dependencies are correct.
+                        actual = d.manifest.replace(self.proto_dir + "/", "")
+                        if actual == self.paths["delivered_many_nodeps"]:
+                                seen_nodeps = True
+                        elif actual == self.paths["delivered_many_nodeps_alt"]:
+                                seen_nodeps3 = True
+                        self.assert_(d.run_paths, "Expected a directory path "
+                            "for %s: %s" % (d, d.run_paths))
+                        self.assert_(d.full_paths == [], "Expected an empty "
+                            "list for full_paths, got %s" % d.full_paths)
+
+                self.assert_(seen_nodeps3 and seen_nodeps, "Expected "
+                    "dependencies were not generated when several SMF "
+                    "instances were listed as 'require_all' dependencies.")
+
+                # Test the third case: service dependencies satisfied by
+                # multiple SMF manifests, but with one bypassed.
+                t_path = self.make_manifest(self.bypassed_int_req_svc_smf_manf)
+
+                ds, es, ms, pkg_attrs = dependencies.list_implicit_deps(
+                    t_path, [self.proto_dir], {}, [],
+                    remove_internal_deps=False, convert=False)
+                self.assert_(len(es) == 0, "Detected %s error(s), expected 0" %
+                    len(es))
+                self.assert_(len(ds) == 1, "Expected 1 dependency, got %s" %
+                    len(ds))
+                # ensure the dependencies are correct.
+                self.assert_(ds[0].full_paths == \
+                    [self.paths["delivered_many_nodeps"]],
+                    "d.full_paths entry was incorrect, got %s" %
+                    ds[0].full_paths)
+
+                # since we've bypassed a dependency, we should not have
+                # run_paths or base_names
+                self.assert_(ds[0].run_paths == [])
+                self.assert_(ds[0].base_names == [])
 
         def test_runpath_1(self):
                 """Test basic functionality of runpaths."""
