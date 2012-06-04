@@ -376,27 +376,13 @@ class ImagePlan(object):
                 fs.extend([(f, None) for f in self.__removed_facets])
                 return vs, fs
 
-        def __verbose_str(self):
-                s = str(self)
-
-                if self.state == EVALUATED_PKGS:
-                        return s
-
-                s = s + "Actions being removed:\n"
-                for pplan, o_action, ignore in self.removal_actions:
-                        s = s + "\t%s:%s\n" % ( pplan.origin_fmri, o_action)
-
-                s = s + "\nActions being updated:\n"
-                for pplan, o_action, d_action in self.update_actions:
-                        s = s + "\t%s:%s -> %s%s\n" % (
-                            pplan.origin_fmri, o_action,
-                            pplan.destination_fmri, d_action )
-
-                s = s + "\nActions being installed:\n"
-                for pplan, ignore, d_action in self.removal_actions:
-                        s = s + "\t%s:%s\n" % ( pplan.destination_fmri, d_action)
-
-                return s
+        def gen_verbose_strs(self):
+                """yields action change descriptions in order performed"""
+                for pplan, o_act, d_act in itertools.chain(
+                    self.removal_actions, 
+                    self.update_actions,
+                    self.install_actions):
+                        yield "%s -> %s" % (o_act, d_act)
 
         @property
         def planned_op(self):
@@ -1035,12 +1021,6 @@ class ImagePlan(object):
                 for t in self.__fmri_changes:
                         output += "%s -> %s\n" % t
                 return output
-
-        def display(self):
-                if DebugValues["plan"]:
-                        logger.info(self.__verbose_str())
-                else:
-                        logger.info(str(self))
 
         def gen_new_installed_pkgs(self):
                 """Generates all the fmris which will be in the new image."""

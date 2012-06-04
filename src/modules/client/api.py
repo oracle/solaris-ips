@@ -4926,8 +4926,8 @@ class PlanDescription(object):
         def get_actions(self):
                 """A generator function that returns action changes for all
                 the package plans"""
-                for pp in self.__plan.pkg_plans:
-                        yield str(pp)
+                for a in self.__plan.gen_verbose_strs():
+                        yield(a)
 
         def get_licenses(self, pfmri=None):
                 """A generator function that yields information about the

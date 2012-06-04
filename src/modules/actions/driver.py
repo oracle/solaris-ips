@@ -86,6 +86,20 @@ class DriverAction(generic.Action):
                 else:
                         self.attrs["clone_perms"] = new_cloneperms
 
+        def compare(self, other):
+                """Compare with other driver instance; defined to force
+                clone driver to be removed last"""
+
+                ret = cmp(self.attrs["name"], other.attrs["name"])
+                if ret == 0:
+                        return 0
+
+                if self.attrs["name"] == "clone":
+                        return -1
+                elif other.attrs["name"] == "clone":
+                        return 1
+                return ret
+
         @staticmethod
         def __usr_sbin_init():
                 """Initialize paths to device management commands that we will
