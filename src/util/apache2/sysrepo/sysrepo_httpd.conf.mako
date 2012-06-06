@@ -435,8 +435,8 @@ SSLProxyProtocol all
                             "%(uri)s/$1 [NE,P]" % locals())
 %>
                 % endif
-        % endfor uri
-% endfor pub
+        % endfor pub
+% endfor uri
 
 % for uri in reversed(sorted(uri_pub_map.keys())):
         % for pub, cert_path, key_path, hash in uri_pub_map[uri]:
@@ -459,8 +459,20 @@ CacheDisable /${pub}/${hash}/versions/0
                       % endif
 Alias /${pub}/${hash} ${repo_path}
                 % endif
-        % endfor uri
-% endfor pub
+        % endfor pub
+% endfor uri
+
+<%
+context.write("# Create dummy proxy pass directives so that connection "
+    "pooling happens.\n# The first rule says to ignore all ProxyPass rules, "
+    "which is why this works.\n")
+context.write("ProxyPass / !")
+%>
+% for uri in reversed(sorted(uri_pub_map.keys())):
+        % if uri.startswith("http"):
+<%              context.write("ProxyPass / %s" % uri) %>
+        % endif
+% endfor uri
 
 # any non-file-based repositories get our local versions and syspub responses
 RewriteRule ^.*/versions/0/?$ - [L]
