@@ -289,9 +289,21 @@ Incorrect attribute list.
                 self.assert_(not a.different(a2))
 
                 # ... unless of course the hash can't be represented that way.
-                a = action.fromstr("file hash=abc=123 path=usr/bin/foo mode=0755 owner=root group=bin")
-                self.assert_("hash=abc=123" in str(a))
-                self.assert_(not str(a).startswith("file abc=123"))
+                d = {
+                    "hash=abc=123": "abc=123",
+                    "hash=\"one with spaces\"": "one with spaces",
+                    "hash='one with \" character'": 'one with " character',
+                    "hash=\"'= !@$%^\)(*\"": "'= !@$%^\)(*",
+                    """hash="\\"'= \\ " """:""""'= \\ """,
+                    '\\' : '\\'
+                }
+
+                astr = "file %s path=usr/bin/foo mode=0755 owner=root group=bin"
+                for k, v  in d.iteritems():
+                        a = action.fromstr(astr % k)
+                        self.assert_(action.fromstr(str(a)) == a)
+                        self.assert_(a.hash == v)
+                        self.assert_(k in str(a))
 
         def test_action_sig_str(self):
                 sig_act = action.fromstr(
@@ -478,9 +490,9 @@ Incorrect attribute list.
                         assert_invalid_attrs(nact)
 
                 # Verify invalid values are not allowed for mode attribute on
-                # file and dir actions. 
+                # file and dir actions.
                 for act in (fact, dact):
-                        for bad_mode in ("", 'mode=""', "mode=???", 
+                        for bad_mode in ("", 'mode=""', "mode=???",
                             "mode=44755", "mode=44", "mode=999", "mode=0898"):
                                 nact = act.replace("mode=XXX", bad_mode)
                                 assert_invalid_attrs(nact)

@@ -257,7 +257,8 @@ class Action(object):
                 try:
                         h = self.hash
                         if h:
-                                if "=" not in h:
+                                if "=" not in h and " " not in h and \
+                                    '"' not in h:
                                         out += " " + h
                                 else:
                                         sattrs.append("hash")
@@ -892,7 +893,7 @@ class Action(object):
                 try:
                         value = self.attrs[name]
                 except KeyError:
-                        return [] 
+                        return []
                 if type(value) is not list:
                         return [value]
                 return value
