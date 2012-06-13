@@ -2848,7 +2848,7 @@ adm:NP:6445::::::
 
         only_legacy10 = """
             open only_legacy@1.0,5.11-0
-            add legacy arch=i386 category=system desc="GNU make - A utility used to build software (gmake) 3.81" hotline="Please contact your local service provider" name="gmake - GNU make" pkg=SUNWgmake vendor="Sun Microsystems, Inc." version=11.11.0,REV=2008.04.29.02.08
+            add legacy category=system desc="GNU make - A utility used to build software (gmake) 3.81" hotline="Please contact your local service provider" name="gmake - GNU make" pkg=SUNWgmake vendor="Sun Microsystems, Inc." version=11.11.0,REV=2008.04.29.02.08
             close """
 
         only_link10 = """
@@ -2868,37 +2868,37 @@ adm:NP:6445::::::
 
         csu1 = """
             open csu1@1.0,5.11-0
-            add legacy arch=i386 category=system desc="core software for a specific instruction-set architecture" hotline="Please contact your local service provider" name="Core Solaris, (Usr)" pkg=SUNWcsu variant.arch=i386 vendor="Oracle Corporation" version=11.11,REV=2009.11.11
+            add legacy category=system desc="core software for a specific instruction-set architecture" hotline="Please contact your local service provider" name="Core Solaris, (Usr)" pkg=SUNWcsu vendor="Oracle Corporation" version=11.11,REV=2009.11.11
             close
         """
 
         csu1_2 = """
             open csu1@2.0,5.11-0
-            add legacy arch=i386 category=system desc="core software for a specific instruction-set architecture" hotline="Please contact your local service provider" name="Core Solaris, (Usr)" pkg=SUNWcsu variant.arch=i386 vendor="Oracle Corporation" version=11.11,REV=2010.11.11
+            add legacy category=system desc="core software for a specific instruction-set architecture" hotline="Please contact your local service provider" name="Core Solaris, (Usr)" pkg=SUNWcsu vendor="Oracle Corporation" version=11.11,REV=2010.11.11
             close
         """
 
         csu2 = """
             open csu2@1.0,5.11-0
-            add legacy arch=i386 category=system desc="core software for a specific instruction-set architecture" hotline="Please contact your local service provider" name="Core Solaris, (Usr)" pkg=SUNWcsu variant.arch=i386 vendor="Oracle Corporation" version=11.11,REV=2009.11.11
+            add legacy category=system desc="core software for a specific instruction-set architecture" hotline="Please contact your local service provider" name="Core Solaris, (Usr)" pkg=SUNWcsu vendor="Oracle Corporation" version=11.11,REV=2009.11.11
             close
         """
 
         csu2_2 = """
             open csu2@2.0,5.11-0
-            add legacy arch=i386 category=system desc="core software for a specific instruction-set architecture" hotline="Please contact your local service provider" name="Core Solaris, (Usr)" pkg=SUNWcsu variant.arch=i386 vendor="Oracle Corporation" version=11.11,REV=2010.11.11
+            add legacy category=system desc="core software for a specific instruction-set architecture" hotline="Please contact your local service provider" name="Core Solaris, (Usr)" pkg=SUNWcsu vendor="Oracle Corporation" version=11.11,REV=2010.11.11
             close
         """
 
         csu3 = """
             open csu3@1.0,5.11-0
-            add legacy arch=i386 category=system desc="core software for a specific instruction-set architecture" hotline="Please contact your local service provider" name="Core Solaris, (Usr)" pkg=SUNWcsu variant.arch=i386 vendor="Oracle Corporation" version=11.11,REV=2009.11.11
+            add legacy category=system desc="core software for a specific instruction-set architecture" hotline="Please contact your local service provider" name="Core Solaris, (Usr)" pkg=SUNWcsu vendor="Oracle Corporation" version=11.11,REV=2009.11.11
             close
         """
 
         csu3_2 = """
             open csu3@2.0,5.11-0
-            add legacy arch=i386 category=system desc="core software for a specific instruction-set architecture" hotline="Please contact your local service provider" name="Core Solaris, (Usr)" pkg=SUNWcsu variant.arch=i386 vendor="Oracle Corporation" version=11.11,REV=2010.11.11
+            add legacy category=system desc="core software for a specific instruction-set architecture" hotline="Please contact your local service provider" name="Core Solaris, (Usr)" pkg=SUNWcsu vendor="Oracle Corporation" version=11.11,REV=2010.11.11
             close
         """
 
