@@ -315,6 +315,16 @@ for entry in os.walk("web"):
             os.path.join(web_dir, f) for f in files
             if f != "Makefile"
             ]))
+        # install same set of files in "en/" in "__LOCALE__/ as well" 
+        # for localizable file package (regarding themes, install
+        # theme "oracle.com" only)
+        if os.path.basename(web_dir) == "en" and \
+            os.path.dirname(web_dir) in ("web", "web/_themes/oracle.com"):
+                web_files.append((os.path.join(resource_dir,
+                    os.path.dirname(web_dir), "__LOCALE__"), [
+                        os.path.join(web_dir, f) for f in files
+                        if f != "Makefile"
+                    ]))
 
 smf_app_files = [
         'svc/pkg-mdns.xml',
@@ -382,9 +392,10 @@ help_files.update(
         (locale, ['gui/help/%s/package-manager.xml' % locale])
         for locale in help_locales[1:]
 )
+# add package-manager-__LOCALE__.omf for localizable file package
 omf_files = [
         'gui/help/package-manager-%s.omf' % locale
-        for locale in help_locales
+        for locale in help_locales + [ "__LOCALE__" ]
 ]
 startpage_locales = \
     'C ar ca cs de es fr hu id it ja ko nl pt_BR ru sv zh_CN zh_HK zh_TW'.split()
@@ -710,16 +721,32 @@ class install_data_func(_install_data):
                         rm_f(dst)
                         os.symlink(src, dst)
 
-def run_cmd(args, swdir, env=None):
-                if env is None:
+def run_cmd(args, swdir, updenv=None, ignerr=False):
+                if updenv:
+                        # use temp environment modified with the given dict
+                        env = os.environ.copy()
+                        env.update(updenv)
+                else:
+                        # just use environment of this (parent) process as is
                         env = os.environ
-                ret = subprocess.Popen(args, cwd=swdir, env=env).wait()
+                if ignerr:
+                        # send stderr to devnull
+                        stderr = open(os.devnull)
+                else:
+                        # just use stderr of this (parent) process
+                        stderr = None
+                ret = subprocess.Popen(args, cwd=swdir, env=env,
+                    stderr=stderr).wait()
                 if ret != 0:
+                        if stderr:
+                            stderr.close()
                         print >> sys.stderr, \
                             "install failed and returned %d." % ret
                         print >> sys.stderr, \
                             "Command was: %s" % " ".join(args)
                         sys.exit(1)
+                if stderr:
+                        stderr.close()
 
 def _copy_file_contents(src, dst, buffer_size=16*1024):
         """A clone of distutils.file_util._copy_file_contents() that strips the
@@ -766,6 +793,70 @@ def _copy_file_contents(src, dst, buffer_size=16*1024):
 # Make file_util use our version of _copy_file_contents
 file_util._copy_file_contents = _copy_file_contents
 
+def intltool_update_maintain():
+        """Check if scope of localization looks up-to-date or possibly not,
+        by comparing file set described in po/POTFILES.{in,skip} and
+        actual source files (e.g. .py) detected.
+        """
+        rm_f("po/missing")
+        rm_f("po/notexist")
+
+        args = [
+            "/usr/bin/intltool-update", "--maintain"
+        ]
+        print " ".join(args)
+        podir = os.path.join(os.getcwd(), "po")
+        run_cmd(args, podir, updenv={"LC_ALL": "C"}, ignerr=True)
+
+        if os.path.exists("po/missing"):
+            print >> sys.stderr, \
+                "New file(s) with translatable strings detected:"
+            missing = open("po/missing", "r")
+            print >> sys.stderr, "--------"
+            for fn in missing:
+                print >> sys.stderr, "%s" % fn.strip()
+            print >> sys.stderr, "--------"
+            missing.close()
+            print >> sys.stderr, \
+"""Please evaluate whether any of the above file(s) needs localization. 
+If so, please add its name to po/POTFILES.in.  If not (e.g., it's not 
+delivered), please add its name to po/POTFILES.skip. 
+Please be sure to maintain alphabetical ordering in both files."""
+            sys.exit(1)
+
+        if os.path.exists("po/notexist"):
+            print >> sys.stderr, \
+"""The following files are listed in po/POTFILES.in, but no longer exist 
+in the workspace:"""
+            notexist = open("po/notexist", "r")
+            print >> sys.stderr, "--------"
+            for fn in notexist:
+                print >> sys.stderr, "%s" % fn.strip()
+            print >> sys.stderr, "--------"
+            notexist.close()
+            print >> sys.stderr, \
+                "Please remove the file names from po/POTFILES.in"
+            sys.exit(1)
+
+def intltool_update_pot():
+        """Generate pkg.pot by extracting localizable strings from source
+        files (e.g. .py)
+        """
+        rm_f("po/pkg.pot")
+
+        args = [
+            "/usr/bin/intltool-update", "--pot"
+        ]
+        print " ".join(args)
+        podir = os.path.join(os.getcwd(), "po")
+        run_cmd(args, podir,
+            updenv={"LC_ALL": "C", "XGETTEXT": "/usr/gnu/bin/xgettext"})
+
+        if not os.path.exists("po/pkg.pot"):
+            print >> sys.stderr, \
+                "Failed in generating pkg.pot."
+            sys.exit(1)
+
 def intltool_merge(src, dst):
         if not dep_util.newer(src, dst):
                 return
@@ -775,7 +866,7 @@ def intltool_merge(src, dst):
             "-c", "po/.intltool-merge-cache", "po", src, dst
         ]
         print " ".join(args)
-        run_cmd(args, os.getcwd(), os.environ.copy().update({"LC_ALL": "C"}))
+        run_cmd(args, os.getcwd(), updenv={"LC_ALL": "C"})
 
 def msgfmt(src, dst):
         if not dep_util.newer(src, dst):
@@ -785,7 +876,50 @@ def msgfmt(src, dst):
         print " ".join(args)
         run_cmd(args, os.getcwd())
 
-def xml2po(src, dst, mofile):
+def localizablexml(src, dst):
+        """create XML help for localization, where French part of legalnotice
+        is stripped off
+        """
+        if not dep_util.newer(src, dst):
+                return
+
+        fsrc = open(src, "r")
+        fdst = open(dst, "w")
+
+        # indicates currently in French part of legalnotice
+        in_fr = False
+
+        for l in fsrc:
+            if in_fr: # in French part
+                if l.startswith('</legalnotice>'):
+                    # reached end of legalnotice
+                    print >> fdst, l,
+                    in_fr = False
+            elif l.startswith('<para lang="fr"/>') or \
+                    l.startswith('<para lang="fr"></para>'):
+                in_fr = True
+            else:
+                # not in French part
+                print >> fdst, l,
+        
+        fsrc.close()
+        fdst.close()
+
+def xml2po_gen(src, dst):
+        """Input is English XML file. Output is pkg_help.pot, message
+        source for next translation update.
+        """
+        if not dep_util.newer(src, dst):
+                return
+
+        args = ["/usr/bin/xml2po", "-o", dst, src]
+        print " ".join(args)
+        run_cmd(args, os.getcwd())
+
+def xml2po_merge(src, dst, mofile):
+        """Input is English XML file and <lang>.po file (which contains
+        translations). Output is translated XML file.
+        """
         msgfmt(mofile[:-3] + ".po", mofile)
 
         monewer = dep_util.newer(mofile, dst)
@@ -1089,12 +1223,30 @@ class build_data_func(Command):
 
                 for l in help_locales:
                         path = "gui/help/%s/" % l
-                        xml2po(path + "package-manager.xml.in",
+                        xml2po_merge(path + "package-manager.xml.in",
                             path + "package-manager.xml",
                             path + "%s.mo" % l)
 
+                # create xml for localization
+                localizablexml("gui/help/C/package-manager.xml",
+                    "gui/help/C/package-manager.localizable.xml")
+
+                # generate pkg_help.pot for next translation
+                xml2po_gen("gui/help/C/package-manager.localizable.xml",
+                    "gui/help/C/pkg_help.pot")
+
                 for l in pkg_locales:
                         msgfmt("po/%s.po" % l, "po/%s.mo" % l)
+
+                # generate pkg.pot for next translation
+                intltool_update_maintain()
+                intltool_update_pot()
+
+                # create __LOCALE__ -> C symlink for omf file
+                # to make installation with data_files list work
+                locomf="gui/help/package-manager-__LOCALE__.omf"
+                if not os.path.exists(locomf):
+                    os.symlink("package-manager-C.omf", locomf)
 
 def rm_f(filepath):
         """Remove a file without caring whether it exists."""
@@ -1121,10 +1273,16 @@ class clean_func(_clean):
                 for l in pkg_locales:
                         rm_f("po/%s.mo" % l)
 
+                rm_f("po/pkg.pot")
+
                 for l in help_locales:
                         path = "gui/help/%s/" % l
                         rm_f(path + "package-manager.xml")
                         rm_f(path + "%s.mo" % l)
+
+                rm_f("gui/help/C/pkg_help.pot")
+
+                rm_f("gui/help/package-manager-__LOCALE__.omf")
 
 class clobber_func(Command):
         user_options = []
@@ -1313,10 +1471,21 @@ if osname == 'sunos':
             (os.path.join(help_dir, locale), files)
             for locale, files in help_files.iteritems()
         ]
+        # install localizable .xml and its .pot file to put into localizable file package
+        data_files += [
+            (os.path.join(help_dir, '__LOCALE__'),
+                [('gui/help/C/package-manager.localizable.xml', 'package-manager.xml'),
+                 ('gui/help/C/pkg_help.pot', 'pkg_help.pot')])
+        ]
         data_files += [
             (os.path.join(locale_dir, locale, 'LC_MESSAGES'),
                 [('po/%s.mo' % locale, 'pkg.mo')])
             for locale in pkg_locales
+        ]
+        # install English .pot file to put into localizable file package
+        data_files += [
+            (os.path.join(locale_dir, '__LOCALE__', 'LC_MESSAGES'),
+                [('po/pkg.pot', 'pkg.pot')])
         ]
         for t in 'HighContrast', 'HighContrastInverse', '':
                 for px in '24', '36', '48':

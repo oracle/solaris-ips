@@ -18,7 +18,7 @@
 #
 # CDDL HEADER END
 #
-# Copyright (c) 2010, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2010, 2012, Oracle and/or its affiliates. All rights reserved.
 #
 
 # What we want to do is to transform all the pkg.fmri package attributes into
@@ -50,5 +50,8 @@
 
 # Don't need to incorporate the incorporation!
 <transform depend fmri=.*/ips-incorporation@.* -> drop>
+
+# Exclude localizable file package which is internal
+<transform depend fmri=/$(PKGPUBLISHER_LOCALIZABLE)/ -> drop>
 
 # vim: ft=pkg5manifest

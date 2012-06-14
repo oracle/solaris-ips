@@ -45,6 +45,7 @@ PKGDEST           = $(PWD)/../../packages/$(ARCH)
 PKGROOT           = $(PWD)/../../proto/root_$(ARCH)
 
 PKGPUBLISHER      = pkg5-nightly
+PKGPUBLISHER_LOCALIZABLE      = pkg5-localizable
 
 POUND_SIGN:sh     = echo \\043
 PUBLISHALL        = $(POUND_SIGN)
@@ -100,7 +101,8 @@ PKGMOG_DEFVALS    = \
 	REV=$(REV) \
 	PYDIR=usr/lib/python2.6 \
 	PYDIRVP=usr/lib/python2.6/vendor-packages \
-	CHANGESET=$(CHANGESET)
+	CHANGESET=$(CHANGESET) \
+	PKGPUBLISHER_LOCALIZABLE=$(PKGPUBLISHER_LOCALIZABLE)
 PKGMOG_DEFINES    = $(PKGMOG_DEFVALS:%=-D %)
 PKGMOG_DEFINES    += $(ARCH_DEFINES:%=-D %)
 
@@ -130,6 +132,7 @@ publish-pkgs: $(PKGDEST)/repo .WAIT $(PUBLIFESTS)
 $(PKGDEST)/repo:
 	$(PKGREPO) create $@
 	$(PKGREPO) -s $@ set publisher/prefix=$(PKGPUBLISHER)
+	$(PKGREPO) -s $@ add-publisher $(PKGPUBLISHER_LOCALIZABLE)
 
 # Special rule for creating the incorporation.  Note that the incorporation
 # looks at all manifests, not just the ones listed in $(MANIFESTS).  This is

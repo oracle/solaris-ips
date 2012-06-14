@@ -1,0 +1,71 @@
+#
+# CDDL HEADER START
+#
+# The contents of this file are subject to the terms of the
+# Common Development and Distribution License (the "License").
+# You may not use this file except in compliance with the License.
+#
+# You can obtain a copy of the license at usr/src/OPENSOLARIS.LICENSE
+# or http://www.opensolaris.org/os/licensing.
+# See the License for the specific language governing permissions
+# and limitations under the License.
+#
+# When distributing Covered Code, include this CDDL HEADER in each
+# file and include the License file at usr/src/OPENSOLARIS.LICENSE.
+# If applicable, add the following below this CDDL HEADER, with the
+# fields enclosed by brackets "[]" replaced with your own identifying
+# information: Portions Copyright [yyyy] [name of copyright owner]
+#
+# CDDL HEADER END
+#
+# Copyright (c) 2012 Oracle and/or its affiliates. All rights reserved.
+#
+
+#
+# Use "__LOCALE__" as placeholder for "C" and "en", to avoid duplication
+# error between this package and runtime package.
+# Some files (e.g. .pot files) which don't go into runtime package
+# don't need the modification but applying it as well for simplification.
+#
+
+set name=pkg.fmri \
+    value=pkg://$(PKGPUBLISHER_LOCALIZABLE)/consolidation/ips/ips-message-files@$(PKGVERS)
+set name=pkg.summary value="Localizable files for Image Packaging System"
+set name=pkg.description \
+    value="Localizable file package to send to localization group. Not intended to publish to repository for users."
+set name=info.classification \
+    value=org.opensolaris.category.2008:System/Packaging
+set name=variant.arch value=$(ARCH)
+dir  path=usr
+dir  path=usr/share
+dir  path=usr/share/gnome
+dir  path=usr/share/gnome/help
+dir  path=usr/share/gnome/help/package-manager
+dir  path=usr/share/gnome/help/package-manager/__LOCALE__
+file path=usr/share/gnome/help/package-manager/__LOCALE__/package-manager.xml
+file path=usr/share/gnome/help/package-manager/__LOCALE__/pkg_help.pot
+dir  path=usr/share/lib/pkg/web
+dir  path=usr/share/lib/pkg/web/__LOCALE__
+file path=usr/share/lib/pkg/web/__LOCALE__/advanced_search.shtml
+file path=usr/share/lib/pkg/web/__LOCALE__/base.shtml
+file path=usr/share/lib/pkg/web/__LOCALE__/catalog.shtml
+file path=usr/share/lib/pkg/web/__LOCALE__/index.shtml
+file path=usr/share/lib/pkg/web/__LOCALE__/layout.shtml
+file path=usr/share/lib/pkg/web/__LOCALE__/search.shtml
+file path=usr/share/lib/pkg/web/__LOCALE__/stats.shtml
+dir  path=usr/share/lib/pkg/web/_themes
+dir  path=usr/share/lib/pkg/web/_themes/oracle.com
+dir  path=usr/share/lib/pkg/web/_themes/oracle.com/__LOCALE__
+file path=usr/share/lib/pkg/web/_themes/oracle.com/__LOCALE__/base.css
+file path=usr/share/lib/pkg/web/_themes/oracle.com/__LOCALE__/body_end.shtml
+file path=usr/share/lib/pkg/web/_themes/oracle.com/__LOCALE__/footer.shtml
+file path=usr/share/lib/pkg/web/_themes/oracle.com/__LOCALE__/head_end.shtml
+file path=usr/share/lib/pkg/web/_themes/oracle.com/__LOCALE__/header.shtml
+dir  path=usr/share/locale
+dir  path=usr/share/locale/__LOCALE__
+dir  path=usr/share/locale/__LOCALE__/LC_MESSAGES
+file path=usr/share/locale/__LOCALE__/LC_MESSAGES/pkg.pot
+dir  path=usr/share/omf
+dir  path=usr/share/omf/package-manager
+file path=usr/share/omf/package-manager/package-manager-__LOCALE__.omf
+license cr_Oracle license=cr_Oracle
