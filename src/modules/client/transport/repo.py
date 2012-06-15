@@ -1643,6 +1643,10 @@ class _FilesystemRepo(TransportRepo):
 
         def publish_append(self, header=None, client_release=None,
             pkg_name=None):
+
+                # Calling any publication operation sets read_only to False.
+                self._frepo.read_only = False
+
                 try:
                         trans_id = self._frepo.append(client_release, pkg_name)
                 except svr_repo.RepositoryError, e:

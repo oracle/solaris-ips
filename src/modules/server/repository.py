@@ -331,9 +331,18 @@ class _RepoStore(object):
                         self.__unlock_rstore()
 
         def __set_read_only(self, value):
+                old_ro = self.__read_only
                 self.__read_only = value
                 if self.__catalog:
                         self.__catalog.read_only = value
+                if self.cache_store:
+                        self.cache_store.readonly = value
+                if old_ro and not self.__read_only:
+                        self.__lock_rstore(blocking=True)
+                        try:
+                                self.__init_state()
+                        finally:
+                                self.__unlock_rstore()
 
         def __mkdtemp(self):
                 """Create a temp directory under repository directory for

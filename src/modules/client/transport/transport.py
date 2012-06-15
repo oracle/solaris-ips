@@ -2785,7 +2785,10 @@ class Transport(object):
                 if not self.__engine:
                         self.__setup()
 
-                originuri = pub.repository.origins[0].uri
+                # Trailing '/' must be stripped to match behaviour of
+                # get_repostats() call in publish_cache_repository().
+                originuri = pub.repository.origins[0].uri.rstrip('/')
+
                 return originuri in self.__repo_cache
 
 
