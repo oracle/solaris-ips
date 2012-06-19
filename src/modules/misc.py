@@ -156,6 +156,9 @@ def copytree(src, dst):
                         os.chown(d_path, s.st_uid, s.st_gid)
                         os.utime(d_path, (s.st_atime, s.st_mtime))
                 elif S_ISCHR(s.st_mode) or S_ISBLK(s.st_mode):
+                        # the s11 fcs version of python doesn't have os.mknod()
+                        # E1101 Module '%s' has no '%s' member
+                        # pylint: disable-msg=E1101
                         if hasattr(os, "mknod"):
                                 os.mknod(d_path, s.st_mode, s.st_dev)
                                 os.chown(d_path, s.st_uid, s.st_gid)
