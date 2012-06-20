@@ -22,7 +22,7 @@
 # Copyright (c) 2007, 2012, Oracle and/or its affiliates. All rights reserved.
 #
 msgid ""
-msgstr "Project-Id-Version: PACKAGE VERSION\nReport-Msgid-Bugs-To: \nPOT-Creation-Date: 2012-04-06 12:11+0900\nPO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\nLast-Translator: FULL NAME <EMAIL@ADDRESS>\nLanguage-Team: LANGUAGE <LL@li.org>\nMIME-Version: 1.0\nContent-Type: text/plain; charset=UTF-8\nContent-Transfer-Encoding: 8bit\nPlural-Forms: nplurals=2; plural=(n != 1);\n"
+msgstr "Project-Id-Version: PACKAGE VERSION\nReport-Msgid-Bugs-To: \nPOT-Creation-Date: 2012-05-09 15:44+0900\nPO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\nLast-Translator: FULL NAME <EMAIL@ADDRESS>\nLanguage-Team: LANGUAGE <LL@li.org>\nMIME-Version: 1.0\nContent-Type: text/plain; charset=UTF-8\nContent-Transfer-Encoding: 8bit\nPlural-Forms: nplurals=2; plural=(n != 1);\n"
 
 #: ../client.py:108
 msgid ""
@@ -415,14 +415,14 @@ msgid ""
 "WARNING: The boot environment being modified is not the active one.  "
 "Changes\n"
 "made will not be reflected on the next boot.\n"
-msgstr "WARNUNG: Die Boot-Umgebung, die derzeit geändert wird, ist nicht die aktive\nUmgebung.  Änderungen an werden beim nächsten Boot-Vorgang nicht umgesetzt.\n"
+msgstr "WARNUNG: Die Boot-Umgebung, die derzeit geändert wird, ist nicht die aktive\nUmgebung.  Änderungen werden beim nächsten Boot-Vorgang nicht umgesetzt.\n"
 
-#: ../client.py:940 ../client.py:4709
+#: ../client.py:940 ../client.py:4718
 msgid "Yes"
 msgstr "Ja"
 
 #. Not Installed
-#: ../client.py:941 ../client.py:4707 ../modules/gui/misc.py:654
+#: ../client.py:941 ../client.py:4716 ../modules/gui/misc.py:654
 #: ../modules/gui/misc.py:755 ../modules/gui/versioninfo.py:171
 msgid "No"
 msgstr "Nein"
@@ -562,7 +562,7 @@ msgid ""
 "Please retry this operation on an alternate boot environment."
 msgstr "Angeforderter \"%s\"-Vorgang würde sich auf Dateien auswirken, die im Live-Abbild nicht geändert werden können.\nVersuchen Sie diesen Vorgang in einer alternativen Boot-Umgebung erneut."
 
-#: ../client.py:1321 ../client.py:5434
+#: ../client.py:1321 ../client.py:5443
 msgid ""
 "\n"
 "(Failure to consistently execute pkg commands as a privileged user is often "
@@ -703,7 +703,7 @@ msgid "VER. SRC."
 msgstr "VER. SRC."
 
 #: ../client.py:2389 ../client.py:2433 ../client.py:2441 ../client.py:2749
-#: ../client.py:5449 ../pkgrepo.py:858 ../pkgrepo.py:867
+#: ../client.py:5458 ../pkgrepo.py:858 ../pkgrepo.py:867
 msgid "VERSION"
 msgstr "VERSION"
 
@@ -760,7 +760,7 @@ msgstr "%(name)s wurde bei %(ver)s eingefroren"
 msgid "%s was unfrozen."
 msgstr "Für %s wurde der Freeze aufgehoben."
 
-#: ../client.py:2748 ../client.py:4955 ../pkgrepo.py:857 ../pkgrepo.py:867
+#: ../client.py:2748 ../client.py:4964 ../pkgrepo.py:857 ../pkgrepo.py:867
 #: ../util/publish/pkglint.py:210 ../util/publish/pkglint.py:212
 msgid "NAME"
 msgstr "NAME"
@@ -1014,14 +1014,14 @@ msgid ""
 "%s"
 msgstr "Der angegebene URI zeigt nicht auf ein gültiges pkg-Repository.\nPrüfen Sie den URI und die Netzwerkkonfiguration des Clients.\nZusätzliche Details:\n\n%s"
 
-#: ../client.py:3951 ../client.py:5335
+#: ../client.py:3951 ../client.py:5344
 #, python-format
 msgid ""
 "properties to be set must be of the form '<name>=<value>'. This is what was "
 "given: %s"
 msgstr "Eigenschaften müssen in der Form '<Name>=<Wert>' festgelegt werden. Folgendes wurde angegeben: %s"
 
-#: ../client.py:3955 ../client.py:5339
+#: ../client.py:3955 ../client.py:5348
 #, python-format
 msgid "a property may only be set once in a command. %s was set twice"
 msgstr "Eine Eigenschaft kann nur einmal pro Befehl festgelegt werden. %s wurde zweimal festgelegt."
@@ -1154,193 +1154,193 @@ msgstr "SYSPUB"
 msgid "Unrecognized format %(format)s. Supported formats: %(valid)s"
 msgstr "Nicht erkanntes Format %(format)s. Unterstützte Formate: %(valid)s"
 
-#: ../client.py:4570 ../modules/client/api_errors.py:649
+#: ../client.py:4575 ../modules/client/api_errors.py:649
 msgid "non-sticky"
 msgstr "non-sticky"
 
-#: ../client.py:4575
+#: ../client.py:4580
 msgid "disabled"
 msgstr "deaktiviert"
 
-#: ../client.py:4577
+#: ../client.py:4582
 msgid "syspub"
 msgstr "syspub"
 
-#: ../client.py:4584 ../client.py:4588 ../client.py:4592
+#: ../client.py:4589 ../client.py:4593 ../client.py:4597
 msgid "true"
 msgstr "wahr"
 
-#: ../client.py:4586 ../client.py:4590 ../client.py:4594
+#: ../client.py:4591 ../client.py:4595 ../client.py:4599
 msgid "false"
 msgstr "falsch"
 
 #. XXX get the real origin status
-#: ../client.py:4604
+#: ../client.py:4613
 msgid "origin"
 msgstr "ursprünglich"
 
-#: ../client.py:4605 ../client.py:4617
+#: ../client.py:4614 ../client.py:4626
 msgid "online"
 msgstr "online"
 
 #. XXX get the real mirror status
-#: ../client.py:4616
+#: ../client.py:4625
 msgid "mirror"
 msgstr "spiegel"
 
-#: ../client.py:4639
+#: ../client.py:4648
 msgid "              SSL Key:"
 msgstr "              SSL-Schlüssel:"
 
-#: ../client.py:4640
+#: ../client.py:4649
 msgid "             SSL Cert:"
 msgstr "             SSL-Zert.:"
 
-#: ../client.py:4652
+#: ../client.py:4661
 msgid " Cert. Effective Date:"
 msgstr " Gültigkeitsdatum Zertifikat:"
 
-#: ../client.py:4654
+#: ../client.py:4663
 msgid "Cert. Expiration Date:"
 msgstr "Ablaufdatum Zertifikat:"
 
-#: ../client.py:4661
+#: ../client.py:4670
 msgid "           Origin URI:"
 msgstr "           Ursprünglicher URI:"
 
-#: ../client.py:4667
+#: ../client.py:4676
 msgid "           Mirror URI:"
 msgstr "           Gespiegelter URI:"
 
-#: ../client.py:4675
+#: ../client.py:4684
 msgid "         Approved CAs:"
 msgstr "         Genehmigte CAs:"
 
-#: ../client.py:4678 ../client.py:4683
+#: ../client.py:4687 ../client.py:4692
 msgid "                     :"
 msgstr "                     :"
 
-#: ../client.py:4680
+#: ../client.py:4689
 msgid "          Revoked CAs:"
 msgstr "          Widerrufene CAs:"
 
-#: ../client.py:4693
+#: ../client.py:4702
 msgid "            Publisher:"
 msgstr "            Herausgeber:"
 
-#: ../client.py:4694
+#: ../client.py:4703
 msgid "                Alias:"
 msgstr "                Alias:"
 
-#: ../client.py:4703
+#: ../client.py:4712
 msgid "          Client UUID:"
 msgstr "          Client-UUID:"
 
-#: ../client.py:4704
+#: ../client.py:4713
 msgid "      Catalog Updated:"
 msgstr "      Aktualisierter Katalog:"
 
-#: ../client.py:4707 ../client.py:4709
+#: ../client.py:4716 ../client.py:4718
 msgid "              Enabled:"
 msgstr "              Aktiviert:"
 
-#: ../client.py:4717
+#: ../client.py:4726
 msgid "           Properties:"
 msgstr "           Eigenschaften:"
 
-#: ../client.py:4733 ../client.py:4755
+#: ../client.py:4742 ../client.py:4764
 msgid "requires a property name and value"
 msgstr "Eigenschaftsname und -wert erforderlich"
 
-#: ../client.py:4780
+#: ../client.py:4789
 msgid "requires a property name and at least one value"
 msgstr "Erfordert einen Eigenschaftsnamen und mindestens einen Wert"
 
-#: ../client.py:4797
+#: ../client.py:4806
 #, python-format
 msgid "Signature-policy %s doesn't allow additional parameters."
 msgstr "Signaturrichtlinie %s lässt keine zusätzlichen Parameter zu."
 
-#: ../client.py:4824
+#: ../client.py:4833
 msgid "requires at least one property name"
 msgstr "Erfordert mindestens einen Eigenschaftsnamen"
 
-#: ../client.py:4853
+#: ../client.py:4862
 #, python-format
 msgid "no such property: %s"
 msgstr "Eigenschaft existiert nicht: %s"
 
-#: ../client.py:4887
+#: ../client.py:4896
 #, python-format
 msgid "no such variant: %s"
 msgstr "Variante existiert nicht: %s"
 
-#: ../client.py:4955
+#: ../client.py:4964
 msgid "RELATIONSHIP"
 msgstr "BEZIEHUNG"
 
-#: ../client.py:4955
+#: ../client.py:4964
 msgid "PATH"
 msgstr "PFAD"
 
-#: ../client.py:4979
+#: ../client.py:4988
 msgid "linked image property arguments must be of the form '<name>=<value>'."
 msgstr "Die Eigenschaftenargumente eines verknüpften Abbilds müssen die Form '<name>=<value>' aufweisen."
 
-#: ../client.py:4983
+#: ../client.py:4992
 #, python-format
 msgid "invalid linked image property: '%s'."
 msgstr "Ungültige Eigenschaft des verküpften Abbilds: '%s'."
 
-#: ../client.py:4987
+#: ../client.py:4996
 #, python-format
 msgid "linked image property specified multiple times: '%s'."
 msgstr "Eigenschaft des verknüpften Abbilds ist mehrmals angegeben: '%s'."
 
-#: ../client.py:5010
+#: ../client.py:5019
 #, python-format
 msgid "%(op)s: no such property: %(p)s"
 msgstr "%(op)s: Eigenschaft nicht vorhanden: %(p)s"
 
-#: ../client.py:5090
+#: ../client.py:5099
 msgid "synced"
 msgstr "Synchronisiert"
 
-#: ../client.py:5092
+#: ../client.py:5101
 msgid "diverged"
 msgstr "Umgeleitet"
 
-#: ../client.py:5179
+#: ../client.py:5188
 #, python-format
 msgid "cannot specify linked image property: '%s'"
 msgstr "Eigenschaft des verknüpften Abbilds kann nicht angegeben werden: '%s'"
 
-#: ../client.py:5183
+#: ../client.py:5192
 msgid "a linked image name and path must be specified"
 msgstr "Name und Pfad eines verknüpften Abbilds müssen angegeben werden"
 
-#: ../client.py:5326
+#: ../client.py:5335
 msgid "Facet arguments must be of the form '<name>=(True|False)'"
 msgstr "Variantenargumente müssen die Form '<name>=(True|False)' aufweisen"
 
-#: ../client.py:5349
+#: ../client.py:5358
 msgid "variant arguments must be of the form '<name>=<value>'."
 msgstr "Variantenargumente müssen die Form '<Name>=<Wert>' haben."
 
-#: ../client.py:5355
+#: ../client.py:5364
 msgid "an image directory path must be specified"
 msgstr "Es muss ein Abbildverzeichnispfad angegeben werden"
 
-#: ../client.py:5358
+#: ../client.py:5367
 msgid "only one image directory path may be specified"
 msgstr "Es darf nur ein Abbildverzeichnispfad angegeben werden"
 
-#: ../client.py:5363
+#: ../client.py:5372
 msgid ""
 "--no-refresh cannot be used with -p unless a publisher prefix is provided."
 msgstr "--no-refresh kann nur mit -p verwendet werden, wenn ein Herausgeberpräfix angegeben wird."
 
-#: ../client.py:5393
+#: ../client.py:5402
 #, python-format
 msgid ""
 "The URI '%(pub_url)s' does not appear to point to a valid pkg repository.\n"
@@ -1351,233 +1351,233 @@ msgid ""
 "%(error)s"
 msgstr "Der URI für '%(pub_url)s' zeigt nicht auf ein gültiges pkg-Repository.\nPrüfen Sie die Adresse des Repositorys und die Netzwerkkonfiguration des Clients.\nZusätzliche Details:\n\n%(error)s"
 
-#: ../client.py:5420
+#: ../client.py:5429
 #, python-format
 msgid "command does not take operands ('%s')"
 msgstr "Befehl akzeptiert keine Operanden ('%s')"
 
-#: ../client.py:5446
+#: ../client.py:5455
 msgid "BE"
 msgstr "BU"
 
-#: ../client.py:5447
+#: ../client.py:5456
 msgid "BE UUID"
 msgstr "BU-UUID"
 
-#: ../client.py:5448
+#: ../client.py:5457
 msgid "CLIENT"
 msgstr "CLIENT"
 
-#: ../client.py:5450
+#: ../client.py:5459
 msgid "COMMAND"
 msgstr "BEFEHL"
 
-#: ../client.py:5451
+#: ../client.py:5460
 msgid "FINISH"
 msgstr "FERTIG STELLEN"
 
-#: ../client.py:5452
+#: ../client.py:5461
 msgid "ID"
 msgstr "ID"
 
-#: ../client.py:5453
+#: ../client.py:5462
 msgid "NEW BE"
 msgstr "NEUE BU"
 
-#: ../client.py:5454
+#: ../client.py:5463
 msgid "NEW BE UUID"
 msgstr "NEUE BU-UUID"
 
-#: ../client.py:5455
+#: ../client.py:5464
 msgid "OPERATION"
 msgstr "VORGANG"
 
-#: ../client.py:5456
+#: ../client.py:5465
 msgid "OUTCOME"
 msgstr "ERGEBNIS"
 
-#: ../client.py:5457
+#: ../client.py:5466
 msgid "REASON"
 msgstr "GRUND"
 
-#: ../client.py:5458
+#: ../client.py:5467
 msgid "SNAPSHOT"
 msgstr "SCHNAPPSCHUSS"
 
-#: ../client.py:5459
+#: ../client.py:5468
 msgid "START"
 msgstr "START"
 
-#: ../client.py:5460
+#: ../client.py:5469
 msgid "TIME"
 msgstr "ZEIT"
 
-#: ../client.py:5461
+#: ../client.py:5470
 msgid "USER"
 msgstr "BENUTZER"
 
-#: ../client.py:5484
+#: ../client.py:5493
 msgid "Argument to -n must be numeric"
 msgstr "Argumente von -n müssen numerisch sein"
 
-#: ../client.py:5489
+#: ../client.py:5498
 msgid "Argument to -n must be positive"
 msgstr "Argumente von -n müssen positiv sein"
 
 #. Translators: 'command' and 'reason' are
 #. keywords and should not be translated
-#: ../client.py:5502
+#: ../client.py:5511
 msgid "'command' and 'reason' columns cannot be used together."
 msgstr "Spalten 'Befehl' und 'Grund' können nicht gemeinsam verwendet werden."
 
-#: ../client.py:5510
+#: ../client.py:5519
 #, python-format
 msgid "The '%s' column must be the last item in the -o list"
 msgstr "Spalte '%s' muss in der Liste -o das letzte Element sein."
 
-#: ../client.py:5517
+#: ../client.py:5526
 #, python-format
 msgid "Unknown output column '%s'"
 msgstr "Unbekannte Ausgabespalte '%s'"
 
-#: ../client.py:5527
+#: ../client.py:5536
 msgid "-H and -l may not be combined"
 msgstr "-H und -I dürfen nicht kombiniert werden"
 
-#: ../client.py:5530
+#: ../client.py:5539
 msgid "-o and -l may not be combined"
 msgstr "-o und -l dürfen nicht kombiniert werden"
 
-#: ../client.py:5533
+#: ../client.py:5542
 msgid "-n and -t may not be combined"
 msgstr "-n und -t dürfen nicht kombiniert werden"
 
-#: ../client.py:5586
+#: ../client.py:5595
 #, python-format
 msgid ""
 "History operation appeared to end before it started.  Start time: %"
 "(start_time)s, End time: %(end_time)s"
 msgstr "Historienvorgang wurde offenbar beendet, bevor er gestartet wurde.  Startzeit: %(start_time)s, Endzeit: %(end_time)s"
 
-#: ../client.py:5632 ../client.py:5635
+#: ../client.py:5641 ../client.py:5644
 msgid "(Unknown)"
 msgstr "(Unbekannt)"
 
-#: ../client.py:5638 ../client.py:5641 ../client.py:5644
+#: ../client.py:5647 ../client.py:5650 ../client.py:5653
 msgid "(None)"
 msgstr "(Kein)"
 
-#: ../client.py:5671
+#: ../client.py:5680
 #, python-format
 msgid "Duplicate column specified: %s"
 msgstr "Doppelte Spalte angegeben: %s"
 
-#: ../client.py:5677
+#: ../client.py:5686
 msgid "Operation"
 msgstr "Vorgang"
 
-#: ../client.py:5679
+#: ../client.py:5688
 msgid "Outcome"
 msgstr "Ergebnis"
 
-#: ../client.py:5680
+#: ../client.py:5689
 msgid "Reason"
 msgstr "Grund"
 
-#: ../client.py:5681
+#: ../client.py:5690
 msgid "Client"
 msgstr "Client"
 
-#: ../client.py:5682
+#: ../client.py:5691
 msgid "Version"
 msgstr "Version"
 
-#: ../client.py:5684
+#: ../client.py:5693
 msgid "User"
 msgstr "Benutzer"
 
-#: ../client.py:5688
+#: ../client.py:5697
 msgid "Boot Env."
 msgstr "Boot-Umg."
 
-#: ../client.py:5690
+#: ../client.py:5699
 msgid "Boot Env. UUID"
 msgstr "Boot-Umg.-UUID"
 
-#: ../client.py:5692
+#: ../client.py:5701
 msgid "New Boot Env."
 msgstr "Neue Boot-Umg."
 
-#: ../client.py:5694
+#: ../client.py:5703
 msgid "New Boot Env. UUID"
 msgstr "Neue Boot-Umg.-UUID"
 
-#: ../client.py:5697
+#: ../client.py:5706
 msgid "Snapshot"
 msgstr "Schnappschuss"
 
-#: ../client.py:5699
+#: ../client.py:5708
 msgid "Start Time"
 msgstr "Startzeit"
 
-#: ../client.py:5700
+#: ../client.py:5709
 msgid "End Time"
 msgstr "Endzeit"
 
-#: ../client.py:5701
+#: ../client.py:5710
 msgid "Total Time"
 msgstr "Gesamtzeit"
 
-#: ../client.py:5702
+#: ../client.py:5711
 msgid "Command"
 msgstr "Befehl"
 
-#: ../client.py:5706
+#: ../client.py:5715
 msgid "Start State"
 msgstr "Anfangsstatus"
 
-#: ../client.py:5710
+#: ../client.py:5719
 msgid "End State"
 msgstr "Endstatus"
 
-#: ../client.py:5714
+#: ../client.py:5723
 msgid "Errors"
 msgstr "Fehler"
 
-#: ../client.py:5720
+#: ../client.py:5729
 msgid "History purged."
 msgstr "Historie geleert"
 
-#: ../client.py:5733
+#: ../client.py:5742
 msgid ""
 "\n"
 "The following proxy configuration is set in the environment:\n"
 msgstr "\nIn der Umgebung ist folgende Proxy-Konfiguration festgelegt:\n"
 
-#: ../client.py:5736
+#: ../client.py:5745
 #, python-format
 msgid "http_proxy: %s\n"
 msgstr "http_proxy: %s\n"
 
-#: ../client.py:5738
+#: ../client.py:5747
 #, python-format
 msgid "https_proxy: %s\n"
 msgstr "https_proxy: %s\n"
 
-#: ../client.py:5750
+#: ../client.py:5759
 msgid "Image format updated."
 msgstr "Abbildformat aktualisiert."
 
-#: ../client.py:5753
+#: ../client.py:5762
 msgid "Image format already current."
 msgstr "Abbildformat bereits aktualisiert."
 
-#: ../client.py:5758
+#: ../client.py:5767
 #, python-format
 msgid "version: command does not take operands ('%s')"
 msgstr "version: Befehl akzeptiert keine Operanden ('%s')"
 
-#: ../client.py:5789 ../pkgdep.py:108 ../pkgdep.py:220 ../pkgdep.py:538
+#: ../client.py:5798 ../pkgdep.py:108 ../pkgdep.py:220 ../pkgdep.py:538
 #: ../pkgrepo.py:1198 ../publish.py:718 ../sign.py:124 ../sysrepo.py:642
 #: ../util/publish/pkgdiff.py:86 ../util/publish/pkgfmt.py:522
 #: ../util/publish/pkgmogrify.py:695
@@ -1585,50 +1585,50 @@ msgstr "version: Befehl akzeptiert keine Operanden ('%s')"
 msgid "illegal global option -- %s"
 msgstr "unzulässige globale Option -- %s"
 
-#: ../client.py:5802 ../publish.py:711
+#: ../client.py:5811 ../publish.py:711
 #, python-format
 msgid "%(opt)s takes argument of form name=value, not %(arg)s"
 msgstr "%(opt)s erfordert ein Argument der Form Name=Wert, nicht %(arg)s."
 
-#: ../client.py:5880 ../client.py:5891 ../pkgdep.py:566 ../pkgrepo.py:1223
+#: ../client.py:5889 ../client.py:5900 ../pkgdep.py:566 ../pkgrepo.py:1223
 #: ../publish.py:765
 #, python-format
 msgid "unknown subcommand '%s'"
 msgstr "unbekannter Unterbefehl '%s'"
 
-#: ../client.py:5895 ../pkgrepo.py:1217
+#: ../client.py:5904 ../pkgrepo.py:1217
 msgid "no subcommand specified"
 msgstr "Es wurde kein Unterbefehl angegeben"
 
-#: ../client.py:5900
+#: ../client.py:5909
 msgid "runid must be an integer"
 msgstr "runid muss eine Ganzzahl sein"
 
-#: ../client.py:5920
+#: ../client.py:5929
 #, python-format
 msgid "-R not allowed for %s subcommand"
 msgstr "-R für %s Unterbefehl nicht zulässig"
 
-#: ../client.py:5925 ../client.py:5968 ../modules/misc.py:1099
+#: ../client.py:5934 ../client.py:5977 ../modules/misc.py:1099
 #: ../pkgrepo.py:1230 ../util/publish/pkgmerge.py:224
 #, python-format
 msgid "illegal option -- %s"
 msgstr "unzulässige Option -- %s"
 
-#: ../client.py:5940 ../pkgdep.py:274
+#: ../client.py:5949 ../pkgdep.py:274
 msgid ""
 "Could not find image.  Use the -R option or set $PKG_IMAGE to the\n"
 "location of an image."
 msgstr "Abbild nicht gefunden. Verwenden Sie die Option -R oder legen Sie für $PKG_IMAGE\nden Speicherort eines Abbilds fest."
 
-#: ../client.py:6003
+#: ../client.py:6012
 #, python-format
 msgid ""
 "Linked image exception(s):\n"
 "%s"
 msgstr "Verknüpfte Abbildausnahme(n):\n%s"
 
-#: ../client.py:6024
+#: ../client.py:6033
 msgid ""
 "\n"
 "Errors were encountered while attempting to retrieve package or file data "
@@ -1636,7 +1636,7 @@ msgid ""
 "the requested operation."
 msgstr "\nFehler beim Abrufen von Paket oder Dateidaten für\nden angeforderten Vorgang."
 
-#: ../client.py:6027
+#: ../client.py:6036
 #, python-format
 msgid ""
 "Details follow:\n"
@@ -1644,7 +1644,7 @@ msgid ""
 "%s"
 msgstr "Details folgen:\n\n%s"
 
-#: ../client.py:6033
+#: ../client.py:6042
 #, python-format
 msgid ""
 "\n"
@@ -1654,7 +1654,7 @@ msgid ""
 "%s"
 msgstr "\nFehler bei dem Versuch, die Statusinformationen zum Abbild zu lesen,\num den angeforderten Vorgang auszuführen. Details folgen:\n\n%s"
 
-#: ../client.py:6040
+#: ../client.py:6049
 msgid ""
 "\n"
 "Unable to contact a valid package repository. This may be due to a problem "
@@ -1663,7 +1663,7 @@ msgid ""
 "repository's location."
 msgstr "\nEs konnte kein gültiges Paket-Repository kontaktiert werden. Dies kann an einem Problem mit dem Repository, der Netzwerkkonfiguration oder der pkg-Client-Konfiguration liegen. Überprüfen Sie die Netzwerkkonfiguration des Clients und den Speicherort des Repositorys."
 
-#: ../client.py:6045
+#: ../client.py:6054
 #, python-format
 msgid ""
 "\n"
@@ -1672,23 +1672,23 @@ msgid ""
 "%s"
 msgstr "\nZusätzliche Details:\n\n%s"
 
-#: ../client.py:6053
+#: ../client.py:6062
 msgid ""
 "An error was encountered while attempting to load history information\n"
 "about past client operations."
 msgstr "Fehler beim Laden der Historie-Daten\nvergangener Client-Vorgänge."
 
-#: ../client.py:6062
+#: ../client.py:6071
 msgid ""
 "An error was encountered while attempting to store information about the\n"
 "current operation in client history."
 msgstr "Fehler beim Speichern der Daten des\naktuellen Vorgangs in der Client-Historie."
 
-#: ../client.py:6072
+#: ../client.py:6081
 msgid "An error was encountered while attempting to purge client history."
 msgstr "Fehler beim Leeren der Client-Historie"
 
-#: ../client.py:6079
+#: ../client.py:6088
 #, python-format
 msgid ""
 "The pkg command appears out of sync with the libraries provided\n"
@@ -1696,14 +1696,14 @@ msgid ""
 "API version is %(api)s."
 msgstr "Der pkg-Befehl stimmt nicht mit den von\npkg:/package/pkg angegebenen Bibliotheken \nüberein. Die Client-Version ist %(client)s und die Bibliothek-API-Version\nist %(api)s."
 
-#: ../client.py:6094
+#: ../client.py:6103
 #, python-format
 msgid ""
 "\n"
 "%s%s"
 msgstr "\n%s%s"
 
-#: ../client.py:6096
+#: ../client.py:6105
 msgid ""
 "\n"
 "\n"
@@ -2406,7 +2406,7 @@ msgstr "Suchen und installieren Sie alle verfügbaren Updates."
 
 #: ../gui/data/packagemanager.ui.h:52
 msgid "Checking package dependencies..."
-msgstr "Überprüfen der Paketabhängigkeiten..."
+msgstr "Paketabhängigkeiten werden überprüft..."
 
 #: ../gui/data/packagemanager.ui.h:53
 msgid "Clear Recent Searc_hes"
@@ -3059,62 +3059,62 @@ msgid ""
 "mountpoint."
 msgstr "%s; kann nicht entfernt werden, da es vom System, einem anderen Prozess oder als Einhängepunkt verwendet wird."
 
-#: ../modules/actions/driver.py:818
+#: ../modules/actions/driver.py:825
 #, python-format
 msgid "etc/name_to_major: more than one entry for '%s' is present"
 msgstr "etc/name_to_major: mehrere Einträge für '%s' vorhanden"
 
-#: ../modules/actions/driver.py:823
+#: ../modules/actions/driver.py:830
 #, python-format
 msgid "etc/name_to_major: '%s' entry not present"
 msgstr "etc/name_to_major: Eintrag '%s' nicht vorhanden"
 
-#: ../modules/actions/driver.py:830
+#: ../modules/actions/driver.py:837
 #, python-format
 msgid "extra alias '%s' found in etc/driver_aliases"
 msgstr "Zusätzlicher Alias '%s' gefunden in etc/driver_aliases"
 
-#: ../modules/actions/driver.py:833
+#: ../modules/actions/driver.py:840
 #, python-format
 msgid "alias '%s' missing from etc/driver_aliases"
 msgstr "Alias '%s' fehlt in etc/driver_aliases"
 
-#: ../modules/actions/driver.py:839
+#: ../modules/actions/driver.py:846
 #, python-format
 msgid "extra class '%s' found in etc/driver_classes"
 msgstr "Zusätzliche Klasse '%s' gefunden in etc/driver_classes"
 
-#: ../modules/actions/driver.py:842
+#: ../modules/actions/driver.py:849
 #, python-format
 msgid "class '%s' missing from etc/driver_classes"
 msgstr "Klasse '%s' fehlt in etc/driver_classes"
 
-#: ../modules/actions/driver.py:848
+#: ../modules/actions/driver.py:855
 #, python-format
 msgid "extra minor node permission '%s' found in etc/minor_perm"
 msgstr "Zusätzliche untergeordnete Knotenberechtigung '%s' gefunden in etc/minor_perm"
 
-#: ../modules/actions/driver.py:851
+#: ../modules/actions/driver.py:858
 #, python-format
 msgid "minor node permission '%s' missing from etc/minor_perm"
 msgstr "Untergeordnete Knotenberechtigung '%s' fehlt in etc/minor_perm"
 
-#: ../modules/actions/driver.py:869
+#: ../modules/actions/driver.py:876
 #, python-format
 msgid "extra device policy '%s' found in etc/security/device_policy"
 msgstr "Zusätzliche Geräterichtlinie '%s' gefunden in etc/security/device_policy"
 
-#: ../modules/actions/driver.py:872
+#: ../modules/actions/driver.py:879
 #, python-format
 msgid "device policy '%s' missing from etc/security/device_policy"
 msgstr "Geräterichtlinie '%s' fehlt in etc/security/device_policy"
 
-#: ../modules/actions/driver.py:878
+#: ../modules/actions/driver.py:885
 #, python-format
 msgid "extra device privilege '%s' found in etc/security/extra_privs"
 msgstr "Zusätzliche Geräterichtlinie '%s' gefunden in etc/security/extra_privs"
 
-#: ../modules/actions/driver.py:881
+#: ../modules/actions/driver.py:888
 #, python-format
 msgid "device privilege '%s' missing from etc/security/extra_privs"
 msgstr "Geräteberechtigung '%s' fehlt in etc/security/extra_privs"
@@ -3141,27 +3141,31 @@ msgstr "Zeitstempel: %(found)s sollte %(expected)s sein"
 msgid "Size: %(found)d bytes should be %(expected)d"
 msgstr "Größe: %(found)d Byte sollte %(expected)d sein"
 
-#: ../modules/actions/file.py:338
+#: ../modules/actions/file.py:339
 #, python-format
 msgid "Elfhash: %(found)s should be %(expected)s"
 msgstr "Elfhash: %(found)s sollte %(expected)s sein"
 
 #: ../modules/actions/file.py:356
+msgid "editable file has been changed"
+msgstr "bearbeitbare Datei wurde geändert"
+
+#: ../modules/actions/file.py:361
 #, python-format
 msgid "Hash: %(found)s should be %(expected)s"
 msgstr "Hash: %(found)s sollte %(expected)s sein"
 
-#: ../modules/actions/file.py:364
+#: ../modules/actions/file.py:369
 msgid "Skipping: Permission Denied"
 msgstr "Übersprungen: Berechtigung verweigert"
 
-#: ../modules/actions/file.py:366 ../modules/actions/generic.py:844
+#: ../modules/actions/file.py:371 ../modules/actions/generic.py:844
 #: ../modules/actions/hardlink.py:140 ../modules/actions/user.py:214
 #, python-format
 msgid "Unexpected Error: %s"
 msgstr "Unerwarteter Fehler: %s"
 
-#: ../modules/actions/file.py:368
+#: ../modules/actions/file.py:373
 #, python-format
 msgid "Unexpected Exception: %s"
 msgstr "Unerwartete Ausnahme: %s"
@@ -5056,7 +5060,7 @@ msgid ""
 "\t%s"
 msgstr "%s wurde als Zertifikat erwartet, konnte jedoch nicht analysiert werden.  Folgender Fehler ist aufgetreten:\n\t%s"
 
-#: ../modules/client/image.py:1942 ../modules/client/imageconfig.py:1224
+#: ../modules/client/image.py:1942 ../modules/client/imageconfig.py:1280
 #, python-format
 msgid "Publisher '%s' is a system publisher and cannot be moved."
 msgstr "Herausgeber '%s' ist ein Systemherausgeber und kann nicht verschoben werden."
@@ -5080,249 +5084,249 @@ msgstr "Abbildstatus-Updatephase"
 msgid "pkg(5) update check failed."
 msgstr "Updateprüfung von pkg(5) fehlgeschlagen."
 
-#: ../modules/client/imageconfig.py:806 ../modules/client/publisher.py:2207
+#: ../modules/client/imageconfig.py:806 ../modules/client/imageconfig.py:868
+#: ../modules/client/publisher.py:2207
 msgid ""
 "At least one name must be provided for the signature-required-names policy."
 msgstr "Mindestens ein Name muss für die Richtlinie 'signature-required-names' angegeben werden."
 
-#: ../modules/client/imageconfig.py:1228
+#: ../modules/client/imageconfig.py:1284
 #, python-format
 msgid ""
 "Publisher '%s' is a system publisher and other publishers cannot be moved "
 "relative to it."
 msgstr "Herausgeber '%s' ist ein Systemherausgeber. Andere Herausgeber können nicht in Relation zu diesem verschoben werden."
 
-#: ../modules/client/imageconfig.py:1265
+#: ../modules/client/imageconfig.py:1321
 #, python-format
 msgid "%s is a system publisher and cannot be unset."
 msgstr "%s ist ein Systemherausgeber und kann nicht entfernt werden."
 
-#: ../modules/client/imageplan.py:3166
+#: ../modules/client/imageplan.py:3177
 msgid "Download cache"
 msgstr "Cache herunterladen"
 
-#: ../modules/client/imageplan.py:3171 ../modules/client/imageplan.py:3246
+#: ../modules/client/imageplan.py:3182 ../modules/client/imageplan.py:3257
 msgid "Root filesystem"
 msgstr "Root-Dateisystem"
 
-#: ../modules/client/imageplan.py:3309
+#: ../modules/client/imageplan.py:3325
 msgid "Removal Phase"
 msgstr "Entfernphase"
 
-#: ../modules/client/imageplan.py:3322
+#: ../modules/client/imageplan.py:3347
 msgid "Install Phase"
 msgstr "Installationsphase"
 
-#: ../modules/client/imageplan.py:3336
+#: ../modules/client/imageplan.py:3361
 msgid "Update Phase"
 msgstr "Updatephase"
 
-#: ../modules/client/imageplan.py:3387
+#: ../modules/client/imageplan.py:3412
 #, python-format
 msgid ""
 "A link targeting itself or part of a link loop was found at '%s'; a file or "
 "directory was expected.  Please remove the link and try again."
 msgstr "Ein auf sich selbst verweisender Verweis oder Teil einer Schleife wurde in '%s' gefunden. Es wurde eine Datei oder ein Verzeichnis erwartet.  Entfernen Sie den Verweis und versuchen Sie es erneut."
 
-#: ../modules/client/imageplan.py:3445
+#: ../modules/client/imageplan.py:3470
 msgid "Index Phase"
 msgstr "Indizierungsphase"
 
-#: ../modules/client/pkg_solver.py:312 ../modules/client/pkg_solver.py:662
+#: ../modules/client/pkg_solver.py:321 ../modules/client/pkg_solver.py:680
 msgid "This version rejected by user request"
 msgstr "Diese Version wurde durch Benutzeranforderung abgewiesen"
 
-#: ../modules/client/pkg_solver.py:355
+#: ../modules/client/pkg_solver.py:364
 msgid "This version excluded by specified installation version"
 msgstr "Diese Version wird durch die angegebene Installationsversion ausgeschlossen"
 
-#: ../modules/client/pkg_solver.py:364
+#: ../modules/client/pkg_solver.py:373
 msgid "This version is excluded by installed incorporation {0}"
 msgstr "Diese Version wird durch die installierte Inkorporation {0} ausgeschlossen"
 
-#: ../modules/client/pkg_solver.py:377 ../modules/client/pkg_solver.py:673
+#: ../modules/client/pkg_solver.py:386 ../modules/client/pkg_solver.py:691
 msgid ""
 "This version is excluded by a freeze on {0} at version {1}.  The reason for "
 "the freeze is: {2}"
 msgstr "Diese Version wurde durch einen Freeze von {0} in Version {1} ausgeschlossen.  Grund für den Freeze: {2}"
 
-#: ../modules/client/pkg_solver.py:382 ../modules/client/pkg_solver.py:678
+#: ../modules/client/pkg_solver.py:391 ../modules/client/pkg_solver.py:696
 msgid "This version is excluded by a freeze on {0} at version {1}."
 msgstr "Diese Version wurde durch einen Freeze von {0} in Version {1} ausgeschlossen."
 
-#: ../modules/client/pkg_solver.py:406 ../modules/client/pkg_solver.py:458
+#: ../modules/client/pkg_solver.py:415 ../modules/client/pkg_solver.py:468
 #, python-format
 msgid "No matching version of %s can be installed:"
 msgstr "Es kann keine entsprechende Version von %s installiert werden:"
 
 #. no version of this package is allowed
-#: ../modules/client/pkg_solver.py:520 ../modules/client/pkg_solver.py:746
+#: ../modules/client/pkg_solver.py:530 ../modules/client/pkg_solver.py:766
 #, python-format
 msgid "The installed package %s is not permissible."
 msgstr "Das installierte Paket %s ist nicht zulässig."
 
-#: ../modules/client/pkg_solver.py:562
+#: ../modules/client/pkg_solver.py:572
 msgid "Plan Creation: dependency error(s) in proposed packages:"
 msgstr "Planerstellung: Abhängigkeitsfehler in vorgeschlagenen Paketen:"
 
-#: ../modules/client/pkg_solver.py:570
+#: ../modules/client/pkg_solver.py:580
 msgid "Plan Creation: Errors in installed packages due to proposed changes:"
 msgstr "Planerstellung: Fehler in installierten Paketen aufgrund vorgeschlagener Änderungen:"
 
 #. both error detection methods insufficent.
-#: ../modules/client/pkg_solver.py:575
+#: ../modules/client/pkg_solver.py:585
 msgid "Plan Creation: Package solver is unable to compute solution."
 msgstr "Planerstellung: Paket-Solver kann die Lösung nicht berechnen"
 
-#: ../modules/client/pkg_solver.py:576 ../modules/client/pkg_solver.py:791
+#: ../modules/client/pkg_solver.py:586 ../modules/client/pkg_solver.py:811
 msgid "Dependency analysis is unable to determine exact cause."
 msgstr "Die Abhängigkeitsanalyse hat keine genaue Ursache ergeben."
 
-#: ../modules/client/pkg_solver.py:577 ../modules/client/pkg_solver.py:792
+#: ../modules/client/pkg_solver.py:587 ../modules/client/pkg_solver.py:812
 msgid "Try specifying expected results to obtain more detailed error messages."
 msgstr "Geben Sie erwartete Ergebnisse an, um ausführlichere Fehlermeldungen zu erhalten."
 
-#: ../modules/client/pkg_solver.py:578
+#: ../modules/client/pkg_solver.py:588
 msgid "Include specific version of packages you wish installed."
 msgstr "Geben Sie die Version von Paketen an, die installiert werden sollen."
 
-#: ../modules/client/pkg_solver.py:774
+#: ../modules/client/pkg_solver.py:794
 msgid ""
 "Plan Creation: Package solver has not found a solution to update to latest "
 "available versions."
 msgstr "Planerstellung: Paket-Solver sieht keine Möglichkeit, um auf die neuesten Versionen zu aktualisieren."
 
-#: ../modules/client/pkg_solver.py:775
+#: ../modules/client/pkg_solver.py:795
 msgid "This may indicate an overly constrained set of packages are installed."
 msgstr "Dies kann mit zu vielen Einschränkungen der installierten Pakete zusammenhängen."
 
-#: ../modules/client/pkg_solver.py:777
+#: ../modules/client/pkg_solver.py:797
 msgid "latest incorporations:"
 msgstr "Neueste Inkorporationen:"
 
-#: ../modules/client/pkg_solver.py:786
+#: ../modules/client/pkg_solver.py:806
 msgid ""
 "The following indicates why the system cannot update to the latest version:"
 msgstr "Im Folgenden wird erläutert, warum das System ein Update auf die neueste Version nicht durchführen kann:"
 
-#: ../modules/client/pkg_solver.py:1157 ../modules/client/pkg_solver.py:1199
-#: ../modules/client/pkg_solver.py:1215
+#: ../modules/client/pkg_solver.py:1177 ../modules/client/pkg_solver.py:1219
+#: ../modules/client/pkg_solver.py:1235
 msgid "Package contains invalid or unsupported actions"
 msgstr "Paket enthält ungültige oder nicht unterstützte Aktionen"
 
-#: ../modules/client/pkg_solver.py:1338
+#: ../modules/client/pkg_solver.py:1359
 msgid "Excluded by proposed incorporation '{0}'"
 msgstr "Durch vorgeschlagene Inkorporation '{0}' ausgeschlossen"
 
-#: ../modules/client/pkg_solver.py:1510
+#: ../modules/client/pkg_solver.py:1531
 msgid "Package contains 'exclude' dependency {0} on installed package"
 msgstr "Paket enthält die 'exclude'-Abhängigkeit {0} vom installierten Paket"
 
-#: ../modules/client/pkg_solver.py:1514
+#: ../modules/client/pkg_solver.py:1535
 msgid "All versions matching 'exclude' dependency {0} are rejected"
 msgstr "Alle Versionen mit 'exclude'-Abhängigkeit {0} werden abgewiesen"
 
-#: ../modules/client/pkg_solver.py:1541
+#: ../modules/client/pkg_solver.py:1562
 msgid "All acceptable versions of '{0}' dependency on {1} are obsolete"
 msgstr "Alle zulässigen Versionen mit '{0}'-Abhängigkeit von {1} sind veraltet"
 
-#: ../modules/client/pkg_solver.py:1545
+#: ../modules/client/pkg_solver.py:1566
 msgid "All acceptable versions of '{0}' dependencies on {1} are obsolete"
 msgstr "Alle zulässigen Versionen mit '{0}'-Abhängigkeiten von {1} sind veraltet"
 
-#: ../modules/client/pkg_solver.py:1557
+#: ../modules/client/pkg_solver.py:1578
 msgid "A version for '{0}' dependency on {1} cannot be found"
 msgstr "Version der '{0}'-Abhängigkeit von {1} kann nicht gefunden werden"
 
-#: ../modules/client/pkg_solver.py:1561
+#: ../modules/client/pkg_solver.py:1582
 msgid "All versions matching '{0}' dependency {1} are rejected"
 msgstr "Alle Versionen mit '{0}'-Abhängigkeit {1} werden abgewiesen"
 
-#: ../modules/client/pkg_solver.py:1608
+#: ../modules/client/pkg_solver.py:1629
 #, python-format
 msgid "No suitable version of installed package %s found"
 msgstr "Keine geeignete Version des installierten Pakets %s gefunden"
 
-#: ../modules/client/pkg_solver.py:1642
+#: ../modules/client/pkg_solver.py:1663
 #, python-format
 msgid "%s  Reject:  "
 msgstr "%s  Abweisen:  "
 
-#: ../modules/client/pkg_solver.py:1644
+#: ../modules/client/pkg_solver.py:1665
 msgid "Reason:"
 msgstr "Grund:"
 
-#: ../modules/client/pkg_solver.py:1647
+#: ../modules/client/pkg_solver.py:1668
 #, python-format
 msgid "%s  %s  [already rejected; see above]"
 msgstr "%s  %s  [bereits abgewiesen; siehe oben]"
 
-#: ../modules/client/pkg_solver.py:1681
+#: ../modules/client/pkg_solver.py:1702
 #, python-format
 msgid "No suitable version of required package %s found:"
 msgstr "Keine geeignete Version des erforderlichen Pakets %s gefunden:"
 
-#: ../modules/client/pkg_solver.py:1799
+#: ../modules/client/pkg_solver.py:1820
 #, python-format
 msgid "List of integers, not %s, expected"
 msgstr "Eine Liste von Ganzzahlen wurde erwartet, nicht %s"
 
-#: ../modules/client/pkg_solver.py:1924
+#: ../modules/client/pkg_solver.py:1945
 msgid "Currently installed package '{0}' is from sticky publisher '{1}'."
 msgstr "Derzeit installiertes Paket '{0}' stammt vom Sticky-Herausgeber '{1}'."
 
-#: ../modules/client/pkg_solver.py:1927
+#: ../modules/client/pkg_solver.py:1948
 msgid "Package is from publisher other than specified one."
 msgstr "Paket ist von einem anderen Herausgeber als dem angegebenen."
 
-#: ../modules/client/pkg_solver.py:1942
+#: ../modules/client/pkg_solver.py:1963
 msgid "Higher ranked publisher {0} was selected"
 msgstr "Herausgeber höherer Priorität {0} ausgewählt"
 
-#: ../modules/client/pkg_solver.py:1944
+#: ../modules/client/pkg_solver.py:1965
 msgid "Package publisher is ranked lower in search order"
 msgstr "Paketherausgeber hat in der Suchreihenfolge eine niedrigere Priorität"
 
-#: ../modules/client/pkg_solver.py:1980
+#: ../modules/client/pkg_solver.py:2001
 msgid "Newer version {0} is already installed"
 msgstr "Es ist bereits eine neuere Version von {0} installiert"
 
-#: ../modules/client/pkg_solver.py:1989
+#: ../modules/client/pkg_solver.py:2011
 msgid "Package doesn't support image architecture"
 msgstr "Paket unterstützt die Abbildarchitektur nicht"
 
-#: ../modules/client/pkg_solver.py:1991
+#: ../modules/client/pkg_solver.py:2013
 msgid "Package doesn't support image variant {0}"
 msgstr "Paket unterstützt die Abbildvariante {0} nicht"
 
 #. package is not installed in parent
-#: ../modules/client/pkg_solver.py:2002
+#: ../modules/client/pkg_solver.py:2025
 msgid "Package is not installed in parent image: {0}"
 msgstr "Paket ist nicht im übergeordneten Abbild installiert: {0}"
 
 #. package is from a different publisher in the parent
-#: ../modules/client/pkg_solver.py:2010
+#: ../modules/client/pkg_solver.py:2033
 msgid "Package in parent is from a different publisher: {0}"
 msgstr "Paket im übergeordneten Abbild ist von einem anderen Herausgeber: {0}"
 
-#: ../modules/client/pkg_solver.py:2023
+#: ../modules/client/pkg_solver.py:2046
 msgid "Parent image has a incompatible newer version: {0}"
 msgstr "Übergeordnetes Abbild verfügt über eine neuere inkompatible Version des Pakets: {0}"
 
-#: ../modules/client/pkg_solver.py:2026
+#: ../modules/client/pkg_solver.py:2049
 msgid "Parent image has an older version of package: {0}"
 msgstr "Übergeordnetes Abbild verfügt über eine ältere Version des Pakets: {0}"
 
-#: ../modules/client/pkg_solver.py:2091
-#, python-format
-msgid "Installed version in root image is too old for origin dependency %s"
-msgstr "Im Root-Abbild installierte Version ist für die ursprüngliche Abhängigkeit %s zu alt"
+#: ../modules/client/pkg_solver.py:2114
+msgid "Installed version in root image is too old for origin dependency {0}"
+msgstr "Im Root-Abbild installierte Version ist für die ursprüngliche Abhängigkeit {0} zu alt"
 
-#: ../modules/client/pkg_solver.py:2097
-#, python-format
+#: ../modules/client/pkg_solver.py:2120
 msgid ""
-"Installed version in image being upgraded is too old for origin dependency %s"
-msgstr "Im aufzurüstenden Abbild installierte Version ist für die ursprüngliche Abhängigkeit %s zu alt"
+"Installed version in image being upgraded is too old for origin dependency "
+"{0}"
+msgstr "Im aufzurüstenden Abbild installierte Version ist für die ursprüngliche Abhängigkeit {0} zu alt"
 
 #: ../modules/client/progress.py:643 ../modules/client/progress.py:850
 #, python-format
@@ -5573,14 +5577,14 @@ msgstr "Die Eigenschaft eines Systemherausgebers kann nicht entfernt werden. Die
 msgid "Cannot unset a property for a system publisher."
 msgstr "Die Eigenschaft eines Systemherausgebers kann nicht entfernt werden."
 
-#: ../modules/client/transport/repo.py:1120
+#: ../modules/client/transport/repo.py:1121
 #, python-format
 msgid ""
 "The configuration file for the repository is invalid or incomplete:\n"
 "%s"
 msgstr "Die Konfigurationsdatei für das Repository ist ungültig oder unvollständig:\n%s"
 
-#: ../modules/client/transport/repo.py:1183
+#: ../modules/client/transport/repo.py:1184
 msgid "Search temporarily unavailable."
 msgstr "Die Suchfunktion ist vorübergehend nicht verfügbar."
 
@@ -5981,7 +5985,7 @@ msgstr "%m/%d/%y %H:%M"
 
 #: ../modules/gui/detailspanel.py:119 ../modules/gui/detailspanel.py:180
 msgid "Fetching information..."
-msgstr "Info wird abgerufen..."
+msgstr "Informationen werden abgerufen..."
 
 #: ../modules/gui/detailspanel.py:154
 msgid "Installable versions... "
@@ -5989,7 +5993,7 @@ msgstr "Installierbare Versionen... "
 
 #: ../modules/gui/detailspanel.py:164
 msgid "Fetching dependencies information..."
-msgstr "Info zu Abhängigkeiten werden abgerufen..."
+msgstr "Informationen zu Abhängigkeiten werden abgerufen..."
 
 #: ../modules/gui/detailspanel.py:172
 msgid "Fetching legal information..."
@@ -6088,15 +6092,15 @@ msgstr "Update Manager"
 
 #: ../modules/gui/installupdate.py:161
 msgid "Preparing..."
-msgstr "Vorbereitung..."
+msgstr "Wird vorbereitet..."
 
 #: ../modules/gui/installupdate.py:162 ../modules/gui/installupdate.py:890
 msgid "Downloading..."
-msgstr "Download..."
+msgstr "Wird heruntergeladen..."
 
 #: ../modules/gui/installupdate.py:163
 msgid "Installing..."
-msgstr "Installation..."
+msgstr "Wird installiert..."
 
 #: ../modules/gui/installupdate.py:247 ../modules/gui/webinstall.py:229
 msgid "_Proceed"
@@ -6172,7 +6176,7 @@ msgstr "Zusammenfassung"
 
 #: ../modules/gui/installupdate.py:596
 msgid "Canceling..."
-msgstr "Vorgang wird abgebrochen..."
+msgstr "Wird abgebrochen..."
 
 #: ../modules/gui/installupdate.py:670
 #, python-format
@@ -6817,7 +6821,7 @@ msgstr "Herausgeber wird hinzugefügt"
 
 #: ../modules/gui/repository.py:1710
 msgid "Canceling...\n"
-msgstr "Vorgang wird abgebrochen...\n"
+msgstr "Wird abgebrochen...\n"
 
 #: ../modules/gui/repository.py:1757 ../modules/gui/repository.py:2022
 #, python-format
@@ -8300,11 +8304,11 @@ msgstr "Unzulässiges Argument -- %s"
 msgid "'%s' and '%s' have the same meaning"
 msgstr "'%s' und '%s' haben die gleiche Bedeutung"
 
-#: ../modules/p5i.py:92 ../modules/p5s.py:74
+#: ../modules/p5i.py:92 ../modules/p5s.py:76
 msgid "missing version"
 msgstr "fehlende Version"
 
-#: ../modules/p5i.py:94 ../modules/p5s.py:76
+#: ../modules/p5i.py:94 ../modules/p5s.py:78
 msgid "invalid version"
 msgstr "ungültige Version"
 
