@@ -39,7 +39,7 @@ import hashlib
 import time
 
 from distutils.errors import DistutilsError, DistutilsFileError
-from distutils.core import setup, Extension
+from distutils.core import setup
 from distutils.cmd import Command
 from distutils.command.install import install as _install
 from distutils.command.install_data import install_data as _install_data
@@ -1066,8 +1066,9 @@ class build_ext_func(_build_ext):
 
         def build_extension(self, ext):
                 # Build 32-bit
-                log.info("building 32-bit extension")
                 _build_ext.build_extension(self, ext)
+                if not ext.build_64:
+                        return
 
                 # Set up for 64-bit
                 old_build_temp = self.build_temp
@@ -1081,7 +1082,6 @@ class build_ext_func(_build_ext):
                 self.build64 = True
 
                 # Build 64-bit
-                log.info("building 64-bit extension")
                 _build_ext.build_extension(self, ext)
 
                 # Reset to 32-bit
@@ -1376,6 +1376,14 @@ class dist_func(_bdist):
                 _bdist.initialize_options(self)
                 self.dist_dir = dist_dir
 
+class Extension(distutils.core.Extension):
+        # This class wraps the distutils Extension class, allowing us to set
+        # build_64 in the object constructor instead of being forced to add it
+        # after the object has been created.
+        def __init__(self, name, sources, build_64=False, **kwargs):
+                distutils.core.Extension.__init__(self, name, sources, **kwargs)
+                self.build_64 = build_64
+
 # These are set to real values based on the platform, down below
 compile_args = None
 if osname in ("sunos", "linux", "darwin"):
@@ -1384,27 +1392,33 @@ if osname == "sunos":
         link_args = [ "-zstrip-class=nonalloc" ]
 else:
         link_args = []
+# We don't support 64-bit yet, but 64-bit _actions.so, _common.so, and
+# _varcet.so are needed for a system repository mod_wsgi application,
+# sysrepo_p5p.py.
 ext_modules = [
         Extension(
                 'actions._actions',
                 _actions_srcs,
                 include_dirs = include_dirs,
                 extra_compile_args = compile_args,
-                extra_link_args = link_args
+                extra_link_args = link_args,
+                build_64 = True
                 ),
         Extension(
                 'actions._common',
                 _actcomm_srcs,
                 include_dirs = include_dirs,
                 extra_compile_args = compile_args,
-                extra_link_args = link_args
+                extra_link_args = link_args,
+                build_64 = True
                 ),
         Extension(
                 '_varcet',
                 _varcet_srcs,
                 include_dirs = include_dirs,
                 extra_compile_args = compile_args,
-                extra_link_args = link_args
+                extra_link_args = link_args,
+                build_64 = True
                 ),
         Extension(
                 'solver',
@@ -1549,7 +1563,7 @@ if osname == 'sunos' or osname == "linux":
                         include_dirs = include_dirs,
                         libraries = elf_libraries,
                         extra_compile_args = compile_args,
-                        extra_link_args = link_args
+                        extra_link_args = link_args,
                         ),
                 ]
 
@@ -1595,20 +1609,3 @@ setup(cmdclass = cmdclasses,
     ext_package = 'pkg',
     ext_modules = ext_modules,
     )
-
-# We don't support 64-bit yet, but 64-bit _actions.so, _common.so, and
-# _varcet.so are needed for a system repository mod_wsgi application,
-# sysrepo_p5p.py.  Remove the others.
-remove_libs = [
-    "arch.so",
-    "elf.so",
-    "pspawn.so",
-    "solver.so",
-    "syscallat.so",
-]
-pkg_64_path = os.path.join(root_dir, "usr/lib/python2.6/vendor-packages/pkg/64")
-for lib in remove_libs:
-        rm_path = os.path.join(pkg_64_path, lib)
-        if os.path.exists(rm_path):
-                log.info("Removing unnecessary 64-bit library: %s" % lib)
-                os.unlink(rm_path)
