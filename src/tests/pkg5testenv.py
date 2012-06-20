@@ -20,7 +20,7 @@
 # CDDL HEADER END
 #
 
-# Copyright (c) 2010, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2010, 2012, Oracle and/or its affiliates. All rights reserved.
 
 import os
 import sys
@@ -95,10 +95,11 @@ def setup_environment(path_to_proto, covdir=None, debug=False):
 
         os.environ["PATH"] = bins + os.pathsep + os.environ["PATH"]
 
+        # Proxy environment variables cause all kinds of problems, strip them
+        # all out.
         # Use "keys"; otherwise we'll change dictionary size during iteration.
         for k in os.environ.keys():
-                if k.startswith("PKG_") or k in ("http_proxy", "HTTP_PROXY",
-                    "https_proxy", "HTTPS_PROXY", "all_proxy", "ALL_PROXY"):
+                if k.startswith("PKG_") or k.lower().endswith("_proxy"):
                         del os.environ[k]
 
         #
