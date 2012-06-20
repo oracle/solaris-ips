@@ -930,7 +930,7 @@ msgid ""
 "the requested operation."
 msgstr ""
        "\n"
-       "Objevila se chyba při pokusu stáhnout balíček nebo data souboru"
+       "Objevila se chyba při pokusu stáhnout balíček nebo data souboru "
        "pro \n"
        "požadovanou operaci."
 
