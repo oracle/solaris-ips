@@ -409,7 +409,8 @@ def list_inventory(op, api_inst, pargs,
     verbose):
         """List packages."""
 
-        api_inst.progresstracker = get_tracker(quiet=omit_headers)
+        api_inst.progresstracker.set_purpose(
+            api_inst.progresstracker.PURPOSE_LISTING)
 
         variants = False
         pkg_list = api.ImageInterface.LIST_INSTALLED
@@ -603,28 +604,31 @@ def list_inventory(op, api_inst, pargs,
                 api_inst.log_operation_end(result=RESULT_NOTHING_TO_DO)
                 return EXIT_OOPS
 
-def get_tracker(parsable_version=None, quiet=False, verbose=0):
-        if quiet:
-                progresstracker = progress.QuietProgressTracker(
-                    parsable_version=parsable_version,
-                    progfd=global_settings.client_output_progfd)
+def get_tracker():
+        if global_settings.client_output_parsable_version is not None:
+                progresstracker = progress.NullProgressTracker()
+        elif global_settings.client_output_quiet:
+                progresstracker = progress.QuietProgressTracker()
+        elif global_settings.client_output_progfd:
+		# This logic handles linked images: for linked children
+		# we elide the progress output.
+                output_file = os.fdopen(global_settings.client_output_progfd,
+		    "w")
+                child_tracker = progress.LinkedChildProgressTracker(
+                    output_file=output_file)
+		dot_tracker = progress.DotProgressTracker(
+		    output_file=output_file)
+		progresstracker = progress.MultiProgressTracker(
+		    [child_tracker, dot_tracker])
         else:
                 try:
-                        progresstracker = \
-                            progress.FancyUNIXProgressTracker(
-                                parsable_version=parsable_version, quiet=quiet,
-                                verbose=verbose,
-                                progfd=global_settings.client_output_progfd)
+                        progresstracker = progress.FancyUNIXProgressTracker()
                 except progress.ProgressTrackerException:
-                        progresstracker = progress.CommandLineProgressTracker(
-                            parsable_version=parsable_version, quiet=quiet,
-                            verbose=verbose,
-                            progfd=global_settings.client_output_progfd)
+                        progresstracker = progress.CommandLineProgressTracker()
+
         return progresstracker
 
 def fix_image(api_inst, args):
-        progresstracker = get_tracker(quiet=False)
-
         opts, pargs = getopt.getopt(args, "", ["accept", "licenses"])
 
         accept = show_licenses = False
@@ -639,9 +643,14 @@ def fix_image(api_inst, args):
         try:
                 res = api_inst.get_pkg_list(api.ImageInterface.LIST_INSTALLED,
                     patterns=pargs, raise_unmatched=True, return_fmris=True)
+                # We un-generate this because this is a long operation and
+                # we would like to know how many pkgs we will operate upon.
+                result = list(res)
+                if result:
+                        api_inst.progresstracker.verify_start(len(result))
 
                 repairs = []
-                for entry in res:
+                for entry in result:
                         pfmri = entry[0]
                         found = True
                         entries = []
@@ -652,7 +661,8 @@ def fix_image(api_inst, args):
                         # an overall success/failure result and then the
                         # related messages output for it.
                         for act, errors, warnings, pinfo in img.verify(pfmri,
-                            progresstracker, verbose=True, forever=True):
+                            api_inst.progresstracker, verbose=True,
+                            forever=True):
                                 if not errors:
                                         # Fix will silently skip packages that
                                         # don't have errors, but will display
@@ -681,6 +691,9 @@ def fix_image(api_inst, args):
                                 for x in warnings:
                                         msg("\t\t%s" % x)
                         repairs.append((pfmri, failed))
+                if result:
+                        api_inst.progresstracker.verify_done()
+
         except api_errors.InventoryException, e:
                 if e.illegal:
                         for i in e.illegal:
@@ -701,69 +714,67 @@ def fix_image(api_inst, args):
                 return EXIT_OOPS
 
         # Repair anything we failed to verify
-        if repairs:
-                # Since BootEnv records the snapshot name in the image history,
-                # we need to manage our own history start/end & exception
-                # handling rather then delegating to <Image>.repair()
-                api_inst.log_operation_start("fix")
-                # Create a snapshot in case they want to roll back
-                success = False
-                try:
-                        be = bootenv.BootEnv(img)
-                        if be.exists():
-                                msg(_("Created ZFS snapshot: %s") %
-                                    be.snapshot_name)
-                except RuntimeError:
-                        # Error is printed by the BootEnv call.
-                        be = bootenv.BootEnvNull(img)
-                img.bootenv = be
-                try:
-                        success = img.repair(repairs, progresstracker,
-                            accept=accept, show_licenses=show_licenses,
-                            new_history_op=False)
-                except (api_errors.InvalidPlanError,
-                    api_errors.InvalidPackageErrors,
-                    api_errors.ActionExecutionError,
-                    api_errors.PermissionsException,
-                    api_errors.SigningException,
-                    api_errors.InvalidResourceLocation,
-                    api_errors.ConflictingActionErrors), e:
-                        logger.error(str(e))
-                except api_errors.ImageFormatUpdateNeeded, e:
-                        format_update_error(e)
-                        api_inst.log_operation_end(
-                            result=RESULT_FAILED_CONFIGURATION)
-                        return EXIT_OOPS
-                except api_errors.PlanLicenseErrors, e:
-                        error(_("The following packages require their "
-                            "licenses to be accepted before they can be "
-                            "repaired: "))
-                        logger.error(str(e))
-                        logger.error(_("To indicate that you agree to and "
-                            "accept the terms of the licenses of the packages "
-                            "listed above, use the --accept option.  To "
-                            "display all of the related licenses, use the "
-                            "--licenses option."))
-                        api_inst.log_operation_end(
-                            result=RESULT_FAILED_CONSTRAINED)
-                        return EXIT_LICENSE
-                except api_errors.RebootNeededOnLiveImageException:
-                        error(_("Requested \"fix\" operation would affect "
-                            "files that cannot be modified in live image.\n"
-                            "Please retry this operation on an alternate boot "
-                            "environment."))
-                        api_inst.log_operation_end(
-                            result=RESULT_FAILED_CONSTRAINED)
-                        return EXIT_NOTLIVE
-                except Exception, e:
-                        api_inst.log_operation_end(error=e)
-                        raise
+        if not repairs:
+                msg(_("No repairs for this image."))
+                return EXIT_OK
 
-                if not success:
-                        api_inst.log_operation_end(
-                            result=RESULT_FAILED_UNKNOWN)
-                        return EXIT_OOPS
-                api_inst.log_operation_end(result=RESULT_SUCCEEDED)
+        # Since BootEnv records the snapshot name in the image history, we need
+        # to manage our own history start/end & exception handling rather then
+        # delegating to <Image>.repair()
+        api_inst.log_operation_start("fix")
+        # Create a snapshot in case they want to roll back
+        success = False
+        try:
+                be = bootenv.BootEnv(img)
+                if be.exists():
+                        msg(_("Created ZFS snapshot: %s") % be.snapshot_name)
+        except RuntimeError:
+                # Error is printed by the BootEnv call.
+                be = bootenv.BootEnvNull(img)
+        img.bootenv = be
+        try:
+                success = img.repair(repairs, api_inst.progresstracker,
+                    accept=accept, show_licenses=show_licenses,
+                    new_history_op=False)
+        except (api_errors.InvalidPlanError,
+            api_errors.InvalidPackageErrors,
+            api_errors.ActionExecutionError,
+            api_errors.PermissionsException,
+            api_errors.SigningException,
+            api_errors.InvalidResourceLocation,
+            api_errors.ConflictingActionErrors), e:
+                logger.error(str(e))
+        except api_errors.ImageFormatUpdateNeeded, e:
+                format_update_error(e)
+                api_inst.log_operation_end(result=RESULT_FAILED_CONFIGURATION)
+                return EXIT_OOPS
+        except api_errors.PlanLicenseErrors, e:
+                error(_("The following packages require their "
+                    "licenses to be accepted before they can be repaired: "))
+                logger.error(str(e))
+                logger.error(_("To indicate that you agree to and "
+                    "accept the terms of the licenses of the packages "
+                    "listed above, use the --accept option.  To "
+                    "display all of the related licenses, use the "
+                    "--licenses option."))
+                api_inst.log_operation_end(
+                    result=RESULT_FAILED_CONSTRAINED)
+                return EXIT_LICENSE
+        except api_errors.RebootNeededOnLiveImageException:
+                error(_("Requested \"fix\" operation would affect "
+                    "files that cannot be modified in live image.\n"
+                    "Please retry this operation on an alternate boot "
+                    "environment."))
+                api_inst.log_operation_end(result=RESULT_FAILED_CONSTRAINED)
+                return EXIT_NOTLIVE
+        except Exception, e:
+                api_inst.log_operation_end(error=e)
+                raise
+
+        if not success:
+                api_inst.log_operation_end(result=RESULT_FAILED_UNKNOWN)
+                return EXIT_OOPS
+        api_inst.log_operation_end(result=RESULT_SUCCEEDED)
         return EXIT_OK
 
 def verify_image(api_inst, args):
@@ -794,12 +805,16 @@ def verify_image(api_inst, args):
         any_errors = False
         processed = False
         notfound = EmptyI
-        progresstracker = get_tracker(quiet=quiet, verbose=verbose)
         try:
                 res = api_inst.get_pkg_list(api.ImageInterface.LIST_INSTALLED,
                     patterns=pargs, raise_unmatched=True, return_fmris=True)
-
-                for entry in res:
+                # We un-generate this because this is a long operation and
+                # we would like to know how many pkgs we will operate upon.
+                result = list(res)
+                if result:
+                        api_inst.progresstracker.verify_start(len(result))
+                
+                for entry in result:
                         pfmri = entry[0]
                         entries = []
                         result = _("OK")
@@ -812,7 +827,8 @@ def verify_image(api_inst, args):
                         # an overall success/failure result and then the
                         # related messages output for it.
                         for act, errors, warnings, pinfo in img.verify(pfmri,
-                            progresstracker, verbose=verbose, forever=forever):
+                            api_inst.progresstracker, verbose=verbose,
+                            forever=forever):
                                 if errors:
                                         failed = True
                                         if quiet:
@@ -918,15 +934,20 @@ def __display_plan(api_inst, verbose):
 
         plan = api_inst.describe()
 
-        if not api_inst.is_active_liveroot_be:
-                # Warn the user since this isn't likely what they wanted.
-                if plan.new_be:
-                        logger.warning(_("""\
+	# If we're a recursive invocation (indicated by client_output_progfd),
+	# we want to elide messages related to BE management.
+	recursive_child = \
+	    True if global_settings.client_output_progfd is not None else False
+
+	if not api_inst.is_active_liveroot_be and not recursive_child:
+			# Warn the user since this isn't likely what they wanted.
+			if plan.new_be:
+				logger.warning(_("""\
 WARNING: The boot environment being modified is not the active one.  Changes
 made in the active BE will not be reflected on the next boot.
 """))
-                else:
-                        logger.warning(_("""\
+			else:
+				logger.warning(_("""\
 WARNING: The boot environment being modified is not the active one.  Changes
 made will not be reflected on the next boot.
 """))
@@ -976,17 +997,18 @@ made will not be reflected on the next boot.
                 else:
                         cond_show(_("Packages to fix:"), "%d", len(a))
 
-                status.append((_("Create boot environment:"),
-                    bool_str(plan.new_be)))
+		if not recursive_child:
+			status.append((_("Create boot environment:"),
+			    bool_str(plan.new_be)))
 
-                if plan.new_be and (verbose or not plan.activate_be):
-                        # Only show activation status if verbose or if new BE
-                        # will not be activated.
-                        status.append((_("Activate boot environment:"),
-                            bool_str(plan.activate_be)))
+			if plan.new_be and (verbose or not plan.activate_be):
+				# Only show activation status if verbose or
+				# if new BE will not be activated.
+				status.append((_("Activate boot environment:"),
+				    bool_str(plan.activate_be)))
 
-                status.append((_("Create backup boot environment:"),
-                    bool_str(plan.backup_be)))
+			status.append((_("Create backup boot environment:"),
+			    bool_str(plan.backup_be)))
 
                 if not plan.new_be:
                         cond_show(_("Services to change:"), "%d",
@@ -997,13 +1019,12 @@ made will not be reflected on the next boot.
                     bool_str(plan.update_boot_archive)))
 
         # Right-justify all status strings based on length of longest string.
-        rjust_status = max(len(s[0]) for s in status)
-        rjust_value = max(len(s[1]) for s in status)
-        for s in status:
-                logger.info("%s %s" % (s[0].rjust(rjust_status),
-                    s[1].rjust(rjust_value)))
-
-        if status:
+	if status:
+		rjust_status = max(len(s[0]) for s in status)
+		rjust_value = max(len(s[1]) for s in status)
+		for s in status:
+			logger.info("%s %s" % (s[0].rjust(rjust_status),
+			    s[1].rjust(rjust_value)))
                 # Ensure there is a blank line between status information and
                 # remainder.
                 logger.info("")
@@ -1084,8 +1105,7 @@ made will not be reflected on the next boot.
                 for a in plan.get_actions():
                         logger.info("  %s" % a)
 
-def __display_parsable_plan(api_inst, parsable_version,
-    child_images=None):
+def __display_parsable_plan(api_inst, parsable_version, child_images=None):
         """Display the parsable version of the plan."""
 
         assert parsable_version == 0, "parsable_version was %r" % \
@@ -1376,8 +1396,7 @@ def __api_execute_plan(operation, api_inst):
 
         return rval
 
-def __api_alloc(imgdir, exact_match, pkg_image_used, quiet):
-        progresstracker = get_tracker(quiet=quiet)
+def __api_alloc(imgdir, exact_match, pkg_image_used):
 
         def qv(val):
                 # Escape shell metacharacters; '\' must be escaped first to
@@ -1386,6 +1405,7 @@ def __api_alloc(imgdir, exact_match, pkg_image_used, quiet):
                         val = val.replace(c, "\\" + c)
                 return val
 
+        progresstracker = get_tracker()
         try:
                 return api.ImageInterface(imgdir, CLIENT_API_VERSION,
                     progresstracker, None, PKG_CLIENT_NAME,
@@ -1911,6 +1931,16 @@ def opts_table_cb_no_headers_vs_quiet(op, api_inst, opts, opts_new):
         if opts["quiet"]:
                 opts_new["omit_headers"] = True
 
+def opts_table_cb_q(op, api_inst, opts, opts_new):
+        # Be careful not to overwrite global_settings.client_output_quiet
+        # because it might be set "True" from elsewhere, e.g. in
+        # opts_table_cb_parsable.
+        if opts["quiet"] is True:
+                global_settings.client_output_quiet = True
+
+def opts_table_cb_v(op, api_inst, opts, opts_new):
+        global_settings.client_output_verbose = opts["verbose"]
+
 def opts_table_cb_nqv(op, api_inst, opts, opts_new):
         if opts["verbose"] and opts["quiet"]:
                 opts_err_incompat("-v", "-q", op)
@@ -1925,7 +1955,10 @@ def opts_table_cb_parsable(op, api_inst, opts, opts_new):
                 except ValueError:
                         usage(_("--parsable expects an integer argument."),
                             cmd=op)
+                global_settings.client_output_parsable_version = \
+                    opts_new["parsable_version"]
                 opts_new["quiet"] = True
+                global_settings.client_output_quiet = True
 
 def opts_table_cb_origins(op, api_inst, opts, opts_new):
         origins = set()
@@ -2153,10 +2186,12 @@ opts_table_reject = [
 ]
 
 opts_table_verbose = [
+    opts_table_cb_v,
     ("v", "",                "verbose",              0),
 ]
 
 opts_table_quiet = [
+    opts_table_cb_q,
     ("q", "",                "quiet",                False),
 ]
 
@@ -2406,9 +2441,6 @@ def change_variant(op, api_inst, pargs,
         """Attempt to change a variant associated with an image, updating
         the image contents as necessary."""
 
-        api_inst.progresstracker = get_tracker(
-            parsable_version=parsable_version, quiet=quiet, verbose=verbose)
-
         xrval, xres = get_fmri_args(api_inst, reject_pats, cmd=op)
         if not xrval:
                 return EXIT_OOPS
@@ -2450,9 +2482,6 @@ def change_facet(op, api_inst, pargs,
     refresh_catalogs, reject_pats, show_licenses, update_index, verbose):
         """Attempt to change the facets as specified, updating
         image as necessary"""
-
-        api_inst.progresstracker = get_tracker(
-            parsable_version=parsable_version, quiet=quiet, verbose=verbose)
 
         xrval, xres = get_fmri_args(api_inst, reject_pats, cmd=op)
         if not xrval:
@@ -2510,9 +2539,6 @@ def install(op, api_inst, pargs,
         """Attempt to take package specified to INSTALLED state.  The operands
         are interpreted as glob patterns."""
 
-        api_inst.progresstracker = get_tracker(
-            parsable_version=parsable_version, quiet=quiet, verbose=verbose)
-
         if not pargs:
                 usage(_("at least one package name required"), cmd=op)
 
@@ -2539,9 +2565,6 @@ def uninstall(op, api_inst, pargs,
     update_index, noexecute, parsable_version, quiet, verbose, stage):
         """Attempt to take package specified to DELETED state."""
 
-        api_inst.progresstracker = get_tracker(
-            parsable_version=parsable_version, quiet=quiet, verbose=verbose)
-
         if not pargs:
                 usage(_("at least one package name required"), cmd=op)
 
@@ -2565,9 +2588,6 @@ def update(op, api_inst, pargs, accept, backup_be, backup_be_name, be_activate,
     stage, update_index, verbose):
         """Attempt to take all installed packages specified to latest
         version."""
-
-        api_inst.progresstracker = get_tracker(
-            parsable_version=parsable_version, quiet=quiet, verbose=verbose)
 
         rval, res = get_fmri_args(api_inst, pargs, cmd=op)
         if not rval:
@@ -2609,9 +2629,6 @@ def revert(op, api_inst, pargs,
 
         if not pargs:
                 usage(_("at least one file path or tag name required"), cmd=op)
-
-        api_inst.progresstracker = get_tracker(
-            parsable_version=parsable_version, quiet=quiet, verbose=verbose)
 
         return __api_op(op, api_inst, _noexecute=noexecute, _quiet=quiet,
             _verbose=verbose, be_activate=be_activate, be_name=be_name,
@@ -2735,9 +2752,6 @@ def set_mediator(op, api_inst, pargs,
         if verbose > 2:
                 DebugValues.set_value("plan", "True")
 
-        api_inst.progresstracker = get_tracker(
-            parsable_version=parsable_version, quiet=quiet, verbose=verbose)
-
         # Now set version and/or implementation for all matching mediators.
         # The user may specify 'None' as a special value to explicitly
         # request mediations that do not have the related component.
@@ -2821,9 +2835,6 @@ def unset_mediator(op, api_inst, pargs,
                     cmd=op)
         if verbose > 2:
                 DebugValues.set_value("plan", "True")
-
-        api_inst.progresstracker = get_tracker(
-            parsable_version=parsable_version, quiet=quiet, verbose=verbose)
 
         # Build dictionary of mediators to unset based on input.
         mediators = collections.defaultdict(dict)
@@ -3361,7 +3372,8 @@ def info(api_inst, args):
 
         err = 0
 
-        api_inst.progresstracker = get_tracker(quiet=True)
+        api_inst.progresstracker.set_purpose(
+            api_inst.progresstracker.PURPOSE_LISTING)
 
         info_needed = api.PackageInfo.ALL_OPTIONS
         if not display_license:
@@ -3814,6 +3826,9 @@ def list_contents(api_inst, args):
 
         check_attrs(attrs, subcommand)
 
+        api_inst.progresstracker.set_purpose(
+            api_inst.progresstracker.PURPOSE_LISTING)
+
         api_inst.log_operation_start(subcommand)
         if local:
                 pkg_list = api.ImageInterface.LIST_INSTALLED
@@ -4033,6 +4048,9 @@ def publisher_refresh(api_inst, args):
         for opt, arg in opts:
                 if opt == "--full":
                         full_refresh = True
+        # suppress phase information since we're doing just one thing.
+        api_inst.progresstracker.set_major_phase(
+            api_inst.progresstracker.PHASE_UTILITY)
         return __refresh(api_inst, pargs, full_refresh=full_refresh)
 
 def _get_ssl_cert_key(root, is_zone, ssl_cert, ssl_key):
@@ -4743,7 +4761,8 @@ def publisher_list(api_inst, args):
                                     "valid": valid_formats }, cmd="publisher")
                                 return EXIT_OOPS
 
-        api_inst.progresstracker = get_tracker(quiet=True)
+        api_inst.progresstracker.set_purpose(
+            api_inst.progresstracker.PURPOSE_LISTING)
 
         cert_cache = {}
         def get_cert_info(ssl_cert):
@@ -5209,7 +5228,8 @@ def list_linked(op, api_inst, pargs,
 
         List all the linked images known to the current image."""
 
-        api_inst.progresstracker = get_tracker(quiet=omit_headers)
+        api_inst.progresstracker.set_purpose(
+            api_inst.progresstracker.PURPOSE_LISTING)
 
         li_list = api_inst.list_linked(li_ignore)
         if len(li_list) == 0:
@@ -5276,7 +5296,8 @@ def list_property_linked(op, api_inst, pargs,
         List the linked image properties associated with a child or parent
         image."""
 
-        api_inst.progresstracker = get_tracker(quiet=omit_headers)
+        api_inst.progresstracker.set_purpose(
+            api_inst.progresstracker.PURPOSE_LISTING)
 
         lin = None
         if li_name:
@@ -5319,8 +5340,8 @@ def set_property_linked(op, api_inst, pargs,
         Change the specified linked image properties.  This may result in
         updating the package contents of a child image."""
 
-        api_inst.progresstracker = get_tracker(
-            parsable_version=parsable_version, quiet=quiet, verbose=verbose)
+        api_inst.progresstracker.set_purpose(
+            api_inst.progresstracker.PURPOSE_LISTING)
 
         # make sure we're a child image
         if li_name:
@@ -5345,7 +5366,8 @@ def audit_linked(op, api_inst, pargs,
         Audit one or more child images to see if they are in sync
         with their parent image."""
 
-        api_inst.progresstracker = get_tracker(quiet=omit_headers)
+        api_inst.progresstracker.set_purpose(
+            api_inst.progresstracker.PURPOSE_LISTING)
 
         # audit the requested child image(s)
         if not li_target_all and not li_target_list:
@@ -5388,9 +5410,6 @@ def sync_linked(op, api_inst, pargs, accept, backup_be, backup_be_name,
 
         Sync one or more child images with their parent image."""
 
-        api_inst.progresstracker = get_tracker(
-            parsable_version=parsable_version, quiet=quiet, verbose=verbose)
-
         xrval, xres = get_fmri_args(api_inst, reject_pats, cmd=op)
         if not xrval:
                 return EXIT_OOPS
@@ -5411,6 +5430,8 @@ def sync_linked(op, api_inst, pargs, accept, backup_be, backup_be_name,
                     update_index=update_index)
 
         # sync the requested child image(s)
+	api_inst.progresstracker.set_major_phase(
+	    api_inst.progresstracker.PHASE_UTILITY)
         rvdict = api_inst.sync_linked_children(li_target_list,
             noexecute=noexecute, accept=accept, show_licenses=show_licenses,
             refresh_catalogs=refresh_catalogs, update_index=update_index,
@@ -5446,9 +5467,6 @@ def attach_linked(op, api_inst, pargs,
         itself to a parent, or another image being attach as a child with
         this image being the parent."""
 
-        api_inst.progresstracker = get_tracker(
-            parsable_version=parsable_version, quiet=quiet, verbose=verbose)
-
         for k, v in li_props:
                 if k in [li.PROP_PATH, li.PROP_NAME, li.PROP_MODEL]:
                         usage(_("cannot specify linked image property: '%s'") %
@@ -5483,6 +5501,8 @@ def attach_linked(op, api_inst, pargs,
                     reject_list=reject_pats, update_index=update_index)
 
         # attach the requested child image
+	api_inst.progresstracker.set_major_phase(
+	    api_inst.progresstracker.PHASE_UTILITY)
         (rv, err, p_dict) = api_inst.attach_linked_child(lin, li_path, li_props,
             accept=accept, allow_relink=allow_relink, force=force,
             li_md_only=li_md_only, li_pkg_updates=li_pkg_updates,
@@ -5509,14 +5529,13 @@ def detach_linked(op, api_inst, pargs, force, li_target_all, li_target_list,
 
         Detach one or more child linked images."""
 
-        api_inst.progresstracker = get_tracker(quiet=quiet, verbose=verbose)
-
         if not li_target_all and not li_target_list:
                 # detach the current image
                 return __api_op(op, api_inst, _noexecute=noexecute,
                     _quiet=quiet, _verbose=verbose, force=force)
 
-        # detach the requested child image(s)
+	api_inst.progresstracker.set_major_phase(
+	    api_inst.progresstracker.PHASE_UTILITY)
         rvdict = api_inst.detach_linked_children(li_target_list, force=force,
             noexecute=noexecute)
 
@@ -5648,10 +5667,11 @@ def image_create(args):
         ssl_cert, ssl_key = _get_ssl_cert_key(image_dir, is_zone, ssl_cert,
             ssl_key)
 
+        progtrack = get_tracker()
+        progtrack.set_major_phase(progtrack.PHASE_UTILITY)
         global _api_inst
         global img
         try:
-                progtrack = get_tracker()
                 _api_inst = api.image_create(PKG_CLIENT_NAME, CLIENT_API_VERSION,
                     image_dir, imgtype, is_zone, facets=facets, force=force,
                     mirrors=list(add_mirrors), origins=list(add_origins),
@@ -5681,6 +5701,12 @@ def image_create(args):
         except api_errors.ApiException, e:
                 error(str(e), cmd=cmd_name)
                 return EXIT_OOPS
+        finally:
+                # Normally this would get flushed by handle_errors
+                # but that won't happen if the above code throws, because
+                # _api_inst will be None.
+                progtrack.flush()
+
         return EXIT_OK
 
 def rebuild_index(api_inst, pargs):
@@ -6252,7 +6278,7 @@ def main_func():
                 return EXIT_OOPS
 
         # Get ImageInterface and image object.
-        api_inst = __api_alloc(mydir, provided_image_dir, pkg_image_used, False)
+        api_inst = __api_alloc(mydir, provided_image_dir, pkg_image_used)
         if api_inst is None:
                 return EXIT_OOPS
         _api_inst = api_inst
@@ -6270,6 +6296,11 @@ def main_func():
 
                 opts, pargs = misc.opts_parse(subcommand, api_inst, pargs,
                     opts_cmd, pargs_limit, usage)
+
+                # Reset the progress tracker here, because we may have
+                # to switch to a different tracker due to the options parse.
+                _api_inst.progresstracker = get_tracker()
+
                 pkg_timer.record("client startup", logger=logger)
                 return func(op=subcommand, api_inst=api_inst,
                     pargs=pargs, **opts)

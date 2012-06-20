@@ -89,9 +89,9 @@ def usage(usage_error=None, retcode=2):
         msg(_("""\
 Usage:
         pkgrecv [-s src_uri] [-a] [-d (path|dest_uri)] [-c cache_dir]
-            [-kr] [-m match] [-n] [--raw] [--key keyfile --cert certfile] 
+            [-kr] [-m match] [-n] [--raw] [--key keyfile --cert certfile]
             (fmri|pattern) ...
-        pkgrecv [-s src_repo_uri] --newest 
+        pkgrecv [-s src_repo_uri] --newest
 
 Options:
         -a              Store the retrieved package data in a pkg(5) archive
@@ -185,15 +185,13 @@ def abort(err=None, retcode=1):
         cleanup(caller_error=True)
         sys.exit(retcode)
 
-def get_tracker(quiet=False):
-        if quiet:
-                progresstracker = progress.QuietProgressTracker()
-        else:
-                try:
-                        progresstracker = \
-                            progress.FancyUNIXProgressTracker()
-                except progress.ProgressTrackerException:
-                        progresstracker = progress.CommandLineProgressTracker()
+def get_tracker():
+        try:
+                progresstracker = \
+                    progress.FancyUNIXProgressTracker()
+        except progress.ProgressTrackerException:
+                progresstracker = progress.CommandLineProgressTracker()
+        progresstracker.set_major_phase(progresstracker.PHASE_UTILITY)
         return progresstracker
 
 def get_manifest(pfmri, xport_cfg, contents=False):
@@ -249,7 +247,8 @@ def get_dependencies(fmri_list, xport_cfg, tracker):
 
 def _get_dependencies(s, pfmri, xport_cfg, tracker):
         """Expand all dependencies."""
-        tracker.evaluate_progress(fmri=pfmri)
+        # XXX???
+        # tracker.evaluate_progress(pkgfmri=pfmri)
         s.add(pfmri)
 
         m = get_manifest(pfmri, xport_cfg)
@@ -306,11 +305,16 @@ def prune(fmri_list, all_versions, all_timestamps):
                 fmri_list = [sorted(dedup[f], reverse=True)[0] for f in dedup]
         return fmri_list
 
-def fetch_catalog(src_pub, tracker, txport):
-        """Fetch the catalog from src_uri."""
+def fetch_catalog(src_pub, tracker, txport, target_catalog):
+        """Fetch the catalog from src_uri.
+	
+	target_catalog is a hint about whether this is a destination catalog,
+	which helps the progress tracker render the refresh output properly."""
 
         src_uri = src_pub.repository.origins[0].uri
-        tracker.catalog_start(src_uri)
+        tracker.refresh_start(1, full_refresh=True,
+            target_catalog=target_catalog)
+        tracker.refresh_start_pub(src_pub)
 
         if not src_pub.meta_root:
                 # Create a temporary directory for catalog.
@@ -321,16 +325,17 @@ def fetch_catalog(src_pub, tracker, txport):
 
         src_pub.transport = txport
         try:
-                src_pub.refresh(True, True)
+                src_pub.refresh(True, True, progtrack=tracker)
         except apx.TransportError, e:
                 # Assume that a catalog doesn't exist for the target publisher,
                 # and drive on.  If there was an actual failure due to a
                 # transport issue, let the failure happen whenever some other
                 # operation is attempted later.
-                tracker.catalog_done()
                 return catalog.Catalog(read_only=True)
+        finally:
+                tracker.refresh_end_pub(src_pub)
+                tracker.refresh_done()
 
-        tracker.catalog_done()
         return src_pub.catalog
 
 def main_func():
@@ -359,7 +364,7 @@ def main_func():
         src_uri = os.environ.get("PKG_SRC", None)
 
         try:
-                opts, pargs = getopt.getopt(sys.argv[1:], "ac:d:hkm:nrs:", 
+                opts, pargs = getopt.getopt(sys.argv[1:], "ac:d:hkm:nrs:",
                     ["cert=", "key=", "newest", "raw"])
         except getopt.GetoptError, e:
                 usage(_("Illegal option -- %s") % e.opt)
@@ -467,7 +472,7 @@ def get_matches(src_pub, tracker, xport, pargs, any_unmatched, any_matched,
         """Returns the set of matching FMRIs for the given arguments."""
         global src_cat
 
-        src_cat = fetch_catalog(src_pub, tracker, xport)
+        src_cat = fetch_catalog(src_pub, tracker, xport, False)
         # Avoid overhead of going through matching if user requested all
         # packages.
         if "*" not in pargs and "*@*" not in pargs:
@@ -492,10 +497,8 @@ def get_matches(src_pub, tracker, xport, pargs, any_unmatched, any_matched,
         if recursive:
                 msg(_("Retrieving manifests for dependency "
                     "evaluation ..."))
-                tracker.evaluate_start()
                 matches = prune(get_dependencies(matches, xport_cfg, tracker),
                     all_versions, all_timestamps)
-                tracker.evaluate_done()
 
         return matches
 
@@ -554,7 +557,9 @@ def archive_pkgs(pargs, target, list_newest, all_versions, all_timestamps,
                         msg(_("Retrieving and evaluating %d package(s)...") %
                             npkgs)
 
-                tracker.evaluate_start(npkgs=npkgs)
+
+                tracker.manifest_fetch_start(npkgs)
+
                 for f in matches:
                         m = get_manifest(f, xport_cfg)
                         getb, getf, arcb, arccb = get_sizes(m)
@@ -574,9 +579,9 @@ def archive_pkgs(pargs, target, list_newest, all_versions, all_timestamps,
                         except EnvironmentError, e:
                                 raise apx._convert_error(e)
 
-                        tracker.evaluate_progress(fmri=f)
+                        tracker.manifest_fetch_progress(completion=True)
 
-                tracker.evaluate_done()
+                tracker.manifest_fetch_done()
 
                 # Next, retrieve the content for this publisher's packages.
                 tracker.download_set_goal(len(matches), get_files,
@@ -587,13 +592,13 @@ def archive_pkgs(pargs, target, list_newest, all_versions, all_timestamps,
                         # assertion failure since nothing was downloaded.
                         # Instead, call the method that simply finishes
                         # up the progress output.
-                        tracker.dl_output_done()
+                        tracker.download_done(dryrun=True)
                         cleanup()
                         continue
 
                 processed = 0
                 for f in matches:
-                        tracker.download_start_pkg(f.pkg_name)
+                        tracker.download_start_pkg(f)
                         pkgdir = xport_cfg.get_pkg_dir(f)
                         mfile = xport.multi_file_ni(src_pub, pkgdir,
                             progtrack=tracker)
@@ -608,7 +613,7 @@ def archive_pkgs(pargs, target, list_newest, all_versions, all_timestamps,
                                 archive_list.append((f, m.pathname, pkgdir))
 
                         # Nothing more to do for this package.
-                        tracker.download_end_pkg()
+                        tracker.download_end_pkg(f)
 
                 tracker.download_done()
                 tracker.reset()
@@ -643,14 +648,19 @@ def transfer_pkgs(pargs, target, list_newest, all_versions, all_timestamps,
         any_unmatched = []
         any_matched = []
         total_processed = 0
+
         for src_pub in xport_cfg.gen_publishers():
                 tracker = get_tracker()
                 if list_newest:
+			# Make sure the prog tracker knows we're doing a listing
+			# operation so that it suppresses irrelevant output.
+                        tracker.set_purpose(tracker.PURPOSE_LISTING)
+
                         if pargs or len(pargs) > 0:
-                                usage(_("-n takes no options"))
+                                usage(_("--newest takes no options"))
 
                         src_cat = fetch_catalog(src_pub, tracker,
-                            xport)
+                            xport, False)
                         for f in src_cat.fmris(ordered=True, last=True):
                                 msg(f.get_fmri())
                         continue
@@ -714,7 +724,7 @@ def transfer_pkgs(pargs, target, list_newest, all_versions, all_timestamps,
 
                 if republish:
                         targ_cat = fetch_catalog(targ_pub, tracker,
-                            dest_xport)
+                            dest_xport, True)
 
                 matches = get_matches(src_pub, tracker, xport, pargs,
                     any_unmatched, any_matched, all_versions, all_timestamps,
@@ -740,18 +750,18 @@ def transfer_pkgs(pargs, target, list_newest, all_versions, all_timestamps,
                         msg(_("Retrieving and evaluating %d package(s)...") %
                             npkgs)
 
-                tracker.evaluate_start(npkgs=npkgs)
+                tracker.manifest_fetch_start(npkgs)
 
                 pkgs_to_get = []
                 while matches:
                         f = matches.pop()
                         if republish and targ_cat.get_entry(f):
-                                tracker.evaluate_progress(fmri=f)
+                                tracker.manifest_fetch_progress(completion=True)
                                 continue
                         pkgs_to_get.append(f)
 
                         m = get_manifest(f, xport_cfg)
-         
+
                         getb, getf, sendb, sendcb = get_sizes(m)
                         get_bytes += getb
                         get_files += getf
@@ -761,23 +771,22 @@ def transfer_pkgs(pargs, target, list_newest, all_versions, all_timestamps,
                                 # is not supported for publication.
                                 send_bytes += sendb
 
-                        tracker.evaluate_progress(fmri=f)
-                tracker.evaluate_done()
+                        tracker.manifest_fetch_progress(completion=True)
+                tracker.manifest_fetch_done()
 
                 # Next, retrieve and store the content for each package.
                 tracker.republish_set_goal(len(pkgs_to_get), get_bytes,
                     send_bytes)
 
                 if dry_run:
-                        tracker.republish_done(dry_run=True)
+                        tracker.republish_done(dryrun=True)
                         cleanup()
                         continue
 
-                
                 processed = 0
                 pkgs_to_get = sorted(pkgs_to_get)
                 for f in pkgs_to_get:
-                        tracker.republish_start_pkg(f.pkg_name)
+                        tracker.republish_start_pkg(f)
                         pkgdir = xport_cfg.get_pkg_dir(f)
                         mfile = xport.multi_file_ni(src_pub, pkgdir,
                             not keep_compressed, tracker)
@@ -790,7 +799,7 @@ def transfer_pkgs(pargs, target, list_newest, all_versions, all_timestamps,
 
                         if not republish:
                                 # Nothing more to do for this package.
-                                tracker.republish_end_pkg()
+                                tracker.republish_end_pkg(f)
                                 continue
 
                         # Get first line of original manifest so that inclusion
@@ -842,9 +851,9 @@ def transfer_pkgs(pargs, target, list_newest, all_versions, all_timestamps,
                                                     "rb")
                                         t.add(a)
                                         if a.name == "signature":
-                                                for f in a.get_chain_certs():
+                                                for fp in a.get_chain_certs():
                                                         fname = os.path.join(
-                                                            pkgdir, f)
+                                                            pkgdir, fp)
                                                         t.add_file(fname)
                                 # Always defer catalog update.
                                 t.close(add_to_catalog=False)
@@ -868,7 +877,7 @@ def transfer_pkgs(pargs, target, list_newest, all_versions, all_timestamps,
                         misc.makedirs(dest_xport_cfg.incoming_root)
 
                         processed += 1
-                        tracker.republish_end_pkg()
+                        tracker.republish_end_pkg(f)
 
                 tracker.republish_done()
                 tracker.reset()

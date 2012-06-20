@@ -295,53 +295,53 @@ class TransportRepo(object):
 
                 return reqlist
 
-	@staticmethod
-	def _analyze_server_error(error_header):
-		""" Decode the X-Ipkg-Error header which is appended by the 
-		module doing entitlement checks on the server side. Let the user
-		know why they can't access the repository. """
+        @staticmethod
+        def _analyze_server_error(error_header):
+                """ Decode the X-Ipkg-Error header which is appended by the 
+                module doing entitlement checks on the server side. Let the user
+                know why they can't access the repository. """
 
-		ENTITLEMENT_ERROR = "ENT"
-		LICENSE_ERROR = "LIC"
-		SERVER_ERROR = "SVR"
+                ENTITLEMENT_ERROR = "ENT"
+                LICENSE_ERROR = "LIC"
+                SERVER_ERROR = "SVR"
 
-		entitlement_err_msg = """
+                entitlement_err_msg = """
 This account is not entitled to access this repository. Ensure that the correct 
 certificate is being used and that the support contract for the product being 
 accessed is still valid. 
 """
 
-		license_err_msg = """
+                license_err_msg = """
 The license agreement required to access this repository has not been 
 accepted yet or the license agreement for the product has changed. Please go to
 https://pkg-register.oracle.com and accept the license for the product you are 
 trying to access.
 """
 
-		server_err_msg = """
+                server_err_msg = """
 Repository access is currently unavailable due to service issues. Please retry
 later or contact your customer service representative. 
 """
 
-		msg = ""
+                msg = ""
 
-		# multiple errors possible (e.g. license and entitlement not ok)
-		error_codes = error_header.split(",")
+                # multiple errors possible (e.g. license and entitlement not ok)
+                error_codes = error_header.split(",")
 
-		for e in error_codes:
-			code = e.strip().upper()
-			
-			if code == ENTITLEMENT_ERROR:
-				 msg += entitlement_err_msg
-			elif code == LICENSE_ERROR:
-				msg += license_err_msg
-			elif code == SERVER_ERROR:
-				msg += server_err_msg
+                for e in error_codes:
+                        code = e.strip().upper()
+                        
+                        if code == ENTITLEMENT_ERROR:
+                                 msg += entitlement_err_msg
+                        elif code == LICENSE_ERROR:
+                                msg += license_err_msg
+                        elif code == SERVER_ERROR:
+                                msg += server_err_msg
 
-		if msg == "":
-			return None
+                if msg == "":
+                        return None
 
-		return msg
+                return msg
 
 
 class HTTPRepo(TransportRepo):
@@ -515,7 +515,7 @@ class HTTPRepo(TransportRepo):
                 if header:
                         headers.update(header)
                 if progtrack:
-                        progclass = ProgressCallback
+                        progclass = CatalogProgress
 
                 for f in filelist:
                         url = urlparse.urljoin(baseurl, f)
@@ -607,7 +607,7 @@ class HTTPRepo(TransportRepo):
                 progclass = None
 
                 if progtrack:
-                        progclass = ProgressCallback
+                        progclass = ManifestProgress
 
                 for fmri, h in mfstlist:
                         f = fmri.get_url_path()
@@ -712,32 +712,32 @@ class HTTPRepo(TransportRepo):
         def get_versions(self, header=None, ccancel=None):
                 """Query the repo for versions information.
                 Returns a fileobject. If server returns 401 (Unauthorized)
-		check for presence of X-IPkg-Error header and decode."""
+                check for presence of X-IPkg-Error header and decode."""
 
                 requesturl = self.__get_request_url("versions/0/")
                 fobj = self._fetch_url(requesturl, header, ccancel=ccancel, 
-		    failonerror=False)
+                    failonerror=False)
 
                 try:
-			# Bogus request to trigger 
-			# StreamingFileObj.__fill_buffer(), otherwise the 
-			# TransportProtoError won't be raised here. We can't
-			# use .read() since this will empty the data buffer.
-			fobj.getheader("octopus", None)
-		except tx.TransportProtoError, e:
-			if e.code == httplib.UNAUTHORIZED:
-				exc_type, exc_value, exc_tb = sys.exc_info()
-				try:
-					e.details = self._analyze_server_error(
+                        # Bogus request to trigger 
+                        # StreamingFileObj.__fill_buffer(), otherwise the 
+                        # TransportProtoError won't be raised here. We can't
+                        # use .read() since this will empty the data buffer.
+                        fobj.getheader("octopus", None)
+                except tx.TransportProtoError, e:
+                        if e.code == httplib.UNAUTHORIZED:
+                                exc_type, exc_value, exc_tb = sys.exc_info()
+                                try:
+                                        e.details = self._analyze_server_error(
                                              fobj.getheader("X-IPkg-Error",
-					     None))
-				except:
-					# If analysis fails, raise original
+                                             None))
+                                except:
+                                        # If analysis fails, raise original
                                         # exception.
                                         raise exc_value, None, exc_tb
-			raise
+                        raise
 
-		return fobj
+                return fobj
 
         def has_version_data(self):
                 """Returns true if this repo knows its version information."""
@@ -1382,7 +1382,7 @@ class _FilesystemRepo(TransportRepo):
                 pub_prefix = getattr(pub, "prefix", None)
 
                 if progtrack:
-                        progclass = ProgressCallback
+                        progclass = ManifestProgress
 
                 # Errors that happen before the engine is executed must be
                 # collected and added to the errors raised during engine
@@ -1834,7 +1834,7 @@ class _ArchiveRepo(TransportRepo):
                                    pub=pub_prefix)
                                 if progtrack:
                                         fs = os.stat(os.path.join(destloc, f))
-                                        progtrack.download_add_progress(1,
+                                        progtrack.refresh_progress(pub,
                                             fs.st_size)
                         except pkg.p5p.UnknownArchiveFiles, e:
                                 ex = tx.TransportProtoError("file",
@@ -1920,8 +1920,8 @@ class _ArchiveRepo(TransportRepo):
                                 if progtrack:
                                         fs = os.stat(os.path.join(dest,
                                             fmri.get_url_path()))
-                                        progtrack.download_add_progress(1,
-                                            fs.st_size)
+                                        progtrack.manifest_fetch_progress(
+                                            completion=True)
                         except pkg.p5p.UnknownPackageManifest, e:
                                 ex = tx.TransportProtoError("file",
                                     errno.ENOENT, reason=str(e),
@@ -2106,6 +2106,74 @@ class ProgressCallback(object):
 
                 return 0
 
+class CatalogProgress(ProgressCallback):
+        """This class bridges the interfaces between a ProgressTracker's
+        refresh code and the progress callback for that's provided by Pycurl."""
+
+        def __init__(self, progtrack):
+                ProgressCallback.__init__(self, progtrack)
+                self.dltotal = 0
+                self.dlcurrent = 0
+                self.completed = False
+
+        def abort(self):
+                """Download failed.  Remove the amount of bytes downloaded
+                by this file from the ProgressTracker."""
+
+                self.progtrack.refresh_progress(None, -self.dlcurrent)
+                self.completed = True
+
+        def commit(self, size):
+                #
+                # This callback is not interesting to us because
+                # catalogs are stored uncompressed-- and size is the
+                # size of the resultant object on disk, not the total
+                # xfer size.
+                #
+                pass
+
+
+        def progress_callback(self, dltot, dlcur, ultot, ulcur):
+                """Called by pycurl/libcurl framework to update
+                progress tracking."""
+
+                if hasattr(self.progtrack, "check_cancelation") and \
+                    self.progtrack.check_cancelation():
+                        return -1
+
+                if self.dltotal != dltot:
+                        self.dltotal = dltot
+
+                new_progress = int(dlcur - self.dlcurrent)
+                if new_progress > 0:
+                        self.dlcurrent += new_progress
+                        self.progtrack.refresh_progress(None, new_progress)
+
+                return 0
+
+class ManifestProgress(ProgressCallback):
+        """This class bridges the interfaces between a ProgressTracker's
+        manifest fetching code and the progress callback for that's provided by
+        Pycurl."""
+
+        def abort(self):
+                """Download failed.  Remove the amount of bytes downloaded
+                by this file from the ProgressTracker."""
+		pass
+
+        def commit(self, size):
+                """Indicate that this download has succeeded."""
+                self.progtrack.manifest_fetch_progress(completion=True)
+
+        def progress_callback(self, dltot, dlcur, ultot, ulcur):
+                """Called by pycurl/libcurl framework to update
+                progress tracking."""
+
+                if hasattr(self.progtrack, "check_cancelation") and \
+                    self.progtrack.check_cancelation():
+                        return -1
+                self.progtrack.manifest_fetch_progress(completion=False)
+                return 0
 
 class FileProgress(ProgressCallback):
         """This class bridges the interfaces between a ProgressTracker

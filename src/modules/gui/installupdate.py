@@ -19,7 +19,7 @@
 #
 # CDDL HEADER END
 #
-# Copyright (c) 2008, 2011, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2008, 2012, Oracle and/or its affiliates. All rights reserved.
 #
 
 DEFAULT_CONFIRMATION_WIDTH = 550        # Width & height of single confirmation
@@ -402,7 +402,7 @@ class InstallUpdate(progress.GuiProgressTracker):
                                 pkgs_no = len(self.confirmation_list)
                                 remove_text = ngettext(
                                     "Review the package to be removed",
-                		    "Review the packages to be removed", pkgs_no)
+                                    "Review the packages to be removed", pkgs_no)
                                 self.w_confirm_label.set_markup("<b>"+remove_text+"</b>")
 
                                 self.w_install_expander.hide()
@@ -670,6 +670,7 @@ class InstallUpdate(progress.GuiProgressTracker):
                                             _("Ensuring %s is up to date...") %
                                             self.parent_name,
                                             bounce_progress=True)
+                                        self.set_purpose(self.PURPOSE_PKG_UPDATE_CHK)
                                         solaris_image = True
                                         ips_uptodate = True
                                         notfound = self.__installed_fmris_from_args(
@@ -680,16 +681,20 @@ class InstallUpdate(progress.GuiProgressTracker):
                                         if solaris_image:
                                                 ips_uptodate = \
                                                     self.__ipkg_ipkgui_uptodate()
+                                        self.set_purpose(self.PURPOSE_NORMAL)
                                         if not ips_uptodate:
-                                        #Do the stuff with installing pkg pkg-gui
-                                        #and restart in the special mode
+                                                # Do the stuff with installing
+                                                # pkg pkg-gui and restart in the
+                                                # special mode
                                                 self.ips_update = True
                                                 self.__proceed_with_ipkg_thread()
                                                 return
-                                        else:
-                                                gobject.idle_add(
-                                                    self.__create_uarenamebe_o)
-                                                self.api_o.reset()
+                                        self.update_details_text(_("%s "
+                                            "is up to date.\n") % \
+                                            self.parent_name, "level1")         
+                                        gobject.idle_add(
+                                            self.__create_uarenamebe_o)
+                                        self.api_o.reset()
                                 if continue_operation == False:
                                         self.__proceed_with_stages_thread()
                                 else:
@@ -1262,7 +1267,8 @@ class InstallUpdate(progress.GuiProgressTracker):
                 self.w_main_window.set_title(display_string)
 
         def display_download_info(self):
-                self.update_progress(self.dl_cur_nbytes, self.dl_goal_nbytes)
+                self.update_progress(self.dl_bytes.items,
+                    self.dl_bytes.goalitems)
                 if self.w_main_window:
                         progtimes100 = int(self.prog * 100)
                         if progtimes100 != self.prev_prog:
@@ -1271,24 +1277,23 @@ class InstallUpdate(progress.GuiProgressTracker):
                                     self.stages[2][0])
                                 gobject.idle_add(self.__update_window_title,
                                     display_string)
-                self.__display_download()
 
-        def __display_download(self):
                 if self.display_download_id == 0:
-                        self.display_download_id = gobject.timeout_add(DISPLAY_DELAY,
-                            self.__display_download_text)
+                        self.display_download_id = gobject.timeout_add( \
+                            DISPLAY_DELAY, self.__display_download_text)
 
         def __display_download_text(self):
                 self.display_download_id = 0
-                size_a_str = ""
-                size_b_str = ""
-                if self.dl_cur_nbytes >= 0:
-                        size_a_str = misc.bytes_to_str(self.dl_cur_nbytes)
-                if self.dl_goal_nbytes >= 0:
-                        size_b_str = misc.bytes_to_str(self.dl_goal_nbytes)
-                c = _("Downloaded %(current)s of %(total)s") % \
+                size_a_str = misc.bytes_to_str(self.dl_bytes.items)
+                size_b_str = misc.bytes_to_str(self.dl_bytes.goalitems)
+                speed = self.dl_estimator.get_speed_estimate()
+                speed_str = "" if speed is None else \
+                    _("(%s)") % self.dl_estimator.format_speed(speed)
+
+                c = _("Downloaded %(current)s of %(total)s %(speed)s") % \
                     {"current" : size_a_str,
-                    "total" : size_b_str}
+                    "total" : size_b_str,
+                    "speed" : speed_str}
                 self.__stages_label_set_markup(c)
 
         def display_phase_info(self, phase_name, cur_n, goal_n):
@@ -1330,6 +1335,7 @@ class InstallUpdate(progress.GuiProgressTracker):
 
         def update_progress(self, current, total):
                 self.prog = float(current)/total
+                assert self.prog >= 0.0 and self.prog <= 1.0
                 if self.update_progress_id == 0:
                         self.update_progress_id = gobject.timeout_add(DISPLAY_DELAY,
                             self.__update_progress)

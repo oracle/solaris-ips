@@ -1120,6 +1120,7 @@ class TestActionExecutionErrors(pkg5unittest.SingleDepotTestCase):
         def __do_verify(api_obj, pfmri):
                 img = api_obj.img
                 progtrack = progress.NullProgressTracker()
+		progtrack.verify_start(1)
                 for act, errors, warnings, pinfo in img.verify(pfmri, progtrack,
                     forever=True):
                         raise AssertionError("Action %s in package %s failed "

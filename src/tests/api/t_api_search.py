@@ -20,7 +20,7 @@
 # CDDL HEADER END
 #
 
-# Copyright (c) 2009, 2011, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2009, 2012, Oracle and/or its affiliates. All rights reserved.
 
 import testutils
 if __name__ == "__main__":
@@ -2421,11 +2421,11 @@ class TestApiSearchBasics_nonP(TestApiSearchBasics):
 
         def test_bug_9729_1(self):
                 """Test that installing more than
-                indexer.MAX_ADDED_NUMBER_PACKAGES packages at a time doesn't
+                indexer.MAX_FAST_INDEXED_PKGS packages at a time doesn't
                 cause any type of indexing error."""
                 durl = self.dc.get_depot_url()
                 pkg_list = []
-                for i in range(0, indexer.MAX_ADDED_NUMBER_PACKAGES + 1):
+                for i in range(0, indexer.MAX_FAST_INDEXED_PKGS + 1):
                         self.pkgsend_bulk(durl,
                             "open pkg%s@1.0,5.11-0\nclose\n" % i)
                         pkg_list.append("pkg%s" % i)
@@ -2434,13 +2434,13 @@ class TestApiSearchBasics_nonP(TestApiSearchBasics):
 
         def test_bug_9729_2(self):
                 """Test that installing more than
-                indexer.MAX_ADDED_NUMBER_PACKAGES packages one after another
+                indexer.MAX_FAST_INDEXED_PKGS packages one after another
                 doesn't cause any type of indexing error."""
                 def _remove_extra_info(v):
                         return v.split("-")[0]
                 durl = self.dc.get_depot_url()
                 pkg_list = []
-                for i in range(0, indexer.MAX_ADDED_NUMBER_PACKAGES + 3):
+                for i in range(0, indexer.MAX_FAST_INDEXED_PKGS + 3):
                         self.pkgsend_bulk(durl,
                             "open pkg%s@1.0,5.11-0\nclose\n" % i)
                         pkg_list.append("pkg%s" % i)
@@ -2482,7 +2482,7 @@ class TestApiSearchBasics_nonP(TestApiSearchBasics):
                     )), self.fast_remove_after_first_update)
                 # Now check that image update also handles fast_add
                 # appropriately when a large number of packages have changed.
-                for i in range(3, indexer.MAX_ADDED_NUMBER_PACKAGES + 3):
+                for i in range(3, indexer.MAX_FAST_INDEXED_PKGS + 3):
                         self.pkgsend_bulk(durl,
                             "open pkg%s@2.0,5.11-0\nclose\n" % i)
                         pkg_list.append("pkg%s" % i)

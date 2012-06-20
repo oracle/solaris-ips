@@ -172,10 +172,6 @@ class ImagePlan(object):
                         elif pp.origin_fmri:
                                 self.__target_removal_count += 1
 
-                if self.pd.state >= plandesc.EVALUATED_OK:
-                        self.__progtrack.download_set_goal(self.pd._dl_npkgs,
-                            self.pd._dl_nfiles, self.pd._dl_nbytes)
-
                 if self.pd.state >= plandesc.PREEXECUTED_OK:
                         self.__progtrack.evaluate_done(
                             self.__target_install_count,
@@ -459,9 +455,13 @@ class ImagePlan(object):
                 self.pd._new_mediators = new_mediators
                 cfg_mediators = self.image.cfg.mediators
 
+                pt = self.__progtrack
+
+                pt.plan_start(pt.PLAN_MEDIATION_CHG)
                 # keys() is used since entries are deleted during iteration.
                 update_mediators = {}
                 for m in self.pd._new_mediators.keys():
+                        pt.plan_add_progress(pt.PLAN_MEDIATION_CHG)
                         for k in ("implementation", "version"):
                                 if k in self.pd._new_mediators[m]:
                                         if self.pd._new_mediators[m][k] is not None:
@@ -532,7 +532,7 @@ class ImagePlan(object):
 
                         # Determine which packages will be affected.
                         for f in self.image.gen_installed_pkgs():
-                                self.__progtrack.evaluate_progress()
+                                pt.plan_add_progress(pt.PLAN_MEDIATION_CHG)
                                 m = self.image.get_manifest(f,
                                     ignore_excludes=True)
                                 mediated = []
@@ -558,6 +558,7 @@ class ImagePlan(object):
                         # these mediators, so no packages needed loading.
                         self.pd._new_mediators = update_mediators
 
+                pt.plan_done(pt.PLAN_MEDIATION_CHG)
                 self.pd.state = plandesc.EVALUATED_PKGS
 
         def plan_sync(self, li_pkg_updates=True, reject_list=misc.EmptyI):
@@ -710,6 +711,13 @@ class ImagePlan(object):
 
                 revert_dict = defaultdict(list)
 
+                pt = self.__progtrack
+                pt.plan_all_start()
+
+                # We could have a specific 'revert' tracker item, but
+                # "package planning" seems as good a term as any.
+                pt.plan_start(pt.PLAN_PKGPLAN,
+                    goal=self.image.count_installed_pkgs())
                 if tagged:
                         # look through all the files on the system; any files
                         # tagged w/ revert-tag set to any of the values on
@@ -719,7 +727,7 @@ class ImagePlan(object):
 
                         tag_set = set(args)
                         for f in self.image.gen_installed_pkgs():
-                                self.__progtrack.evaluate_progress()
+                                pt.plan_add_progress(pt.PLAN_PKGPLAN)
                                 m = self.image.get_manifest(f,
                                     ignore_excludes=True)
                                 for act in m.gen_actions_by_type("file",
@@ -735,7 +743,7 @@ class ImagePlan(object):
                         revertpaths = set([a.lstrip(os.path.sep) for a in args])
                         overlaypaths = set()
                         for f in self.image.gen_installed_pkgs():
-                                self.__progtrack.evaluate_progress()
+                                pt.plan_add_progress(pt.PLAN_PKGPLAN)
                                 m = self.image.get_manifest(f,
                                     ignore_excludes=True)
                                 for act in m.gen_actions_by_type("file",
@@ -759,6 +767,8 @@ class ImagePlan(object):
 
                         revertpaths.difference_update(overlaypaths)
                         if revertpaths:
+                                pt.plan_done(pt.PLAN_PKGPLAN)
+                                pt.plan_all_done()
                                 raise api_errors.PlanCreationException(
                                     nofiles=list(revertpaths))
 
@@ -766,7 +776,7 @@ class ImagePlan(object):
                         # build list of actions that will need to be reverted
                         # no sense in replacing files that are original already
                         needs_change = []
-                        self.__progtrack.evaluate_progress()
+                        pt.plan_add_progress(pt.PLAN_PKGPLAN, nitems=0)
                         for act in revert_dict[(f, m)]:
                                 # delete preserve attribute to both find and
                                 # enable replacement of modified editable files.
@@ -785,6 +795,8 @@ class ImagePlan(object):
 
                 self.pd._fmri_changes = []
                 self.pd.state = plandesc.EVALUATED_PKGS
+                pt.plan_done(pt.PLAN_PKGPLAN)
+                pt.plan_all_done()
 
         def plan_noop(self):
                 """Create a plan that doesn't change the package contents of
@@ -1344,7 +1356,8 @@ class ImagePlan(object):
 
                 d = {}
                 for klass in action_classes:
-                        self.__progtrack.evaluate_progress()
+                        self.__progtrack.plan_add_progress(
+                            self.__progtrack.PLAN_ACTION_CONFLICT)
                         for a, pfmri in \
                             gen_func(klass.name, implicit_dirs=True,
                             excludes=excludes):
@@ -1611,7 +1624,8 @@ class ImagePlan(object):
                 for key, actions in new.iteritems():
                         oactions = old.get(key, [])
 
-                        self.__progtrack.evaluate_progress()
+                        self.__progtrack.plan_add_progress(
+                            self.__progtrack.PLAN_ACTION_CONFLICT)
 
                         if len(actions) == 1 and len(oactions) < 2:
                                 continue
@@ -1723,12 +1737,16 @@ class ImagePlan(object):
 
                 errs = []
 
+                pt = self.__progtrack
+                pt.plan_start(pt.PLAN_ACTION_CONFLICT)
+
                 # Using strings instead of PkgFmri objects in sets allows for
                 # much faster performance.
                 new_fmris = set((str(s) for s in self.gen_new_installed_pkgs()))
 
                 # If we're removing all packages, there won't be any conflicts.
                 if not new_fmris:
+                        pt.plan_done(pt.PLAN_ACTION_CONFLICT)
                         self.__clear_pkg_plans()
                         return
 
@@ -1747,8 +1765,9 @@ class ImagePlan(object):
                     for ns, action_classes in itertools.groupby(types, kf)
                 )
 
+                pt.plan_add_progress(pt.PLAN_ACTION_CONFLICT)
                 # Load information about the actions currently on the system.
-                offset_dict = self.image._load_actdict()
+                offset_dict = self.image._load_actdict(self.__progtrack)
                 sf = self.image._get_stripped_actions_file()
 
                 conflict_clean_image = \
@@ -1758,6 +1777,7 @@ class ImagePlan(object):
                 # Iterate over action types in namespace groups first; our first
                 # check should be for action type consistency.
                 for ns, action_classes in namespace_dict.iteritems():
+                        pt.plan_add_progress(pt.PLAN_ACTION_CONFLICT)
                         # There's no sense in checking actions which have no
                         # limits
                         if all(not c.globally_identical
@@ -1807,6 +1827,7 @@ class ImagePlan(object):
                 self.__clear_pkg_plans()
                 sf.close()
                 self.__evaluate_fixups()
+                pt.plan_done(pt.PLAN_ACTION_CONFLICT)
 
                 if errs:
                         raise api_errors.ConflictingActionErrors(errs)
@@ -2007,6 +2028,7 @@ class ImagePlan(object):
                 """Internal helper function that does the work of converting
                 fmri changes into pkg plans."""
 
+                pt = self.__progtrack
                 # prefetch manifests
                 prefetch_mfsts = [] # manifest, intents to be prefetched
                 eval_list = []     # oldfmri, oldintent, newfmri, newintent
@@ -2016,8 +2038,14 @@ class ImagePlan(object):
                                 for a in self.image.gen_publishers()
                                 ])
 
+                #
+                # XXX this could be improved, or perhaps the "do we have it?"
+                # logic could be moved into prefetch_manifests, and
+                # PLAN_FIND_MFST could go away?  This can be slow.
+                #
+                pt.plan_start(pt.PLAN_FIND_MFST)
                 for oldfmri, newfmri in self.pd._fmri_changes:
-                        self.__progtrack.evaluate_progress(oldfmri)
+                        pt.plan_add_progress(pt.PLAN_FIND_MFST)
                         old_in, new_in = self.__create_intent(oldfmri, newfmri,
                             enabled_publishers)
                         if oldfmri:
@@ -2030,6 +2058,7 @@ class ImagePlan(object):
                                         new_in = None
                         eval_list.append((oldfmri, old_in, newfmri, new_in))
                         old_in = new_in = None
+                pt.plan_done(pt.PLAN_FIND_MFST)
 
                 # No longer needed.
                 del enabled_publishers
@@ -2038,11 +2067,13 @@ class ImagePlan(object):
                 self.__match_update = {}
 
                 self.image.transport.prefetch_manifests(prefetch_mfsts,
-                    ccancel=self.__check_cancel)
+                    ccancel=self.__check_cancel, progtrack=self.__progtrack)
 
                 # No longer needed.
                 del prefetch_mfsts
 
+                max_items = len(eval_list)
+                pt.plan_start(pt.PLAN_PKGPLAN, goal=max_items)
                 same_excludes = self.__old_excludes == self.__new_excludes
 
                 for oldfmri, old_in, newfmri, new_in in eval_list:
@@ -2072,11 +2103,12 @@ class ImagePlan(object):
                             can_exclude=can_exclude)
 
                         self.pd.pkg_plans.append(pp)
+                        pt.plan_add_progress(pt.PLAN_PKGPLAN, nitems=1)
                         pp = None
-                        self.__progtrack.evaluate_progress()
 
                 # No longer needed.
                 del eval_list
+                pt.plan_done(pt.PLAN_PKGPLAN)
 
         def __mediate_links(self, mediated_removed_paths):
                 """Mediate links in the plan--this requires first determining the
@@ -2417,15 +2449,14 @@ class ImagePlan(object):
                                 self.pd._mediators_change = False
 
                 self.pd._new_mediators = prop_mediators
-
                 # Link mediation is complete.
-                self.__progtrack.evaluate_progress()
 
         def merge_actions(self):
                 """Given a set of fmri changes and their associated pkg plan,
                 merge all the resultant actions for the packages being
                 updated."""
 
+                pt = self.__progtrack
                 if self.pd._new_mediators is None:
                         self.pd._new_mediators = {}
 
@@ -2456,12 +2487,14 @@ class ImagePlan(object):
                 # package to package.  See theory comment in execute, below.
                 self.pd.removal_actions = []
 
+                pt.plan_start(pt.PLAN_ACTION_MERGE)
                 # cache the current image mediators within the plan
                 cfg_mediators = self.pd._cfg_mediators = \
                     self.image.cfg.mediators
 
                 mediated_removed_paths = set()
                 for p in self.pd.pkg_plans:
+                        pt.plan_add_progress(pt.PLAN_ACTION_MERGE)
                         for src, dest in p.gen_removal_actions():
                                 if src.name == "user":
                                         self.pd.removed_users[src.attrs[
@@ -2505,11 +2538,10 @@ class ImagePlan(object):
                                         mediated_removed_paths.add(
                                             src.attrs["path"])
 
-                self.__progtrack.evaluate_progress()
-
                 self.pd.update_actions = []
                 self.pd._rm_aliases = {}
                 for p in self.pd.pkg_plans:
+                        pt.plan_add_progress(pt.PLAN_ACTION_MERGE)
                         for src, dest in p.gen_update_actions():
                                 if dest.name == "user":
                                         self.pd.added_users[dest.attrs[
@@ -2527,10 +2559,10 @@ class ImagePlan(object):
                                                     set()).update(rm)
                                 self.pd.update_actions.append(
                                     _ActionPlan(p, src, dest))
-                self.__progtrack.evaluate_progress()
 
                 self.pd.install_actions = []
                 for p in self.pd.pkg_plans:
+                        pt.plan_add_progress(pt.PLAN_ACTION_MERGE)
                         for src, dest in p.gen_install_actions():
                                 if dest.name == "user":
                                         self.pd.added_users[dest.attrs[
@@ -2540,7 +2572,6 @@ class ImagePlan(object):
                                             "groupname"]] = p.destination_fmri
                                 self.pd.install_actions.append(
                                     _ActionPlan(p, src, dest))
-                self.__progtrack.evaluate_progress()
 
                 # In case a removed user or group was added back...
                 for entry in self.pd.added_groups.keys():
@@ -2551,9 +2582,11 @@ class ImagePlan(object):
                                 del self.pd.removed_users[entry]
 
                 self.pd.state = plandesc.MERGED_OK
+                pt.plan_done(pt.PLAN_ACTION_MERGE)
 
                 self.__find_all_conflicts()
 
+                pt.plan_start(pt.PLAN_ACTION_CONSOLIDATE)
                 ConsolidationEntry = namedtuple("ConsolidationEntry", "idx id")
 
                 # cons_named maps original_name tags to the index into
@@ -2578,7 +2611,7 @@ class ImagePlan(object):
                 for i, ap in enumerate(self.pd.removal_actions):
                         if ap is None:
                                 continue
-                        self.__progtrack.evaluate_progress()
+                        pt.plan_add_progress(pt.PLAN_ACTION_CONSOLIDATE)
 
                         # If the action type needs to be reference-counted, make
                         # sure it doesn't get removed if another instance
@@ -2673,7 +2706,7 @@ class ImagePlan(object):
                 self.__licenses = None
                 self.__legacy = None
 
-                self.__progtrack.evaluate_progress()
+                pt.plan_add_progress(pt.PLAN_ACTION_CONSOLIDATE)
 
                 # Construct a mapping from the install actions in a pkgplan to
                 # the position they have in the plan's list.  This allows us to
@@ -2700,7 +2733,7 @@ class ImagePlan(object):
                 for i, ap in enumerate(self.pd.install_actions):
                         if ap is None:
                                 continue
-                        self.__progtrack.evaluate_progress()
+                        pt.plan_add_progress(pt.PLAN_ACTION_CONSOLIDATE)
 
                         # In order to handle editable files that move their path
                         # or change pkgs, for all new files with original_name
@@ -2778,6 +2811,8 @@ class ImagePlan(object):
                         ]
                 del pp_needs_trimming
 
+                pt.plan_add_progress(pt.PLAN_ACTION_CONSOLIDATE)
+
                 # We want to cull out actions where they've not changed at all,
                 # leaving only the changed ones to put into
                 # self.pd.update_actions.
@@ -2785,14 +2820,14 @@ class ImagePlan(object):
                 nu_src.set_content(content=(a[0] for a in new_updates),
                     excludes=self.__old_excludes)
                 nu_dst = manifest.Manifest()
-                self.__progtrack.evaluate_progress()
+                pt.plan_add_progress(pt.PLAN_ACTION_CONSOLIDATE)
                 nu_dst.set_content(content=(a[1] for a in new_updates),
                     excludes=self.__new_excludes)
                 del new_updates
-                self.__progtrack.evaluate_progress()
+                pt.plan_add_progress(pt.PLAN_ACTION_CONSOLIDATE)
                 nu_add, nu_chg, nu_rem = nu_dst.difference(nu_src,
                     self.__old_excludes, self.__new_excludes)
-                self.__progtrack.evaluate_progress()
+                pt.plan_add_progress(pt.PLAN_ACTION_CONSOLIDATE)
                 # All the differences should be updates
                 assert not nu_add
                 assert not nu_rem
@@ -2807,11 +2842,14 @@ class ImagePlan(object):
 
                 del dest_pkgplans, nu_chg
 
-                self.__progtrack.evaluate_progress()
+                pt.plan_done(pt.PLAN_ACTION_CONSOLIDATE)
+                pt.plan_start(pt.PLAN_ACTION_MEDIATION)
+                pt.plan_add_progress(pt.PLAN_ACTION_MEDIATION)
 
                 # Mediate and repair links affected by the plan.
                 prop_mediators = self.__mediate_links(mediated_removed_paths)
 
+                pt.plan_add_progress(pt.PLAN_ACTION_MEDIATION)
                 for prop in ("removal_actions", "install_actions",
                     "update_actions"):
                         pval = getattr(self.pd, prop)
@@ -2821,11 +2859,18 @@ class ImagePlan(object):
                             if a is not None
                         ]
 
+                pt.plan_add_progress(pt.PLAN_ACTION_MEDIATION)
+
                 # Add any necessary repairs to plan.
                 self.__evaluate_fixups()
 
+                pt.plan_add_progress(pt.PLAN_ACTION_MEDIATION)
+
                 # Finalize link mediation.
                 self.__finalize_mediation(prop_mediators)
+
+                pt.plan_done(pt.PLAN_ACTION_MEDIATION)
+                pt.plan_start(pt.PLAN_ACTION_FINALIZE)
 
                 # Go over update actions
                 l_actions = self.get_actions("hardlink", self.hardlink_keyfunc)
@@ -2866,23 +2911,16 @@ class ImagePlan(object):
                 self.pd.update_actions.sort(key=addsort)
                 self.pd.install_actions.sort(key=addsort)
 
-                # Pre-calculate size of data retrieval for preexecute().
-                for p in self.pd.pkg_plans:
-                        nf, nb = p.get_xferstats()
-                        self.pd._dl_nbytes += nb
-                        self.pd._dl_nfiles += nf
+                #
+                # Sort the package plans by fmri to create predictability (and
+                # some sense of order) in the download output; this is not
+		# a perfect sort of this, but we only really care for things
+		# we fetch over the wire.
+                #
+                self.pd.pkg_plans.sort(
+		    key=operator.attrgetter("destination_fmri"))
 
-                        # It's not perfectly accurate but we count a download
-                        # even if the package will do zero data transfer.  This
-                        # makes the pkg stats consistent between download and
-                        # install.
-                        self.pd._dl_npkgs += 1
-                self.__progtrack.download_set_goal(self.pd._dl_npkgs,
-                    self.pd._dl_nfiles, self.pd._dl_nbytes)
-
-                # Evaluation complete.
-                self.__progtrack.evaluate_done(self.__target_install_count, \
-                    self.__target_update_count, self.__target_removal_count)
+                pt.plan_done(pt.PLAN_ACTION_FINALIZE)
 
                 if self.pd._need_boot_archive is None:
                         self.pd._need_boot_archive = False
@@ -2999,6 +3037,23 @@ class ImagePlan(object):
                 # bulk downloads.
                 self.image.transport.stats.reset()
 
+                #
+                # Calculate size of data retrieval and pass it to progress
+		# tracker.
+                #
+                npkgs = nfiles = nbytes = 0
+                for p in self.pd.pkg_plans:
+                        nf, nb = p.get_xferstats()
+                        nbytes += nb
+                        nfiles += nf
+
+                        # It's not perfectly accurate but we count a download
+                        # even if the package will do zero data transfer.  This
+                        # makes the pkg stats consistent between download and
+                        # install.
+                        npkgs += 1
+                self.__progtrack.download_set_goal(npkgs, nfiles, nbytes)
+
                 lic_errors = []
                 try:
                         # Check for license acceptance issues first to avoid
@@ -3040,8 +3095,8 @@ class ImagePlan(object):
                                         e._autofix_pkgs = p._autofix_pkgs
                                 raise
 
-                        self.__progtrack.download_done()
                         self.image.transport.shutdown()
+                        self.__progtrack.download_done()
                 except:
                         self.pd.state = plandesc.PREEXECUTED_ERROR
                         raise
@@ -3053,7 +3108,7 @@ class ImagePlan(object):
                         pd_json2 = self.pd.getstate(self.pd,
                             reset_volatiles=True)
                         pkg.misc.json_diff("PlanDescription",
-                            pd_json1, pd_json2)
+                            pd_json1, pd_json2, pd_json1, pd_json2)
                         del pd_json1, pd_json2
 
         def execute(self):
@@ -3138,6 +3193,9 @@ class ImagePlan(object):
                         self.pd.state = plandesc.EXECUTED_OK
                         return
 
+                pt = self.__progtrack
+                pt.set_major_phase(pt.PHASE_EXECUTE)
+
                 # It's necessary to do this check here because the state of the
                 # image before the current operation is performed is desired.
                 empty_image = self.__is_image_empty()
@@ -3151,15 +3209,19 @@ class ImagePlan(object):
                 executed_pp = []
                 try:
                         try:
+                                pt.actions_set_goal(pt.ACTION_REMOVE,
+                                    len(self.pd.removal_actions))
+                                pt.actions_set_goal(pt.ACTION_INSTALL,
+                                    len(self.pd.install_actions))
+                                pt.actions_set_goal(pt.ACTION_UPDATE,
+                                    len(self.pd.update_actions))
 
                                 # execute removals
-                                self.__progtrack.actions_set_goal(
-                                    _("Removal Phase"),
-                                    len(self.pd.removal_actions))
                                 for p, src, dest in self.pd.removal_actions:
                                         p.execute_removal(src, dest)
-                                        self.__progtrack.actions_add_progress()
-                                self.__progtrack.actions_done()
+                                        pt.actions_add_progress(
+                                            pt.ACTION_REMOVE)
+                                pt.actions_done(pt.ACTION_REMOVE)
 
                                 # Update driver alias database to reflect the
                                 # aliases drivers have lost in the new image.
@@ -3175,29 +3237,25 @@ class ImagePlan(object):
                                 self.pd.removal_actions = []
 
                                 # execute installs
-                                self.__progtrack.actions_set_goal(
-                                    _("Install Phase"),
-                                    len(self.pd.install_actions))
-
                                 for p, src, dest in self.pd.install_actions:
                                         p.execute_install(src, dest)
-                                        self.__progtrack.actions_add_progress()
-                                self.__progtrack.actions_done()
+                                        pt.actions_add_progress(
+                                            pt.ACTION_INSTALL)
+                                pt.actions_done(pt.ACTION_INSTALL)
 
                                 # Done with installs, so discard them so memory
                                 # can be re-used.
                                 self.pd.install_actions = []
 
                                 # execute updates
-                                self.__progtrack.actions_set_goal(
-                                    _("Update Phase"),
-                                    len(self.pd.update_actions))
-
                                 for p, src, dest in self.pd.update_actions:
                                         p.execute_update(src, dest)
-                                        self.__progtrack.actions_add_progress()
+                                        pt.actions_add_progress(
+                                            pt.ACTION_UPDATE)
 
-                                self.__progtrack.actions_done()
+                                pt.actions_done(pt.ACTION_UPDATE)
+                                pt.actions_all_done()
+                                pt.set_major_phase(pt.PHASE_FINALIZE)
 
                                 # Done with updates, so discard them so memory
                                 # can be re-used.
@@ -3273,7 +3331,7 @@ class ImagePlan(object):
                 else:
                         self.pd._actuators.exec_post_actuators(self.image)
 
-                self.image._create_fast_lookups()
+                self.image._create_fast_lookups(progtrack=self.__progtrack)
 
                 # success
                 self.pd.state = plandesc.EXECUTED_OK
@@ -3293,8 +3351,6 @@ class ImagePlan(object):
                 # Perform the incremental update to the search indexes
                 # for all changed packages
                 if self.update_index:
-                        self.__progtrack.actions_set_goal(_("Index Phase"),
-                            len(executed_pp))
                         self.image.update_index_dir()
                         ind = indexer.Indexer(self.image,
                             self.image.get_manifest,

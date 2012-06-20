@@ -424,11 +424,11 @@ class PkgPlan(object):
                 return reduce(sum_dest_size, itertools.chain(*self.actions),
                     (0, 0))
 
-        def get_xfername(self):
+        def get_xferfmri(self):
                 if self.destination_fmri:
-                        return self.destination_fmri.get_name()
+                        return self.destination_fmri
                 if self.origin_fmri:
-                        return self.origin_fmri.get_name()
+                        return self.origin_fmri
                 return None
 
         def preexecute(self):
@@ -461,12 +461,12 @@ class PkgPlan(object):
 
         def download(self, progtrack, check_cancel):
                 """Download data for any actions that need it."""
-                progtrack.download_start_pkg(self.get_xfername())
+                progtrack.download_start_pkg(self.get_xferfmri())
                 mfile = self.image.transport.multi_file(self.destination_fmri,
                     progtrack, check_cancel)
 
                 if mfile is None:
-                        progtrack.download_end_pkg()
+                        progtrack.download_end_pkg(self.get_xferfmri())
                         return
 
                 for src, dest in itertools.chain(*self.actions):
@@ -474,7 +474,7 @@ class PkgPlan(object):
                                 mfile.add_action(dest)
 
                 mfile.wait_files()
-                progtrack.download_end_pkg()
+                progtrack.download_end_pkg(self.get_xferfmri())
 
         def cacheload(self):
                 """Load previously downloaded data for actions that need it."""

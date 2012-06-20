@@ -43,6 +43,7 @@ import pkg.client.transport.exception as tx
 import pkg.client.transport.mdetect as mdetect
 import pkg.client.transport.repo as trepo
 import pkg.client.transport.stats as tstats
+import pkg.client.progress as progress
 import pkg.file_layout.file_manager as fm
 import pkg.fmri
 import pkg.manifest as manifest
@@ -1316,6 +1317,10 @@ class Transport(object):
                 if not fetchlist:
                         return
 
+                if not progtrack:
+                        progtrack = progress.NullProgressTracker()
+                progtrack.manifest_fetch_start(len(fetchlist))
+
                 # Call setup if the transport isn't configured or was shutdown.
                 if not self.__engine:
                         self.__setup()
@@ -1396,7 +1401,10 @@ class Transport(object):
                                         self._prefetch_manifests_list(mxfr,
                                             mfstlist, excludes)
                                 except apx.PermissionsException:
+                                        progtrack.manifest_fetch_done()
                                         return
+
+                progtrack.manifest_fetch_done()
 
         def _prefetch_manifests_list(self, mxfr, mlist, excludes=misc.EmptyI):
                 """Perform bulk manifest prefetch.  This is the routine
@@ -1410,6 +1418,7 @@ class Transport(object):
                 mfstlist = mlist
                 pub = mxfr.get_publisher()
                 progtrack = mxfr.get_progtrack()
+                assert(progtrack)
 
                 # download_dir is temporary download path.
                 download_dir = self.cfg.incoming_root
@@ -1503,8 +1512,7 @@ class Transport(object):
                                                 # valid, but can't be logically
                                                 # parsed, drive on.
                                                 os.remove(dl_path)
-                                                progtrack.evaluate_progress(
-                                                    fmri)
+                                                progtrack.manifest_commit()
                                                 mxfr.del_hash(s)
                                                 continue
                                         repostats.record_error(content=True)
@@ -1513,8 +1521,7 @@ class Transport(object):
                                         continue
 
                                 os.remove(dl_path)
-                                if progtrack:
-                                        progtrack.evaluate_progress(fmri)
+                                progtrack.manifest_commit()
                                 mxfr.del_hash(s)
 
                         # If there were failures, re-generate list for just
@@ -2923,7 +2930,7 @@ class MultiFile(MultiXfr):
                                             len(action.attrs.get("chain",
                                             "").split())
                                 self._progtrack.download_add_progress(file_cnt,
-                                    filesz)
+                                    filesz, cachehit=True)
                         return
 
                 hashval = action.hash
@@ -3030,7 +3037,8 @@ class MultiFileNI(MultiFile):
                         self._final_copy(hashval, cpath)
                         if self._progtrack:
                                 filesz = int(misc.get_pkg_otw_size(action))
-                                self._progtrack.download_add_progress(1, filesz)
+                                self._progtrack.download_add_progress(1, filesz,
+                                    cachehit=True)
                 else:
                         self.add_hash(hashval, action)
                 if action.name == "signature":

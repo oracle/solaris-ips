@@ -1624,7 +1624,7 @@ pkg unset-publisher %s
                 return False, True
 
         def __refresh_v1(self, croot, tempdir, full_refresh, immediate,
-            mismatched, repo):
+            mismatched, repo, progtrack=None):
                 """The method to refresh the publisher's metadata against
                 a catalog/1 source.  If the more recent catalog/1 version
                 isn't supported, __refresh_v0 is invoked as a fallback.
@@ -1646,7 +1646,8 @@ pkg unset-publisher %s
                 try:
                         self.transport.get_catalog1(self, ["catalog.attrs"],
                             path=tempdir, redownload=redownload,
-                            revalidate=revalidate, alt_repo=repo)
+                            revalidate=revalidate, alt_repo=repo,
+			    progtrack=progtrack)
                 except api_errors.UnsupportedRepositoryOperation:
                         # No v1 catalogs available.
                         if v1_cat.exists:
@@ -1686,7 +1687,8 @@ pkg unset-publisher %s
                         try:
                                 self.transport.get_catalog1(self, flist,
                                     path=tempdir, redownload=redownload,
-                                    revalidate=revalidate, alt_repo=repo)
+                                    revalidate=revalidate, alt_repo=repo,
+				    progtrack=progtrack)
                         except api_errors.UnsupportedRepositoryOperation:
                                 # Couldn't find a v1 catalog after getting one
                                 # before.  This would be a bizzare error, but we
@@ -1738,7 +1740,7 @@ pkg unset-publisher %s
                 return True, True
 
         def __refresh_origin(self, croot, full_refresh, immediate, mismatched,
-            origin):
+            origin, progtrack=None):
                 """Private helper method used to refresh catalog data for each
                 origin.  Returns a tuple of (changed, refreshed) where 'changed'
                 indicates whether new catalog data was found and 'refreshed'
@@ -1767,7 +1769,8 @@ pkg unset-publisher %s
                 # of success or failure.
                 try:
                         rval = self.__refresh_v1(croot, tempdir,
-                            full_refresh, immediate, mismatched, repo)
+                            full_refresh, immediate, mismatched, repo,
+			    progtrack=progtrack)
 
                         # Perform publisher metadata sanity checks.
                         self.__validate_metadata(croot, repo)
@@ -1777,7 +1780,8 @@ pkg unset-publisher %s
                         # Cleanup tempdir.
                         shutil.rmtree(tempdir, True)
 
-        def __refresh(self, full_refresh, immediate, mismatched=False):
+        def __refresh(self, full_refresh, immediate, mismatched=False,
+	    progtrack=None):
                 """The method to handle the overall refresh process.  It
                 determines if a refresh is actually needed, and then calls
                 the first version-specific refresh method in the chain."""
@@ -1812,7 +1816,8 @@ pkg unset-publisher %s
                 any_refreshed = False
                 for origin, opath in self.__gen_origin_paths():
                         changed, refreshed = self.__refresh_origin(opath,
-                            full_refresh, immediate, mismatched, origin)
+                            full_refresh, immediate, mismatched, origin,
+			    progtrack=progtrack)
                         if changed:
                                 any_changed = True
                         if refreshed:
@@ -1828,7 +1833,7 @@ pkg unset-publisher %s
 
                 return any_changed
 
-        def refresh(self, full_refresh=False, immediate=False):
+        def refresh(self, full_refresh=False, immediate=False, progtrack=None):
                 """Refreshes the publisher's metadata, returning a boolean
                 value indicating whether any updates to the publisher's
                 metadata occurred.
@@ -1844,7 +1849,8 @@ pkg unset-publisher %s
                 is True."""
 
                 try:
-                        return self.__refresh(full_refresh, immediate)
+                        return self.__refresh(full_refresh, immediate,
+			    progtrack=progtrack)
                 except (api_errors.BadCatalogUpdateIdentity,
                     api_errors.DuplicateCatalogEntry,
                     api_errors.ObsoleteCatalogUpdate,
@@ -1876,7 +1882,7 @@ pkg unset-publisher %s
                         #   by this version of the client, so a full retrieval
                         #   is required.
                         #
-                        return self.__refresh(True, True)
+                        return self.__refresh(True, True, progtrack=progtrack)
                 except api_errors.MismatchedCatalog:
                         if full_refresh:
                                 # If this was a full refresh, don't bother
@@ -1889,17 +1895,18 @@ pkg unset-publisher %s
                         # information) didn't match the catalog attributes.
                         # This could be the result of a misbehaving or stale
                         # cache.
-                        return self.__refresh(False, True, mismatched=True)
+                        return self.__refresh(False, True, mismatched=True,
+			    progtrack=progtrack)
                 except (api_errors.BadCatalogSignatures,
                     api_errors.InvalidCatalogFile):
                         # Assembly of the catalog failed, but this could be due
                         # to a transient error.  So, retry at least once more.
-                        return self.__refresh(True, True)
+                        return self.__refresh(True, True, progtrack=progtrack)
                 except (api_errors.BadCatalogSignatures,
                     api_errors.InvalidCatalogFile):
                         # Assembly of the catalog failed, but this could be due
                         # to a transient error.  So, retry at least once more.
-                        return self.__refresh(True, True)
+                        return self.__refresh(True, True, progtrack=progtrack)
 
         def remove_meta_root(self):
                 """Removes the publisher's meta_root."""

@@ -414,35 +414,36 @@ def N_(message):
         their use is delayed by the program."""
         return message
 
-def bytes_to_str(n, fmt=None):
+def bytes_to_str(nbytes, fmt="%(num).2f %(unit)s"):
         """Returns a human-formatted string representing the number of bytes
-        in the largest unit possible.  If provided, 'fmt' should be a string
-        which can be formatted with a dictionary containing a float 'num' and
-        string 'unit'."""
+        in the largest unit possible.
+        
+        If provided, 'fmt' should be a string which can be formatted
+        with a dictionary containing a float 'num' and strings 'unit' and
+        'shortunit'.  The default format prints, for example, '3.23 MB' """
 
         units = [
-            (_("B"), 2**10),
-            (_("kB"), 2**20),
-            (_("MB"), 2**30),
-            (_("GB"), 2**40),
-            (_("TB"), 2**50),
-            (_("PB"), 2**60),
-            (_("EB"), 2**70)
+            (_("B"), _("B"), 2**10),
+            (_("kB"), _("k"), 2**20),
+            (_("MB"), _("M"), 2**30),
+            (_("GB"), _("G"), 2**40),
+            (_("TB"), _("T"), 2**50),
+            (_("PB"), _("P"), 2**60),
+            (_("EB"), _("E"), 2**70)
         ]
 
-        for uom, limit in units:
-                if uom != _("EB") and n >= limit:
+        for uom, shortuom, limit in units:
+                if uom != _("EB") and nbytes >= limit:
                         # Try the next largest unit of measure unless this is
                         # the largest or if the byte size is within the current
                         # unit of measure's range.
                         continue
-                else:
-                        if not fmt:
-                                fmt = "%(num).2f %(unit)s"
-                        return fmt % {
-                            "num": round(n / float(limit / 2**10), 2),
-                            "unit": uom
-                        }
+
+                return fmt % {
+                    "num": round(nbytes / float(limit / 2**10), 2),
+                    "unit": uom,
+                    "shortunit": shortuom
+                }
 
 def get_rel_path(request, uri, pub=None):
         """Calculate the depth of the current request path relative to our
@@ -2120,34 +2121,42 @@ def json_validate(name, data):
                         new_name = "%s[%i]" % (name, i)
                         json_validate(new_name, data[i])
 
-def json_diff(name, d0, d1):
+def json_diff(name, d0, d1, alld0, alld1):
         """Compare two json encoded objects to make sure they are
         identical, assert() if they are not."""
 
+        def dbg():
+                """dump debug info for json_diff"""
+                def d(s):
+                        """dbg helper"""
+                        return json.dumps(s, sort_keys=True, indent=4)
+                return "\n--- d0\n" + d(d0) + "\n+++ d1\n" + d(d1) + \
+                    "\n--- alld0\n" + d(alld0) + "\n+++ alld1\n" + d(alld1)
+
         assert type(d0) == type(d1), ("Json data types differ for \"%s\":\n"
-                "type 1: %s\ntype 2: %s\n") % (name, type(d0), type(d1))
+                "type 1: %s\ntype 2: %s\n") % (name, type(d0), type(d1)) + dbg()
 
         if type(d0) == dict:
                 assert set(d0) == set(d1), (
                    "Json dictionary keys differ for \"%s\":\n"
                    "dict 1 missing: %s\n"
                    "dict 2 missing: %s\n") % (name,
-                   set(d1) - set(d0), set(d0) - set(d1))
+                   set(d1) - set(d0), set(d0) - set(d1)) + dbg()
 
                 for k in d0:
                         new_name = "%s[%s]" % (name, k)
-                        json_diff(new_name, d0[k], d1[k])
+                        json_diff(new_name, d0[k], d1[k], alld0, alld1)
 
         if type(d0) == list:
                 assert len(d0) == len(d1), (
                    "Json list lengths differ for \"%s\":\n"
                    "list 1 length: %s\n"
                    "list 2 length: %s\n") % (name,
-                   len(d0), len(d1))
+                   len(d0), len(d1)) + dbg()
 
                 for i in range(len(d0)):
                         new_name = "%s[%i]" % (name, i)
-                        json_diff(new_name, d0[i], d1[i])
+                        json_diff(new_name, d0[i], d1[i], alld0, alld1)
 
 class Timer(object):
         """A class which can be used for measuring process times (user,

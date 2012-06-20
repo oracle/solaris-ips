@@ -302,11 +302,14 @@ packages = [
 
 pylint_targets = [
         'pkg.altroot',
+        'pkg.client.__init__',
         'pkg.client.api',
         'pkg.client.linkedimage',
         'pkg.client.pkgdefs',
         'pkg.client.pkgremote',
         'pkg.client.plandesc',
+        'pkg.client.printengine',
+        'pkg.client.progress',
         'pkg.misc',
         'pkg.pipeutils',
         ]

@@ -21,201 +21,254 @@
 #
 
 #
-# Copyright (c) 2009, 2010, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2009, 2012, Oracle and/or its affiliates. All rights reserved.
 #
 
-MIN_ELEMENTS_BOUNCE = 5      # During indexing the progress will be progressive if 
-                                 # the number of indexing elements is greater then this, 
-                                 # otherwise it will bounce
+# Display linear, incremental progress if the # of elements is greater than
+# this, else bounce back and forth.
+MIN_ELEMENTS_BOUNCE = 5  
 
-from pkg.client.progress import NullProgressTracker
+import pkg.client.progress as progress
+import pkg.client.pkgdefs as pkgdefs
 
-class GuiProgressTracker(NullProgressTracker):
+class GuiProgressTracker(progress.ProgressTracker):
 
         def __init__(self, indent = False):
-                NullProgressTracker.__init__(self)
-                self.prev_pkg = None
-                self.act_phase_last = None
+                progress.ProgressTracker.__init__(self)
+                self.dl_prev_pkg = None
+                self.last_actionitem = None
                 self.ind_started = False
                 self.item_started = False
                 self.indent = indent
 
-        def cat_output_start(self):
-                if self.indent:
-                        self.update_details_text(_("Retrieving catalog '%s'...\n") % \
-                            self.cat_cur_catalog, "level1")
-                else:
-                        self.update_details_text(_("Retrieving catalog '%s'...\n") % \
-                            self.cat_cur_catalog)
+        def _change_purpose(self, old_purpose, new_purpose):
+                pass
+
+        def _cache_cats_output(self, outspec):
+                if outspec.first:
+                        i = "level1" if self.indent else ""
+                        self.update_details_text(_("Caching catalogs ..."), i)
+                if outspec.last:
+                        self.update_details_text("\n")
                 return
 
-        def cat_output_done(self):
-                return
-
-        def cache_cats_output_start(self):
-                if self.indent:
-                        self.update_details_text(_("Caching catalogs ...\n"), "level1")
-                else:
-                        self.update_details_text(_("Caching catalogs ...\n"))
-                return
-
-        def cache_cats_output_done(self):
-                return
-
-        def load_cat_cache_output_start(self):
-                if self.indent:
-                        self.update_details_text(_("Loading catalog cache ...\n"),
-                            "level1")
-                else:
-                        self.update_details_text(_("Loading catalog cache ...\n"))
-                return
-
-        def load_cat_cache_output_done(self):
-                return
-
-        def refresh_output_start(self):
-                return
-
-        def refresh_output_progress(self):
-                if self.indent:
+        def _load_cat_cache_output(self, outspec):
+                if outspec.first:
+                        i = "level1" if self.indent else ""
                         self.update_details_text(
-                            _("Refreshing catalog %s\n") % self.refresh_cur_pub, "level1")
-                else:
-                        self.update_details_text(
-                            _("Refreshing catalog %s\n") % self.refresh_cur_pub)
+                            _("Loading catalog cache ..."), i)
+                if outspec.last:
+                        self.update_details_text("\n")
                 return
 
-        def refresh_output_done(self):
-                if self.indent:
-                        self.update_details_text(
-                            _("Finished refreshing catalog %s\n") % self.refresh_cur_pub,
-                            "level1")
-                else:
-                        self.update_details_text(
-                            _("Finished refreshing catalog %s\n") % self.refresh_cur_pub)
+        def _refresh_output_progress(self, outspec):
+                i = "level1" if self.indent else ""
+
+                if "startpublisher" in outspec.changed:
+                        if self.refresh_full_refresh:
+                                msg = _("Retrieving catalog: %s") % \
+                                    self.pub_refresh.curinfo
+                        else:
+                                msg = _("Refreshing catalog: %s") % \
+                                    self.pub_refresh.curinfo
+                        self.update_details_text(msg, i)
+                if "endpublisher" in outspec.changed:
+                        self.update_details_text("\n", i)
                 return
 
-        def eval_output_start(self):
-                return
-
-        def eval_output_progress(self):
-                '''Called by progress tracker each time some package was evaluated. The
-                call is being done by calling progress tracker evaluate_progress() 
-                function'''
-                if self.prev_pkg != self.eval_cur_fmri:
-                        self.prev_pkg = self.eval_cur_fmri
-                        text = _("Evaluating: %s") % self.eval_cur_fmri.get_name()
+        def _plan_output(self, outspec, planitem):
+                '''Called by progress tracker each time some package was
+                evaluated. The call is being done by calling progress tracker
+                evaluate_progress() function'''
+                if self.purpose == self.PURPOSE_PKG_UPDATE_CHK:
+                        if not outspec.first:
+                                return
+                        text = _("Up to date check: planning (%s)") % \
+                            planitem.name
                         self.update_label_text(text)
+                        return
+
+                text = _("Planning: %s") % planitem.name
+                if outspec.first:
+                        self.update_label_text(text)
+                        i = "level1" if self.indent else ""
+                        self.update_details_text(text + _("... "), i)
+                if outspec.last:
+                        self.update_details_text(_("Done\n"))
+
+                if isinstance(planitem, progress.GoalTrackerItem):
+                        self.__generic_progress(text, planitem.items,
+                            planitem.goalitems)
+                else:
+                        self.__generic_progress(text, 1, 1)
+
+                if outspec.last:
                         self.reset_label_text_after_delay()
 
-        def eval_output_done(self):
-                return
+        def _plan_output_all_done(self):
+                text = _("Planning: Complete\n")
+                self.update_label_text(text)
+                i = "level1" if self.indent else ""
+                self.update_details_text(text, i)
 
-        def ver_output(self):
-                return
+        def _mfst_fetch(self, outspec):
+                if outspec.first:
+                        text = _("Fetching %d manifests") % \
+                            self.mfst_fetch.goalitems
+                        self.update_label_text(text)
+                        self.stop_bouncing_progress()
 
-        def ver_output_error(self, actname, errors):
-                return
+                if "manifests" in outspec.changed:
+                        self.__generic_progress("Fetching manifests",
+                            self.mfst_fetch.items + 1,
+                            self.mfst_fetch.goalitems)
 
-        def ver_output_done(self):
-                return
+                if outspec.last:
+                        self.start_bouncing_progress()
+                pass
 
-        def dl_output(self):
+        def _mfst_commit(self, outspec):
+                text = _("Committing manifests")
+                self.update_label_text(text)
+                pass
+
+        def _ver_output(self): pass
+        def _ver_output_error(self, actname, errors): pass
+        def _ver_output_warning(self, actname, warnings): pass
+        def _ver_output_info(self, actname, info): pass
+        def _ver_output_done(self): pass
+
+        def _dl_output(self, outspec):
                 self.display_download_info()
-                if self.prev_pkg != self.cur_pkg:
-                        self.prev_pkg = self.cur_pkg
+                if "startpkg" in outspec.changed:
                         self.update_details_text(
-                            _("Package %d of %d: %s\n") % (self.dl_cur_npkgs+1, 
-                            self.dl_goal_npkgs, self.cur_pkg), "level1")
+                            _("Package %d of %d: %s\n") % (
+                            self.dl_pkgs.items + 1,
+                            self.dl_pkgs.goalitems, self.dl_pkgs.curinfo),
+                            "level1")
 
-        def dl_output_done(self):
-                self.update_details_text("\n")
+                if outspec.last:
+                        self.update_details_text("\n")
 
-        def act_output(self, force=False):
-                if self.act_phase != self.act_phase_last:
-                        self.act_phase_last = self.act_phase
-                        self.update_label_text(self.act_phase)
-                        self.update_details_text("%s\n" % self.act_phase, "level1")
-                self.display_phase_info(self.act_phase, self.act_cur_nactions,
-                    self.act_goal_nactions)
+        def _act_output(self, outspec, actionitem):
+                if actionitem != self.last_actionitem:
+                        self.last_actionitem = actionitem
+                        self.update_label_text(actionitem.name)
+                        self.update_details_text("%s\n" % actionitem.name,
+                            "level1")
+                if actionitem.goalitems > 0:
+                        self.display_phase_info(actionitem.name,
+                            actionitem.items,
+                            actionitem.goalitems)
                 return
 
-        def act_output_done(self):
+        def _act_output_all_done(self):
                 return
 
-        def ind_output(self, force=False):
-                if self.ind_started != self.ind_phase:
-                        self.ind_started = self.ind_phase
-                        self.update_label_text(self.ind_phase)
+        def _job_output(self, outspec, job):
+                if outspec.first:
+                        self.update_label_text(job.name)
                         self.update_details_text(
-                            "%s\n" % (self.ind_phase), "level1")
-                self.__indexing_progress()
+                            "%s ... " % (job.name), "level1")
 
-        def ind_output_done(self):
-                self.update_progress(self.ind_cur_nitems, self.ind_goal_nitems)
+                if isinstance(job, progress.GoalTrackerItem):
+                        self.__generic_progress(job.name, job.items,
+                            job.goalitems)
+                else:
+                        self.__generic_progress(job.name, 1, 1)
 
-        def __indexing_progress(self):
-                self.__generic_progress(self.ind_phase, self.ind_goal_nitems,
-                    self.ind_cur_nitems)
+                if outspec.last:
+                        self.update_details_text(_("Done\n"))
+                return
 
-        def __generic_progress(self, phase, goal_nitems, cur_nitems):
-                #It doesn't look nice if the progressive is just for few elements
+        def _li_recurse_start_output(self):
+                pass
+
+        def _li_recurse_end_output(self):
+                # elide output for publisher check
+                if self.linked_pkg_op == pkgdefs.PKG_OP_PUBCHECK:
+                        return
+                i = "level1" if self.indent else ""
+                self.update_details_text(
+                    _("Finished processing linked images.\n\n"), i)
+
+        def __li_dump_output(self, output):
+                i = "level1" if self.indent else ""
+                if not output:
+                        return
+                lines = output.splitlines()
+                nlines = len(lines)
+                for linenum, line in enumerate(lines):
+                        if linenum < nlines - 1:
+                                self.update_details_text("| " + line + "\n", i)
+                        else:
+                                if lines[linenum].strip() != "":
+                                        self.update_details_text(
+                                            "| " + line + "\n", i)
+                                self.update_details_text("`\n", i)
+                        
+        def _li_recurse_output_output(self, lin, stdout, stderr):
+                if not stdout and not stderr:
+                        return
+                i = "level1" if self.indent else ""
+                self.update_details_text(_("Linked image '%s' output:\n") % lin,
+                    i)
+                self.__li_dump_output(stdout)
+                self.__li_dump_output(stderr)
+
+        def _li_recurse_status_output(self, done, pending):
+                if self.linked_pkg_op == pkgdefs.PKG_OP_PUBCHECK:
+                        return
+
+                i = "level1" if self.indent else ""
+
+                total = len(self.linked_running) + pending + done
+                running = " ".join([str(s) for s in self.linked_running])
+                msg = _("Linked images: %s done; %d working: %s\n") % \
+                    (progress.format_pair("%d", done, total),
+                    len(self.linked_running), running)
+                self.update_details_text(msg, i)
+
+        def _li_recurse_progress_output(self, lin):
+                self.__generic_progress("Linked Images", 1, 1)
+                pass
+
+        def __generic_progress(self, phase, cur_nitems, goal_nitems):
+                # It doesn't look nice if the progressive is just for few
+                # elements
                 if goal_nitems > MIN_ELEMENTS_BOUNCE:
-                        self.display_phase_info(phase, cur_nitems-1, goal_nitems)
+                        if self.is_progress_bouncing():
+                                self.stop_bouncing_progress()
+                        self.display_phase_info(phase, cur_nitems-1,
+                            goal_nitems)
                 else:
                         if not self.is_progress_bouncing():
                                 self.start_bouncing_progress()
 
-        def item_output(self, force=False):
-                if self.item_started != self.item_phase:
-                        self.item_started = self.item_phase
-                        self.update_label_text(self.item_phase)
-                        self.update_details_text(
-                            "%s\n" % (self.item_phase), "level1")
-                self.__item_progress()
+        @progress.pt_abstract
+        def update_progress(self, current_progress, total_progress): pass
 
-        def __item_progress(self):
-                self.__generic_progress(self.item_phase, self.item_goal_nitems,
-                    self.item_cur_nitems)
+        @progress.pt_abstract
+        def start_bouncing_progress(self): pass
 
+        @progress.pt_abstract
+        def is_progress_bouncing(self): pass
 
-        def item_output_done(self):
-                self.update_progress(self.item_cur_nitems, self.item_goal_nitems)
+        @progress.pt_abstract
+        def stop_bouncing_progress(self): pass
 
-        def update_progress(self, current_progress, total_progress):
-                raise NotImplementedError("abstract method update_progress() not "
-                    "implemented in superclass")
+        @progress.pt_abstract
+        def display_download_info(self): pass
 
-        def start_bouncing_progress(self):
-                raise NotImplementedError("abstract method start_bouncing_progress() "
-                    "not implemented in superclass")
+        @progress.pt_abstract
+        def display_phase_info(self, phase_name, cur_n, goal_n): pass
 
-        def is_progress_bouncing(self):
-                raise NotImplementedError("abstract method is_progress_bouncing() "
-                    "not implemented in superclass")
+        @progress.pt_abstract
+        def reset_label_text_after_delay(self): pass
 
-        def stop_bouncing_progress(self):
-                raise NotImplementedError("abstract method stop_bouncing_progress() "
-                    "not implemented in superclass")
+        @progress.pt_abstract
+        def update_label_text(self, text): pass
 
-        def display_download_info(self):
-                raise NotImplementedError("abstract method display_download_info() "
-                    "not implemented in superclass")
-
-        def display_phase_info(self, phase_name, cur_n, goal_n):
-                raise NotImplementedError("abstract method display_phase_info() "
-                    "not implemented in superclass")
-
-        def reset_label_text_after_delay(self):
-                raise NotImplementedError(
-                    "abstract method reset_label_text_after_delay() "
-                    "not implemented in superclass")
-
-        def update_label_text(self, text):
-                raise NotImplementedError("abstract method update_label_text() "
-                    "not implemented in superclass")
-
-        def update_details_text(self, text, *tags):
-                raise NotImplementedError("abstract method update_details_text() "
-                    "not implemented in superclass")
+        @progress.pt_abstract
+        def update_details_text(self, text, *tags): pass
 

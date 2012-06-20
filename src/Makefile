@@ -66,7 +66,7 @@ clint:
 	$(PYTHON) setup.py clint
 	@cd zoneproxy; pwd; make lint
 
-pylint:
+pylint: install
 	$(PYTHON) setup.py pylint
 
 #

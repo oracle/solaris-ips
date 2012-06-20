@@ -389,13 +389,12 @@ def main_func():
                 )
 
                 f = man.fmri
-                tracker.republish_start_pkg(f.pkg_name, getbytes=getbytes,
-                    sendbytes=sendbytes)
 
+                tracker.republish_start_pkg(f, getbytes=getbytes,
+                    sendbytes=sendbytes)
                 if dry_run:
                         # Dry-run; attempt a merge of everything but don't
                         # write any data or publish packages.
-                        tracker.republish_end_pkg()
                         continue
 
                 pkgdir = tempfile.mkdtemp(dir=tmpdir)
@@ -448,12 +447,12 @@ def main_func():
                         error(str(e))
 
                 # Done with this package.
-                tracker.republish_end_pkg()
+                tracker.republish_end_pkg(f)
 
                 # Dump retrieved package data after each republication.
                 shutil.rmtree(pkgdir)
 
-        tracker.republish_done(assert_mismatch=False)
+        tracker.republish_done(dryrun=dry_run)
         tracker.reset()
 
         return 0

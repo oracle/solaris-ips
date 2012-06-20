@@ -24,7 +24,8 @@
 # Copyright (c) 2007, 2012, Oracle and/or its affiliates. All rights reserved.
 #
 
-import copy
+# Missing docstring; pylint: disable-msg=C0111
+
 import logging
 import os
 import sys
@@ -57,6 +58,17 @@ class GlobalSettings(object):
                 self.__info_log_handler = None
                 self.__error_log_handler = None
                 self.__verbose = False
+
+                #
+                # These properties allow the client to describe how it
+                # has been asked to behave with respect to output.  This
+                # allows subprocess invocations (e.g. for linked images) to
+                # discover from the global settings how they are expected
+                # to behave.
+                #
+                self.client_output_verbose = 0
+                self.client_output_quiet = False
+                self.client_output_parsable_version = None
 
                 # runid, used by the pkg.1 client and the linked image
                 # subsystem when when generating temporary files.
@@ -185,6 +197,7 @@ class GlobalSettings(object):
 
         @property
         def logger(self):
+		# Method could be a function; pylint: disable-msg=R0201
                 return logging.getLogger("pkg")
 
         def reset_logging(self):

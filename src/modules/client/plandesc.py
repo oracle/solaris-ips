@@ -189,10 +189,6 @@ class PlanDescription(object):
                 self.added_users = {}
                 self.removed_groups = {}
                 self.removed_users = {}
-                # Data retrieval statistics for preexecute()
-                self._dl_npkgs = 0
-                self._dl_nfiles = 0
-                self._dl_nbytes = 0
                 # plan properties
                 self._cbytes_added = 0 # size of compressed files
                 self._bytes_added = 0  # size of files added

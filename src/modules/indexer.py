@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!eusr/bin/python
 #
 # CDDL HEADER START
 #
@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2007, 2010, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2007, 2012, Oracle and/or its affiliates. All rights reserved.
 #
 
 import errno
@@ -37,6 +37,7 @@ import pkg.portable as portable
 import pkg.search_storage as ss
 import pkg.search_errors as search_errors
 import pkg.version
+import pkg.client.progress as progress
 from pkg.misc import EmptyI, PKG_DIR_MODE, PKG_FILE_BUFSIZ
 
 # Constants for indicating whether pkgplans or fmri-manifest path pairs are
@@ -48,7 +49,7 @@ INITIAL_VERSION_NUMBER = 1
 
 FILE_OPEN_TIMEOUT_SECS = 2
 
-MAX_ADDED_NUMBER_PACKAGES = 20
+MAX_FAST_INDEXED_PKGS = 20
 
 SORT_FILE_PREFIX = "sort."
 
@@ -143,7 +144,10 @@ class Indexer(object):
                 self.empty_index = False
                 self.file_version_number = None
 
-                self._progtrack = progtrack
+                if progtrack is None:
+                        self._progtrack = progress.NullProgressTracker()
+                else:
+                        self._progtrack = progtrack
 
                 self._file_timeout_secs = FILE_OPEN_TIMEOUT_SECS
 
@@ -186,9 +190,7 @@ class Indexer(object):
 
                 res = ss.consistent_open(self._data_dict.values(), directory,
                     self._file_timeout_secs)
-                if self._progtrack is not None:
-                        self._progtrack.index_set_goal(
-                            _("Reading Existing Index"), len(self._data_dict))
+                pt = self._progtrack
                 if res == None:
                         self.file_version_number = INITIAL_VERSION_NUMBER
                         self.empty_index = True
@@ -196,16 +198,16 @@ class Indexer(object):
                 self.file_version_number = res
 
                 try:
+                        pt.job_start(pt.JOB_READ_SEARCH)
                         try:
                                 for d in self._data_dict.values():
                                         if (d == self._data_main_dict or
                                                 d == self._data_token_offset):
-                                                if self._progtrack is not None:
-                                                        self._progtrack.index_add_progress()
+                                                pt.job_add_progress(
+                                                    pt.JOB_READ_SEARCH)
                                                 continue
                                         d.read_dict_file()
-                                        if self._progtrack is not None:
-                                                self._progtrack.index_add_progress()
+                                        pt.job_add_progress(pt.JOB_READ_SEARCH)
                         except:
                                 self._data_dict["main_dict"].close_file_handle()
                                 raise
@@ -214,8 +216,7 @@ class Indexer(object):
                                 if d == self._data_main_dict:
                                         continue
                                 d.close_file_handle()
-                if self._progtrack is not None:
-                        self._progtrack.index_done()
+                        pt.job_done(pt.JOB_READ_SEARCH)
 
         def __close_sort_fh(self):
                 """Utility fuction used to close and sort the temporary
@@ -295,7 +296,38 @@ class Indexer(object):
                 that indicated which versions of a package are being added or
                 removed."""
 
+                nfast_add = len(self._data_fast_add._set)
+                nfast_remove = len(self._data_fast_remove._set)
+
+                #
+                # First pass determines whether a fast update makes sense.
+                # 
                 filters, pkgplan_list = filters_pkgplan_list
+                for p in pkgplan_list:
+                        d_fmri, o_fmri = p
+                        if d_fmri:
+                                d_tmp = d_fmri.get_fmri(anarchy=True,
+                                    include_scheme=False)
+                                if self._data_fast_remove.has_entity(d_tmp):
+                                        nfast_remove -= 1
+                                else:
+                                        nfast_add += 1
+                        if o_fmri:
+                                o_tmp = o_fmri.get_fmri(anarchy=True,
+                                    include_scheme=False)
+                                if self._data_fast_add.has_entity(o_tmp):
+                                        nfast_add -= 1
+                                else:
+                                        nfast_remove += 1
+
+                if nfast_add > MAX_FAST_INDEXED_PKGS:
+                        return False
+
+                #
+                # Second pass actually does the work.
+                #
+                self._progtrack.job_start(self._progtrack.JOB_UPDATE_SEARCH,
+                    goal=len(pkgplan_list))
                 for p in pkgplan_list:
                         d_fmri, o_fmri = p
 
@@ -322,9 +354,12 @@ class Indexer(object):
                                 else:
                                         self._data_fast_remove.add_entity(o_tmp)
 
-                        if self._progtrack is not None:
-                                self._progtrack.index_add_progress()
-                return
+                        self._progtrack.job_add_progress(
+                            self._progtrack.JOB_UPDATE_SEARCH)
+
+                self._progtrack.job_done(self._progtrack.JOB_UPDATE_SEARCH)
+
+                return True
 
         def _process_fmris(self, fmris):
                 """Takes a list of fmris and updates the internal storage to
@@ -340,8 +375,8 @@ class Indexer(object):
                             self.excludes, log=self.__log)
                         self._add_terms(added_fmri, new_dict)
 
-                        if self._progtrack is not None:
-                                self._progtrack.index_add_progress()
+                        self._progtrack.job_add_progress(
+                            self._progtrack.JOB_REBUILD_SEARCH)
                 return removed_paths
 
         def _write_main_dict_line(self, file_handle, token,
@@ -372,6 +407,8 @@ class Indexer(object):
                 self._data_token_offset.write_entity(token, cur_location)
 
                 for at, st_list in fv_fmri_pos_list_list:
+                        self._progtrack.job_add_progress(
+                            self._progtrack.JOB_REBUILD_SEARCH, nitems=0)
                         if at not in self.at_fh:
                                 self.at_fh[at] = file(os.path.join(out_dir,
                                     "__at_" + at), "wb")
@@ -705,19 +742,15 @@ class Indexer(object):
 
                         if input_type == IDX_INPUT_TYPE_PKG:
                                 assert image
-                                if self._progtrack is not None:
-                                        self._progtrack.index_set_goal(
-                                            _("Indexing Packages"),
-                                            len(inputs[1]))
-                                self._fast_update(inputs)
-                                if self._progtrack is not None:
-                                        self._progtrack.index_done()
-                                fast_update = True
-                                if len(self._data_fast_add._set) > \
-                                    MAX_ADDED_NUMBER_PACKAGES:
+
+                                #
+                                # Try to do a fast update; if that fails,
+                                # do a full index rebuild.
+                                #
+                                fast_update = self._fast_update(inputs)
+
+                                if not fast_update:
                                         self._data_main_dict.close_file_handle()
-                                        if self._progtrack:
-                                                self._progtrack.index_optimize()
                                         self._data_fast_add.clear()
                                         self._data_fast_remove.clear()
 
@@ -736,16 +769,15 @@ class Indexer(object):
                                     str(self._sort_file_num)), "wb")
                                 self._sort_file_num += 1
 
-                                if self._progtrack is not None:
-                                        self._progtrack.index_set_goal(
-                                            _("Indexing Packages"),
-                                            len(inputs))
+                                self._progtrack.job_start(
+                                    self._progtrack.JOB_REBUILD_SEARCH,
+                                    goal=len(inputs))
                                 dicts = self._process_fmris(inputs)
                                 # Update the main dictionary file
                                 self.__close_sort_fh()
-                                if self._progtrack is not None:
-                                        self._progtrack.index_done()
                                 self._update_index(dicts, tmp_index_dir)
+                                self._progtrack.job_done(
+                                    self._progtrack.JOB_REBUILD_SEARCH)
 
                                 self.empty_index = False
                         else:
@@ -776,8 +808,6 @@ class Indexer(object):
                 directory structure.  This prevents the indexer from
                 accidentally removing files.  Image the image object. This is
                 needed to allow correct reindexing from scratch to occur."""
-
-                assert self._progtrack is not None
 
                 self._generic_update_index(pkgplan_list, IDX_INPUT_TYPE_PKG,
                     tmp_index_dir=tmp_index_dir, image=image)

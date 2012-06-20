@@ -1767,7 +1767,7 @@ class LinkedImage(object):
                 """Sync one or more children of the current image."""
 
                 if progtrack is None:
-                        progtrack = progress.QuietProgressTracker()
+                        progtrack = progress.NullProgressTracker()
 
                 if lin_list == []:
                         lin_list = None
@@ -1824,7 +1824,7 @@ class LinkedImage(object):
                     _pkg_op=pkgdefs.PKG_OP_DETACH,
                     _lic_list=lic_dict.values(),
                     _rvdict=rvdict,
-                    _progtrack=progress.QuietProgressTracker(),
+                    _progtrack=progress.NullProgressTracker(),
                     _failfast=False,
                     noexecute=noexecute))
 
@@ -1861,8 +1861,7 @@ class LinkedImage(object):
 
         @staticmethod
         def __children_op(_pkg_op, _lic_list, _rvdict, _progtrack, _failfast,
-            _expect_plan=False, _ignore_syncmd_nop=True, _pd=None,
-            **kwargs):
+	    _expect_plan=False, _ignore_syncmd_nop=True, _pd=None, **kwargs):
                 """An iterator function which performs a linked image
                 operation on multiple children in parallel.
 
@@ -1893,7 +1892,7 @@ class LinkedImage(object):
                 '_pd' a PlanDescription pointer."""
 
                 if _lic_list:
-                        _progtrack.li_recurse_start()
+                        _progtrack.li_recurse_start(_pkg_op)
 
                 if _pkg_op in [ pkgdefs.PKG_OP_AUDIT_LINKED,
                     pkgdefs.PKG_OP_PUBCHECK ]:
@@ -1942,8 +1941,7 @@ class LinkedImage(object):
 
                         lic_list.remove(lic)
 
-                        (rvtuple, stdout, stderr) = lic.child_op_rv(
-                            _progtrack, _expect_plan)
+                        rvtuple, stdout, stderr = lic.child_op_rv(_expect_plan)
                         _li_rvtuple_check(rvtuple)
                         _rvdict[lic.child_name] = rvtuple
 
@@ -2007,7 +2005,9 @@ class LinkedImage(object):
                                     len(lic_running)
                                 pending = len(_lic_list) - len(lic_running) - \
                                     done
-                                _progtrack.li_recurse(lic_running,
+                                lin_running = sorted([
+                                    lic.child_name for lic in lic_running])
+                                _progtrack.li_recurse_status(lin_running,
                                     done, pending)
 
                         rlistrv = select.select(lic_running, [], [])[0]
@@ -2091,7 +2091,7 @@ class LinkedImage(object):
                 if repos:
                         raise apx.PlanCreationException(no_tmp_origins=True)
 
-        def api_recurse_pubcheck(self):
+        def api_recurse_pubcheck(self, progtrack):
                 """Do a recursive publisher check"""
 
                 # get a list of of children to recurse into.
@@ -2103,7 +2103,7 @@ class LinkedImage(object):
                     _pkg_op=pkgdefs.PKG_OP_PUBCHECK,
                     _lic_list=lic_list,
                     _rvdict=rvdict,
-                    _progtrack=progress.QuietProgressTracker(),
+                    _progtrack=progtrack,
                     _failfast=False))
 
                 # raise an exception if one or more children failed the
@@ -2777,14 +2777,15 @@ class LinkedImageChild(object):
                     new_be=None,
                     noexecute=noexecute,
                     origins=[],
-                    parsable_version=_progtrack.parsable_version,
-                    quiet=_progtrack.quiet,
+                    parsable_version=\
+			global_settings.client_output_parsable_version,
+                    quiet=global_settings.client_output_quiet,
                     refresh_catalogs=refresh_catalogs,
                     reject_pats=reject_list,
                     show_licenses=show_licenses,
                     stage=stage,
                     update_index=update_index,
-                    verbose=_progtrack.verbose)
+                    verbose=global_settings.client_output_verbose)
 
         def __child_setup_update(self, _progtrack, _ignore_syncmd_nop, _pd,
             accept=False,
@@ -2816,14 +2817,15 @@ class LinkedImageChild(object):
                     new_be=None,
                     noexecute=noexecute,
                     origins=[],
-                    parsable_version=_progtrack.parsable_version,
-                    quiet=_progtrack.quiet,
+                    parsable_version=\
+			global_settings.client_output_parsable_version,
+                    quiet=global_settings.client_output_quiet,
                     refresh_catalogs=refresh_catalogs,
                     reject_pats=reject_list,
                     show_licenses=show_licenses,
                     stage=stage,
                     update_index=update_index,
-                    verbose=_progtrack.verbose)
+                    verbose=global_settings.client_output_verbose)
 
         def __child_setup_detach(self, _progtrack, noexecute=False):
                 """Prepare to detach a child image."""
@@ -2834,8 +2836,8 @@ class LinkedImageChild(object):
                     li_target_all=False,
                     li_target_list=[],
                     noexecute=noexecute,
-                    quiet=_progtrack.quiet,
-                    verbose=_progtrack.verbose)
+                    quiet=global_settings.client_output_quiet,
+                    verbose=global_settings.client_output_verbose)
 
         def __child_setup_pubcheck(self):
                 """Prepare to a check if a child's publishers are in sync."""
@@ -2916,11 +2918,9 @@ class LinkedImageChild(object):
                 # make sure there is some data from the child
                 return self.__pkg_remote.is_done()
 
-        def child_op_rv(self, progtrack, expect_plan):
+        def child_op_rv(self, expect_plan):
                 """Public interface to get the result of an operation on a
                 child image.
-
-                'progtrack' progress tracker associated with this operation
 
                 'expect_plan' boolean indicating if the child is performing a
                 planning operation.  this is needed because if we're running
@@ -2958,7 +2958,7 @@ class LinkedImageChild(object):
                         rvtuple = LI_RVTuple(rv, None, None)
                         return (rvtuple, stdout, stderr)
 
-                if progtrack.parsable_version is None or \
+                if global_settings.client_output_parsable_version is None or \
                     not expect_plan:
                         rvtuple = LI_RVTuple(rv, None, None)
                         return (rvtuple, stdout, stderr)

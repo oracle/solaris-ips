@@ -100,6 +100,7 @@ file path=$(PYDIRVP)/pkg/client/pkgdefs.py
 file path=$(PYDIRVP)/pkg/client/pkgplan.py
 file path=$(PYDIRVP)/pkg/client/pkgremote.py
 file path=$(PYDIRVP)/pkg/client/plandesc.py
+file path=$(PYDIRVP)/pkg/client/printengine.py
 file path=$(PYDIRVP)/pkg/client/progress.py
 file path=$(PYDIRVP)/pkg/client/publisher.py
 file path=$(PYDIRVP)/pkg/client/query_parser.py

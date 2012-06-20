@@ -143,13 +143,14 @@ class LintEngineCache():
                                                 packages[key] = pfmri
 
                 # now get the manifests
-                tracker.index_set_goal(phase, len(packages))
+                tracker.manifest_fetch_start(len(packages))
                 for item in packages:
                         self.latest_cache[api_inst][item] = \
                             api_inst.get_manifest(packages[item])
-                        tracker.index_add_progress()
+                        tracker.manifest_fetch_progress(completion=True)
+                tracker.manifest_fetch_done()
 
-        def gen_latest(self, api_inst, tracker, pattern):
+        def gen_latest(self, api_inst, pattern):
                 """ A generator function to return the latest version of the
                 packages matching the supplied pattern from the publishers set
                 for api_inst"""
@@ -161,10 +162,8 @@ class LintEngineCache():
                                 mf = self.latest_cache[api_inst][item]
                                 if pattern and pkg.fmri.glob_match(
                                     str(mf.fmri), pattern):
-                                        tracker.index_add_progress()
                                         yield mf
                                 elif not pattern:
-                                        tracker.index_add_progress()
                                         yield mf
 
         def get_latest(self, api_inst, pkg_name):
@@ -588,7 +587,8 @@ class LintEngine(object):
 
                 for checker in self.checkers:
                         checker.startup(self)
-                self.get_tracker().index_done()
+
+                self.get_tracker().lint_done()
                 self.in_setup = False
 
         def execute(self):
@@ -653,12 +653,14 @@ class LintEngine(object):
 
                 tracker = self.get_tracker()
                 if self.in_setup:
-                        self.tracker_phase = \
-                            self.tracker_phase + 1
-                tracker.index_set_goal(self.tracker_phase,
-                    self.mf_cache.count_latest(api_inst, pattern))
-                for m in self.mf_cache.gen_latest(api_inst,
-                    tracker, pattern):
+                        pt = tracker.LINT_PHASETYPE_SETUP
+                else:
+                        pt = tracker.LINT_PHASETYPE_EXECUTE
+                tracker.lint_next_phase(
+                    self.mf_cache.count_latest(api_inst, pattern), pt)
+
+                for m in self.mf_cache.gen_latest(api_inst, pattern):
+                        tracker.lint_add_progress()
                         yield m
                 return
 
@@ -960,13 +962,13 @@ class LintEngine(object):
                 """Creates a ProgressTracker if we don't already have one,
                 otherwise resetting our current tracker and returning it"""
 
-                if self.tracker and self.in_setup:
-                        return self.tracker
-                if self.tracker:
-                        self.tracker.reset()
+		if self.tracker:
+			if not self.in_setup:
+				self.tracker.reset()
+                        self.tracker.set_major_phase(self.tracker.PHASE_UTILITY)
                         return self.tracker
                 if not self.use_tracker:
-                        self.tracker = progress.QuietProgressTracker()
+                        self.tracker = progress.NullProgressTracker()
                 else:
                         try:
                                 self.tracker = \
@@ -974,6 +976,7 @@ class LintEngine(object):
                         except progress.ProgressTrackerException:
                                 self.tracker = \
                                     progress.CommandLineProgressTracker()
+                self.tracker.set_major_phase(self.tracker.PHASE_UTILITY)
                 return self.tracker
 
         def follow_renames(self, pkg_name, target=None, old_mfs=[],

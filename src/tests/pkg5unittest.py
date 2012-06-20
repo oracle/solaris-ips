@@ -355,9 +355,7 @@ if __name__ == "__main__":
                         return p
                 self.output, self.errout = p.communicate()
                 retcode = p.returncode
-                self.debugresult(retcode, exit, self.output)
-                if self.errout != "":
-                        self.debug(self.errout)
+                self.debugresult(retcode, exit, self.output + self.errout)
 
                 if raise_error and retcode == 99:
                         raise TracebackException(cmdline, self.output +
@@ -1617,8 +1615,8 @@ class Pkg5TestRunner(unittest.TextTestRunner):
 
         @staticmethod
         def __terminate_processes(jobs):
-                """Terminate all processes in this process's task group.  This
-                assumes that test suite is running in its own task group which
+                """Terminate all processes in this process's task.  This
+                assumes that test suite is running in its own task which
                 run.py should ensure."""
 
                 signal.signal(signal.SIGTERM, signal.SIG_IGN)
@@ -1631,18 +1629,39 @@ class Pkg5TestRunner(unittest.TextTestRunner):
                 # images and not told us about them, so we catch EBUSY, unmount,
                 # and keep trying.
                 finished = False
-                while not finished:
+                retry = 0
+
+                while not finished and retry < 10:
                         try:
                                 shutil.rmtree(os.path.join(g_tempdir,
                                     "ips.test.%s" % os.getpid()))
                         except OSError, e:
-                                if e.errno != errno.EBUSY:
+                                if e.errno == errno.ENOENT:
+                                        #
+                                        # seems to sporadically happen if we
+                                        # race with e.g. something shutting
+                                        # down which has a pid file; retry.
+                                        #
+                                        retry += 1
+                                        continue
+                                elif e.errno == errno.EBUSY:
+                                        ret = subprocess.call(
+                                            ["/usr/sbin/umount",
+                                            e.filename])
+                                        # if the umount failed, bump retry so
+                                        # we won't be stuck doing this forever.
+                                        if ret != 0:
+                                                retry += 1
+                                        continue
+                                else:
                                         raise
-                                subprocess.call(["/usr/sbin/umount", e.filename])
                         else:
                                 finished = True
 
-                print >> sys.stderr, "Directories successfully removed."
+                if not finished:
+                        print >> sys.stderr, "Not all directories removed!"
+                else:
+                        print >> sys.stderr, "Directories successfully removed."
                 sys.exit(1)
 
         def run(self, suite_list, jobs, port, time_estimates, quiet,
@@ -2673,13 +2692,13 @@ class CliTestCase(Pkg5TestCase):
                     proprietary attributes which would otherwise make tidy fail.
                 """
                 if drop_prop_attrs:
-			tfname = fname + ".tmp"
-			os.rename(fname, tfname)
-			moptions = options + " --drop-proprietary-attributes y"
+                        tfname = fname + ".tmp"
+                        os.rename(fname, tfname)
+                        moptions = options + " --drop-proprietary-attributes y"
                         cmdline = "tidy %s %s > %s" % (moptions, tfname, fname)
                         self.cmdline_run(cmdline, comment=comment,
                             coverage=False, exit=exit, raise_error=False)
-			os.unlink(tfname)
+                        os.unlink(tfname)
 
                 cmdline = "tidy %s %s" % (options, fname)
                 return self.cmdline_run(cmdline, comment=comment,

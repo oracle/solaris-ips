@@ -713,6 +713,15 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
         def abort(self, result=RESULT_FAILED_UNKNOWN):
                 """Indicate that execution was unexpectedly aborted and log
                 operation failure if possible."""
+                try:
+                        # This can raise if, for example, we're aborting
+                        # because we have a PipeError and we can no longer
+                        # write.  So supress problems here.
+                        if self.__progresstracker:
+                                self.__progresstracker.flush()
+                except:
+                        pass
+
                 self._img.history.abort(result)
 
         def avoid_pkgs(self, fmri_strings, unavoid=False):
@@ -926,7 +935,19 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
 
                 if not self.solaris_image():
                         return
+
+                # Get old purpose in order to be able to restore it on return.
+                p = self.__progresstracker.get_purpose()
+
                 try:
+                        #
+                        # Let progress tracker know that subsequent callbacks
+                        # into it will all be in service of update checking.
+                        # Note that even though this might return, the
+                        # finally: will still reset the purpose.
+                        #
+                        self.__progresstracker.set_purpose(
+                            self.__progresstracker.PURPOSE_PKG_UPDATE_CHK)
                         if self._img.ipkg_is_up_to_date(
                             self.__check_cancel, noexecute,
                             refresh_allowed=False,
@@ -936,6 +957,8 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                         # Can't do anything in this
                         # case; so proceed.
                         return
+                finally:
+                        self.__progresstracker.set_purpose(p)
 
                 raise apx.IpkgOutOfDateException()
 
@@ -1136,7 +1159,7 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                         pd_json2 = pd_new.getstate(pd_new, reset_volatiles=True)
                         del fobj, pd_new
                         pkg.misc.json_diff("PlanDescription", \
-                            pd_json1, pd_json2)
+                            pd_json1, pd_json2, pd_json1, pd_json2)
                         del pd_json1, pd_json2
 
         @_LockedCancelable()
@@ -1202,7 +1225,7 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                 self._img.linked.pubcheck()
 
                 # check child images
-                self._img.linked.api_recurse_pubcheck()
+                self._img.linked.api_recurse_pubcheck(self.__progresstracker)
 
         @_LockedCancelable()
         def linked_publisher_check(self):
@@ -2762,7 +2785,7 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                 pkg_repos = {}
                 pkg_pub_map = {}
                 try:
-                        progtrack.refresh_start(len(pubs))
+                        progtrack.refresh_start(len(pubs), full_refresh=False)
                         pub_cats = []
                         for pub in pubs:
                                 # Assign a temporary meta root to each
@@ -2775,8 +2798,9 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                                 pkg_repos[id(repo)] = repo
 
                                 # Retrieve each publisher's catalog.
-                                progtrack.refresh_progress(pub.prefix)
+                                progtrack.refresh_start_pub(pub)
                                 pub.refresh()
+                                progtrack.refresh_end_pub(pub)
                                 pub_cats.append((
                                     pub.prefix,
                                     repo,

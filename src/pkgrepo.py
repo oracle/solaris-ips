@@ -786,22 +786,27 @@ def subcmd_list(conf, args):
 
         temp_root = misc.config_temp_root()
         progtrack = get_tracker()
+        progtrack.set_purpose(progtrack.PURPOSE_LISTING)
+
+        progtrack.refresh_start(pub_cnt=len(pub_data), full_refresh=True,
+            target_catalog=False)
+
         for pub in pub_data:
+                progtrack.refresh_start_pub(pub)
                 meta_root = tempfile.mkdtemp(dir=temp_root)
                 tmpdirs.append(meta_root)
                 pub.meta_root = meta_root
                 pub.transport = xport
 
-                progtrack.catalog_start(pub.prefix)
                 try:
-                        pub.refresh(True, True)
+                        pub.refresh(True, True, progtrack=progtrack)
                 except apx.TransportError:
                         # Assume that a catalog doesn't exist for the target
                         # publisher and drive on.
                         pass
-                finally:
-                        progtrack.catalog_done()
+                progtrack.refresh_end_pub(pub)
 
+        progtrack.refresh_done()
         listed = {}
         matched = set()
         unmatched = set()

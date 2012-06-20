@@ -1442,7 +1442,7 @@ class _RepoStore(object):
                 if not self.manifest_root:
                         raise RepositoryUnsupportedOperationError()
                 if not progtrack:
-                        progtrack = progress.QuietProgressTracker()
+                        progtrack = progress.NullProgressTracker()
 
                 def get_hashes(pfmri):
                         """Given an FMRI, return a set containing all of the
@@ -1469,19 +1469,22 @@ class _RepoStore(object):
                 try:
                         # First, dump all search data as it will be invalidated
                         # as soon as the catalog is updated.
-                        progtrack.actions_set_goal(_("Delete search index"), 1)
+                        progtrack.job_start(progtrack.JOB_REPO_DELSEARCH)
+                        progtrack.job_add_progress(progtrack.JOB_REPO_DELSEARCH)
                         self.__purge_search_index()
-                        progtrack.actions_add_progress()
-                        progtrack.actions_done()
+                        progtrack.job_add_progress(progtrack.JOB_REPO_DELSEARCH)
+                        progtrack.job_done(progtrack.JOB_REPO_DELSEARCH)
 
                         # Next, remove all of the packages to be removed
                         # from the catalog (if they are present).  That way
                         # any active clients are less likely to be surprised
                         # when files for packages start disappearing.
-                        progtrack.actions_set_goal(_("Update catalog"), 1)
+                        progtrack.job_start(progtrack.JOB_REPO_UPDATE_CAT)
                         c.batch_mode = True
                         save_catalog = False
                         for pfmri in packages:
+				progtrack.job_add_progress(
+				    progtrack.JOB_REPO_UPDATE_CAT)
                                 try:
                                         c.remove_package(pfmri)
                                 except apx.UnknownCatalogEntry:
@@ -1490,6 +1493,8 @@ class _RepoStore(object):
                                         continue
                                 save_catalog = True
 
+                        progtrack.job_add_progress(
+			    progtrack.JOB_REPO_UPDATE_CAT)
                         c.batch_mode = False
                         if save_catalog:
                                 # Only need to re-write catalog if at least one
@@ -1497,8 +1502,7 @@ class _RepoStore(object):
                                 c.finalize(pfmris=packages)
                                 c.save()
 
-                        progtrack.actions_add_progress()
-                        progtrack.actions_done()
+                        progtrack.job_done(progtrack.JOB_REPO_UPDATE_CAT)
 
                         # Next, build a list of all of the hashes for the files
                         # that can potentially be removed from the repository.
@@ -1506,12 +1510,13 @@ class _RepoStore(object):
                         # any of the packages not actually have a manifest in
                         # the repository.
                         pfiles = set()
-                        progtrack.actions_set_goal(
-                            _("Analyze removed packages"), len(packages))
+                        progtrack.job_start(progtrack.JOB_REPO_ANALYZE_RM,
+			    goal=len(packages))
                         for pfmri in packages:
                                 pfiles.update(get_hashes(pfmri))
-                                progtrack.actions_add_progress()
-                        progtrack.actions_done()
+                                progtrack.job_add_progress(
+				    progtrack.JOB_REPO_ANALYZE_RM)
+                        progtrack.job_done(progtrack.JOB_REPO_ANALYZE_RM)
 
                         # Now for the slow part; iterate over every manifest in
                         # the repository (excluding the ones being removed) and
@@ -1530,8 +1535,9 @@ class _RepoStore(object):
                                         self.manifest_root, s))
                                 )
 
-                                progtrack.actions_set_goal(
-                                    _("Analyze repository packages"), remaining)
+                                progtrack.job_start(
+				    progtrack.JOB_REPO_ANALYZE_REPO,
+				    goal=remaining)
                                 for name in slist:
                                         # Stem must be decoded before use.
                                         try:
@@ -1550,7 +1556,7 @@ class _RepoStore(object):
                                                         # since no files are
                                                         # safe to remove, but
                                                         # update progress.
-                                                        progtrack.actions_add_progress()
+                                                        progtrack.job_add_progress(progtrack.JOB_REPO_ANALYZE_REPO)
                                                         continue
 
                                                 # Version must be decoded before
@@ -1565,46 +1571,49 @@ class _RepoStore(object):
                                                         # of unexpected file in
                                                         # directory; just skip
                                                         # it and drive on.
-                                                        progtrack.actions_add_progress()
+                                                        progtrack.job_add_progress(progtrack.JOB_REPO_ANALYZE_REPO)
                                                         continue
 
                                                 if pfmri in packages:
                                                         # Package is one of
                                                         # those queued for
                                                         # removal.
-                                                        progtrack.actions_add_progress()
+                                                        progtrack.job_add_progress(progtrack.JOB_REPO_ANALYZE_REPO)
                                                         continue
 
                                                 # Any files in use by another
                                                 # package can't be removed.
                                                 pfiles -= get_hashes(pfmri)
-                                                progtrack.actions_add_progress()
-                                progtrack.actions_done()
+						progtrack.job_add_progress(progtrack.JOB_REPO_ANALYZE_REPO)
+                                progtrack.job_done(
+				    progtrack.JOB_REPO_ANALYZE_REPO)
 
                         # Next, remove the manifests of the packages to be
                         # removed.  (This is done before removing the files
                         # so that clients won't have a chance to retrieve a
                         # manifest which has missing files.)
-                        progtrack.actions_set_goal(
-                            _("Remove package manifests"), len(packages))
+                        progtrack.job_start(progtrack.JOB_REPO_RM_MFST,
+			    goal=len(packages))
                         for pfmri in packages:
                                 mpath = self.manifest(pfmri)
                                 portable.remove(mpath)
-                                progtrack.actions_add_progress()
-                        progtrack.actions_done()
+                                progtrack.job_add_progress(
+				    progtrack.JOB_REPO_RM_MFST)
+                        progtrack.job_done(progtrack.JOB_REPO_RM_MFST)
 
                         # Next, remove any package files that are not
                         # referenced by other packages.
-                        progtrack.actions_set_goal(
-                            _("Remove package files"), len(pfiles))
+                        progtrack.job_start(progtrack.JOB_REPO_RM_FILES,
+                            goal=len(pfiles))
                         for h in pfiles:
                                 # File might already be gone (don't care if
                                 # it is).
                                 fpath = self.cache_store.lookup(h)
                                 if fpath is not None:
                                         portable.remove(fpath)
-                                        progtrack.actions_add_progress()
-                        progtrack.actions_done()
+                                        progtrack.job_add_progress(
+					    progtrack.JOB_REPO_RM_FILES)
+                        progtrack.job_done(progtrack.JOB_REPO_RM_FILES)
 
                         # Finally, tidy up repository structure by discarding
                         # unused package data directories for any packages
