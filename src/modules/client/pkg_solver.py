@@ -1537,8 +1537,10 @@ class PkgSolver(object):
 
                 elif dtype == "group":
                         obsolete_ok = True
-                        # remove version explicitly
-                        fmri.version = None
+                        # remove version explicitly; don't modify cached fmri
+                        if fmri.version is not None:
+                                fmri = fmri.copy()
+                                fmri.version = None
                         if fmri.pkg_name in self.__avoid_set or \
                             fmri.pkg_name in self.__reject_set:
                                 required = False
