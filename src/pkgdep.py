@@ -24,6 +24,7 @@
 # Copyright (c) 2009, 2012, Oracle and/or its affiliates. All rights reserved.
 #
 
+import errno
 import getopt
 import gettext
 import locale
@@ -287,6 +288,11 @@ def resolve(args, img_dir):
                                                         system_patterns.append(
                                                             l)
                         except EnvironmentError, e:
+                                if e.errno == errno.ENOENT:
+                                        error("%s: '%s'" %
+                                            (e.args[1], e.filename),
+                                            cmd="resolve")
+                                        return 1
                                 raise api_errors._convert_error(e)
                 if not system_patterns:
                         error(_("External package list files were provided but "
