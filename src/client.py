@@ -1456,10 +1456,7 @@ Cannot remove '%s' due to the following packages that depend on it:"""
                         logger.error("  %s" % d)
                 return EXIT_OOPS
         if e_type == api_errors.CatalogRefreshException:
-                if display_catalog_failures(e) != 0:
-                        return EXIT_OOPS
-                if noexecute:
-                        return EXIT_OK
+                display_catalog_failures(e)
                 return EXIT_OOPS
         if e_type == api_errors.ConflictingActionErrors:
                 error("\n" + str(e), cmd=op)

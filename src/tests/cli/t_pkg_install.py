@@ -5119,6 +5119,18 @@ class TestMultipleDepots(pkg5unittest.ManyDepotTestCase):
                 self.pkg("install upgrade-p")
                 self.pkg("info pkg://test2/upgrade-p@1.1")
 
+        def test_19_refresh_failure(self):
+                """Test that pkg client returns with exit code 1 when only one 
+                publisher is specified and it's not reachable (bug 7176158)."""
+
+                # Create private image for this test.
+                self.image_create(self.rurl1, prefix="test1") 
+                # Set origin to an invalid repo.
+                self.pkg("set-publisher --no-refresh -O http://test.invalid7 "
+                    "test1")
+
+                # Check if install -n returns with exit code 1
+                self.pkg("install -n moo", exit=1)
 
 class TestImageCreateCorruptImage(pkg5unittest.SingleDepotTestCaseCorruptImage):
         """
