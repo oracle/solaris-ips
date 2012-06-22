@@ -303,32 +303,37 @@ class TransportRepo(object):
 
         @staticmethod
         def _analyze_server_error(error_header):
-                """ Decode the X-Ipkg-Error header which is appended by the 
+                """ Decode the X-Ipkg-Error header which is appended by the
                 module doing entitlement checks on the server side. Let the user
                 know why they can't access the repository. """
 
                 ENTITLEMENT_ERROR = "ENT"
                 LICENSE_ERROR = "LIC"
                 SERVER_ERROR = "SVR"
+                MAINTENANCE = "MNT"
 
                 entitlement_err_msg = """
-This account is not entitled to access this repository. Ensure that the correct 
-certificate is being used and that the support contract for the product being 
-accessed is still valid. 
+This account is not entitled to access this repository. Ensure that the correct
+certificate is being used and that the support contract for the product being
+accessed is still valid.
 """
 
                 license_err_msg = """
-The license agreement required to access this repository has not been 
+The license agreement required to access this repository has not been
 accepted yet or the license agreement for the product has changed. Please go to
-https://pkg-register.oracle.com and accept the license for the product you are 
+https://pkg-register.oracle.com and accept the license for the product you are
 trying to access.
 """
 
                 server_err_msg = """
 Repository access is currently unavailable due to service issues. Please retry
-later or contact your customer service representative. 
+later or contact your customer service representative.
 """
 
+                maintenance_msg = """
+Repository access rights can currently not be verified due to server
+maintenance. Please retry later.
+"""
                 msg = ""
 
                 # multiple errors possible (e.g. license and entitlement not ok)
@@ -336,13 +341,15 @@ later or contact your customer service representative.
 
                 for e in error_codes:
                         code = e.strip().upper()
-                        
+
                         if code == ENTITLEMENT_ERROR:
                                  msg += entitlement_err_msg
                         elif code == LICENSE_ERROR:
                                 msg += license_err_msg
                         elif code == SERVER_ERROR:
                                 msg += server_err_msg
+                        elif code == MAINTENANCE:
+                                msg += maintenance_msg
 
                 if msg == "":
                         return None
@@ -734,12 +741,12 @@ class HTTPRepo(TransportRepo):
                 check for presence of X-IPkg-Error header and decode."""
 
                 requesturl = self.__get_request_url("versions/0/")
-                fobj = self._fetch_url(requesturl, header, ccancel=ccancel, 
+                fobj = self._fetch_url(requesturl, header, ccancel=ccancel,
                     failonerror=False)
 
                 try:
-                        # Bogus request to trigger 
-                        # StreamingFileObj.__fill_buffer(), otherwise the 
+                        # Bogus request to trigger
+                        # StreamingFileObj.__fill_buffer(), otherwise the
                         # TransportProtoError won't be raised here. We can't
                         # use .read() since this will empty the data buffer.
                         fobj.getheader("octopus", None)
