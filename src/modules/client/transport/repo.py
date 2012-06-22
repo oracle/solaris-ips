@@ -45,7 +45,7 @@ import pkg.server.repository as svr_repo
 import pkg.server.query_parser as sqp
 
 from email.utils import formatdate
-
+from pkg.misc import N_
 
 class TransportRepo(object):
         """The TransportRepo class handles transport requests.
@@ -312,28 +312,28 @@ class TransportRepo(object):
                 SERVER_ERROR = "SVR"
                 MAINTENANCE = "MNT"
 
-                entitlement_err_msg = """
+                entitlement_err_msg = N_("""
 This account is not entitled to access this repository. Ensure that the correct
 certificate is being used and that the support contract for the product being
 accessed is still valid.
-"""
+""")
 
-                license_err_msg = """
+                license_err_msg = N_("""
 The license agreement required to access this repository has not been
 accepted yet or the license agreement for the product has changed. Please go to
 https://pkg-register.oracle.com and accept the license for the product you are
 trying to access.
-"""
+""")
 
-                server_err_msg = """
+                server_err_msg = N_("""
 Repository access is currently unavailable due to service issues. Please retry
 later or contact your customer service representative.
-"""
+""")
 
-                maintenance_msg = """
+                maintenance_msg = N_("""
 Repository access rights can currently not be verified due to server
 maintenance. Please retry later.
-"""
+""")
                 msg = ""
 
                 # multiple errors possible (e.g. license and entitlement not ok)
@@ -343,13 +343,13 @@ maintenance. Please retry later.
                         code = e.strip().upper()
 
                         if code == ENTITLEMENT_ERROR:
-                                 msg += entitlement_err_msg
+                                 msg += _(entitlement_err_msg)
                         elif code == LICENSE_ERROR:
-                                msg += license_err_msg
+                                msg += _(license_err_msg)
                         elif code == SERVER_ERROR:
-                                msg += server_err_msg
+                                msg += _(server_err_msg)
                         elif code == MAINTENANCE:
-                                msg += maintenance_msg
+                                msg += _(maintenance_msg)
 
                 if msg == "":
                         return None
