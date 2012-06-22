@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2010, 2011, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2010, 2012, Oracle and/or its affiliates. All rights reserved.
 #
 
 """The pkg.config module provides a set of classes for managing both 'flat'
@@ -582,6 +582,83 @@ class PropList(PropDefined):
                 self._value = nvalue
 
 
+class PropDictionaryList(PropList):
+        """Class representing properties with a value specified as a list of
+        dictionaries. Each dictionary must contain string key/value pairs, or
+        a string key, with None as a value.
+        """
+
+        @PropDefined.value.setter
+        def value(self, value):
+                if isinstance(value, basestring):
+                        value = self._value_map.get(value, value)
+                if value is None or value == "":
+                        value = []
+                elif isinstance(value, basestring):
+                        value = self._parse_str(value)
+                        if not isinstance(value, list):
+                                # Only accept lists for literal string form.
+                                raise InvalidPropertyValueError(prop=self.name,
+                                    value=value)
+                else:
+                        try:
+                                iter(value)
+                        except TypeError:
+                                raise InvalidPropertyValueError(prop=self.name,
+                                    value=value)
+
+                self._is_allowed(value)
+                nvalue = []
+                for v in value:
+                        if v is None:
+                                v = {}
+                        elif not isinstance(v, dict):
+                                # Only dict values are allowed.
+                                raise InvalidPropertyValueError(prop=self.name,
+                                    value=value)
+                        for item in v:
+                                # we allow None values, but always store them
+                                # as an empty string to prevent them getting
+                                # serialised as "None"
+                                if not v[item]:
+                                        v[item] = ""
+                        nvalue.append(v)
+
+                # if we don't allow an empty list, raise an error
+                if self.allowed and "" not in self.allowed and not len(nvalue):
+                        raise InvalidPropertyValueError(prop=self.name,
+                            value=nvalue)
+                self._value = nvalue
+
+        def _is_allowed(self, value):
+                if not isinstance(value, list):
+                        raise InvalidPropertyValueError(prop=self.name,
+                            value=value)
+
+                # ensure that we only have dictionary values
+                for dic in value:
+                        if not isinstance(dic, dict):
+                                raise InvalidPropertyValueError(prop=self.name,
+                                    value=value)
+
+                if not self.allowed:
+                        return
+
+                # ensure that each dictionary in the value is allowed
+                for dic in value:
+                        if not isinstance(dic, dict):
+                                raise InvalidPropertyValueError(prop=self.name,
+                                    value=value)
+                        if dic not in self.allowed:
+                                raise InvalidPropertyValueError(prop=self.name,
+                                    value=value)
+                        for key, val in dic.items():
+                                Property._is_allowed(self, key)
+                                if not val:
+                                        continue
+                                Property._is_allowed(self, val)
+
+
 class PropSimpleList(PropList):
         """Class representing a property with a list of string values that are
         simple in nature.  Output is in a comma-separated format that may not
@@ -701,6 +778,39 @@ class PropPubURIList(PropList):
                 if not valid:
                         raise InvalidPropertyValueError(prop=self.name,
                             value=value)
+
+
+class PropPubURIDictionaryList(PropDictionaryList):
+        """Class representing a list of values associated with a given publisher
+        URI.
+
+        A PropPubURIDictionaryList contains a series of dictionaries, where
+        each dictionary must have a "uri" key with a valid URI as a value.
+
+        eg.
+
+        [ {'uri':'http://foo',
+           'proxy': 'http://foo-proxy'},
+          {'uri': 'http://bar',
+           'proxy': http://bar-proxy'}
+         ... ]
+        """
+
+        def _is_allowed(self, value):
+                """Raises an InvalidPropertyValueError if 'value' is not allowed
+                for this property.
+                """
+
+                # Enforce base class rules.
+                PropDictionaryList._is_allowed(self, value)
+
+                for dic in value:
+                        if 'uri' not in dic:
+                                raise InvalidPropertyValueError(prop=self.name,
+                                    value=value)
+                        if not misc.valid_pub_url(dic["uri"]):
+                                raise InvalidPropertyValueError(prop=self.name,
+                                    value=value)
 
 
 class PropUUID(Property):

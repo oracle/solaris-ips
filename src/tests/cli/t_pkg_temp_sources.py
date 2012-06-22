@@ -735,7 +735,7 @@ link path=usr/local/bin/soft-foo target=usr/bin/foo
                 # and is enabled and sticky (-n omits disabled publishers).
                 self.pkg("publisher -nH")
                 expected = """\
-empty origin online %s/
+empty origin online F %s/
 test 
 """ % self.empty_rurl
                 output = self.reduceSpaces(self.output)
@@ -802,7 +802,7 @@ test
                 # origins.
                 self.pkg("publisher -H")
                 expected = """\
-empty origin online %s/
+empty origin online F %s/
 test 
 test2 
 """ % self.empty_rurl

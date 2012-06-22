@@ -277,6 +277,21 @@ ProxyRemote http ${http_proxy}
 % if https_proxy != None:
 ProxyRemote https ${https_proxy}
 % endif
+<%doc> #
+       # If we supplied proxies, then these override all per-repository proxies.
+       # </%doc>
+% if http_proxy == None and https_proxy == None:
+        % for uri in reversed(sorted(uri_pub_map.keys())):
+                % for pub, cert_path, key_path, hash, proxy in uri_pub_map[uri]:
+<%
+                        if proxy:
+                                context.write(
+                                    "ProxyRemote %(uri)s %(proxy)s\n" % locals()
+                                    )
+%>
+                % endfor pub
+        % endfor uri
+% endif
 
 <%doc> #
        # We only perform caching if cache_dir is set.  It need to be set to
@@ -343,7 +358,7 @@ SSLProxyProtocol all
 </%doc>
 
 % for uri in reversed(sorted(uri_pub_map.keys())):
-        % for pub, cert_path, key_path, hash in uri_pub_map[uri]:
+        % for pub, cert_path, key_path, hash, proxy in uri_pub_map[uri]:
 <%doc>
                 # for any https publishers, we want to allow proxy clients
                 # access the repos using the key/cert from the sysrepo
@@ -439,7 +454,7 @@ SSLProxyProtocol all
 % endfor uri
 
 % for uri in reversed(sorted(uri_pub_map.keys())):
-        % for pub, cert_path, key_path, hash in uri_pub_map[uri]:
+        % for pub, cert_path, key_path, hash, proxy in uri_pub_map[uri]:
                 <%doc>
                 # Create an alias for the file repository under ${pub}
                 </%doc>
@@ -470,7 +485,7 @@ context.write("ProxyPass / !")
 %>
 % for uri in reversed(sorted(uri_pub_map.keys())):
         % if uri.startswith("http"):
-<%              context.write("ProxyPass / %s" % uri) %>
+<%              context.write("ProxyPass / %s retry=0" % uri) %>
         % endif
 % endfor uri
 

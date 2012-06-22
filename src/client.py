@@ -90,12 +90,14 @@ except KeyboardInterrupt:
         import sys
         sys.exit(1)
 
-CLIENT_API_VERSION = 72
+CLIENT_API_VERSION = 73
 PKG_CLIENT_NAME = "pkg"
 
 JUST_UNKNOWN = 0
 JUST_LEFT = -1
 JUST_RIGHT = 1
+
+SYSREPO_HIDDEN_URI = "<system-repository>"
 
 logger = global_settings.logger
 pkg_timer = pkg.misc.Timer("pkg client")
@@ -295,10 +297,11 @@ def usage(usage_error=None, cmd=None, retcode=EXIT_BADOPT, full=False):
             "            [--add-property-value name_of_property=value_to_add]\n"
             "            [--remove-property-value name_of_property=value_to_remove]\n"
             "            [--unset-property name_of_property_to_delete]\n"
+            "            [--proxy proxy to use]\n"
             "            [publisher]")
 
         adv_usage["unset-publisher"] = _("publisher ...")
-        adv_usage["publisher"] = _("[-HPn] [publisher ...]")
+        adv_usage["publisher"] = _("[-HPn] [-F format] [publisher ...]")
         adv_usage["history"] = _("[-Hl] [-t [time|time-time],...] [-n number] [-o column,...]")
         adv_usage["purge-history"] = ""
         adv_usage["rebuild-index"] = ""
@@ -4129,6 +4132,7 @@ def publisher_set(api_inst, args):
             [--add-property-value name of property=value to add]
             [--remove-property-value name of property=value to remove]
             [--unset-property name of property to delete]
+            [--proxy proxy to use]
             [publisher] """
 
         cmd_name = "set-publisher"
@@ -4148,6 +4152,7 @@ def publisher_set(api_inst, args):
         search_after = None
         search_first = False
         repo_uri = None
+        proxy_uri = None
 
         approved_ca_certs = []
         revoked_ca_certs = []
@@ -4163,7 +4168,7 @@ def publisher_set(api_inst, args):
             "non-sticky", "search-after=", "search-before=", "search-first",
             "approve-ca-cert=", "revoke-ca-cert=", "unset-ca-cert=",
             "set-property=", "add-property-value=", "remove-property-value=",
-            "unset-property="])
+            "unset-property=", "proxy="])
 
         for opt, arg in opts:
                 if opt == "-c":
@@ -4247,6 +4252,8 @@ def publisher_set(api_inst, args):
                         remove_prop_values[t[0]].append(t[1])
                 elif opt == "--unset-property":
                         unset_props.add(arg)
+                elif opt == "--proxy":
+                        proxy_uri = arg
 
         name = None
         if len(pargs) == 0 and not repo_uri:
@@ -4274,6 +4281,12 @@ def publisher_set(api_inst, args):
                     "-M, --remove-mirror, --enable, --disable, --no-refresh, "
                     "or --reset-uuid options"), cmd="set-publisher")
 
+        if proxy_uri and not (add_origins or add_mirrors or repo_uri or
+            remove_origins or remove_mirrors):
+                usage(_("the --proxy argument may only be combined with the -g,"
+                    " --add-origin,  -m, --add-mirror, or -p options"),
+                    cmd="set-publisher")
+
         # Get sanitized SSL Cert/Key input values.
         ssl_cert, ssl_key = _get_ssl_cert_key(api_inst.root, api_inst.is_zone,
             ssl_cert, ssl_key)
@@ -4291,7 +4304,8 @@ def publisher_set(api_inst, args):
                     set_props=set_props, add_prop_values=add_prop_values,
                     remove_prop_values=remove_prop_values,
                     unset_props=unset_props, approved_cas=approved_ca_certs,
-                    revoked_cas=revoked_ca_certs, unset_cas=unset_ca_certs)
+                    revoked_cas=revoked_ca_certs, unset_cas=unset_ca_certs,
+                    proxy_uri=proxy_uri)
 
                 rval, rmsg = ret
                 if rmsg:
@@ -4301,8 +4315,12 @@ def publisher_set(api_inst, args):
         pubs = None
         # Automatic configuration via -p case.
         def get_pubs():
+                if proxy_uri:
+                        proxies = [publisher.ProxyURI(proxy_uri)]
+                else:
+                        proxies = []
                 repo = publisher.RepositoryURI(repo_uri,
-                    ssl_cert=ssl_cert, ssl_key=ssl_key)
+                    ssl_cert=ssl_cert, ssl_key=ssl_key, proxies=proxies)
                 return EXIT_OK, api_inst.get_publisherdata(repo=repo)
 
         ret = None
@@ -4376,7 +4394,7 @@ assistance."""))
                             set_props=set_props,
                             add_prop_values=add_prop_values,
                             remove_prop_values=remove_prop_values,
-                            unset_props=unset_props)
+                            unset_props=unset_props, proxy_uri=proxy_uri)
                         if rval == EXIT_OK:
                                 added.append(prefix)
 
@@ -4453,7 +4471,7 @@ assistance."""))
                             set_props=set_props,
                             add_prop_values=add_prop_values,
                             remove_prop_values=remove_prop_values,
-                            unset_props=unset_props)
+                            unset_props=unset_props, proxy_uri=proxy_uri)
 
                         if rval == EXIT_OK:
                                 updated.append(prefix)
@@ -4503,7 +4521,7 @@ def _add_update_pub(api_inst, prefix, pub=None, disable=None, sticky=None,
     reset_uuid=None, refresh_allowed=False,
     set_props=EmptyI, add_prop_values=EmptyI,
     remove_prop_values=EmptyI, unset_props=EmptyI, approved_cas=EmptyI,
-    revoked_cas=EmptyI, unset_cas=EmptyI):
+    revoked_cas=EmptyI, unset_cas=EmptyI, proxy_uri=None):
 
         repo = None
         new_pub = False
@@ -4544,6 +4562,12 @@ def _add_update_pub(api_inst, prefix, pub=None, disable=None, sticky=None,
                 # Set stickiness only if provided
                 pub.sticky = sticky
 
+        if proxy_uri:
+                # we only support a single proxy for now.
+                proxies = [publisher.ProxyURI(proxy_uri)]
+        else:
+                proxies = []
+
         if origin_uri:
                 # For compatibility with old -O behaviour, treat -O as a wipe
                 # of existing origins and add the new one.
@@ -4562,7 +4586,8 @@ def _add_update_pub(api_inst, prefix, pub=None, disable=None, sticky=None,
                                 break
 
                 repo.reset_origins()
-                repo.add_origin(origin_uri)
+                o = publisher.RepositoryURI(origin_uri, proxies=proxies)
+                repo.add_origin(o)
 
                 # XXX once image configuration supports storing this
                 # information at the uri level, ssl info should be set
@@ -4581,7 +4606,8 @@ def _add_update_pub(api_inst, prefix, pub=None, disable=None, sticky=None,
                                 getattr(repo, "remove_%s" % etype)(u)
 
                 for u in add:
-                        getattr(repo, "add_%s" % etype)(u)
+                        uri = publisher.RepositoryURI(u, proxies=proxies)
+                        getattr(repo, "add_%s" % etype)(uri)
 
         # None is checked for here so that a client can unset a ssl_cert or
         # ssl_key by using -k "" or -c "".
@@ -4708,15 +4734,18 @@ def publisher_list(api_inst, args):
             "attrs" : [("default"), "", ""],
             "type" : [("default", "tsv"), _("TYPE"), ""],
             "status" : [("default", "tsv"), _("STATUS"), ""],
-            "uri" : [("default", "tsv"), _("URI"), ""],
+            "repo_loc" : [("default"), _("LOCATION"), ""],
+            "uri": [("tsv"), _("URI"), ""],
             "sticky" : [("tsv"), _("STICKY"), ""],
             "enabled" : [("tsv"), _("ENABLED"), ""],
-            "syspub" : [("tsv"), _("SYSPUB"), ""]
+            "syspub" : [("tsv"), _("SYSPUB"), ""],
+            "proxy"  : [("tsv"), _("PROXY"), ""],
+            "proxied" : [("default"), _("P"), ""]
         }
 
         desired_field_order = (_("PUBLISHER"), "", _("STICKY"),
                                _("SYSPUB"), _("ENABLED"), _("TYPE"),
-                               _("STATUS"), _("URI"))
+                               _("STATUS"), _("P"), _("LOCATION"))
 
         # Custom sort function for preserving field ordering
         def sort_fields(one, two):
@@ -4816,14 +4845,17 @@ def publisher_list(api_inst, args):
                 # Create a formatting string for the default output
                 # format
                 if output_format == "default":
-                        fmt = "%-24s %-12s %-8s %-8s %s"
+                        fmt = "%-14s %-12s %-8s %-2s %s %s"
                         filter_func = filter_default
 
                 # Create a formatting string for the tsv output
                 # format
                 if output_format == "tsv":
-                        fmt = "%s\t%s\t%s\t%s\t%s\t%s\t%s"
+                        fmt = "%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s"
                         filter_func = filter_tsv
+                        desired_field_order = (_("PUBLISHER"), "", _("STICKY"),
+                               _("SYSPUB"), _("ENABLED"), _("TYPE"),
+                               _("STATUS"), _("PROXY"), _("URI"))
 
                 # Extract our list of headers from the field_data
                 # dictionary Make sure they are extracted in the
@@ -4880,13 +4912,31 @@ def publisher_list(api_inst, args):
                         else:
                                 origins = mirrors = []
 
+                        set_value(field_data["repo_loc"], "")
+                        set_value(field_data["proxied"], "")
                         # Update field_data for each origin and output
                         # a publisher record in our desired format.
                         for uri in sorted(origins):
                                 # XXX get the real origin status
                                 set_value(field_data["type"], _("origin"))
                                 set_value(field_data["status"], _("online"))
-                                set_value(field_data["uri"], str(uri))
+                                set_value(field_data["proxy"], "")
+                                set_value(field_data["proxied"], "F")
+
+                                set_value(field_data["uri"], uri)
+
+                                if uri.proxies:
+                                        set_value(field_data["proxied"], _("T"))
+                                        set_value(field_data["proxy"],
+                                            ", ".join(
+                                            [proxy.uri
+                                            for proxy in uri.proxies]))
+                                if uri.system:
+                                        set_value(field_data["repo_loc"],
+                                            SYSREPO_HIDDEN_URI)
+                                else:
+                                        set_value(field_data["repo_loc"], uri)
+
                                 values = map(get_value,
                                     sorted(filter(filter_func,
                                     field_data.values()), sort_fields)
@@ -4898,7 +4948,22 @@ def publisher_list(api_inst, args):
                                 # XXX get the real mirror status
                                 set_value(field_data["type"], _("mirror"))
                                 set_value(field_data["status"], _("online"))
-                                set_value(field_data["uri"], str(uri))
+                                set_value(field_data["proxy"], "")
+                                set_value(field_data["proxied"], _("F"))
+
+                                set_value(field_data["uri"], uri)
+
+                                if uri.proxies:
+                                        set_value(field_data["proxied"], _("T"))
+                                        set_value(field_data["proxy"],
+                                            ", ".join(
+                                            [p.uri for p in uri.proxies]))
+                                if uri.system:
+                                        set_value(field_data["repo_loc"],
+                                            SYSREPO_HIDDEN_URI)
+                                else:
+                                        set_value(field_data["repo_loc"], uri)
+
                                 values = map(get_value,
                                     sorted(filter(filter_func,
                                     field_data.values()), sort_fields)
@@ -4909,6 +4974,7 @@ def publisher_list(api_inst, args):
                                 set_value(field_data["type"], "")
                                 set_value(field_data["status"], "")
                                 set_value(field_data["uri"], "")
+                                set_value(field_data["proxy"], "")
                                 values = map(get_value,
                                     sorted(filter(filter_func,
                                     field_data.values()), sort_fields)
@@ -4942,12 +5008,20 @@ def publisher_list(api_inst, args):
                         retcode = 0
                         for uri in r.origins:
                                 msg(_("           Origin URI:"), uri)
+                                if uri.proxies:
+                                        msg(_("                Proxy:"),
+                                            ", ".join(
+                                            [p.uri for p in uri.proxies]))
                                 rval = display_ssl_info(uri)
                                 if rval == 1:
                                         retcode = EXIT_PARTIAL
 
                         for uri in r.mirrors:
                                 msg(_("           Mirror URI:"), uri)
+                                if uri.proxies:
+                                        msg(_("                Proxy:"),
+                                            ", ".join(
+                                            [p.uri for p in uri.proxies]))
                                 rval = display_ssl_info(uri)
                                 if rval == 1:
                                         retcode = EXIT_PARTIAL

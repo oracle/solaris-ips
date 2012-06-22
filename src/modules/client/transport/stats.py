@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2009, 2011, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2009, 2012, Oracle and/or its affiliates. All rights reserved.
 #
 
 import os
@@ -40,6 +40,8 @@ class RepoChooser(object):
         helps the transport pick the best performing destination."""
 
         def __init__(self):
+                # A dictionary containing the RepoStats objects. The dictionary
+                # uses TransportRepoURI.key() values as its key.
                 self.__rsobj = {}
 
         def __getitem__(self, key):
@@ -48,13 +50,31 @@ class RepoChooser(object):
         def __contains__(self, key):
                 return key in self.__rsobj
 
+        def __get_proxy(self, ds):
+                """Gets the proxy that was used at runtime for a given
+                RepoStats object.  This may differ from the persistent
+                configuration of any given TransportRepoURI.  We do not use the
+                ds.runtime_proxy value, since that may include cleartext
+                passwords."""
+
+                # we don't allow the proxy used for the system publisher to be
+                # overridden
+                if ds.system:
+                        return ds.proxy
+
+                proxy = misc.get_runtime_proxy(ds.proxy, ds.url,
+                    expand_variables=False)
+                if not proxy:
+                        return "-"
+                return proxy
+
         def dump(self):
                 """Write the repo statistics to stdout."""
 
-                hfmt = "%-31.31s %-6s %-4s %-4s %-8s %-10s %-5s %-7s %-4s"
-                dfmt = "%-31.31s %-6s %-4s %-4s %-8s %-10s %-5s %-6f %-4s"
-                misc.msg(hfmt % ("URL", "Good", "Err", "Conn", "Speed", "Size",
-                    "Used", "CSpeed", "Qual"))
+                hfmt = "%-41.41s %-30s %-6s %-4s %-4s %-8s %-10s %-5s %-7s %-4s"
+                dfmt = "%-41.41s %-30s %-6s %-4s %-4s %-8s %-10s %-5s %-6f %-4s"
+                misc.msg(hfmt % ("URL", "Proxy", "Good", "Err", "Conn", "Speed",
+                    "Size", "Used", "CSpeed", "Qual"))
 
                 for ds in self.__rsobj.values():
 
@@ -62,13 +82,13 @@ class RepoChooser(object):
                             "%(num).0f %(unit)s/s")
 
                         sizestr = misc.bytes_to_str(ds.bytes_xfr)
-
-                        misc.msg(dfmt % (ds.url, ds.success, ds.failures,
+                        proxy = self.__get_proxy(ds)
+                        misc.msg(dfmt % (ds.url, proxy, ds.success, ds.failures,
                             ds.num_connect, speedstr, sizestr, ds.used,
                             ds.connect_time, ds.quality))
 
         def get_num_visited(self, repouri_list):
-                """Walk a list of repository uris and return the number
+                """Walk a list of TransportRepoURIs and return the number
                 that have been visited as an integer.  If a repository
                 is in the list, but we don't know about it yet, create a
                 stats object to keep track of it, and include it in
@@ -77,18 +97,18 @@ class RepoChooser(object):
                 found_rs = []
 
                 for ruri in repouri_list:
-                        url = ruri.uri.rstrip("/")
-                        if url in self.__rsobj:
-                                rs = self.__rsobj[url]
+                        key = ruri.key()
+                        if key in self.__rsobj:
+                                rs = self.__rsobj[key]
                         else:
                                 rs = RepoStats(ruri)
-                                self.__rsobj[rs.url] = rs
+                                self.__rsobj[key] = rs
                         found_rs.append((rs, ruri))
 
                 return len([x for x in found_rs if x[0].used])
 
         def get_repostats(self, repouri_list, origin_list=misc.EmptyI):
-                """Walk a list of repo uris and return a sorted list of
+                """Walk a list of TransportRepoURIs and return a sorted list of
                 status objects.  The better choices should be at the
                 beginning of the list."""
 
@@ -101,9 +121,9 @@ class RepoChooser(object):
                 origin_avg_cspeed = 0
 
                 for ouri in origin_list:
-                        url = ouri.uri.rstrip("/")
-                        if url in self.__rsobj:
-                                rs = self.__rsobj[url]
+                        key = ouri.key()
+                        if key in self.__rsobj:
+                                rs = self.__rsobj[key]
                                 if rs.bytes_xfr > 0:
                                         # Exclude sources that don't
                                         # contribute to transfer speed.
@@ -117,7 +137,7 @@ class RepoChooser(object):
                                         origin_ccount += 1
                         else:
                                 rs = RepoStats(ouri)
-                                self.__rsobj[rs.url] = rs
+                                self.__rsobj[key] = rs
 
                 if origin_count > 0:
                         origin_avg_speed = origin_speed / origin_count
@@ -129,12 +149,12 @@ class RepoChooser(object):
                 # into the found_rs list, otherwise create the object
                 # and then add it to our list of found objects.
                 for ruri in repouri_list:
-                        url = ruri.uri.rstrip("/")
-                        if url in self.__rsobj:
-                                rs = self.__rsobj[url]
+                        key = ruri.key()
+                        if key in self.__rsobj:
+                                rs = self.__rsobj[key]
                         else:
                                 rs = RepoStats(ruri)
-                                self.__rsobj[rs.url] = rs
+                                self.__rsobj[key] = rs
                         found_rs.append((rs, ruri))
 
                         if origin_count > 0:
@@ -166,21 +186,24 @@ class RepoChooser(object):
 
 class RepoStats(object):
         """An object for keeping track of observed statistics for a particular
-        RepoURI.  This includes things like observed performance, availability,
-        successful and unsuccessful transaction rates, etc.
+        TransportRepoURI.  This includes things like observed performance,
+        availability, successful and unsuccessful transaction rates, etc.
 
         There's one RepoStats object per transport destination.
         This allows the transport to keep statistics about each
         host that it visits."""
 
         def __init__(self, repouri):
-                """Initialize a RepoStats object.  Pass a RepositoryURI object
-                in repouri to configure an object for a particular
+                """Initialize a RepoStats object.  Pass a TransportRepoURI
+                object in repouri to configure an object for a particular
                 repository URI."""
 
                 self.__url = repouri.uri.rstrip("/")
                 self.__scheme = urlparse.urlsplit(self.__url)[0]
                 self.__priority = repouri.priority
+
+                self.__proxy = repouri.proxy
+                self.__system = repouri.system
 
                 self._err_decay = 0
                 self.__failed_tx = 0
@@ -217,7 +240,7 @@ class RepoStats(object):
                 self.__connect_time += time
 
         def record_error(self, decayable=False, content=False, timeout=False):
-                """Record that an operation to the RepositoryURI represented
+                """Record that an operation to the TransportRepoURI represented
                 by this RepoStats object failed with an error.
 
                 Set decayable to true if the error is a transient
@@ -245,7 +268,8 @@ class RepoStats(object):
 
         def record_progress(self, bytes, seconds):
                 """Record time and size of a network operation to a
-                particular RepositoryURI, represented by the RepoStats object.
+                particular TransportRepoURI, represented by the RepoStats
+                object.
                 Place the number of bytes transferred in the bytes argument.
                 The time, in seconds, should be supplied in the
                 seconds argument."""
@@ -463,6 +487,24 @@ class RepoStats(object):
                    keeping statistics about."""
 
                 return self.__url
+
+        @property
+        def proxy(self):
+                """Return the default proxy being used to contact the repository
+                that we're keeping statistics about.  Note that OS
+                environment variables, "http_proxy", "https_proxy", "all_proxy"
+                and "no_proxy" values will override this value in
+                pkg.client.transport.engine."""
+
+                return self.__proxy
+
+        @property
+        def system(self):
+                """Return whether these statistics are being used to track the
+                system publisher, in which case, we always use the proxy
+                provided rather than proxy environment variables."""
+
+                return self.__system
 
         @property
         def used(self):

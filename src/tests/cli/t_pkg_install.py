@@ -4671,6 +4671,7 @@ class TestMultipleDepots(pkg5unittest.ManyDepotTestCase):
                     "test3", "test2", "test4", "test1", "test3"])
 
                 self.rurl1 = self.dcs[1].get_repo_url()
+                self.durl1 = self.dcs[1].get_depot_url()
                 self.pkgsend_bulk(self.rurl1, (self.foo10, self.moo10,
                     self.quux10, self.optional10, self.upgrade_p10,
                     self.upgrade_np11, self.incorp_p10, self.incorp_p11,
@@ -4678,6 +4679,7 @@ class TestMultipleDepots(pkg5unittest.ManyDepotTestCase):
                     self.corge10))
 
                 self.rurl2 = self.dcs[2].get_repo_url()
+                self.durl2 = self.dcs[2].get_depot_url()
                 self.pkgsend_bulk(self.rurl2, (self.foo10, self.bar10,
                     self.upgrade_p11, self.upgrade_np10, self.corge10))
 
@@ -5131,6 +5133,92 @@ class TestMultipleDepots(pkg5unittest.ManyDepotTestCase):
 
                 # Check if install -n returns with exit code 1
                 self.pkg("install -n moo", exit=1)
+
+def test_19_granular_proxy(self):
+                """Tests that images can use the set-publisher --proxy argument
+                to selectively proxy requests."""
+
+                self.dcs[1].start()
+                self.dcs[2].start()
+                # we use the system repository as a convenient way to setup
+                # a caching proxy.   Since the image doesn't have the property
+                # 'use-system-repo=True', the configuration of the sysrepo
+                # will remain static.
+                self.image_create(self.durl1)
+                self.sysrepo("")
+                sc_runtime_dir = os.path.join(self.test_root, "sysrepo_runtime")
+                sc_conf = os.path.join(sc_runtime_dir, "sysrepo_httpd.conf")
+                sc_cache = os.path.join(self.test_root, "sysrepo_cache")
+
+                # ensure pkg5srv can write cache content
+                os.chmod(sc_cache, 0777)
+
+                sysrepo_port = self.next_free_port
+                self.next_free_port += 1
+                sc = pkg5unittest.SysrepoController(sc_conf,
+                    sysrepo_port, sc_runtime_dir, testcase=self)
+
+                try:
+                        sc.start()
+                        sysrepo_url = "http://localhost:%s" % sysrepo_port
+
+                        self.image_create()
+                        self.pkg("set-publisher -p %s --proxy %s" % (self.durl1,
+                            sysrepo_url))
+                        self.pkg("install foo")
+                        self.pkg("uninstall foo")
+
+                        sc.stop()
+                        # with our proxy offline, and with no other origins
+                        # available, we should be unable to install
+                        self.pkg("install --no-refresh foo", exit=1)
+                        sc.start()
+
+                        # we cannot add another origin with the same url
+                        self.pkg("set-publisher --no-refresh -g %s test1" %
+                            self.durl1, exit=1)
+                        # we cannot add another proxied origin with that url
+                        self.pkg("set-publisher --no-refresh -g %s "
+                            "--proxy http://noodles test1" % self.durl1,
+                            exit=1)
+
+                        # Now add a second, unproxied publisher, ensuring we
+                        # can install packages from there.  Since the proxy
+                        # isn't configured to proxy that resource, this tests
+                        # that the proxy for self.durl1 isn't being used.
+                        self.pkg("set-publisher -g %s test2" % self.durl2)
+                        self.pkg("install --no-refresh "
+                            "pkg://test2/upgrade-np@1.0")
+                        self.pkg("uninstall pkg://test2/upgrade-np@1.0")
+                        self.pkg("set-publisher -G %s test2" % self.durl2)
+
+                        # check that runtime proxies are being used - we
+                        # set a bogus proxy, then ensure our $http_proxy value
+                        # gets used.
+                        self.pkg("publisher")
+                        self.pkg("set-publisher -G %s test1" % self.durl1)
+                        self.pkg("set-publisher --no-refresh -g %s "
+                            "--proxy http://noodles test1" % self.durl1)
+                        env = {"http_proxy": sysrepo_url}
+                        self.pkg("refresh", env_arg=env)
+                        self.pkg("install foo", env_arg=env)
+                        self.pkg("uninstall foo")
+
+                        # check that $all_proxy works
+                        env = {"all_proxy": sysrepo_url}
+                        self.pkg("install foo", env_arg=env)
+                        self.pkg("uninstall foo", env_arg=env)
+
+                        # now check that no_proxy works
+                        env["no_proxy"] = "*"
+                        self.pkg("install foo", env_arg=env)
+                        self.pkg("refresh --full", env_arg=env)
+
+                finally:
+                        if sc.is_alive():
+                                sc.stop()
+                        self.killalldepots()
+
 
 class TestImageCreateCorruptImage(pkg5unittest.SingleDepotTestCaseCorruptImage):
         """

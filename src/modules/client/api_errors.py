@@ -1695,6 +1695,15 @@ class DuplicateRepositoryMirror(PublisherError):
                     "publisher.") % self.data
 
 
+class DuplicateSyspubMirror(PublisherError):
+        """Used to indicate that a repository URI is already in use by the
+        system publisher."""
+
+        def __str__(self):
+                return _("Mirror '%s' is already accessible through the "
+                    "system repository.") % self.data
+
+
 class DuplicateRepositoryOrigin(PublisherError):
         """Used to indicate that a repository URI is already in use by another
         repository origin."""
@@ -1702,6 +1711,32 @@ class DuplicateRepositoryOrigin(PublisherError):
         def __str__(self):
                 return _("Origin '%s' already exists for the specified "
                     "publisher.") % self.data
+
+
+class DuplicateSyspubOrigin(PublisherError):
+        """Used to indicate that a repository URI is already in use by the
+        system publisher."""
+
+        def __str__(self):
+                return _("Origin '%s' is already accessible through the "
+                    "system repository.") % self.data
+
+
+class RemoveSyspubOrigin(PublisherError):
+        """Used to indicate that a system publisher origin may not be
+        removed."""
+
+        def __str__(self):
+                return _("Unable to remove origin '%s' since it is provided "
+                    "by the system repository.") % self.data
+
+class RemoveSyspubMirror(PublisherError):
+        """Used to indicate that a system publisher mirror may not be
+        removed."""
+
+        def __str__(self):
+                return _("Unable to remove mirror '%s' since it is provided "
+                    "by the system repository.") % self.data
 
 
 class NoPublisherRepositories(TransportError):
@@ -1895,6 +1930,27 @@ class UnsupportedRepositoryURIAttribute(PublisherError):
         def __str__(self):
                 return _("'%(attr)s' is not supported for '%(scheme)s'.") % {
                     "attr": self.data, "scheme": self._args["scheme"] }
+
+
+class UnsupportedProxyURI(PublisherError):
+        """Used to indicate that the specified proxy URI is unsupported."""
+
+        def __str__(self):
+                if self.data:
+                        scheme = urlparse.urlsplit(self.data,
+                            allow_fragments=0)[0]
+                        return _("The proxy URI '%(uri)s' uses the unsupported "
+                            "scheme '%(scheme)s'.  Supported schemes are "
+                            "http://, and https://.") % {
+                            "uri": self.data, "scheme": scheme }
+                return _("The specified proxy URI uses an unsupported scheme."
+                    "  Supported schemes are: http://, and https://.")
+
+class BadProxyURI(PublisherError):
+        """Used to indicate that a proxy URI is not syntactically valid."""
+
+        def __str__(self):
+                return _("'%s' is not a valid URI.") % self.data
 
 
 class UnknownSysrepoConfiguration(ApiException):

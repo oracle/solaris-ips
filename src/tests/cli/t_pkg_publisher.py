@@ -348,17 +348,17 @@ class TestPkgPublisherBasics(pkg5unittest.SingleDepotTestCase):
                 self.pkg("set-publisher --no-refresh -O http://%s2 test2" %
                     self.bogus_url)
 
-                base_string = ("test\ttrue\tfalse\ttrue\torigin\tonline\t"
+                base_string = ("test\ttrue\tfalse\ttrue\torigin\tonline\t\t"
                     "%s/\n"
-                    "test1\ttrue\tfalse\ttrue\torigin\tonline\t"
+                    "test1\ttrue\tfalse\ttrue\torigin\tonline\t\t"
                     "https://%s1/\n"
-                    "test2\ttrue\tfalse\ttrue\torigin\tonline\t"
+                    "test2\ttrue\tfalse\ttrue\torigin\tonline\t\t"
                     "http://%s2/\n" % (self.rurl, self.bogus_url,
                     self.bogus_url))
                 # With headers
                 self.pkg("publisher -F tsv")
                 expected = "PUBLISHER\tSTICKY\tSYSPUB\tENABLED" \
-                    "\tTYPE\tSTATUS\tURI\n" + base_string
+                    "\tTYPE\tSTATUS\tPROXY\tURI\n" + base_string
                 output = self.reduceSpaces(self.output)
                 self.assertEqualDiff(expected, output)
 
@@ -455,6 +455,66 @@ class TestPkgPublisherBasics(pkg5unittest.SingleDepotTestCase):
                 self.pkg("install foo")
                 self.pkg("unset-publisher test")
                 self.pkg("publisher -P", exit=0)
+
+        def test_publisher_proxies(self):
+                """Tests that set-publisher can add and remove proxy values
+                per origin."""
+
+                self.image_create(self.rurl)
+                self.pkg("publisher test")
+                self.assert_("Proxy:" not in self.output)
+
+                # check origin and mirror addition/removal when proxies are used
+                for add, remove in [("-g", "-G"), ("-m", "-M")]:
+                        self.image_create(self.rurl)
+                        # we can't proxy file repositories
+                        self.pkg("set-publisher --no-refresh %(add)s %(url)s "
+                            "--proxy http://foo test" %
+                            {"add": add, "url": self.rurl}, exit=1)
+                        self.pkg("publisher test")
+                        self.assert_("Proxy:" not in self.output)
+
+                        # we can set the proxy for http repos
+                        self.pkg("set-publisher --no-refresh %(add)s %(url)s "
+                            "--proxy http://foo test" %
+                            {"add": add, "url": self.durl})
+
+                        self.pkg("publisher test")
+                        self.assert_("Proxy: http://foo" in self.output)
+
+                        # remove the file-based repository and ensure we still
+                        # have a proxied http-based publisher
+                        self.pkg("set-publisher --no-refresh -G %s test" %
+                            self.rurl)
+                        self.pkg("publisher -F tsv")
+                        self.assert_("http://foo\t%s/" %
+                            self.durl in self.output)
+                        self.assert_(self.rurl not in self.output)
+
+                        # ensure we can't add duplicate proxied or unproxied
+                        # repositories
+                        self.pkg("set-publisher --no-refresh %(add)s %(url)s "
+                            "--proxy http://foo test" %
+                            {"add": add, "url": self.durl}, exit=1)
+                        self.pkg("set-publisher --no-refresh %(add)s %(url)s "
+                            "test" % {"add": add, "url": self.durl}, exit=1)
+
+                        # we should have 1 proxied occurrence of our http url
+                        self.pkg("publisher -F tsv")
+                        self.assert_("http://foo\t%s/" %
+                            self.durl in self.output)
+                        self.assert_("\t\t%s" % self.durl not in self.output)
+
+                        # when removing a proxied url, then adding the same url
+                        # unproxied, the proxy configuration does get removed
+                        self.pkg("set-publisher --no-refresh %(remove)s %(url)s"
+                            " test" % {"remove": remove, "url": self.durl},
+                            exit=0)
+                        self.pkg("set-publisher --no-refresh %(add)s %(url)s "
+                            "test" % {"add": add, "url": self.durl}, exit=0)
+                        self.assert_("http://foo\t%s/" %
+                            self.durl not in self.output)
+
 
 class TestPkgPublisherMany(pkg5unittest.ManyDepotTestCase):
         # Only start/stop the depot once (instead of for every test)

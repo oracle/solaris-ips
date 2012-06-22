@@ -21,7 +21,9 @@
 # CDDL HEADER END
 #
 
+#
 # Copyright (c) 2011, 2012, Oracle and/or its affiliates. All rights reserved.
+#
 
 import testutils
 if __name__ == "__main__":
@@ -40,7 +42,9 @@ import urllib2
 import shutil
 import simplejson
 import stat
+import sys
 import time
+import StringIO
 
 import pkg.portable as portable
 
@@ -192,7 +196,8 @@ class TestBasicSysrepoCli(pkg5unittest.CliTestCase):
         def test_11_invalid_proxies(self):
                 """We return an error given invalid proxies"""
 
-                for invalid_proxy in ["http://", "https://foo.bar", "-1"]:
+                for invalid_proxy in ["http://", "https://foo.bar", "-1",
+                    "http://user:password@hostname:3128"]:
                         ret, output, err = self.sysrepo("-w %s" % invalid_proxy,
                             out=True, stderr=True, exit=1)
                         self.assert_("http_proxy" in err, "error message "
@@ -228,14 +233,30 @@ class TestDetailedSysrepoCli(pkg5unittest.ManyDepotTestCase):
                 pubs.extend(self.overlap_pubs)
                 pkg5unittest.ManyDepotTestCase.setUp(self, pubs,
                     start_depots=True)
+
+                # Most tests use a single system-repository instance, "sc",
+                # but some also use an alternative instance, "alt_sc".
                 self.sc = None
+                self.alt_sc = None
+
                 self.default_sc_runtime = os.path.join(self.test_root,
                     "sysrepo_runtime")
+                # add another level to the tree used to store the alternative
+                # runtime dir, since the sysrepo writes
+                # <runtime>/../sysrepo_httpd.pid, which would clash with the
+                # default instance
+                self.alt_sc_runtime = os.path.sep.join([self.test_root,
+                    "alt_sysrepo_runtime", "alt"])
                 self.default_sc_conf = os.path.join(self.default_sc_runtime,
                     "sysrepo_httpd.conf")
+                self.alt_sc_conf = os.path.join(self.alt_sc_runtime,
+                    "sysrepo_httpd.conf")
+                self.default_sc_p5s = os.path.sep.join([self.default_sc_runtime,
+                    "htdocs", "syspub", "0", "index.html"])
                 self.make_misc_files(self.misc_files)
                 self.durl1 = self.dcs[1].get_depot_url()
                 self.rurl1 = self.dcs[1].get_repo_url()
+                self.durl2 = self.dcs[2].get_depot_url()
                 for dc_num in self.dcs:
                         durl = self.dcs[dc_num].get_depot_url()
                         self.pkgsend_bulk(durl, self.sample_pkg)
@@ -254,15 +275,37 @@ class TestDetailedSysrepoCli(pkg5unittest.ManyDepotTestCase):
                                                 self.sc.kill()
                                         except Exception, e:
                                                 pass
+                        if self.alt_sc:
+                                self.debug("stopping alt sysrepo")
+                                try:
+                                        self.alt_sc.stop()
+                                except Exception, e:
+                                        try:
+                                                self.debug(
+                                                    "killing alt sysrepo")
+                                                self.alt_ac.stop()
+                                        except Exception, e:
+                                                pass
 
-        def _start_sysrepo(self, runtime_dir=None):
+        def _start_sysrepo(self, runtime_dir=None, alt=False):
+                """Starts a system repository instance, either using the default
+                or alternative configurations."""
                 if not runtime_dir:
                         runtime_dir = self.default_sc_runtime
                 self.sysrepo_port = self.next_free_port
                 self.next_free_port += 1
-                self.sc = pkg5unittest.SysrepoController(self.default_sc_conf,
-                    self.sysrepo_port, runtime_dir, testcase=self)
-                self.sc.start()
+
+                if alt:
+                        conf = self.alt_sc_conf
+                        runtime_dir = self.alt_sc_runtime
+                        self.alt_sc = pkg5unittest.SysrepoController(conf,
+                            self.sysrepo_port, runtime_dir, testcase=self)
+                        self.alt_sc.start()
+                else:
+                        self.sc = pkg5unittest.SysrepoController(
+                            self.default_sc_conf,
+                            self.sysrepo_port, runtime_dir, testcase=self)
+                        self.sc.start()
 
         def test_1_substring_proxy(self):
                 """We can proxy publishers that are substrings of each other"""
@@ -827,6 +870,107 @@ class TestDetailedSysrepoCli(pkg5unittest.ManyDepotTestCase):
                 self.assert_("Unable to load config" not in self.output)
                 self.assert_("Unable to store config" not in self.output)
 
+        def test_17_proxy(self):
+                """ Ensure that the system repository can proxy access
+                through another proxy."""
+
+                self.image_create(prefix="test1", repourl=self.durl1)
+
+                # Start a system repository instance that we will use as a
+                # convenient way to configure a simple http proxy
+                alt_logs_dir = os.path.join(self.test_root, "alt_sysrepo_logs")
+                self.sysrepo("-r %s -l %s" % (self.alt_sc_runtime,
+                    alt_logs_dir))
+                self._start_sysrepo(alt=True)
+                alt_sc_port = self.sysrepo_port
+
+                # Start another system-repository using the 1st sysrepo instance
+                # as a http proxy
+                def_logs_dir = os.path.join(self.test_root, "def_sysrepo_logs")
+                self.sysrepo("-r %s -w http://localhost:%s -l %s" %
+                    (self.default_sc_runtime, alt_sc_port, def_logs_dir))
+                self._start_sysrepo()
+
+                # check the configuration
+                self.file_contains(self.default_sc_conf,
+                    "ProxyRemote http http://localhost:%s" % alt_sc_port)
+
+                # configure an image to use the system repository
+                saved_sysrepo_env = os.environ.get("PKG_SYSREPO_URL")
+                os.environ["PKG_SYSREPO_URL"] = "http://localhost:%s" % \
+                    self.sysrepo_port
+                self.image_create()
+                self.pkg("set-property use-system-repo True")
+                self.pkg("refresh")
+                self.pkg("list -af")
+
+                # Both logs should show access requests for our catalogs, but
+                # only the system-repository this image is configured to use
+                # should show access requests for /versions/0 (the versions
+                # response of  the system repository itself, not the pkg.depot
+                # we're pointing at via the http proxy)
+                alt_log = os.path.join(alt_logs_dir, "access_log")
+                def_log = os.path.join(def_logs_dir, "access_log")
+
+                self.file_contains(alt_log, "catalog/1/catalog.attrs")
+                self.file_contains(def_log, "catalog/1/catalog.attrs")
+                self.file_doesnt_contain(alt_log, "GET /versions/0/")
+                self.file_contains(def_log, "GET /versions/0/")
+
+                # When we disable the proxy, pkg operations through the system
+                # repository are affected
+                self.alt_sc.stop()
+
+                self.image_create()
+                self.pkg("set-property use-system-repo True")
+                ret, out, err = self.pkg("refresh", exit=1, stderr=True,
+                    out=True)
+                self.assert_("503 reason: Service Unavailable" in err)
+
+                # By enabling the remote proxy, the system-repository should
+                # now be able to proxy this resource.
+                self.alt_sc.start()
+
+                self.pkg("set-property use-system-repo True")
+                self.pkg("refresh")
+
+                self.alt_sc.stop()
+                self.sc.stop()
+
+                if saved_sysrepo_env:
+                        os.environ["PKG_SYSREPO_URL"] = saved_sysrepo_env
+                else:
+                        del os.environ["PKG_SYSREPO_URL"]
+
+        def test_17_granular_proxies(self):
+                """Ensure that when an image has --proxy values set, that we add
+                appropriate ProxyRemote directives for those publishers."""
+
+                # We use --no-refresh because our proxy doesn't exist
+                self.image_create()
+                self.pkg("set-publisher --no-refresh -g %s "
+                    "--proxy http://foobar test1" % self.durl1)
+
+                self.sysrepo("")
+                self.file_contains(self.default_sc_conf,
+                    "ProxyRemote %s http://foobar" % self.durl1)
+
+                self.pkg("set-publisher --no-refresh -g %s "
+                    "--proxy http://bar test2" % self.durl2)
+
+                self.sysrepo("")
+                self.file_contains(self.default_sc_conf,
+                    "ProxyRemote %s http://foobar" % self.durl1)
+                self.file_contains(self.default_sc_conf,
+                    "ProxyRemote %s http://bar" % self.durl2)
+
+                # Ensure we fail when an image is set with a proxy we don't
+                # support.
+                self.image_create()
+                self.pkg("set-publisher --no-refresh -g %s "
+                    "--proxy http://user:password@foobar test1" % self.durl1)
+                self.sysrepo("", exit=1)
+
 
 class TestP5pWsgi(pkg5unittest.SingleDepotTestCase):
         """A class to directly exercise the p4p mod_wsgi application outside
@@ -903,9 +1047,18 @@ class TestP5pWsgi(pkg5unittest.SingleDepotTestCase):
                                 seen_content = False
                                 environ["QUERY_STRING"] = urllib2.unquote(query)
                                 self.http_status = ""
-                                for item in self.sysrepo_p5p.application(
-                                    environ, start_response):
-                                        seen_content = item
+
+                                try:
+                                        # The WSGI application writes to stdout
+                                        # so to reduce console noise, we
+                                        # redirect that temporarily.
+                                        saved_stdout = sys.stdout
+                                        sys.stdout = StringIO.StringIO()
+                                        for item in self.sysrepo_p5p.application(
+                                            environ, start_response):
+                                                seen_content = item
+                                finally:
+                                        sys.stdout = saved_stdout
 
                                 self.assert_(code in self.http_status,
                                     "Query %s response did not contain %s: %s" %

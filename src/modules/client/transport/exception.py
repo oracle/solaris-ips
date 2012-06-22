@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2009, 2010, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2009, 2012, Oracle and/or its affiliates. All rights reserved.
 #
 
 import errno
@@ -140,7 +140,7 @@ class TransportProtoError(TransportException):
         """Raised when errors occur in the transport protocol."""
 
         def __init__(self, proto, code=None, url=None, reason=None,
-            repourl=None, request=None, uuid=None, details=None):
+            repourl=None, request=None, uuid=None, details=None, proxy=None):
                 TransportException.__init__(self)
                 self.proto = proto
                 self.code = code
@@ -152,6 +152,7 @@ class TransportProtoError(TransportException):
                 self.retryable = self.code in retryable_proto_errors[self.proto]
                 self.uuid = uuid
                 self.details = details
+                self.proxy = proxy
 
         def __str__(self):
                 s = "%s protocol error" % self.proto
@@ -160,13 +161,15 @@ class TransportProtoError(TransportException):
                 if self.reason:
                         s += " reason: %s" % self.reason
                 if self.url:
-                        s += "\nURL: '%s'." % self.url
+                        s += "\nURL: '%s'" % self.url
                 elif self.urlstem:
                         # If the location of the resource isn't known because
                         # the error was encountered while attempting to find
                         # the location, then at least knowing where it was
                         # looking will be helpful.
                         s += "\nRepository URL: '%s'." % self.urlstem
+                if self.proxy:
+                        s += "\nProxy: '%s'" % self.proxy
                 if self.details:
                         s +="\nAdditional Details:\n%s" % self.details
                 return s
@@ -193,7 +196,7 @@ class TransportFrameworkError(TransportException):
         """Raised when errors occur in the transport framework."""
 
         def __init__(self, code, url=None, reason=None, repourl=None,
-            uuid=None):
+            uuid=None, proxy=None):
                 TransportException.__init__(self)
                 self.code = code
                 self.url = url
@@ -202,13 +205,16 @@ class TransportFrameworkError(TransportException):
                 self.decayable = self.code in decayable_pycurl_errors
                 self.retryable = self.code in retryable_pycurl_errors
                 self.uuid = uuid
+                self.proxy = proxy
 
         def __str__(self):
                 s = "Framework error: code: %d" % self.code
                 if self.reason:
                         s += " reason: %s" % self.reason
                 if self.url:
-                        s += "\nURL: '%s'." % self.url
+                        s += "\nURL: '%s'" % self.url
+                if self.proxy:
+                        s += "\nProxy: '%s'" % self.proxy
                 s += self._str_autofix()
                 return s
 
@@ -221,42 +227,58 @@ class TransportFrameworkError(TransportException):
                 r = cmp(self.url, other.url)
                 if r != 0:
                         return r
+                r = cmp(self.proxy, other.proxy)
+                if r != 0:
+                        return r
                 return cmp(self.reason, other.reason)
 
 
 class TransportStallError(TransportException):
         """Raised when stalls occur in the transport framework."""
 
-        def __init__(self, url=None, repourl=None, uuid=None):
+        def __init__(self, url=None, repourl=None, uuid=None, proxy=None):
                 TransportException.__init__(self)
                 self.url = url
                 self.urlstem = repourl
                 self.retryable = True
                 self.uuid = uuid
+                self.proxy = proxy
 
         def __str__(self):
                 s = "Framework stall"
+                if self.url or self.proxy:
+                        s += ":"
                 if self.url:
-                        s += ":\nURL: '%s'." % self.url
+                        s += "\nURL: '%s'" % self.url
+                if self.proxy:
+                        s += "\nProxy: '%s'" % self.proxy
                 return s
 
         def __cmp__(self, other):
                 if not isinstance(other, TransportStallError):
-                        return -1        
-                return cmp(self.url, other.url)
+                        return -1
+                r = cmp(self.url, other.url)
+                if r != 0:
+                        return r
+                return cmp(self.proxy, other.proxy)
 
 
 class TransferContentException(TransportException):
         """Raised when there are problems downloading the requested content."""
 
-        def __init__(self, url, reason=None):
+        def __init__(self, url, reason=None, proxy=None):
                 TransportException.__init__(self)
                 self.url = url
                 self.reason = reason
                 self.retryable = True
+                self.proxy = proxy
 
         def __str__(self):
-                s = "Transfer from '%s' failed" % self.url
+                if self.proxy:
+                        s = "Transfer from '%s' via proxy '%s' failed" % \
+                            (self.url, self.proxy)
+                else:
+                        s = "Transfer from '%s' failed" % self.url
                 if self.reason:
                         s += ": %s" % self.reason
                 s += "."
@@ -268,6 +290,9 @@ class TransferContentException(TransportException):
                 r = cmp(self.url, other.url)
                 if r != 0:
                         return r
+                r = cmp(self.proxy, other.proxy)
+                if r != 0:
+                        return r
                 return cmp(self.reason, other.reason)
 
 
@@ -275,13 +300,14 @@ class InvalidContentException(TransportException):
         """Raised when the content's hash/chash doesn't verify, or the
         content is received in an unreadable format."""
 
-        def __init__(self, path=None, reason=None, size=0, url=None):
+        def __init__(self, path=None, reason=None, size=0, url=None, proxy=None):
                 TransportException.__init__(self)
                 self.path = path
                 self.reason = reason
                 self.size = size
                 self.retryable = True
                 self.url = url
+                self.proxy = proxy
 
         def __str__(self):
                 s = "Invalid content"
@@ -291,6 +317,8 @@ class InvalidContentException(TransportException):
                         s += ": %s." % self.reason
                 if self.url:
                         s += "\nURL: %s" % self.url
+                if self.proxy:
+                        s += "\nProxy: %s" % self.proxy
                 return s
 
         def __cmp__(self, other):
@@ -300,6 +328,9 @@ class InvalidContentException(TransportException):
                 if r != 0:
                         return r
                 r = cmp(self.reason, other.reason)
+                if r != 0:
+                        return r
+                r = cmp(self.proxy, other.proxy)
                 if r != 0:
                         return r
                 return cmp(self.url, other.url)
@@ -313,15 +344,21 @@ class PkgProtoError(TransportException):
         a L8 error, since our pkg protocol is built on top of application
         level protocols.  The Framework errors deal with L3-6 errors."""
 
-        def __init__(self, url, operation=None, version=None, reason=None):
+        def __init__(self, url, operation=None, version=None, reason=None,
+            proxy=None):
                 TransportException.__init__(self)
                 self.url = url
                 self.reason = reason
                 self.operation = operation
                 self.version = version
+                self.proxy = proxy
         
         def __str__(self):
-                s = "Invalid pkg(5) response from %s" % self.url
+                if self.proxy:
+                        s = "Invalid pkg(5) response from %s (proxy %s)" % \
+                            (self.url, self.proxy)
+                else:
+                        s = "Invalid pkg(5) response from %s" % self.url
                 if self.operation:
                         s += ": Attempting operation '%s'" % self.operation
                 if self.version is not None:
@@ -342,6 +379,9 @@ class PkgProtoError(TransportException):
                 r = cmp(self.version, other.version)
                 if r != 0:
                         return r
+                r = cmp(self.proxy, other.proxy)
+                if r != 0:
+                        return r
                 return cmp(self.reason, other.reason) 
 
 
@@ -349,18 +389,21 @@ class ExcessiveTransientFailure(TransportException):
         """Raised when the transport encounters too many retryable errors
         at a single endpoint."""
 
-        def __init__(self, url, count):
+        def __init__(self, url, count, proxy=None):
                 TransportException.__init__(self)
                 self.url = url
                 self.count = count
                 self.retryable = True
                 self.failures = None
                 self.success = None
+                self.proxy = proxy
 
         def __str__(self):
                 s = "Too many retryable errors encountered during transfer.\n"
                 if self.url:
                         s += "URL: %s " % self.url
+                if self.proxy:
+                        s += "Proxy: %s" % self.proxy
                 if self.count:
                         s += "Count: %s " % self.count
                 return s
@@ -369,6 +412,9 @@ class ExcessiveTransientFailure(TransportException):
                 if not isinstance(other, ExcessiveTransientFailure):
                         return -1
                 r = cmp(self.url, other.url)
+                if r != 0:
+                        return r
+                r = cmp(self.proxy, other.proxy)
                 if r != 0:
                         return r
                 return cmp(self.count, other.count)

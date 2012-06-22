@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2011, 2012 Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2011, 2012, Oracle and/or its affiliates. All rights reserved.
 #
 
 import copy
@@ -54,14 +54,25 @@ def parse(proxy_host, data):
         def transform_urls(urls):
                 res = []
                 for val in urls:
-                        # If the url is an http url, then we need to proxy it
-                        # through the system repository.
-                        if val.startswith("http://<sysrepo>"):
+                        # If the URI contains <sysrepo> then it's served
+                        # directly by the system-repository.
+                        if val.startswith("http://%s" %
+                            publisher.SYSREPO_PROXY):
                                 scheme, netloc, path, params, query, fragment =\
                                     urlparse.urlparse(val)
-                                val = urlparse.urlunparse((scheme, proxy_host,
-                                    path, params, query, fragment))
-                        res.append(val)
+                                r = publisher.RepositoryURI(
+                                        urlparse.urlunparse((scheme, proxy_host,
+                                        path, params, query, fragment)))
+                        else:
+                                # This URI needs to be proxied through the
+                                # system-repository, so we assign it a special
+                                # ProxyURI, which gets replaced by the actual
+                                # URI of the system-repository in
+                                # imageconfig.BlendedConfig.__merge_publishers
+                                r = publisher.RepositoryURI(val)
+                                r.proxies = [publisher.ProxyURI(None,
+                                    system=True)]
+                        res.append(r)
                 return res
         
         try:
@@ -97,8 +108,6 @@ def parse(proxy_host, data):
 
                         pub = publisher.Publisher(prefix, alias=alias,
                             sticky=sticky)
-                        pub.properties["proxied-urls"] = \
-                            p.get("proxied-urls", [])
                         v = p.get("signature-policy")
                         if v is not None:
                                 pub.properties["signature-policy"] = v
@@ -162,13 +171,11 @@ def write(fileobj, pubs, cfg):
 
         def transform_uris(urls, prefix):
                 res = []
-                proxied = []
 
                 for u in urls:
                         m = copy.copy(u)
                         if m.scheme == "http":
                                 res.append(m.uri)
-                                proxied.append(m.uri)
                         elif m.scheme == "https":
                                 # The system depot handles connecting to the
                                 # proxied https repositories, so the client
@@ -176,20 +183,33 @@ def write(fileobj, pubs, cfg):
                                 # from doing tunneling.
                                 m.change_scheme("http")
                                 res.append(m.uri)
-                                proxied.append(m.uri)
                         elif m.scheme == "file":
                                 # The system depot provides direct access to
                                 # file repositories.  The token <sysrepo> will
                                 # be replaced in the client with the url it uses
                                 # to communicate with the system repository.
-                                res.append("http://<sysrepo>/%s/%s" %
-                                    (prefix,
+                                res.append("http://%s/%s/%s" %
+                                    (publisher.SYSREPO_PROXY, prefix,
                                     hashlib.sha1(m.uri.rstrip("/")).hexdigest()
                                     ))
                         else:
                                 assert False, "%s is an unknown scheme." % \
                                     u.scheme
-                return res, proxied
+
+                # Remove duplicates, since the system-repository can only
+                # provide one path to a given origin. This can happen if the
+                # image has eg. two origins/mirrors configured for a publisher,
+                # with one using http and the other using https, but both using
+                # the same netloc and path.
+                # We want to preserve origin/mirror order, so simply casting
+                # into a set is not appropriate.
+                values = set()
+                res_unique = []
+                for item in res:
+                        if item not in values:
+                                values.add(item)
+                                res_unique.append(item)
+                return res_unique
 
         dump_struct = {
             "publishers": [],
@@ -202,15 +222,12 @@ def write(fileobj, pubs, cfg):
         for p in pubs:
 
                 d = None
-                proxied_urls = []
                 if p.repository:
                         r = p.repository
                         reg_uri = ""
 
-                        mirrors, t = transform_uris(r.mirrors, p.prefix)
-                        proxied_urls.extend(t)
-                        origins, t = transform_uris(r.origins, p.prefix)
-                        proxied_urls.extend(t)
+                        mirrors = transform_uris(r.mirrors, p.prefix)
+                        origins = transform_uris(r.origins, p.prefix)
                         d = {
                             "collection_type": r.collection_type,
                             "description": r.description,
@@ -227,7 +244,6 @@ def write(fileobj, pubs, cfg):
                 dpub = {
                     "alias": p.alias,
                     "name": p.prefix,
-                    "proxied-urls" : proxied_urls,
                     "repository": d,
                     "sticky": p.sticky,
                 }

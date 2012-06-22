@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2009, 2011, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2009, 2012, Oracle and/or its affiliates. All rights reserved.
 #
 
 
@@ -96,6 +96,10 @@ class TestPublisher(pkg5unittest.Pkg5TestCase):
                     "uri", None)
                 self.assertRaises(api_errors.UnsupportedRepositoryURI, setattr,
                     uobj, "uri", ":/notvalid")
+                # this value is valid only for ProxyURI objects, not
+                # RepositoryURI objects
+                self.assertRaises(api_errors.BadRepositoryURI, setattr, uobj,
+                    "uri", "http://user:password@server")
                 self.assertRaises(api_errors.BadRepositoryURIPriority,
                     setattr, uobj, "priority", "foo")
                 self.assertRaises(api_errors.BadRepositoryAttributeValue,
@@ -130,6 +134,46 @@ class TestPublisher(pkg5unittest.Pkg5TestCase):
                 for p in ("priority", "ssl_cert", "ssl_key"):
                         setattr(uobj, p, None)
                         self.assertEqual(getattr(uobj, p), None)
+
+                # Verify that proxies are set properly
+                uobj = publisher.RepositoryURI("https://example.com",
+                    proxies=[])
+                uobj = publisher.RepositoryURI("https://example.com",
+                    proxies=[publisher.ProxyURI("http://foo.com")])
+
+                self.assert_(uobj.proxies == [publisher.ProxyURI(
+                    "http://foo.com")])
+                uobj.proxies = []
+                self.assert_(uobj.proxies == [])
+
+                # Verify that proxies and proxy are linked
+                uobj.proxies = [publisher.ProxyURI("http://foo.com")]
+                self.assert_(uobj.proxy == "http://foo.com")
+                uobj.proxy = "http://bar"
+                self.assert_(uobj.proxies == [publisher.ProxyURI("http://bar")])
+
+                try:
+                        raised = False
+                        publisher.RepositoryURI("http://foo", proxies=[
+                            publisher.ProxyURI("http://bar")],
+                            proxy="http://foo")
+                except api_errors.PublisherError:
+                        raised = True
+                finally:
+                        self.assert_(raised, "No exception raised when "
+                            "creating a RepositoryURI obj with proxies & proxy")
+
+                # Check that we detect bad values for proxies
+                self.assertRaises(api_errors.BadRepositoryAttributeValue,
+                    setattr, uobj, "proxies", "foo")
+                self.assertRaises(api_errors.BadRepositoryAttributeValue,
+                    setattr, uobj, "proxies", [None])
+                # we only support a single proxy per RepositoryURI
+                self.assertRaises(api_errors.BadRepositoryAttributeValue,
+                    setattr, uobj, "proxies", [
+                    publisher.ProxyURI("http://foo.com"),
+                    publisher.ProxyURI("http://bar.com")])
+
 
         def test_02_repository(self):
                 """Verify that a Repository object can be created, copied,
@@ -294,7 +338,6 @@ class TestPublisher(pkg5unittest.Pkg5TestCase):
                         method()
                         self.assertEqual(getattr(robj, prop), [])
 
-
         def test_03_publisher(self):
                 """Verify that a Repository object can be created, copied,
                 modified, and used as expected."""
@@ -394,6 +437,51 @@ class TestPublisher(pkg5unittest.Pkg5TestCase):
 
                 pobj.remove_meta_root()
                 self.assertFalse(os.path.exists(pobj.meta_root))
+
+        def test_04_proxy_uri(self):
+                """Verify that a ProxyURI object can be created, copied,
+                modified, and used as expected."""
+
+                pobj = publisher.ProxyURI("http://example.com")
+                self.assert_(pobj.uri == "http://example.com")
+
+                tcert = os.path.join(self.test_root, "test.cert")
+                tkey = os.path.join(self.test_root, "test.key")
+                # check that we can't set several RepositoryURI attributes
+                bad_props = {
+                    "priority": 1,
+                    "ssl_cert": tcert,
+                    "ssl_key": tkey,
+                    "trailing_slash": False
+                }
+
+                pobj = publisher.ProxyURI("http://example.com")
+                for prop in bad_props:
+                        self.assertRaises(ValueError,
+                            setattr, pobj, prop, bad_props[prop])
+
+                # check bad values for system
+                self.assertRaises(api_errors.BadRepositoryAttributeValue,
+                    setattr, pobj, "system", "Carrots")
+                self.assertRaises(api_errors.BadRepositoryAttributeValue,
+                    setattr, pobj, "system", None)
+
+                # check that we can set URI values that RespositoryURI would
+                # choke on
+                for uri in ["http://user:pass@server",
+                    "http://$userpass@server"]:
+                        pobj.uri = uri
+                        self.assert_(pobj.uri == uri)
+
+                # check that setting system results in uri being overridden
+                pobj.system = True
+                self.assert_(pobj.system == True)
+                self.assert_(pobj.uri == publisher.SYSREPO_PROXY)
+
+                # check that clearing system also clears uri
+                pobj.system = False
+                self.assert_(pobj.system == False)
+                self.assert_(pobj.uri == None)
 
 
 if __name__ == "__main__":

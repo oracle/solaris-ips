@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2008, 2011, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2008, 2012, Oracle and/or its affiliates. All rights reserved.
 #
 
 import testutils
@@ -515,7 +515,8 @@ class TestPkgImageCreateBasics(pkg5unittest.ManyDepotTestCase):
                         newcfg.remove_property("property", p)
                 for p in ("origins", "property.signature-required-names",
                     "intermediate_certs", "approved_ca_certs",
-                    "revoked_ca_certs", "signing_ca_certs"):
+                    "revoked_ca_certs", "signing_ca_certs",
+                    "origin_info", "mirror_info"):
                         newcfg.remove_property("authority_test1", p)
                         newcfg.remove_property("authority_test2", p)
 
@@ -559,8 +560,8 @@ class TestPkgImageCreateBasics(pkg5unittest.ManyDepotTestCase):
 
                 # Verify origin configuration is intact.
                 expected = """\
-test1\ttrue\tfalse\ttrue\torigin\tonline\t%s/
-test2\ttrue\tfalse\tfalse\torigin\tonline\t%s/
+test1\ttrue\tfalse\ttrue\torigin\tonline\t\t%s/
+test2\ttrue\tfalse\tfalse\torigin\tonline\t\t%s/
 """ % (self.rurl1, self.rurl2)
                 self.pkg("publisher -HF tsv")
                 output = self.reduceSpaces(self.output)
@@ -569,8 +570,8 @@ test2\ttrue\tfalse\tfalse\torigin\tonline\t%s/
                 # Verify origin information matches expected if configuration
                 # changes are made.
                 expected = """\
-test1\ttrue\tfalse\ttrue\torigin\tonline\t%s/
-test2\ttrue\tfalse\tfalse\torigin\tonline\t%s/
+test1\ttrue\tfalse\ttrue\torigin\tonline\t\t%s/
+test2\ttrue\tfalse\tfalse\torigin\tonline\t\t%s/
 """ % (self.rurl2, self.rurl2)
                 self.pkg("set-publisher --no-refresh -O %s test1" % self.rurl2)
                 self.pkg("publisher -HF tsv")

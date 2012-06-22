@@ -85,6 +85,7 @@ REPO_COLLECTION_TYPES = {
 
 # Supported Protocol Schemes
 SUPPORTED_SCHEMES = set(("file", "http", "https"))
+SUPPORTED_PROXY_SCHEMES = ("http")
 
 # SSL Protocol Schemes
 SSL_SCHEMES = set(("https",))
@@ -119,6 +120,11 @@ CRL_SIGNING_USE = {
 
 POSSIBLE_USES = [CODE_SIGNING_USE, CERT_SIGNING_USE, CRL_SIGNING_USE]
 
+# A special token used in place of the system repository URL which is
+# replaced at runtime by the actual address and port of the
+# system-repository.
+SYSREPO_PROXY = "<sysrepo>"
+
 class RepositoryURI(object):
         """Class representing a repository URI and any transport-related
         information."""
@@ -127,7 +133,7 @@ class RepositoryURI(object):
         # documentation as private, and for clarity in the property declarations
         # found near the end of the class definition.
         __priority = None
-        __proxy = None
+        __proxies = None
         __ssl_cert = None
         __ssl_key = None
         __trailing_slash = None
@@ -138,9 +144,14 @@ class RepositoryURI(object):
         _source_object_id = None
 
         def __init__(self, uri, priority=None, ssl_cert=None, ssl_key=None,
-            trailing_slash=True, proxy=None, system=False):
+            trailing_slash=True, proxy=None, system=False, proxies=None):
+
+
                 # Must set first.
                 self.__trailing_slash = trailing_slash
+                self.__scheme = None
+                self.__netloc = None
+                self.__proxies = []
 
                 # Note that the properties set here are intentionally lacking
                 # the '__' prefix which means assignment will occur using the
@@ -150,31 +161,40 @@ class RepositoryURI(object):
                 self.uri = uri
                 self.ssl_cert = ssl_cert
                 self.ssl_key = ssl_key
-                self.proxy = proxy
+                # The proxy parameter is deprecated and remains for backwards
+                # compatibity, for now.  If we get given both, then we must
+                # complain - this error is for internal use only.
+                if proxy and proxies:
+                        raise api_errors.PublisherError("Both 'proxies' and "
+                            "'proxy' values were used to create a "
+                            "RepositoryURI object.")
+
+                if proxy:
+                        self.proxies = [ProxyURI(proxy)]
+                if proxies:
+                        self.proxies = proxies
                 self.system = system
 
         def __copy__(self):
                 uri = RepositoryURI(self.__uri, priority=self.__priority,
                     ssl_cert=self.__ssl_cert, ssl_key=self.__ssl_key,
-                    trailing_slash=self.__trailing_slash, proxy=self.__proxy,
-                    system=self.system)
+                    trailing_slash=self.__trailing_slash,
+                    proxies=self.__proxies, system=self.system)
                 uri._source_object_id = id(self)
                 return uri
 
         def __eq__(self, other):
                 if isinstance(other, RepositoryURI):
-                        return self.uri == other.uri and \
-                            self.proxy == other.proxy
+                        return self.uri == other.uri
                 if isinstance(other, str):
-                        return self.proxy is None and self.uri == other
+                        return self.uri == other
                 return False
 
         def __ne__(self, other):
                 if isinstance(other, RepositoryURI):
-                        return self.uri != other.uri or \
-                            self.proxy != other.proxy
+                        return self.uri != other.uri
                 if isinstance(other, str):
-                        return self.proxy is not None or self.uri != other
+                        return self.uri != other
                 return True
 
         def __cmp__(self, other):
@@ -182,10 +202,7 @@ class RepositoryURI(object):
                         return 1
                 if not isinstance(other, RepositoryURI):
                         other = RepositoryURI(other)
-                res = cmp(self.uri, other.uri)
-                if res != 0:
-                        return res
-                return cmp(self.proxy, other.proxy)
+                return cmp(self.uri, other.uri)
 
         def __set_priority(self, value):
                 if value is not None:
@@ -195,12 +212,47 @@ class RepositoryURI(object):
                                 raise api_errors.BadRepositoryURIPriority(value)
                 self.__priority = value
 
+        def __get_proxy(self):
+                if not self.__proxies:
+                        return None
+                else:
+                        return self.__proxies[0].uri
+
         def __set_proxy(self, proxy):
                 if not proxy:
                         return
-                self.__proxy = proxy
-                assert not self.__ssl_cert
-                assert not self.__ssl_key
+                if not isinstance(proxy, ProxyURI):
+                        p = ProxyURI(proxy)
+                else:
+                        p = proxy
+
+                self.__proxies = [p]
+
+        def __set_proxies(self, proxies):
+
+                for proxy in proxies:
+                        if not isinstance(proxy, ProxyURI):
+                                raise api_errors.BadRepositoryAttributeValue(
+                                    "proxies", value=proxy)
+
+                if proxies and self.scheme == "file":
+                        raise api_errors.UnsupportedRepositoryURIAttribute(
+                            "proxies", scheme=self.scheme)
+
+                if not (isinstance(proxies, list) or
+                    isinstance(proxies, tuple)):
+                        raise api_errors.BadRepositoryAttributeValue(
+                            "proxies", value=proxies)
+
+                # for now, we only support a single proxy per RepositoryURI
+                if len(proxies) > 1:
+                        raise api_errors.BadRepositoryAttributeValue(
+                            "proxies", value=proxies)
+
+                if proxies:
+                        self.__proxies = proxies
+                else:
+                        self.__proxies = []
 
         def __set_ssl_cert(self, filename):
                 if self.scheme not in SSL_SCHEMES and filename:
@@ -238,39 +290,65 @@ class RepositoryURI(object):
                 if uri is None:
                         raise api_errors.BadRepositoryURI(uri)
 
+                # if we're setting the URI to an existing value, do nothing.
+                if uri == self.__uri:
+                        return
+
+                # This is not ideal, but determining whether we're operating
+                # on a ProxyURI saves us duplicating code in that class,
+                # which we would otherwise need, due to __protected members
+                # here.
+                if isinstance(self, ProxyURI):
+                        is_proxy = True
+                else:
+                        is_proxy = False
+
                 # Decompose URI to verify attributes.
                 scheme, netloc, path, params, query = \
                     urlparse.urlsplit(uri, allow_fragments=0)
 
+                self.__scheme = scheme.lower()
+                self.__netloc = netloc
+
                 # The set of currently supported protocol schemes.
-                if scheme.lower() not in SUPPORTED_SCHEMES:
-                        raise api_errors.UnsupportedRepositoryURI(uri)
+                if is_proxy and self.__scheme not in \
+                    SUPPORTED_PROXY_SCHEMES:
+                        raise api_errors.UnsupportedProxyURI(uri)
+                else:
+                        if self.__scheme not in SUPPORTED_SCHEMES:
+                                raise api_errors.UnsupportedRepositoryURI(uri)
 
                 # XXX valid_pub_url's check isn't quite right and could prevent
                 # usage of IDNs (international domain names).
-                if (scheme.lower().startswith("http") and not netloc) or \
-                    not misc.valid_pub_url(uri):
+                if (self.__scheme.startswith("http") and not netloc) or \
+                    not misc.valid_pub_url(uri, proxy=is_proxy):
                         raise api_errors.BadRepositoryURI(uri)
 
-                if scheme.lower() == "file" and netloc:
+                if self.__scheme == "file" and netloc:
                         raise api_errors.BadRepositoryURI(uri)
 
                 # Normalize URI scheme.
-                uri = uri.replace(scheme, scheme.lower(), 1)
+                uri = uri.replace(scheme, self.__scheme, 1)
 
                 if self.__trailing_slash:
+                        uri = uri.rstrip("/")
                         uri = misc.url_affix_trailing_slash(uri)
 
-                if scheme.lower() not in SSL_SCHEMES:
+                if self.__scheme not in SSL_SCHEMES:
                         self.__ssl_cert = None
                         self.__ssl_key = None
 
                 self.__uri = uri
 
+        def _override_uri(self, uri):
+                """Allow the __uri field of the object to be overridden in
+                special cases."""
+                if uri not in [None, SYSREPO_PROXY]:
+                        raise api_errors.BadRepositoryURI(uri)
+                self.__uri = uri
+
         def __str__(self):
-                if not self.__proxy:
-                        return self.__uri
-                return "proxy://%s" % self.__uri
+                return str(self.__uri)
 
         def change_scheme(self, new_scheme):
                 """Change the scheme of this uri."""
@@ -315,8 +393,13 @@ class RepositoryURI(object):
             "An integer value representing the importance of this repository "
             "URI relative to others.")
 
-        proxy = property(lambda self: self.__proxy, __set_proxy, None, "The "
-            "proxy to use to access this repository.")
+        proxy = property(__get_proxy, __set_proxy, None, "The proxy to use to "
+            "access this repository.")
+
+        proxies = property(lambda self: self.__proxies, __set_proxies, None,
+            "A list of proxies that can be used to access this repository."
+            "At runtime, a $http_proxy environment variable might override this."
+            )
 
         @property
         def scheme(self):
@@ -330,6 +413,212 @@ class RepositoryURI(object):
             "A boolean value indicating whether any URI provided for this "
             "object should have a trailing slash appended when setting the "
             "URI property.")
+
+
+class ProxyURI(RepositoryURI):
+        """A class to represent the URI of a proxy. The 'uri' value can be
+        'None' if 'system' is set to True."""
+
+        def __init__(self, uri, system=False):
+                self.__system = None
+                self.system = system
+                if not system:
+                        self.uri = uri
+
+        def __set_system(self, value):
+                """A property to specify whether we should use the system
+                publisher as the proxy.  Note that this method modifies the
+                'uri' property when set or cleared."""
+                if value not in (True, False):
+                        raise api_errors.BadRepositoryAttributeValue(
+                            "system", value=value)
+                self.__system = value
+                if value:
+                        # Set a special value for the uri, intentionally an
+                        # invalid URI which should get caught by any consumers
+                        # using it by mistake.  This also allows us to reuse
+                        # the __eq__, __cmp__, etc. methods from the parent
+                        # (where there is no public way of setting the URI to
+                        # SYSREPO_PROXY, '<sysrepo>')
+                        self._override_uri(SYSREPO_PROXY)
+                else:
+                        self._override_uri(None)
+
+        def __unsupported(self, value):
+                """A method used to prevent certain properties defined in the
+                parent class from being set on ProxyURI objects."""
+
+                # We don't expect this string to be exposed to users.
+                raise ValueError("This property cannot be set to %s on a "
+                    "ProxyURI object." % value)
+
+        system = property(lambda self: self.__system, __set_system, None,
+            "True, if we should use the system publisher as a proxy.")
+
+        # Ensure we can't set any of the following properties.
+        proxies = property(lambda self: None, __unsupported, None,
+            "proxies is an invalid property for ProxyURI properties")
+
+        ssl_cert = property(lambda self:  None, __unsupported, None,
+            "ssl_cert is an invalid property for ProxyURI properties")
+
+        ssl_key = property(lambda self: None, __unsupported, None,
+            "ssl_key is an invalid property for ProxyURI properties")
+
+        priority = property(lambda self: None, __unsupported, None,
+            "priority is an invalid property for ProxyURI properties")
+
+        trailing_slash = property(lambda self: None, __unsupported, None,
+            "trailing_slash is an invalid property for ProxyURI properties")
+
+
+class TransportRepoURI(RepositoryURI):
+        """A TransportRepoURI allows for multiple representations of a given
+        RepositoryURI, each with different properties.
+
+        One RepositoryURI could be represented by several TransportRepoURIs,
+        used to allow the transport to properly track repo statistics for
+        for each discrete path to a given URI, perhaps using different proxies
+        or trying one of several SSL key/cert pairs."""
+
+        def __init__(self, uri, priority=None, ssl_cert=None, ssl_key=None,
+            trailing_slash=True, proxy=None, system=False):
+                # Must set first.
+                self.__proxy = None
+                self.__runtime_proxy = None
+                self.proxy = proxy
+
+                RepositoryURI.__init__(self, uri, priority=priority,
+                    ssl_cert=ssl_cert, ssl_key=ssl_key,
+                    trailing_slash=trailing_slash, system=system)
+
+        def __eq__(self, other):
+                if isinstance(other, TransportRepoURI):
+                        return self.uri == other.uri and \
+                            self.proxy == other.proxy
+                if isinstance(other, basestring):
+                        return self.uri == other and self.proxy == None
+                return False
+
+        def __ne__(self, other):
+                if isinstance(other, TransportRepoURI):
+                        return self.uri != other.uri or \
+                            self.proxy != other.proxy
+                if isinstance(other, basestring):
+                        return self.uri != other or self.proxy != None
+                return True
+
+        def __cmp__(self, other):
+                if not other:
+                        return 1
+                if isinstance(other, basestring):
+                        other = TransportRepoURI(other)
+                elif not isinstance(other, TransportRepoURI):
+                        return 1
+                res = cmp(self.uri, other.uri)
+                if res == 0:
+                        return cmp(self.proxy, other.proxy)
+                else:
+                        return res
+
+        def key(self):
+                """Returns a value that can be used to identify this RepoURI
+                uniquely for the transport system.  Normally, this would be done
+                using __hash__() however, TransportRepoURI objects are not
+                guaranteed to be immutable.
+
+                The key is a (uri, proxy) tuple, where the proxy is
+                the proxy used to reach that URI.  Note that in the transport
+                system, we may choose to override the proxy value here.
+
+                If this key format changes, a corresponding change should be
+                made in pkg.client.transport.engine.__cleanup_requests(..)"""
+
+                u = self.uri
+                p = self.__proxy
+
+                if self.uri:
+                        u = self.uri.rstrip("/")
+                return (u, p)
+
+        def __set_proxy(self, proxy):
+                assert not self.ssl_cert
+                assert not self.ssl_key
+
+                if proxy and self.scheme == "file":
+                        raise api_errors.UnsupportedRepositoryURIAttribute(
+                            "proxy", scheme=self.scheme)
+                if proxy:
+                        self.__proxy = proxy.rstrip("/")
+                else:
+                        self.__proxy = None
+                # Changing the proxy value causes us to clear any cached
+                # value we have in __runtime_proxy.
+                self.__runtime_proxy = None
+
+        def __get_runtime_proxy(self):
+                """Returns the proxy that should be used at runtime, which may
+                differ from the persisted proxy value.  We check for http_proxy,
+                https_proxy and all_proxy OS environment variables.
+
+                We try to expand any $variables set in the proxy string which
+                may be needed to pass credentials to authenticating proxies. To
+                avoid repeated environment lookups, we cache the results."""
+
+                # we don't permit the proxy used by system publishers to be
+                # overridden by environment variables.
+                if self.system:
+                        return self.proxy
+
+                if not self.__runtime_proxy:
+                        self.__runtime_proxy = misc.get_runtime_proxy(
+                            self.__proxy, self.uri)
+                return self.__runtime_proxy
+
+        def __set_runtime_proxy(self, runtime_proxy):
+                """The runtime proxy value is always computed dynamically,
+                we should not allow a caller to set it."""
+
+                assert False, "Refusing to set a runtime_proxy value."
+
+        @staticmethod
+        def fromrepouri(repouri):
+                """Build a list of TransportRepositoryURI objects using
+                properties from the given RepositoryURI, 'repouri'.
+
+                This is to allow the transport to try different paths to
+                a given RepositoryURI, if more than one is possible."""
+
+                trans_repouris = []
+                # we just use the proxies for now, but in future, we may want
+                # other per-origin/mirror properties
+                if repouri.proxies:
+                        for p in repouri.proxies:
+                                t = TransportRepoURI(repouri.uri,
+                                    priority=repouri.priority,
+                                    ssl_cert=repouri.ssl_cert,
+                                    ssl_key=repouri.ssl_key,
+                                    system=repouri.system,
+                                    trailing_slash=repouri.trailing_slash,
+                                    proxy=p.uri)
+                                trans_repouris.append(t)
+                else:
+                        trans_repouris.append(TransportRepoURI(repouri.uri,
+                            priority=repouri.priority,
+                            ssl_cert=repouri.ssl_cert,
+                            ssl_key=repouri.ssl_key,
+                            system=repouri.system,
+                            trailing_slash=repouri.trailing_slash))
+                return trans_repouris
+
+        proxy = property(lambda self: self.__proxy, __set_proxy, None,
+            "The proxy that is used to access this repository."
+            "At runtime, a $http_proxy environnent variable might override this."
+            )
+
+        runtime_proxy = property(__get_runtime_proxy, __set_runtime_proxy, None,
+            "The proxy to use to access this repository.  This value checks"
+            "OS environment variables, and expands any $user:$password values.")
 
 
 class Repository(object):
@@ -540,6 +829,10 @@ class Repository(object):
 
                 def dup_check(mirror):
                         if self.has_mirror(mirror):
+                                o = self.get_mirror(mirror)
+                                if o.system:
+                                        raise api_errors.DuplicateSyspubMirror(
+                                            mirror)
                                 raise api_errors.DuplicateRepositoryMirror(
                                     mirror)
 
@@ -556,6 +849,10 @@ class Repository(object):
 
                 def dup_check(origin):
                         if self.has_origin(origin):
+                                o = self.get_origin(origin)
+                                if o.system:
+                                        raise api_errors.DuplicateSyspubOrigin(
+                                            origin)
                                 raise api_errors.DuplicateRepositoryOrigin(
                                     origin)
 
@@ -641,6 +938,9 @@ class Repository(object):
                         mirror = misc.url_affix_trailing_slash(mirror)
                 for i, m in enumerate(self.mirrors):
                         if mirror == m.uri:
+                                if m.system:
+                                        api_errors.RemoveSyspubMirror(
+                                            mirror.uri)
                                 # Immediate return as the index into the array
                                 # changes with each removal.
                                 del self.mirrors[i]
@@ -655,7 +955,10 @@ class Repository(object):
                 if not isinstance(origin, RepositoryURI):
                         origin = RepositoryURI(origin)
                 for i, o in enumerate(self.origins):
-                        if origin == o.uri and origin.proxy == o.proxy:
+                        if origin == o.uri:
+                                if o.system:
+                                        raise api_errors.RemoveSyspubOrigin(
+                                            origin.uri)
                                 # Immediate return as the index into the array
                                 # changes with each removal.
                                 del self.origins[i]
@@ -679,7 +982,10 @@ class Repository(object):
             ssl_key=None):
                 """Updates an existing mirror object matching 'mirror'.
 
-                'mirror' can be a RepositoryURI object or a URI string."""
+                'mirror' can be a RepositoryURI object or a URI string.
+
+                This method is deprecated, and may be removed in future API
+                versions."""
 
                 if not isinstance(mirror, RepositoryURI):
                         mirror = RepositoryURI(mirror, priority=priority,
@@ -689,13 +995,17 @@ class Repository(object):
                 target.priority = mirror.priority
                 target.ssl_cert = mirror.ssl_cert
                 target.ssl_key = mirror.ssl_key
+                target.proxies = mirror.proxies
                 self.mirrors.sort(key=URI_SORT_POLICIES[self.__sort_policy])
 
         def update_origin(self, origin, priority=None, ssl_cert=None,
             ssl_key=None):
                 """Updates an existing origin object matching 'origin'.
 
-                'origin' can be a RepositoryURI object or a URI string."""
+                'origin' can be a RepositoryURI object or a URI string.
+
+                This method is deprecated, and may be removed in future API
+                versions."""
 
                 if not isinstance(origin, RepositoryURI):
                         origin = RepositoryURI(origin, priority=priority,
@@ -705,6 +1015,7 @@ class Repository(object):
                 target.priority = origin.priority
                 target.ssl_cert = origin.ssl_cert
                 target.ssl_key = origin.ssl_key
+                target.proxies = origin.proxies
                 self.origins.sort(key=URI_SORT_POLICIES[self.__sort_policy])
 
         def reset_mirrors(self):
@@ -1956,8 +2267,8 @@ pkg unset-publisher %s
                 except (api_errors.TransportError,
                     api_errors.UnsupportedRepositoryOperation):
                         # Nothing more can be done (because the target origin
-                        # can't be contacted, or beacuse it doesn't support
-                        # retrievel of publisher configuration data).
+                        # can't be contacted, or because it doesn't support
+                        # retrieval of publisher configuration data).
                         return
 
                 if not pubs:

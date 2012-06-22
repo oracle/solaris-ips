@@ -1,3 +1,37 @@
+Version 73:
+Compatible with clients using version 72.
+
+     A per-origin/mirror property has been added, and the transport
+     updated to allow for multiple paths to a given URI.
+
+     pkg.client.publisher.RepositoryURI has changed as follows:
+
+        * proxies attribute has been added, allowing origins
+          and mirrors to be specified with individual HTTP proxies,
+          each represented by a pkg.client.publisher.ProxyURI object.
+          Multiple proxies for the same URI may not be configured
+          at present.
+
+        * proxy attribute is now deprecated, and attempts to set
+          both 'proxies' and 'proxy' in the constructor will result
+          in an error.
+
+    pkg.client.api_errors has changed as follows:
+
+        * UnknownRepositoryOrigin and UnknownRepositoryMirror
+          exceptions have been changed to include a message
+          when a RepositoryURI with a proxy is being used,
+          printing that proxy.
+
+        * The Exceptions DuplicateSyspubOrigin and
+          DuplicateSyspubMirror have been added for cases where we
+          attempt to add a user-origin or user-mirror that is already
+          provided by the system publisher.
+
+        * The Exceptions RemoveSyspubOrigin and RemoveSyspubMirror
+          have been added for cases where we attempt to remove origins
+          or mirrors that are proxied by the system publisher.
+
 Version 72:
 Incompatible with clients using versions 0-71.
 

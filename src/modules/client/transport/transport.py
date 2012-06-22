@@ -483,6 +483,19 @@ class LockedTransport(object):
                                 lock.release()
                 return wrapper
 
+def _convert_repouris(repolist):
+        """Given a list of RepositoryURI objects, expand them into a list of
+        TransportRepoURI objects, each representing a different transport path
+        to the given RepositoryURI, allowing the transport to eg. try all
+        configured proxies for a given RepositoryURI."""
+
+        trans_repouris = []
+        for repouri in repolist:
+                trans_repouris.extend(
+                    publisher.TransportRepoURI.fromrepouri(repouri))
+        return trans_repouris
+
+
 class Transport(object):
         """The generic transport wrapper object.  Its public methods should
         be used by all client code that wishes to perform file/network
@@ -690,7 +703,7 @@ class Transport(object):
                 for d, retries in self.__gen_repo(pub, retry_count,
                     origin_only=True, alt_repo=alt_repo):
 
-                        repostats = self.stats[d.get_url()]
+                        repostats = self.stats[d.get_repouri_key()]
 
                         # If a transport exception occurs,
                         # save it if it's retryable, otherwise
@@ -850,7 +863,7 @@ class Transport(object):
                     ccancel=ccancel, alt_repo=alt_repo):
 
                         failedreqs = []
-                        repostats = self.stats[d.get_url()]
+                        repostats = self.stats[d.get_repouri_key()]
                         gave_up = False
                         if repostats.content_errors and retries > 1:
                                 header = d.build_refetch_header(header)
@@ -976,11 +989,11 @@ class Transport(object):
                                 failures.extend(e.failures)
 
                         except apx.InvalidP5IFile, e:
-                                url = d.get_url()
-                                exc = tx.TransferContentException(url,
+                                repouri_key = d.get_repouri_key()
+                                exc = tx.TransferContentException(url[0],
                                     "api_errors.InvalidP5IFile:%s" %
                                     (" ".join([str(a) for a in e.args])))
-                                repostats = self.stats[url]
+                                repostats = self.stats[repouri_key]
                                 repostats.record_error(content=True)
                                 if exc.retryable:
                                         failures.append(exc)
@@ -1068,8 +1081,8 @@ class Transport(object):
                 for d, retries, v in self.__gen_repo(pub, retry_count,
                     operation="file", versions=[0, 1], alt_repo=alt_repo):
 
-                        url = d.get_url()
-                        repostats = self.stats[url]
+                        repouri_key = d.get_repouri_key()
+                        repostats = self.stats[repouri_key]
                         if repostats.content_errors and retries > 1:
                                 header = d.build_refetch_header(header)
                         try:
@@ -1082,7 +1095,8 @@ class Transport(object):
                                         exc = tx.InvalidContentException(
                                             reason="hash failure:  expected: %s"
                                             "computed: %s" % (fhash, hash_val),
-                                            url=url)
+                                            url=repouri_key[0],
+                                            proxy=repouri_key[1])
                                         repostats.record_error(content=True)
                                         raise exc
 
@@ -1098,9 +1112,10 @@ class Transport(object):
                                 failures.extend(e.failures)
 
                         except zlib.error, e:
-                                exc = tx.TransferContentException(url,
+                                exc = tx.TransferContentException(repouri_key[0],
                                     "zlib.error:%s" %
-                                    (" ".join([str(a) for a in e.args])))
+                                    (" ".join([str(a) for a in e.args])),
+                                    proxy=repouri_key[1])
                                 repostats.record_error(content=True)
                                 if exc.retryable:
                                         failures.append(exc)
@@ -1130,8 +1145,8 @@ class Transport(object):
                     origin_only=True, operation="status", versions=[0],
                     ccancel=ccancel):
                         try:
-                                url = d.get_url()
-                                repostats = self.stats[url]
+                                repouri_key = d.get_repouri_key()
+                                repostats = self.stats[repouri_key]
                                 if repostats.content_errors and retries > 1:
                                         header = d.build_refetch_header(header)
                                 resp = d.get_status(header, ccancel=ccancel)
@@ -1147,8 +1162,9 @@ class Transport(object):
 
                         except (TypeError, ValueError), e:
                                 
-                                exc = tx.TransferContentException(url,
-                                    "Invalid stats response: %s" % e)
+                                exc = tx.TransferContentException(repouri_key[0],
+                                    "Invalid stats response: %s" % e,
+                                    proxy=repouri_key[1])
                                 repostats.record_error(content=True)
                                 if exc.retryable:
                                         failures.append(exc)
@@ -1245,7 +1261,8 @@ class Transport(object):
                 for d, retries in self.__gen_repo(pub, retry_count,
                     origin_only=True, alt_repo=alt_repo):
 
-                        repostats = self.stats[d.get_url()]
+                        repouri_key = d.get_repouri_key()
+                        repostats = self.stats[repouri_key]
                         verified = False
                         if repostats.content_errors and retries > 1:
                                 header = d.build_refetch_header(header)
@@ -1294,7 +1311,8 @@ class Transport(object):
                                         raise
                                 repostats.record_error(content=True)
                                 te = tx.TransferContentException(
-                                    d.get_url(), reason=str(e))
+                                    repouri_key[0], reason=str(e),
+                                    proxy=repouri_key[1])
                                 failures.append(te)
 
                 raise failures
@@ -1427,7 +1445,7 @@ class Transport(object):
                     origin_only=True, alt_repo=mxfr.get_alt_repo()):
 
                         failedreqs = []
-                        repostats = self.stats[d.get_url()]
+                        repostats = self.stats[d.get_repouri_key()]
                         gave_up = False
 
                         # Possibly overkill, if any content errors were seen
@@ -1440,7 +1458,7 @@ class Transport(object):
                         # This returns a list of transient errors
                         # that occurred during the transport operation.
                         # An exception handler here isn't necessary
-                        # unless we want to suppress a permanant failure.
+                        # unless we want to suppress a permanent failure.
                         try:
                                 errlist = d.get_manifests(mfstlist,
                                     download_dir, progtrack=progtrack, pub=pub)
@@ -1677,7 +1695,7 @@ class Transport(object):
                     alt_repo=mfile.get_alt_repo()):
 
                         failedreqs = []
-                        repostats = self.stats[d.get_url()]
+                        repostats = self.stats[d.get_repouri_key()]
                         if repostats.content_errors and retries > 1:
                                 header = d.build_refetch_header(header)
 
@@ -1851,7 +1869,7 @@ class Transport(object):
                 for d, retries in self.__gen_repo(pub, retry_count,
                     origin_only=True, alt_repo=alt_repo):
 
-                        repostats = self.stats[d.get_url()]
+                        repostats = self.stats[d.get_repouri_key()]
                         if repostats.content_errors and retries > 1:
                                 header = d.build_refetch_header(header)
 
@@ -1874,10 +1892,9 @@ class Transport(object):
 
                         except tx.InvalidContentException, e:
                                 repostats.record_error(content=True)
-                                failures.append(
-                                    apx.InvalidDepotResponseException(
-                                    d.get_url(), "Unable to parse "
-                                    "repository's versions/0 response"))
+                                e.reason = "Unable to parse repository's " \
+                                    "versions/0 response"
+                                failures.append(e)
 
                         except tx.TransportException, e:
                                 e.url = d.get_url()
@@ -2024,6 +2041,9 @@ class Transport(object):
                         repolist = [pub]
                         origins = repolist
 
+                repolist = _convert_repouris(repolist)
+                origins = _convert_repouris(origins)
+
                 def remote_first(a, b):
                         # For now, any URI using the file scheme is considered
                         # local.  Realistically, it could be an NFS mount, etc.
@@ -2128,6 +2148,7 @@ class Transport(object):
                         # pub argument, repolist is the RepoURI.
                         repolist = [pub]
 
+                repolist = _convert_repouris(repolist)
                 n = len(repolist)
                 m = self.stats.get_num_visited(repolist)
                 if m < n:
@@ -2803,7 +2824,7 @@ class Transport(object):
                 if not self.__engine:
                         self.__setup()
 
-                origins = [pub.repository.origins[0]]
+                origins = _convert_repouris([pub.repository.origins[0]])
                 rslist = self.stats.get_repostats(origins, origins)
                 rs, ruri = rslist[0]
 
@@ -2816,11 +2837,12 @@ class Transport(object):
                 if not self.__engine:
                         self.__setup()
 
-                # Trailing '/' must be stripped to match behaviour of
-                # get_repostats() call in publish_cache_repository().
-                originuri = pub.repository.origins[0].uri.rstrip('/')
-
-                return originuri in self.__repo_cache
+                # we need to check that all TransportRepoURIs are present
+                turis = _convert_repouris([pub.repository.origins[0]])
+                for turi in turis:
+                        if turi not in self.__repo_cache:
+                                return False
+                return True
 
 
 class MultiXfr(object):
@@ -3171,7 +3193,6 @@ def setup_publisher(repo_uri, prefix, xport, xport_cfg,
 
         If remote_publishers is True, the caller will obtain the prefix and
         repository information from the repo's publisher info."""
-
 
         if isinstance(repo_uri, list):
                 repo = publisher.Repository(origins=repo_uri)

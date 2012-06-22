@@ -37,6 +37,7 @@ import urllib
 import pkg
 import pkg.p5i as p5i
 import pkg.client.api_errors as apx
+import pkg.client.publisher as pub
 import pkg.client.transport.exception as tx
 import pkg.config as cfg
 import pkg.p5p
@@ -122,6 +123,11 @@ class TransportRepo(object):
                 """Return's the Repo's URL."""
 
                 raise NotImplementedError
+
+        def get_repouri_key(self):
+                """Returns the repo's RepositoryURI."""
+
+                return NotImplementedError
 
         def get_versions(self, header=None, ccancel=None):
                 """Query the repo for versions information.
@@ -348,7 +354,7 @@ class HTTPRepo(TransportRepo):
 
         def __init__(self, repostats, repouri, engine):
                 """Create a http repo.  Repostats is a RepoStats object.
-                Repouri is a RepositoryURI object.  Engine is a transport
+                Repouri is a TransportRepoURI object.  Engine is a transport
                 engine object.
 
                 The convenience function new_repo() can be used to create
@@ -367,19 +373,24 @@ class HTTPRepo(TransportRepo):
                 self._engine.add_url(url, filepath=filepath,
                     progclass=progclass, progtrack=progtrack, repourl=self._url,
                     header=header, compressible=compress,
+                    runtime_proxy=self._repouri.runtime_proxy,
                     proxy=self._repouri.proxy)
 
         def _fetch_url(self, url, header=None, compress=False, ccancel=None,
             failonerror=True):
                 return self._engine.get_url(url, header, repourl=self._url,
                     compressible=compress, ccancel=ccancel,
-                    failonerror=failonerror, proxy=self._repouri.proxy)
+                    failonerror=failonerror,
+                    runtime_proxy=self._repouri.runtime_proxy,
+                    proxy=self._repouri.proxy)
 
         def _fetch_url_header(self, url, header=None, ccancel=None,
             failonerror=True):
                 return self._engine.get_url_header(url, header,
                     repourl=self._url, ccancel=ccancel,
-                    failonerror=failonerror, proxy=self._repouri.proxy)
+                    failonerror=failonerror,
+                    runtime_proxy=self._repouri.runtime_proxy,
+                    proxy=self._repouri.proxy)
 
         def _post_url(self, url, data=None, header=None, ccancel=None,
             data_fobj=None, data_fp=None, failonerror=True, progclass=None,
@@ -388,7 +399,9 @@ class HTTPRepo(TransportRepo):
                     repourl=self._url, ccancel=ccancel,
                     data_fobj=data_fobj, data_fp=data_fp,
                     failonerror=failonerror, progclass=progclass,
-                    progtrack=progtrack, proxy=self._repouri.proxy)
+                    progtrack=progtrack,
+                    runtime_proxy=self._repouri.runtime_proxy,
+                    proxy=self._repouri.proxy)
 
         def __check_response_body(self, fobj):
                 """Parse the response body found accessible using the provided
@@ -708,6 +721,12 @@ class HTTPRepo(TransportRepo):
                 """Returns the repo's url."""
 
                 return self._url
+
+        def get_repouri_key(self):
+                """Returns the repo's TransportRepoURI key, used to uniquely
+                identify this TransportRepoURI."""
+
+                return self._repouri.key()
 
         def get_versions(self, header=None, ccancel=None):
                 """Query the repo for versions information.
@@ -1043,7 +1062,7 @@ class HTTPSRepo(HTTPRepo):
 
         def __init__(self, repostats, repouri, engine):
                 """Create a http repo.  Repostats is a RepoStats object.
-                Repouri is a RepositoryURI object.  Engine is a transport
+                Repouri is a TransportRepoURI object.  Engine is a transport
                 engine object.
 
                 The convenience function new_repo() can be used to create
@@ -1091,7 +1110,7 @@ class _FilesystemRepo(TransportRepo):
 
         def __init__(self, repostats, repouri, engine, frepo=None):
                 """Create a file repo.  Repostats is a RepoStats object.
-                Repouri is a RepositoryURI object.  Engine is a transport
+                Repouri is a TransportRepoURI object.  Engine is a transport
                 engine object.  If the caller wants to pass a Repository
                 object instead of having FileRepo create one, it should
                 pass the object in the frepo argument.
@@ -1520,6 +1539,12 @@ class _FilesystemRepo(TransportRepo):
 
                 return self._url
 
+        def get_repouri_key(self):
+                """Returns a key from the TransportRepoURI that can be
+                used in a dictionary"""
+
+                return self._repouri.key()
+
         def get_versions(self, header=None, ccancel=None):
                 """Query the repo for versions information.
                 Returns a file-like object."""
@@ -1767,7 +1792,7 @@ class _ArchiveRepo(TransportRepo):
 
         def __init__(self, repostats, repouri, engine):
                 """Create a file repo.  Repostats is a RepoStats object.
-                Repouri is a RepositoryURI object.  Engine is a transport
+                Repouri is a TransportRepoURI object.  Engine is a transport
                 engine object.
 
                 The convenience function new_repo() can be used to create
@@ -1977,6 +2002,11 @@ class _ArchiveRepo(TransportRepo):
 
                 return self._url
 
+        def get_repouri_key(self):
+                """Returns the repo's RepositoryURI."""
+
+                return self._repouri.key()
+
         def get_versions(self, header=None, ccancel=None):
                 """Query the repo for versions information.
                 Returns a file-like object."""
@@ -2042,7 +2072,7 @@ class FileRepo(object):
 
                 'repostats' is a RepoStats object.
 
-                'repouri' is a RepositoryURI object.
+                'repouri' is a TransportRepoURI object.
                 
                 'engine' is a transport engine object.
 
@@ -2252,7 +2282,8 @@ class FileProgress(ProgressCallback):
 class RepoCache(object):
         """An Object that caches repository objects.  Used to make
         sure that repos are re-used instead of re-created for each
-        operation."""
+        operation. The objects are keyed by TransportRepoURI.key()
+        objects."""
 
         # Schemes supported by the cache.
         supported_schemes = {
@@ -2271,8 +2302,8 @@ class RepoCache(object):
                 self.__engine = engine
                 self.__cache = {}
 
-        def __contains__(self, url):
-                return url in self.__cache
+        def __contains__(self, repouri):
+                return repouri.key() in self.__cache
 
         def clear_cache(self):
                 """Flush the contents of the cache."""
@@ -2282,22 +2313,19 @@ class RepoCache(object):
         def new_repo(self, repostats, repouri):
                 """Create a new repo server for the given repouri object."""
 
-                origin_url = repostats.url
-                urltuple = urlparse.urlparse(origin_url)
-                scheme = urltuple[0]
+                scheme = repouri.scheme
 
                 if scheme not in RepoCache.supported_schemes:
                         raise tx.TransportOperationError("Scheme %s not"
                             " supported by transport." % scheme)
 
-                if origin_url in self.__cache:
-                        return self.__cache[origin_url]
+                if repouri.key() in self.__cache:
+                        return self.__cache[repouri.key()]
 
                 repo = RepoCache.supported_schemes[scheme](repostats, repouri,
                     self.__engine)
 
-                self.__cache[origin_url] = repo
-
+                self.__cache[repouri.key()] = repo
                 return repo
 
         def update_repo(self, repostats, repouri, repository):
@@ -2305,33 +2333,32 @@ class RepoCache(object):
                 Repository object.  They should use this method to do so.
                 If the Repo isn't in the cache, it's created and added."""
 
-                origin_url = repostats.url
-                urltuple = urlparse.urlparse(origin_url)
-                scheme = urltuple[0]
+                scheme = repouri.scheme
 
                 if scheme not in RepoCache.update_schemes:
                         return
 
-                if origin_url in self.__cache:
-                        repo = self.__cache[origin_url]
+                if repouri.key() in self.__cache:
+                        repo = self.__cache[repouri.key()]
                         repo._frepo = repository
                         return
 
                 repo = RepoCache.update_schemes[scheme](repostats, repouri,
                     self.__engine, frepo=repository)
 
-                self.__cache[origin_url] = repo
+                self.__cache[repouri.key()] = repo
 
         def remove_repo(self, repo=None, url=None):
                 """Remove a repo from the cache.  Caller must supply
-                either a RepositoryURI object or a URL."""
+                either a TransportRepoURI object or a URL."""
+                self.contents()
 
                 if repo:
-                        origin_url = repo.uri
-                elif url:
-                        origin_url = url
+                        repouri = repo
+                if url:
+                        repouri = TransportRepoURI(url)
                 else:
                         raise ValueError, "Must supply either a repo or a uri."
 
-                if origin_url in self.__cache:
-                        del self.__cache[origin_url]
+                if repouri.key() in self.__cache:
+                        del self.__cache[repouri.key()]

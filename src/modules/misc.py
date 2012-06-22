@@ -266,8 +266,9 @@ def valid_pub_prefix(prefix):
 
         return False
 
-def valid_pub_url(url):
-        """Verify that the publisher URL contains only valid characters."""
+def valid_pub_url(url, proxy=False):
+        """Verify that the publisher URL contains only valid characters.
+        If 'proxy' is set to True, some checks are relaxed."""
 
         if not url:
                 return False
@@ -288,6 +289,13 @@ def valid_pub_url(url):
 
         # Next verify that the network location is valid
         host = urllib.splitport(o[1])[0]
+
+        if proxy:
+                # We may have authentication details in the proxy URI, which
+                # we must ignore when checking for hostname validity.
+                host_parts = host.split("@")
+                if len(host_parts) == 2:
+                        host = host[1]
 
         if not host or _invalid_host_chars.match(host):
                 return False
@@ -2360,3 +2368,116 @@ class AsyncCall(object):
                         # Raising NoneType; pylint: disable-msg=E0702
                         raise self.e
                 return self.rv
+
+
+def get_runtime_proxy(proxy, uri, expand_variables=True):
+        """Given a proxy string and a URI we want to access using it, determine
+        whether any OS environment variables should override that value.
+        If expand_variables is set, we also try to expand any environment
+        variables containing authentication details.
+
+        The special value "-" is returned when a no_proxy environment variable
+        was found which should apply to this URI, indicating that no proxy
+        should be used at runtime."""
+
+        runtime_proxy = proxy
+        # There is no upper case version of http_proxy, according to curl(1)
+        environ_http_proxy = os.environ.get("http_proxy")
+        environ_https_proxy = os.environ.get("https_proxy")
+        environ_https_proxy_upper = os.environ.get("HTTPS_PROXY")
+        environ_all_proxy = os.environ.get("all_proxy")
+        environ_all_proxy_upper = os.environ.get("ALL_PROXY")
+
+        no_proxy = os.environ.get("no_proxy", [])
+        no_proxy_upper = os.environ.get("NO_PROXY", [])
+
+        if no_proxy:
+                no_proxy = no_proxy.split(",")
+
+        if no_proxy_upper:
+                no_proxy_upper = no_proxy_upper.split(",")
+
+        # Give precedence to protocol-specific proxies, and lowercase versions.
+        if uri and uri.startswith("http") and environ_http_proxy:
+                runtime_proxy = environ_http_proxy
+        elif uri and uri.startswith("https") and environ_https_proxy:
+                runtime_proxy = environ_https_proxy
+        elif uri and uri.startswith("https") and environ_https_proxy_upper:
+                runtime_proxy = environ_https_proxy_upper
+        elif environ_all_proxy:
+                runtime_proxy = environ_all_proxy
+        elif environ_all_proxy_upper:
+                runtime_proxy = environ_all_proxy_upper
+
+        if no_proxy or no_proxy_upper:
+                # SplitResult has a netloc member; pylint: disable-msg=E1103
+                netloc = urlparse.urlsplit(uri, allow_fragments=0).netloc
+                if netloc in no_proxy or "*" in no_proxy:
+                        return "-"
+                if netloc in no_proxy_upper or "*" in no_proxy_upper:
+                        return "-"
+
+        if not runtime_proxy:
+                return
+
+        if expand_variables:
+                runtime_proxy = expand_proxy_envvars(runtime_proxy)
+        return runtime_proxy
+
+def expand_proxy_envvars(proxy):
+        """Expand any authentication environment variables used in a given
+        proxy url.
+
+        This method looks for values starting with '$' in the userinfo
+        portion of the proxy supplied, and retrieves those values from
+        the OS environment, returning the proxy value with any userinfo
+        variables expanded. The returned proxy value should not be persisted
+        to disk.
+
+        We allow one or two environment variables, which must
+        be in the userinfo portion of the authority.  For example,
+
+        http://<user>:<password>@hostname:3128
+
+        could be expressed as:
+        http://$user:$password@hostname:3128
+        or
+        http://$userpasswd@hostname:3128
+        """
+
+        # SplitResult has a netloc member; pylint: disable-msg=E1103
+        netloc = urlparse.urlsplit(proxy, allow_fragments=0).netloc
+        netloc_parts = netloc.split("@")
+
+        # If we don't have any authentication details, return.
+        if len(netloc_parts) != 2:
+                return proxy
+
+        user_passwd = netloc_parts[0].split(":")
+        if len(user_passwd) not in [1, 2]:
+                return proxy
+
+        # Check that the values do include environment variables.
+        if not all(item.startswith("$") for item in user_passwd):
+                return proxy
+
+        # Finally, retrieve the values from the environment, and include
+        # them in the proxy value.
+        if len(user_passwd) == 1:
+                userpasswd_env = user_passwd[0][1:]
+                userpasswd = os.environ.get(userpasswd_env)
+                if not userpasswd:
+                        return proxy
+                proxy = proxy.replace("$%s" % userpasswd_env, userpasswd, 1)
+                return proxy
+
+        user_env = user_passwd[0][1:]
+        passwd_env = user_passwd[1][1:]
+        user = os.environ.get(user_env)
+        passwd = os.environ.get(passwd_env)
+        if not user or not passwd:
+                return proxy
+
+        proxy = proxy.replace("$%s" % user_env, user, 1)
+        proxy = proxy.replace("$%s" % passwd_env, passwd, 1)
+        return proxy

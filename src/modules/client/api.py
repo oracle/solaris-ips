@@ -103,8 +103,8 @@ from pkg.smf import NonzeroExitException
 # things like help(pkg.client.api.PlanDescription)
 from pkg.client.plandesc import PlanDescription # pylint: disable-msg=W0611
 
-CURRENT_API_VERSION = 72
-COMPATIBLE_API_VERSIONS = frozenset([CURRENT_API_VERSION])
+CURRENT_API_VERSION = 73
+COMPATIBLE_API_VERSIONS = frozenset([72, CURRENT_API_VERSION])
 CURRENT_P5I_VERSION = 1
 
 # Image type constants.
@@ -4579,12 +4579,12 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                 def origins_changed(oldr, newr):
                         old_origins = set([
                             (o.uri, o.ssl_cert,
-                                o.ssl_key)
+                                o.ssl_key, tuple(sorted(o.proxies)))
                             for o in oldr.origins
                         ])
                         new_origins = set([
                             (o.uri, o.ssl_cert,
-                                o.ssl_key)
+                                o.ssl_key, tuple(sorted(o.proxies)))
                             for o in newr.origins
                         ])
                         return new_origins - old_origins
@@ -4706,9 +4706,10 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
 
                                 # Validate all new origins against publisher
                                 # configuration.
-                                for uri, ssl_cert, ssl_key in validate:
+                                for uri, ssl_cert, ssl_key, proxies in validate:
                                         repo = publisher.RepositoryURI(uri,
-                                            ssl_cert=ssl_cert, ssl_key=ssl_key)
+                                            ssl_cert=ssl_cert, ssl_key=ssl_key,
+                                            proxies=proxies)
                                         pub.validate_config(repo)
 
                                 self.__refresh(pubs=[pub], immediate=True)
