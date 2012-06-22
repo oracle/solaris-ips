@@ -171,10 +171,12 @@ def find_tests(testdir, testpats, startatpat=False, output=OUTPUT_DOTS,
                                     filename, cname, attrname)
                                 # Remove this function from our class obj if
                                 # it doesn't match the test pattern
-                                if re.search(startatpat, full):
-                                        seen = True
                                 if not seen:
-                                        delattr(classobj, attrname)
+                                        if re.search(startatpat, full):
+                                                seen = True
+                                        else:
+                                                delattr(classobj, attrname)
+                                                continue
                                 found = reduce(lambda x, y: x or y,
                                     [ re.search(pat, full) for pat in pats ],
                                     None)
