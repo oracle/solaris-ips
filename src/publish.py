@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2007, 2011, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2007, 2012, Oracle and/or its affiliates. All rights reserved.
 #
 
 import fnmatch
@@ -364,6 +364,12 @@ def trans_publish(repo_uri, fargs):
 
         try:
                 pfmri = pkg.fmri.PkgFmri(m["pkg.fmri"], "5.11")
+                if not pfmri.version:
+                        # Cannot have a FMRI without version
+                        error(_("The pkg.fmri attribute '%s' in the package "
+                            "manifest must include a version.") % pfmri,
+                            cmd="publish")
+                        return 1
                 if not DebugValues["allow-timestamp"]:
                         # If not debugging, timestamps are ignored.
                         pfmri.version.timestr = None

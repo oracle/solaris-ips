@@ -20,7 +20,7 @@
 # CDDL HEADER END
 #
 
-# Copyright (c) 2008, 2011, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2008, 2012, Oracle and/or its affiliates. All rights reserved.
 
 import testutils
 if __name__ == "__main__":
@@ -1231,6 +1231,23 @@ dir path=foo/bar mode=0755 owner=root group=bin
                 self.pkg("install testmultipledirs")
                 self.pkg("verify")
                 self.image_destroy()
+
+        def test_23_pkgsend_no_version(self):
+                """Verify that FMRI without version cannot be specified."""
+
+                rootdir = self.test_root
+                dir_1 = os.path.join(rootdir, "dir_1")
+                os.mkdir(dir_1)
+                file(os.path.join(dir_1, "A"), "wb").close()
+                mfpath = os.path.join(rootdir, "manifest_test")
+                with open(mfpath, "wb") as mf:
+                        mf.write("""file NOHASH mode=0755 owner=root group=bin path=/A
+                            set name=pkg.fmri value=testnoversion
+                            """)
+
+                dhurl = self.dc.get_depot_url()
+                self.pkgsend("", "-s %s publish -d %s < %s" % (dhurl,
+                    dir_1, mfpath), exit=1)
 
 
 class TestPkgsendHardlinks(pkg5unittest.CliTestCase):
