@@ -693,7 +693,14 @@ class Manifest(object):
                 if log is None:
                         log = lambda x: None
 
-                file_handle = file(file_path, "rb")
+                try:
+                        file_handle = file(file_path, "rb")
+                except EnvironmentError, e:
+                        if e.errno != errno.ENOENT:
+                                raise
+                        log((_("%(fp)s:\n%(e)s") %
+                            { "fp": file_path, "e": e }))
+                        return {}
                 cur_pos = 0
                 line = file_handle.readline()
                 action_dict = {}

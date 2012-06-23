@@ -535,33 +535,6 @@ class IndexStoreDict(IndexStoreBase):
                         self._dict[line_cnt] = line
                 IndexStoreBase.read_dict_file(self)
 
-        def matching_read_dict_file(self, in_set, update=False):
-                """If it's necessary to reread the file, it rereads the
-                file.  It matches the line it reads against the contents of
-                "in_set".  If a match is found, the entry on the line is stored
-                for later use, otherwise the line is skipped.  When all items
-                in in_set have been matched, the method is done and returns.
-                By default, any existing information is cleared before the
-                dictionary is reread.  With "update", the original dictionary
-                is left in place and any new information is added to it.
-                """
-
-                if update or not self._have_read:
-                        if not update:
-                                self._dict.clear()
-                        match_cnt = 0
-                        max_match = len(in_set)
-                        self._file_handle.seek(0)
-                        # skip the version line
-                        self._file_handle.next()
-                        for i, line in enumerate(self._file_handle):
-                                if i in in_set:
-                                        match_cnt += 1
-                                        line = line.rstrip('\n')
-                                        self._dict[i] = line
-                                if match_cnt >= max_match:
-                                        break
-
         def count_entries_removed_during_partial_indexing(self):
                 """Returns the number of entries removed during a second phase
                 of indexing.

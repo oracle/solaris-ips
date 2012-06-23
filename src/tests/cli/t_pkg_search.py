@@ -40,6 +40,7 @@ import pkg.catalog as catalog
 import pkg.client.pkgdefs as pkgdefs
 import pkg.fmri as fmri
 import pkg.indexer as indexer
+import pkg.portable as portable
 
 
 class TestPkgSearchBasics(pkg5unittest.SingleDepotTestCase):
@@ -550,9 +551,10 @@ adm:NP:6445::::::
 
         def pkgsend_bulk(self, durl, pkg):
                 # Ensure indexing is performed for every published package.
-                pkg5unittest.SingleDepotTestCase.pkgsend_bulk(self, durl, pkg,
-                    refresh_index=True)
+                plist = pkg5unittest.SingleDepotTestCase.pkgsend_bulk(self,
+                    durl, pkg, refresh_index=True)
                 self.wait_repo(self.dc.get_repodir())
+                return plist
 
         def test_pkg_search_cli(self):
                 """Test search cli options."""
@@ -932,6 +934,22 @@ adm:NP:6445::::::
                             {"ver": i})
                 self.pkg("install 'empty*'")
                 self.pkg("search 'empty*'")
+
+        def test_missing_manifest(self):
+                """Check that missing manifests don't cause a traceback when
+                indexing or searching."""
+
+                rurl = self.dc.get_repo_url()
+                plist = self.pkgsend_bulk(rurl, self.example_pkg10)
+                api_obj = self.image_create(rurl)
+                self._api_install(api_obj, ["example_pkg"])
+                client_manifest_file = self.get_img_manifest_path(
+                    fmri.PkgFmri(plist[0]))
+                portable.remove(client_manifest_file)
+                # Test search with a missing manifest.
+                self.pkg("search -l /bin", exit=1)
+                # Test rebuilding the index with a missing manifest.
+                self.pkg("rebuild-index")
 
 
 if __name__ == "__main__":

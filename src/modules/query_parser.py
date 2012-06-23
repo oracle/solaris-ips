@@ -523,13 +523,6 @@ class Query(object):
                 return pfmri
 
 
-class UnknownFieldTypeException(Exception):
-        def __init__(self, field_kind, field_value):
-                Exception.__init__(self)
-                self.field_kind = field_kind
-                self.field_value = field_value
-
-
 class BooleanQueryException(QueryException):
         """This exception is used when the two children of a boolean query
         don't agree on whether to return actions or packages."""
@@ -1527,11 +1520,6 @@ class TermQuery(object):
                 self._close_dicts()
                 return
 
-        @staticmethod
-        def __get_key(k):
-                p_id, p_str = k
-                return p_str
-        
         def _get_results(self, res):
                 """Takes the results from search_internal ("res") and reads the
                 lines from the manifest files at the provided offsets."""
