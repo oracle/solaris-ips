@@ -57,6 +57,7 @@ import pkg.updatelog as updatelog
 
 from pkg.actions import ActionError
 from pkg.client import global_settings
+from pkg.client.debugvalues import DebugValues
 logger = global_settings.logger
 
 class TransportCfg(object):
@@ -1602,7 +1603,8 @@ class Transport(object):
                             "or content arguments.")
 
                 newhash = manifest.Manifest.hash_create(mcontent)
-                if chash != newhash:
+                if chash != newhash and \
+                    DebugValues.get("manifest_validation") != "False":
                         if mfstpath:
                                 sz = os.stat(mfstpath).st_size
                                 os.remove(mfstpath)

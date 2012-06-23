@@ -41,6 +41,7 @@ import pkg.client.progress as progress
 import pkg.fmri
 import pkg.manifest as manifest
 import pkg.client.api_errors as apx
+import pkg.client.pkgdefs as pkgdefs
 import pkg.client.transport.transport as transport
 import pkg.misc as misc
 import pkg.p5p
@@ -49,6 +50,7 @@ import pkg.version as version
 
 from pkg.client import global_settings
 from pkg.misc import emsg, get_pkg_otw_size, msg, PipeError
+from pkg.client.debugvalues import DebugValues
 
 # Globals
 archive = False
@@ -364,7 +366,7 @@ def main_func():
         src_uri = os.environ.get("PKG_SRC", None)
 
         try:
-                opts, pargs = getopt.getopt(sys.argv[1:], "ac:d:hkm:nrs:",
+                opts, pargs = getopt.getopt(sys.argv[1:], "ac:D:d:hkm:nrs:",
                     ["cert=", "key=", "newest", "raw"])
         except getopt.GetoptError, e:
                 usage(_("Illegal option -- %s") % e.opt)
@@ -376,6 +378,18 @@ def main_func():
                         cache_dir = arg
                 elif opt == "-d":
                         target = arg
+                elif opt == "-D":
+                        if arg in ["plan", "transport"]:
+                                key = arg
+                                value = "True"
+                        else:
+                                try:
+                                        key, value = arg.split("=", 1)
+                                except (AttributeError, ValueError):
+                                        usage(_("%(opt)s takes argument of form "
+                                            "name=value, not %(arg)s") % {
+                                            "opt":  opt, "arg": arg })
+                        DebugValues.set_value(key, value)
                 elif opt == "-h":
                         usage(retcode=0)
                 elif opt == "-k":
@@ -526,6 +540,7 @@ def archive_pkgs(pargs, target, list_newest, all_versions, all_timestamps,
         # Retrieve package data for all publishers.
         any_unmatched = []
         any_matched = []
+        invalid_manifests = []
         total_processed = 0
         arc_bytes = 0
         archive_list = []
@@ -560,8 +575,14 @@ def archive_pkgs(pargs, target, list_newest, all_versions, all_timestamps,
 
                 tracker.manifest_fetch_start(npkgs)
 
+                good_matches = []
                 for f in matches:
-                        m = get_manifest(f, xport_cfg)
+                        try:
+                                m = get_manifest(f, xport_cfg)
+                        except apx.InvalidPackageErrors, e:
+                                invalid_manifests.extend(e.errors)
+                                continue
+                        good_matches.append(f)
                         getb, getf, arcb, arccb = get_sizes(m)
                         get_bytes += getb
                         get_files += getf
@@ -580,6 +601,7 @@ def archive_pkgs(pargs, target, list_newest, all_versions, all_timestamps,
                                 raise apx._convert_error(e)
 
                         tracker.manifest_fetch_progress(completion=True)
+                matches = good_matches
 
                 tracker.manifest_fetch_done()
 
@@ -594,9 +616,9 @@ def archive_pkgs(pargs, target, list_newest, all_versions, all_timestamps,
                         # up the progress output.
                         tracker.download_done(dryrun=True)
                         cleanup()
+                        total_processed = len(matches)
                         continue
 
-                processed = 0
                 for f in matches:
                         tracker.download_start_pkg(f)
                         pkgdir = xport_cfg.get_pkg_dir(f)
@@ -614,6 +636,7 @@ def archive_pkgs(pargs, target, list_newest, all_versions, all_timestamps,
 
                         # Nothing more to do for this package.
                         tracker.download_end_pkg(f)
+                        total_processed += 1
 
                 tracker.download_done()
                 tracker.reset()
@@ -622,20 +645,25 @@ def archive_pkgs(pargs, target, list_newest, all_versions, all_timestamps,
         # unmatched.
         check_processed(any_matched, any_unmatched, total_processed)
 
-        if dry_run:
-                # Dump all temporary data.
-                cleanup()
-                return 0
-
-        # Now create archive and then archive retrieved package data.
-        while archive_list:
-                pfmri, mpath, pkgdir = archive_list.pop()
-                pkg_arc.add_package(pfmri, mpath, pkgdir)
-        pkg_arc.close(progtrack=tracker)
+        if not dry_run:
+                # Now create archive and then archive retrieved package data.
+                while archive_list:
+                        pfmri, mpath, pkgdir = archive_list.pop()
+                        pkg_arc.add_package(pfmri, mpath, pkgdir)
+                pkg_arc.close(progtrack=tracker)
 
         # Dump all temporary data.
         cleanup()
-        return 0
+
+        if invalid_manifests:
+                error(_("The following errors were encountered.  The packages "
+                    "listed were not\nreceived.\n%s") %
+                    "\n".join(str(im) for im in invalid_manifests))
+        if invalid_manifests and total_processed:
+                return pkgdefs.EXIT_PARTIAL
+        if invalid_manifests:
+                return pkgdefs.EXIT_OOPS
+        return pkgdefs.EXIT_OK
 
 def transfer_pkgs(pargs, target, list_newest, all_versions, all_timestamps,
     keep_compressed, raw, recursive, dry_run, dest_xport_cfg, src_uri):
@@ -647,6 +675,7 @@ def transfer_pkgs(pargs, target, list_newest, all_versions, all_timestamps,
 
         any_unmatched = []
         any_matched = []
+        invalid_manifests = []
         total_processed = 0
 
         for src_pub in xport_cfg.gen_publishers():
@@ -758,9 +787,12 @@ def transfer_pkgs(pargs, target, list_newest, all_versions, all_timestamps,
                         if republish and targ_cat.get_entry(f):
                                 tracker.manifest_fetch_progress(completion=True)
                                 continue
+                        try:
+                                m = get_manifest(f, xport_cfg)
+                        except apx.InvalidPackageErrors, e:
+                                invalid_manifests.extend(e.errors)
+                                continue
                         pkgs_to_get.append(f)
-
-                        m = get_manifest(f, xport_cfg)
 
                         getb, getf, sendb, sendcb = get_sizes(m)
                         get_bytes += getb
@@ -897,7 +929,15 @@ def transfer_pkgs(pargs, target, list_newest, all_versions, all_timestamps,
 
         # Dump all temporary data.
         cleanup()
-        return 0
+        if invalid_manifests:
+                error(_("The following errors were encountered.  The packages "
+                    "listed were not\nreceived.\n%s") %
+                    "\n".join(str(im) for im in invalid_manifests))
+        if invalid_manifests and total_processed:
+                return pkgdefs.EXIT_PARTIAL
+        if invalid_manifests:
+                return pkgdefs.EXIT_OOPS
+        return pkgdefs.EXIT_OK
 
 if __name__ == "__main__":
 

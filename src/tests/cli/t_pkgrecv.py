@@ -32,10 +32,12 @@ import pkg5unittest
 import os
 import pkg.catalog as catalog
 import pkg.config as cfg
+import pkg.client.pkgdefs as pkgdefs
 import pkg.fmri as fmri
 import pkg.manifest as manifest
 import pkg.misc as misc
 import pkg.p5p as p5p
+import pkg.portable as portable
 import pkg.server.repository as repo
 import shutil
 import tempfile
@@ -140,7 +142,8 @@ class TestPkgrecvMulti(pkg5unittest.ManyDepotTestCase):
                 # and scheme after that.
                 time.sleep(1)
                 self.published.extend(self.pkgsend_bulk(self.durl1,
-                    (self.bronze20, self.tree10, self.branch10, self.leaf10, self.scheme10)))
+                    (self.bronze20, self.tree10, self.branch10, self.leaf10,
+                    self.scheme10)))
 
                 self.dpath2 = self.dcs[2].get_repodir()
                 self.durl2 = self.dcs[2].get_depot_url()
@@ -670,6 +673,117 @@ class TestPkgrecvMulti(pkg5unittest.ManyDepotTestCase):
                 # with -n, so just check that it exits 0.
                 self.pkgrecv(self.durl1, "--raw -r -n -d %s %s" %
                     (self.tempdir, f))
+
+        def test_10_unsupported_actions(self):
+                """Test that pkgrecv skips packages with actions it can't
+                understand, processes those it can, and exits with appropriate
+                exit codes."""
+
+                def __count_pulled_packages(pth):
+                        self.pkgrepo("list -F tsv -H -s %s" % pth)
+                        return len(self.output.splitlines())
+
+                def __check_errout(pfmri):
+                        s1 = "invalid action in package %s" % pfmri
+                        s2 = "Malformed action in package '%s'" % pfmri
+                        self.assert_(s1 in self.errout or s2 in self.errout,
+                            "%s not in error" % pfmri)
+
+                def __empty_repo(uri, arg_string):
+                        if uri.startswith("http://"):
+                                rurl = self.dcs[4].get_repo_url()
+                                self.pkgrepo("remove -s %s '*'" % rurl)
+                                # Refresh the depot to get it to realize that
+                                # the catalog has changed.
+                                self.dcs[4].refresh()
+                        elif arg_string:
+                                portable.remove(uri)
+                        else:
+                                self.pkgrepo("remove -s %s '*'" % uri)
+
+
+                def __test_rec(duri, arg_string, pfmris):
+                        self.debug("\n\nNow pkgrecv'ing to %s" % duri)
+
+                        # It's necessary to use the -D option below because
+                        # otherwise pkgrecv will fail because the manifest
+                        # doesn't validate.
+
+                        # Check that invalid action attributes don't cause
+                        # tracebacks.
+                        self.pkgrecv(self.durl1, "-D manifest_validation=False "
+                            "-d %s %s %s" % (duri, arg_string,
+                            " ".join(pfmris)), exit=pkgdefs.EXIT_OOPS)
+                        for pfmri in pfmris:
+                                __check_errout(pfmri)
+                        self.assertEqual(__count_pulled_packages(duri), 0)
+                        if arg_string:
+                                portable.remove(duri)
+
+                        self.pkgrecv(self.rurl1, "-D manifest_validation=False "
+                            "-d %s %s %s" % (duri, arg_string,
+                            " ".join(pfmris)), exit=pkgdefs.EXIT_OOPS)
+                        for pfmri in pfmris:
+                                __check_errout(pfmri)
+                        self.assertEqual(__count_pulled_packages(duri), 0)
+                        if arg_string:
+                                portable.remove(duri)
+
+                        # Check that other packages are retrieved and the exit
+                        # code reflects partial success.
+                        self.pkgrecv(self.durl1, "-D manifest_validation=False "
+                            "-d %s %s -m all-timestamps '*'" %
+                            (duri, arg_string), exit=pkgdefs.EXIT_PARTIAL)
+                        for pfmri in pfmris:
+                                __check_errout(pfmri)
+                        self.assertEqual(__count_pulled_packages(duri),
+                            len(self.published) - len(pfmris))
+                        __empty_repo(duri, arg_string)
+
+                        self.pkgrecv(self.rurl1, "-D manifest_validation=False "
+                            "-d %s %s -m all-timestamps '*'" %
+                            (duri, arg_string), exit=pkgdefs.EXIT_PARTIAL)
+                        for pfmri in pfmris:
+                                __check_errout(pfmri)
+                        self.assertEqual(__count_pulled_packages(duri),
+                            len(self.published) - len(pfmris))
+                        __empty_repo(duri, arg_string)
+
+                self.rurl1 = self.dcs[1].get_repo_url()
+                repo = self.dcs[1].get_repo()
+                rd = repo.get_pub_rstore()
+                pfmri = fmri.PkgFmri(self.published[4])
+                mp = rd.manifest(pfmri)
+
+                with open(mp, "rb") as fh:
+                        original_txt = fh.read()
+                txt = original_txt.replace("type=require", "type=foo")
+                with open(mp, "wb") as fh:
+                        fh.write(txt)
+
+                rpth = tempfile.mkdtemp(dir=self.test_root)
+                self.pkgrepo("create %s" % rpth)
+                adir = tempfile.mkdtemp(dir=self.test_root)
+
+                # The __empty repo function above assumes that the only http uri
+                # used is the one for depot number 4.
+                dest_uris = ((rpth, ""), (self.durl4, ""),
+                    (os.path.join(adir, "archive.p5p"), "-a"))
+                for duri, arg_string in dest_uris:
+                        __test_rec(duri, arg_string, [self.published[4]])
+
+                # Test that multiple packages failing are handled correctly.
+                for i in range(5, 7):
+                        pfmri = fmri.PkgFmri(self.published[i])
+                        mp = rd.manifest(pfmri)
+                        with open(mp, "rb") as fh:
+                                original_txt = fh.read()
+                        txt = "foop\n" + original_txt
+                        with open(mp, "wb") as fh:
+                                fh.write(txt)
+
+                for duri, arg_string, in dest_uris:
+                        __test_rec(duri, arg_string, self.published[4:7])
 
 
 if __name__ == "__main__":
