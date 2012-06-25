@@ -551,9 +551,13 @@ def list_inventory(op, api_inst, pargs,
                                     result=RESULT_NOTHING_TO_DO)
                                 return EXIT_OOPS
                         elif pkg_list == api_inst.LIST_UPGRADABLE:
-                                error(_("no packages are installed or are "
-                                    "installed and have newer versions "
-                                    "available"))
+                                img = api_inst._img
+                                cat = img.get_catalog(img.IMG_CATALOG_INSTALLED)
+                                if cat.package_count > 0:
+                                        error(_("no packages have newer "
+                                            "versions available"))
+                                else:
+                                        error(_("no packages are installed"))
                                 api_inst.log_operation_end(
                                     result=RESULT_NOTHING_TO_DO)
                                 return EXIT_OOPS
@@ -2018,6 +2022,9 @@ def opts_table_cb_md_only(op, api_inst, opts, opts_new):
                 opts_err_incompat(arg1, "--reject", op)
 
 def opts_cb_list(op, api_inst, opts, opts_new):
+        if opts_new["origins"] and opts_new["list_upgradable"]:
+                opts_err_incompat("-g", "-u", op)
+
         if opts_new["origins"] and not opts_new["list_newest"]:
                 # Use of -g implies -a unless -n is provided.
                 opts_new["list_installed_newest"] = True

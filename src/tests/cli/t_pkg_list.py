@@ -105,6 +105,8 @@ class TestPkgList(pkg5unittest.ManyDepotTestCase):
 
                 self.pkg("list -@", exit=2)
                 self.pkg("list -v -s", exit=2)
+                self.pkg("list -a -u", exit=2)
+                self.pkg("list -g pkg://test1/ -u", exit=2)
 
         def test_00(self):
                 """Verify that sort order and content of a full list matches
