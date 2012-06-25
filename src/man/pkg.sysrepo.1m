@@ -1,13 +1,13 @@
 '\" te
-.\" Copyright (c) 2007, 2011, Oracle and/or its
+.\" Copyright (c) 2007, 2012, Oracle and/or its
 .\" affiliates. All rights reserved.
-.TH pkg.sysrepo 1m "28 Jul 2011" "SunOS 5.11" "System Administration Commands"
+.TH pkg.sysrepo 1M "27 May 2012" "SunOS 5.11" "System Administration Commands"
 .SH NAME
 pkg.sysrepo \- Image Packaging System system repository configuration
 .SH SYNOPSIS
 .LP
 .nf
-pkg.sysrepo -p \fIport\fR [-c \fIcache_dir\fR] [-s \fIcache_size\fR]
+/usr/lib/pkg.sysrepo -p \fIport\fR [-c \fIcache_dir\fR] [-s \fIcache_size\fR]
     [-w \fIhttp_proxy\fR] [-W \fIhttps_proxy\fR]
 .fi
 
@@ -23,7 +23,7 @@ The system repository is responsible for providing access to the package reposit
 The system repository is primarily used in the global zone to allow non-global zones to access the repositories configured in the global zone. The SMF services \fBsvc:/application/pkg/zones-proxyd\fR and \fBsvc:/application/pkg/zones-proxy-client\fR are responsible for providing the transport between non-global zones and the global zone. This transport is only used by \fBpkg\fR(5).
 .sp
 .LP
-Note that only http, https, p5p and v4 file repositories are supported. Older file repository formats are not supported. See \fBpkgrepo\fR(1) for more information about repository versions.
+Note that only \fBhttp\fR, \fBhttps\fR, and \fBv4\fR file repositories and \fBp5p\fR archives are supported. Older file repository formats are not supported. See \fBpkgrepo\fR(1) for more information about repository versions.
 .SH OPTIONS
 .sp
 .LP
@@ -34,9 +34,9 @@ The following options are supported:
 .na
 \fB\fB-c\fR \fIcache_dir\fR\fR
 .ad
-.RS 18n
-.rt  
-The absolute path to a directory that should be used by the system repository for caching responses from the publishers configured.
+.sp .6
+.RS 4n
+Specify the absolute path to a directory that should be used by the system repository for caching responses from the publishers configured.
 .sp
 By default, a file-cache is used. However, the special value \fBmemory\fR can be used to indicate the an in-memory cache should be used. The special value \fBNone\fR can be used to indicate that the system repository should not perform any caching. This setting should be configured using the \fBconfig/cache_dir\fR SMF property.
 .RE
@@ -47,9 +47,9 @@ By default, a file-cache is used. However, the special value \fBmemory\fR can be
 .na
 \fB\fB-p\fR \fIport\fR\fR
 .ad
-.RS 18n
-.rt  
-The port that the system repository should use to listen for requests. This setting should be configured using the \fBconfig/port\fR SMF property.
+.sp .6
+.RS 4n
+Specify the port that the system repository should use to listen for requests. This setting should be configured using the \fBconfig/port\fR SMF property.
 .RE
 
 .sp
@@ -58,8 +58,8 @@ The port that the system repository should use to listen for requests. This sett
 .na
 \fB\fB-s\fR \fIcache_size\fR\fR
 .ad
-.RS 18n
-.rt  
+.sp .6
+.RS 4n
 An integer value in megabytes that defines the maximum cache size of the system repository. This setting should be configured using the \fBconfig/cache_max\fR SMF property.
 .RE
 
@@ -69,8 +69,8 @@ An integer value in megabytes that defines the maximum cache size of the system 
 .na
 \fB\fB-w\fR \fIhttp_proxy\fR\fR
 .ad
-.RS 18n
-.rt  
+.sp .6
+.RS 4n
 A string of the form \fB\fIscheme\fR://\fIhostname\fR[:\fIport\fR]\fR that defines a web proxy that the system repository can use to access http-based package repositories. This setting can be configured using the \fBconfig/http_proxy\fR SMF property.
 .RE
 
@@ -80,8 +80,8 @@ A string of the form \fB\fIscheme\fR://\fIhostname\fR[:\fIport\fR]\fR that defin
 .na
 \fB\fB-W\fR \fIhttps_proxy\fR\fR
 .ad
-.RS 18n
-.rt  
+.sp .6
+.RS 4n
 A string of the form \fB\fIscheme\fR://\fIhostname\fR[:\fIport\fR]\fR that defines a web proxy that the system repository can use to access https-based package repositories. This setting can be configured using the \fBconfig/https_proxy\fR SMF property.
 .RE
 
@@ -166,7 +166,7 @@ Interface StabilityUncommitted
 .SH SEE ALSO
 .sp
 .LP
-\fBpkg\fR(1), \fBpkgdepotd\fR(1M), \fBpkg\fR(5)
+\fBpkg\fR(1), \fBpkg.depotd\fR(1M), \fBpkg\fR(5)
 .sp
 .LP
 \fBhttp://hub.opensolaris.org/bin/view/Project+pkg/\fR

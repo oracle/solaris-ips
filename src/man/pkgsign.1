@@ -1,7 +1,7 @@
 '\" te
-.\" Copyright (c) 2007, 2011, Oracle and/or its
+.\" Copyright (c) 2007, 2012, Oracle and/or its
 .\" affiliates. All rights reserved.
-.TH pkgsign 1 "28 Jul 2011" "SunOS 5.11" "User Commands"
+.TH pkgsign 1 "27 May 2012" "SunOS 5.11" "User Commands"
 .SH NAME
 pkgsign \- Image Packaging System signing utility
 .SH SYNOPSIS
@@ -24,32 +24,104 @@ pkgsign \- Image Packaging System signing utility
 .LP
 The following options are supported:
 .sp
-.LP
-With \fB-a\fR, use the signature algorithm \fIhash_algorithm\fR instead of the default. The default signature algorithm is \fBrsa-sha256\fR. Supported signature algorithms are \fBrsa-sha256\fR, \fBrsa-sha384\fR, \fBrsa-sha512\fR, \fBsha256\fR, \fBsha384\fR, and \fBsha512\fR. A signature algorithm that only specifies a hash algorithm causes the signature value to be the hash of the manifest of the package. A signature algorithm that specifies \fBrsa\fR and a hash algorithm causes the signature value to be the hash of the manifest signed with the private key provided (see the \fB-c\fR and \fB-k\fR options).
+.ne 2
+.mk
+.na
+\fB\fB--help\fR\fR
+.ad
+.sp .6
+.RS 4n
+Display a usage message.
+.RE
+
 .sp
-.LP
-With \fB-c\fR, add the certificate \fIpath_to_signing_certificate\fR as the certificate to use when verifying the value of the signature in the action. The \fB-c\fR option can only be used with the \fB-k\fR option.
+.ne 2
+.mk
+.na
+\fB\fB-a\fR \fIhash_algorithm\fR\fR
+.ad
+.sp .6
+.RS 4n
+Use the signature algorithm \fIhash_algorithm\fR instead of the default. The default signature algorithm is \fBrsa-sha256\fR. Supported signature algorithms are \fBrsa-sha256\fR, \fBrsa-sha384\fR, \fBrsa-sha512\fR, \fBsha256\fR, \fBsha384\fR, and \fBsha512\fR. A signature algorithm that only specifies a hash algorithm causes the signature value to be the hash of the manifest of the package. A signature algorithm that specifies \fBrsa\fR and a hash algorithm causes the signature value to be the hash of the manifest signed with the private key provided (see the \fB-c\fR and \fB-k\fR options).
+.RE
+
 .sp
-.LP
-With \fB-i\fR, add the certificate \fIpath_to_intermediate_cert\fR as a certificate to use when validating the certificate \fIpath_to_signing_certificate\fR given as an argument to \fB-c\fR. Multiple certificates can be provided by specifying \fB-i\fR multiple times.
+.ne 2
+.mk
+.na
+\fB\fB-c\fR \fIpath_to_signing_certificate\fR\fR
+.ad
+.sp .6
+.RS 4n
+Add the certificate \fIpath_to_signing_certificate\fR as the certificate to use when verifying the value of the signature in the action. The \fB-c\fR option can only be used with the \fB-k\fR option.
+.RE
+
 .sp
-.LP
-With \fB-k\fR, use the private key stored in \fIpath_to_private_key\fR to sign the manifest. The \fB-k\fR option can only be used with the \fB-c\fR option. If \fB-k\fR is not set, then the signature value is the hash of the manifest.
+.ne 2
+.mk
+.na
+\fB\fB-i\fR \fIpath_to_intermediate_cert\fR\fR
+.ad
+.sp .6
+.RS 4n
+Add the certificate \fIpath_to_intermediate_cert\fR as a certificate to use when validating the certificate \fIpath_to_signing_certificate\fR given as an argument to \fB-c\fR. Multiple certificates can be provided by specifying \fB-i\fR multiple times.
+.RE
+
 .sp
-.LP
-With \fB-n\fR, perform a trial run that does not change the repository in any way.
+.ne 2
+.mk
+.na
+\fB\fB-k\fR \fIpath_to_private_key\fR\fR
+.ad
+.sp .6
+.RS 4n
+Use the private key stored in \fIpath_to_private_key\fR to sign the manifest. The \fB-k\fR option can only be used with the \fB-c\fR option. If \fB-k\fR is not set, then the signature value is the hash of the manifest.
+.RE
+
 .sp
-.LP
-With \fB-s\fR, sign packages in the repository at \fIpath_or_uri\fR.
+.ne 2
+.mk
+.na
+\fB\fB-n\fR\fR
+.ad
+.sp .6
+.RS 4n
+Perform a trial run that does not change the repository in any way.
+.RE
+
 .sp
-.LP
-With \fB--help\fR, display a usage message.
+.ne 2
+.mk
+.na
+\fB\fB-s\fR \fIpath_or_uri\fR\fR
+.ad
+.sp .6
+.RS 4n
+Sign packages in the repository at \fIpath_or_uri\fR.
+.RE
+
 .sp
-.LP
-With \fB--no-index\fR, do not update the repository search indices after the signed manifest has been republished.
+.ne 2
+.mk
+.na
+\fB\fB--no-index\fR\fR
+.ad
+.sp .6
+.RS 4n
+Do not update the repository search indexes after the signed manifest has been republished.
+.RE
+
 .sp
-.LP
-With \fB--no-catalog\fR, do not update the repository catalog after the signed manifest has been republished.
+.ne 2
+.mk
+.na
+\fB\fB--no-catalog\fR\fR
+.ad
+.sp .6
+.RS 4n
+Do not update the repository catalog after the signed manifest has been republished.
+.RE
+
 .SH EXAMPLES
 .LP
 \fBExample 1 \fRSign Using the Hash Value of the Manifest
@@ -163,7 +235,7 @@ Interface StabilityUncommitted
 .SH SEE ALSO
 .sp
 .LP
-\fBpkg\fR(1), \fBpkgrecv\fR(1), \fBpkgsend\fR(1), \fBpkgrepo\fR(1M), \fBpkg\fR(5)
+\fBpkg\fR(1), \fBpkgrecv\fR(1), \fBpkgsend\fR(1), \fBpkgrepo\fR(1), \fBpkg\fR(5)
 .sp
 .LP
 \fBhttp://hub.opensolaris.org/bin/view/Project+pkg/\fR

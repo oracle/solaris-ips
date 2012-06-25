@@ -1,7 +1,7 @@
 '\" te
-.\" Copyright (c) 2007, 2011, Oracle and/or its
+.\" Copyright (c) 2009, 2012, Oracle and/or its
 .\" affiliates. All rights reserved.
-.TH pkg 5 "29 Jul 2011" "SunOS 5.11" "Standards, Environments, and Macros"
+.TH pkg 5 "5 Jun 2012" "SunOS 5.11" "Standards, Environments, and Macros"
 .SH NAME
 pkg \- Image Packaging System
 .SH DESCRIPTION
@@ -15,17 +15,17 @@ Each package is represented by a fault management resource identifier (FMRI) wit
 .sp
 .in +2
 .nf
-pkg://opensolaris.org/library/libc@5.11,5.11-0.75:20071001T163427Z
+pkg://solaris/system/library/c++-runtime@0.5.11,5.11-0.175.0.0.0.2.1:20120921T190358Z
 .fi
 .in -2
 .sp
 
 .sp
 .LP
-\fBopensolaris.org\fR is the publisher. \fBlibrary/libc\fR is the package name. Although the namespace is hierarchical and arbitrarily deep, there is no enforced containment; the name is essentially arbitrary. The publisher information is optional, but must be preceded by \fBpkg://\fR if present. An FMRI that includes the publisher is often referred to as being "fully qualified." If publisher information is not present, then the package name should generally be preceded by \fBpkg:/\fR.
+\fBsolaris\fR is the publisher. \fBsystem/library/c++-runtime\fR is the package name. Although the namespace is hierarchical and arbitrarily deep, there is no enforced containment; the name is essentially arbitrary. The publisher information is optional, but must be preceded by \fBpkg://\fR if present. An FMRI that includes the publisher is often referred to as being "fully qualified." If publisher information is not present, then the package name should generally be preceded by \fBpkg:/\fR.
 .sp
 .LP
-Packaging clients often allow the scheme of an FMRI to be omitted if it does not contain publisher information. For example, \fBpkg:/library/libc\fR can be written as \fBlibrary/libc\fR. If the scheme is omitted, clients also allow omission of all but the last component of a package name for matching purposes. For example, \fBlibrary/libc\fRcould be written as \fBlibc\fR, which would then match packages named \fBlibc\fR or package names ending in \fB/libc\fR.
+Packaging clients often allow the scheme of an FMRI to be omitted if it does not contain publisher information. For example, \fBpkg:/system/library/c++-runtime\fR can be written as \fBsystem/library/c++-runtime\fR. If the scheme is omitted, clients also allow omission of all but the last component of a package name for matching purposes. For example, \fBsystem/library/c++-runtime\fR could be written as \fBlibrary/c++-runtime\fR or \fBc++-runtime\fR, which would then match packages named \fBc++-runtime\fR or package names ending in \fB/c++-runtime\fR.
 .sp
 .LP
 A publisher name identifies a person, group of persons, or an organization as the source of one or more packages. To avoid publisher name collisions and help identify the publisher, a best practice is to use a domain name that represents the entity publishing the packages as a publisher name.
@@ -66,7 +66,7 @@ Actions have a simple text representation:
 
 .sp
 .LP
-Names of attributes cannot have whitespace, quotation marks, or equals signs (=) in them. All characters after the first equals sign belong to the value. Values can have all of those, though spaces must be enclosed in single or double quotation marks. Single quotation marks do not need to be escaped inside a string that is enclosed in double quotation marks, and double quotation marks do not need to be escaped inside a string that is enclosed in single quotation marks. A quotation mark can be prefixed with a backslash (\\) character to avoid terminating the quoted string. A backslash can be escaped with a backslash.
+Names of attributes cannot have whitespace, quotation marks, or equals signs (=) in them. All characters after the first equals sign belong to the value. Values can have all of those, though spaces must be enclosed in single or double quotation marks. Single quotation marks do not need to be escaped inside a string that is enclosed in double quotation marks, and double quotation marks do not need to be escaped inside a string that is enclosed in single quotation marks. A quotation mark can be prefixed with a backslash (\e) character to avoid terminating the quoted string. A backslash can be escaped with a backslash.
 .sp
 .LP
 Attributes can be named more than once with multiple values. These are treated as unordered lists.
@@ -139,8 +139,8 @@ Other attributes include:
 .na
 \fB\fBpreserve\fR\fR
 .ad
-.RS 12n
-.rt  
+.sp .6
+.RS 4n
 This specifies that the file's contents should not be overwritten on upgrade if the contents are determined to have changed since the file was installed or last upgraded. On initial installs, if an existing file is found, the file is salvaged (stored in \fB/var/pkg/lost+found\fR).
 .sp
 If the value of \fBpreserve\fR is \fBrenameold\fR, then the existing file is renamed with the extension \fB\&.old\fR, and the new file is put in its place.
@@ -158,8 +158,8 @@ If the value of \fBpreserve\fR is \fBtrue\fR (or a value not listed above, such 
 .na
 \fB\fBoverlay\fR\fR
 .ad
-.RS 12n
-.rt  
+.sp .6
+.RS 4n
 This specifies whether the action allows other packages to deliver a file at the same location or whether it delivers a file intended to overlay another. This functionality is intended for use with configuration files that do not participate in any self-assembly (for example, \fB/etc/motd\fR) and that can be safely overwritten.
 .sp
 If \fBoverlay\fR is not specified, multiple packages cannot deliver files to the same location.
@@ -178,9 +178,9 @@ Files can also be "tasted," and depending on the flavor, can have additional att
 .na
 \fB\fBelfarch\fR\fR
 .ad
-.RS 17n
-.rt  
-The architecture of the ELF file. This is the output of \fBuname -p\fRon the architecture for which the file is built.
+.sp .6
+.RS 4n
+The architecture of the ELF file. This is the output of \fBuname -p\fR on the architecture for which the file is built.
 .RE
 
 .sp
@@ -189,8 +189,8 @@ The architecture of the ELF file. This is the output of \fBuname -p\fRon the arc
 .na
 \fB\fBelfbits\fR\fR
 .ad
-.RS 17n
-.rt  
+.sp .6
+.RS 4n
 This is \fB32\fR or \fB64\fR.
 .RE
 
@@ -200,8 +200,8 @@ This is \fB32\fR or \fB64\fR.
 .na
 \fB\fBelfhash\fR\fR
 .ad
-.RS 17n
-.rt  
+.sp .6
+.RS 4n
 This is the hash of the "interesting" ELF sections in the file. These are the sections that are mapped into memory when the binary is loaded. These are the only sections necessary to consider when determining whether the executable behavior of two binaries will differ.
 .RE
 
@@ -211,8 +211,8 @@ This is the hash of the "interesting" ELF sections in the file. These are the se
 .na
 \fB\fBoriginal_name\fR\fR
 .ad
-.RS 17n
-.rt  
+.sp .6
+.RS 4n
 This attribute is used to handle editable files moving from package to package or from place to place, or both. The form this takes is the name of the originating package, followed by a colon and the original path to the file. Any file being deleted is recorded either with its package and path, or with the value of the \fBoriginal_name\fR attribute if specified. Any editable file being installed that has the \fBoriginal_name\fR attribute set uses the file of that name if it is deleted as part of the same packaging operation.
 .RE
 
@@ -222,9 +222,9 @@ This attribute is used to handle editable files moving from package to package o
 .na
 \fB\fBrevert-tag\fR\fR
 .ad
-.RS 17n
-.rt  
-This attribute is used to tag editable files that should be reverted as a set. Multiple revert-tag values can be specified. The file reverts to its manifest-defined state when \fBpkg revert\fR is invoked with any of those tags specified. See \fBpkg\fR(1).
+.sp .6
+.RS 4n
+This attribute is used to tag editable files that should be reverted as a set. Multiple \fBrevert-tag\fR values can be specified. The file reverts to its manifest-defined state when \fBpkg revert\fR is invoked with any of those tags specified. See \fBpkg\fR(1).
 .RE
 
 .SS "Directory Actions"
@@ -243,8 +243,8 @@ To move unpackaged contents into a new directory, the following attribute might 
 .na
 \fB\fBsalvage-from\fR\fR
 .ad
-.RS 16n
-.rt  
+.sp .6
+.RS 4n
 This names a directory of salvaged items. A directory with such an attribute inherits on creation the salvaged directory contents if they exist.
 .RE
 
@@ -282,7 +282,7 @@ The target of the symbolic link. The file system object to which the link resolv
 .ad
 .sp .6
 .RS 4n
-Specifies the entry in the mediation namespace shared by all path names participating in a given mediation group (for example, \fBpython\fR). Link mediation can be performed based on \fBmediator-version\fR and/or \fBmediator-implementation\fR.  All mediated links for a given path name must specify the same mediator. However, not all mediator versions and implementations need to provide a link at a given path. If a mediation does not provide a link, then the link is removed when that mediation is selected. A \fBmediator\fR, in combination with a specific version and/or implementation represents a mediation that can be selected for use by the packaging system.
+Specifies the entry in the mediation namespace shared by all path names participating in a given mediation group (for example, \fBpython\fR). Link mediation can be performed based on \fBmediator-version\fR and/or \fBmediator-implementation\fR. All mediated links for a given path name must specify the same mediator. However, not all mediator versions and implementations need to provide a link at a given path. If a mediation does not provide a link, then the link is removed when that mediation is selected. A \fBmediator\fR, in combination with a specific version and/or implementation represents a mediation that can be selected for use by the packaging system.
 .RE
 
 .sp
@@ -306,7 +306,7 @@ Specifies the version (expressed as a dot-separated sequence of nonnegative inte
 .RS 4n
 Specifies the implementation of the mediator for use in addition to or instead of the \fBmediator-version\fR. Implementation strings are not considered to be ordered and a string is arbitrary selected by \fBpkg\fR(5) if not explicitly specified by a system administrator.
 .sp
-The value can be a string of arbitrary length composed of alphanumeric characters and spaces.  If the implementation itself can be versioned or is versioned, then the version should be specified at the end of the string, after a @ (expressed as a dot-separated sequence of nonnegative integers). If multiple versions of an implementation exist, the default behavior is to select the implementation with the greatest version.
+The value can be a string of arbitrary length composed of alphanumeric characters and spaces. If the implementation itself can be versioned or is versioned, then the version should be specified at the end of the string, after a @ (expressed as a dot-separated sequence of nonnegative integers). If multiple versions of an implementation exist, the default behavior is to select the implementation with the greatest version.
 .sp
 If only one instance of an implementation mediation link at a particular path is installed on a system, then that one is chosen automatically. If future links at the path are installed, the link is not switched unless a vendor, site, or local override applies, or if one of the links is version mediated.
 .RE
@@ -344,8 +344,8 @@ The \fBdriver\fR action represents a device driver. The \fBdriver\fR action does
 .na
 \fB\fBname\fR\fR
 .ad
-.RS 15n
-.rt  
+.sp .6
+.RS 4n
 The name of the driver. This is usually, but not always, the file name of the driver binary. This is the \fBdriver\fR action's key attribute.
 .RE
 
@@ -355,8 +355,8 @@ The name of the driver. This is usually, but not always, the file name of the dr
 .na
 \fB\fBalias\fR\fR
 .ad
-.RS 15n
-.rt  
+.sp .6
+.RS 4n
 This represents an alias for the driver. A given driver can have more than one \fBalias\fR attribute. No special quoting rules are necessary.
 .RE
 
@@ -366,8 +366,8 @@ This represents an alias for the driver. A given driver can have more than one \
 .na
 \fB\fBclass\fR\fR
 .ad
-.RS 15n
-.rt  
+.sp .6
+.RS 4n
 This represents a driver class. A given driver can have more than one \fBclass\fR attribute.
 .RE
 
@@ -377,8 +377,8 @@ This represents a driver class. A given driver can have more than one \fBclass\f
 .na
 \fB\fBperms\fR\fR
 .ad
-.RS 15n
-.rt  
+.sp .6
+.RS 4n
 This represents the file system permissions for the driver's device nodes.
 .RE
 
@@ -388,8 +388,8 @@ This represents the file system permissions for the driver's device nodes.
 .na
 \fB\fBclone_perms\fR\fR
 .ad
-.RS 15n
-.rt  
+.sp .6
+.RS 4n
 This represents the file system permissions for the clone driver's minor nodes for this driver.
 .RE
 
@@ -399,8 +399,8 @@ This represents the file system permissions for the clone driver's minor nodes f
 .na
 \fB\fBpolicy\fR\fR
 .ad
-.RS 15n
-.rt  
+.sp .6
+.RS 4n
 This specifies additional security policy for the device. A given driver can have more than one \fBpolicy\fR attribute, but no minor device specification can be present in more than one attribute.
 .RE
 
@@ -410,8 +410,8 @@ This specifies additional security policy for the device. A given driver can hav
 .na
 \fB\fBprivs\fR\fR
 .ad
-.RS 15n
-.rt  
+.sp .6
+.RS 4n
 This specifies privileges used by the driver. A given driver can have more than one \fBprivs\fR attribute.
 .RE
 
@@ -421,9 +421,9 @@ This specifies privileges used by the driver. A given driver can have more than 
 .na
 \fB\fBdevlink\fR\fR
 .ad
-.RS 15n
-.rt  
-This specifies an entry in \fB/etc/devlink.tab\fR. The value is the exact line to go into the file, with tabs denoted by \fB\\t\fR. See \fBdevlinks\fR(1M) for more information. A given driver can have more than one \fBdevlink\fR attribute.
+.sp .6
+.RS 4n
+This specifies an entry in \fB/etc/devlink.tab\fR. The value is the exact line to go into the file, with tabs denoted by \fB\et\fR\&. See \fBdevlinks\fR(1M) for more information. A given driver can have more than one \fBdevlink\fR attribute.
 .RE
 
 .SS "Depend Actions"
@@ -439,8 +439,8 @@ The following attributes are recognized:
 .na
 \fB\fBfmri\fR\fR
 .ad
-.RS 14n
-.rt  
+.sp .6
+.RS 4n
 The FMRI representing the dependent package. This is the \fBdependency\fR action's key attribute. The \fBfmri\fR value must not include the publisher. The package name is assumed to be complete. Dependencies of type \fBrequire-any\fR can have multiple \fBfmri\fR attributes. A version is optional on the \fBfmri\fR value, though for some types of dependencies, an \fBfmri\fR with no version has no meaning.
 .RE
 
@@ -450,27 +450,108 @@ The FMRI representing the dependent package. This is the \fBdependency\fR action
 .na
 \fB\fBtype\fR\fR
 .ad
-.RS 14n
-.rt  
+.sp .6
+.RS 4n
 The type of the dependency.
 .sp
-If the value is \fBrequire\fR, then the dependency is required and must have a version equal to or greater than the version specified in the \fBfmri\fR attribute. If the version is not specified, any version satisfies the dependency. A package cannot be installed if any of its required dependencies cannot be satisfied.
+.ne 2
+.mk
+.na
+\fB\fBrequire\fR\fR
+.ad
+.sp .6
+.RS 4n
+The dependency is required and must have a version equal to or greater than the version specified in the \fBfmri\fR attribute. If the version is not specified, any version satisfies the dependency. A package cannot be installed if any of its required dependencies cannot be satisfied.
+.RE
+
 .sp
-If the value is \fBoptional\fR, then the dependency, if present, must be at the specified version level or greater.
+.ne 2
+.mk
+.na
+\fB\fBoptional\fR\fR
+.ad
+.sp .6
+.RS 4n
+The dependency, if present, must be at the specified version level or greater.
+.RE
+
 .sp
-If the value is \fBexclude\fR, then the containing package cannot be installed if the dependency is present at the specified version level or greater. If no version is specified, the dependent package cannot be installed concurrently with the package specifying the dependency.
+.ne 2
+.mk
+.na
+\fB\fBexclude\fR\fR
+.ad
+.sp .6
+.RS 4n
+The containing package cannot be installed if the dependency is present at the specified version level or greater. If no version is specified, the dependent package cannot be installed concurrently with the package specifying the dependency.
+.RE
+
 .sp
-If the value is \fBincorporate\fR, then the dependency is optional, but the version of the dependent package is constrained. See "Constraints and Freezing" below.
+.ne 2
+.mk
+.na
+\fB\fBincorporate\fR\fR
+.ad
+.sp .6
+.RS 4n
+The dependency is optional, but the version of the dependent package is constrained. See "Constraints and Freezing" below.
+.RE
+
 .sp
-If the value is \fBrequire-any\fR, then any one of multiple dependent packages as specified by multiple \fBfmri\fR attributes can satisfy the dependency, following the same rules as the \fBrequire\fR dependency type.
+.ne 2
+.mk
+.na
+\fB\fBrequire-any\fR\fR
+.ad
+.sp .6
+.RS 4n
+Any one of multiple dependent packages as specified by multiple \fBfmri\fR attributes can satisfy the dependency, following the same rules as the \fBrequire\fR dependency type.
+.RE
+
 .sp
-If the value is \fBconditional\fR, the dependency is required only if the package defined by the \fBpredicate\fR attribute is present on the system.
+.ne 2
+.mk
+.na
+\fB\fBconditional\fR\fR
+.ad
+.sp .6
+.RS 4n
+The dependency is required only if the package defined by the \fBpredicate\fR attribute is present on the system.
+.RE
+
 .sp
-If the value is \fBorigin\fR, the dependency must, if present, be at the specified value or better on the image to be modified prior to installation. If the value of the \fBroot-image\fR attribute is \fBtrue\fR, the dependency must be present on the image rooted at / in order to install this package.
+.ne 2
+.mk
+.na
+\fB\fBorigin\fR\fR
+.ad
+.sp .6
+.RS 4n
+The dependency must, if present, be at the specified value or better on the image to be modified prior to installation. If the value of the \fBroot-image\fR attribute is \fBtrue\fR, the dependency must be present on the image rooted at / in order to install this package.
+.RE
+
 .sp
-If the value is \fBgroup\fR, the dependency is required unless the package is on the image avoid list. Note that obsolete packages silently satisfy the group dependency. See the \fBavoid\fR subcommand in \fBpkg\fR(1).
+.ne 2
+.mk
+.na
+\fB\fBgroup\fR\fR
+.ad
+.sp .6
+.RS 4n
+The dependency is required unless the package is on the image avoid list. Note that obsolete packages silently satisfy the group dependency. See the \fBavoid\fR subcommand in \fBpkg\fR(1).
+.RE
+
 .sp
-If the value is \fBparent\fR, then the dependency is ignored if the image is not a child image. If the image is a child image then the dependency is required to be present in the parent image. The package version matching for a \fBparent\fR dependency is the same as that used for \fBincorporate\fR dependencies.
+.ne 2
+.mk
+.na
+\fB\fBparent\fR\fR
+.ad
+.sp .6
+.RS 4n
+The dependency is ignored if the image is not a child image. If the image is a child image then the dependency is required to be present in the parent image. The package version matching for a \fBparent\fR dependency is the same as that used for \fBincorporate\fR dependencies.
+.RE
+
 .RE
 
 .sp
@@ -479,8 +560,8 @@ If the value is \fBparent\fR, then the dependency is ignored if the image is not
 .na
 \fB\fBpredicate\fR\fR
 .ad
-.RS 14n
-.rt  
+.sp .6
+.RS 4n
 The FMRI representing the predicate for \fBconditional\fR dependencies.
 .RE
 
@@ -490,8 +571,8 @@ The FMRI representing the predicate for \fBconditional\fR dependencies.
 .na
 \fB\fBroot-image\fR\fR
 .ad
-.RS 14n
-.rt  
+.sp .6
+.RS 4n
 Has an effect only for \fBorigin\fR dependencies as mentioned above.
 .RE
 
@@ -511,8 +592,8 @@ The following attributes are recognized:
 .na
 \fB\fBlicense\fR\fR
 .ad
-.RS 16n
-.rt  
+.sp .6
+.RS 4n
 This is a \fBlicense\fR action's key attribute. This attribute provides a meaningful description for the license to assist users in determining the contents without reading the license text itself. Some example values include:
 .RS +4
 .TP
@@ -562,7 +643,7 @@ Mozilla Public License 1.1 (MPL)
 .el o
 Simplified BSD License
 .RE
-Wherever possible, including the version of the license in the description is recommended as shown above. The \fBlicense\fR value must be unique within a package.
+The \fBlicense\fR value must be unique within a package. Including the version of the license in the description, as shown in several of the examples above, is recommended. If a package has code under multiple licenses, use multiple \fBlicense\fR actions. The length of the license attribute value should not be more than 64 characters.
 .RE
 
 .sp
@@ -571,8 +652,8 @@ Wherever possible, including the version of the license in the description is re
 .na
 \fB\fBmust-accept\fR\fR
 .ad
-.RS 16n
-.rt  
+.sp .6
+.RS 4n
 When \fBtrue\fR, this license must be accepted by a user before the related package can be installed or updated. Omission of this attribute is equivalent to \fBfalse\fR. The method of acceptance (interactive or configuration-based, for example) is at the discretion of clients.
 .RE
 
@@ -582,8 +663,8 @@ When \fBtrue\fR, this license must be accepted by a user before the related pack
 .na
 \fB\fBmust-display\fR\fR
 .ad
-.RS 16n
-.rt  
+.sp .6
+.RS 4n
 When \fBtrue\fR, the action's payload must be displayed by clients during packaging operations. Omission of this value is equivalent to \fBfalse\fR. This attribute should not be used for copyright notices, only actual licenses or other material that must be displayed during operations. The method of display is at the discretion of clients.
 .RE
 
@@ -600,8 +681,8 @@ The following attributes, named in accordance with the parameters on \fBpkginfo\
 .na
 \fB\fBcategory\fR\fR
 .ad
-.RS 12n
-.rt  
+.sp .6
+.RS 4n
 The value for the \fBCATEGORY\fR parameter. The default value is \fBsystem\fR.
 .RE
 
@@ -611,8 +692,8 @@ The value for the \fBCATEGORY\fR parameter. The default value is \fBsystem\fR.
 .na
 \fB\fBdesc\fR\fR
 .ad
-.RS 12n
-.rt  
+.sp .6
+.RS 4n
 The value for the \fBDESC\fR parameter.
 .RE
 
@@ -622,8 +703,8 @@ The value for the \fBDESC\fR parameter.
 .na
 \fB\fBhotline\fR\fR
 .ad
-.RS 12n
-.rt  
+.sp .6
+.RS 4n
 The value for the \fBHOTLINE\fR parameter.
 .RE
 
@@ -633,8 +714,8 @@ The value for the \fBHOTLINE\fR parameter.
 .na
 \fB\fBname\fR\fR
 .ad
-.RS 12n
-.rt  
+.sp .6
+.RS 4n
 The value for the \fBNAME\fR parameter. The default value is \fBnone provided\fR.
 .RE
 
@@ -644,8 +725,8 @@ The value for the \fBNAME\fR parameter. The default value is \fBnone provided\fR
 .na
 \fB\fBpkg\fR\fR
 .ad
-.RS 12n
-.rt  
+.sp .6
+.RS 4n
 The abbreviation for the package being installed. The default value is the name from the FMRI of the package. This is a \fBlegacy\fR action's key attribute.
 .RE
 
@@ -655,8 +736,8 @@ The abbreviation for the package being installed. The default value is the name 
 .na
 \fB\fBvendor\fR\fR
 .ad
-.RS 12n
-.rt  
+.sp .6
+.RS 4n
 The value for the \fBVENDOR\fR parameter.
 .RE
 
@@ -666,8 +747,8 @@ The value for the \fBVENDOR\fR parameter.
 .na
 \fB\fBversion\fR\fR
 .ad
-.RS 12n
-.rt  
+.sp .6
+.RS 4n
 The value for the VERSION parameter. The default value is the version from the FMRI of the package.
 .RE
 
@@ -707,10 +788,21 @@ The \fBset\fR action can deliver any metadata the package author chooses. Howeve
 .ne 2
 .mk
 .na
+\fB\fBpkg.fmri\fR\fR
+.ad
+.sp .6
+.RS 4n
+See "Package FMRIs and Versions" in the "Description" section.
+.RE
+
+.sp
+.ne 2
+.mk
+.na
 \fB\fBinfo.classification\fR\fR
 .ad
-.RS 23n
-.rt  
+.sp .6
+.RS 4n
 One or more tokens that a \fBpkg\fR(5) client can use to classify the package. The value should have a scheme (such as "org.opensolaris.category.2008" or "org.acm.class.1998") and the actual classification, such as "Applications/Games", separated by a colon (:).
 .RE
 
@@ -720,8 +812,8 @@ One or more tokens that a \fBpkg\fR(5) client can use to classify the package. T
 .na
 \fB\fBpkg.description\fR\fR
 .ad
-.RS 23n
-.rt  
+.sp .6
+.RS 4n
 A detailed description of the contents and functionality of the package, typically a paragraph or so in length.
 .RE
 
@@ -731,8 +823,8 @@ A detailed description of the contents and functionality of the package, typical
 .na
 \fB\fBpkg.obsolete\fR\fR
 .ad
-.RS 23n
-.rt  
+.sp .6
+.RS 4n
 When \fBtrue\fR, the package is marked obsolete. An obsolete package can have no actions other than more set actions, and must not be marked renamed.
 .RE
 
@@ -742,8 +834,8 @@ When \fBtrue\fR, the package is marked obsolete. An obsolete package can have no
 .na
 \fB\fBpkg.renamed\fR\fR
 .ad
-.RS 23n
-.rt  
+.sp .6
+.RS 4n
 When \fBtrue\fR, the package has been renamed. There must be one or more \fBdepend\fR actions in the package as well that point to the package versions to which this package has been renamed. A package cannot be marked both renamed and obsolete, but otherwise can have any number of set actions.
 .RE
 
@@ -753,8 +845,8 @@ When \fBtrue\fR, the package has been renamed. There must be one or more \fBdepe
 .na
 \fB\fBpkg.summary\fR\fR
 .ad
-.RS 23n
-.rt  
+.sp .6
+.RS 4n
 A short, one-line description of the package.
 .RE
 
@@ -768,8 +860,8 @@ The \fBgroup\fR action defines a UNIX group as defined in \fBgroup\fR(4). No sup
 .na
 \fB\fBgroupname\fR\fR
 .ad
-.RS 13n
-.rt  
+.sp .6
+.RS 4n
 The value for the name of the group.
 .RE
 
@@ -779,8 +871,8 @@ The value for the name of the group.
 .na
 \fB\fBgid\fR\fR
 .ad
-.RS 13n
-.rt  
+.sp .6
+.RS 4n
 The group's unique numerical id. The default value is the first free group under 100.
 .RE
 
@@ -797,8 +889,8 @@ The following attributes are recognized:
 .na
 \fB\fBusername\fR\fR
 .ad
-.RS 15n
-.rt  
+.sp .6
+.RS 4n
 The unique name of the user
 .RE
 
@@ -808,8 +900,8 @@ The unique name of the user
 .na
 \fB\fBpassword\fR\fR
 .ad
-.RS 15n
-.rt  
+.sp .6
+.RS 4n
 The encrypted password of the user. Default value is \fB*LK*\fR. See \fBshadow\fR(4).
 .RE
 
@@ -819,8 +911,8 @@ The encrypted password of the user. Default value is \fB*LK*\fR. See \fBshadow\f
 .na
 \fB\fBuid\fR\fR
 .ad
-.RS 15n
-.rt  
+.sp .6
+.RS 4n
 The unique uid of the user. Default value is first free value under 100.
 .RE
 
@@ -830,8 +922,8 @@ The unique uid of the user. Default value is first free value under 100.
 .na
 \fB\fBgroup\fR\fR
 .ad
-.RS 15n
-.rt  
+.sp .6
+.RS 4n
 The name of the user's primary group. Must be found in \fB/etc/group\fR.
 .RE
 
@@ -841,8 +933,8 @@ The name of the user's primary group. Must be found in \fB/etc/group\fR.
 .na
 \fB\fBgcos-field\fR\fR
 .ad
-.RS 15n
-.rt  
+.sp .6
+.RS 4n
 The value of the \fBgcos\fR field in \fB/etc/passwd\fR. Default value is \fBusername\fR.
 .RE
 
@@ -852,8 +944,8 @@ The value of the \fBgcos\fR field in \fB/etc/passwd\fR. Default value is \fBuser
 .na
 \fB\fBhome-dir\fR\fR
 .ad
-.RS 15n
-.rt  
+.sp .6
+.RS 4n
 The user's home directory. Default value is /.
 .RE
 
@@ -863,8 +955,8 @@ The user's home directory. Default value is /.
 .na
 \fB\fBlogin-shell\fR\fR
 .ad
-.RS 15n
-.rt  
+.sp .6
+.RS 4n
 The user's default shell. Default value is empty.
 .RE
 
@@ -874,8 +966,8 @@ The user's default shell. Default value is empty.
 .na
 \fB\fBgroup-list\fR\fR
 .ad
-.RS 15n
-.rt  
+.sp .6
+.RS 4n
 Secondary groups to which the user belongs. See \fBgroup\fR(4).
 .RE
 
@@ -885,8 +977,8 @@ Secondary groups to which the user belongs. See \fBgroup\fR(4).
 .na
 \fB\fBftpuser\fR\fR
 .ad
-.RS 15n
-.rt  
+.sp .6
+.RS 4n
 Can be set to \fBtrue\fR or \fBfalse\fR. The default value of \fBtrue\fR indicates that the user is permitted to login via FTP. See \fBftpusers\fR(4).
 .RE
 
@@ -896,8 +988,8 @@ Can be set to \fBtrue\fR or \fBfalse\fR. The default value of \fBtrue\fR indicat
 .na
 \fB\fBlastchg\fR\fR
 .ad
-.RS 15n
-.rt  
+.sp .6
+.RS 4n
 The number of days between January 1, 1970, and the date that the password was last modified. Default value is empty. See \fBshadow\fR(4).
 .RE
 
@@ -907,8 +999,8 @@ The number of days between January 1, 1970, and the date that the password was l
 .na
 \fB\fBmin\fR\fR
 .ad
-.RS 15n
-.rt  
+.sp .6
+.RS 4n
 The minimum number of days required between password changes. This field must be set to 0 or above to enable password aging. Default value is empty. See \fBshadow\fR(4).
 .RE
 
@@ -918,8 +1010,8 @@ The minimum number of days required between password changes. This field must be
 .na
 \fB\fBmax\fR\fR
 .ad
-.RS 15n
-.rt  
+.sp .6
+.RS 4n
 The maximum number of days the password is valid. Default value is empty. See \fBshadow\fR(4).
 .RE
 
@@ -929,8 +1021,8 @@ The maximum number of days the password is valid. Default value is empty. See \f
 .na
 \fB\fBwarn\fR\fR
 .ad
-.RS 15n
-.rt  
+.sp .6
+.RS 4n
 The number of days before password expires that the user is warned. See \fBshadow\fR(4).
 .RE
 
@@ -940,8 +1032,8 @@ The number of days before password expires that the user is warned. See \fBshado
 .na
 \fB\fBinactive\fR\fR
 .ad
-.RS 15n
-.rt  
+.sp .6
+.RS 4n
 The number of days of inactivity allowed for that user. This is counted on a per-machine basis. The information about the last login is taken from the machine's \fBlastlog\fR file. See \fBshadow\fR(4).
 .RE
 
@@ -951,8 +1043,8 @@ The number of days of inactivity allowed for that user. This is counted on a per
 .na
 \fB\fBexpire\fR\fR
 .ad
-.RS 15n
-.rt  
+.sp .6
+.RS 4n
 An absolute date expressed as the number of days since the UNIX Epoch (January 1, 1970). When this number is reached, the login can no longer be used. For example, an expire value of 13514 specifies a login expiration of January 1, 2007. See \fBshadow\fR(4).
 .RE
 
@@ -962,8 +1054,8 @@ An absolute date expressed as the number of days since the UNIX Epoch (January 1
 .na
 \fB\fBflag\fR\fR
 .ad
-.RS 15n
-.rt  
+.sp .6
+.RS 4n
 Set to empty. See \fBshadow\fR(4).
 .RE
 
@@ -985,7 +1077,7 @@ The following actuators are defined:
 .ad
 .sp .6
 .RS 4n
-Can be set to \fBtrue\fR or \fBfalse\fR. If an action with this actuator set to \fBtrue\fR is installed or updated during a package installation, then the packaging transaction can be advertised as requiring a reboot. Certain client implementations might take additional steps, such as performing the entire package operation using a clone of the image, in the case that the image is the live system image.
+Can be set to \fBtrue\fR or \fBfalse\fR. This actuator declares that update or removal of the tagged action must be performed in a new boot environment if the package system is operating on a live image. Creation of a new boot environment is controlled by the \fBbe-policy\fR image property. See the "Image Properties" section in the \fBpkg\fR(1) man page for more information about the \fBbe-policy\fR property.
 .RE
 
 .sp
@@ -996,11 +1088,29 @@ Can be set to \fBtrue\fR or \fBfalse\fR. If an action with this actuator set to 
 .ad
 .sp .6
 .RS 4n
-Each of these actuators takes the value of an FMRI of a service instance to operate on during the package installation or removal. \fBdisable_fmri\fR causes the given FMRI to be disabled prior to action removal, per the \fBdisable\fR subcommand to \fBsvcadm\fR(1M). \fBrefresh_fmri\fR and \fBrestart_fmri\fR cause the given FMRI to be refreshed or restarted after action installation or update, per the respective subcommands of \fBsvcadm\fR(1M). Finally, \fBsuspend_fmri\fR causes the given FMRI to be disabled temporarily prior to the action install phase, and then enabled after the completion of that phase.
+Each of these actuators takes the value of an FMRI of a service instance to operate on during the package installation or removal. \fBdisable_fmri\fR causes the given FMRI to be disabled prior to action removal, per the \fBdisable\fR subcommand to \fBsvcadm\fR(1M). \fBrefresh_fmri\fR and \fBrestart_fmri\fR cause the given FMRI to be refreshed or restarted after action installation, update, or removal per the respective subcommands of \fBsvcadm\fR(1M). Finally, \fBsuspend_fmri\fR causes the given FMRI to be disabled temporarily prior to the action install phase, and then enabled after the completion of that phase.
 .sp
 The value can contain a pattern that matches multiple service instances. However, it must do so explicitly with a glob as accepted by \fBsvcs\fR(1), rather than doing so implicitly by not indicating any instances.
 .RE
 
+.SH MEDIATIONS
+.sp
+.LP
+A mediator is a name that represents a set of related symbolic or hard links. If two or more link actions have the same path and mediator name, the user or the package system selects the link target based on version, implementation, or priority. See "Link Actions" for information about mediator attributes.
+.sp
+.LP
+The following example shows two different instances of a mediator named \fBjava\fR where the link choices are between versions. These two \fBlink\fR actions would appear in two different packages.
+.sp
+.in +2
+.nf
+link mediator=java mediator-version=1.6 path=usr/java target=jdk/jdk1.6.0_31
+link mediator=java mediator-version=1.7 path=usr/java target=jdk/jdk1.7.0_02
+.fi
+.in -2
+
+.sp
+.LP
+See the \fBset-mediator\fR subcommand in the \fBpkg\fR(1) man page for information about how to select the version you want for this link path. To have a choice of versions, both packages must be installed.
 .SH CONSTRAINTS AND FREEZING
 .sp
 .LP
@@ -1013,7 +1123,7 @@ The most common form of constraint is delivered by the \fBrequire\fR dependency,
 Most parts of the operating system are encapsulated by packages called \fBincorporations\fR. These packages primarily deliver constraints represented by the \fBincorporate\fR dependency.
 .sp
 .LP
-As described above, an incorporated package need not be present on the system, but if it is, then it specifies both an inclusive minimum version and an exclusive maximum version. For example, if the dependent FMRI has a version of 1.4.3, then no version less than 1.4.3 would satisfy the dependency, and neither would any version greater than or equal to 1.4.4.  However, versions that merely extended the dotted sequence, such as 1.4.3.7, would be allowed.
+As described above, an incorporated package need not be present on the system, but if it is, then it specifies both an inclusive minimum version and an exclusive maximum version. For example, if the dependent FMRI has a version of 1.4.3, then no version less than 1.4.3 would satisfy the dependency, and neither would any version greater than or equal to 1.4.4. However, versions that merely extended the dotted sequence, such as 1.4.3.7, would be allowed.
 .sp
 .LP
 Incorporations are used to force parts of the system to upgrade synchronously. For some components, such as the C library and the kernel, this is a basic requirement. For others, such as a simple userland component on which nothing else has a dependency, the synchronous upgrade is used merely to provide a known and tested set of package versions that can be referred to by a particular version of the incorporation.
@@ -1025,10 +1135,10 @@ Since an incorporation is simply a package, it can be removed, and all the const
 Attempting an upgrade of a package to a version that is not allowed by an installed incorporation will not attempt to find a newer version of the incorporation in order to satisfy the request, but will instead fail. If the constraint itself must be moved, and the incorporation specifying it cannot be removed, then the incorporation must be upgraded to a version that specifies a desired version of the constraint. Upgrading an incorporation causes all of the incorporated packages that would not satisfy the constraints delivered by the new version to be upgraded as well.
 .sp
 .LP
-A system administrator can constrain a package by using the \fBpkg freeze\fR command. The named package is constrained to the version installed on the system if no version is provided.  If a versioned package is provided, then this administrative constraint, or freeze, acts as if an incorporate dependency were installed where the \fBfmri\fR attribute had the value of the provided package version.
+A system administrator can constrain a package by using the \fBpkg freeze\fR command. The named package is constrained to the version installed on the system if no version is provided. If a versioned package is provided, then this administrative constraint, or freeze, acts as if an incorporate dependency were installed where the \fBfmri\fR attribute had the value of the provided package version.
 .sp
 .LP
-A freeze is never be lifted automatically by the packaging system. To relax a constraint, use the \fBpkg unfreeze\fR command.
+A freeze is never lifted automatically by the packaging system. To relax a constraint, use the \fBpkg unfreeze\fR command.
 .SH PUBLISHERS AND REPOSITORIES
 .sp
 .LP
@@ -1039,36 +1149,126 @@ An \fBorigin\fR is a package repository that contains all of the metadata (such 
 .sp
 .LP
 A \fBmirror\fR is a package repository that contains only package content (files). If one or more mirrors are configured for a given publisher in an image, the client API prefers the mirrors for package content retrieval and attempts to choose the best one to retrieve package content from. If the mirror is unreachable, does not have the required content, or is slower, the client API retrieves the content from any configured origin repositories. Mirrors are intended for content sharing among a trusted set of clients using the dynamic mirror functionality of \fBpkg.depotd\fR(1M). Mirrors are also intended to be used to authenticate access to package metadata, but distribute the package content without authentication. For example, a client might be configured with an \fBhttps\fR origin that requires an SSL key and certificate pair to access, and with an \fBhttp\fR mirror that provides the package content. In this way, only authorized clients can install or update the packages, while the overhead of authentication for package content retrieval is avoided. A mirror can be created by removing all subdirectories of a repository except those named \fBfile\fR and their parents. An origin repository can be also be provisioned as a mirror by using the mirror mode of \fBpkg.depotd\fR(1M).
-.SH PROPERTIES
+.SH GLOBAL AND NON-GLOBAL ZONE UPDATE
 .sp
 .LP
-Images can have one or more properties associated with them. These properties can be used to store information about the purpose, content, and behavior of the image. See \fBpkg\fR(1) for a complete list.
+The \fBpkg\fR system forces non-global zones to be kept in sync with the global zone. This means that certain packages must be at the same version in the global zone and all non-global zones to ensure the same kernel is run. To do this, \fBpkg\fR uses \fBparent\fR dependencies to impose certain constraints on non-global zones. See "Depend Actions" above for more information about \fBparent\fR dependencies.
+.sp
+.LP
+Because of restrictions that the global zone imposes on non-global zones, the non-global zones must have access to the packages of the global zone and must have a similar publisher configuration. Both of these objectives are achieved by using a \fBsystem repository\fR (see the \fBpkg.sysrepo\fR(1M) man page). The system repository provides access to the publishers configured in the global zone and information about how those publishers are configured. To prevent non-global zones from choosing different packages during installation or update, system publishers are ranked higher in the publisher search order than publishers configured in the non-global zone. See the \fBpkg set-publisher\fR command in the \fBpkg\fR(1) man page for information about publisher search order.
+.sp
+.LP
+To update all non-global zones on the system, use the \fBpkg update\fR command with no arguments in the global zone. This command operates on the global zone and on each non-global zone recursively. The minimal changes necessary are made to non-global zones to bring them in sync with the changes made in the global zone. For example, suppose package \fBfoo\fR is installed at version 1 in both the global zone and non-global zones, and suppose version 2 is available in a system repository. If \fBfoo\fR has a parent dependency, then \fBpkg update foo\fR updates \fBfoo\fR to version 2 in both the global zone and the non-global zones because the \fBparent\fR dependency forces the package to stay in sync. If \fBfoo\fR does not have a parent dependency, then \fBfoo\fR is updated to version 2 in the global zone but remains at version 1 in the non-global zones.
+.SH FACETS AND VARIANTS
+.sp
+.LP
+Software can have components that are optional and components that are mutually exclusive. Examples of optional components include locales and documentation. Examples of mutually exclusive components include SPARC or x86 and debug or non-debug binaries.
+.sp
+.LP
+In IPS, optional components are called \fBfacets\fR and mutually exclusive components are called \fBvariants\fR. Facets and variants are specified as tags on package actions. Each facet and variant tag has a name and a value. A single action can have multiple facet and variant tags. Examples of components with multiple facet and variant tags include an architecture-specific header file that is used by developers, or a component that is only for a SPARC global zone.
+.sp
+.LP
+An example of a variant tag is \fBvariant.arch=sparc\fR. An example of a facet tag is \fBfacet.devel=true\fR. Facets and variants are often referred to without the leading \fBfacet.\fR and \fBvariant.\fR.
+.sp
+.LP
+Facets and variants are special properties of the image and cannot be set on individual packages. To view the current values of the facets and variants set on the image, use the \fBpkg facet\fR and \fBpkg variant\fR commands as shown in the \fBpkg\fR(1) man page. To modify the values of the facets and variants set on the image, use the \fBpkg change-facet\fR and \fBpkg change-variant\fR commands.
+.sp
+.LP
+Facets are boolean: They can be set only to \fBtrue\fR (enabled) or \fBfalse\fR (disabled). By default, all facets are considered to be set to \fBtrue\fR in the image. A facet tag on an action should only have the value \fBtrue\fR; other values have undefined behavior. A facet set on the image can be a full facet such as \fBdoc.man\fR or a pattern such as \fBlocale.*\fR. This is useful when you want to disable a portion of the facet namespace, and only enable individual facets within it. For example, you could disable all locales and then only enable one or two specific locales, as shown in the following example:
+.sp
+.in +2
+.nf
+# \fBpkg change-facet locale.*=false\fR
+[output about packages being updated]
+# \fBpkg change-facet locale.en_US=true\fR
+[output about packages being updated]
+.fi
+.in -2
+.sp
+
+.sp
+.LP
+Most variants can have any number of values. For example, the \fBarch\fR variant can be set to \fBi386\fR, \fBsparc\fR, \fBppc\fR, \fBarm\fR, or whatever architectures the distribution supports. (Only \fBi386\fR and \fBsparc\fR are used in Oracle Solaris.) The exception are the \fBdebug\fR variants. The \fBdebug\fR variants can only be set to \fBtrue\fR or \fBfalse\fR; other values have undefined behavior. If a file action has both non-debug and debug versions, both versions must have the applicable \fBdebug\fR variant explicitly set, as shown in the following example:
+.sp
+.in +2
+.nf
+file group=sys mode=0644 overlay=allow owner=root \e
+  path=etc/motd pkg.csize=115 pkg.size=103 preserve=true \e
+  variant.debug.osnet=true
+
+file group=sys mode=0644 overlay=allow owner=root \e
+  path=etc/motd pkg.csize=68 pkg.size=48 preserve=true \e
+  variant.debug.osnet=false 
+.fi
+.in -2
+
+.sp
+.LP
+The variant value must be set on the image in order for a package using the variant to be installed. The \fBarch\fR and \fBzone\fR variants are set by the program that creates the image and installs its initial contents. The \fBdebug.*\fR variants are \fBfalse\fR in the image by default.
+.sp
+.LP
+The facets and variants set on the image affect whether a particular action is installed.
+.RS +4
+.TP
+.ie t \(bu
+.el o
+Actions with no facet or variant tags are always installed.
+.RE
+.RS +4
+.TP
+.ie t \(bu
+.el o
+Actions with facet tags are installed unless all of the facets or facet patterns matching the tags are set to \fBfalse\fR on the image. If any facet is set to \fBtrue\fR or is not explicitly set (\fBtrue\fR is the default), then the action is installed.
+.RE
+.RS +4
+.TP
+.ie t \(bu
+.el o
+Actions with variant tags are installed only if the values of all the variant tags are the same as the values set in the image.
+.RE
+.RS +4
+.TP
+.ie t \(bu
+.el o
+Actions with both facet and variant tags are installed if both the facets and the variants allow the action to be installed.
+.RE
+.sp
+.LP
+You can create your own facet and variant tags. The following tags are in common use in Oracle Solaris.
+.sp
+
+.sp
+.TS
+tab();
+cw(2.75i) cw(2.75i) 
+lw(2.75i) lw(2.75i) 
+.
+Variant NamePossible Values
+_
+\fBvariant.arch\fR\fBsparc\fR, \fBi386\fR
+\fBvariant.opensolaris.zone\fR\fBglobal\fR, \fBnonglobal\fR
+\fBvariant.debug.*\fR\fBtrue\fR, \fBfalse\fR
+.TE
+
+.sp
+.LP
+The following list shows a small sample of the facet tags that are used in Oracle Solaris:
+.sp
+.in +2
+.nf
+facet.devel             facet.doc
+facet.doc.html          facet.doc.info
+facet.doc.man           facet.doc.pdf
+facet.locale.de         facet.locale.en_GB
+facet.locale.en_US      facet.locale.fr
+facet.locale.ja_JP      facet.locale.zh_CN
+.fi
+.in -2
+
 .SH IMAGE POLICIES
 .sp
 .LP
-Policies are defined by image properties with boolean values. The supported policies include:
-.sp
-.ne 2
-.mk
-.na
-\fB\fBflush-content-cache-on-success\fR\fR
-.ad
-.sp .6
-.RS 4n
-When true, the cache of downloaded files is erased after a successful install of a package. Default value: \fBTrue\fR.
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fB\fBsend-uuid\fR\fR
-.ad
-.sp .6
-.RS 4n
-When true, a unique identifier (UUID) that identifies the image to the publisher is sent on all requests. Default value: \fBTrue\fR.
-.RE
-
+Image policies are defined by image properties with boolean values. See "Image Properties" in the \fBpkg\fR(1) man page for descriptions of the \fBflush-content-cache-on-success\fR and \fBsend-uuid\fR properties and information about how to view and modify their values.
 .SH FILES
 .sp
 .LP
@@ -1104,8 +1304,8 @@ Within the metadata of a particular image, certain files and directories can con
 .na
 \fB\fB$IMAGE_META/lost+found\fR\fR
 .ad
-.RS 26n
-.rt  
+.sp .6
+.RS 4n
 Location of conflicting directories and files moved during a package operation.
 .RE
 
@@ -1115,8 +1315,8 @@ Location of conflicting directories and files moved during a package operation.
 .na
 \fB\fB$IMAGE_META/publisher\fR\fR
 .ad
-.RS 26n
-.rt  
+.sp .6
+.RS 4n
 Contains a directory for each publisher. Each directory stores publisher-specific metadata.
 .RE
 
@@ -1145,7 +1345,16 @@ Interface StabilityUncommitted
 .SH SEE ALSO
 .sp
 .LP
-\fBpkg\fR(1), \fBpkgsend\fR(1), \fBpkg.depotd\fR(1M), \fBsvcadm\fR(1M), \fBpkginfo\fR(4)
+\fBpkg\fR(1), \fBpkg\fR(1), \fBpkg\fR(1M), \fBpkg\fR(1M), \fBsvcs\fR(1), \fBsvcadm\fR(1M)
+.sp
+.LP
+\fIAdding and Updating Oracle Solaris 11.1 Software Packages\fR
+.sp
+.LP
+\fICopying and Creating Oracle Solaris 11.1 Package Repositories\fR
+.sp
+.LP
+\fIPackaging and Delivering Software With the Oracle Solaris 11 Image Packaging System\fR
 .sp
 .LP
 \fBhttp://hub.opensolaris.org/bin/view/Project+pkg/\fR

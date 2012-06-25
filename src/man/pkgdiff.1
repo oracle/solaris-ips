@@ -1,7 +1,7 @@
 '\" te
-.\" Copyright (c) 2007, 2011, Oracle and/or its
+.\" Copyright (c) 2007, 2012, Oracle and/or its
 .\" affiliates. All rights reserved.
-.TH pkgdiff 1 "28 Jul 2011" "SunOS 5.11" "User Commands"
+.TH pkgdiff 1 "27 May 2012" "SunOS 5.11" "User Commands"
 .SH NAME
 pkgdiff \- compare package manifests
 .SH SYNOPSIS
@@ -24,8 +24,8 @@ Output is in the following form:
 .na
 \fB+ \fIcomplete_action\fR\fR
 .ad
-.RS 21n
-.rt  
+.sp .6
+.RS 4n
 This action is in \fIfile2\fR but not in \fIfile1\fR.
 .RE
 
@@ -35,8 +35,8 @@ This action is in \fIfile2\fR but not in \fIfile1\fR.
 .na
 \fB- \fIcomplete_action\fR\fR
 .ad
-.RS 21n
-.rt  
+.sp .6
+.RS 4n
 This action is in \fIfile1\fR but not in \fIfile2\fR.
 .RE
 
@@ -53,8 +53,8 @@ This action is in \fIfile1\fR but not in \fIfile2\fR.
 .na
 \fB- \fIattribute1\fR=\fIvalue1\fR\fR
 .ad
-.RS 23n
-.rt  
+.sp .6
+.RS 4n
 This \fIattribute\fR,\fIvalue\fR is in \fIfile1\fR but not in \fIfile2\fR.
 .RE
 
@@ -64,8 +64,8 @@ This \fIattribute\fR,\fIvalue\fR is in \fIfile1\fR but not in \fIfile2\fR.
 .na
 \fB+ \fIattribute2\fR=\fIvalue2\fR\fR
 .ad
-.RS 23n
-.rt  
+.sp .6
+.RS 4n
 This \fIattribute\fR,\fIvalue\fR is in \fIfile2\fR but not in \fIfile1\fR.
 .RE
 
@@ -80,10 +80,21 @@ The following options are supported:
 .ne 2
 .mk
 .na
+\fB\fB--help\fR\fR
+.ad
+.sp .6
+.RS 4n
+Display a usage message.
+.RE
+
+.sp
+.ne 2
+.mk
+.na
 \fB\fB-i\fR \fIattribute\fR\fR
 .ad
-.RS 17n
-.rt  
+.sp .6
+.RS 4n
 Ignore \fIattribute\fR if present during comparisons. File hash values can be ignored with \fB-i\fR \fIhash\fR. This option cannot be used with the \fB-o\fR option. This option can be repeated.
 .RE
 
@@ -93,8 +104,8 @@ Ignore \fIattribute\fR if present during comparisons. File hash values can be ig
 .na
 \fB\fB-o\fR \fIattribute\fR\fR
 .ad
-.RS 17n
-.rt  
+.sp .6
+.RS 4n
 Only report differences in \fIattribute\fR. This option cannot be used with the \fB-i\fR option. This option elides any action changes that do not affect \fIattribute\fR on an action.
 .RE
 
@@ -104,8 +115,8 @@ Only report differences in \fIattribute\fR. This option cannot be used with the 
 .na
 \fB\fB-v\fR \fIname\fR=\fIvalue\fR\fR
 .ad
-.RS 17n
-.rt  
+.sp .6
+.RS 4n
 Only compute differences for this variant value. For example, only compute differences for \fBarch=sparc\fR. This variant tag is removed for all actions before comparison. Only one value can be specified per variant. This option can be repeated for different variants.
 .RE
 

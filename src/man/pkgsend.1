@@ -1,7 +1,7 @@
 '\" te
-.\" Copyright (c) 2007, 2011, Oracle and/or its
+.\" Copyright (c) 2007, 2012, Oracle and/or its
 .\" affiliates. All rights reserved.
-.TH pkgsend 1 "28 Jul 2011" "SunOS 5.11" "User Commands"
+.TH pkgsend 1 "22 Jun 2012" "SunOS 5.11" "User Commands"
 .SH NAME
 pkgsend \- Image Packaging System publication client
 .SH SYNOPSIS
@@ -18,7 +18,7 @@ pkgsend \- Image Packaging System publication client
 
 .LP
 .nf
-/usr/bin/pkgsend publish [-b \fIbundle\fR ...] [-d \fIsource\fR ...] 
+/usr/bin/pkgsend publish [-b \fIbundle\fR ...] [-d \fIsource\fR ...]
     [-s \fIrepo_uri_or_path\fR] [-T \fIpattern\fR] [--no-catalog]
     [\fImanifest\fR ...]
 .fi
@@ -27,6 +27,9 @@ pkgsend \- Image Packaging System publication client
 .sp
 .LP
 \fBpkgsend\fR enables the publication of new packages and new package versions to an image packaging repository using package manifests. To create or manage repositories, see \fBpkgrepo\fR(1). To create package archives from packages in an existing repository, see \fBpkgrecv\fR(1). For more information about package manifests, see \fBpkg\fR(5).
+.sp
+.LP
+After a \fBpkgsend\fR operation, run \fBpkgrepo refresh\fR or \fBpkgrepo rebuild\fR on the repository to build search indexes.
 .SH OPTIONS
 .sp
 .LP
@@ -35,11 +38,15 @@ The following options are supported:
 .ne 2
 .mk
 .na
-\fB--help\fR or \fB-?\fR
+\fB\fB-?\fR\fR
 .ad
-.RS 16n
-.rt  
-Displays a usage message.
+.br
+.na
+\fB\fB--help\fR\fR
+.ad
+.sp .6
+.RS 4n
+Display a usage message.
 .RE
 
 .SH SUB-COMMANDS
@@ -50,11 +57,16 @@ The following subcommands are supported:
 .ne 2
 .mk
 .na
-\fBgenerate\fR [\fB-T\fR \fIpattern\fR] [\fB--target\fR \fIfile\fR] \fIsource\fR ...\fR
+\fB\fBpkgsend generate\fR [\fB-T\fR \fIpattern\fR] [\fB--target\fR \fIfile\fR] \fIsource\fR ...\fR
 .ad
 .sp .6
 .RS 4n
-Read each \fIsource\fR (such as an SVR4 package, a directory, or a \fBtar\fR file) and emit the manifest that describes the \fIsource\fR to \fBstdout\fR. The output manifest can then be annotated, have dependencies added or analyzed using \fBpkgdepend\fR(1), and have its correctness verified using \fBpkglint\fR(1) before being passed to the \fBpublish\fR subcommand. The following are supported sources:
+Read each \fIsource\fR (such as an SVR4 package, a directory, or a \fBtar\fR file) and emit the manifest that describes the \fIsource\fR to \fBstdout\fR. In the output manifest, \fBfile\fR and \fBdir\fR actions have owner set to \fBroot\fR and group set to \fBbin\fR.
+.sp
+The output manifest can then be annotated, have dependencies added or analyzed using \fBpkgdepend\fR, and have its correctness verified using \fBpkglint\fR before being passed to the \fBpublish\fR subcommand.
+.sp
+.LP
+The following are supported sources:
 .RS +4
 .TP
 .ie t \(bu
@@ -86,7 +98,7 @@ If the base name of files in the source match the patterns specified with \fB-T\
 .na
 \fB*\fR
 .ad
-.RS 20n
+.RS 10n
 .rt  
 Matches everything.
 .RE
@@ -97,7 +109,7 @@ Matches everything.
 .na
 \fB?\fR
 .ad
-.RS 20n
+.RS 10n
 .rt  
 Matches any single character.
 .RE
@@ -108,7 +120,7 @@ Matches any single character.
 .na
 \fB[\fIseq\fR]\fR
 .ad
-.RS 20n
+.RS 10n
 .rt  
 Matches any character in \fIseq\fR.
 .RE
@@ -119,7 +131,7 @@ Matches any character in \fIseq\fR.
 .na
 \fB![\fIseq\fR]\fR
 .ad
-.RS 20n
+.RS 10n
 .rt  
 Matches any character not in \fIseq\fR.
 .RE
@@ -135,21 +147,58 @@ The SVR4 \fBDESC\fR parameter is converted to a \fBpkg.description\fR value. The
 .ne 2
 .mk
 .na
-\fBpublish\fR [\fB-b\fR \fIbundle\fR ...] [\fB-d\fR \fIsource\fR ...] [\fB-s\fR \fIrepo_uri_or_path\fR] [\fB-T\fR \fIpattern\fR] [\fB--no-catalog\fR] [\fImanifest\fR ...]\fR
+\fB\fBpkgsend publish\fR [\fB-b\fR \fIbundle\fR ...] [\fB-d\fR \fIsource\fR ...] [\fB-s\fR \fIrepo_uri_or_path\fR] [\fB-T\fR \fIpattern\fR] [\fB--no-catalog\fR] [\fImanifest\fR ...]\fR
 .ad
 .sp .6
 .RS 4n
-Publishes a package using the specified package manifests to the target package repository, retrieving files for the package from the provided sources. If multiple manifests are specified, they are joined in the order provided. If a manifest is not specified, the manifest is read from \fBstdin\fR.
+Publish a package using the specified package manifests to the target package repository, retrieving files for the package from the provided sources. If multiple manifests are specified, they are joined in the order provided. If a manifest is not specified, the manifest is read from \fBstdin\fR.
 .sp
-With \fB-b\fR, add the specified bundle to the list of sources to search when looking for files in the manifest. Bundles are sources such as tar files and SVR4 packages. If this option is specified multiple times, sources are searched in the order they appear on the command line. If both \fB-b\fR and \fB-d\fR are specified, \fB-d\fR sources are searched first. For a description of supported bundles and how they are used, refer to the \fBgenerate\fR subcommand above.
+If not specified, \fBpkgsend publish\fR adds the build version to the package FMRI. The \fBpublish\fR tool also adds the timestamp (the current time in UTC) to the package FMRI. See the \fBpkg\fR(5) man page for information about the version string of a package FMRI.
 .sp
-With \fB-d\fR, add the specified directory to the list of sources to search when looking for files in the manifest. If this option is specified multiple times, sources are searched in the order they appear on the command line. For a description of supported sources and how they are used, refer to the \fBgenerate\fR subcommand above.
+.ne 2
+.mk
+.na
+\fB\fB-b\fR \fIbundle\fR\fR
+.ad
+.sp .6
+.RS 4n
+Add the specified bundle to the list of sources to search when looking for files in the manifest. Bundles are sources such as tar files and SVR4 packages. If this option is specified multiple times, sources are searched in the order they appear on the command line. If both \fB-b\fR and \fB-d\fR are specified, \fB-d\fR sources are searched first. For a description of supported bundles and how they are used, refer to the \fBgenerate\fR subcommand above.
+.RE
+
 .sp
-With \fB-s\fR, publish the package to the repository located at the given URI or file system path. See the "Notes" section below for more information about restrictions and suggestions for publication. See also the "Environment Variables" section.
+.ne 2
+.mk
+.na
+\fB\fB-d\fR \fIsource\fR\fR
+.ad
+.sp .6
+.RS 4n
+Add the specified directory to the list of sources to search when looking for files in the manifest. If this option is specified multiple times, sources are searched in the order they appear on the command line. For a description of supported sources and how they are used, refer to the \fBgenerate\fR subcommand above.
+.RE
+
 .sp
-With \fB--no-catalog\fR, do not add the package to the publisher's catalog. This option is recommended whenever multiple packages are being published at one time as updates to publisher catalogs must be performed serially. Once publication is complete, the \fBrefresh\fR subcommand of \fBpkgrepo\fR(1) can be used to add the new packages to the respective publisher catalogs.
+.ne 2
+.mk
+.na
+\fB\fB-s\fR \fIrepo_uri_or_path\fR\fR
+.ad
+.sp .6
+.RS 4n
+Publish the package to the repository located at the given URI or file system path. See the "Notes" section below for more information about restrictions and suggestions for publication. See also the "Environment Variables" section.
+.RE
+
 .sp
-For all other options, refer to the \fBgenerate\fR subcommand above for usage and their effects.
+.ne 2
+.mk
+.na
+\fB\fB--no-catalog\fR\fR
+.ad
+.sp .6
+.RS 4n
+Do not add the package to the publisher's catalog. This option is recommended whenever multiple packages are being published at one time as updates to publisher catalogs must be performed serially. Once publication is complete, the \fBrefresh\fR subcommand of \fBpkgrepo\fR can be used to add the new packages to the respective publisher catalogs.
+.RE
+
+For a descriptions of the \fB-T\fR option, see the \fBgenerate\fR subcommand above.
 .RE
 
 .SH ENVIRONMENT VARIABLES
@@ -157,7 +206,7 @@ For all other options, refer to the \fBgenerate\fR subcommand above for usage an
 .ne 2
 .mk
 .na
-\fBPKG_REPO\fR
+\fB\fBPKG_REPO\fR\fR
 .ad
 .RS 12n
 .rt  
@@ -262,7 +311,7 @@ The following exit values are returned:
 .ne 2
 .mk
 .na
-\fB0\fR
+\fB\fB0\fR\fR
 .ad
 .RS 6n
 .rt  
@@ -273,7 +322,7 @@ Command succeeded.
 .ne 2
 .mk
 .na
-\fB1\fR
+\fB\fB1\fR\fR
 .ad
 .RS 6n
 .rt  
@@ -284,7 +333,7 @@ An error occurred.
 .ne 2
 .mk
 .na
-\fB2\fR
+\fB\fB2\fR\fR
 .ad
 .RS 6n
 .rt  
@@ -295,7 +344,7 @@ Invalid command line options were specified.
 .ne 2
 .mk
 .na
-\fB99\fR
+\fB\fB99\fR\fR
 .ad
 .RS 6n
 .rt  

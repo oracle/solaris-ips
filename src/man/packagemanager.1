@@ -1,7 +1,7 @@
 '\" te
-.\" Copyright (c) 2007, 2011, Oracle and/or its
+.\" Copyright (c) 2007, 2012, Oracle and/or its
 .\" affiliates. All rights reserved.
-.TH packagemanager 1 "28 Jul 2011" "SunOS 5.11" "User Commands"
+.TH packagemanager 1 "27 May 2012" "SunOS 5.11" "User Commands"
 .SH NAME
 packagemanager \- GUI for the Image Packaging System
 .SH SYNOPSIS
@@ -12,9 +12,9 @@ packagemanager \- GUI for the Image Packaging System
 
 .LP
 .nf
-/usr/bin/packagemanager [-hiRu] [--help]
-    [--info-install \fIfile\fR] [--update-all]
-    [--image-dir \fIdir\fR]
+/usr/bin/packagemanager [-h | --help]
+    [-i | --info-install \fIfile\fR] [-U | --update-all]
+    [-R | --image-dir \fIdir\fR]
 .fi
 
 .LP
@@ -58,29 +58,41 @@ The following options are supported:
 .ne 2
 .mk
 .na
-\fB\fB-h\fR or \fB--help\fR\fR
+\fB\fB-h\fR\fR
+.ad
+.br
+.na
+\fB\fB--help\fR\fR
 .ad
 .sp .6
 .RS 4n
-Displays a usage message.
+Display a usage message.
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fB\fB-i\fR or \fB--info-install\fR \fIfile\fR\fR
+\fB\fB-i\fR \fIfile\fR\fR
+.ad
+.br
+.na
+\fB\fB--info-install\fR \fIfile\fR\fR
 .ad
 .sp .6
 .RS 4n
-Allows you to specify a \fB\&.p5i\fR file to run \fBpackagemanager\fR in Web Install mode. The \fIfile\fR must have the suffix \fB\&.p5i\fR.
+Specify a \fB\&.p5i\fR file to run \fBpackagemanager\fR in Web Install mode. The \fIfile\fR must have the suffix \fB\&.p5i\fR.
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fB\fB-R\fR or \fB--image-dir\fR \fIdir\fR\fR
+\fB\fB-R\fR \fIdir\fR\fR
+.ad
+.br
+.na
+\fB\fB--image-dir\fR \fIdir\fR\fR
 .ad
 .sp .6
 .RS 4n
@@ -91,7 +103,11 @@ Operate on the image rooted at \fIdir\fR, rather than the image discovered autom
 .ne 2
 .mk
 .na
-\fB\fB-U\fR or \fB--update-all\fR\fR
+\fB\fB-U\fR\fR
+.ad
+.br
+.na
+\fB\fB--update-all\fR\fR
 .ad
 .sp .6
 .RS 4n

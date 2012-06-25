@@ -1,7 +1,7 @@
 '\" te
-.\" Copyright (c) 2007, 2011, Oracle and/or its
+.\" Copyright (c) 2007, 2012, Oracle and/or its
 .\" affiliates. All rights reserved.
-.TH pkgdepend 1 "28 Jul 2011" "SunOS 5.11" "User Commands"
+.TH pkgdepend 1 "22 Jun 2012" "SunOS 5.11" "User Commands"
 .SH NAME
 pkgdepend \- Image Packaging System dependency analyzer
 .SH SYNOPSIS
@@ -13,19 +13,19 @@ pkgdepend \- Image Packaging System dependency analyzer
 .LP
 .nf
 /usr/bin/pkgdepend generate [-IMm] -d \fIdir\fR [-d \fIdir\fR]
-    [-D \fIname\fR=\fIvalue\fR] [-k \fIpath\fR] \fImanifest_path\fR
+    [-D \fIname\fR=\fIvalue\fR] [-k \fIpath\fR] \fImanifest_file\fR
 .fi
 
 .LP
 .nf
-/usr/bin/pkgdepend resolve [-EmoSv] [-d \fIoutput_dir\fR]
-    [-e \fIexternal_package_file\fR] [-s \fIsuffix\fR] \fImanifest_path\fR ...
+/usr/bin/pkgdepend resolve [-moSv] [-d \fIoutput_dir\fR]
+    [-s \fIsuffix\fR] \fImanifest_file\fR ...
 .fi
 
 .SH DESCRIPTION
 .sp
 .LP
-\fBpkgdepend\fR is used to generate and resolve dependencies for packages. A package might depend on files from other packages. \fBpkgdepend\fR is typically used in two passes: file dependency generation and file-to-package resolution.
+The \fBpkgdepend\fR command generates and resolves dependencies for packages. A package might depend on files from other packages. The \fBpkgdepend\fR command is typically used in two passes: file dependency generation and file-to-package resolution.
 .sp
 .LP
 The \fBgenerate\fR subcommand examines the content of a package and determines what external files the package needs.
@@ -43,7 +43,7 @@ Several components of delivered files are used as sources of dependency informat
 .ad
 .RS 14n
 .rt  
-ELF headers in delivered files are analyzed for dependency information, with the \fB-k\fR and \fB-D\fR options modifying the information obtained. For more details on ELF dependencies, see \fBldd\fR(1) and the \fILinker and Libraries Guide\fR.
+ELF headers in delivered files are analyzed for dependency information, with the \fB-k\fR and \fB-D\fR options modifying the information obtained. For more details on ELF dependencies, see \fBldd\fR and the \fILinker and Libraries Guide\fR.
 .RE
 
 .sp
@@ -98,22 +98,30 @@ The following options are supported:
 .ne 2
 .mk
 .na
-\fB\fB-R\fR \fIdir\fR\fR
+\fB\fB-?\fR\fR
 .ad
-.RS 16n
-.rt  
-Operate on the image rooted at directory \fIdir\fR. If no directory was specified or determined based on environment, the default is /. See the "Environment Variables" section for more information.
+.br
+.na
+\fB\fB--help\fR\fR
+.ad
+.sp .6
+.RS 4n
+Display a usage message.
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fB\fB--help\fR or \fB-?\fR\fR
+\fB\fB-R\fR \fIdir\fR\fR
 .ad
-.RS 16n
-.rt  
-Displays a usage message.
+.br
+.na
+\fB\fB--image-dir\fR \fIdir\fR\fR
+.ad
+.sp .6
+.RS 4n
+Operate on the image rooted at \fIdir\fR. If no directory was specified or determined based on environment, the default is /. See the "Environment Variables" section for more information.
 .RE
 
 .SH SUB-COMMANDS
@@ -124,33 +132,84 @@ The following subcommands are supported:
 .ne 2
 .mk
 .na
-\fBgenerate\fR [\fB-IMm\fR] \fB-d\fR \fIdir\fR [\fB-d\fR \fIdir\fR] [\fB-D\fR \fIname\fR=\fIvalue\fR] [\fB-k\fR \fIpath\fR] \fImanifest_path\fR
+\fB\fBpkgdepend generate\fR [\fB-IMm\fR] \fB-d\fR \fIdir\fR [\fB-d\fR \fIdir\fR] [\fB-D\fR \fIname\fR=\fIvalue\fR] [\fB-k\fR \fIpath\fR] \fImanifest_file\fR\fR
 .ad
 .sp .6
 .RS 4n
-Produce the dependencies on files of the manifest specified by \fImanifest_path\fR.
+Produce the dependencies on files of the manifest specified by \fImanifest_file\fR.
 .sp
-With \fB-I\fR, show the dependencies that are satisfied within the given manifest.
+.ne 2
+.mk
+.na
+\fB\fB-I\fR\fR
+.ad
+.sp .6
+.RS 4n
+Show the dependencies that are satisfied within \fImanifest_file\fR. Do not use the result of \fB-I\fR with \fBpkgdepend resolve\fR.
+.RE
+
 .sp
-With \fB-M\fR, display a list of file types that could not be analyzed.
+.ne 2
+.mk
+.na
+\fB\fB-M\fR\fR
+.ad
+.sp .6
+.RS 4n
+Display a list of file types that could not be analyzed.
+.RE
+
 .sp
-With \fB-m\fR, repeat the original manifest with any discovered dependencies added after.
+.ne 2
+.mk
+.na
+\fB\fB-m\fR\fR
+.ad
+.sp .6
+.RS 4n
+Repeat the original manifest with any discovered dependencies added after.
+.RE
+
 .sp
-With \fB-d\fR, add \fIdir\fR to a list of directories to search for the manifest's files.
+.ne 2
+.mk
+.na
+\fB\fB-d\fR \fIdir\fR\fR
+.ad
+.sp .6
+.RS 4n
+Add \fIdir\fR to a list of directories to search for the manifest's files.
+.RE
+
 .sp
-For each \fB-D\fR, add the \fIvalue\fR as a way to expand the token \fIname\fR in run paths for ELF file dependencies.
+.ne 2
+.mk
+.na
+\fB\fB-D\fR \fIname\fR=\fIvalue\fR\fR
+.ad
+.sp .6
+.RS 4n
+Add the \fIvalue\fR as a way to expand the token \fIname\fR in run paths for ELF file dependencies.
+.RE
+
 .sp
-For each \fB-k\fR, add the \fIpath\fR to the list of run paths to search for kernel modules. Using the \fB-k\fR argument removes the default paths, which are \fB/kernel\fR and \fB/usr/kernel\fR.
+.ne 2
+.mk
+.na
+\fB\fB-k\fR \fIpath\fR\fR
+.ad
+.sp .6
+.RS 4n
+Add the \fIpath\fR to the list of run paths to search for kernel modules. Using the \fB-k\fR option removes the default paths, which are \fB/kernel\fR and \fB/usr/kernel\fR.
 .sp
-Run paths such as those specified by the \fB-k\fR option can also be specified per action or per manifest by using the action or manifest attribute \fBpkg.depend.runpath\fR. The value of the \fBpkg.depend.runpath\fR attribute is a colon-separated string of the paths to use.
-.sp
-The use of \fB-k\fR is overridden by any \fBpkg.depend.runpath\fR attributes set in the manifest or action.
+Run paths such as those specified by the \fB-k\fR option can also be specified per action or per manifest by using the action or manifest attribute \fBpkg.depend.runpath\fR. The value of the \fBpkg.depend.runpath\fR attribute is a colon-separated string of the paths to use. Setting any \fBpkg.depend.runpath\fR attributes in the manifest or action overrides paths specified with the \fB-k\fR option.
 .sp
 The special token \fB$PKGDEPEND_RUNPATH\fR can be used as one component of the \fBpkg.depend.runpath\fR attribute value in order to include the standard system run path for the file being analyzed.
-.sp
+.RE
+
 In some cases, you might want to prevent automatic generation of dependencies. For example, if a package delivers a sample Python script that imports a set of modules, those modules imported by the sample script are not dependencies for the package that delivers the sample script. Use the action or manifest attribute \fBpkg.depend.bypass-generate\fR to prevent generating dependencies against the specified files.
 .sp
-The \fBpkg.depend.bypass-generate\fR values are \fBperl5\fR regular expressions that match file names. The regular expressions are implicitly anchored at the start and end of the file path. The value given in the following example matches \fBthis/that\fR but does not match \fBsomething/this/that/the/other\fR.
+The \fBpkg.depend.bypass-generate\fR values are Python regular expressions that match file names. The regular expressions are implicitly anchored at the start and end of the file path. The value given in the following example matches \fBthis/that\fR but does not match \fBsomething/this/that/the/other\fR.
 .sp
 .in +2
 .nf
@@ -158,33 +217,86 @@ pkg.depend.bypass-generate=this/that
 .fi
 .in -2
 
+For more information about Python regular expression syntax, use the command \fBpydoc re\fR or see more complete documentation at \fBhttp://docs.python.org/dev/howto/regex.html\fR.
+.sp
+When \fBpkgdepend generate\fR input manifests contain SMF manifest files, any SMF services or instances declared by those SMF manifest files are included in the \fBpkgdepend\fR output. These SMF services or instances are included in the form of a \fBset\fR action with the name \fBorg.opensolaris.smf.fmri\fR.
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBresolve\fR [\fB-EmoSv\fR] [\fB-d\fR \fIoutput_dir\fR] [\fB-e\fR \fIexternal_package_file\fR] [\fB-s\fR \fIsuffix\fR] \fImanifest_path\fR ...\fR
+\fB\fBpkgdepend resolve\fR [\fB-moSv\fR] [\fB-d\fR \fIoutput_dir\fR] [\fB-s\fR \fIsuffix\fR] \fImanifest_file\fR ...\fR
 .ad
 .sp .6
 .RS 4n
-Transform dependencies on files into dependencies on the packages that deliver those files. Dependencies are first resolved against the manifests given on the command line and then against the packages installed on the system. By default, the dependencies for each manifest are placed in a file named \fB\fImanifest_path\fR.res\fR.
+Transform dependencies on files into dependencies on the packages that deliver those files. Dependencies are first resolved against the manifests given on the command line and then against the packages installed on the system. By default, the dependencies for each manifest are placed in a file named \fB\fImanifest_file\fR.res\fR.
 .sp
-With \fB-m\fR, repeat the manifest, with any dependencies produced by the \fBgenerate\fR step removed, before adding the resolved dependencies.
+.ne 2
+.mk
+.na
+\fB\fB-m\fR\fR
+.ad
+.sp .6
+.RS 4n
+Repeat the manifest, with any dependencies produced by the \fBgenerate\fR step removed, before adding the resolved dependencies.
+.RE
+
 .sp
-With \fB-o\fR, write the results to standard output. This option is intended for human consumption. Appending this output to a file might result in an invalid manifest. The \fB-d\fR or \fB-s\fR options are strongly recommended instead of \fB-o\fR for use in a pipe line for manifest processing.
+.ne 2
+.mk
+.na
+\fB\fB-o\fR\fR
+.ad
+.sp .6
+.RS 4n
+Write the results to standard output. This option is intended for human consumption. Appending this output to a file might result in an invalid manifest. The \fB-d\fR or \fB-s\fR options are strongly recommended instead of \fB-o\fR for use in a pipeline for manifest processing.
+.RE
+
 .sp
-With \fB-d\fR, write the resolved dependencies for each manifest provided in a separate file in \fIoutput_dir\fR. By default, each file has the same base name as the manifest that was the source of the dependencies written to that file.
+.ne 2
+.mk
+.na
+\fB\fB-d\fR \fIoutput_dir\fR\fR
+.ad
+.sp .6
+.RS 4n
+Write the resolved dependencies for each manifest provided in a separate file in \fIoutput_dir\fR. By default, each file has the same base name as the manifest that was the source of the dependencies written to that file.
+.RE
+
 .sp
-With \fB-e\fR, only resolve against those packages from the system whose name matches a pattern in one of the \fIexternal_package_files\fR. Cannot be used with \fB-S\fR.
+.ne 2
+.mk
+.na
+\fB\fB-s\fR \fIsuffix\fR\fR
+.ad
+.sp .6
+.RS 4n
+For each output file, append \fIsuffix\fR to the base name of the file that was the source of the resolved dependencies. If \fIsuffix\fR is not \fI\&.suffix\fR, a period (.) is prepended to \fIsuffix\fR.
+.RE
+
 .sp
-With \fB-E\fR, if \fB-e\fR was used, show those packages expected to be external dependencies that were not. If \fB-e\fR was not used, display the external dependencies of the resolved packages -- the packages, not named on the command line, which are targets of dependencies in the resolved packages.
+.ne 2
+.mk
+.na
+\fB\fB-S\fR\fR
+.ad
+.sp .6
+.RS 4n
+Only resolve against the manifests given on the command line and not against the manifests installed on the system.
+.RE
+
 .sp
-With \fB-s\fR, for each output file, append \fIsuffix\fR to the base name of the file that was the source of the resolved dependencies. A "." is prepended to \fIsuffix\fR if it is not provided.
-.sp
-With \fB-S\fR, only resolve against the manifests given on the command line and not against the manifests installed on the system.
-.sp
-With \fB-v\fR, include additional package dependency debugging metadata.
+.ne 2
+.mk
+.na
+\fB\fB-v\fR\fR
+.ad
+.sp .6
+.RS 4n
+Include additional package dependency debugging metadata.
+.RE
+
 .RE
 
 .SH EXAMPLES
@@ -289,10 +401,10 @@ file NOHASH path=opt/python/foo/__init__.py mode=0644 group=sys owner=root
 # Add runpath and bypass-generate attributes:
 #
 file NOHASH path=opt/python/foo/file.py mode=0644 group=sys owner=root \e
-    pkg.depend.bypass-generate=^.*/test.py.*$ \e
-    pkg.depend.bypass-generate=^.*/testmodule.so$ \e
-    pkg.depend.bypass-generate=^.*/test.so$ \e
-    pkg.depend.bypass-generate=^usr/lib/python2.6/vendor-packages/xdg/.*$ \e
+    pkg.depend.bypass-generate=.*/test.py.* \e
+    pkg.depend.bypass-generate=.*/testmodule.so \e
+    pkg.depend.bypass-generate=.*/test.so \e
+    pkg.depend.bypass-generate=usr/lib/python2.6/vendor-packages/xdg/.* \e
     pkg.depend.runpath=$PKGDEPEND_RUNPATH:/opt/python
 
 $ \fBpkgdepend generate -d proto manifest.py\fR

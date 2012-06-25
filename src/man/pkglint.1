@@ -1,15 +1,15 @@
 '\" te
-.\" Copyright (c) 2007, 2011, Oracle and/or its
+.\" Copyright (c) 2007, 2012, Oracle and/or its
 .\" affiliates. All rights reserved.
-.TH pkglint 1 "28 Jul 2011" "SunOS 5.11" "User Commands"
+.TH pkglint 1 "27 May 2012" "SunOS 5.11" "User Commands"
 .SH NAME
 pkglint \- Image Packaging System package lint
 .SH SYNOPSIS
 .LP
 .nf
-/usr/bin/pkglint [-c \fIdir\fR] [-r \fIuri\fR] [-p \fIregexp\fR]
-    [-f \fIrcfile\fR] [-b \fIbuild_no\fR] [-v]
-    [-l \fIuri\fR] | \fImanifest\fR ...
+/usr/bin/pkglint [-c \fIcache_dir\fR] [-r \fIrepo_uri\fR] [-p \fIregexp\fR]
+    [-f \fIconfig_file\fR] [-b \fIbuild_no\fR] [-v]
+    [-l \fIlint_uri\fR] | \fImanifest\fR ...
 .fi
 
 .LP
@@ -23,7 +23,7 @@ pkglint \- Image Packaging System package lint
 \fBpkglint\fR runs a series of checks on one or more package manifests, optionally referencing another repository.
 .sp
 .LP
-\fBpkglint\fR should be used during the package authoring process, prior to package publication. \fBpkglint\fR performs exhaustive testing on the manifests that might be too expensive to perform during normal operation of \fBpkgsend\fR(1) or \fBpkg.depotd\fR(1M). \fBpkglint\fR checks include tests for duplicate actions, missing attributes, and unusual file permissions.
+\fBpkglint\fR should be used during the package authoring process, prior to package publication. \fBpkglint\fR performs exhaustive testing on the manifests that might be too expensive to perform during normal operation of \fBpkgsend\fR or \fBpkg.depotd\fR. \fBpkglint\fR checks include tests for duplicate actions, missing attributes, and unusual file permissions.
 .sp
 .LP
 Manifests for linting can be passed as a space-separated list of local files on the command line, or manifests can be retrieved from a repository.
@@ -35,7 +35,7 @@ When retrieving manifests from repositories, on first run \fBpkglint\fR creates 
 Subsequent invocations of \fBpkglint\fR can reuse the cache directory and can omit any \fB-r\fR or \fB-l\fR arguments.
 .sp
 .LP
-\fBpkglint\fR provides limited support for configuring publishers in the cache directory. Use \fBpkg\fR(1) to perform more complex publisher configuration on these images.
+\fBpkglint\fR provides limited support for configuring publishers in the cache directory. Use \fBpkg\fR to perform more complex publisher configuration on these images.
 .sp
 .LP
 \fBpkglint\fR allows package authors to bypass checks for a given manifest or action. A manifest or action that contains the attribute \fBpkg.linted\fR set to \fBTrue\fR does not produce any lint output for that manifest or action.
@@ -56,10 +56,25 @@ The following options are supported:
 .ne 2
 .mk
 .na
+\fB\fB-h\fR\fR
+.ad
+.br
+.na
+\fB\fB--help\fR\fR
+.ad
+.sp .6
+.RS 4n
+Display a usage message.
+.RE
+
+.sp
+.ne 2
+.mk
+.na
 \fB\fB-b\fR \fIbuild_no\fR\fR
 .ad
-.RS 18n
-.rt  
+.sp .6
+.RS 4n
 Specify a build number used to narrow the list of packages used during linting from lint and reference repositories. If no \fB-b\fR option is specified, the latest versions of packages are used. See also the \fBversion.pattern\fR configuration property.
 .RE
 
@@ -69,8 +84,8 @@ Specify a build number used to narrow the list of packages used during linting f
 .na
 \fB\fB-c\fR \fIcache_dir\fR\fR
 .ad
-.RS 18n
-.rt  
+.sp .6
+.RS 4n
 Specify a local directory used for caching package metadata from the lint and reference repositories.
 .RE
 
@@ -80,8 +95,8 @@ Specify a local directory used for caching package metadata from the lint and re
 .na
 \fB\fB-l\fR \fIlint_uri\fR\fR
 .ad
-.RS 18n
-.rt  
+.sp .6
+.RS 4n
 Specify a URI representing the location of the lint repository. Both HTTP and file system based publication are supported. If you specify \fB-l\fR, then you must also specify \fB-c\fR.
 .RE
 
@@ -91,8 +106,8 @@ Specify a URI representing the location of the lint repository. Both HTTP and fi
 .na
 \fB\fB-L\fR\fR
 .ad
-.RS 18n
-.rt  
+.sp .6
+.RS 4n
 List the known and excluded lint checks and then exit. Display the short name and description of each check. When combined with the \fB-v\fR flag, display the method that implements the check instead of the description.
 .RE
 
@@ -102,8 +117,8 @@ List the known and excluded lint checks and then exit. Display the short name an
 .na
 \fB\fB-f\fR \fIconfig_file\fR\fR
 .ad
-.RS 18n
-.rt  
+.sp .6
+.RS 4n
 Configure the \fBpkglint\fR session using the \fIconfig_file\fR configuration file.
 .RE
 
@@ -113,8 +128,8 @@ Configure the \fBpkglint\fR session using the \fIconfig_file\fR configuration fi
 .na
 \fB\fB-p\fR \fIregexp\fR\fR
 .ad
-.RS 18n
-.rt  
+.sp .6
+.RS 4n
 Specify a regular expression used to narrow the list of packages to be checked from the lint repository. All manifests from the reference repository are loaded (assuming they match the value for \fB-b\fR, if supplied), ignoring this pattern.
 .RE
 
@@ -124,8 +139,8 @@ Specify a regular expression used to narrow the list of packages to be checked f
 .na
 \fB\fB-r\fR \fIrepo_uri\fR\fR
 .ad
-.RS 18n
-.rt  
+.sp .6
+.RS 4n
 Specify a URI representing the location of the reference repository. If you specify \fB-r\fR, then you must also specify \fB-c\fR.
 .RE
 
@@ -135,20 +150,9 @@ Specify a URI representing the location of the reference repository. If you spec
 .na
 \fB\fB-v\fR\fR
 .ad
-.RS 18n
-.rt  
+.sp .6
+.RS 4n
 Run \fBpkglint\fR in a verbose mode, overriding any \fBlog_level\fR settings in the configuration file.
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fB\fB--help\fR or \fB-?\fR\fR
-.ad
-.RS 18n
-.rt  
-Display a usage message.
 .RE
 
 .SH FILES
@@ -161,8 +165,8 @@ The \fBpkglintrc\fR configuration file takes the following key/value arguments:
 .na
 \fB\fBlog_level\fR\fR
 .ad
-.RS 24n
-.rt  
+.sp .6
+.RS 4n
 The minimum level at which to emit lint messages. Lint messages lower than this level are discarded. The default value is \fBINFO\fR.
 .sp
 Log levels in order of least to most severe are \fBDEBUG\fR, \fBINFO\fR, \fBWARNING\fR, \fBERROR\fR, and \fBCRITICAL\fR.
@@ -174,8 +178,8 @@ Log levels in order of least to most severe are \fBDEBUG\fR, \fBINFO\fR, \fBWARN
 .na
 \fB\fBdo_pub_checks\fR\fR
 .ad
-.RS 24n
-.rt  
+.sp .6
+.RS 4n
 If \fBTrue\fR, perform checks that might only make sense for published packages. The default value is \fBTrue\fR.
 .RE
 
@@ -185,8 +189,8 @@ If \fBTrue\fR, perform checks that might only make sense for published packages.
 .na
 \fB\fBpkglint.ext.\fR*\fR
 .ad
-.RS 24n
-.rt  
+.sp .6
+.RS 4n
 The plugin mechanism of \fBpkglint\fR allows for additional lint modules to be added at runtime. Any key that starts with \fBpkglint.ext.\fR takes a value that must be a fully-specified Python module. See the "Developers" section for more information.
 .RE
 
@@ -196,8 +200,8 @@ The plugin mechanism of \fBpkglint\fR allows for additional lint modules to be a
 .na
 \fB\fBpkglint.exclude\fR\fR
 .ad
-.RS 24n
-.rt  
+.sp .6
+.RS 4n
 A space-separated list of fully specified Python modules, classes, or function names to omit from the set of checks performed.
 .RE
 
@@ -207,8 +211,8 @@ A space-separated list of fully specified Python modules, classes, or function n
 .na
 \fB\fBuse_progress_tracker\fR\fR
 .ad
-.RS 24n
-.rt  
+.sp .6
+.RS 4n
 If \fBTrue\fR, use a progress tracker when iterating over manifests during lint runs. The default value is \fBTrue\fR.
 .RE
 
@@ -218,8 +222,8 @@ If \fBTrue\fR, use a progress tracker when iterating over manifests during lint 
 .na
 \fB\fBversion.pattern\fR\fR
 .ad
-.RS 24n
-.rt  
+.sp .6
+.RS 4n
 A version pattern, used when specifying a build number to lint against (\fB-b\fR). If not specified in the configuration file, the \fB-b\fR option uses the pattern \fB*,5.11-0.\fR, matching all components of the 5.11 build, with a branch prefix of 0.
 .RE
 

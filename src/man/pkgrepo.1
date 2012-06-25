@@ -1,7 +1,7 @@
 '\" te
-.\" Copyright (c) 2007, 2011, Oracle and/or its
+.\" Copyright (c) 2007, 2012, Oracle and/or its
 .\" affiliates. All rights reserved.
-.TH pkgrepo 1 "28 Jul 2011" "SunOS 5.11" "User Commands"
+.TH pkgrepo 1 "22 Jun 2012" "SunOS 5.11" "User Commands"
 .SH NAME
 pkgrepo \- Image Packaging System repository management utility
 .SH SYNOPSIS
@@ -17,7 +17,7 @@ pkgrepo \- Image Packaging System repository management utility
 
 .LP
 .nf
-/usr/bin/pkgrepo get [-F \fIformat\fR] [-p \fIpublisher\fR ...]
+/usr/bin/pkgrepo get [-F \fIformat\fR] [-H] [-p \fIpublisher\fR ...]
     -s \fIrepo_uri_or_path\fR [\fIsection/property\fR ...]
 .fi
 
@@ -30,7 +30,7 @@ pkgrepo \- Image Packaging System repository management utility
 .LP
 .nf
 /usr/bin/pkgrepo list [-F \fIformat\fR] [-H] [-p \fIpublisher\fR ...]
-    -s \fIrepo_uri_or_path\fR \fIpkg_fmri_pattern\fR ...
+    -s \fIrepo_uri_or_path\fR [\fIpkg_fmri_pattern\fR ...]
 .fi
 
 .LP
@@ -54,7 +54,12 @@ pkgrepo \- Image Packaging System repository management utility
 .LP
 .nf
 /usr/bin/pkgrepo set [-p \fIpublisher\fR] -s \fIrepo_uri_or_path\fR
-    \fIsection/property\fR=[\fIvalue\fR] ... or
+    \fIsection/property\fR=[\fIvalue\fR]
+.fi
+
+.LP
+.nf
+/usr/bin/pkgrepo set [-p \fIpublisher\fR] -s \fIrepo_uri_or_path\fR
     \fIsection/property\fR=([\fIvalue\fR]) ...
 .fi
 
@@ -71,7 +76,7 @@ pkgrepo \- Image Packaging System repository management utility
 .SH DESCRIPTION
 .sp
 .LP
-\fBpkgrepo\fR provides the ability to create and manage \fBpkg\fR(5) package repositories. Package repositories are a predefined set of directories and files that permit the storage and retrieval of package data by \fBpkg\fR(1) and publication clients such as \fBpkgsend\fR(1) or \fBpkgrecv\fR(1). In addition, when network-based access to a package repository is needed, \fBpkg.depotd\fR(1m) can provide clients access to the repository to store and/or retrieve package data.
+\fBpkgrepo\fR provides the ability to create and manage \fBpkg\fR(5) package repositories. Package repositories are a predefined set of directories and files that permit the storage and retrieval of package data by \fBpkg\fR and publication clients such as \fBpkgsend\fR or \fBpkgrecv\fR. In addition, when network-based access to a package repository is needed, \fBpkg.depotd\fR can provide clients access to the repository to store and/or retrieve package data.
 .SH OPTIONS
 .sp
 .LP
@@ -80,11 +85,15 @@ The following options are supported:
 .ne 2
 .mk
 .na
-\fB--help\fR or \fB-?\fR
+\fB\fB-?\fR\fR
 .ad
-.RS 16n
-.rt  
-Displays a usage message.
+.br
+.na
+\fB\fB--help\fR\fR
+.ad
+.sp .6
+.RS 4n
+Display a usage message.
 .RE
 
 .SH SUB-COMMANDS
@@ -95,30 +104,45 @@ The following subcommands are supported:
 .ne 2
 .mk
 .na
-\fBcreate\fR [\fB--version\fR \fIver\fR] \fIuri_or_path\fR
+\fB\fBpkgrepo create\fR [\fB--version\fR \fIver\fR] \fIuri_or_path\fR\fR
 .ad
 .sp .6
 .RS 4n
-Creates a \fBpkg\fR(5) repository at the specified location.
+Create a \fBpkg\fR(5) repository at the specified location.
 .sp
 This subcommand can be used only with file system based repositories.
 .sp
-With \fB--version\fR, create a repository in a format compatible with the specified version. By default, version 4 repositories are created. Supported versions are:
+.ne 2
+.mk
+.na
+\fB\fB--version\fR\fR
+.ad
+.sp .6
+.RS 4n
+Create a repository in a format compatible with the specified version. By default, version 4 repositories are created. Supported versions are:
 .sp
+.ne 2
+.mk
+.na
+\fB3\fR
+.ad
+.RS 5n
+.rt  
+Supports storage of packages for a single publisher, catalog version 1, and search version 1.
+.RE
 
 .sp
-.TS
-tab();
-lw(.33i) lw(5.17i) 
-lw(.33i) lw(5.17i) 
-.
-3T{
-Supports storage of packages for a single publisher, catalog version 1, and search version 1.
-T}
-4T{
+.ne 2
+.mk
+.na
+\fB4\fR
+.ad
+.RS 5n
+.rt  
 Supports storage of packages for multiple publishers, catalog version 1, and search version 1.
-T}
-.TE
+.RE
+
+.RE
 
 .RE
 
@@ -126,11 +150,11 @@ T}
 .ne 2
 .mk
 .na
-\fBadd-publisher\fR \fB-s\fR \fIrepo_uri_or_path\fR \fIpublisher\fR ...\fR
+\fB\fBpkgrepo add-publisher\fR \fB-s\fR \fIrepo_uri_or_path\fR \fIpublisher\fR ...\fR
 .ad
 .sp .6
 .RS 4n
-Adds the specified publishers to the repository. The new publishers have no packages or content.
+Add the specified publishers to the repository. The new publishers have no packages or content.
 .sp
 This subcommand can be used only with version 4 file system based repositories.
 .RE
@@ -139,11 +163,11 @@ This subcommand can be used only with version 4 file system based repositories.
 .ne 2
 .mk
 .na
-\fBget\fR [\fB-F\fR \fIformat\fR] [\fB-p\fR \fIpublisher\fR ...] \fB-s\fR \fIrepo_uri_or_path\fR [\fIsection/property\fR ...]\fR
+\fB\fBpkgrepo get\fR [\fB-F\fR \fIformat\fR] [\fB-H\fR] [\fB-p\fR \fIpublisher\fR ...] \fB-s\fR \fIrepo_uri_or_path\fR [\fIsection/property\fR ...]\fR
 .ad
 .sp .6
 .RS 4n
-Displays the property information for the repository or its publishers.
+Display the property information for the repository or its publishers.
 .sp
 By default, each property and its value are printed on separate lines. Empty ASCII string values are represented by a pair of double quotation marks (\fB""\fR). The following Bourne shell metacharacters, and newline, space, and tab, in ASCII string values must be escaped by backslash characters (\fB\e\fR):
 .sp
@@ -153,106 +177,297 @@ By default, each property and its value are printed on separate lines. Empty ASC
 .fi
 .in -2
 
-See the "Examples" section.
+See the "Examples" section for examples displaying publisher and repository properties.
 .sp
-For a list of possible properties and the purpose and value of each property, see the \fBset\fR subcommand below.
+For a list of properties and the purpose and value of each property, see the \fBset\fR subcommand below.
 .sp
-With \fB-F\fR, specify an alternative output format. Supported formats are: \fBtsv\fR (Tab Separated Values), \fBjson\fR (JavaScript Object Notation as a single line), and \fBjson-formatted\fR (same as the previous, formatted for readability).
-.sp
-With \fB-H\fR, omit the headers from the listing.
-.sp
-With \fB-p\fR, display the property information for the given publisher. The special value \fBall\fR displays the properties for all publishers. This option can be specified multiple times.
-.sp
-With \fB-s\fR, operate on the repository located at the given URI or file system path.
+.ne 2
+.mk
+.na
+\fB\fB-F\fR \fIformat\fR\fR
+.ad
+.sp .6
+.RS 4n
+Specify an alternative output format. The value of \fIformat\fR can be \fBtsv\fR (Tab Separated Values), \fBjson\fR (JavaScript Object Notation as a single line), or \fBjson-formatted\fR (JavaScript Object Notation, formatted for readability).
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBinfo\fR [\fB-F\fR \fIformat\fR] [\fB-H\fR] [\fB-p\fR \fIpublisher\fR ...] \fB-s\fR \fIrepo_uri_or_path\fR
+\fB\fB-H\fR\fR
 .ad
 .sp .6
 .RS 4n
-Displays a listing of the package publishers known by the repository. The listing includes the number of packages for each publisher, when the publisher's package data was last updated, and the status of the publisher's package data (such as whether it is currently being processed).
-.sp
-With \fB-F\fR, specify an alternative output format. Supported formats are: \fBtsv\fR (Tab Separated Values), \fBjson\fR (JavaScript Object Notation as a single line), and \fBjson-formatted\fR (same as the previous, formatted for readability).
-.sp
-With \fB-H\fR, omit the headers from the listing.
-.sp
-With \fB-p\fR, only display the data for the given publisher. If not provided, the data for all publishers is displayed. This option can be specified multiple times.
-.sp
-With \fB-s\fR, operate on the repository located at the given URI or file system path.
+Omit the headers from the listing.
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBlist\fR [\fB-F\fR \fIformat\fR] [\fB-H\fR] [\fB-p\fR \fIpublisher\fR ...] \fB-s\fR \fIrepo_uri_or_path\fR \fIpkg_fmri_pattern\fR ...\fR
+\fB\fB-p\fR \fIpublisher\fR\fR
 .ad
 .sp .6
 .RS 4n
-List the packages matching the specified patterns in the repository. If no patterns are specified, all packages will be listed. To list the latest version of a package, use \fBlatest\fR for the pattern version (e.g. \fBvim@latest\fR).
-.sp
-In the default output, the first column contains the name of the publisher of the package. The second column contains the name of the package. The third column is a flag showing the status of the package, where \fBo\fR indicates it is obsolete, and an \fBr\fR shows that it has been renamed (a form of obsoletion). The last column contains the release and branch versions of the package (see \fBpkg\fR(5)).
-.sp
-With \fB-F\fR, specify an alternative output format. Supported formats are: \fBtsv\fR (Tab Separated Values), \fBjson\fR (JavaScript Object Notation as a single line), and \fBjson-formatted\fR (same as the previous, formatted for readability).
-.sp
-With \fB-H\fR, omit the headers from the listing.
-.sp
-With \fB-p\fR, only display the packages for the given publisher. If not provided, the packages for all publishers will be displayed. This option can be specified multiple times.
-.sp
-With \fB-s\fR, operate on the repository located at the given URI or file system path.
+Display the property information for the given publisher. The special value \fBall\fR displays the properties for all publishers. This option can be specified multiple times.
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBrebuild\fR [\fB-p\fR \fIpublisher\fR ...] \fB-s\fR \fIrepo_uri_or_path\fR [\fB--no-catalog\fR] [\fB--no-index\fR]\fR
+\fB\fB-s\fR \fIrepo_uri_or_path\fR\fR
 .ad
 .sp .6
 .RS 4n
-Discards all catalog, search, and other cached information found in the repository, and then recreates it based on the current contents of the repository.
-.sp
-With \fB-p\fR, perform the operation only for the given publisher. If not provided, or if the special value \fBall\fR is specified, the operation is performed for all publishers. This option can be specified multiple times.
-.sp
-With \fB-s\fR, operate on the repository located at the given URI or file system path.
-.sp
-With \fB--no-catalog\fR, do not rebuild package data.
-.sp
-With \fB--no-index\fR, do not rebuild search indexes.
+Operate on the repository located at the given URI or file system path.
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBrefresh\fR [\fB-p\fR \fIpublisher\fR ...] \fB-s\fR \fIrepo_uri_or_path\fR [\fB--no-catalog\fR] [\fB--no-index\fR]\fR
+\fB\fIsection/property\fR\fR
 .ad
 .sp .6
 .RS 4n
-Catalogs any new packages found in the repository and updates all search indexes. This is intended for use with deferred publication (\fB--no-catalog\fR or \fB--no-index\fR options of \fBpkgsend\fR).
-.sp
-With \fB-p\fR, perform the operation only for the given publisher. If not provided, or if the special value \fBall\fR is specified, the operation is performed for all publishers. This option can be specified multiple times.
-.sp
-With \fB-s\fR, operate on the repository located at the given URI or file system path.
-.sp
-With \fB--no-catalog\fR, do not add any new packages.
-.sp
-With \fB--no-index\fR, do not update search indexes.
+Display values for only the specified properties, such as \fBpublisher/prefix\fR or \fBrepository/version\fR. See the \fBset\fR subcommand for a complete list of properties.
+.RE
+
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBremove\fR [\fB-n\fR] [\fB-p\fR \fIpublisher\fR ...] \fB-s\fR \fIrepo_uri_or_path\fR \fIpkg_fmri_pattern\fR ...\fR
+\fB\fBpkgrepo info\fR [\fB-F\fR \fIformat\fR] [\fB-H\fR] [\fB-p\fR \fIpublisher\fR ...] \fB-s\fR \fIrepo_uri_or_path\fR\fR
 .ad
 .sp .6
 .RS 4n
-Removes the packages matching the specified patterns from the repository, including any files they reference that are not in use by any other package.
+Display a listing of the package publishers known by the repository. The listing includes the number of packages for each publisher, when the publisher's package data was last updated, and the status of the publisher's package data (such as whether it is currently being processed).
+.sp
+.ne 2
+.mk
+.na
+\fB\fB-F\fR \fIformat\fR\fR
+.ad
+.sp .6
+.RS 4n
+Specify an alternative output format. The value of \fIformat\fR can be \fBtsv\fR (Tab Separated Values), \fBjson\fR (JavaScript Object Notation as a single line), or \fBjson-formatted\fR (JavaScript Object Notation, formatted for readability).
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB-H\fR\fR
+.ad
+.sp .6
+.RS 4n
+Omit the headers from the listing.
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB-p\fR \fIpublisher\fR\fR
+.ad
+.sp .6
+.RS 4n
+Only display the data for the given publisher. If not provided, the data for all publishers is displayed. This option can be specified multiple times.
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB-s\fR \fIrepo_uri_or_path\fR\fR
+.ad
+.sp .6
+.RS 4n
+Operate on the repository located at the given URI or file system path.
+.RE
+
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fBpkgrepo list\fR [\fB-F\fR \fIformat\fR] [\fB-H\fR] [\fB-p\fR \fIpublisher\fR ...] \fB-s\fR \fIrepo_uri_or_path\fR [\fIpkg_fmri_pattern\fR ...]\fR
+.ad
+.sp .6
+.RS 4n
+List the packages in the \fIrepo_uri_or_path\fR repository that match the specified \fIpkg_fmri_pattern\fR patterns. If no patterns are specified, all packages in the repository are listed.
+.sp
+In the default output, the first column contains the name of the publisher of the package. The second column contains the name of the package. The third column is a flag that shows the status of the package. A value of \fBo\fR in the status column indicates the package is obsolete. A value of \fBr\fR in the status column indicates the package has been renamed, which is a form of obsoletion. The fourth column contains the release and branch versions of the package. See \fBpkg\fR(5) for information about release and branch versions.
+.sp
+.ne 2
+.mk
+.na
+\fB\fB-F\fR \fIformat\fR\fR
+.ad
+.sp .6
+.RS 4n
+Specify an alternative output format. The value of \fIformat\fR can be \fBtsv\fR (Tab Separated Values), \fBjson\fR (JavaScript Object Notation as a single line), or \fBjson-formatted\fR (JavaScript Object Notation, formatted for readability).
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB-H\fR\fR
+.ad
+.sp .6
+.RS 4n
+Omit the headers from the listing.
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB-p\fR \fIpublisher\fR\fR
+.ad
+.sp .6
+.RS 4n
+Only display the packages for the given publisher. If not provided, the packages for all publishers are displayed. This option can be specified multiple times.
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB-s\fR \fIrepo_uri_or_path\fR\fR
+.ad
+.sp .6
+.RS 4n
+Operate on the repository located at the given URI or file system path.
+.RE
+
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fBpkgrepo rebuild\fR [\fB-p\fR \fIpublisher\fR ...] \fB-s\fR \fIrepo_uri_or_path\fR [\fB--no-catalog\fR] [\fB--no-index\fR]\fR
+.ad
+.sp .6
+.RS 4n
+Discard all catalog, search, and other cached information found in the repository, and then recreates it based on the current contents of the repository.
+.sp
+.ne 2
+.mk
+.na
+\fB\fB-p\fR \fIpublisher\fR\fR
+.ad
+.sp .6
+.RS 4n
+Perform the operation only for the given publisher. If not provided, or if the special value \fBall\fR is specified, the operation is performed for all publishers. This option can be specified multiple times.
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB-s\fR \fIrepo_uri_or_path\fR\fR
+.ad
+.sp .6
+.RS 4n
+Operate on the repository located at the given URI or file system path.
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB--no-catalog\fR\fR
+.ad
+.sp .6
+.RS 4n
+Do not rebuild package data.
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB--no-index\fR\fR
+.ad
+.sp .6
+.RS 4n
+Do not rebuild search indexes.
+.RE
+
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fBpkgrepo refresh\fR [\fB-p\fR \fIpublisher\fR ...] \fB-s\fR \fIrepo_uri_or_path\fR [\fB--no-catalog\fR] [\fB--no-index\fR]\fR
+.ad
+.sp .6
+.RS 4n
+Catalog any new packages found in the repository and updates all search indexes. This is intended for use with deferred publication (\fB--no-catalog\fR or \fB--no-index\fR options of \fBpkgsend\fR).
+.sp
+.ne 2
+.mk
+.na
+\fB\fB-p\fR \fIpublisher\fR\fR
+.ad
+.sp .6
+.RS 4n
+Perform the operation only for the given publisher. If not provided, or if the special value \fBall\fR is specified, the operation is performed for all publishers. This option can be specified multiple times.
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB-s\fR \fIrepo_uri_or_path\fR\fR
+.ad
+.sp .6
+.RS 4n
+Operate on the repository located at the given URI or file system path.
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB--no-catalog\fR\fR
+.ad
+.sp .6
+.RS 4n
+Do not add any new packages.
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB--no-index\fR\fR
+.ad
+.sp .6
+.RS 4n
+Do not update search indexes.
+.RE
+
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fBpkgrepo remove\fR [\fB-n\fR] [\fB-p\fR \fIpublisher\fR ...] \fB-s\fR \fIrepo_uri_or_path\fR \fIpkg_fmri_pattern\fR ...\fR
+.ad
+.sp .6
+.RS 4n
+Remove the packages matching the specified patterns from the repository, including any files they reference that are not in use by any other package.
 .LP
 Note - 
 .sp
@@ -266,29 +481,78 @@ Caution -
 .RS 2
 This operation is not reversible and should not be used while other clients are accessing the repository since it might cause them to fail during retrieval operations.
 .RE
-With \fB-n\fR, perform a trial run of the operation with no package changes made. A list of the packages to be removed is displayed before exiting.
 .sp
-With \fB-p\fR, only remove matching packages for the given publisher. If not provided, any matching packages are removed for all publishers. This option can be specified multiple times.
-.sp
-With \fB-s\fR, operate on the repository located at the given URI or file system path.
+.ne 2
+.mk
+.na
+\fB\fB-n\fR\fR
+.ad
+.sp .6
+.RS 4n
+Perform a trial run of the operation with no package changes made. A list of the packages to be removed is displayed before exiting.
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBset\fR [\fB-p\fR \fIpublisher\fR] \fB-s\fR \fIrepo_uri_or_path\fR \fIsection/property\fR=[\fIvalue\fR] ... or \fIsection/property\fR=([\fIvalue\fR]) ...\fR
+\fB\fB-p\fR \fIpublisher\fR\fR
 .ad
 .sp .6
 .RS 4n
-Sets the value of the specified properties for the repository or publisher.
+Only remove matching packages for the given publisher. If not provided, any matching packages are removed for all publishers. This option can be specified multiple times.
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB-s\fR \fIrepo_uri_or_path\fR\fR
+.ad
+.sp .6
+.RS 4n
+Operate on the repository located at the given URI or file system path.
+.RE
+
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fBpkgrepo set\fR [\fB-p\fR \fIpublisher\fR] \fB-s\fR \fIrepo_uri_or_path\fR \fIsection/property\fR=[\fIvalue\fR] ...\fR
+.ad
+.br
+.na
+\fB\fBset\fR [\fB-p\fR \fIpublisher\fR] \fB-s\fR \fIrepo_uri_or_path\fR \fIsection/property\fR=([\fIvalue\fR]) ...\fR
+.ad
+.sp .6
+.RS 4n
+Set the value of the specified properties for the repository or publisher.
 .sp
 This subcommand can be used only with file system based repositories.
 .sp
-With \fB-p\fR, only set property data for the given publisher. If the publisher does not already exist, it is added. The special value \fBall\fR can be used to set the property for all publishers.
+.ne 2
+.mk
+.na
+\fB\fB-p\fR \fIpublisher\fR\fR
+.ad
+.sp .6
+.RS 4n
+Only set property data for the given publisher. If the publisher does not already exist, it is added. The special value \fBall\fR can be used to set the property for all publishers.
+.RE
+
 .sp
-With \fB-s\fR, operate on the repository located at the given URI or file system path.
-.sp
+.ne 2
+.mk
+.na
+\fB\fB-s\fR \fIrepo_uri_or_path\fR\fR
+.ad
+.sp .6
+.RS 4n
+Operate on the repository located at the given URI or file system path.
+.RE
+
 Properties and values can be specified using one of the following forms:
 .sp
 .ne 2
@@ -328,33 +592,11 @@ For repository versions 3 and 4, the following properties can be set for the rep
 .ne 2
 .mk
 .na
-\fB\fIpublisher\fR/\fIprefix\fR\fR
+\fB\fBpublisher/prefix\fR\fR
 .ad
-.sp .6
-.RS 4n
+.RS 20n
+.rt  
 A string that represents the name of the default publisher. The first character must be a-z, A-Z, or 0-9. The remainder of the string can only contain the characters 0-9, -, ., a-z, and A-Z. This value indicates the publisher that should be used when more than one publisher's packages are present, or when packages are published to the repository and a publisher is not specified.
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fB\fIpublisher\fR/\fIsigning_ca_certs\fR\fR
-.ad
-.sp .6
-.RS 4n
-A list of strings that contain the hashes of signing CA certificates that should be used for this publisher.
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fB\fIpublisher\fR/\fIintermediate_certs\fR\fR
-.ad
-.sp .6
-.RS 4n
-A list of strings that contain the hashes of intermediate certificates that should be used for this publisher.
 .RE
 
 For repository versions 3 and 4, the following properties can be set for individual publishers in the repository:
@@ -362,7 +604,7 @@ For repository versions 3 and 4, the following properties can be set for individ
 .ne 2
 .mk
 .na
-\fB\fIpublisher\fR/\fIalias\fR\fR
+\fB\fBpublisher/alias\fR\fR
 .ad
 .sp .6
 .RS 4n
@@ -373,7 +615,7 @@ A string that represents the default alias that clients should use when adding a
 .ne 2
 .mk
 .na
-\fB\fIrepository\fR/\fIcollection_type\fR\fR
+\fB\fBrepository/collection_type\fR\fR
 .ad
 .sp .6
 .RS 4n
@@ -388,7 +630,7 @@ The \fBsupplemental\fR type indicates that the repository contains packages that
 .ne 2
 .mk
 .na
-\fB\fIrepository\fR/\fIdescription\fR\fR
+\fB\fBrepository/description\fR\fR
 .ad
 .sp .6
 .RS 4n
@@ -399,7 +641,7 @@ A paragraph of plain text that describes the purpose and contents of the reposit
 .ne 2
 .mk
 .na
-\fB\fIrepository\fR/\fIdetailed_url\fR\fR
+\fB\fBrepository/detailed_url\fR\fR
 .ad
 .sp .6
 .RS 4n
@@ -410,7 +652,7 @@ A URI that represents the location of a document (such as a web page) that provi
 .ne 2
 .mk
 .na
-\fB\fIrepository\fR/\fIlegal_uris\fR\fR
+\fB\fBrepository/legal_uris\fR\fR
 .ad
 .sp .6
 .RS 4n
@@ -421,7 +663,7 @@ A list of locations (URIs) for documents that provide additional legal informati
 .ne 2
 .mk
 .na
-\fB\fIrepository\fR/\fImirrors\fR\fR
+\fB\fBrepository/mirrors\fR\fR
 .ad
 .sp .6
 .RS 4n
@@ -432,7 +674,7 @@ A list of locations (URIs) of repositories that contain a copy of the repository
 .ne 2
 .mk
 .na
-\fB\fIrepository\fR/\fIname\fR\fR
+\fB\fBrepository/name\fR\fR
 .ad
 .sp .6
 .RS 4n
@@ -443,7 +685,7 @@ A plain text string that contains the name of the repository.
 .ne 2
 .mk
 .na
-\fB\fIrepository\fR/\fIorigins\fR\fR
+\fB\fBrepository/origins\fR\fR
 .ad
 .sp .6
 .RS 4n
@@ -454,7 +696,7 @@ A list of locations (URIs) of repositories that contain a complete copy of the r
 .ne 2
 .mk
 .na
-\fB\fIrepository\fR/\fIrefresh_seconds\fR\fR
+\fB\fBrepository/refresh_seconds\fR\fR
 .ad
 .sp .6
 .RS 4n
@@ -465,7 +707,7 @@ An integer value that represents the number of seconds clients should wait befor
 .ne 2
 .mk
 .na
-\fB\fIrepository\fR/\fIregistration_uri\fR\fR
+\fB\fBrepository/registration_uri\fR\fR
 .ad
 .sp .6
 .RS 4n
@@ -476,7 +718,7 @@ A URI that represents the location of a resource that must be used to obtain cre
 .ne 2
 .mk
 .na
-\fB\fIrepository\fR/\fIrelated_uris\fR\fR
+\fB\fBrepository/related_uris\fR\fR
 .ad
 .sp .6
 .RS 4n
@@ -490,11 +732,22 @@ Properties not documented here, but listed in the output of the \fBget\fR subcom
 .ne 2
 .mk
 .na
-\fBversion\fR
+\fB\fBpkgrepo help\fR\fR
 .ad
 .sp .6
 .RS 4n
-Displays a unique string that identifies the version of the \fBpkg\fR(5) system. The values produced by the \fBversion\fR operation are not sortable and are not safe for comparison beyond equality.
+Display a usage message.
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fBpkgrepo version\fR\fR
+.ad
+.sp .6
+.RS 4n
+Display a unique string that identifies the version of the \fBpkg\fR(5) system. The values produced by the \fBversion\fR operation are not sortable and are not safe for comparison beyond equality.
 .RE
 
 .SH EXAMPLES
@@ -561,12 +814,16 @@ $ \fBpkgrepo refresh -s http://example.com/repository\fR
 .sp
 .in +2
 .nf
-$ \fBpkgrepo get -s /my/repository\fR
-SECTION    PROPERTY VALUE
-publisher  prefix   ""
-repository version  4
+$ \fBpkgrepo get -s /export/repoSolaris11\fR
+SECTION    PROPERTY    VALUE
+publisher  prefix      solaris
+repository description Local\e copy\e of\e the\e Oracle\e Solaris\e 11\e repository
+repository name        Oracle\e Solaris\e 11
+repository version     4
 $ \fBpkgrepo get -s http://pkg.oracle.com/solaris/release/\fR
 SECTION    PROPERTY VALUE
+deployment content  s11_11-11
+deployment pubdate  20111102T222051Z
 publisher  prefix   solaris
 repository version  4
 .fi
@@ -583,7 +840,8 @@ PUBLISHER SECTION    PROPERTY         VALUE
 solaris   publisher  alias
 solaris   publisher  prefix           solaris
 solaris   repository collection-type  core
-solaris   repository description      This\e repository\e serves\e the\e Oracle\e Solaris\e 11\e Package\e repository.
+solaris   repository description      This\e repository\e serves\e the\e Oracle\e
+Solaris\e 11\e Package\e repository.
 solaris   repository legal-uris       ()
 solaris   repository mirrors          (http://pkg-cdn1.oracle.com/solaris.release/)
 solaris   repository name             Oracle\e Solaris\e 11\e Package\e Repository
@@ -634,7 +892,7 @@ The following exit values are returned:
 .ne 2
 .mk
 .na
-\fB0\fR
+\fB\fB0\fR\fR
 .ad
 .RS 6n
 .rt  
@@ -645,7 +903,7 @@ Command succeeded.
 .ne 2
 .mk
 .na
-\fB1\fR
+\fB\fB1\fR\fR
 .ad
 .RS 6n
 .rt  
@@ -656,7 +914,7 @@ An error occurred.
 .ne 2
 .mk
 .na
-\fB2\fR
+\fB\fB2\fR\fR
 .ad
 .RS 6n
 .rt  
@@ -667,7 +925,7 @@ Invalid command line options were specified.
 .ne 2
 .mk
 .na
-\fB3\fR
+\fB\fB3\fR\fR
 .ad
 .RS 6n
 .rt  
@@ -678,7 +936,7 @@ Multiple operations were requested, but only some of them succeeded.
 .ne 2
 .mk
 .na
-\fB4\fR
+\fB\fB4\fR\fR
 .ad
 .RS 6n
 .rt  
@@ -689,7 +947,7 @@ No changes were made, nothing to do.
 .ne 2
 .mk
 .na
-\fB99\fR
+\fB\fB99\fR\fR
 .ad
 .RS 6n
 .rt  

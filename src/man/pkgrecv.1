@@ -1,7 +1,7 @@
 '\" te
-.\" Copyright (c) 2007, 2011, Oracle and/or its
+.\" Copyright (c) 2007, 2012, Oracle and/or its
 .\" affiliates. All rights reserved.
-.TH pkgrecv 1 "28 Jul 2011" "SunOS 5.11" "User Commands"
+.TH pkgrecv 1 "11 Jun 2012" "SunOS 5.11" "User Commands"
 .SH NAME
 pkgrecv \- Image Packaging System content retrieval utility
 .SH SYNOPSIS
@@ -20,7 +20,10 @@ pkgrecv \- Image Packaging System content retrieval utility
 .SH DESCRIPTION
 .sp
 .LP
-\fBpkgrecv\fR allows the user to retrieve packages from a \fBpkg\fR(5) repository or package archive. \fBpkgrecv\fR can also optionally republish the retrieved packages to a different package repository or archive them. By default, packages are retrieved in package repository format suitable for use with \fBpkg\fR(1), \fBpkg.depotd\fR(1M), and package publication tools.
+\fBpkgrecv\fR allows the user to retrieve packages from a \fBpkg\fR(5) repository or package archive. \fBpkgrecv\fR can also optionally republish the retrieved packages to a different package repository or archive them. By default, packages are retrieved in package repository format suitable for use with \fBpkg\fR, \fBpkg.depotd\fR, and package publication tools.
+.sp
+.LP
+After a \fBpkgrecv\fR operation, run \fBpkgrepo refresh\fR or \fBpkgrepo rebuild\fR on the repository to build search indexes.
 .SH OPTIONS
 .sp
 .LP
@@ -29,10 +32,21 @@ The following options are supported:
 .ne 2
 .mk
 .na
+\fB\fB-h\fR\fR
+.ad
+.sp .6
+.RS 4n
+Display a usage message.
+.RE
+
+.sp
+.ne 2
+.mk
+.na
 \fB\fB-a\fR\fR
 .ad
-.RS 19n
-.rt  
+.sp .6
+.RS 4n
 Store the retrieved package data in a \fBpkg\fR(5) archive at the location specified by \fB-d\fR. The file cannot already exist. This option can be used only with file system based destinations. Although not required, using a file extension of \fB\&.p5p\fR (for example, \fBarchive.p5p\fR) is strongly suggested. This option cannot be combined with \fB--raw\fR.
 .RE
 
@@ -42,31 +56,20 @@ Store the retrieved package data in a \fBpkg\fR(5) archive at the location speci
 .na
 \fB\fB-c\fR \fIcache_dir\fR\fR
 .ad
-.RS 19n
-.rt  
-The path to a directory that will be used to cache downloaded content. If this directory is not supplied, the client automatically selects a cache directory. In the case where a download is interrupted, and a cache directory was automatically chosen, use this option to resume the download. See the "Environment Variables" section below for details about how to set the location used for temporary data storage.
+.sp .6
+.RS 4n
+Specify the path to a directory that will be used to cache downloaded content. If this directory is not supplied, the client automatically selects a cache directory. In the case where a download is interrupted, and a cache directory was automatically chosen, use this option to resume the download. See the "Environment Variables" section below for details about how to set the location used for temporary data storage.
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fB\fB-d\fR \fIpath_or_uri\fR\fR
+\fB\fB-d\fR (\fIpath\fR|\fIdest_uri\fR)\fR
 .ad
-.RS 19n
-.rt  
-The file system path or URI of the target to republish packages to. The target must already exist. New repositories can be created using \fBpkgrepo\fR(1). If \fB-a\fR is specified, the target is assumed to be a new package archive.
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fB\fB-h\fR\fR
-.ad
-.RS 19n
-.rt  
-Display a usage message.
+.sp .6
+.RS 4n
+Specify the file system path or URI of the target to republish packages to. If \fB-a\fR  is specified, the target is a new package archive that cannot already exist. Otherwise, the target must be a package repository that already exists. New repositories can be created using \fBpkgrepo\fR.
 .RE
 
 .sp
@@ -75,9 +78,9 @@ Display a usage message.
 .na
 \fB\fB-k\fR\fR
 .ad
-.RS 19n
-.rt  
-Keep the retrieved package content compressed. This option is ignored when republishing. Compressed package content should not be used with \fBpkgsend\fR(1).
+.sp .6
+.RS 4n
+Keep the retrieved package content compressed. This option is ignored when republishing. Compressed package content should not be used with \fBpkgsend\fR.
 .RE
 
 .sp
@@ -86,17 +89,17 @@ Keep the retrieved package content compressed. This option is ignored when repub
 .na
 \fB\fB-m\fR \fImatch\fR\fR
 .ad
-.RS 19n
-.rt  
-Controls matching behavior using the following values:
+.sp .6
+.RS 4n
+Control matching behavior using the following values:
 .sp
 .ne 2
 .mk
 .na
 \fB\fBall-timestamps\fR\fR
 .ad
-.RS 18n
-.rt  
+.sp .6
+.RS 4n
 Includes all matching timestamps, not just the latest (implies \fBall-versions\fR).
 .RE
 
@@ -106,8 +109,8 @@ Includes all matching timestamps, not just the latest (implies \fBall-versions\f
 .na
 \fB\fBall-versions\fR\fR
 .ad
-.RS 18n
-.rt  
+.sp .6
+.RS 4n
 Includes all matching versions, not just the latest.
 .RE
 
@@ -119,8 +122,8 @@ Includes all matching versions, not just the latest.
 .na
 \fB\fB-n\fR\fR
 .ad
-.RS 19n
-.rt  
+.sp .6
+.RS 4n
 Perform a trial run with no changes made.
 .RE
 
@@ -130,30 +133,30 @@ Perform a trial run with no changes made.
 .na
 \fB\fB-r\fR\fR
 .ad
-.RS 19n
-.rt  
-Recursively retrieves all dependencies for the provided list of packages.
+.sp .6
+.RS 4n
+Recursively retrieve all dependencies for the provided list of packages.
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fB\fB-s\fR \fIsrc_repo_uri\fR\fR
+\fB\fB-s\fR \fIsrc_uri\fR\fR
 .ad
-.RS 19n
-.rt  
-A URI representing the location of a \fBpkg\fR(5) repository or package archive from which to receive package data.
+.sp .6
+.RS 4n
+Specify a URI representing the location of a \fBpkg\fR(5) repository or package archive from which to receive package data.
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fB\fB--cert\fR \fIfile\fR\fR
+\fB\fB--cert\fR \fIcertfile\fR\fR
 .ad
-.RS 19n
-.rt  
+.sp .6
+.RS 4n
 Specify a client SSL certificate file to use for package retrieval from an HTTPS repository.
 .RE
 
@@ -161,10 +164,10 @@ Specify a client SSL certificate file to use for package retrieval from an HTTPS
 .ne 2
 .mk
 .na
-\fB\fB--key\fR \fIfile\fR\fR
+\fB\fB--key\fR \fIkeyfile\fR\fR
 .ad
-.RS 19n
-.rt  
+.sp .6
+.RS 4n
 Specify a client SSL key file to use for package retrieval from an HTTPS repository.
 .RE
 
@@ -174,8 +177,8 @@ Specify a client SSL key file to use for package retrieval from an HTTPS reposit
 .na
 \fB\fB--newest\fR\fR
 .ad
-.RS 19n
-.rt  
+.sp .6
+.RS 4n
 List the most recent versions of the packages available from the specified repository and exit. (All other options except \fB-s\fR are ignored.)
 .RE
 
@@ -185,8 +188,8 @@ List the most recent versions of the packages available from the specified repos
 .na
 \fB\fB--raw\fR\fR
 .ad
-.RS 19n
-.rt  
+.sp .6
+.RS 4n
 Retrieve and store the raw package data in a set of directory structures by stem and version at the location specified by \fB-d\fR. This option can be used only with file system based destinations. This package data can be used to conveniently modify and republish packages, perhaps by correcting file contents or providing additional package metadata. This option cannot be combined with \fB-a\fR.
 .RE
 
@@ -201,10 +204,9 @@ List the newest packages available from the repository on the system named \fBte
 .in +2
 .nf
 $ \fBpkgrecv -s http://test --newest\fR
-pkg:/SUNWlibC@0.5.11,5.11-0.79:20080221T125720Z
-pkg:/SUNWfreetype2@0.5.11,5.11-0.79:20080221T123955Z
-pkg:/SUNWlibm@0.5.11,5.11-0.79:20080221T125728Z
-pkg:/SUNWliboil@0.5.11,5.11-0.79:20080221T125730Z
+pkg://solaris/system/library/c++-runtime@0.5.11,5.11-0.175.0.0.0.2.1:20120921T190358Z
+pkg://solaris/system/library/freetype-2@2.4.8,5.11-0.175.1.0.0.7.1234:20120109T215840Z
+pkg://solaris/system/library/math@0.5.11,5.11-0.175.0.0.0.2.1:20120921T190432Z
 .fi
 .in -2
 .sp
@@ -213,17 +215,20 @@ pkg:/SUNWliboil@0.5.11,5.11-0.79:20080221T125730Z
 \fBExample 2 \fRRetrieve Raw Package Data
 .sp
 .LP
-Receive the \fBSUNWlibC\fR, \fBSUNWfreetype\fR, and \fBSUNWlibm\fR packages from Example 1 in a format suitable for use with \fBpkgsend include\fR.
+Receive the \fBc++-runtime\fR package from Example 1 in a format suitable for use with \fBpkgsend publish\fR.
 
 .sp
 .in +2
 .nf
 $ \fBpkgrecv -s http://test \e\fR
-\fBSUNWlibC@0.5.11,5.11-0.79:20080221T125720Z --raw\fR
-SUNWfreetype2@0.5.11,5.11-0.79:20080221T123955Z
-SUNWlibm@0.5.11,5.11-0.79:20080221T125728Z
-$ \fBls -d SUNW*\fR
-SUNWfreetype2  SUNWlibC       SUNWlibm
+\fB-d /local/repo --raw \e\fR
+\fBc++-runtime@0.5.11,5.11-0.175.0.0.0.2.1:20120921T190358Z\fR
+Processing packages for publisher solaris ...
+Retrieving and evaluating 1 package(s)...
+PROCESS       ITEMS     GET (MB)    SEND (MB)
+Completed       1/1      3.5/3.5      0.0/0.0
+$ \fBls /local/repo\fR
+pkg5.repository  publisher  system%2Flibrary%2Fc%2B%2B-runtime
 .fi
 .in -2
 .sp
@@ -232,12 +237,12 @@ SUNWfreetype2  SUNWlibC       SUNWlibm
 \fBExample 3 \fRRetrieve Dependencies From a System
 .sp
 .LP
-Receive the package \fBSUNWvim\fR and all of its dependencies from the system named \fBtest\fR.
+Receive the package \fBeditor/vim\fR and all of its dependencies from the system named \fBtest\fR.
 
 .sp
 .in +2
 .nf
-$ \fBpkgrecv -s http://test -r SUNWvim\fR
+$ \fBpkgrecv -s http://test -d /local/repo -r editor/vim\fR
 .fi
 .in -2
 .sp
@@ -246,88 +251,97 @@ $ \fBpkgrecv -s http://test -r SUNWvim\fR
 \fBExample 4 \fRRetrieve All Versions
 .sp
 .LP
-Receive all versions of the package \fBSUNWvim\fR from the system named \fBtest\fR.
+Receive all versions of the package \fBeditor/vim\fR from the system named \fBtest\fR.
 
 .sp
 .in +2
 .nf
-$ \fBpkgrecv -s http://test -m all-versions SUNWvim\fR
+$ \fBpkgrecv -s http://test -d /local/repo -m all-versions \e\fR
+\fBeditor/vim\fR
+Processing packages for publisher solaris ...
+Retrieving and evaluating 2 package(s)...
+PROCESS       ITEMS     GET (MB)    SEND(MB)
+Completed       2/2    16.7/16.7    44.9/44.9
 .fi
 .in -2
 .sp
 
 .LP
-\fBExample 5 \fRRetrieve All Versions and Republish Locally
+\fBExample 5 \fRRetrieve All Versions and Republish Remotely
 .sp
 .LP
-Receive all versions of the package \fBSUNWvim\fR from the system named \fBtest\fR and republish it to a local repository.
+Receive all versions of the package \fBlibrary/zlib\fR from the system named \fBtest\fR and republish it to a remote repository on the system named \fBremote\fR.
 
 .sp
 .in +2
 .nf
-$ \fBpkgrecv -s http://test -d /local/repo SUNWvim\fR
+$ \fBpkgrecv -s http://test -d http://remote:10000 \e\fR
+\fB-m all-versions library/zlib\fR
 .fi
 .in -2
 .sp
 
 .LP
-\fBExample 6 \fRRetrieve All Versions and Republish Remotely
+\fBExample 6 \fRRetrieve Dependencies From a Repository
 .sp
 .LP
-Receive all versions of the package \fBSUNWzlib\fR from the system named \fBtest\fR and republish it to a remote repository on the system named \fBremote\fR.
+Receive the package \fBeditor/gnu-emacs\fR and all of its dependencies from the repository located at \fB/export/repo\fR.
 
 .sp
 .in +2
 .nf
-$ \fBpkgrecv -s http://test -d http://remote:10000 SUNWzlib\fR
+$ \fBpkgrecv -s /export/repo -d /local/repo -r editor/gnu-emacs\fR
 .fi
 .in -2
 .sp
 
 .LP
-\fBExample 7 \fRRetrieve Dependencies From a Repository
+\fBExample 7 \fRRetrieve Additional Packages and Changed Content
 .sp
 .LP
-Receive the package \fBSUNWemacs\fR and all of its dependencies from the repository located at \fB/export/repo\fR.
+Receive all packages that do not already exist and all changed content from the repository located at \fBhttp://pkg.oracle.com/solaris/release/\fR to the repository located at \fB/export/repoSolaris11\fR.
 
 .sp
 .in +2
 .nf
-$ \fBpkgrecv -s /export/repo -r SUNWemacs\fR
+$ \fBpkgrecv -s http://pkg.oracle.com/solaris/release/ \e\fR
+\fB-d /export/repoSolaris11 -m all-timestamps '*'\fR
+.fi
+.in -2
+.sp
+
+.sp
+.LP
+Receive all packages that do not already exist and all changed content from the secure repository located at \fBhttp://pkg.oracle.com/solaris/support/\fR to the repository located at \fB/export/repoSolaris11\fR.
+
+.sp
+.in +2
+.nf
+$ \fBpkgrecv -s http://pkg.oracle.com/solaris/support/ \e\fR
+\fB-d /export/repoSolaris11 -m all-timestamps \e\fR
+\fB--key /var/pkg/ssl/Oracle_Solaris_11_Support.key.pem \e\fR
+\fB--cert /var/pkg/ssl/Oracle_Solaris_11_Support.certificate.pem '*'\fR
 .fi
 .in -2
 .sp
 
 .LP
-\fBExample 8 \fRRetrieve Additional Packages
+\fBExample 8 \fRCreate a Package Archive
 .sp
 .LP
-Receive all packages that do not already exist from the repository located at \fBhttp://example.com:10000\fR.
+Create a package archive containing the package \fBeditor/gnu-emacs\fR and all of its dependencies from the repository located at \fBhttp://example.com:10000\fR.
 
 .sp
 .in +2
 .nf
-$ \fBpkgrecv -s http://example.com:10000 -d /my/pkg/repo '*'\fR
+$ \fBpkgrecv -s http://example.com:10000 -d /my/emacs.p5p -a \e\fR
+\fB-r editor/gnu-emacs\fR
 .fi
 .in -2
 .sp
 
 .LP
-\fBExample 9 \fRCreate a Package Archive
-.sp
-.LP
-Create a package archive containing the package \fBSUNWemacs\fR and all of its dependencies from the repository located at \fBhttp://example.com:10000\fR.
-
-.sp
-.in +2
-.nf
-$ \fBpkgrecv -s http://example.com:10000 -d /my/emacs.p5p -a -r SUNWemacs\fR
-.fi
-.in -2
-.sp
-
-.LP
-\fBExample 10 \fRCopy Packages From an Archive to a Repository
+\fBExample 9 \fRCopy Packages From an Archive to a Repository
 .sp
 .LP
 Copy all of the packages in a package archive to an existing repository located at \fB/export/repo\fR.

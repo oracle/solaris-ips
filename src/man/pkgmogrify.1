@@ -1,7 +1,7 @@
 '\" te
-.\" Copyright (c) 2007, 2011, Oracle and/or its
+.\" Copyright (c) 2007, 2012, Oracle and/or its
 .\" affiliates. All rights reserved.
-.TH pkgmogrify 1 "28 Jul 2011" "SunOS 5.11" "User Commands"
+.TH pkgmogrify 1 "4 Jun 2012" "SunOS 5.11" "User Commands"
 .SH NAME
 pkgmogrify \- Image Packaging System manifest transmogrifier
 .SH SYNOPSIS
@@ -45,11 +45,26 @@ The following options are supported:
 .ne 2
 .mk
 .na
-\fB\fB-D\fR \fIname\fR=\fIvalue\fR\fR
+\fB\fB-?\fR\fR
+.ad
+.br
+.na
+\fB\fB--help\fR\fR
 .ad
 .sp .6
 .RS 4n
-Defines \fIname\fR as a macro, with the value \fIvalue\fR. Macros appear in the input file as \fB$(macro)\fR. Substitution is repeated until no more translations are found. Common idioms include:
+Display a usage message.
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB-D\fR \fImacro\fR=\fIvalue\fR\fR
+.ad
+.sp .6
+.RS 4n
+Define \fImacro\fR as a macro, with the value \fIvalue\fR. Macros appear in the input file as \fB$(macro)\fR. Substitution is repeated until no more translations are found. Common idioms include:
 .RS +4
 .TP
 .ie t \(bu
@@ -84,11 +99,11 @@ These macros should be set to the desired value on the command line. There are n
 .ne 2
 .mk
 .na
-\fB\fB-I\fR \fIinclude_directory\fR\fR
+\fB\fB-I\fR \fIincludedir\fR\fR
 .ad
 .sp .6
 .RS 4n
-Adds the specified directory to the search path for both files specified on the command line and embedded include directives.
+Add the specified directory to the search path for both files specified on the command line and embedded include directives.
 .RE
 
 .sp
@@ -135,17 +150,6 @@ Ignore include directives in files. Only files specified on the command line (or
 Write comments into the output manifest showing the effect of transforms. This information can aid in debugging.
 .RE
 
-.sp
-.ne 2
-.mk
-.na
-\fB\fB--help\fR or \fB-?\fR\fR
-.ad
-.sp .6
-.RS 4n
-Displays a usage message.
-.RE
-
 .SH EMBEDDED DIRECTIVES
 .sp
 .LP
@@ -182,13 +186,13 @@ Matching criteria are of the form:
 .sp
 .in +2
 .nf
-[\fIaction-type\fR ... ] [\fIattribute\fR=<\fIvalue-regexp\fR> ...]
+[\fIaction-name\fR ... ] [\fIattribute\fR=<\fIvalue-regexp\fR> ...]
 .fi
 .in -2
 
 .sp
 .LP
-One of the \fIaction-types\fR specified must match. All of the \fIattributes\fR specified must match. The regular expression syntax used is that of Python. For more information about Python regular expression syntax, use the command \fBpydoc re\fR or see more complete documentation at \fBhttp://docs.python.org/dev/howto/regex.html\fR. The regular expression is anchored at the beginning but not at the end. Therefore, a regular expression matching files by their extensions must include a leading \fB\&.*\fR and should include a trailing \fB$\fR.
+At least one specified \fIaction-name\fR must match. Every specified \fIattribute\fR must match. Action names and attributes are listed in "Actions" in the \fBpkg\fR(5) man page. The regular expression syntax used is that of Python. For more information about Python regular expression syntax, use the command \fBpydoc re\fR or see more complete documentation at \fBhttp://docs.python.org/dev/howto/regex.html\fR. The regular expression is anchored at the beginning but not at the end. Therefore, a regular expression matching files by their extensions must include a leading \fB\&.*\fR and should include a trailing \fB$\fR.
 .sp
 .LP
 Multiple criteria can be specified, separated by spaces.
@@ -317,7 +321,7 @@ Several synthetic attributes exist. Two are unique to \fBpkgmogrify\fR:
 .RE
 .sp
 .LP
-Three synthetic attributes are similar to ones used in \fBpkg\fR(1):
+Three synthetic attributes are similar to ones used in \fBpkg\fR:
 .RS +4
 .TP
 .ie t \(bu
@@ -334,7 +338,7 @@ Three synthetic attributes are similar to ones used in \fBpkg\fR(1):
 .TP
 .ie t \(bu
 .el o
-\fBaction.name\fR refers to the name of the action type.
+\fBaction.name\fR refers to the name of the action.
 .RE
 .sp
 .LP
@@ -350,7 +354,7 @@ Similarly to action attributes, \fBpkgmogrify\fR directives can reference packag
 It is useful not only to reference package attributes as if they were action attributes, but also to match on them, and even temporarily modify them. Therefore a synthetic action name, \fBpkg\fR, is available (only in the context of \fBpkgmogrify\fR) for use in these situations.
 .sp
 .LP
-When \fBpkgmogrify\fR finishes reading a manifest specified on the command line and that manifest defined a \fBpkg.fmri\fR package attribute, \fBpkgmogrify\fR creates this synthetic \fBpkg\fR action, whose attributes are the package's attributes. A \fB<transform>\fR directive can then match on this action, just like any other action type.
+When \fBpkgmogrify\fR finishes reading a manifest specified on the command line and that manifest defined a \fBpkg.fmri\fR package attribute, \fBpkgmogrify\fR creates this synthetic \fBpkg\fR action, whose attributes are the package's attributes. A \fB<transform>\fR directive can then match on this action, just as it can match on any other action.
 .sp
 .LP
 Operations on a \fBpkg\fR action are special in that they take place only in memory and do not directly affect the emitted manifest. For instance, trying to set an attribute on a \fBpkg\fR action via the \fBadd\fR, \fBdefault\fR, or \fBset\fR operations does not result in a \fBset\fR action being added to the manifest, though it will be available for other \fB<transform>\fR directives to match on. Attempting to \fBemit\fR a \fBpkg\fR action causes an error. To add a package attribute, \fBemit\fR a \fBset\fR action instead.
@@ -580,6 +584,7 @@ Invalid command line options were specified.
 .rt  
 Unexpected processing error.
 .RE
+
 .SH FILES
 .sp
 .ne 2
@@ -589,8 +594,8 @@ Unexpected processing error.
 .ad
 .sp .6
 .RS 4n
-This directory contains files with useful transforms to set facets, 
-actuators and other attributes.
+This directory contains files with useful transforms to set facets, actuators, and other attributes.
+.RE
 
 .SH ATTRIBUTES
 .sp

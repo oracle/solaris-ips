@@ -1,7 +1,7 @@
 '\" te
-.\" Copyright (c) 2007, 2011, Oracle and/or its
+.\" Copyright (c) 2007, 2012, Oracle and/or its
 .\" affiliates. All rights reserved.
-.TH pkgmerge 1 "28 Jul 2011" "SunOS 5.11" "User Commands"
+.TH pkgmerge 1 "27 May 2012" "SunOS 5.11" "User Commands"
 .SH NAME
 pkgmerge \- Image Packaging System package merging utility
 .SH SYNOPSIS
@@ -30,11 +30,26 @@ The following options are supported:
 .ne 2
 .mk
 .na
+\fB\fB-?\fR\fR
+.ad
+.br
+.na
+\fB\fB--help\fR\fR
+.ad
+.sp .6
+.RS 4n
+Display a usage message.
+.RE
+
+.sp
+.ne 2
+.mk
+.na
 \fB\fB-d\fR \fIdest_repo\fR\fR
 .ad
 .sp .6
 .RS 4n
-The file system path or URI of the target repository to publish the merged packages to. The target repository must already exist. New repositories can be created using \fBpkgrepo\fR(1).
+Specify the file system path or URI of the target repository to publish the merged packages to. The target repository must already exist. New repositories can be created using \fBpkgrepo\fR.
 .RE
 
 .sp
@@ -56,18 +71,7 @@ Perform a trial run with no changes made to the target repository.
 .ad
 .sp .6
 .RS 4n
-The variant name and value to use for packages from this source, followed by the file system path or URI of the source repository or package archive to retrieve packages from. Multiple variants can be specified separated by commas. The same variants must be named for all sources. This option can be specified multiple times.
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fB\fB--help\fR or \fB-?\fR\fR
-.ad
-.sp .6
-.RS 4n
-Displays a usage message.
+Specify the variant name and value to use for packages from this source, followed by the file system path or URI of the source repository or package archive to retrieve packages from. Multiple variants can be specified separated by commas. The same variants must be named for all sources. This option can be specified multiple times.
 .RE
 
 .SH ENVIRONMENT VARIABLES
