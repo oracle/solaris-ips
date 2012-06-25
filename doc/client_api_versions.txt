@@ -1,3 +1,11 @@
+Version 74:
+Compatible with clients using version 73, 72.
+     The PlanDescription now has interfaces to
+     determine whether or not release notes were generated
+     for this operation, whether or not they must be displayed,
+     and a method of retrieving the release notes line by
+     line.
+
 Version 73:
 Compatible with clients using version 72.
 

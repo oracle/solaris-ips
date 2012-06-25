@@ -133,6 +133,7 @@ class PlanDescription(object):
             "li_ppkgs": frozenset([ pkg.fmri.PkgFmri ]),
             "li_props": { li.PROP_NAME: li.LinkedImageName },
             "pkg_plans": [ pkg.client.pkgplan.PkgPlan ],
+            "release_notes": (bool, []),
             "removal_actions": [ _ActionPlan ],
             "removed_groups": { str: pkg.fmri.PkgFmri },
             "removed_users": { str: pkg.fmri.PkgFmri },
@@ -189,6 +190,8 @@ class PlanDescription(object):
                 self.added_users = {}
                 self.removed_groups = {}
                 self.removed_users = {}
+                # release notes that are part of this operation
+                self.release_notes = (False, [])
                 # plan properties
                 self._cbytes_added = 0 # size of compressed files
                 self._bytes_added = 0  # size of files added
@@ -206,6 +209,7 @@ class PlanDescription(object):
                 # Properties set when state >= EXECUTED_OK
                 #
                 self._salvaged = []
+                self.release_notes_name = None
 
                 #
                 # Set by imageplan.set_be_options()
@@ -513,6 +517,19 @@ class PlanDescription(object):
                     self.install_actions):
                 # pylint: enable-msg=W0612
                         yield "%s -> %s" % (o_act, d_act)
+
+        def has_release_notes(self):
+                """True if there are release notes for this plan"""
+                return bool(self.release_notes[1])
+
+        def must_display_notes(self):
+                """True if the release notes must be displayed"""
+                return self.release_notes[0]
+
+        def get_release_notes(self):
+                """A generator that returns the release notes for this plan"""
+                for notes in self.release_notes[1]:
+                        yield notes
 
         def get_licenses(self, pfmri=None):
                 """A generator function that yields information about the

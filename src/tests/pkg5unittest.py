@@ -398,6 +398,8 @@ if __name__ == "__main__":
                         ins = " [+%d lines...]" % (len(lines) - 1)
                 else:
                         ins = ""
+                if isinstance(lines[0], unicode):
+                        lines[0] = lines[0].encode("utf-8")
                 self.debugcmd(
                     "echo '%s%s' > %s" % (lines[0], ins, path))
 
@@ -803,7 +805,7 @@ if __name__ == "__main__":
             change_facets=EmptyI, change_packages=EmptyI,
             change_mediators=EmptyI, change_variants=EmptyI,
             child_images=EmptyI, create_backup_be=False, create_new_be=False,
-            image_name=None, licenses=EmptyI, remove_packages=EmptyI,
+            image_name=None, licenses=EmptyI, remove_packages=EmptyI, release_notes=EmptyI,
             version=0):
                 """Check that the parsable output in 'output' is what is
                 expected."""

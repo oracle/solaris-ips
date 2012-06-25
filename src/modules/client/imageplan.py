@@ -33,6 +33,7 @@ import operator
 import os
 import simplejson as json
 import sys
+import tempfile
 import traceback
 import weakref
 
@@ -1969,6 +1970,7 @@ class ImagePlan(object):
 
                 self.evaluate_pkg_plans()
                 self.merge_actions()
+                self.compile_release_notes()
 
                 for p in self.pd.pkg_plans:
                         cpbytes, pbytes = p.get_bytes_added()
@@ -2016,6 +2018,7 @@ class ImagePlan(object):
 
         def __update_avail_space(self):
                 """Update amount of available space on FS"""
+
                 self.pd._cbytes_avail = misc.spaceavail(
                     self.image.write_cache_path)
 
@@ -2023,6 +2026,93 @@ class ImagePlan(object):
                 # if we don't have a full image yet
                 if self.pd._cbytes_avail < 0:
                         self.pd._cbytes_avail = self.pd._bytes_avail
+
+        def __include_note(self, installed_dict, act, containing_fmri):
+                """Decide if a release note should be shown/included.  If
+                feature/pkg/self is fmri, fmri is containing package;
+                if version is then 0, this is note is displayed on initial
+                install only.  Otherwise, if version earlier than specified
+                fmri is present in code, display release note."""
+
+                for fmristr in act.attrlist("release-note"):
+                        try:
+                                pfmri = pkg.fmri.PkgFmri(fmristr, "5.11")
+                        except pkg.fmri.FmriError:
+                                continue # skip malformed fmris
+                        # any special handling here?
+                        if pfmri.pkg_name == "feature/pkg/self":
+                                if str(pfmri.version) == "0,5.11" \
+                                    and containing_fmri.pkg_name \
+                                    not in installed_dict:
+                                                return True
+                                else:
+                                        pfmri.pkg_name = \
+                                            containing_fmri.pkg_name
+                        if pfmri.pkg_name not in installed_dict:
+                                continue
+                        installed_fmri = installed_dict[pfmri.pkg_name]
+                        # if neither is successor they are equal
+                        if pfmri.is_successor(installed_fmri):
+                                return True
+                return False
+
+        def __get_note_text(self, act, pfmri):
+                """Retrieve text for release note from repo"""
+                try:
+                        pub = self.image.get_publisher(pfmri.publisher)
+                        return self.image.transport.get_content(pub, act.hash,
+                            fmri=pfmri)
+                finally:
+                        self.image.cleanup_downloads()
+
+        def compile_release_notes(self):
+                """Figure out what release notes need to be displayed"""
+                release_notes = self.pd._actuators.get_release_note_info()
+                must_display = False
+                notes = []
+
+                def do_decode(s):
+                        """convert non-ascii strings to unicode;
+                        replace non-convertable chars"""
+                        try:
+                                # this will fail if any 8 bit chars in string
+                                # this is a nop if string is ascii.
+                                s = s.encode("ascii")
+                        except ValueError:
+                                # this will encode 8 bit strings into unicode
+                                s = s.decode("utf-8", "replace")
+                        return s
+
+                if release_notes:
+                        installed_dict = ImagePlan.__fmris2dict(
+                            self.image.gen_installed_pkgs())
+                        for act, pfmri in release_notes:
+                                if self.__include_note(installed_dict, act, 
+                                    pfmri):
+                                        if act.attrs.get("must-display", 
+                                            "false") == "true":
+                                                must_display = True
+                                        for l in self.__get_note_text(
+                                            act, pfmri).splitlines():
+                                                notes.append(do_decode(l))
+                                        
+                        self.pd.release_notes = (must_display, notes)
+
+        def save_release_notes(self):
+                """Save a copy of the release notes and store the file name"""
+                if self.pd.release_notes[1]:
+                        # create a file in imgdir/notes
+                        dpath = os.path.join(self.image.imgdir, "notes")
+                        misc.makedirs(dpath)
+                        fd, path = tempfile.mkstemp(suffix=".txt",
+                            dir=dpath, prefix="release-notes-")
+                        tmpfile = os.fdopen(fd, "wb")
+                        for note in self.pd.release_notes[1]:
+                                if isinstance(note, unicode):
+                                        note = note.encode("utf-8")
+                                print >>tmpfile, note
+                        tmpfile.close()
+                        self.pd.release_notes_name = os.path.basename(path)
 
         def evaluate_pkg_plans(self):
                 """Internal helper function that does the work of converting
@@ -2693,7 +2783,7 @@ class ImagePlan(object):
                                         fname = None
                                 attrs = re = None
 
-                        self.pd._actuators.scan_removal(ap.src.attrs)
+                        self.pd._actuators.scan_removal(ap)
                         if self.pd._need_boot_archive is None:
                                 if ap.src.attrs.get("path", "").startswith(
                                     ramdisk_prefixes):
@@ -2791,7 +2881,7 @@ class ImagePlan(object):
                                         pp_needs_trimming.add(ap.p)
                                 nkv = index = ra = None
 
-                        self.pd._actuators.scan_install(ap.dst.attrs)
+                        self.pd._actuators.scan_install(ap)
                         if self.pd._need_boot_archive is None:
                                 if ap.dst.attrs.get("path", "").startswith(
                                     ramdisk_prefixes):
@@ -2894,9 +2984,7 @@ class ImagePlan(object):
 
                         # scan both old and new actions
                         # repairs may result in update action w/o orig action
-                        if a[1]:
-                                self.pd._actuators.scan_update(a[1].attrs)
-                        self.pd._actuators.scan_update(a[2].attrs)
+                        self.pd._actuators.scan_update(a)
                         if self.pd._need_boot_archive is None:
                                 if a[2].attrs.get("path", "").startswith(
                                     ramdisk_prefixes):
@@ -3332,6 +3420,7 @@ class ImagePlan(object):
                         self.pd._actuators.exec_post_actuators(self.image)
 
                 self.image._create_fast_lookups(progtrack=self.__progtrack)
+                self.save_release_notes()
 
                 # success
                 self.pd.state = plandesc.EXECUTED_OK

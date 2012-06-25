@@ -103,8 +103,8 @@ from pkg.smf import NonzeroExitException
 # things like help(pkg.client.api.PlanDescription)
 from pkg.client.plandesc import PlanDescription # pylint: disable-msg=W0611
 
-CURRENT_API_VERSION = 73
-COMPATIBLE_API_VERSIONS = frozenset([72, CURRENT_API_VERSION])
+CURRENT_API_VERSION = 74
+COMPATIBLE_API_VERSIONS = frozenset([72, 73, CURRENT_API_VERSION])
 CURRENT_P5I_VERSION = 1
 
 # Image type constants.
@@ -2393,7 +2393,8 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                 # by one of the previous operations, then log it as
                 # ending now.
                 if self._img.history.operation_name:
-                        self.log_operation_end()
+                        self.log_operation_end(release_notes=
+                            self._img.imageplan.pd.release_notes_name)
                 self.__executed = True
 
         def set_plan_license_status(self, pfmri, plicense, accepted=None,
@@ -4745,7 +4746,8 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                 # Successful; so save configuration.
                 self._img.save_config()
 
-        def log_operation_end(self, error=None, result=None):
+        def log_operation_end(self, error=None, result=None, 
+            release_notes=None):
                 """Marks the end of an operation to be recorded in image
                 history.
 
@@ -4755,7 +4757,8 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                 be based on the class of 'error' and 'error' will be recorded
                 for the current operation.  If 'result' and 'error' is not
                 provided, success is assumed."""
-                self._img.history.log_operation_end(error=error, result=result)
+                self._img.history.log_operation_end(error=error, result=result,
+                release_notes=release_notes)
 
         def log_operation_error(self, error):
                 """Adds an error to the list of errors to be recorded in image

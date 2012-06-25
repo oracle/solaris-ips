@@ -58,6 +58,7 @@ try:
         import re
         import socket
         import sys
+        import tempfile
         import textwrap
         import time
         import traceback
@@ -90,7 +91,7 @@ except KeyboardInterrupt:
         import sys
         sys.exit(1)
 
-CLIENT_API_VERSION = 73
+CLIENT_API_VERSION = 74
 PKG_CLIENT_NAME = "pkg"
 
 JUST_UNKNOWN = 0
@@ -302,7 +303,7 @@ def usage(usage_error=None, cmd=None, retcode=EXIT_BADOPT, full=False):
 
         adv_usage["unset-publisher"] = _("publisher ...")
         adv_usage["publisher"] = _("[-HPn] [-F format] [publisher ...]")
-        adv_usage["history"] = _("[-Hl] [-t [time|time-time],...] [-n number] [-o column,...]")
+        adv_usage["history"] = _("[-HNl] [-t [time|time-time],...] [-n number] [-o column,...]")
         adv_usage["purge-history"] = ""
         adv_usage["rebuild-index"] = ""
         adv_usage["update-format"] = ""
@@ -820,7 +821,7 @@ def verify_image(api_inst, args):
                 result = list(res)
                 if result:
                         api_inst.progresstracker.verify_start(len(result))
-                
+
                 for entry in result:
                         pfmri = entry[0]
                         entries = []
@@ -919,16 +920,20 @@ def accept_plan_licenses(api_inst):
 display_plan_options = ["basic", "fmris", "variants/facets", "services",
     "actions", "boot-archive"]
 
-def __display_plan(api_inst, verbose):
+def __display_plan(api_inst, verbose, noexecute):
         """Helper function to display plan to the desired degree.
         Verbose can either be a numerical value, or a list of
         items to display"""
 
         if isinstance(verbose, int):
                 disp = ["basic"]
+
+                if verbose == 0 and noexecute:
+                        disp.append("release-notes")
                 if verbose > 0:
                         disp.extend(["fmris", "mediators", "services",
-                            "variants/facets", "boot-archive"])
+                                     "variants/facets", "boot-archive",
+                                     "release-notes"])
                 if verbose > 1:
                         disp.append("actions")
                 if verbose > 2:
@@ -940,6 +945,9 @@ def __display_plan(api_inst, verbose):
                 disp.append("solver-errors")
 
         plan = api_inst.describe()
+
+        if plan.must_display_notes():
+                disp.append("release-notes")
 
 	# If we're a recursive invocation (indicated by client_output_progfd),
 	# we want to elide messages related to BE management.
@@ -1112,6 +1120,35 @@ made will not be reflected on the next boot.
                 for a in plan.get_actions():
                         logger.info("  %s" % a)
 
+
+        if plan.has_release_notes():
+                if "release-notes" in disp:
+                        logger.info("Release Notes:")
+                        for a in plan.get_release_notes():
+                                logger.info("  %s", a)
+                else:
+                        if not plan.new_be:
+                                logger.info(_("Release notes can be viewed with 'pkg history -n 1 -N'"))
+                        else:
+                                tmp_path = __write_tmp_release_notes(plan)
+                                if tmp_path:
+                                        logger.info(_("Release notes can be found in %s before rebooting.")
+                                            % tmp_path)
+                                logger.info(_("After rebooting, use 'pkg history -n 1 -N' to view release notes."))
+
+def __write_tmp_release_notes(plan):
+        """write release notes out to a file in /tmp and return the name"""
+        if plan.has_release_notes:
+                try:
+                        fd, path = tempfile.mkstemp(suffix=".txt", prefix="release-notes")
+                        tmpfile = os.fdopen(fd, "w+b")
+                        for a in plan.get_release_notes():
+                                tmpfile.write(a)
+                        tmpfile.close()
+                        return path
+                except Exception:
+                        pass
+
 def __display_parsable_plan(api_inst, parsable_version, child_images=None):
         """Display the parsable version of the plan."""
 
@@ -1138,6 +1175,7 @@ def __display_parsable_plan(api_inst, parsable_version, child_images=None):
         licenses = []
         if child_images is None:
                 child_images = []
+        release_notes = []
 
         if plan:
                 for rem, add in plan.get_changes():
@@ -1166,6 +1204,10 @@ def __display_parsable_plan(api_inst, parsable_version, child_images=None):
                 space_required = plan.bytes_added
                 services_affected = plan.services
                 mediators_changed = plan.mediators
+
+                for n in plan.get_release_notes():
+                        release_notes.append(n)
+
                 for dfmri, src_li, dest_li, acc, disp in \
                     plan.get_licenses():
                         src_tup = None
@@ -1199,6 +1241,7 @@ def __display_parsable_plan(api_inst, parsable_version, child_images=None):
             "change-variants": sorted(variants_changed),
             "affect-services": sorted(services_affected),
             "change-mediators": sorted(mediators_changed),
+            "release-notes": release_notes,
             "image-name": None,
             "child-images": child_images,
             "version": parsable_version,
@@ -1264,7 +1307,7 @@ def display_plan(api_inst, child_image_plans, noexecute, op, parsable_version,
                 display_plan_licenses(api_inst, show_all=show_licenses)
 
         if not quiet:
-                __display_plan(api_inst, verbose)
+                __display_plan(api_inst, verbose, noexecute)
         if parsable_version is not None:
                 __display_parsable_plan(api_inst, parsable_version,
                     child_image_plans)
@@ -1468,7 +1511,7 @@ Cannot remove '%s' due to the following packages that depend on it:"""
         if e_type == api_errors.ConflictingActionErrors:
                 error("\n" + str(e), cmd=op)
                 if verbose:
-                        __display_plan(api_inst, verbose)
+                        __display_plan(api_inst, verbose, noexecute)
                 return EXIT_OOPS
         if e_type in (api_errors.InvalidPlanError,
             api_errors.ReadOnlyFileSystemException,
@@ -2798,7 +2841,7 @@ def set_mediator(op, api_inst, pargs,
 
         if not stuff_to_do:
                 if verbose:
-                        __display_plan(api_inst, verbose)
+                        __display_plan(api_inst, verbose, noexecute)
                 if parsable_version is not None:
                         try:
                                 __display_parsable_plan(api_inst,
@@ -2811,7 +2854,7 @@ def set_mediator(op, api_inst, pargs,
                 return EXIT_NOP
 
         if not quiet:
-                __display_plan(api_inst, verbose)
+                __display_plan(api_inst, verbose, noexecute)
         if parsable_version is not None:
                 try:
                         __display_parsable_plan(api_inst, parsable_version)
@@ -2873,7 +2916,7 @@ def unset_mediator(op, api_inst, pargs,
 
         if not stuff_to_do:
                 if verbose:
-                        __display_plan(api_inst, verbose)
+                        __display_plan(api_inst, verbose, noexecute)
                 if parsable_version is not None:
                         try:
                                 __display_parsable_plan(api_inst,
@@ -2886,7 +2929,7 @@ def unset_mediator(op, api_inst, pargs,
                 return EXIT_NOP
 
         if not quiet:
-                __display_plan(api_inst, verbose)
+                __display_plan(api_inst, verbose, noexecute)
         if parsable_version is not None:
                 try:
                         __display_parsable_plan(api_inst, parsable_version)
@@ -5818,7 +5861,7 @@ def history_list(api_inst, args):
         """Display history about the current image.
         """
         # define column name, header, field width and <History> attribute name
-        # we compute 'reason' and 'time' columns ourselves
+        # we compute 'reason', 'time' and 'release_note' columns ourselves
         history_cols = {
             "be": (_("BE"), "%-20s", "operation_be"),
             "be_uuid": (_("BE UUID"), "%-41s", "operation_be_uuid"),
@@ -5832,6 +5875,7 @@ def history_list(api_inst, args):
             "operation": (_("OPERATION"), "%-25s", "operation_name"),
             "outcome": (_("OUTCOME"), "%-12s", "operation_result"),
             "reason": (_("REASON"), "%-10s", None),
+            "release_notes": (_("RELEASE NOTES"), "%-12s", None),
             "snapshot": (_("SNAPSHOT"), "%-20s", "operation_snapshot"),
             "start": (_("START"), "%-25s", "operation_start_time"),
             "time": (_("TIME"), "%-10s", None),
@@ -5843,14 +5887,17 @@ def history_list(api_inst, args):
         omit_headers = False
         long_format = False
         column_format = False
+        show_notes = False
         display_limit = None    # Infinite
         time_vals = [] # list of timestamps for which we want history events
         columns = ["start", "operation", "client", "outcome"]
 
-        opts, pargs = getopt.getopt(args, "Hln:o:t:")
+        opts, pargs = getopt.getopt(args, "HNln:o:t:")
         for opt, arg in opts:
                 if opt == "-H":
                         omit_headers = True
+                elif opt == "-N":
+                        show_notes = True
                 elif opt == "-l":
                         long_format = True
                 elif opt == "-n":
@@ -5909,9 +5956,15 @@ def history_list(api_inst, args):
         if time_vals and display_limit:
                 usage(_("-n and -t may not be combined"), cmd="history")
 
+        if column_format and show_notes:
+                usage(_("-o and -N may not be combined"), cmd="history")
+
+        if long_format and show_notes:
+                usage(_("-l and -N may not be combined"), cmd="history")
+
         history_fmt = None
 
-        if not long_format:
+        if not long_format and not show_notes:
                 headers = []
                 # build our format string
                 for col in columns:
@@ -5938,6 +5991,21 @@ def history_list(api_inst, args):
                 except api_errors.HistoryException, e:
                         error(str(e), cmd="history")
                         sys.exit(EXIT_OOPS)
+
+        if show_notes:
+                for he in gen_entries():
+                        start_time = misc.timestamp_to_time(
+                            he.operation_start_time)
+                        start_time = datetime.datetime.fromtimestamp(
+                            start_time).isoformat()
+                        if he.operation_release_notes:
+                                msg(_("%s: Release notes:") % start_time)
+                                for a in he.notes:
+                                        msg("    %s" % a)
+                        else:
+                                msg(_("%s: Release notes: None") % start_time)
+
+                return EXIT_OK
 
         for he in gen_entries():
                 # populate a dictionary containing our output
@@ -5997,6 +6065,11 @@ def history_list(api_inst, args):
                         output["new_be"] = "%s*" % he.operation_new_be
                 else:
                         output["new_be"] = "%s" % he.operation_new_be
+
+                if he.operation_release_notes:
+                        output["release_notes"] = _("Yes")
+                else:
+                        output["release_notes"] = _("No")
 
                 outcome, reason = he.operation_result_text
                 output["outcome"] = outcome
@@ -6088,6 +6161,7 @@ def __get_long_history_data(he, hist_info):
         data.append((_("End Time"), hist_info["finish"]))
         data.append((_("Total Time"), hist_info["time"]))
         data.append((_("Command"), hist_info["command"]))
+        data.append((_("Release Notes"), hist_info["release_notes"]))
 
         state = he.operation_start_state
         if state:

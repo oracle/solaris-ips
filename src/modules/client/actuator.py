@@ -25,6 +25,7 @@
 #
 
 import pkg.smf as smf
+import pkg.actions
 import os
 
 import pkg.misc
@@ -32,67 +33,19 @@ import pkg.misc
 from pkg.client.debugvalues import DebugValues
 from pkg.client.imagetypes import IMG_USER, IMG_ENTIRE
 
-class GenericActuator(object):
+
+class Actuator(object):
         """Actuators are action attributes that cause side effects
         on live images when those actions are updated, installed
         or removed.  Since no side effects are caused when the
         affected image isn't the current root image, the OS may
         need to cause the equivalent effect during boot.
-        """
-
-        actuator_attrs = set()
-
-        def __init__(self):
-                self.install = {}
-                self.removal = {}
-                self.update =  {}
-
-        def __nonzero__(self):
-                return bool(self.install or self.removal or self.update)
-
-        def scan_install(self, attrs):
-                self.__scan(self.install, attrs)
-
-        def scan_removal(self, attrs):
-                self.__scan(self.removal, attrs)
-
-        def scan_update(self, attrs):
-                self.__scan(self.update, attrs)
-
-        def __scan(self, dictionary, attrs):
-                for a in set(attrs.keys()) & self.actuator_attrs:
-                        values = attrs[a]
-
-                        if not isinstance(values, list):
-                                values = [values]
-
-                        dictionary.setdefault(a, set()).update(values)
-
-        def reboot_needed(self):
-                return False
-
-        def exec_prep(self, image):
-                pass
-
-        def exec_pre_actuators(self, image):
-                pass
-
-        def exec_post_actuators(self, image):
-                pass
-
-        def exec_fail_actuators(self, image):
-                pass
-
-        def __str__(self):
-                return "Removals: %s\nInstalls: %s\nUpdates: %s\n" % \
-                    (self.removal, self.install, self.update)
-
-
-class Actuator(GenericActuator):
-        """Solaris specific Actuator implementation..."""
+        This is Solaris specific for now. """
 
         actuator_attrs = set([
             "reboot-needed",    # have to reboot to update this file
+            "release-note",     # conditionally include this file
+                                # in release notes
             "refresh_fmri",     # refresh this service on any change
             "restart_fmri",     # restart this service on any change
             "suspend_fmri",     # suspend this service during update
@@ -104,6 +57,7 @@ class Actuator(GenericActuator):
                     "disable_fmri": set(),
                     "reboot-needed": set(),
                     "refresh_fmri": set(),
+                    "release-note": [(pkg.actions.generic.NSG, pkg.fmri.PkgFmri)],
                     "restart_fmri": set(),
                     "suspend_fmri": set(),
                 },
@@ -111,6 +65,7 @@ class Actuator(GenericActuator):
                     "disable_fmri": set(),
                     "reboot-needed": set(),
                     "refresh_fmri": set(),
+                    "release-note": [(pkg.actions.generic.NSG, pkg.fmri.PkgFmri)],
                     "restart_fmri": set(),
                     "suspend_fmri": set(),
                 },
@@ -118,13 +73,16 @@ class Actuator(GenericActuator):
                     "disable_fmri": set(),
                     "reboot-needed": set(),
                     "refresh_fmri": set(),
+                    "release-note": [(pkg.actions.generic.NSG, pkg.fmri.PkgFmri)],
                     "restart_fmri": set(),
                     "suspend_fmri": set(),
                 },
         }
 
         def __init__(self):
-                GenericActuator.__init__(self)
+                self.install = {}
+                self.removal = {}
+                self.update =  {}
                 self.suspend_fmris = None
                 self.tmp_suspend_fmris = None
                 self.do_nothing = True
@@ -163,12 +121,40 @@ class Actuator(GenericActuator):
         def __bool__(self):
                 return self.install or self.removal or self.update
 
+        def __nonzero__(self):
+                return bool(self.install or self.removal or self.update)
+
+        # scan_* functions take ActionPlan arguments (see imageplan.py)
+        def scan_install(self, ap):
+                self.__scan(self.install, ap.dst, ap.p.destination_fmri)
+
+        def scan_removal(self, ap):
+                self.__scan(self.removal, ap.src, ap.p.origin_fmri)
+
+        def scan_update(self, ap):
+                if ap.src:
+                        self.__scan(self.update, ap.src, ap.p.destination_fmri)
+                self.__scan(self.update, ap.dst, ap.p.destination_fmri)
+
+        def __scan(self, dictionary, act, fmri):
+                attrs = act.attrs
+                for a in set(attrs.keys()) & self.actuator_attrs:
+                        if a != "release-note":
+                                values = attrs[a]
+                                if not isinstance(values, list):
+                                        values = [values]
+                                dictionary.setdefault(a, set()).update(values)
+                        else:
+                                if act.name == "file": # ignore for non-files
+                                        dictionary.setdefault(a, list()).append(
+                                            (act, fmri))
+
         def get_list(self):
                 """Returns a list of actuator value pairs, suitable for printing"""
                 def check_val(dfmri):
                         # For actuators which are a single, global function that
                         # needs to get executed, simply print true.
-                        if callable(dfmri):
+                        if callable(dfmri) or isinstance(dfmri, list):
                                 return [ "true" ]
                         else:
                                 return dfmri
@@ -188,6 +174,11 @@ class Actuator(GenericActuator):
                         for smf in merge[fmri]
                         ]
 
+        def get_release_note_info(self):
+                """Returns a list of tuples of possible release notes"""
+                return self.update.get("release-note", []) + \
+                    self.install.get("release-note", [])
+                
         def get_services_list(self):
                 """Returns a list of services that would be restarted"""
                 return [(fmri, smf) for fmri, smf in self.get_list()
@@ -210,7 +201,7 @@ class Actuator(GenericActuator):
                 return bool("true" in self.update.get("reboot-needed", [])) or \
                     bool("true" in self.removal.get("reboot-needed", []))
 
-        def exec_prep(self, image):                
+        def exec_prep(self, image):
                 if not image.is_liveroot():
                         # we're doing off-line pkg ops; we need
                         # to support self-assembly milestone

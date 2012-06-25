@@ -1,5 +1,5 @@
 #!/usr/bin/python
-#
+# -*- coding: utf-8
 # CDDL HEADER START
 #
 # The contents of this file are subject to the terms of the
@@ -30,7 +30,7 @@ import os
 import pkg5unittest
 import unittest
 
-class TestPkgActuators(pkg5unittest.SingleDepotTestCase):
+class TestPkgSMFActuators(pkg5unittest.SingleDepotTestCase):
         # Only start/stop the depot once (instead of for every test)
         persistent_setup = True
 
@@ -425,5 +425,137 @@ stop/type astring method
                     "svc:/system/test_multi_svc2:default")
                 os.unlink(svcadm_output)
 
+class TestPkgReleaseNotes(pkg5unittest.SingleDepotTestCase):
+        # Only start/stop the depot once (instead of for every test)
+        persistent_setup = True
+
+        foo10 = """
+            open foo@1.0,5.11-0
+            add file tmp/release-note-1 mode=0644 owner=root group=bin path=/usr/share/doc/release-notes/release-note-1 release-note=feature/pkg/self@0
+            close """
+
+        foo11 = """
+            open foo@1.1,5.11-0
+            add file tmp/release-note-2 mode=0644 owner=root group=root path=/usr/share/doc/release-notes/release-note-2 release-note=feature/pkg/self@1.0.1
+            close """
+
+        foo12 = """
+            open foo@1.2,5.11-0
+            add file tmp/release-note-3 mode=0644 owner=root group=root path=/usr/share/doc/release-notes/release-note-3 release-note=feature/pkg/self@1.1.1 must-display=true
+            close """
+
+        foo13 = """
+            open foo@1.3,5.11-0
+            add file tmp/release-note-4 mode=0644 owner=root group=root path=/usr/share/doc/release-notes/release-note-4 release-note=feature/pkg/self@1.1
+            close """
+
+        bar10 = """
+            open bar@1.0,5.11-0
+            add dir path=/usr mode=0755 owner=root group=root release-note=feature/pkg/self@0
+            close """
+
+        bar11 = """
+            open bar@1.1,5.11-0
+            close """
+
+        baz10 = """
+            open baz@1.0,5.11-0
+            add file tmp/release-note-5 mode=0644 owner=root group=root path=/usr/share/doc/release-notes/release-note-5 release-note=bar@1.1
+            close """
+
+        hovercraft = """
+            open hovercraft@1.0,5.10-0
+            add file tmp/release-note-6 mode=0644 owner=root group=root path=/usr/share/doc/release-notes/release-note-6 release-note=feature/pkg/self@0
+            close """
+
+        misc_files = {
+                "tmp/release-note-1":"bobcats are fun!",
+                "tmp/release-note-2":"wombats are fun!",
+                "tmp/release-note-3":"no animals were hurt...",
+                "tmp/release-note-4":"no vegetables were hurt...",
+                "tmp/release-note-5":"multi-line release notes\nshould work too,\nwe'll see if they do.",
+                "tmp/release-note-6":u"Eels are best smoked\nМоё судно на воздушной подушке полно угрей\nHovercraft can be smoked, too.\n",
+                }
+
+        def setUp(self):
+                pkg5unittest.SingleDepotTestCase.setUp(self)
+                self.make_misc_files(self.misc_files)
+                self.pkgsend_bulk(self.rurl, self.foo10 + self.foo11 + 
+                    self.foo12 + self.foo13 + self.bar10 + self.bar11 + self.baz10 +
+                    self.hovercraft)
+                self.image_create(self.rurl)
+
+        def test_release_note_1(self):
+                # make sure release note gets printed on original install
+                self.pkg("install -v foo@1.0")
+                self.output.index("bobcats are fun!")
+                # check update case
+                self.pkg("update -v foo@1.1")
+                self.output.index("wombats are fun!")
+                # check must display case
+                self.pkg("update foo@1.2")
+                self.output.index("no animals")
+                # check that no output is seen w/o must-display and -v,
+                # but that user is prompted that notes are available.
+                self.pkg("update foo@1.3")
+                assert self.output.find("no vegetables") == -1
+
+        def test_release_note_2(self):
+                self.pkg("uninstall '*'")
+                # check that release notes are printed with just -n
+                self.pkg("install -vn foo@1.0")
+                self.output.index("bobcats are fun!")
+                # retrieve release notes with pkg history after actual install
+                self.pkg("install foo@1.0")
+                # make sure we note that release notes are available
+                self.output.index("Release notes")
+                # check that we list them in the -l output
+                self.pkg("history -n 1 -l")
+                self.output.index("Release Notes")
+                # retrieve notes and look for felines
+                self.pkg("history -n 1 -N")
+                self.output.index("bobcats are fun!")
+                # check that we say yes that release notes are available
+                self.pkg("history -Hn 1 -o release_notes")
+                self.output.index("Yes")
+
+        def test_release_note_3(self):
+                # check that release notes are printed properly
+                # when needed and dependency is on other pkg
+                self.pkg("uninstall '*'")
+                self.pkg("install bar@1.0")
+                self.pkg("install -v baz@1.0")
+                self.output.index("multi-line release notes")
+                self.output.index("should work too,")
+                self.output.index("we'll see if they do.")
+                # should not see notes again
+                self.pkg("update -v bar")
+                assert self.output.find("Release notes") == -1
+                self.pkg("uninstall '*'")
+                # no output expected here since baz@1.0 isn't part of original image.
+                self.pkg("install bar@1.0 baz@1.0")
+                assert self.output.find("multi-line release notes") == -1
+
+        def test_release_note_4(self):
+                # make sure that parseable option works properly
+                self.pkg("uninstall '*'")                
+                self.pkg("install bar@1.0")
+                self.pkg("install --parsable 0 baz@1.0")
+                self.output.index("multi-line release notes")
+                self.output.index("should work too,")
+                self.output.index("we'll see if they do.")
+                self.pkg("uninstall '*'")
+                # test unicode character in files
+                self.pkg("install -n hovercraft@1.0")
+                unicode(self.output, "utf-8").index(u"Моё судно на воздушной подушке полно угрей")
+                unicode(self.output, "utf-8").index(u"Eels are best smoked")
+                self.pkg("install -v hovercraft@1.0")                
+                unicode(self.output, "utf-8").index(u"Моё судно на воздушной подушке полно угрей")
+                unicode(self.output, "utf-8").index(u"Eels are best smoked")
+                self.pkg("uninstall '*'")
+                self.pkg("install --parsable 0 hovercraft@1.0")                
+                self.pkg("history -n 1 -N")
+                unicode(self.output, "utf-8").index(u"Моё судно на воздушной подушке полно угрей")
+                unicode(self.output, "utf-8").index(u"Eels are best smoked")
 if __name__ == "__main__":
         unittest.main()

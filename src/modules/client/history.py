@@ -144,7 +144,8 @@ class _HistoryOperation(object):
                 for attr in ("name", "start_time", "end_time", "start_state",
                     "end_state", "username", "userid", "be", "be_exists",
                     "be_uuid", "current_be", "current_new_be", "new_be",
-                    "new_be_exists", "new_be_uuid", "result", "snapshot"):
+                    "new_be_exists", "new_be_uuid", "result", "release_notes",
+                    "snapshot"):
                         setattr(h, attr, getattr(self, attr))
                 h.errors = [copy.copy(e) for e in self.errors]
                 return h
@@ -177,12 +178,13 @@ Operation New Boot Env.: %s
 Operation New Boot Env. Current: %s
 Operation New Boot Env. UUID: %s
 Operation Snapshot: %s
+Operation Release Notes: %s
 Operation Errors:
 %s
 """ % (self.name, self.result, self.start_time, self.end_time,
     self.start_state, self.end_state, self.username, self.userid,
     self.be, self.current_be, self.be_uuid, self.new_be, self.current_new_be,
-    self.new_be_uuid, self.snapshot, self.errors)
+    self.new_be_uuid, self.snapshot, self.release_notes, self.errors)
 
         # All "time" values should be in UTC, using ISO 8601 as the format.
         # Name of the operation performed (e.g. install, update, etc.).
@@ -214,6 +216,8 @@ Operation Errors:
         # The uuid of the boot environment that was created as a result of the
         # operation
         new_be_uuid = None
+        # The name of the file containing the release notes, or None.
+        release_notes = None
 
         # The snapshot that was created while running this operation
         # set to None if no snapshot was taken, or destroyed after successful
@@ -278,6 +282,7 @@ class History(object):
         operation_snapshot = None
         operation_errors = None
         operation_result = None
+        operation_release_notes = None
 
         def __copy__(self):
                 h = History()
@@ -425,6 +430,23 @@ class History(object):
                             "%s-01.xml" % ops[-1]["operation"].start_time)
                 return pathname
 
+        @property
+        def notes(self):
+                """Generates the lines of release notes for this operation.
+                If no release notes are present, no output occurs."""
+
+                if not self.operation_release_notes:
+                        return
+                try:
+                        rpath = os.path.join(self.root_dir, 
+                            "notes", 
+                            self.operation_release_notes)
+                        for a in file(rpath, "r"):
+                                yield a.rstrip()
+
+                except Exception, e:
+                        raise apx.HistoryLoadException(e)
+                        
         def clear(self):
                 """Discards all information related to the current history
                 object.
@@ -490,6 +512,8 @@ class History(object):
                         if op.new_be_uuid:
                                 op.current_new_be = uuid_be_dic.get(
                                     op.new_be_uuid, op.new_be)
+                if node.hasAttribute("release-notes"):
+                        op.release_notes = node.getAttribute("release-notes")
 
                 def get_node_values(parent_name, child_name=None):
                         try:
@@ -611,6 +635,8 @@ class History(object):
                             self.operation_new_be_uuid)
                 if self.operation_snapshot:
                         op.setAttribute("snapshot", self.operation_snapshot)
+                if self.operation_release_notes:
+                        op.setAttribute("release-notes", self.operation_release_notes)
 
                 root.appendChild(op)
 
@@ -755,7 +781,7 @@ class History(object):
                 self.operation_be = be_name
                 self.operation_be_uuid = be_uuid
 
-        def log_operation_end(self, error=None, result=None):
+        def log_operation_end(self, error=None, result=None, release_notes=None):
                 """Marks the end of an operation to be recorded in image
                 history.
 
@@ -789,6 +815,8 @@ class History(object):
                 elif not result:
                         # Assume success if no error and no result.
                         result = RESULT_SUCCEEDED
+                if release_notes:
+                        self.operation_release_notes = release_notes
                 self.operation_result = result
 
         def log_operation_error(self, error):

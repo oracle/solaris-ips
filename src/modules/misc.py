@@ -1977,6 +1977,7 @@ def json_decode(name, data, desc, commonize=None, jd_state=None):
 
         # we don't need to do anything for basic types
         if desc_type in json_types_immediates:
+                rv = None
                 return jd_return(name, data, desc, finish, jd_state)
 
         # decode elements nested in a dictionary
