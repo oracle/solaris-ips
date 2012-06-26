@@ -19,7 +19,7 @@
 #
 # CDDL HEADER END
 #
-# Copyright (c) 2008, 2011, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2008, 2012, Oracle and/or its affiliates. All rights reserved.
 #
 # ##########################################################################
 # This script is run as part of a cron job.
@@ -102,7 +102,7 @@ sleep $dither
 
 cd $image_dir
 
-pkg refresh 2>/dev/null
+pkg refresh -q 2>/dev/null
 
 # Check and cache whether updates are available
 /usr/lib/pm-checkforupdates --nice --image-dir $image_dir

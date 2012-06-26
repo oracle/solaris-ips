@@ -20,7 +20,7 @@
 # CDDL HEADER END
 #
 
-# Copyright (c) 2008, 2010, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2008, 2012, Oracle and/or its affiliates. All rights reserved.
 
 import testutils
 if __name__ == "__main__":
@@ -172,6 +172,7 @@ class TestPkgRefreshMulti(pkg5unittest.ManyDepotTestCase):
 
                 self.pkg("refresh")
                 self.pkg("refresh --full")
+                self.pkg("refresh -q")
                 self.pkg("refresh -F", exit=2)
 
         def test_general_refresh(self):

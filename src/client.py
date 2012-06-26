@@ -173,7 +173,7 @@ def usage(usage_error=None, cmd=None, retcode=EXIT_BADOPT, full=False):
         basic_usage["list"] = _(
             "[-Hafnsuv] [-g path_or_uri ...] [--no-refresh]\n"
             "            [pkg_fmri_pattern ...]")
-        basic_usage["refresh"] = _("[--full] [publisher ...]")
+        basic_usage["refresh"] = _("[-q] [--full] [publisher ...]")
         basic_usage["version"] = ""
 
         advanced_cmds = [
@@ -4094,10 +4094,15 @@ def publisher_refresh(api_inst, args):
 
         # XXX will need to show available content series for each package
         full_refresh = False
-        opts, pargs = getopt.getopt(args, "", ["full"])
+        opts, pargs = getopt.getopt(args, "q", ["full"])
         for opt, arg in opts:
+                if opt == "-q":
+                        global_settings.client_output_quiet = True
                 if opt == "--full":
                         full_refresh = True
+        # Reset the progress tracker here, because we may have
+        # to switch to a different tracker due to the options parse.
+        _api_inst.progresstracker = get_tracker()
         # suppress phase information since we're doing just one thing.
         api_inst.progresstracker.set_major_phase(
             api_inst.progresstracker.PHASE_UTILITY)
