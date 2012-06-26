@@ -2200,7 +2200,7 @@ class CliTestCase(Pkg5TestCase):
                             path.lstrip(os.path.sep))
                         os.makedirs(full_path)
                         self.cmdline_run("/usr/sbin/mount -F tmpfs swap " +
-                            full_path)
+                            full_path, coverage=False)
                         self.fs.add(full_path)
                         if path.lstrip(os.path.sep) == "var":
                                 force = True
@@ -2253,7 +2253,8 @@ class CliTestCase(Pkg5TestCase):
                         # Make sure we're not in the image.
                         os.chdir(self.test_root)
                         for path in getattr(self, "fs", set()).copy():
-                                self.cmdline_run("/usr/sbin/umount " + path)
+                                self.cmdline_run("/usr/sbin/umount " + path,
+				    coverage=False)
                                 self.fs.remove(path)
                         shutil.rmtree(self.img_path())
 
@@ -2767,7 +2768,13 @@ class CliTestCase(Pkg5TestCase):
                 if start:
                         # If the caller requested the depot be started, then let
                         # the depot process create the repository.
-                        dc.start()
+                        self.debug("prep_depot: starting depot")
+                        try:
+                                dc.start()
+                        except Exception, e:
+                                self.debug("prep_depot: failed to start "
+                                    "depot!: %s" % e)
+                                raise
                         self.debug("depot on port %s started" % port)
                 else:
                         # Otherwise, create the repository with the assumption

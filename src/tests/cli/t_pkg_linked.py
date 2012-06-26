@@ -235,10 +235,11 @@ class TestPkgLinked(pkg5unittest.ManyDepotTestCase):
 
                 self.set_image(0)
 
-        def _cmd(self, args, rv=0):
+        def _ccmd(self, args, rv=0):
+                """Run a 'C' (or other non-python) command."""
                 assert type(args) == str
-
-                self.cmdline_run("%s" % args, exit=rv)
+                # Ensure 'coverage' is turned off-- it won't work.
+                self.cmdline_run("%s" % args, exit=rv, coverage=False)
 
         def _pkg(self, il, cmd, args=None, rv=None, rvdict=None):
                 assert type(il) == list
@@ -749,7 +750,7 @@ class TestPkgLinked1(TestPkgLinked):
                                 # empty the parent image
                                 self.set_image(0)
                                 self.image_destroy()
-                                self.cmdline_run("mkdir -p %s" % self.i_path[0])
+                                self._ccmd("mkdir -p %s" % self.i_path[0])
                         if i == 1:
                                 # delete the parent image
                                 self.set_image(0)
@@ -778,17 +779,17 @@ class TestPkgLinked1(TestPkgLinked):
                 for i in [0, 1, 2]:
                         if i == 0:
                                 # corrupt the child image
-                                self.cmdline_run("mkdir -p "
+                                self._ccmd("mkdir -p "
                                     "%s/%s" % (self.i_path[1],
                                     image.img_user_prefix))
-                                self.cmdline_run("mkdir -p "
+                                self._ccmd("mkdir -p "
                                     "%s/%s" % (self.i_path[1],
                                     image.img_root_prefix))
                         if i == 1:
                                 # delete the child image
                                 self.set_image(1)
                                 self.image_destroy()
-                                self.cmdline_run("mkdir -p %s" % self.i_path[1])
+                                self._ccmd("mkdir -p %s" % self.i_path[1])
                         if i == 2:
                                 # delete the child image
                                 self.set_image(1)
@@ -797,15 +798,15 @@ class TestPkgLinked1(TestPkgLinked):
 
                         # child should still be listed
                         self._pkg([0], "list-linked -H > %s" % outfile)
-                        self._cmd("cat %s" % outfile)
-                        self._cmd("egrep '^%s[ 	]' %s" %
+                        self._ccmd("cat %s" % outfile)
+                        self._ccmd("egrep '^%s[ 	]' %s" %
                             (self.i_name[1], outfile))
 
                         # child should still be listed
                         self._pkg([0], "property-linked -H -l %s > %s" %
                             (self.i_name[1], outfile))
-                        self._cmd("cat %s" % outfile)
-                        self._cmd("egrep '^li-' %s" % outfile)
+                        self._ccmd("cat %s" % outfile)
+                        self._ccmd("egrep '^li-' %s" % outfile)
 
                         # operations that need to access child should fail
                         self._pkg_child(0, [1], "sync-linked", rv=rv)
@@ -826,8 +827,8 @@ class TestPkgLinked1(TestPkgLinked):
 
                 # it's ok to use -I with no children
                 self._pkg([0], "list-linked -H -I > %s" % outfile)
-                self._cmd("cat %s" % outfile)
-                self._cmd("egrep '^$|.' %s" % outfile, rv=EXIT_OOPS)
+                self._ccmd("cat %s" % outfile)
+                self._ccmd("egrep '^$|.' %s" % outfile, rv=EXIT_OOPS)
 
         def test_ignore_2_ok(self):
                 self._imgs_create(3)
@@ -837,22 +838,22 @@ class TestPkgLinked1(TestPkgLinked):
                 # ignore one child
                 self._pkg([0], "list-linked -H -i %s > %s" %
                     (self.i_name[1], outfile))
-                self._cmd("cat %s" % outfile)
-                self._cmd("egrep '^%s[ 	]' %s" %
+                self._ccmd("cat %s" % outfile)
+                self._ccmd("egrep '^%s[ 	]' %s" %
                     (self.i_name[1], outfile), rv=EXIT_OOPS)
-                self._cmd("egrep '^%s[ 	]' %s" %
+                self._ccmd("egrep '^%s[ 	]' %s" %
                     (self.i_name[2], outfile))
 
                 # manually ignore all children
                 self._pkg([0], "list-linked -H -i %s -i %s > %s" %
                     (self.i_name[1], self.i_name[2], outfile))
-                self._cmd("cat %s" % outfile)
-                self._cmd("egrep '^$|.' %s" % outfile, rv=EXIT_OOPS)
+                self._ccmd("cat %s" % outfile)
+                self._ccmd("egrep '^$|.' %s" % outfile, rv=EXIT_OOPS)
 
                 # automatically ignore all children
                 self._pkg([0], "list-linked -H -I > %s" % outfile)
-                self._cmd("cat %s" % outfile)
-                self._cmd("egrep '^$|.' %s" % outfile, rv=EXIT_OOPS)
+                self._ccmd("cat %s" % outfile)
+                self._ccmd("egrep '^$|.' %s" % outfile, rv=EXIT_OOPS)
 
         def test_no_pkg_updates_1_empty_via_attach(self):
                 """test --no-pkg-updates with an empty image."""

@@ -19,7 +19,7 @@
 #
 # CDDL HEADER END
 #
-# Copyright (c) 2008, 2011, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2008, 2012, Oracle and/or its affiliates. All rights reserved.
 #
 
 import httplib
@@ -71,11 +71,17 @@ class DepotController(object):
                 self.__starttime = 0
                 self.__wrapper_start = []
                 self.__wrapper_end = wrapper_end
-                self.__env = { "PKGDEPOT_CONTROLLER": 1 }
+                self.__env = {}
                 if wrapper_start:
                         self.__wrapper_start = wrapper_start
                 if env:
                         self.__env = env
+                #
+                # Enable special unit-test depot mode in which it doesn't
+                # do its normal double-fork, providing us good control
+                # over the process.
+                #
+                self.__env["PKGDEPOT_CONTROLLER"] = "1"
                 return
 
         def get_wrapper(self):
@@ -451,11 +457,13 @@ class DepotController(object):
                                 time.sleep(1.0 - lifetime)
 
                 finally:
-                        # By sticking in this finally: block we ensure that even
-                        # if the kill gets ctrl-c'd, we'll at least take a good
-                        # final whack at the depot by killing -9 its process group.
+                        # By sticking in this finally: block we ensure that
+                        # even if the kill gets ctrl-c'd, we'll at least take
+                        # a good final whack at the depot by killing -9 its
+                        # process group.
                         try:
-                                os.kill(-1 * self.__depot_handle.pid, signal.SIGKILL)
+                                os.kill(-1 * self.__depot_handle.pid,
+                                    signal.SIGKILL)
                         except OSError:
                                 pass
                         self.__state = self.HALTED

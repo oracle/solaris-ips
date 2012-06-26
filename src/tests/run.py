@@ -306,7 +306,7 @@ if __name__ == "__main__":
                                     "be an integer."
                                 usage()
                 if opt == "-h":
-			usage()
+                        usage()
                 if opt == "-j":
                         jobs = int(arg)
                 if opt == "-q":
@@ -465,20 +465,21 @@ if __name__ == "__main__":
                 subprocess.Popen(["coverage", "combine"], env=newenv).wait()
                 os.rename("%s/pkg5" % covdir, ".coverage")
                 shutil.rmtree(covdir)
-                print >> sys.stderr, "Generating html coverage report"
                 vp = pkg5unittest.g_proto_area + "/usr/lib/python2.6/vendor-packages"
                 omits = [
-                    # External modules
-                    "%s/cherrypy" % vp,
-                    "%s/ply" % vp,
-                    "%s/mako" % vp,
-                    "%s/M2Crypto" % vp,
-                    # This removes test-related stuff, as well as compiled
-                    # expressions such as Mako templates and filters.
-                    ""
+                    # These mako templates fail.
+                    "*etc_pkg_*mako",
+                    # Complex use of module importer makes this fail.
+                    "*sysrepo_p5p.py"
                 ]
-                subprocess.Popen(["coverage", "html", "--omit", ",".join(omits),
-                    "-d", "htmlcov"]).wait()
+                print >> sys.stderr, "Generating html coverage report"
+                cmd = ["coverage", "html", "--omit", ",".join(omits),
+                    "-d", "htmlcov"]
+                print >> sys.stderr, "# %s" % " ".join(cmd)
+                if subprocess.Popen(cmd).wait() != 0:
+                        print >> sys.stderr, \
+                            "Failed to generate coverage report!"
+                        exitval = 1
                 # The coverage data file and report are most likely owned by
                 # root, if a true test run was performed.  Make the files owned
                 # by the owner of the test directory, so they can be easily
