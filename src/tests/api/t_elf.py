@@ -20,8 +20,7 @@
 # CDDL HEADER END
 #
 
-# Copyright 2010 Sun Microsystems, Inc.  All rights reserved.
-# Use is subject to license terms.
+# Copyright (c) 2008, 2012, Oracle and/or its affiliates. All rights reserved.
 
 import testutils
 if __name__ == "__main__":
@@ -31,119 +30,57 @@ import pkg5unittest
 import unittest
 import pkg.elf as elf
 import os
+import re
 import sys
+import pkg.portable
 
 class TestElf(pkg5unittest.Pkg5TestCase):
 
-	def test_is_elf_object(self):
-		""" ASSERT: is_elf_object correctly classifies a range of
-		    elf objects and non-elf objects """
+        # If something in this list does not exist, the test_valid_elf
+        # tests may fail.  At some point if someone moves paths around in
+        # ON, this might fail.  Sorry!
+        elf_paths = [
+            "/usr/bin/ls",
+            "/usr/bin/__ARCH__/ls",
+            "/dev/ksyms",
+            "/usr/lib/libc.so",
+            "/usr/lib/__ARCH__/libc.so",
+            "/usr/lib/crti.o",
+            "/usr/lib/__ARCH__/crti.o",
+            "/kernel/drv/__ARCH__/sd",
+            "/kernel/fs/__ARCH__/zfs",
+            "/usr/kernel/drv/__ARCH__/ptm",
+        ]
 
-		if os.path.exists("/usr/bin/cat"):
-			self.assertEqual(elf.is_elf_object("/usr/bin/cat"),
-			    True)
+        def test_non_elf(self):
+                """Test that elf routines gracefully handle non-elf objects."""
 
-		if os.path.exists("/etc/motd"):
-			self.assertNotEqual(elf.is_elf_object("/etc/motd"),
-			    True)
+                p = "this-is-not-an-elf-file.so"
+                self.make_misc_files({p: "this is only a test"})
+                os.chdir(self.test_root)
+                self.assertEqual(elf.is_elf_object(p), False)
+                self.assertRaises(elf.ElfError, elf.get_dynamic, p)
+                self.assertRaises(elf.ElfError, elf.get_info, p)
 
-		if os.path.exists("/dev/ksyms"):
-			self.assertEqual(elf.is_elf_object("/dev/ksyms"),
-			    True)
+        def test_non_existent(self):
+                """Test that elf routines gracefully handle ENOENT."""
 
-		if os.path.exists("/usr/lib/libmlib.so"):
-			self.assertEqual(
-			    elf.is_elf_object("/usr/lib/libmlib.so"), True)
+                os.chdir(self.test_root)
+                p = "does/not/exist"
+                self.assertRaises(OSError, elf.is_elf_object, p)
+                self.assertRaises(OSError, elf.get_dynamic, p)
+                self.assertRaises(OSError, elf.get_info, p)
 
-		if os.path.exists("/kernel/drv/sd"):
-			self.assertEqual(elf.is_elf_object("/kernel/drv/sd"),
-			    True)
-
-		if os.path.exists("/kernel/drv/amd64/sd"):
-			self.assertEqual(
-			    elf.is_elf_object("/kernel/drv/amd64/sd"), True)
-
-		if os.path.exists("/kernel/drv/sparcv9/sd"):
-			self.assertEqual(
-			    elf.is_elf_object("/kernel/drv/sparcv9/sd"), True)
-
-		self.assertRaises(OSError, elf.is_elf_object, "/does/not/exist")
-
-	def test_get_dynamic(self):
-		if os.path.exists("/usr/bin/cat"):
-			try:
-				elf.get_dynamic("/usr/bin/cat")
-			except:
-				self.fail();
-
-		if os.path.exists("/etc/motd"):
-			self.assertRaises(elf.ElfError, elf.get_dynamic,
-			    "/etc/motd")
-
-		if os.path.exists("/usr/lib/libmlib.so"):
-			elf.get_dynamic("/usr/lib/libmlib.so")
-
-		if os.path.exists("/kernel/drv/sd"):
-			elf.get_dynamic("/kernel/drv/sd")
-
-		if os.path.exists("/kernel/drv/amd64/sd"):
-			elf.get_dynamic("/kernel/drv/amd64/sd")
-
-		if os.path.exists("/kernel/drv/sparcv9/sd"):
-			elf.get_dynamic("/kernel/drv/sparcv9/sd")
-
-		if os.path.exists("/usr/lib/crti.o"):
-			elf.get_dynamic("/usr/lib/crti.o")
-
-		if os.path.exists("/usr/kernel/drv/fssnap"):
-			elf.get_dynamic("/usr/kernel/drv/fssnap")
-
-		if os.path.exists("/usr/kernel/drv/amd64/fssnap"):
-			elf.get_dynamic("/usr/kernel/drv/amd64/fssnap")
-
-		if os.path.exists("/usr/kernel/drv/sparcv9/fssnap"):
-			elf.get_dynamic("/usr/kernel/drv/sparcv9/fssnap")
-
-
-		self.assertRaises(OSError, elf.get_dynamic, "/does/not/exist")
-
-	def test_get_info(self):
-		if os.path.exists("/usr/bin/cat"):
-			try:
-				elf.get_info("/usr/bin/cat")
-			except:
-				self.fail();
-
-		if os.path.exists("/etc/motd"):
-			self.assertRaises(elf.ElfError, elf.get_info,
-			    "/etc/motd");
-
-		if os.path.exists("/usr/lib/libmlib.so"):
-			elf.get_info("/usr/lib/libmlib.so")
-
-		if os.path.exists("/kernel/drv/sd"):
-			elf.get_info("/kernel/drv/sd")
-
-		if os.path.exists("/kernel/drv/amd64/sd"):
-			elf.get_info("/kernel/drv/amd64/sd")
-
-		if os.path.exists("/kernel/drv/sparcv9/sd"):
-			elf.get_info("/kernel/drv/sparcv9/sd")
-
-		if os.path.exists("/usr/lib/crti.o"):
-			elf.get_info("/usr/lib/crti.o")
-
-		if os.path.exists("/usr/kernel/drv/fssnap"):
-			elf.get_info("/usr/kernel/drv/fssnap")
-
-		if os.path.exists("/usr/kernel/drv/amd64/fssnap"):
-			elf.get_info("/usr/kernel/drv/amd64/fssnap")
-
-		if os.path.exists("/usr/kernel/drv/sparcv9/fssnap"):
-			elf.get_info("/usr/kernel/drv/sparcv9/fssnap")
-
-		self.assertRaises(OSError, elf.get_info, "/does/not/exist");
-		
+        def test_valid_elf(self):
+                """Test that elf routines work on a small set of objects."""
+                arch = pkg.portable.get_isainfo()[0]
+                for p in self.elf_paths:
+                        p = re.sub("__ARCH__", arch, p)
+                        self.debug("testing elf file %s" % p)
+                        self.assert_(os.path.exists(p))
+                        self.assertEqual(elf.is_elf_object(p), True)
+                        elf.get_dynamic(p)
+                        elf.get_info(p)
 
 if __name__ == "__main__":
-	unittest.main()
+        unittest.main()
