@@ -62,8 +62,7 @@ class RepoChooser(object):
                 if ds.system:
                         return ds.proxy
 
-                proxy = misc.get_runtime_proxy(ds.proxy, ds.url,
-                    expand_variables=False)
+                proxy = misc.get_runtime_proxy(ds.proxy, ds.url)
                 if not proxy:
                         return "-"
                 return proxy

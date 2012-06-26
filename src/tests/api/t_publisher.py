@@ -468,10 +468,9 @@ class TestPublisher(pkg5unittest.Pkg5TestCase):
 
                 # check that we can set URI values that RespositoryURI would
                 # choke on
-                for uri in ["http://user:pass@server",
-                    "http://$userpass@server"]:
-                        pobj.uri = uri
-                        self.assert_(pobj.uri == uri)
+                uri = "http://user:pass@server"
+                pobj.uri = uri
+                self.assert_(pobj.uri == uri)
 
                 # check that setting system results in uri being overridden
                 pobj.system = True

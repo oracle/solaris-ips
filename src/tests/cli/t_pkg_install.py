@@ -5134,7 +5134,7 @@ class TestMultipleDepots(pkg5unittest.ManyDepotTestCase):
                 # Check if install -n returns with exit code 1
                 self.pkg("install -n moo", exit=1)
 
-def test_19_granular_proxy(self):
+        def test_20_granular_proxy(self):
                 """Tests that images can use the set-publisher --proxy argument
                 to selectively proxy requests."""
 
@@ -5202,7 +5202,7 @@ def test_19_granular_proxy(self):
                         env = {"http_proxy": sysrepo_url}
                         self.pkg("refresh", env_arg=env)
                         self.pkg("install foo", env_arg=env)
-                        self.pkg("uninstall foo")
+                        self.pkg("uninstall foo", env_arg=env)
 
                         # check that $all_proxy works
                         env = {"all_proxy": sysrepo_url}

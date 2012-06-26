@@ -115,51 +115,6 @@ class TestMisc(pkg5unittest.Pkg5TestCase):
                 libc = ctypes.CDLL('libc.so')
                 self.assertEqual(psinfo.pr_zoneid, libc.getzoneid())
 
-        def test_expand_proxy_envvars(self):
-                """Verify that misc.expand_proxy_envvars works as expected."""
-
-                # we should be able to pass all of these through.  Since we're
-                # not storing values in the environment, any lookups will fail
-                # and the method should return the value passed into it.
-                no_proxy_values = [
-                    "bad_url",
-                    "host:90",
-                    "http://foo/bar",
-                    "zfgs//:sdfsf//",
-                    "http://user:password@hostname",
-                    "http://user:password@hostname:3128",
-                    "http://user:password@hostname:port",
-                    "http://user:password@hostname:$port",
-                    "http://$user:$foo@hostname:80",
-                    "$user:$pass@hostname:80" ]
-
-                for value in no_proxy_values:
-                        self.assert_(value == misc.expand_proxy_envvars(value))
-
-                # each of these keys should result in the corresponding value
-                # given the os.environ values we specify
-                proxy_values = {
-                    "http://$user:$password@host": "http://timf:noodles@host",
-                    "http://$userpass@host": "http://timf:noodles@host",
-                    "http://$userpass@$userpass": "http://timf:noodles@$userpass",
-                    "http://$userf@host": "http://$userf@host",
-                    # this case is special, since it's an invalid use of our
-                    # variables, we should not attempt to expand them
-                    "http://$user$password@host": "http://$user$password@host"
-                }
-
-                saved_environ = os.environ
-                try:
-                        os.environ["user"] = "timf"
-                        os.environ["password"] = "noodles"
-                        os.environ["userpass"] = "timf:noodles"
-
-                        for key in proxy_values:
-                                exp = misc.expand_proxy_envvars(key)
-                                self.assert_(exp == proxy_values[key],
-                                    "%s != %s" % (exp, proxy_values[key]))
-                finally:
-                        os.environ = saved_environ
 
 if __name__ == "__main__":
         unittest.main()

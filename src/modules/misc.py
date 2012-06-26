@@ -2371,11 +2371,9 @@ class AsyncCall(object):
                 return self.rv
 
 
-def get_runtime_proxy(proxy, uri, expand_variables=True):
+def get_runtime_proxy(proxy, uri):
         """Given a proxy string and a URI we want to access using it, determine
         whether any OS environment variables should override that value.
-        If expand_variables is set, we also try to expand any environment
-        variables containing authentication details.
 
         The special value "-" is returned when a no_proxy environment variable
         was found which should apply to this URI, indicating that no proxy
@@ -2421,64 +2419,4 @@ def get_runtime_proxy(proxy, uri, expand_variables=True):
         if not runtime_proxy:
                 return
 
-        if expand_variables:
-                runtime_proxy = expand_proxy_envvars(runtime_proxy)
         return runtime_proxy
-
-def expand_proxy_envvars(proxy):
-        """Expand any authentication environment variables used in a given
-        proxy url.
-
-        This method looks for values starting with '$' in the userinfo
-        portion of the proxy supplied, and retrieves those values from
-        the OS environment, returning the proxy value with any userinfo
-        variables expanded. The returned proxy value should not be persisted
-        to disk.
-
-        We allow one or two environment variables, which must
-        be in the userinfo portion of the authority.  For example,
-
-        http://<user>:<password>@hostname:3128
-
-        could be expressed as:
-        http://$user:$password@hostname:3128
-        or
-        http://$userpasswd@hostname:3128
-        """
-
-        # SplitResult has a netloc member; pylint: disable-msg=E1103
-        netloc = urlparse.urlsplit(proxy, allow_fragments=0).netloc
-        netloc_parts = netloc.split("@")
-
-        # If we don't have any authentication details, return.
-        if len(netloc_parts) != 2:
-                return proxy
-
-        user_passwd = netloc_parts[0].split(":")
-        if len(user_passwd) not in [1, 2]:
-                return proxy
-
-        # Check that the values do include environment variables.
-        if not all(item.startswith("$") for item in user_passwd):
-                return proxy
-
-        # Finally, retrieve the values from the environment, and include
-        # them in the proxy value.
-        if len(user_passwd) == 1:
-                userpasswd_env = user_passwd[0][1:]
-                userpasswd = os.environ.get(userpasswd_env)
-                if not userpasswd:
-                        return proxy
-                proxy = proxy.replace("$%s" % userpasswd_env, userpasswd, 1)
-                return proxy
-
-        user_env = user_passwd[0][1:]
-        passwd_env = user_passwd[1][1:]
-        user = os.environ.get(user_env)
-        passwd = os.environ.get(passwd_env)
-        if not user or not passwd:
-                return proxy
-
-        proxy = proxy.replace("$%s" % user_env, user, 1)
-        proxy = proxy.replace("$%s" % passwd_env, passwd, 1)
-        return proxy
