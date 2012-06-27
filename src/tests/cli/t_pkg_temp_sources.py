@@ -85,6 +85,11 @@ class TestPkgTempSources(pkg5unittest.ManyDepotTestCase):
             add license tmp/LICENSE license=sample_license
             close """
 
+        licensed_pkg_2 = """
+            open pkg://test2/licensed@2.0
+            add license tmp/LICENSE2 license=sample_license
+            close """
+
         signed_pkg = """
             open pkg://test/signed@1.0
             add depend type=require fmri=foo@1.0
@@ -107,7 +112,7 @@ class TestPkgTempSources(pkg5unittest.ManyDepotTestCase):
             close """
 
         misc_files = ["tmp/foo", "tmp/libfoo.so.1", "tmp/libfoo_debug.so.1",
-            "tmp/foo.1", "tmp/README", "tmp/LICENSE", "tmp/quux"]
+            "tmp/foo.1", "tmp/README", "tmp/LICENSE", "tmp/LICENSE2", "tmp/quux"]
 
         def __seed_ta_dir(self, certs, dest_dir=None):
                 if isinstance(certs, basestring):
@@ -261,6 +266,8 @@ class TestPkgTempSources(pkg5unittest.ManyDepotTestCase):
                 # Handle license package specially.
                 self.licensed10 = self.pkgsend_bulk(self.licensed_rurl,
                     self.licensed_pkg)[0]
+                self.licensed20 = self.pkgsend_bulk(self.licensed_rurl,
+                    self.licensed_pkg_2)[0]
 
         def test_00_list(self):
                 """Verify that the list operation works as expected for
@@ -576,8 +583,12 @@ Packaging Date: %(pkg_date)s
                 self.pkg("info -r \*", exit=1)
 
                 # Verify that --license works as expected with -g.
-                self.pkg("info -g %s --license licensed" % self.licensed_rurl)
+                self.pkg("info -g %s --license licensed@1.0" %
+                    self.licensed_rurl)
                 self.assertEqualDiff("tmp/LICENSE\n", self.output)
+                self.pkg("info -g %s --license licensed" %
+                    self.licensed_rurl)
+                self.assertEqualDiff("tmp/LICENSE2\n", self.output)
 
                 # Cleanup.
                 self.image_destroy()
@@ -900,6 +911,39 @@ test2
                 self.pkg("update --stage=execute -g %s -g %s" %
                     (self.incorp_arc, self.quux_arc))
                 self.pkg("list incorp@2.0 quux@1.0")
+
+        def test_06_appropriate_license_files(self):
+                """Verify that the correct license file is displayed."""
+
+                self.image_create()
+
+                self.pkg("info -g %s --license licensed" % self.licensed_rurl)
+                self.assertEqual("tmp/LICENSE2\n", self.output)
+                self.pkg("info -g %s --license licensed@1.0" %
+                    self.licensed_rurl)
+                self.assertEqual("tmp/LICENSE\n", self.output)
+
+                self.pkg("install -g %s --licenses licensed@1.0" %
+                    self.licensed_rurl)
+                self.assert_("tmp/LICENSE" in self.output, "Expected "
+                    "tmp/LICENSE to be in the output of the install. Output "
+                    "was:\n%s" % self.output)
+                self.pkg("info -g %s --license licensed" % self.licensed_rurl)
+                self.assertEqual("tmp/LICENSE2\n", self.output)
+                self.pkg("info -g %s --license licensed@2.0" %
+                    self.licensed_rurl)
+                self.assertEqual("tmp/LICENSE2\n", self.output)
+
+                self.pkg("update -g %s --licenses licensed@2.0" %
+                    self.licensed_rurl)
+                self.assert_("tmp/LICENSE2" in self.output, "Expected "
+                    "tmp/LICENSE2 to be in the output of the install. Output "
+                    "was:\n%s" % self.output)
+                self.pkg("info -g %s --license licensed" % self.licensed_rurl)
+                self.assertEqual("tmp/LICENSE2\n", self.output)
+                self.pkg("info -g %s --license licensed@1.0" %
+                    self.licensed_rurl)
+                self.assertEqual("tmp/LICENSE\n", self.output)
 
 
 if __name__ == "__main__":

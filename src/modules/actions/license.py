@@ -188,11 +188,20 @@ class LicenseAction(generic.Action):
                 any required transport operations.
                 """
 
-                opener = self.get_local_opener(img, pfmri)
-                if opener:
-                        # License installed already; return its content.
-                        return opener().read()
-
+                path = self.get_local_path(img, pfmri)
+                try:
+                        with open(path, "rb") as fh:
+                                length = os.stat(path).st_size
+                                chash, txt = misc.get_data_digest(fh,
+                                    length=length, return_content=True)
+                                if chash == self.hash:
+                                        return txt
+                except EnvironmentError, e:
+                        if e.errno != errno.ENOENT:
+                                raise
+                # If we get here, either the license file wasn't on disk, or the
+                # hash didn't match.  In either case, go retrieve it from the
+                # publisher.
                 try:
                         if not alt_pub:
                                 alt_pub = img.get_publisher(pfmri.publisher)
@@ -202,7 +211,7 @@ class LicenseAction(generic.Action):
                 finally:
                         img.cleanup_downloads()
 
-        def get_local_opener(self, img, pfmri):
+        def get_local_path(self, img, pfmri):
                 """Return an opener for the license text from the local disk or
                 None if the data for the text is not on-disk."""
 
@@ -217,16 +226,7 @@ class LicenseAction(generic.Action):
                         path = os.path.join(img.get_license_dir(pfmri),
                             "license." + urllib.quote(self.attrs["license"],
                             ""))
-
-                if not os.path.exists(path):
-                        return None
-
-                def opener():
-                        # XXX Do we check to make sure that what's there is what
-                        # we think is there (i.e., re-hash)?
-                        return file(path, "rb")
-
-                return opener
+                return path
 
         @property
         def must_accept(self):

@@ -20,7 +20,7 @@
 # CDDL HEADER END
 #
 
-# Copyright (c) 2008, 2011, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2008, 2012, Oracle and/or its affiliates. All rights reserved.
 
 import testutils
 if __name__ == "__main__":
@@ -50,6 +50,12 @@ class TestPkgInfoBasics(pkg5unittest.SingleDepotTestCase):
             close
         """
 
+        bronze05 = """
+            open bronze@0.5,5.11-0:20110908T004546Z
+            add license tmp/copyright0 license=copyright
+            close
+        """
+
         badfile10 = """
             open badfile@1.0,5.11-0
             add file tmp/baz mode=644 owner=root group=bin path=/tmp/baz-file
@@ -69,13 +75,14 @@ class TestPkgInfoBasics(pkg5unittest.SingleDepotTestCase):
         """
 
         misc_files = [ "tmp/bronzeA1",  "tmp/bronzeA2", "tmp/bronze1",
-            "tmp/bronze2", "tmp/copyright1", "tmp/sh", "tmp/baz"]
+            "tmp/bronze2", "tmp/copyright1", "tmp/copyright0", "tmp/sh",
+            "tmp/baz"]
 
         def setUp(self):
                 pkg5unittest.SingleDepotTestCase.setUp(self)
                 self.make_misc_files(self.misc_files)
                 self.plist = self.pkgsend_bulk(self.rurl, (self.badfile10,
-                    self.baddir10, self.bronze10, self.human))
+                    self.baddir10, self.bronze10, self.bronze05, self.human))
 
         def test_pkg_info_bad_fmri(self):
                 """Test bad frmi's with pkg info."""
@@ -562,6 +569,38 @@ Packaging Date: %(pkg_date)s
           FMRI: %(pkg_fmri)s
 """ % { "pkg_date": pkg_date, "pkg_fmri": pfmri }
                 self.assertEqualDiff(expected, actual)
+
+        def test_appropriate_license_files(self):
+                """Verify that the correct license file is displayed."""
+
+                self.image_create(self.rurl)
+
+                self.pkg("info -r --license bronze")
+                self.assertEqual("tmp/copyright1\n", self.output)
+                self.pkg("info -r --license bronze@0.5")
+                self.assertEqual("tmp/copyright0\n", self.output)
+
+                self.pkg("install --licenses bronze@0.5")
+                self.assert_("tmp/copyright0" in self.output, "Expected "
+                    "tmp/copyright0 to be in the output of the install. Output "
+                    "was:\n%s" % self.output)
+                self.pkg("info -l --license bronze")
+                self.assertEqual("tmp/copyright0\n", self.output)
+                self.pkg("info -r --license bronze")
+                self.assertEqual("tmp/copyright1\n", self.output)
+                self.pkg("info -r --license bronze@1.0")
+                self.assertEqual("tmp/copyright1\n", self.output)
+
+                self.pkg("update --licenses bronze@1.0")
+                self.assert_("tmp/copyright1" in self.output, "Expected "
+                    "tmp/copyright1 to be in the output of the install. Output "
+                    "was:\n%s" % self.output)
+                self.pkg("info -r --license bronze")
+                self.assertEqual("tmp/copyright1\n", self.output)
+                self.pkg("info -l --license bronze")
+                self.assertEqual("tmp/copyright1\n", self.output)
+                self.pkg("info -r --license bronze@0.5")
+                self.assertEqual("tmp/copyright0\n", self.output)
 
 
 if __name__ == "__main__":
