@@ -188,7 +188,6 @@ depend type=group fmri=terminal/gnome-terminal
 depend type=group fmri=terminal/xterm
 depend type=group fmri=web/browser/firefox
 depend type=group fmri=web/browser/firefox/multi-user-desktop
-depend type=group fmri=web/browser/firefox/plugin/firefox-flashplayer
 depend type=group fmri=web/browser/firefox/plugin/firefox-java
 depend type=group fmri=web/browser/w3m
 depend type=group fmri=web/data/firefox-bookmarks
