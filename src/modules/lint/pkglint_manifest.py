@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2010, 2011, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2010, 2012, Oracle and/or its affiliates. All rights reserved.
 #
 
 # Some pkg(5) specific lint manifest checks
@@ -43,40 +43,71 @@ class PkgManifestChecker(base.ManifestChecker):
                 self.ref_lastnames = {}
                 self.lint_lastnames = {}
                 self.processed_lastnames = []
+
+                # maps package names to a list of packages which depend on them.
+                self.dependencies = {}
+
                 super(PkgManifestChecker, self).__init__(config)
 
         def startup(self, engine):
 
-                def update_names(pfmri, dic):
-                        name = os.path.basename(pfmri.get_name())
-                        if name in dic:
-                                dic[name].append(pfmri)
-                        else:
-                                dic[name] = [pfmri]
-
-                engine.logger.debug(
-                    _("Seeding reference manifest duplicates dictionaries."))
-                for manifest in engine.gen_manifests(engine.ref_api_inst,
-                    release=engine.release):
+                def seed_names_dict(manifest, dic):
                         if "pkg.renamed" in manifest or \
                             "pkg.obsolete" in manifest:
-                                continue
-                        update_names(manifest.fmri, self.ref_lastnames)
+                                return
+                        name = os.path.basename(manifest.fmri.get_name())
+                        if name in dic:
+                                dic[name].append(manifest.fmri)
+                        else:
+                                dic[name] = [manifest.fmri]
+
+                def seed_depend_dict(mf, dic):
+                        """Updates a dictionary of package names that declare
+                        dependencies, keyed by the depend action fmri name.
+                        We drop versions and consider all dependency types
+                        except 'incorporate'."""
+
+                        name = mf.fmri
+                        for action in mf.gen_actions_by_type("depend"):
+                                if action.attrs.get("type") == "incorporate":
+                                        continue
+                                dep = action.attrs["fmri"]
+                                try:
+                                        if isinstance(dep, basestring):
+                                                f = fmri.PkgFmri(dep, "5.11")
+                                                dic.setdefault(
+                                                    f.get_name(), []
+                                                    ).append(name)
+                                        elif isinstance(dep, list):
+                                                for d in dep:
+                                                        f = fmri.PkgFmri(d,
+                                                            "5.11")
+                                                        dic.setdefault(
+                                                            f.get_name(), []
+                                                            ).append(name)
+                                # If we have a bad FMRI, this will be picked up
+                                # by pkglint.action006 and pkglint.action009.
+                                except fmri.FmriError:
+                                        pass
 
                 engine.logger.debug(
-                    _("Seeding lint manifest duplicates dictionaries."))
+                    _("Seeding reference manifest dictionaries."))
+                for manifest in engine.gen_manifests(engine.ref_api_inst,
+                    release=engine.release):
+                        seed_depend_dict(manifest, self.dependencies)
+                        seed_names_dict(manifest, self.ref_lastnames)
+
+                engine.logger.debug(
+                    _("Seeding lint manifest dictionaries."))
                 for manifest in engine.gen_manifests(engine.lint_api_inst,
                     release=engine.release, pattern=engine.pattern):
-                        if "pkg.renamed" in manifest \
-                            or "pkg.obsolete" in manifest:
-                                continue
-                        update_names(manifest.fmri, self.lint_lastnames)
+                        seed_depend_dict(manifest, self.dependencies)
+                        seed_names_dict(manifest, self.lint_lastnames)
 
                 for manifest in engine.lint_manifests:
-                        if "pkg.renamed" in manifest \
-                            or "pkg.obsolete" in manifest:
-                                continue
-                        update_names(manifest.fmri, self.lint_lastnames)
+                        seed_depend_dict(manifest, self.dependencies)
+                        seed_names_dict(manifest, self.lint_lastnames)
+
                 self._merge_names(self.lint_lastnames, self.ref_lastnames,
                     ignore_pubs=engine.ignore_pubs)
 
@@ -84,9 +115,12 @@ class PkgManifestChecker(base.ManifestChecker):
                 """Checks for correct package obsoletion.
                 * error if obsoleted packages contain anything other than
                   set or signature actions
-                * error if pkg.description or pkg.summary are set."""
+                * error if pkg.description or pkg.summary are set.
+                * warn if other packages have non-incorporate dependencies on
+                  this package.
+                """
 
-                if "pkg.obsolete" not in manifest:
+                if manifest.get("pkg.obsolete", "false") != "true":
                         return
 
                 for key in [ "pkg.description", "pkg.summary" ]:
@@ -136,6 +170,28 @@ class PkgManifestChecker(base.ManifestChecker):
                             "set or signature actions") % manifest.fmri,
                             msgid=lint_id)
 
+                # determine whether other packages we know about have
+                # dependencies on this obsolete package.
+                obsolete_depends = set()
+                lint_id = "%s%s.3" % (self.name, pkglint_id)
+
+                depends = set(
+                    self.dependencies.get(manifest.fmri.get_name(), []))
+                if depends:
+                        for depending_package in depends:
+                                p = engine.get_manifest(str(depending_package),
+                                    search_type=engine.LATEST_SUCCESSOR)
+                                if p.get("pkg.obsolete", None) != "true":
+                                        obsolete_depends.add(p.fmri)
+                if obsolete_depends:
+                        # this is only a warning, because at install-time the
+                        # solver may still be able to find a non-obsolete
+                        # version of a package.
+                        engine.warning("obsolete package %(pkg)s is depended "
+                            "upon by the following packages: %(deps)s"
+                            % {"pkg": manifest.fmri, "deps": " ".join(
+                            [str(fmri) for fmri in obsolete_depends])},
+                            msgid=lint_id)
 
         obsoletion.pkglint_desc = _(
             "Obsolete packages should have valid contents.")
@@ -144,7 +200,9 @@ class PkgManifestChecker(base.ManifestChecker):
                 """Checks for correct package renaming.
                 * error if renamed packages contain anything other than set,
                   signature and depend actions.
-                * follows renames, ensuring they're not circular."""
+                * follows renames, ensuring they're not circular, and don't
+                  end up at an obsolete package.
+                """
 
                 if "pkg.renamed" not in manifest:
                         return
@@ -155,7 +213,7 @@ class PkgManifestChecker(base.ManifestChecker):
                 count_depends = 0
 
                 for action in manifest.gen_actions():
-                        if action.name not in [ "set", "depend", "signature"]:
+                        if action.name not in ["set", "depend", "signature"]:
 
                                 if engine.linted(action=action,
                                     manifest=manifest,
@@ -200,6 +258,14 @@ class PkgManifestChecker(base.ManifestChecker):
                                     "%s: possible missing package") %
                                     manifest.fmri, msgid="%s%s.3" %
                                     (self.name, pkglint_id))
+                        else:
+                                if "pkg.obsolete" not in mf:
+                                        return
+                                engine.error(_("package %(pkg)s was renamed "
+                                    "to an obsolete package %(obs)s") %
+                                    {"pkg": manifest.fmri, "obs": mf.fmri},
+                                    msgid="%s%s.5" % (self.name, pkglint_id))
+
                 except base.LintException, err:
                         engine.error(_("package renaming: %s") % str(err),
                             msgid="%s%s.4" % (self.name, pkglint_id) )

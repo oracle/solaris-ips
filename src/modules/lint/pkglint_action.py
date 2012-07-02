@@ -1210,7 +1210,8 @@ class PkgActionChecker(base.ActionChecker):
                 if action.attrs["type"] != "require":
                         return
 
-                # it's ok for renamed packages to eventually be obsoleted
+                # We check for renames as part of pkglint.manifest002.5, so
+                # don't do that here.
                 if "pkg.renamed" in manifest and \
                     manifest["pkg.renamed"].lower() == "true":
                         return

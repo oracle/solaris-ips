@@ -1575,6 +1575,21 @@ depend fmri=consolidation/sfw/sfw-incorporation type=require
 signature algorithm=sha256 value=75b662e14a4ea8f0fa0507d40133b0347a36bc1f63112487f4738073edf4455d version=0
 """
 
+expected_failures["renamed-self.mf"] = ["pkglint.manifest002.4"]
+broken_manifests["renamed-self.mf"] = """
+#
+# We try to rename to ourself.
+#
+set name=pkg.fmri value=pkg://opensolaris.org/renamed-ancestor-new@0.5.11,5.11-0.141
+set name=pkg.description value="additional reference actions for pkglint"
+set name=info.classification value=org.opensolaris.category.2008:System/Core
+set name=pkg.summary value="Core Solaris Kernel"
+set name=org.opensolaris.consolidation value=osnet
+set name=variant.arch value=i386 value=sparc
+set name=pkg.renamed value=true
+depend fmri=renamed-ancestor-new type=require
+"""
+
 expected_failures["underscores.mf"] = ["pkglint.action001.1",
     "pkglint.action001.3", "pkglint.action001.2"]
 broken_manifests["underscores.mf"] = \
@@ -2063,6 +2078,8 @@ class TestLintEngineDepot(pkg5unittest.ManyDepotTestCase):
         """Tests that exercise reference vs. lint repository checks
         and test linting of multiple packages at once."""
 
+        persistent_setup = True
+
         ref_mf = {}
 
         ref_mf["ref-ancient-sample1.mf"] = """
@@ -2241,6 +2258,22 @@ set name=org.opensolaris.consolidation value=osnet
 set name=variant.arch value=i386 value=sparc
 set name=pkg.renamed value=true
 depend fmri=legacy-uses-renamed-ancestor type=require
+"""
+
+        ref_mf["depend-possibly-obsolete.mf"] = """
+#
+# We declare a dependency on a package that we intend to make obsolete
+# in the lint repository, though this package itself is perfectly valid.
+#
+set name=pkg.fmri value=pkg://opensolaris.org/dep/tobeobsolete@0.5.11,5.11-0.141
+set name=pkg.description value="additional reference actions for pkglint"
+set name=info.classification value=org.opensolaris.category.2008:System/Core
+set name=pkg.summary value="Core Solaris Kernel"
+set name=org.opensolaris.consolidation value=osnet
+set name=variant.arch value=i386 value=sparc
+# we mark this linted because we know this package does not exist in the
+# reference repository
+depend fmri=system/obsolete-this type=require
 """
 
         # A set of manifests to be linted. Note that these are all self
@@ -2427,6 +2460,33 @@ set name=pkg.renamed value=true
 depend fmri=renamed-ancestor-new type=require
 """
 
+        expected_failures["renamed-obsolete.mf"] = ["pkglint.manifest002.5"]
+        lint_mf["renamed-obsolete.mf"] = """
+#
+# We try to rename ourselves to an obsolete package.
+#
+set name=pkg.fmri value=pkg://opensolaris.org/an-old-name@0.5.11,5.11-0.141
+set name=pkg.description value="additional reference actions for pkglint"
+set name=info.classification value=org.opensolaris.category.2008:System/Core
+set name=pkg.summary value="Core Solaris Kernel"
+set name=org.opensolaris.consolidation value=osnet
+set name=variant.arch value=i386 value=sparc
+set name=pkg.renamed value=true
+depend fmri=system/obsolete type=require
+"""
+
+        expected_failures["obsolete-this.mf"] = ["pkglint.manifest001.3"]
+        lint_mf["obsolete-this.mf"] = """
+#
+# Make this package obsolete.  Since it has a dependency in the ref_repository,
+# we should get a warning, but only when linting against that repo.
+#
+set name=pkg.fmri value=pkg://opensolaris.org/system/obsolete-this@0.5.11,5.11-0.141
+set name=pkg.obsolete value=true variant.arch=i386
+set name=variant.opensolaris.zone value=global value=nonglobal variant.arch=i386
+set name=variant.arch value=i386
+"""
+
         lint_move_mf = {}
         lint_move_mf["move-sample1.mf"] = """
 #
@@ -2504,10 +2564,16 @@ dir group=sys mode=0755 owner=root path=etc
                     lint_uris=[self.ref_uri])
                 lint_engine.execute()
 
-                self.assert_(len(lint_logger.messages) == 0,
+                lint_msgs = []
+                # prune out the missing dependency warnings
+                for msg in lint_logger.messages:
+                        if "pkglint.action005.1" not in msg:
+                                lint_msgs.append(msg)
+
+                self.assert_(len(lint_msgs) == 0,
                     "Unexpected lint errors messages reported against "
                     "reference repo: %s" %
-                    "\n".join(lint_logger.messages))
+                    "\n".join(lint_msgs))
                 lint_logger.close()
 
                 lint_engine.teardown()
