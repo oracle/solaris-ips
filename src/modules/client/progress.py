@@ -1505,7 +1505,8 @@ class ProgressTracker(ProgressTrackerFrontend, ProgressTrackerBackend):
 
         def lint_done(self):
                 self.lint_phase = None
-                self._lint_output(OutSpec(last=True))
+                if self.lintitems:
+                        self._lint_output(OutSpec(last=True))
 
         def set_linked_name(self, lin):
                 """Called once an image determines its linked image name."""

@@ -20,7 +20,7 @@
 # CDDL HEADER END
 #
 
-# Copyright (c) 2010, 2011, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2010, 2012, Oracle and/or its affiliates. All rights reserved.
 
 import testutils
 if __name__ == "__main__":
@@ -29,9 +29,12 @@ import pkg5unittest
 
 import os
 import os.path
+import pty
 import shutil
 import unittest
 import tempfile
+import threading
+import subprocess
 
 class TestPkglintBasics(pkg5unittest.CliTestCase):
 
@@ -575,6 +578,60 @@ dir group=sys mode=0755 owner=root path=etc
                 for opt in ["chickens", "0,1234", "0.16b"]:
                         self.pkglint("-c %s -l %s -b %s" %
                             (self.cache_dir, self.lint_uri, opt), exit=1)
+
+        def test_4_fancy_unix_progress_tracking(self):
+                """When stdout is not a tty, pkglint uses a
+                CommandLineProgressTracker. This test runs pkglint with a tty
+                in order to sanity-check the FancyUnixProgressTracker.
+                See also t_progress.TestProgressTrackers.__t_pty_tracker(..)
+                """
+
+                mpath1 = self.make_manifest(self.ref_mf["ref-sample1.mf"])
+                cache = tempfile.mkdtemp("pkglint-cache", "", self.test_root)
+
+                # - Allocate a pty
+                # - Create a thread to drain off the master side; without
+                #   this, the slave side will block when trying to write.
+                # - Set it running
+                def __drain(masterf):
+                        while True:
+                                termdata = masterf.read(1024)
+                                if len(termdata) == 0:
+                                        break
+
+                for args in [[mpath1], ["-c", cache, "-l", self.lint_uri]]:
+
+                        (master, slave) = pty.openpty()
+                        slavef = os.fdopen(slave, "w")
+                        masterf = os.fdopen(master, "r")
+
+                        t = threading.Thread(target=__drain, args=(masterf, ))
+                        t.start()
+
+                        cmdline = ["%s/usr/bin/pkglint" %
+                            pkg5unittest.g_proto_area]
+                        cmdline.extend(args)
+
+                        # ensure the command works first
+                        self.pkglint(" ".join(args))
+
+                        # now try it using our fake tty
+                        p = subprocess.Popen(cmdline, stdout=slavef,
+                            stderr=subprocess.PIPE)
+
+                        self.output, self.errout = p.communicate()
+                        retcode = p.returncode
+                        slavef.close()
+                        t.join()
+                        masterf.close()
+
+                        # it's difficult to obtain the output given the hoops we
+                        # jumped through to setup a fake tty - we'll just report
+                        # the error.
+                        self.assert_(retcode == 0, self.errout)
+
+                if os.path.exists(cache):
+                        shutil.rmtree(cache)
 
 if __name__ == "__main__":
         unittest.main()
