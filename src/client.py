@@ -4905,7 +4905,7 @@ def publisher_list(api_inst, args):
                         filter_func = filter_tsv
                         desired_field_order = (_("PUBLISHER"), "", _("STICKY"),
                                _("SYSPUB"), _("ENABLED"), _("TYPE"),
-                               _("STATUS"), _("PROXY"), _("URI"))
+                               _("STATUS"), _("URI"), _("PROXY"))
 
                 # Extract our list of headers from the field_data
                 # dictionary Make sure they are extracted in the
@@ -4970,7 +4970,7 @@ def publisher_list(api_inst, args):
                                 # XXX get the real origin status
                                 set_value(field_data["type"], _("origin"))
                                 set_value(field_data["status"], _("online"))
-                                set_value(field_data["proxy"], "")
+                                set_value(field_data["proxy"], "-")
                                 set_value(field_data["proxied"], "F")
 
                                 set_value(field_data["uri"], uri)
@@ -4998,7 +4998,7 @@ def publisher_list(api_inst, args):
                                 # XXX get the real mirror status
                                 set_value(field_data["type"], _("mirror"))
                                 set_value(field_data["status"], _("online"))
-                                set_value(field_data["proxy"], "")
+                                set_value(field_data["proxy"], "-")
                                 set_value(field_data["proxied"], _("F"))
 
                                 set_value(field_data["uri"], uri)

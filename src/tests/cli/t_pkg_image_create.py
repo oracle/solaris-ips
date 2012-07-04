@@ -560,8 +560,8 @@ class TestPkgImageCreateBasics(pkg5unittest.ManyDepotTestCase):
 
                 # Verify origin configuration is intact.
                 expected = """\
-test1\ttrue\tfalse\ttrue\torigin\tonline\t\t%s/
-test2\ttrue\tfalse\tfalse\torigin\tonline\t\t%s/
+test1\ttrue\tfalse\ttrue\torigin\tonline\t%s/\t-
+test2\ttrue\tfalse\tfalse\torigin\tonline\t%s/\t-
 """ % (self.rurl1, self.rurl2)
                 self.pkg("publisher -HF tsv")
                 output = self.reduceSpaces(self.output)
@@ -570,8 +570,8 @@ test2\ttrue\tfalse\tfalse\torigin\tonline\t\t%s/
                 # Verify origin information matches expected if configuration
                 # changes are made.
                 expected = """\
-test1\ttrue\tfalse\ttrue\torigin\tonline\t\t%s/
-test2\ttrue\tfalse\tfalse\torigin\tonline\t\t%s/
+test1\ttrue\tfalse\ttrue\torigin\tonline\t%s/\t-
+test2\ttrue\tfalse\tfalse\torigin\tonline\t%s/\t-
 """ % (self.rurl2, self.rurl2)
                 self.pkg("set-publisher --no-refresh -O %s test1" % self.rurl2)
                 self.pkg("publisher -HF tsv")

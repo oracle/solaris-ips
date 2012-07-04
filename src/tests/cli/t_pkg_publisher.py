@@ -348,17 +348,17 @@ class TestPkgPublisherBasics(pkg5unittest.SingleDepotTestCase):
                 self.pkg("set-publisher --no-refresh -O http://%s2 test2" %
                     self.bogus_url)
 
-                base_string = ("test\ttrue\tfalse\ttrue\torigin\tonline\t\t"
-                    "%s/\n"
-                    "test1\ttrue\tfalse\ttrue\torigin\tonline\t\t"
-                    "https://%s1/\n"
-                    "test2\ttrue\tfalse\ttrue\torigin\tonline\t\t"
-                    "http://%s2/\n" % (self.rurl, self.bogus_url,
+                base_string = ("test\ttrue\tfalse\ttrue\torigin\tonline\t"
+                    "%s/\t-\n"
+                    "test1\ttrue\tfalse\ttrue\torigin\tonline\t"
+                    "https://%s1/\t-\n"
+                    "test2\ttrue\tfalse\ttrue\torigin\tonline\t"
+                    "http://%s2/\t-\n" % (self.rurl, self.bogus_url,
                     self.bogus_url))
                 # With headers
                 self.pkg("publisher -F tsv")
                 expected = "PUBLISHER\tSTICKY\tSYSPUB\tENABLED" \
-                    "\tTYPE\tSTATUS\tPROXY\tURI\n" + base_string
+                    "\tTYPE\tSTATUS\tURI\tPROXY\n" + base_string
                 output = self.reduceSpaces(self.output)
                 self.assertEqualDiff(expected, output)
 
@@ -487,7 +487,7 @@ class TestPkgPublisherBasics(pkg5unittest.SingleDepotTestCase):
                         self.pkg("set-publisher --no-refresh -G %s test" %
                             self.rurl)
                         self.pkg("publisher -F tsv")
-                        self.assert_("http://foo\t%s/" %
+                        self.assert_("%s/\thttp://foo" %
                             self.durl in self.output)
                         self.assert_(self.rurl not in self.output)
 
@@ -501,7 +501,7 @@ class TestPkgPublisherBasics(pkg5unittest.SingleDepotTestCase):
 
                         # we should have 1 proxied occurrence of our http url
                         self.pkg("publisher -F tsv")
-                        self.assert_("http://foo\t%s/" %
+                        self.assert_("%s/\thttp://foo" %
                             self.durl in self.output)
                         self.assert_("\t\t%s" % self.durl not in self.output)
 
@@ -512,7 +512,7 @@ class TestPkgPublisherBasics(pkg5unittest.SingleDepotTestCase):
                             exit=0)
                         self.pkg("set-publisher --no-refresh %(add)s %(url)s "
                             "test" % {"add": add, "url": self.durl}, exit=0)
-                        self.assert_("http://foo\t%s/" %
+                        self.assert_("%s/\thttp://foo" %
                             self.durl not in self.output)
 
 
