@@ -262,7 +262,7 @@ def test_logging_printengine(output_file):
         pe.flush()
 
 
-def test_posix_printengine(output_file):
+def test_posix_printengine(output_file, ttymode):
         """Test driver for POSIX print engine.  This is maintained as a
         standalone function in order to support the 'runprintengine' test
         utility in $SRC/tests/interactive/runprintengine.py; it is also
@@ -270,16 +270,17 @@ def test_posix_printengine(output_file):
 
         standout = ""
         sgr0 = ""
-        ttymode = False
 
-        # Non-portable API; pylint: disable-msg=E0901
-        if os.isatty(output_file.fileno()):
+        if ttymode:
+                # Non-portable API; pylint: disable-msg=E0901
+                if not os.isatty(output_file.fileno()):
+                        raise RuntimeError, \
+                            "output_file doesn't seem to be a tty"
                 try:
                         import curses
                         curses.setupterm()
                         standout = curses.tigetstr("smso") or ""
                         sgr0 = curses.tigetstr("sgr0") or ""
-                        ttymode = True
                 except KeyboardInterrupt:
                         raise
                 except:
@@ -289,7 +290,7 @@ def test_posix_printengine(output_file):
         pe.cprint("Testing POSIX print engine; ttymode is %s\n" % ttymode)
 
         # If we're not in ttymode, then the testing is simple.
-        if ttymode is False:
+        if not ttymode:
                 pe.cprint("testing  1  2  3")
                 pe.cprint("testing flush (2)")
                 pe.flush()

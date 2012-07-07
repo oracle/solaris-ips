@@ -26,6 +26,7 @@
 
 import locale
 import gettext
+import os
 import sys
 
 import pkg.client.printengine as printengine
@@ -40,7 +41,11 @@ if __name__ == "__main__":
         else:
                 output_file = sys.stdout
 
+        if os.isatty(output_file.fileno()):
+                ttymode = True
+        else:
+                ttymode = False
         print >> output_file, ("-" * 60)
         printengine.test_logging_printengine(output_file)
         print >> output_file, "\n\n" + ("-" * 60)
-        printengine.test_posix_printengine(output_file)
+        printengine.test_posix_printengine(output_file, ttymode)
