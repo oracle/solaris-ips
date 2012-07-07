@@ -31,6 +31,7 @@ render them to a file, a terminal, or a logger."""
 import errno
 import logging
 import os
+import re
 import time
 from abc import ABCMeta, abstractmethod
 import StringIO
@@ -82,12 +83,13 @@ class POSIXPrintEngine(PrintEngine):
                 self.__nchars_printed = 0
                 self.__needs_nl = 0
                 self.__cr = None
-                self.__clear_eol = None
                 self.__ttymode = ttymode
 
                 if not self.__ttymode:
                         return
 
+                self.__putp_re = re.compile("\$<[0-9]+>")
+                self.__el = None
                 try:
                         import curses
                         # Non-portable API; pylint: disable-msg=E0901
@@ -95,20 +97,38 @@ class POSIXPrintEngine(PrintEngine):
                                 raise PrintEngineException(
                                     "out_file is not a TTY")
 
-                        curses.setupterm()
+                        curses.setupterm(None, self._out_file.fileno())
                         self.__cr = curses.tigetstr("cr")
-                        #
-                        # Note: in the future, might want to handle
-                        # clear_eol being unavailable.
-                        #
-                        self.__clear_eol = curses.tigetstr("el") or ""
+                        self.__el = curses.tigetstr("el")
+
                 except KeyboardInterrupt:
                         raise
                 except PrintEngineException:
                         raise
-                except Exception, e:
-                        raise PrintEngineException(
-                            "Could not setup printengine: %s" % str(e))
+
+        def putp(self, string):
+                """This routine loosely emulates python's curses.putp, but
+                works on whatever our output file is, instead just stdout"""
+
+                assert self.__ttymode
+
+                # Hardware terminals are pretty much gone now; we choose
+                # to drop delays specified in termcap (delays are in the
+                # form: $<[0-9]+>).
+                self._out_file.write(self.__putp_re.sub("", string))
+
+        def erase(self):
+                """Send sequence to erase the current line to _out_file."""
+                if self.__el:
+                        self.putp(self.__cr)
+                        self.putp(self.__el)
+                        self.putp(self.__cr)
+                else:
+                        # fallback mode if we have no el; overwrite with
+                        # spaces.
+                        self.putp(self.__cr)
+                        self._out_file.write(self.__nchars_printed * ' ')
+                        self.putp(self.__cr)
 
         def cprint(self, *args, **kwargs):
                 """Core print routine.  Acts largely like py3k's print command,
@@ -120,11 +140,9 @@ class POSIXPrintEngine(PrintEngine):
                 sep = kwargs.get("sep", ' ')
                 outmsg = sep.join(args) + kwargs.get("end", '\n')
 
-                clearstring = ""
                 if kwargs.get("erase"):
                         assert self.__ttymode
-
-                        clearstring = self.__cr + self.__clear_eol
+                        self.erase()
                         # account for the erase setting the number of chars
                         # printed back to 0.
                         self.__nchars_printed = 0
@@ -150,7 +168,7 @@ class POSIXPrintEngine(PrintEngine):
                         self.__nchars_printed = len(outmsg) - (npos + 1)
 
                 try:
-                        self._out_file.write(clearstring + outmsg)
+                        self._out_file.write(outmsg)
                         self._out_file.flush()
                         #
                         # if indeed we printed a newline at the end, we know
@@ -277,13 +295,20 @@ def test_posix_printengine(output_file):
                 pe.flush()
                 return
 
+        pe.cprint("Now we'll print something and then erase it;")
+        pe.cprint("you should see a blank line below this line.")
+        pe.cprint("IF YOU CAN SEE THIS, THE TEST HAS FAILED", end='')
+        pe.cprint("", erase=True)
+
         pe.cprint("You should see an X swishing back and forth; from")
         pe.cprint("left to right it should be inverse.")
         # Unused variable 'y'; pylint: disable-msg=W0612
         for y in range(0, 2):
                 for x in xrange(0, 30, 1):
-                        pe.cprint(" " * x + standout + "X" + sgr0,
-                            erase=True, end='')
+                        pe.cprint(" " * x, erase=True, end='')
+                        pe.putp(standout)
+                        pe.cprint("X", end='')
+                        pe.putp(sgr0)
                         time.sleep(0.050)
                 for x in xrange(30, -1, -1):
                         pe.cprint(" " * x + "X", erase=True, end='')
