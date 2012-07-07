@@ -2290,12 +2290,13 @@ class FancyUNIXProgressTracker(ProgressTracker):
 
                 # The first time, emit header.
                 if outspec.first:
-                        self._pe.cprint("%-44s %11s %12s" %
+                        self._pe.cprint("%-44s %13s %11s" %
                             (_("ARCHIVE"), _("FILES"), _("STORE (MB)")))
 
                 mbs = format_pair("%.1f", self.archive_bytes.items,
-                    self.archive_bytes.goalitems, scale=(1024 * 1024))
-                s = "%-44.44s %11s %12s" % \
+                    self.archive_bytes.goalitems, scale=(1024 * 1024),
+		    targetwidth=5, format2="%d")
+                s = "%-44.44s %11s %11s" % \
                     (self._archive_name, self.archive_items.pair(), mbs)
                 self._pe.cprint(s, end='', erase=True)
 
@@ -2310,7 +2311,7 @@ class FancyUNIXProgressTracker(ProgressTracker):
 
                 # The first time, emit header.
                 if outspec.first:
-                        self._pe.cprint("%-36s %9s %11s %12s %7s" %
+                        self._pe.cprint("%-34s %9s %13s %12s %7s" %
                             (_("DOWNLOAD"), _("PKGS"), _("FILES"),
                             _("XFER (MB)"), _("SPEED")))
 
@@ -2318,8 +2319,8 @@ class FancyUNIXProgressTracker(ProgressTracker):
                         pkg_name = _("Completed")
                 else:
                         pkg_name = self.dl_pkgs.curinfo.get_name()
-                if len(pkg_name) > 36:
-                        pkg_name = "..." + pkg_name[-32:]
+                if len(pkg_name) > 34:
+                        pkg_name = "..." + pkg_name[-30:]
 
                 if outspec.last:
                         speedstr = self.dl_estimator.format_speed(
@@ -2344,7 +2345,7 @@ class FancyUNIXProgressTracker(ProgressTracker):
                 mbstr = format_pair("%.1f", self.dl_bytes.items,
                     self.dl_bytes.goalitems, scale=1024.0 * 1024.0,
                     targetwidth=5, format2="%d")
-                s = "%-36.38s %9s %11s %12s %7s" % \
+                s = "%-34.34s %9s %13s %12s %7s" % \
                     (pkg_name, self.dl_pkgs.pair(), self.dl_files.pair(),
                     mbstr, speedstr)
                 self._pe.cprint(s, end='', erase=True)
@@ -2360,7 +2361,7 @@ class FancyUNIXProgressTracker(ProgressTracker):
 
                 # The first time, emit header.
                 if outspec.first:
-                        self._pe.cprint("%-40s %12s %12s %12s" %
+                        self._pe.cprint("%-40s %12s %11s %11s" %
                             (_("PROCESS"), _("ITEMS"), _("GET (MB)"),
                             _("SEND (MB)")))
 
@@ -2371,12 +2372,14 @@ class FancyUNIXProgressTracker(ProgressTracker):
                 if len(pkg_name) > 40:
                         pkg_name = "..." + pkg_name[-37:]
 
-                s = "%-40.40s %12s %12s %12s" % \
+                s = "%-40.40s %12s %11s %11s" % \
                     (pkg_name, self.repub_pkgs.pair(),
                     format_pair("%.1f", self.dl_bytes.items,
-                        self.dl_bytes.goalitems, scale=(1024 * 1024)),
+                        self.dl_bytes.goalitems, scale=(1024 * 1024),
+			targetwidth=5, format2="%d"),
                     format_pair("%.1f", self.repub_send_bytes.items,
-                        self.repub_send_bytes.goalitems, scale=(1024 * 1024)))
+                        self.repub_send_bytes.goalitems, scale=(1024 * 1024),
+			targetwidth=5, format2="%d"))
                 self._pe.cprint(s, erase=True, end='')
 
                 if outspec.last:
