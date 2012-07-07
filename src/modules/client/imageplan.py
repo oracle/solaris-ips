@@ -145,10 +145,10 @@ class ImagePlan(object):
 
                 return s
 
-        def __setup_plan(self, plan, prepared=False):
+        def __setup_plan(self, plan):
                 assert plan.state in [
                     plandesc.UNEVALUATED, plandesc.EVALUATED_PKGS,
-                    plandesc.EVALUATED_OK, plandesc.PREEXECUTED_OK]
+                    plandesc.EVALUATED_OK]
 
                 self.pd = plan
                 self.__update_avail_space()
@@ -172,12 +172,6 @@ class ImagePlan(object):
                                 self.__target_install_count += 1
                         elif pp.origin_fmri:
                                 self.__target_removal_count += 1
-
-                if self.pd.state >= plandesc.PREEXECUTED_OK:
-                        self.__progtrack.evaluate_done(
-                            self.__target_install_count,
-                            self.__target_update_count,
-                            self.__target_removal_count)
 
         def skip_preexecute(self):
                 assert self.pd.state in \
