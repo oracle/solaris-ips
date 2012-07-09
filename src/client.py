@@ -6607,7 +6607,8 @@ to perform the requested operation.  Details follow:\n\n%s""") % __e)
 
 if __name__ == "__main__":
         misc.setlocale(locale.LC_ALL, "", error)
-        gettext.install("pkg", "/usr/share/locale")
+        gettext.install("pkg", "/usr/share/locale",
+            codeset=locale.getpreferredencoding())
 
         # Make all warnings be errors.
         import warnings

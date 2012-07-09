@@ -20,7 +20,7 @@
 # CDDL HEADER END
 
 #
-# Copyright (c) 2009, 2011, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2009, 2012, Oracle and/or its affiliates. All rights reserved.
 #
 
 # Prefixes should be ordered alphabetically with most specific first.
@@ -56,6 +56,7 @@ try:
         import errno
         import getopt
         import gettext
+        import locale
         import operator
         import os
         import re
@@ -489,7 +490,8 @@ def write_line(line, fileobj):
         print >> fileobj, output
 
 def main_func():
-        gettext.install("pkg", "/usr/share/locale")
+        gettext.install("pkg", "/usr/share/locale",
+            codeset=locale.getpreferredencoding())
         global opt_unwrap
         global opt_check
         global opt_diffs

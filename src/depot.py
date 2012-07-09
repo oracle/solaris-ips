@@ -19,7 +19,7 @@
 #
 # CDDL HEADER END
 #
-# Copyright (c) 2007, 2011 Oracle and/or its affiliates.  All rights reserved.
+# Copyright (c) 2007, 2012, Oracle and/or its affiliates.  All rights reserved.
 #
 
 # pkg.depotd - package repository daemon
@@ -228,7 +228,8 @@ class OptionError(Exception):
 if __name__ == "__main__":
 
         setlocale(locale.LC_ALL, "")
-        gettext.install("pkg", "/usr/share/locale")
+        gettext.install("pkg", "/usr/share/locale",
+            codeset=locale.getpreferredencoding())
 
         add_content = False
         exit_ready = False

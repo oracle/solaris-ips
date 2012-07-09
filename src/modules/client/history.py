@@ -26,8 +26,6 @@
 
 import copy
 import errno
-import gettext
-import locale
 import os
 import shutil
 import sys
@@ -104,31 +102,6 @@ error_results = {
     MemoryError: RESULT_FAILED_OUTOFMEMORY,
 }
 
-misc.setlocale(locale.LC_ALL, "")
-gettext.install("pkg", "/usr/share/locale")
-
-# since we store english text in our XML files, we need a way for clients
-# obtain a translated version of these messages.
-result_l10n = {
-    "Canceled": _("Canceled"),
-    "Failed": _("Failed"),
-    "Ignored": _("Ignored"),
-    "Nothing to do": _("Nothing to do"),
-    "Succeeded": _("Succeeded"),
-    "Bad Request": _("Bad Request"),
-    "Configuration": _("Configuration"),
-    "Constrained": _("Constrained"),
-    "Locked": _("Locked"),
-    "Search": _("Search"),
-    "Storage": _("Storage"),
-    "Transport": _("Transport"),
-    "Actuator": _("Actuator"),
-    "Out of Memory": _("Out of Memory"),
-    "Conflicting Actions": _("Conflicting Actions"),
-    "Unknown": _("Unknown"),
-    "None": _("None")
-}
-
 class _HistoryOperation(object):
         """A _HistoryOperation object is a representation of data about an
         operation that a pkg(5) client has performed.  This class is private
@@ -138,6 +111,8 @@ class _HistoryOperation(object):
         operations that History manages should these values need to be
         manipulated as they are set or retrieved.
         """
+
+        result_l10n = {}    # Static variable for dictionary
 
         def __copy__(self):
                 h = _HistoryOperation()
@@ -235,10 +210,35 @@ Operation Errors:
         def result_text(self):
                 """Returns a tuple containing the translated text for the
                 operation result of the form (outcome, reason)."""
+
+                if not _HistoryOperation.result_l10n:
+                        # since we store english text in our XML files, we
+                        # need a way for clients obtain a translated version
+                        # of these messages.
+                        _HistoryOperation.result_l10n = {
+                            "Canceled": _("Canceled"),
+                            "Failed": _("Failed"),
+                            "Ignored": _("Ignored"),
+                            "Nothing to do": _("Nothing to do"),
+                            "Succeeded": _("Succeeded"),
+                            "Bad Request": _("Bad Request"),
+                            "Configuration": _("Configuration"),
+                            "Constrained": _("Constrained"),
+                            "Locked": _("Locked"),
+                            "Search": _("Search"),
+                            "Storage": _("Storage"),
+                            "Transport": _("Transport"),
+                            "Actuator": _("Actuator"),
+                            "Out of Memory": _("Out of Memory"),
+                            "Conflicting Actions": _("Conflicting Actions"),
+                            "Unknown": _("Unknown"),
+                            "None": _("None")
+                        }
+
                 if not self.start_time or not self.result:
                         return ("", "")
-                return (result_l10n[self.result[0]],
-                    result_l10n[self.result[1]])
+                return (_HistoryOperation.result_l10n[self.result[0]],
+                    _HistoryOperation.result_l10n[self.result[1]])
 
 
 class History(object):

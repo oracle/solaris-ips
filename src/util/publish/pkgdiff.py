@@ -26,6 +26,7 @@
 
 import getopt
 import gettext
+import locale
 import sys
 import traceback
 
@@ -59,7 +60,8 @@ def error(text, exitcode=1):
                 sys.exit(exitcode)
 
 def main_func():
-        gettext.install("pkg", "/usr/share/locale")
+        gettext.install("pkg", "/usr/share/locale",
+            codeset=locale.getpreferredencoding())
 
         ignoreattrs = []
         onlyattrs = []

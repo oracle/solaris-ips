@@ -39,6 +39,7 @@
     pkg:/system/library/dbus
     pkg:/system/library/math
     pkg:/system/linker
+    pkg:/system/locale/extra
     pkg:/system/network
     pkg:/text/gnu-grep
     pkg:/text/locale

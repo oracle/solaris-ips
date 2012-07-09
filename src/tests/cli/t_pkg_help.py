@@ -20,16 +20,21 @@
 # CDDL HEADER END
 #
 
-# Copyright (c) 2009, 2010, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2009, 2012, Oracle and/or its affiliates. All rights reserved.
 
 import testutils
 if __name__ == "__main__":
         testutils.setup_environment("../../../proto")
 import pkg5unittest
 
+import codecs
+import os
+import re
 import unittest
 
 class TestPkgHelp(pkg5unittest.CliTestCase):
+        # Tests in this suite use the read only data directory.
+        need_ro_data = True
 
         def test_help(self):
                 """Verify that usage message works regardless of how it is
@@ -82,6 +87,47 @@ class TestPkgHelp(pkg5unittest.CliTestCase):
                             "Usage:"], unexpected=[
                             "pkg [options] command [cmd_options] [operands]",
                             "PKG_IMAGE"])
+
+        def test_help_character_encoding(self):
+                """Verify help command output for ja_JP.eucJP locale.
+                Match against the expected output"""
+
+                # This is a test case for CR 7166082.
+                # It compares the output of "pkg --help" command against
+                # the expected output for ja_JP.eucJP locale.
+                # If first 4 lines of "pkg --help" command output modified
+                # in the future then this test case will also need to be
+                # modified.
+
+                ret, out = self.cmdline_run("/usr/bin/locale -a", out=True)
+                line = " ".join(out.split())
+                m = re.search(r"ja_JP.eucJP", line)
+                self.assert_(m, "You must have ja_JP.eucJP"
+                    " locale installed for this test to succeed.")
+
+                eucJP_encode_file = os.path.join(self.ro_data_root,
+                    "pkg.help.eucJP.expected.out")
+                f = codecs.open(eucJP_encode_file, encoding="eucJP")
+
+                locale_env = { "LC_ALL": "ja_JP.eucJP" }
+                ret, out, err = self.pkg("--help", env_arg=locale_env,
+                    out=True, stderr=True)
+                cmd_out = unicode(err, encoding="eucJP")
+                # Take only 4 lines from "pkg --help" command output.
+                u_out = cmd_out.splitlines()[:4]
+
+                n = 0
+                # The expected output file contain 4 lines and command output
+                # is also 4 lines.
+                while n < 4:
+                        cmd_line = u_out[n]
+                        # Remove \n from readline()
+                        file_line = f.readline()[:-1]
+
+                        self.assertEqual(cmd_line, file_line)
+                        n = n + 1
+
+                f.close()
 
 if __name__ == "__main__":
         unittest.main()

@@ -20,11 +20,12 @@
 # CDDL HEADER END
 
 #
-# Copyright (c) 2009, 2011, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2009, 2012, Oracle and/or its affiliates. All rights reserved.
 #
 
 import getopt
 import gettext
+import locale
 import os
 import re
 import shlex
@@ -661,7 +662,8 @@ def error(text, exitcode=1):
                 sys.exit(exitcode)
 
 def main_func():
-        gettext.install("pkg", "/usr/share/locale")
+        gettext.install("pkg", "/usr/share/locale",
+            codeset=locale.getpreferredencoding())
 
         outfilename = None
         printfilename = None

@@ -21,17 +21,16 @@
 #
     
 #
-# Copyright (c) 2010, 2011 Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2010, 2012, Oracle and/or its affiliates. All rights reserved.
 #
 
 import codecs
 import logging
 import sys
 import gettext
+import locale
 import traceback
 from optparse import OptionParser
-
-gettext.install("pkg", "/usr/share/locale")
 
 from pkg.client.api_errors import InvalidPackageErrors
 from pkg import VERSION
@@ -56,6 +55,9 @@ def debug(message):
 
 def main_func():
         """Start pkglint."""
+
+        gettext.install("pkg", "/usr/share/locale",
+            codeset=locale.getpreferredencoding())
 
         global logger
         
