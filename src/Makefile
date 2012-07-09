@@ -36,7 +36,6 @@ pylint := TARGET = pylint
 test := TARGET = test
 test-verbose := TARGET = test-verbose
 test-generate := TARGET = test-generate
-test-leaks := TARGET = test-leaks
 
 SUBDIRS=zoneproxy tsol
 
@@ -90,8 +89,5 @@ test-verbose:
 
 test-generate:
 	$(PYTHON) setup.py test -g
-
-test-leaks:
-	@cd tests; pwd; /bin/ksh memleaks.ksh
 
 FRC:

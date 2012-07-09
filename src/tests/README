@@ -1,6 +1,5 @@
 
-Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
-Use is subject to license terms.
+Copyright (c) 2007, 2012, Oracle and/or its affiliates. All rights reserved.
 
 tests/README
 
@@ -31,12 +30,7 @@ tests/README
   The code coverage collection is done with Ned Batchelder's "coverage.py"
   tool [1].
 
-  2.  Pending work.
-
-  The special dependency scenarios in "old" should be recoded as part of
-  the cli test suite.
-
-  3.  References
+  2.  References
 
   [1] N. Batchelder, coverage module, 2009.
       http://nedbatchelder.com/code/coverage/
