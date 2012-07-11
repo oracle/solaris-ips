@@ -6309,6 +6309,9 @@ class TestPkgInstallLicense(pkg5unittest.SingleDepotTestCase):
 
         persistent_depot = True
 
+        # Tests in this suite use the read only data directory.
+        need_ro_data = True
+
         baz10 = """
             open baz@1.0,5.11-0
             add license copyright.baz license=copyright.baz
@@ -6343,12 +6346,47 @@ class TestPkgInstallLicense(pkg5unittest.SingleDepotTestCase):
         misc_files = ["copyright.baz", "copyright.licensed", "libc.so.1",
             "license.licensed", "license.licensed.addendum"]
 
+        # Packages with copyright in non-ascii character
+        nonascii10 = """
+            open nonascii@1.0,5.11-0
+            add license 88591enc.copyright license=copyright
+            close """
+
+        # Packages with copyright in non-ascii character
+        utf8enc10 = """
+            open utf8enc@1.0,5.11-0
+            add license utf8enc.copyright license=copyright
+            close """
+
+        # Packages with copyright in unsupported character set
+        unsupported10 = """
+            open unsupported@1.0,5.11-0
+            add license unsupported.copyright license=copyright
+            close """
+
         def setUp(self):
                 pkg5unittest.SingleDepotTestCase.setUp(self, publisher="bobcat")
                 self.make_misc_files(self.misc_files)
 
+                # Use license with latin1 i.e 88591 encoding
+                n_copyright = os.path.join(self.ro_data_root,
+                    "88591enc.copyright")
+                self.make_misc_files({"88591enc.copyright": n_copyright})
+
+                # Use utf-8 encoding license
+                utf_copyright = os.path.join(self.ro_data_root,
+                    "utf8enc.copyright")
+                self.make_misc_files({"utf8enc.copyright": utf_copyright})
+
+                # Use unsupported license
+                u_copyright = os.path.join(self.ro_data_root,
+                    "unsupported.copyright")
+                self.make_misc_files({"unsupported.copyright": u_copyright})
+
                 self.plist = self.pkgsend_bulk(self.rurl, (self.licensed10,
-                    self.licensed12, self.licensed13, self.baz10))
+                    self.licensed12, self.licensed13, self.baz10,
+                    self.nonascii10, self.utf8enc10, self.unsupported10))
+
 
         def test_01_install_update(self):
                 """Verifies that install and update handle license
@@ -6420,6 +6458,15 @@ class TestPkgInstallLicense(pkg5unittest.SingleDepotTestCase):
                             [self.plist[2], "license.licensed",
                             "license.licensed", True, False]]])
                 self.pkg("info licensed@1.3")
+
+        def test_02_bug_7127117(self):
+                """Verifies that install with --parsable handles licenses
+                with non-ascii & non UTF locale"""
+                self.image_create(self.rurl, prefix="bobcat")
+
+                self.pkg("install --parsable=0 nonascii@1.0")
+                self.pkg("install --parsable=0 utf8enc@1.0")
+                self.pkg("install --parsable=0 unsupported@1.0")
 
 
 class TestActionErrors(pkg5unittest.SingleDepotTestCase):

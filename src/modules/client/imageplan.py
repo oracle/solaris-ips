@@ -2065,18 +2065,6 @@ class ImagePlan(object):
                 must_display = False
                 notes = []
 
-                def do_decode(s):
-                        """convert non-ascii strings to unicode;
-                        replace non-convertable chars"""
-                        try:
-                                # this will fail if any 8 bit chars in string
-                                # this is a nop if string is ascii.
-                                s = s.encode("ascii")
-                        except ValueError:
-                                # this will encode 8 bit strings into unicode
-                                s = s.decode("utf-8", "replace")
-                        return s
-
                 if release_notes:
                         installed_dict = ImagePlan.__fmris2dict(
                             self.image.gen_installed_pkgs())
@@ -2088,7 +2076,7 @@ class ImagePlan(object):
                                                 must_display = True
                                         for l in self.__get_note_text(
                                             act, pfmri).splitlines():
-                                                notes.append(do_decode(l))
+                                                notes.append(misc.decode(l))
                                         
                         self.pd.release_notes = (must_display, notes)
 

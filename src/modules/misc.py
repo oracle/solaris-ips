@@ -2420,3 +2420,15 @@ def get_runtime_proxy(proxy, uri):
                 return
 
         return runtime_proxy
+
+def decode(s):
+        """convert non-ascii strings to unicode;
+        replace non-convertable chars"""
+        try:
+                # this will fail if any 8 bit chars in string
+                # this is a nop if string is ascii.
+                s = s.encode("ascii")
+        except ValueError:
+                # this will encode 8 bit strings into unicode
+                s = s.decode("utf-8", "replace")
+        return s
