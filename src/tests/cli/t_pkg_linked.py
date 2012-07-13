@@ -346,6 +346,7 @@ class TestPkgLinked(pkg5unittest.ManyDepotTestCase):
                             (args, self.i_name[c], self.i_path[c]),
                             rv=rv)
 
+
 class TestPkgLinked1(TestPkgLinked):
         def test_not_linked(self):
                 self._imgs_create(1)
@@ -1062,6 +1063,7 @@ class TestPkgLinked1(TestPkgLinked):
                 self._pkg_child(0, [1, 2, 3], "audit-linked")
                 self._pkg_child_all(0, "audit-linked")
 
+
 class TestPkgLinked2(TestPkgLinked):
         """Class used solely to split up the test suite for parallelization."""
 
@@ -1291,7 +1293,7 @@ class TestPkgLinked2(TestPkgLinked):
                 # check unsynced packages
                 self._pkg([1, 2], "list -v %s" % self.p_foo1_name[2])
 
-        def test_sync_2_via_change_variant(self):
+        def test_no_sync_2_via_change_variant(self):
                 self._imgs_create(3)
 
                 # install different synced package into each image
@@ -1312,16 +1314,13 @@ class TestPkgLinked2(TestPkgLinked):
 
                 # sync child
                 self._pkg([1, 2], "change-variant -v variant.foo=baz")
-                self._pkg([1, 2], "audit-linked")
+                self._pkg([1, 2], "audit-linked", rv=EXIT_DIVERGED)
                 self._pkg([1, 2], "change-variant -v variant.foo=baz",
                     rv=EXIT_NOP)
-                self._pkg([1, 2], "sync-linked -v", rv=EXIT_NOP)
 
                 # check unsynced packages
                 self._pkg([1, 2], "list -v %s" % self.p_foo1_name[2])
 
-        def test_sync_2_via_set_property_linked_TODO(self):
-                pass
 
 class TestPkgLinked3(TestPkgLinked):
         """Class used solely to split up the test suite for parallelization."""
@@ -1408,7 +1407,7 @@ class TestPkgLinked3(TestPkgLinked):
                     rv=EXIT_NOP)
                 self._pkg([1], "audit-linked")
 
-        def test_parent_sync_2_via_change_variant(self):
+        def test_parent_no_sync_2_via_change_variant(self):
                 self._imgs_create(2)
 
                 # install synced package into each image
@@ -1423,10 +1422,7 @@ class TestPkgLinked3(TestPkgLinked):
                 self._pkg([1], "change-variant -v -n variant.foo=baz")
                 self._pkg([1], "change-variant -v variant.foo=baz")
                 self._pkg([1], "change-variant -v variant.foo=baz", rv=EXIT_NOP)
-                self._pkg([1], "audit-linked")
-
-        def test_parent_sync_2_via_set_property_linked_TODO(self):
-                pass
+                self._pkg([1], "audit-linked", rv=EXIT_DIVERGED)
 
         def test_install_constrainted(self):
                 self._imgs_create(3)

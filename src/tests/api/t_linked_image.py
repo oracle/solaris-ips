@@ -766,7 +766,7 @@ packages known:
                     lin=self.i_lin[1], li_path=self.i_path[0],
                     li_md_only=True)
 
-                # try to modify image.
+                # try to modify sycned packages.
                 # no version of synced package is in the parent
                 assertRaises(
                     (apx_verify, {
@@ -787,16 +787,13 @@ packages known:
                         "e_type": apx.PlanCreationException,
                         "e_member": "no_version"}),
                     lambda *args, **kwargs: list(
-                        api_objs[1].gen_plan_change_varcets(*args, **kwargs)),
-                        variants={"variant.foo": "baz"})
-
-                assertRaises(
-                    (apx_verify, {
-                        "e_type": apx.PlanCreationException,
-                        "e_member": "no_version"}),
-                    lambda *args, **kwargs: list(
                         api_objs[1].gen_plan_install(*args, **kwargs)),
                         [self.p_sync1_name[0]])
+
+                # but change variant is allowed since it's not taking us
+                # further out of sync
+                api_objs[1].gen_plan_change_varcets(
+                    variants={"variant.foo": "baz"})
 
                 # install a synced package into 1
                 self._api_install(api_objs[0], [self.p_sync1_name[2]],
@@ -823,17 +820,13 @@ packages known:
                         "e_type": apx.PlanCreationException,
                         "e_member": "no_version"}),
                     lambda *args, **kwargs: list(
-                        api_objs[1].gen_plan_change_varcets(*args,
-                            **kwargs)),
-                        variants={"variant.foo": "baz"})
-
-                assertRaises(
-                    (apx_verify, {
-                        "e_type": apx.PlanCreationException,
-                        "e_member": "no_version"}),
-                    lambda *args, **kwargs: list(
                         api_objs[1].gen_plan_install(*args, **kwargs)),
                         [self.p_sync1_name[0]])
+
+                # but change variant is allowed since it's not taking us
+                # further out of sync
+                api_objs[1].gen_plan_change_varcets(
+                    variants={"variant.foo": "baz"})
 
         def test_err_pubcheck(self):
                 """Verify the linked image publisher sync check."""
@@ -1156,19 +1149,6 @@ packages known:
                 self._api_uninstall(api_objs[0], [
                     self.p_sync3_name[1], self.p_sync4_name[1]])
 
-                # try to install a newer version of the incorporation
-                e = assertRaises(
-                    (apx_verify, {
-                        "e_type": apx.PlanCreationException,
-                        "e_member": "no_version"}),
-                    lambda *args, **kwargs: list(
-                        api_objs[1].gen_plan_install(*args, **kwargs)),
-                        [self.p_foo_incorp_name[0]])
-
-                # make sure the error message mentions both synced packages.
-                substring_verify(str(e), self.p_sync3_name[1])
-                substring_verify(str(e), self.p_sync4_name[1])
-
                 # try to update
                 e = assertRaises(
                     (apx_verify, {
@@ -1317,6 +1297,92 @@ packages known:
                 # update the synced package in the parent again so it delivers
                 # no content.
                 self._api_install(api_objs[0], [self.p_sync5_name[0]])
+
+        def test_unsynced_image_operations(self):
+                """Verify that package operations which modify unsynced
+                packages can be performed on an out of sync image."""
+
+                api_objs = self._imgs_create(2)
+
+                # install synced package into the images
+                # make sure the child has a newer synced package
+                self._api_install(api_objs[0], [self.p_sync1_name[2],
+                   self.p_sync2_name[2], self.p_sync3_name[0],
+                   self.p_sync4_name[2]])
+                self._api_install(api_objs[0], [self.p_sync1_name[2]])
+                self._api_install(api_objs[1], [self.p_sync1_name[1],
+                    self.p_sync2_name[1], self.p_sync3_name[1],
+                    self.p_sync4_name[1]])
+
+                # link the images
+                self._children_attach(0, [1], li_md_only=True)
+
+                # verify that our image is out of sync
+                lin = api_objs[1].get_linked_name()
+                rvdict = api_objs[1].audit_linked()
+                self.assertEqual(rvdict[lin].rvt_rv, EXIT_DIVERGED)
+
+                # verify that we can install an unsynced package
+                self._api_install(api_objs[1], [self.p_foo1_name[2]])
+
+                # verify that we can update an unsynced package
+                self._api_update(api_objs[1], pkgs_update=[self.p_foo1_name[1]])
+
+                # verify that we can downgrade an unsynced package
+                self._api_update(api_objs[1], pkgs_update=[self.p_foo1_name[2]])
+
+                # verify that we can bring a package into sync via downgrade
+                self._api_update(api_objs[1],
+                    pkgs_update=[self.p_sync2_name[2]])
+
+                # verify that we can bring a package into sync via upgrade
+                self._api_update(api_objs[1],
+                    pkgs_update=[self.p_sync3_name[0]])
+
+                # verify that we can uninstall an out of sync package
+                self._api_uninstall(api_objs[1], [self.p_sync4_name[1]])
+
+                # verify that we can install an in sync package.
+                self._api_install(api_objs[1], [self.p_sync4_name[2]])
+
+                # verify that we can uninstall an in sync package.
+                self._api_uninstall(api_objs[1], [self.p_sync4_name[2]])
+
+                # verify that a sync fails (parent has older package)
+                assertRaises(
+                    (apx_verify, {
+                        "e_type": apx.PlanCreationException}),
+                    lambda *args, **kwargs: list(
+                        api_objs[1].gen_plan_sync(*args, **kwargs)))
+
+                # verify that we can't install a new out of sync package
+                assertRaises(
+                    (apx_verify, {
+                        "e_type": apx.PlanCreationException}),
+                    lambda *args, **kwargs: list(
+                        api_objs[1].gen_plan_install(*args, **kwargs)),
+                        [self.p_sync4_name[0]])
+
+                # verify that we can't update an installed out of sync package
+                assertRaises(
+                    (apx_verify, {
+                        "e_type": apx.PlanCreationException}),
+                    lambda *args, **kwargs: list(
+                        api_objs[1].gen_plan_install(*args, **kwargs)),
+                        [self.p_sync1_name[0]])
+
+                # verify that we can't do a general update
+                assertRaises(
+                    (apx_verify, {
+                        "e_type": apx.PlanCreationException}),
+                    lambda *args, **kwargs: list(
+                        api_objs[1].gen_plan_update(*args, **kwargs)))
+
+                # verify that our image is still out of sync
+                lin = api_objs[1].get_linked_name()
+                rvdict = api_objs[1].audit_linked()
+                self.assertEqual(rvdict[lin].rvt_rv, EXIT_DIVERGED)
+
 
 if __name__ == "__main__":
         unittest.main()

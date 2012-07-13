@@ -354,12 +354,18 @@ class ImagePlan(object):
                     self.image.linked.parent_fmris(),
                     self.__progtrack)
 
+                # If this isn't a sync-linked operation then set
+                # ignore_inst_parent_deps to True to allow us to modify
+                # out of sync images.
+                ignore_inst_parent_deps = not li_sync_op
+
                 # Solve... will raise exceptions if no solution is found
                 new_vector, self.pd._new_avoid_obs = solver.solve_install(
                         self.image.get_frozen_list(), inst_dict,
                         new_variants=new_variants, new_facets=new_facets,
                         excludes=self.__new_excludes, reject_set=reject_set,
-                        relax_all=li_sync_op)
+                        relax_all=li_sync_op,
+                        ignore_inst_parent_deps=ignore_inst_parent_deps)
 
                 self.pd._fmri_changes = self.__vector_2_fmri_changes(
                     installed_dict, new_vector,
@@ -609,9 +615,12 @@ class ImagePlan(object):
                     self.image.linked.parent_fmris(),
                     self.__progtrack)
 
+                # Set ignore_inst_parent_deps to True to allow us to
+                # modify out of sync images.
                 new_vector, self.pd._new_avoid_obs = solver.solve_uninstall(
                     self.image.get_frozen_list(), proposed_removals,
-                    self.__new_excludes)
+                    self.__new_excludes,
+                    ignore_inst_parent_deps=True)
 
                 self.pd._fmri_changes = [
                     (a, b)
@@ -664,12 +673,15 @@ class ImagePlan(object):
                     self.__progtrack)
 
                 if pkgs_update:
+                        # Set ignore_inst_parent_deps to True to allow us to
+                        # modify out of sync images.
                         new_vector, self.pd._new_avoid_obs = \
                             solver.solve_install(
                                 self.image.get_frozen_list(),
                                 update_dict, excludes=self.__new_excludes,
                                 reject_set=reject_set,
-                                trim_proposed_installed=False)
+                                trim_proposed_installed=False,
+                                ignore_inst_parent_deps=True)
                 else:
                         # Updating all installed packages requires a different
                         # solution path.

@@ -238,7 +238,7 @@ class PkgSolver(object):
         def solve_install(self, existing_freezes, proposed_dict,
             new_variants=None, new_facets=None, excludes=EmptyI,
             reject_set=frozenset(), trim_proposed_installed=True,
-            relax_all=False):
+            relax_all=False, ignore_inst_parent_deps=False):
                 """Logic to install packages, change variants, and/or change
                 facets.
 
@@ -271,7 +271,14 @@ class PkgSolver(object):
 
                 'relax_all' indicates if the solver should relax all install
                 holds, or only install holds specified by proposed packages.
-                """
+
+                'ignore_inst_parent_deps' indicates if the solver should
+                ignore parent dependencies for installed packages.  This
+                allows us to modify images with unsatisfied parent
+                dependencies (ie, out of sync images).  Any packaging
+                operation which needs to guarantee that we have an in sync
+                image (for example, sync-linked operations, or any recursive
+                packaging operations) should NOT enable this behavior."""
 
                 # Once solution has been returned or failure has occurred, a new
                 # solver must be used.
@@ -462,7 +469,8 @@ class PkgSolver(object):
                 # trim any non-matching variants, origins or parents
                 for f in possible_set:
                         self.__progress()
-                        if self.__trim_nonmatching_parents(f, excludes):
+                        if self.__trim_nonmatching_parents(f, excludes,
+                            ignore_inst_parent_deps):
                                 if self.__trim_nonmatching_variants(f):
                                         self.__trim_nonmatching_origins(f,
                                             excludes)
@@ -849,7 +857,8 @@ class PkgSolver(object):
                 return self.__cleanup((self.__elide_possible_renames(solution,
                     excludes), (self.__avoid_set, self.__obs_set)))
 
-        def solve_uninstall(self, existing_freezes, uninstall_list, excludes):
+        def solve_uninstall(self, existing_freezes, uninstall_list, excludes,
+            ignore_inst_parent_deps=False):
                 """Compute changes needed for uninstall"""
 
                 # Once solution has been returned or failure has occurred, a new
@@ -884,7 +893,8 @@ class PkgSolver(object):
                 # Run it through the solver; with more complex dependencies
                 # we're going to be out of luck without it.
                 return self.solve_install(existing_freezes, {},
-                    excludes=excludes, reject_set=reject_set)
+                    excludes=excludes, reject_set=reject_set,
+                    ignore_inst_parent_deps=ignore_inst_parent_deps)
 
         def __update_solution_set(self, solution, excludes):
                 """Update avoid set w/ any missing packages (due to reject).
@@ -2090,7 +2100,8 @@ class PkgSolver(object):
                 self.__trim(pkg_fmri, reason)
                 return False
 
-        def __trim_nonmatching_parents(self, pkg_fmri, excludes):
+        def __trim_nonmatching_parents(self, pkg_fmri, excludes,
+            ignore_inst_parent_deps=False):
                 """Trim any pkg_fmri that contains a parent dependency that
                 is not satisfied by the parent image."""
 
@@ -2099,6 +2110,12 @@ class PkgSolver(object):
 
                 # if we're not a child then ignore "parent" dependencies.
                 if self.__parent_pkgs == None:
+                        return True
+
+                # check if we're ignoring parent dependencies for installed
+                # packages.
+                if ignore_inst_parent_deps and \
+                    pkg_fmri in self.__installed_fmris:
                         return True
 
                 # Find all the fmris that we depend on in our parent.
