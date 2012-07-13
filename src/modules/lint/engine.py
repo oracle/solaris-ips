@@ -37,20 +37,30 @@ import logging
 import os
 import shutil
 import sys
+import urllib2
 
 PKG_CLIENT_NAME = "pkglint"
 CLIENT_API_VERSION = 73
 pkg.client.global_settings.client_name = PKG_CLIENT_NAME
 
 class LintEngineException(Exception):
-        """An exception thrown when something fatal goes wrong with the engine.
-            """
+        """An exception thrown when something fatal goes wrong with the engine,
+        such that linting can no longer continue."""
+
         def __unicode__(self):
                 # To workaround python issues 6108 and 2517, this provides a
                 # a standard wrapper for this class' exceptions so that they
                 # have a chance of being stringified correctly.
                 return str(self)
 
+class LintEngineSetupException(LintEngineException):
+        """An exception thrown when the engine failed to complete its setup."""
+
+        def __unicode__(self):
+                # To workaround python issues 6108 and 2517, this provides a
+                # a standard wrapper for this class' exceptions so that they
+                # have a chance of being stringified correctly.
+                return str(self)
 
 class LintEngineCache():
         """This class provides two caches for the LintEngine.  A cache of the
@@ -77,7 +87,7 @@ class LintEngineCache():
                                 self.branch = DotSequence(
                                     combined.split("-")[1])
                         except pkg.version.IllegalDotSequence:
-                                raise LintEngineException(
+                                raise LintEngineSetupException(
                                     _("Invalid release string: %s") %
                                     self.release)
 
@@ -366,7 +376,7 @@ class LintEngine(object):
                 unique_names = set()
                 for checker in self.checkers:
                         if checker.name in unique_names:
-                                raise LintEngineException(
+                                raise LintEngineSetupException(
                                     _("loading extensions: "
                                     "duplicate checker name %(name)s: "
                                     "%(class)s") %
@@ -379,7 +389,7 @@ class LintEngine(object):
                             checker.excluded_checks:
 
                                 if pkglint_id in unique_methods:
-                                        raise LintEngineException(_(
+                                        raise LintEngineSetupException(_(
                                             "loading extension "
                                             "%(checker)s: duplicate pkglint_id "
                                             "%(pkglint_id)s in %(method)s") %
@@ -396,7 +406,7 @@ class LintEngine(object):
                         conf = pkg.lint.config.PkglintConfig(
                             config_file=config).config
                 except (pkg.lint.config.PkglintConfigException), err:
-                        raise LintEngineException(err)
+                        raise LintEngineSetupException(err)
 
                 excl = []
 
@@ -429,7 +439,7 @@ class LintEngine(object):
                                         self.excluded_checkers.extend(exclude)
 
                                 except base.LintException, err:
-                                        raise LintEngineException(
+                                        raise LintEngineSetupException(
                                             _("Error parsing config value for "
                                             "%(key)s: %(err)s") % locals())
 
@@ -501,12 +511,12 @@ class LintEngine(object):
                     release=release)
 
                 if not cache and not lint_manifests:
-                        raise LintEngineException(
+                        raise LintEngineSetupException(
                             _("Either a cache directory, or some local "
                             "manifest files must be provided."))
 
                 if not cache and (ref_uris or lint_uris):
-                        raise LintEngineException(
+                        raise LintEngineSetupException(
                             _("A cache directory must be provided if using "
                             "reference or lint repositories."))
 
@@ -541,7 +551,7 @@ class LintEngine(object):
                                             self.tracker_phase)
 
                         except LintEngineException, err:
-                                raise LintEngineException(
+                                raise LintEngineSetupException(
                                     _("Unable to create lint image: %s") %
                                     str(err))
                         try:
@@ -561,7 +571,7 @@ class LintEngine(object):
                                 if not self.ref_api_inst and ref_uris:
                                         if not (self.lint_api_inst or \
                                             lint_manifests):
-                                                raise LintEngineException(
+                                                raise LintEngineSetupException(
                                                     "No lint image or manifests"
                                                     " provided.")
                                         self.ref_api_inst = self._create_image(
@@ -576,12 +586,12 @@ class LintEngine(object):
                                             self.tracker_phase)
 
                         except LintEngineException, err:
-                                raise LintEngineException(
+                                raise LintEngineSetupException(
                                     _("Unable to create reference image: %s") %
                                     str(err))
 
                         if not (self.ref_api_inst or self.lint_api_inst):
-                                raise LintEngineException(
+                                raise LintEngineSetupException(
                                     _("Unable to access any pkglint images "
                                    "under %s") % cache)
 
@@ -620,7 +630,7 @@ class LintEngine(object):
                         elif isinstance(checker, base.ActionChecker):
                                 action_checks.append(checker)
                         else:
-                                raise LintEngineException(
+                                raise LintEngineSetupException(
                                     _("%s does not subclass a known "
                                     "Checker subclass intended for use by "
                                     "pkglint extensions") % str(checker))
@@ -820,7 +830,7 @@ class LintEngine(object):
                                 # update interval
                                 api_inst.refresh(immediate=True)
                 except Exception, err:
-                        raise LintEngineException(
+                        raise LintEngineSetupException(
                             _("Unable to get image at %(dir)s: %(reason)s") %
                             {"dir": image_dir,
                             "reason": str(err)})
@@ -834,7 +844,7 @@ class LintEngine(object):
                 a single publisher is supported per image."""
 
                 if len(repo_uris) != 1:
-                        raise LintEngineException(
+                        raise LintEngineSetupException(
                             _("pkglint only supports a single publisher "
                             "per image."))
 
@@ -846,6 +856,13 @@ class LintEngine(object):
                 self.tracker.flush()
                 self.logger.debug(_("Creating image at %s") % image_dir)
 
+                # Check to see if a scheme was used, if not, treat it as a
+                # file:// URI, and get the absolute path.  Missing or invalid
+                # repositories will be caught by pkg.client.api.image_create.
+                if not urllib2.urlparse.urlparse(repo_uris[0]).scheme:
+                        repo_uris[0] = "file://%s" % \
+                            urllib2.quote(os.path.abspath(repo_uris[0]))
+
                 try:
                         api_inst = pkg.client.api.image_create(
                             PKG_CLIENT_NAME, CLIENT_API_VERSION, image_dir,
@@ -854,7 +871,7 @@ class LintEngine(object):
                             progtrack=tracker, refresh_allowed=refresh_allowed,
                             repo_uri=repo_uris[0])
                 except (ApiException, OSError, IOError), err:
-                        raise LintEngineException(err)
+                        raise LintEngineSetupException(err)
                 return api_inst
 
         def _check_manifest(self, manifest, manifest_checks, action_checks):

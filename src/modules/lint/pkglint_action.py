@@ -1,3 +1,4 @@
+import os.path
 #!/usr/bin/python
 #
 # CDDL HEADER START
@@ -32,6 +33,7 @@ import pkg.fmri
 import pkg.lint.base as base
 from pkg.actions import ActionError
 from pkg.actions.file import FileAction
+import re
 import stat
 import string
 
@@ -448,8 +450,8 @@ class PkgDupActionChecker(base.ActionChecker):
 
                 # prune out any valid overlay file action-pairs.
                 if attr_name == "path" and action.name == "file":
-                        conflict_actions, errors = _prune_overlays(
-                            self, conflict_actions, ref_dic, pkg_vars)
+                        conflict_actions, errors = self._prune_overlays(
+                            conflict_actions, ref_dic, pkg_vars)
                         if only_overlays:
                                 for error, sub_id in errors:
                                         engine.error(error, msgid="%s%s.%s" %
@@ -736,186 +738,236 @@ class PkgDupActionChecker(base.ActionChecker):
                                         l.append((pfmri, action))
                         target[p] = l
 
-def _prune_overlays(self, actions, ref_dic, pkg_vars):
-        """Given a list of file actions that all deliver to the same path,
-        return that list minus any actions that are attempting to use overlays.
-        Also  return a list of tuples containing any overlay-related errors
-        encountered, in the the format [ (<error msg>, <id>), ... ]
-        """
+        def _prune_overlays(self, actions, ref_dic, pkg_vars):
+                """Given a list of file actions that all deliver to the same
+                path, return that list minus any actions that are attempting to
+                use overlays. Also return a list of tuples containing any
+                overlay-related errors encountered, in the the format:
 
-        if not actions:
-                return [], []
+                    [ (<error msg>, <id>), ... ]
 
-        path = actions[0].attrs["path"]
-        # action_fmris is a list of (fmri, action) tuples
-        action_fmris = ref_dic[path]
-        # When printing errors, we emit all FMRIs that are taking part in the
-        # duplication of this path.
-        fmris = sorted(set([str(fmri) for fmri, action in action_fmris]))
-
-        def _remove_attrs(action):
-                """returns a string representation of the given action with
-                all non-variant attributes other than path and overlay removed.
-                Used for comparison of overlay actions.
                 """
-                action_copy = copy.deepcopy(action)
-                for key in action_copy.attrs.keys():
-                        if key in ["path", "overlay"]:
-                                continue
-                        elif key.startswith("variant"):
-                                continue
+
+                if not actions:
+                        return [], []
+
+                path = actions[0].attrs["path"]
+                # action_fmris is a list of (fmri, action) tuples
+                action_fmris = ref_dic[path]
+                # When printing errors, we emit all FMRIs that are taking part
+                # in the duplication of this path.
+                fmris = sorted(set(
+                    [str(fmri) for fmri, action in action_fmris]))
+
+                def _remove_attrs(action):
+                        """returns a string representation of the given action
+                        with all non-variant attributes other than path and
+                        overlay removed. Used for comparison of overlay actions.
+                        """
+                        action_copy = copy.deepcopy(action)
+                        for key in action_copy.attrs.keys():
+                                if key in ["path", "overlay"]:
+                                        continue
+                                elif key.startswith("variant"):
+                                        continue
+                                else:
+                                        del action_copy.attrs[key]
+                        return str(action_copy)
+
+                def _get_fmri(action, action_fmris):
+                        """return the fmri for a given action."""
+                        for fmri, ac in action_fmris:
+                                if action == ac:
+                                        return fmri
+
+                # buckets for actions according to their overlay attribute value
+                # any actions that do not specify overlay attributes, or use
+                # them incorrectly get put into ret_actions, and returned for
+                # our generic duplicate-attribute code to deal with.
+                allow_overlay = []
+                overlay = []
+                ret_actions = []
+
+                errors = set()
+
+                # sort our list of actions into the corresponding bucket
+                for action in actions:
+                        overlay_attr = action.attrs.get("overlay", None)
+                        if overlay_attr and overlay_attr == "allow":
+                                if not action.attrs.get("preserve", None):
+                                        errors.add(
+                                            (_("path %(path)s missing "
+                                            "'preserve' attribute for "
+                                            "'overlay=allow' action "
+                                            "in %(fmri)s") % {"path": path,
+                                            "fmri": _get_fmri(
+                                            action, action_fmris)}, "1"))
+                                else:
+                                        allow_overlay.append(action)
+
+                        elif overlay_attr and overlay_attr == "true":
+                                overlay.append(action)
                         else:
-                                del action_copy.attrs[key]
-                return str(action_copy)
+                                ret_actions.append(action)
 
-        def _get_fmri(action, action_fmris):
-                """return the fmri for a given action."""
-                for fmri, ac in action_fmris:
-                        if action == ac:
-                                return fmri
+                if not (overlay or allow_overlay):
+                        return actions, []
 
-        # buckets for actions according to their overlay attribute value
-        # any actions that do not specify overlay attributes, or use them
-        # incorrectly get put into ret_actions, and returned for our
-        # generic duplicate-attribute code to deal with.
-        allow_overlay = []
-        overlay = []
-        ret_actions = []
+                def _render_variants(conflict_vars):
+                        """pretty print a group of variants"""
+                        vars = set()
+                        for group in conflict_vars:
+                                for key, val in group:
+                                        vars.add("%s=%s" % (key, val))
+                        return ", ".join(list(vars))
 
-        errors = set()
+                def _unique_attrs(action):
+                        """return a dictionary containing only attrs that must
+                        be unique across overlay actions."""
+                        attrs = {}
+                        for key in FileAction.unique_attrs:
+                                if key == "preserve":
+                                        continue
+                                attrs[key] = action.attrs.get(key, None)
+                        return attrs
 
-        # sort our list of actions into the corresponding bucket
-        for action in actions:
-                overlay_attr = action.attrs.get("overlay", None)
-                if overlay_attr and overlay_attr == "allow":
-                        if not action.attrs.get("preserve", None):
-                                errors.add(
-                                    (_("path %(path)s missing 'preserve' "
-                                    "attribute for 'overlay=allow' action "
-                                    "in %(fmri)s") % {"path": path,
-                                    "fmri": _get_fmri(action, action_fmris)},
-                                    "1"))
-                        else:
-                                allow_overlay.append(action)
-
-                elif overlay_attr and overlay_attr == "true":
-                        overlay.append(action)
-                else:
-                        ret_actions.append(action)
-
-        if not (overlay or allow_overlay):
-                return actions, []
-
-        def _render_variants(conflict_vars):
-                """pretty print a group of variants"""
-                vars = set()
-                for group in conflict_vars:
-                        for key, val in group:
-                                vars.add("%s=%s" % (key, val))
-                return ", ".join(list(vars))
-
-        def _unique_attrs(action):
-                """return a dictionary containing only attrs that must be
-                unique across overlay actions."""
-                attrs = {}
-                for key in FileAction.unique_attrs:
-                        if key == "preserve":
-                                continue
-                        attrs[key] = action.attrs.get(key, None)
-                return attrs
-
-        # Ensure none of the groups of overlay actions have
-        # conflicting variants within them.
-        conflict_vars, conflict_overlays = self.conflicting_variants(overlay,
-            pkg_vars)
-        if conflict_vars:
-                errors.add(
-                    (_("path %(path)s has duplicate 'overlay=true' actions for "
-                    "the following variants across across %(fmris)s: %(var)s") %
-                    {"path": path, "fmris": ", ".join(list(fmris)),
-                    "var": _render_variants(conflict_vars)}, "2"))
-
-        # verify that if we're only delivering overlay=allow actions, none of
-        # them conflict with each other (we check corresponding overlay=true
-        # actions, if any, later)
-        if not overlay:
+                # Ensure none of the groups of overlay actions have
+                # conflicting variants within them.
                 conflict_vars, conflict_overlays = self.conflicting_variants(
-                allow_overlay, pkg_vars)
+                    overlay, pkg_vars)
                 if conflict_vars:
                         errors.add(
-                            (_("path %(path)s has duplicate 'overlay=allow' "
+                            (_("path %(path)s has duplicate 'overlay=true' "
                             "actions for the following variants across across "
                             "%(fmris)s: %(var)s") %
                             {"path": path, "fmris": ", ".join(list(fmris)),
-                            "var": _render_variants(conflict_vars)}, "3"))
+                            "var": _render_variants(conflict_vars)}, "2"))
 
-        # Check for valid, complimentary sets of overlay and allow_overlay
-        # actions.
-        seen_mismatch = False
-        for a1 in overlay:
-                # Our assertions on how to detect clashing overlay +
-                # allow_overlay actions:
-                #
-                # 1. each overlay action must have at least one conflict from
-                #    the set of allow_overlay actions.
-                #
-                # 2. from that set of conflicts, when we remove the overlay
-                #    action itself, there must be no conflicts within that set
-                #    of overlay=allow actions.
-                #
-                # 3. all attributes required to be the same between
-                #    complimentary sets of allow_overlay and overlay actions
-                #    are the same.
+                # verify that if we're only delivering overlay=allow actions,
+                # none of them conflict with each other (we check corresponding
+                # overlay=true actions, if any, later)
+                if not overlay:
+                        conflict_vars, conflict_overlays = \
+                            self.conflicting_variants(allow_overlay, pkg_vars)
+                        if conflict_vars:
+                                errors.add(
+                                    (_("path %(path)s has duplicate "
+                                    "'overlay=allow' actions for the following "
+                                    "variants across across "
+                                    "%(fmris)s: %(var)s") %
+                                    {"path": path, "fmris": ", ".join(
+                                    list(fmris)),
+                                    "var": _render_variants(conflict_vars)},
+                                    "3"))
 
-                conflict_vars, conflict_actions = self.conflicting_variants(
-                    [a1] + allow_overlay, pkg_vars)
+                # Check for valid, complimentary sets of overlay and
+                # allow_overlay actions.
+                seen_mismatch = False
+                for a1 in overlay:
+                        # Our assertions on how to detect clashing overlay +
+                        # allow_overlay actions:
+                        #
+                        # 1. each overlay action must have at least one conflict
+                        #    from the set of allow_overlay actions.
+                        #
+                        # 2. from that set of conflicts, when we remove the
+                        #    overlay action itself, there must be no conflicts
+                        #    within that set of overlay=allow actions.
+                        #
+                        # 3. all attributes required to be the same between
+                        #    complimentary sets of allow_overlay and overlay
+                        #    actions are the same.
 
-                if conflict_actions:
-                        conflict_actions.remove(a1)
-                        conflict_vars_sub, conflict_actions_allow = \
-                            self.conflicting_variants(conflict_actions,
+                        conflict_vars, conflict_actions = \
+                            self.conflicting_variants([a1] + allow_overlay,
                             pkg_vars)
 
-                        if conflict_actions_allow:
-                                errors.add(
-                                    (_("path %(path)s uses overlay='true' "
-                                    "actions but has duplicate 'overlay=allow' "
-                                    "actions for the following variants across "
-                                    "%(fmris)s: %(vars)s") %
-                                    {"path": path,
-                                    "fmris": ", ".join(list(fmris)),
-                                    "vars": _render_variants(
-                                    conflict_vars_sub)}, "4"))
+                        if conflict_actions:
+                                conflict_actions.remove(a1)
+                                conflict_vars_sub, conflict_actions_allow = \
+                                    self.conflicting_variants(conflict_actions,
+                                    pkg_vars)
+
+                                if conflict_actions_allow:
+                                        errors.add(
+                                            (_("path %(path)s uses "
+                                            "overlay='true' actions but has "
+                                            "duplicate 'overlay=allow' actions "
+                                            "for the following variants across "
+                                            "%(fmris)s: %(vars)s") %
+                                            {"path": path,
+                                            "fmris": ", ".join(list(fmris)),
+                                            "vars": _render_variants(
+                                            conflict_vars_sub)}, "4"))
+                                else:
+                                        # check that none of the attributes
+                                        # required to be the same between
+                                        # overlay and allow actions differ.
+                                        a1_attrs = _unique_attrs(a1)
+                                        for a2 in conflict_actions:
+                                                if a1_attrs != _unique_attrs(
+                                                    a2):
+                                                        seen_mismatch = True
                         else:
-                                # check that none of the attributes required to
-                                # be the same between overlay and allow actions
-                                # differ.
-                                a1_attrs = _unique_attrs(a1)
-                                for a2 in conflict_actions:
-                                        if a1_attrs != _unique_attrs(a2):
-                                                seen_mismatch = True
-                else:
+                                errors.add(
+                                    (_("path %(path)s uses 'overlay=true' "
+                                    "actions but has no corresponding "
+                                    "'overlay=allow' actions across %(fmris)s"
+                                    ) %
+                                    {"path": path, "fmris": ", ".join(
+                                    list(fmris))}, "5"))
+
+                if seen_mismatch:
                         errors.add(
-                            (_("path %(path)s uses 'overlay=true' actions"
-                            " but has no corresponding 'overlay=allow' actions "
-                            "across %(fmris)s") %
+                            (_("path %(path)s has mismatching attributes for "
+                            "'overlay=true' and 'overlay=allow' action-pairs "
+                            "across %(fmris)s") % {"path": path,
+                            "fmris": ", ".join(list(fmris))}, "6"))
+
+                if (overlay or allow_overlay) and ret_actions:
+                        errors.add(
+                            (_("path %(path)s has both overlay and non-overlay "
+                            "actions across %(fmris)s") %
                             {"path": path, "fmris": ", ".join(list(fmris))},
-                            "5"))
+                            "7"))
 
-        if seen_mismatch:
-                errors.add(
-                    (_("path %(path)s has mismatching attributes for "
-                    "'overlay=true' and 'overlay=allow' action-pairs across "
-                    "%(fmris)s") % {"path": path,
-                    "fmris": ", ".join(list(fmris))}, "6"))
+                return ret_actions, errors
 
-        if (overlay or allow_overlay) and ret_actions:
-                errors.add(
-                    (_("path %(path)s has both overlay and non-overlay actions "
-                    "across %(fmris)s") %
-                    {"path": path, "fmris": ", ".join(list(fmris))}, "7"))
+        def dir_parents(self, action, manifest, engine, pkglint_id="011"):
+                """Checks that if any paths are delivered by this action, and
+                if we know about the parent path, that parent must be a
+                directory."""
 
-        return ret_actions, errors
+                if "path" not in action.attrs:
+                        return
+                path = action.attrs["path"]
+                parent_path = os.path.dirname(path)
+                parents = self.ref_paths.get(parent_path, None)
+                if not parents:
+                        return
+                for parent_pfmri, parent_action in parents:
+                        if parent_action.name == "dir":
+                                continue
+                        # check for conflicting variants - if the parent and
+                        # child paths can't be installed together, then this
+                        # is allowed.
+                        conflict_vars, conflict_actions = \
+                            self.conflicting_variants([action, parent_action],
+                            manifest.get_all_variants())
+                        if not conflict_actions:
+                                continue
+                        engine.error(_("Expecting a dir action for "
+                            "%(parent_path)s, but %(parent_fmri)s delivers it "
+                            "as a %(parent_type)s. %(child_path)s is delivered "
+                            "by %(child_fmri)s") %
+                            {"parent_path": parent_path,
+                            "parent_fmri": parent_pfmri,
+                            "parent_type": parent_action.name,
+                            "child_path": path,
+                            "child_fmri": manifest.fmri},
+                            "%s%s" % (self.name, pkglint_id))
+
+        dir_parents.pkglint_desc = _("Parent paths should be directories.")
 
 
 class PkgActionChecker(base.ActionChecker):
@@ -1389,3 +1441,34 @@ class PkgActionChecker(base.ActionChecker):
 
         validate.pkglint_desc = _("Publication checks for actions.")
 
+        def username_format(self, action, manifest, engine, pkglint_id="010"):
+                """Checks username length, and format."""
+
+                if action.name is not "user":
+                        return
+
+                username = action.attrs["username"]
+                if len(username) > 8:
+                        engine.error(
+                            _("Username %(name)s in %(pkg)s > 8 chars") %
+                            {"name": username,
+                            "pkg": manifest.fmri},
+                            msgid="%s%s.1" % (self.name, pkglint_id))
+
+                if len(username) == 0 or not re.match("[a-z]", username[0]):
+                        engine.error(
+                            _("Username %(name)s in %(pkg)s does not have an "
+                            "initial lower-case alphabetical character") %
+                            {"name": username,
+                            "pkg": manifest.fmri},
+                            msgid="%s%s.2" % (self.name, pkglint_id))
+
+                if not re.match("^[a-z]([a-zA-Z1-9._-])*$", username):
+                        engine.error(
+                            _("Username %(name)s in %(pkg)s is invalid - see "
+                            "passwd(4)") %
+                            {"name": username,
+                            "pkg": manifest.fmri},
+                            msgid="%s%s.3" % (self.name, pkglint_id))
+
+        username_format.pkglint_desc = _("User names should be valid.")

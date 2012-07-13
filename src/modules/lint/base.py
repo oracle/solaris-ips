@@ -21,10 +21,12 @@
 #
 
 #
-# Copyright (c) 2010, 2011 Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2010, 2012 Oracle and/or its affiliates. All rights reserved.
 #
 
 import inspect
+import os.path
+import ConfigParser
 
 import pkg.variant as variant
 import traceback
@@ -224,6 +226,40 @@ class ManifestChecker(Checker):
         engine.advise_loggers(manifest=manifest)
 
         """
+
+        def __init__(self, config):
+
+                self.classification_data = None
+
+                self.classification_path = config.get(
+                    "pkglint", "info_classification_path")
+                self.skip_classification_check = False
+
+                # a default error message used if we've parsed the
+                # data file, but haven't thrown any exceptions
+                self.bad_classification_data = _("no sections found in data "
+                    "file %s") % self.classification_path
+
+                if os.path.exists(self.classification_path):
+                        try:
+                                self.classification_data = \
+                                    ConfigParser.SafeConfigParser()
+                                self.classification_data.readfp(
+                                    open(self.classification_path))
+                        except Exception, err:
+                                # any exception thrown here results in a null
+                                # classification_data object.  We deal with that
+                                # later.
+                                self.bad_classification_data = _(
+                                    "unable to parse data file %(path)s: "
+                                    "%(err)s") % \
+                                    {"path": self.classification_path,
+                                    "err": err}
+                                pass
+                else:
+                        self.bad_classification_data = _("missing file %s") % \
+                            self.classification_path
+                super(ManifestChecker, self).__init__(config)
 
         def check(self, manifest, engine):
                 """'manifest' is a pkg.manifest.Manifest"""

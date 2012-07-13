@@ -142,7 +142,8 @@ def main_func():
                 manifests = []
                 if len(args) >= 1:
                         manifests = read_manifests(args, lint_logger)
-                        if None in manifests:
+                        if None in manifests or \
+                            lint_logger.produced_lint_msgs():
                                 error(_("Fatal error in manifest - exiting."))
                                 return 1
                 lint_engine.setup(ref_uris=opts.ref_uris,
@@ -157,6 +158,12 @@ def main_func():
                 lint_engine.execute()
                 lint_engine.teardown()
                 lint_logger.close()
+
+        except engine.LintEngineSetupException, err:
+                # errors during setup are likely to be caused by bad
+                # input or configuration, not lint errors in manifests.
+                error(err)
+                return 2
 
         except engine.LintEngineException, err:
                 error(err)

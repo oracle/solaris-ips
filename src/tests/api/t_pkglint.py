@@ -20,7 +20,7 @@
 # CDDL HEADER END
 #
 
-# Copyright (c) 2010, 2011, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2010, 2012, Oracle and/or its affiliates. All rights reserved.
 
 import testutils
 if __name__ == "__main__":
@@ -163,6 +163,7 @@ set name=pkg.description value="Description of pkglint test package"
 set name=description value="Pkglint test package"
 set name=info.classification value=org.opensolaris.category.2008:System/Packaging
 set name=pkg.summary value="Pkglint test package"
+set name=org.opensolaris.smf.fmri value=svc:/application/x11/xfs:default
 dir group=bin mode=0755 owner=root path=usr/lib/X11
 dir group=bin mode=0755 alt=foo owner=root path=usr/lib/X11/fs
 file nohash group=bin mode=0755 owner=root path=usr/sbin/fsadmin pkg.csize=953 pkg.size=1572 variant.other=carrots
@@ -300,6 +301,7 @@ set name=pkg.description value="Description of pkglint test package"
 set name=description value="Pkglint test package"
 set name=info.classification value=org.opensolaris.category.2008:System/Packaging
 set name=pkg.summary value="Pkglint test package"
+set name=org.opensolaris.smf.fmri value=svc:/application/x11/xfs:default
 dir group=bin mode=0755 owner=root path=usr/lib/X11
 dir group=bin mode=0755 alt=foo owner=root path=usr/lib/X11/fs
 file nohash group=bin mode=0755 owner=root path=usr/sbin/fsadmin pkg.csize=953 pkg.size=1572
@@ -398,6 +400,7 @@ set name=pkg.description value="Description of pkglint test package"
 set name=description value="Pkglint test package"
 set name=info.classification value=org.opensolaris.category.2008:System/Packaging
 set name=pkg.summary value="Pkglint test package"
+set name=org.opensolaris.smf.fmri value=svc:/application/x11/xfs:default
 dir group=bin mode=0755 owner=root path=usr/lib/X11
 dir group=bin mode=0755 alt=foo owner=root path=usr/lib/X11/fs
 dir group=bin mode=0755 owner=root path=usr/sbin/fsadmin variant.other=carrots
@@ -421,6 +424,7 @@ set name=pkg.description value="Description of pkglint test package"
 set name=description value="Pkglint test package"
 set name=info.classification value=org.opensolaris.category.2008:System/Packaging
 set name=pkg.summary value="Pkglint test package"
+set name=org.opensolaris.smf.fmri value=svc:/application/x11/xfs:default
 dir group=bin mode=0755 owner=root path=usr/lib/X11
 dir group=bin mode=0755 alt=foo owner=root path=usr/lib/X11/fs
 link group=bin mode=0755 alt=foo owner=foor path=usr/lib/X11/fs target=bar
@@ -549,7 +553,7 @@ set name=pkg.summary value="Pkglint test package"
 set name=variant.arch value=i386 value=sparc
 """
 
-expected_failures["silly_description.mf"] = ["opensolaris.manifest004.2"]
+expected_failures["silly_description.mf"] = ["pkglint.manifest009.2"]
 broken_manifests["silly_description.mf"] = \
 """
 #
@@ -564,7 +568,37 @@ set name=pkg.summary value="Pkglint test package"
 set name=variant.arch value=i386 value=sparc
 """
 
-expected_failures["info_class_many_values.mf"] = ["opensolaris.manifest003.6"]
+expected_failures["empty_description.mf"] = ["pkglint.manifest009.1"]
+broken_manifests["empty_description.mf"] = \
+"""
+#
+# we deliver package where the description is empty
+#
+set name=pkg.fmri value=pkg://opensolaris.org/pkglint/test@1.1.0,5.11-0.149:20100917T003411Z
+set name=org.opensolaris.consolidation value=osnet
+set name=variant.opensolaris.zone value=global value=nonglobal
+set name=pkg.description value=""
+set name=info.classification value=org.opensolaris.category.2008:System/Packaging
+set name=pkg.summary value="Pkglint test package"
+set name=variant.arch value=i386 value=sparc
+"""
+
+expected_failures["empty_summary.mf"] = ["pkglint.manifest009.3"]
+broken_manifests["empty_summary.mf"] = \
+"""
+#
+# we deliver package where the summary is empty
+#
+set name=pkg.fmri value=pkg://opensolaris.org/pkglint/test@1.1.0,5.11-0.149:20100917T003411Z
+set name=org.opensolaris.consolidation value=osnet
+set name=variant.opensolaris.zone value=global value=nonglobal
+set name=pkg.description value="Pkglint test package"
+set name=info.classification value=org.opensolaris.category.2008:System/Packaging
+set name=pkg.summary value=""
+set name=variant.arch value=i386 value=sparc
+"""
+
+expected_failures["info_class_many_values.mf"] = ["pkglint.manifest008.6"]
 broken_manifests["info_class_many_values.mf"] = \
 """
 #
@@ -581,7 +615,7 @@ set name=pkg.summary value="Pkglint test package"
 set name=variant.arch value=i386 value=sparc
 """
 
-expected_failures["info_class_wrong_prefix.mf"] = ["opensolaris.manifest003.2"]
+expected_failures["info_class_wrong_prefix.mf"] = ["pkglint.manifest008.2"]
 broken_manifests["info_class_wrong_prefix.mf"] = \
 """
 #
@@ -597,7 +631,7 @@ set name=pkg.summary value="Pkglint test package"
 set name=variant.arch value=i386 value=sparc
 """
 
-expected_failures["info_class_no_category.mf"] = ["opensolaris.manifest003.3"]
+expected_failures["info_class_no_category.mf"] = ["pkglint.manifest008.3"]
 broken_manifests["info_class_no_category.mf"] = \
 """
 #
@@ -614,7 +648,7 @@ set name=pkg.summary value="Pkglint test package"
 set name=variant.arch value=i386 value=sparc
 """
 
-expected_failures["info_class_wrong_category.mf"] = ["opensolaris.manifest003.4"]
+expected_failures["info_class_wrong_category.mf"] = ["pkglint.manifest008.4"]
 broken_manifests["info_class_wrong_category.mf"] = \
 """
 #
@@ -669,10 +703,10 @@ depend fmri=foo/bar@@134 type=require
 depend fmri=foo/bar fmri="" type=require-any
 """
 
-expected_failures["invalid_usernames.mf"] = ["opensolaris.action001.2",
-    "opensolaris.action001.3", "opensolaris.action001.2",
-    "opensolaris.action001.3", "opensolaris.action001.1",
-    "opensolaris.action001.3"]
+expected_failures["invalid_usernames.mf"] = ["pkglint.action010.2",
+    "pkglint.action010.3", "pkglint.action010.2",
+    "pkglint.action010.3", "pkglint.action010.1",
+    "pkglint.action010.3"]
 broken_manifests["invalid_usernames.mf"] = \
 """
 #
@@ -801,7 +835,7 @@ set name=variant.other value=carrots
 # set name=variant.arch value=i386 value=sparc
 set name=pkg.description value="Description of pkglint test package"
 set name=description value="Pkglint test package"
-set name=info.classification value=org.opensolaris.category.2008:System/Noodles pkg.linted.opensolaris.manifest003.6=True
+set name=info.classification value=org.opensolaris.category.2008:System/Noodles pkg.linted.pkglint.manifest008.6=True
 set name=pkg.summary value="Pkglint test package"
 set name=pkg.linted value=True
 dir group=bin mode=0755 owner=root path=usr/lib/X11
@@ -830,7 +864,7 @@ set name=pkg.linted.pkglint.action001 value=True
 set name=pkg.description value="Description of pkglint test package"
 set name=description value="Pkglint test package"
 # this is linted due to our our action attribute
-set name=info.classification value=org.opensolaris.category.2008:System/Noodles pkg.linted.opensolaris.manifest003.6=True
+set name=info.classification value=org.opensolaris.category.2008:System/Noodles pkg.linted.pkglint.manifest008.6=True
 # an underscore the key "foo_name"
 set name=pkg.summary value="Pkglint test package" foo_name=bar
 # this action is ok, underscores in attribute values are fine
@@ -856,7 +890,7 @@ set name=variant.other value=carrots under_score=oh_yes
 set name=pkg.linted.pkglint.action001.2 value=True
 set name=pkg.description value="Description of pkglint test package"
 set name=description value="Pkglint test package"
-set name=info.classification value=org.opensolaris.category.2008:System/Noodles pkg.linted.opensolaris.manifest003.6=True
+set name=info.classification value=org.opensolaris.category.2008:System/Noodles pkg.linted.pkglint.manifest008.6=True
 set name=pkg.summary value="Pkglint test package" foo_name=bar
 set name=foo_bar value=baz
 dir group=bin mode=0755 owner=root path=usr/lib/X11 bar=has_underscore
@@ -870,7 +904,7 @@ broken_manifests["linted-missing-summary.mf"] = \
 #
 set name=pkg.fmri value=pkg://opensolaris.org/pkglint/TIMFtest@1.1.0,5.11-0.141:20100604T143737Z
 set name=org.opensolaris.consolidation value=osnet
-set name=pkg.linted.opensolaris.manifest001.2 value=True
+set name=pkg.linted.pkglint.manifest010.2 value=True
 set name=variant.opensolaris.zone value=global value=nonglobal
 set name=variant.arch value=i386 value=sparc
 set name=pkg.description value="Description of pkglint test package"
@@ -888,7 +922,7 @@ set name=variant.opensolaris.zone value=global value=nonglobal
 set name=variant.arch value=i386 value=sparc
 set name=pkg.description value="Description of pkglint test package"
 set name=info.classification value=org.opensolaris.category.2008:System/Packaging
-set name=pkg.summary value="Description of pkglint test package" pkg.linted.opensolaris.manifest004.2=True
+set name=pkg.summary value="Description of pkglint test package" pkg.linted.pkglint.manifest009.2=True
 """
 
 expected_failures["linted-dup-path-types.mf"] = ["pkglint.dupaction001.1",
@@ -902,7 +936,7 @@ set name=pkg.fmri value=pkg://opensolaris.org/pkglint/TIMFtest@1.1.0,5.11-0.141:
 set name=org.opensolaris.consolidation value=osnet
 set name=variant.opensolaris.zone value=global value=nonglobal
 set name=variant.arch value=i386 value=sparc
-set name=pkg.linted.opensolaris.manifest001.2 value=True
+set name=pkg.linted.pkglint.manifest010.2 value=True
 set name=pkg.summary value="Summary of pkglint test package"
 set name=info.classification value=org.opensolaris.category.2008:System/Packaging
 file path=usr/bin/ls owner=root group=staff mode=755 pkg.linted.pkglint.dupaction008=True
@@ -921,7 +955,7 @@ set name=pkg.fmri value=pkg://opensolaris.org/pkglint/TIMFtest@1.1.0,5.11-0.141:
 set name=org.opensolaris.consolidation value=osnet
 set name=variant.opensolaris.zone value=global value=nonglobal
 set name=variant.arch value=i386 value=sparc
-set name=pkg.linted.opensolaris.manifest001.2 value=True
+set name=pkg.linted.pkglint.manifest010.2 value=True
 set name=pkg.summary value="Summary of pkglint test package"
 set name=info.classification value=org.opensolaris.category.2008:System/Packaging
 file path=usr/bin/ls owner=root group=staff mode=755 pkg.linted.pkglint.dupaction001.1=True
@@ -981,6 +1015,7 @@ set name=info.classification value=org.opensolaris.category.2008:System/Packagin
 set name=pkg.summary value="Pkglint test package"
 set name=variant.arch value=i386 value=sparc
 set name=variant.other value="carrots" value="turnips"
+set name=org.opensolaris.smf.fmri value=svc:/application/x11/xfs:default
 dir group=bin mode=0755 owner=root path=usr/lib/X11
 dir group=bin mode=0755 alt=foo owner=root path=usr/lib/X11/fs
 file nohash group=bin mode=0755 owner=root path=usr/sbin/fsadmin pkg.csize=953 pkg.size=1572 variant.other=carrots
@@ -1008,6 +1043,7 @@ set name=info.classification value=org.opensolaris.category.2008:System/Packagin
 set name=pkg.summary value="Pkglint test package"
 set name=variant.arch value=i386 value=sparc
 set name=variant.bar value=other value=foo
+set name=org.opensolaris.smf.fmri value=svc:/application/x11/xfs:default
 link path=usr/lib/foo target=usr/sparc-sun-solaris2.11/lib/foo variant.arch=sparc
 link path=usr/lib/foo target=usr/i386-pc-solaris2.11/lib/foo variant.arch=i386
 dir group=bin mode=0755 owner=root path=usr/lib/X11
@@ -1495,6 +1531,42 @@ file NOHASH group=staff mode=0644 overlay=allow owner=timf path=foo preserve=tru
 file NOHASH group=staff mode=0644 overlay=allow owner=timf path=foo preserve=true variant.arch=i386
 """
 
+expected_failures["parent_is_not_dir.mf"] = ["pkglint.dupaction011"]
+broken_manifests["parent_is_not_dir.mf"] = \
+"""
+# This manifest delivers /usr/bin as a symlink to /bin, but tries to install
+# a file through that symlink.
+#
+set name=pkg.fmri value=foo
+set name=pkg.summary value="Image Packaging System"
+set name=info.classification value=org.opensolaris.category.2008:System/Packaging
+set name=pkg.description value="overlay checks"
+set name=variant.arch value=i386 value=sparc
+set name=org.opensolaris.consolidation value=pkg
+dir path=/bin owner=root group=sys mode=0755
+link target=../bin path=usr/bin group=sys owner=root
+file /etc/motd group=sys mode=0644 owner=root path=usr/bin/foo
+"""
+
+expected_failures["parent_is_not_dir_variants.mf"] = []
+broken_manifests["parent_is_not_dir_variants.mf"] = \
+"""
+# This manifest delivers /usr/bin as a symlink to /bin, but tries to install
+# a file through that symlink.  However, since the symlink and the file are
+# delivered under different variants, this is acceptable
+#
+set name=pkg.fmri value=foo
+set name=pkg.summary value="Image Packaging System"
+set name=info.classification value=org.opensolaris.category.2008:System/Packaging
+set name=pkg.description value="overlay checks"
+set name=variant.arch value=i386 value=sparc
+set name=variant.bar value=other value=new value=baz
+set name=org.opensolaris.consolidation value=pkg
+dir path=/bin owner=root group=sys mode=0755
+link target=../bin path=usr/bin group=sys owner=root variant.bar=other
+file /etc/motd group=sys mode=0644 owner=root path=usr/bin/foo variant.bar=new
+"""
+
 expected_failures["renamed-more-actions.mf"] = ["pkglint.manifest002.1",
     "pkglint.manifest002.3"]
 broken_manifests["renamed-more-actions.mf"] = \
@@ -1590,6 +1662,43 @@ set name=pkg.renamed value=true
 depend fmri=renamed-ancestor-new type=require
 """
 
+expected_failures["smf-manifest.mf"] = []
+broken_manifests["smf-manifest.mf"] = """
+#
+# We deliver SMF manifests, with correct org.opensolaris.smf.fmri tags
+#
+set name=pkg.fmri value=pkg://opensolaris.org/smf-package@0.5.11,5.11-0.141
+set name=pkg.description value="additional reference actions for pkglint"
+set name=org.opensolaris.smf.fmri value=svc:/foo/bar value=svc:/foo/bar:default \
+    value=svc:/application/foo/bar value=svc:/application/foo/bar:instance
+set name=info.classification value=org.opensolaris.category.2008:System/Core
+set name=pkg.summary value="Core Solaris Kernel"
+set name=org.opensolaris.consolidation value=osnet
+set name=variant.arch value=i386 value=sparc
+file path=lib/svc/manifest/file.xml owner=root group=sys mode=644
+file path=var/svc/manifest/application/file.xml owner=root group=sys mode=644
+"""
+
+expected_failures["smf-manifest_broken.mf"] = ["pkglint.manifest011"]
+broken_manifests["smf-manifest_broken.mf"] = """
+#
+# We deliver SMF manifests, but don't declare an org.opensolaris.smf.fmri tag
+# We should get one warning, rather than one per-SMF-manifest
+#
+set name=pkg.fmri value=pkg://opensolaris.org/smf-package@0.5.11,5.11-0.141
+set name=pkg.description value="additional reference actions for pkglint"
+set name=info.classification value=org.opensolaris.category.2008:System/Core
+set name=pkg.summary value="Core Solaris Kernel"
+set name=org.opensolaris.consolidation value=osnet
+set name=variant.arch value=i386 value=sparc
+file path=lib/svc/manifest/file.xml owner=root group=sys mode=644
+file path=var/svc/manifest/application/file.xml owner=root group=sys mode=644
+# these files are a red herrings - they deliver to the manifest dirs, but do not
+# have ".xml" file extensions
+file path=lib/svc/manifest/README owner=root group=sys mode=644
+file path=var/svc/manifest/sample.db owner=root group=sys mode=644
+"""
+
 expected_failures["underscores.mf"] = ["pkglint.action001.1",
     "pkglint.action001.3", "pkglint.action001.2"]
 broken_manifests["underscores.mf"] = \
@@ -1623,6 +1732,7 @@ set name=pkg.description value="Description of pkglint test package"
 set name=description value="Pkglint test package"
 set name=info.classification value=org.opensolaris.category.2008:System/Packaging
 set name=pkg.summary value="Pkglint test package"
+set name=org.opensolaris.smf.fmri value=svc:/application/x11/xfs:default
 dir group=bin mode=0755 owner=root path=usr/lib/X11
 dir group=bin mode=0755 alt=foo owner=root path=usr/lib/X11/fs
 file nohash group=sys mode=0444 owner=root path=var/svc/manifest/application/x11/xfs.xml pkg.csize=1649 pkg.size=3534 restart_fmri=svc:/system/manifest-import:default variant.noodles=singapore
@@ -1643,6 +1753,7 @@ set name=pkg.description value="Description of pkglint test package"
 set name=description value="Pkglint test package"
 set name=info.classification value=org.opensolaris.category.2008:System/Packaging
 set name=pkg.summary value="Pkglint test package"
+set name=org.opensolaris.smf.fmri value=svc:/application/x11/xfs:default
 dir group=bin mode=0755 owner=root path=usr/lib/X11
 dir group=bin mode=0755 alt=foo owner=root path=usr/lib/X11/fs
 file nohash group=sys mode=0444 owner=root path=var/svc/manifest/application/x11/xfs.xml pkg.csize=1649 pkg.size=3534 restart_fmri=svc:/system/manifest-import:default variant.opensolaris.zone=foo
@@ -1663,6 +1774,7 @@ set name=pkg.description value="Description of pkglint test package"
 set name=description value="Pkglint test package"
 set name=info.classification value=org.opensolaris.category.2008:System/Packaging
 set name=pkg.summary value="Pkglint test package"
+set name=org.opensolaris.smf.fmri value=svc:/application/x11/xfs:default
 dir group=bin mode=0755 owner=root path=usr/lib/X11
 dir group=bin mode=0755 alt=foo owner=root path=usr/lib/X11/fs
 file nohash group=sys mode=0444 owner=root path=var/svc/manifest/application/x11/xfs.xml pkg.csize=1649 pkg.size=3534 restart_fmri=svc:/system/manifest-import:default variant.opensolaris.zone=global
@@ -1684,6 +1796,7 @@ set name=pkg.description value="Description of pkglint test package"
 set name=description value="Pkglint test package"
 set name=info.classification value=org.opensolaris.category.2008:System/Packaging
 set name=pkg.summary value="Pkglint test package"
+set name=org.opensolaris.smf.fmri value=svc:/application/x11/xfs:default
 dir group=bin mode=0755 owner=root path=usr/lib/X11
 dir group=bin mode=0755 alt=foo owner=root path=usr/lib/X11/fs
 file nohash group=sys mode=0444 owner=root path=var/svc/manifest/application/x11/xfs.xml pkg.csize=1649 pkg.size=3534 restart_fmri=svc:/system/manifest-import:default variant.opensolaris.zone=foo
@@ -1720,6 +1833,7 @@ set name=description value="Pkglint test package"
 set name=info.classification value=org.opensolaris.category.2008:System/Packaging
 set name=pkg.summary value="Pkglint test package"
 set name=variant.arch value=i386 value=sparc
+set name=org.opensolaris.smf.fmri value=svc:/application/x11/xfs:default
 dir group=bin mode=0424 owner=root path=usr/lib/X11
 dir group=bin mode=0755 alt=foo owner=root path=usr/lib/X11/fs
 file nohash group=bin mode=0755 owner=root path=usr/sbin/fsadmin pkg.csize=1234 pkg.size=1234
@@ -2069,7 +2183,7 @@ class TestLintEngine(pkg5unittest.Pkg5TestCase):
                         lint_engine.setup(lint_manifests=manifests)
                         lint_engine.execute()
                         self.assert_(
-                            lint_logger.ids == ["opensolaris.manifest003.1"],
+                            lint_logger.ids == ["pkglint.manifest008.1"],
                             "Unexpected errors encountered: %s" %
                             lint_logger.messages)
                         lint_logger.close()

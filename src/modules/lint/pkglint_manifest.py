@@ -30,6 +30,7 @@ from pkg.lint.engine import lint_fmri_successor
 import pkg.fmri as fmri
 import pkg.lint.base as base
 import os.path
+import ConfigParser
 
 class PkgManifestChecker(base.ManifestChecker):
         """A class to check manifests."""
@@ -359,6 +360,12 @@ class PkgManifestChecker(base.ManifestChecker):
 
                 fmris = self.ref_lastnames[lastname]
 
+                # we ignored renamed or obsolete packages when building
+                # ref_lastnames, so this package might not be there,
+                # in which case, we can ignore this package too.
+                if manifest.fmri not in fmris:
+                        return
+
                 if len(self.ref_lastnames[lastname]) > 1:
                         plist = sorted((f.get_fmri() for f in fmris))
                         engine.warning(
@@ -486,6 +493,195 @@ class PkgManifestChecker(base.ManifestChecker):
                              ignore_linted=True)
 
         linted.pkglint_desc = _("Show manifests with pkg.linted attributes.")
+
+        def info_classification(self, manifest, engine, pkglint_id="008"):
+                """Checks that the info.classification attribute is valid."""
+
+                if (not "info.classification" in manifest) or \
+                    self.skip_classification_check:
+                        return
+
+                if not self.classification_data or \
+                    not self.classification_data.sections():
+                        engine.error(_("Unable to perform manifest checks "
+                            "for info.classification attribute: %s") %
+                            self.bad_classification_data,
+                            msgid="%s%s.1" % (self.name, pkglint_id))
+                        self.skip_classification_check = True
+                        return
+
+                action = engine.get_attr_action("info.classification", manifest)
+                engine.advise_loggers(action=action, manifest=manifest)
+
+                for item in action.attrlist("value"):
+                        self._check_info_classification_value(engine, item,
+                            manifest.fmri, "%s%s" % (self.name, pkglint_id))
+
+        info_classification.pkglint_desc = _(
+            "info.classification attribute should be valid.")
+
+        def _check_info_classification_value(self, engine, value, fmri, msgid):
+
+                prefix = "org.opensolaris.category.2008:"
+
+                if not prefix in value:
+                        engine.error(_("info.classification attribute "
+                            "does not contain '%(prefix)s' for %(fmri)s") %
+                            locals(), msgid="%s.2" % msgid)
+                        return
+
+                classification = value.replace(prefix, "")
+
+                components = classification.split("/", 1)
+                if len(components) != 2:
+                        engine.error(_("info.classification value %(value)s "
+                            "does not match "
+                            "%(prefix)s<Section>/<Category> for %(fmri)s") %
+                            locals(), msgid="%s.3" % msgid)
+                        return
+
+                # the data file looks like:
+                # [Section]
+                # category = Cat1,Cat2,Cat3
+                #
+                # We expect the info.classification action to look like:
+                # org.opensolaris.category.2008:Section/Cat2
+                #
+                section, category = components
+                valid_value = True
+                ref_categories = []
+                try:
+                        ref_categories = self.classification_data.get(section,
+                            "category").split(",")
+                        if category not in ref_categories:
+                                valid_value = False
+                except ConfigParser.NoSectionError:
+                        sections = self.classification_data.sections()
+                        engine.error(_("info.classification value %(value)s "
+                            "does not contain one of the valid sections "
+                            "%(ref_sections)s for %(fmri)s.") %
+                            {"value": value,
+                            "ref_sections": ", ".join(sorted(sections)),
+                            "fmri": fmri},
+                            msgid="%s.4" % msgid)
+                        return
+                except ConfigParser.NoOptionError:
+                        engine.error(_("Invalid info.classification value for "
+                            "%(fmri)s: data file %(file)s does not have a "
+                            "'category' key for section %(section)s.") %
+                            {"file": self.classification_path,
+                            "section": section,
+                            "fmri": fmri},
+                             msgid="%s.5" % msgid)
+                        return
+
+                if valid_value:
+                        return
+
+                ref_cats = self.classification_data.get(section, "category")
+                engine.error(_("info.classification attribute in %(fmri)s "
+                    "does not contain one of the values defined for the "
+                    "section %(section)s: %(ref_cats)s from %(path)s") %
+                    {"section": section,
+                    "fmri": fmri,
+                    "path": self.classification_path,
+                    "ref_cats": ref_cats },
+                    msgid="%s.6" % msgid)
+
+        def bogus_description(self, manifest, engine, pkglint_id="009"):
+                """Warns when a package has an empty summary or description,
+                or a description which is identical to the summary."""
+
+                desc = manifest.get("pkg.description", None)
+                summ = manifest.get("pkg.summary", None)
+
+                if desc == "":
+                        action = engine.get_attr_action("pkg.description",
+                            manifest)
+                        engine.advise_loggers(action=action, manifest=manifest)
+                        engine.warning(_("Empty pkg.description in %s") %
+                            manifest.fmri,
+                            msgid="%s%s.1" % (self.name, pkglint_id))
+
+                if summ == "":
+                        action = engine.get_attr_action("pkg.summary",
+                            manifest)
+                        engine.advise_loggers(action=action, manifest=manifest)
+                        engine.warning(_("Empty pkg.summary in %s") %
+                            manifest.fmri,
+                            msgid="%s%s.3" % (self.name, pkglint_id))
+
+                if desc == summ and desc:
+                        action = engine.get_attr_action("pkg.summary", manifest)
+                        engine.advise_loggers(action=action, manifest=manifest)
+                        engine.warning(_("pkg.description matches pkg.summary "
+                            "in %s") % manifest.fmri,
+                            msgid="%s%s.2" % (self.name, pkglint_id))
+
+        bogus_description.pkglint_desc = _(
+            "A package's description should not match its summary.")
+
+        def missing_attrs(self, manifest, engine, pkglint_id="010"):
+                """Various checks for missing attributes
+                * error when a package doesn't have a pkg.summary
+                (pkg.fmri should be present too, but that would get caught
+                before we get here)
+                """
+                if "pkg.renamed" in manifest:
+                        return
+
+                if "pkg.obsolete" in manifest:
+                        return
+
+                if "pkg.summary" not in manifest:
+                        engine.error(
+                            _("Missing attribute 'pkg.summary' in %s") %
+                            manifest.fmri,
+                            msgid="%s%s.2" % (self.name, pkglint_id))
+
+        missing_attrs.pkglint_desc = _(
+            "Standard package attributes should be present.")
+
+        def missing_smf_fmri(self, manifest, engine, pkglint_id="011"):
+                """If we deliver files to lib/svc/manifest or
+                var/svc/manifest, we should include an org.opensolaris.smf.fmri
+                attribute in the manifest.  This only reports a warning, because
+                without pkglint content-checking support, we do not know whether
+                the file actually contains any services or instances."""
+
+                smf_manifests = []
+                for action in manifest.gen_actions_by_type("file"):
+
+                        if "path" not in action.attrs:
+                                contine
+
+                        path = action.attrs["path"]
+
+                        if not path.endswith(".xml"):
+                                continue
+
+                        if not (path.startswith("lib/svc/manifest") or
+                            path.startswith("var/svc/manifest")):
+                                continue
+                        smf_manifests.append(path)
+
+                if not smf_manifests:
+                        return
+
+                if "org.opensolaris.smf.fmri" in manifest:
+                        return
+
+                engine.warning(
+                    _("SMF manifests were delivered by %(pkg)s, but no "
+                    "org.opensolaris.smf.fmri attribute was found. "
+                    "Manifests found were: %(manifests)s") %
+                    {"manifests": " ".join(smf_manifests),
+                    "pkg": manifest.fmri},
+                    msgid="%s%s" % (self.name, pkglint_id))
+
+        missing_smf_fmri.pkglint_desc = _(
+            "Packages delivering SMF services should have "
+            "org.opensolaris.smf.fmri attributes.")
 
         def _merge_names(self, src, target, ignore_pubs=True):
                 """Merges the given src list into the target list"""

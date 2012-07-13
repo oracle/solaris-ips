@@ -470,11 +470,14 @@ if __name__ == "__main__":
                 tempfile.tempdir = self.__test_root
                 setup_logging(self)
 
+                # Create a pkglintrc file that points to our info.classification
+                # data, and doesn't exclude any shipped plugins.
                 self.configure_rcfile( "%s/usr/share/lib/pkg/pkglintrc" %
                     g_proto_area,
                     {"info_classification_path":
                     "%s/usr/share/lib/pkg/opensolaris.org.sections" %
-                    g_proto_area}, self.test_root, section="pkglint")
+                    g_proto_area,
+                    "pkglint.exclude": ""}, self.test_root, section="pkglint")
 
                 self.template_dir = "%s/etc/pkg/sysrepo" % g_proto_area
                 self.make_misc_files(self.smf_cmds, prefix="smf_cmds",
