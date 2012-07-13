@@ -99,7 +99,8 @@ class TestPkgHelp(pkg5unittest.CliTestCase):
                 # in the future then this test case will also need to be
                 # modified.
 
-                ret, out = self.cmdline_run("/usr/bin/locale -a", out=True)
+                ret, out = self.cmdline_run("/usr/bin/locale -a", out=True,
+                    coverage=False)
                 line = " ".join(out.split())
                 m = re.search(r"ja_JP.eucJP", line)
                 self.assert_(m, "You must have ja_JP.eucJP"
