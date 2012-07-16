@@ -29,8 +29,12 @@
 ^src/gui/data/packagemanager-preferences.schemas$
 ^src/gui/data/packagemanager.desktop$
 ^src/gui/help/.*/package-manager.xml$
+^src/gui/help/.*/package-manager.localizable.xml$
+^src/gui/help/.*/pkg_help.pot$
+^src/gui/help/package-manager-__LOCALE__.omf$
 ^src/pkg/Makefile.link
 ^src/pkg/pkgtmp/
+^src/po/pkg.pot$
 ^src/tests/.coverage$
 ^src/tests/.coverage-.*$
 ^src/tests/.timing_history.txt$
