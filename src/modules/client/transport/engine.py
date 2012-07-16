@@ -153,8 +153,10 @@ class CurlTransportEngine(TransportEngine):
                 reset the transport and generate exceptions for the failed
                 requests."""
 
-                current_time = time.time()
                 timeout = global_settings.PKG_CLIENT_LOWSPEED_TIMEOUT
+                if timeout == 0:
+                        return
+                current_time = time.time()
                 time_list = []
                 size_list = []
                 failures = []
