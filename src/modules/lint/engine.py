@@ -646,6 +646,7 @@ class LintEngine(object):
                     pattern=self.pattern, release=self.release):
                         self._check_manifest(manifest, manifest_checks,
                             action_checks)
+                self.tracker.flush()
 
         def gen_manifests(self, api_inst, pattern=None, release=None):
                 """A generator to return package manifests for a given image.
