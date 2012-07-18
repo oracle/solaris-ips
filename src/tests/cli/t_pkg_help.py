@@ -103,8 +103,10 @@ class TestPkgHelp(pkg5unittest.CliTestCase):
                     coverage=False)
                 line = " ".join(out.split())
                 m = re.search(r"ja_JP.eucJP", line)
-                self.assert_(m, "You must have ja_JP.eucJP"
-                    " locale installed for this test to succeed.")
+                if not m:
+                        raise pkg5unittest.TestSkippedException("The "
+                            "test system must have the ja_JP.eucJP locale "
+                            "installed to run this test.")
 
                 eucJP_encode_file = os.path.join(self.ro_data_root,
                     "pkg.help.eucJP.expected.out")
