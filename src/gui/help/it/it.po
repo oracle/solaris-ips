@@ -1,1667 +1,1666 @@
 msgid ""
-msgstr "Project-Id-Version: PACKAGE VERSION\nPOT-Creation-Date: 2012-03-30 15:24+0900\nPO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\nLast-Translator: FULL NAME <EMAIL@ADDRESS>\nLanguage-Team: LANGUAGE <LL@li.org>\nMIME-Version: 1.0\nContent-Type: text/plain; charset=UTF-8\nContent-Transfer-Encoding: 8bit\n"
+msgstr "Project-Id-Version: PACKAGE VERSION\nPOT-Creation-Date: 2012-06-24 23:45-0700\nPO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\nLast-Translator: FULL NAME <EMAIL@ADDRESS>\nLanguage-Team: LANGUAGE <LL@li.org>\nMIME-Version: 1.0\nContent-Type: text/plain; charset=UTF-8\nContent-Transfer-Encoding: 8bit\n"
 
-#: gui/help/C/package-manager.xml:3(title)
+#: gui/help/C/package-manager.localizable.xml:3(title)
 msgid "<trademark class=\"registered\">Oracle</trademark> Solaris 11 Package Manager Online Help"
 msgstr "<trademark class=\"registered\">Oracle</trademark> Solaris 11 Package Manager - Guida in linea"
 
-#: gui/help/C/package-manager.xml:4(firstname)
+#: gui/help/C/package-manager.localizable.xml:4(firstname)
 msgid "Oracle"
 msgstr "Oracle"
 
-#: gui/help/C/package-manager.xml:5(surname)
+#: gui/help/C/package-manager.localizable.xml:5(surname)
 msgid "Corporation"
 msgstr "Corporation"
 
-#: gui/help/C/package-manager.xml:8(releaseinfo)
+#: gui/help/C/package-manager.localizable.xml:8(releaseinfo)
 msgid "Oracle Solaris 11"
 msgstr "Oracle Solaris 11"
 
-#: gui/help/C/package-manager.xml:9(pubdate)
+#: gui/help/C/package-manager.localizable.xml:9(pubdate)
 msgid "June 2011"
 msgstr "Giugno 2011"
 
-#: gui/help/C/package-manager.xml:10(publishername)
+#: gui/help/C/package-manager.localizable.xml:10(publishername)
 msgid "Oracle Corporation"
 msgstr "Oracle Corporation"
 
-#: gui/help/C/package-manager.xml:11(street)
+#: gui/help/C/package-manager.localizable.xml:11(street)
 msgid "500 Oracle Parkway"
 msgstr "500 Oracle Parkway"
 
-#: gui/help/C/package-manager.xml:12(city)
+#: gui/help/C/package-manager.localizable.xml:12(city)
 msgid "Redwood City"
 msgstr "Redwood City"
 
-#: gui/help/C/package-manager.xml:13(state)
+#: gui/help/C/package-manager.localizable.xml:13(state)
 msgid "CA"
 msgstr "CA"
 
-#: gui/help/C/package-manager.xml:14(postcode)
+#: gui/help/C/package-manager.localizable.xml:14(postcode)
 msgid "94065"
 msgstr "94065"
 
-#: gui/help/C/package-manager.xml:15(country)
+#: gui/help/C/package-manager.localizable.xml:15(country)
 msgid "U.S.A."
 msgstr "U.S.A."
 
-#: gui/help/C/package-manager.xml:18(year)
+#: gui/help/C/package-manager.localizable.xml:18(year)
 msgid "2008, 2011"
 msgstr "2008, 2011"
 
-#: gui/help/C/package-manager.xml:19(para)
+#: gui/help/C/package-manager.localizable.xml:19(para)
 msgid "This software and related documentation are provided under a license agreement containing restrictions on use and disclosure and are protected by intellectual property laws. Except as expressly permitted in your license agreement or allowed by law, you may not use, copy, reproduce, translate, broadcast, modify, license, transmit, distribute, exhibit, perform, publish, or display any part, in any form, or by any means. Reverse engineering, disassembly, or decompilation of this software, unless required by law for interoperability, is prohibited."
 msgstr "Il software e la relativa documentazione vengono distribuiti sulla base di specifiche condizioni di licenza che prevedono restrizioni relative all'uso e alla divulgazione e sono inoltre protetti dalle leggi vigenti sulla proprietà intellettuale. Ad eccezione di quanto espressamente consentito dal contratto di licenza o dalle disposizioni di legge, nessuna parte può essere utilizzata, copiata, riprodotta, tradotta, diffusa, modificata, concessa in licenza, trasmessa, distribuita, presentata, eseguita, pubblicata o visualizzata in alcuna forma o con alcun mezzo. La decodificazione, il disassemblaggio o la decompilazione del software sono vietati, salvo che per garantire l'interoperabilità nei casi espressamente previsti dalla legge."
 
-#: gui/help/C/package-manager.xml:20(para)
+#: gui/help/C/package-manager.localizable.xml:20(para)
 msgid "The information contained herein is subject to change without notice and is not warranted to be error-free. If you find any errors, please report them to us in writing."
 msgstr "Le informazioni contenute nella presente documentazione potranno essere soggette a modifiche senza preavviso. Non si garantisce che la presente documentazione sia priva di errori. Qualora l'utente riscontrasse dei problemi, è pregato di segnalarli per iscritto a Oracle."
 
-#: gui/help/C/package-manager.xml:21(para)
+#: gui/help/C/package-manager.localizable.xml:21(para)
 msgid "If this is software or related software documentation that is delivered to the U.S. Government or anyone licensing it on behalf of the U.S. Government, the following notice is applicable:"
 msgstr "Qualora il software o la relativa documentazione vengano forniti al Governo degli Stati Uniti o a chiunque li abbia in licenza per conto del Governo degli Stati Uniti, sarà applicabile la clausola riportata di seguito:"
 
-#: gui/help/C/package-manager.xml:22(para)
+#: gui/help/C/package-manager.localizable.xml:22(para)
 msgid "U.S. GOVERNMENT RIGHTS Programs, software, databases, and related documentation and technical data delivered to U.S. Government customers are “commercial computer software” or “commercial technical data” pursuant to the applicable Federal Acquisition Regulation and agency-specific supplemental regulations. As such, the use, duplication, disclosure, modification, and adaptation shall be subject to the restrictions and license terms set forth in the applicable Government contract, and, to the extent applicable by the terms of the Government contract, the additional rights set forth in FAR 52.227-19, Commercial Computer Software License (December 2007). Oracle America, Inc., 500 Oracle Parkway, Redwood City, CA 94065."
 msgstr "U.S. GOVERNMENT RIGHTS Programs, software, databases, and related documentation and technical data delivered to U.S. Government customers are \"commercial computer software\" or \"commercial technical data\" pursuant to the applicable Federal Acquisition Regulation and agency-specific supplemental regulations. As such, the use, duplication, disclosure, modification, and adaptation shall be subject to the restrictions and license terms set forth in the applicable Government contract, and, to the extent applicable by the terms of the Government contract, the additional rights set forth in FAR 52.227-19, Commercial Computer Software License (December 2007). Oracle America, Inc., 500 Oracle Parkway, Redwood City, CA 94065."
 
-#: gui/help/C/package-manager.xml:23(para)
+#: gui/help/C/package-manager.localizable.xml:23(para)
 msgid "This software or hardware is developed for general use in a variety of information management applications. It is not developed or intended for use in any inherently dangerous applications, including applications which may create a risk of personal injury. If you use this software or hardware in dangerous applications, then you shall be responsible to take all appropriate fail-safe, backup, redundancy, and other measures to ensure its safe use. Oracle Corporation and its affiliates disclaim any liability for any damages caused by use of this software or hardware in dangerous applications."
 msgstr "Il presente software o hardware è stato sviluppato per un uso generico in varie applicazioni di gestione delle informazioni. Non è stato sviluppato né concepito per l'uso in campi intrinsecamente pericolosi, incluse le applicazioni che implicano un rischio di lesioni personali. Qualora il software o l'hardware venga utilizzato per impieghi pericolosi, è responsabilità dell'utente adottare tutte le necessarie misure di emergenza, backup e di altro tipo per garantirne la massima sicurezza di utilizzo. Oracle Corporation e le sue consociate declinano ogni responsabilità per eventuali danni causati dall'uso del software o dell'hardware per impieghi pericolosi."
 
-#: gui/help/C/package-manager.xml:24(para)
+#: gui/help/C/package-manager.localizable.xml:24(para)
 msgid "Oracle and Java are registered trademarks of Oracle and/or its affiliates. Other names may be trademarks of their respective owners."
 msgstr "Oracle e Java sono marchi registrati di Oracle e/o delle relative consociate. Altri nomi possono essere marchi dei rispettivi proprietari."
 
-#: gui/help/C/package-manager.xml:25(para)
+#: gui/help/C/package-manager.localizable.xml:25(para)
 msgid "AMD, Opteron, the AMD logo, and the AMD Opteron logo are trademarks or registered trademarks of Advanced Micro Devices. Intel and Intel Xeon are trademarks or registered trademarks of Intel Corporation. All SPARC trademarks are used under license and are trademarks or registered trademarks of SPARC International, Inc. UNIX is a registered trademark licensed through X/Open Company, Ltd."
 msgstr "AMD, Opteron, il logo AMD e il logo AMD Opteron sono marchi o marchi registrati di Advanced Micro Devices. Intel e Intel Xeon sono marchi o marchi registrati di Intel Corporation. Tutti i marchi SPARC sono utilizzati in base alla relativa licenza e sono marchi o marchi registrati di SPARC International, Inc. UNIX è un marchio registrato concesso in licenza attraverso X/Open Company, Ltd."
 
-#: gui/help/C/package-manager.xml:26(para)
+#: gui/help/C/package-manager.localizable.xml:26(para)
 msgid "This software or hardware and documentation may provide access to or information on content, products, and services from third parties. Oracle Corporation and its affiliates are not responsible for and expressly disclaim all warranties of any kind with respect to third-party content, products, and services. Oracle Corporation and its affiliates will not be responsible for any loss, costs, or damages incurred due to your access to or use of third-party content, products, or services."
 msgstr "Il software o l'hardware e la documentazione possono includere informazioni su contenuti, prodotti e servizi di terze parti o collegamenti agli stessi. Oracle Corporation e le sue consociate declinano ogni responsabilità ed escludono espressamente qualsiasi tipo di garanzia relativa a contenuti, prodotti e servizi di terze parti. Oracle Corporation e le sue consociate non potranno quindi essere ritenute responsabili per qualsiasi perdita, costo o danno causato dall'accesso a contenuti, prodotti o servizi di terze parti o dall'utilizzo degli stessi."
 
-
-#: gui/help/C/package-manager.xml:37(title)
+#: gui/help/C/package-manager.localizable.xml:29(title)
 msgid "About Package Manager"
 msgstr "Informazioni su Package Manager"
 
-#: gui/help/C/package-manager.xml:38(para)
+#: gui/help/C/package-manager.localizable.xml:30(para)
 msgid "Package Manager is a graphical user interface (GUI) for the Oracle Solaris Image Packaging System (IPS)."
 msgstr "Package Manager è un'interfaccia utente grafica (GUI, graphical user interface) per Oracle Solaris Image Packaging System (IPS)."
 
-#: gui/help/C/package-manager.xml:39(para)
+#: gui/help/C/package-manager.localizable.xml:31(para)
 msgid "See the <xref linkend=\"glossary\"/> for definitions of terms used in this document."
 msgstr "Per le definizioni dei termini utilizzati nel presente documento consultare <xref linkend=\"glossary\"/>."
 
-#: gui/help/C/package-manager.xml:40(title)
+#: gui/help/C/package-manager.localizable.xml:32(title)
 msgid "Oracle Solaris Image Packaging System"
 msgstr "Oracle Solaris Image Packaging System"
 
-#: gui/help/C/package-manager.xml:41(para)
+#: gui/help/C/package-manager.localizable.xml:33(para)
 msgid "Oracle Solaris Image Packaging System (IPS) is a software delivery system that interacts with a package repository on a network. IPS is a framework that provides software lifecycle management capabilities, including software installation, upgrade, and removal."
 msgstr "Oracle Solaris Image Packaging System (IPS) è un sistema di distribuzione del software in grado di interagire con un repository di pacchetti su una rete. IPS è una struttura che offre funzionalità di gestione del ciclo di vita del software, comprese le operazioni di installazione, aggiornamento e rimozione."
 
-#: gui/help/C/package-manager.xml:42(para)
+#: gui/help/C/package-manager.localizable.xml:34(para)
 msgid "After you install the Oracle Solaris operating system, you might find that some of the software you want to use is not available. This software probably is available in an IPS package repository. You can use Package Manager or the <literal>pkg</literal>(1M) command to download and install packages from a package repository."
 msgstr "Dopo aver installato il sistema operativo Oracle Solaris, alcune delle applicazioni software che si desidera utilizzare potrebbero non essere disponibili. Tali applicazioni potrebbero essere disponibili in un repository di pacchetto IPS. È possibile utilizzare Package Manager o il comando <literal>pkg</literal>(1M) per scaricare e installare pacchetti da un repository di pacchetto."
 
-#: gui/help/C/package-manager.xml:43(para)
+#: gui/help/C/package-manager.localizable.xml:35(para)
 msgid "IPS also enables you to create a copy of an existing IPS package repository, create your own IPS package repository, and publish your own IPS packages. For more information about IPS, see the Oracle Solaris 11 Information Library. Go to <literal>download.oracle.com</literal>, select Documentation Index on the left, select Systems Software, select Oracle Solaris 11, and select View Library. See especially <citetitle>Adding and Updating Oracle Solaris 11 Software Packages</citetitle>."
 msgstr "IPS consente inoltre di creare una copia di un repository di pacchetti IPS esistente, creare il proprio repository di pacchetti IPS e pubblicare i propri pacchetti IPS. Per ulteriori informazioni su IPS, vedere l'apposita libreria informativa di Oracle Solaris 11. Visitare <literal>download.oracle.com</literal>, selezionare la sezione relativa all'indice della documentazione, visualizzare la sezione relativa al software dei sistemi, quindi scegliere Oracle Solaris 11 e il comando di visualizzazione della libreria. Vedere in particolare la sezione relativa all'<citetitle>aggiunta e all'aggiornamento dei pacchetti software Oracle Solaris 11</citetitle>."
 
-#: gui/help/C/package-manager.xml:45(title)
+#: gui/help/C/package-manager.localizable.xml:37(title)
 msgid "Package Manager"
 msgstr "Package Manager"
 
-#: gui/help/C/package-manager.xml:46(para)
+#: gui/help/C/package-manager.localizable.xml:38(para)
 msgid "Package Manager provides a subset of the functionality offered by the IPS command-line interface."
 msgstr "Package Manager fornisce un sottoinsieme di funzionalità offerte dall'interfaccia della riga di comando IPS."
 
-#: gui/help/C/package-manager.xml:47(para)
+#: gui/help/C/package-manager.localizable.xml:39(para)
 msgid "Package Manager enables you to perform the following tasks:"
 msgstr "Package Manager consente inoltre di eseguire le seguenti attività:"
 
-#: gui/help/C/package-manager.xml:48(para)
+#: gui/help/C/package-manager.localizable.xml:40(para)
 msgid "Find, install, update, and remove IPS packages. See <xref linkend=\"manage-pkg\"/>."
 msgstr "Individuare, installare, aggiornare e rimuovere i pacchetti IPS. Vedere <xref linkend=\"manage-pkg\"/>."
 
-#: gui/help/C/package-manager.xml:50(para)
+#: gui/help/C/package-manager.localizable.xml:42(para)
 msgid "Update your system (update all the packages on your system). See <xref linkend=\"update_all\"/>."
 msgstr "Aggiornare il sistema (aggiornare tutti i pacchetti nel sistema). Vedere <xref linkend=\"update_all\"/>."
 
-#: gui/help/C/package-manager.xml:52(para)
+#: gui/help/C/package-manager.localizable.xml:44(para)
 msgid "Add, modify, and delete IPS package publishers. See <xref linkend=\"manage-publisher\"/>."
 msgstr "Aggiungere, modificare ed eliminare i publisher dei pacchetti IPS. Vedere <xref linkend=\"manage-publisher\"/>."
 
-#: gui/help/C/package-manager.xml:54(para)
+#: gui/help/C/package-manager.localizable.xml:46(para)
 msgid "List, rename, delete, and manage boot environments. See <xref linkend=\"manage-be\"/>."
 msgstr "Elencare, rinominare, eliminare e gestire gli ambienti di boot. Vedere <xref linkend=\"manage-be\"/>."
 
-#: gui/help/C/package-manager.xml:56(para)
+#: gui/help/C/package-manager.localizable.xml:48(para)
 msgid "Create a WebInstall installation file (<filename>.p5i</filename>). See <xref linkend=\"webinstall\"/>."
 msgstr "Creare un file di installazione WebInstall (<filename>.p5i</filename>). Vedere <xref linkend=\"webinstall\"/>."
 
-#: gui/help/C/package-manager.xml:59(para)
+#: gui/help/C/package-manager.localizable.xml:51(para)
 msgid "This documentation refers to the following features of the Package Manager window:"
 msgstr "La presente documentazione fa riferimento alle seguenti funzioni della finestra Package Manager:"
 
-#: gui/help/C/package-manager.xml:60(para)
+#: gui/help/C/package-manager.localizable.xml:52(para)
 msgid "The large pane in the center of the window is the package list pane. Sometimes this pane shows informational messages, but usually this pane contains a list of packages."
 msgstr "Il riquadro di grandi dimensioni al centro della finestra corrisponde al riquadro dell'elenco dei pacchetti. Talvolta in questo riquadro vengono visualizzati messaggi informativi, ma solitamente contiene un elenco di pacchetti."
 
-#: gui/help/C/package-manager.xml:62(para)
+#: gui/help/C/package-manager.localizable.xml:54(para)
 msgid "The menu bar at the top of the window provides most Package Manager functionality."
 msgstr "La barra dei menu nella parte superiore della finestra fornisce la maggior parte delle funzionalità Package Manager."
 
-#: gui/help/C/package-manager.xml:64(para)
+#: gui/help/C/package-manager.localizable.xml:56(para)
 msgid "The tool bar just below the menu bar has buttons on the left that provide some often-used operations. The buttons on the left of the separator have global functionality: Update all packages that have updates available or refresh the list of packages and package status. The buttons on the right of the separator only operate on selected packages."
 msgstr "La barra degli strumenti immediatamente sotto la barra dei menu è caratterizzata a sinistra da pulsanti che forniscono accesso ad alcune operazioni di uso comune. I pulsanti a sinistra del separatore presentano funzionalità globali: aggiornamento di tutti i pacchetti con aggiornamenti disponibili o refresh dell'elenco dei pacchetti e dello stato del pacchetto. I pulsanti a destra del separatore possono essere utilizzati solo su pacchetti selezionati."
 
-#: gui/help/C/package-manager.xml:66(para)
+#: gui/help/C/package-manager.localizable.xml:58(para)
 msgid "The Search field on the right of the tool bar helps control the content of the package list pane. See <xref linkend=\"search-pkg\"/>."
 msgstr "Il campo Cerca a destra della barra degli strumenti consente di controllare il contenuto del riquadro dell'elenco dei pacchetti. Vedere <xref linkend=\"search-pkg\"/>."
 
-#: gui/help/C/package-manager.xml:68(para)
+#: gui/help/C/package-manager.localizable.xml:60(para)
 msgid "The <guimenu>Publisher</guimenu> drop-down menu below the buttons helps control the content of the package list pane and also enables you to add a new publisher. See <xref linkend=\"list-pkg\"/> “By Publisher.”"
 msgstr "Il menu a discesa <guimenu>Publisher</guimenu> sotto i pulsanti consente di controllare il contenuto del riquadro dell'elenco dei pacchetti e di creare un nuovo publisher. Vedere <xref linkend=\"list-pkg\"/> \"Per Publisher\"."
 
-#: gui/help/C/package-manager.xml:70(para)
+#: gui/help/C/package-manager.localizable.xml:62(para)
 msgid "The <guimenu>View</guimenu> drop-down menu below the Search field helps control the content of the package list pane. See Listing Packages “By Package Status.”"
 msgstr "Il menu a discesa <guimenu>Visualizza</guimenu> sotto il campo Cerca consente di controllare il contenuto del riquadro dell'elenco dei pacchetti. Vedere Elenco di pacchetti \"Per stato del pacchetto\"."
 
-#: gui/help/C/package-manager.xml:72(para)
+#: gui/help/C/package-manager.localizable.xml:64(para)
 msgid "The category pane below the <guimenu>Publisher</guimenu> menu helps control the content of the package list pane. See Listing Packages “By Category.”"
 msgstr "Il riquadro delle categorie sotto il menu <guimenu>Publisher</guimenu> consente di controllare il contenuto del riquadro dell'elenco dei pacchetti. Vedere Elenco di pacchetti \"Per categoria\"."
 
-#: gui/help/C/package-manager.xml:74(para)
+#: gui/help/C/package-manager.localizable.xml:66(para)
 msgid "Below the list of software categories is a list of searches that you have performed in this session."
 msgstr "Sotto l'elenco delle categorie del software è disponibile un elenco di ricerche eseguite in questa sessione."
 
-#: gui/help/C/package-manager.xml:76(para)
+#: gui/help/C/package-manager.localizable.xml:68(para)
 msgid "Below the package list pane is the package details pane. See <xref linkend=\"package-version\"/>."
 msgstr "Sotto il riquadro dell'elenco dei pacchetti è disponibile il riquadro dei dettagli del pacchetto. Vedere <xref linkend=\"package-version\"/>."
 
-#: gui/help/C/package-manager.xml:81(title)
+#: gui/help/C/package-manager.localizable.xml:73(title)
 msgid "Managing Packages"
 msgstr "Gestione dei pacchetti"
 
-#: gui/help/C/package-manager.xml:82(para)
+#: gui/help/C/package-manager.localizable.xml:74(para)
 msgid "You can list packages according to various criteria. You can install, update, and remove packages."
 msgstr "È possibile elencare i pacchetti secondo diversi criteri. È possibile installare, aggiornare e rimuovere i pacchetti."
 
-#: gui/help/C/package-manager.xml:83(title)
+#: gui/help/C/package-manager.localizable.xml:75(title)
 msgid "Listing Packages"
 msgstr "Elenco di pacchetti"
 
-#: gui/help/C/package-manager.xml:84(para)
+#: gui/help/C/package-manager.localizable.xml:76(para)
 msgid "The list of packages in the Package Manager list pane is affected by the selections you make in the <guimenu>Publisher</guimenu> drop-down menu, the <guimenu>View</guimenu> drop-down menu, the categories pane, and the Search field."
 msgstr "L'elenco dei pacchetti nel riquadro dell'elenco di Package Manager è interessato dalle selezioni eseguite nei menu a discesa <guimenu>Publisher</guimenu> e <guimenu>Visualizza</guimenu>, nel riquadro delle categorie e nel campo Cerca."
 
-#: gui/help/C/package-manager.xml:85(para)
+#: gui/help/C/package-manager.localizable.xml:77(para)
 msgid "You can reorder the package list by clicking the column headings."
 msgstr "È possibile riordinare l'elenco dei pacchetti facendo clic sulle intestazioni colonna."
 
-#: gui/help/C/package-manager.xml:86(para)
+#: gui/help/C/package-manager.localizable.xml:78(para)
 msgid "You can use the <guibutton>Refresh</guibutton> button or the <menuchoice><guimenu>Package</guimenu><guimenuitem>Refresh</guimenuitem></menuchoice> menu option to reread repository catalogs and update the list of packages and package status. A refresh also is attempted whenever you open Package Manager."
 msgstr "È possibile utilizzare il pulsante <guibutton>Refresh</guibutton> o l'opzione di menu <menuchoice><guimenu>Pacchetto</guimenu><guimenuitem>Refresh</guimenuitem></menuchoice> per leggere nuovamente i cataloghi del repository e aggiornare l'elenco di pacchetti e relativo stato. Inoltre a ogni apertura di Package Manager, viene eseguito un tentativo di refresh."
 
-#: gui/help/C/package-manager.xml:87(title)
+#: gui/help/C/package-manager.localizable.xml:79(title)
 msgid "By Publisher"
 msgstr "Per publisher"
 
-#: gui/help/C/package-manager.xml:88(para)
+#: gui/help/C/package-manager.localizable.xml:80(para)
 msgid "The <guimenu>Publisher</guimenu> drop-down menu enables you to list packages according to publisher."
 msgstr "Il menu a discesa <guimenu>Publisher</guimenu> consente di elencare i pacchetti in base al publisher."
 
-#: gui/help/C/package-manager.xml:89(para)
+#: gui/help/C/package-manager.localizable.xml:81(para)
 msgid "The top of the menu lists the name of each publisher that you have added using the Add Publisher dialog or using the <literal>pkg</literal> command. When you select one of these publishers, the package list pane shows only packages that are available from that selected publisher. The package list pane shows only the Name, Status, and Summary columns because the publisher is the same for every package."
 msgstr "Nella parte superiore del menu vengono elencati i nomi di ciascun publisher aggiunto utilizzando la finestra di dialogo Aggiungi publisher o il comando <literal>pkg</literal>. Quando si seleziona uno di questi publisher, il riquadro dell'elenco dei pacchetti mostra solo i pacchetti disponibili dal publisher selezionato. Nel riquadro dell'elenco dei pacchetti vengono visualizzate solo le colonne Nome, Stato e Riepilogo, poiché il publisher è lo stesso per tutti i pacchetti."
 
-#: gui/help/C/package-manager.xml:91(para)
+#: gui/help/C/package-manager.localizable.xml:83(para)
 msgid "<guimenuitem>All Publishers</guimenuitem> — Shows packages from all publishers in the package list pane. The package list pane shows columns Name, Status, Publisher, and Summary."
 msgstr "<guimenuitem>Tutti i publisher</guimenuitem> - Mostra i pacchetti di tutti i publisher nel riquadro dell'elenco dei pacchetti. In tale riquadro vengono visualizzate le colonne Nome, Stato, Publisher e Riepilogo."
 
-#: gui/help/C/package-manager.xml:92(para)
+#: gui/help/C/package-manager.localizable.xml:84(para)
 msgid "Example: To list all media device drivers that have updates available from all publishers, select <guimenuitem>All Publishers</guimenuitem> from the <guimenu>Publisher</guimenu> menu, select the <menuchoice><guimenu>Drivers</guimenu><guimenuitem>Media</guimenuitem></menuchoice> category, and select <guimenuitem>Updates</guimenuitem> from the <guimenu>View</guimenu> menu."
 msgstr "Esempio: per elencare tutti i driver del dispositivo del supporto con aggiornamenti disponibili da tutti i publisher, selezionare <guimenuitem>Tutti i publisher</guimenuitem> dal menu <guimenu>Publisher</guimenu>, scegliere la categoria <menuchoice><guimenu>Driver</guimenu><guimenuitem>Supporti</guimenuitem></menuchoice> e selezionare <guimenuitem>Aggiornamenti</guimenuitem> dal menu <guimenu>Visualizza</guimenu>."
 
-#: gui/help/C/package-manager.xml:94(para)
+#: gui/help/C/package-manager.localizable.xml:86(para)
 msgid "<guimenuitem>All Installed Packages</guimenuitem> — Shows all packages that are installed from all publishers."
 msgstr "<guimenuitem>Tutti i pacchetti installati</guimenuitem> - Mostra tutti i pacchetti installati da tutti i publisher."
 
-#: gui/help/C/package-manager.xml:95(para)
+#: gui/help/C/package-manager.localizable.xml:87(para)
 msgid "Example: To list all the font packages that are currently installed from the <literal>solaris</literal> publisher, select <guimenuitem>All Installed Packages</guimenuitem> from the <guimenu>Publisher</guimenu> menu, select the <menuchoice><guimenu>System</guimenu><guimenuitem>Fonts</guimenuitem></menuchoice> category, click on the Publisher column heading to sort the list by Publisher, and scroll down to the <literal>solaris</literal> entries."
 msgstr "Esempio: per elencare tutti i pacchetti dei caratteri attualmente installati dal publisher <literal>solaris</literal>, selezionare <guimenuitem>Tutti i pacchetti installati</guimenuitem> dal menu <guimenu>Publisher</guimenu>, scegliere la categoria <menuchoice><guimenu>Sistema</guimenu><guimenuitem>Caratteri</guimenuitem></menuchoice>, fare clic sull'intestazione colonna Publisher per ordinare l'elenco a seconda del Publisher e scorrere verso il basso fino alle voci <literal>solaris</literal>."
 
-#: gui/help/C/package-manager.xml:97(para)
+#: gui/help/C/package-manager.localizable.xml:89(para)
 msgid "<guimenuitem>All Publishers (Search)</guimenuitem> — Shows an informational message in the package list pane instead of a list of packages. The message lists all publishers that you have configured and reminds you how to view all packages from those publishers. See <xref linkend=\"search-pkg\"/> for information about searching with <guimenuitem>All Publishers (Search)</guimenuitem>."
 msgstr "<guimenuitem>Tutti i publisher (Cerca)</guimenuitem> - Mostra un messaggio informativo nel riquadro dell'elenco dei pacchetti invece di un elenco di pacchetti. Nel messaggio vengono elencati tutti i publisher configurati e viene indicato come visualizzare tutti i pacchetti di quei publisher. Vedere <xref linkend=\"search-pkg\"/> per informazioni sulla ricerca con <guimenuitem>Tutti i publisher (Cerca)</guimenuitem>."
 
-#: gui/help/C/package-manager.xml:99(para)
+#: gui/help/C/package-manager.localizable.xml:91(para)
 msgid "<guimenuitem>Add...</guimenuitem> — Opens the Add Publisher window."
 msgstr "<guimenuitem>Aggiungi...</guimenuitem> - Consente di aprire la finestra Aggiungi publisher."
 
-#: gui/help/C/package-manager.xml:103(title)
+#: gui/help/C/package-manager.localizable.xml:95(title)
 msgid "By Package Status"
 msgstr "Per stato del pacchetto"
 
-#: gui/help/C/package-manager.xml:104(para)
+#: gui/help/C/package-manager.localizable.xml:96(para)
 msgid "The <guimenu>View</guimenu> drop-down menu enables you to list packages according to package status. Package status can be installed, not installed, or an update is available. The icons displayed on the <guimenu>View</guimenu> menu match the icons displayed in the Status column of the package list pane."
 msgstr "Il menu a discesa <guimenu>Visualizza</guimenu> consente di elencare i pacchetti in base allo stato del pacchetto. Lo stato può essere installato, non installato o con disponibilità di aggiornamenti. Le icone visualizzate nel menu <guimenu>Visualizza</guimenu> corrispondono a quelle presenti nella colonna Stato del riquadro dell'elenco dei pacchetti."
 
-#: gui/help/C/package-manager.xml:105(para)
+#: gui/help/C/package-manager.localizable.xml:97(para)
 msgid "<guimenuitem>All Packages</guimenuitem> — Shows all packages available from the selected publisher in the selected category or matching the specified search string."
 msgstr "<guimenuitem>Tutti i pacchetti</guimenuitem> - Mostra tutti i pacchetti disponibili dal publisher selezionato nella categoria selezionata o che corrispondono alla stringa di ricerca specifica."
 
-#: gui/help/C/package-manager.xml:106(para)
+#: gui/help/C/package-manager.localizable.xml:98(para)
 msgid "Example: To list all web services packages from the <literal>solaris</literal> publisher that are installed, not installed, or have updates available, select <literal>solaris</literal> from the <guimenu>Publisher</guimenu> menu, select the <menuchoice><guimenu>Web Services</guimenu></menuchoice> category, and select <guimenuitem>All Packages</guimenuitem> from the <guimenu>View</guimenu> menu."
 msgstr "Esempio: per elencare tutti i pacchetti di servizi Web dal publisher <literal>solaris</literal> installati, non installati o con aggiornamenti disponibili, selezionare <literal>solaris</literal> dal menu <guimenu>Publisher</guimenu>, scegliere la categoria <menuchoice><guimenu>Servizi Web</guimenu></menuchoice> e selezionare <guimenuitem>Tutti i pacchetti</guimenuitem> dal menu <guimenu>Visualizza</guimenu>."
 
-#: gui/help/C/package-manager.xml:109(para)
+#: gui/help/C/package-manager.localizable.xml:101(para)
 msgid "<guimenuitem>Installed Packages</guimenuitem> — Shows all installed packages from the selected publisher in the selected category or matching the specified search string. See also the <menuchoice><guimenu>Publisher</guimenu><guimenuitem>All Installed Packages</guimenuitem></menuchoice> option."
 msgstr "<guimenuitem>Pacchetti installati</guimenuitem> - Mostra tutti i pacchetti installati dal publisher selezionato nella categoria selezionata o corrispondenti alla stringa di ricerca specificata. Vedere inoltre l'opzione <menuchoice><guimenu>Publisher</guimenu><guimenuitem>Tutti i pacchetti installati</guimenuitem></menuchoice>."
 
-#: gui/help/C/package-manager.xml:110(para)
+#: gui/help/C/package-manager.localizable.xml:102(para)
 msgid "Example: To list only the web server packages that are installed from the <literal>solaris</literal> publisher, select <literal>solaris</literal> from the <guimenu>Publisher</guimenu> menu, select the <menuchoice><guimenu>Web Services</guimenu></menuchoice> category, and select <guimenuitem>Installed Packages</guimenuitem> from the <guimenu>View</guimenu> menu."
 msgstr "Esempio: per elencare solo i pacchetti server Web installati dal publisher <literal>solaris</literal>, selezionare <literal>solaris</literal> dal menu <guimenu>Publisher</guimenu>, scegliere la categoria <menuchoice><guimenu>Servizi Web</guimenu></menuchoice> e selezionare <guimenuitem>Pacchetti installati</guimenuitem> dal menu <guimenu>Visualizza</guimenu>."
 
-#: gui/help/C/package-manager.xml:112(para)
+#: gui/help/C/package-manager.localizable.xml:104(para)
 msgid "<guimenuitem>Updates</guimenuitem> — Shows all packages from the selected publisher in the selected category or matching the specified search string that have updates available."
 msgstr "<guimenuitem>Aggiornamenti</guimenuitem> - Mostra tutti i pacchetti del publisher selezionato nella categoria selezionata o corrispondenti alla stringa di ricerca specificata con aggiornamenti disponibili."
 
-#: gui/help/C/package-manager.xml:113(para)
+#: gui/help/C/package-manager.localizable.xml:105(para)
 msgid "Example: To list all device drivers that have updates available from all publishers, select <guimenuitem>All Publishers</guimenuitem> from the <guimenu>Publisher</guimenu> menu, select the <guimenu>Drivers</guimenu> category, and select <guimenuitem>Updates</guimenuitem> from the <guimenu>View</guimenu> menu."
 msgstr "Esempio: per elencare tutti i driver di dispositivo con aggiornamenti disponibili da tutti i publisher, selezionare <guimenuitem>Tutti i publisher</guimenuitem> dal menu <guimenu>Publisher</guimenu>, scegliere la categoria <guimenu>Driver</guimenu> e selezionare <guimenuitem>Aggiornamenti</guimenuitem> dal menu <guimenu>Visualizza</guimenu>."
 
-#: gui/help/C/package-manager.xml:115(para)
+#: gui/help/C/package-manager.localizable.xml:107(para)
 msgid "<guimenuitem>Not Installed Packages</guimenuitem> — Shows all packages from the selected publisher in the selected category or matching the specified search string that are not installed."
 msgstr "<guimenuitem>Pacchetti non installati</guimenuitem> - Mostra tutti i pacchetti dal publisher selezionato nella categoria selezionata o corrispondenti alla stringa di ricerca specificata non installati."
 
-#: gui/help/C/package-manager.xml:116(para)
+#: gui/help/C/package-manager.localizable.xml:108(para)
 msgid "Example: To list all the font packages that are currently not installed from the <literal>solaris</literal> publisher, select <literal>solaris</literal> from the <guimenu>Publisher</guimenu> menu, select the <menuchoice><guimenu>System</guimenu><guimenuitem>Fonts</guimenuitem></menuchoice> category, and then select <guimenuitem>Not Installed Packages</guimenuitem> from the <guimenu>View</guimenu> menu."
 msgstr "Esempio: per elencare tutti i pacchetti dei caratteri attualmente non installati dal publisher <literal>solaris</literal>, selezionare <literal>solaris</literal> dal menu <guimenu>Publisher</guimenu>, scegliere la categoria <menuchoice><guimenu>Sistema</guimenu><guimenuitem>Caratteri</guimenuitem></menuchoice>, quindi selezionare <guimenuitem>Pacchetti non installati</guimenuitem> dal menu <guimenu>Visualizza</guimenu>."
 
-#: gui/help/C/package-manager.xml:118(para)
+#: gui/help/C/package-manager.localizable.xml:110(para)
 msgid "<guimenuitem>Selected Packages</guimenuitem> — Lists all packages that are currently selected. See <xref linkend=\"select-pkg\"/>."
 msgstr "<guimenuitem>Pacchetti selezionati</guimenuitem> - Consente di elencare tutti i pacchetti attualmente selezionati. Vedere <xref linkend=\"select-pkg\"/>."
 
-#: gui/help/C/package-manager.xml:122(title)
+#: gui/help/C/package-manager.localizable.xml:114(title)
 msgid "By Category"
 msgstr "Per categoria"
 
-#: gui/help/C/package-manager.xml:123(para)
+#: gui/help/C/package-manager.localizable.xml:115(para)
 msgid "You can browse the available packages by type of software in the category pane on the left side of the Package Manager window. Click a category name to show subcategories. Packages in the selected category or subcategory are listed in the package list pane according to the selected publisher and package status and the specified search criteria."
 msgstr "È possibile esplorare i pacchetti disponibili per tipo di software nel riquadro della categoria a sinistra della finestra Package Manager. Fare clic sul nome di una categoria per visualizzare le sottocategorie. I pacchetti nella categoria o sottocategoria selezionata sono elencati nel riquadro dell'elenco dei pacchetti a seconda del publisher e dello stato del pacchetto selezionato e in base ai criteri di ricerca specificati."
 
-#: gui/help/C/package-manager.xml:124(para)
+#: gui/help/C/package-manager.localizable.xml:116(para)
 msgid "In addition to named types of software, the categories pane also enables you to select <guimenuitem>All Categories</guimenuitem> and <guimenuitem>Recent Searches</guimenuitem>. See <xref linkend=\"search-pkg\"/> “Repeat a Previous Search” for information about <guimenuitem>Recent Searches</guimenuitem>."
 msgstr "In aggiunta ai tipi di software denominati, il riquadro delle categorie consente inoltre di selezionare <guimenuitem>Tutte le categorie</guimenuitem> e <guimenuitem>Ricerche recenti</guimenuitem>. Vedere <xref linkend=\"search-pkg\"/> sulla ripetizione di una ricerca precedente per informazioni sulle <guimenuitem>Ricerche recenti</guimenuitem>."
 
-#: gui/help/C/package-manager.xml:127(title)
+#: gui/help/C/package-manager.localizable.xml:119(title)
 msgid "Searching for Packages"
 msgstr "Ricerca di pacchetti"
 
-#: gui/help/C/package-manager.xml:128(para)
+#: gui/help/C/package-manager.localizable.xml:120(para)
 msgid "Use one of the following two methods to search for packages:"
 msgstr "Utilizzare uno dei due metodi seguenti per cercare i pacchetti:"
 
-#: gui/help/C/package-manager.xml:129(para)
+#: gui/help/C/package-manager.localizable.xml:121(para)
 msgid "Focus on the package list pane (for example, select <menuchoice><guimenu>Edit</guimenu><guimenuitem>Go to package list</guimenuitem></menuchoice> and start typing. As you type, matches are identified among the packages currently listed in the package list pane."
 msgstr "Andare al riquadro dell'elenco dei pacchetti (ad esempio, selezionare <menuchoice><guimenu>Modifica</guimenu><guimenuitem>Vai all'elenco pacchetti</guimenuitem></menuchoice> e iniziare la digitazione. Durante la digitazione, le corrispondenze vengono identificate tra i pacchetti attualmente elencati nel riquadro dell'elenco dei pacchetti."
 
-#: gui/help/C/package-manager.xml:131(para)
+#: gui/help/C/package-manager.localizable.xml:123(para)
 msgid "Use the Search field in the tool bar."
 msgstr "Utilizzare il campo Cerca nella barra degli strumenti."
 
-#: gui/help/C/package-manager.xml:134(title)
+#: gui/help/C/package-manager.localizable.xml:126(title)
 msgid "Enter a Search String"
 msgstr "Immettere una stringa di ricerca"
 
-#: gui/help/C/package-manager.xml:135(para)
+#: gui/help/C/package-manager.localizable.xml:127(para)
 msgid "Enter a string in the Search field and then press the Enter key or click the magnifying glass icon to the right of the Search field."
 msgstr "Immettere una stringa nel campo Cerca e premere il tasto Invio o fare clic sull'icona della lente di ingrandimento a destra del campo Cerca."
 
-#: gui/help/C/package-manager.xml:136(para)
+#: gui/help/C/package-manager.localizable.xml:128(para)
 msgid "<guimenu>Publisher</guimenu> menu selection — Package Manager searches for the search string in the information about each package from a particular publisher or from all publishers, according to what you have selected on the <guimenu> Publisher</guimenu> menu."
 msgstr "Selezione menu <guimenu>Publisher</guimenu> - Package Manager consente di cercare la stringa di ricerca nelle informazioni relative a ciascun pacchetto da un publisher particolare o da tutti i publisher, secondo quanto selezionato nel menu <guimenu> Publisher</guimenu>."
 
-#: gui/help/C/package-manager.xml:137(para)
+#: gui/help/C/package-manager.localizable.xml:129(para)
 msgid "Search results are the same whether you select <guimenuitem>All Publishers</guimenuitem> or <guimenuitem>All Publishers (Search)</guimenuitem>. The difference is that using <guimenuitem>All Publishers (Search)</guimenuitem> is faster because you avoid the delay to load data from all publishers that you incur when you select <guimenuitem>All Publishers</guimenuitem>. With <guimenuitem>All Publishers (Search)</guimenuitem>, the search is performed on all publishers without loading data from all publishers in the package list pane."
 msgstr "I risultati della ricerca sono gli stessi, sia che si selezioni <guimenuitem>Tutti i publisher</guimenuitem> o <guimenuitem>Tutti i publisher (Cerca)</guimenuitem>. La differenza risiede nella maggiore rapidità dell'opzione <guimenuitem>Tutti i publisher (Cerca)</guimenuitem> poiché non rende necessario il caricamento dei dati da tutti i publisher come invece avviene con la selezione di <guimenuitem>Tutti i publisher</guimenuitem>. Con <guimenuitem>Tutti i publisher (Cerca)</guimenuitem>, la ricerca viene eseguita su tutti i publisher senza caricare i dati da tutti i publisher nel riquadro dell'elenco dei pacchetti."
 
-#: gui/help/C/package-manager.xml:139(para)
+#: gui/help/C/package-manager.localizable.xml:131(para)
 msgid "<guimenu>View</guimenu> menu selection — Search results are displayed in the package list pane according to the package status selected on the <guimenu>View</guimenu> menu. You can display different subsets of the same search results in the package list pane by changing the <guimenu>View</guimenu> menu selection without redoing the search."
 msgstr "Selezione menu <guimenu>Visualizza</guimenu> - I risultati della ricerca vengono visualizzati nel riquadro dell'elenco dei pacchetti a seconda dello stato del pacchetto selezionato nel menu <guimenu>Visualizza</guimenu>. È possibile visualizzare diversi sottoinsiemi degli stessi risultati della ricerca nel riquadro dell'elenco dei pacchetti modificando la selezione menu <guimenu>Visualizza</guimenu>, senza eseguire nuovamente la ricerca."
 
-#: gui/help/C/package-manager.xml:142(para)
+#: gui/help/C/package-manager.localizable.xml:134(para)
 msgid "Package Manager searches package information including name, summary, description, category, and names of files contained within the package. Only exact matches are found if you do not use wild cards."
 msgstr "Package Manager consente di cercare le informazioni sul pacchetto, compresi nome, riepilogo, descrizione, categoria e i nomi dei file contenuti nel pacchetto. Se non si utilizzano caratteri jolly vengono trovate solo corrispondenze esatte."
 
-#: gui/help/C/package-manager.xml:143(literal)
+#: gui/help/C/package-manager.localizable.xml:135(literal)
 msgid "AND"
 msgstr "AND"
 
-#: gui/help/C/package-manager.xml:144(para)
+#: gui/help/C/package-manager.localizable.xml:136(para)
 msgid "When search terms are separated by spaces or by <literal>AND</literal>, Package Manager searches for packages that contain <emphasis role=\"strong\">all</emphasis> of the search terms. This is the default search behavior."
 msgstr "Quando i termini di ricerca sono separati da spazi o da <literal>AND</literal>, Package Manager cerca i pacchetti contenenti <emphasis role=\"strong\">tutti</emphasis> i termini di ricerca. Si tratta dell'impostazione di ricerca di default."
 
-#: gui/help/C/package-manager.xml:145(para)
+#: gui/help/C/package-manager.localizable.xml:137(para)
 msgid "Example: If the search string is <literal>python book</literal> or <literal>python AND book</literal>, the search results include only packages that contain <emphasis>both</emphasis><literal>python</literal><emphasis>and</emphasis><literal>book</literal> in their package information. For example, the package <literal>diveintopython</literal>, a book about Python programming, would appear in the search results, but the package <literal>python-26</literal> would not."
 msgstr "Esempio: se la stringa di ricerca è <literal>manuale python</literal> o <literal>manuale AND python</literal>, i risultati della ricerca includono solo i pacchetti contenenti <emphasis>entrambi</emphasis> i termini <literal>python</literal><emphasis>e</emphasis><literal>manuale</literal> nelle informazioni del pacchetto. Ad esempio, il pacchetto <literal>diveintopython</literal>, un manuale sul linguaggio di programmazione Python, verrà visualizzato nei risultati della ricerca, a differenza del pacchetto <literal>python-26</literal>."
 
-#: gui/help/C/package-manager.xml:148(term)
+#: gui/help/C/package-manager.localizable.xml:140(term)
 msgid "Double quotation marks"
 msgstr "Virgolette doppie"
 
-#: gui/help/C/package-manager.xml:149(para)
+#: gui/help/C/package-manager.localizable.xml:141(para)
 msgid "Enclose the search term in double quotation marks to match that search term exactly."
 msgstr "Racchiudere il termine di ricerca tra virgolette doppie per trovare l'esatta corrispondenza con il termine."
 
-#: gui/help/C/package-manager.xml:150(para)
+#: gui/help/C/package-manager.localizable.xml:142(para)
 msgid "Example: <literal>\"ethernet driver\"</literal> in double quotation marks matches <literal>Fast Ethernet Driver</literal> but does not match <literal>Ethernet Adapter Driver</literal>."
 msgstr "Esempio: <literal>\"driver ethernet\"</literal> tra virgolette doppie corrisponde a <literal>Driver Ethernet veloce</literal> ma non a <literal>Driver per scheda Ethernet</literal>."
 
-#: gui/help/C/package-manager.xml:153(term)
+#: gui/help/C/package-manager.localizable.xml:145(term)
 msgid "Wild card"
 msgstr "Carattere jolly"
 
-#: gui/help/C/package-manager.xml:154(para)
+#: gui/help/C/package-manager.localizable.xml:146(para)
 msgid "You can use the <literal>*</literal> wild card in your search string. Using wild cards can be slower."
 msgstr "È possibile utilizzare il carattere jolly <literal>*</literal> nella stringa di ricerca. L'utilizzo dei caratteri jolly può rallentare la ricerca."
 
-#: gui/help/C/package-manager.xml:155(para)
+#: gui/help/C/package-manager.localizable.xml:147(para)
 msgid "Example: <literal>802.11*</literal> matches <literal>802.11b/g</literal> and <literal>802.11a/b/g</literal>."
 msgstr "Esempio: <literal>802.11*</literal> corrisponde a <literal>802.11b/g</literal> e a <literal>802.11a/b/g</literal>."
 
-#: gui/help/C/package-manager.xml:156(para)
+#: gui/help/C/package-manager.localizable.xml:148(para)
 msgid "Note that <literal>802.11*</literal> does not match <literal>IEEE802.11b/g</literal>. To match <literal>IEEE802.11b/g</literal>, use search string <literal>*802.11*</literal>."
 msgstr "Tenere presente che <literal>802.11*</literal> non corrisponde a <literal>IEEE802.11b/g</literal>. Per ottenere <literal>IEEE802.11b/g</literal>, utilizzare la stringa di ricerca <literal>*802.11*</literal>."
 
-#: gui/help/C/package-manager.xml:159(literal)
+#: gui/help/C/package-manager.localizable.xml:151(literal)
 msgid "OR"
 msgstr "OR"
 
-#: gui/help/C/package-manager.xml:160(para)
+#: gui/help/C/package-manager.localizable.xml:152(para)
 msgid "When search terms are separated by <literal>OR</literal>, Package Manager searches for packages that contain <emphasis role=\"strong\">any</emphasis> of the search terms."
 msgstr "Quando i termini di ricerca sono separati da <literal>OR</literal>, Package Manager cerca i pacchetti contenenti <emphasis role=\"strong\">qualsiasi</emphasis> termine di ricerca."
 
-#: gui/help/C/package-manager.xml:161(para)
+#: gui/help/C/package-manager.localizable.xml:153(para)
 msgid "Example: <literal>python OR book</literal> matches all packages that contain <literal>python</literal> in their package information and all packages that contain <literal>book</literal> in their package information."
 msgstr "Esempio: <literal>manuale OR python</literal> corrisponde a tutti i pacchetti che contengono <literal>python</literal> e <literal>manuale</literal> nelle relative informazioni di pacchetto."
 
-#: gui/help/C/package-manager.xml:165(para)
+#: gui/help/C/package-manager.localizable.xml:157(para)
 msgid "You can combine these search string modifiers. You can use AND, OR, doublt quotation marks, and * all in one search string."
 msgstr "È possibile unire questi modificatori della stringa di ricerca. In un'unica stringa è possibile utilizzare AND, OR, virgolette doppie e *."
 
-#: gui/help/C/package-manager.xml:167(title)
+#: gui/help/C/package-manager.localizable.xml:159(title)
 msgid "Clear the Search Field"
 msgstr "Cancellare il campo Cerca"
 
-#: gui/help/C/package-manager.xml:168(para)
+#: gui/help/C/package-manager.localizable.xml:160(para)
 msgid "To clear both the search string and the list of search results, use the Search field or the Edit menu."
 msgstr "Per cancellare la stringa di ricerca e l'elenco dei risultati, utilizzare il campo Cerca o il menu Modifica."
 
-#: gui/help/C/package-manager.xml:169(para)
+#: gui/help/C/package-manager.localizable.xml:161(para)
 msgid "In the Search field, click the <literal>X</literal> icon."
 msgstr "Nel campo Cerca, fare clic sull'icona <literal>X</literal>."
 
-#: gui/help/C/package-manager.xml:171(para)
+#: gui/help/C/package-manager.localizable.xml:163(para)
 msgid "On the <guimenu>Edit</guimenu> menu, select the <guimenuitem>Clear Search</guimenuitem> option."
 msgstr "Nel menu <guimenu>Modifica</guimenu>, selezionare l'opzione <guimenuitem>Cancella ricerca</guimenuitem>."
 
-#: gui/help/C/package-manager.xml:175(title)
+#: gui/help/C/package-manager.localizable.xml:167(title)
 msgid "Cancel the Search"
 msgstr "Cancellare la ricerca"
 
-#: gui/help/C/package-manager.xml:176(para)
+#: gui/help/C/package-manager.localizable.xml:168(para)
 msgid "During a search operation, a busy bar displays at the right end of the status bar at the bottom of the Package Manager window. On the right end of the busy bar is an <literal>X</literal> icon. Click the <literal>X</literal> icon in the busy bar to cancel the search in progress."
 msgstr "Nel corso di un'operazione di ricerca, viene visualizzato l'avanzamento nell'estremità destra della barra di stato nella parte inferiore della finestra Package Manager. Nell'estremità destra della barra di avanzamento si trova un'icona <literal>X</literal>. Fare clic sull'icona <literal>X</literal> nella barra di avanzamento per cancellare la ricerca in corso."
 
-#: gui/help/C/package-manager.xml:178(title)
+#: gui/help/C/package-manager.localizable.xml:170(title)
 msgid "Redisplay Previous Search Results"
 msgstr "Visualizzare nuovamente i risultati della ricerca precedente"
 
-#: gui/help/C/package-manager.xml:179(para)
+#: gui/help/C/package-manager.localizable.xml:171(para)
 msgid "Results from searches that you have already performed during the current Package Manager session are saved in <guimenuitem>Recent Searches</guimenuitem> in the categories pane."
 msgstr "I risultati delle ricerche già eseguite durante la sessione corrente di Package Manager sono salvate in <guimenuitem>Ricerche recenti</guimenuitem> nel riquadro delle categorie."
 
-#: gui/help/C/package-manager.xml:180(para)
+#: gui/help/C/package-manager.localizable.xml:172(para)
 msgid "Select the <guimenuitem>Recent Searches</guimenuitem> label in the categories pane to display an informational message in the package list pane. The package list pane shows the list of previous search results. Click a \"results\" link to redisplay those results."
 msgstr "Selezionare l'etichetta <guimenuitem>Ricerche recenti</guimenuitem> nel riquadro delle categorie per visualizzare un messaggio informativo nel riquadro dell'elenco dei pacchetti. In tale riquadro viene visualizzato l'elenco dei risultati della ricerca precedente. Fare clic su un collegamento \"risultati\" per visualizzare nuovamente tali risultati."
 
-#: gui/help/C/package-manager.xml:181(para)
+#: gui/help/C/package-manager.localizable.xml:173(para)
 msgid "Select the arrow to the left of the <guimenuitem>Recent Searches</guimenuitem> label to expand or hide the list of previous search results in the categories pane. Select an item in the list of recent searches to redisplay those search results."
 msgstr "Selezionare la freccia a sinistra dell'etichetta <guimenuitem>Ricerche recenti</guimenuitem> per espandere o nascondere l'elenco dei risultati della ricerca precedente nel riquadro delle categorie. Selezionare una voce nell'elenco delle ricerche recenti per visualizzare nuovamente tali risultati della ricerca."
 
-#: gui/help/C/package-manager.xml:182(para)
+#: gui/help/C/package-manager.localizable.xml:174(para)
 msgid "A search that matched no packages does not appear in the recent searches list."
 msgstr "Un ricerca che non ha prodotto risultati nei pacchetti non viene visualizzata nell'elenco delle ricerche recenti."
 
-#: gui/help/C/package-manager.xml:183(para)
+#: gui/help/C/package-manager.localizable.xml:175(para)
 msgid "Selecting the <guibutton>Refresh</guibutton> button or the <menuchoice><guimenu>Package</guimenu><guimenuitem>Refresh</guimenuitem></menuchoice> menu option deletes all recent searches results."
 msgstr "Selezionando il pulsante <guibutton>Refresh</guibutton> o l'opzione menu <menuchoice><guimenu>Pacchetto</guimenu><guimenuitem>Refresh</guimenuitem></menuchoice> è possibile eliminare tutti i risultati delle ricerche recenti."
 
-#: gui/help/C/package-manager.xml:186(title)
+#: gui/help/C/package-manager.localizable.xml:178(title)
 msgid "Showing More Information"
 msgstr "Visualizzazione di maggiori informazioni"
 
-#: gui/help/C/package-manager.xml:187(para)
+#: gui/help/C/package-manager.localizable.xml:179(para)
 msgid "See more information about a package in the package details pane or on the Package Version Info dialog."
 msgstr "È possibile visualizzare maggiori informazioni su un pacchetto nel riquadro dei dettagli del pacchetto o nella finestra di dialogo Informazioni sulla versione del pacchetto."
 
-#: gui/help/C/package-manager.xml:188(title)
+#: gui/help/C/package-manager.localizable.xml:180(title)
 msgid "Package Details Pane"
 msgstr "Riquadro dei dettagli del pacchetto"
 
-#: gui/help/C/package-manager.xml:189(para)
+#: gui/help/C/package-manager.localizable.xml:181(para)
 msgid "To show more information about a package, click your left mouse button to highlight the package in the package list. The package details pane below the package list pane shows information such as the latest version available from this publisher, the size of the package, the files in the package, dependencies, and license terms."
 msgstr "Per visualizzare maggiori informazioni su un pacchetto, fare clic con il pulsante sinistro del mouse per evidenziare il pacchetto nell'elenco relativo. Nel riquadro dei dettagli del pacchetto sotto il riquadro dell'elenco dei pacchetti vengono visualizzate informazioni come l'ultima versione disponibile da questo publisher, le dimensioni del pacchetto, i file presenti nel pacchetto, le dipendenze e le condizioni di licenza."
 
-#: gui/help/C/package-manager.xml:190(para)
+#: gui/help/C/package-manager.localizable.xml:182(para)
 msgid "If a package has been renamed since it was installed, the Renamed To field on the General tab shows the new name of the package."
 msgstr "Se un pacchetto è stato rinominato dopo l'installazione, nel campo Rinominato in della scheda Generale viene visualizzato il nuovo nome del pacchetto."
 
-#: gui/help/C/package-manager.xml:191(para)
+#: gui/help/C/package-manager.localizable.xml:183(para)
 msgid "The Versions tab shows a list of versions of this package that are available for you to install. Select a version from the list and click the <guibutton>Install/Update</guibutton> button to the right of the list to install that version. See <xref linkend=\"install-pkg\"/>."
 msgstr "Nella scheda Versioni viene visualizzato un elenco delle versioni del pacchetto disponibili per l'installazione. Selezionare una versione dall'elenco e fare clic sul pulsante <guibutton>Installa/Aggiorna</guibutton> a destra dell'elenco per installare tale versione. Vedere <xref linkend=\"install-pkg\"/>."
 
-#: gui/help/C/package-manager.xml:192(para)
+#: gui/help/C/package-manager.localizable.xml:184(para)
 msgid "The package details pane is not displayed if the package list pane contains an informational message."
 msgstr "Il riquadro dei dettagli del pacchetto non viene visualizzato se il riquadro dell'elenco dei pacchetti contiene un messaggio informativo."
 
-#: gui/help/C/package-manager.xml:194(title)
+#: gui/help/C/package-manager.localizable.xml:186(title)
 msgid "Package Version Info Dialog"
 msgstr "Finestra di dialogo Informazioni sulla versione del pacchetto"
 
-#: gui/help/C/package-manager.xml:195(para)
+#: gui/help/C/package-manager.localizable.xml:187(para)
 msgid "Click your right mouse button on a package in the package list to pop up the <guimenu>Package</guimenu> menu."
 msgstr "Fare clic con il pulsante destro del mouse su un pacchetto nell'elenco dei pacchetti per visualizzare il menu <guimenu>Pacchetto</guimenu>."
 
-#: gui/help/C/package-manager.xml:196(para)
+#: gui/help/C/package-manager.localizable.xml:188(para)
 msgid "Select the <menuchoice><guimenu>Package</guimenu><guimenuitem>Package Version Info</guimenuitem></menuchoice> menu option either from the pop-up menu or from the menu bar to display a separate window that shows the version of the package that is installed and the latest version that you can install or upgrade to if applicable."
 msgstr "Selezionare l'opzione menu <menuchoice><guimenu>Pacchetto</guimenu><guimenuitem>Informazioni sulla versione del pacchetto</guimenuitem></menuchoice> sia dal menu popup sia dalla barra dei menu per visualizzare una finestra separata in cui viene visualizzata la versione del pacchetto installato e l'ultima versione che è possibile installare o a cui è possibile eseguire l'aggiornamento, se applicabile."
 
-#: gui/help/C/package-manager.xml:199(title)
+#: gui/help/C/package-manager.localizable.xml:191(title)
 msgid "Selecting Packages"
 msgstr "Selezione di pacchetti"
 
-#: gui/help/C/package-manager.xml:200(para)
+#: gui/help/C/package-manager.localizable.xml:192(para)
 msgid "Selected packages can be installed, updated, or removed. To select a package, use the package list pane or the <guimenu>Edit</guimenu> menu."
 msgstr "È possibile installare, aggiornare o rimuovere i pacchetti selezionati. Per selezionare un pacchetto, utilizzare il riquadro dell'elenco dei pacchetti o il menu <guimenu>Modifica</guimenu>."
 
-#: gui/help/C/package-manager.xml:201(para)
+#: gui/help/C/package-manager.localizable.xml:193(para)
 msgid "In the package list pane, do one of the following actions to select a package. You can select multiple packages."
 msgstr "Nel riquadro dell'elenco dei pacchetti eseguire una delle seguenti azioni per selezionare un pacchetto. È possibile selezionare più pacchetti."
 
-#: gui/help/C/package-manager.xml:202(para)
+#: gui/help/C/package-manager.localizable.xml:194(para)
 msgid "Click the box to the left of the package name. Click the box again to deselect the package."
 msgstr "Fare clic sulla casella a sinistra del nome del pacchetto. Fare nuovamente clic sulla casella per deselezionare il pacchetto."
 
-#: gui/help/C/package-manager.xml:204(para)
+#: gui/help/C/package-manager.localizable.xml:196(para)
 msgid "Click the package name one time to highlight the package. Then double-click the highlighted package to select the package. Double-click again to deselect the package."
 msgstr "Fare clic una volta sul nome del pacchetto per evidenziare il pacchetto. Fare quindi doppio clic sul pacchetto evidenziato per selezionare il pacchetto. Fare nuovamente doppio clic per deselezionarlo."
 
-#: gui/help/C/package-manager.xml:206(para)
+#: gui/help/C/package-manager.localizable.xml:198(para)
 msgid "Click the checkbox icon in the column heading to select all packages that are currently listed in the package list pane. Click the checkbox icon again to deselect all packages currently listed in the package list pane."
 msgstr "Fare clic sull'icona della casella di controllo nell'intestazione colonna per selezionare tutti i pacchetti attualmente elencati nel riquadro dell'elenco dei pacchetti. Fare nuovamente clic sull'icona della casella di controllo per deselezionare tutti i pacchetti attualmente elencati nel riquadro dell'elenco dei pacchetti."
 
-#: gui/help/C/package-manager.xml:209(para)
+#: gui/help/C/package-manager.localizable.xml:201(para)
 msgid "The <guimenu>Edit</guimenu> menu has the following options for selecting packages:"
 msgstr "Il menu <guimenu>Modifica</guimenu> comprende le seguenti opzioni per la selezione dei pacchetti:"
 
-#: gui/help/C/package-manager.xml:210(para)
+#: gui/help/C/package-manager.localizable.xml:202(para)
 msgid "<guimenuitem>Select All</guimenuitem> — Selects all packages that are currently listed in the package list pane."
 msgstr "<guimenuitem>Seleziona tutto</guimenuitem> - Consente di selezionare tutti i pacchetti attualmente elencati nel riquadro dell'elenco dei pacchetti."
 
-#: gui/help/C/package-manager.xml:212(para)
+#: gui/help/C/package-manager.localizable.xml:204(para)
 msgid "<guimenuitem>Select Updates</guimenuitem> — Selects all packages that are currently listed in the package list pane that have updates available."
 msgstr "<guimenuitem>Seleziona aggiornamenti</guimenuitem> - Consente di selezionare tutti i pacchetti, di cui sono disponibili aggiornamenti, attualmente installati nel riquadro dell'elenco dei pacchetti."
 
-#: gui/help/C/package-manager.xml:214(para)
+#: gui/help/C/package-manager.localizable.xml:206(para)
 msgid "<guimenuitem>Deselect All</guimenuitem> — Deselects all packages that are currently listed in the package list pane."
 msgstr "<guimenuitem>Deseleziona tutto</guimenuitem> - Consente di deselezionare tutti i pacchetti attualmente installati nel riquadro dell'elenco dei pacchetti."
 
-#: gui/help/C/package-manager.xml:217(para)
+#: gui/help/C/package-manager.localizable.xml:209(para)
 msgid "In all cases when you select a package, packages that were previously selected are still selected."
 msgstr "In ogni caso, quando si seleziona un pacchetto, non viene persa la selezione dei pacchetti precedentemente selezionati."
 
-#: gui/help/C/package-manager.xml:218(para)
+#: gui/help/C/package-manager.localizable.xml:210(para)
 msgid "The number of packages currently listed in the package list pane and the number of those packages that are selected are shown on the left side of the status bar at the bottom of the Package Manager window."
 msgstr "Il numero di pacchetti attualmente elencati nel riquadro dell'elenco dei pacchetti e il numero dei pacchetti selezionati vengono visualizzati nel lato sinistro della barra di stato nella parte inferiore della finestra Package Manager."
 
-#: gui/help/C/package-manager.xml:219(para)
+#: gui/help/C/package-manager.localizable.xml:211(para)
 msgid "Select the <menuchoice><guimenu>Publisher</guimenu><guimenuitem>All Publishers</guimenuitem></menuchoice> option, the <guimenuitem>All Categories</guimenuitem> category, and the <menuchoice><guimenu>View</guimenu><guimenuitem>Selected Packages</guimenuitem></menuchoice> option to list all selected packages from all publishers in the package list pane."
 msgstr "Selezionare l'opzione <menuchoice><guimenu>Publisher</guimenu><guimenuitem>Tutti i publisher</guimenuitem></menuchoice>, la categoria <guimenuitem>Tutte le categorie</guimenuitem> e l'opzione <menuchoice><guimenu>Visualizza</guimenu><guimenuitem>Pacchetti selezionati</guimenuitem></menuchoice> per elencare tutti i pacchetti selezionati da tutti i publisher nel riquadro dell'elenco dei pacchetti."
 
-#: gui/help/C/package-manager.xml:220(para)
+#: gui/help/C/package-manager.localizable.xml:212(para)
 msgid "A package can be highlighted but not selected. When a package is highlighted, detailed information about that package is displayed in the package details pane below the package list pane. When a package is selected, a check mark displays in the box to the left of the package name. If you want to install, update, or delete a package, make sure a check mark appears in the selection box for that package."
 msgstr "È possibile evidenziare ma non selezionare un pacchetto. Quando un pacchetto viene evidenziato, vengono visualizzate informazioni dettagliate su tale pacchetto nel riquadro dei dettagli del pacchetto sotto il riquadro dell'elenco dei pacchetti. Quando viene selezionato un pacchetto, viene visualizzato un segno di spunta nella casella a sinistra del nome del pacchetto. Se si desidera installare, aggiornare o eliminare un pacchetto, assicurarsi che sia presente un segno di spunta nella casella di selezione di tale pacchetto."
 
-#: gui/help/C/package-manager.xml:222(title)
+#: gui/help/C/package-manager.localizable.xml:214(title)
 msgid "Installing and Updating Packages"
 msgstr "Installazione e aggiornamento di pacchetti"
 
-#: gui/help/C/package-manager.xml:223(para)
+#: gui/help/C/package-manager.localizable.xml:215(para)
 msgid "Before you install or update, check your Optional Components preference settings. Select the <menuchoice><guimenu>Edit</guimenu><guimenuitem>Preferences</guimenuitem></menuchoice> option. In the Preferences window, select the Optional Components tab. By default, Install all languages, Install all development files, and Install all documentation are selected. You can save space in your installation by selecting a subset of languages to install or deselecting development files, for example. Click the OK button to save your changes. These settings apply to all installed packages as well as future package installations and updates."
 msgstr "Prima di procedere all'installazione o all'aggiornamento, verificare le impostazioni di preferenza dei componenti facoltativi. Selezionare l'opzione <menuchoice><guimenu>Modifica</guimenu><guimenuitem>Preferenze</guimenuitem></menuchoice>. Nella finestra Preferenze, selezionare la scheda relativa ai componenti facoltativi. Le opzioni di installazione di tutte le lingue, di tutti i file di sviluppo e di tutta la documentazione sono selezionate di default. È possibile risparmiare spazio per l'installazione selezionando un sottoinsieme di lingue per, ad esempio, installare o deselezionare i file di sviluppo. Fare clic sul pulsante OK per salvare le modifiche. Tali impostazioni vengono applicate a tutti i pacchetti installati, nonché agli aggiornamenti e alle installazioni di pacchetti futuri."
 
-#: gui/help/C/package-manager.xml:224(para)
+#: gui/help/C/package-manager.localizable.xml:216(para)
 msgid "Perform the following steps to install or update a package:"
 msgstr "Eseguire i seguenti passaggi per installare o aggiornare un pacchetto:"
 
-#: gui/help/C/package-manager.xml:225(para) gui/help/C/package-manager.xml:247(para)
+#: gui/help/C/package-manager.localizable.xml:217(para) gui/help/C/package-manager.localizable.xml:239(para)
 msgid "Select the package. See <xref linkend=\"select-pkg\"/>."
 msgstr "Selezionare il pacchetto. Vedere <xref linkend=\"select-pkg\"/>."
 
-#: gui/help/C/package-manager.xml:227(para)
+#: gui/help/C/package-manager.localizable.xml:219(para)
 msgid "Use one of the following methods to install or update the package:"
 msgstr "Utilizzare uno dei metodi seguenti per installare o aggiornare il pacchetto:"
 
-#: gui/help/C/package-manager.xml:228(para)
+#: gui/help/C/package-manager.localizable.xml:220(para)
 msgid "Select the <guibutton>Install/Update</guibutton> button in the tool bar."
 msgstr "Selezionare il pulsante <guibutton>Installa/Aggiorna</guibutton> nella barra degli strumenti."
 
-#: gui/help/C/package-manager.xml:230(para)
+#: gui/help/C/package-manager.localizable.xml:222(para)
 msgid "Select the <menuchoice><guimenu>Package</guimenu><guimenuitem>Install/Update</guimenuitem></menuchoice> option from the menu bar."
 msgstr "Selezionare l'opzione <menuchoice><guimenu>Pacchetto</guimenu><guimenuitem>Installa/Aggiorna</guimenuitem></menuchoice> dalla barra dei menu."
 
-#: gui/help/C/package-manager.xml:232(para)
+#: gui/help/C/package-manager.localizable.xml:224(para)
 msgid "Click your right mouse button on the name of a package to display the pop-up <guimenu>Package</guimenu> menu. Then select the <guimenuitem>Install/Update</guimenuitem> option."
 msgstr "Fare clic con il pulsante destro del mouse sul nome di un pacchetto per visualizzare il menu popup <guimenu>Pacchetto</guimenu>. Selezionare quindi l'opzione <guimenuitem>Installa/Aggiorna</guimenuitem>."
 
-#: gui/help/C/package-manager.xml:234(para)
+#: gui/help/C/package-manager.localizable.xml:226(para)
 msgid "On the Versions tab in the package details pane below the package list pane, select a version from the Version to Install list and click the <guibutton>Install/Update</guibutton> button to the right of the list. The packages in the Version to Install list are available in the repository; they might not be installable. A particular version might not be compatible with other packages that you have installed. If the version that you select is not installable on your system, Package Manager warns you and does not install the package."
 msgstr "Nella scheda Versioni del riquadro dei dettagli del pacchetto sotto il riquadro dell'elenco dei pacchetti, selezionare una versione dall'elenco Versione da installare e fare clic sul pulsante <guibutton>Installa/Aggiorna</guibutton> a destra dell'elenco. I pacchetti nell'elenco Versione da installare sono disponibili nel repository; potrebbe non essere possibile installarli. Una versione particolare potrebbe non essere compatibile con altri pacchetti installati. Se la versione selezionata non è installabile sul sistema, Package Manager genera un avviso e non installa il pacchetto."
 
-#: gui/help/C/package-manager.xml:237(para)
+#: gui/help/C/package-manager.localizable.xml:229(para)
 msgid "If the package is already installed and does not have an update available (see the Status column or the <menuchoice><guimenu>Package</guimenu><guimenuitem>Package Version Info</guimenuitem></menuchoice> option), the <guibutton>Install/Update</guibutton> option is grayed out and not selectable."
 msgstr "Se il pacchetto è già installato e non sono disponibili aggiornamenti (vedere la colonna Stato o l'opzione <menuchoice><guimenu>Pacchetto</guimenu><guimenuitem>Informazioni sulla versione del pacchetto</guimenuitem></menuchoice>), l'opzione <guibutton>Installa/Aggiorna</guibutton> è visualizzata in grigio e non è selezionabile."
 
-#: gui/help/C/package-manager.xml:239(para)
+#: gui/help/C/package-manager.localizable.xml:231(para)
 msgid "The Install/Update Confirmation window is displayed. Packages that are not yet installed are listed in the Install Details pane, and packages that are installed are listed in the Update Details pane for you to review. Select the <guibutton>Proceed</guibutton> button to install or update the listed packages."
 msgstr "Viene visualizzata la finestra Conferma installazione/aggiornamento. I pacchetti non ancora installati sono elencati nel riquadro Dettagli installazione, mentre quelli installati nel riquadro Aggiorna dettagli per la revisione. Selezionare il pulsante <guibutton>Continua</guibutton> per installare o aggiornare i pacchetti elencati."
 
-#: gui/help/C/package-manager.xml:240(para)
+#: gui/help/C/package-manager.localizable.xml:232(para)
 msgid "In some cases a license dialog is displayed and you must accept the license to install the package."
 msgstr "In alcuni casi viene visualizzata un finestra di dialogo relativa alla licenza ed è necessario accettare tale licenza per installare il pacchetto."
 
-#: gui/help/C/package-manager.xml:241(para)
+#: gui/help/C/package-manager.localizable.xml:233(para)
 msgid "If an error occurs during package installation, an error dialog is displayed. Messages explain why the install or update failed."
 msgstr "Se viene rilevato un errore durante l'installazione del pacchetto, viene visualizzata una finestra di dialogo relativa all'errore. I messaggi contengono informazioni sul fallimento dell'installazione o dell'aggiornamento."
 
-#: gui/help/C/package-manager.xml:245(title)
+#: gui/help/C/package-manager.localizable.xml:237(title)
 msgid "Removing Packages"
 msgstr "Rimozione di pacchetti"
 
-#: gui/help/C/package-manager.xml:246(para)
+#: gui/help/C/package-manager.localizable.xml:238(para)
 msgid "Perform the following steps to remove a package:"
 msgstr "Per rimuovere un pacchetto, attenersi alla seguente procedura."
 
-#: gui/help/C/package-manager.xml:249(para)
+#: gui/help/C/package-manager.localizable.xml:241(para)
 msgid "Use one of the following methods to remove the package:"
 msgstr "Utilizzare uno dei metodi seguenti per rimuovere il pacchetto:"
 
-#: gui/help/C/package-manager.xml:250(para)
+#: gui/help/C/package-manager.localizable.xml:242(para)
 msgid "Select the <guibutton>Remove</guibutton> button in the tool bar."
 msgstr "Selezionare il pulsante <guibutton>Rimuovi</guibutton> nella barra degli strumenti."
 
-#: gui/help/C/package-manager.xml:252(para)
+#: gui/help/C/package-manager.localizable.xml:244(para)
 msgid "Select the <menuchoice><guimenu>Package</guimenu><guimenuitem>Remove</guimenuitem></menuchoice> option from the menu bar."
 msgstr "Selezionare l'opzione <menuchoice><guimenu>Pacchetto</guimenu><guimenuitem>Rimuovi</guimenuitem></menuchoice> dalla barra dei menu."
 
-#: gui/help/C/package-manager.xml:254(para)
+#: gui/help/C/package-manager.localizable.xml:246(para)
 msgid "Click your right mouse button on the name of a package to display the pop-up <guimenu>Package</guimenu> menu. Then select the <guimenuitem>Remove</guimenuitem> option."
 msgstr "Fare clic con il pulsante destro del mouse sul nome di un pacchetto per visualizzare il menu popup <guimenu>Pacchetto</guimenu>. Selezionare quindi l'opzione <guimenuitem>Rimuovi</guimenuitem>."
 
-#: gui/help/C/package-manager.xml:257(para)
+#: gui/help/C/package-manager.localizable.xml:249(para)
 msgid "If the package is not installed, the Remove option is grayed out and not selectable."
 msgstr "Se il pacchetto non è installato, l'opzione Rimuovi viene visualizzata in grigio e non è selezionabile."
 
-#: gui/help/C/package-manager.xml:259(para)
+#: gui/help/C/package-manager.localizable.xml:251(para)
 msgid "The Remove Confirmation window is displayed. Packages to be removed are listed in the Remove Details pane for you to review. Select the <guibutton>Proceed</guibutton> button to remove the listed packages."
 msgstr "Viene visualizzata la finestra Conferma rimozione. I pacchetti da rimuovere sono elencati nel riquadro Rimuovi dettagli per la revisione. Selezionare il pulsante <guibutton>Continua</guibutton> per rimuovere i pacchetti elencati."
 
-#: gui/help/C/package-manager.xml:260(para)
+#: gui/help/C/package-manager.localizable.xml:252(para)
 msgid "If a package cannot be removed because other packages depend on it, you can select the <guibutton>Remove Continue</guibutton> option to attempt to remove any remaining packages that you originally selected for removal."
 msgstr "Se non è possibile rimuovere un pacchetto poiché altri pacchetti ne sono dipendenti, è possibile selezionare l'opzione <guibutton>Rimuovi continua</guibutton> per tentare di rimuovere qualsiasi pacchetto rimanente originariamente selezionato per la rimozione."
 
-#: gui/help/C/package-manager.xml:265(title)
+#: gui/help/C/package-manager.localizable.xml:257(title)
 msgid "Updating Your System"
 msgstr "Aggiornamento del sistema"
 
-#: gui/help/C/package-manager.xml:266(para)
+#: gui/help/C/package-manager.localizable.xml:258(para)
 msgid "When certain key packages such as some drivers and other kernel components are updated, the system performs the following actions:"
 msgstr "Quando vengono aggiornati determinati pacchetti chiave come alcuni driver e altri componenti kernel, il sistema esegue le seguenti operazioni:"
 
-#: gui/help/C/package-manager.xml:267(para)
+#: gui/help/C/package-manager.localizable.xml:259(para)
 msgid "Creates a clone of the current boot environment (BE)."
 msgstr "Crea un clone dell'ambiente di boot corrente."
 
-#: gui/help/C/package-manager.xml:269(para)
+#: gui/help/C/package-manager.localizable.xml:261(para)
 msgid "Updates the packages in the clone, and does not update any packages in the current BE."
 msgstr "Aggiorna i pacchetti nel clone e non aggiorna tutti i pacchetti nell'ambiente di boot corrente."
 
-#: gui/help/C/package-manager.xml:271(para)
+#: gui/help/C/package-manager.localizable.xml:263(para)
 msgid "Sets the new BE to be the default boot choice the next time the system is rebooted. The current BE remains as an alternate boot choice."
 msgstr "Imposta il nuovo ambiente di boot come scelta di boot di default al successivo reboot del sistema. L'ambiente di boot corrente resta impostato come scelta alternativa."
 
-#: gui/help/C/package-manager.xml:274(title)
+#: gui/help/C/package-manager.localizable.xml:266(title)
 msgid "Updating All Packages"
 msgstr "Aggiornamento di tutti i pacchetti"
 
-#: gui/help/C/package-manager.xml:275(para)
+#: gui/help/C/package-manager.localizable.xml:267(para)
 msgid "When you select the <guibutton>Updates</guibutton> button in the tool bar or the <menuchoice><guimenu>Package</guimenu><guimenuitem>Updates</guimenuitem></menuchoice> menu option, Package Manager updates all installed packages that have updates available."
 msgstr "Quando si seleziona il pulsante <guibutton>Aggiornamenti</guibutton> nella barra degli strumenti o l'opzione menu <menuchoice><guimenu>Pacchetto</guimenu><guimenuitem>Aggiornamenti</guimenuitem></menuchoice>, Package Manager consente di aggiornare tutti i pacchetti installati con aggiornamenti disponibili."
 
-#: gui/help/C/package-manager.xml:276(para)
+#: gui/help/C/package-manager.localizable.xml:268(para)
 msgid "All packages that have updates available from their current publisher are updated. If a package has an update available from a different publisher in your publisher list, that package is updated only if its current publisher is configured as non-sticky. If its current publisher is configured as sticky, then that package is not updated."
 msgstr "Tutti i pacchetti con aggiornamenti disponibili dal publisher corrente sono aggiornati. Se un pacchetto presenta un aggiornamento disponibile da un publisher diverso nell'elenco dei publisher, tale pacchetto viene aggiornato solo se il relativo publisher corrente è configurato come non-sticky. Se il relativo publisher corrente viene configurato come sticky, il pacchetto non viene quindi aggiornato."
 
-#: gui/help/C/package-manager.xml:277(para)
+#: gui/help/C/package-manager.localizable.xml:269(para)
 msgid "The Updates window displays, and the update process starts:"
 msgstr "Viene visualizzata la finestra Aggiornamenti e viene avviato il processo di aggiornamento:"
 
-#: gui/help/C/package-manager.xml:278(para)
+#: gui/help/C/package-manager.localizable.xml:270(para)
 msgid "The system refreshes all catalogs."
 msgstr "Su tutti i cataloghi viene eseguito il refrewsh dal sistema."
 
-#: gui/help/C/package-manager.xml:280(para)
+#: gui/help/C/package-manager.localizable.xml:272(para)
 msgid "The system evaluates all installed packages to determine which packages have updates available."
 msgstr "Il sistema valuta tutti i pacchetti installati per determinare per quali pacchetti sono disponibili aggiornamenti."
 
-#: gui/help/C/package-manager.xml:281(para)
+#: gui/help/C/package-manager.localizable.xml:273(para)
 msgid "If no packages have updates available, the message “No Updates Available” is displayed and processing stops."
 msgstr "Se non vi sono aggiornamenti disponibili per alcun pacchetto, viene visualizzato il messaggio \"Nessun aggiornamento disponibile\" e l'elaborazione viene interrotta."
 
-#: gui/help/C/package-manager.xml:283(para)
+#: gui/help/C/package-manager.localizable.xml:275(para)
 msgid "If package updates are available, the packages to be updated are listed for your review. This is your last chance to click the <guibutton>Cancel</guibutton> button to abort the update."
 msgstr "Se sono disponibili aggiornamenti, i pacchetti da aggiornare vengono elencati per la revisione. È ora possibile fare clic per l'ultima volta sul pulsante <guibutton>Annulla</guibutton> per interrompere l'aggiornamento."
 
-#: gui/help/C/package-manager.xml:287(para)
+#: gui/help/C/package-manager.localizable.xml:279(para)
 msgid "Click the <guibutton>Proceed</guibutton> button to continue with the update."
 msgstr "Fare clic sul pulsante <guibutton>Continua</guibutton> per continuare l'aggiornamento."
 
-#: gui/help/C/package-manager.xml:288(para)
+#: gui/help/C/package-manager.localizable.xml:280(para)
 msgid "The system might create a new boot environment (BE), as described in <xref linkend=\"update_all\"/> above, depending on which packages are being updated."
 msgstr "Il sistema potrebbe creare un nuovo ambiente di boot, come descritto in <xref linkend=\"update_all\"/> sopra, a seconda di quale pacchetto viene aggiornato."
 
-#: gui/help/C/package-manager.xml:289(para)
+#: gui/help/C/package-manager.localizable.xml:281(para)
 msgid "If the system determined that a new BE is required but was not able to create a new BE, an error message is displayed. If the problem is not enough disk space, perform the following steps:"
 msgstr "Se viene ritenuto necessario tramite il sistema un nuovo ambiente di boot, ma non è possibile crearlo, viene visualizzato un messaggio di errore. Se il problema è la quantità insufficiente di spazio su disco eseguire le seguenti azioni:"
 
-#: gui/help/C/package-manager.xml:290(para)
+#: gui/help/C/package-manager.localizable.xml:282(para)
 msgid "Click <guibutton>Close</guibutton> to cancel the Updates process."
 msgstr "Fare clic su <guibutton>Chiudi</guibutton> per annullare il processo relativo agli aggiornamenti."
 
-#: gui/help/C/package-manager.xml:292(para)
+#: gui/help/C/package-manager.localizable.xml:284(para)
 msgid "Follow the instructions in <xref linkend=\"remove-be\"/> to remove a BE that is no longer needed."
 msgstr "Seguire le istruzioni in <xref linkend=\"remove-be\"/> per rimuovere un ambiente di boot non più necessario."
 
-#: gui/help/C/package-manager.xml:294(para)
+#: gui/help/C/package-manager.localizable.xml:286(para)
 msgid "Select <guibutton>Updates</guibutton> again to restart the Updates process."
 msgstr "Selezionare nuovamente <guibutton>Aggiornamenti</guibutton> per riavviare il processo relativo agli aggiornamenti."
 
-#: gui/help/C/package-manager.xml:298(para)
+#: gui/help/C/package-manager.localizable.xml:290(para)
 msgid "The system downloads all package updates."
 msgstr "Il sistema scarica tutti gli aggiornamenti dei pacchetti."
 
-#: gui/help/C/package-manager.xml:300(para)
+#: gui/help/C/package-manager.localizable.xml:292(para)
 msgid "The system installs the package updates. If a cloned BE was created, the updates are installed in the clone. If no clone was created, the updates are installed in the current BE."
 msgstr "Il sistema consente di installare gli aggiornamenti dei pacchetti. Se è stato creato un ambiente di boot clonato, gli aggiornamenti vengono installati nel clone. Se, al contrario, non è stato creato alcun clone, gli aggiornamenti sono installati nell'ambiente di boot corrente."
 
-#: gui/help/C/package-manager.xml:301(para)
+#: gui/help/C/package-manager.localizable.xml:293(para)
 msgid "If an error occurs at any time during the update process, the Details panel is expanded and the details of the error are displayed. An error status indicator is shown next to the failed stage."
 msgstr "Se viene rilevato un errore in qualunque momento del processo di aggiornamento, il riquadro Dettagli viene espanso e i dettagli dell'errore visualizzati. Un indicatore di stato dell'errore viene visualizzato accanto alla fase non riuscita."
 
-#: gui/help/C/package-manager.xml:303(para)
+#: gui/help/C/package-manager.localizable.xml:295(para)
 msgid "If the system created a new BE for the update, you can edit the default BE name. When you are satisfied with the BE name, click the <guibutton>Restart Now</guibutton> button to reboot your system immediately. Click the <guibutton>Restart Later</guibutton> button to restart your system at a later time. You must restart to boot into the new BE. The new BE will be your default boot choice. Your current BE will be available as an alternate boot choice."
 msgstr "Se dal sistema è stato creato un nuovo ambiente di boot per l'aggiornamento, è possibile modificare il nome di default dell'ambiente di boot. Una volta modificato il nome, fare clic sul pulsante <guibutton>Riavvia ora</guibutton> per eseguire immediatamente il reboot del sistema. Fare clic sul pulsante <guibutton>Riavvia in seguito</guibutton> per riavviare il sistema in un secondo momento. È necessario eseguire un riavvio per eseguire il boot in un nuovo ambiente di boot. Il nuovo ambiente di boot sarà quello di default. L'ambiente di boot corrente resterà disponibile come scelta alternativa."
 
-#: gui/help/C/package-manager.xml:307(title)
+#: gui/help/C/package-manager.localizable.xml:299(title)
 msgid "Using Update Manager"
 msgstr "Utilizzo di Update Manager"
 
-#: gui/help/C/package-manager.xml:308(para)
+#: gui/help/C/package-manager.localizable.xml:300(para)
 msgid "You can open Update Manager from a system notification or from the desktop menu bar. Update Manager executes the same process as described above in <xref linkend=\"um_info\"/>."
 msgstr "È possibile aprire Update Manager da una notifica di sistema o dalla barra dei menu del desktop. Update Manager consente di eseguire lo stesso processo descritto sopra in <xref linkend=\"um_info\"/>."
 
-#: gui/help/C/package-manager.xml:309(title)
+#: gui/help/C/package-manager.localizable.xml:301(title)
 msgid "Software Updates Notification"
 msgstr "Notifiche di aggiornamenti software"
 
-#: gui/help/C/package-manager.xml:310(para)
+#: gui/help/C/package-manager.localizable.xml:302(para)
 msgid "The system periodically checks whether updates are available for any of your installed packages. If the system detects that updates are available, an Updates Available notification icon and popup are displayed in the system notification tray. Click the notification icon to open Update Manager."
 msgstr "Il sistema verifica periodicamente se sono disponibili aggiornamenti per qualsiasi pacchetto installato. Se il sistema rileva la presenza di aggiornamenti, vengono visualizzati un popup e un'icona di notifica Aggiornamenti disponibili nella barra di notifica del sistema. Fare clic sull'icona di notifica per aprire Update Manager."
 
-#: gui/help/C/package-manager.xml:312(title)
+#: gui/help/C/package-manager.localizable.xml:304(title)
 msgid "Desktop System Menu"
 msgstr "Menu Desktop System"
 
-#: gui/help/C/package-manager.xml:313(para)
+#: gui/help/C/package-manager.localizable.xml:305(para)
 msgid "Select <menuchoice><guimenu>System</guimenu><guisubmenu>Administration</guisubmenu><guimenuitem>Update Manager</guimenuitem></menuchoice> from the menu bar on the desktop to open Update Manager."
 msgstr "Selezionare <menuchoice><guimenu>Sistema</guimenu><guisubmenu>Amministrazione</guisubmenu><guimenuitem>Update Manager</guimenuitem></menuchoice> dalla barra dei menu sul desktop per aprire Update Manager."
 
-#: gui/help/C/package-manager.xml:317(title)
+#: gui/help/C/package-manager.localizable.xml:309(title)
 msgid "Managing Publishers"
 msgstr "Gestione dei publisher"
 
-#: gui/help/C/package-manager.xml:318(para)
+#: gui/help/C/package-manager.localizable.xml:310(para)
 msgid "You can add, modify, and remove IPS package publishers. You can change the priority of a publisher, change the enabled and sticky settings, change the publisher alias, add or remove a publisher origin, and add or remove a publisher mirror. You can manage keys, certificates, and signature policy."
 msgstr "È possibile aggiungere, modificare e rimuovere i publisher dei pacchetti IPS. È possibile modificare la priorità di un publisher, le impostazioni attivato e sticky e l'alias del publisher, nonché aggiungere o rimuovere un'origine e un mirror di un publisher. È possibile gestire chiavi, certificati e criteri firma."
 
-#: gui/help/C/package-manager.xml:319(para)
+#: gui/help/C/package-manager.localizable.xml:311(para)
 msgid "Note that system publishers are an exception. System publishers can only be viewed in the Manage Publishers window. System publishers cannot be removed or modified, and you cannot change their priority. See <xref linkend=\"glossary\"/>. The Details pane indicates whether the selected publisher is a system publisher."
 msgstr "Tenere presente che i publisher di sistema sono eccezioni. È possibile visualizzare i publisher di sistema solo nella finestra Gestisci publisher. Non è possibile rimuovere o modificare i publisher di sistema, nonché modificarne la priorità. Vedere <xref linkend=\"glossary\"/>. Nel riquadro Dettagli viene indicato se il publisher selezionato è un publisher di sistema."
 
-#: gui/help/C/package-manager.xml:320(title)
+#: gui/help/C/package-manager.localizable.xml:312(title)
 msgid "Adding Publishers"
 msgstr "Aggiunta di publisher"
 
-#: gui/help/C/package-manager.xml:321(para)
+#: gui/help/C/package-manager.localizable.xml:313(para)
 msgid "To add an IPS package publisher, use the Add Publisher window. To open the Add Publisher window, do one of the following actions:"
 msgstr "Per aggiungere un publisher di pacchetto IPS, utilizzare la finestra Aggiungi publisher. Per aprire tale finestra eseguire una delle seguenti azioni:"
 
-#: gui/help/C/package-manager.xml:322(para)
+#: gui/help/C/package-manager.localizable.xml:314(para)
 msgid "Select the <guimenuitem>Add</guimenuitem> option from the <guimenu>Publisher</guimenu> drop-down menu."
 msgstr "Selezionare l'opzione <guimenuitem>Aggiungi</guimenuitem> dal menu a discesa <guimenu>Publisher</guimenu>."
 
-#: gui/help/C/package-manager.xml:324(para)
+#: gui/help/C/package-manager.localizable.xml:316(para)
 msgid "Select the <menuchoice><guimenu>File</guimenu><guimenuitem>Add Publisher</guimenuitem></menuchoice> menu option."
 msgstr "Selezionare l'opzione menu <menuchoice><guimenu>File</guimenu><guimenuitem>Aggiungi publisher</guimenuitem></menuchoice>."
 
-#: gui/help/C/package-manager.xml:326(para)
+#: gui/help/C/package-manager.localizable.xml:318(para)
 msgid "Select the <menuchoice><guimenu>File</guimenu><guimenuitem>Manage Publishers</guimenuitem></menuchoice> menu option. In the Manage Publishers window, select the <guibutton>Add</guibutton> button."
 msgstr "Selezionare l'opzione menu <menuchoice><guimenu>File</guimenu><guimenuitem>Gestisci publisher</guimenuitem></menuchoice>. Nella finestra Gestisci publisher, selezionare il pulsante <guibutton>Aggiungi</guibutton>."
 
-#: gui/help/C/package-manager.xml:329(para)
+#: gui/help/C/package-manager.localizable.xml:321(para)
 msgid "In the Add Publisher window, perform the following steps to add an IPS package publisher:"
 msgstr "Nella finestra Aggiungi publisher, eseguire i passaggi seguenti per aggiungere un publisher di pacchetto IPS:"
 
-#: gui/help/C/package-manager.xml:330(para)
+#: gui/help/C/package-manager.localizable.xml:322(para)
 msgid "In the URI field, enter the URI of the publisher. The URI is a network location such as <literal>http://pkg.oracle.com/solaris/release/</literal> or <literal>http://localhost:5555</literal>."
 msgstr "Nel campo URI, immettere l'URI del publisher. L'URI corrisponde a un percorso di rete come <literal>http://pkg.oracle.com/solaris/release/</literal> o <literal>http://localhost:5555</literal>."
 
-#: gui/help/C/package-manager.xml:332(para)
+#: gui/help/C/package-manager.localizable.xml:324(para)
 msgid "In the Alias field, you can enter an alternate name for this publisher."
 msgstr "Nel campo Alias, è possibile immettere un nome alternativo per questo publisher."
 
-#: gui/help/C/package-manager.xml:334(para)
+#: gui/help/C/package-manager.localizable.xml:326(para)
 msgid "Click the <guibutton>Add</guibutton> button."
 msgstr "Fare clic sul pulsante <guibutton>Aggiungi</guibutton>."
 
-#: gui/help/C/package-manager.xml:336(para)
+#: gui/help/C/package-manager.localizable.xml:328(para)
 msgid "The Adding Publisher dialog is displayed. Click <guibutton>Cancel</guibutton> to cancel the process. Click Details to view verbose information."
 msgstr "Viene visualizzata la finestra di dialogo Aggiunta publisher. Fare clic su <guibutton>Annulla</guibutton> per annullare il processo. Fare clic su Dettagli per visualizzare informazioni dettagliate."
 
-#: gui/help/C/package-manager.xml:337(para)
+#: gui/help/C/package-manager.localizable.xml:329(para)
 msgid "If the new publisher is added successfully, the Adding Publisher Complete dialog is displayed and shows the new publisher name, alias, and URI."
 msgstr "Se il nuovo publisher viene aggiunto con successo, viene visualizzata la finestra di dialogo Aggiunta publisher completata e vengono mostrati nome, alias e URI del nuovo publisher."
 
-#: gui/help/C/package-manager.xml:339(para)
+#: gui/help/C/package-manager.localizable.xml:331(para)
 msgid "If the new publisher is not added, the Publisher Error dialog is displayed with information about the problem."
 msgstr "Se non viene aggiunto il nuovo publisher, viene visualizzata la finestra di dialogo Errore del publisher con informazioni relative al problema."
 
-#: gui/help/C/package-manager.xml:344(para)
+#: gui/help/C/package-manager.localizable.xml:336(para)
 msgid "The new publisher is the last publisher listed in the Manage Publishers window and is enabled and sticky."
 msgstr "Il nuovo publisher corrisponde all'ultimo publisher elencato nella finestra Gestisci publisher ed è attivato e sticky."
 
-#: gui/help/C/package-manager.xml:345(para)
+#: gui/help/C/package-manager.localizable.xml:337(para)
 msgid "See <xref linkend=\"modify-publisher\"/> for information about changing the priority of the new publisher, changing the enabled and sticky settings, changing the publisher alias, adding a publisher origin, setting an SSL key and certificate, adding a publisher mirror, and managing publisher certificates and signature policy."
 msgstr "Vedere <xref linkend=\"modify-publisher\"/> per informazioni sulla modifica della proprietà del nuovo publisher, delle impostazioni attivato e sticky e dell'alias del publisher, dell'aggiunta di un'origine del publisher, dell'impostazione di un certificato SSL, di una chiave SSL e di un mirror del publisher e della gestione di criteri firma e certificati del publisher."
 
-#: gui/help/C/package-manager.xml:347(title)
+#: gui/help/C/package-manager.localizable.xml:339(title)
 msgid "Modifying Publishers"
 msgstr "Modifica dei publisher"
 
-#: gui/help/C/package-manager.xml:348(para)
+#: gui/help/C/package-manager.localizable.xml:340(para)
 msgid "To modify the attributes of a publisher, select the <menuchoice><guimenu>File</guimenu><guimenuitem>Manage Publishers</guimenuitem></menuchoice> menu option. Currently configured publishers are listed in the Manage Publishers window."
 msgstr "Per modificare gli attributi di un publisher, selezionare l'opzione menu <menuchoice><guimenu>File</guimenu><guimenuitem>Gestisci publisher</guimenuitem></menuchoice>. I publisher attualmente configurati sono elencati nella finestra Gestisci publisher."
 
-#: gui/help/C/package-manager.xml:349(para)
+#: gui/help/C/package-manager.localizable.xml:341(para)
 msgid "In the Manage Publishers window you can change the priority of a publisher, enable or disable a publisher, set the publisher to be sticky or non-sticky, and remove a publisher. See <xref linkend=\"priority-stickiness\"/> and <xref linkend=\"remove-publisher\"/>."
 msgstr "Nella finestra Gestisci publisher è possibile modificare la priorità di un publisher, attivare o disattivare un publisher, impostare il publisher come sticky o non-sticky e rimuovere un publisher. Vedere <xref linkend=\"priority-stickiness\"/> e <xref linkend=\"remove-publisher\"/>."
 
-#: gui/help/C/package-manager.xml:350(para)
+#: gui/help/C/package-manager.localizable.xml:342(para)
 msgid "Click the <guibutton>Modify</guibutton> button to open the Modify Publisher window. In the Modify Publisher window you can change the publisher alias, add or remove a publisher origin, add or remove a publisher mirror, set an SSL key and certificate, and manage publisher certificates and signature policy. See <xref linkend=\"origin-mirror\"/> and <xref linkend=\"pub-security\"/>."
 msgstr "Fare clic sul pulsante <guibutton>Modifica</guibutton> per aprire la finestra Modifica publisher. Nella finestra Modifica publisher è possibile modificare l'alias del publisher, aggiungere o rimuovere un'origine e un mirror del publisher, impostare un certificato e una chiave SSL e gestire criteri firma e certificati del publisher. Vedere <xref linkend=\"origin-mirror\"/> e <xref linkend=\"pub-security\"/>."
 
-#: gui/help/C/package-manager.xml:351(title)
+#: gui/help/C/package-manager.localizable.xml:343(title)
 msgid "Changing Priority and Stickiness"
 msgstr "Modifica della priorità e della persistenza"
 
-#: gui/help/C/package-manager.xml:352(para)
+#: gui/help/C/package-manager.localizable.xml:344(para)
 msgid "Select the <menuchoice><guimenu>File</guimenu><guimenuitem>Manage Publishers</guimenuitem></menuchoice> menu option to display the Manage Publishers window."
 msgstr "Selezionare l'opzione menu <menuchoice><guimenu>File</guimenu><guimenuitem>Gestisci publisher</guimenuitem></menuchoice> per visualizzare la finestra Gestisci publisher."
 
-#: gui/help/C/package-manager.xml:353(title)
+#: gui/help/C/package-manager.localizable.xml:345(title)
 msgid "Publisher Priority"
 msgstr "Priorità del publisher"
 
-#: gui/help/C/package-manager.xml:354(para)
+#: gui/help/C/package-manager.localizable.xml:346(para)
 msgid "Publishers are listed in priority order in the Manage Publishers window. The publisher at the top of the list is the highest priority publisher. The publisher at the bottom of the list is the lowest priority publisher."
 msgstr "I publisher sono elencati in ordine di priorità nella finestra Gestisci publisher. Il publisher nella parte superiore dell'elenco è il publisher con la priorità superiore. Il publisher nella parte inferiore dell'elenco è il publisher con priorità inferiore."
 
-#: gui/help/C/package-manager.xml:355(para)
+#: gui/help/C/package-manager.localizable.xml:347(para)
 msgid "The publisher at the top of the list is also known as the preferred publisher."
 msgstr "Il publisher in cima all'elenco è noto inoltre come publisher preferito."
 
-#: gui/help/C/package-manager.xml:356(para)
+#: gui/help/C/package-manager.localizable.xml:348(para)
 msgid "The preferred publisher cannot be disabled or removed."
 msgstr "Non è possibile disabilitare o rimuovere il publisher preferito."
 
-#: gui/help/C/package-manager.xml:357(para)
+#: gui/help/C/package-manager.localizable.xml:349(para)
 msgid "When you search for packages and do not specify a publisher, the catalogs of higher priority publishers are searched first."
 msgstr "Quando si cercano pacchetti e non si specifica un publisher, la ricerca viene eseguita prima sui cataloghi con priorità superiore."
 
-#: gui/help/C/package-manager.xml:358(para)
+#: gui/help/C/package-manager.localizable.xml:350(para)
 msgid "When you update a package that was installed from a non-sticky publisher, the catalogs of higher priority publishers are searched first for updates."
 msgstr "Quando si esegue l'aggiornamento a un pacchetto installato da un publisher non-sticky, la ricerca di aggiornamenti viene eseguita prima sui cataloghi con priorità superiore."
 
-#: gui/help/C/package-manager.xml:360(para)
+#: gui/help/C/package-manager.localizable.xml:352(para)
 msgid "To change the priority of a publisher, perform the following steps:"
 msgstr "Per modificare la priorità di un publisher, eseguire le seguenti operazioni:"
 
-#: gui/help/C/package-manager.xml:361(para)
+#: gui/help/C/package-manager.localizable.xml:353(para)
 msgid "Click to highlight a publisher row in the list in the Manage Publishers window."
 msgstr "Fare clic per evidenziare una riga di un publisher nell'elenco della finestra Gestisci publisher."
 
-#: gui/help/C/package-manager.xml:363(para)
+#: gui/help/C/package-manager.localizable.xml:355(para)
 msgid "Click the <guibutton>Up</guibutton> and <guibutton>Down</guibutton> buttons to the right of the publisher list to increase or reduce the priority of the selected publisher. The selected publisher listing moves up and down in the list to show its new priority."
 msgstr "Fare clic sui pulsanti <guibutton>Su</guibutton> e <guibutton>Giù</guibutton> a destra dell'elenco del publisher per aumentare o diminuire la priorità del publisher selezionato. L'elenco del publisher selezionato si muove verso l'alto o verso il basso nell'elenco per mostrare la nuova priorità."
 
-#: gui/help/C/package-manager.xml:364(para)
+#: gui/help/C/package-manager.localizable.xml:356(para)
 msgid "If the selected publisher is a system publisher, then the <guibutton>Up</guibutton> and <guibutton>Down</guibutton> buttons are disabled. You cannot change the priority of a system publisher. Because you cannot change the priority of a system publisher, you cannot lower the priority of the publisher that is the next higher priority above a system publisher, and you cannot raise the priority of a publisher that is the next lower priority below a system publisher."
 msgstr "Se il publisher selezionato è un publisher di sistema, i pulsanti <guibutton>Su</guibutton> e <guibutton>Giù</guibutton> sono disattivati. Poiché non è possibile modificare la priorità di un publisher di sistema, non è possibile diminuire la priorità del publisher con la priorità maggiore più vicina sopra al publisher di sistema; inoltre, non è possibile aumentare la priorità di un publisher con la priorità minore più vicina sotto al publisher di sistema."
 
-#: gui/help/C/package-manager.xml:365(para) gui/help/C/package-manager.xml:378(para) gui/help/C/package-manager.xml:456(para) gui/help/C/package-manager.xml:481(para) gui/help/C/package-manager.xml:499(para) gui/help/C/package-manager.xml:512(para) gui/help/C/package-manager.xml:526(para)
+#: gui/help/C/package-manager.localizable.xml:357(para) gui/help/C/package-manager.localizable.xml:370(para) gui/help/C/package-manager.localizable.xml:448(para) gui/help/C/package-manager.localizable.xml:473(para) gui/help/C/package-manager.localizable.xml:491(para) gui/help/C/package-manager.localizable.xml:504(para) gui/help/C/package-manager.localizable.xml:518(para)
 msgid "Click the <guibutton>OK</guibutton> button at the bottom of the Manage Publishers window."
 msgstr "Fare clic sul pulsante <guibutton>OK</guibutton> nella parte inferiore della finestra Gestisci publisher."
 
-#: gui/help/C/package-manager.xml:369(title)
+#: gui/help/C/package-manager.localizable.xml:361(title)
 msgid "Enabled and Sticky"
 msgstr "Attivato e sticky"
 
-#: gui/help/C/package-manager.xml:370(para)
+#: gui/help/C/package-manager.localizable.xml:362(para)
 msgid "When you add a publisher, the enabled and sticky attributes are set by default. The preferred publisher (see <xref linkend=\"set-pub-order\"/> above) cannot be disabled. A system publisher cannot be disabled, and the sticky setting of a system publisher cannot be changed. All other enabled and sticky settings can be changed."
 msgstr "Quando si aggiunge un publisher, gli attributi attivato e sticky vengono impostati di default. Non è possibile disattivare il publisher preferito (vedere <xref linkend=\"set-pub-order\"/> sopra). Non è consentito disattivare un publisher di sistema, né modificare l'impostazione sticky di un publisher di sistema. Tutte le altre impostazioni sticky e attivato possono essere modificate."
 
-#: gui/help/C/package-manager.xml:371(para)
+#: gui/help/C/package-manager.localizable.xml:363(para)
 msgid "If the sticky attribute is set for a publisher, then a package that was installed from that publisher cannot be updated from a different publisher. If the sticky attribute is not set for a publisher, then that publisher is non-sticky. If a publisher is non-sticky, then a package that originally came from that publisher can be updated from another publisher. A different publisher might have a newer version of a package than the original publisher of the package. If you want to update to that newer version, the original publisher needs to be non-sticky. Also, if a lower priority publisher is non-sticky, then higher-priority publishers will be searched first for updates for packages installed from that non-sticky publisher."
 msgstr "Se viene impostato l'attributo sticky per un publisher, non è quindi possibile che un pacchetto installato da tale publisher venga aggiornato da un publisher diverso. Se non viene impostato l'attributo sticky per un publisher, tale publisher è non-sticky. In questo caso, un pacchetto originariamente derivato da tale publisher può essere aggiornato da un altro publisher. Un publisher diverso potrebbe presentare una versione più recente di un pacchetto rispetto al publisher originale del pacchetto. Se si desidera eseguire l'aggiornamento alla versione più recente, è necessario che il publisher originale sia non-sticky. Inoltre, se un publisher con priorità inferiore è non-sticky, la ricerca di aggiornamenti per i pacchetti installati da tale publisher non-sticky inizierà dai publisher con priorità maggiore."
 
-#: gui/help/C/package-manager.xml:372(para)
+#: gui/help/C/package-manager.localizable.xml:364(para)
 msgid "A publisher that is disabled is not searched for updates or for packages to install. Catalogs of a disabled publisher are not refreshed. A disabled publisher is not shown on the <guimenu>Publisher</guimenu> drop-down menu."
 msgstr "La ricerca di aggiornamenti o pacchetti da installare non avviene in un publisher disattivato. Inoltre, non viene eseguito il refresh dei cataloghi di un publisher disattivato. Un publisher disattivato non viene visualizzato nel menu a discesa <guimenu>Publisher</guimenu>."
 
-#: gui/help/C/package-manager.xml:373(para)
+#: gui/help/C/package-manager.localizable.xml:365(para)
 msgid "To change the Enabled and Sticky settings for a publisher, perform the following steps:"
 msgstr "Per modificare le impostazioni Attivato e Sticky di un publisher, eseguire le seguenti operazioni:"
 
-#: gui/help/C/package-manager.xml:374(para) gui/help/C/package-manager.xml:384(para) gui/help/C/package-manager.xml:463(para) gui/help/C/package-manager.xml:519(para)
+#: gui/help/C/package-manager.localizable.xml:366(para) gui/help/C/package-manager.localizable.xml:376(para) gui/help/C/package-manager.localizable.xml:455(para) gui/help/C/package-manager.localizable.xml:511(para)
 msgid "Select the <menuchoice><guimenu>File</guimenu><guimenuitem>Manage Publishers</guimenuitem></menuchoice> menu option to open the Manage Publishers window."
 msgstr "Selezionare l'opzione menu <menuchoice><guimenu>File</guimenu><guimenuitem>Gestisci publisher</guimenuitem></menuchoice> per aprire la finestra Gestisci publisher."
 
-#: gui/help/C/package-manager.xml:376(para)
+#: gui/help/C/package-manager.localizable.xml:368(para)
 msgid "Click an Enabled box or a Sticky box to toggle its setting."
 msgstr "Fare clic sulla casella Attivato o Sticky per attivare o disattivare le relative impostazioni."
 
-#: gui/help/C/package-manager.xml:383(title)
+#: gui/help/C/package-manager.localizable.xml:375(title)
 msgid "Changing Alias, Origins, and Mirrors"
 msgstr "Modifica di alias, origini e mirror"
 
-#: gui/help/C/package-manager.xml:386(para)
+#: gui/help/C/package-manager.localizable.xml:378(para)
 msgid "Select the publisher you want to modify. The Details pane below the publisher list in the Manage Publishers window displays the current origins for the selected publisher."
 msgstr "Selezionare il publisher che si desidera modificare. Il riquadro Dettagli sotto l'elenco dei publisher nella finestra Gestisci publisher consente di visualizzare le origini correnti del publisher selezionato."
 
-#: gui/help/C/package-manager.xml:388(para)
+#: gui/help/C/package-manager.localizable.xml:380(para)
 msgid "Click the <guibutton>Modify</guibutton> button to the right of the publisher list to open the Modify Publisher window."
 msgstr "Fare clic sul pulsante <guibutton>Modifica</guibutton> a destra dell'elenco dei publisher per aprire la finestra Modifica publisher."
 
-#: gui/help/C/package-manager.xml:389(para)
+#: gui/help/C/package-manager.localizable.xml:381(para)
 msgid "If the selected publisher is a system publisher, the <guibutton>Modify</guibutton> button is disabled. The Details pane indicates that the selected publisher is a system publisher and displays a message that this publisher cannot be modified or removed."
 msgstr "Se il publisher selezionato è un publisher di sistema, il pulsante <guibutton>Modifica</guibutton> è disattivato. Il riquadro Dettagli indica che il publisher selezionato è un publisher di sistema e viene visualizzato un messaggio che informa che non è possibile modificare o rimuovere tale publisher."
 
-#: gui/help/C/package-manager.xml:391(para)
+#: gui/help/C/package-manager.localizable.xml:383(para)
 msgid "Select the General tab to modify the publisher alias, add and remove origins, and add and remove mirrors."
 msgstr "Selezionare la scheda Generale per modificare l'alias del publisher, aggiungere e rimuovere le origini e aggiungere e rimuovere i mirror."
 
-#: gui/help/C/package-manager.xml:393(title)
+#: gui/help/C/package-manager.localizable.xml:385(title)
 msgid "Publisher Alias"
 msgstr "Alias publisher"
 
-#: gui/help/C/package-manager.xml:394(para)
+#: gui/help/C/package-manager.localizable.xml:386(para)
 msgid "The publisher alias is another name for the publisher. The alias name is used in the <guimenu>Publisher</guimenu> drop-down menu and in the package list pane."
 msgstr "L'alias del publisher corrisponde a un altro nome per il publisher. Il nome dell'alias viene utilizzato nel menu a discesa <guimenu>Publisher</guimenu> e nel riquadro dell'elenco dei pacchetti."
 
-#: gui/help/C/package-manager.xml:395(para)
+#: gui/help/C/package-manager.localizable.xml:387(para)
 msgid "To change the alias of this publisher, perform the following steps:"
 msgstr "Per modificare l'alias di questo publisher, eseguire le seguenti operazioni:"
 
-#: gui/help/C/package-manager.xml:396(para)
+#: gui/help/C/package-manager.localizable.xml:388(para)
 msgid "On the General tab of the Modify Publisher window, enter a new name in the Alias field."
 msgstr "Nella scheda Generale della finestra Modifica publisher, immettere un nuovo nome nel campo Alias."
 
-#: gui/help/C/package-manager.xml:398(para) gui/help/C/package-manager.xml:426(para) gui/help/C/package-manager.xml:454(para) gui/help/C/package-manager.xml:480(para) gui/help/C/package-manager.xml:498(para) gui/help/C/package-manager.xml:511(para)
+#: gui/help/C/package-manager.localizable.xml:390(para) gui/help/C/package-manager.localizable.xml:418(para) gui/help/C/package-manager.localizable.xml:446(para) gui/help/C/package-manager.localizable.xml:472(para) gui/help/C/package-manager.localizable.xml:490(para) gui/help/C/package-manager.localizable.xml:503(para)
 msgid "Click the <guibutton>OK</guibutton> button at the bottom of the Modify Publisher window."
 msgstr "Fare clic su <guibutton>OK</guibutton> nella parte inferiore della finestra Modifica publisher."
 
-#: gui/help/C/package-manager.xml:400(para)
+#: gui/help/C/package-manager.localizable.xml:392(para)
 msgid "The publisher alias has changed in the Manage Publishers window. Click the <guibutton>OK</guibutton> button at the bottom of the Manage Publishers window."
 msgstr "L'alias del publisher è stato modificato nella finestra Gestisci publisher. Fare clic sul pulsante <guibutton>OK</guibutton> nella parte inferiore della finestra Gestisci publisher."
 
-#: gui/help/C/package-manager.xml:404(title)
+#: gui/help/C/package-manager.localizable.xml:396(title)
 msgid "Publisher Origins"
 msgstr "Origini dei publisher"
 
-#: gui/help/C/package-manager.xml:405(para)
+#: gui/help/C/package-manager.localizable.xml:397(para)
 msgid "An origin is the location of an IPS package repository or archive that contains both package metadata (package manifests and catalogs) and package content (package files)."
 msgstr "Un'origine corrisponde alla posizione di un archivio o repository di pacchetto IPS che contiene entrambi i metadati di pacchetto (cataloghi e manifesti di pacchetto) e i contenuti di pacchetto (file di pacchetto)."
 
-#: gui/help/C/package-manager.xml:406(para)
+#: gui/help/C/package-manager.localizable.xml:398(para)
 msgid "An origin value is the URI of an IPS package repository."
 msgstr "Un valore di origine corrisponde all'URI di un repository di pacchetto IPS."
 
-#: gui/help/C/package-manager.xml:407(para)
+#: gui/help/C/package-manager.localizable.xml:399(para)
 msgid "To change, add, or remove an origin for this publisher, perform the following steps:"
 msgstr "Per modificare, aggiungere o rimuovere un'origine per questo publisher, eseguire le seguenti operazioni:"
 
-#: gui/help/C/package-manager.xml:408(para) gui/help/C/package-manager.xml:435(para)
+#: gui/help/C/package-manager.localizable.xml:400(para) gui/help/C/package-manager.localizable.xml:427(para)
 msgid "Select the General tab of the Modify Publisher window."
 msgstr "Selezionare la scheda Generale della finestra Modifica publisher."
 
-#: gui/help/C/package-manager.xml:409(para)
+#: gui/help/C/package-manager.localizable.xml:401(para)
 msgid "Add an origin."
 msgstr "Aggiungere un'origine."
 
-#: gui/help/C/package-manager.xml:410(para)
+#: gui/help/C/package-manager.localizable.xml:402(para)
 msgid "In the Origin field, enter the URI of the new origin you want to associate with this publisher."
 msgstr "Nel campo Origine, immettere l'URI della nuova origine che si desidera associare a questo publisher."
 
-#: gui/help/C/package-manager.xml:411(para)
+#: gui/help/C/package-manager.localizable.xml:403(para)
 msgid "Click the <guibutton>Add</guibutton> button. The new URI is added to the list below the Origin field."
 msgstr "Fare clic sul pulsante <guibutton>Aggiungi</guibutton>. Il nuovo URI viene aggiunto all'elenco sotto il campo Origine."
 
-#: gui/help/C/package-manager.xml:414(para)
+#: gui/help/C/package-manager.localizable.xml:406(para)
 msgid "Remove an origin."
 msgstr "Rimuovere un'origine."
 
-#: gui/help/C/package-manager.xml:415(para)
+#: gui/help/C/package-manager.localizable.xml:407(para)
 msgid "In the list below the Origin field, select the URI you want to delete."
 msgstr "Nell'elenco sotto il campo Origine, selezionare l'URI che si desidera eliminare."
 
-#: gui/help/C/package-manager.xml:416(para)
+#: gui/help/C/package-manager.localizable.xml:408(para)
 msgid "Click the <guibutton>Remove</guibutton> button. The selected URI is removed from the list. If only one origin is defined for this publisher, you cannot remove that origin."
 msgstr "Fare clic sul pulsante <guibutton>Rimuovi</guibutton>. L'URI selezionato viene rimosso dall'elenco. Se viene definita una sola origine per questo publisher, non è possibile rimuovere tale origine."
 
-#: gui/help/C/package-manager.xml:419(para)
+#: gui/help/C/package-manager.localizable.xml:411(para)
 msgid "Change an origin."
 msgstr "Modificare un'origine."
 
-#: gui/help/C/package-manager.xml:420(para)
+#: gui/help/C/package-manager.localizable.xml:412(para)
 msgid "Add the new origin."
 msgstr "Aggiungere la nuova origine."
 
-#: gui/help/C/package-manager.xml:421(para)
+#: gui/help/C/package-manager.localizable.xml:413(para)
 msgid "Delete the origin you want to change."
 msgstr "Eliminare l'origine che si desidera modificare."
 
-#: gui/help/C/package-manager.xml:428(para)
+#: gui/help/C/package-manager.localizable.xml:420(para)
 msgid "The origin changes are reflected in the Details pane in the Manage Publishers window. Click the <guibutton>OK</guibutton> button at the bottom of the Manage Publishers window."
 msgstr "Le modifiche all'origine vengono visualizzate nel riquadro Dettagli della finestra Gestisci publisher. Fare clic sul pulsante <guibutton>OK</guibutton> nella parte inferiore della finestra Gestisci publisher."
 
-#: gui/help/C/package-manager.xml:432(title)
+#: gui/help/C/package-manager.localizable.xml:424(title)
 msgid "Publisher Mirrors"
 msgstr "Mirror dei publisher"
 
-#: gui/help/C/package-manager.xml:433(para)
+#: gui/help/C/package-manager.localizable.xml:425(para)
 msgid "A mirror is a location of an IPS package repository that contains only package content (package files). A mirror does not contain package metadata (package manifests and catalogs). Mirrors provide a subset of the data that origins provide. Mirrors can be used only for downloading package files. Package metadata is downloaded from the origin. IPS clients access the origin to obtain a publisher's catalog, even when the clients download package content from a mirror."
 msgstr "Un mirror corrisponde alla posizione di un repository di pacchetto IPS contenente solo il contenuto del pacchetto (file di pacchetto). Un mirror non contiene metadati di pacchetti (cataloghi e manifesti di pacchetto). I mirror forniscono un sottoinsieme dei dati forniti dalle origini e possono inoltre essere utilizzati solo per scaricare i file di pacchetto. Il metadato del pacchetto viene scaricato dall'origine. I client IPS eseguono l'accesso all'origine per ottenere un catalogo del publisher, anche quando i client scaricano il contenuto del pacchetto da un mirror."
 
-#: gui/help/C/package-manager.xml:434(para)
+#: gui/help/C/package-manager.localizable.xml:426(para)
 msgid "To add, remove, or change a mirror for this publisher, perform the following steps:"
 msgstr "Per aggiungere, rimuovere o modificare un mirror per questo publisher, eseguire le seguenti operazioni:"
 
-#: gui/help/C/package-manager.xml:436(para)
+#: gui/help/C/package-manager.localizable.xml:428(para)
 msgid "Click the Mirrors label to display the Mirror field and the list of mirrors."
 msgstr "Fare clic sull'etichetta relativa ai mirror per visualizzare il campo Mirror e l'elenco dei mirror."
 
-#: gui/help/C/package-manager.xml:437(para)
+#: gui/help/C/package-manager.localizable.xml:429(para)
 msgid "Add a mirror."
 msgstr "Aggiungere un mirror."
 
-#: gui/help/C/package-manager.xml:438(para)
+#: gui/help/C/package-manager.localizable.xml:430(para)
 msgid "In the Mirror field, enter the URI of the new mirror you want to associate with this publisher."
 msgstr "Nel campo Mirror, immettere l'URI del nuovo mirror che si desidera associare a questo publisher."
 
-#: gui/help/C/package-manager.xml:439(para)
+#: gui/help/C/package-manager.localizable.xml:431(para)
 msgid "Click the <guibutton>Add</guibutton> button. The new URI is added to the list below the Mirror field."
 msgstr "Fare clic sul pulsante <guibutton>Aggiungi</guibutton>. Il nuovo URI viene aggiunto all'elenco sotto il campo Mirror."
 
-#: gui/help/C/package-manager.xml:442(para)
+#: gui/help/C/package-manager.localizable.xml:434(para)
 msgid "Remove a mirror."
 msgstr "Rimuovere un mirror."
 
-#: gui/help/C/package-manager.xml:443(para)
+#: gui/help/C/package-manager.localizable.xml:435(para)
 msgid "In the list below the Mirror field, select the URI you want to delete."
 msgstr "Nell'elenco sotto il campo Mirror, selezionare l'URI che si desidera eliminare."
 
-#: gui/help/C/package-manager.xml:444(para)
+#: gui/help/C/package-manager.localizable.xml:436(para)
 msgid "Click the <guibutton>Remove</guibutton> button. The selected URI is removed from the list."
 msgstr "Fare clic sul pulsante <guibutton>Rimuovi</guibutton>. L'URI selezionato viene rimosso dall'elenco."
 
-#: gui/help/C/package-manager.xml:447(para)
+#: gui/help/C/package-manager.localizable.xml:439(para)
 msgid "Change a mirror."
 msgstr "Modificare un mirror."
 
-#: gui/help/C/package-manager.xml:448(para)
+#: gui/help/C/package-manager.localizable.xml:440(para)
 msgid "Delete the mirror you want to change."
 msgstr "Eliminare il mirror che si desidera modificare."
 
-#: gui/help/C/package-manager.xml:449(para)
+#: gui/help/C/package-manager.localizable.xml:441(para)
 msgid "Add a new mirror."
 msgstr "Aggiungere un nuovo mirror."
 
-#: gui/help/C/package-manager.xml:461(title)
+#: gui/help/C/package-manager.localizable.xml:453(title)
 msgid "Managing Publisher Security"
 msgstr "Gestione della sicurezza del publisher"
 
-#: gui/help/C/package-manager.xml:462(para)
+#: gui/help/C/package-manager.localizable.xml:454(para)
 msgid "Certificates are used to verify that packages have been appropriately signed before being installed, depending on the signature policy of the image or the publisher, whichever is more restrictive."
 msgstr "I certificati vengono utilizzati per verificare che i pacchetti siano stati correttamente firmati prima dell'installazione, a seconda dei criteri firma dell'immagine o del publisher (in base all'opzione che presenta la restrizione maggiore)."
 
-#: gui/help/C/package-manager.xml:465(para)
+#: gui/help/C/package-manager.localizable.xml:457(para)
 msgid "Select the publisher whose security you want to modify."
 msgstr "Selezionare il publisher del quale si desidera modificare la sicurezza."
 
-#: gui/help/C/package-manager.xml:467(para)
+#: gui/help/C/package-manager.localizable.xml:459(para)
 msgid "Click the <guibutton>Modify</guibutton> button to the right of the publisher list to open the Modify Publisher window. The publisher that was selected in the Manage Publishers window is listed in the title of the Modify Publisher window."
 msgstr "Fare clic sul pulsante <guibutton>Modifica</guibutton> a destra dell'elenco dei publisher per aprire la finestra Modifica publisher. Il publisher selezionato nella finestra Gestisci publisher viene elencato nel titolo della finestra Modifica publisher."
 
-#: gui/help/C/package-manager.xml:468(para)
+#: gui/help/C/package-manager.localizable.xml:460(para)
 msgid "Select the General tab to add the SSL key and SSL certificate if a publisher has a secure origin."
 msgstr "Selezionare la scheda Generale per aggiungere il certificato e la chiave SSL se un publisher ha un'origine sicura."
 
-#: gui/help/C/package-manager.xml:469(para)
+#: gui/help/C/package-manager.localizable.xml:461(para)
 msgid "Select the Certificates tab to manage certificates for this publisher."
 msgstr "Selezionare la scheda Certificati per gestire i certificati per questo publisher."
 
-#: gui/help/C/package-manager.xml:470(para)
+#: gui/help/C/package-manager.localizable.xml:462(para)
 msgid "Select the Signature Policy tab to manage signature policy for this publisher."
 msgstr "Selezionare la scheda Criteri firma per gestire i criteri firma di questo publisher."
 
-#: gui/help/C/package-manager.xml:474(title)
+#: gui/help/C/package-manager.localizable.xml:466(title)
 msgid "Adding SSL Keys and Certificates"
 msgstr "Aggiunta di certificati e chiavi SSL"
 
-#: gui/help/C/package-manager.xml:475(para)
+#: gui/help/C/package-manager.localizable.xml:467(para)
 msgid "If a publisher has a secure origin, add the SSL key and SSL certificate for the publisher."
 msgstr "Se un publisher ha un'origine sicura, aggiungere il certificato e la chiave SSL del publisher."
 
-#: gui/help/C/package-manager.xml:476(para)
+#: gui/help/C/package-manager.localizable.xml:468(para)
 msgid "Click the General tab of the Modify Publisher window."
 msgstr "Fare clic sulla scheda Generale della finestra Modifica publisher."
 
-#: gui/help/C/package-manager.xml:477(para)
+#: gui/help/C/package-manager.localizable.xml:469(para)
 msgid "Click the SSL Key and Certificate label to display the SSL Key field and the SSL Certificate field."
 msgstr "Fare clic sull'etichetta Chiave e certificato SSL per visualizzare i campi Chiave SSL e Certificato SSL."
 
-#: gui/help/C/package-manager.xml:478(para)
+#: gui/help/C/package-manager.localizable.xml:470(para)
 msgid "Click the <guibutton>Browse</guibutton> button to the right of the SSL Key field to select the SSL Key file."
 msgstr "Fare clic sul pulsante <guibutton>Sfoglia</guibutton> a destra del campo Chiave SSL per selezionare il file relativo alla chiave SSL."
 
-#: gui/help/C/package-manager.xml:479(para)
+#: gui/help/C/package-manager.localizable.xml:471(para)
 msgid "Click the <guibutton>Browse</guibutton> button to the right of the SSL Certificate field to select the SSL Certificate file."
 msgstr "Fare clic sul pulsante <guibutton>Sfoglia</guibutton> a destra del campo Certificato SSL per selezionare il file relativo al certificato SSL."
 
-#: gui/help/C/package-manager.xml:484(title)
+#: gui/help/C/package-manager.localizable.xml:476(title)
 msgid "Managing Certificates"
 msgstr "Gestione dei certificati"
 
-#: gui/help/C/package-manager.xml:485(para)
+#: gui/help/C/package-manager.localizable.xml:477(para)
 msgid "Click the Certificates tab of the Modify Publisher window."
 msgstr "Fare clic sulla scheda Certificati della finestra Modifica publisher."
 
-#: gui/help/C/package-manager.xml:486(para)
+#: gui/help/C/package-manager.localizable.xml:478(para)
 msgid "Use the buttons below the list of certificates to add a certificate or to remove, revoke, or reinstate the certificate that is currently selected in the list."
 msgstr "Utilizzare i pulsanti sotto l'elenco dei certificati per aggiungere un certificato o rimuovere, revocare o ripristinare il certificato attualmente selezionato nell'elenco."
 
-#: gui/help/C/package-manager.xml:487(para)
+#: gui/help/C/package-manager.localizable.xml:479(para)
 msgid "Note that any actions you take in the Modify Publisher window are applied to the selected publisher's certificates only after you click the <guibutton>OK</guibutton> button at the bottom of the Modify Publisher window. If you click the <guibutton>Cancel</guibutton> button, no changes are applied."
 msgstr "Tenere presente che qualsiasi azione eseguita nella finestra Modifica publisher viene applicata ai certificati del publisher selezionato solo dopo aver fatto clic sul pulsante <guibutton>OK</guibutton> nella parte inferiore della finestra Modifica publisher. Se si fa clic sul pulsante <guibutton>Annulla</guibutton> non verrà applicata alcuna modifica."
 
-#: gui/help/C/package-manager.xml:488(para)
+#: gui/help/C/package-manager.localizable.xml:480(para)
 msgid "<guibutton>Add</guibutton>. Add a new publisher certificate for the publisher listed in the Modify Publisher window title. In the Add Publisher Certificate window, browse to select the certificate (<tt>.pem</tt>) file. Click the <guibutton>OK</guibutton> button at the bottom of the Add Publisher Certificate window. The newly added certificate is selected in the certificates list in the Certificates tab of the Modify Publisher window. The details pane indicates that this certificate is \"marked to be added.\" This certificate will be added after you click the <guibutton>OK</guibutton> button on the Modify Publisher window."
 msgstr "<guibutton>Aggiungi</guibutton>. Aggiungere un nuovo certificato del publisher al publisher elencato nel titolo della finestra Modifica publisher. Nella finestra Aggiungi certificato publisher, individuare e selezionare il file di certificato (<tt>.pem</tt>). Fare clic sul pulsante <guibutton>OK</guibutton> nella parte inferiore della finestra Aggiungi certificato publisher. Il certificato appena aggiunto viene selezionato nell'elenco dei certificati della scheda Certificati nella finestra Modifica publisher. Il riquadro dei dettagli indica che questo certificato è contrassegnato per l'aggiunta. Il certificato verrà aggiunto dopo aver fatto clic sul pulsante <guibutton>OK</guibutton> nella finestra Modifica publisher."
 
-#: gui/help/C/package-manager.xml:491(para)
+#: gui/help/C/package-manager.localizable.xml:483(para)
 msgid "In the list of certificates for this publisher, select the certificate you want to modify or whose details you want to check. Details about the selected certificate are shown below the list of certificates and row of buttons. Note that an expired certificate can still be Approved and used to validate signed packages that were published (not necessarily installed) before the certificate expired."
 msgstr "Nell'elenco dei certificati per questo publisher, selezionare il certificato che si desidera modificare o i cui dettagli è necessario verificare. I dettagli relativi al certificato selezionato vengono visualizzati sotto l'elenco dei certificati e la riga dei pulsanti. Tenere presente che è comunque possibile approvare un certificato scaduto e utilizzarlo per convalidare i pacchetti firmati pubblicati (non necessariamente installati) prima della scadenza del certificato."
 
-#: gui/help/C/package-manager.xml:492(para)
+#: gui/help/C/package-manager.localizable.xml:484(para)
 msgid "Click the headings of the list of certificates to resort the list. The Organization and Name columns are resizable."
 msgstr "Fare clic sulle intestazioni dell'elenco di certificati per riordinare l'elenco. È possibile ridimensionare le colonne Organizzazione e Nome."
 
-#: gui/help/C/package-manager.xml:493(para)
+#: gui/help/C/package-manager.localizable.xml:485(para)
 msgid "<guibutton>Remove</guibutton>. Remove the certificate that is currently selected in the certificates list."
 msgstr "<guibutton>Rimuovi</guibutton>. Rimuovere il certificato attualmente selezionato nell'elenco dei certificati."
 
-#: gui/help/C/package-manager.xml:494(para)
+#: gui/help/C/package-manager.localizable.xml:486(para)
 msgid "<guibutton>Revoke</guibutton>. If the certificate currently selected in the certificates list is Approved, click the <guibutton>Revoke</guibutton> button to treat this certificate as revoked. In the certificates list, the Status of this certificate changes to Revoked. This change is applied to the certificate after you click the <guibutton>OK</guibutton> button on the Modify Publisher window."
 msgstr "<guibutton>Revoca</guibutton>. Se il certificato attualmente selezionato nell'elenco dei certificati è Approvato, fare clic sul pulsante <guibutton>Revoca</guibutton> per applicare l'attributo revocato a questo certificato. Nell'elenco dei certificati, lo Stato di questo certificato viene modificato in Revocato. Questa modifica viene applicata al certificato dopo aver fatto clic sul pulsante <guibutton>OK</guibutton> nella finestra Modifica publisher."
 
-#: gui/help/C/package-manager.xml:495(para)
+#: gui/help/C/package-manager.localizable.xml:487(para)
 msgid "<guibutton>Reinstate</guibutton>. If the certificate currently selected in the certificates list is Revoked, click the <guibutton>Reinstate</guibutton> button to treat this certificate as approved. The details pane indicates that this certificate is \"marked to be reinstated.\" This certificate will be reinstated after you click the <guibutton>OK</guibutton> button on the Modify Publisher window."
 msgstr "<guibutton>Ripristina</guibutton>. Se il certificato attualmente selezionato nell'elenco dei certificati è Revocato, fare clic sul pulsante <guibutton>Ripristina</guibutton> per applicare l'attributo approvato a questo certificato. Nel riquadro dei dettagli il certificato è contrassegnato per il ripristino. Questo certificato verrà ripristinato dopo aver fatto clic sul pulsante <guibutton>OK</guibutton> nella finestra Modifica publisher."
 
-#: gui/help/C/package-manager.xml:502(title)
+#: gui/help/C/package-manager.localizable.xml:494(title)
 msgid "Managing Signature Policy"
 msgstr "Gestione dei criteri firma"
 
-#: gui/help/C/package-manager.xml:503(para)
+#: gui/help/C/package-manager.localizable.xml:495(para)
 msgid "Click the Signature Policy tab of the Modify Publisher window."
 msgstr "Fare clic sulla scheda Criteri firma della finestra Modifica publisher."
 
-#: gui/help/C/package-manager.xml:504(para)
+#: gui/help/C/package-manager.localizable.xml:496(para)
 msgid "Use the buttons on the Signature Policy tab to set the signature policy to use when installing packages from the publisher listed in the Modify Publisher window title."
 msgstr "Utilizzare i pulsanti della scheda Criteri firma per impostare i criteri firma da utilizzare durante l'installazione dei pacchetti dal publisher elencato nel titolo della finestra Modifica publisher."
 
-#: gui/help/C/package-manager.xml:505(para)
+#: gui/help/C/package-manager.localizable.xml:497(para)
 msgid "To set the global signature policy, use the Signature Policy tab of the Preferences window (see <xref linkend=\"img-sig-policy\"/>)."
 msgstr "Per impostare i criteri firma globali, utilizzare la scheda Criteri firma della finestra Preferenze (vedere <xref linkend=\"img-sig-policy\"/>)."
 
-#: gui/help/C/package-manager.xml:506(para)
+#: gui/help/C/package-manager.localizable.xml:498(para)
 msgid "Signatures are ignored: Ignore signatures for all packages."
 msgstr "Le firme vengono ignorate: ignorare le firme per tutti i pacchetti."
 
-#: gui/help/C/package-manager.xml:507(para)
+#: gui/help/C/package-manager.localizable.xml:499(para)
 msgid "Signatures are optional, but must be valid if provided: Verify that all packages with signatures are validly signed, but do not require all installed packages to be signed."
 msgstr "Le firme sono opzionali, ma devono essere valide se fornite: verificare che tutti i pacchetti con firme siano correttamente firmati; non è necessario che tutti i pacchetti installati siano firmati."
 
-#: gui/help/C/package-manager.xml:508(para)
+#: gui/help/C/package-manager.localizable.xml:500(para)
 msgid "One or more valid signatures are required: Require that all newly installed packages have at least one valid signature."
 msgstr "Sono necessarie una o più firme valide: richiedere che tutti i pacchetti appena installati possiedano almeno una firma valida."
 
-#: gui/help/C/package-manager.xml:509(para)
+#: gui/help/C/package-manager.localizable.xml:501(para)
 msgid "Signatures are required and the certificate name must include the name or names specified in the text field when validating the signatures of a package. If more than one name is specified, the names must be comma-separated."
 msgstr "Sono necessarie le firme e il nome del certificato deve includere il nome o i nomi specificati nel campo del testo quando vengono convalidate le firme di un pacchetto. Se vengono specificati più nomi devono essere separati da virgole."
 
-#: gui/help/C/package-manager.xml:517(title)
+#: gui/help/C/package-manager.localizable.xml:509(title)
 msgid "Removing Publishers"
 msgstr "Rimozione dei publisher"
 
-#: gui/help/C/package-manager.xml:518(para)
+#: gui/help/C/package-manager.localizable.xml:510(para)
 msgid "Perform the following steps to remove a publisher:"
 msgstr "Per rimuovere un publisher, attenersi alla seguente procedura:"
 
-#: gui/help/C/package-manager.xml:521(para)
+#: gui/help/C/package-manager.localizable.xml:513(para)
 msgid "Select the publisher that you want to remove."
 msgstr "Selezionare il publisher che si desidera rimuovere."
 
-#: gui/help/C/package-manager.xml:523(para)
+#: gui/help/C/package-manager.localizable.xml:515(para)
 msgid "Click the <guibutton>Remove</guibutton> button to the right of the publisher list."
 msgstr "Fare clic sul pulsante <guibutton>Rimuovi</guibutton> a destra dell'elenco dei publisher."
 
-#: gui/help/C/package-manager.xml:524(para)
+#: gui/help/C/package-manager.localizable.xml:516(para)
 msgid "If the selected publisher is a system publisher, the <guibutton>Remove</guibutton> button is disabled. The Details pane indicates that the selected publisher is a system publisher and displays a message that this publisher cannot be modified or removed."
 msgstr "Se il publisher selezionato è un publisher di sistema, viene disattivato il pulsante <guibutton>Rimuovi</guibutton>. Il riquadro Dettagli indica che il publisher selezionato è un publisher di sistema e viene visualizzato un messaggio che informa circa l'impossibilità di modificare o rimuovere questo publisher."
 
-#: gui/help/C/package-manager.xml:531(title)
+#: gui/help/C/package-manager.localizable.xml:523(title)
 msgid "Managing Boot Environments"
 msgstr "Gestione degli ambienti di boot"
 
-#: gui/help/C/package-manager.xml:532(para)
+#: gui/help/C/package-manager.localizable.xml:524(para)
 msgid "A boot environment (BE) is a bootable image. You can maintain multiple BEs on your Oracle Solaris system. One BE is the default BE at startup or reboot. Other BEs are available as alternate boot selections. The BE you are booted into is the active BE."
 msgstr "Un ambiente di boot è un'immagine bootable. Nel sistema Oracle Solaris possono essere presenti più ambienti di boot. Un ambiente di boot è l'ambiente di boot di default all'avvio o al reboot. Sono disponibili più ambienti di boot come selezioni di boot alternative. L'ambiente di boot in uso è quello attivo."
 
-#: gui/help/C/package-manager.xml:533(para)
+#: gui/help/C/package-manager.localizable.xml:525(para)
 msgid "You can use the <literal>beadm</literal>(1) command to create, rename, mount, unmount, activate, or destroy BEs. For complete information about BEs, see <citetitle>Creating and Managing Boot Environments After Installation</citetitle>."
 msgstr "È possibile utilizzare il comando <literal>beadm</literal>(1) per creare, rinominare, attivare, disattivare o distruggere gli ambienti di boot. Per informazioni complete sugli ambienti di boot, vedere <citetitle>Creazione e gestione degli ambienti di boot dopo l'installazione</citetitle>."
 
-#: gui/help/C/package-manager.xml:534(para)
+#: gui/help/C/package-manager.localizable.xml:526(para)
 msgid "Package Manager provides a subset of the functionality that the <literal>beadm</literal>(1) command provides. Use the Package Manager <menuchoice><guimenu>File</guimenu><guimenuitem>Manage Boot Environments</guimenuitem></menuchoice> option to open the Manage Boot Environments window. The Manage Boot Environments window lists the BEs on this system and enables you to activate, rename, and delete those BEs as described below."
 msgstr "Package Manager fornisce un sottoinsieme delle funzionalità offerte dal comando <literal>beadm</literal>(1). Utilizzare l'opzione <menuchoice><guimenu>File</guimenu><guimenuitem>Gestione ambienti di boot</guimenuitem></menuchoice> di Package Manager per aprire la finestra Gestione ambienti di boot. Nella finestra Gestione ambienti di boot vengono elencati gli ambienti di boot nel sistema ed è possibile attivare, rinominare ed eliminare tali ambienti come descritto di seguito."
 
-#: gui/help/C/package-manager.xml:535(title)
+#: gui/help/C/package-manager.localizable.xml:527(title)
 msgid "Creating a BE"
 msgstr "Creazione di un ambiente di boot"
 
-#: gui/help/C/package-manager.xml:536(para)
+#: gui/help/C/package-manager.localizable.xml:528(para)
 msgid "A new BE is automatically created when you do one of the following actions:"
 msgstr "Un nuovo ambiente di boot viene creato automaticamente quando si esegue una delle azioni seguenti:"
 
-#: gui/help/C/package-manager.xml:537(para)
+#: gui/help/C/package-manager.localizable.xml:529(para)
 msgid "Install the Oracle Solaris OS."
 msgstr "Installare il sistema operativo Oracle Solaris."
 
-#: gui/help/C/package-manager.xml:539(para)
+#: gui/help/C/package-manager.localizable.xml:531(para)
 msgid "Install or update particular key system packages such as some drivers and other kernel components."
 msgstr "Installare o aggiornare pacchetti di sistema chiave particolari come alcuni driver e altri componenti kernel."
 
-#: gui/help/C/package-manager.xml:541(para)
+#: gui/help/C/package-manager.localizable.xml:533(para)
 msgid "Use the <literal>beadm create</literal> command."
 msgstr "Utilizzare il comando <literal>beadm create</literal>."
 
-#: gui/help/C/package-manager.xml:544(para)
+#: gui/help/C/package-manager.localizable.xml:536(para)
 msgid "Often a new BE is created when you execute the <literal>pkg update</literal> command or use the <guibutton>Updates</guibutton> button to update all packages that have updates available."
 msgstr "Spesso viene creato un nuovo ambiente di boot all'esecuzione del comando <literal>pkg update</literal> o si utilizza il pulsante <guibutton>Aggiornamenti</guibutton> per aggiornare tutti i pacchetti con aggiornamenti disponibili."
 
-#: gui/help/C/package-manager.xml:546(title)
+#: gui/help/C/package-manager.localizable.xml:538(title)
 msgid "Activating a BE"
 msgstr "Attivazione di un ambiente di boot"
 
-#: gui/help/C/package-manager.xml:547(para)
+#: gui/help/C/package-manager.localizable.xml:539(para)
 msgid "Select the <menuchoice><guimenu>File</guimenu><guimenuitem>Manage Boot Environments</guimenuitem></menuchoice> menu option to open the Manage Boot Environments window. Each BE is listed in the window. The BE that you are currently booted into shows a check mark to the left of the BE name."
 msgstr "Selezionare l'opzione menu <menuchoice><guimenu>File</guimenu><guimenuitem>Gestione ambienti di boot</guimenuitem></menuchoice> per aprire la finestra Gestione ambienti di boot. Ogni ambiente di boot viene elencato nella finestra. Nell'ambiente di boot in uso viene visualizzato un segno di spunta a sinistra del nome dell'ambiente di boot."
 
-#: gui/help/C/package-manager.xml:548(para)
+#: gui/help/C/package-manager.localizable.xml:540(para)
 msgid "To specify a different BE to be the default active BE after the next reboot, perform the following steps:"
 msgstr "Per specificare un ambiente di boot diverso come ambiente di boot attivo di default dopo il successivo reboot, eseguire le seguenti operazioni:"
 
-#: gui/help/C/package-manager.xml:549(para)
+#: gui/help/C/package-manager.localizable.xml:541(para)
 msgid "Select the <guibutton>Active on Reboot</guibutton> button for the BE that you want to be the default active BE after the next reboot."
 msgstr "Selezionare il pulsante <guibutton>Attivo al reboot</guibutton> per l'ambiente di boot che si desidera impostare come ambiente di boot attivo di default dopo il successivo reboot."
 
-#: gui/help/C/package-manager.xml:551(para) gui/help/C/package-manager.xml:564(para) gui/help/C/package-manager.xml:576(para)
+#: gui/help/C/package-manager.localizable.xml:543(para) gui/help/C/package-manager.localizable.xml:556(para) gui/help/C/package-manager.localizable.xml:568(para)
 msgid "Select the <guibutton>OK</guibutton> button in the Manage Boot Environments window."
 msgstr "Selezionare il pulsante <guibutton>OK</guibutton> nella finestra Gestione ambienti di boot."
 
-#: gui/help/C/package-manager.xml:555(title)
+#: gui/help/C/package-manager.localizable.xml:547(title)
 msgid "Renaming a BE"
 msgstr "Ridenominazione di un ambiente di boot"
 
-#: gui/help/C/package-manager.xml:556(para)
+#: gui/help/C/package-manager.localizable.xml:548(para)
 msgid "Select the <menuchoice><guimenu>File</guimenu><guimenuitem>Manage Boot Environments</guimenuitem></menuchoice> menu option to open the Manage Boot Environments window. Each BE is listed in the window."
 msgstr "Selezionare l'opzione menu <menuchoice><guimenu>File</guimenu><guimenuitem>Gestione ambienti di boot</guimenuitem></menuchoice> per aprire la finestra Gestione ambienti di boot. Nella finestra vengono elencati tutti gli ambienti di boot."
 
-#: gui/help/C/package-manager.xml:557(para)
+#: gui/help/C/package-manager.localizable.xml:549(para)
 msgid "You cannot rename the currently active BE."
 msgstr "Non è possibile rinominare l'ambiente di boot attivo corrente."
 
-#: gui/help/C/package-manager.xml:558(para)
+#: gui/help/C/package-manager.localizable.xml:550(para)
 msgid "You cannot rename a BE that you have marked for deletion."
 msgstr "Non è possibile rinominare un ambiente di boot che è stato contrassegnato per l'eliminazione."
 
-#: gui/help/C/package-manager.xml:559(para)
+#: gui/help/C/package-manager.localizable.xml:551(para)
 msgid "To rename a BE, perform the following steps:"
 msgstr "Per rinominare un ambiente di boot, eseguire le seguenti operazioni:"
 
-#: gui/help/C/package-manager.xml:560(para)
+#: gui/help/C/package-manager.localizable.xml:552(para)
 msgid "Double-click the name of the BE that you want to rename. The name field becomes editable."
 msgstr "Fare doppio clic sul nome dell'ambiente di boot che si desidera rinominare. È ora possibile modificare il campo del nome."
 
-#: gui/help/C/package-manager.xml:562(para)
+#: gui/help/C/package-manager.localizable.xml:554(para)
 msgid "Enter the new name."
 msgstr "Immettere il nuovo nome."
 
-#: gui/help/C/package-manager.xml:568(title)
+#: gui/help/C/package-manager.localizable.xml:560(title)
 msgid "Removing a BE"
 msgstr "Rimozione di un ambiente di boot"
 
-#: gui/help/C/package-manager.xml:569(para)
+#: gui/help/C/package-manager.localizable.xml:561(para)
 msgid "Select the <menuchoice><guimenu>File</guimenu><guimenuitem>Manage Boot Environments</guimenuitem></menuchoice> menu option to open the Manage Boot Environments window. Each BE is listed in the window. The right-most column in the window is the Delete column."
 msgstr "Selezionare l'opzione menu <menuchoice><guimenu>File</guimenu><guimenuitem>Gestione ambienti di boot</guimenuitem></menuchoice> per aprire la finestra Gestione ambienti di boot. Nella finestra vengono elencati tutti gli ambienti di boot. La colonna più a destra nella finestra corrisponde alla colonna Elimina."
 
-#: gui/help/C/package-manager.xml:570(para)
+#: gui/help/C/package-manager.localizable.xml:562(para)
 msgid "The middle column in the Manage Boot Environments window shows the size of the BE. You might want to remove a BE to free some space on your storage device."
 msgstr "Nella colonna centrale della finestra Gestione ambienti di boot viene visualizzata la dimensione dell'ambiente di boot. È possibile, se si desidera, rimuovere un ambiente di boot per liberare spazio nell'unità di memorizzazione."
 
-#: gui/help/C/package-manager.xml:571(para)
+#: gui/help/C/package-manager.localizable.xml:563(para)
 msgid "You cannot delete the currently active BE."
 msgstr "Non è possibile eliminare l'ambiente di boot attualmente attivo."
 
-#: gui/help/C/package-manager.xml:572(para)
+#: gui/help/C/package-manager.localizable.xml:564(para)
 msgid "You cannot delete a BE that you have renamed."
 msgstr "Non è possibile eliminare un ambiente di boot che è stato rinominato."
 
-#: gui/help/C/package-manager.xml:573(para)
+#: gui/help/C/package-manager.localizable.xml:565(para)
 msgid "To delete a BE, perform the following steps:"
 msgstr "Per eliminare un ambiente di boot, eseguire le seguenti operazioni:"
 
-#: gui/help/C/package-manager.xml:574(para)
+#: gui/help/C/package-manager.localizable.xml:566(para)
 msgid "Select the <guibutton>Delete</guibutton> box for the BE that you want to delete."
 msgstr "Selezionare la casella <guibutton>Elimina</guibutton> dell'ambiente di boot che si desidera eliminare."
 
-#: gui/help/C/package-manager.xml:581(title)
+#: gui/help/C/package-manager.localizable.xml:573(title)
 msgid "Working With WebInstall"
 msgstr "Utilizzo di WebInstall"
 
-#: gui/help/C/package-manager.xml:582(para)
+#: gui/help/C/package-manager.localizable.xml:574(para)
 msgid "Package Manager supports installing packages using a simple one-click WebInstall process. The WebInstall process uses a <filename>.p5i</filename> file. A <filename>.p5i</filename> file contains information to add publishers and add packages that can be installed from these publishers. The information in the <filename>.p5i</filename> file is read and used by the WebInstall process."
 msgstr "Package Manager supporta l'installazione di pacchetti tramite un semplice processo WebInstall. Il processo WebInstall utilizza un file <filename>.p5i</filename>. Un file <filename>.p5i</filename> contiene informazioni per aggiungere publisher e pacchetti che possono essere installati da questi publisher. L'informazione nel file <filename>.p5i</filename> viene letta e utilizzata dal processo WebInstall."
 
-#: gui/help/C/package-manager.xml:583(title)
+#: gui/help/C/package-manager.localizable.xml:575(title)
 msgid "Exporting Files Using WebInstall"
 msgstr "Esportazione di file tramite WebInstall"
 
-#: gui/help/C/package-manager.xml:584(para)
+#: gui/help/C/package-manager.localizable.xml:576(para)
 msgid "If you want other users to be able to install packages that you have installed on your system, you can export the installation instructions for those package files using the WebInstall process. A <filename>.p5i</filename> file consisting of installation instructions for those packages and publishers to be installed is created."
 msgstr "Se si desidera consentire ad altri utenti di installare pacchetti già installati sul proprio sistema, è possibile esportare le istruzioni di installazione per quei file di pacchetto tramite il processo WebInstall. Viene creato un file <filename>.p5i</filename> contenente le istruzioni di installazione per i pacchetti e i publisher da installare."
 
-#: gui/help/C/package-manager.xml:585(para)
+#: gui/help/C/package-manager.localizable.xml:577(para)
 msgid "To export the installation instructions for your selected packages and their publishers to a <filename>.p5i</filename> file, perform the following steps:"
 msgstr "Per esportare le istruzioni di installazione dei pacchetti selezionati e dei relativi publisher in un file <filename>.p5i</filename>, eseguire le seguenti operazioni:"
 
-#: gui/help/C/package-manager.xml:586(para)
+#: gui/help/C/package-manager.localizable.xml:578(para)
 msgid "From the <guimenu>Publisher</guimenu> drop-down menu, select the publisher from which you want to include the packages in the <filename>.p5i</filename> file."
 msgstr "Nel menu a discesa <guimenu>Publisher</guimenu>, selezionare il publisher dal quale si desidera includere i pacchetti nel file <filename>.p5i</filename>."
 
-#: gui/help/C/package-manager.xml:588(para)
+#: gui/help/C/package-manager.localizable.xml:580(para)
 msgid "In the package list pane, select the package whose installation instructions you want to distribute."
 msgstr "Nel riquadro dell'elenco dei pacchetti, selezionare il pacchetto del quale si desidera distribuire le istruzioni di installazione."
 
-#: gui/help/C/package-manager.xml:590(para)
+#: gui/help/C/package-manager.localizable.xml:582(para)
 msgid "Click <menuchoice><guisubmenu>File</guisubmenu><guimenuitem>Export Selections</guimenuitem></menuchoice> to display the Export Selections Confirmation window."
 msgstr "Fare clic su <menuchoice><guisubmenu>File</guisubmenu><guimenuitem>Esporta selezioni</guimenuitem></menuchoice> per visualizzare la finestra Conferma esportazione selezioni."
 
-#: gui/help/C/package-manager.xml:592(para)
+#: gui/help/C/package-manager.localizable.xml:584(para)
 msgid "Click the <guibutton>OK</guibutton> button to confirm the selections. The Export Selections window is displayed."
 msgstr "Fare clic sul pulsante <guibutton>OK</guibutton> per confermare le selezioni. Viene visualizzata la finestra Esporta selezioni."
 
-#: gui/help/C/package-manager.xml:594(para)
+#: gui/help/C/package-manager.localizable.xml:586(para)
 msgid "A default name for the <filename>p5i</filename> file with the extension <filename>.p5i</filename> is provided. You can change this file name, but do not change the extension."
 msgstr "Viene fornito un nome di default per il file <filename>p5i</filename> con l'estensione <filename>.p5i</filename>. È possibile modificare questo nome file, ma non cambiare l'estensione."
 
-#: gui/help/C/package-manager.xml:596(para)
+#: gui/help/C/package-manager.localizable.xml:588(para)
 msgid "A default location for the <filename>p5i</filename> file is provided. You can change the location. If you use the <guibutton>Browse</guibutton> button, you can select the <filename>p5i Files</filename> option from the drop-down menu at the bottom right hand side of the Export Selections window to display only <filename>.p5i</filename> files in the file list."
 msgstr "Viene fornita una posizione di default per il file <filename>p5i</filename>. È possibile modificare la posizione. Se si utilizza il pulsante <guibutton>Sfoglia</guibutton>, è possibile selezionare l'opzione <filename>File p5i</filename> dal menu a discesa nella parte inferiore destra della finestra Esporta selezioni per visualizzare solo i file <filename>.p5i</filename> nell'elenco dei file."
 
-#: gui/help/C/package-manager.xml:598(para)
+#: gui/help/C/package-manager.localizable.xml:590(para)
 msgid "Click the <guibutton>Save</guibutton> button to save the file name and location."
 msgstr "Fare clic sul pulsante <guibutton>Salva</guibutton> per salvare la posizione e il nome del file."
 
-#: gui/help/C/package-manager.xml:602(title)
+#: gui/help/C/package-manager.localizable.xml:594(title)
 msgid "Using WebInstall to Add Publishers and Install Packages"
 msgstr "Utilizzo di WebInstall per aggiungere publisher e installare pacchetti"
 
-#: gui/help/C/package-manager.xml:603(para)
+#: gui/help/C/package-manager.localizable.xml:595(para)
 msgid "The WebInstall process enables you to install packages through a <filename>p5i</filename> file."
 msgstr "Il processo WebInstall consente di installare pacchetti mediante un file <filename>p5i</filename>."
 
-#: gui/help/C/package-manager.xml:604(para)
+#: gui/help/C/package-manager.localizable.xml:596(para)
 msgid "Locate the <filename>.p5i</filename> file. This file might be on your desktop or on a web site."
 msgstr "Individuare il file <filename>.p5i</filename>. Questo file potrebbe trovarsi sul desktop o su un sito Web."
 
-#: gui/help/C/package-manager.xml:606(para)
+#: gui/help/C/package-manager.localizable.xml:598(para)
 msgid "Use one of the following methods to start Package Manager in WebInstall mode:"
 msgstr "Utilizzare uno dei metodi seguenti per avviare Package Manager in modalità WebInstall:"
 
-#: gui/help/C/package-manager.xml:607(para)
+#: gui/help/C/package-manager.localizable.xml:599(para)
 msgid "Click on a <filename>.p5i</filename> file on your desktop. The associated application (Package Manager Web Installer) is launched."
 msgstr "Fare clic su un file <filename>.p5i</filename> sul desktop. Viene avviata l'applicazione associata (Programma di installazione Web Package Manager)."
 
-#: gui/help/C/package-manager.xml:609(para)
+#: gui/help/C/package-manager.localizable.xml:601(para)
 msgid "Start Package Manager from the command line along with a path to the <filename>.p5i</filename> file. For example, enter the following command:"
 msgstr "Avviare Package Manager dalla riga di comando con un percorso in un file <filename>.p5i</filename>. Ad esempio, immettere il seguente comando:"
 
-#: gui/help/C/package-manager.xml:610(replaceable)
+#: gui/help/C/package-manager.localizable.xml:602(replaceable)
 msgid "path_to_p5i_file/file.p5i"
 msgstr "path_to_p5i_file/file.p5i"
 
-#: gui/help/C/package-manager.xml:610(userinput)
+#: gui/help/C/package-manager.localizable.xml:602(userinput)
 #, no-wrap
 msgid "packagemanager/<placeholder-1/>"
 msgstr "packagemanager/<placeholder-1/>"
 
-#: gui/help/C/package-manager.xml:610(screen)
+#: gui/help/C/package-manager.localizable.xml:602(screen)
 #, no-wrap
 msgid "# <placeholder-1/>"
 msgstr "# <placeholder-1/>"
 
-#: gui/help/C/package-manager.xml:612(para)
+#: gui/help/C/package-manager.localizable.xml:604(para)
 msgid "Go to a URL location that contains a link to <filename>.p5i</filename> file. The <filename>.p5i</filename> file must be located on a web server that has registered this MIME type."
 msgstr "Individuare una posizione URL contenente un collegamento a un file <filename>.p5i</filename>. È necessario posizionare il file <filename>.p5i</filename> in un server Web con questo tipo di MIME registrato."
 
-#: gui/help/C/package-manager.xml:613(para)
+#: gui/help/C/package-manager.localizable.xml:605(para)
 msgid "If the <filename>.p5i</filename> is located on a web server that has not registered this MIME type, save the <filename>.p5i</filename> file to your desktop and then click on it to launch WebInstall."
 msgstr "Se il file <filename>.p5i</filename> è posizionato in un server Web che non contiene questo tipo di MIME registrato, salvare il file <filename>.p5i</filename> sul desktop, quindi fare clic su di esso per avviare WebInstall."
 
-#: gui/help/C/package-manager.xml:617(para)
+#: gui/help/C/package-manager.localizable.xml:609(para)
 msgid "The Install/Update window is displayed. The label at the top of the window is: “Package Manager Web Installer/The following will be added to your system:” Then the publishers and packages are listed. Click the <guibutton>Proceed</guibutton> button to continue with the installation."
 msgstr "Viene visualizzata la finestra Installa/Aggiorna. L'etichetta nella parte superiore della finestra è la seguente: \"Programma di installazione Web Package Manager/Al sistema verrà aggiunto quanto segue:\". Vengono quindi elencati i publisher e i pacchetti. Fare clic sul pulsante <guibutton>Continua</guibutton> per proseguire l'installazione."
 
-#: gui/help/C/package-manager.xml:618(para)
+#: gui/help/C/package-manager.localizable.xml:610(para)
 msgid "If the package publisher is not already configured on your system, the Add Publisher window is displayed. The name and URI of the publisher are already entered."
 msgstr "Se il publisher del pacchetto non è ancora configurato nel sistema, viene visualizzata la finestra Aggiungi publisher. Il nome e l'URI del publisher sono già inseriti."
 
-#: gui/help/C/package-manager.xml:619(para)
+#: gui/help/C/package-manager.localizable.xml:611(para)
 msgid "If the publishers to be added are secure publishers, an SSL key and certificate are required. Browse to locate the SSL Key and SSL Certificate on your system."
 msgstr "Se i publisher da aggiungere sono sicuri, sono necessari un certificato e una chiave SSL. Individuare il certificato e la chiave SSL nel sistema."
 
-#: gui/help/C/package-manager.xml:620(para)
+#: gui/help/C/package-manager.localizable.xml:612(para)
 msgid "The Adding Publisher Complete dialog displays if the publisher is added successfully. Click the <guibutton>OK</guibutton> button to continue with the installation."
 msgstr "Nella finestra di dialogo Aggiunta publisher completata viene indicato se l'aggiunta del publisher è avvenuta con successo. Fare clic sul pulsante <guibutton>OK</guibutton> per proseguire l'installazione."
 
-#: gui/help/C/package-manager.xml:622(para)
+#: gui/help/C/package-manager.localizable.xml:614(para)
 msgid "If a <filename>.p5i</filename> file contains packages from a disabled publisher, WebInstall opens up an Enable Publisher dialog. Use this dialog to enable the publisher so that you can install the packages."
 msgstr "Se un file <filename>.p5i</filename> contiene pacchetti da un publisher disattivato, WebInstall consente di visualizzare una finestra di dialogo Abilita publisher. Utilizzare questa finestra di dialogo per attivare il publisher ed essere quindi in grado di installare i pacchetti."
 
-#: gui/help/C/package-manager.xml:626(para)
+#: gui/help/C/package-manager.localizable.xml:618(para)
 msgid "The Install/Update window now looks the same as when you select <guibutton>Install/Update</guibutton> from within Package Manager."
 msgstr "La finestra Installa/Aggiorna corrisponde ora esattamente all'opzione di selezione <guibutton>Installa/Aggiorna</guibutton> da Package Manager."
 
-#: gui/help/C/package-manager.xml:631(title)
+#: gui/help/C/package-manager.localizable.xml:623(title)
 msgid "Troubleshooting"
 msgstr "Risoluzione dei problemi"
 
-#: gui/help/C/package-manager.xml:632(para)
+#: gui/help/C/package-manager.localizable.xml:624(para)
 msgid "Error, warning, and informational messages are saved to a log so that you can review them at any time."
 msgstr "Messaggi informativi, di errore e di avviso vengono salvati in un log così da poter essere disponibili in ogni momento."
 
-#: gui/help/C/package-manager.xml:633(title)
+#: gui/help/C/package-manager.localizable.xml:625(title)
 msgid "Viewing Message Logs"
 msgstr "Visualizzazione dei log messaggi"
 
-#: gui/help/C/package-manager.xml:634(para)
+#: gui/help/C/package-manager.localizable.xml:626(para)
 msgid "Select the <menuchoice><guimenu>View</guimenu><guimenuitem>Logs</guimenuitem></menuchoice> menu option to open the Logs window. The Logs window displays error, warning, and informational messages from Package Manager and Update Manager."
 msgstr "Selezionare l'opzione menu <menuchoice><guimenu>Visualizza</guimenu><guimenuitem>Log</guimenuitem></menuchoice> per aprire la finestra Log. Nella finestra Log vengono visualizzati messaggi informativi, di avviso e di errore da Package Manager e Update Manager."
 
-#: gui/help/C/package-manager.xml:635(para)
+#: gui/help/C/package-manager.localizable.xml:627(para)
 msgid "Select the <guibutton>Clear</guibutton> button at the bottom of the Logs window to delete all the messages."
 msgstr "Selezionare il pulsante <guibutton>Cancella</guibutton> nella parte inferiore della finestra Log per eliminare tutti i messaggi."
 
-#: gui/help/C/package-manager.xml:636(para)
+#: gui/help/C/package-manager.localizable.xml:628(para)
 msgid "If an error or warning is logged, a yellow triangle is displayed on the left side of the status bar. Click the yellow triangle to display the Logs window."
 msgstr "Se viene registrato un errore o un avviso, viene visualizzato un triangolo giallo a sinistra della barra di stato. Fare clic su di esso per visualizzare la finestra Log."
 
-#: gui/help/C/package-manager.xml:639(title)
+#: gui/help/C/package-manager.localizable.xml:631(title)
 msgid "Setting Preferences"
 msgstr "Impostazione preferenze"
 
-#: gui/help/C/package-manager.xml:640(para)
+#: gui/help/C/package-manager.localizable.xml:632(para)
 msgid "Use the <menuchoice><guimenu>Edit</guimenu><guimenuitem>Preferences</guimenuitem></menuchoice> menu option to change some of the Package Manager user interface settings."
 msgstr "Utilizzare l'opzione menu <menuchoice><guimenu>Modifica</guimenu><guimenuitem>Preferenze</guimenuitem></menuchoice> per modificare alcune delle impostazioni dell'interfaccia utente di Package Manager."
 
-#: gui/help/C/package-manager.xml:641(para)
+#: gui/help/C/package-manager.localizable.xml:633(para)
 msgid "The Preferences window has three tabs:"
 msgstr "La finestra Preferenze è composta da tre schede:"
 
-#: gui/help/C/package-manager.xml:642(para)
+#: gui/help/C/package-manager.localizable.xml:634(para)
 msgid "The General tab enables you to set exit preferences and confirmation dialog preferences."
 msgstr "La scheda Generale consente di impostare le preferenze di uscita e della finestra di conferma."
 
-#: gui/help/C/package-manager.xml:643(para)
+#: gui/help/C/package-manager.localizable.xml:635(para)
 msgid "The Optional Components tab enables you to set preferences for which optional package components to install when you install or update a package."
 msgstr "La scheda Componenti opzionali consente di impostare le preferenze sui componenti dei pacchetti opzionali da installare quando si installa o aggiorna un pacchetto."
 
-#: gui/help/C/package-manager.xml:644(para)
+#: gui/help/C/package-manager.localizable.xml:636(para)
 msgid "The Signature Policy tab enables you to set signature policy for this image."
 msgstr "La scheda Criteri firma consente di impostare i criteri firma per questa immagine."
 
-#: gui/help/C/package-manager.xml:646(title)
+#: gui/help/C/package-manager.localizable.xml:638(title)
 msgid "Exit Preferences"
 msgstr "Uscita dalle preferenze"
 
-#: gui/help/C/package-manager.xml:647(para) gui/help/C/package-manager.xml:660(para)
+#: gui/help/C/package-manager.localizable.xml:639(para) gui/help/C/package-manager.localizable.xml:652(para)
 msgid "Select the <menuchoice><guimenu>Edit</guimenu><guimenuitem>Preferences</guimenuitem></menuchoice> option and select the General tab."
 msgstr "Selezionare l'opzione <menuchoice><guimenu>Modifica</guimenu><guimenuitem>Preferenze</guimenuitem></menuchoice> e selezionare la scheda Generale."
 
-#: gui/help/C/package-manager.xml:648(para)
+#: gui/help/C/package-manager.localizable.xml:640(para)
 msgid "If the “Remember current state on exit” box is checked, Package Manager saves the following settings and restores them the next time you start Package Manager:"
 msgstr "Se viene selezionata la casella \"Ricorda stato attuale all'uscita\", Package Manager consente di salvare le impostazioni seguenti e di ripristinarle al successivo avvio di Package Manager:"
 
-#: gui/help/C/package-manager.xml:649(para)
+#: gui/help/C/package-manager.localizable.xml:641(para)
 msgid "<emphasis role=\"strong\">Vertical and horizontal separators</emphasis> — Widths and heights of the panes in the window"
 msgstr "<emphasis role=\"strong\">Separatori verticali e orizzontali</emphasis> — larghezze e altezze dei riquadri nella finestra"
 
-#: gui/help/C/package-manager.xml:651(para)
+#: gui/help/C/package-manager.localizable.xml:643(para)
 msgid "<emphasis role=\"strong\">Window size</emphasis> — Overall size of the Package Manager window"
 msgstr "<emphasis role=\"strong\">Dimensione della finestra</emphasis> — dimensione totale della finestra Package Manager"
 
-#: gui/help/C/package-manager.xml:653(para)
+#: gui/help/C/package-manager.localizable.xml:645(para)
 msgid "<emphasis role=\"strong\">Publisher option</emphasis> — The publisher or other option that is selected in the <guimenu>Publisher</guimenu> drop-down menu when Package Manager is closed"
 msgstr "<emphasis role=\"strong\">Opzione publisher</emphasis> — il publisher o altre opzioni selezionate nel menu a discesa <guimenu>Publisher</guimenu> quando viene chiuso Package Manager"
 
-#: gui/help/C/package-manager.xml:655(para)
+#: gui/help/C/package-manager.localizable.xml:647(para)
 msgid "<emphasis role=\"strong\">Categories</emphasis> — The selected category and the expanded and collapsed categories for each publisher"
 msgstr "<emphasis role=\"strong\">Categorie</emphasis> — la categoria selezionata e le categorie espanse o compresse per ciascun publisher"
 
-#: gui/help/C/package-manager.xml:659(title)
+#: gui/help/C/package-manager.localizable.xml:651(title)
 msgid "Confirmation Dialog Preferences"
 msgstr "Preferenze della finestra di conferma"
 
-#: gui/help/C/package-manager.xml:661(para)
+#: gui/help/C/package-manager.localizable.xml:653(para)
 msgid "When a package is installed, updated, or removed, a confirmation dialog is displayed that shows the list of packages and the action to be performed. If you do not want to see these confirmation dialogs, uncheck these selections in the Preferences window."
 msgstr "Quando viene installato, aggiornato o rimosso un pacchetto, viene visualizzata una finestra di conferma che mostra l'elenco dei pacchetti e delle azioni da eseguire. Se non si desidera visualizzare tali finestre di conferma, deselezionare queste selezioni nella finestra Preferenze."
 
-#: gui/help/C/package-manager.xml:662(para)
+#: gui/help/C/package-manager.localizable.xml:654(para)
 msgid "Clicking the “Do not show this confirmation dialog again” check box in a particular confirmation dialog also unsets this preference for that dialog."
 msgstr "È inoltre possibile annullare l'impostazione di questa preferenza per una particolare finestra di conferma facendo clic sulla casella di controllo \"Non mostrare più questa finestra di conferma\" nella finestra."
 
-#: gui/help/C/package-manager.xml:664(title)
+#: gui/help/C/package-manager.localizable.xml:656(title)
 msgid "Signature Policy Preferences"
 msgstr "Preferenze dei criteri firma"
 
-#: gui/help/C/package-manager.xml:665(para)
+#: gui/help/C/package-manager.localizable.xml:657(para)
 msgid "Use the buttons on the Signature Policy tab to ignore or require signatures when installing packages in this image. To set signature policy for specific publishers, select the publisher in the Manage Publishers window, click the <guibutton>Modify</guibutton> button, and use the Signature Policy tab of the Modify Publisher window."
 msgstr "Utilizzare i pulsanti della scheda Criteri firma per ignorare o richiedere firme durante l'installazione dei pacchetti in questa immagine. Per impostare criteri firma per i publisher specificati, selezionare il publisher nella finestra Gestisci publisher, fare clic sul pulsante <guibutton>Modifica</guibutton> e utilizzare la scheda Criteri firma della finestra Modifica publisher."
 
-#: gui/help/C/package-manager.xml:666(para)
+#: gui/help/C/package-manager.localizable.xml:658(para)
 msgid "The choices for image signature policy are the same as the choices for publisher signature policy except that the settings apply to all packages installed in the image, not just to packages installed from a particular publisher. See <xref linkend=\"pub-sig-policy\"/>."
 msgstr "Le scelte effettuate per i criteri firma dell'immagine corrispondono a quelle dei criteri firma del publisher, tranne per l'applicazione delle impostazioni a tutti i pacchetti installati nell'immagine, non solo ai pacchetti installati da un publisher particolare. Vedere <xref linkend=\"pub-sig-policy\"/>."
 
-#: gui/help/C/package-manager.xml:668(title)
+#: gui/help/C/package-manager.localizable.xml:660(title)
 msgid "Optional Component Preferences Language Choices"
 msgstr "Lingua scelta per le preferenze dei componenti opzionali"
 
-#: gui/help/C/package-manager.xml:669(para) gui/help/C/package-manager.xml:676(para)
+#: gui/help/C/package-manager.localizable.xml:661(para) gui/help/C/package-manager.localizable.xml:668(para)
 msgid "Select the <menuchoice><guimenu>Edit</guimenu><guimenuitem>Preferences</guimenuitem></menuchoice> option and select the Optional Components tab."
 msgstr "Selezionare l'opzione <menuchoice><guimenu>Modifica</guimenu><guimenuitem>Preferenze</guimenuitem></menuchoice> e scegliere la scheda Componenti opzionali."
 
-#: gui/help/C/package-manager.xml:670(para)
+#: gui/help/C/package-manager.localizable.xml:662(para)
 msgid "By default, Install all languages is selected under Language choices for any package. You can save space in your installation by selecting a subset of languages to install."
 msgstr "Viene selezionata di default l'opzione Installa tutte le lingue nella selezione relativa alla lingua scelta per ciascun pacchetto. È possibile risparmiare spazio di installazione selezionando un sottoinsieme di lingue da installare."
 
-#: gui/help/C/package-manager.xml:671(para)
+#: gui/help/C/package-manager.localizable.xml:663(para)
 msgid "When Install only these languages is selected, you can click the checkbox icon in the left most column heading of the language list to select all languages. Click the column heading again to deselect all languages. Click the Language and Territory column headings to sort the list."
 msgstr "Quando è selezionata l'opzione Installa solo queste lingue, è possibile fare clic sull'icona della casella di controllo nell'intestazione della colonna più a sinistra dell'elenco delle lingue per selezionare tutte le lingue. Fare nuovamente clic sull'intestazione della colonna per deselezionare tutte le lingue. Fare clic sulle intestazioni delle colonne Lingua e Area per ordinare l'elenco."
 
-#: gui/help/C/package-manager.xml:672(para) gui/help/C/package-manager.xml:678(para)
+#: gui/help/C/package-manager.localizable.xml:664(para) gui/help/C/package-manager.localizable.xml:670(para)
 msgid "Click the OK button to save your changes. These settings apply to currently installed packages as well as future package installations and updates. The image is updated as necessary to install or remove optional package components based on the new settings."
 msgstr "Fare clic sul pulsante OK per salvare le modifiche. Queste impostazioni hanno effetto sui pacchetti attualmente installati, nonché sugli aggiornamenti e le installazioni di futuri pacchetti. L'immagine viene aggiornata per poter installare o rimuovere componenti di pacchetti opzionali basati sulle nuove impostazioni."
 
-#: gui/help/C/package-manager.xml:673(para)
+#: gui/help/C/package-manager.localizable.xml:665(para)
 msgid "If you have previously updated your image to include only a subset of languages, Install only these languages is the default selection in this window, and that language list is grayed out if you select the Install all languages option."
 msgstr "Se l'immagine è stata aggiornata in precedenza per consentire di includere solo un sottoinsieme di lingue, l'opzione Installa solo queste lingue viene impostata di default in questa finestra; l'elenco delle lingue viene visualizzato in grigio se si seleziona l'opzione Installa tutte le lingue."
 
-#: gui/help/C/package-manager.xml:675(title)
+#: gui/help/C/package-manager.localizable.xml:667(title)
 msgid "Other Optional Component Preferences"
 msgstr "Altre preferenze dei componenti opzionali"
 
-#: gui/help/C/package-manager.xml:677(para)
+#: gui/help/C/package-manager.localizable.xml:669(para)
 msgid "By default, Install all development files and Install all documentation are selected under Other component choices. You can save space in your installation by deselecting development files or documentation."
 msgstr "In Altre scelte di componenti vengono selezionate di default le opzioni Installa tutti i file di sviluppo e Installa tutta la documentazione. È possibile risparmiare spazio di installazione deselezionando i file di sviluppo o la documentazione."
 
-#: gui/help/C/package-manager.xml:681(title)
+#: gui/help/C/package-manager.localizable.xml:673(title)
 msgid "Glossary"
 msgstr "Glossario"
 
-#: gui/help/C/package-manager.xml:682(glossterm)
+#: gui/help/C/package-manager.localizable.xml:674(glossterm)
 msgid "alias"
 msgstr "alias"
 
-#: gui/help/C/package-manager.xml:683(para)
+#: gui/help/C/package-manager.localizable.xml:675(para)
 msgid "Another name for a publisher."
 msgstr "Un altro nome per indicare un publisher."
 
-#: gui/help/C/package-manager.xml:686(glossterm)
+#: gui/help/C/package-manager.localizable.xml:678(glossterm)
 msgid "boot environment (BE)"
 msgstr "ambiente di boot"
 
-#: gui/help/C/package-manager.xml:687(para)
+#: gui/help/C/package-manager.localizable.xml:679(para)
 msgid "An instance of a bootable Oracle Solaris environment. The root file system and all other file systems of the boot environment that contain system software are required to be ZFS datasets."
 msgstr "Un'istanza di un ambiente Oracle Solaris bootable. Il file system root e tutti gli altri file system dell'ambiente di boot contenenti software di sistema devono corrispondere a set di dati ZFS."
 
-#: gui/help/C/package-manager.xml:688(para)
+#: gui/help/C/package-manager.localizable.xml:680(para)
 msgid "The active boot environment is the one that is currently booted. A system can have many boot environments. You can select the one you want to boot into when you reboot."
 msgstr "L'ambiente di boot attivo è quello in cui è attualmente eseguito il boot. Un sistema può presentare più ambienti di boot. È possibile selezionare quello desiderato quando viene eseguito il reboot."
 
-#: gui/help/C/package-manager.xml:691(glossterm)
+#: gui/help/C/package-manager.localizable.xml:683(glossterm)
 msgid "clone"
 msgstr "clone"
 
-#: gui/help/C/package-manager.xml:692(para)
+#: gui/help/C/package-manager.localizable.xml:684(para)
 msgid "An exact copy."
 msgstr "Una copia esatta."
 
-#: gui/help/C/package-manager.xml:693(para)
+#: gui/help/C/package-manager.localizable.xml:685(para)
 msgid "A clone could be an exact copy of an operating system, a file system, or a volume. This copy has 100% compatibility with the original."
 msgstr "Può trattarsi di una copia esatta di un sistema operativo, di un file system o di un volume. Questa copia è compatibile al 100% con l'originale."
 
-#: gui/help/C/package-manager.xml:696(glossterm)
+#: gui/help/C/package-manager.localizable.xml:688(glossterm)
 msgid "dataset"
 msgstr "set di dati"
 
-#: gui/help/C/package-manager.xml:697(para)
+#: gui/help/C/package-manager.localizable.xml:689(para)
 msgid "A generic name for the following ZFS entities: clones, file systems, snapshots, or volumes. Each dataset is identified by a unique name in the ZFS namespace."
 msgstr "Un nome generico per le seguenti entità ZFS: copie, file system, istantanee o volumi. Ciascun set di dati è identificato da un nome univoco nello spazio di nomi ZFS."
 
-#: gui/help/C/package-manager.xml:700(glossterm)
+#: gui/help/C/package-manager.localizable.xml:692(glossterm)
 msgid "image"
 msgstr "immagine"
 
-#: gui/help/C/package-manager.xml:701(para)
+#: gui/help/C/package-manager.localizable.xml:693(para)
 msgid "A collection of operating system software in a package that can be booted and installed."
 msgstr "Una raccolta di software di sistemi operativi in un pacchetto in cui è possibile eseguire il boot e l'installazione."
 
-#: gui/help/C/package-manager.xml:702(para)
+#: gui/help/C/package-manager.localizable.xml:694(para)
 msgid "A location on your system where packages and their associated files, directories, links, and dependencies can be installed."
 msgstr "Una posizione nel sistema in cui è possibile installare i pacchetti e i relativi file, directory, collegamenti e dipendenze."
 
-#: gui/help/C/package-manager.xml:705(glossterm)
+#: gui/help/C/package-manager.localizable.xml:697(glossterm)
 msgid "origin"
 msgstr "origine"
 
-#: gui/help/C/package-manager.xml:706(para)
+#: gui/help/C/package-manager.localizable.xml:698(para)
 msgid "A package server to which a publisher publishes packages."
 msgstr "Un server di pacchetti in cui un publisher pubblica i pacchetti."
 
-#: gui/help/C/package-manager.xml:709(glossterm)
+#: gui/help/C/package-manager.localizable.xml:701(glossterm)
 msgid "package"
 msgstr "pacchetto"
 
-#: gui/help/C/package-manager.xml:710(para)
+#: gui/help/C/package-manager.localizable.xml:702(para)
 msgid "A collection of files, directories, links, drivers, and dependencies in a defined format."
 msgstr "Raccolta di file, directory, link, driver e dipendenze in un formato definito."
 
-#: gui/help/C/package-manager.xml:713(glossterm)
+#: gui/help/C/package-manager.localizable.xml:705(glossterm)
 msgid "publisher"
 msgstr "publisher"
 
-#: gui/help/C/package-manager.xml:714(para)
+#: gui/help/C/package-manager.localizable.xml:706(para)
 msgid "A person, group, or corporation that designs, creates, and publishes a package to a package server. The package server in turn serves the packages from the (default) publisher, for downloading purposes."
 msgstr "Persona, gruppo o azienda che progetta, crea e pubblica un pacchetto in un server di pacchetti. Il server di pacchetti, a sua volta, gestisce i pacchetti dal publisher (default) per consentire lo scaricamento."
 
-#: gui/help/C/package-manager.xml:717(glossterm)
+#: gui/help/C/package-manager.localizable.xml:709(glossterm)
 msgid "system publisher"
 msgstr "publisher di sistema"
 
-#: gui/help/C/package-manager.xml:718(para)
+#: gui/help/C/package-manager.localizable.xml:710(para)
 msgid "System publishers are special publishers used in linked images and non-global zones in particular, to ensure that certain packages stay in sync with the global zone. The global zone constrains packages within the non-global zones by configuring these special system publishers in the non-global zone. They are special because the non-global zones cannot make certain changes to them including removing, disabling, modifying, or changing their priority."
 msgstr "I publisher di sistema sono publisher speciali utilizzati in immagini collegate e in zone non globali in particolare, per garantire la sincronizzazione di determinati pacchetti con la zona globale. La zona globale limita i pacchetti all'interno delle zone non globali configurando questi publisher di sistema speciali nella zona non globale. Vengono definiti speciali poiché non è possibile eseguire determinate modifiche su di essi nelle zone non globali, comprese rimozione, disattivazione o modifica della priorità."
 
 #. Put one translator per line, in the form of NAME <EMAIL>, YEAR1, YEAR2
-#: gui/help/C/package-manager.xml:0(None)
+#: gui/help/C/package-manager.localizable.xml:0(None)
 msgid "translator-credits"
 msgstr "Traduzione"
 

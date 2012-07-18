@@ -22,75 +22,75 @@
 # Copyright (c) 2007, 2012, Oracle and/or its affiliates. All rights reserved.
 #
 msgid ""
-msgstr "Project-Id-Version: PACKAGE VERSION\nReport-Msgid-Bugs-To: \nPOT-Creation-Date: 2012-05-09 15:44+0900\nPO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\nLast-Translator: FULL NAME <EMAIL@ADDRESS>\nLanguage-Team: LANGUAGE <LL@li.org>\nMIME-Version: 1.0\nContent-Type: text/plain; charset=UTF-8\nContent-Transfer-Encoding: 8bit\nPlural-Forms: nplurals=2; plural=(n != 1);\n"
+msgstr "Project-Id-Version: PACKAGE VERSION\nReport-Msgid-Bugs-To: \nPOT-Creation-Date: 2012-06-25 23:45-0700\nPO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\nLast-Translator: FULL NAME <EMAIL@ADDRESS>\nLanguage-Team: LANGUAGE <LL@li.org>\nMIME-Version: 1.0\nContent-Type: text/plain; charset=UTF-8\nContent-Transfer-Encoding: 8bit\nPlural-Forms: nplurals=2; plural=(n != 1);\n"
 
-#: ../client.py:108
+#: ../client.py:115
 msgid ""
 "To continue, execute 'pkg update-format' as a privileged user and then try "
 "again.  Please note that updating the format of the image will render it "
 "unusable with older versions of the pkg(5) system."
 msgstr "계속하려면 권한을 가진 사용자로 'pkg update-format'을 실행한 다음 다시 시도하십시오. 이미지의 형식을 업데이트하면 이전 버전의 pkg(5) 시스템에서 사용할 수 없게 렌더링됩니다."
 
-#: ../client.py:150
+#: ../client.py:157
 msgid ""
-"[-nvq] [-g path_or_uri ...] [--accept]\n"
+"[-nvq] [-C n] [-g path_or_uri ...] [--accept]\n"
 "            [--licenses] [--no-be-activate] [--no-index] [--no-refresh]\n"
 "            [--no-backup-be | --require-backup-be] [--backup-be-name name]\n"
 "            [--deny-new-be | --require-new-be] [--be-name name]\n"
 "            [--reject pkg_fmri_pattern ... ] pkg_fmri_pattern ..."
-msgstr "[-nvq] [-g path_or_uri ...] [--accept]\n            [--licenses] [--no-be-activate] [--no-index] [--no-refresh]\n            [--no-backup-be | --require-backup-be] [--backup-be-name name]\n            [--deny-new-be | --require-new-be] [--be-name name]\n            [--reject pkg_fmri_pattern ... ] pkg_fmri_pattern ..."
+msgstr "[-nvq] [-C n] [-g path_or_uri ...] [--accept]\n            [--licenses] [--no-be-activate] [--no-index] [--no-refresh]\n            [--no-backup-be | --require-backup-be] [--backup-be-name name]\n            [--deny-new-be | --require-new-be] [--be-name name]\n            [--reject pkg_fmri_pattern ... ] pkg_fmri_pattern ..."
 
-#: ../client.py:156
+#: ../client.py:163
 msgid ""
-"[-nvq] [--no-be-activate] [--no-index]\n"
+"[-nvq] [-C n] [--no-be-activate] [--no-index]\n"
 "            [--no-backup-be | --require-backup-be] [--backup-be-name]\n"
 "            [--deny-new-be | --require-new-be] [--be-name name]\n"
 "            pkg_fmri_pattern ..."
-msgstr "[-nvq] [--no-be-activate] [--no-index]\n            [--no-backup-be | --require-backup-be] [--backup-be-name]\n            [--deny-new-be | --require-new-be] [--be-name name]\n            pkg_fmri_pattern ..."
+msgstr "[-nvq] [-C n] [--no-be-activate] [--no-index]\n            [--no-backup-be | --require-backup-be] [--backup-be-name]\n            [--deny-new-be | --require-new-be] [--be-name name]\n            pkg_fmri_pattern ..."
 
-#: ../client.py:161
+#: ../client.py:168
 msgid ""
-"[-fnvq] [-g path_or_uri ...] [--accept]\n"
+"[-fnvq] [-C n] [-g path_or_uri ...] [--accept]\n"
 "            [--licenses] [--no-be-activate] [--no-index] [--no-refresh]\n"
 "            [--no-backup-be | --require-backup-be] [--backup-be-name]\n"
 "            [--deny-new-be | --require-new-be] [--be-name name]\n"
 "            [--reject pkg_fmri_pattern ...] [pkg_fmri_pattern ...]"
-msgstr "[-fnvq] [-g path_or_uri ...] [--accept]\n            [--licenses] [--no-be-activate] [--no-index] [--no-refresh]\n            [--no-backup-be | --require-backup-be] [--backup-be-name]\n            [--deny-new-be | --require-new-be] [--be-name name]\n            [--reject pkg_fmri_pattern ...] [pkg_fmri_pattern ...]"
+msgstr "[-fnvq] [-C n] [-g path_or_uri ...] [--accept]\n            [--licenses] [--no-be-activate] [--no-index] [--no-refresh]\n            [--no-backup-be | --require-backup-be] [--backup-be-name]\n            [--deny-new-be | --require-new-be] [--be-name name]\n            [--reject pkg_fmri_pattern ...] [pkg_fmri_pattern ...]"
 
-#: ../client.py:167
+#: ../client.py:174
 msgid ""
 "[-Hafnsuv] [-g path_or_uri ...] [--no-refresh]\n"
 "            [pkg_fmri_pattern ...]"
 msgstr "[-Hafnsuv] [-g path_or_uri ...] [--no-refresh]\n            [pkg_fmri_pattern ...]"
 
-#: ../client.py:169
+#: ../client.py:176
 msgid "[--full] [publisher ...]"
 msgstr "[--full] [publisher ...]"
 
-#: ../client.py:216
+#: ../client.py:223
 msgid "[-lr] [-g path_or_uri ...] [--license] [pkg_fmri_pattern ...]"
 msgstr "[-lr] [-g path_or_uri ...] [--license] [pkg_fmri_pattern ...]"
 
-#: ../client.py:218
+#: ../client.py:225
 msgid ""
 "[-Hmr] [-a attribute=pattern ...] [-g path_or_uri ...]\n"
 "            [-o attribute ...] [-s sort_key] [-t action_type ...]\n"
 "            [pkg_fmri_pattern ...]"
 msgstr "[-Hmr] [-a attribute=pattern ...] [-g path_or_uri ...]\n            [-o attribute ...] [-s sort_key] [-t action_type ...]\n            [pkg_fmri_pattern ...]"
 
-#: ../client.py:222
+#: ../client.py:229
 msgid "[-HIaflpr] [-o attribute ...] [-s repo_uri] query"
 msgstr "[-HIaflpr] [-o attribute ...] [-s repo_uri] query"
 
-#: ../client.py:224
+#: ../client.py:231
 msgid "[-Hqv] [pkg_fmri_pattern ...]"
 msgstr "[-Hqv] [pkg_fmri_pattern ...]"
 
-#: ../client.py:225
+#: ../client.py:232
 msgid "[--accept] [--licenses] [pkg_fmri_pattern ...]"
 msgstr "[--accept] [--licenses] [pkg_fmri_pattern ...]"
 
-#: ../client.py:227
+#: ../client.py:234
 msgid ""
 "[-nv] [--no-be-activate]\n"
 "            [--no-backup-be | --require-backup-be] [--backup-be-name name]\n"
@@ -98,7 +98,7 @@ msgid ""
 "            (--tagged tag-name ... | path-to-file ...)"
 msgstr "[-nv] [--no-be-activate]\n            [--no-backup-be | --require-backup-be] [--backup-be-name name]\n            [--deny-new-be | --require-new-be] [--be-name name]\n            (--tagged tag-name ... | path-to-file ...)"
 
-#: ../client.py:233
+#: ../client.py:240
 msgid ""
 "[-FPUfz] [--force] [--full|--partial|--user] [--zone]\n"
 "            [-k ssl_key] [-c ssl_cert] [--no-refresh]\n"
@@ -108,29 +108,29 @@ msgid ""
 "            [(-p|--publisher) [<name>=]<repo_uri>] dir"
 msgstr "[-FPUfz] [--force] [--full|--partial|--user] [--zone]\n            [-k ssl_key] [-c ssl_cert] [--no-refresh]\n            [--variant <variant_spec>=<instance> ...]\n            [-g uri|--origin=uri ...] [-m uri|--mirror=uri ...]\n            [--facet <facet_spec>=(True|False) ...]\n            [(-p|--publisher) [<name>=]<repo_uri>] dir"
 
-#: ../client.py:240
+#: ../client.py:247
 msgid ""
-"[-nvq] [-g path_or_uri ...]\n"
+"[-nvq] [-C n] [-g path_or_uri ...]\n"
 "            [--accept] [--licenses] [--no-be-activate]\n"
 "            [--no-backup-be | --require-backup-be] [--backup-be-name name]\n"
 "            [--deny-new-be | --require-new-be] [--be-name name]\n"
 "            <variant_spec>=<instance> ..."
-msgstr "[-nvq] [-g path_or_uri ...]\n            [--accept] [--licenses] [--no-be-activate]\n            [--no-backup-be | --require-backup-be] [--backup-be-name name]\n            [--deny-new-be | --require-new-be] [--be-name name]\n            <variant_spec>=<instance> ..."
+msgstr "[-nvq] [-C n] [-g path_or_uri ...]\n            [--accept] [--licenses] [--no-be-activate]\n            [--no-backup-be | --require-backup-be] [--backup-be-name name]\n            [--deny-new-be | --require-new-be] [--be-name name]\n            <variant_spec>=<instance> ..."
 
-#: ../client.py:247
+#: ../client.py:254
 msgid ""
-"[-nvq] [-g path_or_uri ...]\n"
+"[-nvq] [-C n] [-g path_or_uri ...]\n"
 "            [--accept] [--licenses] [--no-be-activate]\n"
 "            [--no-backup-be | --require-backup-be] [--backup-be-name name]\n"
 "            [--deny-new-be | --require-new-be] [--be-name name]\n"
 "            <facet_spec>=[True|False|None] ..."
-msgstr "[-nvq] [-g path_or_uri ...]\n            [--accept] [--licenses] [--no-be-activate]\n            [--no-backup-be | --require-backup-be] [--backup-be-name name]\n            [--deny-new-be | --require-new-be] [--be-name name]\n            <facet_spec>=[True|False|None] ..."
+msgstr "[-nvq] [-C n] [-g path_or_uri ...]\n            [--accept] [--licenses] [--no-be-activate]\n            [--no-backup-be | --require-backup-be] [--backup-be-name name]\n            [--deny-new-be | --require-new-be] [--be-name name]\n            <facet_spec>=[True|False|None] ..."
 
-#: ../client.py:253
+#: ../client.py:260
 msgid "[-aH] [-F format] [<mediator> ...]"
 msgstr "[-aH] [-F format] [<mediator> ...]"
 
-#: ../client.py:255
+#: ../client.py:262
 msgid ""
 "[-nv] [-I <implementation>]\n"
 "            [-V <version>] [--no-be-activate]\n"
@@ -139,7 +139,7 @@ msgid ""
 "            <mediator> ..."
 msgstr "[-nv] [-I <implementation>]\n            [-V <version>] [--no-be-activate]\n            [--no-backup-be | --require-backup-be] [--backup-be-name name]\n            [--deny-new-be | --require-new-be] [--be-name name]\n            <mediator> ..."
 
-#: ../client.py:260
+#: ../client.py:267
 msgid ""
 "[-nvIV] [--no-be-activate]\n"
 "            [--no-backup-be | --require-backup-be] [--backup-be-name]\n"
@@ -147,35 +147,35 @@ msgid ""
 "            <mediator> ..."
 msgstr "[-nvIV] [--no-be-activate]\n            [--no-backup-be | --require-backup-be] [--backup-be-name]\n            [--deny-new-be | --require-new-be] [--be-name name]\n            <mediator> ..."
 
-#: ../client.py:265
+#: ../client.py:272
 msgid "[-H] [<variant_spec>]"
 msgstr "[-H] [<variant_spec>]"
 
-#: ../client.py:267 ../client.py:268
+#: ../client.py:274 ../client.py:275
 msgid "[pkg_fmri_pattern] ..."
 msgstr "[pkg_fmri_pattern] ..."
 
-#: ../client.py:269
+#: ../client.py:276
 msgid "[-n] [-c reason] [pkg_fmri_pattern] ..."
 msgstr "[-n] [-c reason] [pkg_fmri_pattern] ..."
 
-#: ../client.py:270
+#: ../client.py:277
 msgid "[-n] [pkg_name_pattern] ..."
 msgstr "[-n] [pkg_name_pattern] ..."
 
-#: ../client.py:271 ../client.py:272 ../client.py:273
+#: ../client.py:278 ../client.py:279 ../client.py:280
 msgid "propname propvalue"
 msgstr "propname propvalue"
 
-#: ../client.py:274
+#: ../client.py:281
 msgid "propname ..."
 msgstr "propname ..."
 
-#: ../client.py:275
+#: ../client.py:282
 msgid "[-H] [propname ...]"
 msgstr "[-H] [propname ...]"
 
-#: ../client.py:277
+#: ../client.py:284
 msgid ""
 "[-Ped] [-k ssl_key] [-c ssl_cert]\n"
 "            [-g origin_to_add|--add-origin=origin_to_add ...]\n"
@@ -194,90 +194,91 @@ msgid ""
 "            [--add-property-value name_of_property=value_to_add]\n"
 "            [--remove-property-value name_of_property=value_to_remove]\n"
 "            [--unset-property name_of_property_to_delete]\n"
+"            [--proxy proxy to use]\n"
 "            [publisher]"
-msgstr "[-Ped] [-k ssl_key] [-c ssl_cert]\n            [-g origin_to_add|--add-origin=origin_to_add ...]\n            [-G origin_to_remove|--remove-origin=origin_to_remove ...]\n            [-m mirror_to_add|--add-mirror=mirror_to_add ...]\n            [-M mirror_to_remove|--remove-mirror=mirror_to_remove ...]\n            [-p repo_uri] [--enable] [--disable] [--no-refresh]\n            [--reset-uuid] [--non-sticky] [--sticky]\n            [--search-after=publisher]\n            [--search-before=publisher]\n            [--search-first]\n            [--approve-ca-cert=path_to_CA]\n            [--revoke-ca-cert=hash_of_CA_to_revoke]\n            [--unset-ca-cert=hash_of_CA_to_unset]\n            [--set-property name_of_property=value]\n            [--add-property-value name_of_property=value_to_add]\n            [--remove-property-value name_of_property=value_to_remove]\n            [--unset-property name_of_property_to_delete]\n            [publisher]"
+msgstr "[-Ped] [-k ssl_key] [-c ssl_cert]\n            [-g origin_to_add|--add-origin=origin_to_add ...]\n            [-G origin_to_remove|--remove-origin=origin_to_remove ...]\n            [-m mirror_to_add|--add-mirror=mirror_to_add ...]\n            [-M mirror_to_remove|--remove-mirror=mirror_to_remove ...]\n            [-p repo_uri] [--enable] [--disable] [--no-refresh]\n            [--reset-uuid] [--non-sticky] [--sticky]\n            [--search-after=publisher]\n            [--search-before=publisher]\n            [--search-first]\n            [--approve-ca-cert=path_to_CA]\n            [--revoke-ca-cert=hash_of_CA_to_revoke]\n            [--unset-ca-cert=hash_of_CA_to_unset]\n            [--set-property name_of_property=value]\n            [--add-property-value name_of_property=value_to_add]\n            [--remove-property-value name_of_property=value_to_remove]\n            [--unset-property name_of_property_to_delete]\n            [--proxy proxy to use]\n            [publisher]"
 
-#: ../client.py:296
+#: ../client.py:304
 msgid "publisher ..."
 msgstr "publisher ..."
 
-#: ../client.py:297
-msgid "[-HPn] [publisher ...]"
-msgstr "[-HPn] [publisher ...]"
+#: ../client.py:305
+msgid "[-HPn] [-F format] [publisher ...]"
+msgstr "[-HPn] [-F format] [publisher ...]"
 
-#: ../client.py:298
-msgid "[-Hl] [-t [time|time-time],...] [-n number] [-o column,...]"
-msgstr "[-Hl] [-t [time|time-time],...] [-n number] [-o column,...]"
+#: ../client.py:306
+msgid "[-HNl] [-t [time|time-time],...] [-n number] [-o column,...]"
+msgstr "[-HNl] [-t [time|time-time],...] [-n number] [-o column,...]"
 
-#: ../client.py:303
+#: ../client.py:311
 msgid "-H"
 msgstr "-H"
 
-#: ../client.py:305
+#: ../client.py:313
 msgid ""
-"[-fnvq] [--accept] [--licenses] [--no-index]\n"
+"[-fnvq] [-C n] [--accept] [--licenses] [--no-index]\n"
 "            [--no-refresh] [--no-pkg-updates] [--linked-md-only]\n"
 "            [--allow-relink]\n"
 "            [--prop-linked <propname>=<propvalue> ...]\n"
 "            (-c|-p) <li-name> <dir>"
-msgstr "[-fnvq] [--accept] [--licenses] [--no-index]\n            [--no-refresh] [--no-pkg-updates] [--linked-md-only]\n            [--allow-relink]\n            [--prop-linked <propname>=<propvalue> ...]\n            (-c|-p) <li-name> <dir>"
+msgstr "[-fnvq] [-C n] [--accept] [--licenses] [--no-index]\n            [--no-refresh] [--no-pkg-updates] [--linked-md-only]\n            [--allow-relink]\n            [--prop-linked <propname>=<propvalue> ...]\n            (-c|-p) <li-name> <dir>"
 
-#: ../client.py:311
+#: ../client.py:319
 msgid "[-fnvq] [-a|-l <li-name>] [--linked-md-only]"
 msgstr "[-fnvq] [-a|-l <li-name>] [--linked-md-only]"
 
-#: ../client.py:312
+#: ../client.py:320
 msgid "[-H] [-l <li-name>] [propname ...]"
 msgstr "[-H] [-l <li-name>] [propname ...]"
 
-#: ../client.py:313
+#: ../client.py:321
 msgid "[-a|-l <li-name>]"
 msgstr "[-a|-l <li-name>]"
 
-#: ../client.py:315
+#: ../client.py:324
 msgid ""
-"[-nvq] [--accept] [--licenses] [--no-index]\n"
+"[-nvq] [-C n] [--accept] [--licenses] [--no-index]\n"
 "            [--no-refresh] [--no-parent-sync] [--no-pkg-updates]\n"
 "            [--linked-md-only] [-a|-l <name>]"
-msgstr "[-nvq] [--accept] [--licenses] [--no-index]\n            [--no-refresh] [--no-parent-sync] [--no-pkg-updates]\n            [--linked-md-only] [-a|-l <name>]"
+msgstr "[-nvq] [-C n] [--accept] [--licenses] [--no-index]\n            [--no-refresh] [--no-parent-sync] [--no-pkg-updates]\n            [--linked-md-only] [-a|-l <name>]"
 
-#: ../client.py:319
+#: ../client.py:328
 msgid ""
 "[-nvq] [--accept] [--licenses] [--no-index] [--no-refresh]\n"
 "            [--no-parent-sync] [--no-pkg-updates]\n"
 "            [--linked-md-only] <propname>=<propvalue> ..."
 msgstr "[-nvq] [--accept] [--licenses] [--no-index] [--no-refresh]\n            [--no-parent-sync] [--no-pkg-updates]\n            [--linked-md-only] <propname>=<propvalue> ..."
 
-#: ../client.py:344
+#: ../client.py:353
 msgid "Usage:"
 msgstr "사용법:"
 
-#: ../client.py:346
+#: ../client.py:355
 msgid "Private subcommand usage, options subject to change at any time:"
 msgstr "개인 하위 명령 사용법, 옵션은 언제든지 변경 가능:"
 
 #. The full usage message isn't desired.
-#: ../client.py:357
+#: ../client.py:366
 msgid "Try `pkg --help or -?' for more information."
 msgstr "좀 더 자세한 정보는 `pkg --help 혹은 -?' 를 이용하시기 바랍니다."
 
-#: ../client.py:360
+#: ../client.py:369
 msgid ""
 "Usage:\n"
 "        pkg [options] command [cmd_options] [operands]\n"
 msgstr "사용법:\n        pkg [options] command [cmd_options] [operands]\n"
 
-#: ../client.py:364
+#: ../client.py:373
 msgid "Basic subcommands:"
 msgstr "기본 하위 명령:"
 
-#: ../client.py:367
+#: ../client.py:376
 msgid ""
 "\n"
 "Advanced subcommands:"
 msgstr "\n고급 하위 명령:"
 
-#: ../client.py:370
+#: ../client.py:379
 msgid ""
 "\n"
 "Options:\n"
@@ -288,273 +289,294 @@ msgid ""
 "        PKG_IMAGE"
 msgstr "\n옵션:\n        -R dir\n        --help 또는 -?\n\n환경:\n        PKG_IMAGE"
 
-#: ../client.py:534 ../client.py:3122 ../client.py:3647
+#: ../client.py:544 ../client.py:3442 ../client.py:3970
 msgid "no packages installed"
 msgstr "패키지가 설치되어 있지 않습니다."
 
-#: ../client.py:539
+#: ../client.py:549
 msgid "no packages installed or available for installation"
 msgstr "패키지가 설치되어 있지 않거나 설치할 수 있는 패키지가 없습니다."
 
-#: ../client.py:545
-msgid ""
-"no packages are installed or are installed and have newer versions available"
-msgstr "패키지가 설치되어 있지 않거나 설치되어 있지만 사용할 수 있는 최신 버전이 없습니다."
+#: ../client.py:558
+msgid "no packages have newer versions available"
+msgstr "사용할 수 있는 최신 버전의 패키지가 없습니다."
 
-#: ../client.py:578
+#: ../client.py:561
+msgid "no packages are installed"
+msgstr "패키지가 설치되어 있지 않습니다."
+
+#: ../client.py:592
 #, python-format
 msgid "no packages matching '%s' known"
 msgstr "'%s'과(와) 일치하는 패키지가 알려지지 않았습니다."
 
-#: ../client.py:581
+#: ../client.py:595
 #, python-format
 msgid ""
 "no packages matching '%s' allowed by installed incorporations, or image "
 "variants that are known or installed"
 msgstr "설치된 통합 또는 알려지거나 설치된 이미지 변형에서 허용하는 '%s'과(와) 일치하는 패키지가 없습니다."
 
-#: ../client.py:587
+#: ../client.py:601
 #, python-format
 msgid ""
 "no packages matching '%s' are installed and have newer versions available"
 msgstr "'%s'과(와) 일치하는 패키지가 설치되어 있지 않거나 사용할 수 있는 최신 버전이 없닙니다."
 
-#: ../client.py:591 ../client.py:687 ../client.py:861
+#: ../client.py:605 ../client.py:716 ../client.py:893
 #, python-format
 msgid "no packages matching '%s' installed"
 msgstr "'%s'과(와) 일치하는 패키지가 설치되어 있지 않습니다."
 
-#: ../client.py:662
+#: ../client.py:688
 #, python-format
 msgid "Verifying: %(pkg_name)-50s %(result)7s"
 msgstr "검사: %(pkg_name)-50s %(result)7s"
 
-#: ../client.py:664 ../client.py:813
+#: ../client.py:690 ../client.py:845
 msgid "ERROR"
 msgstr "오류"
 
-#: ../client.py:706
+#: ../client.py:726
+msgid "No repairs for this image."
+msgstr "이 이미지에 대한 복구가 없습니다."
+
+#: ../client.py:738
 #, python-format
 msgid "Created ZFS snapshot: %s"
 msgstr "작성된 ZFS 스냅샷: %s"
 
-#: ../client.py:730
+#: ../client.py:760
 msgid ""
 "The following packages require their licenses to be accepted before they can "
 "be repaired: "
 msgstr "다음 패키지를 수리하려면 먼저 사용권에 동의해야합니다. "
 
-#: ../client.py:734 ../client.py:1263
+#: ../client.py:763 ../client.py:1338
 msgid ""
 "To indicate that you agree to and accept the terms of the licenses of the "
 "packages listed above, use the --accept option.  To display all of the "
 "related licenses, use the --licenses option."
 msgstr "위에 나열된 패키지의 사용권 계약에 동의함을 나타내려면 --accept 옵션을 사용하십시오. 관련된 사용권을 모두 표시하려면 --licenses 옵션을 사용하십시오."
 
-#: ../client.py:743
+#: ../client.py:772
 msgid ""
 "Requested \"fix\" operation would affect files that cannot be modified in "
 "live image.\n"
 "Please retry this operation on an alternate boot environment."
 msgstr "요청된 \"수정\" 작업은 라이브 이미지 상에서 변경될 수 없는 파일들에 영향을 줄 수 있습니다.\n이 작업을 다른 부트 환경에서 다시 수행하시기 바랍니다."
 
-#: ../client.py:781 ../client.py:2289
+#: ../client.py:808 ../client.py:2622
 msgid "-v and -q may not be combined"
 msgstr "-v 와 -q 는 혼합해서 사용할 수 없습니다."
 
-#: ../client.py:797
+#: ../client.py:828
 msgid "OK"
 msgstr "확인"
 
-#: ../client.py:815
+#: ../client.py:847
 msgid "WARNING"
 msgstr "경고"
 
-#: ../client.py:826 ../client.py:830
+#: ../client.py:858 ../client.py:862
 #, python-format
 msgid "%(pkg_name)-70s %(result)7s"
 msgstr "%(pkg_name)-70s %(result)7s"
 
-#: ../client.py:827
+#: ../client.py:859
 msgid "PACKAGE"
 msgstr "패키지"
 
-#: ../client.py:828 ../client.py:4437 ../client.py:4446 ../pkgrepo.py:722
-#: ../pkgrepo.py:726
+#: ../client.py:860 ../client.py:4786 ../client.py:4798 ../client.py:4908
+#: ../pkgrepo.py:722 ../pkgrepo.py:726
 msgid "STATUS"
 msgstr "상태"
 
-#: ../client.py:866
+#: ../client.py:898
 msgid ""
 "See above for\n"
 "verification failures."
 msgstr "확인 실패는\n위를 참조하십시오."
 
-#: ../client.py:868
+#: ../client.py:900
 msgid ""
 "No packages failed\n"
 "verification."
 msgstr "확인에 실패한 패키지가\n없습니다."
 
-#: ../client.py:869
+#: ../client.py:901
 #, python-format
 msgid ""
 "\n"
 "All other patterns matched installed packages.  %s"
 msgstr "\n일치하는 다른 모든 패턴에서 패키지를 설치했습니다.  %s"
 
-#: ../client.py:917
+#: ../client.py:960
 msgid ""
 "WARNING: The boot environment being modified is not the active one.  "
 "Changes\n"
 "made in the active BE will not be reflected on the next boot.\n"
 msgstr "경고: 수정 중인 부트 환경이 활성 상태가 아닙니다. 활성 BE에서 적용한\n변경 사항이 다음 부트에 적용되지 않습니다.\n"
 
-#: ../client.py:922
+#: ../client.py:965
 msgid ""
 "WARNING: The boot environment being modified is not the active one.  "
 "Changes\n"
 "made will not be reflected on the next boot.\n"
 msgstr "경고: 수정 중인 부트 환경이 활성 상태가 아닙니다. 변경 사항이 다음\n부트에 적용되지 않습니다.\n"
 
-#: ../client.py:940 ../client.py:4718
+#: ../client.py:983 ../client.py:5116 ../client.py:6070
 msgid "Yes"
 msgstr "예"
 
 #. Not Installed
-#: ../client.py:941 ../client.py:4716 ../modules/gui/misc.py:654
-#: ../modules/gui/misc.py:755 ../modules/gui/versioninfo.py:171
+#: ../client.py:984 ../client.py:5114 ../client.py:6072
+#: ../modules/gui/misc.py:654 ../modules/gui/misc.py:755
+#: ../modules/gui/versioninfo.py:171
 msgid "No"
 msgstr "아니오"
 
-#: ../client.py:951
+#: ../client.py:994
 msgid "Packages to remove:"
 msgstr "제거할 패키지:"
 
-#: ../client.py:952
+#: ../client.py:995
 msgid "Packages to install:"
 msgstr "설치할 패키지:"
 
-#: ../client.py:953
+#: ../client.py:996
 msgid "Packages to update:"
 msgstr "업데이트할 패키지:"
 
-#: ../client.py:954
+#: ../client.py:997
 msgid "Mediators to change:"
 msgstr "변경할 조정자:"
 
-#: ../client.py:955
+#: ../client.py:998
 msgid "Variants/Facets to change:"
 msgstr "변경할 변형/페이싯:"
 
-#: ../client.py:961
+#: ../client.py:1004
 msgid "Estimated space available:"
 msgstr "사용 가능한 예상 공간:"
 
-#: ../client.py:964
+#: ../client.py:1007
 msgid "Estimated space to be consumed:"
 msgstr "사용될 예상 공간:"
 
-#: ../client.py:968
+#: ../client.py:1011
 msgid "Packages to change:"
 msgstr "변경할 패키지:"
 
-#: ../client.py:970
+#: ../client.py:1013
 msgid "Packages to fix:"
 msgstr "수정할 패키지:"
 
-#: ../client.py:972
+#: ../client.py:1016
 msgid "Create boot environment:"
 msgstr "부트 환경 만들기:"
 
-#. Only show activation status if verbose or if new BE
-#. will not be activated.
-#: ../client.py:978
+#. Only show activation status if verbose or
+#. if new BE will not be activated.
+#: ../client.py:1022
 msgid "Activate boot environment:"
 msgstr "부트 환경 활성화:"
 
-#: ../client.py:981
+#: ../client.py:1025
 msgid "Create backup boot environment:"
 msgstr "백업 부트 환경 만들기:"
 
-#: ../client.py:985
+#: ../client.py:1029
 msgid "Services to change:"
 msgstr "변경할 서비스:"
 
-#: ../client.py:989
+#: ../client.py:1033
 msgid "Rebuild boot archive:"
 msgstr "부트 아카이브 재구성:"
 
-#: ../client.py:1005
+#: ../client.py:1048
 msgid "Changed mediators:"
 msgstr "변경된 조정자:"
 
-#: ../client.py:1010
+#: ../client.py:1053
 msgid "Changed variants/facets:"
 msgstr "변경된 변형/페이싯:"
 
-#: ../client.py:1018 ../modules/client/api_errors.py:623
+#: ../client.py:1061 ../modules/client/api_errors.py:623
 msgid "Solver dependency errors:"
 msgstr "Solver 종속성 오류:"
 
-#: ../client.py:1046
+#: ../client.py:1089
 msgid "Changed packages:"
 msgstr "변경된 패키지:"
 
-#: ../client.py:1061
+#: ../client.py:1104
 msgid "Affected fmris:"
 msgstr "영향을 받는 fmri:"
 
-#: ../client.py:1197 ../modules/client/image.py:2328
+#: ../client.py:1131
+msgid "Release notes can be viewed with 'pkg history -n 1 -N'"
+msgstr "릴리스 노트는 'pkg history -n 1 -N'을 사용하여 볼 수 있습니다."
+
+#: ../client.py:1135
+#, python-format
+msgid "Release notes can be found in %s before rebooting."
+msgstr "재부트 전에는 %s에서 릴리스 노트를 찾을 수 있습니다."
+
+#: ../client.py:1137
+msgid "After rebooting, use 'pkg history -n 1 -N' to view release notes."
+msgstr "재부트 후에는 'pkg history -n 1 -N'을 사용하여 릴리스 노트를 볼 수 있습니다."
+
+#: ../client.py:1274 ../modules/client/image.py:2341
 #, python-format
 msgid "Package: %s"
 msgstr "패키지: %s"
 
-#: ../client.py:1198 ../modules/client/api_errors.py:277
-#: ../modules/client/image.py:2330
+#: ../client.py:1275 ../modules/client/api_errors.py:277
+#: ../modules/client/image.py:2343
 #, python-format
 msgid "License: %s\n"
 msgstr "사용권: %s\n"
 
-#: ../client.py:1221
+#: ../client.py:1298
 msgid "No updates available for this image."
 msgstr "이 이미지에 사용 가능한 업데이트가 없습니다."
 
-#: ../client.py:1223
+#: ../client.py:1300
 msgid "No updates necessary for this image."
 msgstr "해당 이미지는 어떠한 업데이트도 필요하지 않습니다."
 
-#: ../client.py:1259
+#: ../client.py:1334
 msgid ""
 "The following packages require their licenses to be accepted before they can "
 "be installed or updated: "
 msgstr "다음 패키지를 설치하거나 업데이트하려면 먼저 사용권에 동의해야 합니다. "
 
-#: ../client.py:1282
+#: ../client.py:1357
 #, python-format
 msgid ""
 "\n"
 "An unexpected error happened while preparing for %s:"
 msgstr "\n예상치 못했던 에러가  %s 를 준비하면서 발생하였습니다:"
 
-#: ../client.py:1293
+#: ../client.py:1368
 #, python-format
 msgid "%s failed: %s"
 msgstr "%s 이(가) 실패하였습니다: %s"
 
-#: ../client.py:1303 ../client.py:1416
+#: ../client.py:1378 ../client.py:1491
 #, python-format
 msgid ""
 "%s failed (linked image exception(s)):\n"
 "%s"
 msgstr "%s 실패(링크된 이미지 예외):\n%s"
 
-#: ../client.py:1307
+#: ../client.py:1382
 #, python-format
 msgid "%s cannot be done on live image"
 msgstr "%s 는 라이브 이미지에서 수행될 수 없습니다."
 
-#: ../client.py:1310
+#: ../client.py:1385
 #, python-format
 msgid ""
 "Requested \"%s\" operation would affect files that cannot be modified in "
@@ -562,47 +584,47 @@ msgid ""
 "Please retry this operation on an alternate boot environment."
 msgstr "요청된 \"%s\" 작업은 라이브 이미지 상에서 변경될 수 없는 파일들에 영향을 줄 수 있습니다.\n이 작업을 다른 부트 환경에서 다시 수행하시기 바랍니다."
 
-#: ../client.py:1321 ../client.py:5443
+#: ../client.py:1396 ../client.py:5854
 msgid ""
 "\n"
 "(Failure to consistently execute pkg commands as a privileged user is often "
 "a source of this problem.)"
 msgstr "\n(권한을 가진 사용자로 pkg 명령을 일관성 있게 실행하지 못할 경우  이 문제가 종종 발생합니다.)"
 
-#: ../client.py:1341
+#: ../client.py:1416
 #, python-format
 msgid "An unexpected error happened during %s: %s"
 msgstr "%s (을)를 수행하는 도중에 예상치 못한 에러가 발생하였습니다: %s"
 
-#: ../client.py:1355
+#: ../client.py:1430
 msgid ""
 "The following unexpected or editable files and directories were\n"
 "salvaged while executing the requested package operation; they\n"
 "have been moved to the displayed location in the image:\n"
 msgstr "요청된 패키지 작업을 실행하는 중 예상치 않거나 편집 가능한\n다음 파일 및 디렉토리가 복원되었습니다. 해당 파일 및\n디렉토리가 이미지의 표시된 위치로 이동되었습니다.\n"
 
-#: ../client.py:1391 ../pkgdep.py:308
+#: ../client.py:1466 ../pkgdep.py:314
 #, python-format
 msgid "No image rooted at '%s' (set by $PKG_IMAGE)"
 msgstr "%s'에 루트 지정된 이미지가 없습니다($PKG_IMAGE에 의해 설정)."
 
-#: ../client.py:1394 ../client.py:1409 ../pkgdep.py:311
+#: ../client.py:1469 ../client.py:1484 ../pkgdep.py:317
 #, python-format
 msgid "No image rooted at '%s'"
 msgstr "%s'에 루트 지정된 이미지가 없습니다."
 
-#: ../client.py:1396 ../pkgdep.py:313
+#: ../client.py:1471 ../pkgdep.py:319
 msgid "No image found."
 msgstr "이미지를 찾을 수 없습니다."
 
-#: ../client.py:1412
+#: ../client.py:1487
 #, python-format
 msgid ""
 "%s failed (inventory exception):\n"
 "%s"
 msgstr "%s 이(가) 실패하였습니다 (인벤토리 예외상황):\n%s"
 
-#: ../client.py:1420
+#: ../client.py:1495
 #, python-format
 msgid ""
 "WARNING: pkg(5) appears to be out of date, and should be updated before\n"
@@ -610,334 +632,350 @@ msgid ""
 "pkg:/package/pkg' as a privileged user and then retry the %(op)s."
 msgstr "경고: pkg(5)가 오래된 것 같습니다. %(op)s 실행 전에 업데이트해야 합니다.\n권한을 가진 사용자로 'pkg install pkg:/package/pkg'를 실행하여 pkg(5)를\n업데이트한 다음 %(op)s를 다시 시도하십시오."
 
-#: ../client.py:1427
+#: ../client.py:1502
 #, python-format
 msgid "Cannot remove '%s' due to the following packages that depend on it:"
 msgstr "다음과 같은 의존 패키지들 때문에 '%s' 를 제거할 수 없습니다:"
 
-#: ../client.py:1455
+#: ../client.py:1527
 msgid "The proposed operation cannot be performed on a live image."
 msgstr "제안된 작업을 라이브 이미지에 대해 수행할 수 없습니다."
 
-#: ../client.py:1468
+#: ../client.py:1540
 msgid ""
 "Please provide one of the package FMRIs listed above to the install command."
 msgstr "install 명령에 위에 나열된 패키지 FMRI 중 하나를 제공하십시오."
 
-#: ../client.py:1608
+#: ../client.py:1792
 msgid "NOTE: Please review release notes posted at:\n"
 msgstr "주: 다음 위치에 게시된 릴리스 노트를 검토하십시오.\n"
 
-#: ../client.py:1615
+#: ../client.py:1799
 #, python-format
 msgid "%(opt1)s may only be used in combination with %(opt2)s"
 msgstr "%(opt1)s은(는) %(opt2)s과(와) 함께만 사용할 수 있습니다."
 
-#: ../client.py:1620
+#: ../client.py:1804
 #, python-format
 msgid "the %(opt1)s and %(opt2)s options may not be combined"
 msgstr "%(opt1)s 옵션과 %(opt2)s 옵션은 함께 사용할 수 없습니다."
 
-#: ../client.py:1625 ../modules/misc.py:1113
+#: ../client.py:1809 ../modules/misc.py:1320
 #, python-format
 msgid "option '%s' repeated"
 msgstr "'%s' 옵션이 반복되었습니다."
 
-#: ../client.py:1808
+#: ../client.py:2003
 msgid "--parsable expects an integer argument."
 msgstr "--parsable에는 정수 인수가 필요합니다."
 
-#: ../client.py:1824
+#: ../client.py:2022
 #, python-format
 msgid "invalid operation stage: '%s'"
 msgstr "잘못된 작업 단계: '%s'"
 
-#: ../client.py:1832
+#: ../client.py:2030
 msgid "either -c or -p must be specified"
 msgstr "-c 또는 -p 중 하나를 지정해야 합니다."
 
-#: ../client.py:2157
+#: ../client.py:2089
+#, python-format
+msgid "missing required parameter: %s"
+msgstr "필수 매개변수 누락: %s"
+
+#. not a valid integer
+#: ../client.py:2100 ../client.py:2114
+#, python-format
+msgid "invalid '%s' value: %s"
+msgstr "잘못된 '%s' 값: %s"
+
+#: ../client.py:2105
+#, python-format
+msgid "'%s' must be >= %d"
+msgstr "'%s'은(는) %d보다 크거나 같아야 합니다."
+
+#: ../client.py:2499
 #, python-format
 msgid "%s: no variants specified"
 msgstr "%s: 변형이 지정되지 않았습니다."
 
-#: ../client.py:2163
+#: ../client.py:2505
 #, python-format
 msgid "%s: variants must to be of the form '<name>=<value>'."
 msgstr "%s: 변형은 '<name>=<value>' 형식이어야 합니다."
 
-#: ../client.py:2173
+#: ../client.py:2515
 #, python-format
 msgid "%s: duplicate variant specified: %s"
 msgstr "%s: 중복 변형이 지정되었습니다. %s"
 
-#: ../client.py:2202
+#: ../client.py:2541
 #, python-format
 msgid "%s: no facets specified"
 msgstr "%s: 페이싯이 지정되지 않았습니다."
 
-#: ../client.py:2216
+#: ../client.py:2555
 #, python-format
 msgid "%s: facets must to be of the form 'facet....=[True|False|None]'"
 msgstr "%s: 페이싯은 'facet....=[True|False|None]' 형식이어야 합니다."
 
-#: ../client.py:2225
+#: ../client.py:2564
 #, python-format
 msgid "%s: facets must to be of the form 'facet....=[True|False|None]'."
 msgstr "%s: 페이싯은 'facet....=[True|False|None]' 형식이어야 합니다."
 
-#: ../client.py:2257 ../client.py:2286
+#: ../client.py:2593 ../client.py:2619
 msgid "at least one package name required"
 msgstr "적어도 하나 이상의 패키지 이름이 필요 합니다"
 
-#: ../client.py:2353
+#: ../client.py:2681
 msgid "at least one file path or tag name required"
 msgstr "적어도 하나 이상의 파일 경로 또는 태그 이름이 필요합니다."
 
-#: ../client.py:2387 ../client.py:2432 ../client.py:2441
+#: ../client.py:2712 ../client.py:2757 ../client.py:2766
 msgid "MEDIATOR"
 msgstr "MEDIATOR"
 
-#: ../client.py:2388 ../client.py:2434 ../client.py:2441
+#: ../client.py:2713 ../client.py:2759 ../client.py:2766
 msgid "VER. SRC."
 msgstr "VER. SRC."
 
-#: ../client.py:2389 ../client.py:2433 ../client.py:2441 ../client.py:2749
-#: ../client.py:5458 ../pkgrepo.py:858 ../pkgrepo.py:867
+#: ../client.py:2714 ../client.py:2758 ../client.py:2766 ../client.py:3068
+#: ../client.py:5869 ../pkgrepo.py:863 ../pkgrepo.py:872
 msgid "VERSION"
 msgstr "버전"
 
-#: ../client.py:2390 ../client.py:2438 ../client.py:2442
+#: ../client.py:2715 ../client.py:2763 ../client.py:2767
 msgid "IMPL. SRC."
 msgstr "IMPL. SRC."
 
-#: ../client.py:2435 ../client.py:2442
+#: ../client.py:2760 ../client.py:2767
 msgid "IMPLEMENTATION"
 msgstr "IMPLEMENTATION"
 
-#: ../client.py:2439 ../client.py:2442
+#: ../client.py:2764 ../client.py:2767
 msgid "IMPL. VER."
 msgstr "IMPL. VER."
 
 #. Don't pollute other output formats.
-#: ../client.py:2458
+#: ../client.py:2783
 msgid "no matching mediators found"
 msgstr "일치하는 조정자를 찾을 수 없습니다."
 
-#: ../client.py:2471 ../client.py:2562
+#: ../client.py:2796 ../client.py:2884
 msgid "at least one mediator must be specified"
 msgstr "적어도 하나의 조정자가 지정되어야 합니다."
 
-#: ../client.py:2474
+#: ../client.py:2799
 msgid ""
 "a mediator version and/or implementation must be specified using -V and -I"
 msgstr "조정자 버전 및/또는 구현은 -V 및 -I를 사용하여 지정해야 합니다."
 
-#: ../client.py:2531 ../client.py:2609
+#: ../client.py:2853 ../client.py:2928
 msgid "No changes required."
 msgstr "변경이 필요하지 않습니다."
 
-#: ../client.py:2660
+#: ../client.py:2979
 #, python-format
 msgid "    %s (group dependency of '%s')"
 msgstr "    %s('%s'의 그룹 종속성)"
 
-#: ../client.py:2683
+#: ../client.py:3002
 msgid "At least one package to freeze must be given when -c is used."
 msgstr "-c가 사용될 때 하나 이상의 고정할 패키지를 제공해야 합니다."
 
-#: ../client.py:2686
+#: ../client.py:3005
 msgid "-H may only be specified when listing the currently frozen packages."
 msgstr "현재 고정된 패키지를 나열할 때만 -H를 지정할 수 있습니다."
 
-#: ../client.py:2699
+#: ../client.py:3018
 #, python-format
 msgid "%(name)s was frozen at %(ver)s"
 msgstr "%(name)s이(가) %(ver)s에서 고정되었습니다."
 
-#: ../client.py:2729
+#: ../client.py:3048
 #, python-format
 msgid "%s was unfrozen."
 msgstr "%s이(가) 고정 해제되었습니다."
 
-#: ../client.py:2748 ../client.py:4964 ../pkgrepo.py:857 ../pkgrepo.py:867
+#: ../client.py:3067 ../client.py:5360 ../pkgrepo.py:862 ../pkgrepo.py:872
 #: ../util/publish/pkglint.py:210 ../util/publish/pkglint.py:212
 msgid "NAME"
 msgstr "이름"
 
-#: ../client.py:2750
+#: ../client.py:3069
 msgid "DATE"
 msgstr "DATE"
 
-#: ../client.py:2751
+#: ../client.py:3070
 msgid "COMMENT"
 msgstr "COMMENT"
 
-#: ../client.py:2839
+#: ../client.py:3158
 #, python-format
 msgid ""
 "The repository returned a malformed result.\n"
 "The problematic structure:%r"
 msgstr "저장소에서 잘못된 결과가 반환되었습니다.\n문제가 있는 구조: %r"
 
-#: ../client.py:2845
+#: ../client.py:3164
 #, python-format
 msgid ""
 "The repository returned an invalid or unsupported action.\n"
 "%s"
 msgstr "저장소에서 잘못되거나 지원되지 않는 작업이 반환되었습니다.\n%s"
 
-#: ../client.py:2911
+#: ../client.py:3230
 msgid "at least one search term must be provided"
 msgstr "적어도 하나의 검색어가 제공되어야 합니다"
 
-#: ../client.py:2922
+#: ../client.py:3241
 #, python-format
 msgid "action level options ('%s') to -o cannot be used with the -p option"
 msgstr "-o에 대한 작업 수준 옵션('%s')은 -p 옵션과 함께 사용할 수 없습니다."
 
-#: ../client.py:2972
+#: ../client.py:3291
 #, python-format
 msgid "The repository returned a malformed result:%r"
 msgstr "저장소에서 잘못된 결과가 반환되었습니다. %r"
 
-#: ../client.py:2984
+#: ../client.py:3303
 msgid ""
 "action level options to -o cannot be used with the queries that return "
 "packages"
 msgstr "-o에 대한 작업 수준 옵션은 패키지를 반환하는 쿼리와 함께 사용할 수 없습니다."
 
-#: ../client.py:3047 ../client.py:3057
+#: ../client.py:3366 ../client.py:3376
 msgid ""
 "The search index appears corrupted.  Please rebuild the index with 'pkg "
 "rebuild-index'."
 msgstr "검색 색인이 손상된 것 같습니다. 'pkg rebuild-index'를 사용하여 색인을 재구성하십시오."
 
-#: ../client.py:3098
+#: ../client.py:3417
 msgid "-l and -r may not be combined"
 msgstr "-l 과 -r 은 같이 사용될 수 없습니다"
 
-#: ../client.py:3101
+#: ../client.py:3420
 msgid "must request remote info for specific packages"
 msgstr "지정된 패키지들을 위한 원격 정보를 요청해야 합니다"
 
-#: ../client.py:3154 ../packagemanager.py:1247 ../packagemanager.py:2581
+#: ../client.py:3474 ../packagemanager.py:1247 ../packagemanager.py:2581
 msgid "Installed"
 msgstr "설치됨"
 
-#: ../client.py:3156
+#: ../client.py:3476
 msgid "Unsupported"
 msgstr "지원되지 않음"
 
-#: ../client.py:3158 ../packagemanager.py:2583
+#: ../client.py:3478 ../packagemanager.py:2583
 msgid "Not installed"
 msgstr "설치되지 않음"
 
-#: ../client.py:3162
+#: ../client.py:3482
 msgid "Obsolete"
 msgstr "오래됨"
 
-#: ../client.py:3165
+#: ../client.py:3485
 msgid "Renamed"
 msgstr "이름이 바뀜"
 
-#: ../client.py:3169 ../client.py:3171
+#: ../client.py:3489 ../client.py:3491
 msgid "Frozen"
 msgstr "고정됨"
 
-#: ../client.py:3175
+#: ../client.py:3495
 msgid "          Name:"
 msgstr "          이름:"
 
-#: ../client.py:3177
+#: ../client.py:3497
 msgid "       Summary:"
 msgstr "          요약:"
 
-#: ../client.py:3179
+#: ../client.py:3499
 msgid "   Description:"
 msgstr "          설명:"
 
-#: ../client.py:3189
+#: ../client.py:3509
 msgid "      Category:"
 msgstr "          범주:"
 
-#: ../client.py:3196
+#: ../client.py:3516
 msgid "         State:"
 msgstr "          상태:"
 
-#: ../client.py:3205
+#: ../client.py:3525
 msgid "    Renamed to:"
 msgstr "    다음으로 이름 변경:"
 
 #. XXX even more info on the publisher would be nice?
-#: ../client.py:3210
+#: ../client.py:3530
 msgid "     Publisher:"
 msgstr "        게시자:"
 
-#: ../client.py:3213 ../client.py:3216
+#: ../client.py:3533 ../client.py:3536
 msgid "       Version:"
 msgstr "          버전:"
 
-#: ../client.py:3217
+#: ../client.py:3537
 msgid " Build Release:"
 msgstr "   빌드 릴리스:"
 
-#: ../client.py:3218
+#: ../client.py:3538
 msgid "        Branch:"
 msgstr "          분기:"
 
-#: ../client.py:3219
+#: ../client.py:3539
 msgid "Packaging Date:"
 msgstr "   패키징 날짜:"
 
-#: ../client.py:3220
+#: ../client.py:3540
 msgid "          Size:"
 msgstr "          크기:"
 
-#: ../client.py:3221
+#: ../client.py:3541
 msgid "          FMRI:"
 msgstr "          FMRI:"
 
-#: ../client.py:3232
+#: ../client.py:3552
 msgid ""
 "pkg: info: no packages matching the following patterns you specified are\n"
 "installed on the system.  Try specifying -r to query remotely:"
 msgstr "pkg: info: 지정된 다음 패턴과 일치하는 패키지가 시스템에\n설치되어 있지 않습니다. -r을 지정하여 원격으로 쿼리를 시도하십시오."
 
-#: ../client.py:3236
+#: ../client.py:3556
 msgid ""
 "pkg: info: no packages matching the following patterns you specified were\n"
 "found in the catalog.  Try relaxing the patterns, refreshing, and/or\n"
 "examining the catalogs:"
 msgstr "pkg: info: 지정된 다음 패턴과 일치하는 패키지가 카탈로그에\n없습니다. 패턴 완화, 새로 고침 및/또는 카탈로그 검사를\n시도하십시오."
 
-#: ../client.py:3249
+#: ../client.py:3569
 msgid "no license information could be found for the following packages:"
 msgstr "다음 패키지에 대한 사용권 정보를 찾을 수 없습니다."
 
-#: ../client.py:3490
+#: ../client.py:3810
 #, python-format
 msgid "Invalid attribute '%s'"
 msgstr "잘못된 속성 '%s'"
 
-#: ../client.py:3520
+#: ../client.py:3840
 msgid "-a takes an argument of the form <attribute>=<pattern>"
 msgstr "-a는 <attribute>=<pattern> 형식의 인수를 사용합니다."
 
-#: ../client.py:3543
+#: ../client.py:3863
 msgid "contents: must request remote contents for specific packages"
 msgstr "contents: 특정 패키지에 대해 원격 내용을 요청해야 합니다."
 
-#: ../client.py:3554
+#: ../client.py:3874
 #, python-format
 msgid "-m and %s may not be specified at the same time"
 msgstr "-m 과 %s 는 동시에 지정될 수 없습니다"
 
-#: ../client.py:3662
+#: ../client.py:3985
 msgid "pkg: contents: no matching actions found in the listed packages"
 msgstr "pkg: contents: 일치하는 작업이 나열된 패키지에 없습니다."
 
-#: ../client.py:3671
+#: ../client.py:3994
 msgid ""
 "This package contains no actions with the fields specified using the -o\n"
 "option. Please specify other fields, or use the -m option to show the raw\n"
@@ -949,7 +987,7 @@ msgid_plural ""
 msgstr[0] "이 패키지에는 -o 옵션을 사용하여 지정된 필드가 있는 작업이 포함되지\n않습니다. 다른 필드를 지정하거나 -m 옵션을 사용하여 원시 패키지\n매니페스트를 표시하십시오."
 msgstr[1] "이 패키지에는 -o 옵션을 사용하여 지정된 필드가 있는 작업이 포함되지\n않습니다. 다른 필드를 지정하거나 -m 옵션을 사용하여 원시 패키지\n매니페스트를 표시하십시오."
 
-#: ../client.py:3679
+#: ../client.py:4002
 msgid ""
 "This package delivers no filesystem content, but may contain metadata. Use\n"
 "the -o option to specify fields other than 'path', or use the -m option to "
@@ -963,14 +1001,14 @@ msgid_plural ""
 msgstr[0] "이 패키지는 파일 시스템 내용을 전달하지 않지만 메타 데이터를 포함할 수 있습니다.\n-o 옵션을 사용하여 'path'가 아닌 다른 필드를 지정하거나 -m 옵션을 사용하여\n원시 패키지 매니페스트를 표시하십시오."
 msgstr[1] "이러한 패키지는 파일 시스템 내용을 전달하지 않지만 메타 데이터를 포함할 수 있습니다.\n-o 옵션을 사용하여 'path'가 아닌 다른 필드를 지정하거나 -m 옵션을 사용하여\n원시 패키지 매니페스트를 표시하십시오."
 
-#: ../client.py:3692
+#: ../client.py:4015
 msgid ""
 "pkg: contents: no packages matching the following patterns you specified "
 "are\n"
 "installed on the system.  Try specifying -r to query remotely:"
 msgstr "pkg: contents: 지정된 다음 패턴과 일치하는 패키지가 시스템에 설치되어\n있지 않습니다. -r을 지정하여 원격으로 쿼리를 시도하십시오."
 
-#: ../client.py:3696
+#: ../client.py:4019
 msgid ""
 "pkg: contents: no packages matching the following patterns you specified "
 "were\n"
@@ -978,21 +1016,21 @@ msgid ""
 "examining the catalogs:"
 msgstr "pkg: contents: 지정된 다음 패턴과 일치하는 패키지가 카탈로그에\n없습니다. 패턴 완화, 새로 고침 및/또는 카탈로그 검사를\n시도하십시오."
 
-#: ../client.py:3713
+#: ../client.py:4036
 #, python-format
 msgid "pkg: %s/%s catalogs successfully updated:"
 msgstr "pkg: %s/%s 카탈로그가 성공적으로 업데이트되었습니다."
 
-#: ../client.py:3756
+#: ../client.py:4079
 msgid "'pkg publisher' will show a list of publishers."
 msgstr "'pkg publisher'는 게시자 목록을 표시합니다."
 
-#: ../client.py:3811
+#: ../client.py:4137
 #, python-format
 msgid "Could not refresh the catalog for %s\n"
 msgstr "%s의 카탈로그를 새로 고치지 못했습니다.\n"
 
-#: ../client.py:3821
+#: ../client.py:4147
 #, python-format
 msgid ""
 "The origin URIs for '%(pubname)s' do not appear to point to a valid pkg "
@@ -1004,7 +1042,7 @@ msgid ""
 "%(details)s"
 msgstr "'%(pubname)s'에 대한 원본 URI가 유효한 pkg 저장소를 가리키지 않는 것 같습니다.\n저장소 위치와 클라이언트 네트워크 구성을 확인하십시오.\n추가 세부 정보:\n\n%(details)s"
 
-#: ../client.py:3827
+#: ../client.py:4153
 #, python-format
 msgid ""
 "The specified URI does not appear to point to a valid pkg repository.\n"
@@ -1014,58 +1052,64 @@ msgid ""
 "%s"
 msgstr "지정된 URI가 유효한 pkg 저장소를 가리키지 않는 것 같습니다.\nURI와 클라이언트 네트워크 구성을 확인하십시오.\n추가 세부 정보:\n\n%s"
 
-#: ../client.py:3951 ../client.py:5344
+#: ../client.py:4279 ../client.py:5748
 #, python-format
 msgid ""
 "properties to be set must be of the form '<name>=<value>'. This is what was "
 "given: %s"
 msgstr "설정할 등록 정보는 '<name>=<value>' 형식이어야 합니다. 다음과 같이 제공되었습니다.%s"
 
-#: ../client.py:3955 ../client.py:5348
+#: ../client.py:4283 ../client.py:5752
 #, python-format
 msgid "a property may only be set once in a command. %s was set twice"
 msgstr "등록 정보는 명령에서 한 번만 설정할 수 있습니다. %s이(가) 두 번 설정되었습니다."
 
-#: ../client.py:3962
+#: ../client.py:4290
 #, python-format
 msgid ""
 "property values to be added must be of the form '<name>=<value>'. This is "
 "what was given: %s"
 msgstr "추가할 등록 정보 값은 '<name>=<value>' 형식이어야 합니다. 다음과 같이 제공되었습니다.%s"
 
-#: ../client.py:3970
+#: ../client.py:4298
 #, python-format
 msgid ""
 "property values to be removed must be of the form '<name>=<value>'. This is "
 "what was given: %s"
 msgstr "제거할 등록 정보 값은 '<name>=<value>' 형식이어야 합니다. 다음과 같이 제공되었습니다.%s"
 
-#: ../client.py:3980
+#: ../client.py:4310
 msgid "requires a publisher name"
 msgstr "게시자 이름이 필요합니다."
 
-#: ../client.py:3982
+#: ../client.py:4312
 msgid "only one publisher name may be specified"
 msgstr "게시자 이름을 하나만 지정할 수 있습니다."
 
-#: ../client.py:3988
+#: ../client.py:4318
 msgid ""
 "the -O and -g, --add-origin, -G, or --remove-origin options may not be "
 "combined"
 msgstr "-O 및 -g, --add-origin, -G 또는 --remove-origin 옵션을 함께 사용할 수 없습니다."
 
-#: ../client.py:3993
+#: ../client.py:4323
 msgid "search-before, search-after, and search-first (-P) may not be combined"
 msgstr "search-before, search-after 및 search-first(-P)는 함께 사용할 수 없습니다."
 
-#: ../client.py:3999
+#: ../client.py:4329
 msgid ""
 "the -p option may not be combined with the -g, --add-origin, -G, --remove-"
 "origin, -m, --add-mirror, -M, --remove-mirror, --enable, --disable, --no-"
 "refresh, or --reset-uuid options"
 msgstr "-p 옵션을 -g, --add-origin, -G, --remove-origin, -m, --add-mirror, -M, --remove-mirror, --enable, --disable, --no-refresh 또는 --reset-uuid 옵션과 함께 사용할 수 없습니다."
 
-#: ../client.py:4042
+#: ../client.py:4336
+msgid ""
+"the --proxy argument may only be combined with the -g, --add-origin,  -m, --"
+"add-mirror, or -p options"
+msgstr "--proxy 인수는 -g, --add-origin,  -m, --add-mirror 또는 -p 옵션과만 함께 사용할 수 있습니다."
+
+#: ../client.py:4383
 #, python-format
 msgid ""
 "\n"
@@ -1076,7 +1120,7 @@ msgid ""
 "  pkg set-publisher -g %s <publisher>\n"
 msgstr "\n이 저장소를 사용하여 게시자를 추가하려면 권한을 가진 사용자로 다음 명령을\n실행하십시오.\n\n  pkg set-publisher -g %s <publisher>\n"
 
-#: ../client.py:4060
+#: ../client.py:4401
 msgid ""
 "\n"
 "The specified repository did not contain any publisher configuration\n"
@@ -1085,7 +1129,7 @@ msgid ""
 "assistance."
 msgstr "\n지정된 저장소에 게시자 구성 정보가 없습니다.\n저장소 구성 오류 때문인 것 같습니다. 추가 지원이\n필요한 경우 저장소 관리자에게 문의하십시오.\n"
 
-#: ../client.py:4129
+#: ../client.py:4470
 #, python-format
 msgid ""
 "    The specified repository location is not a known source of publisher\n"
@@ -1096,12 +1140,12 @@ msgid ""
 "    to accept configuration updates from this repository."
 msgstr "    지정된 저장소 위치는 '%s'에 대한 게시자 구성 업데이트의 알려진\n    소스가 아닙니다.\n\n    이 새로운 저장소 위치를 게시자의 원본으로 추가하여\n    이 저장소의 구성 업데이트를 적용해야 합니다."
 
-#: ../client.py:4205
+#: ../client.py:4546
 #, python-format
 msgid "  Added publisher(s): %s"
 msgstr "  추가된 게시자: %s"
 
-#: ../client.py:4208
+#: ../client.py:4549
 #, python-format
 msgid "  Updated publisher(s): %s"
 msgstr "  업데이트된 게시자: %s"
@@ -1109,238 +1153,263 @@ msgstr "  업데이트된 게시자: %s"
 #. None of the origins or mirrors for the publisher
 #. use SSL schemes so the cert and key information
 #. won't be retained.
-#: ../client.py:4341
+#: ../client.py:4690
 #, python-format
 msgid "Publisher '%s' does not have any SSL-based origins or mirrors."
 msgstr "'%s' 게시자에 SSL 기반 원본 또는 미러가 없습니다."
 
-#: ../client.py:4389
+#: ../client.py:4738
 msgid "at least one publisher must be specified"
 msgstr "적어도 하나의 퍼블리셔가 지정되어야 합니다"
 
-#: ../client.py:4419
+#: ../client.py:4768
 #, python-format
 msgid "Removal failed for '%(pub)s': %(msg)s"
 msgstr "'%(pub)s'에 대한 제거 실패: %(msg)s"
 
-#: ../client.py:4434 ../client.py:4444 ../modules/client/api_errors.py:646
-#: ../pkgrepo.py:543 ../pkgrepo.py:620 ../pkgrepo.py:625 ../pkgrepo.py:720
-#: ../pkgrepo.py:726 ../pkgrepo.py:856 ../pkgrepo.py:867 ../pkgrepo.py:874
+#: ../client.py:4783 ../client.py:4796 ../client.py:4906
+#: ../modules/client/api_errors.py:646 ../pkgrepo.py:543 ../pkgrepo.py:620
+#: ../pkgrepo.py:625 ../pkgrepo.py:720 ../pkgrepo.py:726 ../pkgrepo.py:861
+#: ../pkgrepo.py:872 ../pkgrepo.py:879
 msgid "PUBLISHER"
 msgstr "게시자"
 
-#: ../client.py:4436 ../client.py:4445
+#: ../client.py:4785 ../client.py:4797 ../client.py:4907
 msgid "TYPE"
 msgstr "유형"
 
-#: ../client.py:4438 ../client.py:4446
+#: ../client.py:4787 ../client.py:4798
+msgid "LOCATION"
+msgstr "위치"
+
+#: ../client.py:4788 ../client.py:4908
 msgid "URI"
 msgstr "URI"
 
-#: ../client.py:4439 ../client.py:4444
+#: ../client.py:4789 ../client.py:4796 ../client.py:4906
 msgid "STICKY"
 msgstr "고정"
 
-#: ../client.py:4440 ../client.py:4445
+#: ../client.py:4790 ../client.py:4797 ../client.py:4907
 msgid "ENABLED"
 msgstr "활성화"
 
-#: ../client.py:4441 ../client.py:4445
+#: ../client.py:4791 ../client.py:4797 ../client.py:4907
 msgid "SYSPUB"
 msgstr "SYSPUB"
 
-#: ../client.py:4482 ../pkgrepo.py:402 ../pkgrepo.py:663 ../pkgrepo.py:764
+#: ../client.py:4792 ../client.py:4908
+msgid "PROXY"
+msgstr "프록시"
+
+#: ../client.py:4793 ../client.py:4798 ../modules/misc.py:442
+msgid "P"
+msgstr "P"
+
+#: ../client.py:4834 ../pkgrepo.py:402 ../pkgrepo.py:663 ../pkgrepo.py:764
 #, python-format
 msgid "Unrecognized format %(format)s. Supported formats: %(valid)s"
 msgstr "%(format)s 형식을 인식할 수 없습니다. 지원되는 형식: %(valid)s"
 
-#: ../client.py:4575 ../modules/client/api_errors.py:649
+#: ../client.py:4931 ../modules/client/api_errors.py:649
 msgid "non-sticky"
 msgstr "고정되지 않음"
 
-#: ../client.py:4580
+#: ../client.py:4936
 msgid "disabled"
 msgstr "사용 불가"
 
-#: ../client.py:4582
+#: ../client.py:4938
 msgid "syspub"
 msgstr "syspub"
 
-#: ../client.py:4589 ../client.py:4593 ../client.py:4597
+#: ../client.py:4945 ../client.py:4949 ../client.py:4953
 msgid "true"
 msgstr "참"
 
-#: ../client.py:4591 ../client.py:4595 ../client.py:4599
+#: ../client.py:4947 ../client.py:4951 ../client.py:4955
 msgid "false"
 msgstr "거짓"
 
 #. XXX get the real origin status
-#: ../client.py:4613
+#: ../client.py:4971
 msgid "origin"
 msgstr "원본"
 
-#: ../client.py:4614 ../client.py:4626
+#: ../client.py:4972 ../client.py:5000
 msgid "online"
 msgstr "온라인"
 
+#: ../client.py:4979 ../client.py:5007 ../modules/misc.py:441
+msgid "T"
+msgstr "T"
+
 #. XXX get the real mirror status
-#: ../client.py:4625
+#: ../client.py:4999
 msgid "mirror"
 msgstr "이중화"
 
-#: ../client.py:4648
+#: ../client.py:5002
+msgid "F"
+msgstr "F"
+
+#: ../client.py:5038
 msgid "              SSL Key:"
 msgstr "              SSL 키:"
 
-#: ../client.py:4649
+#: ../client.py:5039
 msgid "             SSL Cert:"
 msgstr "             SSL 인증서:"
 
-#: ../client.py:4661
+#: ../client.py:5051
 msgid " Cert. Effective Date:"
 msgstr " 인증서 발효일:"
 
-#: ../client.py:4663
+#: ../client.py:5053
 msgid "Cert. Expiration Date:"
 msgstr "인증서 만료일:"
 
-#: ../client.py:4670
+#: ../client.py:5060
 msgid "           Origin URI:"
 msgstr "           원본 URI:"
 
-#: ../client.py:4676
+#: ../client.py:5062 ../client.py:5072
+msgid "                Proxy:"
+msgstr "                프록시:"
+
+#: ../client.py:5070
 msgid "           Mirror URI:"
 msgstr "           미러 URI:"
 
-#: ../client.py:4684
+#: ../client.py:5082
 msgid "         Approved CAs:"
 msgstr "         승인된 CA:"
 
-#: ../client.py:4687 ../client.py:4692
+#: ../client.py:5085 ../client.py:5090
 msgid "                     :"
 msgstr "                     :"
 
-#: ../client.py:4689
+#: ../client.py:5087
 msgid "          Revoked CAs:"
 msgstr "          취소된 CA:"
 
-#: ../client.py:4702
+#: ../client.py:5100
 msgid "            Publisher:"
 msgstr "   게시자:"
 
-#: ../client.py:4703
+#: ../client.py:5101
 msgid "                Alias:"
 msgstr "                별칭:"
 
-#: ../client.py:4712
+#: ../client.py:5110
 msgid "          Client UUID:"
 msgstr "          클라이언트 UUID:"
 
-#: ../client.py:4713
+#: ../client.py:5111
 msgid "      Catalog Updated:"
 msgstr "      카탈로그 업데이트:"
 
-#: ../client.py:4716 ../client.py:4718
+#: ../client.py:5114 ../client.py:5116
 msgid "              Enabled:"
 msgstr "              활성화:"
 
-#: ../client.py:4726
+#: ../client.py:5124
 msgid "           Properties:"
 msgstr "           등록 정보:"
 
-#: ../client.py:4742 ../client.py:4764
+#: ../client.py:5140 ../client.py:5162
 msgid "requires a property name and value"
 msgstr "프로퍼티 이름과 값이 필요로 합니다"
 
-#: ../client.py:4789
+#: ../client.py:5187
 msgid "requires a property name and at least one value"
 msgstr "등록 정보 이름과 하나 이상의 값이 필요합니다."
 
-#: ../client.py:4806
+#: ../client.py:5204
 #, python-format
 msgid "Signature-policy %s doesn't allow additional parameters."
 msgstr "서명 정책 %s은(는) 추가 매개변수를 허용하지 않습니다."
 
-#: ../client.py:4833
+#: ../client.py:5231
 msgid "requires at least one property name"
 msgstr "적어도 하나의 프로퍼티 이름이 필요 합니다"
 
-#: ../client.py:4862
+#: ../client.py:5260
 #, python-format
 msgid "no such property: %s"
 msgstr "프로퍼티가 존재하지 않습니다: %s"
 
-#: ../client.py:4896
+#: ../client.py:5294
 #, python-format
 msgid "no such variant: %s"
 msgstr "해당 변형이 없습니다. %s"
 
-#: ../client.py:4964
+#: ../client.py:5360
 msgid "RELATIONSHIP"
 msgstr "관계"
 
-#: ../client.py:4964
+#: ../client.py:5360
 msgid "PATH"
 msgstr "경로"
 
-#: ../client.py:4988
+#: ../client.py:5398
 msgid "linked image property arguments must be of the form '<name>=<value>'."
 msgstr "링크된 이미지 등록 정보 인수는 '<name>=<value>' 형식이어야 합니다."
 
-#: ../client.py:4992
+#: ../client.py:5402
 #, python-format
 msgid "invalid linked image property: '%s'."
 msgstr "잘못된 링크된 이미지 등록 정보: '%s'."
 
-#: ../client.py:4996
+#: ../client.py:5406
 #, python-format
 msgid "linked image property specified multiple times: '%s'."
 msgstr "링크된 이미지 등록 정보가 여러 번 지정됨: '%s'."
 
-#: ../client.py:5019
+#: ../client.py:5430
 #, python-format
 msgid "%(op)s: no such property: %(p)s"
 msgstr "%(op)s: 해당 등록 정보 없음: %(p)s"
 
-#: ../client.py:5099
+#: ../client.py:5513
 msgid "synced"
 msgstr "동기화됨"
 
-#: ../client.py:5101
+#: ../client.py:5515
 msgid "diverged"
 msgstr "분산됨"
 
-#: ../client.py:5188
+#: ../client.py:5593
 #, python-format
 msgid "cannot specify linked image property: '%s'"
 msgstr "링크된 이미지 등록 정보를 지정할 수 없음: '%s'"
 
-#: ../client.py:5192
+#: ../client.py:5597
 msgid "a linked image name and path must be specified"
 msgstr "링크된 이미지 이름 및 경로를 지정해야 합니다."
 
-#: ../client.py:5335
+#: ../client.py:5739
 msgid "Facet arguments must be of the form '<name>=(True|False)'"
 msgstr "페이싯 인수는 '<name>=(True|False)' 형식이어야 합니다."
 
-#: ../client.py:5358
+#: ../client.py:5762
 msgid "variant arguments must be of the form '<name>=<value>'."
 msgstr "변형 인수는 '<name>=<value>' 형식이어야 합니다."
 
-#: ../client.py:5364
+#: ../client.py:5768
 msgid "an image directory path must be specified"
 msgstr "이미지 디렉토리 경로를 지정해야 합니다."
 
-#: ../client.py:5367
+#: ../client.py:5771
 msgid "only one image directory path may be specified"
 msgstr "오직 하나의 이미지 디렉토리 경로 만이 지정가능합니다"
 
-#: ../client.py:5372
+#: ../client.py:5776
 msgid ""
 "--no-refresh cannot be used with -p unless a publisher prefix is provided."
 msgstr "게시자 접두어를 제공하지 않을 경우 --no-refresh를 -p와 함께 사용할 수 없습니다."
 
-#: ../client.py:5402
+#: ../client.py:5807
 #, python-format
 msgid ""
 "The URI '%(pub_url)s' does not appear to point to a valid pkg repository.\n"
@@ -1351,284 +1420,310 @@ msgid ""
 "%(error)s"
 msgstr "URI '%(pub_url)s'이(가) 유효한 pkg 저장소를 가리키지 않는 것 같습니다.\n저장소 위치와 클라이언트 네트워크 구성을 확인하십시오.\n추가 세부 정보:\n\n%(error)s"
 
-#: ../client.py:5429
+#: ../client.py:5840
 #, python-format
 msgid "command does not take operands ('%s')"
 msgstr "명령이 피연산자('%s')를 가져오지 않습니다."
 
-#: ../client.py:5455
+#: ../client.py:5866
 msgid "BE"
 msgstr "BE"
 
-#: ../client.py:5456
+#: ../client.py:5867
 msgid "BE UUID"
 msgstr "BE UUID"
 
-#: ../client.py:5457
+#: ../client.py:5868
 msgid "CLIENT"
 msgstr "클라이언트"
 
-#: ../client.py:5459
+#: ../client.py:5870
 msgid "COMMAND"
 msgstr "명령"
 
-#: ../client.py:5460
+#: ../client.py:5871
 msgid "FINISH"
 msgstr "종료"
 
-#: ../client.py:5461
+#: ../client.py:5872
 msgid "ID"
 msgstr "ID"
 
-#: ../client.py:5462
+#: ../client.py:5873
 msgid "NEW BE"
 msgstr "새 BE"
 
-#: ../client.py:5463
+#: ../client.py:5874
 msgid "NEW BE UUID"
 msgstr "새 BE UUID"
 
-#: ../client.py:5464
+#: ../client.py:5875
 msgid "OPERATION"
 msgstr "작업"
 
-#: ../client.py:5465
+#: ../client.py:5876
 msgid "OUTCOME"
 msgstr "출력"
 
-#: ../client.py:5466
+#: ../client.py:5877
 msgid "REASON"
 msgstr "이유"
 
-#: ../client.py:5467
+#: ../client.py:5878
+msgid "RELEASE NOTES"
+msgstr "릴리스 노트"
+
+#: ../client.py:5879
 msgid "SNAPSHOT"
 msgstr "스냅샷"
 
-#: ../client.py:5468
+#: ../client.py:5880
 msgid "START"
 msgstr "시작"
 
-#: ../client.py:5469
+#: ../client.py:5881
 msgid "TIME"
 msgstr "시간"
 
-#: ../client.py:5470
+#: ../client.py:5882
 msgid "USER"
 msgstr "사용자"
 
-#: ../client.py:5493
+#: ../client.py:5908
 msgid "Argument to -n must be numeric"
 msgstr "-n에 대한 인수는 숫자여야 합니다."
 
-#: ../client.py:5498
+#: ../client.py:5913
 msgid "Argument to -n must be positive"
 msgstr "-n에 대한 인수는 양수여야 합니다."
 
 #. Translators: 'command' and 'reason' are
 #. keywords and should not be translated
-#: ../client.py:5511
+#: ../client.py:5926
 msgid "'command' and 'reason' columns cannot be used together."
 msgstr "'command' 및 'reason' 열을 함께 사용할 수 없습니다."
 
-#: ../client.py:5519
+#: ../client.py:5934
 #, python-format
 msgid "The '%s' column must be the last item in the -o list"
 msgstr "'%s' 열은 -o 목록에서 마지막 항목이어야 합니다."
 
-#: ../client.py:5526
+#: ../client.py:5941
 #, python-format
 msgid "Unknown output column '%s'"
 msgstr "알 수 없는 출력 열 '%s'"
 
-#: ../client.py:5536
+#: ../client.py:5951
 msgid "-H and -l may not be combined"
 msgstr "-H 와 -l 은 같이 사용될 수 없습니다"
 
-#: ../client.py:5539
+#: ../client.py:5954
 msgid "-o and -l may not be combined"
 msgstr "-o 와 -l 은 같이 사용할 수 없습니다."
 
-#: ../client.py:5542
+#: ../client.py:5957
 msgid "-n and -t may not be combined"
 msgstr "-n 과 -t 는 같이 사용할 수 없습니다."
 
-#: ../client.py:5595
+#: ../client.py:5960
+msgid "-o and -N may not be combined"
+msgstr "-o 와 -N 은 같이 사용할 수 없습니다."
+
+#: ../client.py:5963
+msgid "-l and -N may not be combined"
+msgstr "-l 과 -N 은 같이 사용될 수 없습니다"
+
+#: ../client.py:6002
+#, python-format
+msgid "%s: Release notes:"
+msgstr "%s: 릴리스 노트:"
+
+#: ../client.py:6006
+#, python-format
+msgid "%s: Release notes: None"
+msgstr "%s: 릴리스 노트: 없음"
+
+#: ../client.py:6031
 #, python-format
 msgid ""
 "History operation appeared to end before it started.  Start time: %"
 "(start_time)s, End time: %(end_time)s"
 msgstr "내역 작업이 시작되기 전에 종료된 것 같습니다.  시작 시간: %(start_time)s, 종료 시간: %(end_time)s"
 
-#: ../client.py:5641 ../client.py:5644
+#: ../client.py:6082 ../client.py:6085
 msgid "(Unknown)"
 msgstr "(알 수 없음)"
 
-#: ../client.py:5647 ../client.py:5650 ../client.py:5653
+#: ../client.py:6088 ../client.py:6091 ../client.py:6094
 msgid "(None)"
 msgstr "(없음)"
 
-#: ../client.py:5680
+#: ../client.py:6132
 #, python-format
 msgid "Duplicate column specified: %s"
 msgstr "중복 열이 지정됨: %s"
 
-#: ../client.py:5686
+#: ../client.py:6138
 msgid "Operation"
 msgstr "작업"
 
-#: ../client.py:5688
+#: ../client.py:6140
 msgid "Outcome"
 msgstr "출력"
 
-#: ../client.py:5689
+#: ../client.py:6141
 msgid "Reason"
 msgstr "이유"
 
-#: ../client.py:5690
+#: ../client.py:6142
 msgid "Client"
 msgstr "클라이언트"
 
-#: ../client.py:5691
+#: ../client.py:6143
 msgid "Version"
 msgstr "버전"
 
-#: ../client.py:5693
+#: ../client.py:6145
 msgid "User"
 msgstr "사용자"
 
-#: ../client.py:5697
+#: ../client.py:6149
 msgid "Boot Env."
 msgstr "부트 환경"
 
-#: ../client.py:5699
+#: ../client.py:6151
 msgid "Boot Env. UUID"
 msgstr "부트 환경 UUID"
 
-#: ../client.py:5701
+#: ../client.py:6153
 msgid "New Boot Env."
 msgstr "새 부트 환경"
 
-#: ../client.py:5703
+#: ../client.py:6155
 msgid "New Boot Env. UUID"
 msgstr "새 부트 환경 UUID"
 
-#: ../client.py:5706
+#: ../client.py:6158
 msgid "Snapshot"
 msgstr "스냅샷"
 
-#: ../client.py:5708
+#: ../client.py:6160
 msgid "Start Time"
 msgstr "시작 시간"
 
-#: ../client.py:5709
+#: ../client.py:6161
 msgid "End Time"
 msgstr "종료 시간"
 
-#: ../client.py:5710
+#: ../client.py:6162
 msgid "Total Time"
 msgstr "총 시간"
 
-#: ../client.py:5711
+#: ../client.py:6163
 msgid "Command"
 msgstr "명령"
 
-#: ../client.py:5715
+#: ../client.py:6164
+msgid "Release Notes"
+msgstr "릴리스 노트"
+
+#: ../client.py:6168
 msgid "Start State"
 msgstr "시작 상태"
 
-#: ../client.py:5719
+#: ../client.py:6172
 msgid "End State"
 msgstr "종료 상태"
 
-#: ../client.py:5723
+#: ../client.py:6176
 msgid "Errors"
 msgstr "오류"
 
-#: ../client.py:5729
+#: ../client.py:6182
 msgid "History purged."
 msgstr "내역이 제거되었습니다."
 
-#: ../client.py:5742
+#: ../client.py:6195
 msgid ""
 "\n"
 "The following proxy configuration is set in the environment:\n"
 msgstr "\n다음 프록시 구성이 환경에 설정되어 있습니다.\n"
 
-#: ../client.py:5745
+#: ../client.py:6198
 #, python-format
 msgid "http_proxy: %s\n"
 msgstr "http_proxy: %s\n"
 
-#: ../client.py:5747
+#: ../client.py:6200
 #, python-format
 msgid "https_proxy: %s\n"
 msgstr "https_proxy: %s\n"
 
-#: ../client.py:5759
+#: ../client.py:6212
 msgid "Image format updated."
 msgstr "이미지 형식이 업데이트되었습니다."
 
-#: ../client.py:5762
+#: ../client.py:6215
 msgid "Image format already current."
 msgstr "이미지 형식이 이미 최신입니다."
 
-#: ../client.py:5767
+#: ../client.py:6220
 #, python-format
 msgid "version: command does not take operands ('%s')"
 msgstr "version: 명령이 피연산자('%s')를 가져오지 않습니다."
 
-#: ../client.py:5798 ../pkgdep.py:108 ../pkgdep.py:220 ../pkgdep.py:538
-#: ../pkgrepo.py:1198 ../publish.py:718 ../sign.py:124 ../sysrepo.py:642
+#: ../client.py:6330 ../pkgdep.py:109 ../pkgdep.py:221 ../pkgdep.py:544
+#: ../pkgrepo.py:1203 ../publish.py:724 ../sign.py:124 ../sysrepo.py:863
 #: ../util/publish/pkgdiff.py:86 ../util/publish/pkgfmt.py:522
 #: ../util/publish/pkgmogrify.py:695
 #, python-format
 msgid "illegal global option -- %s"
 msgstr "잘못된 글로벌 옵션 -- %s"
 
-#: ../client.py:5811 ../publish.py:711
+#: ../client.py:6343 ../publish.py:717 ../pull.py:389
 #, python-format
 msgid "%(opt)s takes argument of form name=value, not %(arg)s"
 msgstr "%(opt)s은(는) %(arg)s이(가) 아닌 name=value 형식의 인수를 사용합니다."
 
-#: ../client.py:5889 ../client.py:5900 ../pkgdep.py:566 ../pkgrepo.py:1223
-#: ../publish.py:765
+#: ../client.py:6366 ../client.py:6377 ../pkgdep.py:572 ../pkgrepo.py:1228
+#: ../publish.py:771
 #, python-format
 msgid "unknown subcommand '%s'"
 msgstr "알 수 없는 하위 명령 '%s'"
 
-#: ../client.py:5904 ../pkgrepo.py:1217
+#: ../client.py:6381 ../pkgrepo.py:1222
 msgid "no subcommand specified"
 msgstr "하위 명령이 지정되지 않음"
 
-#: ../client.py:5909
+#: ../client.py:6386
 msgid "runid must be an integer"
 msgstr "runid는 정수여야 합니다."
 
-#: ../client.py:5929
+#: ../client.py:6407
 #, python-format
 msgid "-R not allowed for %s subcommand"
 msgstr "-R은 %s 하위 명령에 허용되지 않습니다."
 
-#: ../client.py:5934 ../client.py:5977 ../modules/misc.py:1099
-#: ../pkgrepo.py:1230 ../util/publish/pkgmerge.py:224
+#: ../client.py:6413 ../client.py:6461 ../modules/misc.py:1306
+#: ../pkgrepo.py:1235 ../util/publish/pkgmerge.py:224
 #, python-format
 msgid "illegal option -- %s"
 msgstr "잘못된 옵션입니다 -- %s"
 
-#: ../client.py:5949 ../pkgdep.py:274
+#: ../client.py:6428 ../pkgdep.py:275
 msgid ""
 "Could not find image.  Use the -R option or set $PKG_IMAGE to the\n"
 "location of an image."
 msgstr "이미지를 찾을 수 없습니다.  -R 옵션을 사용하거나 $PKG_IMAGE를\n이미지의 위치로 설정하십시오."
 
-#: ../client.py:6012
+#: ../client.py:6496
 #, python-format
 msgid ""
 "Linked image exception(s):\n"
 "%s"
 msgstr "링크된 이미지 예외:\n%s"
 
-#: ../client.py:6033
+#: ../client.py:6517
 msgid ""
 "\n"
 "Errors were encountered while attempting to retrieve package or file data "
@@ -1636,7 +1731,7 @@ msgid ""
 "the requested operation."
 msgstr "\n요청된 작업에 대한 패키지나 파일 데이터 검색을 시도하는 동안\n오류가 발생했습니다."
 
-#: ../client.py:6036
+#: ../client.py:6520
 #, python-format
 msgid ""
 "Details follow:\n"
@@ -1644,7 +1739,7 @@ msgid ""
 "%s"
 msgstr "세부 정보:\n\n%s"
 
-#: ../client.py:6042
+#: ../client.py:6526
 #, python-format
 msgid ""
 "\n"
@@ -1654,7 +1749,7 @@ msgid ""
 "%s"
 msgstr "\n요청한 작업을 수행하기 위해 이미지 상태 정보를 읽으려고 시도하는 동안\n오류가 발생했습니다. 다음은 세부 정보입니다.\n\n%s"
 
-#: ../client.py:6049
+#: ../client.py:6533
 msgid ""
 "\n"
 "Unable to contact a valid package repository. This may be due to a problem "
@@ -1663,7 +1758,7 @@ msgid ""
 "repository's location."
 msgstr "\n유효한 패키지 저장소에 연결할 수 없습니다. 저장소, 잘못된 네트워크 구성 또는 잘못된 pkg 클라이언트 구성의 문제 때문일 수 있습니다. 클라이언트 네트워크 구성 및 저장소 위치를 확인하십시오."
 
-#: ../client.py:6054
+#: ../client.py:6538
 #, python-format
 msgid ""
 "\n"
@@ -1672,23 +1767,23 @@ msgid ""
 "%s"
 msgstr "\n추가 세부 정보:\n\n%s"
 
-#: ../client.py:6062
+#: ../client.py:6546
 msgid ""
 "An error was encountered while attempting to load history information\n"
 "about past client operations."
 msgstr "지난 클라이언트 작업에 대한 내역 정보를 로드하는 중에 오류가\n발생했습니다."
 
-#: ../client.py:6071
+#: ../client.py:6555
 msgid ""
 "An error was encountered while attempting to store information about the\n"
 "current operation in client history."
 msgstr "클라이언트 내역에서 현재 작업에 대한 정보를 저장하는 중에 오류가\n발생했습니다."
 
-#: ../client.py:6081
+#: ../client.py:6565
 msgid "An error was encountered while attempting to purge client history."
 msgstr "클라이언트 내역을 제거하는 중에 오류가 발생했습니다."
 
-#: ../client.py:6088
+#: ../client.py:6572
 #, python-format
 msgid ""
 "The pkg command appears out of sync with the libraries provided\n"
@@ -1696,14 +1791,14 @@ msgid ""
 "API version is %(api)s."
 msgstr "pkg 명령이 pkg:/package/pkg에 의해 제공된 라이브러리와 동기화되지\n않은 것 같습니다. 클라이언트 버전은 %(client)s이고 라이브러리\nAPI 버전은 %(api)s입니다."
 
-#: ../client.py:6103
+#: ../client.py:6587
 #, python-format
 msgid ""
 "\n"
 "%s%s"
 msgstr "\n%s%s"
 
-#: ../client.py:6105
+#: ../client.py:6589
 msgid ""
 "\n"
 "\n"
@@ -2450,7 +2545,8 @@ msgstr "세부 정보"
 msgid "Do not notify me about these publishers again."
 msgstr "이러한 게시자에 대해 다시 알리지 않습니다."
 
-#: ../gui/data/packagemanager.ui.h:64 ../modules/gui/installupdate.py:162
+#: ../gui/data/packagemanager.ui.h:64 ../modules/client/progress.py:706
+#: ../modules/gui/installupdate.py:162
 msgid "Download"
 msgstr "다운로드"
 
@@ -2566,7 +2662,7 @@ msgstr "환경 설정"
 msgid "Preparation"
 msgstr "준비"
 
-#: ../gui/data/packagemanager.ui.h:94
+#: ../gui/data/packagemanager.ui.h:94 ../modules/client/progress.py:721
 msgid "Processing"
 msgstr "처리 중"
 
@@ -3042,7 +3138,7 @@ msgstr "%s 디렉토리를 만들 수 없습니다. 이 디렉토리가 링크�
 #. or a package has been poorly implemented.
 #. User has replaced item with mountpoint, or a
 #. package has been poorly implemented.
-#: ../modules/actions/directory.py:220 ../modules/actions/generic.py:944
+#: ../modules/actions/directory.py:220 ../modules/actions/generic.py:957
 #, python-format
 msgid ""
 "Unable to remove %s; it is in use as a mountpoint.  To continue, please "
@@ -3052,79 +3148,79 @@ msgstr "%s을(를) 제거할 수 없습니다. 마운트 지점으로 사용 중
 #. os.path.ismount() is broken for lofs
 #. filesystems, so give a more generic
 #. error.
-#: ../modules/actions/directory.py:231 ../modules/actions/generic.py:954
+#: ../modules/actions/directory.py:231 ../modules/actions/generic.py:967
 #, python-format
 msgid ""
 "Unable to remove %s; it is in use by the system, another process, or as a "
 "mountpoint."
 msgstr "%s을(를) 제거할 수 없습니다. 시스템이나 다른 프로세스에서 사용 중이거나 마운트 지점으로 사용 중입니다."
 
-#: ../modules/actions/driver.py:825
+#: ../modules/actions/driver.py:839
 #, python-format
 msgid "etc/name_to_major: more than one entry for '%s' is present"
 msgstr "etc/name_to_major: '%s'에 대해 둘 이상의 항목이 있습니다."
 
-#: ../modules/actions/driver.py:830
+#: ../modules/actions/driver.py:844
 #, python-format
 msgid "etc/name_to_major: '%s' entry not present"
 msgstr "etc/name_to_major: '%s' 항목이 없습니다."
 
-#: ../modules/actions/driver.py:837
+#: ../modules/actions/driver.py:851
 #, python-format
 msgid "extra alias '%s' found in etc/driver_aliases"
 msgstr "etc/driver_aliases에 추가 별칭 '%s'이(가) 있습니다."
 
-#: ../modules/actions/driver.py:840
+#: ../modules/actions/driver.py:854
 #, python-format
 msgid "alias '%s' missing from etc/driver_aliases"
 msgstr "etc/driver_aliases에서 별칭 '%s'이(가) 누락되었습니다."
 
-#: ../modules/actions/driver.py:846
+#: ../modules/actions/driver.py:860
 #, python-format
 msgid "extra class '%s' found in etc/driver_classes"
 msgstr "etc/driver_classes에 추가 클래스 '%s'이(가) 있습니다."
 
-#: ../modules/actions/driver.py:849
+#: ../modules/actions/driver.py:863
 #, python-format
 msgid "class '%s' missing from etc/driver_classes"
 msgstr "etc/driver_classes에서 클래스 '%s'이(가) 누락되었습니다."
 
-#: ../modules/actions/driver.py:855
+#: ../modules/actions/driver.py:869
 #, python-format
 msgid "extra minor node permission '%s' found in etc/minor_perm"
 msgstr "etc/minor_perm에 추가 보조 노드 권한 '%s'이(가) 있습니다."
 
-#: ../modules/actions/driver.py:858
+#: ../modules/actions/driver.py:872
 #, python-format
 msgid "minor node permission '%s' missing from etc/minor_perm"
 msgstr "etc/minor_perm에서 보조 노드 권한 '%s'이(가) 누락되었습니다."
 
-#: ../modules/actions/driver.py:876
+#: ../modules/actions/driver.py:890
 #, python-format
 msgid "extra device policy '%s' found in etc/security/device_policy"
 msgstr "etc/security/device_policy에 추가 장치 정책 '%s'이(가) 있습니다."
 
-#: ../modules/actions/driver.py:879
+#: ../modules/actions/driver.py:893
 #, python-format
 msgid "device policy '%s' missing from etc/security/device_policy"
 msgstr "etc/security/device_policy에서 장치 정책 '%s'이(가) 누락되었습니다."
 
-#: ../modules/actions/driver.py:885
+#: ../modules/actions/driver.py:899
 #, python-format
 msgid "extra device privilege '%s' found in etc/security/extra_privs"
 msgstr "etc/security/extra_privs에 추가 장치 권한 '%s'이(가) 있습니다."
 
-#: ../modules/actions/driver.py:888
+#: ../modules/actions/driver.py:902
 #, python-format
 msgid "device privilege '%s' missing from etc/security/extra_privs"
 msgstr "etc/security/extra_privs에서 장치 권한 '%s'이(가) 누락되었습니다."
 
-#: ../modules/actions/file.py:196 ../modules/actions/license.py:97
+#: ../modules/actions/file.py:196 ../modules/actions/license.py:100
 #, python-format
 msgid "Error decompressing payload: %s"
 msgstr "페이로드 압축을 해제하는 중 오류 발생: %s"
 
-#: ../modules/actions/file.py:205 ../modules/actions/license.py:105
+#: ../modules/actions/file.py:205 ../modules/actions/license.py:108
 #, python-format
 msgid ""
 "Action data hash verification failure: expected: %(expected)s computed: %"
@@ -3159,7 +3255,7 @@ msgstr "해시: %(found)s은(는) %(expected)s이(가) 되어야 합니다."
 msgid "Skipping: Permission Denied"
 msgstr "건너뛰기: 권한이 거부됨"
 
-#: ../modules/actions/file.py:371 ../modules/actions/generic.py:844
+#: ../modules/actions/file.py:371 ../modules/actions/generic.py:857
 #: ../modules/actions/hardlink.py:140 ../modules/actions/user.py:214
 #, python-format
 msgid "Unexpected Error: %s"
@@ -3170,131 +3266,131 @@ msgstr "예기치 못한 오류: %s"
 msgid "Unexpected Exception: %s"
 msgstr "예기치 못한 예외: %s"
 
-#: ../modules/actions/generic.py:185 ../modules/actions/signature.py:100
+#: ../modules/actions/generic.py:197 ../modules/actions/signature.py:100
 #, python-format
 msgid "No such file: '%s'."
 msgstr "다음의 파일이 존재하지 않습니다: '%s'."
 
-#: ../modules/actions/generic.py:188 ../modules/actions/signature.py:103
+#: ../modules/actions/generic.py:200 ../modules/actions/signature.py:103
 #, python-format
 msgid "'%s' is not a file."
 msgstr "'%s' 는 파일이 아닙니다."
 
-#: ../modules/actions/generic.py:525 ../modules/actions/generic.py:564
+#: ../modules/actions/generic.py:538 ../modules/actions/generic.py:577
 #, python-format
 msgid ""
 "Unable to create %(path)s; a parent directory %(p)s has been replaced with a "
 "file or link.  Please restore the parent directory and try again."
 msgstr "%(path)s을(를) 만들 수 없습니다. 부모 디렉토리 %(p)s이(가) 파일 또는 링크로 바뀌었습니다. 부모 디렉토리를 복원하고 다시 시도하십시오."
 
-#: ../modules/actions/generic.py:661
+#: ../modules/actions/generic.py:674
 msgid "mode is required; value must be of the form '644', '0644', or '04755'."
 msgstr "모드가 필요합니다. 값은 '644', '0644' 또는 '04755' 형식이어야 합니다."
 
-#: ../modules/actions/generic.py:665
+#: ../modules/actions/generic.py:678
 msgid "mode may only be specified once"
 msgstr "모드는 한 번만 지정할 수 있습니다."
 
-#: ../modules/actions/generic.py:668
+#: ../modules/actions/generic.py:681
 #, python-format
 msgid ""
 "'%s' is not a valid mode; value must be of the form '644', '0644', or "
 "'04755'."
 msgstr "'%s'이(가) 유효한 모드가 아닙니다. 값은 '644', '0644' 또는 '04755' 형식이어야 합니다."
 
-#: ../modules/actions/generic.py:675
+#: ../modules/actions/generic.py:688
 msgid "owner may only be specified once"
 msgstr "소유자는 한 번만 지정할 수 있습니다."
 
-#: ../modules/actions/generic.py:681
+#: ../modules/actions/generic.py:694
 msgid "group may only be specified once"
 msgstr "그룹은 한 번만 지정할 수 있습니다."
 
-#: ../modules/actions/generic.py:715
+#: ../modules/actions/generic.py:728
 #, python-format
 msgid ""
 "'%(path)s' cannot be installed; the owner '%(owner)s' was removed by '%"
 "(src_fmri)s'."
 msgstr "'%(path)s'을(를) 설치할 수 없습니다. 소유자 '%(owner)s'이(가) '%(src_fmri)s'에 의해 제거되었습니다."
 
-#: ../modules/actions/generic.py:731
+#: ../modules/actions/generic.py:744
 #, python-format
 msgid ""
 "'%(path)s' cannot be installed; '%(owner)s' is an unknown or invalid user."
 msgstr "'%(path)s'을(를) 설치할 수 없습니다. '%(owner)s'이(가) 알 수 없거나 잘못된 사용자입니다."
 
-#: ../modules/actions/generic.py:758
+#: ../modules/actions/generic.py:771
 #, python-format
 msgid ""
 "'%(path)s' cannot be installed; the group '%(group)s' was removed by '%"
 "(src_fmri)s'."
 msgstr "'%(path)s'을(를) 설치할 수 없습니다. 그룹 '%(group)s'이(가) '%(src_fmri)s'에 의해 제거되었습니다."
 
-#: ../modules/actions/generic.py:774
+#: ../modules/actions/generic.py:787
 #, python-format
 msgid ""
 "'%(path)s' cannot be installed; '%(group)s' is an unknown or invalid group."
 msgstr "'%(path)s'을(를) 설치할 수 없습니다. '%(group)s'이(가) 알 수 없거나 잘못된 그룹입니다."
 
-#: ../modules/actions/generic.py:814
+#: ../modules/actions/generic.py:827
 #, python-format
 msgid "Owner: %s is unknown"
 msgstr "소유자: %s을(를) 알 수 없습니다."
 
-#: ../modules/actions/generic.py:821
+#: ../modules/actions/generic.py:834
 #, python-format
 msgid "Group: %s is unknown "
 msgstr "그룹: %s을(를) 알 수 없습니다. "
 
-#: ../modules/actions/generic.py:839
+#: ../modules/actions/generic.py:852
 #, python-format
 msgid "Missing: %s does not exist"
 msgstr "누락: %s이(가) 없습니다."
 
-#: ../modules/actions/generic.py:842 ../modules/actions/user.py:212
+#: ../modules/actions/generic.py:855 ../modules/actions/user.py:212
 msgid "Skipping: Permission denied"
 msgstr "건너뛰기: 권한이 거부되었습니다."
 
-#: ../modules/actions/generic.py:851
+#: ../modules/actions/generic.py:864
 #, python-format
 msgid "File Type: '%(found)s' should be '%(expected)s'"
 msgstr "파일 유형: '%(found)s'은(는) '%(expected)s'이(가) 되어야 합니다."
 
-#: ../modules/actions/generic.py:858
+#: ../modules/actions/generic.py:871
 #, python-format
 msgid ""
 "Owner: '%(found_name)s (%(found_id)d)' should be '%(expected_name)s (%"
 "(expected_id)d)'"
 msgstr "소유자: '%(found_name)s (%(found_id)d)'은(는) '%(expected_name)s (%(expected_id)d)'이(가) 되어야 합니다."
 
-#: ../modules/actions/generic.py:867
+#: ../modules/actions/generic.py:880
 #, python-format
 msgid ""
 "Group: '%(found_name)s (%(found_id)s)' should be '%(expected_name)s (%"
 "(expected_id)s)'"
 msgstr "그룹: '%(found_name)s (%(found_id)s)'은(는) '%(expected_name)s (%(expected_id)s)'이(가) 되어야 합니다."
 
-#: ../modules/actions/generic.py:876
+#: ../modules/actions/generic.py:889
 #, python-format
 msgid "Mode: 0%(found).3o should be 0%(expected).3o"
 msgstr "모드: 0%(found).3o은(는) 0%(expected).3o이(가) 되어야 합니다."
 
-#: ../modules/actions/generic.py:1039
+#: ../modules/actions/generic.py:1052
 #, python-format
 msgid "%s may only be specified once"
 msgstr "%s은(는) 한 번만 지정할 수 있습니다."
 
-#: ../modules/actions/generic.py:1045
+#: ../modules/actions/generic.py:1058
 #, python-format
 msgid "%s must be an integer"
 msgstr "%s은(는) 정수여야 합니다."
 
-#: ../modules/actions/generic.py:1052
+#: ../modules/actions/generic.py:1065
 #, python-format
 msgid "%s is required"
 msgstr "%s이(가) 필요합니다."
 
-#: ../modules/actions/generic.py:1097
+#: ../modules/actions/generic.py:1110
 #, python-format
 msgid ""
 "Cannot install '%(final_path)s'; parent directory %(parent_dir)s is a link "
@@ -3340,12 +3436,12 @@ msgstr "디렉토리 var/sadm/pkg/%s이(가) 누락되었습니다."
 msgid "Missing file var/sadm/pkg/%s/pkginfo"
 msgstr "파일 var/sadm/pkg/%s/pkginfo가 누락되었습니다."
 
-#: ../modules/actions/license.py:143
+#: ../modules/actions/license.py:146
 #, python-format
 msgid "License file %s does not exist."
 msgstr "라이센스 파일 %s 가 존재하지 않습니다."
 
-#: ../modules/actions/license.py:149
+#: ../modules/actions/license.py:152
 #, python-format
 msgid "Hash: '%(found)s' should be '%(expected)s'"
 msgstr "해시: '%(found)s'은(는) '%(expected)s'이(가) 되어야 합니다."
@@ -3410,7 +3506,7 @@ msgid "Unknown info_needed type: %s"
 msgstr "인식할 수 없는 info_needed 타입입니다: %s"
 
 #. API consumer passed an unknown type for img_path.
-#: ../modules/client/api.py:377
+#: ../modules/client/api.py:364
 msgid "Unknown img_path type."
 msgstr "인식할 수 없는 img_path 타입입니다."
 
@@ -3421,24 +3517,24 @@ msgstr "인식할 수 없는 img_path 타입입니다."
 #. before the format of an image is updated.  Yes, this
 #. means that if the refresh was needed to do that, then
 #. this isn't useful, but this is as good as it gets.)
-#: ../modules/client/api.py:601
+#: ../modules/client/api.py:610
 #, python-format
 msgid ""
 "Skipping publisher metadata refresh;image rooted at %s must have its format "
 "updated before a refresh can occur."
 msgstr "게시자 메타 데이터 새로 고침을 건너 뜁니다. 새로 고침 이전에 %s에 루트 지정된 이미지의 형식이 업데이트되어야 합니다."
 
-#: ../modules/client/api.py:1853 ../modules/client/api.py:1917
+#: ../modules/client/api.py:1970 ../modules/client/api.py:2034
 #, python-format
 msgid "Start time must be older than finish time: %s"
 msgstr "시작 시간은 종료 시간 이후여야 함: %s"
 
-#: ../modules/client/api.py:1863
+#: ../modules/client/api.py:1980
 #, python-format
 msgid "No history entries found for %s"
 msgstr "%s에 대한 내역 항목을 찾을 수 없습니다."
 
-#: ../modules/client/api.py:1931
+#: ../modules/client/api.py:2048
 #, python-format
 msgid ""
 "Invalid time format '%s'.  Please use %%Y-%%m-%%dT%%H:%%M:%%S or\n"
@@ -3580,7 +3676,7 @@ msgstr "'%s'이(가) 여러 패키지에 일치합니다."
 msgid "'%s' is an illegal FMRI"
 msgstr "'%s'은(는) 잘못된 FMRI입니다."
 
-#: ../modules/client/api_errors.py:442 ../modules/client/api_errors.py:577
+#: ../modules/client/api_errors.py:442
 msgid "The following different patterns specify the same package(s):"
 msgstr "다음과 같은 다양한 패턴에서 동일한 패키지를 지정합니다."
 
@@ -3643,6 +3739,11 @@ msgstr "다음 패키지는 이미 설치되어 있으므로 해당 패키지에
 #: ../modules/client/api_errors.py:570
 msgid "The following mediations are not syntactically valid:"
 msgstr "다음 해결책은 구문적으로 유효하지 않습니다."
+
+#: ../modules/client/api_errors.py:577
+msgid ""
+"The following patterns specify different versions of the same package(s):"
+msgstr "다음 패턴에서 서로 다른 버전의 동일한 패키지를 지정합니다."
 
 #: ../modules/client/api_errors.py:587
 msgid "No solution was found to satisfy constraints"
@@ -4124,7 +4225,7 @@ msgstr "'%(value)s'은(는) 저장소 속성 '%(attribute)s'에 대한 유효한
 msgid "'%s' is not a valid repository collection type."
 msgstr "'%s'은(는) 유효한 저장소 컬렉션 유형이 아닙니다."
 
-#: ../modules/client/api_errors.py:1638
+#: ../modules/client/api_errors.py:1638 ../modules/client/api_errors.py:1953
 #, python-format
 msgid "'%s' is not a valid URI."
 msgstr "'%s'은(는) 유효한 URI가 아닙니다."
@@ -4163,42 +4264,64 @@ msgstr "미러 '%s'이(가) 지정한 게시자에 대해 이미 존재합니다
 
 #: ../modules/client/api_errors.py:1703
 #, python-format
+msgid "Mirror '%s' is already accessible through the system repository."
+msgstr "'%s' 미러는 이미 시스템 저장소를 통해 액세스할 수 있습니다."
+
+#: ../modules/client/api_errors.py:1712
+#, python-format
 msgid "Origin '%s' already exists for the specified publisher."
 msgstr "원본 '%s'이(가) 지정한 게시자에 대해 이미 존재합니다."
 
-#: ../modules/client/api_errors.py:1716
+#: ../modules/client/api_errors.py:1721
+#, python-format
+msgid "Origin '%s' is already accessible through the system repository."
+msgstr "'%s' 원본은 이미 시스템 저장소를 통해 액세스할 수 있습니다."
+
+#: ../modules/client/api_errors.py:1730
+#, python-format
+msgid ""
+"Unable to remove origin '%s' since it is provided by the system repository."
+msgstr "'%s' 원본은 시스템 저장소에서 제공하므로 제거할 수 없습니다."
+
+#: ../modules/client/api_errors.py:1738
+#, python-format
+msgid ""
+"Unable to remove mirror '%s' since it is provided by the system repository."
+msgstr "'%s' 미러는 시스템 저장소에서 제공하므로 제거할 수 없습니다."
+
+#: ../modules/client/api_errors.py:1751
 #, python-format
 msgid ""
 "Unable to retrieve requested package data for publisher %s; no repositories "
 "are currently configured for use with this publisher."
 msgstr "%s 게시자에 대해 요청된 패키지 데이터를 검색할 수 없습니다. 이 게시자와 사용하도록 현재 구성된 저장소가 없습니다."
 
-#: ../modules/client/api_errors.py:1725
+#: ../modules/client/api_errors.py:1760
 msgid "Cannot search a repository before or after itself"
 msgstr "저장소 자체보다 이전 또는 이후 저장소를 검색할 수 없습니다."
 
-#: ../modules/client/api_errors.py:1736
+#: ../modules/client/api_errors.py:1771
 #, python-format
 msgid ""
 "%s is an unknown publisher; no other publishers can be ordered relative to "
 "it."
 msgstr "%s은(는) 알 수 없는 게시자입니다. 이를 기준으로 다른 게시자의 순서를 지정할 수 없습니다."
 
-#: ../modules/client/api_errors.py:1745
+#: ../modules/client/api_errors.py:1780
 msgid "Cannot remove the selected repository for a publisher."
 msgstr "게시자에 대해 선택한 저장소를 제거할 수 없습니다."
 
-#: ../modules/client/api_errors.py:1754
+#: ../modules/client/api_errors.py:1789
 #, python-format
 msgid "Unknown legal URI '%s'."
 msgstr "알 수 없는 합법적 URI '%s'입니다."
 
-#: ../modules/client/api_errors.py:1762
+#: ../modules/client/api_errors.py:1797
 #, python-format
 msgid "Unknown publisher '%s'."
 msgstr "알 수 없는 게시자 '%s'입니다."
 
-#: ../modules/client/api_errors.py:1779
+#: ../modules/client/api_errors.py:1814
 #, python-format
 msgid ""
 "The repository at %(location)s does not contain package data for %(unknown)"
@@ -4208,7 +4331,7 @@ msgid ""
 "provided publisher does not match those known by the repository."
 msgstr "%(location)s의 저장소에 %(unknown)s이(가) 아니라 %(known)s의 패키지 데이터만 포함됩니다.\n\n저장소 위치가 유효하지 않거나 제공된 게시자가 저장소에 의해 알려진 게시자와 일치하지 않기 때문입니다."
 
-#: ../modules/client/api_errors.py:1789
+#: ../modules/client/api_errors.py:1824
 #, python-format
 msgid ""
 "One or more of the repository origin(s) listed below contains package data "
@@ -4221,78 +4344,91 @@ msgid ""
 "repository origin does not match the client."
 msgstr "아래에 나열된 하나 이상의 저장소 원본에 %(unknown)s이(가) 아니라 %(known)s의 패키지 데이터가 포함됩니다.\n\n%(origins)s\n\n이 게시자에 대해 저장소 원본 중 하나가 유효하지 않거나 저장소 원본에서 검색된 알려진 게시자 목록이 클라이언트와 일치하지 않기 때문입니다."
 
-#: ../modules/client/api_errors.py:1799
+#: ../modules/client/api_errors.py:1834
 #, python-format
 msgid ""
 "The specified publisher repository does not contain any package data for %"
 "(unknown)s; only %(known)s."
 msgstr "지정된 게시자 저장소에 %(unknown)s이(가) 아니라 %(known)s의 패키지 데이터만 포함됩니다."
 
-#: ../modules/client/api_errors.py:1810
+#: ../modules/client/api_errors.py:1845
 #, python-format
 msgid "Unknown related URI '%s'."
 msgstr "알 수 없는 관련 URI '%s'입니다."
 
-#: ../modules/client/api_errors.py:1818
+#: ../modules/client/api_errors.py:1853
 #, python-format
 msgid "Unknown repository '%s'."
 msgstr "알 수 없는 저장소 '%s'입니다."
 
-#: ../modules/client/api_errors.py:1826
+#: ../modules/client/api_errors.py:1861
 #, python-format
 msgid "Unknown repository mirror '%s'."
 msgstr "알 수 없는 저장소 미러 '%s'입니다."
 
-#: ../modules/client/api_errors.py:1840
+#: ../modules/client/api_errors.py:1875
 #, python-format
 msgid ""
 "Publisher '%(pub)s' has no repositories that support the '%(op)s' operation."
 msgstr "'%(pub)s' 게시자에 '%(op)s' 작업을 지원하는 저장소가 없습니다."
 
-#: ../modules/client/api_errors.py:1855
+#: ../modules/client/api_errors.py:1890
 msgid ""
 "The specified package repository does not provide publisher configuration "
 "information."
 msgstr "지정된 패키지 저장소에서 게시자 구성 정보를 제공하지 않습니다."
 
-#: ../modules/client/api_errors.py:1858
+#: ../modules/client/api_errors.py:1893
 #, python-format
 msgid ""
 "The package repository at %s does not provide publisher configuration "
 "information or the information provided is incomplete."
 msgstr "%s의 패키지 저장소에서 게시자 구성 정보를 제공하지 않거나 제공된 정보가 불완전합니다."
 
-#: ../modules/client/api_errors.py:1862
+#: ../modules/client/api_errors.py:1897
 #, python-format
 msgid ""
 "One of the package repository origins for %s does not provide publisher "
 "configuration information or the information provided is incomplete."
 msgstr "%s의 패키지 저장소 원본 중 하나에서 게시자 구성 정보를 제공하지 않거나 제공된 정보가 불완전합니다."
 
-#: ../modules/client/api_errors.py:1872
+#: ../modules/client/api_errors.py:1907
 #, python-format
 msgid "Unknown repository origin '%s'"
 msgstr "알 수 없는 저장소 원본 '%s'입니다."
 
-#: ../modules/client/api_errors.py:1883
+#: ../modules/client/api_errors.py:1918
 #, python-format
 msgid ""
 "The URI '%(uri)s' uses the unsupported scheme '%(scheme)s'.  Supported "
 "schemes are file://, http://, and https://."
 msgstr "URI '%(uri)s'에서 지원되지 않는 체계 '%(scheme)s'을(를) 사용합니다. 지원되는 체계는 file://, http:// 및 https://입니다."
 
-#: ../modules/client/api_errors.py:1887
+#: ../modules/client/api_errors.py:1922
 msgid ""
 "The specified URI uses an unsupported scheme.  Supported schemes are: "
 "file://, http://, and https://."
 msgstr "지정된 URI에서 지원되지 않는 체계를 사용합니다. 지원되는 체계는 file://, http:// 및 https://입니다."
 
-#: ../modules/client/api_errors.py:1896
+#: ../modules/client/api_errors.py:1931
 #, python-format
 msgid "'%(attr)s' is not supported for '%(scheme)s'."
 msgstr "'%(attr)s'은(는) '%(scheme)s'에 대해 지원되지 않습니다."
 
-#: ../modules/client/api_errors.py:1905
+#: ../modules/client/api_errors.py:1942
+#, python-format
+msgid ""
+"The proxy URI '%(uri)s' uses the unsupported scheme '%(scheme)s'.  Supported "
+"schemes are http://, and https://."
+msgstr "프록시 URI '%(uri)s'에서 지원되지 않는 체계 '%(scheme)s'을(를) 사용합니다. 지원되는 체계는 http:// 및 https://입니다."
+
+#: ../modules/client/api_errors.py:1946
+msgid ""
+"The specified proxy URI uses an unsupported scheme.  Supported schemes are: "
+"http://, and https://."
+msgstr "지정된 프록시 URI에서 지원되지 않는 체계를 사용합니다. 지원되는 체계는 http:// 및 https://입니다."
+
+#: ../modules/client/api_errors.py:1961
 msgid ""
 "pkg is configured to use the system repository (via the use-system-repo\n"
 "property) but it could not get the host and port from\n"
@@ -4303,59 +4439,59 @@ msgid ""
 "of those services or setting the PKG_SYSREPO_URL environment variable.\n"
 msgstr "use-system-repo 등록 정보를 통해 패키지가 시스템 저장소를\n사용하도록 구성되어 있지만 호스트 및 포트를\nsvc:/application/pkg/zones-proxy-client 또는 svc:/application/pkg/system-저장소에서 가져올 수 없습니다. 또한 \nPKG_SYSREPO_URL 환경 변수가 설정되지 않았습니다.해당 서비스 중 하나를 사용으로 설정하거나\nPKG_SYSREPO_URL 환경 변수를 설정해 보십시오.\n"
 
-#: ../modules/client/api_errors.py:1937
+#: ../modules/client/api_errors.py:1993
 #, python-format
 msgid ""
 "The relevant signature action is found in %(pfmri)s and has a hash of %(hsh)s"
 msgstr "관련 서명 작업이 %(pfmri)s에서 발견되었으며 %(hsh)s의 해시를 포함합니다."
 
-#: ../modules/client/api_errors.py:1941
+#: ../modules/client/api_errors.py:1997
 #, python-format
 msgid "The package involved is:%s"
 msgstr "포함된 패키지는 %s입니다."
 
-#: ../modules/client/api_errors.py:1943
+#: ../modules/client/api_errors.py:1999
 #, python-format
 msgid "The relevant signature action's value attribute is %s"
 msgstr "관련 서명 작업의 값 속성은 %s입니다."
 
-#: ../modules/client/api_errors.py:1968
+#: ../modules/client/api_errors.py:2024
 #, python-format
 msgid ""
 "The signature action %(act)s was made using a version (%(ver)s) this version "
 "of pkg(5) doesn't understand."
 msgstr "서명 작업 %(act)s이(가) 이 버전의 pkg(5)에서 인식할 수 없는 버전(%(ver)s)을 사용하여 만들어졌습니다."
 
-#: ../modules/client/api_errors.py:1991
+#: ../modules/client/api_errors.py:2047
 #, python-format
 msgid ""
 "Certificate %s has been modified on disk. Its hash value is not what was "
 "expected."
 msgstr "%s 인증서가 디스크에서 수정되었습니다. 해당 해시 값이 예상한 값이 아닙니다."
 
-#: ../modules/client/api_errors.py:2000
+#: ../modules/client/api_errors.py:2056
 msgid "Chain was rooted in an untrusted self-signed certificate.\n"
 msgstr "신뢰되지 않는 자체 서명된 인증서에 체인의 경로가 지정되었습니다.\n"
 
-#: ../modules/client/api_errors.py:2015
+#: ../modules/client/api_errors.py:2071
 msgid "The following problems were encountered:\n"
 msgstr "다음과 같은 문제가 발생했습니다.\n"
 
-#: ../modules/client/api_errors.py:2017
+#: ../modules/client/api_errors.py:2073
 #, python-format
 msgid ""
 "The certificate which issued this certificate:%(subj)s could not be found. "
 "The issuer is:%(issuer)s\n"
 msgstr "이 인증서를 발행한 인증서 %(subj)s을(를) 찾지 못했습니다. 발행자는 %(issuer)s입니다.\n"
 
-#: ../modules/client/api_errors.py:2033
+#: ../modules/client/api_errors.py:2089
 #, python-format
 msgid ""
 "This certificate was revoked:%(cert)s for this reason:\n"
 "%(reason)s"
 msgstr "다음 이유로 인해 이 인증서가 취소되었습니다. %(cert)s\n%(reason)s"
 
-#: ../modules/client/api_errors.py:2049
+#: ../modules/client/api_errors.py:2105
 #, python-format
 msgid ""
 "A signature in %(pfmri)s could not be verified for this reason:\n"
@@ -4363,7 +4499,7 @@ msgid ""
 "The signature's hash is %(hash)s"
 msgstr "다음 이유로 인해 %(pfmri)s의 서명을 확인하지 못했습니다.\n%(reason)s\n서명의 해시는 %(hash)s입니다."
 
-#: ../modules/client/api_errors.py:2055
+#: ../modules/client/api_errors.py:2111
 #, python-format
 msgid ""
 "The signature with this signature value:\n"
@@ -4372,21 +4508,21 @@ msgid ""
 "%(reason)s\n"
 msgstr "서명 값:\n%(sigval)s\n을(를) 가진 서명을 다음 이유로 인해 확인하지 못했습니다.\n%(reason)s\n"
 
-#: ../modules/client/api_errors.py:2071
+#: ../modules/client/api_errors.py:2127
 #, python-format
 msgid ""
 "The policy for %(pub_str)s requires signatures to be present but no "
 "signature was found in %(fmri_str)s."
 msgstr "%(pub_str)s의 정책을 사용하려면 서명이 필요하지만 %(fmri_str)s에서 서명을 찾을 수 없습니다."
 
-#: ../modules/client/api_errors.py:2075
+#: ../modules/client/api_errors.py:2131
 #, python-format
 msgid ""
 "The policy for %(pub_str)s requires signatures to be present but no "
 "signature was found."
 msgstr "%(pub_str)s의 정책을 사용하려면 서명이 필요하지만 서명을 찾을 수 없습니다."
 
-#: ../modules/client/api_errors.py:2092
+#: ../modules/client/api_errors.py:2148
 #, python-format
 msgid ""
 "The policy for %(pub_str)s requires certain CNs to be seen in a chain of "
@@ -4395,7 +4531,7 @@ msgid ""
 "%(missing)s"
 msgstr "%(pub_str)s의 정책을 사용하려면 신뢰 기반의 체인에서 특정 CN을 확인해야 합니다. 필요한 다음 이름을 이 패키지에서 찾지 못했습니다. %(fmri_str)s.\n%(missing)s"
 
-#: ../modules/client/api_errors.py:2098
+#: ../modules/client/api_errors.py:2154
 #, python-format
 msgid ""
 "The policy for %(pub_str)s requires certain CNs to be seen in a chain of "
@@ -4403,7 +4539,7 @@ msgid ""
 "%(missing)s"
 msgstr "%(pub_str)s의 정책을 사용하려면 트러스트 체인에서 특정 CN을 확인해야 합니다. 필요한 다음 이름을 찾지 못했습니다.\n%(missing)s"
 
-#: ../modules/client/api_errors.py:2113
+#: ../modules/client/api_errors.py:2169
 #, python-format
 msgid ""
 "The certificate whose subject is %(cert)s could not be verified because it "
@@ -4412,7 +4548,7 @@ msgid ""
 "Extension value:%(val)s"
 msgstr "제목이 %(cert)s인 인증서가 pkg5에서 아직 처리할 수 없는 중요한 확장을 사용하므로 이 인증서를 확인하지 못했습니다.\n확장 이름: %(name)s\n확장 값: %(val)s"
 
-#: ../modules/client/api_errors.py:2131
+#: ../modules/client/api_errors.py:2187
 #, python-format
 msgid ""
 "The certificate whose subject is %(cert)s could not be verified because it "
@@ -4421,14 +4557,14 @@ msgid ""
 "Extension value:%(val)s"
 msgstr "pkg(5)에서 이해할 수 없는 값의 확장을 가지고 있으므로 주체가 %(cert)s인 인증서를 확인할 수 없습니다.\n확장 이름:%(name)s\n확장 값:%(val)s"
 
-#: ../modules/client/api_errors.py:2138
+#: ../modules/client/api_errors.py:2194
 #, python-format
 msgid ""
 "\n"
 "Problematic Value:%s"
 msgstr "\n문제가 되는 값:%s"
 
-#: ../modules/client/api_errors.py:2154
+#: ../modules/client/api_errors.py:2210
 #, python-format
 msgid ""
 "The certificate whose subject is %(cert)s could not be verified because it "
@@ -4436,7 +4572,7 @@ msgid ""
 "extension %(name)s must include '%(use)s' but the value was '%(val)s'."
 msgstr "부적절하게 사용되었으므로 주체가 %(cert)s인 인증서를 확인할 수 없습니다. 사용된 방식은 %(name)s 확장에 대한 값에 '%(use)s'이(가) 포함되어야 하지만 값이 '%(val)s'이었음을 의미합니다."
 
-#: ../modules/client/api_errors.py:2175
+#: ../modules/client/api_errors.py:2231
 #, python-format
 msgid ""
 "The certificate whose subject is %(cert)s could not be verified because it "
@@ -4445,7 +4581,7 @@ msgid ""
 "certificates between this certificate and the leaf in this chain."
 msgstr "주체가 %(cert)s인 인증서가 잘못 사용되어 해당 인증서를 확인할 수 없습니다. 이 인증서와 최하위 인증서 간에 %(cl)s 인증서만 있을 수 있지만, 해당 체인의 이 인증서와 최하위 인증서 간에 %(al)s 인증서가 있습니다."
 
-#: ../modules/client/api_errors.py:2199
+#: ../modules/client/api_errors.py:2255
 #, python-format
 msgid ""
 "The signature to be added to the package has the same hash (%(hash)s), "
@@ -4454,12 +4590,12 @@ msgid ""
 "be added, the existing signature must be removed."
 msgstr "패키지에 추가할 서명의 해시(%(hash)s), 알고리즘(%(algorithm)s) 및 버전(%(version)s)이 기존 서명과 동일하지만 이 서명과 기존 서명이 정확히 일치하지 않습니다. 이 서명을 추가하려면 기존 서명을 제거해야 합니다."
 
-#: ../modules/client/api_errors.py:2209
+#: ../modules/client/api_errors.py:2265
 #, python-format
 msgid "The package being signed was %(pkg)s"
 msgstr "서명하려는 패키지가 %(pkg)s입니다."
 
-#: ../modules/client/api_errors.py:2223
+#: ../modules/client/api_errors.py:2279
 #, python-format
 msgid ""
 "%s could not be signed because it already has two copies of this signature "
@@ -4467,284 +4603,284 @@ msgid ""
 "given to users."
 msgstr "%s은(는) 이 서명의 복사본 두 개를 이미 포함하므로 서명할 수 없습니다. 사용자에게 패키지를 제공하기 전에 해당 서명 작업 중 하나를 제거해야 합니다."
 
-#: ../modules/client/api_errors.py:2263
+#: ../modules/client/api_errors.py:2319
 #, python-format
 msgid ""
 "Certificate '%(cert)s' for publisher '%(pub)s' needed to access '%(uri)s', "
 "has expired.  Please install a valid certificate."
 msgstr "'%(uri)s'에 액세스하는 데 필요한 게시자 '%(pub)s'의 인증서 '%(cert)s'이(가) 만료되었습니다. 유효한 인증서를 설치하십시오."
 
-#: ../modules/client/api_errors.py:2268
+#: ../modules/client/api_errors.py:2324
 #, python-format
 msgid ""
 "Certificate '%(cert)s' for publisher '%(pub)s', has expired.  Please install "
 "a valid certificate."
 msgstr "게시자 '%(pub)s'의 인증서 '%(cert)s'이(가) 만료되었습니다. 유효한 인증서를 설치하십시오."
 
-#: ../modules/client/api_errors.py:2273
+#: ../modules/client/api_errors.py:2329
 #, python-format
 msgid ""
 "Certificate '%(cert)s', needed to access '%(uri)s', has expired.  Please "
 "install a valid certificate."
 msgstr "'%(uri)s'에 액세스하는 데 필요한 인증서 '%(cert)s'이(가) 만료되었습니다. 유효한 인증서를 설치하십시오."
 
-#: ../modules/client/api_errors.py:2276
+#: ../modules/client/api_errors.py:2332
 #, python-format
 msgid "Certificate '%s' has expired.  Please install a valid certificate."
 msgstr "인증서 '%s'이(가) 만료되었습니다. 유효한 인증서를 설치하십시오."
 
-#: ../modules/client/api_errors.py:2289
+#: ../modules/client/api_errors.py:2345
 #, python-format
 msgid ""
 "Certificate '%(cert)s' for publisher '%(pub)s', needed to access '%(uri)s', "
 "will expire in '%(days)s' days."
 msgstr "'%(uri)s'에 액세스하는 데 필요한 게시자 '%(pub)s'의 인증서 '%(cert)s'이(가) '%(days)s'일 후에 만료됩니다."
 
-#: ../modules/client/api_errors.py:2294
+#: ../modules/client/api_errors.py:2350
 #, python-format
 msgid ""
 "Certificate '%(cert)s' for publisher '%(pub)s' will expire in '%(days)s' "
 "days."
 msgstr "게시자 '%(pub)s'의 인증서 '%(cert)s'이(가) '%(days)s'일 후에 만료됩니다."
 
-#: ../modules/client/api_errors.py:2298
+#: ../modules/client/api_errors.py:2354
 #, python-format
 msgid ""
 "Certificate '%(cert)s', needed to access '%(uri)s', will expire in '%(days)"
 "s' days."
 msgstr "'%(uri)s'에 액세스하는 데 필요한 인증서 '%(cert)s'이(가) '%(days)s'일후에 만료됩니다."
 
-#: ../modules/client/api_errors.py:2301
+#: ../modules/client/api_errors.py:2357
 #, python-format
 msgid "Certificate '%(cert)s' will expire in '%(days)s' days."
 msgstr "인증서 '%(cert)s'이(가) '%(days)s'일 후에 만료됩니다."
 
-#: ../modules/client/api_errors.py:2313
+#: ../modules/client/api_errors.py:2369
 #, python-format
 msgid ""
 "Certificate '%(cert)s' for publisher '%(pub)s', needed to access '%(uri)s', "
 "is invalid."
 msgstr "%(uri)s'에 액세스하는 데 필요한 게시자 '%(pub)s'의 인증서 '%(cert)s'이(가) 유효하지 않습니다."
 
-#: ../modules/client/api_errors.py:2317
+#: ../modules/client/api_errors.py:2373
 #, python-format
 msgid "Certificate '%(cert)s' for publisher '%(pub)s' is invalid."
 msgstr "게시자 '%(pub)s'의 인증서 '%(cert)s'이(가) 유효하지 않습니다."
 
-#: ../modules/client/api_errors.py:2321
+#: ../modules/client/api_errors.py:2377
 #, python-format
 msgid "Certificate '%(cert)s' needed to access '%(uri)s' is invalid."
 msgstr "%(uri)s'에 액세스하는 데 필요한 인증서 '%(cert)s'이(가) 유효하지 않습니다."
 
-#: ../modules/client/api_errors.py:2324
+#: ../modules/client/api_errors.py:2380
 #, python-format
 msgid "Invalid certificate '%s'."
 msgstr "인증서 '%s'이(가) 유효하지 않습니다."
 
-#: ../modules/client/api_errors.py:2335
+#: ../modules/client/api_errors.py:2391
 #, python-format
 msgid ""
 "Unable to locate key '%(key)s' for publisher '%(pub)s' needed to access '%"
 "(uri)s'."
 msgstr "'%(uri)s'에 액세스하는 데 필요한 게시자 '%(pub)s'에 대한 키'%(key)s'을(를) 찾을 수 없습니다."
 
-#: ../modules/client/api_errors.py:2339
+#: ../modules/client/api_errors.py:2395
 #, python-format
 msgid "Unable to locate key '%(key)s' for publisher '%(pub)s'."
 msgstr "게시자 '%(pub)s'에 대한 키 '%(key)s'을(를) 찾을 수 없습니다."
 
-#: ../modules/client/api_errors.py:2343
+#: ../modules/client/api_errors.py:2399
 #, python-format
 msgid "Unable to locate key '%(key)s' needed to access '%(uri)s'."
 msgstr "'%(uri)s'에 액세스하는 데 필요한 키 '%(key)s'을(를) 찾을 수 없습니다."
 
-#: ../modules/client/api_errors.py:2346
+#: ../modules/client/api_errors.py:2402
 #, python-format
 msgid "Unable to locate key '%s'."
 msgstr "키 '%s'을(를) 찾을 수 없습니다."
 
-#: ../modules/client/api_errors.py:2357
+#: ../modules/client/api_errors.py:2413
 #, python-format
 msgid ""
 "Unable to locate certificate '%(cert)s' for publisher '%(pub)s' needed to "
 "access '%(uri)s'."
 msgstr "%(uri)s'에 액세스하는 데 필요한 게시자 '%(pub)s'의 인증서 '%(cert)s'을(를) 찾을 수 없습니다."
 
-#: ../modules/client/api_errors.py:2362
+#: ../modules/client/api_errors.py:2418
 #, python-format
 msgid "Unable to locate certificate '%(cert)s' for publisher '%(pub)s'."
 msgstr "게시자 '%(pub)s'의 인증서 '%(cert)s'을(를) 찾을 수 없습니다."
 
-#: ../modules/client/api_errors.py:2366
+#: ../modules/client/api_errors.py:2422
 #, python-format
 msgid "Unable to locate certificate '%(cert)s' needed to access '%(uri)s'."
 msgstr "%(uri)s'에 액세스하는 데 필요한 인증서 '%(cert)s'을(를) 찾을 수 없습니다."
 
-#: ../modules/client/api_errors.py:2369
+#: ../modules/client/api_errors.py:2425
 #, python-format
 msgid "Unable to locate certificate '%s'."
 msgstr "인증서 '%s'을(를) 찾을 수 없습니다."
 
-#: ../modules/client/api_errors.py:2381
+#: ../modules/client/api_errors.py:2437
 #, python-format
 msgid ""
 "Certificate '%(cert)s' for publisher '%(pub)s', needed to access '%(uri)s', "
 "has a future effective date."
 msgstr "%(uri)s'에 액세스하는 데 필요한 게시자 '%(pub)s'의 인증서 '%(cert)s'의 발효일이 미래 날짜입니다."
 
-#: ../modules/client/api_errors.py:2386
+#: ../modules/client/api_errors.py:2442
 #, python-format
 msgid ""
 "Certificate '%(cert)s' for publisher '%(pub)s' has a future effective date."
 msgstr "게시자 '%(pub)s'의 인증서 '%(cert)s'의 발효일이 미래 날짜입니다."
 
-#: ../modules/client/api_errors.py:2390
+#: ../modules/client/api_errors.py:2446
 #, python-format
 msgid ""
 "Certificate '%(cert)s' needed to access '%(uri)s' has a future effective "
 "date."
 msgstr "%(uri)s'에 액세스하는 데 필요한 인증서 '%(cert)s'의 발효일이 미래 날짜입니다."
 
-#: ../modules/client/api_errors.py:2393
+#: ../modules/client/api_errors.py:2449
 #, python-format
 msgid "Certificate '%s' has a future effective date."
 msgstr "인증서 '%s'의 발효일이 미래 날짜입니다."
 
-#: ../modules/client/api_errors.py:2406
+#: ../modules/client/api_errors.py:2462
 #, python-format
 msgid "Gave a bad response:%s"
 msgstr "잘못된 응답을 제공했습니다. %s"
 
-#: ../modules/client/api_errors.py:2417
+#: ../modules/client/api_errors.py:2473
 #, python-format
 msgid "Could not find %s"
 msgstr "%s 를 찾을 수 없습니다."
 
-#: ../modules/client/api_errors.py:2440
+#: ../modules/client/api_errors.py:2496
 #, python-format
 msgid "The signature data for the manifest of the '%s' package is not valid."
 msgstr "'%s' 의 manifest 를 위한 서명 데이타가 유효하지 않습니다."
 
-#: ../modules/client/api_errors.py:2442
+#: ../modules/client/api_errors.py:2498
 msgid "The signature data for the manifest is not valid."
 msgstr "해당 manifest 의 서명 데이타가 유효하지 않습니다."
 
-#: ../modules/client/api_errors.py:2472
+#: ../modules/client/api_errors.py:2528
 #, python-format
 msgid ""
 "there is already an image at: %s.\n"
 "To override, use the -f (force) option."
 msgstr "이미지가 다음 위치에 이미 있습니다. %s.\n대체하려면 -f (force) 옵션을 사용하십시오."
 
-#: ../modules/client/api_errors.py:2480
+#: ../modules/client/api_errors.py:2536
 #, python-format
 msgid "The configuration data for the image rooted at %s is empty or missing."
 msgstr "%s에 루트 지정된 이미지에 대한 구성 데이터가 비어 있거나 누락되었습니다."
 
-#: ../modules/client/api_errors.py:2493
+#: ../modules/client/api_errors.py:2549
 #, python-format
 msgid ""
 "The image rooted at %s is invalid or is not supported by this version of the "
 "packaging system."
 msgstr "%s에 루트 지정된 이미지가 잘못되었거나 이 버전의 패키징 시스템에서 지원되지 않습니다."
 
-#: ../modules/client/api_errors.py:2500
+#: ../modules/client/api_errors.py:2556
 #, python-format
 msgid ""
 "the specified image path is not empty: %s.\n"
 "To override, use the -f (force) option."
 msgstr "지정한 이미지 경로가 비어 있지 않습니다. %s.\n대체하려면 -f (force) 옵션을 사용하십시오."
 
-#: ../modules/client/api_errors.py:2602
+#: ../modules/client/api_errors.py:2660
 #, python-format
 msgid "Invalid linked image attach property: %s"
 msgstr "잘못된 링크된 이미지 연결 등록 정보: %s"
 
-#: ../modules/client/api_errors.py:2608
+#: ../modules/client/api_errors.py:2666
 #, python-format
 msgid "Invalid linked image attach property value: %s"
 msgstr "잘못된 링크된 이미지 연결 등록 정보 값: %s"
 
-#: ../modules/client/api_errors.py:2612
+#: ../modules/client/api_errors.py:2670
 #, python-format
 msgid "Linked image type does not support child attach: %s"
 msgstr "링크된 이미지 유형이 자식 연결을 지원하지 않음: %s"
 
-#: ../modules/client/api_errors.py:2616
+#: ../modules/client/api_errors.py:2674
 #, python-format
 msgid "Linked image type does not support parent attach: %s"
 msgstr "링크된 이미지 유형이 부모 연결을 지원하지 않음: %s"
 
-#: ../modules/client/api_errors.py:2620
+#: ../modules/client/api_errors.py:2678
 msgid "Cannot attach root image as child"
 msgstr "루트 이미지를 자식으로 연결할 수 없습니다."
 
-#: ../modules/client/api_errors.py:2626
+#: ../modules/client/api_errors.py:2684
 #, python-format
 msgid "Can't initialize child image (%(lin)s) at path: %(path)s"
 msgstr "%(path)s 경로의 자식 이미지(%(lin)s)를 초기화할 수 없습니다."
 
-#: ../modules/client/api_errors.py:2632
+#: ../modules/client/api_errors.py:2690
 #, python-format
 msgid "Can't initialize child image at path: %s"
 msgstr "%s 경로의 자식 이미지를 초기화할 수 없습니다."
 
-#: ../modules/client/api_errors.py:2638
+#: ../modules/client/api_errors.py:2696
 #, python-format
 msgid "Linked image is diverged: %s"
 msgstr "링크된 이미지가 분산됨: %s"
 
-#: ../modules/client/api_errors.py:2642
+#: ../modules/client/api_errors.py:2700
 #, python-format
 msgid "A linked child image with this name already exists: %s"
 msgstr "동일한 이름의 링크된 자식 이미지가 존재함: %s"
 
-#: ../modules/client/api_errors.py:2647
+#: ../modules/client/api_errors.py:2705
 #, python-format
 msgid "Child image '%(cpath)s' is nested within another image: '%(ipath)s'"
 msgstr "자식 이미지 '%(cpath)s'이(가) 다른 이미지 '%(ipath)s'에 중첩되어 있습니다."
 
-#: ../modules/client/api_errors.py:2655
+#: ../modules/client/api_errors.py:2713
 #, python-format
 msgid ""
 "Child image '%(path)s' is not located within the parent's altroot '%(altroot)"
 "s'"
 msgstr "자식 이미지 '%(path)s'이(가) 부모의 altroot '%(altroot)s'에없습니다."
 
-#: ../modules/client/api_errors.py:2663
+#: ../modules/client/api_errors.py:2721
 #, python-format
 msgid ""
 "Child image '%(cpath)s' is not nested within the parent image '%(ppath)s'"
 msgstr "자식 이미지 '%(cpath)s'이(가) 부모 이미지 '%(ppath)s'에 중첩되어 있지 않습니다."
 
-#: ../modules/client/api_errors.py:2673
+#: ../modules/client/api_errors.py:2731
 #, python-format
 msgid "Can't access child image (%(lin)s) at path: %(path)s"
 msgstr "%(path)s 경로의 자식 이미지(%(lin)s)에 액세스할 수 없습니다."
 
-#: ../modules/client/api_errors.py:2679
+#: ../modules/client/api_errors.py:2737
 #, python-format
 msgid "Can't access child image at path: %s"
 msgstr "%s 경로의 자식 이미지에 액세스할 수 없습니다."
 
-#: ../modules/client/api_errors.py:2683
+#: ../modules/client/api_errors.py:2741
 #, python-format
 msgid "Child path not absolute: %s"
 msgstr "자식 경로가 절대 경로가 아님: %s"
 
-#: ../modules/client/api_errors.py:2687
+#: ../modules/client/api_errors.py:2745
 #, python-format
 msgid "Unknown child linked image: %s"
 msgstr "알 수 없는 자식에 링크된 이미지: %s"
 
-#: ../modules/client/api_errors.py:2692
+#: ../modules/client/api_errors.py:2750
 #, python-format
 msgid ""
 "The following subprocess returned an unexpected exit code of %(rv)d:\n"
 "    %(cmd)s"
 msgstr "다음과 같은 부속 프로세스가 예상치 않은 종료 코드 %(rv)d을(를) 반환했습니다.\n    %(cmd)s"
 
-#: ../modules/client/api_errors.py:2697
+#: ../modules/client/api_errors.py:2755
 #, python-format
 msgid ""
 "\n"
@@ -4752,78 +4888,104 @@ msgid ""
 "%(errout)s"
 msgstr "\n그리고 다음 오류 메시지를 생성했습니다.\n%(errout)s"
 
-#: ../modules/client/api_errors.py:2701
+#: ../modules/client/api_errors.py:2759
 #, python-format
 msgid "Linked image type does not support child detach: %s"
 msgstr "링크된 이미지 유형이 자식 분리를 지원하지 않음: %s"
 
-#: ../modules/client/api_errors.py:2707
+#: ../modules/client/api_errors.py:2765
 #, python-format
 msgid "Parent linked to child, can not detach child: %s"
 msgstr "자식에 링크된 부모는 자식을 분리할 수 없음: %s"
 
-#: ../modules/client/api_errors.py:2711
+#: ../modules/client/api_errors.py:2769
 #, python-format
 msgid "Linked image type does not support parent detach: %s"
 msgstr "링크된 이미지 유형이 부모 분리를 지원하지 않음: %s"
 
-#: ../modules/client/api_errors.py:2715
+#: ../modules/client/api_errors.py:2773
 #, python-format
 msgid "Image already a linked child: %s"
 msgstr "이미지가 이미 링크된 자식임: %s"
 
-#: ../modules/client/api_errors.py:2719
+#: ../modules/client/api_errors.py:2777
 #, python-format
 msgid "Invalid linked image name: %s"
 msgstr "잘못된 링크된 이미지 이름: %s"
 
-#: ../modules/client/api_errors.py:2723
+#: ../modules/client/api_errors.py:2781
 msgid "Can't link image to itself."
 msgstr "이미지를 자체에 링크할 수 없습니다."
 
-#: ../modules/client/api_errors.py:2728
+#: ../modules/client/api_errors.py:2786
 #, python-format
 msgid "Can't initialize parent image at path: %s"
 msgstr "%s 경로의 부모 이미지를 초기화할 수 없습니다."
 
-#: ../modules/client/api_errors.py:2732
+#: ../modules/client/api_errors.py:2790
 #, python-format
 msgid "Parent path not absolute: %s"
 msgstr "부모 경로가 절대 경로가 아님: %s"
 
-#: ../modules/client/api_errors.py:2738
+#: ../modules/client/api_errors.py:2796
 #, python-format
 msgid "Can't access parent image at path: %s"
 msgstr "%s 경로의 부모 이미지에 액세스할 수 없습니다."
 
-#: ../modules/client/api_errors.py:2743
+#: ../modules/client/api_errors.py:2801
 #, python-format
 msgid ""
 "Parent image '%(path)s' is not located within the child's altroot '%(altroot)"
 "s'"
 msgstr "부모 이미지 '%(path)s'이(가) 자식의 altroot '%(altroot)s'에없습니다."
 
-#: ../modules/client/api_errors.py:2756
+#: ../modules/client/api_errors.py:2812
 #, python-format
 msgid ""
 "\n"
 "A '%(op)s' operation failed for child '%(lin)s' with an unexpected\n"
-"return value of %(exitrv)d and the following error message:\n"
+"return value of %(exitrv)d and generated the following output:\n"
 "%(errout)s\n"
 "\n"
-msgstr "\n예상치 않은 반환 값 %(exitrv)d 및 다음 오류 메시지와 함께 자식 '%(lin)s'에 대한\n'%(op)s' 작업을 실패했습니다.\n%(errout)s\n\n"
+msgstr "\n예상치 않은 반환 값 %(exitrv)d와 함께 자식 '%(lin)s'에 대한\n'%(op)s' 작업을 실패하고 다음 출력을 생성했습니다.\n%(errout)s\n\n"
 
-#: ../modules/client/api_errors.py:2770
+#: ../modules/client/api_errors.py:2825
+#, python-format
+msgid ""
+"\n"
+"A '%(op)s' operation failed for child '%(lin)s' with an unexpected\n"
+"exception:\n"
+"%(e)s\n"
+"\n"
+"The child generated the following output:\n"
+"%(errout)s\n"
+"\n"
+msgstr "\n예상치 않은 예외 사항과 함께 자식 '%(lin)s'에 대한\n'%(op)s' 작업 실패:\n%(e)s\n\n자식이 다음 출력을 생성했습니다.\n%(errout)s\n\n"
+
+#: ../modules/client/api_errors.py:2842
 #, python-format
 msgid "Current image already a linked child: %s"
 msgstr "현재 이미지가 이미 링크된 자식임: %s"
 
-#: ../modules/client/api_errors.py:2776
+#: ../modules/client/api_errors.py:2848
 #, python-format
 msgid "Current image is not a linked child: %s"
 msgstr "현재 이미지가 링크된 자식이 아님: %s"
 
-#: ../modules/client/api_errors.py:2818
+#: ../modules/client/api_errors.py:2853
+#, python-format
+msgid ""
+"\n"
+"A '%(op)s' operation for child '%(lin)s' generated non-json output.\n"
+"The json parser failed with the following error:\n"
+"%(e)s\n"
+"\n"
+"The child generated the following output:\n"
+"%(errout)s\n"
+"\n"
+msgstr "\n자식 '%(lin)s'에 대한 '%(op)s' 작업이 비json 출력을 생성했습니다.\n다음 오류와 함께 json 구문 분석기 실패:\n%(e)s\n\n자식이 다음 출력을 생성했습니다.\n%(errout)s\n\n"
+
+#: ../modules/client/api_errors.py:2908
 msgid ""
 "The following packages were frozen at two different versions by\n"
 "the patterns provided.  The package stem and the versions it was frozen at "
@@ -4831,45 +4993,36 @@ msgid ""
 "provided:"
 msgstr "다음 패키지는 제공된 패턴에 의해 다른 두 버전에서\n고정되었습니다. 고정된 위치의 패키지 이름 및 버전이\n제공됩니다."
 
-#: ../modules/client/api_errors.py:2828
+#: ../modules/client/api_errors.py:2918
 msgid ""
 "The following patterns contained wildcards but matched no\n"
 "installed packages."
 msgstr "다음 패턴은 와일드카드를 포함하지만 설치된 패키지와\n일치되지 않았습니다."
 
-#: ../modules/client/api_errors.py:2836
+#: ../modules/client/api_errors.py:2926
 msgid ""
 "The following patterns attempted to freeze the listed packages\n"
 "at a version different from the version at which the packages are installed."
 msgstr "다음 패턴이 해당 패키지가 설치된 버전과 다른 버전에서\n나열된 패키지를 고정하려고 시도했습니다."
 
-#: ../modules/client/api_errors.py:2850
+#: ../modules/client/api_errors.py:2940
 msgid ""
 "The following patterns don't match installed packages and\n"
 "contain no version information.  Uninstalled packages can only be frozen by\n"
 "providing a version at which to freeze them."
 msgstr "다음 패턴은 설치된 패키지와 일치하지 않으며\n버전 정보를 포함하지 않습니다. 설치 해제된 패키지는 해당 패키지를 고정할 버전을\n제공해야만 고정될 수 있습니다."
 
-#: ../modules/client/api_errors.py:2863
+#: ../modules/client/api_errors.py:2953
 #, python-format
 msgid "The freeze state file '%s' is invalid."
 msgstr "고정 상태 파일 '%s'이(가) 잘못되었습니다."
 
-#: ../modules/client/api_errors.py:2875
+#: ../modules/client/api_errors.py:2965
 #, python-format
 msgid ""
 "The freeze state file '%(loc)s' was expected to have a version of %(exp)s, "
 "but its version was %(found)s"
 msgstr "고정 상태 파일 '%(loc)s'의 버전이 %(exp)s여야 하지만 %(found)s 버전이었습니다."
-
-#: ../modules/client/api_errors.py:2890
-#, python-format
-msgid ""
-"Because of this error:\n"
-"%(err)s\n"
-"JSON could not parse the following data:\n"
-"%(data)s"
-msgstr "이 오류의 원인:\n%(err)s\nJSON이 다음 데이터의 구문을 분석할 수 없음:\n%(data)s"
 
 #: ../modules/client/bootenv.py:136
 msgid "pkg: unable to create an auto snapshot. pkg recovery is disabled."
@@ -5044,7 +5197,7 @@ msgstr "알 수 없음"
 msgid "None"
 msgstr "없음"
 
-#: ../modules/client/image.py:329
+#: ../modules/client/image.py:326
 #, python-format
 msgid ""
 "The trust anchors for the image were expected to be found in %s, but that is "
@@ -5052,7 +5205,7 @@ msgid ""
 "the correct path."
 msgstr "이미지의 신뢰 앵커가 %s에 있어야 하는데 이 위치가 디렉토리가 아닙니다. 이미지 등록 정보 'trust-anchor-directory'를 올바른 경로로 설정하십시오."
 
-#: ../modules/client/image.py:364
+#: ../modules/client/image.py:361
 #, python-format
 msgid ""
 "%s is expected to be a certificate but could not be parsed.  The error "
@@ -5060,398 +5213,676 @@ msgid ""
 "\t%s"
 msgstr "%s은(는) 인증서여야 하지만 구문을 분석할 수 없습니다. 오류 발생:\n\t%s"
 
-#: ../modules/client/image.py:1942 ../modules/client/imageconfig.py:1280
+#: ../modules/client/image.py:1955 ../modules/client/imageconfig.py:1444
 #, python-format
 msgid "Publisher '%s' is a system publisher and cannot be moved."
 msgstr "'%s' 게시자는 시스템 게시자이므로 이동할 수 없습니다."
 
-#: ../modules/client/image.py:2491
-msgid "Package State Update Phase"
-msgstr "패키지 상태 업데이트 단계"
-
-#. Remove manifests of packages that were removed from the
-#. system.  Some packages may have only had facets or
-#. variants changed, so don't remove those.
-#: ../modules/client/image.py:2589
-msgid "Package Cache Update Phase"
-msgstr "패키지 캐시 업데이트 단계"
-
-#: ../modules/client/image.py:2607
-msgid "Image State Update Phase"
-msgstr "이미지 상태 업데이트 단계"
-
-#: ../modules/client/image.py:4313
+#: ../modules/client/image.py:4401
 msgid "pkg(5) update check failed."
 msgstr "pkg(5) 업데이트 확인에 실패했습니다."
 
-#: ../modules/client/imageconfig.py:806 ../modules/client/imageconfig.py:868
-#: ../modules/client/publisher.py:2207
+#: ../modules/client/imageconfig.py:933 ../modules/client/imageconfig.py:997
+#: ../modules/client/publisher.py:2525
 msgid ""
 "At least one name must be provided for the signature-required-names policy."
 msgstr "signature-required-names 정책에 대해 적어도 하나의 이름을 제공해야 합니다."
 
-#: ../modules/client/imageconfig.py:1284
+#: ../modules/client/imageconfig.py:1448
 #, python-format
 msgid ""
 "Publisher '%s' is a system publisher and other publishers cannot be moved "
 "relative to it."
 msgstr "'%s' 게시자는 시스템 게시자이므로 이 게시자를 기준으로 다른 게시자를이동할 수 없습니다."
 
-#: ../modules/client/imageconfig.py:1321
+#: ../modules/client/imageconfig.py:1485
 #, python-format
 msgid "%s is a system publisher and cannot be unset."
 msgstr "%s은(는) 시스템 게시자이므로 설정을 해제할 수 없습니다."
 
-#: ../modules/client/imageplan.py:3177
+#: ../modules/client/imageplan.py:3116
 msgid "Download cache"
 msgstr "캐시 다운로드"
 
-#: ../modules/client/imageplan.py:3182 ../modules/client/imageplan.py:3257
+#: ../modules/client/imageplan.py:3121 ../modules/client/imageplan.py:3232
 msgid "Root filesystem"
 msgstr "루트 파일 시스템"
 
-#: ../modules/client/imageplan.py:3325
-msgid "Removal Phase"
-msgstr "제거 단계"
-
-#: ../modules/client/imageplan.py:3347
-msgid "Install Phase"
-msgstr "설치 단계"
-
-#: ../modules/client/imageplan.py:3361
-msgid "Update Phase"
-msgstr "수정 단계"
-
-#: ../modules/client/imageplan.py:3412
+#: ../modules/client/imageplan.py:3391
 #, python-format
 msgid ""
 "A link targeting itself or part of a link loop was found at '%s'; a file or "
 "directory was expected.  Please remove the link and try again."
 msgstr "'%s'에 파일 또는 디렉토리가 있어야 하는데, 자체를 대상으로 한 링크 또는 링크 루프의 일부가 발견되었습니다. 해당 링크를 제거하고 다시 시도하십시오."
 
-#: ../modules/client/imageplan.py:3470
-msgid "Index Phase"
-msgstr "인덱스 단계"
-
-#: ../modules/client/pkg_solver.py:321 ../modules/client/pkg_solver.py:680
+#: ../modules/client/pkg_solver.py:341 ../modules/client/pkg_solver.py:705
 msgid "This version rejected by user request"
 msgstr "이 버전은 사용자 요청에 의해 거부되었습니다."
 
-#: ../modules/client/pkg_solver.py:364
+#: ../modules/client/pkg_solver.py:383
 msgid "This version excluded by specified installation version"
 msgstr "이 버전은 지정된 설치 버전에서 제외되었습니다."
 
-#: ../modules/client/pkg_solver.py:373
+#: ../modules/client/pkg_solver.py:391
 msgid "This version is excluded by installed incorporation {0}"
 msgstr "이 버전은 설치된 통합 {0}에서 제외되었습니다."
 
-#: ../modules/client/pkg_solver.py:386 ../modules/client/pkg_solver.py:691
+#: ../modules/client/pkg_solver.py:402 ../modules/client/pkg_solver.py:718
 msgid ""
 "This version is excluded by a freeze on {0} at version {1}.  The reason for "
 "the freeze is: {2}"
 msgstr "이 버전은 {1} 버전의 {0}에서의 고정에서 제외되었습니다. 고정 원인은 {2}입니다."
 
-#: ../modules/client/pkg_solver.py:391 ../modules/client/pkg_solver.py:696
+#: ../modules/client/pkg_solver.py:407 ../modules/client/pkg_solver.py:723
 msgid "This version is excluded by a freeze on {0} at version {1}."
 msgstr "이 버전은 {1} 버전의 {0}에서의 고정에서 제외되었습니다."
 
-#: ../modules/client/pkg_solver.py:415 ../modules/client/pkg_solver.py:468
+#: ../modules/client/pkg_solver.py:429 ../modules/client/pkg_solver.py:482
 #, python-format
 msgid "No matching version of %s can be installed:"
 msgstr "%s의 일치하는 버전을 설치할 수 없습니다."
 
 #. no version of this package is allowed
-#: ../modules/client/pkg_solver.py:530 ../modules/client/pkg_solver.py:766
+#: ../modules/client/pkg_solver.py:542 ../modules/client/pkg_solver.py:793
 #, python-format
 msgid "The installed package %s is not permissible."
 msgstr "설치된 패키지 %s은(는) 허용되지 않습니다."
 
-#: ../modules/client/pkg_solver.py:572
+#: ../modules/client/pkg_solver.py:588
 msgid "Plan Creation: dependency error(s) in proposed packages:"
 msgstr "계획 만들기: 제안된 패키지에서 종속성 오류 발생:"
 
-#: ../modules/client/pkg_solver.py:580
+#: ../modules/client/pkg_solver.py:596
 msgid "Plan Creation: Errors in installed packages due to proposed changes:"
 msgstr "계획 만들기: 제안된 변경 사항으로 인해 설치된 패키지에서 오류 발생:"
 
 #. both error detection methods insufficent.
-#: ../modules/client/pkg_solver.py:585
+#: ../modules/client/pkg_solver.py:601
 msgid "Plan Creation: Package solver is unable to compute solution."
 msgstr "계획 만들기: 패키지 Solver에서 솔루션을 계산할 수 없습니다."
 
-#: ../modules/client/pkg_solver.py:586 ../modules/client/pkg_solver.py:811
+#: ../modules/client/pkg_solver.py:602 ../modules/client/pkg_solver.py:837
 msgid "Dependency analysis is unable to determine exact cause."
 msgstr "종속성 분석에서 정확한 원인을 확인할 수 없습니다."
 
-#: ../modules/client/pkg_solver.py:587 ../modules/client/pkg_solver.py:812
+#: ../modules/client/pkg_solver.py:603 ../modules/client/pkg_solver.py:838
 msgid "Try specifying expected results to obtain more detailed error messages."
 msgstr "좀더 자세한 오류 메시지를 얻으려면 예상한 결과를 지정해 보십시오."
 
-#: ../modules/client/pkg_solver.py:588
+#: ../modules/client/pkg_solver.py:604
 msgid "Include specific version of packages you wish installed."
 msgstr "설치하려는 특정 버전의 패키지를 포함시키십시오."
 
-#: ../modules/client/pkg_solver.py:794
+#: ../modules/client/pkg_solver.py:820
 msgid ""
 "Plan Creation: Package solver has not found a solution to update to latest "
 "available versions."
 msgstr "계획 만들기: 패키지 Solver에서 사용 가능한 최신 버전으로 업데이트할 솔루션을 찾지 못했습니다."
 
-#: ../modules/client/pkg_solver.py:795
+#: ../modules/client/pkg_solver.py:821
 msgid "This may indicate an overly constrained set of packages are installed."
 msgstr "과도하게 제한적인 패키지 집합이 설치되었기 때문일 수 있습니다."
 
-#: ../modules/client/pkg_solver.py:797
+#: ../modules/client/pkg_solver.py:823
 msgid "latest incorporations:"
 msgstr "최신 통합:"
 
-#: ../modules/client/pkg_solver.py:806
+#: ../modules/client/pkg_solver.py:832
 msgid ""
 "The following indicates why the system cannot update to the latest version:"
 msgstr "다음은 시스템을 최신 버전으로 업데이트할 수 없는 이유를 나타냅니다."
 
-#: ../modules/client/pkg_solver.py:1177 ../modules/client/pkg_solver.py:1219
-#: ../modules/client/pkg_solver.py:1235
+#: ../modules/client/pkg_solver.py:1212 ../modules/client/pkg_solver.py:1254
+#: ../modules/client/pkg_solver.py:1270
 msgid "Package contains invalid or unsupported actions"
 msgstr "패키지에 잘못되거나 지원되지 않는 작업이 있습니다."
 
-#: ../modules/client/pkg_solver.py:1359
+#: ../modules/client/pkg_solver.py:1394
 msgid "Excluded by proposed incorporation '{0}'"
 msgstr "제안된 통합 '{0}'에서 제외되었습니다."
 
-#: ../modules/client/pkg_solver.py:1531
+#: ../modules/client/pkg_solver.py:1568
 msgid "Package contains 'exclude' dependency {0} on installed package"
 msgstr "패키지에 설치된 패키지에 대한 'exclude' 종속성 {0}이(가) 포함되어 있습니다."
 
-#: ../modules/client/pkg_solver.py:1535
+#: ../modules/client/pkg_solver.py:1572
 msgid "All versions matching 'exclude' dependency {0} are rejected"
 msgstr "'exclude' 종속성 {0}과(와) 일치하는 모든 버전이 거부되었습니다."
 
-#: ../modules/client/pkg_solver.py:1562
+#: ../modules/client/pkg_solver.py:1599
 msgid "All acceptable versions of '{0}' dependency on {1} are obsolete"
 msgstr "{1}에 대한 '{0}' 종속성의 모든 수용 가능한 버전이 오래되었습니다."
 
-#: ../modules/client/pkg_solver.py:1566
+#: ../modules/client/pkg_solver.py:1603
 msgid "All acceptable versions of '{0}' dependencies on {1} are obsolete"
 msgstr "{1}에 대한 '{0}' 종속성의 모든 수용 가능한 버전이 오래되었습니다."
 
-#: ../modules/client/pkg_solver.py:1578
+#: ../modules/client/pkg_solver.py:1615
 msgid "A version for '{0}' dependency on {1} cannot be found"
 msgstr "{1}에 대한 '{0}' 종속성의 버전을 찾을 수 없습니다."
 
-#: ../modules/client/pkg_solver.py:1582
+#: ../modules/client/pkg_solver.py:1619
 msgid "All versions matching '{0}' dependency {1} are rejected"
 msgstr "'{0}' 종속성 {1}과(와) 일치하는 모든 버전이 거부되었습니다."
 
-#: ../modules/client/pkg_solver.py:1629
+#: ../modules/client/pkg_solver.py:1666
 #, python-format
 msgid "No suitable version of installed package %s found"
 msgstr "설치된 패키지 %s의 알맞은 버전을 찾을 수 없습니다."
 
-#: ../modules/client/pkg_solver.py:1663
+#: ../modules/client/pkg_solver.py:1700
 #, python-format
 msgid "%s  Reject:  "
 msgstr "%s  거부:  "
 
-#: ../modules/client/pkg_solver.py:1665
+#: ../modules/client/pkg_solver.py:1702
 msgid "Reason:"
 msgstr "이유:"
 
-#: ../modules/client/pkg_solver.py:1668
+#: ../modules/client/pkg_solver.py:1705
 #, python-format
 msgid "%s  %s  [already rejected; see above]"
 msgstr "%s  %s  [이미 거부됨. 위 참조]"
 
-#: ../modules/client/pkg_solver.py:1702
+#: ../modules/client/pkg_solver.py:1739
 #, python-format
 msgid "No suitable version of required package %s found:"
 msgstr "필요한 패키지 %s의 알맞은 버전을 찾을 수 없습니다."
 
-#: ../modules/client/pkg_solver.py:1820
+#: ../modules/client/pkg_solver.py:1857
 #, python-format
 msgid "List of integers, not %s, expected"
 msgstr "%s이(가) 아닌 정수 목록이 필요합니다."
 
-#: ../modules/client/pkg_solver.py:1945
+#: ../modules/client/pkg_solver.py:1982
 msgid "Currently installed package '{0}' is from sticky publisher '{1}'."
 msgstr "현재 설치된 패키지 '{0}'은(는) 고정 게시자 '{1}'의 패키지입니다."
 
-#: ../modules/client/pkg_solver.py:1948
+#: ../modules/client/pkg_solver.py:1985
 msgid "Package is from publisher other than specified one."
 msgstr "패키지가 지정된 게시자가 아닌 다른 게시자의 패키지입니다."
 
-#: ../modules/client/pkg_solver.py:1963
+#: ../modules/client/pkg_solver.py:2000
 msgid "Higher ranked publisher {0} was selected"
 msgstr "더 높은 순위의 게시자 {0}이(가) 선택되었습니다."
 
-#: ../modules/client/pkg_solver.py:1965
+#: ../modules/client/pkg_solver.py:2002
 msgid "Package publisher is ranked lower in search order"
 msgstr "패키지 게시자의 순위가 검색 순서에서 낮게 지정되어 있습니다."
 
-#: ../modules/client/pkg_solver.py:2001
+#: ../modules/client/pkg_solver.py:2039
 msgid "Newer version {0} is already installed"
 msgstr "최신 버전 {0}이(가) 이미 설치되어 있습니다."
 
-#: ../modules/client/pkg_solver.py:2011
+#: ../modules/client/pkg_solver.py:2049
 msgid "Package doesn't support image architecture"
 msgstr "패키지에서 이미지 아키텍처를 지원하지 않습니다."
 
-#: ../modules/client/pkg_solver.py:2013
+#: ../modules/client/pkg_solver.py:2051
 msgid "Package doesn't support image variant {0}"
 msgstr "패키지에서 이미지 변형 {0}을(를) 지원하지 않습니다."
 
 #. package is not installed in parent
-#: ../modules/client/pkg_solver.py:2025
+#: ../modules/client/pkg_solver.py:2063
 msgid "Package is not installed in parent image: {0}"
 msgstr "패키지가 부모 이미지에 설치되어 있지 않음: {0}"
 
 #. package is from a different publisher in the parent
-#: ../modules/client/pkg_solver.py:2033
+#: ../modules/client/pkg_solver.py:2071
 msgid "Package in parent is from a different publisher: {0}"
 msgstr "부모의 패키지가 다른 게시자의 패키지임: {0}"
 
-#: ../modules/client/pkg_solver.py:2046
+#: ../modules/client/pkg_solver.py:2084
 msgid "Parent image has a incompatible newer version: {0}"
 msgstr "부모 이미지에 호환되지 않는 최신 버전이 있음: {0}"
 
-#: ../modules/client/pkg_solver.py:2049
+#: ../modules/client/pkg_solver.py:2087
 msgid "Parent image has an older version of package: {0}"
 msgstr "부모 이미지에 이전 버전의 패키지가 있음: {0}"
 
-#: ../modules/client/pkg_solver.py:2114
+#: ../modules/client/pkg_solver.py:2152
 msgid "Installed version in root image is too old for origin dependency {0}"
 msgstr "루트 이미지의 설치된 버전이 원본 종속성 {0}에 대해 너무 오래되었습니다."
 
-#: ../modules/client/pkg_solver.py:2120
+#: ../modules/client/pkg_solver.py:2158
 msgid ""
 "Installed version in image being upgraded is too old for origin dependency "
 "{0}"
 msgstr "업그레이드하는 이미지의 설치된 버전이 원본 종속성 {0}에 대해 너무 오래되었습니다."
 
-#: ../modules/client/progress.py:643 ../modules/client/progress.py:850
+#: ../modules/client/progress.py:457
 #, python-format
-msgid "Image %s "
-msgstr "%s 이미지 "
+msgid "Goal mismatch '%s': expected goal: %s, current value: %s"
+msgstr "목표 불일치 '%s': 필요한 목표: %s, 현재 값: %s"
 
-#: ../modules/client/progress.py:673 ../modules/client/progress.py:966
+#: ../modules/client/progress.py:704
+msgid "Startup"
+msgstr "시작"
+
+#: ../modules/client/progress.py:705 ../modules/client/progress.py:718
+msgid "Planning"
+msgstr "계획"
+
+#: ../modules/client/progress.py:707
+msgid "Actions"
+msgstr "작업"
+
+#: ../modules/client/progress.py:708
+msgid "Finalize"
+msgstr "마무리"
+
+#: ../modules/client/progress.py:719
+msgid "Downloading"
+msgstr "다운로드"
+
+#: ../modules/client/progress.py:720
+msgid "Executing"
+msgstr "실행"
+
+#: ../modules/client/progress.py:977
+msgid "Download packages"
+msgstr "패키지 다운로드"
+
+#: ../modules/client/progress.py:978
+msgid "Download files"
+msgstr "파일 다운로드"
+
+#: ../modules/client/progress.py:979
+msgid "Download bytes"
+msgstr "바이트 다운로드"
+
+#. republishing support; republishing also uses dl_bytes
+#: ../modules/client/progress.py:984
+msgid "Republished pkgs"
+msgstr "재게시된 패키지"
+
+#: ../modules/client/progress.py:986
+msgid "Republish sent bytes"
+msgstr "전송된 바이트 재게시"
+
+#: ../modules/client/progress.py:993
+msgid "Refresh Publishers"
+msgstr "게시자 새로 고침"
+
+#. We don't know the goal in advance for this one
+#: ../modules/client/progress.py:995
+msgid "Refresh bytes"
+msgstr "바이트 새로 고침"
+
+#: ../modules/client/progress.py:999
+msgid "Download Manifests"
+msgstr "증명 다운로드"
+
+#: ../modules/client/progress.py:1000
+msgid "Committed Manifests"
+msgstr "커밋된 증명"
+
+#: ../modules/client/progress.py:1002
+msgid "Verify Packages"
+msgstr "패키지 확인"
+
+#. archiving support
+#: ../modules/client/progress.py:1005
+msgid "Archived items"
+msgstr "아카이브된 항목"
+
+#: ../modules/client/progress.py:1006
+msgid "Archived bytes"
+msgstr "아카이브된 바이트"
+
+#: ../modules/client/progress.py:1014
+msgid "Solver setup"
+msgstr "Solver 설정"
+
+#: ../modules/client/progress.py:1016
+msgid "Running solver"
+msgstr "Solver 실행"
+
+#: ../modules/client/progress.py:1018
+msgid "Finding local manifests"
+msgstr "로컬 증명 찾기"
+
+#: ../modules/client/progress.py:1020
+msgid "Package planning"
+msgstr "패키지 계획"
+
+#: ../modules/client/progress.py:1022
+msgid "Merging actions"
+msgstr "작업 병합"
+
+#: ../modules/client/progress.py:1024
+msgid "Checking for conflicting actions"
+msgstr "충돌 작업 확인"
+
+#: ../modules/client/progress.py:1026
+msgid "Consolidating action changes"
+msgstr "작업 변경 사항 통합"
+
+#: ../modules/client/progress.py:1028
+msgid "Evaluating mediators"
+msgstr "조정자 평가"
+
+#: ../modules/client/progress.py:1030
+msgid "Finalizing action plan"
+msgstr "작업 계획 마무리"
+
+#: ../modules/client/progress.py:1032
+msgid "Evaluating mediator changes"
+msgstr "조정자 변경 사항 평가"
+
+#: ../modules/client/progress.py:1037
+msgid "Removing old actions"
+msgstr "이전 작업 제거"
+
+#: ../modules/client/progress.py:1039
+msgid "Installing new actions"
+msgstr "새 작업 설치"
+
+#: ../modules/client/progress.py:1041
+msgid "Updating modified actions"
+msgstr "수정된 작업 업데이트"
+
+#: ../modules/client/progress.py:1046
+msgid "Updating package state database"
+msgstr "패키지 상태 데이터베이스 업데이트"
+
+#: ../modules/client/progress.py:1048
+msgid "Updating image state"
+msgstr "이미지 상태 업데이트"
+
+#: ../modules/client/progress.py:1050
+msgid "Creating fast lookup database"
+msgstr "빠른 조회 데이터베이스 만들기"
+
+#: ../modules/client/progress.py:1052
+msgid "Updating package cache"
+msgstr "패키지 캐시 업데이트"
+
+#: ../modules/client/progress.py:1054
+msgid "Reading search index"
+msgstr "검색 색인 읽기"
+
+#: ../modules/client/progress.py:1056
+msgid "Updating search index"
+msgstr "검색 색인 업데이트"
+
+#: ../modules/client/progress.py:1058
+msgid "Building new search index"
+msgstr "새 검색 색인 작성"
+
+#: ../modules/client/progress.py:1062
+msgid "Deleting search index"
+msgstr "검색 색인 삭제"
+
+#: ../modules/client/progress.py:1064
+msgid "Updating catalog"
+msgstr "카탈로그 업데이트"
+
+#: ../modules/client/progress.py:1066
+msgid "Analyzing removed packages"
+msgstr "제거된 패키지 분석"
+
+#: ../modules/client/progress.py:1068
+msgid "Analyzing repository packages"
+msgstr "저장소 패키지 분석"
+
+#: ../modules/client/progress.py:1070
+msgid "Removing package manifests"
+msgstr "패키지 증명 제거"
+
+#: ../modules/client/progress.py:1072
+msgid "Removing package files"
+msgstr "패키지 파일 제거"
+
+#: ../modules/client/progress.py:1495
 #, python-format
-msgid "Recursing into linked image: %s"
-msgstr "링크된 이미지로 반복하는 중: %s"
+msgid "Lint setup %d"
+msgstr "Lint 설정 %d"
 
-#: ../modules/client/progress.py:685 ../modules/client/progress.py:979
+#: ../modules/client/progress.py:1497
 #, python-format
-msgid "Returning from linked image: %s"
-msgstr "링크된 이미지에서 반환하는 중: %s"
+msgid "Lint phase %d"
+msgstr "Lint 단계 %d"
 
-#: ../modules/client/progress.py:716 ../modules/client/progress.py:734
+#: ../modules/client/progress.py:1749
+#, python-format
+msgid "%*s: "
+msgstr "%*s: "
+
+#: ../modules/client/progress.py:1769 ../modules/client/progress.py:1781
+#: ../modules/client/progress.py:1798 ../modules/client/progress.py:2423
 #: ../modules/gui/startpage.py:240
 msgid "Done"
 msgstr "완료"
 
-#: ../modules/client/progress.py:727
+#: ../modules/client/progress.py:1779
 #, python-format
-msgid "Download: %s ... "
-msgstr "다운로드: %s ... "
+msgid "Done (%(elapsed).3fs)"
+msgstr "완료(%(elapsed).3fs)"
 
-#: ../modules/client/progress.py:730
+#: ../modules/client/progress.py:1796
+msgid "Checking that pkg(5) is up to date ..."
+msgstr "pkg(5)가 최신인지 확인 중..."
+
+#: ../modules/client/progress.py:1802 ../modules/client/progress.py:2162
+#: ../modules/gui/progress.py:50
+msgid "Caching catalogs ..."
+msgstr "카탈로그들을 캐싱하고 있습니다 ..."
+
+#: ../modules/client/progress.py:1808 ../modules/client/progress.py:2168
+#: ../modules/gui/progress.py:59
+msgid "Loading catalog cache ..."
+msgstr "카탈로그 캐시를 로딩하고 있습니다 ..."
+
+#: ../modules/client/progress.py:1819
+#, python-format
+msgid "Retrieving target catalog '%s' ..."
+msgstr "대상 카탈로그 '%s' 검색 중..."
+
+#: ../modules/client/progress.py:1821
+#, python-format
+msgid "Retrieving catalog '%s' ..."
+msgstr "카탈로그 '%s' 검색 중..."
+
+#: ../modules/client/progress.py:1823
+#, python-format
+msgid "Refreshing catalog '%s' ..."
+msgstr "카탈로그 '%s' 새로 고치는 중..."
+
+#: ../modules/client/progress.py:1830
+#, python-format
+msgid "%s ..."
+msgstr "%s ..."
+
+#: ../modules/client/progress.py:1836
+#, python-format
+msgid "Planning completed in %.2f seconds"
+msgstr "계획이 %.2f초만에 완료되었습니다."
+
+#: ../modules/client/progress.py:1857
+#, python-format
+msgid "Fetching manifests: %s  %d%% complete"
+msgstr "증명 인출 중: %s  %d%% 완료"
+
+#: ../modules/client/progress.py:1904
+#, python-format
+msgid "Download: %s items  %sMB  %d%% complete %s"
+msgstr "다운로드: %s 항목  %sMB  %d%% 완료 %s"
+
+#: ../modules/client/progress.py:1911
+#, python-format
+msgid "Download: Completed %s in %.2f seconds %s"
+msgstr "다운로드: 완료됨 %s(걸린 시간: %.2f초) %s"
+
+#: ../modules/client/progress.py:1917
 #, python-format
 msgid "Republish: %s ... "
 msgstr "%s을(를) 다시 게시하는 중... "
 
-#: ../modules/client/progress.py:879
+#: ../modules/client/progress.py:1932
 #, python-format
-msgid "Retrieving catalog '%s'..."
-msgstr "카탈로그 '%s' 를 검색하고 있습니다..."
+msgid "Archiving: Completed %s in %.2f seconds"
+msgstr "아카이브 중: 완료됨 %s(걸린 시간: %.2f초)"
 
-#: ../modules/client/progress.py:886
-msgid "Caching catalogs ..."
-msgstr "카탈로그들을 캐싱하고 있습니다 ..."
+#: ../modules/client/progress.py:1939
+#, python-format
+msgid "Archiving: %s items  %sMB  %d%% complete"
+msgstr "아카이브 중: %s 항목  %sMB  %d%% 완료"
 
-#: ../modules/client/progress.py:892
-msgid "Loading catalog cache ..."
-msgstr "카탈로그 캐시를 로딩하고 있습니다 ..."
+#: ../modules/client/progress.py:1958
+#, python-format
+msgid "%s actions (%s)"
+msgstr "%s 작업(%s)"
 
-#: ../modules/client/progress.py:898
+#: ../modules/client/progress.py:1970
+#, python-format
+msgid "Completed %d actions in %.2f seconds."
+msgstr "%d 작업을 %.2f초만에 완료했습니다."
+
+#: ../modules/client/progress.py:1996
+msgid "Linked image publisher check ..."
+msgstr "링크된 이미지 게시자 확인..."
+
+#: ../modules/client/progress.py:2004
+msgid "Finished processing linked images."
+msgstr "링크된 이미지 처리를 완료했습니다."
+
+#: ../modules/client/progress.py:2023 ../modules/client/progress.py:2468
+#, python-format
+msgid "Linked image '%s' output:"
+msgstr "링크된 이미지 '%s' 출력:"
+
+#: ../modules/client/progress.py:2033
+#, python-format
+msgid "Linked images: %s done; %d working: %s"
+msgstr "링크된 이미지: %s 완료; %d 작업 중: %s"
+
+#: ../modules/client/progress.py:2151
+#, python-format
+msgid "Checking that pkg(5) is up to date %c"
+msgstr "pkg(5)가 최신 %c인지 확인 중"
+
+#: ../modules/client/progress.py:2188
+msgid "Retrieving target catalog"
+msgstr "대상 카탈로그 검색 중"
+
+#: ../modules/client/progress.py:2190
+msgid "Retrieving catalog"
+msgstr "카탈로그 검색 중"
+
+#: ../modules/client/progress.py:2192
 msgid "Refreshing catalog"
 msgstr "카탈로그를 재설정하고 있습니다"
 
-#: ../modules/client/progress.py:905
+#: ../modules/client/progress.py:2193
 #, python-format
-msgid "Refreshing catalog %(current)d/%(total)d %(publisher)s"
-msgstr "카탈로그 %(current)d/%(total)d %(publisher)s을(를) 새로 고치는 중"
+msgid "%(prefix)s %(pub_cnt)s %(publisher)s%(bytes)s"
+msgstr "%(prefix)s %(pub_cnt)s %(publisher)s%(bytes)s"
 
-#: ../modules/client/progress.py:927
-msgid "Creating Plan"
-msgstr "계획을 만드는 중"
-
-#: ../modules/client/progress.py:947
+#: ../modules/client/progress.py:2215
 #, python-format
-msgid "Creating Plan %c"
-msgstr "계획을 만드는 중 %c"
+msgid "Creating Plan (%s%s): %s"
+msgstr "계획 작성 중(%s%s): %s"
 
-#: ../modules/client/progress.py:1064
+#: ../modules/client/progress.py:2237
+#, python-format
+msgid "Creating Plan (%s %s) %c"
+msgstr "계획 작성 중(%s %s) %c"
+
+#: ../modules/client/progress.py:2241
+#, python-format
+msgid "%s (%s) %c"
+msgstr "%s(%s) %c"
+
+#: ../modules/client/progress.py:2255
+#, python-format
+msgid "Creating Plan (Committing Manifests): %c"
+msgstr "계획 작성 중(커밋 중인 증명): %c"
+
+#: ../modules/client/progress.py:2258
+#, python-format
+msgid "Committing Manifests %c"
+msgstr "커밋 중인 증명 %c"
+
+#: ../modules/client/progress.py:2293
 msgid "ARCHIVE"
 msgstr "아카이브"
 
-#: ../modules/client/progress.py:1065 ../modules/client/progress.py:1101
+#: ../modules/client/progress.py:2293 ../modules/client/progress.py:2313
 msgid "FILES"
 msgstr "파일"
 
-#: ../modules/client/progress.py:1065
+#: ../modules/client/progress.py:2293
 msgid "STORE (MB)"
 msgstr "저장(MB)"
 
-#: ../modules/client/progress.py:1100
+#: ../modules/client/progress.py:2313
 msgid "DOWNLOAD"
 msgstr "다운로드"
 
-#: ../modules/client/progress.py:1101
+#: ../modules/client/progress.py:2313
 msgid "PKGS"
 msgstr "패키지"
 
-#: ../modules/client/progress.py:1101
+#: ../modules/client/progress.py:2314
 msgid "XFER (MB)"
 msgstr "XFER(MB)"
 
-#: ../modules/client/progress.py:1155
+#: ../modules/client/progress.py:2314
+msgid "SPEED"
+msgstr "속도"
+
+#: ../modules/client/progress.py:2317
+msgid "Completed"
+msgstr "완료됨"
+
+#: ../modules/client/progress.py:2363
 msgid "PROCESS"
 msgstr "프로세스"
 
-#: ../modules/client/progress.py:1156 ../modules/client/progress.py:1268
-#: ../modules/client/progress.py:1302
+#: ../modules/client/progress.py:2363 ../modules/client/progress.py:2388
 msgid "ITEMS"
 msgstr "항목"
 
-#: ../modules/client/progress.py:1156
+#: ../modules/client/progress.py:2363
 msgid "GET (MB)"
 msgstr "가져오기(MB)"
 
-#: ../modules/client/progress.py:1156
+#: ../modules/client/progress.py:2364
 msgid "SEND (MB)"
 msgstr "보내기(MB)"
 
-#: ../modules/client/progress.py:1221 ../modules/client/progress.py:1268
-#: ../modules/client/progress.py:1302
+#: ../modules/client/progress.py:2388
 msgid "PHASE"
 msgstr "단계"
 
-#: ../modules/client/progress.py:1221
-msgid "ACTIONS"
-msgstr "작업"
+#: ../modules/client/progress.py:2423
+msgid "working"
+msgstr "작업 중"
 
-#: ../modules/client/progress.py:1247
-msgid "Optimizing Index..."
-msgstr "색인을 최적화하는 중..."
+#: ../modules/client/progress.py:2441
+msgid "Linked image publisher check"
+msgstr "링크된 이미지 게시자 확인"
 
-#: ../modules/client/publisher.py:981
+#: ../modules/client/progress.py:2481
+#, python-format
+msgid "%s linked: %s done; %d working: %s"
+msgstr "%s 링크됨: %s 완료됨; %d 작업 중: %s"
+
+#: ../modules/client/progress.py:2505
+#, python-format
+msgid "Linked progress: %s"
+msgstr "링크된 진행: %s"
+
+#: ../modules/client/publisher.py:1292
 msgid "Cannot enable or disable a system publisher"
 msgstr "시스템 게시자를 사용 또는 사용 안함으로 설정할 수 없습니다."
 
-#: ../modules/client/publisher.py:1080
+#: ../modules/client/publisher.py:1391
 msgid "Cannot change the stickiness of a system publisher"
 msgstr "시스템 게시자의 고착성을 변경할 수 없습니다."
 
-#: ../modules/client/publisher.py:1111
+#: ../modules/client/publisher.py:1422
 #, python-format
 msgid ""
 "\n"
@@ -5464,7 +5895,7 @@ msgid ""
 "contains package data for: %(pubs)s.\n"
 msgstr "\n다음 원본 중 하나에서 게시자 '%(prefix)s'에 대한 패키지\n데이터를 검색할 수 없습니다.\n\n%(origins)s\n\n위에 나열된 원본 중 하나에서 검색된 카탈로그에만 %(pubs)s에 대한\n패키지 데이터가 포함되어 있습니다.\n"
 
-#: ../modules/client/publisher.py:1123
+#: ../modules/client/publisher.py:1434
 #, python-format
 msgid ""
 "This is either a result of invalid origin information being provided\n"
@@ -5472,7 +5903,7 @@ msgid ""
 "provided when this publisher was added.\n"
 msgstr "게시자 '%s'에 대해 제공되는 원본 정보가 잘못된 결과이거나\n이 게시자가 추가될 때 잘못된 게시자 이름이 제공되었기\n때문입니다.\n"
 
-#: ../modules/client/publisher.py:1131
+#: ../modules/client/publisher.py:1442
 #, python-format
 msgid ""
 "To resolve this issue, correct the origin information provided for\n"
@@ -5481,7 +5912,7 @@ msgid ""
 "publisher.\n"
 msgstr "이 문제를 해결하려면 pkg set-publisher 하위 명령을 사용하여 게시자\n'%(prefix)s'에 대해 제공되는 원본 정보를 수정하거나 올바른 이름을 사용하여\n게시자를 다시 추가하고 '%(prefix)s' 게시자를\n제거하십시오.\n"
 
-#: ../modules/client/publisher.py:1139
+#: ../modules/client/publisher.py:1450
 #, python-format
 msgid ""
 "To re-add this publisher with the correct name, execute the following\n"
@@ -5491,19 +5922,19 @@ msgid ""
 "pkg unset-publisher %(prefix)s\n"
 msgstr "올바른 이름으로 이 게시자를 다시 추가하려면 권한이 부여된 사용자로\n다음 명령을 실행하십시오.\n\npkg set-publisher -P -g %(origin)s %(pub)s\npkg unset-publisher %(prefix)s\n"
 
-#: ../modules/client/publisher.py:1148
+#: ../modules/client/publisher.py:1459
 msgid ""
 "The origin(s) listed above contain package data for more than one\n"
 "publisher, but this issue can likely be resolved by executing one\n"
 "of the following commands as a privileged user:\n"
 msgstr "위에 나열된 원본에는 둘 이상의 게시자에 대한 패키지 데이터가 포함되어\n있지만 이 문제는 권한이 부여된 사용자로 다음 명령 중 하나를 실행하여\n해결할 수 있습니다.\n"
 
-#: ../modules/client/publisher.py:1155
+#: ../modules/client/publisher.py:1466
 #, python-format
 msgid "pkg set-publisher -P -g %(origin)s %(pub)s\n"
 msgstr "pkg set-publisher -P -g %(origin)s %(pub)s\n"
 
-#: ../modules/client/publisher.py:1159
+#: ../modules/client/publisher.py:1470
 #, python-format
 msgid ""
 "Afterwards, the old publisher should be removed by executing the\n"
@@ -5512,14 +5943,14 @@ msgid ""
 "pkg unset-publisher %s\n"
 msgstr "나중에 권한이 부여된 사용자로 다음 명령을 실행하여 이전\n게시자를 제거해야 합니다.\n\npkg unset-publisher %s\n"
 
-#: ../modules/client/publisher.py:2024
+#: ../modules/client/publisher.py:2342
 #, python-format
 msgid ""
 "The file with hash %s was expected to be a PEM certificate but it could not "
 "be read."
 msgstr "해시가 %s인 파일이 PEM 인증서여야 하지만 읽을 수 없습니다."
 
-#: ../modules/client/publisher.py:2028
+#: ../modules/client/publisher.py:2346
 #, python-format
 msgid ""
 "The following string was expected to be a PEM certificate, but it could not "
@@ -5527,64 +5958,100 @@ msgid ""
 "%s"
 msgstr "다음 문자열이 PEM 인증서여야 하지만 그렇게 구문 분석할 수 없습니다.\n%s"
 
-#: ../modules/client/publisher.py:2175
+#: ../modules/client/publisher.py:2493
 #, python-format
 msgid ""
 "Cannot remove a value from the property %(name)s because the property does "
 "not exist."
 msgstr "등록 정보가 없으므로 %(name)s 등록 정보에서 값을 제거할 수 없습니다."
 
-#: ../modules/client/publisher.py:2180
+#: ../modules/client/publisher.py:2498
 #, python-format
 msgid ""
 "Cannot remove a value from a single valued property, unset must be used. The "
 "property name is '%(name)s' and the current value is '%(value)s'"
 msgstr "단일 값 등록 정보에서 값을 제거할 수 없습니다. 설정 해제를 사용해야 합니다. 등록 정보 이름은 '%(name)s'이고 현재 값은 '%(value)s'입니다."
 
-#: ../modules/client/publisher.py:2190
+#: ../modules/client/publisher.py:2508
 #, python-format
 msgid ""
 "Cannot remove the value %(value)s from the property %(name)s because the "
 "value is not in the property's list."
 msgstr "등록 정보 목록에 값이 없으므로 등록 정보 %(name)s에서 값 %(value)s을(를) 제거할 수 없습니다."
 
-#: ../modules/client/publisher.py:2221
+#: ../modules/client/publisher.py:2539
 #, python-format
 msgid "The CRL file %s is not in a recognized format."
 msgstr "CRL 파일 %s의 형식을 인식할 수 없습니다."
 
-#: ../modules/client/publisher.py:2659
+#: ../modules/client/publisher.py:2977
 #, python-format
 msgid "Cannot set a property for a system publisher. The property was:%s"
 msgstr "시스템 게시자에 대한 등록 정보를 설정할 수 없습니다. 등록 정보: %s"
 
-#: ../modules/client/publisher.py:2670
+#: ../modules/client/publisher.py:2988
 #, python-format
 msgid "%(val)s is not a valid value for this property:%(prop)s"
 msgstr "%(val)s은(는) 등록 정보 %(prop)s에 유효한 값이 아닙니다."
 
-#: ../modules/client/publisher.py:2694
+#: ../modules/client/publisher.py:3012
 #, python-format
 msgid "The %s signature-policy takes no argument."
 msgstr "%s 서명 정책이 인수를 사용하지 않습니다."
 
-#: ../modules/client/publisher.py:2706
+#: ../modules/client/publisher.py:3024
 #, python-format
 msgid "Cannot unset a property for a system publisher. The property was:%s"
 msgstr "시스템 게시자에 대한 등록 정보의 설정을 해제할 수 없습니다. 등록 정보: %s"
 
-#: ../modules/client/publisher.py:2751
+#: ../modules/client/publisher.py:3069
 msgid "Cannot unset a property for a system publisher."
 msgstr "시스템 게시자에 대한 등록 정보의 설정을 해제할 수 없습니다."
 
-#: ../modules/client/transport/repo.py:1121
+#: ../modules/client/transport/repo.py:315
+msgid ""
+"\n"
+"This account is not entitled to access this repository. Ensure that the "
+"correct\n"
+"certificate is being used and that the support contract for the product "
+"being\n"
+"accessed is still valid.\n"
+msgstr "\n이 계정은 이 저장소에 액세스할 자격이 없습니다. 올바른\n인증서를 사용 중이고 액세스하는 제품에 대한 지원 계약이\n아직 유효한지 확인하십시오.\n"
+
+#: ../modules/client/transport/repo.py:321
+msgid ""
+"\n"
+"The license agreement required to access this repository has not been\n"
+"accepted yet or the license agreement for the product has changed. Please go "
+"to\n"
+"https://pkg-register.oracle.com and accept the license for the product you "
+"are\n"
+"trying to access.\n"
+msgstr "\n이 저장소에 액세스하는 데 필요한 라이센스 계약에\n아직 동의하지 않았거나 제품에 대한 라이센스 계약이 변경되었습니다.\nhttps://pkg-register.oracle.com으로 이동하여 액세스 시도 중인 제품에 대한 라이센스에\n동의하십시오.\n"
+
+#: ../modules/client/transport/repo.py:328
+msgid ""
+"\n"
+"Repository access is currently unavailable due to service issues. Please "
+"retry\n"
+"later or contact your customer service representative.\n"
+msgstr "\n서비스 문제로 인해 현재 저장소 액세스가 불가능합니다. 나중에\n다시 시도하거나 고객 서비스 담당자에게 문의하십시오.\n"
+
+#: ../modules/client/transport/repo.py:333
+msgid ""
+"\n"
+"Repository access rights can currently not be verified due to server\n"
+"maintenance. Please retry later.\n"
+msgstr "\n서버 유지 보수로 인해 저장소 액세스 권한을 현재 확인할 수 없습니다.\n나중에 다시 시도하십시오.\n"
+
+#: ../modules/client/transport/repo.py:1147
 #, python-format
 msgid ""
 "The configuration file for the repository is invalid or incomplete:\n"
 "%s"
 msgstr "저장소의 구성 파일이 잘못되었거나 불완전합니다.\n%s"
 
-#: ../modules/client/transport/repo.py:1184
+#: ../modules/client/transport/repo.py:1210
 msgid "Search temporarily unavailable."
 msgstr "검색을 잠시 사용할 수 없습니다."
 
@@ -5677,7 +6144,7 @@ msgstr "알 수 없는 등록 정보 %s"
 msgid "Unknown property section: %s."
 msgstr "알 수 없는 등록 정보 섹션: %s."
 
-#: ../modules/config.py:1527
+#: ../modules/config.py:1637
 #, python-format
 msgid ""
 "Property name '%(name)s' is not valid.  Property names may not contain: "
@@ -5685,7 +6152,7 @@ msgid ""
 "backslashes and must also match the regular expression: %(exp)s"
 msgstr "등록 정보 이름 '%(name)s'이(가) 유효하지 않습니다. 등록 정보 이름에는 탭, 개행, 캐리지 리턴, 용지 공급, 세로 탭, 슬래시 또는 백슬래시를 포함할 수 없으며 해당 이름은 정규 표현식과 일치해야 합니다. %(exp)s"
 
-#: ../modules/config.py:1542
+#: ../modules/config.py:1652
 #, python-format
 msgid ""
 "Section name '%(name)s' is not valid.  Section names may not contain: tabs, "
@@ -5693,21 +6160,21 @@ msgid ""
 "backslashes and must also match the regular expression: %(exp)s"
 msgstr "섹션 이름 '%(name)s'이(가) 유효하지 않습니다. 섹션 이름에는 탭, 개행, 캐리지 리턴, 용지 공급, 세로 탭, 슬래시 또는 백슬래시를 포함할 수 없으며 해당 이름은 정규 표현식과 일치해야 합니다. %(exp)s"
 
-#: ../modules/config.py:1560
+#: ../modules/config.py:1670
 #, python-format
 msgid ""
 "Unable to read configuration data for SMF FMRI '%(fmri)s':\n"
 "%(errmsg)s"
 msgstr "SMF FMRI '%(fmri)s'의 구성 데이터를 읽을 수 없습니다.\n%(errmsg)s"
 
-#: ../modules/config.py:1575
+#: ../modules/config.py:1685
 #, python-format
 msgid ""
 "Unable to write configuration data for SMF FMRI '%(fmri)s':\n"
 "%(errmsg)s"
 msgstr "SMF FMRI '%(fmri)s' 구성 데이터를 쓸 수 없습니다.\n%(errmsg)s"
 
-#: ../modules/config.py:1761
+#: ../modules/config.py:1871
 msgid "Writing configuration data to SMF is not supported at this time."
 msgstr "지금은 SMF에 구성 데이터 쓰기가 지원되지 않습니다."
 
@@ -5760,7 +6227,12 @@ msgstr "둘 이상의 $PKGDEPEND_RUNPATH 토큰이 이 매니페스트의 동일
 msgid "Invalid pkg.depend.bypass-generate value %(val)s: %(err)s"
 msgstr "잘못된 pkg.depend.bypass-generate 값 %(val)s: %(err)s"
 
-#: ../modules/flavor/base.py:141
+#: ../modules/flavor/base.py:97
+#, python-format
+msgid "Invalid publishing dependency: %s"
+msgstr "잘못된 게시 종속성: %s"
+
+#: ../modules/flavor/base.py:155
 #, python-format
 msgid "Subclasses of Dependency must implement dep_key. Current class is %s"
 msgstr "의존해야할 서브클래스들은 반드시 dep_key 를 구현해야 합니다. 현재 클래스는 %s 입니다"
@@ -5831,58 +6303,62 @@ msgstr "%(ip)s에 설치할 파일이 설치 경로와 텍스트에 특정 버�
 msgid "%(lp)s says it should be run with '%(bin)s' which is a relative path."
 msgstr "%(lp)s에는 상대 경로인 '%(bin)s'을(를) 사용하여 실행되어야 한다고 나타납니다."
 
-#: ../modules/flavor/smf_manifest.py:146
+#: ../modules/flavor/smf_manifest.py:164
 msgid "FMRI does not appear to be valid"
 msgstr "FMRI가 유효하지 않은 것 같습니다."
 
-#: ../modules/flavor/smf_manifest.py:179 ../modules/flavor/smf_manifest.py:186
+#: ../modules/flavor/smf_manifest.py:197 ../modules/flavor/smf_manifest.py:204
 #, python-format
 msgid "more than one set of dependencies found: %s"
 msgstr "둘 이상의 종속성 집합이 발견되었습니다. %s"
 
 #. we can't satisfy the dependency at all
-#: ../modules/flavor/smf_manifest.py:205
+#: ../modules/flavor/smf_manifest.py:223
 msgid "cannot resolve FMRI to a delivered file"
 msgstr "FMRI를 전달된 파일로 확인할 수 없습니다."
 
-#: ../modules/flavor/smf_manifest.py:211
-#, python-format
-msgid "FMRI is delivered by multiple files: %s"
-msgstr "FMRI가 여러 파일에 의해 전달됩니다. %s"
-
-#: ../modules/flavor/smf_manifest.py:231
+#: ../modules/flavor/smf_manifest.py:241
 #, python-format
 msgid "%s actions cannot deliver SMF manifests"
 msgstr "%s 작업에서 SMF 매니페스트를 전달할 수 없습니다."
 
-#: ../modules/flavor/smf_manifest.py:249
+#: ../modules/flavor/smf_manifest.py:259
 #, python-format
 msgid "Unable to parse SMF manifest %s"
 msgstr "SMF 매니페스트 %s을(를) 구문 분석할 수 없습니다."
 
-#: ../modules/flavor/smf_manifest.py:261
+#: ../modules/flavor/smf_manifest.py:271
 #, python-format
 msgid "Problem resolving %(fmri)s: %(err)s"
 msgstr "%(fmri)s을(를) 확인하는 중 문제가 발생했습니다. %(err)s"
 
-#: ../modules/flavor/smf_manifest.py:272
+#: ../modules/flavor/smf_manifest.py:282
 #, python-format
 msgid "Problem determining dependencies for %(fmri)s:%(err)s"
 msgstr "%(fmri)s의 종속성을 확인하는 중 문제가 발생했습니다. %(err)s"
 
-#: ../modules/flavor/smf_manifest.py:287
+#: ../modules/flavor/smf_manifest.py:297
 #, python-format
 msgid ""
 "Unable to generate SMF dependency on %(dep_fmri)s declared in %(proto_file)s "
 "by %(fmri)s: %(err)s"
 msgstr "%(fmri)s이(가) %(proto_file)s에서 선언한 %(dep_fmri)s의 SMF 종속성을 생성할 수 없습니다.%(err)s"
 
+#: ../modules/flavor/smf_manifest.py:314
+#, python-format
+msgid ""
+"Unable to generate SMF dependency on the service FMRI %(dep_fmri)s declared "
+"in %(proto_file)s by %(fmri)s. SMF dependencies should always resolve to SMF "
+"instances rather than SMF services and multiple files deliver instances of "
+"this service: %(manifests)s"
+msgstr "%(fmri)s에 의해 %(proto_file)s에 선언된 서비스 FMRI %(dep_fmri)s에 대한 SMF 종속성을 생성할 수 없습니다. SMF 종속성은 항상 SMF 서비스가 아닌 SMF 인스턴스로 확인되어야 하고 여러 파일 %(manifests)s이(가) 이 서비스의 인스턴스를 제공합니다."
+
 #: ../modules/fmri.py:96
 #, python-format
 msgid "FMRI '%s' is missing version information."
 msgstr "FMRI '%s' 에 버전 정보가 빠져 있습니다."
 
-#: ../modules/fmri.py:185 ../modules/fmri.py:202
+#: ../modules/fmri.py:197 ../modules/fmri.py:214
 msgid "Missing '/' after publisher name"
 msgstr "게시자 이름 뒤에 '/'가 누락되었습니다."
 
@@ -6094,7 +6570,7 @@ msgstr "업데이트 관리자"
 msgid "Preparing..."
 msgstr "준비 중..."
 
-#: ../modules/gui/installupdate.py:162 ../modules/gui/installupdate.py:890
+#: ../modules/gui/installupdate.py:162 ../modules/gui/installupdate.py:895
 msgid "Downloading..."
 msgstr "다운로드 중..."
 
@@ -6139,7 +6615,7 @@ msgid_plural "Review the packages to be Installed/Updated"
 msgstr[0] "설치/업데이트할 패키지 검토"
 msgstr[1] "설치/업데이트할 패키지 검토"
 
-#: ../modules/gui/installupdate.py:466 ../modules/gui/installupdate.py:1010
+#: ../modules/gui/installupdate.py:466 ../modules/gui/installupdate.py:1015
 msgid "Updates Confirmation"
 msgstr "업데이트 확인"
 
@@ -6183,11 +6659,16 @@ msgstr "취소하는 중..."
 msgid "Ensuring %s is up to date..."
 msgstr "%s이(가) 최신인지 확인하는 중..."
 
-#: ../modules/gui/installupdate.py:712
+#: ../modules/gui/installupdate.py:692
+#, python-format
+msgid "%s is up to date.\n"
+msgstr "%s은(는) 최신입니다.\n"
+
+#: ../modules/gui/installupdate.py:717
 msgid "Inventory exception:\n"
 msgstr "인벤토리 예외:\n"
 
-#: ../modules/gui/installupdate.py:725
+#: ../modules/gui/installupdate.py:730
 #, python-format
 msgid ""
 "Please check the network connection.\n"
@@ -6196,7 +6677,7 @@ msgid ""
 "%s"
 msgstr "네트워크 연결을 확인하십시오.\n저장소에 액세스할 수 있습니까?\n\n%s"
 
-#: ../modules/gui/installupdate.py:731
+#: ../modules/gui/installupdate.py:736
 #, python-format
 msgid ""
 "\n"
@@ -6206,14 +6687,14 @@ msgid ""
 "%s"
 msgstr "\n유효한 패키지 저장소에 연결할 수 없습니다. 네트워크 설정을 확인하고 웹 브라우저를 사용하여 서버 연결을 시도하십시오.\n\n%s"
 
-#: ../modules/gui/installupdate.py:738
+#: ../modules/gui/installupdate.py:743
 #, python-format
 msgid ""
 "pkg(5) appears to be out of date and should be updated.\n"
 "Please update %s package"
 msgstr "pkg(5)가 오래된 것 같습니다. 업데이트해야 합니다.\n%s 패키지를 업데이트하십시오."
 
-#: ../modules/gui/installupdate.py:745
+#: ../modules/gui/installupdate.py:750
 #, python-format
 msgid ""
 "Cannot remove:\n"
@@ -6221,14 +6702,14 @@ msgid ""
 "Due to the following packages that depend on it:\n"
 msgstr "제거할 수 없습니다.\n\t%s\n다음 패키지가 종속되어 있기 때문입니다.\n"
 
-#: ../modules/gui/installupdate.py:766
+#: ../modules/gui/installupdate.py:771
 #, python-format
 msgid ""
 "Press %(button)s button to continue removal without\n"
 "\t%(package)s\n"
 msgstr "%(package)s 없이 제거를 계속하려면 %(button)s 버튼을\n\t누르십시오.\n"
 
-#: ../modules/gui/installupdate.py:777
+#: ../modules/gui/installupdate.py:782
 #, python-format
 msgid ""
 "\n"
@@ -6236,19 +6717,19 @@ msgid ""
 "user is often a source of this problem."
 msgstr "\n권한을 가진 사용자로 %s을(를) 실행할 때 pkg 명령을 일관성 있게 실행하지 못할 경우  이 문제가 종종 발생합니다."
 
-#: ../modules/gui/installupdate.py:780
+#: ../modules/gui/installupdate.py:785
 msgid ""
 "\n"
 "To rebuild index, please execute the following command as a privileged user:"
 msgstr "\n색인을 재구성하려면 권한을 가진 사용자로 다음 명령을 실행하십시오."
 
-#: ../modules/gui/installupdate.py:782
+#: ../modules/gui/installupdate.py:787
 msgid ""
 "\n"
 "\tpkg rebuild-index"
 msgstr "\n\tpkg rebuild-index"
 
-#: ../modules/gui/installupdate.py:786
+#: ../modules/gui/installupdate.py:791
 msgid ""
 "There was an error during installation. The search index is corrupted. You "
 "might want try to fix this problem by executing the following command as a "
@@ -6256,18 +6737,18 @@ msgid ""
 "\tpkg rebuild-index"
 msgstr "설치 중에 오류가 발생했습니다. 검색 색인이 손상되었습니다. 권한을 가진 사용자로 다음 명령을 실행하여 이 문제를 해결할 수 있습니다.\n\tpkg rebuild-index"
 
-#: ../modules/gui/installupdate.py:794
+#: ../modules/gui/installupdate.py:799
 msgid "This is a Live Image. The install operation can't be performed."
 msgstr "이것은 라이브 이미지입니다. 설치 작업을 수행할 수 없습니다."
 
-#: ../modules/gui/installupdate.py:799
+#: ../modules/gui/installupdate.py:804
 msgid ""
 "The requested operation would affect files that cannot be modified in the "
 "Live Image.\n"
 "Please retry this operation on an alternate boot environment."
 msgstr "요청한 작업은 라이브 이미지에서 수정할 수 없는 파일에 영향을 줍니다.\n다른 부트 환경에서 이 작업을 다시 시도하십시오."
 
-#: ../modules/gui/installupdate.py:805
+#: ../modules/gui/installupdate.py:810
 #, python-format
 msgid ""
 "There was an error during installation.\n"
@@ -6275,7 +6756,7 @@ msgid ""
 "You might want try to fix this problem by restarting %s\n"
 msgstr "설치 중에 오류가 발생했습니다.\n작업 계획이 누락되어 작업을 완료할 수 없습니다. %s을(를) 다시 시작하여 이 문제를 해결할 수 있습니다.\n"
 
-#: ../modules/gui/installupdate.py:812
+#: ../modules/gui/installupdate.py:817
 #, python-format
 msgid ""
 "There was an error during installation.\n"
@@ -6283,20 +6764,20 @@ msgid ""
 "might want try to fix this problem by restarting %s\n"
 msgstr "설치 중에 오류가 발생했습니다.\n이미지 상태가 올바르지 않아 작업을 완료할 수 없습니다. %s을(를) 다시 시작하여 이 문제를 해결할 수 있습니다.\n"
 
-#: ../modules/gui/installupdate.py:823
+#: ../modules/gui/installupdate.py:828
 msgid "Specifying BE Name not supported.\n"
 msgstr "BE 이름 지정 기능은 지원되지 않습니다.\n"
 
-#: ../modules/gui/installupdate.py:886
+#: ../modules/gui/installupdate.py:891
 #, python-format
 msgid "Updating %s"
 msgstr "%s을(를) 업데이트하는 중"
 
-#: ../modules/gui/installupdate.py:892
+#: ../modules/gui/installupdate.py:897
 msgid "Executing..."
 msgstr "실행 중..."
 
-#: ../modules/gui/installupdate.py:899 ../modules/gui/installupdate.py:1091
+#: ../modules/gui/installupdate.py:904 ../modules/gui/installupdate.py:1096
 msgid ""
 "\n"
 "\n"
@@ -6304,92 +6785,97 @@ msgid ""
 "has completed successfuly."
 msgstr "\n\n색인화 도중 오류가 발생했지만 이미지 업데이트, 설치 또는 제거가 성공적으로 완료되었습니다."
 
-#: ../modules/gui/installupdate.py:910
+#: ../modules/gui/installupdate.py:915
 msgid "Gathering package information, please wait..."
 msgstr "패키지 정보를 수집하는 중입니다. 잠시 기다려 주십시오..."
 
-#: ../modules/gui/installupdate.py:913
+#: ../modules/gui/installupdate.py:918
 msgid "Gathering package information"
 msgstr "패키지 정보 수집"
 
-#: ../modules/gui/installupdate.py:926 ../modules/gui/installupdate.py:1394
+#: ../modules/gui/installupdate.py:931 ../modules/gui/installupdate.py:1400
 msgid "All packages already installed."
 msgstr "모든 패키지가 이미 설치되었습니다."
 
-#: ../modules/gui/installupdate.py:930
+#: ../modules/gui/installupdate.py:935
 msgid "No updates necessary"
 msgstr "업데이트 필요 없음"
 
-#: ../modules/gui/installupdate.py:932
+#: ../modules/gui/installupdate.py:937
 msgid "No updates available"
 msgstr "사용 가능한 업데이트 없음"
 
-#: ../modules/gui/installupdate.py:934
+#: ../modules/gui/installupdate.py:939
 msgid "All features already installed"
 msgstr "모든 기능이 이미 설치되었습니다."
 
-#: ../modules/gui/installupdate.py:1012
+#: ../modules/gui/installupdate.py:1017
 msgid "Review the package which will be affected by Updates"
 msgid_plural "Review the packages which will be affected by Updates"
 msgstr[0] "업데이트의 영향을 받는 패키지 검토"
 msgstr[1] "업데이트의 영향을 받는 패키지 검토"
 
-#: ../modules/gui/installupdate.py:1143 ../modules/gui/installupdate.py:1200
+#: ../modules/gui/installupdate.py:1148 ../modules/gui/installupdate.py:1205
 msgid "No further information available"
 msgstr "사용할 수 있는 추가 정보 없음"
 
-#: ../modules/gui/installupdate.py:1147 ../modules/gui/installupdate.py:1192
+#: ../modules/gui/installupdate.py:1152 ../modules/gui/installupdate.py:1197
 msgid ""
 "\n"
 "Error:\n"
 msgstr "\n오류:\n"
 
-#: ../modules/gui/installupdate.py:1150 ../modules/gui/installupdate.py:1184
+#: ../modules/gui/installupdate.py:1155 ../modules/gui/installupdate.py:1189
 msgid " - Failed </b>"
 msgstr " - 실패 </b>"
 
-#: ../modules/gui/installupdate.py:1190
+#: ../modules/gui/installupdate.py:1195
 #, python-format
 msgid ""
 "An unknown error occurred in the %s stage.\n"
 "\n"
 msgstr "%s 단계에서 알 수 없는 오류가 발생했습니다.\n\n"
 
-#: ../modules/gui/installupdate.py:1195
+#: ../modules/gui/installupdate.py:1200
 msgid "Exception traceback:\n"
 msgstr "예외 역추적 내용:\n"
 
-#: ../modules/gui/installupdate.py:1202
+#: ../modules/gui/installupdate.py:1207
 msgid "List of configured publishers:"
 msgstr "구성된 게시자 목록:"
 
-#: ../modules/gui/installupdate.py:1289
+#: ../modules/gui/installupdate.py:1291
 #, python-format
-msgid "Downloaded %(current)s of %(total)s"
-msgstr "%(current)s/%(total)s 다운로드됨"
+msgid "(%s)"
+msgstr "(%s)"
 
-#: ../modules/gui/installupdate.py:1303
+#: ../modules/gui/installupdate.py:1293
+#, python-format
+msgid "Downloaded %(current)s of %(total)s %(speed)s"
+msgstr "%(current)s/%(total)s %(speed)s 다운로드됨"
+
+#: ../modules/gui/installupdate.py:1308
 #, python-format
 msgid "%(cur)d of %(goal)d - %(name)s"
 msgstr "%(cur)d/%(goal)d - %(name)s"
 
-#: ../modules/gui/installupdate.py:1366 ../modules/gui/installupdate.py:1396
+#: ../modules/gui/installupdate.py:1372 ../modules/gui/installupdate.py:1402
 msgid "Installation completed successfully"
 msgstr "설치가 성공적으로 완료되었습니다."
 
-#: ../modules/gui/installupdate.py:1368
+#: ../modules/gui/installupdate.py:1374
 msgid "Packages removed successfully"
 msgstr "패키지가 성공적으로 제거되었습니다."
 
-#: ../modules/gui/installupdate.py:1370
+#: ../modules/gui/installupdate.py:1376
 msgid "Packages updated successfully"
 msgstr "패키지가 성공적으로 업데이트되었습니다."
 
-#: ../modules/gui/installupdate.py:1372
+#: ../modules/gui/installupdate.py:1378
 msgid "Optional components updated successfully"
 msgstr "선택적 구성 요소가 성공적으로 업데이트되었습니다."
 
-#: ../modules/gui/installupdate.py:1418
+#: ../modules/gui/installupdate.py:1424
 msgid ""
 "Not enough disk space, the selected action cannot be performed.\n"
 "\n"
@@ -6397,45 +6883,45 @@ msgid ""
 "cancel the action."
 msgstr "디스크 공간이 부족하기 때문에 선택한 작업을 수행할 수 없습니다.\n\n기존 BE를 관리하여 디스크 여유 공간을 확보하려면 확인을 누르거나 작업을 취소하려면 취소를 누릅니다."
 
-#: ../modules/gui/installupdate.py:1422
+#: ../modules/gui/installupdate.py:1428
 msgid "Not Enough Disk Space"
 msgstr "디스크 공간 부족"
 
-#: ../modules/gui/installupdate.py:1444
+#: ../modules/gui/installupdate.py:1450
 msgid "Packages To Be Updated:\n"
 msgstr "업데이트할 패키지:\n"
 
-#: ../modules/gui/installupdate.py:1451
+#: ../modules/gui/installupdate.py:1457
 msgid "Packages To Be Installed:\n"
 msgstr "설치할 패키지:\n"
 
-#: ../modules/gui/installupdate.py:1458
+#: ../modules/gui/installupdate.py:1464
 msgid "Packages To Be Removed:\n"
 msgstr "제거할 패키지:\n"
 
-#: ../modules/gui/installupdate.py:1467
+#: ../modules/gui/installupdate.py:1473
 msgid "Optional components\n"
 msgstr "선택적 구성 요소\n"
 
-#: ../modules/gui/installupdate.py:1469
+#: ../modules/gui/installupdate.py:1475
 #, python-format
 msgid "Number of facets set: %s\n"
 msgstr "페이싯 세트 수: %s\n"
 
-#: ../modules/gui/installupdate.py:1559
+#: ../modules/gui/installupdate.py:1565
 msgid "A_ccept"
 msgstr "동의(_C)"
 
-#: ../modules/gui/installupdate.py:1561
+#: ../modules/gui/installupdate.py:1567
 msgid ""
 "You must accept the terms of the license before downloading this package."
 msgstr "이 패키지를 다운로드하기 전에 사용권 계약에 동의해야 합니다."
 
-#: ../modules/gui/installupdate.py:1574
+#: ../modules/gui/installupdate.py:1580
 msgid "You must view the terms of the license before downloading this package."
 msgstr "이 패키지를 다운로드하기 전에 사용권 계약을 확인해야 합니다."
 
-#: ../modules/gui/installupdate.py:1582
+#: ../modules/gui/installupdate.py:1588
 #, python-format
 msgid "%s License"
 msgstr "%s 사용권"
@@ -6648,38 +7134,67 @@ msgstr "영역"
 msgid " [latin]"
 msgstr " [라틴 문자]"
 
-#: ../modules/gui/progress.py:45 ../modules/gui/progress.py:48
+#: ../modules/gui/progress.py:69
 #, python-format
-msgid "Retrieving catalog '%s'...\n"
-msgstr "카탈로그 '%s' 를 검색하고 있습니다...\n"
+msgid "Retrieving catalog: %s"
+msgstr "카탈로그 검색 중: %s"
 
-#: ../modules/gui/progress.py:57 ../modules/gui/progress.py:59
-msgid "Caching catalogs ...\n"
-msgstr "카탈로그들을 캐싱하고 있습니다 ...\n"
-
-#: ../modules/gui/progress.py:67 ../modules/gui/progress.py:70
-msgid "Loading catalog cache ...\n"
-msgstr "카탈로그 캐시를 로딩하고 있습니다 ...\n"
-
-#: ../modules/gui/progress.py:82 ../modules/gui/progress.py:85
+#: ../modules/gui/progress.py:72
 #, python-format
-msgid "Refreshing catalog %s\n"
-msgstr "카탈로그 %s 를 재설정하고 있습니다\n"
+msgid "Refreshing catalog: %s"
+msgstr "카탈로그 새로 고치는 중: %s"
 
-#: ../modules/gui/progress.py:91 ../modules/gui/progress.py:95
+#: ../modules/gui/progress.py:86
 #, python-format
-msgid "Finished refreshing catalog %s\n"
-msgstr "카탈로그 %s 재설정을 완료했습니다\n"
+msgid "Up to date check: planning (%s)"
+msgstr "최신 확인: 계획(%s)"
 
-#: ../modules/gui/progress.py:107
+#: ../modules/gui/progress.py:91
 #, python-format
-msgid "Evaluating: %s"
-msgstr "평가 중: %s"
+msgid "Planning: %s"
+msgstr "계획: %s"
 
-#: ../modules/gui/progress.py:128
+#: ../modules/gui/progress.py:95
+msgid "... "
+msgstr "... "
+
+#: ../modules/gui/progress.py:97 ../modules/gui/progress.py:181
+msgid "Done\n"
+msgstr "완료\n"
+
+#: ../modules/gui/progress.py:109
+msgid "Planning: Complete\n"
+msgstr "계획: 완료\n"
+
+#: ../modules/gui/progress.py:116
+#, python-format
+msgid "Fetching %d manifests"
+msgstr "%d 증명 인출 중"
+
+#: ../modules/gui/progress.py:131
+msgid "Committing manifests"
+msgstr "커밋 중인 증명"
+
+#: ../modules/gui/progress.py:145
 #, python-format
 msgid "Package %d of %d: %s\n"
 msgstr "패키지 %d/%d: %s\n"
+
+#: ../modules/gui/progress.py:193
+msgid ""
+"Finished processing linked images.\n"
+"\n"
+msgstr "링크된 이미지 처리를 완료했습니다.\n\n"
+
+#: ../modules/gui/progress.py:214
+#, python-format
+msgid "Linked image '%s' output:\n"
+msgstr "링크된 이미지 '%s' 출력:\n"
+
+#: ../modules/gui/progress.py:227
+#, python-format
+msgid "Linked images: %s done; %d working: %s\n"
+msgstr "링크된 이미지: %s 완료; %d 작업 중: %s\n"
 
 #: ../modules/gui/repository.py:32
 msgid "Approved"
@@ -7482,17 +7997,9 @@ msgstr "%s을(를) 추가하는 데 실패했습니다.\n"
 msgid "Web Installer Error: %s"
 msgstr "웹 설치 프로그램 오류: %s"
 
-#: ../modules/indexer.py:96
+#: ../modules/indexer.py:97
 msgid "sort_file_max_size must be greater than 0"
 msgstr "sort_file_max_size는 0보다 커야 합니다."
-
-#: ../modules/indexer.py:191
-msgid "Reading Existing Index"
-msgstr "기존 색인 읽는 중"
-
-#: ../modules/indexer.py:709 ../modules/indexer.py:740
-msgid "Indexing Packages"
-msgstr "패키지 색인화 중"
 
 #: ../modules/lint/base.py:309
 #, python-format
@@ -7519,52 +8026,52 @@ msgstr "pkglintrc 파일 %(config_file)s이(가) 누락되거나 손상됨: %(er
 msgid "Invalid release string: %s"
 msgstr "잘못된 릴리스 문자열: %s"
 
-#: ../modules/lint/engine.py:371
+#: ../modules/lint/engine.py:370
 #, python-format
 msgid "loading extensions: duplicate checker name %(name)s: %(class)s"
 msgstr "확장 로드 중: 중복된 검사기 이름 %(name)s: %(class)s"
 
-#: ../modules/lint/engine.py:384
+#: ../modules/lint/engine.py:383
 #, python-format
 msgid ""
 "loading extension %(checker)s: duplicate pkglint_id %(pkglint_id)s in %"
 "(method)s"
 msgstr "%(checker)s 확장 로드 중: %(method)s에 중복된 pkglint_id %(pkglint_id)s이(가) 있습니다."
 
-#: ../modules/lint/engine.py:434
+#: ../modules/lint/engine.py:433
 #, python-format
 msgid "Error parsing config value for %(key)s: %(err)s"
 msgstr "%(key)s의 구성 값을 구문 분석하는 중 오류가 발생했습니다. %(err)s"
 
-#: ../modules/lint/engine.py:506
+#: ../modules/lint/engine.py:505
 msgid ""
 "Either a cache directory, or some local manifest files must be provided."
 msgstr "캐시 디렉토리 또는 일부 로컬 매니페스트 파일을 제공해야 합니다."
 
-#: ../modules/lint/engine.py:511
+#: ../modules/lint/engine.py:510
 msgid ""
 "A cache directory must be provided if using reference or lint repositories."
 msgstr "참조 또는 Lint 저장소를 사용하는 경우 캐시 디렉토리를 제공해야 합니다."
 
-#: ../modules/lint/engine.py:527
+#: ../modules/lint/engine.py:526
 msgid "Ignoring -l option, existing image found."
 msgstr "-l 옵션을 무시합니다. 기존 이미지를 발견했습니다."
 
-#: ../modules/lint/engine.py:546
+#: ../modules/lint/engine.py:545
 #, python-format
 msgid "Unable to create lint image: %s"
 msgstr "Lint 이미지를 만들 수 없습니다. %s"
 
-#: ../modules/lint/engine.py:557
+#: ../modules/lint/engine.py:556
 msgid "Ignoring -r option, existing image found."
 msgstr "-r 옵션을 무시합니다. 기존 이미지를 발견했습니다."
 
-#: ../modules/lint/engine.py:581
+#: ../modules/lint/engine.py:580
 #, python-format
 msgid "Unable to create reference image: %s"
 msgstr "참조 이미지를 만들 수 없습니다. %s"
 
-#: ../modules/lint/engine.py:586
+#: ../modules/lint/engine.py:585
 #, python-format
 msgid "Unable to access any pkglint images under %s"
 msgstr "%s에서 pkglint 이미지에 액세스할 수 없습니다."
@@ -7581,56 +8088,56 @@ msgstr "%s에서는 pkglint 확장에 사용되는 알려진 검사기 부속 �
 msgid "Total number of checks found: %s"
 msgstr "발견된 총 검사 수: %s"
 
-#: ../modules/lint/engine.py:698
+#: ../modules/lint/engine.py:700
 #, python-format
 msgid "unable to construct fmri from %s"
 msgstr "%s에서 fmri를 생성할 수 없습니다."
 
-#: ../modules/lint/engine.py:707
+#: ../modules/lint/engine.py:709
 #, python-format
 msgid "invalid pkg name %s"
 msgstr "pkg 이름 %s이(가) 잘못되었습니다."
 
-#: ../modules/lint/engine.py:734
+#: ../modules/lint/engine.py:736
 #, python-format
 msgid "get_fmri(pattern) %(pattern)s matched %(count)s packages: %(pkgs)s"
 msgstr "%(count)s 패키지와 일치하는 get_fmri(pattern) %(pattern)s: %(pkgs)s"
 
-#: ../modules/lint/engine.py:822 ../sysrepo.py:184
+#: ../modules/lint/engine.py:824 ../sysrepo.py:190
 #, python-format
 msgid "Unable to get image at %(dir)s: %(reason)s"
 msgstr "%(dir)s의 이미지를 가져올 수 없습니다. %(reason)s"
 
-#: ../modules/lint/engine.py:836
+#: ../modules/lint/engine.py:838
 msgid "pkglint only supports a single publisher per image."
 msgstr "pkglint는 이미지마다 하나의 게시자만 지원합니다."
 
-#: ../modules/lint/engine.py:845
+#: ../modules/lint/engine.py:847
 #, python-format
 msgid "Creating image at %s"
 msgstr "%s에 이미지를 만드는 중"
 
-#: ../modules/lint/engine.py:861
+#: ../modules/lint/engine.py:863
 #, python-format
 msgid "Checking %s"
 msgstr "%s 확인 중"
 
-#: ../modules/lint/engine.py:932
+#: ../modules/lint/engine.py:934
 #, python-format
 msgid "Not running %(check)s checks on linted action %(action)s"
 msgstr "Lint 작업 %(action)s에서 %(check)s 검사가 실행되고 있지 않습니다."
 
-#: ../modules/lint/engine.py:999
+#: ../modules/lint/engine.py:1002
 #, python-format
 msgid "obsolete package: %s"
 msgstr "오래된 패키지: %s"
 
-#: ../modules/lint/engine.py:1007
+#: ../modules/lint/engine.py:1010
 #, python-format
 msgid "loop detected in rename: %s"
 msgstr "이름 바꾸기에서 루프 발견: %s"
 
-#: ../modules/lint/engine.py:1081
+#: ../modules/lint/engine.py:1084
 #, python-format
 msgid "%s is not set in manifest"
 msgstr "매니페스트에서 %s이(가) 설정되지 않았습니다."
@@ -8196,26 +8703,26 @@ msgstr "%(pkg)s에 대한 pkg.linted 속성이 감지됨: %(linted)s"
 msgid "Show manifests with pkg.linted attributes."
 msgstr "pkg.linted 속성이 있는 매니페스트를 표시합니다."
 
-#: ../modules/manifest.py:704
+#: ../modules/manifest.py:701 ../modules/manifest.py:748
 #, python-format
 msgid ""
 "%(fp)s:\n"
 "%(e)s"
 msgstr "%(fp)s:\n%(e)s"
 
-#: ../modules/manifest.py:716
+#: ../modules/manifest.py:760
 #, python-format
 msgid ""
 "%(fp)s contains an action which is missing the expected attribute: %(at)s.\n"
 "The action is:%(act)s"
 msgstr "%(fp)s에는 다음 예상 속성이 누락된 작업이 있습니다. %(at)s.\n작업: %(act)s"
 
-#: ../modules/manifest.py:839
+#: ../modules/manifest.py:883
 #, python-format
 msgid "Attribute value '%s' not 'true' or 'false'"
 msgstr "속성 값 '%s'이(가) 'true' 또는 'false'가 아닙니다."
 
-#: ../modules/manifest.py:880
+#: ../modules/manifest.py:924
 #, python-format
 msgid "%(forv)s '%(v)s' specified multiple times"
 msgstr "%(forv)s '%(v)s'이(가) 여러 번 지정되었습니다."
@@ -8256,7 +8763,7 @@ msgid ""
 "'%s' is not a valid mediator-priority; valid values are 'site' or 'vendor'"
 msgstr "'%s'은(는) 유효한 mediator-priority가 아닙니다. 유효한 값은 '사이트' 또는 '판매자'입니다."
 
-#: ../modules/misc.py:72
+#: ../modules/misc.py:86
 #, python-format
 msgid ""
 "\n"
@@ -8266,63 +8773,79 @@ msgid ""
 "message."
 msgstr "\n\n이것은 pkg(5) 버전 %(version)s의 내부 오류입니다.  위의 정보 및\n이 메시지를 포함하여 이 문제에 대한\n서비스 요청을 기록하십시오."
 
-#: ../modules/misc.py:408
+#: ../modules/misc.py:437
 msgid "B"
 msgstr "B"
 
-#: ../modules/misc.py:409
+#: ../modules/misc.py:438
 msgid "kB"
 msgstr "kB"
 
-#: ../modules/misc.py:410
+#: ../modules/misc.py:438
+msgid "k"
+msgstr "k"
+
+#: ../modules/misc.py:439
 msgid "MB"
 msgstr "MB"
 
-#: ../modules/misc.py:411
+#: ../modules/misc.py:439
+msgid "M"
+msgstr "M"
+
+#: ../modules/misc.py:440
 msgid "GB"
 msgstr "GB"
 
-#: ../modules/misc.py:412
+#: ../modules/misc.py:440
+msgid "G"
+msgstr "G"
+
+#: ../modules/misc.py:441
 msgid "TB"
 msgstr "TB"
 
-#: ../modules/misc.py:413
+#: ../modules/misc.py:442
 msgid "PB"
 msgstr "PB"
 
-#: ../modules/misc.py:414 ../modules/misc.py:418
+#: ../modules/misc.py:443 ../modules/misc.py:447
 msgid "EB"
 msgstr "EB"
 
-#: ../modules/misc.py:1102
+#: ../modules/misc.py:443
+msgid "E"
+msgstr "E"
+
+#: ../modules/misc.py:1309
 #, python-format
 msgid "illegal argument -- %s"
 msgstr "잘못된 인수 -- %s"
 
-#: ../modules/misc.py:1115
+#: ../modules/misc.py:1322
 #, python-format
 msgid "'%s' and '%s' have the same meaning"
 msgstr "'%s'과(와) '%s'의 의미가 동일합니다."
 
-#: ../modules/p5i.py:92 ../modules/p5s.py:76
+#: ../modules/p5i.py:92 ../modules/p5s.py:87
 msgid "missing version"
 msgstr "누락된 버전"
 
-#: ../modules/p5i.py:94 ../modules/p5s.py:78
+#: ../modules/p5i.py:94 ../modules/p5s.py:89
 msgid "invalid version"
 msgstr "잘못된 버전"
 
-#: ../modules/p5p.py:60
+#: ../modules/p5p.py:61
 #, python-format
 msgid "%s is not in a supported or recognizable archive index format."
 msgstr "%s은(는) 지원되거나 인식할 수 있는 아카이브 색인 형식이 아닙니다."
 
-#: ../modules/p5p.py:213
+#: ../modules/p5p.py:214
 #, python-format
 msgid "Archive %s is missing, unsupported, or corrupt."
 msgstr "%s 아카이브가 누락되었거나 지원되지 않거나 손상되었습니다."
 
-#: ../modules/p5p.py:228
+#: ../modules/p5p.py:229
 #, python-format
 msgid ""
 "Package archive %(arc_name)s contains corrupt entries for the requested "
@@ -8330,7 +8853,7 @@ msgid ""
 "%(files)s."
 msgstr "패키지 아카이브 %(arc_name)s에 요청된 패키지 파일에 대한 손상된 항목이 포함되어 있습니다.\n%(files)s."
 
-#: ../modules/p5p.py:245
+#: ../modules/p5p.py:246
 #, python-format
 msgid ""
 "Package archive %(arc_name)s does not contain the requested package file"
@@ -8338,7 +8861,7 @@ msgid ""
 "%(files)s."
 msgstr "패키지 아카이브 %(arc_name)s에 요청된 패키지 파일이 포함되어 있지 않습니다.\n%(files)s."
 
-#: ../modules/p5p.py:262
+#: ../modules/p5p.py:263
 #, python-format
 msgid ""
 "No package manifest for package '%(pfmri)s' exists in archive %(arc_name)s."
@@ -8534,15 +9057,15 @@ msgstr "쿼리를 구문 분석할 수 없습니다."
 msgid "Problem occurred with: %s"
 msgstr "문제가 발생했습니다. %s"
 
-#: ../modules/query_parser.py:552
+#: ../modules/query_parser.py:545
 msgid "This expression produces action results:"
 msgstr "이 표현식은 작업 결과를 생성합니다."
 
-#: ../modules/query_parser.py:554
+#: ../modules/query_parser.py:547
 msgid "This expression produces package results:"
 msgstr "이 표현식은 패키지 결과를 생성합니다."
 
-#: ../modules/query_parser.py:557
+#: ../modules/query_parser.py:550
 msgid ""
 "'AND' and 'OR' require those expressions to produce the same type of results."
 msgstr "'AND' 및 'OR'에서 동일한 유형의 결과를 생성하려면 해당 표현식이 필요합니다."
@@ -8698,60 +9221,30 @@ msgstr "저장소에 대해 게시자가 지정되지 않았거나 기본 게시
 msgid "No publisher matching '%s' could be found."
 msgstr "'%s'과(와) 일치하는 게시자를 찾지 못했습니다."
 
-#: ../modules/server/repository.py:676
+#: ../modules/server/repository.py:685
 #, python-format
 msgid "Skipping %(name)s; invalid manifest: %(error)s"
 msgstr "%(name)s을(를) 건너뜁니다. 잘못된 매니페스트: %(error)s"
 
 #. Create the transformed catalog.
-#: ../modules/server/repository.py:845
+#: ../modules/server/repository.py:854
 msgid "Transforming repository catalog; this process will take some time."
 msgstr "저장소 카탈로그를 변형합니다. 이 프로세스는 시간이 걸릴 수 있습니다."
 
-#: ../modules/server/repository.py:1392
+#: ../modules/server/repository.py:1401
 #, python-format
 msgid ""
 "Index corrupted or out of date. Removing old index directory (%s)  and "
 "rebuilding search indexes."
 msgstr "색인이 손상되었거나 최신 버전이 아입니다. 이전 색인 디렉토리(%s)를 제거하고 검색 색인을 재구성하는 중입니다."
 
-#: ../modules/server/repository.py:1409
+#: ../modules/server/repository.py:1418
 msgid "writable root not writable by current user id or group."
 msgstr "현재 사용자 ID 또는 그룹에서 쓰기 가능 루트에 쓸 수 없습니다."
 
-#: ../modules/server/repository.py:1412
+#: ../modules/server/repository.py:1421
 msgid "unable to write to index directory."
 msgstr "색인 디렉토리에 쓸 수 없습니다."
-
-#. First, dump all search data as it will be invalidated
-#. as soon as the catalog is updated.
-#: ../modules/server/repository.py:1463
-msgid "Delete search index"
-msgstr "검색 색인 삭제"
-
-#. Next, remove all of the packages to be removed
-#. from the catalog (if they are present).  That way
-#. any active clients are less likely to be surprised
-#. when files for packages start disappearing.
-#: ../modules/server/repository.py:1472
-msgid "Update catalog"
-msgstr "카탈로그 업데이트"
-
-#: ../modules/server/repository.py:1501
-msgid "Analyze removed packages"
-msgstr "제거된 패키지 분석"
-
-#: ../modules/server/repository.py:1525
-msgid "Analyze repository packages"
-msgstr "저장소 패키지 분석"
-
-#: ../modules/server/repository.py:1580
-msgid "Remove package manifests"
-msgstr "패키지 증명 제거"
-
-#: ../modules/server/repository.py:1590
-msgid "Remove package files"
-msgstr "패키지 파일 제거"
 
 #: ../modules/server/transaction.py:73
 #, python-format
@@ -9054,13 +9547,13 @@ msgstr[1] "%(s1)s%(search_text)s%(e1)s과(와) 일치하는 패키지를 %(numbe
 msgid "Unable to initialize gtk"
 msgstr "gtk 를 초기화 할 수 없습니다"
 
-#: ../pkgdep.py:55
+#: ../pkgdep.py:56
 msgid ""
 "To continue, the target image must be upgraded before it can be used.  See "
 "pkg(1) update-format for more information."
 msgstr "계속하려면 사용하기 전에 대상 이미지를 업그레이드해야 합니다. 자세한 내용은 pkg(1) update-format을 참조하십시오."
 
-#: ../pkgdep.py:84
+#: ../pkgdep.py:85
 msgid ""
 "Usage:\n"
 "        pkgdepend [options] command [cmd_options] [operands]\n"
@@ -9077,64 +9570,64 @@ msgid ""
 "        PKG_IMAGE"
 msgstr "사용법:\n        pkgdepend [options] command [cmd_options] [operands]\n\n하위 명령:\n        pkgdepend generate [-IMm] -d dir [-d dir] [-D name=value] [-k path]\n            manifest_path\n        pkgdepend [options] resolve [-dmosv] manifest ...\n\n옵션:\n        -R dir\n        --help 또는 -?\n환경:\n        PKG_IMAGE"
 
-#: ../pkgdep.py:123 ../pkgdep.py:165
+#: ../pkgdep.py:124 ../pkgdep.py:166
 #, python-format
 msgid "The proto directory %s could not be found."
 msgstr "proto 디렉토리 %s을(를) 찾을 수 없습니다."
 
-#: ../pkgdep.py:130
+#: ../pkgdep.py:131
 msgid "-D arguments must be of the form 'name=value'."
 msgstr "-D 인수는 'name=value' 형식이어야 합니다."
 
-#: ../pkgdep.py:149
+#: ../pkgdep.py:150
 msgid "Generate only accepts one or two arguments."
 msgstr "Generate 명령은 한 개 또는 두 개의 인수만 허용합니다."
 
-#: ../pkgdep.py:152
+#: ../pkgdep.py:153
 msgid ""
 "ORIGIN may not be specified using -D. It will be inferred from the\n"
 "install paths of the files."
 msgstr "ORIGIN은 -D를 사용하여 지정할 수 없습니다. 파일의 설치 경로에서\n유추됩니다."
 
-#: ../pkgdep.py:160 ../pkgdep.py:246
+#: ../pkgdep.py:161 ../pkgdep.py:247
 #, python-format
 msgid "The manifest file %s could not be found."
 msgstr "매니페스트 파일 %s을(를) 찾을 수 없습니다."
 
-#: ../pkgdep.py:169
+#: ../pkgdep.py:170
 msgid "At least one proto directory must be provided."
 msgstr "하나 이상의 proto 디렉토리를 제공해야 합니다."
 
-#: ../pkgdep.py:176
+#: ../pkgdep.py:177
 #, python-format
 msgid ""
 "Could not parse manifest %(manifest)s because of the following line:\n"
 "%(line)s"
 msgstr "다음 행 때문에 매니페스트 %(manifest)s을(를) 구문 분석할 수 없습니다.\n%(line)s"
 
-#: ../pkgdep.py:240
+#: ../pkgdep.py:241
 msgid "-o cannot be used with -d or -s"
 msgstr "-o 는 -d 혹은 -s 와 같이 사용될 수 없습니다"
 
-#: ../pkgdep.py:252
+#: ../pkgdep.py:253
 #, python-format
 msgid "The output directory %s is not a directory."
 msgstr "출력 디렉토리 %s은(는) 디렉토리가 아닙니다."
 
-#: ../pkgdep.py:292
+#: ../pkgdep.py:298
 msgid ""
 "External package list files were provided but did not contain any fmri "
 "patterns."
 msgstr "외부 패키지 목록 파일이 제공되었지만 fmri 패턴이 포함되어 있지 않습니다."
 
-#: ../pkgdep.py:328
+#: ../pkgdep.py:334
 #, python-format
 msgid ""
 "Could not parse one or more manifests because of the following line:\n"
 "%s"
 msgstr "다음 라인으로 인해 하나 이상의 매니페스트의 구문을 분석할 수 없습니다.\n%s"
 
-#: ../pkgdep.py:351
+#: ../pkgdep.py:357
 msgid ""
 "\n"
 "The following fmris matched a pattern in a constraint file but were not used "
@@ -9142,32 +9635,32 @@ msgid ""
 "dependency resolution:"
 msgstr "\n다음 fmri는 제약 조건 파일에서 패턴이 일치했지만\n종속성 분석에서 사용되지 않았습니다."
 
-#: ../pkgdep.py:357
+#: ../pkgdep.py:363
 msgid ""
 "\n"
 "The following fmris had dependencies resolve to them:"
 msgstr "\n다음 fmri는 종속성 분석을 가집니다."
 
-#: ../pkgdep.py:406
+#: ../pkgdep.py:412
 #, python-format
 msgid "Could not open %s to echo manifest"
 msgstr "%s을(를) 열어 매니페스트를 반향할 수 없습니다."
 
-#: ../pkgdep.py:453
+#: ../pkgdep.py:459
 #, python-format
 msgid "Could not open output file %s for writing"
 msgstr "결과를 쓰기 위해 %s 파일을 읽을 수 없습니다"
 
-#: ../pkgdep.py:486
+#: ../pkgdep.py:492
 #, python-format
 msgid "Out dir %s does not exist and could not be created. Error is: %s"
 msgstr "결과 디렉토리 %s 가 존재하지 않고, 생성할 수도 없습니다. 에러는: %s"
 
-#: ../pkgdep.py:561
+#: ../pkgdep.py:567
 msgid "generate subcommand doesn't use -R"
 msgstr "generate 서브커맨드는 -R 을 사용하지 않습니다"
 
-#: ../pkgdep.py:583
+#: ../pkgdep.py:589
 #, python-format
 msgid ""
 "The %(cmd)s command appears out of sync with the libraries provided\n"
@@ -9225,7 +9718,7 @@ msgid "At least one package pattern must be provided."
 msgstr "하나 이상의 패키지 패턴을 제공해야 합니다."
 
 #: ../pkgrepo.py:203 ../pkgrepo.py:416 ../pkgrepo.py:681 ../pkgrepo.py:778
-#: ../pkgrepo.py:932 ../pkgrepo.py:988 ../pkgrepo.py:1073
+#: ../pkgrepo.py:937 ../pkgrepo.py:993 ../pkgrepo.py:1078
 msgid "A package repository location must be provided using -s."
 msgstr "-s를 사용하여 패키지 저장소 위치를 제공해야 합니다."
 
@@ -9253,7 +9746,7 @@ msgstr "저장소 위치를 지정하지 않았습니다."
 msgid "At least one publisher must be specified"
 msgstr "적어도 하나의 게시자가 지정되어야 합니다."
 
-#: ../pkgrepo.py:311 ../pkgrepo.py:913 ../pkgrepo.py:969
+#: ../pkgrepo.py:311 ../pkgrepo.py:918 ../pkgrepo.py:974
 #, python-format
 msgid "Invalid publisher prefix '%s'"
 msgstr "게시자 접두어 '%s'이(가) 잘못되었습니다."
@@ -9299,8 +9792,8 @@ msgstr "일치하는 등록 정보를 찾을 수 없습니다."
 msgid "no matching publishers found"
 msgstr "일치하는 게시자를 찾을 수 없습니다."
 
-#: ../pkgrepo.py:677 ../pkgrepo.py:924 ../pkgrepo.py:980 ../pkgrepo.py:1186
-#: ../publish.py:668
+#: ../pkgrepo.py:677 ../pkgrepo.py:929 ../pkgrepo.py:985 ../pkgrepo.py:1191
+#: ../publish.py:674
 msgid "command does not take operands"
 msgstr "명령이 피연산자를 사용하지 않습니다."
 
@@ -9312,79 +9805,79 @@ msgstr "패키지"
 msgid "UPDATED"
 msgstr "업데이트"
 
-#: ../pkgrepo.py:859 ../pkgrepo.py:868
+#: ../pkgrepo.py:864 ../pkgrepo.py:873
 msgid "RELEASE"
 msgstr "릴리스"
 
-#: ../pkgrepo.py:860 ../pkgrepo.py:869
+#: ../pkgrepo.py:865 ../pkgrepo.py:874
 msgid "BUILD RELEASE"
 msgstr "빌드 릴리스"
 
-#: ../pkgrepo.py:861 ../pkgrepo.py:869
+#: ../pkgrepo.py:866 ../pkgrepo.py:874
 msgid "BRANCH"
 msgstr "분기"
 
-#: ../pkgrepo.py:862 ../pkgrepo.py:869
+#: ../pkgrepo.py:867 ../pkgrepo.py:874
 msgid "PACKAGING DATE"
 msgstr "패키징 날짜"
 
-#: ../pkgrepo.py:863 ../pkgrepo.py:869
+#: ../pkgrepo.py:868 ../pkgrepo.py:874
 msgid "FMRI"
 msgstr "FMRI"
 
-#: ../pkgrepo.py:868
+#: ../pkgrepo.py:873
 msgid "SUMMARY"
 msgstr "요약"
 
-#: ../pkgrepo.py:868 ../util/publish/pkglint.py:212
+#: ../pkgrepo.py:873 ../util/publish/pkglint.py:212
 msgid "DESCRIPTION"
 msgstr "설명"
 
-#: ../pkgrepo.py:868
+#: ../pkgrepo.py:873
 msgid "CATEGORIES"
 msgstr "범주"
 
-#: ../pkgrepo.py:870
+#: ../pkgrepo.py:875
 msgid "STATE"
 msgstr "상태"
 
-#: ../pkgrepo.py:1067
+#: ../pkgrepo.py:1072
 msgid ""
 "a property name and value must be provided in the form <section/"
 "property>=<value> or <section/property>=([\"<value>\" ...])"
 msgstr "등록 정보 이름 및 값은 <section/property>=<value> 또는 <section/property>=([\"<value>\" ...]) 형식으로 제공해야 합니다."
 
-#: ../pkgrepo.py:1089
+#: ../pkgrepo.py:1094
 #, python-format
 msgid "unknown property section '%s'"
 msgstr "알 수 없는 등록 정보 섹션 '%s'입니다."
 
-#: ../pkgrepo.py:1093
+#: ../pkgrepo.py:1098
 #, python-format
 msgid "'%s' may not be set using this command"
 msgstr "이 명령을 사용하여 '%s'을(를) 설정할 수 없습니다."
 
-#: ../pkgrepo.py:1098
+#: ../pkgrepo.py:1103
 #, python-format
 msgid "unknown property '%s'"
 msgstr "알 수 없는 등록 정보 '%s'입니다."
 
 #. If there are still no known publishers, this
 #. operation cannot succeed, so fail now.
-#: ../pkgrepo.py:1107
+#: ../pkgrepo.py:1112
 msgid ""
 "One or more publishers must be specified to create and set properties for as "
 "none exist yet."
 msgstr "등록 정보가 아직 없을 경우 만들고 설정하려면 하나 이상의 게시자를 지정해야 합니다."
 
-#: ../pkgrepo.py:1161
+#: ../pkgrepo.py:1166
 #, python-format
 msgid ""
 "Unable to set properties for publisher '%(pfx)s':\n"
 "%(details)s"
 msgstr "'%(pfx)s' 게시자에 대한 등록 정보를 설정할 수 없습니다.\n%(details)s"
 
-#: ../pkgrepo.py:1266
+#: ../pkgrepo.py:1271
 #, python-format
 msgid ""
 "The pkgrepo command appears out of sync with the libraries provided\n"
@@ -9451,49 +9944,56 @@ msgstr "append 명령에는 하나의 패키지 이름이 필요합니다."
 msgid "No transaction ID specified using -t or in $PKG_TRANS_ID."
 msgstr "-t를 사용하여 지정되거나 $PKG_TRANS_ID에 지정된 트랜잭션 ID가 없습니다."
 
-#: ../publish.py:273 ../publish.py:457 ../publish.py:573
+#: ../publish.py:273 ../publish.py:463 ../publish.py:579
 msgid "No transaction ID specified in $PKG_TRANS_ID"
 msgstr "$PKG_TRANS_ID에 트랜잭션 ID가 지정되지 않았습니다."
 
-#: ../publish.py:277 ../publish.py:588 ../publish.py:641
+#: ../publish.py:277 ../publish.py:594 ../publish.py:647
 msgid "No arguments specified for subcommand."
 msgstr "하위 명령에 인수가 지정되지 않았습니다."
 
-#: ../publish.py:282 ../publish.py:410 ../publish.py:527 ../publish.py:600
+#: ../publish.py:282 ../publish.py:416 ../publish.py:533 ../publish.py:606
 #, python-format
 msgid "invalid action for publication: %s"
 msgstr "게시에 대해 잘못된 작업이 있습니다. %s"
 
-#: ../publish.py:319 ../publish.py:736
+#: ../publish.py:319 ../publish.py:742
 msgid "A destination package repository must be provided using -s."
 msgstr "-s를 사용하여 대상 패키지 저장소를 제공해야 합니다."
 
-#: ../publish.py:361 ../publish.py:504
+#: ../publish.py:361 ../publish.py:510
 #, python-format
 msgid "File %s line %s: %s"
 msgstr "파일 %s 행 %s: %s"
 
-#: ../publish.py:372
+#. Cannot have a FMRI without version
+#: ../publish.py:369
+#, python-format
+msgid ""
+"The pkg.fmri attribute '%s' in the package manifest must include a version."
+msgstr "패키지 증명의 pkg.fmri 속성 '%s'에는 버전이 포함되어야 합니다."
+
+#: ../publish.py:378
 msgid "Manifest does not set pkg.fmri"
 msgstr "매니페스트에서 pkg.fmri를 설정하지 않습니다."
 
-#: ../publish.py:399
+#: ../publish.py:405
 #, python-format
 msgid "WARNING: Omitting signature action '%s'"
 msgstr "경고: 서명 작업 '%s'을(를) 생략하는 중입니다."
 
-#: ../publish.py:785
+#: ../publish.py:791
 #, python-format
 msgid "illegal %s option -- %s"
 msgstr "잘못된 %s 옵션 -- %s"
 
-#: ../pull.py:89
+#: ../pull.py:91
 msgid ""
 "Usage:\n"
 "        pkgrecv [-s src_uri] [-a] [-d (path|dest_uri)] [-c cache_dir]\n"
-"            [-kr] [-m match] [-n] [--raw] [--key keyfile --cert certfile] \n"
+"            [-kr] [-m match] [-n] [--raw] [--key keyfile --cert certfile]\n"
 "            (fmri|pattern) ...\n"
-"        pkgrecv [-s src_repo_uri] --newest \n"
+"        pkgrecv [-s src_repo_uri] --newest\n"
 "\n"
 "Options:\n"
 "        -a              Store the retrieved package data in a pkg(5) "
@@ -9569,7 +10069,7 @@ msgid ""
 "        PKG_SRC         Source URI or path"
 msgstr "사용법:\n        pkgrecv [-s src_uri] [-a] [-d (path|dest_uri)] [-c cache_dir]\n            [-kr] [-m match] [-n] [--raw] [--key keyfile --cert certfile] \n            (fmri|pattern) ...\n        pkgrecv [-s src_repo_uri] --newest \n\n옵션:\n        -a              검색된 패키지 데이터를 -d로 지정된 위치에 있는 pkg(5) 아카이브에\n                        저장합니다. 아직 파일이 존재하지 않을 수 있으며,\n                        이 옵션은 파일 시스템 기반 대상에서만 사용할\n                        수 있습니다.\n\n        -c cache_dir    다운로드된 컨텐츠를 캐시하는 데 사용할\n                        디렉토리의 경로입니다. 제공하지 않을 경우\n                        클라이언트가 자동으로 캐시 디렉토리를 \n                        선택합니다. 다운로드가 중단되고\n                        캐시 디렉토리가 자동으로 선택되면 이 옵션을\n                        사용하여 다운로드를 계속하십시오.\n\n        -d path_or_uri  패키지를 다시 게시할 대상 저장소의 파일\n                        시스템 경로 또는 URI입니다. 대상이 존재해야 합니다.\n                        새 저장소는 pkgrepo(1)를 사용하여 만들 수 있습니다.\n\n        -h              이 사용법 메시지를 표시합니다.\n\n        -k              다시 게시할 때 검색된 패키지 컨텐츠를 압축 및 무시된\n                        상태로 유지합니다. pkgsend와 함께 사용하지 마십시오.\n\n        -m match        다음 값을 사용하여 일치하는 동작을 제어합니다.\n                            all-timestamps\n                                최신 시간 표시 방식뿐 아니라 일치하는 모든\n                                시간 표시 방식을 포함합니다(all-versions를 의미함).\n                            all-versions\n                                최신 버전뿐 아니라 일치하는 모든 버전을 포함합니다.\n\n        -n              변경 사항 없이 테스트 실행을 수행합니다.\n\n        -r              제공된 패키지 목록의 모든 종속성을 반복적으로 평가하여\n                        목록에 추가합니다.\n\n        -s src_repo_uri 패키지 데이터를 검색할 pkg(5) 저장소\n                        위치를 나타내는 URI입니다.\n\n        --newest        지정된 저장소에서 사용 가능한 최신 패키지 버전을 나열하고\n                        종료합니다. -s를 제외한 기타\n                        옵션은 모두 무시됩니다.\n\n        --raw           -d로 지정된 위치에 있는 스템 및 버전으로\n                        디렉토리 구조 세트의 원시 패키지 데이터를 검색하고\n                        저장합니다. 파일 시스템 기반 대상에서만\n                        사용할 수 있습니다. pkgsend(1)\n                        include와 함께 사용하면 파일 내용을 수정하거나 추가\n                        패키지 메타 데이터를 제공하여\n                        패키지를 편리하게 수정하고 다시 게시할 수 있습니다.\n\n        --key keyfile   pkg 검색을 위해 사용할 클라이언트 SSL 키 파일을 지정합니다.\n\n        --cert certfile pkg 검색을 위해 사용할 클라이언트 SSL 인증서 파일을\n                        지정합니다.\n\n환경:\n        PKG_DEST        대상 디렉토리 또는 URI입니다.\n        PKG_SRC         소스 URI 또는 경로입니다."
 
-#: ../pull.py:163
+#: ../pull.py:165
 #, python-format
 msgid ""
 "\n"
@@ -9584,61 +10084,69 @@ msgstr "\n\n캐시된 파일이 다음 디렉토리에 보존되었습니다.\n\
 msgid "Unable to parse manifest '%(mpath)s' for package '%(pfmri)s'"
 msgstr "패키지 '%(pfmri)s'에 대한 매니페스트 '%(mpath)s'을(를) 구문 분석할 수 없습니다."
 
-#: ../pull.py:365
+#: ../pull.py:372
 #, python-format
 msgid "Illegal option -- %s"
 msgstr "잘못된 옵션 -- %s"
 
-#: ../pull.py:384
+#: ../pull.py:403
 #, python-format
 msgid "Illegal option value -- %s"
 msgstr "잘못된 옵션 값입니다 -- %s"
 
-#: ../pull.py:401
+#: ../pull.py:420
 msgid "a destination must be provided"
 msgstr "대상을 제공해야 합니다."
 
-#: ../pull.py:404
+#: ../pull.py:423
 msgid "a source repository must be provided"
 msgstr "소스 저장소가 반드시 제공되어야 합니다."
 
-#: ../pull.py:493
+#: ../pull.py:512
 msgid "Retrieving manifests for dependency evaluation ..."
 msgstr "의존성 검사를 위한 manifest 들을 검색합니다 ..."
 
-#: ../pull.py:510
+#: ../pull.py:527
 #, python-format
 msgid "Target archive '%s' already exists."
 msgstr "대상 아카이브 '%s'이(가) 이미 존재합니다."
 
-#: ../pull.py:535
+#: ../pull.py:553
 #, python-format
 msgid "Retrieving packages for publisher %s ..."
 msgstr "%s 게시자에 대한 패키지를 검색하는 중..."
 
-#: ../pull.py:538 ../pull.py:661
+#: ../pull.py:556 ../pull.py:700
 msgid "must specify at least one pkgfmri"
 msgstr "하나 이상의 pkgfmri를 지정해야 합니다."
 
-#: ../pull.py:554 ../pull.py:740
+#: ../pull.py:572 ../pull.py:779
 #, python-format
 msgid "Retrieving and evaluating %d package(s)..."
 msgstr "%d개의 패키지를 검색 및 평가하는 중..."
 
-#: ../pull.py:650
-msgid "-n takes no options"
-msgstr "-n에는 옵션을 사용하지 않습니다."
+#: ../pull.py:659 ../pull.py:933
+#, python-format
+msgid ""
+"The following errors were encountered.  The packages listed were not\n"
+"received.\n"
+"%s"
+msgstr "다음 오류가 발생했습니다.  나열된 패키지가 수신되지\n않았습니다.\n%s"
 
-#: ../pull.py:658
+#: ../pull.py:689
+msgid "--newest takes no options"
+msgstr "--newest에는 옵션을 사용하지 않습니다."
+
+#: ../pull.py:697
 #, python-format
 msgid "Processing packages for publisher %s ..."
 msgstr "%s 게시자에 대한 패키지를 처리하는 중..."
 
-#: ../pull.py:687
+#: ../pull.py:726
 msgid "To create a repository, use the pkgrepo command."
 msgstr "저장소를 만들려면 pkgrepo 명령을 사용합니다."
 
-#: ../pull.py:692
+#: ../pull.py:731
 #, python-format
 msgid ""
 "The repository configuration for the repository located at '%s' is not valid "
@@ -9646,20 +10154,20 @@ msgid ""
 "the repository or create a new one."
 msgstr "'%s'에 있는 저장소에 대한 저장소 구성이 유효하지 않거나 지정한 경로가 존재하지 않습니다. 저장소의 구성을 수정하거나 새 저장소를 만드십시오."
 
-#: ../pull.py:708
+#: ../pull.py:747
 #, python-format
 msgid "Unable to create basedir '%s': %s"
 msgstr "기본 디렉토리 '%s'을(를) 만들 수 없음: %s"
 
-#: ../pull.py:935
+#: ../pull.py:986
 msgid "Storage space quota exceeded."
 msgstr "저장 공간 쿼터가 초과되었습니다."
 
-#: ../pull.py:937
+#: ../pull.py:988
 msgid "No storage space left."
 msgstr "남은 저장 공간이 없습니다."
 
-#: ../pull.py:947
+#: ../pull.py:998
 #, python-format
 msgid ""
 "Please verify that the filesystem containing the following directories has "
@@ -9737,7 +10245,7 @@ msgstr "%s 해시 알고리즘에는 키 또는 인증서가 사용되지 않습
 msgid "Signed %s"
 msgstr "서명된 %s"
 
-#: ../sysrepo.py:158
+#: ../sysrepo.py:164
 msgid ""
 "Usage:\n"
 "        pkg.sysrepo -p <port> [-R image_root] [ -c cache_dir] [-h hostname]\n"
@@ -9747,123 +10255,143 @@ msgid ""
 "     "
 msgstr "사용법:\n        pkg.sysrepo -p <port> [-R image_root] [ -c cache_dir] [-h hostname]\n                [-l logs_dir] [-r runtime_dir] [-s cache_size] [-t template_dir]\n                [-T http_timeout] [-w http_proxy] [-W https_proxy]\n     "
 
-#: ../sysrepo.py:181
+#: ../sysrepo.py:187
 #, python-format
 msgid "Problem getting image at %s"
 msgstr "%s에서 이미지를 가져오는 중 문제가 발생했습니다."
 
 #. We need to log this, and carry on - the url
 #. could become available at a later date.
-#: ../sysrepo.py:225
+#: ../sysrepo.py:237
 #, python-format
 msgid "WARNING: unable to access %(uri)s when checking for redirects: %(err)s"
 msgstr "경고: 재지정을 확인할 때 %(uri)s에 액세스할 수 없음: %(err)s"
 
-#: ../sysrepo.py:262
+#: ../sysrepo.py:333
+#, python-format
+msgid "Invalid config cache file at %s generating fresh configuration."
+msgstr "%s에서 잘못된 구성 캐시 파일이 새로운 구성을 생성하는 중입니다."
+
+#: ../sysrepo.py:339 ../sysrepo.py:350
+#, python-format
+msgid "Invalid config cache at %s generating fresh configuration."
+msgstr "%s에서 잘못된 구성 캐시가 새로운 구성을 생성하는 중입니다."
+
+#: ../sysrepo.py:357
+#, python-format
+msgid "Unable to load config from %(cache_path)s: %(e)s"
+msgstr "%(cache_path)s에서 구성을 로드할 수 없음: %(e)s"
+
+#: ../sysrepo.py:385
+#, python-format
+msgid "Unable to store config to %(cache_path)s: %(e)s"
+msgstr "%(cache_path)s에 구성을 저장할 수 없음: %(e)s"
+
+#: ../sysrepo.py:463
 #, python-format
 msgid "file repository %s does not exist or is not accessible"
 msgstr "파일 저장소 %s이(가) 존재하지 않거나 액세스할 수 없습니다."
 
-#: ../sysrepo.py:266
-#, python-format
-msgid "p5p-based file repository %s cannot be proxied."
-msgstr "p5p 기반 파일 저장소 %s을(를) 프록시할 수 없습니다."
-
-#: ../sysrepo.py:271
+#: ../sysrepo.py:469
 #, python-format
 msgid ""
 "file repository %s cannot be proxied. Only file repositories of version 4 or "
 "later are supported."
 msgstr "파일 저장소 %s을(를) 프록시할 수 없습니다. 버전 4 또는 이후 버전의 파일 저장소만 지원됩니다."
 
-#: ../sysrepo.py:299 ../sysrepo.py:518
+#: ../sysrepo.py:478
+#, python-format
+msgid "unable to read p5p archive file at %s"
+msgstr "%s에서 p5p 아카이브 파일을 읽을 수 없습니다."
+
+#: ../sysrepo.py:509 ../sysrepo.py:741
 #, python-format
 msgid "Unable to chown to %(user)s:%(group)s: %(err)s"
 msgstr "%(user)s:%(group)s에 chown할 수 없음: %(err)s"
 
-#: ../sysrepo.py:319
+#: ../sysrepo.py:533
 #, python-format
 msgid "%s is not a directory"
 msgstr "%s은(는) 디렉토리가 아닙니다."
 
-#: ../sysrepo.py:336 ../sysrepo.py:339
+#: ../sysrepo.py:550 ../sysrepo.py:553
 #, python-format
 msgid "invalid port: %s"
 msgstr "잘못된 포트: %s"
 
-#: ../sysrepo.py:345 ../sysrepo.py:348
+#: ../sysrepo.py:559 ../sysrepo.py:562
 #, python-format
 msgid "invalid cache size: %s"
 msgstr "잘못된 캐시 크기: %s"
 
-#: ../sysrepo.py:361
+#: ../sysrepo.py:575
 msgid "scheme must be http"
 msgstr "체계는 http이어야 합니다."
 
-#: ../sysrepo.py:366
+#: ../sysrepo.py:582
 #, python-format
 msgid "invalid %(key)s: %(val)s: %(err)s"
 msgstr "잘못된 %(key)s: %(val)s: %(err)s"
 
-#: ../sysrepo.py:393
+#: ../sysrepo.py:615
 #, python-format
 msgid "Unable to write sysrepo_httpd.conf: %(host)s: %(err)s"
 msgstr "sysrepo_httpd.conf를 쓸 수 없음: %(host)s: %(err)s"
 
-#: ../sysrepo.py:397
+#: ../sysrepo.py:619
 #, python-format
 msgid "Unable to write sysrepo_httpd.conf: %s"
 msgstr "sysrepo_httpd.conf를 쓸 수 없음: %s"
 
-#: ../sysrepo.py:427
+#: ../sysrepo.py:649
 #, python-format
 msgid "unable to write crypto.txt file: %s"
 msgstr "crypto.txt 파일을 쓸 수 없음: %s"
 
-#: ../sysrepo.py:466
+#: ../sysrepo.py:689
 #, python-format
 msgid "unable to write publisher response: %s"
 msgstr "게시자 응답을 쓸 수 없음: %s"
 
-#: ../sysrepo.py:482
+#: ../sysrepo.py:705
 #, python-format
 msgid "Unable to write versions response: %s"
 msgstr "버전 응답을 쓸 수 없음: %s"
 
-#: ../sysrepo.py:501
+#: ../sysrepo.py:724
 #, python-format
 msgid "Unable to write syspub response: %s"
 msgstr "syspub 응답을 쓸 수 없음: %s"
 
-#: ../sysrepo.py:529
+#: ../sysrepo.py:752
 #, python-format
 msgid "Unable to cleanup old configuration: %s"
 msgstr "이전 구성을 지울 수 없음: %s"
 
-#: ../sysrepo.py:547
+#: ../sysrepo.py:768
 #, python-format
 msgid "invalid value for http_timeout: %s"
 msgstr "http_timeout에 대한 잘못된 값: %s"
 
-#: ../sysrepo.py:550
+#: ../sysrepo.py:771
 msgid "http_timeout must a positive integer"
 msgstr "http_timeout은 양의 정수여야 합니다."
 
-#: ../sysrepo.py:557
+#: ../sysrepo.py:778
 #, python-format
 msgid "unable to get publisher information: %s"
 msgstr "게시자 정보를 가져올 수 없음: %s"
 
-#: ../sysrepo.py:565
+#: ../sysrepo.py:786
 #, python-format
 msgid "unable to create htdocs dir: %s"
 msgstr "htdocs 디렉토리를 만들 수 없음: %s"
 
-#: ../sysrepo.py:645
+#: ../sysrepo.py:866
 msgid "required port option missing."
 msgstr "필요한 포트 옵션이 누락되었습니다."
 
-#: ../sysrepo.py:685
+#: ../sysrepo.py:906
 #, python-format
 msgid ""
 "The sysrepo command appears out of sync with the libraries provided\n"
@@ -10231,7 +10759,7 @@ msgid ""
 "all repositories: %s"
 msgstr "다음 패턴과 일치하는 fmri에 모든 저장소에 걸쳐 일치하는 버전이 없습니다. %s"
 
-#: ../util/publish/pkgmerge.py:641
+#: ../util/publish/pkgmerge.py:640
 #, python-format
 msgid "package %(pkg)s is tagged as not supporting %(var_name)s %(var_value)s"
 msgstr "%(pkg)s 패키지가 %(var_name)s %(var_value)s을(를) 지원하지 않는 것으로 태그가 지정되지 않았습니다."

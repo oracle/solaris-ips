@@ -22,75 +22,75 @@
 # Copyright (c) 2007, 2012, Oracle and/or its affiliates. All rights reserved.
 #
 msgid ""
-msgstr "Project-Id-Version: PACKAGE VERSION\nReport-Msgid-Bugs-To: \nPOT-Creation-Date: 2012-05-09 15:44+0900\nPO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\nLast-Translator: FULL NAME <EMAIL@ADDRESS>\nLanguage-Team: LANGUAGE <LL@li.org>\nMIME-Version: 1.0\nContent-Type: text/plain; charset=UTF-8\nContent-Transfer-Encoding: 8bit\nPlural-Forms: nplurals=2; plural=(n != 1);\n"
+msgstr "Project-Id-Version: PACKAGE VERSION\nReport-Msgid-Bugs-To: \nPOT-Creation-Date: 2012-06-25 23:45-0700\nPO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\nLast-Translator: FULL NAME <EMAIL@ADDRESS>\nLanguage-Team: LANGUAGE <LL@li.org>\nMIME-Version: 1.0\nContent-Type: text/plain; charset=UTF-8\nContent-Transfer-Encoding: 8bit\nPlural-Forms: nplurals=2; plural=(n != 1);\n"
 
-#: ../client.py:108
+#: ../client.py:115
 msgid ""
 "To continue, execute 'pkg update-format' as a privileged user and then try "
 "again.  Please note that updating the format of the image will render it "
 "unusable with older versions of the pkg(5) system."
 msgstr "続行するには、特権ユーザーとして 'pkg update-format' を実行してから再試行します。イメージの形式を更新すると、古いバージョンの pkg(5) システムでは使用できない形式になります。"
 
-#: ../client.py:150
+#: ../client.py:157
 msgid ""
-"[-nvq] [-g path_or_uri ...] [--accept]\n"
+"[-nvq] [-C n] [-g path_or_uri ...] [--accept]\n"
 "            [--licenses] [--no-be-activate] [--no-index] [--no-refresh]\n"
 "            [--no-backup-be | --require-backup-be] [--backup-be-name name]\n"
 "            [--deny-new-be | --require-new-be] [--be-name name]\n"
 "            [--reject pkg_fmri_pattern ... ] pkg_fmri_pattern ..."
-msgstr "[-nvq] [-g path_or_uri ...] [--accept]\n            [--licenses] [--no-be-activate] [--no-index] [--no-refresh]\n            [--no-backup-be | --require-backup-be] [--backup-be-name name]\n            [--deny-new-be | --require-new-be] [--be-name name]\n            [--reject pkg_fmri_pattern ... ] pkg_fmri_pattern ..."
+msgstr "[-nvq] [-C n] [-g path_or_uri ...] [--accept]\n            [--licenses] [--no-be-activate] [--no-index] [--no-refresh]\n            [--no-backup-be | --require-backup-be] [--backup-be-name name]\n            [--deny-new-be | --require-new-be] [--be-name name]\n            [--reject pkg_fmri_pattern ... ] pkg_fmri_pattern ..."
 
-#: ../client.py:156
+#: ../client.py:163
 msgid ""
-"[-nvq] [--no-be-activate] [--no-index]\n"
+"[-nvq] [-C n] [--no-be-activate] [--no-index]\n"
 "            [--no-backup-be | --require-backup-be] [--backup-be-name]\n"
 "            [--deny-new-be | --require-new-be] [--be-name name]\n"
 "            pkg_fmri_pattern ..."
-msgstr "[-nvq] [--no-be-activate] [--no-index]\n            [--no-backup-be | --require-backup-be] [--backup-be-name]\n            [--deny-new-be | --require-new-be] [--be-name name]\n            pkg_fmri_pattern ..."
+msgstr "[-nvq] [-C n] [--no-be-activate] [--no-index]\n            [--no-backup-be | --require-backup-be] [--backup-be-name]\n            [--deny-new-be | --require-new-be] [--be-name name]\n            pkg_fmri_pattern ..."
 
-#: ../client.py:161
+#: ../client.py:168
 msgid ""
-"[-fnvq] [-g path_or_uri ...] [--accept]\n"
+"[-fnvq] [-C n] [-g path_or_uri ...] [--accept]\n"
 "            [--licenses] [--no-be-activate] [--no-index] [--no-refresh]\n"
 "            [--no-backup-be | --require-backup-be] [--backup-be-name]\n"
 "            [--deny-new-be | --require-new-be] [--be-name name]\n"
 "            [--reject pkg_fmri_pattern ...] [pkg_fmri_pattern ...]"
-msgstr "[-fnvq] [-g path_or_uri ...] [--accept]\n            [--licenses] [--no-be-activate] [--no-index] [--no-refresh]\n            [--no-backup-be | --require-backup-be] [--backup-be-name]\n            [--deny-new-be | --require-new-be] [--be-name name]\n            [--reject pkg_fmri_pattern ...] [pkg_fmri_pattern ...]"
+msgstr "[-fnvq] [-C n] [-g path_or_uri ...] [--accept]\n            [--licenses] [--no-be-activate] [--no-index] [--no-refresh]\n            [--no-backup-be | --require-backup-be] [--backup-be-name]\n            [--deny-new-be | --require-new-be] [--be-name name]\n            [--reject pkg_fmri_pattern ...] [pkg_fmri_pattern ...]"
 
-#: ../client.py:167
+#: ../client.py:174
 msgid ""
 "[-Hafnsuv] [-g path_or_uri ...] [--no-refresh]\n"
 "            [pkg_fmri_pattern ...]"
 msgstr "[-Hafnsuv] [-g path_or_uri ...] [--no-refresh]\n            [pkg_fmri_pattern ...]"
 
-#: ../client.py:169
+#: ../client.py:176
 msgid "[--full] [publisher ...]"
 msgstr "[--full] [publisher ...]"
 
-#: ../client.py:216
+#: ../client.py:223
 msgid "[-lr] [-g path_or_uri ...] [--license] [pkg_fmri_pattern ...]"
 msgstr "[-lr] [-g path_or_uri ...] [--license] [pkg_fmri_pattern ...]"
 
-#: ../client.py:218
+#: ../client.py:225
 msgid ""
 "[-Hmr] [-a attribute=pattern ...] [-g path_or_uri ...]\n"
 "            [-o attribute ...] [-s sort_key] [-t action_type ...]\n"
 "            [pkg_fmri_pattern ...]"
 msgstr "[-Hmr] [-a attribute=pattern ...] [-g path_or_uri ...]\n            [-o attribute ...] [-s sort_key] [-t action_type ...]\n            [pkg_fmri_pattern ...]"
 
-#: ../client.py:222
+#: ../client.py:229
 msgid "[-HIaflpr] [-o attribute ...] [-s repo_uri] query"
 msgstr "[-HIaflpr] [-o attribute ...] [-s repo_uri] query"
 
-#: ../client.py:224
+#: ../client.py:231
 msgid "[-Hqv] [pkg_fmri_pattern ...]"
 msgstr "[-Hqv] [pkg_fmri_pattern ...]"
 
-#: ../client.py:225
+#: ../client.py:232
 msgid "[--accept] [--licenses] [pkg_fmri_pattern ...]"
 msgstr "[--accept] [--licenses] [pkg_fmri_pattern ...]"
 
-#: ../client.py:227
+#: ../client.py:234
 msgid ""
 "[-nv] [--no-be-activate]\n"
 "            [--no-backup-be | --require-backup-be] [--backup-be-name name]\n"
@@ -98,7 +98,7 @@ msgid ""
 "            (--tagged tag-name ... | path-to-file ...)"
 msgstr "[-nv] [--no-be-activate]\n            [--no-backup-be | --require-backup-be] [--backup-be-name name]\n            [--deny-new-be | --require-new-be] [--be-name name]\n            (--tagged tag-name ... | path-to-file ...)"
 
-#: ../client.py:233
+#: ../client.py:240
 msgid ""
 "[-FPUfz] [--force] [--full|--partial|--user] [--zone]\n"
 "            [-k ssl_key] [-c ssl_cert] [--no-refresh]\n"
@@ -108,29 +108,29 @@ msgid ""
 "            [(-p|--publisher) [<name>=]<repo_uri>] dir"
 msgstr "[-FPUfz] [--force] [--full|--partial|--user] [--zone]\n            [-k ssl_key] [-c ssl_cert] [--no-refresh]\n            [--variant <variant_spec>=<instance> ...]\n            [-g uri|--origin=uri ...] [-m uri|--mirror=uri ...]\n            [--facet <facet_spec>=(True|False) ...]\n            [(-p|--publisher) [<name>=]<repo_uri>] dir"
 
-#: ../client.py:240
+#: ../client.py:247
 msgid ""
-"[-nvq] [-g path_or_uri ...]\n"
+"[-nvq] [-C n] [-g path_or_uri ...]\n"
 "            [--accept] [--licenses] [--no-be-activate]\n"
 "            [--no-backup-be | --require-backup-be] [--backup-be-name name]\n"
 "            [--deny-new-be | --require-new-be] [--be-name name]\n"
 "            <variant_spec>=<instance> ..."
-msgstr "[-nvq] [-g path_or_uri ...]\n            [--accept] [--licenses] [--no-be-activate]\n            [--no-backup-be | --require-backup-be] [--backup-be-name name]\n            [--deny-new-be | --require-new-be] [--be-name name]\n            <variant_spec>=<instance> ..."
+msgstr "[-nvq] [-C n] [-g path_or_uri ...]\n            [--accept] [--licenses] [--no-be-activate]\n            [--no-backup-be | --require-backup-be] [--backup-be-name name]\n            [--deny-new-be | --require-new-be] [--be-name name]\n            <variant_spec>=<instance> ..."
 
-#: ../client.py:247
+#: ../client.py:254
 msgid ""
-"[-nvq] [-g path_or_uri ...]\n"
+"[-nvq] [-C n] [-g path_or_uri ...]\n"
 "            [--accept] [--licenses] [--no-be-activate]\n"
 "            [--no-backup-be | --require-backup-be] [--backup-be-name name]\n"
 "            [--deny-new-be | --require-new-be] [--be-name name]\n"
 "            <facet_spec>=[True|False|None] ..."
-msgstr "[-nvq] [-g path_or_uri ...]\n            [--accept] [--licenses] [--no-be-activate]\n            [--no-backup-be | --require-backup-be] [--backup-be-name name]\n            [--deny-new-be | --require-new-be] [--be-name name]\n            <facet_spec>=[True|False|None] ..."
+msgstr "[-nvq] [-C n] [-g path_or_uri ...]\n            [--accept] [--licenses] [--no-be-activate]\n            [--no-backup-be | --require-backup-be] [--backup-be-name name]\n            [--deny-new-be | --require-new-be] [--be-name name]\n            <facet_spec>=[True|False|None] ..."
 
-#: ../client.py:253
+#: ../client.py:260
 msgid "[-aH] [-F format] [<mediator> ...]"
 msgstr "[-aH] [-F format] [<mediator> ...]"
 
-#: ../client.py:255
+#: ../client.py:262
 msgid ""
 "[-nv] [-I <implementation>]\n"
 "            [-V <version>] [--no-be-activate]\n"
@@ -139,7 +139,7 @@ msgid ""
 "            <mediator> ..."
 msgstr "[-nv] [-I <implementation>]\n            [-V <version>] [--no-be-activate]\n            [--no-backup-be | --require-backup-be] [--backup-be-name name]\n            [--deny-new-be | --require-new-be] [--be-name name]\n            <mediator> ..."
 
-#: ../client.py:260
+#: ../client.py:267
 msgid ""
 "[-nvIV] [--no-be-activate]\n"
 "            [--no-backup-be | --require-backup-be] [--backup-be-name]\n"
@@ -147,35 +147,35 @@ msgid ""
 "            <mediator> ..."
 msgstr "[-nvIV] [--no-be-activate]\n            [--no-backup-be | --require-backup-be] [--backup-be-name]\n            [--deny-new-be | --require-new-be] [--be-name name]\n            <mediator> ..."
 
-#: ../client.py:265
+#: ../client.py:272
 msgid "[-H] [<variant_spec>]"
 msgstr "[-H] [<variant_spec>]"
 
-#: ../client.py:267 ../client.py:268
+#: ../client.py:274 ../client.py:275
 msgid "[pkg_fmri_pattern] ..."
 msgstr "[pkg_fmri_pattern] ..."
 
-#: ../client.py:269
+#: ../client.py:276
 msgid "[-n] [-c reason] [pkg_fmri_pattern] ..."
 msgstr "[-n] [-c reason] [pkg_fmri_pattern] ..."
 
-#: ../client.py:270
+#: ../client.py:277
 msgid "[-n] [pkg_name_pattern] ..."
 msgstr "[-n] [pkg_name_pattern] ..."
 
-#: ../client.py:271 ../client.py:272 ../client.py:273
+#: ../client.py:278 ../client.py:279 ../client.py:280
 msgid "propname propvalue"
 msgstr "propname propvalue"
 
-#: ../client.py:274
+#: ../client.py:281
 msgid "propname ..."
 msgstr "propname ..."
 
-#: ../client.py:275
+#: ../client.py:282
 msgid "[-H] [propname ...]"
 msgstr "[-H] [propname ...]"
 
-#: ../client.py:277
+#: ../client.py:284
 msgid ""
 "[-Ped] [-k ssl_key] [-c ssl_cert]\n"
 "            [-g origin_to_add|--add-origin=origin_to_add ...]\n"
@@ -194,90 +194,91 @@ msgid ""
 "            [--add-property-value name_of_property=value_to_add]\n"
 "            [--remove-property-value name_of_property=value_to_remove]\n"
 "            [--unset-property name_of_property_to_delete]\n"
+"            [--proxy proxy to use]\n"
 "            [publisher]"
-msgstr "[-Ped] [-k ssl_key] [-c ssl_cert]\n            [-g origin_to_add|--add-origin=origin_to_add ...]\n            [-G origin_to_remove|--remove-origin=origin_to_remove ...]\n            [-m mirror_to_add|--add-mirror=mirror_to_add ...]\n            [-M mirror_to_remove|--remove-mirror=mirror_to_remove ...]\n            [-p repo_uri] [--enable] [--disable] [--no-refresh]\n            [--reset-uuid] [--non-sticky] [--sticky]\n            [--search-after=publisher]\n            [--search-before=publisher]\n            [--search-first]\n            [--approve-ca-cert=path_to_CA]\n            [--revoke-ca-cert=hash_of_CA_to_revoke]\n            [--unset-ca-cert=hash_of_CA_to_unset]\n            [--set-property name_of_property=value]\n            [--add-property-value name_of_property=value_to_add]\n            [--remove-property-value name_of_property=value_to_remove]\n            [--unset-property name_of_property_to_delete]\n            [publisher]"
+msgstr "[-Ped] [-k ssl_key] [-c ssl_cert]\n            [-g origin_to_add|--add-origin=origin_to_add ...]\n            [-G origin_to_remove|--remove-origin=origin_to_remove ...]\n            [-m mirror_to_add|--add-mirror=mirror_to_add ...]\n            [-M mirror_to_remove|--remove-mirror=mirror_to_remove ...]\n            [-p repo_uri] [--enable] [--disable] [--no-refresh]\n            [--reset-uuid] [--non-sticky] [--sticky]\n            [--search-after=publisher]\n            [--search-before=publisher]\n            [--search-first]\n            [--approve-ca-cert=path_to_CA]\n            [--revoke-ca-cert=hash_of_CA_to_revoke]\n            [--unset-ca-cert=hash_of_CA_to_unset]\n            [--set-property name_of_property=value]\n            [--add-property-value name_of_property=value_to_add]\n            [--remove-property-value name_of_property=value_to_remove]\n            [--unset-property name_of_property_to_delete]\n            [--proxy proxy to use]\n            [publisher]"
 
-#: ../client.py:296
+#: ../client.py:304
 msgid "publisher ..."
 msgstr "発行元 ..."
 
-#: ../client.py:297
-msgid "[-HPn] [publisher ...]"
-msgstr "[-HPn] [publisher ...]"
+#: ../client.py:305
+msgid "[-HPn] [-F format] [publisher ...]"
+msgstr "[-HPn] [-F format] [publisher ...]"
 
-#: ../client.py:298
-msgid "[-Hl] [-t [time|time-time],...] [-n number] [-o column,...]"
-msgstr "[-Hl] [-t [time|time-time],...] [-n number] [-o column,...]"
+#: ../client.py:306
+msgid "[-HNl] [-t [time|time-time],...] [-n number] [-o column,...]"
+msgstr "[-HNl] [-t [time|time-time],...] [-n number] [-o column,...]"
 
-#: ../client.py:303
+#: ../client.py:311
 msgid "-H"
 msgstr "-H"
 
-#: ../client.py:305
+#: ../client.py:313
 msgid ""
-"[-fnvq] [--accept] [--licenses] [--no-index]\n"
+"[-fnvq] [-C n] [--accept] [--licenses] [--no-index]\n"
 "            [--no-refresh] [--no-pkg-updates] [--linked-md-only]\n"
 "            [--allow-relink]\n"
 "            [--prop-linked <propname>=<propvalue> ...]\n"
 "            (-c|-p) <li-name> <dir>"
-msgstr "[-fnvq] [--accept] [--licenses] [--no-index]\n            [--no-refresh] [--no-pkg-updates] [--linked-md-only]\n            [--allow-relink]\n            [--prop-linked <propname>=<propvalue> ...]\n            (-c|-p) <li-name> <dir>"
+msgstr "[-fnvq] [-C n] [--accept] [--licenses] [--no-index]\n            [--no-refresh] [--no-pkg-updates] [--linked-md-only]\n            [--allow-relink]\n            [--prop-linked <propname>=<propvalue> ...]\n            (-c|-p) <li-name> <dir>"
 
-#: ../client.py:311
+#: ../client.py:319
 msgid "[-fnvq] [-a|-l <li-name>] [--linked-md-only]"
 msgstr "[-fnvq] [-a|-l <li-name>] [--linked-md-only]"
 
-#: ../client.py:312
+#: ../client.py:320
 msgid "[-H] [-l <li-name>] [propname ...]"
 msgstr "[-H] [-l <li-name>] [propname ...]"
 
-#: ../client.py:313
+#: ../client.py:321
 msgid "[-a|-l <li-name>]"
 msgstr "[-a|-l <li-name>]"
 
-#: ../client.py:315
+#: ../client.py:324
 msgid ""
-"[-nvq] [--accept] [--licenses] [--no-index]\n"
+"[-nvq] [-C n] [--accept] [--licenses] [--no-index]\n"
 "            [--no-refresh] [--no-parent-sync] [--no-pkg-updates]\n"
 "            [--linked-md-only] [-a|-l <name>]"
-msgstr "[-nvq] [--accept] [--licenses] [--no-index]\n            [--no-refresh] [--no-parent-sync] [--no-pkg-updates]\n            [--linked-md-only] [-a|-l <name>]"
+msgstr "[-nvq] [-C n] [--accept] [--licenses] [--no-index]\n            [--no-refresh] [--no-parent-sync] [--no-pkg-updates]\n            [--linked-md-only] [-a|-l <name>]"
 
-#: ../client.py:319
+#: ../client.py:328
 msgid ""
 "[-nvq] [--accept] [--licenses] [--no-index] [--no-refresh]\n"
 "            [--no-parent-sync] [--no-pkg-updates]\n"
 "            [--linked-md-only] <propname>=<propvalue> ..."
 msgstr "[-nvq] [--accept] [--licenses] [--no-index] [--no-refresh]\n            [--no-parent-sync] [--no-pkg-updates]\n            [--linked-md-only] <propname>=<propvalue> ..."
 
-#: ../client.py:344
+#: ../client.py:353
 msgid "Usage:"
 msgstr "使用方法:"
 
-#: ../client.py:346
+#: ../client.py:355
 msgid "Private subcommand usage, options subject to change at any time:"
 msgstr "プライベートサブコマンドの使用方法、オプション (いつでも変更される可能性があります):"
 
 #. The full usage message isn't desired.
-#: ../client.py:357
+#: ../client.py:366
 msgid "Try `pkg --help or -?' for more information."
 msgstr "詳細は、pkg --help または -? を参照してください。"
 
-#: ../client.py:360
+#: ../client.py:369
 msgid ""
 "Usage:\n"
 "        pkg [options] command [cmd_options] [operands]\n"
 msgstr "使用方法:\n        pkg [options] command [cmd_options] [operands]\n"
 
-#: ../client.py:364
+#: ../client.py:373
 msgid "Basic subcommands:"
 msgstr "基本的なサブコマンド:"
 
-#: ../client.py:367
+#: ../client.py:376
 msgid ""
 "\n"
 "Advanced subcommands:"
 msgstr "\n高度なサブコマンド:"
 
-#: ../client.py:370
+#: ../client.py:379
 msgid ""
 "\n"
 "Options:\n"
@@ -288,273 +289,294 @@ msgid ""
 "        PKG_IMAGE"
 msgstr "\nオプション:\n        -R dir\n        --help または -?\n\n環境:\n        PKG_IMAGE"
 
-#: ../client.py:534 ../client.py:3122 ../client.py:3647
+#: ../client.py:544 ../client.py:3442 ../client.py:3970
 msgid "no packages installed"
 msgstr "インストール済みのパッケージが存在しません"
 
-#: ../client.py:539
+#: ../client.py:549
 msgid "no packages installed or available for installation"
 msgstr "インストール済みのパッケージまたはインストールに使用可能なパッケージが存在しません"
 
-#: ../client.py:545
-msgid ""
-"no packages are installed or are installed and have newer versions available"
-msgstr "インストール済みのパッケージが存在しないか、インストール済みでより新しいバージョンを使用できるパッケージが存在しません"
+#: ../client.py:558
+msgid "no packages have newer versions available"
+msgstr "より新しいバージョンが使用可能になっているパッケージが存在しません"
 
-#: ../client.py:578
+#: ../client.py:561
+msgid "no packages are installed"
+msgstr "インストール済みのパッケージが存在しません"
+
+#: ../client.py:592
 #, python-format
 msgid "no packages matching '%s' known"
 msgstr "'%s' に一致する既知のパッケージが存在しません"
 
-#: ../client.py:581
+#: ../client.py:595
 #, python-format
 msgid ""
 "no packages matching '%s' allowed by installed incorporations, or image "
 "variants that are known or installed"
 msgstr "インストール済みの incorporation あるいは既知またはインストール済みのイメージバリアントで許可されている、'%s' に一致するパッケージが存在しません"
 
-#: ../client.py:587
+#: ../client.py:601
 #, python-format
 msgid ""
 "no packages matching '%s' are installed and have newer versions available"
 msgstr "インストール済みでより新しいバージョンを使用できる、'%s' に一致するパッケージが存在しません"
 
-#: ../client.py:591 ../client.py:687 ../client.py:861
+#: ../client.py:605 ../client.py:716 ../client.py:893
 #, python-format
 msgid "no packages matching '%s' installed"
 msgstr "'%s' に一致するインストール済みのパッケージが存在しません"
 
-#: ../client.py:662
+#: ../client.py:688
 #, python-format
 msgid "Verifying: %(pkg_name)-50s %(result)7s"
 msgstr "確認中: %(pkg_name)-50s %(result)7s"
 
-#: ../client.py:664 ../client.py:813
+#: ../client.py:690 ../client.py:845
 msgid "ERROR"
 msgstr "エラー"
 
-#: ../client.py:706
+#: ../client.py:726
+msgid "No repairs for this image."
+msgstr "このイメージは修復できません。"
+
+#: ../client.py:738
 #, python-format
 msgid "Created ZFS snapshot: %s"
 msgstr "作成された ZFS スナップショット: %s"
 
-#: ../client.py:730
+#: ../client.py:760
 msgid ""
 "The following packages require their licenses to be accepted before they can "
 "be repaired: "
 msgstr "次のパッケージを修正するには、対応するライセンスに同意する必要があります。"
 
-#: ../client.py:734 ../client.py:1263
+#: ../client.py:763 ../client.py:1338
 msgid ""
 "To indicate that you agree to and accept the terms of the licenses of the "
 "packages listed above, use the --accept option.  To display all of the "
 "related licenses, use the --licenses option."
 msgstr "上に表示されているパッケージのライセンス契約書の条項に同意し受諾することを示すには、「--accept」オプションを使用します。全ての関連ライセンスを表示するには、「--licenses」オプションを使用します。"
 
-#: ../client.py:743
+#: ../client.py:772
 msgid ""
 "Requested \"fix\" operation would affect files that cannot be modified in "
 "live image.\n"
 "Please retry this operation on an alternate boot environment."
 msgstr "要求された \"fix\" 操作は、ライブイメージ内で変更できないファイルに影響を及ぼします。\n 操作を代替ブート環境で再試行してください。"
 
-#: ../client.py:781 ../client.py:2289
+#: ../client.py:808 ../client.py:2622
 msgid "-v and -q may not be combined"
 msgstr "-v と -q を組み合わせることはできません"
 
-#: ../client.py:797
+#: ../client.py:828
 msgid "OK"
 msgstr "了解"
 
-#: ../client.py:815
+#: ../client.py:847
 msgid "WARNING"
 msgstr "警告"
 
-#: ../client.py:826 ../client.py:830
+#: ../client.py:858 ../client.py:862
 #, python-format
 msgid "%(pkg_name)-70s %(result)7s"
 msgstr "%(pkg_name)-70s %(result)7s"
 
-#: ../client.py:827
+#: ../client.py:859
 msgid "PACKAGE"
 msgstr "パッケージ"
 
-#: ../client.py:828 ../client.py:4437 ../client.py:4446 ../pkgrepo.py:722
-#: ../pkgrepo.py:726
+#: ../client.py:860 ../client.py:4786 ../client.py:4798 ../client.py:4908
+#: ../pkgrepo.py:722 ../pkgrepo.py:726
 msgid "STATUS"
 msgstr "ステータス"
 
-#: ../client.py:866
+#: ../client.py:898
 msgid ""
 "See above for\n"
 "verification failures."
 msgstr "検証エラーについては\n上記を参照してください。"
 
-#: ../client.py:868
+#: ../client.py:900
 msgid ""
 "No packages failed\n"
 "verification."
 msgstr "検証に失敗したパッケージは\nありません。"
 
-#: ../client.py:869
+#: ../client.py:901
 #, python-format
 msgid ""
 "\n"
 "All other patterns matched installed packages.  %s"
 msgstr "\n ほかのパターンは、すべてインストール済みパッケージに一致しました。  %s"
 
-#: ../client.py:917
+#: ../client.py:960
 msgid ""
 "WARNING: The boot environment being modified is not the active one.  "
 "Changes\n"
 "made in the active BE will not be reflected on the next boot.\n"
 msgstr "警告: 変更されているブート環境はアクティブなものではありません。アクティブな\nブート環境に行われた変更は、次のブートに反映されません。\n"
 
-#: ../client.py:922
+#: ../client.py:965
 msgid ""
 "WARNING: The boot environment being modified is not the active one.  "
 "Changes\n"
 "made will not be reflected on the next boot.\n"
 msgstr "警告: 変更されているブート環境はアクティブなものではありません。行われた変更\nは、次のブートに反映されません。\n"
 
-#: ../client.py:940 ../client.py:4718
+#: ../client.py:983 ../client.py:5116 ../client.py:6070
 msgid "Yes"
 msgstr "はい"
 
 #. Not Installed
-#: ../client.py:941 ../client.py:4716 ../modules/gui/misc.py:654
-#: ../modules/gui/misc.py:755 ../modules/gui/versioninfo.py:171
+#: ../client.py:984 ../client.py:5114 ../client.py:6072
+#: ../modules/gui/misc.py:654 ../modules/gui/misc.py:755
+#: ../modules/gui/versioninfo.py:171
 msgid "No"
 msgstr "いいえ"
 
-#: ../client.py:951
+#: ../client.py:994
 msgid "Packages to remove:"
 msgstr "削除するパッケージ:"
 
-#: ../client.py:952
+#: ../client.py:995
 msgid "Packages to install:"
 msgstr "インストールするパッケージ:"
 
-#: ../client.py:953
+#: ../client.py:996
 msgid "Packages to update:"
 msgstr "更新するパッケージ:"
 
-#: ../client.py:954
+#: ../client.py:997
 msgid "Mediators to change:"
 msgstr "変更するメディエータ:"
 
-#: ../client.py:955
+#: ../client.py:998
 msgid "Variants/Facets to change:"
 msgstr "変更するバリアント/ファセット:"
 
-#: ../client.py:961
+#: ../client.py:1004
 msgid "Estimated space available:"
 msgstr "推定使用可能容量:"
 
-#: ../client.py:964
+#: ../client.py:1007
 msgid "Estimated space to be consumed:"
 msgstr "推定消費容量:"
 
-#: ../client.py:968
+#: ../client.py:1011
 msgid "Packages to change:"
 msgstr "変更するパッケージ:"
 
-#: ../client.py:970
+#: ../client.py:1013
 msgid "Packages to fix:"
 msgstr "修正するパッケージ:"
 
-#: ../client.py:972
+#: ../client.py:1016
 msgid "Create boot environment:"
 msgstr "ブート環境の作成:"
 
-#. Only show activation status if verbose or if new BE
-#. will not be activated.
-#: ../client.py:978
+#. Only show activation status if verbose or
+#. if new BE will not be activated.
+#: ../client.py:1022
 msgid "Activate boot environment:"
 msgstr "ブート環境のアクティブ化:"
 
-#: ../client.py:981
+#: ../client.py:1025
 msgid "Create backup boot environment:"
 msgstr "バックアップブート環境の作成:"
 
-#: ../client.py:985
+#: ../client.py:1029
 msgid "Services to change:"
 msgstr "変更するサービス:"
 
-#: ../client.py:989
+#: ../client.py:1033
 msgid "Rebuild boot archive:"
 msgstr "ブートアーカイブの再構築:"
 
-#: ../client.py:1005
+#: ../client.py:1048
 msgid "Changed mediators:"
 msgstr "変更されたメディエータ:"
 
-#: ../client.py:1010
+#: ../client.py:1053
 msgid "Changed variants/facets:"
 msgstr "変更されたバリアント/ファセット:"
 
-#: ../client.py:1018 ../modules/client/api_errors.py:623
+#: ../client.py:1061 ../modules/client/api_errors.py:623
 msgid "Solver dependency errors:"
 msgstr "ソルバーの依存関係エラー:"
 
-#: ../client.py:1046
+#: ../client.py:1089
 msgid "Changed packages:"
 msgstr "変更されたパッケージ:"
 
-#: ../client.py:1061
+#: ../client.py:1104
 msgid "Affected fmris:"
 msgstr "影響を受けた FMRI:"
 
-#: ../client.py:1197 ../modules/client/image.py:2328
+#: ../client.py:1131
+msgid "Release notes can be viewed with 'pkg history -n 1 -N'"
+msgstr "リリースノートは 'pkg history -n 1 -N' で表示できます"
+
+#: ../client.py:1135
+#, python-format
+msgid "Release notes can be found in %s before rebooting."
+msgstr "リブート前は %s でリリースノートを参照できます。"
+
+#: ../client.py:1137
+msgid "After rebooting, use 'pkg history -n 1 -N' to view release notes."
+msgstr "リブート後は 'pkg history -n 1 -N' を使用してリリースノートを表示します。"
+
+#: ../client.py:1274 ../modules/client/image.py:2341
 #, python-format
 msgid "Package: %s"
 msgstr "パッケージ: %s"
 
-#: ../client.py:1198 ../modules/client/api_errors.py:277
-#: ../modules/client/image.py:2330
+#: ../client.py:1275 ../modules/client/api_errors.py:277
+#: ../modules/client/image.py:2343
 #, python-format
 msgid "License: %s\n"
 msgstr "ライセンス: %s\n"
 
-#: ../client.py:1221
+#: ../client.py:1298
 msgid "No updates available for this image."
 msgstr "このイメージで使用可能な更新は存在しません。"
 
-#: ../client.py:1223
+#: ../client.py:1300
 msgid "No updates necessary for this image."
 msgstr "このイメージは更新の必要はありません。"
 
-#: ../client.py:1259
+#: ../client.py:1334
 msgid ""
 "The following packages require their licenses to be accepted before they can "
 "be installed or updated: "
 msgstr "次のパッケージはインストールないし更新する前にライセンスに同意する必要があります。"
 
-#: ../client.py:1282
+#: ../client.py:1357
 #, python-format
 msgid ""
 "\n"
 "An unexpected error happened while preparing for %s:"
 msgstr "\n %s の準備中に予期しないエラーが発生しました:"
 
-#: ../client.py:1293
+#: ../client.py:1368
 #, python-format
 msgid "%s failed: %s"
 msgstr "%s に失敗しました: %s"
 
-#: ../client.py:1303 ../client.py:1416
+#: ../client.py:1378 ../client.py:1491
 #, python-format
 msgid ""
 "%s failed (linked image exception(s)):\n"
 "%s"
 msgstr "%s が失敗しました (リンクされたイメージの例外):\n%s"
 
-#: ../client.py:1307
+#: ../client.py:1382
 #, python-format
 msgid "%s cannot be done on live image"
 msgstr "ライブイメージに %s を実行することはできません"
 
-#: ../client.py:1310
+#: ../client.py:1385
 #, python-format
 msgid ""
 "Requested \"%s\" operation would affect files that cannot be modified in "
@@ -562,47 +584,47 @@ msgid ""
 "Please retry this operation on an alternate boot environment."
 msgstr "要求された \"%s\" 操作は、ライブイメージ内で変更できないファイルに影響を及ぼします。\n操作を代替ブート環境で再試行してください。"
 
-#: ../client.py:1321 ../client.py:5443
+#: ../client.py:1396 ../client.py:5854
 msgid ""
 "\n"
 "(Failure to consistently execute pkg commands as a privileged user is often "
 "a source of this problem.)"
 msgstr "\n(多くの場合、常に特権ユーザーとして pkg コマンドを実行していないことがこの問題の原因です)。"
 
-#: ../client.py:1341
+#: ../client.py:1416
 #, python-format
 msgid "An unexpected error happened during %s: %s"
 msgstr "%s 中に予期しないエラーが発生しました: %s"
 
-#: ../client.py:1355
+#: ../client.py:1430
 msgid ""
 "The following unexpected or editable files and directories were\n"
 "salvaged while executing the requested package operation; they\n"
 "have been moved to the displayed location in the image:\n"
 msgstr "要求されたパッケージ操作の実行中に次の予期しないまたは\n編集可能なファイルおよびディレクトリが回収されました。\nこれらは、イメージ内の表示された場所に移動されています:\n"
 
-#: ../client.py:1391 ../pkgdep.py:308
+#: ../client.py:1466 ../pkgdep.py:314
 #, python-format
 msgid "No image rooted at '%s' (set by $PKG_IMAGE)"
 msgstr "($PKG_IMAGE によって設定された) '%s' をルートに持つイメージは存在しません"
 
-#: ../client.py:1394 ../client.py:1409 ../pkgdep.py:311
+#: ../client.py:1469 ../client.py:1484 ../pkgdep.py:317
 #, python-format
 msgid "No image rooted at '%s'"
 msgstr "'%s' をルートに持つイメージは存在しません"
 
-#: ../client.py:1396 ../pkgdep.py:313
+#: ../client.py:1471 ../pkgdep.py:319
 msgid "No image found."
 msgstr "イメージが見つかりません。"
 
-#: ../client.py:1412
+#: ../client.py:1487
 #, python-format
 msgid ""
 "%s failed (inventory exception):\n"
 "%s"
 msgstr "%s が失敗しました (目録の例外):\n %s"
 
-#: ../client.py:1420
+#: ../client.py:1495
 #, python-format
 msgid ""
 "WARNING: pkg(5) appears to be out of date, and should be updated before\n"
@@ -610,334 +632,350 @@ msgid ""
 "pkg:/package/pkg' as a privileged user and then retry the %(op)s."
 msgstr "警告: pkg(5) が古いようなので、%(op)s を実行する前に更新してください。\n特権ユーザーとして 'pkg install pkg:/package/pkg' を実行して\n pkg(5) を更新したあとで、%(op)s を再試行してください。"
 
-#: ../client.py:1427
+#: ../client.py:1502
 #, python-format
 msgid "Cannot remove '%s' due to the following packages that depend on it:"
 msgstr "次のパッケージが依存しているため、'%s' を削除できません:"
 
-#: ../client.py:1455
+#: ../client.py:1527
 msgid "The proposed operation cannot be performed on a live image."
 msgstr "この操作はライブイメージに対して実行できません。"
 
-#: ../client.py:1468
+#: ../client.py:1540
 msgid ""
 "Please provide one of the package FMRIs listed above to the install command."
 msgstr "上記で一覧表示されているいずれかのパッケージ FMRI をインストールコマンドに指定してください。"
 
-#: ../client.py:1608
+#: ../client.py:1792
 msgid "NOTE: Please review release notes posted at:\n"
 msgstr "注: 次の場所で公開されているリリースノートを確認してください:\n"
 
-#: ../client.py:1615
+#: ../client.py:1799
 #, python-format
 msgid "%(opt1)s may only be used in combination with %(opt2)s"
 msgstr "%(opt1)s は、%(opt2)s と同時に指定した場合のみ使用できます"
 
-#: ../client.py:1620
+#: ../client.py:1804
 #, python-format
 msgid "the %(opt1)s and %(opt2)s options may not be combined"
 msgstr "%(opt1)s オプションと %(opt2)s オプションを組み合わせることはできません"
 
-#: ../client.py:1625 ../modules/misc.py:1113
+#: ../client.py:1809 ../modules/misc.py:1320
 #, python-format
 msgid "option '%s' repeated"
 msgstr "オプション '%s' が重複しています"
 
-#: ../client.py:1808
+#: ../client.py:2003
 msgid "--parsable expects an integer argument."
 msgstr "--parsable には整数の引数が必要です。"
 
-#: ../client.py:1824
+#: ../client.py:2022
 #, python-format
 msgid "invalid operation stage: '%s'"
 msgstr "操作段階が無効です: '%s'"
 
-#: ../client.py:1832
+#: ../client.py:2030
 msgid "either -c or -p must be specified"
 msgstr "-c または -p のいずれかを指定する必要があります"
 
-#: ../client.py:2157
+#: ../client.py:2089
+#, python-format
+msgid "missing required parameter: %s"
+msgstr "必要なパラメータがありません: %s"
+
+#. not a valid integer
+#: ../client.py:2100 ../client.py:2114
+#, python-format
+msgid "invalid '%s' value: %s"
+msgstr "'%s' の値が無効です: %s"
+
+#: ../client.py:2105
+#, python-format
+msgid "'%s' must be >= %d"
+msgstr "'%s' は >= %d でなければなりません"
+
+#: ../client.py:2499
 #, python-format
 msgid "%s: no variants specified"
 msgstr "%s: バリアントが指定されていません"
 
-#: ../client.py:2163
+#: ../client.py:2505
 #, python-format
 msgid "%s: variants must to be of the form '<name>=<value>'."
 msgstr "%s: バリアントは '<name>=<value>' の形式になっている必要があります。"
 
-#: ../client.py:2173
+#: ../client.py:2515
 #, python-format
 msgid "%s: duplicate variant specified: %s"
 msgstr "%s: 重複したバリアントが指定されています: %s"
 
-#: ../client.py:2202
+#: ../client.py:2541
 #, python-format
 msgid "%s: no facets specified"
 msgstr "%s: ファセットが指定されていません"
 
-#: ../client.py:2216
+#: ../client.py:2555
 #, python-format
 msgid "%s: facets must to be of the form 'facet....=[True|False|None]'"
 msgstr "%s: ファセットは 'facet....=[True|False|None]' の形式になっている必要があります。"
 
-#: ../client.py:2225
+#: ../client.py:2564
 #, python-format
 msgid "%s: facets must to be of the form 'facet....=[True|False|None]'."
 msgstr "%s: ファセットは 'facet....=[True|False|None]' の形式になっている必要があります。"
 
-#: ../client.py:2257 ../client.py:2286
+#: ../client.py:2593 ../client.py:2619
 msgid "at least one package name required"
 msgstr "パッケージ名を少なくとも 1 つ指定する必要があります"
 
-#: ../client.py:2353
+#: ../client.py:2681
 msgid "at least one file path or tag name required"
 msgstr "ファイルパスまたはタグ名を少なくとも 1 つ指定する必要があります"
 
-#: ../client.py:2387 ../client.py:2432 ../client.py:2441
+#: ../client.py:2712 ../client.py:2757 ../client.py:2766
 msgid "MEDIATOR"
 msgstr "MEDIATOR"
 
-#: ../client.py:2388 ../client.py:2434 ../client.py:2441
+#: ../client.py:2713 ../client.py:2759 ../client.py:2766
 msgid "VER. SRC."
 msgstr "VER. SRC."
 
-#: ../client.py:2389 ../client.py:2433 ../client.py:2441 ../client.py:2749
-#: ../client.py:5458 ../pkgrepo.py:858 ../pkgrepo.py:867
+#: ../client.py:2714 ../client.py:2758 ../client.py:2766 ../client.py:3068
+#: ../client.py:5869 ../pkgrepo.py:863 ../pkgrepo.py:872
 msgid "VERSION"
 msgstr "バージョン"
 
-#: ../client.py:2390 ../client.py:2438 ../client.py:2442
+#: ../client.py:2715 ../client.py:2763 ../client.py:2767
 msgid "IMPL. SRC."
 msgstr "IMPL. SRC."
 
-#: ../client.py:2435 ../client.py:2442
+#: ../client.py:2760 ../client.py:2767
 msgid "IMPLEMENTATION"
 msgstr "IMPLEMENTATION"
 
-#: ../client.py:2439 ../client.py:2442
+#: ../client.py:2764 ../client.py:2767
 msgid "IMPL. VER."
 msgstr "IMPL. VER."
 
 #. Don't pollute other output formats.
-#: ../client.py:2458
+#: ../client.py:2783
 msgid "no matching mediators found"
 msgstr "一致するメディエータが見つかりません"
 
-#: ../client.py:2471 ../client.py:2562
+#: ../client.py:2796 ../client.py:2884
 msgid "at least one mediator must be specified"
 msgstr "メディエータが少なくとも 1 つ指定されている必要があります"
 
-#: ../client.py:2474
+#: ../client.py:2799
 msgid ""
 "a mediator version and/or implementation must be specified using -V and -I"
 msgstr "メディエータのバージョンまたは実装、あるいはその両方を -V と -I を使用して指定する必要があります。"
 
-#: ../client.py:2531 ../client.py:2609
+#: ../client.py:2853 ../client.py:2928
 msgid "No changes required."
 msgstr "変更は必要ありません。"
 
-#: ../client.py:2660
+#: ../client.py:2979
 #, python-format
 msgid "    %s (group dependency of '%s')"
 msgstr "    %s ('%s' のグループ依存性)"
 
-#: ../client.py:2683
+#: ../client.py:3002
 msgid "At least one package to freeze must be given when -c is used."
 msgstr "-c を使用した場合は、凍結するパッケージを少なくとも 1 つ指定する必要があります。"
 
-#: ../client.py:2686
+#: ../client.py:3005
 msgid "-H may only be specified when listing the currently frozen packages."
 msgstr "-H は、現在凍結されているパッケージを一覧表示する場合にのみ指定できます。"
 
-#: ../client.py:2699
+#: ../client.py:3018
 #, python-format
 msgid "%(name)s was frozen at %(ver)s"
 msgstr "%(name)s は %(ver)s で凍結されました"
 
-#: ../client.py:2729
+#: ../client.py:3048
 #, python-format
 msgid "%s was unfrozen."
 msgstr "%s は凍結解除されました。"
 
-#: ../client.py:2748 ../client.py:4964 ../pkgrepo.py:857 ../pkgrepo.py:867
+#: ../client.py:3067 ../client.py:5360 ../pkgrepo.py:862 ../pkgrepo.py:872
 #: ../util/publish/pkglint.py:210 ../util/publish/pkglint.py:212
 msgid "NAME"
 msgstr "名前"
 
-#: ../client.py:2750
+#: ../client.py:3069
 msgid "DATE"
 msgstr "DATE"
 
-#: ../client.py:2751
+#: ../client.py:3070
 msgid "COMMENT"
 msgstr "COMMENT"
 
-#: ../client.py:2839
+#: ../client.py:3158
 #, python-format
 msgid ""
 "The repository returned a malformed result.\n"
 "The problematic structure:%r"
 msgstr "リポジトリが不正な形式の結果を返しました。\n問題のある構造:%r"
 
-#: ../client.py:2845
+#: ../client.py:3164
 #, python-format
 msgid ""
 "The repository returned an invalid or unsupported action.\n"
 "%s"
 msgstr "リポジトリが無効なアクションまたはサポートされていないアクションを返しました。\n%s"
 
-#: ../client.py:2911
+#: ../client.py:3230
 msgid "at least one search term must be provided"
 msgstr "検索語句が少なくとも 1 つ指定されている必要があります"
 
-#: ../client.py:2922
+#: ../client.py:3241
 #, python-format
 msgid "action level options ('%s') to -o cannot be used with the -p option"
 msgstr "-o のアクションレベルのオプション ('%s') と -p オプションは同時に使用できません"
 
-#: ../client.py:2972
+#: ../client.py:3291
 #, python-format
 msgid "The repository returned a malformed result:%r"
 msgstr "リポジトリが不正な形式の結果を返しました:%r"
 
-#: ../client.py:2984
+#: ../client.py:3303
 msgid ""
 "action level options to -o cannot be used with the queries that return "
 "packages"
 msgstr "-o のアクションレベルのオプションとパッケージを返すクエリーは同時に使用できません"
 
-#: ../client.py:3047 ../client.py:3057
+#: ../client.py:3366 ../client.py:3376
 msgid ""
 "The search index appears corrupted.  Please rebuild the index with 'pkg "
 "rebuild-index'."
 msgstr "検索インデックスが壊れているようです。'pkg rebuild-index' でインデックスを再構築してください。"
 
-#: ../client.py:3098
+#: ../client.py:3417
 msgid "-l and -r may not be combined"
 msgstr "-l と -r を組み合わせることはできません"
 
-#: ../client.py:3101
+#: ../client.py:3420
 msgid "must request remote info for specific packages"
 msgstr "特定のパッケージではリモートの情報を要求する必要があります"
 
-#: ../client.py:3154 ../packagemanager.py:1247 ../packagemanager.py:2581
+#: ../client.py:3474 ../packagemanager.py:1247 ../packagemanager.py:2581
 msgid "Installed"
 msgstr "インストール済み"
 
-#: ../client.py:3156
+#: ../client.py:3476
 msgid "Unsupported"
 msgstr "サポートされていない"
 
-#: ../client.py:3158 ../packagemanager.py:2583
+#: ../client.py:3478 ../packagemanager.py:2583
 msgid "Not installed"
 msgstr "インストール済みでない"
 
-#: ../client.py:3162
+#: ../client.py:3482
 msgid "Obsolete"
 msgstr "廃止"
 
-#: ../client.py:3165
+#: ../client.py:3485
 msgid "Renamed"
 msgstr "名前変更済み"
 
-#: ../client.py:3169 ../client.py:3171
+#: ../client.py:3489 ../client.py:3491
 msgid "Frozen"
 msgstr "凍結済み"
 
-#: ../client.py:3175
+#: ../client.py:3495
 msgid "          Name:"
 msgstr "          名前:"
 
-#: ../client.py:3177
+#: ../client.py:3497
 msgid "       Summary:"
 msgstr "      サマリー:"
 
-#: ../client.py:3179
+#: ../client.py:3499
 msgid "   Description:"
 msgstr "          説明:"
 
-#: ../client.py:3189
+#: ../client.py:3509
 msgid "      Category:"
 msgstr "      カテゴリ:"
 
-#: ../client.py:3196
+#: ../client.py:3516
 msgid "         State:"
 msgstr "          状態:"
 
-#: ../client.py:3205
+#: ../client.py:3525
 msgid "    Renamed to:"
 msgstr "  変更後の名前:"
 
 #. XXX even more info on the publisher would be nice?
-#: ../client.py:3210
+#: ../client.py:3530
 msgid "     Publisher:"
 msgstr "        発行元:"
 
-#: ../client.py:3213 ../client.py:3216
+#: ../client.py:3533 ../client.py:3536
 msgid "       Version:"
 msgstr "    バージョン:"
 
-#: ../client.py:3217
+#: ../client.py:3537
 msgid " Build Release:"
 msgstr "ビルドリリース:"
 
-#: ../client.py:3218
+#: ../client.py:3538
 msgid "        Branch:"
 msgstr "          分岐:"
 
-#: ../client.py:3219
+#: ../client.py:3539
 msgid "Packaging Date:"
 msgstr "パッケージ化の日付:"
 
-#: ../client.py:3220
+#: ../client.py:3540
 msgid "          Size:"
 msgstr "        サイズ:"
 
-#: ../client.py:3221
+#: ../client.py:3541
 msgid "          FMRI:"
 msgstr "          FMRI:"
 
-#: ../client.py:3232
+#: ../client.py:3552
 msgid ""
 "pkg: info: no packages matching the following patterns you specified are\n"
 "installed on the system.  Try specifying -r to query remotely:"
 msgstr "pkg: info: 指定された次のパターンに一致するパッケージの中で、\n システムにインストール済みのものが存在しません。-r を指定して、リモートでクエリーを実行してください:"
 
-#: ../client.py:3236
+#: ../client.py:3556
 msgid ""
 "pkg: info: no packages matching the following patterns you specified were\n"
 "found in the catalog.  Try relaxing the patterns, refreshing, and/or\n"
 "examining the catalogs:"
 msgstr "pkg: info: 指定された次のパターンに一致するパッケージが、カタログ内に見つ\nかりませんでした。パターンの条件緩和、リフレッシュ、カタログの検査の\nいずれか、あるいはそのすべてを試してください:"
 
-#: ../client.py:3249
+#: ../client.py:3569
 msgid "no license information could be found for the following packages:"
 msgstr "次のパッケージのライセンス情報が見つかりませんでした:"
 
-#: ../client.py:3490
+#: ../client.py:3810
 #, python-format
 msgid "Invalid attribute '%s'"
 msgstr "無効な属性 '%s'"
 
-#: ../client.py:3520
+#: ../client.py:3840
 msgid "-a takes an argument of the form <attribute>=<pattern>"
 msgstr "-a は <attribute>=<pattern> という形式の引数を取ります"
 
-#: ../client.py:3543
+#: ../client.py:3863
 msgid "contents: must request remote contents for specific packages"
 msgstr "contents: 特定のパッケージではリモートの内容を要求する必要があります"
 
-#: ../client.py:3554
+#: ../client.py:3874
 #, python-format
 msgid "-m and %s may not be specified at the same time"
 msgstr "-m と %s を同時に指定することはできません"
 
-#: ../client.py:3662
+#: ../client.py:3985
 msgid "pkg: contents: no matching actions found in the listed packages"
 msgstr "pkg: contents: 一覧にあるパッケージの中には一致するアクションは見つかりませんでした"
 
-#: ../client.py:3671
+#: ../client.py:3994
 msgid ""
 "This package contains no actions with the fields specified using the -o\n"
 "option. Please specify other fields, or use the -m option to show the raw\n"
@@ -949,7 +987,7 @@ msgid_plural ""
 msgstr[0] "このパッケージには、-o オプションで指定されたフィールドを持つアクションは\n含まれていません。ほかのフィールドを指定するか、-m オプションを使用してパッケージの生のマニフェストを\n表示してください。"
 msgstr[1] "これらのパッケージには、-o オプションで指定されたフィールドを持つアクションは\n含まれていません。ほかのフィールドを指定するか、-m オプションを使用してパッケージの生のマニフェストを\n表示してください。"
 
-#: ../client.py:3679
+#: ../client.py:4002
 msgid ""
 "This package delivers no filesystem content, but may contain metadata. Use\n"
 "the -o option to specify fields other than 'path', or use the -m option to "
@@ -963,14 +1001,14 @@ msgid_plural ""
 msgstr[0] "このパッケージにファイルシステムの内容はありませんが、メタデータが含まれている可能性があります。\n -o オプションを使用して 'path' 以外のフィールドを指定するか、-m オプションを使用してパッケージの生のマニフェストを表示\nしてください。"
 msgstr[1] "これらのパッケージにファイルシステムの内容はありませんが、メタデータが含まれている可能性があります。\n -o オプションを使用して 'path' 以外のフィールドを指定するか、-m オプションを使用してパッケージの生のマニフェストを表示\nしてください。"
 
-#: ../client.py:3692
+#: ../client.py:4015
 msgid ""
 "pkg: contents: no packages matching the following patterns you specified "
 "are\n"
 "installed on the system.  Try specifying -r to query remotely:"
 msgstr "pkg: contents: 指定された次のパターンに一致するパッケージの中で、\n システムにインストール済みのものが存在しません。-r を指定して、リモートで照会を行なってください:"
 
-#: ../client.py:3696
+#: ../client.py:4019
 msgid ""
 "pkg: contents: no packages matching the following patterns you specified "
 "were\n"
@@ -978,21 +1016,21 @@ msgid ""
 "examining the catalogs:"
 msgstr "pkg: contents: 指定された次のパターンに一致するパッケージが、カタログ内に見つ\nかりませんでした。パターンの条件緩和、リフレッシュ、カタログの検査の\nいずれか、あるいはそのすべてを試してください:"
 
-#: ../client.py:3713
+#: ../client.py:4036
 #, python-format
 msgid "pkg: %s/%s catalogs successfully updated:"
 msgstr "pkg: %s/%s カタログの更新に成功しました:"
 
-#: ../client.py:3756
+#: ../client.py:4079
 msgid "'pkg publisher' will show a list of publishers."
 msgstr "'pkg publisher' は発行元のリストを表示します。"
 
-#: ../client.py:3811
+#: ../client.py:4137
 #, python-format
 msgid "Could not refresh the catalog for %s\n"
 msgstr "%s のカタログをリフレッシュできませんでした\n"
 
-#: ../client.py:3821
+#: ../client.py:4147
 #, python-format
 msgid ""
 "The origin URIs for '%(pubname)s' do not appear to point to a valid pkg "
@@ -1004,7 +1042,7 @@ msgid ""
 "%(details)s"
 msgstr "'%(pubname)s' の起点 URI は有効な pkg リポジトリを指していないようです。\nリポジトリの場所とクライアントのネットワーク構成を確認してください。\nその他の詳細:\n\n%(details)s"
 
-#: ../client.py:3827
+#: ../client.py:4153
 #, python-format
 msgid ""
 "The specified URI does not appear to point to a valid pkg repository.\n"
@@ -1014,58 +1052,64 @@ msgid ""
 "%s"
 msgstr "指定された URI は有効な pkg リポジトリを指していないようです。\nURI とクライアントのネットワーク構成を確認してください。\nその他の詳細:\n\n%s"
 
-#: ../client.py:3951 ../client.py:5344
+#: ../client.py:4279 ../client.py:5748
 #, python-format
 msgid ""
 "properties to be set must be of the form '<name>=<value>'. This is what was "
 "given: %s"
 msgstr "設定するプロパティーは '<name>=<value>' の形式になっている必要があります。次のように指定されました: %s"
 
-#: ../client.py:3955 ../client.py:5348
+#: ../client.py:4283 ../client.py:5752
 #, python-format
 msgid "a property may only be set once in a command. %s was set twice"
 msgstr "プロパティーは 1 つのコマンドで 1 回だけ設定できます。%s は 2 回設定されました"
 
-#: ../client.py:3962
+#: ../client.py:4290
 #, python-format
 msgid ""
 "property values to be added must be of the form '<name>=<value>'. This is "
 "what was given: %s"
 msgstr "追加するプロパティー値は '<name>=<value>' の形式になっている必要があります。次のように指定されました: %s"
 
-#: ../client.py:3970
+#: ../client.py:4298
 #, python-format
 msgid ""
 "property values to be removed must be of the form '<name>=<value>'. This is "
 "what was given: %s"
 msgstr "削除するプロパティー値は '<name>=<value>' の形式になっている必要があります。次のように指定されました: %s"
 
-#: ../client.py:3980
+#: ../client.py:4310
 msgid "requires a publisher name"
 msgstr "発行元名が必要です"
 
-#: ../client.py:3982
+#: ../client.py:4312
 msgid "only one publisher name may be specified"
 msgstr "指定できる発行元名は 1 つだけです"
 
-#: ../client.py:3988
+#: ../client.py:4318
 msgid ""
 "the -O and -g, --add-origin, -G, or --remove-origin options may not be "
 "combined"
 msgstr "-O オプションと -g、--add-origin、-G、 --remove-origin のいずれかのオプションを組み合わせることはできません"
 
-#: ../client.py:3993
+#: ../client.py:4323
 msgid "search-before, search-after, and search-first (-P) may not be combined"
 msgstr "search-before、search-after、および search-first (-P) を組み合わせることはできません"
 
-#: ../client.py:3999
+#: ../client.py:4329
 msgid ""
 "the -p option may not be combined with the -g, --add-origin, -G, --remove-"
 "origin, -m, --add-mirror, -M, --remove-mirror, --enable, --disable, --no-"
 "refresh, or --reset-uuid options"
 msgstr "-p オプションを -g、--add-origin、-G、--remove-origin、-m、--add-mirror、-M、--remove-mirror、--enable、--disable、--no-refresh、または --reset-uuid オプションと組み合わせることはできません"
 
-#: ../client.py:4042
+#: ../client.py:4336
+msgid ""
+"the --proxy argument may only be combined with the -g, --add-origin,  -m, --"
+"add-mirror, or -p options"
+msgstr "--proxy 引数は -g、--add-origin、-m、--add-mirror、または -p オプションとのみ組み合わせることができます"
+
+#: ../client.py:4383
 #, python-format
 msgid ""
 "\n"
@@ -1076,7 +1120,7 @@ msgid ""
 "  pkg set-publisher -g %s <publisher>\n"
 msgstr "\nこのリポジトリを使用して発行元を追加するには、\n特権ユーザーとして次のコマンドを実行します:\n\n  pkg set-publisher -g %s <publisher>\n"
 
-#: ../client.py:4060
+#: ../client.py:4401
 msgid ""
 "\n"
 "The specified repository did not contain any publisher configuration\n"
@@ -1085,7 +1129,7 @@ msgid ""
 "assistance."
 msgstr "\n指定されたリポジトリには発行元の構成情報が含まれていませんでした。\nこれはリポジトリ構成のエラーが原因と考えられます。\nサポートが必要な場合は、リポジトリの管理者に\n連絡してください。"
 
-#: ../client.py:4129
+#: ../client.py:4470
 #, python-format
 msgid ""
 "    The specified repository location is not a known source of publisher\n"
@@ -1096,12 +1140,12 @@ msgid ""
 "    to accept configuration updates from this repository."
 msgstr "    指定されたリポジトリの場所は、'%s' の発行元構成の更新ソースとして\n認識されていません。\n\n    このリポジトリから構成の更新を受け入れるには、\n    この新しいリポジトリの場所を発行元の基点として追加する必要があります。"
 
-#: ../client.py:4205
+#: ../client.py:4546
 #, python-format
 msgid "  Added publisher(s): %s"
 msgstr "  追加された発行元: %s"
 
-#: ../client.py:4208
+#: ../client.py:4549
 #, python-format
 msgid "  Updated publisher(s): %s"
 msgstr "  更新された発行元: %s"
@@ -1109,238 +1153,263 @@ msgstr "  更新された発行元: %s"
 #. None of the origins or mirrors for the publisher
 #. use SSL schemes so the cert and key information
 #. won't be retained.
-#: ../client.py:4341
+#: ../client.py:4690
 #, python-format
 msgid "Publisher '%s' does not have any SSL-based origins or mirrors."
 msgstr "発行元 '%s' には SSL ベースの起点またはミラーがありません。"
 
-#: ../client.py:4389
+#: ../client.py:4738
 msgid "at least one publisher must be specified"
 msgstr "発行元が少なくとも 1 つ指定されている必要があります"
 
-#: ../client.py:4419
+#: ../client.py:4768
 #, python-format
 msgid "Removal failed for '%(pub)s': %(msg)s"
 msgstr "'%(pub)s' の削除に失敗しました: %(msg)s"
 
-#: ../client.py:4434 ../client.py:4444 ../modules/client/api_errors.py:646
-#: ../pkgrepo.py:543 ../pkgrepo.py:620 ../pkgrepo.py:625 ../pkgrepo.py:720
-#: ../pkgrepo.py:726 ../pkgrepo.py:856 ../pkgrepo.py:867 ../pkgrepo.py:874
+#: ../client.py:4783 ../client.py:4796 ../client.py:4906
+#: ../modules/client/api_errors.py:646 ../pkgrepo.py:543 ../pkgrepo.py:620
+#: ../pkgrepo.py:625 ../pkgrepo.py:720 ../pkgrepo.py:726 ../pkgrepo.py:861
+#: ../pkgrepo.py:872 ../pkgrepo.py:879
 msgid "PUBLISHER"
 msgstr "発行元"
 
-#: ../client.py:4436 ../client.py:4445
+#: ../client.py:4785 ../client.py:4797 ../client.py:4907
 msgid "TYPE"
 msgstr "タイプ"
 
-#: ../client.py:4438 ../client.py:4446
+#: ../client.py:4787 ../client.py:4798
+msgid "LOCATION"
+msgstr "場所"
+
+#: ../client.py:4788 ../client.py:4908
 msgid "URI"
 msgstr "URI"
 
-#: ../client.py:4439 ../client.py:4444
+#: ../client.py:4789 ../client.py:4796 ../client.py:4906
 msgid "STICKY"
 msgstr "固定的"
 
-#: ../client.py:4440 ../client.py:4445
+#: ../client.py:4790 ../client.py:4797 ../client.py:4907
 msgid "ENABLED"
 msgstr "有効"
 
-#: ../client.py:4441 ../client.py:4445
+#: ../client.py:4791 ../client.py:4797 ../client.py:4907
 msgid "SYSPUB"
 msgstr "SYSPUB"
 
-#: ../client.py:4482 ../pkgrepo.py:402 ../pkgrepo.py:663 ../pkgrepo.py:764
+#: ../client.py:4792 ../client.py:4908
+msgid "PROXY"
+msgstr "プロキシ"
+
+#: ../client.py:4793 ../client.py:4798 ../modules/misc.py:442
+msgid "P"
+msgstr "P"
+
+#: ../client.py:4834 ../pkgrepo.py:402 ../pkgrepo.py:663 ../pkgrepo.py:764
 #, python-format
 msgid "Unrecognized format %(format)s. Supported formats: %(valid)s"
 msgstr "%(format)s は認識できない形式です。サポートされている形式: %(valid)s"
 
-#: ../client.py:4575 ../modules/client/api_errors.py:649
+#: ../client.py:4931 ../modules/client/api_errors.py:649
 msgid "non-sticky"
 msgstr "非固定的"
 
-#: ../client.py:4580
+#: ../client.py:4936
 msgid "disabled"
 msgstr "無効"
 
-#: ../client.py:4582
+#: ../client.py:4938
 msgid "syspub"
 msgstr "syspub"
 
-#: ../client.py:4589 ../client.py:4593 ../client.py:4597
+#: ../client.py:4945 ../client.py:4949 ../client.py:4953
 msgid "true"
 msgstr "true"
 
-#: ../client.py:4591 ../client.py:4595 ../client.py:4599
+#: ../client.py:4947 ../client.py:4951 ../client.py:4955
 msgid "false"
 msgstr "false"
 
 #. XXX get the real origin status
-#: ../client.py:4613
+#: ../client.py:4971
 msgid "origin"
 msgstr "起点"
 
-#: ../client.py:4614 ../client.py:4626
+#: ../client.py:4972 ../client.py:5000
 msgid "online"
 msgstr "オンライン"
 
+#: ../client.py:4979 ../client.py:5007 ../modules/misc.py:441
+msgid "T"
+msgstr "T"
+
 #. XXX get the real mirror status
-#: ../client.py:4625
+#: ../client.py:4999
 msgid "mirror"
 msgstr "ミラー"
 
-#: ../client.py:4648
+#: ../client.py:5002
+msgid "F"
+msgstr "F"
+
+#: ../client.py:5038
 msgid "              SSL Key:"
 msgstr "              SSL キー:"
 
-#: ../client.py:4649
+#: ../client.py:5039
 msgid "             SSL Cert:"
 msgstr "             SSL 証明書:"
 
-#: ../client.py:4661
+#: ../client.py:5051
 msgid " Cert. Effective Date:"
 msgstr " 証明書の発効日:"
 
-#: ../client.py:4663
+#: ../client.py:5053
 msgid "Cert. Expiration Date:"
 msgstr "証明書の有効期限:"
 
-#: ../client.py:4670
+#: ../client.py:5060
 msgid "           Origin URI:"
 msgstr "           起点 URI:"
 
-#: ../client.py:4676
+#: ../client.py:5062 ../client.py:5072
+msgid "                Proxy:"
+msgstr "                プロキシ:"
+
+#: ../client.py:5070
 msgid "           Mirror URI:"
 msgstr "           ミラー URI:"
 
-#: ../client.py:4684
+#: ../client.py:5082
 msgid "         Approved CAs:"
 msgstr "         承認された CA:"
 
-#: ../client.py:4687 ../client.py:4692
+#: ../client.py:5085 ../client.py:5090
 msgid "                     :"
 msgstr "                     :"
 
-#: ../client.py:4689
+#: ../client.py:5087
 msgid "          Revoked CAs:"
 msgstr "          失効した CA:"
 
-#: ../client.py:4702
+#: ../client.py:5100
 msgid "            Publisher:"
 msgstr "    発行元:"
 
-#: ../client.py:4703
+#: ../client.py:5101
 msgid "                Alias:"
 msgstr "                別名:"
 
-#: ../client.py:4712
+#: ../client.py:5110
 msgid "          Client UUID:"
 msgstr "          クライアント UUID:"
 
-#: ../client.py:4713
+#: ../client.py:5111
 msgid "      Catalog Updated:"
 msgstr "      カタログの更新:"
 
-#: ../client.py:4716 ../client.py:4718
+#: ../client.py:5114 ../client.py:5116
 msgid "              Enabled:"
 msgstr "              有効:"
 
-#: ../client.py:4726
+#: ../client.py:5124
 msgid "           Properties:"
 msgstr "           プロパティー:"
 
-#: ../client.py:4742 ../client.py:4764
+#: ../client.py:5140 ../client.py:5162
 msgid "requires a property name and value"
 msgstr "プロパティー名と値が必要です"
 
-#: ../client.py:4789
+#: ../client.py:5187
 msgid "requires a property name and at least one value"
 msgstr "プロパティー名と少なくとも 1 つの値が必要です"
 
-#: ../client.py:4806
+#: ../client.py:5204
 #, python-format
 msgid "Signature-policy %s doesn't allow additional parameters."
 msgstr "署名ポリシー %s には追加のパラメータは許可されません。"
 
-#: ../client.py:4833
+#: ../client.py:5231
 msgid "requires at least one property name"
 msgstr "プロパティー名を少なくとも 1 つ指定する必要があります"
 
-#: ../client.py:4862
+#: ../client.py:5260
 #, python-format
 msgid "no such property: %s"
 msgstr "そのようなプロパティーは存在しません: %s"
 
-#: ../client.py:4896
+#: ../client.py:5294
 #, python-format
 msgid "no such variant: %s"
 msgstr "そのようなバリアントは存在しません: %s"
 
-#: ../client.py:4964
+#: ../client.py:5360
 msgid "RELATIONSHIP"
 msgstr "関係"
 
-#: ../client.py:4964
+#: ../client.py:5360
 msgid "PATH"
 msgstr "パス"
 
-#: ../client.py:4988
+#: ../client.py:5398
 msgid "linked image property arguments must be of the form '<name>=<value>'."
 msgstr "リンクされたイメージのプロパティーの引数は '<name>=<value>' の形式になっている必要があります。"
 
-#: ../client.py:4992
+#: ../client.py:5402
 #, python-format
 msgid "invalid linked image property: '%s'."
 msgstr "リンクされたイメージのプロパティーが無効です: '%s'。"
 
-#: ../client.py:4996
+#: ../client.py:5406
 #, python-format
 msgid "linked image property specified multiple times: '%s'."
 msgstr "リンクされたイメージのプロパティーが複数回指定されました: '%s'。"
 
-#: ../client.py:5019
+#: ../client.py:5430
 #, python-format
 msgid "%(op)s: no such property: %(p)s"
 msgstr "%(op)s: そのようなプロパティーはありません: %(p)s"
 
-#: ../client.py:5099
+#: ../client.py:5513
 msgid "synced"
 msgstr "同期"
 
-#: ../client.py:5101
+#: ../client.py:5515
 msgid "diverged"
 msgstr "分岐"
 
-#: ../client.py:5188
+#: ../client.py:5593
 #, python-format
 msgid "cannot specify linked image property: '%s'"
 msgstr "リンクされたイメージのプロパティーを指定できません: '%s'"
 
-#: ../client.py:5192
+#: ../client.py:5597
 msgid "a linked image name and path must be specified"
 msgstr "リンクされたイメージの名前とパスを指定する必要があります"
 
-#: ../client.py:5335
+#: ../client.py:5739
 msgid "Facet arguments must be of the form '<name>=(True|False)'"
 msgstr "ファセットの引数は '<name>=(True|False)' の形式になっている必要があります"
 
-#: ../client.py:5358
+#: ../client.py:5762
 msgid "variant arguments must be of the form '<name>=<value>'."
 msgstr "バリアントの引数は '<name>=<value>' の形式になっている必要があります。"
 
-#: ../client.py:5364
+#: ../client.py:5768
 msgid "an image directory path must be specified"
 msgstr "イメージディレクトリのパスを指定する必要があります"
 
-#: ../client.py:5367
+#: ../client.py:5771
 msgid "only one image directory path may be specified"
 msgstr "指定できるイメージディレクトリのパスは 1 つだけです"
 
-#: ../client.py:5372
+#: ../client.py:5776
 msgid ""
 "--no-refresh cannot be used with -p unless a publisher prefix is provided."
 msgstr "発行元の接頭辞が指定されていない場合、--no-refresh と -p は同時に使用できません。"
 
-#: ../client.py:5402
+#: ../client.py:5807
 #, python-format
 msgid ""
 "The URI '%(pub_url)s' does not appear to point to a valid pkg repository.\n"
@@ -1351,284 +1420,310 @@ msgid ""
 "%(error)s"
 msgstr "URI '%(pub_url)s' は有効な pkg リポジトリを指していないようです。\nリポジトリの場所とクライアントのネットワーク構成を確認してください。\nその他の詳細:\n\n%(error)s"
 
-#: ../client.py:5429
+#: ../client.py:5840
 #, python-format
 msgid "command does not take operands ('%s')"
 msgstr "コマンドはオペランドを取りません ('%s')"
 
-#: ../client.py:5455
+#: ../client.py:5866
 msgid "BE"
 msgstr "BE"
 
-#: ../client.py:5456
+#: ../client.py:5867
 msgid "BE UUID"
 msgstr "BE UUID"
 
-#: ../client.py:5457
+#: ../client.py:5868
 msgid "CLIENT"
 msgstr "クライアント"
 
-#: ../client.py:5459
+#: ../client.py:5870
 msgid "COMMAND"
 msgstr "コマンド"
 
-#: ../client.py:5460
+#: ../client.py:5871
 msgid "FINISH"
 msgstr "完了"
 
-#: ../client.py:5461
+#: ../client.py:5872
 msgid "ID"
 msgstr "ID"
 
-#: ../client.py:5462
+#: ../client.py:5873
 msgid "NEW BE"
 msgstr "新規 BE"
 
-#: ../client.py:5463
+#: ../client.py:5874
 msgid "NEW BE UUID"
 msgstr "新規 BE UUID"
 
-#: ../client.py:5464
+#: ../client.py:5875
 msgid "OPERATION"
 msgstr "操作"
 
-#: ../client.py:5465
+#: ../client.py:5876
 msgid "OUTCOME"
 msgstr "結果"
 
-#: ../client.py:5466
+#: ../client.py:5877
 msgid "REASON"
 msgstr "理由"
 
-#: ../client.py:5467
+#: ../client.py:5878
+msgid "RELEASE NOTES"
+msgstr "リリースノート"
+
+#: ../client.py:5879
 msgid "SNAPSHOT"
 msgstr "スナップショット"
 
-#: ../client.py:5468
+#: ../client.py:5880
 msgid "START"
 msgstr "開始"
 
-#: ../client.py:5469
+#: ../client.py:5881
 msgid "TIME"
 msgstr "時間"
 
-#: ../client.py:5470
+#: ../client.py:5882
 msgid "USER"
 msgstr "ユーザー"
 
-#: ../client.py:5493
+#: ../client.py:5908
 msgid "Argument to -n must be numeric"
 msgstr "-n の引数は数値でなければいけません"
 
-#: ../client.py:5498
+#: ../client.py:5913
 msgid "Argument to -n must be positive"
 msgstr "-n の引数は正の値でなければいけません"
 
 #. Translators: 'command' and 'reason' are
 #. keywords and should not be translated
-#: ../client.py:5511
+#: ../client.py:5926
 msgid "'command' and 'reason' columns cannot be used together."
 msgstr "'command' 列と 'reason' 列は一緒に使用できません。"
 
-#: ../client.py:5519
+#: ../client.py:5934
 #, python-format
 msgid "The '%s' column must be the last item in the -o list"
 msgstr "'%s' 列は -o リストの最後の項目である必要があります"
 
-#: ../client.py:5526
+#: ../client.py:5941
 #, python-format
 msgid "Unknown output column '%s'"
 msgstr "不明な出力列 '%s'"
 
-#: ../client.py:5536
+#: ../client.py:5951
 msgid "-H and -l may not be combined"
 msgstr "-H と -l を組み合わせることはできません"
 
-#: ../client.py:5539
+#: ../client.py:5954
 msgid "-o and -l may not be combined"
 msgstr "-o と -l を組み合わせることはできません"
 
-#: ../client.py:5542
+#: ../client.py:5957
 msgid "-n and -t may not be combined"
 msgstr "-n と -t を組み合わせることはできません"
 
-#: ../client.py:5595
+#: ../client.py:5960
+msgid "-o and -N may not be combined"
+msgstr "-o と -N を組み合わせることはできません"
+
+#: ../client.py:5963
+msgid "-l and -N may not be combined"
+msgstr "-l と -N を組み合わせることはできません"
+
+#: ../client.py:6002
+#, python-format
+msgid "%s: Release notes:"
+msgstr "%s: リリースノート:"
+
+#: ../client.py:6006
+#, python-format
+msgid "%s: Release notes: None"
+msgstr "%s: リリースノート: なし"
+
+#: ../client.py:6031
 #, python-format
 msgid ""
 "History operation appeared to end before it started.  Start time: %"
 "(start_time)s, End time: %(end_time)s"
 msgstr "履歴操作が開始される前に終了しました。開始時間: %(start_time)s、終了時間: %(end_time)s"
 
-#: ../client.py:5641 ../client.py:5644
+#: ../client.py:6082 ../client.py:6085
 msgid "(Unknown)"
 msgstr "(不明)"
 
-#: ../client.py:5647 ../client.py:5650 ../client.py:5653
+#: ../client.py:6088 ../client.py:6091 ../client.py:6094
 msgid "(None)"
 msgstr "(なし)"
 
-#: ../client.py:5680
+#: ../client.py:6132
 #, python-format
 msgid "Duplicate column specified: %s"
 msgstr "重複した列が指定されました: %s"
 
-#: ../client.py:5686
+#: ../client.py:6138
 msgid "Operation"
 msgstr "操作"
 
-#: ../client.py:5688
+#: ../client.py:6140
 msgid "Outcome"
 msgstr "結果"
 
-#: ../client.py:5689
+#: ../client.py:6141
 msgid "Reason"
 msgstr "理由"
 
-#: ../client.py:5690
+#: ../client.py:6142
 msgid "Client"
 msgstr "クライアント"
 
-#: ../client.py:5691
+#: ../client.py:6143
 msgid "Version"
 msgstr "バージョン"
 
-#: ../client.py:5693
+#: ../client.py:6145
 msgid "User"
 msgstr "ユーザー"
 
-#: ../client.py:5697
+#: ../client.py:6149
 msgid "Boot Env."
 msgstr "ブート環境"
 
-#: ../client.py:5699
+#: ../client.py:6151
 msgid "Boot Env. UUID"
 msgstr "ブート環境 UUID"
 
-#: ../client.py:5701
+#: ../client.py:6153
 msgid "New Boot Env."
 msgstr "新しいブート環境"
 
-#: ../client.py:5703
+#: ../client.py:6155
 msgid "New Boot Env. UUID"
 msgstr "新しいブート環境 UUID"
 
-#: ../client.py:5706
+#: ../client.py:6158
 msgid "Snapshot"
 msgstr "スナップショット"
 
-#: ../client.py:5708
+#: ../client.py:6160
 msgid "Start Time"
 msgstr "開始時間"
 
-#: ../client.py:5709
+#: ../client.py:6161
 msgid "End Time"
 msgstr "終了時間"
 
-#: ../client.py:5710
+#: ../client.py:6162
 msgid "Total Time"
 msgstr "合計時間"
 
-#: ../client.py:5711
+#: ../client.py:6163
 msgid "Command"
 msgstr "コマンド"
 
-#: ../client.py:5715
+#: ../client.py:6164
+msgid "Release Notes"
+msgstr "リリースノート"
+
+#: ../client.py:6168
 msgid "Start State"
 msgstr "開始状態"
 
-#: ../client.py:5719
+#: ../client.py:6172
 msgid "End State"
 msgstr "終了状態"
 
-#: ../client.py:5723
+#: ../client.py:6176
 msgid "Errors"
 msgstr "エラー"
 
-#: ../client.py:5729
+#: ../client.py:6182
 msgid "History purged."
 msgstr "履歴が削除されます。"
 
-#: ../client.py:5742
+#: ../client.py:6195
 msgid ""
 "\n"
 "The following proxy configuration is set in the environment:\n"
 msgstr "\n 次のプロキシ構成が環境に設定されました:\n"
 
-#: ../client.py:5745
+#: ../client.py:6198
 #, python-format
 msgid "http_proxy: %s\n"
 msgstr "http_proxy: %s\n"
 
-#: ../client.py:5747
+#: ../client.py:6200
 #, python-format
 msgid "https_proxy: %s\n"
 msgstr "https_proxy: %s\n"
 
-#: ../client.py:5759
+#: ../client.py:6212
 msgid "Image format updated."
 msgstr "イメージ形式が更新されました。"
 
-#: ../client.py:5762
+#: ../client.py:6215
 msgid "Image format already current."
 msgstr "イメージ形式はすでに最新です。"
 
-#: ../client.py:5767
+#: ../client.py:6220
 #, python-format
 msgid "version: command does not take operands ('%s')"
 msgstr "version: コマンドはオペランドを取りません ('%s')"
 
-#: ../client.py:5798 ../pkgdep.py:108 ../pkgdep.py:220 ../pkgdep.py:538
-#: ../pkgrepo.py:1198 ../publish.py:718 ../sign.py:124 ../sysrepo.py:642
+#: ../client.py:6330 ../pkgdep.py:109 ../pkgdep.py:221 ../pkgdep.py:544
+#: ../pkgrepo.py:1203 ../publish.py:724 ../sign.py:124 ../sysrepo.py:863
 #: ../util/publish/pkgdiff.py:86 ../util/publish/pkgfmt.py:522
 #: ../util/publish/pkgmogrify.py:695
 #, python-format
 msgid "illegal global option -- %s"
 msgstr "不正なグローバルオプション -- %s"
 
-#: ../client.py:5811 ../publish.py:711
+#: ../client.py:6343 ../publish.py:717 ../pull.py:389
 #, python-format
 msgid "%(opt)s takes argument of form name=value, not %(arg)s"
 msgstr "%(opt)s は、%(arg)s ではなく、形式 name=value の引数を取ります"
 
-#: ../client.py:5889 ../client.py:5900 ../pkgdep.py:566 ../pkgrepo.py:1223
-#: ../publish.py:765
+#: ../client.py:6366 ../client.py:6377 ../pkgdep.py:572 ../pkgrepo.py:1228
+#: ../publish.py:771
 #, python-format
 msgid "unknown subcommand '%s'"
 msgstr "不明なサブコマンド '%s'"
 
-#: ../client.py:5904 ../pkgrepo.py:1217
+#: ../client.py:6381 ../pkgrepo.py:1222
 msgid "no subcommand specified"
 msgstr "サブコマンドが指定されていません"
 
-#: ../client.py:5909
+#: ../client.py:6386
 msgid "runid must be an integer"
 msgstr "runid は整数である必要があります"
 
-#: ../client.py:5929
+#: ../client.py:6407
 #, python-format
 msgid "-R not allowed for %s subcommand"
 msgstr "-R は %s サブコマンドでは許可されていません"
 
-#: ../client.py:5934 ../client.py:5977 ../modules/misc.py:1099
-#: ../pkgrepo.py:1230 ../util/publish/pkgmerge.py:224
+#: ../client.py:6413 ../client.py:6461 ../modules/misc.py:1306
+#: ../pkgrepo.py:1235 ../util/publish/pkgmerge.py:224
 #, python-format
 msgid "illegal option -- %s"
 msgstr "不正なオプション -- %s"
 
-#: ../client.py:5949 ../pkgdep.py:274
+#: ../client.py:6428 ../pkgdep.py:275
 msgid ""
 "Could not find image.  Use the -R option or set $PKG_IMAGE to the\n"
 "location of an image."
 msgstr "イメージが見つかりませんでした。-R オプションを使用するか、\n$PKG_IMAGE をイメージの場所に設定します。"
 
-#: ../client.py:6012
+#: ../client.py:6496
 #, python-format
 msgid ""
 "Linked image exception(s):\n"
 "%s"
 msgstr "リンクされたイメージの例外:\n%s"
 
-#: ../client.py:6033
+#: ../client.py:6517
 msgid ""
 "\n"
 "Errors were encountered while attempting to retrieve package or file data "
@@ -1636,7 +1731,7 @@ msgid ""
 "the requested operation."
 msgstr "\n 要求された操作に対するパッケージまたはファイルデータの取得を 試行しているときに、\n エラーが発生しました。"
 
-#: ../client.py:6036
+#: ../client.py:6520
 #, python-format
 msgid ""
 "Details follow:\n"
@@ -1644,7 +1739,7 @@ msgid ""
 "%s"
 msgstr "詳細は次のとおりです:\n \n %s"
 
-#: ../client.py:6042
+#: ../client.py:6526
 #, python-format
 msgid ""
 "\n"
@@ -1654,7 +1749,7 @@ msgid ""
 "%s"
 msgstr "\n要求された操作を実行するためにイメージの状態情報を読み取ろうとして\nエラーが発生しました。詳細は次のとおりです:\n\n%s"
 
-#: ../client.py:6049
+#: ../client.py:6533
 msgid ""
 "\n"
 "Unable to contact a valid package repository. This may be due to a problem "
@@ -1663,7 +1758,7 @@ msgid ""
 "repository's location."
 msgstr "\n有効なパッケージリポジトリに接続できません。これはリポジトリの問題、ネットワークの構成ミス、または pkg クライアントの構成の誤りが原因と考えられます。クライアントのネットワーク構成とリポジトリの場所を確認してください。"
 
-#: ../client.py:6054
+#: ../client.py:6538
 #, python-format
 msgid ""
 "\n"
@@ -1672,23 +1767,23 @@ msgid ""
 "%s"
 msgstr "\nその他の詳細:\n\n%s"
 
-#: ../client.py:6062
+#: ../client.py:6546
 msgid ""
 "An error was encountered while attempting to load history information\n"
 "about past client operations."
 msgstr "以前のクライアント操作に関する履歴情報の読み込みを試行しているときに、\nエラーが発生しました。"
 
-#: ../client.py:6071
+#: ../client.py:6555
 msgid ""
 "An error was encountered while attempting to store information about the\n"
 "current operation in client history."
 msgstr "現在の操作に関する情報をクライアント履歴に格納しようとしたときに、\nエラーが発生しました。"
 
-#: ../client.py:6081
+#: ../client.py:6565
 msgid "An error was encountered while attempting to purge client history."
 msgstr "クライアント履歴の削除を試行しているときに、エラーが発生しました。"
 
-#: ../client.py:6088
+#: ../client.py:6572
 #, python-format
 msgid ""
 "The pkg command appears out of sync with the libraries provided\n"
@@ -1696,14 +1791,14 @@ msgid ""
 "API version is %(api)s."
 msgstr "pkg コマンドは、pkg:/package/pkg で提供されているライブラリと同期がとれていない\nようです。クライアントのバージョンが %(client)s であるのに対して、ライブラリ \nAPI のバージョンは %(api)s です。"
 
-#: ../client.py:6103
+#: ../client.py:6587
 #, python-format
 msgid ""
 "\n"
 "%s%s"
 msgstr "\n%s%s"
 
-#: ../client.py:6105
+#: ../client.py:6589
 msgid ""
 "\n"
 "\n"
@@ -2450,7 +2545,8 @@ msgstr "詳細"
 msgid "Do not notify me about these publishers again."
 msgstr "今後、これらの発行元について通知しない。"
 
-#: ../gui/data/packagemanager.ui.h:64 ../modules/gui/installupdate.py:162
+#: ../gui/data/packagemanager.ui.h:64 ../modules/client/progress.py:706
+#: ../modules/gui/installupdate.py:162
 msgid "Download"
 msgstr "ダウンロード"
 
@@ -2566,7 +2662,7 @@ msgstr "設定"
 msgid "Preparation"
 msgstr "準備"
 
-#: ../gui/data/packagemanager.ui.h:94
+#: ../gui/data/packagemanager.ui.h:94 ../modules/client/progress.py:721
 msgid "Processing"
 msgstr "処理中"
 
@@ -3042,7 +3138,7 @@ msgstr "ディレクトリ %s を作成できません。リンクで置き換�
 #. or a package has been poorly implemented.
 #. User has replaced item with mountpoint, or a
 #. package has been poorly implemented.
-#: ../modules/actions/directory.py:220 ../modules/actions/generic.py:944
+#: ../modules/actions/directory.py:220 ../modules/actions/generic.py:957
 #, python-format
 msgid ""
 "Unable to remove %s; it is in use as a mountpoint.  To continue, please "
@@ -3052,79 +3148,79 @@ msgstr "%s を削除できません。マウントポイントとして使用さ
 #. os.path.ismount() is broken for lofs
 #. filesystems, so give a more generic
 #. error.
-#: ../modules/actions/directory.py:231 ../modules/actions/generic.py:954
+#: ../modules/actions/directory.py:231 ../modules/actions/generic.py:967
 #, python-format
 msgid ""
 "Unable to remove %s; it is in use by the system, another process, or as a "
 "mountpoint."
 msgstr "%s を削除できません。システムまたは別のプロセスによって使用されているか、マウントポイントとして使用されています。"
 
-#: ../modules/actions/driver.py:825
+#: ../modules/actions/driver.py:839
 #, python-format
 msgid "etc/name_to_major: more than one entry for '%s' is present"
 msgstr "etc/name_to_major: '%s' のエントリが複数存在します"
 
-#: ../modules/actions/driver.py:830
+#: ../modules/actions/driver.py:844
 #, python-format
 msgid "etc/name_to_major: '%s' entry not present"
 msgstr "etc/name_to_major: '%s' のエントリが存在しません"
 
-#: ../modules/actions/driver.py:837
+#: ../modules/actions/driver.py:851
 #, python-format
 msgid "extra alias '%s' found in etc/driver_aliases"
 msgstr "etc/driver_aliases に余分な別名 '%s' が見つかりました"
 
-#: ../modules/actions/driver.py:840
+#: ../modules/actions/driver.py:854
 #, python-format
 msgid "alias '%s' missing from etc/driver_aliases"
 msgstr "etc/driver_aliases に別名 '%s' がありません"
 
-#: ../modules/actions/driver.py:846
+#: ../modules/actions/driver.py:860
 #, python-format
 msgid "extra class '%s' found in etc/driver_classes"
 msgstr "etc/driver_classes に余分なクラス '%s' が見つかりました"
 
-#: ../modules/actions/driver.py:849
+#: ../modules/actions/driver.py:863
 #, python-format
 msgid "class '%s' missing from etc/driver_classes"
 msgstr "etc/driver_classes にクラス '%s' がありません"
 
-#: ../modules/actions/driver.py:855
+#: ../modules/actions/driver.py:869
 #, python-format
 msgid "extra minor node permission '%s' found in etc/minor_perm"
 msgstr "etc/minor_perm に余分なマイナーノードアクセス権 '%s' が見つかりました"
 
-#: ../modules/actions/driver.py:858
+#: ../modules/actions/driver.py:872
 #, python-format
 msgid "minor node permission '%s' missing from etc/minor_perm"
 msgstr "etc/minor_perm にマイナーノードアクセス権 '%s' がありません"
 
-#: ../modules/actions/driver.py:876
+#: ../modules/actions/driver.py:890
 #, python-format
 msgid "extra device policy '%s' found in etc/security/device_policy"
 msgstr "etc/security/device_policy に余分なデバイスポリシー '%s' が見つかりました"
 
-#: ../modules/actions/driver.py:879
+#: ../modules/actions/driver.py:893
 #, python-format
 msgid "device policy '%s' missing from etc/security/device_policy"
 msgstr "etc/security/device_policy にデバイスポリシー '%s' がありません"
 
-#: ../modules/actions/driver.py:885
+#: ../modules/actions/driver.py:899
 #, python-format
 msgid "extra device privilege '%s' found in etc/security/extra_privs"
 msgstr "etc/security/extra_privs に余分なデバイス特権 '%s' が見つかりました"
 
-#: ../modules/actions/driver.py:888
+#: ../modules/actions/driver.py:902
 #, python-format
 msgid "device privilege '%s' missing from etc/security/extra_privs"
 msgstr "etc/security/extra_privs にデバイス特権 '%s' がありません"
 
-#: ../modules/actions/file.py:196 ../modules/actions/license.py:97
+#: ../modules/actions/file.py:196 ../modules/actions/license.py:100
 #, python-format
 msgid "Error decompressing payload: %s"
 msgstr "ペイロードの圧縮解除時にエラーが発生しました: %s"
 
-#: ../modules/actions/file.py:205 ../modules/actions/license.py:105
+#: ../modules/actions/file.py:205 ../modules/actions/license.py:108
 #, python-format
 msgid ""
 "Action data hash verification failure: expected: %(expected)s computed: %"
@@ -3159,7 +3255,7 @@ msgstr "ハッシュ: %(found)s は %(expected)s である必要があります"
 msgid "Skipping: Permission Denied"
 msgstr "スキップしています: アクセス権がありません"
 
-#: ../modules/actions/file.py:371 ../modules/actions/generic.py:844
+#: ../modules/actions/file.py:371 ../modules/actions/generic.py:857
 #: ../modules/actions/hardlink.py:140 ../modules/actions/user.py:214
 #, python-format
 msgid "Unexpected Error: %s"
@@ -3170,131 +3266,131 @@ msgstr "予期しないエラー: %s"
 msgid "Unexpected Exception: %s"
 msgstr "予期しない例外: %s"
 
-#: ../modules/actions/generic.py:185 ../modules/actions/signature.py:100
+#: ../modules/actions/generic.py:197 ../modules/actions/signature.py:100
 #, python-format
 msgid "No such file: '%s'."
 msgstr "ファイルがありません: '%s'。"
 
-#: ../modules/actions/generic.py:188 ../modules/actions/signature.py:103
+#: ../modules/actions/generic.py:200 ../modules/actions/signature.py:103
 #, python-format
 msgid "'%s' is not a file."
 msgstr "'%s' はファイルではありません。"
 
-#: ../modules/actions/generic.py:525 ../modules/actions/generic.py:564
+#: ../modules/actions/generic.py:538 ../modules/actions/generic.py:577
 #, python-format
 msgid ""
 "Unable to create %(path)s; a parent directory %(p)s has been replaced with a "
 "file or link.  Please restore the parent directory and try again."
 msgstr "%(path)s を作成できません。親ディレクトリ %(p)s がファイルまたはリンクで置き換えられています。親ディレクトリを復元してからやり直してください。"
 
-#: ../modules/actions/generic.py:661
+#: ../modules/actions/generic.py:674
 msgid "mode is required; value must be of the form '644', '0644', or '04755'."
 msgstr "モードが必要です。値は '644'、'0644'、または '04755' の形式になっている必要があります。"
 
-#: ../modules/actions/generic.py:665
+#: ../modules/actions/generic.py:678
 msgid "mode may only be specified once"
 msgstr "モードは 1 回だけ指定できます"
 
-#: ../modules/actions/generic.py:668
+#: ../modules/actions/generic.py:681
 #, python-format
 msgid ""
 "'%s' is not a valid mode; value must be of the form '644', '0644', or "
 "'04755'."
 msgstr "'%s' は有効なモードではありません。値は '644'、'0644'、または '04755' の形式になっている必要があります。"
 
-#: ../modules/actions/generic.py:675
+#: ../modules/actions/generic.py:688
 msgid "owner may only be specified once"
 msgstr "所有者は 1 回だけ指定できます"
 
-#: ../modules/actions/generic.py:681
+#: ../modules/actions/generic.py:694
 msgid "group may only be specified once"
 msgstr "グループは 1 回だけ指定できます"
 
-#: ../modules/actions/generic.py:715
+#: ../modules/actions/generic.py:728
 #, python-format
 msgid ""
 "'%(path)s' cannot be installed; the owner '%(owner)s' was removed by '%"
 "(src_fmri)s'."
 msgstr "'%(path)s' をインストールできません。所有者 '%(owner)s' は '%(src_fmri)s' によって削除されました。"
 
-#: ../modules/actions/generic.py:731
+#: ../modules/actions/generic.py:744
 #, python-format
 msgid ""
 "'%(path)s' cannot be installed; '%(owner)s' is an unknown or invalid user."
 msgstr "'%(path)s' をインストールできません。'%(owner)s' は不明または無効なユーザーです。"
 
-#: ../modules/actions/generic.py:758
+#: ../modules/actions/generic.py:771
 #, python-format
 msgid ""
 "'%(path)s' cannot be installed; the group '%(group)s' was removed by '%"
 "(src_fmri)s'."
 msgstr "'%(path)s' をインストールできません。グループ '%(group)s' は '%(src_fmri)s' によって削除されました。"
 
-#: ../modules/actions/generic.py:774
+#: ../modules/actions/generic.py:787
 #, python-format
 msgid ""
 "'%(path)s' cannot be installed; '%(group)s' is an unknown or invalid group."
 msgstr "'%(path)s' をインストールできません。'%(group)s' は不明または無効なグループです。"
 
-#: ../modules/actions/generic.py:814
+#: ../modules/actions/generic.py:827
 #, python-format
 msgid "Owner: %s is unknown"
 msgstr "所有者: %s が不明です"
 
-#: ../modules/actions/generic.py:821
+#: ../modules/actions/generic.py:834
 #, python-format
 msgid "Group: %s is unknown "
 msgstr "グループ: %s が不明です"
 
-#: ../modules/actions/generic.py:839
+#: ../modules/actions/generic.py:852
 #, python-format
 msgid "Missing: %s does not exist"
 msgstr "見つかりません: %s が存在しません"
 
-#: ../modules/actions/generic.py:842 ../modules/actions/user.py:212
+#: ../modules/actions/generic.py:855 ../modules/actions/user.py:212
 msgid "Skipping: Permission denied"
 msgstr "スキップしています: アクセス権がありません"
 
-#: ../modules/actions/generic.py:851
+#: ../modules/actions/generic.py:864
 #, python-format
 msgid "File Type: '%(found)s' should be '%(expected)s'"
 msgstr "ファイルタイプ: '%(found)s' は '%(expected)s' である必要があります"
 
-#: ../modules/actions/generic.py:858
+#: ../modules/actions/generic.py:871
 #, python-format
 msgid ""
 "Owner: '%(found_name)s (%(found_id)d)' should be '%(expected_name)s (%"
 "(expected_id)d)'"
 msgstr "所有者: '%(found_name)s (%(found_id)d)' は '%(expected_name)s (%(expected_id)d)' である必要があります"
 
-#: ../modules/actions/generic.py:867
+#: ../modules/actions/generic.py:880
 #, python-format
 msgid ""
 "Group: '%(found_name)s (%(found_id)s)' should be '%(expected_name)s (%"
 "(expected_id)s)'"
 msgstr "グループ: '%(found_name)s (%(found_id)s)' は '%(expected_name)s (%(expected_id)s)' である必要があります"
 
-#: ../modules/actions/generic.py:876
+#: ../modules/actions/generic.py:889
 #, python-format
 msgid "Mode: 0%(found).3o should be 0%(expected).3o"
 msgstr "モード: 0%(found).3o は 0%(expected).3o である必要があります"
 
-#: ../modules/actions/generic.py:1039
+#: ../modules/actions/generic.py:1052
 #, python-format
 msgid "%s may only be specified once"
 msgstr "%s は 1 回だけ指定できます"
 
-#: ../modules/actions/generic.py:1045
+#: ../modules/actions/generic.py:1058
 #, python-format
 msgid "%s must be an integer"
 msgstr "%s は整数である必要があります"
 
-#: ../modules/actions/generic.py:1052
+#: ../modules/actions/generic.py:1065
 #, python-format
 msgid "%s is required"
 msgstr "%s が必要です"
 
-#: ../modules/actions/generic.py:1097
+#: ../modules/actions/generic.py:1110
 #, python-format
 msgid ""
 "Cannot install '%(final_path)s'; parent directory %(parent_dir)s is a link "
@@ -3340,12 +3436,12 @@ msgstr "ディレクトリ var/sadm/pkg/%s がありません"
 msgid "Missing file var/sadm/pkg/%s/pkginfo"
 msgstr "ファイル var/sadm/pkg/%s/pkginfo がありません"
 
-#: ../modules/actions/license.py:143
+#: ../modules/actions/license.py:146
 #, python-format
 msgid "License file %s does not exist."
 msgstr "ライセンスファイル %s が存在しません。"
 
-#: ../modules/actions/license.py:149
+#: ../modules/actions/license.py:152
 #, python-format
 msgid "Hash: '%(found)s' should be '%(expected)s'"
 msgstr "ハッシュ: '%(found)s' は '%(expected)s' である必要があります"
@@ -3410,7 +3506,7 @@ msgid "Unknown info_needed type: %s"
 msgstr "info_needed タイプが不明です: %s"
 
 #. API consumer passed an unknown type for img_path.
-#: ../modules/client/api.py:377
+#: ../modules/client/api.py:364
 msgid "Unknown img_path type."
 msgstr "img_path タイプが不明です。"
 
@@ -3421,24 +3517,24 @@ msgstr "img_path タイプが不明です。"
 #. before the format of an image is updated.  Yes, this
 #. means that if the refresh was needed to do that, then
 #. this isn't useful, but this is as good as it gets.)
-#: ../modules/client/api.py:601
+#: ../modules/client/api.py:610
 #, python-format
 msgid ""
 "Skipping publisher metadata refresh;image rooted at %s must have its format "
 "updated before a refresh can occur."
 msgstr "発行元メタデータのリフレッシュをスキップします。%s をルートに持つイメージは、リフレッシュする前にその形式を更新する必要があります。"
 
-#: ../modules/client/api.py:1853 ../modules/client/api.py:1917
+#: ../modules/client/api.py:1970 ../modules/client/api.py:2034
 #, python-format
 msgid "Start time must be older than finish time: %s"
 msgstr "開始時間は終了時間よりも前である必要があります: %s"
 
-#: ../modules/client/api.py:1863
+#: ../modules/client/api.py:1980
 #, python-format
 msgid "No history entries found for %s"
 msgstr "%s の履歴エントリが見つかりません"
 
-#: ../modules/client/api.py:1931
+#: ../modules/client/api.py:2048
 #, python-format
 msgid ""
 "Invalid time format '%s'.  Please use %%Y-%%m-%%dT%%H:%%M:%%S or\n"
@@ -3580,7 +3676,7 @@ msgstr "'%s' は複数のパッケージに一致します"
 msgid "'%s' is an illegal FMRI"
 msgstr "'%s' は不正な FMRI です"
 
-#: ../modules/client/api_errors.py:442 ../modules/client/api_errors.py:577
+#: ../modules/client/api_errors.py:442
 msgid "The following different patterns specify the same package(s):"
 msgstr "次の異なるパターンが同じパッケージを指定しています:"
 
@@ -3643,6 +3739,11 @@ msgstr "次のパッケージがすでにインストールされているため
 #: ../modules/client/api_errors.py:570
 msgid "The following mediations are not syntactically valid:"
 msgstr "次の仲介は構文として有効ではありません:"
+
+#: ../modules/client/api_errors.py:577
+msgid ""
+"The following patterns specify different versions of the same package(s):"
+msgstr "次のパターンは同じパッケージの異なるバージョンを指定します:"
 
 #: ../modules/client/api_errors.py:587
 msgid "No solution was found to satisfy constraints"
@@ -4124,7 +4225,7 @@ msgstr "'%(value)s' はリポジトリ属性 '%(attribute)s' に有効な値で�
 msgid "'%s' is not a valid repository collection type."
 msgstr "'%s' は有効なリポジトリ収集タイプではありません。"
 
-#: ../modules/client/api_errors.py:1638
+#: ../modules/client/api_errors.py:1638 ../modules/client/api_errors.py:1953
 #, python-format
 msgid "'%s' is not a valid URI."
 msgstr "'%s' は有効な URI ではありません。"
@@ -4163,42 +4264,64 @@ msgstr "指定された発行元には、ミラー '%s' がすでに存在しま
 
 #: ../modules/client/api_errors.py:1703
 #, python-format
+msgid "Mirror '%s' is already accessible through the system repository."
+msgstr "ミラー '%s' はすでにシステムリポジトリからアクセス可能です。"
+
+#: ../modules/client/api_errors.py:1712
+#, python-format
 msgid "Origin '%s' already exists for the specified publisher."
 msgstr "指定された発行元には、起点 '%s' がすでに存在します。"
 
-#: ../modules/client/api_errors.py:1716
+#: ../modules/client/api_errors.py:1721
+#, python-format
+msgid "Origin '%s' is already accessible through the system repository."
+msgstr "起点 '%s' はすでにシステムリポジトリからアクセス可能です。"
+
+#: ../modules/client/api_errors.py:1730
+#, python-format
+msgid ""
+"Unable to remove origin '%s' since it is provided by the system repository."
+msgstr "起点 '%s' はシステムリポジトリによって提供されているため削除できません。"
+
+#: ../modules/client/api_errors.py:1738
+#, python-format
+msgid ""
+"Unable to remove mirror '%s' since it is provided by the system repository."
+msgstr "ミラー '%s' はシステムリポジトリによって提供されているため削除できません。"
+
+#: ../modules/client/api_errors.py:1751
 #, python-format
 msgid ""
 "Unable to retrieve requested package data for publisher %s; no repositories "
 "are currently configured for use with this publisher."
 msgstr "発行元 %s の要求されたパッケージデータを取得できません。現在、この発行元と使用するように構成されているリポジトリはありません。"
 
-#: ../modules/client/api_errors.py:1725
+#: ../modules/client/api_errors.py:1760
 msgid "Cannot search a repository before or after itself"
 msgstr "リポジトリの前後でそのリポジトリ自体を検索することはできません"
 
-#: ../modules/client/api_errors.py:1736
+#: ../modules/client/api_errors.py:1771
 #, python-format
 msgid ""
 "%s is an unknown publisher; no other publishers can be ordered relative to "
 "it."
 msgstr "%s は不明な発行元です。それに関連してほかの発行元の順序を変更することはできません。"
 
-#: ../modules/client/api_errors.py:1745
+#: ../modules/client/api_errors.py:1780
 msgid "Cannot remove the selected repository for a publisher."
 msgstr "発行元の選択されたリポジトリを削除できません。"
 
-#: ../modules/client/api_errors.py:1754
+#: ../modules/client/api_errors.py:1789
 #, python-format
 msgid "Unknown legal URI '%s'."
 msgstr "正当な URI '%s' は不明です。"
 
-#: ../modules/client/api_errors.py:1762
+#: ../modules/client/api_errors.py:1797
 #, python-format
 msgid "Unknown publisher '%s'."
 msgstr "発行元 '%s' は不明です。"
 
-#: ../modules/client/api_errors.py:1779
+#: ../modules/client/api_errors.py:1814
 #, python-format
 msgid ""
 "The repository at %(location)s does not contain package data for %(unknown)"
@@ -4208,7 +4331,7 @@ msgid ""
 "provided publisher does not match those known by the repository."
 msgstr "%(location)s にあるリポジトリには、%(unknown)s のパッケージデータが含まれていません。%(known)s のものだけです。\n\nこれは、リポジトリの場所が有効でないか、指定された発行元がリポジトリで認識されている発行元と一致しないためです。"
 
-#: ../modules/client/api_errors.py:1789
+#: ../modules/client/api_errors.py:1824
 #, python-format
 msgid ""
 "One or more of the repository origin(s) listed below contains package data "
@@ -4221,78 +4344,91 @@ msgid ""
 "repository origin does not match the client."
 msgstr "次に示すリポジトリの起点の 1 つ以上に、%(known)s のパッケージデータは含まれていますが %(unknown)s のものがありません:\n\n%(origins)s\n\nこれは、リポジトリの起点のいずれかがこの発行元に有効でないか、リポジトリの起点から取得された既知の発行元のリストがクライアントと一致しないためです。"
 
-#: ../modules/client/api_errors.py:1799
+#: ../modules/client/api_errors.py:1834
 #, python-format
 msgid ""
 "The specified publisher repository does not contain any package data for %"
 "(unknown)s; only %(known)s."
 msgstr "指定されたポジトリには、%(unknown)s のパッケージデータが含まれていません。%(known)s のものだけです。"
 
-#: ../modules/client/api_errors.py:1810
+#: ../modules/client/api_errors.py:1845
 #, python-format
 msgid "Unknown related URI '%s'."
 msgstr "関連 URI '%s' は不明です。"
 
-#: ../modules/client/api_errors.py:1818
+#: ../modules/client/api_errors.py:1853
 #, python-format
 msgid "Unknown repository '%s'."
 msgstr "リポジトリ '%s' は不明です。"
 
-#: ../modules/client/api_errors.py:1826
+#: ../modules/client/api_errors.py:1861
 #, python-format
 msgid "Unknown repository mirror '%s'."
 msgstr "リポジトリのミラー '%s' は不明です。"
 
-#: ../modules/client/api_errors.py:1840
+#: ../modules/client/api_errors.py:1875
 #, python-format
 msgid ""
 "Publisher '%(pub)s' has no repositories that support the '%(op)s' operation."
 msgstr "発行元 '%(pub)s' には、'%(op)s' 操作をサポートするリポジトリがありません。"
 
-#: ../modules/client/api_errors.py:1855
+#: ../modules/client/api_errors.py:1890
 msgid ""
 "The specified package repository does not provide publisher configuration "
 "information."
 msgstr "指定されたパッケージリポジトリには発行元の構成情報が含まれていません。"
 
-#: ../modules/client/api_errors.py:1858
+#: ../modules/client/api_errors.py:1893
 #, python-format
 msgid ""
 "The package repository at %s does not provide publisher configuration "
 "information or the information provided is incomplete."
 msgstr "%s にあるパッケージリポジトリには、発行元の構成情報が含まれていないか、含まれている情報が不完全です。"
 
-#: ../modules/client/api_errors.py:1862
+#: ../modules/client/api_errors.py:1897
 #, python-format
 msgid ""
 "One of the package repository origins for %s does not provide publisher "
 "configuration information or the information provided is incomplete."
 msgstr "%s のパッケージリポジトリの起点の 1 つに、発行元の構成情報が含まれていないか、含まれている情報が不完全です。"
 
-#: ../modules/client/api_errors.py:1872
+#: ../modules/client/api_errors.py:1907
 #, python-format
 msgid "Unknown repository origin '%s'"
 msgstr "リポジトリの起点 '%s' は不明です。"
 
-#: ../modules/client/api_errors.py:1883
+#: ../modules/client/api_errors.py:1918
 #, python-format
 msgid ""
 "The URI '%(uri)s' uses the unsupported scheme '%(scheme)s'.  Supported "
 "schemes are file://, http://, and https://."
 msgstr "URI '%(uri)s' はサポートされていないスキーム '%(scheme)s' を使用しています。サポートされるスキームは file://、http://、および https:// です。"
 
-#: ../modules/client/api_errors.py:1887
+#: ../modules/client/api_errors.py:1922
 msgid ""
 "The specified URI uses an unsupported scheme.  Supported schemes are: "
 "file://, http://, and https://."
 msgstr "指定された URI はサポートされていないスキームを使用しています。サポートされるスキームは file://、http://、および https:// です。"
 
-#: ../modules/client/api_errors.py:1896
+#: ../modules/client/api_errors.py:1931
 #, python-format
 msgid "'%(attr)s' is not supported for '%(scheme)s'."
 msgstr "'%(attr)s' は '%(scheme)s' でサポートされていません。"
 
-#: ../modules/client/api_errors.py:1905
+#: ../modules/client/api_errors.py:1942
+#, python-format
+msgid ""
+"The proxy URI '%(uri)s' uses the unsupported scheme '%(scheme)s'.  Supported "
+"schemes are http://, and https://."
+msgstr "プロキシ URI '%(uri)s' はサポートされていないスキーム '%(scheme)s' を使用しています。サポートされるスキームは http:// および https:// です。"
+
+#: ../modules/client/api_errors.py:1946
+msgid ""
+"The specified proxy URI uses an unsupported scheme.  Supported schemes are: "
+"http://, and https://."
+msgstr "指定されたプロキシ URI はサポートされていないスキームを使用しています。サポートされるスキームは http:// および https:// です。"
+
+#: ../modules/client/api_errors.py:1961
 msgid ""
 "pkg is configured to use the system repository (via the use-system-repo\n"
 "property) but it could not get the host and port from\n"
@@ -4303,59 +4439,59 @@ msgid ""
 "of those services or setting the PKG_SYSREPO_URL environment variable.\n"
 msgstr "pkg は、(use-system-repo プロパティーによって) システムリポジトリを使用する\nように設定されていますが、svc:/application/pkg/zones-proxy-client および\nsvc:/application/pkg/system-repository からホストとポートを取得できず、\nPKG_SYSREPO_URL 環境変数が設定されていませんでした。\nこれらのサービスのいずれかを有効にするか、PKG_SYSREPO_URL 環境変数を設定して\nください。\n"
 
-#: ../modules/client/api_errors.py:1937
+#: ../modules/client/api_errors.py:1993
 #, python-format
 msgid ""
 "The relevant signature action is found in %(pfmri)s and has a hash of %(hsh)s"
 msgstr "関連する署名アクションが %(pfmri)s に見つかりました。そのハッシュは %(hsh)s です"
 
-#: ../modules/client/api_errors.py:1941
+#: ../modules/client/api_errors.py:1997
 #, python-format
 msgid "The package involved is:%s"
 msgstr "関係するパッケージ:%s"
 
-#: ../modules/client/api_errors.py:1943
+#: ../modules/client/api_errors.py:1999
 #, python-format
 msgid "The relevant signature action's value attribute is %s"
 msgstr "関連する署名アクションの値属性は %s です"
 
-#: ../modules/client/api_errors.py:1968
+#: ../modules/client/api_errors.py:2024
 #, python-format
 msgid ""
 "The signature action %(act)s was made using a version (%(ver)s) this version "
 "of pkg(5) doesn't understand."
 msgstr "署名アクション %(act)s は、このバージョンの pkg(5) では認識できないバージョン (%(ver)s) を使用して作成されました。"
 
-#: ../modules/client/api_errors.py:1991
+#: ../modules/client/api_errors.py:2047
 #, python-format
 msgid ""
 "Certificate %s has been modified on disk. Its hash value is not what was "
 "expected."
 msgstr "証明書 %s はディスク上で変更されています。そのハッシュ値は期待された値と異なっています。"
 
-#: ../modules/client/api_errors.py:2000
+#: ../modules/client/api_errors.py:2056
 msgid "Chain was rooted in an untrusted self-signed certificate.\n"
 msgstr "チェーンは、信頼できない自己署名付き証明書を基にしています。\n"
 
-#: ../modules/client/api_errors.py:2015
+#: ../modules/client/api_errors.py:2071
 msgid "The following problems were encountered:\n"
 msgstr "次の問題が発生しました:\n"
 
-#: ../modules/client/api_errors.py:2017
+#: ../modules/client/api_errors.py:2073
 #, python-format
 msgid ""
 "The certificate which issued this certificate:%(subj)s could not be found. "
 "The issuer is:%(issuer)s\n"
 msgstr "の証明書 %(subj)s を発行した証明書が見つかりませんでした。発行者:%(issuer)s\n"
 
-#: ../modules/client/api_errors.py:2033
+#: ../modules/client/api_errors.py:2089
 #, python-format
 msgid ""
 "This certificate was revoked:%(cert)s for this reason:\n"
 "%(reason)s"
 msgstr "証明書:%(cert)s は、次の理由で失効していました:\n%(reason)s"
 
-#: ../modules/client/api_errors.py:2049
+#: ../modules/client/api_errors.py:2105
 #, python-format
 msgid ""
 "A signature in %(pfmri)s could not be verified for this reason:\n"
@@ -4363,7 +4499,7 @@ msgid ""
 "The signature's hash is %(hash)s"
 msgstr "%(pfmri)s の署名を次の理由で検証できませんでした:\n%(reason)s\n署名のハッシュは %(hash)s です"
 
-#: ../modules/client/api_errors.py:2055
+#: ../modules/client/api_errors.py:2111
 #, python-format
 msgid ""
 "The signature with this signature value:\n"
@@ -4372,21 +4508,21 @@ msgid ""
 "%(reason)s\n"
 msgstr "次の署名値:\n%(sigval)s\n を持つ署名を、次の理由で検証できませんでした:\n%(reason)s\n"
 
-#: ../modules/client/api_errors.py:2071
+#: ../modules/client/api_errors.py:2127
 #, python-format
 msgid ""
 "The policy for %(pub_str)s requires signatures to be present but no "
 "signature was found in %(fmri_str)s."
 msgstr "%(pub_str)s のポリシーでは、署名が存在している必要がありますが、%(fmri_str)s に署名が見つかりませんでした。"
 
-#: ../modules/client/api_errors.py:2075
+#: ../modules/client/api_errors.py:2131
 #, python-format
 msgid ""
 "The policy for %(pub_str)s requires signatures to be present but no "
 "signature was found."
 msgstr "%(pub_str)s のポリシーでは、署名が存在している必要がありますが、署名が見つかりませんでした。"
 
-#: ../modules/client/api_errors.py:2092
+#: ../modules/client/api_errors.py:2148
 #, python-format
 msgid ""
 "The policy for %(pub_str)s requires certain CNs to be seen in a chain of "
@@ -4395,7 +4531,7 @@ msgid ""
 "%(missing)s"
 msgstr "%(pub_str)s のポリシーでは、トラストチェーン内に特定の CN が見つかる必要があります。次のパッケージには、次に示す必要な名前が見つかりませんでした:%(fmri_str)s。\n%(missing)s"
 
-#: ../modules/client/api_errors.py:2098
+#: ../modules/client/api_errors.py:2154
 #, python-format
 msgid ""
 "The policy for %(pub_str)s requires certain CNs to be seen in a chain of "
@@ -4403,7 +4539,7 @@ msgid ""
 "%(missing)s"
 msgstr "%(pub_str)s のポリシーでは、トラストチェーン内に特定の CN が見つかる必要があります。次に示す必要な名前が見つかりませんでした。\n%(missing)s"
 
-#: ../modules/client/api_errors.py:2113
+#: ../modules/client/api_errors.py:2169
 #, python-format
 msgid ""
 "The certificate whose subject is %(cert)s could not be verified because it "
@@ -4412,7 +4548,7 @@ msgid ""
 "Extension value:%(val)s"
 msgstr "%(cert)s を被認証者とする証明書は、pkg5 ではまだ処理できない重要な拡張機能を使用しているため、検証できませんでした。\n拡張機能の名前:%(name)s\n拡張機能の値:%(val)s"
 
-#: ../modules/client/api_errors.py:2131
+#: ../modules/client/api_errors.py:2187
 #, python-format
 msgid ""
 "The certificate whose subject is %(cert)s could not be verified because it "
@@ -4421,14 +4557,14 @@ msgid ""
 "Extension value:%(val)s"
 msgstr "%(cert)s を被認証者とする証明書は、pkg(5) では認識できない値を持つ拡張機能があるため、検証できませんでした。\n拡張機能の名前: %(name)s\n拡張機能の値: %(val)s"
 
-#: ../modules/client/api_errors.py:2138
+#: ../modules/client/api_errors.py:2194
 #, python-format
 msgid ""
 "\n"
 "Problematic Value:%s"
 msgstr "\n問題のある値: %s"
 
-#: ../modules/client/api_errors.py:2154
+#: ../modules/client/api_errors.py:2210
 #, python-format
 msgid ""
 "The certificate whose subject is %(cert)s could not be verified because it "
@@ -4436,7 +4572,7 @@ msgid ""
 "extension %(name)s must include '%(use)s' but the value was '%(val)s'."
 msgstr "%(cert)s を被認証者とする証明書は、不適切に使用されているために検証できませんでした。この使用方法では、拡張機能 %(name)s の値に '%(use)s' が含まれている必要がありますが、値は '%(val)s' でした。"
 
-#: ../modules/client/api_errors.py:2175
+#: ../modules/client/api_errors.py:2231
 #, python-format
 msgid ""
 "The certificate whose subject is %(cert)s could not be verified because it "
@@ -4445,7 +4581,7 @@ msgid ""
 "certificates between this certificate and the leaf in this chain."
 msgstr "%(cert)s を被認証者とする証明書は、不適切に使用されているために検証できませんでした。この証明書とリーフ証明書の間には%(cl)s 証明書しかない可能性があります。この証明書とこのチェーンのリーフの間には %(al)s 証明書があります。"
 
-#: ../modules/client/api_errors.py:2199
+#: ../modules/client/api_errors.py:2255
 #, python-format
 msgid ""
 "The signature to be added to the package has the same hash (%(hash)s), "
@@ -4454,12 +4590,12 @@ msgid ""
 "be added, the existing signature must be removed."
 msgstr "パッケージに追加される署名は、既存の署名と同じハッシュ (%(hash)s)、アルゴリズム (%(algorithm)s)、およびバージョン (%(version)s) を含んでいますが、既存の署名と厳密には一致しません。この署名を追加するには、既存の署名を削除する必要があります。"
 
-#: ../modules/client/api_errors.py:2209
+#: ../modules/client/api_errors.py:2265
 #, python-format
 msgid "The package being signed was %(pkg)s"
 msgstr "署名中のパッケージは %(pkg)s でした"
 
-#: ../modules/client/api_errors.py:2223
+#: ../modules/client/api_errors.py:2279
 #, python-format
 msgid ""
 "%s could not be signed because it already has two copies of this signature "
@@ -4467,284 +4603,284 @@ msgid ""
 "given to users."
 msgstr "%s は、すでにこの署名のコピーを 2 つ持っているため、署名できません。パッケージをユーザーに提供する前に、これらの署名アクションのいずれかを削除する必要があります。"
 
-#: ../modules/client/api_errors.py:2263
+#: ../modules/client/api_errors.py:2319
 #, python-format
 msgid ""
 "Certificate '%(cert)s' for publisher '%(pub)s' needed to access '%(uri)s', "
 "has expired.  Please install a valid certificate."
 msgstr "'%(uri)s' へのアクセスに必要な発行元 '%(pub)s' の証明書 '%(cert)s' の有効期限が切れています。有効な証明書をインストールしてください。"
 
-#: ../modules/client/api_errors.py:2268
+#: ../modules/client/api_errors.py:2324
 #, python-format
 msgid ""
 "Certificate '%(cert)s' for publisher '%(pub)s', has expired.  Please install "
 "a valid certificate."
 msgstr "発行元 '%(pub)s' の証明書 '%(cert)s' の有効期限が切れています。有効な証明書をインストールしてください。"
 
-#: ../modules/client/api_errors.py:2273
+#: ../modules/client/api_errors.py:2329
 #, python-format
 msgid ""
 "Certificate '%(cert)s', needed to access '%(uri)s', has expired.  Please "
 "install a valid certificate."
 msgstr "'%(uri)s' へのアクセスに必要な証明書 '%(cert)s' の有効期限が切れています。有効な証明書をインストールしてください。"
 
-#: ../modules/client/api_errors.py:2276
+#: ../modules/client/api_errors.py:2332
 #, python-format
 msgid "Certificate '%s' has expired.  Please install a valid certificate."
 msgstr "証明書 '%s' の有効期限が切れています。有効な証明書をインストールしてください。"
 
-#: ../modules/client/api_errors.py:2289
+#: ../modules/client/api_errors.py:2345
 #, python-format
 msgid ""
 "Certificate '%(cert)s' for publisher '%(pub)s', needed to access '%(uri)s', "
 "will expire in '%(days)s' days."
 msgstr "'%(uri)s' へのアクセスに必要な発行元 '%(pub)s' の証明書 '%(cert)s' は、あと '%(days)s' 日で期限切れになります。"
 
-#: ../modules/client/api_errors.py:2294
+#: ../modules/client/api_errors.py:2350
 #, python-format
 msgid ""
 "Certificate '%(cert)s' for publisher '%(pub)s' will expire in '%(days)s' "
 "days."
 msgstr "発行元 '%(pub)s' の証明書 '%(cert)s' は、あと '%(days)s' 日で期限切れになります。"
 
-#: ../modules/client/api_errors.py:2298
+#: ../modules/client/api_errors.py:2354
 #, python-format
 msgid ""
 "Certificate '%(cert)s', needed to access '%(uri)s', will expire in '%(days)"
 "s' days."
 msgstr "'%(uri)s' へのアクセスに必要な証明書 '%(cert)s' は、あと '%(days)s' 日で期限切れになります。"
 
-#: ../modules/client/api_errors.py:2301
+#: ../modules/client/api_errors.py:2357
 #, python-format
 msgid "Certificate '%(cert)s' will expire in '%(days)s' days."
 msgstr "証明書 '%(cert)s' は、あと '%(days)s' 日で期限切れになります。"
 
-#: ../modules/client/api_errors.py:2313
+#: ../modules/client/api_errors.py:2369
 #, python-format
 msgid ""
 "Certificate '%(cert)s' for publisher '%(pub)s', needed to access '%(uri)s', "
 "is invalid."
 msgstr "'%(uri)s' へのアクセスに必要な発行元 '%(pub)s' の証明書 '%(cert)s' が無効です。"
 
-#: ../modules/client/api_errors.py:2317
+#: ../modules/client/api_errors.py:2373
 #, python-format
 msgid "Certificate '%(cert)s' for publisher '%(pub)s' is invalid."
 msgstr "発行元 '%(pub)s' の証明書 '%(cert)s' が無効です。"
 
-#: ../modules/client/api_errors.py:2321
+#: ../modules/client/api_errors.py:2377
 #, python-format
 msgid "Certificate '%(cert)s' needed to access '%(uri)s' is invalid."
 msgstr "'%(uri)s' へのアクセスに必要な証明書 '%(cert)s' が無効です。"
 
-#: ../modules/client/api_errors.py:2324
+#: ../modules/client/api_errors.py:2380
 #, python-format
 msgid "Invalid certificate '%s'."
 msgstr "証明書 '%s' が無効です。"
 
-#: ../modules/client/api_errors.py:2335
+#: ../modules/client/api_errors.py:2391
 #, python-format
 msgid ""
 "Unable to locate key '%(key)s' for publisher '%(pub)s' needed to access '%"
 "(uri)s'."
 msgstr "'%(uri)s' へのアクセスに必要な発行元 '%(pub)s' のキー '%(key)s' が見つかりません。"
 
-#: ../modules/client/api_errors.py:2339
+#: ../modules/client/api_errors.py:2395
 #, python-format
 msgid "Unable to locate key '%(key)s' for publisher '%(pub)s'."
 msgstr "発行元 '%(pub)s' のキー '%(key)s' が見つかりません。"
 
-#: ../modules/client/api_errors.py:2343
+#: ../modules/client/api_errors.py:2399
 #, python-format
 msgid "Unable to locate key '%(key)s' needed to access '%(uri)s'."
 msgstr "'%(uri)s' へのアクセスに必要なキー '%(key)s' が見つかりません。"
 
-#: ../modules/client/api_errors.py:2346
+#: ../modules/client/api_errors.py:2402
 #, python-format
 msgid "Unable to locate key '%s'."
 msgstr "キー key '%s' が見つかりません。"
 
-#: ../modules/client/api_errors.py:2357
+#: ../modules/client/api_errors.py:2413
 #, python-format
 msgid ""
 "Unable to locate certificate '%(cert)s' for publisher '%(pub)s' needed to "
 "access '%(uri)s'."
 msgstr "'%(uri)s' へのアクセスに必要な発行元 '%(pub)s' の証明書 '%(cert)s' が見つかりません。"
 
-#: ../modules/client/api_errors.py:2362
+#: ../modules/client/api_errors.py:2418
 #, python-format
 msgid "Unable to locate certificate '%(cert)s' for publisher '%(pub)s'."
 msgstr "発行元 '%(pub)s' の証明書 '%(cert)s' が見つかりません。"
 
-#: ../modules/client/api_errors.py:2366
+#: ../modules/client/api_errors.py:2422
 #, python-format
 msgid "Unable to locate certificate '%(cert)s' needed to access '%(uri)s'."
 msgstr "'%(uri)s' へのアクセスに必要な証明書 '%(cert)s' が見つかりません。"
 
-#: ../modules/client/api_errors.py:2369
+#: ../modules/client/api_errors.py:2425
 #, python-format
 msgid "Unable to locate certificate '%s'."
 msgstr "証明書 '%s' が見つかりません。"
 
-#: ../modules/client/api_errors.py:2381
+#: ../modules/client/api_errors.py:2437
 #, python-format
 msgid ""
 "Certificate '%(cert)s' for publisher '%(pub)s', needed to access '%(uri)s', "
 "has a future effective date."
 msgstr "'%(uri)s' へのアクセスに必要な発行元 '%(pub)s' の証明書 '%(cert)s' の発効日が未来の日付になっています。"
 
-#: ../modules/client/api_errors.py:2386
+#: ../modules/client/api_errors.py:2442
 #, python-format
 msgid ""
 "Certificate '%(cert)s' for publisher '%(pub)s' has a future effective date."
 msgstr "発行元 '%(pub)s' の証明書 '%(cert)s' の発効日が未来の日付になっています。"
 
-#: ../modules/client/api_errors.py:2390
+#: ../modules/client/api_errors.py:2446
 #, python-format
 msgid ""
 "Certificate '%(cert)s' needed to access '%(uri)s' has a future effective "
 "date."
 msgstr "'%(uri)s' へのアクセスに必要な証明書 '%(cert)s' の発効日が未来の日付になっています。"
 
-#: ../modules/client/api_errors.py:2393
+#: ../modules/client/api_errors.py:2449
 #, python-format
 msgid "Certificate '%s' has a future effective date."
 msgstr "証明書 '%s' の発効日が未来の日付になっています。"
 
-#: ../modules/client/api_errors.py:2406
+#: ../modules/client/api_errors.py:2462
 #, python-format
 msgid "Gave a bad response:%s"
 msgstr "不正な応答でした:%s"
 
-#: ../modules/client/api_errors.py:2417
+#: ../modules/client/api_errors.py:2473
 #, python-format
 msgid "Could not find %s"
 msgstr "%s が見つかりませんでした"
 
-#: ../modules/client/api_errors.py:2440
+#: ../modules/client/api_errors.py:2496
 #, python-format
 msgid "The signature data for the manifest of the '%s' package is not valid."
 msgstr "'%s' パッケージのマニフェストに対する署名日付が無効です。"
 
-#: ../modules/client/api_errors.py:2442
+#: ../modules/client/api_errors.py:2498
 msgid "The signature data for the manifest is not valid."
 msgstr "マニフェストに対する署名日付が無効です。"
 
-#: ../modules/client/api_errors.py:2472
+#: ../modules/client/api_errors.py:2528
 #, python-format
 msgid ""
 "there is already an image at: %s.\n"
 "To override, use the -f (force) option."
 msgstr "次の場所にすでにイメージが存在します: %s。\nオーバーライドするには、-f (force) オプションを使用します。"
 
-#: ../modules/client/api_errors.py:2480
+#: ../modules/client/api_errors.py:2536
 #, python-format
 msgid "The configuration data for the image rooted at %s is empty or missing."
 msgstr "%s をルートに持つイメージの構成データが空であるか、存在しません。"
 
-#: ../modules/client/api_errors.py:2493
+#: ../modules/client/api_errors.py:2549
 #, python-format
 msgid ""
 "The image rooted at %s is invalid or is not supported by this version of the "
 "packaging system."
 msgstr "%s をルートに持つイメージが無効であるか、このバージョンのパッケージシステムでサポートされていません。"
 
-#: ../modules/client/api_errors.py:2500
+#: ../modules/client/api_errors.py:2556
 #, python-format
 msgid ""
 "the specified image path is not empty: %s.\n"
 "To override, use the -f (force) option."
 msgstr "指定されたイメージのパスは空ではありません: %s。\nオーバーライドするには、-f (force) オプションを使用します。"
 
-#: ../modules/client/api_errors.py:2602
+#: ../modules/client/api_errors.py:2660
 #, python-format
 msgid "Invalid linked image attach property: %s"
 msgstr "リンクされたイメージの接続プロパティーが無効です: %s"
 
-#: ../modules/client/api_errors.py:2608
+#: ../modules/client/api_errors.py:2666
 #, python-format
 msgid "Invalid linked image attach property value: %s"
 msgstr "リンクされたイメージの接続プロパティーの値が無効です: %s"
 
-#: ../modules/client/api_errors.py:2612
+#: ../modules/client/api_errors.py:2670
 #, python-format
 msgid "Linked image type does not support child attach: %s"
 msgstr "リンクされたイメージのタイプが子の接続をサポートしていません: %s"
 
-#: ../modules/client/api_errors.py:2616
+#: ../modules/client/api_errors.py:2674
 #, python-format
 msgid "Linked image type does not support parent attach: %s"
 msgstr "リンクされたイメージのタイプが親の接続をサポートしていません: %s"
 
-#: ../modules/client/api_errors.py:2620
+#: ../modules/client/api_errors.py:2678
 msgid "Cannot attach root image as child"
 msgstr "ルートイメージを子として接続できません"
 
-#: ../modules/client/api_errors.py:2626
+#: ../modules/client/api_errors.py:2684
 #, python-format
 msgid "Can't initialize child image (%(lin)s) at path: %(path)s"
 msgstr "次のパスで子イメージ (%(lin)s) を初期化できません: %(path)s"
 
-#: ../modules/client/api_errors.py:2632
+#: ../modules/client/api_errors.py:2690
 #, python-format
 msgid "Can't initialize child image at path: %s"
 msgstr "次のパスで子イメージを初期化できません: %s"
 
-#: ../modules/client/api_errors.py:2638
+#: ../modules/client/api_errors.py:2696
 #, python-format
 msgid "Linked image is diverged: %s"
 msgstr "リンクされたイメージが分岐しています: %s"
 
-#: ../modules/client/api_errors.py:2642
+#: ../modules/client/api_errors.py:2700
 #, python-format
 msgid "A linked child image with this name already exists: %s"
 msgstr "この名前を持つリンクされた子イメージがすでに存在します: %s"
 
-#: ../modules/client/api_errors.py:2647
+#: ../modules/client/api_errors.py:2705
 #, python-format
 msgid "Child image '%(cpath)s' is nested within another image: '%(ipath)s'"
 msgstr "子イメージ '%(cpath)s' は別のイメージの内部で入れ子になっています: '%(ipath)s'"
 
-#: ../modules/client/api_errors.py:2655
+#: ../modules/client/api_errors.py:2713
 #, python-format
 msgid ""
 "Child image '%(path)s' is not located within the parent's altroot '%(altroot)"
 "s'"
 msgstr "子イメージ '%(path)s' は親の altroot '%(altroot)s' の内部にありません"
 
-#: ../modules/client/api_errors.py:2663
+#: ../modules/client/api_errors.py:2721
 #, python-format
 msgid ""
 "Child image '%(cpath)s' is not nested within the parent image '%(ppath)s'"
 msgstr "子イメージ '%(cpath)s' は親イメージ '%(ppath)s' の内部で入れ子になっていません"
 
-#: ../modules/client/api_errors.py:2673
+#: ../modules/client/api_errors.py:2731
 #, python-format
 msgid "Can't access child image (%(lin)s) at path: %(path)s"
 msgstr "次のパスで子イメージ (%(lin)s) にアクセスできません: %(path)s"
 
-#: ../modules/client/api_errors.py:2679
+#: ../modules/client/api_errors.py:2737
 #, python-format
 msgid "Can't access child image at path: %s"
 msgstr "次のパスで子イメージにアクセスできません: %s"
 
-#: ../modules/client/api_errors.py:2683
+#: ../modules/client/api_errors.py:2741
 #, python-format
 msgid "Child path not absolute: %s"
 msgstr "子のパスが絶対パスではありません: %s"
 
-#: ../modules/client/api_errors.py:2687
+#: ../modules/client/api_errors.py:2745
 #, python-format
 msgid "Unknown child linked image: %s"
 msgstr "リンクされた子イメージが不明です: %s"
 
-#: ../modules/client/api_errors.py:2692
+#: ../modules/client/api_errors.py:2750
 #, python-format
 msgid ""
 "The following subprocess returned an unexpected exit code of %(rv)d:\n"
 "    %(cmd)s"
 msgstr "次のサブプロセスが予期しない終了コード %(rv)d を返しました:\n    %(cmd)s"
 
-#: ../modules/client/api_errors.py:2697
+#: ../modules/client/api_errors.py:2755
 #, python-format
 msgid ""
 "\n"
@@ -4752,78 +4888,104 @@ msgid ""
 "%(errout)s"
 msgstr "\nまた、次のエラーメッセージを生成しました:\n%(errout)s"
 
-#: ../modules/client/api_errors.py:2701
+#: ../modules/client/api_errors.py:2759
 #, python-format
 msgid "Linked image type does not support child detach: %s"
 msgstr "リンクされたイメージのタイプが子の切り離しをサポートしていません: %s"
 
-#: ../modules/client/api_errors.py:2707
+#: ../modules/client/api_errors.py:2765
 #, python-format
 msgid "Parent linked to child, can not detach child: %s"
 msgstr "子にリンクされた親が子を切り離せません: %s"
 
-#: ../modules/client/api_errors.py:2711
+#: ../modules/client/api_errors.py:2769
 #, python-format
 msgid "Linked image type does not support parent detach: %s"
 msgstr "リンクされたイメージのタイプが親の切り離しをサポートしていません: %s"
 
-#: ../modules/client/api_errors.py:2715
+#: ../modules/client/api_errors.py:2773
 #, python-format
 msgid "Image already a linked child: %s"
 msgstr "イメージはすでにリンクされた子です: %s"
 
-#: ../modules/client/api_errors.py:2719
+#: ../modules/client/api_errors.py:2777
 #, python-format
 msgid "Invalid linked image name: %s"
 msgstr "リンクされたイメージの名前が無効です: %s"
 
-#: ../modules/client/api_errors.py:2723
+#: ../modules/client/api_errors.py:2781
 msgid "Can't link image to itself."
 msgstr "イメージはそれ自体にリンクできません。"
 
-#: ../modules/client/api_errors.py:2728
+#: ../modules/client/api_errors.py:2786
 #, python-format
 msgid "Can't initialize parent image at path: %s"
 msgstr "次のパスで親イメージを初期化できません: %s"
 
-#: ../modules/client/api_errors.py:2732
+#: ../modules/client/api_errors.py:2790
 #, python-format
 msgid "Parent path not absolute: %s"
 msgstr "親のパスが絶対パスではありません: %s"
 
-#: ../modules/client/api_errors.py:2738
+#: ../modules/client/api_errors.py:2796
 #, python-format
 msgid "Can't access parent image at path: %s"
 msgstr "次のパスで親イメージにアクセスできません: %s"
 
-#: ../modules/client/api_errors.py:2743
+#: ../modules/client/api_errors.py:2801
 #, python-format
 msgid ""
 "Parent image '%(path)s' is not located within the child's altroot '%(altroot)"
 "s'"
 msgstr "親イメージ '%(path)s' は子の altroot '%(altroot)s' の内部にありません"
 
-#: ../modules/client/api_errors.py:2756
+#: ../modules/client/api_errors.py:2812
 #, python-format
 msgid ""
 "\n"
 "A '%(op)s' operation failed for child '%(lin)s' with an unexpected\n"
-"return value of %(exitrv)d and the following error message:\n"
+"return value of %(exitrv)d and generated the following output:\n"
 "%(errout)s\n"
 "\n"
-msgstr "\n子 '%(lin)s' に対する '%(op)s' 操作は、予期しない\n戻り値 %(exitrv)d と次のエラーメッセージで失敗しました:\n%(errout)s\n\n"
+msgstr "\n子 '%(lin)s' に対する '%(op)s' 操作は、予期しない\n戻り値 %(exitrv)d で失敗し、次の出力を生成しました:\n%(errout)s\n\n"
 
-#: ../modules/client/api_errors.py:2770
+#: ../modules/client/api_errors.py:2825
+#, python-format
+msgid ""
+"\n"
+"A '%(op)s' operation failed for child '%(lin)s' with an unexpected\n"
+"exception:\n"
+"%(e)s\n"
+"\n"
+"The child generated the following output:\n"
+"%(errout)s\n"
+"\n"
+msgstr "\n子 '%(lin)s' に対する '%(op)s' 操作は、予期しない\n例外で失敗しました:\n%(e)s\n\n子は次の出力を生成しました:\n%(errout)s\n\n"
+
+#: ../modules/client/api_errors.py:2842
 #, python-format
 msgid "Current image already a linked child: %s"
 msgstr "現在のイメージはすでにリンクされた子です: %s"
 
-#: ../modules/client/api_errors.py:2776
+#: ../modules/client/api_errors.py:2848
 #, python-format
 msgid "Current image is not a linked child: %s"
 msgstr "現在のイメージはリンクされた子ではありません: %s"
 
-#: ../modules/client/api_errors.py:2818
+#: ../modules/client/api_errors.py:2853
+#, python-format
+msgid ""
+"\n"
+"A '%(op)s' operation for child '%(lin)s' generated non-json output.\n"
+"The json parser failed with the following error:\n"
+"%(e)s\n"
+"\n"
+"The child generated the following output:\n"
+"%(errout)s\n"
+"\n"
+msgstr "\n子 '%(lin)s' に対する '%(op)s' 操作は、json でない出力を生成しました。\njson パーサーは次のエラーで失敗しました:\n%(e)s\n\n子は次の出力を生成しました:\n%(errout)s\n\n"
+
+#: ../modules/client/api_errors.py:2908
 msgid ""
 "The following packages were frozen at two different versions by\n"
 "the patterns provided.  The package stem and the versions it was frozen at "
@@ -4831,45 +4993,36 @@ msgid ""
 "provided:"
 msgstr "次のパッケージは、指定されたパターンによって 2 つの異なるバージョンで\n凍結されました。パッケージの語幹および凍結されたバージョンが\n提供されています:"
 
-#: ../modules/client/api_errors.py:2828
+#: ../modules/client/api_errors.py:2918
 msgid ""
 "The following patterns contained wildcards but matched no\n"
 "installed packages."
 msgstr "次のパターンはワイルドカードを含んでいますが、どのインストール済み\nパッケージにも一致しませんでした。"
 
-#: ../modules/client/api_errors.py:2836
+#: ../modules/client/api_errors.py:2926
 msgid ""
 "The following patterns attempted to freeze the listed packages\n"
 "at a version different from the version at which the packages are installed."
 msgstr "次のパターンは、一覧にあるパッケージをパッケージがインストールされた\nバージョンとは異なるバージョンで凍結しようとしました。"
 
-#: ../modules/client/api_errors.py:2850
+#: ../modules/client/api_errors.py:2940
 msgid ""
 "The following patterns don't match installed packages and\n"
 "contain no version information.  Uninstalled packages can only be frozen by\n"
 "providing a version at which to freeze them."
 msgstr "次のパターンは、インストール済みパッケージと一致せず、\nバージョン情報を含んでいません。アンインストールされたパッケージを凍結するには、\n凍結するバージョンを指定する必要があります。"
 
-#: ../modules/client/api_errors.py:2863
+#: ../modules/client/api_errors.py:2953
 #, python-format
 msgid "The freeze state file '%s' is invalid."
 msgstr "凍結状態ファイル '%s' は無効です。"
 
-#: ../modules/client/api_errors.py:2875
+#: ../modules/client/api_errors.py:2965
 #, python-format
 msgid ""
 "The freeze state file '%(loc)s' was expected to have a version of %(exp)s, "
 "but its version was %(found)s"
 msgstr "凍結状態ファイル '%(loc)s' のバージョンは %(exp)s のはずでしたが、バージョンは %(found)s でした"
-
-#: ../modules/client/api_errors.py:2890
-#, python-format
-msgid ""
-"Because of this error:\n"
-"%(err)s\n"
-"JSON could not parse the following data:\n"
-"%(data)s"
-msgstr "原因となったエラー:\n%(err)s\nJSON では次のデータを構文解析できませんでした:\n%(data)s"
 
 #: ../modules/client/bootenv.py:136
 msgid "pkg: unable to create an auto snapshot. pkg recovery is disabled."
@@ -5044,7 +5197,7 @@ msgstr "不明"
 msgid "None"
 msgstr "なし"
 
-#: ../modules/client/image.py:329
+#: ../modules/client/image.py:326
 #, python-format
 msgid ""
 "The trust anchors for the image were expected to be found in %s, but that is "
@@ -5052,7 +5205,7 @@ msgid ""
 "the correct path."
 msgstr "イメージのトラストアンカーは %s に見つかるはずでしたが、これはディレクトリではありません。イメージのプロパティー 'trust-anchor-directory' を正しいパスに設定してください。"
 
-#: ../modules/client/image.py:364
+#: ../modules/client/image.py:361
 #, python-format
 msgid ""
 "%s is expected to be a certificate but could not be parsed.  The error "
@@ -5060,398 +5213,676 @@ msgid ""
 "\t%s"
 msgstr "%s は証明書であると思われますが、解析できませんでした。検出されたエラーを次に示します:\n\t%s"
 
-#: ../modules/client/image.py:1942 ../modules/client/imageconfig.py:1280
+#: ../modules/client/image.py:1955 ../modules/client/imageconfig.py:1444
 #, python-format
 msgid "Publisher '%s' is a system publisher and cannot be moved."
 msgstr "発行元 '%s' はシステム発行元であり、移動できません。"
 
-#: ../modules/client/image.py:2491
-msgid "Package State Update Phase"
-msgstr "パッケージ状態の更新フェーズ"
-
-#. Remove manifests of packages that were removed from the
-#. system.  Some packages may have only had facets or
-#. variants changed, so don't remove those.
-#: ../modules/client/image.py:2589
-msgid "Package Cache Update Phase"
-msgstr "パッケージキャッシュの更新フェーズ"
-
-#: ../modules/client/image.py:2607
-msgid "Image State Update Phase"
-msgstr "イメージ状態の更新フェーズ"
-
-#: ../modules/client/image.py:4313
+#: ../modules/client/image.py:4401
 msgid "pkg(5) update check failed."
 msgstr "pkg(5) の更新チェックに失敗しました。"
 
-#: ../modules/client/imageconfig.py:806 ../modules/client/imageconfig.py:868
-#: ../modules/client/publisher.py:2207
+#: ../modules/client/imageconfig.py:933 ../modules/client/imageconfig.py:997
+#: ../modules/client/publisher.py:2525
 msgid ""
 "At least one name must be provided for the signature-required-names policy."
 msgstr "signature-required-names ポリシーには、少なくとも 1 つの名前を指定する必要があります。"
 
-#: ../modules/client/imageconfig.py:1284
+#: ../modules/client/imageconfig.py:1448
 #, python-format
 msgid ""
 "Publisher '%s' is a system publisher and other publishers cannot be moved "
 "relative to it."
 msgstr "発行元 '%s' はシステム発行元であり、それに関連してほかの発行元を移動することはできません。"
 
-#: ../modules/client/imageconfig.py:1321
+#: ../modules/client/imageconfig.py:1485
 #, python-format
 msgid "%s is a system publisher and cannot be unset."
 msgstr "'%s' はシステム発行元であり、設定解除できません。"
 
-#: ../modules/client/imageplan.py:3177
+#: ../modules/client/imageplan.py:3116
 msgid "Download cache"
 msgstr "ダウンロードキャッシュ"
 
-#: ../modules/client/imageplan.py:3182 ../modules/client/imageplan.py:3257
+#: ../modules/client/imageplan.py:3121 ../modules/client/imageplan.py:3232
 msgid "Root filesystem"
 msgstr "ルートファイルシステム"
 
-#: ../modules/client/imageplan.py:3325
-msgid "Removal Phase"
-msgstr "削除フェーズ"
-
-#: ../modules/client/imageplan.py:3347
-msgid "Install Phase"
-msgstr "インストールフェーズ"
-
-#: ../modules/client/imageplan.py:3361
-msgid "Update Phase"
-msgstr "更新フェーズ"
-
-#: ../modules/client/imageplan.py:3412
+#: ../modules/client/imageplan.py:3391
 #, python-format
 msgid ""
 "A link targeting itself or part of a link loop was found at '%s'; a file or "
 "directory was expected.  Please remove the link and try again."
 msgstr "自己をターゲットとしたリンクまたはリンクループの一部が '%s' に見つかりました。ファイルまたはディレクトリのはずでした。リンクを削除し、再試行してください。"
 
-#: ../modules/client/imageplan.py:3470
-msgid "Index Phase"
-msgstr "インデックスフェーズ"
-
-#: ../modules/client/pkg_solver.py:321 ../modules/client/pkg_solver.py:680
+#: ../modules/client/pkg_solver.py:341 ../modules/client/pkg_solver.py:705
 msgid "This version rejected by user request"
 msgstr "このバージョンはユーザーの要求によって拒否されました"
 
-#: ../modules/client/pkg_solver.py:364
+#: ../modules/client/pkg_solver.py:383
 msgid "This version excluded by specified installation version"
 msgstr "このバージョンは指定されたインストールのバージョンから除外されます"
 
-#: ../modules/client/pkg_solver.py:373
+#: ../modules/client/pkg_solver.py:391
 msgid "This version is excluded by installed incorporation {0}"
 msgstr "このバージョンはインストール済みの incorporation {0} から除外されます"
 
-#: ../modules/client/pkg_solver.py:386 ../modules/client/pkg_solver.py:691
+#: ../modules/client/pkg_solver.py:402 ../modules/client/pkg_solver.py:718
 msgid ""
 "This version is excluded by a freeze on {0} at version {1}.  The reason for "
 "the freeze is: {2}"
 msgstr "このバージョンは、バージョン {1} での {0} の凍結から除外されます。凍結の理由は次のとおりです: {2}"
 
-#: ../modules/client/pkg_solver.py:391 ../modules/client/pkg_solver.py:696
+#: ../modules/client/pkg_solver.py:407 ../modules/client/pkg_solver.py:723
 msgid "This version is excluded by a freeze on {0} at version {1}."
 msgstr "このバージョンは、バージョン {1} での {0} の凍結から除外されます。"
 
-#: ../modules/client/pkg_solver.py:415 ../modules/client/pkg_solver.py:468
+#: ../modules/client/pkg_solver.py:429 ../modules/client/pkg_solver.py:482
 #, python-format
 msgid "No matching version of %s can be installed:"
 msgstr "%s の一致していないバージョンはインストールできません:"
 
 #. no version of this package is allowed
-#: ../modules/client/pkg_solver.py:530 ../modules/client/pkg_solver.py:766
+#: ../modules/client/pkg_solver.py:542 ../modules/client/pkg_solver.py:793
 #, python-format
 msgid "The installed package %s is not permissible."
 msgstr "インストールされたパッケージ %s は許容されません。"
 
-#: ../modules/client/pkg_solver.py:572
+#: ../modules/client/pkg_solver.py:588
 msgid "Plan Creation: dependency error(s) in proposed packages:"
 msgstr "計画の作成: 提示されたパッケージに依存関係エラーがあります:"
 
-#: ../modules/client/pkg_solver.py:580
+#: ../modules/client/pkg_solver.py:596
 msgid "Plan Creation: Errors in installed packages due to proposed changes:"
 msgstr "計画の作成: 提示された変更が原因で、インストールされたパッケージでエラーが発生しました:"
 
 #. both error detection methods insufficent.
-#: ../modules/client/pkg_solver.py:585
+#: ../modules/client/pkg_solver.py:601
 msgid "Plan Creation: Package solver is unable to compute solution."
 msgstr "計画の作成: パッケージソルバーが解決策を計算できません。"
 
-#: ../modules/client/pkg_solver.py:586 ../modules/client/pkg_solver.py:811
+#: ../modules/client/pkg_solver.py:602 ../modules/client/pkg_solver.py:837
 msgid "Dependency analysis is unable to determine exact cause."
 msgstr "依存性の分析で正確な原因を判断できません。"
 
-#: ../modules/client/pkg_solver.py:587 ../modules/client/pkg_solver.py:812
+#: ../modules/client/pkg_solver.py:603 ../modules/client/pkg_solver.py:838
 msgid "Try specifying expected results to obtain more detailed error messages."
 msgstr "予期される結果を指定して、さらに詳細なエラーメッセージを取得してください。"
 
-#: ../modules/client/pkg_solver.py:588
+#: ../modules/client/pkg_solver.py:604
 msgid "Include specific version of packages you wish installed."
 msgstr "インストールするパッケージの特定のバージョンを含めます。"
 
-#: ../modules/client/pkg_solver.py:794
+#: ../modules/client/pkg_solver.py:820
 msgid ""
 "Plan Creation: Package solver has not found a solution to update to latest "
 "available versions."
 msgstr "計画の作成: パッケージソルバーが、使用可能な最新バージョンに更新するための解決策を見つけることができません。"
 
-#: ../modules/client/pkg_solver.py:795
+#: ../modules/client/pkg_solver.py:821
 msgid "This may indicate an overly constrained set of packages are installed."
 msgstr "これは、過度に制約が付けられた一連のパッケージがインストールされていることを示す可能性があります。"
 
-#: ../modules/client/pkg_solver.py:797
+#: ../modules/client/pkg_solver.py:823
 msgid "latest incorporations:"
 msgstr "最新の incorporation:"
 
-#: ../modules/client/pkg_solver.py:806
+#: ../modules/client/pkg_solver.py:832
 msgid ""
 "The following indicates why the system cannot update to the latest version:"
 msgstr "システムが最新バージョンに更新できない理由を次に示します:"
 
-#: ../modules/client/pkg_solver.py:1177 ../modules/client/pkg_solver.py:1219
-#: ../modules/client/pkg_solver.py:1235
+#: ../modules/client/pkg_solver.py:1212 ../modules/client/pkg_solver.py:1254
+#: ../modules/client/pkg_solver.py:1270
 msgid "Package contains invalid or unsupported actions"
 msgstr "パッケージに無効なアクションまたはサポートされていないアクションが含まれています"
 
-#: ../modules/client/pkg_solver.py:1359
+#: ../modules/client/pkg_solver.py:1394
 msgid "Excluded by proposed incorporation '{0}'"
 msgstr "提示された incorporation '{0}' から除外されます"
 
-#: ../modules/client/pkg_solver.py:1531
+#: ../modules/client/pkg_solver.py:1568
 msgid "Package contains 'exclude' dependency {0} on installed package"
 msgstr "インストールされたパッケージに 'exclude' 依存性の {0} が含まれています"
 
-#: ../modules/client/pkg_solver.py:1535
+#: ../modules/client/pkg_solver.py:1572
 msgid "All versions matching 'exclude' dependency {0} are rejected"
 msgstr "'exclude' 依存性の {0} に一致するすべてのバージョンが拒否されます"
 
-#: ../modules/client/pkg_solver.py:1562
+#: ../modules/client/pkg_solver.py:1599
 msgid "All acceptable versions of '{0}' dependency on {1} are obsolete"
 msgstr "{1} で許容される '{0}' 依存性のすべてのバージョンが廃止されています"
 
-#: ../modules/client/pkg_solver.py:1566
+#: ../modules/client/pkg_solver.py:1603
 msgid "All acceptable versions of '{0}' dependencies on {1} are obsolete"
 msgstr "{1} で許容される '{0}' 依存性のすべてのバージョンが廃止されています"
 
-#: ../modules/client/pkg_solver.py:1578
+#: ../modules/client/pkg_solver.py:1615
 msgid "A version for '{0}' dependency on {1} cannot be found"
 msgstr "{1} で '{0}' 依存性のバージョンが見つかりません"
 
-#: ../modules/client/pkg_solver.py:1582
+#: ../modules/client/pkg_solver.py:1619
 msgid "All versions matching '{0}' dependency {1} are rejected"
 msgstr "'{0}' 依存性の {1} に一致するすべてのバージョンが拒否されます"
 
-#: ../modules/client/pkg_solver.py:1629
+#: ../modules/client/pkg_solver.py:1666
 #, python-format
 msgid "No suitable version of installed package %s found"
 msgstr "インストールされているパッケージ %s の適切なバージョンが見つかりません"
 
-#: ../modules/client/pkg_solver.py:1663
+#: ../modules/client/pkg_solver.py:1700
 #, python-format
 msgid "%s  Reject:  "
 msgstr "%s  拒否:  "
 
-#: ../modules/client/pkg_solver.py:1665
+#: ../modules/client/pkg_solver.py:1702
 msgid "Reason:"
 msgstr "理由:"
 
-#: ../modules/client/pkg_solver.py:1668
+#: ../modules/client/pkg_solver.py:1705
 #, python-format
 msgid "%s  %s  [already rejected; see above]"
 msgstr "%s  %s  [すでに拒否されています。上記を参照]"
 
-#: ../modules/client/pkg_solver.py:1702
+#: ../modules/client/pkg_solver.py:1739
 #, python-format
 msgid "No suitable version of required package %s found:"
 msgstr "要求されたパッケージ %s の適切なバージョンが見つかりません。"
 
-#: ../modules/client/pkg_solver.py:1820
+#: ../modules/client/pkg_solver.py:1857
 #, python-format
 msgid "List of integers, not %s, expected"
 msgstr "%s ではなく整数のリストが必要されます"
 
-#: ../modules/client/pkg_solver.py:1945
+#: ../modules/client/pkg_solver.py:1982
 msgid "Currently installed package '{0}' is from sticky publisher '{1}'."
 msgstr "現在インストールされているパッケージ '{0}' は固定的な発行元 '{1}' からのものです。"
 
-#: ../modules/client/pkg_solver.py:1948
+#: ../modules/client/pkg_solver.py:1985
 msgid "Package is from publisher other than specified one."
 msgstr "パッケージは指定された発行元ではない発行元からのものです。"
 
-#: ../modules/client/pkg_solver.py:1963
+#: ../modules/client/pkg_solver.py:2000
 msgid "Higher ranked publisher {0} was selected"
 msgstr "より高くランク付けされている発行元 {0} が選択されました"
 
-#: ../modules/client/pkg_solver.py:1965
+#: ../modules/client/pkg_solver.py:2002
 msgid "Package publisher is ranked lower in search order"
 msgstr "パッケージの発行元は、検索の順位でより低くランク付けされています"
 
-#: ../modules/client/pkg_solver.py:2001
+#: ../modules/client/pkg_solver.py:2039
 msgid "Newer version {0} is already installed"
 msgstr "より新しいバージョン {0} がすでにインストール済みです"
 
-#: ../modules/client/pkg_solver.py:2011
+#: ../modules/client/pkg_solver.py:2049
 msgid "Package doesn't support image architecture"
 msgstr "パッケージはイメージ構造をサポートしていません"
 
-#: ../modules/client/pkg_solver.py:2013
+#: ../modules/client/pkg_solver.py:2051
 msgid "Package doesn't support image variant {0}"
 msgstr "パッケージはイメージバリアント {0} をサポートしていません"
 
 #. package is not installed in parent
-#: ../modules/client/pkg_solver.py:2025
+#: ../modules/client/pkg_solver.py:2063
 msgid "Package is not installed in parent image: {0}"
 msgstr "親イメージにパッケージがインストールされていません: {0}"
 
 #. package is from a different publisher in the parent
-#: ../modules/client/pkg_solver.py:2033
+#: ../modules/client/pkg_solver.py:2071
 msgid "Package in parent is from a different publisher: {0}"
 msgstr "親に含まれているパッケージが別の発行元によるものです: {0}"
 
-#: ../modules/client/pkg_solver.py:2046
+#: ../modules/client/pkg_solver.py:2084
 msgid "Parent image has a incompatible newer version: {0}"
 msgstr "親イメージに互換性のない新しいバージョンが含まれています: {0}"
 
-#: ../modules/client/pkg_solver.py:2049
+#: ../modules/client/pkg_solver.py:2087
 msgid "Parent image has an older version of package: {0}"
 msgstr "親イメージに古いバージョンのパッケージが含まれています: {0}"
 
-#: ../modules/client/pkg_solver.py:2114
+#: ../modules/client/pkg_solver.py:2152
 msgid "Installed version in root image is too old for origin dependency {0}"
 msgstr "ルートイメージにインストールされているバージョンは、起点の依存性 {0} に対して古すぎます"
 
-#: ../modules/client/pkg_solver.py:2120
+#: ../modules/client/pkg_solver.py:2158
 msgid ""
 "Installed version in image being upgraded is too old for origin dependency "
 "{0}"
 msgstr "アップグレードしているイメージにインストールされているバージョンは、起点の依存性 {0} に対して古すぎます"
 
-#: ../modules/client/progress.py:643 ../modules/client/progress.py:850
+#: ../modules/client/progress.py:457
 #, python-format
-msgid "Image %s "
-msgstr "イメージ %s "
+msgid "Goal mismatch '%s': expected goal: %s, current value: %s"
+msgstr "目標の不一致 '%s': 予期される目標: %s、現在の値: %s"
 
-#: ../modules/client/progress.py:673 ../modules/client/progress.py:966
+#: ../modules/client/progress.py:704
+msgid "Startup"
+msgstr "開始"
+
+#: ../modules/client/progress.py:705 ../modules/client/progress.py:718
+msgid "Planning"
+msgstr "計画"
+
+#: ../modules/client/progress.py:707
+msgid "Actions"
+msgstr "アクション"
+
+#: ../modules/client/progress.py:708
+msgid "Finalize"
+msgstr "ファイナライズ"
+
+#: ../modules/client/progress.py:719
+msgid "Downloading"
+msgstr "ダウンロード中"
+
+#: ../modules/client/progress.py:720
+msgid "Executing"
+msgstr "実行中"
+
+#: ../modules/client/progress.py:977
+msgid "Download packages"
+msgstr "ダウンロードパッケージ"
+
+#: ../modules/client/progress.py:978
+msgid "Download files"
+msgstr "ダウンロードファイル"
+
+#: ../modules/client/progress.py:979
+msgid "Download bytes"
+msgstr "ダウンロードバイト"
+
+#. republishing support; republishing also uses dl_bytes
+#: ../modules/client/progress.py:984
+msgid "Republished pkgs"
+msgstr "再発行されたパッケージ"
+
+#: ../modules/client/progress.py:986
+msgid "Republish sent bytes"
+msgstr "送信済みバイトの再発行"
+
+#: ../modules/client/progress.py:993
+msgid "Refresh Publishers"
+msgstr "発行元のリフレッシュ"
+
+#. We don't know the goal in advance for this one
+#: ../modules/client/progress.py:995
+msgid "Refresh bytes"
+msgstr "バイトのリフレッシュ"
+
+#: ../modules/client/progress.py:999
+msgid "Download Manifests"
+msgstr "ダウンロードマニフェスト"
+
+#: ../modules/client/progress.py:1000
+msgid "Committed Manifests"
+msgstr "コミットされたマニフェスト"
+
+#: ../modules/client/progress.py:1002
+msgid "Verify Packages"
+msgstr "パッケージの検証"
+
+#. archiving support
+#: ../modules/client/progress.py:1005
+msgid "Archived items"
+msgstr "アーカイブされた項目"
+
+#: ../modules/client/progress.py:1006
+msgid "Archived bytes"
+msgstr "アーカイブされたバイト"
+
+#: ../modules/client/progress.py:1014
+msgid "Solver setup"
+msgstr "ソルバーのセットアップ"
+
+#: ../modules/client/progress.py:1016
+msgid "Running solver"
+msgstr "ソルバーを実行しています"
+
+#: ../modules/client/progress.py:1018
+msgid "Finding local manifests"
+msgstr "ローカルマニフェストを検索しています"
+
+#: ../modules/client/progress.py:1020
+msgid "Package planning"
+msgstr "パッケージ計画"
+
+#: ../modules/client/progress.py:1022
+msgid "Merging actions"
+msgstr "アクションをマージしています"
+
+#: ../modules/client/progress.py:1024
+msgid "Checking for conflicting actions"
+msgstr "競合するアクションを検査しています"
+
+#: ../modules/client/progress.py:1026
+msgid "Consolidating action changes"
+msgstr "アクションの変更を統合しています"
+
+#: ../modules/client/progress.py:1028
+msgid "Evaluating mediators"
+msgstr "メディエータを評価しています"
+
+#: ../modules/client/progress.py:1030
+msgid "Finalizing action plan"
+msgstr "アクション計画をファイナライズしています"
+
+#: ../modules/client/progress.py:1032
+msgid "Evaluating mediator changes"
+msgstr "メディエータの変更を評価しています"
+
+#: ../modules/client/progress.py:1037
+msgid "Removing old actions"
+msgstr "古いアクションを削除しています"
+
+#: ../modules/client/progress.py:1039
+msgid "Installing new actions"
+msgstr "新しいアクションをインストールしています"
+
+#: ../modules/client/progress.py:1041
+msgid "Updating modified actions"
+msgstr "変更されたアクションを更新しています"
+
+#: ../modules/client/progress.py:1046
+msgid "Updating package state database"
+msgstr "パッケージ状態データベースを更新しています"
+
+#: ../modules/client/progress.py:1048
+msgid "Updating image state"
+msgstr "イメージ状態を更新しています"
+
+#: ../modules/client/progress.py:1050
+msgid "Creating fast lookup database"
+msgstr "スピード検索データベースを作成しています"
+
+#: ../modules/client/progress.py:1052
+msgid "Updating package cache"
+msgstr "パッケージキャッシュを更新しています"
+
+#: ../modules/client/progress.py:1054
+msgid "Reading search index"
+msgstr "検索インデックスを読み取っています"
+
+#: ../modules/client/progress.py:1056
+msgid "Updating search index"
+msgstr "検索インデックスを更新しています"
+
+#: ../modules/client/progress.py:1058
+msgid "Building new search index"
+msgstr "新しい検索インデックスを構築しています"
+
+#: ../modules/client/progress.py:1062
+msgid "Deleting search index"
+msgstr "検索インデックスを削除しています"
+
+#: ../modules/client/progress.py:1064
+msgid "Updating catalog"
+msgstr "カタログを更新しています"
+
+#: ../modules/client/progress.py:1066
+msgid "Analyzing removed packages"
+msgstr "削除されたパッケージを解析しています"
+
+#: ../modules/client/progress.py:1068
+msgid "Analyzing repository packages"
+msgstr "リポジトリパッケージを解析しています"
+
+#: ../modules/client/progress.py:1070
+msgid "Removing package manifests"
+msgstr "パッケージマニフェストを削除しています"
+
+#: ../modules/client/progress.py:1072
+msgid "Removing package files"
+msgstr "パッケージファイルを削除しています"
+
+#: ../modules/client/progress.py:1495
 #, python-format
-msgid "Recursing into linked image: %s"
-msgstr "リンクされたイメージに再帰しています: %s"
+msgid "Lint setup %d"
+msgstr "Lint のセットアップ %d"
 
-#: ../modules/client/progress.py:685 ../modules/client/progress.py:979
+#: ../modules/client/progress.py:1497
 #, python-format
-msgid "Returning from linked image: %s"
-msgstr "リンクされたイメージから復帰しています: %s"
+msgid "Lint phase %d"
+msgstr "Lint フェーズ %d"
 
-#: ../modules/client/progress.py:716 ../modules/client/progress.py:734
+#: ../modules/client/progress.py:1749
+#, python-format
+msgid "%*s: "
+msgstr "%*s: "
+
+#: ../modules/client/progress.py:1769 ../modules/client/progress.py:1781
+#: ../modules/client/progress.py:1798 ../modules/client/progress.py:2423
 #: ../modules/gui/startpage.py:240
 msgid "Done"
 msgstr "完了"
 
-#: ../modules/client/progress.py:727
+#: ../modules/client/progress.py:1779
 #, python-format
-msgid "Download: %s ... "
-msgstr "ダウンロード: %s ... "
+msgid "Done (%(elapsed).3fs)"
+msgstr "完了 (%(elapsed).3fs)"
 
-#: ../modules/client/progress.py:730
+#: ../modules/client/progress.py:1796
+msgid "Checking that pkg(5) is up to date ..."
+msgstr "pkg(5) が最新であることを確認しています..."
+
+#: ../modules/client/progress.py:1802 ../modules/client/progress.py:2162
+#: ../modules/gui/progress.py:50
+msgid "Caching catalogs ..."
+msgstr "カタログをキャッシュしています..."
+
+#: ../modules/client/progress.py:1808 ../modules/client/progress.py:2168
+#: ../modules/gui/progress.py:59
+msgid "Loading catalog cache ..."
+msgstr "カタログキャッシュを読み込んでいます..."
+
+#: ../modules/client/progress.py:1819
+#, python-format
+msgid "Retrieving target catalog '%s' ..."
+msgstr "ターゲットカタログ '%s' を取得しています..."
+
+#: ../modules/client/progress.py:1821
+#, python-format
+msgid "Retrieving catalog '%s' ..."
+msgstr "カタログ '%s' を取得しています..."
+
+#: ../modules/client/progress.py:1823
+#, python-format
+msgid "Refreshing catalog '%s' ..."
+msgstr "カタログ '%s' をリフレッシュしています..."
+
+#: ../modules/client/progress.py:1830
+#, python-format
+msgid "%s ..."
+msgstr "%s ..."
+
+#: ../modules/client/progress.py:1836
+#, python-format
+msgid "Planning completed in %.2f seconds"
+msgstr "計画が %.2f 秒で完了しました"
+
+#: ../modules/client/progress.py:1857
+#, python-format
+msgid "Fetching manifests: %s  %d%% complete"
+msgstr "マニフェストを取得しています: %s  %d%% 完了"
+
+#: ../modules/client/progress.py:1904
+#, python-format
+msgid "Download: %s items  %sMB  %d%% complete %s"
+msgstr "ダウンロード: %s 項目  %sMB  %d%% 完了 %s"
+
+#: ../modules/client/progress.py:1911
+#, python-format
+msgid "Download: Completed %s in %.2f seconds %s"
+msgstr "ダウンロード: %s が %.2f 秒で完了しました %s"
+
+#: ../modules/client/progress.py:1917
 #, python-format
 msgid "Republish: %s ... "
 msgstr "再公開: %s ... "
 
-#: ../modules/client/progress.py:879
+#: ../modules/client/progress.py:1932
 #, python-format
-msgid "Retrieving catalog '%s'..."
-msgstr "カタログ '%s' を取得しています..."
+msgid "Archiving: Completed %s in %.2f seconds"
+msgstr "アーカイブしています: %s が %.2f 秒で完了しました"
 
-#: ../modules/client/progress.py:886
-msgid "Caching catalogs ..."
-msgstr "カタログをキャッシュしていています..."
+#: ../modules/client/progress.py:1939
+#, python-format
+msgid "Archiving: %s items  %sMB  %d%% complete"
+msgstr "アーカイブしています: %s 項目  %sMB  %d%% 完了"
 
-#: ../modules/client/progress.py:892
-msgid "Loading catalog cache ..."
-msgstr "カタログキャッシュを読み込んでいます..."
+#: ../modules/client/progress.py:1958
+#, python-format
+msgid "%s actions (%s)"
+msgstr "%s アクション (%s)"
 
-#: ../modules/client/progress.py:898
+#: ../modules/client/progress.py:1970
+#, python-format
+msgid "Completed %d actions in %.2f seconds."
+msgstr "%d 個のアクションが %.2f 秒で完了しました。"
+
+#: ../modules/client/progress.py:1996
+msgid "Linked image publisher check ..."
+msgstr "リンクされたイメージの発行元の確認..."
+
+#: ../modules/client/progress.py:2004
+msgid "Finished processing linked images."
+msgstr "リンクされたイメージの処理が終了しました。"
+
+#: ../modules/client/progress.py:2023 ../modules/client/progress.py:2468
+#, python-format
+msgid "Linked image '%s' output:"
+msgstr "リンクされたイメージ '%s' の出力:"
+
+#: ../modules/client/progress.py:2033
+#, python-format
+msgid "Linked images: %s done; %d working: %s"
+msgstr "リンクされたイメージ: %s 完了; %d 処理中: %s"
+
+#: ../modules/client/progress.py:2151
+#, python-format
+msgid "Checking that pkg(5) is up to date %c"
+msgstr "pkg(5) が最新であることを確認しています %c"
+
+#: ../modules/client/progress.py:2188
+msgid "Retrieving target catalog"
+msgstr "ターゲットカタログを取得しています"
+
+#: ../modules/client/progress.py:2190
+msgid "Retrieving catalog"
+msgstr "カタログを取得しています"
+
+#: ../modules/client/progress.py:2192
 msgid "Refreshing catalog"
 msgstr "カタログをリフレッシュしています"
 
-#: ../modules/client/progress.py:905
+#: ../modules/client/progress.py:2193
 #, python-format
-msgid "Refreshing catalog %(current)d/%(total)d %(publisher)s"
-msgstr "カタログをリフレッシュしています %(current)d/%(total)d %(publisher)s"
+msgid "%(prefix)s %(pub_cnt)s %(publisher)s%(bytes)s"
+msgstr "%(prefix)s %(pub_cnt)s %(publisher)s%(bytes)s"
 
-#: ../modules/client/progress.py:927
-msgid "Creating Plan"
-msgstr "計画の作成中"
-
-#: ../modules/client/progress.py:947
+#: ../modules/client/progress.py:2215
 #, python-format
-msgid "Creating Plan %c"
-msgstr "計画の作成中 %c"
+msgid "Creating Plan (%s%s): %s"
+msgstr "計画の作成中 (%s%s): %s"
 
-#: ../modules/client/progress.py:1064
+#: ../modules/client/progress.py:2237
+#, python-format
+msgid "Creating Plan (%s %s) %c"
+msgstr "計画の作成中 (%s %s) %c"
+
+#: ../modules/client/progress.py:2241
+#, python-format
+msgid "%s (%s) %c"
+msgstr "%s (%s) %c"
+
+#: ../modules/client/progress.py:2255
+#, python-format
+msgid "Creating Plan (Committing Manifests): %c"
+msgstr "計画の作成中 (マニフェストのコミット中): %c"
+
+#: ../modules/client/progress.py:2258
+#, python-format
+msgid "Committing Manifests %c"
+msgstr "マニフェストのコミット中 %c"
+
+#: ../modules/client/progress.py:2293
 msgid "ARCHIVE"
 msgstr "アーカイブ"
 
-#: ../modules/client/progress.py:1065 ../modules/client/progress.py:1101
+#: ../modules/client/progress.py:2293 ../modules/client/progress.py:2313
 msgid "FILES"
 msgstr "ファイル"
 
-#: ../modules/client/progress.py:1065
+#: ../modules/client/progress.py:2293
 msgid "STORE (MB)"
 msgstr "格納 (MB)"
 
-#: ../modules/client/progress.py:1100
+#: ../modules/client/progress.py:2313
 msgid "DOWNLOAD"
 msgstr "ダウンロード"
 
-#: ../modules/client/progress.py:1101
+#: ../modules/client/progress.py:2313
 msgid "PKGS"
 msgstr "パッケージ"
 
-#: ../modules/client/progress.py:1101
+#: ../modules/client/progress.py:2314
 msgid "XFER (MB)"
 msgstr "転送 (MB)"
 
-#: ../modules/client/progress.py:1155
+#: ../modules/client/progress.py:2314
+msgid "SPEED"
+msgstr "速度"
+
+#: ../modules/client/progress.py:2317
+msgid "Completed"
+msgstr "完了"
+
+#: ../modules/client/progress.py:2363
 msgid "PROCESS"
 msgstr "処理"
 
-#: ../modules/client/progress.py:1156 ../modules/client/progress.py:1268
-#: ../modules/client/progress.py:1302
+#: ../modules/client/progress.py:2363 ../modules/client/progress.py:2388
 msgid "ITEMS"
 msgstr "項目"
 
-#: ../modules/client/progress.py:1156
+#: ../modules/client/progress.py:2363
 msgid "GET (MB)"
 msgstr "取得 (MB)"
 
-#: ../modules/client/progress.py:1156
+#: ../modules/client/progress.py:2364
 msgid "SEND (MB)"
 msgstr "送信 (MB)"
 
-#: ../modules/client/progress.py:1221 ../modules/client/progress.py:1268
-#: ../modules/client/progress.py:1302
+#: ../modules/client/progress.py:2388
 msgid "PHASE"
 msgstr "フェーズ"
 
-#: ../modules/client/progress.py:1221
-msgid "ACTIONS"
-msgstr "アクション"
+#: ../modules/client/progress.py:2423
+msgid "working"
+msgstr "処理中"
 
-#: ../modules/client/progress.py:1247
-msgid "Optimizing Index..."
-msgstr "インデックスを最適化しています..."
+#: ../modules/client/progress.py:2441
+msgid "Linked image publisher check"
+msgstr "リンクされたイメージの発行元の確認"
 
-#: ../modules/client/publisher.py:981
+#: ../modules/client/progress.py:2481
+#, python-format
+msgid "%s linked: %s done; %d working: %s"
+msgstr "%s リンク済み: %s 完了; %d 処理中: %s"
+
+#: ../modules/client/progress.py:2505
+#, python-format
+msgid "Linked progress: %s"
+msgstr "リンクの進行状況: %s"
+
+#: ../modules/client/publisher.py:1292
 msgid "Cannot enable or disable a system publisher"
 msgstr "システム発行元を有効または無効にできません"
 
-#: ../modules/client/publisher.py:1080
+#: ../modules/client/publisher.py:1391
 msgid "Cannot change the stickiness of a system publisher"
 msgstr "システム発行元の持続性を変更できません"
 
-#: ../modules/client/publisher.py:1111
+#: ../modules/client/publisher.py:1422
 #, python-format
 msgid ""
 "\n"
@@ -5464,7 +5895,7 @@ msgid ""
 "contains package data for: %(pubs)s.\n"
 msgstr "\n発行元 '%(prefix)s' のパッケージデータを\n次の起点のいずれからも検出できません:\n\n%(origins)s\n\n上記の起点一覧の 1 つから検出されたカタログには\n次の日付のパッケージデータのみが含まれます: %(pubs)s.\n"
 
-#: ../modules/client/publisher.py:1123
+#: ../modules/client/publisher.py:1434
 #, python-format
 msgid ""
 "This is either a result of invalid origin information being provided\n"
@@ -5472,7 +5903,7 @@ msgid ""
 "provided when this publisher was added.\n"
 msgstr "これは発行元 '%s' に関する誤った起点情報によるものか\nこの発行元が追加されたときに誤った発行元名をつけたことに\nよるものです。\n"
 
-#: ../modules/client/publisher.py:1131
+#: ../modules/client/publisher.py:1442
 #, python-format
 msgid ""
 "To resolve this issue, correct the origin information provided for\n"
@@ -5481,7 +5912,7 @@ msgid ""
 "publisher.\n"
 msgstr "この問題を解決するには、pkg set-publisher サブコマンドを使用して\n発行元 '%(prefix)s' の起点情報を修正するか、正しい名前で発行元を再度追加してから\n発行元 '%(prefix)s' を削除します\n"
 
-#: ../modules/client/publisher.py:1139
+#: ../modules/client/publisher.py:1450
 #, python-format
 msgid ""
 "To re-add this publisher with the correct name, execute the following\n"
@@ -5491,19 +5922,19 @@ msgid ""
 "pkg unset-publisher %(prefix)s\n"
 msgstr "この発行元を正しい名前で再度追加するには、特権ユーザーとして次のコマンドを実行します:\n\npkg set-publisher -P -g %(origin)s %(pub)s\npkg unset-publisher %(prefix)s\n"
 
-#: ../modules/client/publisher.py:1148
+#: ../modules/client/publisher.py:1459
 msgid ""
 "The origin(s) listed above contain package data for more than one\n"
 "publisher, but this issue can likely be resolved by executing one\n"
 "of the following commands as a privileged user:\n"
 msgstr "上記の起点一覧は複数の発行元のパッケージデータを含んでいます。\nただしこの問題は特権ユーザーとして次のコマンドのいずれかを実行することで\n解決できるでしょう:\n"
 
-#: ../modules/client/publisher.py:1155
+#: ../modules/client/publisher.py:1466
 #, python-format
 msgid "pkg set-publisher -P -g %(origin)s %(pub)s\n"
 msgstr "pkg set-publisher -P -g %(origin)s %(pub)s\n"
 
-#: ../modules/client/publisher.py:1159
+#: ../modules/client/publisher.py:1470
 #, python-format
 msgid ""
 "Afterwards, the old publisher should be removed by executing the\n"
@@ -5512,14 +5943,14 @@ msgid ""
 "pkg unset-publisher %s\n"
 msgstr "その後、特権ユーザーとして次のコマンドを実行することで\n旧発行元を削除できます:\n\npkg unset-publisher %s\n"
 
-#: ../modules/client/publisher.py:2024
+#: ../modules/client/publisher.py:2342
 #, python-format
 msgid ""
 "The file with hash %s was expected to be a PEM certificate but it could not "
 "be read."
 msgstr "ハッシュ %s のファイルは PEM 証明書のはずでしたが、読み取れませんでした。"
 
-#: ../modules/client/publisher.py:2028
+#: ../modules/client/publisher.py:2346
 #, python-format
 msgid ""
 "The following string was expected to be a PEM certificate, but it could not "
@@ -5527,64 +5958,100 @@ msgid ""
 "%s"
 msgstr "次の文字列は PEM 証明書のはずでしたが、そのように構文解析できませんでした:\n%s"
 
-#: ../modules/client/publisher.py:2175
+#: ../modules/client/publisher.py:2493
 #, python-format
 msgid ""
 "Cannot remove a value from the property %(name)s because the property does "
 "not exist."
 msgstr "プロパティー %(name)s は存在しないため、このプロパティーから値を削除できません。"
 
-#: ../modules/client/publisher.py:2180
+#: ../modules/client/publisher.py:2498
 #, python-format
 msgid ""
 "Cannot remove a value from a single valued property, unset must be used. The "
 "property name is '%(name)s' and the current value is '%(value)s'"
 msgstr "単一値プロパティーから値を削除できません。unset を使用する必要があります。プロパティー名は %(name)s、現在の値は %(value)s です"
 
-#: ../modules/client/publisher.py:2190
+#: ../modules/client/publisher.py:2508
 #, python-format
 msgid ""
 "Cannot remove the value %(value)s from the property %(name)s because the "
 "value is not in the property's list."
 msgstr "プロパティー %(name)s のリストに値 %(value)s は含まれていないため、プロパティーからこの値を削除できません。"
 
-#: ../modules/client/publisher.py:2221
+#: ../modules/client/publisher.py:2539
 #, python-format
 msgid "The CRL file %s is not in a recognized format."
 msgstr "CRL ファイル %s は認識できない形式です。"
 
-#: ../modules/client/publisher.py:2659
+#: ../modules/client/publisher.py:2977
 #, python-format
 msgid "Cannot set a property for a system publisher. The property was:%s"
 msgstr "システム発行元のプロパティーを設定できません。プロパティー: %s"
 
-#: ../modules/client/publisher.py:2670
+#: ../modules/client/publisher.py:2988
 #, python-format
 msgid "%(val)s is not a valid value for this property:%(prop)s"
 msgstr "%(val)s は、次のプロパティーに有効な値ではありません: %(prop)s"
 
-#: ../modules/client/publisher.py:2694
+#: ../modules/client/publisher.py:3012
 #, python-format
 msgid "The %s signature-policy takes no argument."
 msgstr "%s 署名ポリシーは引数をとりません。"
 
-#: ../modules/client/publisher.py:2706
+#: ../modules/client/publisher.py:3024
 #, python-format
 msgid "Cannot unset a property for a system publisher. The property was:%s"
 msgstr "システム発行元のプロパティーを解除できません。プロパティー: %s"
 
-#: ../modules/client/publisher.py:2751
+#: ../modules/client/publisher.py:3069
 msgid "Cannot unset a property for a system publisher."
 msgstr "システム発行元のプロパティーを解除できません。"
 
-#: ../modules/client/transport/repo.py:1121
+#: ../modules/client/transport/repo.py:315
+msgid ""
+"\n"
+"This account is not entitled to access this repository. Ensure that the "
+"correct\n"
+"certificate is being used and that the support contract for the product "
+"being\n"
+"accessed is still valid.\n"
+msgstr "\nこのアカウントには、このリポジトリにアクセスする資格がありません。正しい証明書を\n使用していることと、アクセスしている製品のサポート契約がまだ有効であることを\n確認してください。\n"
+
+#: ../modules/client/transport/repo.py:321
+msgid ""
+"\n"
+"The license agreement required to access this repository has not been\n"
+"accepted yet or the license agreement for the product has changed. Please go "
+"to\n"
+"https://pkg-register.oracle.com and accept the license for the product you "
+"are\n"
+"trying to access.\n"
+msgstr "\nこのリポジトリへのアクセスに必要なライセンス契約に\nまだ同意していないか、製品のライセンス契約が変更されています。\nhttps://pkg-register.oracle.com にアクセスし、アクセスしようとしている製品のライセンスに\n同意してください。\n"
+
+#: ../modules/client/transport/repo.py:328
+msgid ""
+"\n"
+"Repository access is currently unavailable due to service issues. Please "
+"retry\n"
+"later or contact your customer service representative.\n"
+msgstr "\nサービスの問題のため、リポジトリへのアクセスは現在使用できません。あとで\n再試行するか、顧客サービス担当者に問い合せてください。\n"
+
+#: ../modules/client/transport/repo.py:333
+msgid ""
+"\n"
+"Repository access rights can currently not be verified due to server\n"
+"maintenance. Please retry later.\n"
+msgstr "\nサーバーの保守のため、リポジトリへのアクセス権を現在確認できません。\nあとで再試行してください。\n"
+
+#: ../modules/client/transport/repo.py:1147
 #, python-format
 msgid ""
 "The configuration file for the repository is invalid or incomplete:\n"
 "%s"
 msgstr "リポジトリの構成ファイルが無効または不完全です:\n%s"
 
-#: ../modules/client/transport/repo.py:1184
+#: ../modules/client/transport/repo.py:1210
 msgid "Search temporarily unavailable."
 msgstr "検索は一時的に使用できません。"
 
@@ -5677,7 +6144,7 @@ msgstr "不明なプロパティー %s"
 msgid "Unknown property section: %s."
 msgstr "不明なプロパティーセクション: %s。"
 
-#: ../modules/config.py:1527
+#: ../modules/config.py:1637
 #, python-format
 msgid ""
 "Property name '%(name)s' is not valid.  Property names may not contain: "
@@ -5685,7 +6152,7 @@ msgid ""
 "backslashes and must also match the regular expression: %(exp)s"
 msgstr "プロパティー名 '%(name)s' は有効ではありません。プロパティー名に次の文字を含めることはできません: タブ、改行、キャリッジリターン、用紙送り、垂直タブ、スラッシュ、バックスラッシュ。また、次の正規表現と一致する必要があります: %(exp)s"
 
-#: ../modules/config.py:1542
+#: ../modules/config.py:1652
 #, python-format
 msgid ""
 "Section name '%(name)s' is not valid.  Section names may not contain: tabs, "
@@ -5693,21 +6160,21 @@ msgid ""
 "backslashes and must also match the regular expression: %(exp)s"
 msgstr "セクション名 '%(name)s' は有効ではありません。セクション名に次の文字を含めることはできません: タブ、改行、キャリッジリターン、用紙送り、垂直タブ、スラッシュ、バックスラッシュ。また、次の正規表現と一致する必要があります: %(exp)s"
 
-#: ../modules/config.py:1560
+#: ../modules/config.py:1670
 #, python-format
 msgid ""
 "Unable to read configuration data for SMF FMRI '%(fmri)s':\n"
 "%(errmsg)s"
 msgstr "SMF FMRI '%(fmri)s' の構成データを読み取れません:\n%(errmsg)s"
 
-#: ../modules/config.py:1575
+#: ../modules/config.py:1685
 #, python-format
 msgid ""
 "Unable to write configuration data for SMF FMRI '%(fmri)s':\n"
 "%(errmsg)s"
 msgstr "SMF FMRI '%(fmri)s' の構成データを書き込めません:\n%(errmsg)s"
 
-#: ../modules/config.py:1761
+#: ../modules/config.py:1871
 msgid "Writing configuration data to SMF is not supported at this time."
 msgstr "SMF への構成データの書き込みは、この時点ではサポートされていません。"
 
@@ -5760,7 +6227,12 @@ msgstr "複数の $PKGDEPEND_RUNPATH トークンが、このマニフェスト�
 msgid "Invalid pkg.depend.bypass-generate value %(val)s: %(err)s"
 msgstr "pkg.depend.bypass-generate 値 %(val)s は無効です: %(err)s"
 
-#: ../modules/flavor/base.py:141
+#: ../modules/flavor/base.py:97
+#, python-format
+msgid "Invalid publishing dependency: %s"
+msgstr "発行の依存関係が無効です: %s"
+
+#: ../modules/flavor/base.py:155
 #, python-format
 msgid "Subclasses of Dependency must implement dep_key. Current class is %s"
 msgstr "依存関係のサブクラスには、dep_key を実装する必要があります。現在のクラスは %s"
@@ -5831,58 +6303,62 @@ msgstr "%(ip)s にインストールするファイルでは、そのインス�
 msgid "%(lp)s says it should be run with '%(bin)s' which is a relative path."
 msgstr "%(lp)s によれば、相対パス '%(bin)s' を使用して実行されるべきです。"
 
-#: ../modules/flavor/smf_manifest.py:146
+#: ../modules/flavor/smf_manifest.py:164
 msgid "FMRI does not appear to be valid"
 msgstr "FMRI が有効ではないようです"
 
-#: ../modules/flavor/smf_manifest.py:179 ../modules/flavor/smf_manifest.py:186
+#: ../modules/flavor/smf_manifest.py:197 ../modules/flavor/smf_manifest.py:204
 #, python-format
 msgid "more than one set of dependencies found: %s"
 msgstr "依存性のセットが複数見つかりました: %s"
 
 #. we can't satisfy the dependency at all
-#: ../modules/flavor/smf_manifest.py:205
+#: ../modules/flavor/smf_manifest.py:223
 msgid "cannot resolve FMRI to a delivered file"
 msgstr "もたらされたファイルに FMRI を解決できません"
 
-#: ../modules/flavor/smf_manifest.py:211
-#, python-format
-msgid "FMRI is delivered by multiple files: %s"
-msgstr "FMRI は複数のファイルによってもたらされます: %s"
-
-#: ../modules/flavor/smf_manifest.py:231
+#: ../modules/flavor/smf_manifest.py:241
 #, python-format
 msgid "%s actions cannot deliver SMF manifests"
 msgstr "%s アクションでは SMF マニフェストはもたらされません"
 
-#: ../modules/flavor/smf_manifest.py:249
+#: ../modules/flavor/smf_manifest.py:259
 #, python-format
 msgid "Unable to parse SMF manifest %s"
 msgstr "SMF マニフェスト %s を解析できません"
 
-#: ../modules/flavor/smf_manifest.py:261
+#: ../modules/flavor/smf_manifest.py:271
 #, python-format
 msgid "Problem resolving %(fmri)s: %(err)s"
 msgstr "%(fmri)s の解決中に問題が発生しました: %(err)s"
 
-#: ../modules/flavor/smf_manifest.py:272
+#: ../modules/flavor/smf_manifest.py:282
 #, python-format
 msgid "Problem determining dependencies for %(fmri)s:%(err)s"
 msgstr "%(fmri)s の依存性の判定中に問題が発生しました: %(err)s"
 
-#: ../modules/flavor/smf_manifest.py:287
+#: ../modules/flavor/smf_manifest.py:297
 #, python-format
 msgid ""
 "Unable to generate SMF dependency on %(dep_fmri)s declared in %(proto_file)s "
 "by %(fmri)s: %(err)s"
 msgstr "%(fmri)s によって %(proto_file)s で宣言されている %(dep_fmri)s の SMF 依存性を生成できません: %(err)s"
 
+#: ../modules/flavor/smf_manifest.py:314
+#, python-format
+msgid ""
+"Unable to generate SMF dependency on the service FMRI %(dep_fmri)s declared "
+"in %(proto_file)s by %(fmri)s. SMF dependencies should always resolve to SMF "
+"instances rather than SMF services and multiple files deliver instances of "
+"this service: %(manifests)s"
+msgstr "%(fmri)s によって %(proto_file)s で宣言されているサービス FMRI %(dep_fmri)s の SMF 依存性を生成できません。SMF 依存性は SMF サービスではなく常に SMF インスタンスに解決されるべきであり、複数のファイルからこのサービスのインスタンスが生成されます: %(manifests)s"
+
 #: ../modules/fmri.py:96
 #, python-format
 msgid "FMRI '%s' is missing version information."
 msgstr "FMRI '%s' はバージョン情報がありません。"
 
-#: ../modules/fmri.py:185 ../modules/fmri.py:202
+#: ../modules/fmri.py:197 ../modules/fmri.py:214
 msgid "Missing '/' after publisher name"
 msgstr "発行元名の後ろに '/' がありません"
 
@@ -6094,7 +6570,7 @@ msgstr "更新マネージャー"
 msgid "Preparing..."
 msgstr "準備中..."
 
-#: ../modules/gui/installupdate.py:162 ../modules/gui/installupdate.py:890
+#: ../modules/gui/installupdate.py:162 ../modules/gui/installupdate.py:895
 msgid "Downloading..."
 msgstr "ダウンロード中..."
 
@@ -6139,7 +6615,7 @@ msgid_plural "Review the packages to be Installed/Updated"
 msgstr[0] "インストール/更新するパッケージを確認します"
 msgstr[1] "インストール/更新するパッケージを確認します"
 
-#: ../modules/gui/installupdate.py:466 ../modules/gui/installupdate.py:1010
+#: ../modules/gui/installupdate.py:466 ../modules/gui/installupdate.py:1015
 msgid "Updates Confirmation"
 msgstr "更新の確認"
 
@@ -6183,11 +6659,16 @@ msgstr "キャンセル中..."
 msgid "Ensuring %s is up to date..."
 msgstr "%s が最新であることを確認しています..."
 
-#: ../modules/gui/installupdate.py:712
+#: ../modules/gui/installupdate.py:692
+#, python-format
+msgid "%s is up to date.\n"
+msgstr "%s は最新です。\n"
+
+#: ../modules/gui/installupdate.py:717
 msgid "Inventory exception:\n"
 msgstr "目録の例外:\n"
 
-#: ../modules/gui/installupdate.py:725
+#: ../modules/gui/installupdate.py:730
 #, python-format
 msgid ""
 "Please check the network connection.\n"
@@ -6196,7 +6677,7 @@ msgid ""
 "%s"
 msgstr "ネットワーク接続を確認してください。\nリポジトリにアクセスできますか?\n\n%s"
 
-#: ../modules/gui/installupdate.py:731
+#: ../modules/gui/installupdate.py:736
 #, python-format
 msgid ""
 "\n"
@@ -6206,14 +6687,14 @@ msgid ""
 "%s"
 msgstr "\n有効なパッケージデポに接続できません。ネットワークの設定を確認し、Web ブラウザを使用してサーバーに接続してみてください。\n\n%s"
 
-#: ../modules/gui/installupdate.py:738
+#: ../modules/gui/installupdate.py:743
 #, python-format
 msgid ""
 "pkg(5) appears to be out of date and should be updated.\n"
 "Please update %s package"
 msgstr "pkg(5) は古くなっているため更新することをお勧めします。\n%s パッケージを更新してください"
 
-#: ../modules/gui/installupdate.py:745
+#: ../modules/gui/installupdate.py:750
 #, python-format
 msgid ""
 "Cannot remove:\n"
@@ -6221,14 +6702,14 @@ msgid ""
 "Due to the following packages that depend on it:\n"
 msgstr "削除できません:\n\t%s\n次のパッケージがこれに依存しているためです:\n"
 
-#: ../modules/gui/installupdate.py:766
+#: ../modules/gui/installupdate.py:771
 #, python-format
 msgid ""
 "Press %(button)s button to continue removal without\n"
 "\t%(package)s\n"
 msgstr "%(package)s なしで削除を続行するには、\n\t%(button)s ボタンを押します\n"
 
-#: ../modules/gui/installupdate.py:777
+#: ../modules/gui/installupdate.py:782
 #, python-format
 msgid ""
 "\n"
@@ -6236,19 +6717,19 @@ msgid ""
 "user is often a source of this problem."
 msgstr "\n多くの場合、%s の実行中に常に特権ユーザーとして pkg コマンドを実行していないことがこの問題の原因です。"
 
-#: ../modules/gui/installupdate.py:780
+#: ../modules/gui/installupdate.py:785
 msgid ""
 "\n"
 "To rebuild index, please execute the following command as a privileged user:"
 msgstr "\nインデックスを再構築するには、特権ユーザーとして次のコマンドを実行してください:"
 
-#: ../modules/gui/installupdate.py:782
+#: ../modules/gui/installupdate.py:787
 msgid ""
 "\n"
 "\tpkg rebuild-index"
 msgstr "\n\tpkg rebuild-index"
 
-#: ../modules/gui/installupdate.py:786
+#: ../modules/gui/installupdate.py:791
 msgid ""
 "There was an error during installation. The search index is corrupted. You "
 "might want try to fix this problem by executing the following command as a "
@@ -6256,18 +6737,18 @@ msgid ""
 "\tpkg rebuild-index"
 msgstr "インストール中にエラーが発生しました。検索インデックスが壊れています。特権ユーザーとして次のコマンドを実行することによって、この問題の解決を試みることをお勧めします:\n\tpkg rebuild-index"
 
-#: ../modules/gui/installupdate.py:794
+#: ../modules/gui/installupdate.py:799
 msgid "This is a Live Image. The install operation can't be performed."
 msgstr "これはライブイメージです。インストール操作を実行できません。"
 
-#: ../modules/gui/installupdate.py:799
+#: ../modules/gui/installupdate.py:804
 msgid ""
 "The requested operation would affect files that cannot be modified in the "
 "Live Image.\n"
 "Please retry this operation on an alternate boot environment."
 msgstr "要求された操作は、ライブイメージ内で変更できないファイルに影響を及ぼします。\n操作を代替ブート環境で再試行してください。"
 
-#: ../modules/gui/installupdate.py:805
+#: ../modules/gui/installupdate.py:810
 #, python-format
 msgid ""
 "There was an error during installation.\n"
@@ -6275,7 +6756,7 @@ msgid ""
 "You might want try to fix this problem by restarting %s\n"
 msgstr "インストール中にエラーが発生しました。\n操作の計画がないため操作を完了できません。%s を再起動することによって、この問題の解決を試みることをお勧めします\n"
 
-#: ../modules/gui/installupdate.py:812
+#: ../modules/gui/installupdate.py:817
 #, python-format
 msgid ""
 "There was an error during installation.\n"
@@ -6283,20 +6764,20 @@ msgid ""
 "might want try to fix this problem by restarting %s\n"
 msgstr "インストール中にエラーが発生しました。\nイメージの状態が正しくないため操作を完了できません。%s を再起動することによって、この問題の解決を試みることをお勧めします\n"
 
-#: ../modules/gui/installupdate.py:823
+#: ../modules/gui/installupdate.py:828
 msgid "Specifying BE Name not supported.\n"
 msgstr "BE 名を指定することはできません。\n"
 
-#: ../modules/gui/installupdate.py:886
+#: ../modules/gui/installupdate.py:891
 #, python-format
 msgid "Updating %s"
 msgstr "%s を更新しています"
 
-#: ../modules/gui/installupdate.py:892
+#: ../modules/gui/installupdate.py:897
 msgid "Executing..."
 msgstr "実行しています..."
 
-#: ../modules/gui/installupdate.py:899 ../modules/gui/installupdate.py:1091
+#: ../modules/gui/installupdate.py:904 ../modules/gui/installupdate.py:1096
 msgid ""
 "\n"
 "\n"
@@ -6304,92 +6785,97 @@ msgid ""
 "has completed successfuly."
 msgstr "\n\nインデックス作成中にエラーが発生しましたが、イメージ更新、インストール、またはアンインストールが正常に終了しました。"
 
-#: ../modules/gui/installupdate.py:910
+#: ../modules/gui/installupdate.py:915
 msgid "Gathering package information, please wait..."
 msgstr "パッケージ情報を収集しています。しばらくお待ちください..."
 
-#: ../modules/gui/installupdate.py:913
+#: ../modules/gui/installupdate.py:918
 msgid "Gathering package information"
 msgstr "パッケージ情報を収集しています。"
 
-#: ../modules/gui/installupdate.py:926 ../modules/gui/installupdate.py:1394
+#: ../modules/gui/installupdate.py:931 ../modules/gui/installupdate.py:1400
 msgid "All packages already installed."
 msgstr "すべてのパッケージがすでにインストールされています。"
 
-#: ../modules/gui/installupdate.py:930
+#: ../modules/gui/installupdate.py:935
 msgid "No updates necessary"
 msgstr "更新の必要はありません"
 
-#: ../modules/gui/installupdate.py:932
+#: ../modules/gui/installupdate.py:937
 msgid "No updates available"
 msgstr "有効な更新はありません"
 
-#: ../modules/gui/installupdate.py:934
+#: ../modules/gui/installupdate.py:939
 msgid "All features already installed"
 msgstr "すべての機能がすでにインストールされています"
 
-#: ../modules/gui/installupdate.py:1012
+#: ../modules/gui/installupdate.py:1017
 msgid "Review the package which will be affected by Updates"
 msgid_plural "Review the packages which will be affected by Updates"
 msgstr[0] "「更新」によって影響を受けるパッケージを確認します"
 msgstr[1] "「更新」によって影響を受けるパッケージを確認します"
 
-#: ../modules/gui/installupdate.py:1143 ../modules/gui/installupdate.py:1200
+#: ../modules/gui/installupdate.py:1148 ../modules/gui/installupdate.py:1205
 msgid "No further information available"
 msgstr "利用できる詳細情報はありません"
 
-#: ../modules/gui/installupdate.py:1147 ../modules/gui/installupdate.py:1192
+#: ../modules/gui/installupdate.py:1152 ../modules/gui/installupdate.py:1197
 msgid ""
 "\n"
 "Error:\n"
 msgstr "\nエラー:\n"
 
-#: ../modules/gui/installupdate.py:1150 ../modules/gui/installupdate.py:1184
+#: ../modules/gui/installupdate.py:1155 ../modules/gui/installupdate.py:1189
 msgid " - Failed </b>"
 msgstr " - 失敗しました </b>"
 
-#: ../modules/gui/installupdate.py:1190
+#: ../modules/gui/installupdate.py:1195
 #, python-format
 msgid ""
 "An unknown error occurred in the %s stage.\n"
 "\n"
 msgstr "%s 段階で不明なエラーが発生しました。\n\n"
 
-#: ../modules/gui/installupdate.py:1195
+#: ../modules/gui/installupdate.py:1200
 msgid "Exception traceback:\n"
 msgstr "例外のトレースバック:\n"
 
-#: ../modules/gui/installupdate.py:1202
+#: ../modules/gui/installupdate.py:1207
 msgid "List of configured publishers:"
 msgstr "構成済み発行元リスト:"
 
-#: ../modules/gui/installupdate.py:1289
+#: ../modules/gui/installupdate.py:1291
 #, python-format
-msgid "Downloaded %(current)s of %(total)s"
-msgstr "%(current)s/%(total)s がダウンロードされました"
+msgid "(%s)"
+msgstr "(%s)"
 
-#: ../modules/gui/installupdate.py:1303
+#: ../modules/gui/installupdate.py:1293
+#, python-format
+msgid "Downloaded %(current)s of %(total)s %(speed)s"
+msgstr "%(current)s/%(total)s がダウンロードされました %(speed)s"
+
+#: ../modules/gui/installupdate.py:1308
 #, python-format
 msgid "%(cur)d of %(goal)d - %(name)s"
 msgstr "%(cur)d/%(goal)d - %(name)s"
 
-#: ../modules/gui/installupdate.py:1366 ../modules/gui/installupdate.py:1396
+#: ../modules/gui/installupdate.py:1372 ../modules/gui/installupdate.py:1402
 msgid "Installation completed successfully"
 msgstr "インストールが正常に完了しました"
 
-#: ../modules/gui/installupdate.py:1368
+#: ../modules/gui/installupdate.py:1374
 msgid "Packages removed successfully"
 msgstr "パッケージが正常に削除されました"
 
-#: ../modules/gui/installupdate.py:1370
+#: ../modules/gui/installupdate.py:1376
 msgid "Packages updated successfully"
 msgstr "パッケージが正常に更新されました"
 
-#: ../modules/gui/installupdate.py:1372
+#: ../modules/gui/installupdate.py:1378
 msgid "Optional components updated successfully"
 msgstr "オプションのコンポーネントが正常に更新されました"
 
-#: ../modules/gui/installupdate.py:1418
+#: ../modules/gui/installupdate.py:1424
 msgid ""
 "Not enough disk space, the selected action cannot be performed.\n"
 "\n"
@@ -6397,45 +6883,45 @@ msgid ""
 "cancel the action."
 msgstr "ディスク容量が不足しているため選択したアクションを実行できません。\n\n既存の BE を管理してディスク容量を解放する場合は「了解」をクリックし、アクションを取り消す場合は「取消し」をクリックしてください。"
 
-#: ../modules/gui/installupdate.py:1422
+#: ../modules/gui/installupdate.py:1428
 msgid "Not Enough Disk Space"
 msgstr "ディスク容量の不足"
 
-#: ../modules/gui/installupdate.py:1444
+#: ../modules/gui/installupdate.py:1450
 msgid "Packages To Be Updated:\n"
 msgstr "更新するパッケージ:\n"
 
-#: ../modules/gui/installupdate.py:1451
+#: ../modules/gui/installupdate.py:1457
 msgid "Packages To Be Installed:\n"
 msgstr "インストールするパッケージ:\n"
 
-#: ../modules/gui/installupdate.py:1458
+#: ../modules/gui/installupdate.py:1464
 msgid "Packages To Be Removed:\n"
 msgstr "削除するパッケージ:\n"
 
-#: ../modules/gui/installupdate.py:1467
+#: ../modules/gui/installupdate.py:1473
 msgid "Optional components\n"
 msgstr "オプションのコンポーネント\n"
 
-#: ../modules/gui/installupdate.py:1469
+#: ../modules/gui/installupdate.py:1475
 #, python-format
 msgid "Number of facets set: %s\n"
 msgstr "ファセットセットの数: %s\n"
 
-#: ../modules/gui/installupdate.py:1559
+#: ../modules/gui/installupdate.py:1565
 msgid "A_ccept"
 msgstr "同意(_C)"
 
-#: ../modules/gui/installupdate.py:1561
+#: ../modules/gui/installupdate.py:1567
 msgid ""
 "You must accept the terms of the license before downloading this package."
 msgstr "このパッケージをダウンロードする前にライセンス契約書の条項に同意する必要があります。"
 
-#: ../modules/gui/installupdate.py:1574
+#: ../modules/gui/installupdate.py:1580
 msgid "You must view the terms of the license before downloading this package."
 msgstr "このパッケージをダウンロードする前にライセンス契約書の条項に目を通す必要があります。"
 
-#: ../modules/gui/installupdate.py:1582
+#: ../modules/gui/installupdate.py:1588
 #, python-format
 msgid "%s License"
 msgstr "%s ライセンス"
@@ -6648,38 +7134,67 @@ msgstr "地域"
 msgid " [latin]"
 msgstr " [ラテン語]"
 
-#: ../modules/gui/progress.py:45 ../modules/gui/progress.py:48
+#: ../modules/gui/progress.py:69
 #, python-format
-msgid "Retrieving catalog '%s'...\n"
-msgstr "カタログ '%s' を取得しています...\n"
+msgid "Retrieving catalog: %s"
+msgstr "カタログを取得しています: %s"
 
-#: ../modules/gui/progress.py:57 ../modules/gui/progress.py:59
-msgid "Caching catalogs ...\n"
-msgstr "カタログをキャッシュしています...\n"
-
-#: ../modules/gui/progress.py:67 ../modules/gui/progress.py:70
-msgid "Loading catalog cache ...\n"
-msgstr "カタログキャッシュを読み込んでいます...\n"
-
-#: ../modules/gui/progress.py:82 ../modules/gui/progress.py:85
+#: ../modules/gui/progress.py:72
 #, python-format
-msgid "Refreshing catalog %s\n"
-msgstr "カタログ %s をリフレッシュしています\n"
+msgid "Refreshing catalog: %s"
+msgstr "カタログをリフレッシュしています: %s"
 
-#: ../modules/gui/progress.py:91 ../modules/gui/progress.py:95
+#: ../modules/gui/progress.py:86
 #, python-format
-msgid "Finished refreshing catalog %s\n"
-msgstr "カタログ %s のリフレッシュを終了しました\n"
+msgid "Up to date check: planning (%s)"
+msgstr "最新かどうかの確認: 計画 (%s)"
 
-#: ../modules/gui/progress.py:107
+#: ../modules/gui/progress.py:91
 #, python-format
-msgid "Evaluating: %s"
-msgstr "評価中: %s"
+msgid "Planning: %s"
+msgstr "計画: %s"
 
-#: ../modules/gui/progress.py:128
+#: ../modules/gui/progress.py:95
+msgid "... "
+msgstr "... "
+
+#: ../modules/gui/progress.py:97 ../modules/gui/progress.py:181
+msgid "Done\n"
+msgstr "完了\n"
+
+#: ../modules/gui/progress.py:109
+msgid "Planning: Complete\n"
+msgstr "計画: 完了\n"
+
+#: ../modules/gui/progress.py:116
+#, python-format
+msgid "Fetching %d manifests"
+msgstr "%d 個のマニフェストを取得しています"
+
+#: ../modules/gui/progress.py:131
+msgid "Committing manifests"
+msgstr "マニフェストのコミット中"
+
+#: ../modules/gui/progress.py:145
 #, python-format
 msgid "Package %d of %d: %s\n"
 msgstr "パッケージ %d/%d: %s\n"
+
+#: ../modules/gui/progress.py:193
+msgid ""
+"Finished processing linked images.\n"
+"\n"
+msgstr "リンクされたイメージの処理が終了しました。\n\n"
+
+#: ../modules/gui/progress.py:214
+#, python-format
+msgid "Linked image '%s' output:\n"
+msgstr "リンクされたイメージ '%s' の出力:\n"
+
+#: ../modules/gui/progress.py:227
+#, python-format
+msgid "Linked images: %s done; %d working: %s\n"
+msgstr "リンクされたイメージ: %s 完了; %d 処理中: %s\n"
 
 #: ../modules/gui/repository.py:32
 msgid "Approved"
@@ -7482,17 +7997,9 @@ msgstr "%s の追加に失敗しました。\n"
 msgid "Web Installer Error: %s"
 msgstr "Web インストーラエラー: %s"
 
-#: ../modules/indexer.py:96
+#: ../modules/indexer.py:97
 msgid "sort_file_max_size must be greater than 0"
 msgstr "sort_file_max_size は 0 より大きい必要があります"
-
-#: ../modules/indexer.py:191
-msgid "Reading Existing Index"
-msgstr "既存インデックスの読み取り"
-
-#: ../modules/indexer.py:709 ../modules/indexer.py:740
-msgid "Indexing Packages"
-msgstr "パッケージのインデックス作成"
 
 #: ../modules/lint/base.py:309
 #, python-format
@@ -7519,52 +8026,52 @@ msgstr "pkglintrc ファイル %(config_file)s が存在しないか壊れてい
 msgid "Invalid release string: %s"
 msgstr "無効なリリース文字列: '%s'"
 
-#: ../modules/lint/engine.py:371
+#: ../modules/lint/engine.py:370
 #, python-format
 msgid "loading extensions: duplicate checker name %(name)s: %(class)s"
 msgstr "拡張機能のロード: 検査名 %(name)s は重複しています: %(class)s"
 
-#: ../modules/lint/engine.py:384
+#: ../modules/lint/engine.py:383
 #, python-format
 msgid ""
 "loading extension %(checker)s: duplicate pkglint_id %(pkglint_id)s in %"
 "(method)s"
 msgstr "拡張機能 %(checker)s のロード: %(method)s の pkglint_id %(pkglint_id)s は重複しています"
 
-#: ../modules/lint/engine.py:434
+#: ../modules/lint/engine.py:433
 #, python-format
 msgid "Error parsing config value for %(key)s: %(err)s"
 msgstr "%(key)s の構成値の解析中にエラーが発生しました: %(err)s"
 
-#: ../modules/lint/engine.py:506
+#: ../modules/lint/engine.py:505
 msgid ""
 "Either a cache directory, or some local manifest files must be provided."
 msgstr "キャッシュディレクトリまたはいくつかのローカルマニフェストファイルを指定する必要があります。"
 
-#: ../modules/lint/engine.py:511
+#: ../modules/lint/engine.py:510
 msgid ""
 "A cache directory must be provided if using reference or lint repositories."
 msgstr "参照リポジトリまたは lint リポジトリを使用している場合は、キャッシュディレクトリを指定する必要があります。"
 
-#: ../modules/lint/engine.py:527
+#: ../modules/lint/engine.py:526
 msgid "Ignoring -l option, existing image found."
 msgstr "-l オプションを無視します。既存のイメージが見つかりました。"
 
-#: ../modules/lint/engine.py:546
+#: ../modules/lint/engine.py:545
 #, python-format
 msgid "Unable to create lint image: %s"
 msgstr "lint イメージを作成できません: %s"
 
-#: ../modules/lint/engine.py:557
+#: ../modules/lint/engine.py:556
 msgid "Ignoring -r option, existing image found."
 msgstr "-r オプションを無視します。既存のイメージが見つかりました。"
 
-#: ../modules/lint/engine.py:581
+#: ../modules/lint/engine.py:580
 #, python-format
 msgid "Unable to create reference image: %s"
 msgstr "参照イメージを作成できません: %s"
 
-#: ../modules/lint/engine.py:586
+#: ../modules/lint/engine.py:585
 #, python-format
 msgid "Unable to access any pkglint images under %s"
 msgstr "%s の下の pkglint イメージにアクセスできません"
@@ -7581,56 +8088,56 @@ msgstr "%s は、pkglint の拡張機能で使用される既知の Checker サ�
 msgid "Total number of checks found: %s"
 msgstr "見つかったチェックの合計数: %s"
 
-#: ../modules/lint/engine.py:698
+#: ../modules/lint/engine.py:700
 #, python-format
 msgid "unable to construct fmri from %s"
 msgstr "%s から FMRI を作成できません"
 
-#: ../modules/lint/engine.py:707
+#: ../modules/lint/engine.py:709
 #, python-format
 msgid "invalid pkg name %s"
 msgstr "無効なパッケージ名 %s"
 
-#: ../modules/lint/engine.py:734
+#: ../modules/lint/engine.py:736
 #, python-format
 msgid "get_fmri(pattern) %(pattern)s matched %(count)s packages: %(pkgs)s"
 msgstr "get_fmri(pattern) %(pattern)s は %(count)s 個のパッケージに一致しました: %(pkgs)s"
 
-#: ../modules/lint/engine.py:822 ../sysrepo.py:184
+#: ../modules/lint/engine.py:824 ../sysrepo.py:190
 #, python-format
 msgid "Unable to get image at %(dir)s: %(reason)s"
 msgstr "%(dir)s にあるイメージを取得できません: %(reason)s"
 
-#: ../modules/lint/engine.py:836
+#: ../modules/lint/engine.py:838
 msgid "pkglint only supports a single publisher per image."
 msgstr "pkglint では、1 つのイメージにつき 1 つの発行元だけがサポートされます。"
 
-#: ../modules/lint/engine.py:845
+#: ../modules/lint/engine.py:847
 #, python-format
 msgid "Creating image at %s"
 msgstr "%s にイメージを作成しています"
 
-#: ../modules/lint/engine.py:861
+#: ../modules/lint/engine.py:863
 #, python-format
 msgid "Checking %s"
 msgstr "%s をチェックしています"
 
-#: ../modules/lint/engine.py:932
+#: ../modules/lint/engine.py:934
 #, python-format
 msgid "Not running %(check)s checks on linted action %(action)s"
 msgstr "lint で確認されたアクション %(action)s に対する %(check)s チェックは実行されていません"
 
-#: ../modules/lint/engine.py:999
+#: ../modules/lint/engine.py:1002
 #, python-format
 msgid "obsolete package: %s"
 msgstr "廃止されたパッケージ: %s"
 
-#: ../modules/lint/engine.py:1007
+#: ../modules/lint/engine.py:1010
 #, python-format
 msgid "loop detected in rename: %s"
 msgstr "名前の変更でループが検出されました: %s"
 
-#: ../modules/lint/engine.py:1081
+#: ../modules/lint/engine.py:1084
 #, python-format
 msgid "%s is not set in manifest"
 msgstr "%s はマニフェストで設定されていません"
@@ -8196,26 +8703,26 @@ msgstr "%(pkg)s に pkg.linted 属性が検出されました: %(linted)s"
 msgid "Show manifests with pkg.linted attributes."
 msgstr "pkg.linted 属性を持つマニフェストを表示します。"
 
-#: ../modules/manifest.py:704
+#: ../modules/manifest.py:701 ../modules/manifest.py:748
 #, python-format
 msgid ""
 "%(fp)s:\n"
 "%(e)s"
 msgstr "%(fp)s:\n%(e)s"
 
-#: ../modules/manifest.py:716
+#: ../modules/manifest.py:760
 #, python-format
 msgid ""
 "%(fp)s contains an action which is missing the expected attribute: %(at)s.\n"
 "The action is:%(act)s"
 msgstr "%(fp)s は、必要な属性 %(at)s が不足しているアクションを含んでいます。\nアクションは %(act)s です"
 
-#: ../modules/manifest.py:839
+#: ../modules/manifest.py:883
 #, python-format
 msgid "Attribute value '%s' not 'true' or 'false'"
 msgstr "属性の値 '%s' は 'true' または 'false' ではありません"
 
-#: ../modules/manifest.py:880
+#: ../modules/manifest.py:924
 #, python-format
 msgid "%(forv)s '%(v)s' specified multiple times"
 msgstr "%(forv)s '%(v)s' が複数回指定されました"
@@ -8256,7 +8763,7 @@ msgid ""
 "'%s' is not a valid mediator-priority; valid values are 'site' or 'vendor'"
 msgstr "'%s' は有効な mediator-priority ではありません。有効な値は 'site' または 'vendor' です"
 
-#: ../modules/misc.py:72
+#: ../modules/misc.py:86
 #, python-format
 msgid ""
 "\n"
@@ -8266,63 +8773,79 @@ msgid ""
 "message."
 msgstr "\n\nこれは pkg(5) バージョン %(version)s の内部エラーです。上の情報\nとこのメッセージを含め、この問題に関するサービス要求を記録\nしてください。"
 
-#: ../modules/misc.py:408
+#: ../modules/misc.py:437
 msgid "B"
 msgstr "B"
 
-#: ../modules/misc.py:409
+#: ../modules/misc.py:438
 msgid "kB"
 msgstr "KB"
 
-#: ../modules/misc.py:410
+#: ../modules/misc.py:438
+msgid "k"
+msgstr "k"
+
+#: ../modules/misc.py:439
 msgid "MB"
 msgstr "MB"
 
-#: ../modules/misc.py:411
+#: ../modules/misc.py:439
+msgid "M"
+msgstr "M"
+
+#: ../modules/misc.py:440
 msgid "GB"
 msgstr "GB"
 
-#: ../modules/misc.py:412
+#: ../modules/misc.py:440
+msgid "G"
+msgstr "G"
+
+#: ../modules/misc.py:441
 msgid "TB"
 msgstr "TB"
 
-#: ../modules/misc.py:413
+#: ../modules/misc.py:442
 msgid "PB"
 msgstr "PB"
 
-#: ../modules/misc.py:414 ../modules/misc.py:418
+#: ../modules/misc.py:443 ../modules/misc.py:447
 msgid "EB"
 msgstr "EB"
 
-#: ../modules/misc.py:1102
+#: ../modules/misc.py:443
+msgid "E"
+msgstr "E"
+
+#: ../modules/misc.py:1309
 #, python-format
 msgid "illegal argument -- %s"
 msgstr "引数が不正です -- %s"
 
-#: ../modules/misc.py:1115
+#: ../modules/misc.py:1322
 #, python-format
 msgid "'%s' and '%s' have the same meaning"
 msgstr "'%s' と '%s' は同じ意味です"
 
-#: ../modules/p5i.py:92 ../modules/p5s.py:76
+#: ../modules/p5i.py:92 ../modules/p5s.py:87
 msgid "missing version"
 msgstr "不足しているバージョン"
 
-#: ../modules/p5i.py:94 ../modules/p5s.py:78
+#: ../modules/p5i.py:94 ../modules/p5s.py:89
 msgid "invalid version"
 msgstr "無効なバージョン"
 
-#: ../modules/p5p.py:60
+#: ../modules/p5p.py:61
 #, python-format
 msgid "%s is not in a supported or recognizable archive index format."
 msgstr "%s はサポートされていないか、認識できないアーカイブインデックス形式です。"
 
-#: ../modules/p5p.py:213
+#: ../modules/p5p.py:214
 #, python-format
 msgid "Archive %s is missing, unsupported, or corrupt."
 msgstr "アーカイブ %s は存在しないか、サポートされていないか、壊れています。"
 
-#: ../modules/p5p.py:228
+#: ../modules/p5p.py:229
 #, python-format
 msgid ""
 "Package archive %(arc_name)s contains corrupt entries for the requested "
@@ -8330,7 +8853,7 @@ msgid ""
 "%(files)s."
 msgstr "パッケージアーカイブ %(arc_name)s には、要求されたパッケージファイルの壊れたエントリが含まれています:\n%(files)s。"
 
-#: ../modules/p5p.py:245
+#: ../modules/p5p.py:246
 #, python-format
 msgid ""
 "Package archive %(arc_name)s does not contain the requested package file"
@@ -8338,7 +8861,7 @@ msgid ""
 "%(files)s."
 msgstr "パッケージアーカイブ %(arc_name)s には、要求されたパッケージファイルが含まれていません:\n%(files)s。"
 
-#: ../modules/p5p.py:262
+#: ../modules/p5p.py:263
 #, python-format
 msgid ""
 "No package manifest for package '%(pfmri)s' exists in archive %(arc_name)s."
@@ -8534,15 +9057,15 @@ msgstr "クエリーを構文解析できません。"
 msgid "Problem occurred with: %s"
 msgstr "次の箇所で問題が発生しました: %s"
 
-#: ../modules/query_parser.py:552
+#: ../modules/query_parser.py:545
 msgid "This expression produces action results:"
 msgstr "この式で生成される結果はアクションです:"
 
-#: ../modules/query_parser.py:554
+#: ../modules/query_parser.py:547
 msgid "This expression produces package results:"
 msgstr "この式で生成される結果はパッケージです:"
 
-#: ../modules/query_parser.py:557
+#: ../modules/query_parser.py:550
 msgid ""
 "'AND' and 'OR' require those expressions to produce the same type of results."
 msgstr "'AND' と 'OR' では、これらの式から 同じタイプの結果が生成される必要があります。"
@@ -8698,60 +9221,30 @@ msgstr "リポジトリの発行元が指定されなかったか、デフォル
 msgid "No publisher matching '%s' could be found."
 msgstr "'%s' と一致する発行元が見つかりませんでした。"
 
-#: ../modules/server/repository.py:676
+#: ../modules/server/repository.py:685
 #, python-format
 msgid "Skipping %(name)s; invalid manifest: %(error)s"
 msgstr "%(name)s をスキップしています; マニフェストが無効です: %(error)s"
 
 #. Create the transformed catalog.
-#: ../modules/server/repository.py:845
+#: ../modules/server/repository.py:854
 msgid "Transforming repository catalog; this process will take some time."
 msgstr "リポジトリカタログを変換しています。この処理には時間がかかります。"
 
-#: ../modules/server/repository.py:1392
+#: ../modules/server/repository.py:1401
 #, python-format
 msgid ""
 "Index corrupted or out of date. Removing old index directory (%s)  and "
 "rebuilding search indexes."
 msgstr "インデックスが壊れているか古くなっています。古いインデックスディレクトリ (%s) を削除して検索インデックスを再構築しています。"
 
-#: ../modules/server/repository.py:1409
+#: ../modules/server/repository.py:1418
 msgid "writable root not writable by current user id or group."
 msgstr "現在のユーザー ID またはグループでは書き込みできない書き込み可能ルートです。"
 
-#: ../modules/server/repository.py:1412
+#: ../modules/server/repository.py:1421
 msgid "unable to write to index directory."
 msgstr "インデックスディレクトリに書き込めません。"
-
-#. First, dump all search data as it will be invalidated
-#. as soon as the catalog is updated.
-#: ../modules/server/repository.py:1463
-msgid "Delete search index"
-msgstr "検索インデックスの削除"
-
-#. Next, remove all of the packages to be removed
-#. from the catalog (if they are present).  That way
-#. any active clients are less likely to be surprised
-#. when files for packages start disappearing.
-#: ../modules/server/repository.py:1472
-msgid "Update catalog"
-msgstr "カタログの更新"
-
-#: ../modules/server/repository.py:1501
-msgid "Analyze removed packages"
-msgstr "削除されたパッケージの解析"
-
-#: ../modules/server/repository.py:1525
-msgid "Analyze repository packages"
-msgstr "リポジトリパッケージの解析"
-
-#: ../modules/server/repository.py:1580
-msgid "Remove package manifests"
-msgstr "パッケージマニフェストの削除"
-
-#: ../modules/server/repository.py:1590
-msgid "Remove package files"
-msgstr "パッケージファイルの削除"
 
 #: ../modules/server/transaction.py:73
 #, python-format
@@ -9054,13 +9547,13 @@ msgstr[1] "%(s1)s%(search_text)s%(e1)s に一致するパッケージが %(numbe
 msgid "Unable to initialize gtk"
 msgstr "gtk を初期化できません"
 
-#: ../pkgdep.py:55
+#: ../pkgdep.py:56
 msgid ""
 "To continue, the target image must be upgraded before it can be used.  See "
 "pkg(1) update-format for more information."
 msgstr "続行するには、ターゲットイメージを使用する前にアップグレードする必要があります。詳細は、pkg(1) update-format を参照してください。"
 
-#: ../pkgdep.py:84
+#: ../pkgdep.py:85
 msgid ""
 "Usage:\n"
 "        pkgdepend [options] command [cmd_options] [operands]\n"
@@ -9077,64 +9570,64 @@ msgid ""
 "        PKG_IMAGE"
 msgstr "使用方法:\n        pkgdepend [options] command [cmd_options] [operands]\n\nサブコマンド:\n        pkgdepend generate [-IMm] -d dir [-d dir] [-D name=value] [-k path]\n            manifest_path\n        pkgdepend [options] resolve [-dmosv] manifest ...\n\nオプション:\n        -R dir\n        --help または -?\n環境:\n        PKG_IMAGE"
 
-#: ../pkgdep.py:123 ../pkgdep.py:165
+#: ../pkgdep.py:124 ../pkgdep.py:166
 #, python-format
 msgid "The proto directory %s could not be found."
 msgstr "プロトディレクトリ %s が見つかりません。"
 
-#: ../pkgdep.py:130
+#: ../pkgdep.py:131
 msgid "-D arguments must be of the form 'name=value'."
 msgstr "引数 -D は 'name=value' の形式になっている必要があります。"
 
-#: ../pkgdep.py:149
+#: ../pkgdep.py:150
 msgid "Generate only accepts one or two arguments."
 msgstr "generate は 1 つまたは 2 つの引数だけを受け入れます。"
 
-#: ../pkgdep.py:152
+#: ../pkgdep.py:153
 msgid ""
 "ORIGIN may not be specified using -D. It will be inferred from the\n"
 "install paths of the files."
 msgstr "ORIGIN は -D を使用して指定しなくても構いません。\nそれはファイルのインストールパスから推測されます。"
 
-#: ../pkgdep.py:160 ../pkgdep.py:246
+#: ../pkgdep.py:161 ../pkgdep.py:247
 #, python-format
 msgid "The manifest file %s could not be found."
 msgstr "マニフェストファイル %s が見つかりません。"
 
-#: ../pkgdep.py:169
+#: ../pkgdep.py:170
 msgid "At least one proto directory must be provided."
 msgstr "少なくとも 1 つのプロトディレクトリを指定する必要があります。"
 
-#: ../pkgdep.py:176
+#: ../pkgdep.py:177
 #, python-format
 msgid ""
 "Could not parse manifest %(manifest)s because of the following line:\n"
 "%(line)s"
 msgstr "次の行が原因で、マニフェスト %(manifest)s の構文解析ができませんでした:\n%(line)s"
 
-#: ../pkgdep.py:240
+#: ../pkgdep.py:241
 msgid "-o cannot be used with -d or -s"
 msgstr "-o は -d または -s と同時に使用できません"
 
-#: ../pkgdep.py:252
+#: ../pkgdep.py:253
 #, python-format
 msgid "The output directory %s is not a directory."
 msgstr "出力先ディレクトリ %s はディレクトリではありません。"
 
-#: ../pkgdep.py:292
+#: ../pkgdep.py:298
 msgid ""
 "External package list files were provided but did not contain any fmri "
 "patterns."
 msgstr "外部パッケージリストファイルが提供されましたが、これらのファイルには FMRI パターンが 1 つも含まれていませんでした。"
 
-#: ../pkgdep.py:328
+#: ../pkgdep.py:334
 #, python-format
 msgid ""
 "Could not parse one or more manifests because of the following line:\n"
 "%s"
 msgstr "次の行が原因で、1 つ以上のマニフェストの構文解析ができませんでした:\n%s"
 
-#: ../pkgdep.py:351
+#: ../pkgdep.py:357
 msgid ""
 "\n"
 "The following fmris matched a pattern in a constraint file but were not used "
@@ -9142,32 +9635,32 @@ msgid ""
 "dependency resolution:"
 msgstr "\n次の FMRI は制約ファイル内のパターンに一致しましたが、依存性を解決するときに\n使用されませんでした:"
 
-#: ../pkgdep.py:357
+#: ../pkgdep.py:363
 msgid ""
 "\n"
 "The following fmris had dependencies resolve to them:"
 msgstr "\n次の FMRI は、自分自身に解決される依存性を持っていました:"
 
-#: ../pkgdep.py:406
+#: ../pkgdep.py:412
 #, python-format
 msgid "Could not open %s to echo manifest"
 msgstr "マニフェストを表示するために %s を開けませんでした"
 
-#: ../pkgdep.py:453
+#: ../pkgdep.py:459
 #, python-format
 msgid "Could not open output file %s for writing"
 msgstr "出力ファイル %s を書き込みのために開くことができませんでした"
 
-#: ../pkgdep.py:486
+#: ../pkgdep.py:492
 #, python-format
 msgid "Out dir %s does not exist and could not be created. Error is: %s"
 msgstr "出力先のディレクトリ %s が存在せず、作成もできませんでした。エラーは次のとおりです: %s"
 
-#: ../pkgdep.py:561
+#: ../pkgdep.py:567
 msgid "generate subcommand doesn't use -R"
 msgstr "generate サブコマンドは -R を使用しません"
 
-#: ../pkgdep.py:583
+#: ../pkgdep.py:589
 #, python-format
 msgid ""
 "The %(cmd)s command appears out of sync with the libraries provided\n"
@@ -9225,7 +9718,7 @@ msgid "At least one package pattern must be provided."
 msgstr "少なくとも 1 つのパッケージパターンを指定する必要があります。"
 
 #: ../pkgrepo.py:203 ../pkgrepo.py:416 ../pkgrepo.py:681 ../pkgrepo.py:778
-#: ../pkgrepo.py:932 ../pkgrepo.py:988 ../pkgrepo.py:1073
+#: ../pkgrepo.py:937 ../pkgrepo.py:993 ../pkgrepo.py:1078
 msgid "A package repository location must be provided using -s."
 msgstr "パッケージリポジトリの場所を -s を使用して指定する必要があります。"
 
@@ -9253,7 +9746,7 @@ msgstr "リポジトリの場所が指定されていません。"
 msgid "At least one publisher must be specified"
 msgstr "発行元が少なくとも 1 つ指定されている必要があります"
 
-#: ../pkgrepo.py:311 ../pkgrepo.py:913 ../pkgrepo.py:969
+#: ../pkgrepo.py:311 ../pkgrepo.py:918 ../pkgrepo.py:974
 #, python-format
 msgid "Invalid publisher prefix '%s'"
 msgstr "発行元の接頭辞 '%s' は無効です"
@@ -9299,8 +9792,8 @@ msgstr "一致するプロパティーが見つかりません"
 msgid "no matching publishers found"
 msgstr "一致する発行元が見つかりません"
 
-#: ../pkgrepo.py:677 ../pkgrepo.py:924 ../pkgrepo.py:980 ../pkgrepo.py:1186
-#: ../publish.py:668
+#: ../pkgrepo.py:677 ../pkgrepo.py:929 ../pkgrepo.py:985 ../pkgrepo.py:1191
+#: ../publish.py:674
 msgid "command does not take operands"
 msgstr "コマンドはオペランドを取りません"
 
@@ -9312,79 +9805,79 @@ msgstr "パッケージ"
 msgid "UPDATED"
 msgstr "更新済み"
 
-#: ../pkgrepo.py:859 ../pkgrepo.py:868
+#: ../pkgrepo.py:864 ../pkgrepo.py:873
 msgid "RELEASE"
 msgstr "リリース"
 
-#: ../pkgrepo.py:860 ../pkgrepo.py:869
+#: ../pkgrepo.py:865 ../pkgrepo.py:874
 msgid "BUILD RELEASE"
 msgstr "ビルドリリース"
 
-#: ../pkgrepo.py:861 ../pkgrepo.py:869
+#: ../pkgrepo.py:866 ../pkgrepo.py:874
 msgid "BRANCH"
 msgstr "分岐"
 
-#: ../pkgrepo.py:862 ../pkgrepo.py:869
+#: ../pkgrepo.py:867 ../pkgrepo.py:874
 msgid "PACKAGING DATE"
 msgstr "パッケージ化の日付"
 
-#: ../pkgrepo.py:863 ../pkgrepo.py:869
+#: ../pkgrepo.py:868 ../pkgrepo.py:874
 msgid "FMRI"
 msgstr "FMRI"
 
-#: ../pkgrepo.py:868
+#: ../pkgrepo.py:873
 msgid "SUMMARY"
 msgstr "サマリー"
 
-#: ../pkgrepo.py:868 ../util/publish/pkglint.py:212
+#: ../pkgrepo.py:873 ../util/publish/pkglint.py:212
 msgid "DESCRIPTION"
 msgstr "説明"
 
-#: ../pkgrepo.py:868
+#: ../pkgrepo.py:873
 msgid "CATEGORIES"
 msgstr "カテゴリ"
 
-#: ../pkgrepo.py:870
+#: ../pkgrepo.py:875
 msgid "STATE"
 msgstr "状態"
 
-#: ../pkgrepo.py:1067
+#: ../pkgrepo.py:1072
 msgid ""
 "a property name and value must be provided in the form <section/"
 "property>=<value> or <section/property>=([\"<value>\" ...])"
 msgstr "プロパティーの名前と値は、<section/property>=<value> または <section/property>=([\"<value>\" ...]) の形式で指定する必要があります"
 
-#: ../pkgrepo.py:1089
+#: ../pkgrepo.py:1094
 #, python-format
 msgid "unknown property section '%s'"
 msgstr "不明なプロパティーセクション '%s'"
 
-#: ../pkgrepo.py:1093
+#: ../pkgrepo.py:1098
 #, python-format
 msgid "'%s' may not be set using this command"
 msgstr "このコマンドを使用して '%s' を設定することはできません"
 
-#: ../pkgrepo.py:1098
+#: ../pkgrepo.py:1103
 #, python-format
 msgid "unknown property '%s'"
 msgstr "不明なプロパティー '%s'"
 
 #. If there are still no known publishers, this
 #. operation cannot succeed, so fail now.
-#: ../pkgrepo.py:1107
+#: ../pkgrepo.py:1112
 msgid ""
 "One or more publishers must be specified to create and set properties for as "
 "none exist yet."
 msgstr "発行元がまだ存在しないため、作成してプロパティーを設定する発行元を 1 つ以上指定する必要があります。"
 
-#: ../pkgrepo.py:1161
+#: ../pkgrepo.py:1166
 #, python-format
 msgid ""
 "Unable to set properties for publisher '%(pfx)s':\n"
 "%(details)s"
 msgstr "発行元 '%(pfx)s' のプロパティーを設定できません:\n%(details)s"
 
-#: ../pkgrepo.py:1266
+#: ../pkgrepo.py:1271
 #, python-format
 msgid ""
 "The pkgrepo command appears out of sync with the libraries provided\n"
@@ -9451,49 +9944,56 @@ msgstr "append ではパッケージ名を 1 つ指定する必要がありま�
 msgid "No transaction ID specified using -t or in $PKG_TRANS_ID."
 msgstr "-t の使用時、または $PKG_TRANS_ID でトランザクション ID が指定されていません。"
 
-#: ../publish.py:273 ../publish.py:457 ../publish.py:573
+#: ../publish.py:273 ../publish.py:463 ../publish.py:579
 msgid "No transaction ID specified in $PKG_TRANS_ID"
 msgstr "$PKG_TRANS_ID にトランザクション ID が指定されていません"
 
-#: ../publish.py:277 ../publish.py:588 ../publish.py:641
+#: ../publish.py:277 ../publish.py:594 ../publish.py:647
 msgid "No arguments specified for subcommand."
 msgstr "サブコマンドに引数が指定されていません。"
 
-#: ../publish.py:282 ../publish.py:410 ../publish.py:527 ../publish.py:600
+#: ../publish.py:282 ../publish.py:416 ../publish.py:533 ../publish.py:606
 #, python-format
 msgid "invalid action for publication: %s"
 msgstr "発行のアクションが無効です: %s"
 
-#: ../publish.py:319 ../publish.py:736
+#: ../publish.py:319 ../publish.py:742
 msgid "A destination package repository must be provided using -s."
 msgstr "保存先のパッケージリポジトリを -s を使用して指定する必要があります。"
 
-#: ../publish.py:361 ../publish.py:504
+#: ../publish.py:361 ../publish.py:510
 #, python-format
 msgid "File %s line %s: %s"
 msgstr "ファイル %s の行 %s: %s"
 
-#: ../publish.py:372
+#. Cannot have a FMRI without version
+#: ../publish.py:369
+#, python-format
+msgid ""
+"The pkg.fmri attribute '%s' in the package manifest must include a version."
+msgstr "パッケージマニフェストの pkg.fmri 属性 '%s' にはバージョンが含まれている必要があります。"
+
+#: ../publish.py:378
 msgid "Manifest does not set pkg.fmri"
 msgstr "マニフェストは pkg.fmri を設定していません"
 
-#: ../publish.py:399
+#: ../publish.py:405
 #, python-format
 msgid "WARNING: Omitting signature action '%s'"
 msgstr "警告: 署名アクション '%s' を省略します"
 
-#: ../publish.py:785
+#: ../publish.py:791
 #, python-format
 msgid "illegal %s option -- %s"
 msgstr "不正な %s オプション -- %s"
 
-#: ../pull.py:89
+#: ../pull.py:91
 msgid ""
 "Usage:\n"
 "        pkgrecv [-s src_uri] [-a] [-d (path|dest_uri)] [-c cache_dir]\n"
-"            [-kr] [-m match] [-n] [--raw] [--key keyfile --cert certfile] \n"
+"            [-kr] [-m match] [-n] [--raw] [--key keyfile --cert certfile]\n"
 "            (fmri|pattern) ...\n"
-"        pkgrecv [-s src_repo_uri] --newest \n"
+"        pkgrecv [-s src_repo_uri] --newest\n"
 "\n"
 "Options:\n"
 "        -a              Store the retrieved package data in a pkg(5) "
@@ -9569,7 +10069,7 @@ msgid ""
 "        PKG_SRC         Source URI or path"
 msgstr "使用方法:\n        pkgrecv [-s src_uri] [-a] [-d (path|dest_uri)] [-c cache_dir]\n            [-kr] [-m match] [-n] [--raw] [--key keyfile --cert certfile] \n            (fmri|pattern) ...\n        pkgrecv [-s src_repo_uri] --newest \n\nオプション:\n        -a              取得したパッケージデータを -d によって指定された場所に\n                        ある pkg(5) アーカイブに格納します。ファイルはまだ存在\n                        していない可能性があります。このオプションは保存先が\n                        ファイルシステムベースの場合のみ使用できます。\n\n        -c cache_dir    ダウンロードした内容をキャッシュするためのディレクトリ\n                        のパス。指定されていない場合、クライアントは自動的に\n                        キャッシュディレクトリを選択します。ダウンロードが中断\n                        された場合に、キャッシュディレクトリが自動的に選択され\n                        ていたときは、このオプションを使用してダウンロードを\n                        再開します。\n\n        -d path_or_uri  パッケージを再公開する先のターゲットリポジトリの\n                        ファイルシステムパスまたは URI。ターゲットはすでに存在\n                        している必要があります。新しいリポジトリを作成するには、pkgrepo(1) を使用します。\n\n        -h              この使用方法のメッセージを表示します。\n\n        -k              取得した圧縮されたパッケージコンテンツを保持します。再公開\n                        する場合は、無視されます。pkgsend と一緒に使用しないようにしてください。\n\n        -m match        次の値を使用して、一致動作を制御します:\n                            all-timestamps\n                                最新のタイムスタンプだけではなく、一致するすべ\n                                てのタイムスタンプを含む (つまり、all-versions)\n                            all-versions\n                                最新のバージョンだけではなく、一致するすべてのバージョンを含む\n\n        -n              変更を加えずに、試験実行を行います。\n\n        -r              指定したパッケージのリストのすべての依存関係を再帰的に\n                        検証して、リストに追加します。\n\n        -s src_repo_uri パッケージデータを取得する pkg(5) のリポジトリの場所を\n                        表す URI。\n\n        --newest        指定したリポジトリから入手できるパッケージの最新の\n                        バージョンを一覧表示して終了します (-s を除くほかの\n                        すべてのオプションは無視されます)。\n\n        --raw           -d によって指定された場所の語幹およびバージョンごとに\n                        raw パッケージデータを取得して、一連のディレクトリ構造\n                        に格納します。保存先がファイルシステムベースの場合のみ\n                        使用できます。pkgsend(1) include と一緒に使用すると、\n                        ファイルの内容を修正するか、追加のパッケージメタデータ\n                        を指定することにより、パッケージを容易に変更および\n                        再公開できます。\n\n        --key keyfile   pkg の取得に使用するクライアント SSL キーファイルを指定します。\n\n        --cert certfile pkg の取得に使用するクライアント SSL 証明書ファイルを\n                        指定します。\n\n環境:\n        PKG_DEST        保存先のディレクトリ、または URI\n        PKG_SRC         取得元の URI またはパス"
 
-#: ../pull.py:163
+#: ../pull.py:165
 #, python-format
 msgid ""
 "\n"
@@ -9584,61 +10084,69 @@ msgstr "\n\nキャッシュされたファイルは次のディレクトリに�
 msgid "Unable to parse manifest '%(mpath)s' for package '%(pfmri)s'"
 msgstr "パッケージ '%(pfmri)s' のマニフェスト '%(mpath)s' を解析できません。 "
 
-#: ../pull.py:365
+#: ../pull.py:372
 #, python-format
 msgid "Illegal option -- %s"
 msgstr "不正なオプション -- %s"
 
-#: ../pull.py:384
+#: ../pull.py:403
 #, python-format
 msgid "Illegal option value -- %s"
 msgstr "不正なオプション値 -- %s"
 
-#: ../pull.py:401
+#: ../pull.py:420
 msgid "a destination must be provided"
 msgstr "保存先を指定する必要があります"
 
-#: ../pull.py:404
+#: ../pull.py:423
 msgid "a source repository must be provided"
 msgstr "ソースのリポジトリを指定する必要があります"
 
-#: ../pull.py:493
+#: ../pull.py:512
 msgid "Retrieving manifests for dependency evaluation ..."
 msgstr "依存関係の評価のためにマニフェストを取得しています..."
 
-#: ../pull.py:510
+#: ../pull.py:527
 #, python-format
 msgid "Target archive '%s' already exists."
 msgstr "ターゲットアーカイブ '%s' はすでに存在します。"
 
-#: ../pull.py:535
+#: ../pull.py:553
 #, python-format
 msgid "Retrieving packages for publisher %s ..."
 msgstr "発行元 %s のパッケージを取得しています..."
 
-#: ../pull.py:538 ../pull.py:661
+#: ../pull.py:556 ../pull.py:700
 msgid "must specify at least one pkgfmri"
 msgstr "pkgfmri は少なくとも 1 つ指定する必要があります"
 
-#: ../pull.py:554 ../pull.py:740
+#: ../pull.py:572 ../pull.py:779
 #, python-format
 msgid "Retrieving and evaluating %d package(s)..."
 msgstr "%d 個のパッケージを取得および評価しています..."
 
-#: ../pull.py:650
-msgid "-n takes no options"
-msgstr "-n はオプションを取りません"
+#: ../pull.py:659 ../pull.py:933
+#, python-format
+msgid ""
+"The following errors were encountered.  The packages listed were not\n"
+"received.\n"
+"%s"
+msgstr "次のエラーが発生しました。一覧表示されたパッケージは\n受信されませんでした。\n%s"
 
-#: ../pull.py:658
+#: ../pull.py:689
+msgid "--newest takes no options"
+msgstr "--newest はオプションを取りません"
+
+#: ../pull.py:697
 #, python-format
 msgid "Processing packages for publisher %s ..."
 msgstr "発行元 %s のパッケージを処理しています..."
 
-#: ../pull.py:687
+#: ../pull.py:726
 msgid "To create a repository, use the pkgrepo command."
 msgstr "リポジトリを作成するには、pkgrepo コマンドを使用してください。"
 
-#: ../pull.py:692
+#: ../pull.py:731
 #, python-format
 msgid ""
 "The repository configuration for the repository located at '%s' is not valid "
@@ -9646,20 +10154,20 @@ msgid ""
 "the repository or create a new one."
 msgstr "'%s' にあるリポジトリの構成が無効か、指定したパスが存在しません。リポジトリの構成を修正するか、新しいリポジトリを作成してください。"
 
-#: ../pull.py:708
+#: ../pull.py:747
 #, python-format
 msgid "Unable to create basedir '%s': %s"
 msgstr "basedir '%s' を作成できません: %s"
 
-#: ../pull.py:935
+#: ../pull.py:986
 msgid "Storage space quota exceeded."
 msgstr "ストレージスペースの割り当て制限を超えています。"
 
-#: ../pull.py:937
+#: ../pull.py:988
 msgid "No storage space left."
 msgstr "ストレージスペースが残っていません。"
 
-#: ../pull.py:947
+#: ../pull.py:998
 #, python-format
 msgid ""
 "Please verify that the filesystem containing the following directories has "
@@ -9737,7 +10245,7 @@ msgstr "%s ハッシュアルゴリズムはキーや証明書を使用しませ
 msgid "Signed %s"
 msgstr "署名付き %s"
 
-#: ../sysrepo.py:158
+#: ../sysrepo.py:164
 msgid ""
 "Usage:\n"
 "        pkg.sysrepo -p <port> [-R image_root] [ -c cache_dir] [-h hostname]\n"
@@ -9747,123 +10255,143 @@ msgid ""
 "     "
 msgstr "使用方法:\n        pkg.sysrepo -p <port> [-R image_root] [ -c cache_dir] [-h hostname]\n                [-l logs_dir] [-r runtime_dir] [-s cache_size] [-t template_dir]\n                [-T http_timeout] [-w http_proxy] [-W https_proxy]\n     "
 
-#: ../sysrepo.py:181
+#: ../sysrepo.py:187
 #, python-format
 msgid "Problem getting image at %s"
 msgstr "%s でイメージを取得する際に問題が発生しました"
 
 #. We need to log this, and carry on - the url
 #. could become available at a later date.
-#: ../sysrepo.py:225
+#: ../sysrepo.py:237
 #, python-format
 msgid "WARNING: unable to access %(uri)s when checking for redirects: %(err)s"
 msgstr "警告: リダイレクトのチェック時に %(uri)s にアクセスできません: %(err)s"
 
-#: ../sysrepo.py:262
+#: ../sysrepo.py:333
+#, python-format
+msgid "Invalid config cache file at %s generating fresh configuration."
+msgstr "新規構成の生成時に、無効な構成キャッシュファイルが %s にあります。"
+
+#: ../sysrepo.py:339 ../sysrepo.py:350
+#, python-format
+msgid "Invalid config cache at %s generating fresh configuration."
+msgstr "新規構成の生成時に、無効な構成キャッシュが %s にあります。"
+
+#: ../sysrepo.py:357
+#, python-format
+msgid "Unable to load config from %(cache_path)s: %(e)s"
+msgstr "%(cache_path)s から構成をロードできません: %(e)s"
+
+#: ../sysrepo.py:385
+#, python-format
+msgid "Unable to store config to %(cache_path)s: %(e)s"
+msgstr "%(cache_path)s に構成を格納できません: %(e)s"
+
+#: ../sysrepo.py:463
 #, python-format
 msgid "file repository %s does not exist or is not accessible"
 msgstr "ファイルリポジトリ %s が存在しないか、アクセスできません"
 
-#: ../sysrepo.py:266
-#, python-format
-msgid "p5p-based file repository %s cannot be proxied."
-msgstr "p5p ベースのファイルリポジトリ %s をプロキシ設定できません。"
-
-#: ../sysrepo.py:271
+#: ../sysrepo.py:469
 #, python-format
 msgid ""
 "file repository %s cannot be proxied. Only file repositories of version 4 or "
 "later are supported."
 msgstr "ファイルリポジトリ %s をプロキシ設定できません。バージョン 4 以降のファイルリポジトリのみがサポートされています。"
 
-#: ../sysrepo.py:299 ../sysrepo.py:518
+#: ../sysrepo.py:478
+#, python-format
+msgid "unable to read p5p archive file at %s"
+msgstr "%s にある p5p アーカイブファイルを読み取れません"
+
+#: ../sysrepo.py:509 ../sysrepo.py:741
 #, python-format
 msgid "Unable to chown to %(user)s:%(group)s: %(err)s"
 msgstr "%(user)s:%(group)s への chown を行えません: %(err)s"
 
-#: ../sysrepo.py:319
+#: ../sysrepo.py:533
 #, python-format
 msgid "%s is not a directory"
 msgstr "%s はディレクトリではありません"
 
-#: ../sysrepo.py:336 ../sysrepo.py:339
+#: ../sysrepo.py:550 ../sysrepo.py:553
 #, python-format
 msgid "invalid port: %s"
 msgstr "無効なポート: %s"
 
-#: ../sysrepo.py:345 ../sysrepo.py:348
+#: ../sysrepo.py:559 ../sysrepo.py:562
 #, python-format
 msgid "invalid cache size: %s"
 msgstr "無効なキャッシュサイズ: %s"
 
-#: ../sysrepo.py:361
+#: ../sysrepo.py:575
 msgid "scheme must be http"
 msgstr "スキームは http でなければなりません"
 
-#: ../sysrepo.py:366
+#: ../sysrepo.py:582
 #, python-format
 msgid "invalid %(key)s: %(val)s: %(err)s"
 msgstr "無効な %(key)s: %(val)s: %(err)s"
 
-#: ../sysrepo.py:393
+#: ../sysrepo.py:615
 #, python-format
 msgid "Unable to write sysrepo_httpd.conf: %(host)s: %(err)s"
 msgstr "sysrepo_httpd.conf を書き込めません: %(host)s: %(err)s"
 
-#: ../sysrepo.py:397
+#: ../sysrepo.py:619
 #, python-format
 msgid "Unable to write sysrepo_httpd.conf: %s"
 msgstr "sysrepo_httpd.conf を書き込めません: %s"
 
-#: ../sysrepo.py:427
+#: ../sysrepo.py:649
 #, python-format
 msgid "unable to write crypto.txt file: %s"
 msgstr "crypto.txt ファイルを書き込めません: %s"
 
-#: ../sysrepo.py:466
+#: ../sysrepo.py:689
 #, python-format
 msgid "unable to write publisher response: %s"
 msgstr "発行元の応答を書き込めません: %s"
 
-#: ../sysrepo.py:482
+#: ../sysrepo.py:705
 #, python-format
 msgid "Unable to write versions response: %s"
 msgstr "バージョンの応答を書き込めません: %s"
 
-#: ../sysrepo.py:501
+#: ../sysrepo.py:724
 #, python-format
 msgid "Unable to write syspub response: %s"
 msgstr "syspub の応答を書き込めません: %s"
 
-#: ../sysrepo.py:529
+#: ../sysrepo.py:752
 #, python-format
 msgid "Unable to cleanup old configuration: %s"
 msgstr "古い構成をクリーンアップできません: %s"
 
-#: ../sysrepo.py:547
+#: ../sysrepo.py:768
 #, python-format
 msgid "invalid value for http_timeout: %s"
 msgstr "http_timeout の値が無効です: %s"
 
-#: ../sysrepo.py:550
+#: ../sysrepo.py:771
 msgid "http_timeout must a positive integer"
 msgstr "http_timeout は正の整数でなければなりません"
 
-#: ../sysrepo.py:557
+#: ../sysrepo.py:778
 #, python-format
 msgid "unable to get publisher information: %s"
 msgstr "発行元の情報を取得できません: %s"
 
-#: ../sysrepo.py:565
+#: ../sysrepo.py:786
 #, python-format
 msgid "unable to create htdocs dir: %s"
 msgstr "htdocs ディレクトリを作成できません: %s"
 
-#: ../sysrepo.py:645
+#: ../sysrepo.py:866
 msgid "required port option missing."
 msgstr "必須のポートオプションがありません。"
 
-#: ../sysrepo.py:685
+#: ../sysrepo.py:906
 #, python-format
 msgid ""
 "The sysrepo command appears out of sync with the libraries provided\n"
@@ -10231,7 +10759,7 @@ msgid ""
 "all repositories: %s"
 msgstr "次のパターンに一致する FMRI には、一致するバージョンがどのリポジトリにもありません: %s"
 
-#: ../util/publish/pkgmerge.py:641
+#: ../util/publish/pkgmerge.py:640
 #, python-format
 msgid "package %(pkg)s is tagged as not supporting %(var_name)s %(var_value)s"
 msgstr "パッケージ %(pkg)s は %(var_name)s %(var_value)s を未サポートとしてタグ付けされます"

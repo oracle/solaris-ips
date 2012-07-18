@@ -22,75 +22,75 @@
 # Copyright (c) 2007, 2012, Oracle and/or its affiliates. All rights reserved.
 #
 msgid ""
-msgstr "Project-Id-Version: PACKAGE VERSION\nReport-Msgid-Bugs-To: \nPOT-Creation-Date: 2012-05-09 15:44+0900\nPO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\nLast-Translator: FULL NAME <EMAIL@ADDRESS>\nLanguage-Team: LANGUAGE <LL@li.org>\nMIME-Version: 1.0\nContent-Type: text/plain; charset=UTF-8\nContent-Transfer-Encoding: 8bit\nPlural-Forms: nplurals=2; plural=(n != 1);\n"
+msgstr "Project-Id-Version: PACKAGE VERSION\nReport-Msgid-Bugs-To: \nPOT-Creation-Date: 2012-06-25 23:45-0700\nPO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\nLast-Translator: FULL NAME <EMAIL@ADDRESS>\nLanguage-Team: LANGUAGE <LL@li.org>\nMIME-Version: 1.0\nContent-Type: text/plain; charset=UTF-8\nContent-Transfer-Encoding: 8bit\nPlural-Forms: nplurals=2; plural=(n != 1);\n"
 
-#: ../client.py:108
+#: ../client.py:115
 msgid ""
 "To continue, execute 'pkg update-format' as a privileged user and then try "
 "again.  Please note that updating the format of the image will render it "
 "unusable with older versions of the pkg(5) system."
 msgstr "要继续，请作为特权用户执行 'pkg update-format'，然后重试。请注意，更新映像的格式将会使映像无法用于早期版本的 pkg(5) 系统。"
 
-#: ../client.py:150
+#: ../client.py:157
 msgid ""
-"[-nvq] [-g path_or_uri ...] [--accept]\n"
+"[-nvq] [-C n] [-g path_or_uri ...] [--accept]\n"
 "            [--licenses] [--no-be-activate] [--no-index] [--no-refresh]\n"
 "            [--no-backup-be | --require-backup-be] [--backup-be-name name]\n"
 "            [--deny-new-be | --require-new-be] [--be-name name]\n"
 "            [--reject pkg_fmri_pattern ... ] pkg_fmri_pattern ..."
-msgstr "[-nvq] [-g path_or_uri ...] [--accept]\n            [--licenses] [--no-be-activate] [--no-index] [--no-refresh]\n            [--no-backup-be | --require-backup-be] [--backup-be-name name]\n            [--deny-new-be | --require-new-be] [--be-name name]\n            [--reject pkg_fmri_pattern ... ] pkg_fmri_pattern ..."
+msgstr "[-nvq] [-C n] [-g path_or_uri ...] [--accept]\n            [--licenses] [--no-be-activate] [--no-index] [--no-refresh]\n            [--no-backup-be | --require-backup-be] [--backup-be-name name]\n            [--deny-new-be | --require-new-be] [--be-name name]\n            [--reject pkg_fmri_pattern ... ] pkg_fmri_pattern ..."
 
-#: ../client.py:156
+#: ../client.py:163
 msgid ""
-"[-nvq] [--no-be-activate] [--no-index]\n"
+"[-nvq] [-C n] [--no-be-activate] [--no-index]\n"
 "            [--no-backup-be | --require-backup-be] [--backup-be-name]\n"
 "            [--deny-new-be | --require-new-be] [--be-name name]\n"
 "            pkg_fmri_pattern ..."
-msgstr "[-nvq] [--no-be-activate] [--no-index]\n            [--no-backup-be | --require-backup-be] [--backup-be-name]\n            [--deny-new-be | --require-new-be] [--be-name name]\n            pkg_fmri_pattern ..."
+msgstr "[-nvq] [-C n] [--no-be-activate] [--no-index]\n            [--no-backup-be | --require-backup-be] [--backup-be-name]\n            [--deny-new-be | --require-new-be] [--be-name name]\n            pkg_fmri_pattern ..."
 
-#: ../client.py:161
+#: ../client.py:168
 msgid ""
-"[-fnvq] [-g path_or_uri ...] [--accept]\n"
+"[-fnvq] [-C n] [-g path_or_uri ...] [--accept]\n"
 "            [--licenses] [--no-be-activate] [--no-index] [--no-refresh]\n"
 "            [--no-backup-be | --require-backup-be] [--backup-be-name]\n"
 "            [--deny-new-be | --require-new-be] [--be-name name]\n"
 "            [--reject pkg_fmri_pattern ...] [pkg_fmri_pattern ...]"
-msgstr "[-fnvq] [-g path_or_uri ...] [--accept]\n            [--licenses] [--no-be-activate] [--no-index] [--no-refresh]\n            [--no-backup-be | --require-backup-be] [--backup-be-name]\n            [--deny-new-be | --require-new-be] [--be-name name]\n            [--reject pkg_fmri_pattern ...] [pkg_fmri_pattern ...]"
+msgstr "[-fnvq] [-C n] [-g path_or_uri ...] [--accept]\n            [--licenses] [--no-be-activate] [--no-index] [--no-refresh]\n            [--no-backup-be | --require-backup-be] [--backup-be-name]\n            [--deny-new-be | --require-new-be] [--be-name name]\n            [--reject pkg_fmri_pattern ...] [pkg_fmri_pattern ...]"
 
-#: ../client.py:167
+#: ../client.py:174
 msgid ""
 "[-Hafnsuv] [-g path_or_uri ...] [--no-refresh]\n"
 "            [pkg_fmri_pattern ...]"
 msgstr "[-Hafnsuv] [-g path_or_uri ...] [--no-refresh]\n            [pkg_fmri_pattern ...]"
 
-#: ../client.py:169
+#: ../client.py:176
 msgid "[--full] [publisher ...]"
 msgstr "[--full] [publisher ...]"
 
-#: ../client.py:216
+#: ../client.py:223
 msgid "[-lr] [-g path_or_uri ...] [--license] [pkg_fmri_pattern ...]"
 msgstr "[-lr] [-g path_or_uri ...] [--license] [pkg_fmri_pattern ...]"
 
-#: ../client.py:218
+#: ../client.py:225
 msgid ""
 "[-Hmr] [-a attribute=pattern ...] [-g path_or_uri ...]\n"
 "            [-o attribute ...] [-s sort_key] [-t action_type ...]\n"
 "            [pkg_fmri_pattern ...]"
 msgstr "[-Hmr] [-a attribute=pattern ...] [-g path_or_uri ...]\n            [-o attribute ...] [-s sort_key] [-t action_type ...]\n            [pkg_fmri_pattern ...]"
 
-#: ../client.py:222
+#: ../client.py:229
 msgid "[-HIaflpr] [-o attribute ...] [-s repo_uri] query"
 msgstr "[-HIaflpr] [-o attribute ...] [-s repo_uri] query"
 
-#: ../client.py:224
+#: ../client.py:231
 msgid "[-Hqv] [pkg_fmri_pattern ...]"
 msgstr "[-Hqv] [pkg_fmri_pattern ...]"
 
-#: ../client.py:225
+#: ../client.py:232
 msgid "[--accept] [--licenses] [pkg_fmri_pattern ...]"
 msgstr "[--accept] [--licenses] [pkg_fmri_pattern ...]"
 
-#: ../client.py:227
+#: ../client.py:234
 msgid ""
 "[-nv] [--no-be-activate]\n"
 "            [--no-backup-be | --require-backup-be] [--backup-be-name name]\n"
@@ -98,7 +98,7 @@ msgid ""
 "            (--tagged tag-name ... | path-to-file ...)"
 msgstr "[-nv] [--no-be-activate]\n            [--no-backup-be | --require-backup-be] [--backup-be-name name]\n            [--deny-new-be | --require-new-be] [--be-name name]\n            (--tagged tag-name ... | path-to-file ...)"
 
-#: ../client.py:233
+#: ../client.py:240
 msgid ""
 "[-FPUfz] [--force] [--full|--partial|--user] [--zone]\n"
 "            [-k ssl_key] [-c ssl_cert] [--no-refresh]\n"
@@ -108,29 +108,29 @@ msgid ""
 "            [(-p|--publisher) [<name>=]<repo_uri>] dir"
 msgstr "[-FPUfz] [--force] [--full|--partial|--user] [--zone]\n            [-k ssl_key] [-c ssl_cert] [--no-refresh]\n            [--variant <variant_spec>=<instance> ...]\n            [-g uri|--origin=uri ...] [-m uri|--mirror=uri ...]\n            [--facet <facet_spec>=(True|False) ...]\n            [(-p|--publisher) [<name>=]<repo_uri>] dir"
 
-#: ../client.py:240
+#: ../client.py:247
 msgid ""
-"[-nvq] [-g path_or_uri ...]\n"
+"[-nvq] [-C n] [-g path_or_uri ...]\n"
 "            [--accept] [--licenses] [--no-be-activate]\n"
 "            [--no-backup-be | --require-backup-be] [--backup-be-name name]\n"
 "            [--deny-new-be | --require-new-be] [--be-name name]\n"
 "            <variant_spec>=<instance> ..."
-msgstr "[-nvq] [-g path_or_uri ...]\n            [--accept] [--licenses] [--no-be-activate]\n            [--no-backup-be | --require-backup-be] [--backup-be-name name]\n            [--deny-new-be | --require-new-be] [--be-name name]\n            <variant_spec>=<instance> ..."
+msgstr "[-nvq] [-C n] [-g path_or_uri ...]\n            [--accept] [--licenses] [--no-be-activate]\n            [--no-backup-be | --require-backup-be] [--backup-be-name name]\n            [--deny-new-be | --require-new-be] [--be-name name]\n            <variant_spec>=<instance> ..."
 
-#: ../client.py:247
+#: ../client.py:254
 msgid ""
-"[-nvq] [-g path_or_uri ...]\n"
+"[-nvq] [-C n] [-g path_or_uri ...]\n"
 "            [--accept] [--licenses] [--no-be-activate]\n"
 "            [--no-backup-be | --require-backup-be] [--backup-be-name name]\n"
 "            [--deny-new-be | --require-new-be] [--be-name name]\n"
 "            <facet_spec>=[True|False|None] ..."
-msgstr "[-nvq] [-g path_or_uri ...]\n            [--accept] [--licenses] [--no-be-activate]\n            [--no-backup-be | --require-backup-be] [--backup-be-name name]\n            [--deny-new-be | --require-new-be] [--be-name name]\n            <facet_spec>=[True|False|None] ..."
+msgstr "[-nvq] [-C n] [-g path_or_uri ...]\n            [--accept] [--licenses] [--no-be-activate]\n            [--no-backup-be | --require-backup-be] [--backup-be-name name]\n            [--deny-new-be | --require-new-be] [--be-name name]\n            <facet_spec>=[True|False|None] ..."
 
-#: ../client.py:253
+#: ../client.py:260
 msgid "[-aH] [-F format] [<mediator> ...]"
 msgstr "[-aH] [-F format] [<mediator> ...]"
 
-#: ../client.py:255
+#: ../client.py:262
 msgid ""
 "[-nv] [-I <implementation>]\n"
 "            [-V <version>] [--no-be-activate]\n"
@@ -139,7 +139,7 @@ msgid ""
 "            <mediator> ..."
 msgstr "[-nv] [-I <implementation>]\n            [-V <version>] [--no-be-activate]\n            [--no-backup-be | --require-backup-be] [--backup-be-name name]\n            [--deny-new-be | --require-new-be] [--be-name name]\n            <mediator> ..."
 
-#: ../client.py:260
+#: ../client.py:267
 msgid ""
 "[-nvIV] [--no-be-activate]\n"
 "            [--no-backup-be | --require-backup-be] [--backup-be-name]\n"
@@ -147,35 +147,35 @@ msgid ""
 "            <mediator> ..."
 msgstr "[-nvIV] [--no-be-activate]\n            [--no-backup-be | --require-backup-be] [--backup-be-name]\n            [--deny-new-be | --require-new-be] [--be-name name]\n            <mediator> ..."
 
-#: ../client.py:265
+#: ../client.py:272
 msgid "[-H] [<variant_spec>]"
 msgstr "[-H] [<指定变量>]"
 
-#: ../client.py:267 ../client.py:268
+#: ../client.py:274 ../client.py:275
 msgid "[pkg_fmri_pattern] ..."
 msgstr "[pkg_fmri_pattern] ..."
 
-#: ../client.py:269
+#: ../client.py:276
 msgid "[-n] [-c reason] [pkg_fmri_pattern] ..."
 msgstr "[-n] [-c reason] [pkg_fmri_pattern] ..."
 
-#: ../client.py:270
+#: ../client.py:277
 msgid "[-n] [pkg_name_pattern] ..."
 msgstr "[-n] [pkg_name_pattern] ..."
 
-#: ../client.py:271 ../client.py:272 ../client.py:273
+#: ../client.py:278 ../client.py:279 ../client.py:280
 msgid "propname propvalue"
 msgstr "属性名称 属性值"
 
-#: ../client.py:274
+#: ../client.py:281
 msgid "propname ..."
 msgstr "属性名称 ..."
 
-#: ../client.py:275
+#: ../client.py:282
 msgid "[-H] [propname ...]"
 msgstr "[-H] [propname ...]"
 
-#: ../client.py:277
+#: ../client.py:284
 msgid ""
 "[-Ped] [-k ssl_key] [-c ssl_cert]\n"
 "            [-g origin_to_add|--add-origin=origin_to_add ...]\n"
@@ -194,90 +194,91 @@ msgid ""
 "            [--add-property-value name_of_property=value_to_add]\n"
 "            [--remove-property-value name_of_property=value_to_remove]\n"
 "            [--unset-property name_of_property_to_delete]\n"
+"            [--proxy proxy to use]\n"
 "            [publisher]"
-msgstr "[-Ped] [-k ssl_key] [-c ssl_cert]\n            [-g origin_to_add|--add-origin=origin_to_add ...]\n            [-G origin_to_remove|--remove-origin=origin_to_remove ...]\n            [-m mirror_to_add|--add-mirror=mirror_to_add ...]\n            [-M mirror_to_remove|--remove-mirror=mirror_to_remove ...]\n            [-p repo_uri] [--enable] [--disable] [--no-refresh]\n            [--reset-uuid] [--non-sticky] [--sticky]\n            [--search-after=publisher]\n            [--search-before=publisher]\n            [--search-first]\n            [--approve-ca-cert=path_to_CA]\n            [--revoke-ca-cert=hash_of_CA_to_revoke]\n            [--unset-ca-cert=hash_of_CA_to_unset]\n            [--set-property name_of_property=value]\n            [--add-property-value name_of_property=value_to_add]\n            [--remove-property-value name_of_property=value_to_remove]\n            [--unset-property name_of_property_to_delete]\n            [publisher]"
+msgstr "[-Ped] [-k ssl_key] [-c ssl_cert]\n            [-g origin_to_add|--add-origin=origin_to_add ...]\n            [-G origin_to_remove|--remove-origin=origin_to_remove ...]\n            [-m mirror_to_add|--add-mirror=mirror_to_add ...]\n            [-M mirror_to_remove|--remove-mirror=mirror_to_remove ...]\n            [-p repo_uri] [--enable] [--disable] [--no-refresh]\n            [--reset-uuid] [--non-sticky] [--sticky]\n            [--search-after=publisher]\n            [--search-before=publisher]\n            [--search-first]\n            [--approve-ca-cert=path_to_CA]\n            [--revoke-ca-cert=hash_of_CA_to_revoke]\n            [--unset-ca-cert=hash_of_CA_to_unset]\n            [--set-property name_of_property=value]\n            [--add-property-value name_of_property=value_to_add]\n            [--remove-property-value name_of_property=value_to_remove]\n            [--unset-property name_of_property_to_delete]\n            [--proxy proxy to use]\n            [publisher]"
 
-#: ../client.py:296
+#: ../client.py:304
 msgid "publisher ..."
 msgstr "发布者 ..."
 
-#: ../client.py:297
-msgid "[-HPn] [publisher ...]"
-msgstr "[-HPn] [publisher ...]"
+#: ../client.py:305
+msgid "[-HPn] [-F format] [publisher ...]"
+msgstr "[-HPn] [-F format] [publisher ...]"
 
-#: ../client.py:298
-msgid "[-Hl] [-t [time|time-time],...] [-n number] [-o column,...]"
-msgstr "[-Hl] [-t [time|time-time],...] [-n number] [-o column,...]"
+#: ../client.py:306
+msgid "[-HNl] [-t [time|time-time],...] [-n number] [-o column,...]"
+msgstr "[-HNl] [-t [time|time-time],...] [-n number] [-o column,...]"
 
-#: ../client.py:303
+#: ../client.py:311
 msgid "-H"
 msgstr "-H"
 
-#: ../client.py:305
+#: ../client.py:313
 msgid ""
-"[-fnvq] [--accept] [--licenses] [--no-index]\n"
+"[-fnvq] [-C n] [--accept] [--licenses] [--no-index]\n"
 "            [--no-refresh] [--no-pkg-updates] [--linked-md-only]\n"
 "            [--allow-relink]\n"
 "            [--prop-linked <propname>=<propvalue> ...]\n"
 "            (-c|-p) <li-name> <dir>"
-msgstr "[-fnvq] [--accept] [--licenses] [--no-index]\n            [--no-refresh] [--no-pkg-updates] [--linked-md-only]\n            [--allow-relink]\n            [--prop-linked <propname>=<propvalue> ...]\n            (-c|-p) <li-name> <dir>"
+msgstr "[-fnvq] [-C n] [--accept] [--licenses] [--no-index]\n            [--no-refresh] [--no-pkg-updates] [--linked-md-only]\n            [--allow-relink]\n            [--prop-linked <propname>=<propvalue> ...]\n            (-c|-p) <li-name> <dir>"
 
-#: ../client.py:311
+#: ../client.py:319
 msgid "[-fnvq] [-a|-l <li-name>] [--linked-md-only]"
 msgstr "[-fnvq] [-a|-l <li-name>] [--linked-md-only]"
 
-#: ../client.py:312
+#: ../client.py:320
 msgid "[-H] [-l <li-name>] [propname ...]"
 msgstr "[-H] [-l <li-name>] [propname ...]"
 
-#: ../client.py:313
+#: ../client.py:321
 msgid "[-a|-l <li-name>]"
 msgstr "[-a|-l <li-name>]"
 
-#: ../client.py:315
+#: ../client.py:324
 msgid ""
-"[-nvq] [--accept] [--licenses] [--no-index]\n"
+"[-nvq] [-C n] [--accept] [--licenses] [--no-index]\n"
 "            [--no-refresh] [--no-parent-sync] [--no-pkg-updates]\n"
 "            [--linked-md-only] [-a|-l <name>]"
-msgstr "[-nvq] [--accept] [--licenses] [--no-index]\n            [--no-refresh] [--no-parent-sync] [--no-pkg-updates]\n            [--linked-md-only] [-a|-l <name>]"
+msgstr "[-nvq] [-C n] [--accept] [--licenses] [--no-index]\n            [--no-refresh] [--no-parent-sync] [--no-pkg-updates]\n            [--linked-md-only] [-a|-l <name>]"
 
-#: ../client.py:319
+#: ../client.py:328
 msgid ""
 "[-nvq] [--accept] [--licenses] [--no-index] [--no-refresh]\n"
 "            [--no-parent-sync] [--no-pkg-updates]\n"
 "            [--linked-md-only] <propname>=<propvalue> ..."
 msgstr "[-nvq] [--accept] [--licenses] [--no-index] [--no-refresh]\n            [--no-parent-sync] [--no-pkg-updates]\n            [--linked-md-only] <propname>=<propvalue> ..."
 
-#: ../client.py:344
+#: ../client.py:353
 msgid "Usage:"
 msgstr "用法："
 
-#: ../client.py:346
+#: ../client.py:355
 msgid "Private subcommand usage, options subject to change at any time:"
 msgstr "专用子命令用法、选项有可能会随时更改："
 
 #. The full usage message isn't desired.
-#: ../client.py:357
+#: ../client.py:366
 msgid "Try `pkg --help or -?' for more information."
 msgstr "有关更多信息，请尝试 'pkg --help' 或 'pkg -?'。"
 
-#: ../client.py:360
+#: ../client.py:369
 msgid ""
 "Usage:\n"
 "        pkg [options] command [cmd_options] [operands]\n"
 msgstr "用法：\n        pkg [options] command [cmd_options] [operands]\n"
 
-#: ../client.py:364
+#: ../client.py:373
 msgid "Basic subcommands:"
 msgstr "基本子命令："
 
-#: ../client.py:367
+#: ../client.py:376
 msgid ""
 "\n"
 "Advanced subcommands:"
 msgstr "\n高级子命令："
 
-#: ../client.py:370
+#: ../client.py:379
 msgid ""
 "\n"
 "Options:\n"
@@ -288,273 +289,294 @@ msgid ""
 "        PKG_IMAGE"
 msgstr "\n选项：\n        -R dir\n        --help 或 -?\n\n环境：\n        PKG_IMAGE"
 
-#: ../client.py:534 ../client.py:3122 ../client.py:3647
+#: ../client.py:544 ../client.py:3442 ../client.py:3970
 msgid "no packages installed"
 msgstr "没有安装软件包"
 
-#: ../client.py:539
+#: ../client.py:549
 msgid "no packages installed or available for installation"
 msgstr "没有安装软件包，或没有可供安装的软件包"
 
-#: ../client.py:545
-msgid ""
-"no packages are installed or are installed and have newer versions available"
-msgstr "没有安装软件包，或已安装软件包但没有可用的较新版本"
+#: ../client.py:558
+msgid "no packages have newer versions available"
+msgstr "没有软件包有更新的版本可用"
 
-#: ../client.py:578
+#: ../client.py:561
+msgid "no packages are installed"
+msgstr "未安装软件包"
+
+#: ../client.py:592
 #, python-format
 msgid "no packages matching '%s' known"
 msgstr "没有任何已知软件包与 '%s' 匹配"
 
-#: ../client.py:581
+#: ../client.py:595
 #, python-format
 msgid ""
 "no packages matching '%s' allowed by installed incorporations, or image "
 "variants that are known or installed"
 msgstr "已安装的 incorporation 或者已知或已安装的映像变量不允许任何软件包与 '%s' 匹配"
 
-#: ../client.py:587
+#: ../client.py:601
 #, python-format
 msgid ""
 "no packages matching '%s' are installed and have newer versions available"
 msgstr "没有安装与 '%s' 匹配的任何软件包且没有任何较新版本可用"
 
-#: ../client.py:591 ../client.py:687 ../client.py:861
+#: ../client.py:605 ../client.py:716 ../client.py:893
 #, python-format
 msgid "no packages matching '%s' installed"
 msgstr "没有安装与 '%s' 匹配的任何软件包"
 
-#: ../client.py:662
+#: ../client.py:688
 #, python-format
 msgid "Verifying: %(pkg_name)-50s %(result)7s"
 msgstr "确认: %(pkg_name)-50s %(result)7s"
 
-#: ../client.py:664 ../client.py:813
+#: ../client.py:690 ../client.py:845
 msgid "ERROR"
 msgstr "错误"
 
-#: ../client.py:706
+#: ../client.py:726
+msgid "No repairs for this image."
+msgstr "没有针对此映像的修复。"
+
+#: ../client.py:738
 #, python-format
 msgid "Created ZFS snapshot: %s"
 msgstr "已创建 ZFS 快照：%s"
 
-#: ../client.py:730
+#: ../client.py:760
 msgid ""
 "The following packages require their licenses to be accepted before they can "
 "be repaired: "
 msgstr "需要先接受以下软件包的许可证，然后才能对其进行修复："
 
-#: ../client.py:734 ../client.py:1263
+#: ../client.py:763 ../client.py:1338
 msgid ""
 "To indicate that you agree to and accept the terms of the licenses of the "
 "packages listed above, use the --accept option.  To display all of the "
 "related licenses, use the --licenses option."
 msgstr "要指示您同意并接受上面所列的软件包的许可证条款，请使用 --accept 选项。要显示所有相关的许可证，请使用 --licenses 选项。"
 
-#: ../client.py:743
+#: ../client.py:772
 msgid ""
 "Requested \"fix\" operation would affect files that cannot be modified in "
 "live image.\n"
 "Please retry this operation on an alternate boot environment."
 msgstr "请求的 \"fix\" 操作会影响在实时映像中无法修改的文件。\n请在备用引导环境中重试此操作。"
 
-#: ../client.py:781 ../client.py:2289
+#: ../client.py:808 ../client.py:2622
 msgid "-v and -q may not be combined"
 msgstr "不能组合使用 -v 和 -q"
 
-#: ../client.py:797
+#: ../client.py:828
 msgid "OK"
 msgstr "确定"
 
-#: ../client.py:815
+#: ../client.py:847
 msgid "WARNING"
 msgstr "警告"
 
-#: ../client.py:826 ../client.py:830
+#: ../client.py:858 ../client.py:862
 #, python-format
 msgid "%(pkg_name)-70s %(result)7s"
 msgstr "%(pkg_name)-70s %(result)7s"
 
-#: ../client.py:827
+#: ../client.py:859
 msgid "PACKAGE"
 msgstr "软件包"
 
-#: ../client.py:828 ../client.py:4437 ../client.py:4446 ../pkgrepo.py:722
-#: ../pkgrepo.py:726
+#: ../client.py:860 ../client.py:4786 ../client.py:4798 ../client.py:4908
+#: ../pkgrepo.py:722 ../pkgrepo.py:726
 msgid "STATUS"
 msgstr "状态"
 
-#: ../client.py:866
+#: ../client.py:898
 msgid ""
 "See above for\n"
 "verification failures."
 msgstr "有关验证故障，\n请参见上文。"
 
-#: ../client.py:868
+#: ../client.py:900
 msgid ""
 "No packages failed\n"
 "verification."
 msgstr "没有未通过验证的\n软件包。"
 
-#: ../client.py:869
+#: ../client.py:901
 #, python-format
 msgid ""
 "\n"
 "All other patterns matched installed packages.  %s"
 msgstr "\n所有其他模式都与安装的软件包匹配。%s"
 
-#: ../client.py:917
+#: ../client.py:960
 msgid ""
 "WARNING: The boot environment being modified is not the active one.  "
 "Changes\n"
 "made in the active BE will not be reflected on the next boot.\n"
 msgstr "警告：当前所修改的引导环境不是处于活动状态的引导环境。\n在活动引导环境中所做的更改在下一次引导时不会反映出来。\n"
 
-#: ../client.py:922
+#: ../client.py:965
 msgid ""
 "WARNING: The boot environment being modified is not the active one.  "
 "Changes\n"
 "made will not be reflected on the next boot.\n"
 msgstr "警告：当前所修改的引导环境不是处于活动状态的引导环境。\n所做的更改在下一次引导时不会反映出来。\n"
 
-#: ../client.py:940 ../client.py:4718
+#: ../client.py:983 ../client.py:5116 ../client.py:6070
 msgid "Yes"
 msgstr "是"
 
 #. Not Installed
-#: ../client.py:941 ../client.py:4716 ../modules/gui/misc.py:654
-#: ../modules/gui/misc.py:755 ../modules/gui/versioninfo.py:171
+#: ../client.py:984 ../client.py:5114 ../client.py:6072
+#: ../modules/gui/misc.py:654 ../modules/gui/misc.py:755
+#: ../modules/gui/versioninfo.py:171
 msgid "No"
 msgstr "否"
 
-#: ../client.py:951
+#: ../client.py:994
 msgid "Packages to remove:"
 msgstr "要删除的软件包："
 
-#: ../client.py:952
+#: ../client.py:995
 msgid "Packages to install:"
 msgstr "要安装的软件包："
 
-#: ../client.py:953
+#: ../client.py:996
 msgid "Packages to update:"
 msgstr "要更新的软件包："
 
-#: ../client.py:954
+#: ../client.py:997
 msgid "Mediators to change:"
 msgstr "要更改的中介："
 
-#: ../client.py:955
+#: ../client.py:998
 msgid "Variants/Facets to change:"
 msgstr "要更改的变量/侧面："
 
-#: ../client.py:961
+#: ../client.py:1004
 msgid "Estimated space available:"
 msgstr "估计可用的空间："
 
-#: ../client.py:964
+#: ../client.py:1007
 msgid "Estimated space to be consumed:"
 msgstr "估计要使用的空间："
 
-#: ../client.py:968
+#: ../client.py:1011
 msgid "Packages to change:"
 msgstr "要更改的软件包："
 
-#: ../client.py:970
+#: ../client.py:1013
 msgid "Packages to fix:"
 msgstr "要修复的软件包："
 
-#: ../client.py:972
+#: ../client.py:1016
 msgid "Create boot environment:"
 msgstr "创建引导环境："
 
-#. Only show activation status if verbose or if new BE
-#. will not be activated.
-#: ../client.py:978
+#. Only show activation status if verbose or
+#. if new BE will not be activated.
+#: ../client.py:1022
 msgid "Activate boot environment:"
 msgstr "激活引导环境："
 
-#: ../client.py:981
+#: ../client.py:1025
 msgid "Create backup boot environment:"
 msgstr "创建备份引导环境："
 
-#: ../client.py:985
+#: ../client.py:1029
 msgid "Services to change:"
 msgstr "要更改的服务："
 
-#: ../client.py:989
+#: ../client.py:1033
 msgid "Rebuild boot archive:"
 msgstr "重新生成引导归档文件："
 
-#: ../client.py:1005
+#: ../client.py:1048
 msgid "Changed mediators:"
 msgstr "已更改的中介："
 
-#: ../client.py:1010
+#: ../client.py:1053
 msgid "Changed variants/facets:"
 msgstr "已更改的变量/侧面："
 
-#: ../client.py:1018 ../modules/client/api_errors.py:623
+#: ../client.py:1061 ../modules/client/api_errors.py:623
 msgid "Solver dependency errors:"
 msgstr "解析器相关项错误："
 
-#: ../client.py:1046
+#: ../client.py:1089
 msgid "Changed packages:"
 msgstr "已更改的软件包："
 
-#: ../client.py:1061
+#: ../client.py:1104
 msgid "Affected fmris:"
 msgstr "受影响的 fmri："
 
-#: ../client.py:1197 ../modules/client/image.py:2328
+#: ../client.py:1131
+msgid "Release notes can be viewed with 'pkg history -n 1 -N'"
+msgstr "可以使用 'pkg history -n 1 -N' 查看发行说明"
+
+#: ../client.py:1135
+#, python-format
+msgid "Release notes can be found in %s before rebooting."
+msgstr "在重新引导前，可以在 %s 处找到发行说明。"
+
+#: ../client.py:1137
+msgid "After rebooting, use 'pkg history -n 1 -N' to view release notes."
+msgstr "在重新引导后，可以使用 'pkg history -n 1 -N' 查看发行说明。"
+
+#: ../client.py:1274 ../modules/client/image.py:2341
 #, python-format
 msgid "Package: %s"
 msgstr "软件包: %s"
 
-#: ../client.py:1198 ../modules/client/api_errors.py:277
-#: ../modules/client/image.py:2330
+#: ../client.py:1275 ../modules/client/api_errors.py:277
+#: ../modules/client/image.py:2343
 #, python-format
 msgid "License: %s\n"
 msgstr "许可证: %s\n"
 
-#: ../client.py:1221
+#: ../client.py:1298
 msgid "No updates available for this image."
 msgstr "没有可用于此映像的更新。"
 
-#: ../client.py:1223
+#: ../client.py:1300
 msgid "No updates necessary for this image."
 msgstr "此映像没有必需执行的更新。"
 
-#: ../client.py:1259
+#: ../client.py:1334
 msgid ""
 "The following packages require their licenses to be accepted before they can "
 "be installed or updated: "
 msgstr "需要先接受以下软件包的许可证，然后才能对其进行安装或更新："
 
-#: ../client.py:1282
+#: ../client.py:1357
 #, python-format
 msgid ""
 "\n"
 "An unexpected error happened while preparing for %s:"
 msgstr "\n在准备 %s 时发生意外错误："
 
-#: ../client.py:1293
+#: ../client.py:1368
 #, python-format
 msgid "%s failed: %s"
 msgstr "%s 失败: %s"
 
-#: ../client.py:1303 ../client.py:1416
+#: ../client.py:1378 ../client.py:1491
 #, python-format
 msgid ""
 "%s failed (linked image exception(s)):\n"
 "%s"
 msgstr "%s 失败（链接映像异常）:\n%s"
 
-#: ../client.py:1307
+#: ../client.py:1382
 #, python-format
 msgid "%s cannot be done on live image"
 msgstr "无法对实时映像执行 %s"
 
-#: ../client.py:1310
+#: ../client.py:1385
 #, python-format
 msgid ""
 "Requested \"%s\" operation would affect files that cannot be modified in "
@@ -562,47 +584,47 @@ msgid ""
 "Please retry this operation on an alternate boot environment."
 msgstr "请求的 \"%s\" 操作会影响在实时映像中无法修改的文件。\n请在备用引导环境中重试此操作。"
 
-#: ../client.py:1321 ../client.py:5443
+#: ../client.py:1396 ../client.py:5854
 msgid ""
 "\n"
 "(Failure to consistently execute pkg commands as a privileged user is often "
 "a source of this problem.)"
 msgstr "\n（无法作为特权用户一致地执行 pkg 命令通常是导致出现此问题的根源。）"
 
-#: ../client.py:1341
+#: ../client.py:1416
 #, python-format
 msgid "An unexpected error happened during %s: %s"
 msgstr "%s 期间发生意外错误: %s"
 
-#: ../client.py:1355
+#: ../client.py:1430
 msgid ""
 "The following unexpected or editable files and directories were\n"
 "salvaged while executing the requested package operation; they\n"
 "have been moved to the displayed location in the image:\n"
 msgstr "在执行所请求的软件包操作时挽救了以下\n意外的或可编辑的文件和目录；它们已\n被移到映像中所显示的位置：\n"
 
-#: ../client.py:1391 ../pkgdep.py:308
+#: ../client.py:1466 ../pkgdep.py:314
 #, python-format
 msgid "No image rooted at '%s' (set by $PKG_IMAGE)"
 msgstr "没有映像位于 '%s'（由 $PKG_IMAGE 设置）"
 
-#: ../client.py:1394 ../client.py:1409 ../pkgdep.py:311
+#: ../client.py:1469 ../client.py:1484 ../pkgdep.py:317
 #, python-format
 msgid "No image rooted at '%s'"
 msgstr "没有任何映像的根目录位于 '%s'"
 
-#: ../client.py:1396 ../pkgdep.py:313
+#: ../client.py:1471 ../pkgdep.py:319
 msgid "No image found."
 msgstr "未找到映像。"
 
-#: ../client.py:1412
+#: ../client.py:1487
 #, python-format
 msgid ""
 "%s failed (inventory exception):\n"
 "%s"
 msgstr "%s 失败（清单异常）:\n%s"
 
-#: ../client.py:1420
+#: ../client.py:1495
 #, python-format
 msgid ""
 "WARNING: pkg(5) appears to be out of date, and should be updated before\n"
@@ -610,334 +632,350 @@ msgid ""
 "pkg:/package/pkg' as a privileged user and then retry the %(op)s."
 msgstr "警告：pkg(5) 好像已过时，在运行 %(op)s 之前应对其进行更新。\n请作为特权用户执行 'pkg install\npkg:/package/pkg' 来更新 pkg(5)，然后重试 %(op)s。"
 
-#: ../client.py:1427
+#: ../client.py:1502
 #, python-format
 msgid "Cannot remove '%s' due to the following packages that depend on it:"
 msgstr "无法删除 '%s'，由于与其相关的以下软件包："
 
-#: ../client.py:1455
+#: ../client.py:1527
 msgid "The proposed operation cannot be performed on a live image."
 msgstr "无法对实时映像执行所建议的操作。"
 
-#: ../client.py:1468
+#: ../client.py:1540
 msgid ""
 "Please provide one of the package FMRIs listed above to the install command."
 msgstr "请为 install 命令提供上面列出的某个软件包 FMRI。"
 
-#: ../client.py:1608
+#: ../client.py:1792
 msgid "NOTE: Please review release notes posted at:\n"
 msgstr "注意：请查看位于以下网址的发行说明：\n"
 
-#: ../client.py:1615
+#: ../client.py:1799
 #, python-format
 msgid "%(opt1)s may only be used in combination with %(opt2)s"
 msgstr "%(opt1)s 只能与 %(opt2)s 组合使用"
 
-#: ../client.py:1620
+#: ../client.py:1804
 #, python-format
 msgid "the %(opt1)s and %(opt2)s options may not be combined"
 msgstr "不能组合使用 %(opt1)s 和 %(opt2)s 选项"
 
-#: ../client.py:1625 ../modules/misc.py:1113
+#: ../client.py:1809 ../modules/misc.py:1320
 #, python-format
 msgid "option '%s' repeated"
 msgstr "选项 '%s' 重复"
 
-#: ../client.py:1808
+#: ../client.py:2003
 msgid "--parsable expects an integer argument."
 msgstr "--parsable 需要一个整数参数。"
 
-#: ../client.py:1824
+#: ../client.py:2022
 #, python-format
 msgid "invalid operation stage: '%s'"
 msgstr "操作阶段无效: '%s'"
 
-#: ../client.py:1832
+#: ../client.py:2030
 msgid "either -c or -p must be specified"
 msgstr "必须指定 -c 或 -p"
 
-#: ../client.py:2157
+#: ../client.py:2089
+#, python-format
+msgid "missing required parameter: %s"
+msgstr "缺少必需的参数：%s"
+
+#. not a valid integer
+#: ../client.py:2100 ../client.py:2114
+#, python-format
+msgid "invalid '%s' value: %s"
+msgstr "无效的 '%s' 值：%s"
+
+#: ../client.py:2105
+#, python-format
+msgid "'%s' must be >= %d"
+msgstr "'%s' 必须 >= %d"
+
+#: ../client.py:2499
 #, python-format
 msgid "%s: no variants specified"
 msgstr "%s: 没有指定变量"
 
-#: ../client.py:2163
+#: ../client.py:2505
 #, python-format
 msgid "%s: variants must to be of the form '<name>=<value>'."
 msgstr "%s: 变量的格式必须是“<名称>=<值>”。"
 
-#: ../client.py:2173
+#: ../client.py:2515
 #, python-format
 msgid "%s: duplicate variant specified: %s"
 msgstr "%s: 指定了重复的变量: %s"
 
-#: ../client.py:2202
+#: ../client.py:2541
 #, python-format
 msgid "%s: no facets specified"
 msgstr "%s: 没有指定侧面"
 
-#: ../client.py:2216
+#: ../client.py:2555
 #, python-format
 msgid "%s: facets must to be of the form 'facet....=[True|False|None]'"
 msgstr "%s: 侧面的格式必须是 'facet....=[True|False|None]'"
 
-#: ../client.py:2225
+#: ../client.py:2564
 #, python-format
 msgid "%s: facets must to be of the form 'facet....=[True|False|None]'."
 msgstr "%s: 侧面的格式必须是 'facet....=[True|False|None]'。"
 
-#: ../client.py:2257 ../client.py:2286
+#: ../client.py:2593 ../client.py:2619
 msgid "at least one package name required"
 msgstr "至少需要一个软件包名称"
 
-#: ../client.py:2353
+#: ../client.py:2681
 msgid "at least one file path or tag name required"
 msgstr "至少需要一个文件路径或标记名称"
 
-#: ../client.py:2387 ../client.py:2432 ../client.py:2441
+#: ../client.py:2712 ../client.py:2757 ../client.py:2766
 msgid "MEDIATOR"
 msgstr "中介"
 
-#: ../client.py:2388 ../client.py:2434 ../client.py:2441
+#: ../client.py:2713 ../client.py:2759 ../client.py:2766
 msgid "VER. SRC."
 msgstr "VER. SRC."
 
-#: ../client.py:2389 ../client.py:2433 ../client.py:2441 ../client.py:2749
-#: ../client.py:5458 ../pkgrepo.py:858 ../pkgrepo.py:867
+#: ../client.py:2714 ../client.py:2758 ../client.py:2766 ../client.py:3068
+#: ../client.py:5869 ../pkgrepo.py:863 ../pkgrepo.py:872
 msgid "VERSION"
 msgstr "版本"
 
-#: ../client.py:2390 ../client.py:2438 ../client.py:2442
+#: ../client.py:2715 ../client.py:2763 ../client.py:2767
 msgid "IMPL. SRC."
 msgstr "IMPL. SRC."
 
-#: ../client.py:2435 ../client.py:2442
+#: ../client.py:2760 ../client.py:2767
 msgid "IMPLEMENTATION"
 msgstr "实现"
 
-#: ../client.py:2439 ../client.py:2442
+#: ../client.py:2764 ../client.py:2767
 msgid "IMPL. VER."
 msgstr "IMPL. VER."
 
 #. Don't pollute other output formats.
-#: ../client.py:2458
+#: ../client.py:2783
 msgid "no matching mediators found"
 msgstr "未找到任何匹配的中介"
 
-#: ../client.py:2471 ../client.py:2562
+#: ../client.py:2796 ../client.py:2884
 msgid "at least one mediator must be specified"
 msgstr "必须至少指定一个中介"
 
-#: ../client.py:2474
+#: ../client.py:2799
 msgid ""
 "a mediator version and/or implementation must be specified using -V and -I"
 msgstr "必须使用 -V 和 -I 指定一个中介版本和/或实现"
 
-#: ../client.py:2531 ../client.py:2609
+#: ../client.py:2853 ../client.py:2928
 msgid "No changes required."
 msgstr "不需要进行任何更改。"
 
-#: ../client.py:2660
+#: ../client.py:2979
 #, python-format
 msgid "    %s (group dependency of '%s')"
 msgstr "    %s（'%s' 的组相关项）"
 
-#: ../client.py:2683
+#: ../client.py:3002
 msgid "At least one package to freeze must be given when -c is used."
 msgstr "当使用 -c 时，必须指定至少一个要冻结的软件包。"
 
-#: ../client.py:2686
+#: ../client.py:3005
 msgid "-H may only be specified when listing the currently frozen packages."
 msgstr "只有在列出当前冻结的软件包时才可以指定 -H。"
 
-#: ../client.py:2699
+#: ../client.py:3018
 #, python-format
 msgid "%(name)s was frozen at %(ver)s"
 msgstr "%(name)s 在 %(ver)s 上已被冻结"
 
-#: ../client.py:2729
+#: ../client.py:3048
 #, python-format
 msgid "%s was unfrozen."
 msgstr "%s 已解除冻结。"
 
-#: ../client.py:2748 ../client.py:4964 ../pkgrepo.py:857 ../pkgrepo.py:867
+#: ../client.py:3067 ../client.py:5360 ../pkgrepo.py:862 ../pkgrepo.py:872
 #: ../util/publish/pkglint.py:210 ../util/publish/pkglint.py:212
 msgid "NAME"
 msgstr "名称"
 
-#: ../client.py:2750
+#: ../client.py:3069
 msgid "DATE"
 msgstr "日期"
 
-#: ../client.py:2751
+#: ../client.py:3070
 msgid "COMMENT"
 msgstr "注释"
 
-#: ../client.py:2839
+#: ../client.py:3158
 #, python-format
 msgid ""
 "The repository returned a malformed result.\n"
 "The problematic structure:%r"
 msgstr "系统信息库返回了格式错误的结果。\n有问题的结构: %r"
 
-#: ../client.py:2845
+#: ../client.py:3164
 #, python-format
 msgid ""
 "The repository returned an invalid or unsupported action.\n"
 "%s"
 msgstr "系统信息库返回了无效或不受支持的操作。\n%s"
 
-#: ../client.py:2911
+#: ../client.py:3230
 msgid "at least one search term must be provided"
 msgstr "必须至少提供一个搜索词条"
 
-#: ../client.py:2922
+#: ../client.py:3241
 #, python-format
 msgid "action level options ('%s') to -o cannot be used with the -p option"
 msgstr "对 -o 的操作级别选项 ('%s') 不能与 -p 选项结合使用"
 
-#: ../client.py:2972
+#: ../client.py:3291
 #, python-format
 msgid "The repository returned a malformed result:%r"
 msgstr "系统信息库返回了格式错误的结果: %r"
 
-#: ../client.py:2984
+#: ../client.py:3303
 msgid ""
 "action level options to -o cannot be used with the queries that return "
 "packages"
 msgstr "对 -o 的操作级别选项不能与可返回软件包的查询结合使用"
 
-#: ../client.py:3047 ../client.py:3057
+#: ../client.py:3366 ../client.py:3376
 msgid ""
 "The search index appears corrupted.  Please rebuild the index with 'pkg "
 "rebuild-index'."
 msgstr "搜索索引似乎已被破坏。请使用 'pkg rebuild-index' 重新生成索引。"
 
-#: ../client.py:3098
+#: ../client.py:3417
 msgid "-l and -r may not be combined"
 msgstr "不能组合使用 -l 和 -r"
 
-#: ../client.py:3101
+#: ../client.py:3420
 msgid "must request remote info for specific packages"
 msgstr "必须为特定软件包请求远程信息"
 
-#: ../client.py:3154 ../packagemanager.py:1247 ../packagemanager.py:2581
+#: ../client.py:3474 ../packagemanager.py:1247 ../packagemanager.py:2581
 msgid "Installed"
 msgstr "已安装"
 
-#: ../client.py:3156
+#: ../client.py:3476
 msgid "Unsupported"
 msgstr "不支持"
 
-#: ../client.py:3158 ../packagemanager.py:2583
+#: ../client.py:3478 ../packagemanager.py:2583
 msgid "Not installed"
 msgstr "未安装"
 
-#: ../client.py:3162
+#: ../client.py:3482
 msgid "Obsolete"
 msgstr "过时"
 
-#: ../client.py:3165
+#: ../client.py:3485
 msgid "Renamed"
 msgstr "已重命名"
 
-#: ../client.py:3169 ../client.py:3171
+#: ../client.py:3489 ../client.py:3491
 msgid "Frozen"
 msgstr "已冻结"
 
-#: ../client.py:3175
+#: ../client.py:3495
 msgid "          Name:"
 msgstr "          名称："
 
-#: ../client.py:3177
+#: ../client.py:3497
 msgid "       Summary:"
 msgstr "          摘要："
 
-#: ../client.py:3179
+#: ../client.py:3499
 msgid "   Description:"
 msgstr "          描述："
 
-#: ../client.py:3189
+#: ../client.py:3509
 msgid "      Category:"
 msgstr "          类别："
 
-#: ../client.py:3196
+#: ../client.py:3516
 msgid "         State:"
 msgstr "          状态："
 
-#: ../client.py:3205
+#: ../client.py:3525
 msgid "    Renamed to:"
 msgstr "    已重命名为："
 
 #. XXX even more info on the publisher would be nice?
-#: ../client.py:3210
+#: ../client.py:3530
 msgid "     Publisher:"
 msgstr "        发布者："
 
-#: ../client.py:3213 ../client.py:3216
+#: ../client.py:3533 ../client.py:3536
 msgid "       Version:"
 msgstr "          版本："
 
-#: ../client.py:3217
+#: ../client.py:3537
 msgid " Build Release:"
 msgstr "    内部发行版："
 
-#: ../client.py:3218
+#: ../client.py:3538
 msgid "        Branch:"
 msgstr "          分支："
 
-#: ../client.py:3219
+#: ../client.py:3539
 msgid "Packaging Date:"
 msgstr "      打包日期："
 
-#: ../client.py:3220
+#: ../client.py:3540
 msgid "          Size:"
 msgstr "          大小："
 
-#: ../client.py:3221
+#: ../client.py:3541
 msgid "          FMRI:"
 msgstr "          FMRI："
 
-#: ../client.py:3232
+#: ../client.py:3552
 msgid ""
 "pkg: info: no packages matching the following patterns you specified are\n"
 "installed on the system.  Try specifying -r to query remotely:"
 msgstr "pkg: info：系统中没有安装任何与您指定的以下模式匹配的\n软件包。请尝试指定 -r 来进行远程查询："
 
-#: ../client.py:3236
+#: ../client.py:3556
 msgid ""
 "pkg: info: no packages matching the following patterns you specified were\n"
 "found in the catalog.  Try relaxing the patterns, refreshing, and/or\n"
 "examining the catalogs:"
 msgstr "pkg: info：在目录中没有找到任何与您指定的以下模式匹配的\n软件包。请尝试细化模式、刷新和/或\n检查目录："
 
-#: ../client.py:3249
+#: ../client.py:3569
 msgid "no license information could be found for the following packages:"
 msgstr "找不到以下软件包的许可证信息："
 
-#: ../client.py:3490
+#: ../client.py:3810
 #, python-format
 msgid "Invalid attribute '%s'"
 msgstr "属性 '%s' 无效"
 
-#: ../client.py:3520
+#: ../client.py:3840
 msgid "-a takes an argument of the form <attribute>=<pattern>"
 msgstr "-a 采用格式为 <属性>=<模式> 的参数"
 
-#: ../client.py:3543
+#: ../client.py:3863
 msgid "contents: must request remote contents for specific packages"
 msgstr "contents: 必须为特定软件包请求远程内容"
 
-#: ../client.py:3554
+#: ../client.py:3874
 #, python-format
 msgid "-m and %s may not be specified at the same time"
 msgstr "不能同时指定 -m 和 %s"
 
-#: ../client.py:3662
+#: ../client.py:3985
 msgid "pkg: contents: no matching actions found in the listed packages"
 msgstr "pkg: contents: 在所列的软件包中没有找到任何匹配的操作"
 
-#: ../client.py:3671
+#: ../client.py:3994
 msgid ""
 "This package contains no actions with the fields specified using the -o\n"
 "option. Please specify other fields, or use the -m option to show the raw\n"
@@ -949,7 +987,7 @@ msgid_plural ""
 msgstr[0] "此软件包不包含具有使用 -o 选项指定的字段的任何\n操作。请指定其他字段，或使用 -m 选项显示原始的\n软件包清单。"
 msgstr[1] "这些软件包不包含具有使用 -o 选项指定的字段的任何\n操作。请指定其他字段，或使用 -m 选项显示原始的\n软件包清单。"
 
-#: ../client.py:3679
+#: ../client.py:4002
 msgid ""
 "This package delivers no filesystem content, but may contain metadata. Use\n"
 "the -o option to specify fields other than 'path', or use the -m option to "
@@ -963,14 +1001,14 @@ msgid_plural ""
 msgstr[0] "此软件包未传送任何文件系统内容，但可能包含元数据。请使用 \n-o 选项指定 'path' 之外的字段，或使用 -m 选项显示\n原始的软件包清单。"
 msgstr[1] "这些软件包未传送任何文件系统内容，但可能包含元数据。请使用 \n-o 选项指定 'path' 之外的字段，或使用 -m 选项显示\n原始的软件包清单。"
 
-#: ../client.py:3692
+#: ../client.py:4015
 msgid ""
 "pkg: contents: no packages matching the following patterns you specified "
 "are\n"
 "installed on the system.  Try specifying -r to query remotely:"
 msgstr "pkg: contents: 系统中没有安装任何与您指定的以下模式匹配的\n软件包。请尝试指定 -r 来进行远程查询："
 
-#: ../client.py:3696
+#: ../client.py:4019
 msgid ""
 "pkg: contents: no packages matching the following patterns you specified "
 "were\n"
@@ -978,21 +1016,21 @@ msgid ""
 "examining the catalogs:"
 msgstr "pkg: contents：在目录中没有找到任何与您指定的以下模式匹配的\n软件包。请尝试放宽模式、刷新和/或\n检查目录："
 
-#: ../client.py:3713
+#: ../client.py:4036
 #, python-format
 msgid "pkg: %s/%s catalogs successfully updated:"
 msgstr "pkg: %s/%s 目录已成功更新："
 
-#: ../client.py:3756
+#: ../client.py:4079
 msgid "'pkg publisher' will show a list of publishers."
 msgstr "'pkg publisher' 将会显示一个发布者列表。"
 
-#: ../client.py:3811
+#: ../client.py:4137
 #, python-format
 msgid "Could not refresh the catalog for %s\n"
 msgstr "无法刷新 %s 的目录\n"
 
-#: ../client.py:3821
+#: ../client.py:4147
 #, python-format
 msgid ""
 "The origin URIs for '%(pubname)s' do not appear to point to a valid pkg "
@@ -1004,7 +1042,7 @@ msgid ""
 "%(details)s"
 msgstr "'%(pubname)s' 的源 URI 似乎未指向有效的 pkg 系统信息库。\n请检验系统信息库的位置和客户机的网络配置。\n其他详细信息：\n\n%(details)s"
 
-#: ../client.py:3827
+#: ../client.py:4153
 #, python-format
 msgid ""
 "The specified URI does not appear to point to a valid pkg repository.\n"
@@ -1014,58 +1052,64 @@ msgid ""
 "%s"
 msgstr "指定的 URI 似乎未指向有效的 pkg 系统信息库。\n请检查 URI 和客户机的网络配置。\n其他详细信息：\n\n%s"
 
-#: ../client.py:3951 ../client.py:5344
+#: ../client.py:4279 ../client.py:5748
 #, python-format
 msgid ""
 "properties to be set must be of the form '<name>=<value>'. This is what was "
 "given: %s"
 msgstr "要设置的属性的格式必须为“<名称>=<值>”。所提供的属性为: %s"
 
-#: ../client.py:3955 ../client.py:5348
+#: ../client.py:4283 ../client.py:5752
 #, python-format
 msgid "a property may only be set once in a command. %s was set twice"
 msgstr "在命令中对属性只能设置一次。%s 已设置两次"
 
-#: ../client.py:3962
+#: ../client.py:4290
 #, python-format
 msgid ""
 "property values to be added must be of the form '<name>=<value>'. This is "
 "what was given: %s"
 msgstr "要添加的属性值的格式必须为“<名称>=<值>”。所提供的属性值为: %s"
 
-#: ../client.py:3970
+#: ../client.py:4298
 #, python-format
 msgid ""
 "property values to be removed must be of the form '<name>=<value>'. This is "
 "what was given: %s"
 msgstr "要删除的属性值的格式必须为“<名称>=<值>”。所提供的属性值为: %s"
 
-#: ../client.py:3980
+#: ../client.py:4310
 msgid "requires a publisher name"
 msgstr "需要一个发布者名称"
 
-#: ../client.py:3982
+#: ../client.py:4312
 msgid "only one publisher name may be specified"
 msgstr "只能指定一个发布者名称"
 
-#: ../client.py:3988
+#: ../client.py:4318
 msgid ""
 "the -O and -g, --add-origin, -G, or --remove-origin options may not be "
 "combined"
 msgstr "不能组合使用 -O 和 -g、--add-origin、-G 或 --remove-origin 选项"
 
-#: ../client.py:3993
+#: ../client.py:4323
 msgid "search-before, search-after, and search-first (-P) may not be combined"
 msgstr "不能组合使用 search-before、search-after 和 search-first (-P)"
 
-#: ../client.py:3999
+#: ../client.py:4329
 msgid ""
 "the -p option may not be combined with the -g, --add-origin, -G, --remove-"
 "origin, -m, --add-mirror, -M, --remove-mirror, --enable, --disable, --no-"
 "refresh, or --reset-uuid options"
 msgstr "-p 选项不可与 -g、--add-origin、-G、--remove-origin、-m、--add-mirror、-M、--remove-mirror、--enable、--disable、--no-refresh 或 --reset-uuid 选项组合使用"
 
-#: ../client.py:4042
+#: ../client.py:4336
+msgid ""
+"the --proxy argument may only be combined with the -g, --add-origin,  -m, --"
+"add-mirror, or -p options"
+msgstr "--proxy 参数只能与 -g、--add-origin、-m、--add-mirror 或 -p 选项组合使用"
+
+#: ../client.py:4383
 #, python-format
 msgid ""
 "\n"
@@ -1076,7 +1120,7 @@ msgid ""
 "  pkg set-publisher -g %s <publisher>\n"
 msgstr "\n要使用此系统信息库添加发布者，请以特权用户身份执行\n以下命令：\n\n  pkg set-publisher -g %s <发布者>\n"
 
-#: ../client.py:4060
+#: ../client.py:4401
 msgid ""
 "\n"
 "The specified repository did not contain any publisher configuration\n"
@@ -1085,7 +1129,7 @@ msgid ""
 "assistance."
 msgstr "\n指定的系统信息库不包含任何发布者配置\n信息。这可能是由于系统信息库\n配置出错。请与系统信息库管理员联系以获得进一步\n帮助。"
 
-#: ../client.py:4129
+#: ../client.py:4470
 #, python-format
 msgid ""
 "    The specified repository location is not a known source of publisher\n"
@@ -1096,12 +1140,12 @@ msgid ""
 "    to accept configuration updates from this repository."
 msgstr "    指定的系统信息库位置不是 '%s' 的发布者配置更新\n    的已知源。\n\n    此新系统信息库位置必须作为源添加到发布者，\n    以从此系统信息库接受配置更新。"
 
-#: ../client.py:4205
+#: ../client.py:4546
 #, python-format
 msgid "  Added publisher(s): %s"
 msgstr "  已添加的发布者: %s"
 
-#: ../client.py:4208
+#: ../client.py:4549
 #, python-format
 msgid "  Updated publisher(s): %s"
 msgstr "  已更新的发布者: %s"
@@ -1109,238 +1153,263 @@ msgstr "  已更新的发布者: %s"
 #. None of the origins or mirrors for the publisher
 #. use SSL schemes so the cert and key information
 #. won't be retained.
-#: ../client.py:4341
+#: ../client.py:4690
 #, python-format
 msgid "Publisher '%s' does not have any SSL-based origins or mirrors."
 msgstr "发布者 '%s' 没有任何基于 SSL 的源或镜像。"
 
-#: ../client.py:4389
+#: ../client.py:4738
 msgid "at least one publisher must be specified"
 msgstr "必须至少指定一个发布者"
 
-#: ../client.py:4419
+#: ../client.py:4768
 #, python-format
 msgid "Removal failed for '%(pub)s': %(msg)s"
 msgstr "删除 '%(pub)s' 失败: %(msg)s"
 
-#: ../client.py:4434 ../client.py:4444 ../modules/client/api_errors.py:646
-#: ../pkgrepo.py:543 ../pkgrepo.py:620 ../pkgrepo.py:625 ../pkgrepo.py:720
-#: ../pkgrepo.py:726 ../pkgrepo.py:856 ../pkgrepo.py:867 ../pkgrepo.py:874
+#: ../client.py:4783 ../client.py:4796 ../client.py:4906
+#: ../modules/client/api_errors.py:646 ../pkgrepo.py:543 ../pkgrepo.py:620
+#: ../pkgrepo.py:625 ../pkgrepo.py:720 ../pkgrepo.py:726 ../pkgrepo.py:861
+#: ../pkgrepo.py:872 ../pkgrepo.py:879
 msgid "PUBLISHER"
 msgstr "发布者"
 
-#: ../client.py:4436 ../client.py:4445
+#: ../client.py:4785 ../client.py:4797 ../client.py:4907
 msgid "TYPE"
 msgstr "类型"
 
-#: ../client.py:4438 ../client.py:4446
+#: ../client.py:4787 ../client.py:4798
+msgid "LOCATION"
+msgstr "位置"
+
+#: ../client.py:4788 ../client.py:4908
 msgid "URI"
 msgstr "URI"
 
-#: ../client.py:4439 ../client.py:4444
+#: ../client.py:4789 ../client.py:4796 ../client.py:4906
 msgid "STICKY"
 msgstr "粘性"
 
-#: ../client.py:4440 ../client.py:4445
+#: ../client.py:4790 ../client.py:4797 ../client.py:4907
 msgid "ENABLED"
 msgstr "已启用"
 
-#: ../client.py:4441 ../client.py:4445
+#: ../client.py:4791 ../client.py:4797 ../client.py:4907
 msgid "SYSPUB"
 msgstr "SYSPUB"
 
-#: ../client.py:4482 ../pkgrepo.py:402 ../pkgrepo.py:663 ../pkgrepo.py:764
+#: ../client.py:4792 ../client.py:4908
+msgid "PROXY"
+msgstr "代理"
+
+#: ../client.py:4793 ../client.py:4798 ../modules/misc.py:442
+msgid "P"
+msgstr "P"
+
+#: ../client.py:4834 ../pkgrepo.py:402 ../pkgrepo.py:663 ../pkgrepo.py:764
 #, python-format
 msgid "Unrecognized format %(format)s. Supported formats: %(valid)s"
 msgstr "无法识别的格式 %(format)s。支持的格式: %(valid)s"
 
-#: ../client.py:4575 ../modules/client/api_errors.py:649
+#: ../client.py:4931 ../modules/client/api_errors.py:649
 msgid "non-sticky"
 msgstr "非粘性"
 
-#: ../client.py:4580
+#: ../client.py:4936
 msgid "disabled"
 msgstr "禁用"
 
-#: ../client.py:4582
+#: ../client.py:4938
 msgid "syspub"
 msgstr "syspub"
 
-#: ../client.py:4589 ../client.py:4593 ../client.py:4597
+#: ../client.py:4945 ../client.py:4949 ../client.py:4953
 msgid "true"
 msgstr "true"
 
-#: ../client.py:4591 ../client.py:4595 ../client.py:4599
+#: ../client.py:4947 ../client.py:4951 ../client.py:4955
 msgid "false"
 msgstr "false"
 
 #. XXX get the real origin status
-#: ../client.py:4613
+#: ../client.py:4971
 msgid "origin"
 msgstr "源"
 
-#: ../client.py:4614 ../client.py:4626
+#: ../client.py:4972 ../client.py:5000
 msgid "online"
 msgstr "联机"
 
+#: ../client.py:4979 ../client.py:5007 ../modules/misc.py:441
+msgid "T"
+msgstr "T"
+
 #. XXX get the real mirror status
-#: ../client.py:4625
+#: ../client.py:4999
 msgid "mirror"
 msgstr "镜像"
 
-#: ../client.py:4648
+#: ../client.py:5002
+msgid "F"
+msgstr "F"
+
+#: ../client.py:5038
 msgid "              SSL Key:"
 msgstr "              SSL 密钥："
 
-#: ../client.py:4649
+#: ../client.py:5039
 msgid "             SSL Cert:"
 msgstr "             SSL 证书："
 
-#: ../client.py:4661
+#: ../client.py:5051
 msgid " Cert. Effective Date:"
 msgstr "证书生效日期："
 
-#: ../client.py:4663
+#: ../client.py:5053
 msgid "Cert. Expiration Date:"
 msgstr "证书失效日期："
 
-#: ../client.py:4670
+#: ../client.py:5060
 msgid "           Origin URI:"
 msgstr "              源 URI："
 
-#: ../client.py:4676
+#: ../client.py:5062 ../client.py:5072
+msgid "                Proxy:"
+msgstr "                代理："
+
+#: ../client.py:5070
 msgid "           Mirror URI:"
 msgstr "           镜像 URI："
 
-#: ../client.py:4684
+#: ../client.py:5082
 msgid "         Approved CAs:"
 msgstr "         已批准的 CA："
 
-#: ../client.py:4687 ../client.py:4692
+#: ../client.py:5085 ../client.py:5090
 msgid "                     :"
 msgstr "                     :"
 
-#: ../client.py:4689
+#: ../client.py:5087
 msgid "          Revoked CAs:"
 msgstr "          已吊销的 CA："
 
-#: ../client.py:4702
+#: ../client.py:5100
 msgid "            Publisher:"
 msgstr "            发布者："
 
-#: ../client.py:4703
+#: ../client.py:5101
 msgid "                Alias:"
 msgstr "                别名："
 
-#: ../client.py:4712
+#: ../client.py:5110
 msgid "          Client UUID:"
 msgstr "          客户机 UUID："
 
-#: ../client.py:4713
+#: ../client.py:5111
 msgid "      Catalog Updated:"
 msgstr "      目录已更新："
 
-#: ../client.py:4716 ../client.py:4718
+#: ../client.py:5114 ../client.py:5116
 msgid "              Enabled:"
 msgstr "              已启用："
 
-#: ../client.py:4726
+#: ../client.py:5124
 msgid "           Properties:"
 msgstr "            属性："
 
-#: ../client.py:4742 ../client.py:4764
+#: ../client.py:5140 ../client.py:5162
 msgid "requires a property name and value"
 msgstr "需要一个属性名称和值"
 
-#: ../client.py:4789
+#: ../client.py:5187
 msgid "requires a property name and at least one value"
 msgstr "需要一个属性名称和至少一个值"
 
-#: ../client.py:4806
+#: ../client.py:5204
 #, python-format
 msgid "Signature-policy %s doesn't allow additional parameters."
 msgstr "签名策略 %s 不允许使用其他参数。"
 
-#: ../client.py:4833
+#: ../client.py:5231
 msgid "requires at least one property name"
 msgstr "至少需要一个属性名称"
 
-#: ../client.py:4862
+#: ../client.py:5260
 #, python-format
 msgid "no such property: %s"
 msgstr "无此类属性: %s"
 
-#: ../client.py:4896
+#: ../client.py:5294
 #, python-format
 msgid "no such variant: %s"
 msgstr "无此类变量: %s"
 
-#: ../client.py:4964
+#: ../client.py:5360
 msgid "RELATIONSHIP"
 msgstr "关系"
 
-#: ../client.py:4964
+#: ../client.py:5360
 msgid "PATH"
 msgstr "路径"
 
-#: ../client.py:4988
+#: ../client.py:5398
 msgid "linked image property arguments must be of the form '<name>=<value>'."
 msgstr "链接映像属性参数的格式必须是“<名称>=<值>”。"
 
-#: ../client.py:4992
+#: ../client.py:5402
 #, python-format
 msgid "invalid linked image property: '%s'."
 msgstr "链接映像属性无效: '%s'。"
 
-#: ../client.py:4996
+#: ../client.py:5406
 #, python-format
 msgid "linked image property specified multiple times: '%s'."
 msgstr "链接映像属性指定了多次: '%s'。"
 
-#: ../client.py:5019
+#: ../client.py:5430
 #, python-format
 msgid "%(op)s: no such property: %(p)s"
 msgstr "%(op)s: 没有这样的属性: %(p)s"
 
-#: ../client.py:5099
+#: ../client.py:5513
 msgid "synced"
 msgstr "已同步"
 
-#: ../client.py:5101
+#: ../client.py:5515
 msgid "diverged"
 msgstr "已分离"
 
-#: ../client.py:5188
+#: ../client.py:5593
 #, python-format
 msgid "cannot specify linked image property: '%s'"
 msgstr "无法指定链接映像属性: '%s'"
 
-#: ../client.py:5192
+#: ../client.py:5597
 msgid "a linked image name and path must be specified"
 msgstr "必须指定链接映像名称和路径"
 
-#: ../client.py:5335
+#: ../client.py:5739
 msgid "Facet arguments must be of the form '<name>=(True|False)'"
 msgstr "侧面参数的格式必须是“<名称>=(True|False)”"
 
-#: ../client.py:5358
+#: ../client.py:5762
 msgid "variant arguments must be of the form '<name>=<value>'."
 msgstr "变量参数的格式必须是“<名称>=<值>”。"
 
-#: ../client.py:5364
+#: ../client.py:5768
 msgid "an image directory path must be specified"
 msgstr "必须指定映像目录路径"
 
-#: ../client.py:5367
+#: ../client.py:5771
 msgid "only one image directory path may be specified"
 msgstr "只能指定一个映像目录路径"
 
-#: ../client.py:5372
+#: ../client.py:5776
 msgid ""
 "--no-refresh cannot be used with -p unless a publisher prefix is provided."
 msgstr "无法组合使用 --no-refresh 和 -p，除非提供发布者前缀。"
 
-#: ../client.py:5402
+#: ../client.py:5807
 #, python-format
 msgid ""
 "The URI '%(pub_url)s' does not appear to point to a valid pkg repository.\n"
@@ -1351,284 +1420,310 @@ msgid ""
 "%(error)s"
 msgstr "URI '%(pub_url)s' 似乎未指向有效的 pkg 系统信息库。\n请检查系统信息库的位置和客户机的网络配置。\n其他详细信息：\n\n%(error)s"
 
-#: ../client.py:5429
+#: ../client.py:5840
 #, python-format
 msgid "command does not take operands ('%s')"
 msgstr "命令没有操作数 ('%s')"
 
-#: ../client.py:5455
+#: ../client.py:5866
 msgid "BE"
 msgstr "BE"
 
-#: ../client.py:5456
+#: ../client.py:5867
 msgid "BE UUID"
 msgstr "BE UUID"
 
-#: ../client.py:5457
+#: ../client.py:5868
 msgid "CLIENT"
 msgstr "客户机"
 
-#: ../client.py:5459
+#: ../client.py:5870
 msgid "COMMAND"
 msgstr "命令"
 
-#: ../client.py:5460
+#: ../client.py:5871
 msgid "FINISH"
 msgstr "完成"
 
-#: ../client.py:5461
+#: ../client.py:5872
 msgid "ID"
 msgstr "ID"
 
-#: ../client.py:5462
+#: ../client.py:5873
 msgid "NEW BE"
 msgstr "新的 BE"
 
-#: ../client.py:5463
+#: ../client.py:5874
 msgid "NEW BE UUID"
 msgstr "新的 BE UUID"
 
-#: ../client.py:5464
+#: ../client.py:5875
 msgid "OPERATION"
 msgstr "操作"
 
-#: ../client.py:5465
+#: ../client.py:5876
 msgid "OUTCOME"
 msgstr "结果"
 
-#: ../client.py:5466
+#: ../client.py:5877
 msgid "REASON"
 msgstr "原因"
 
-#: ../client.py:5467
+#: ../client.py:5878
+msgid "RELEASE NOTES"
+msgstr "发行说明"
+
+#: ../client.py:5879
 msgid "SNAPSHOT"
 msgstr "快照"
 
-#: ../client.py:5468
+#: ../client.py:5880
 msgid "START"
 msgstr "开始"
 
-#: ../client.py:5469
+#: ../client.py:5881
 msgid "TIME"
 msgstr "时间"
 
-#: ../client.py:5470
+#: ../client.py:5882
 msgid "USER"
 msgstr "用户"
 
-#: ../client.py:5493
+#: ../client.py:5908
 msgid "Argument to -n must be numeric"
 msgstr "-n 的参数必须是数字"
 
-#: ../client.py:5498
+#: ../client.py:5913
 msgid "Argument to -n must be positive"
 msgstr "-n 的参数必须是正数"
 
 #. Translators: 'command' and 'reason' are
 #. keywords and should not be translated
-#: ../client.py:5511
+#: ../client.py:5926
 msgid "'command' and 'reason' columns cannot be used together."
 msgstr "'command' 与 'reason' 列不能一起使用。"
 
-#: ../client.py:5519
+#: ../client.py:5934
 #, python-format
 msgid "The '%s' column must be the last item in the -o list"
 msgstr "'%s' 列必须是 -o 列表中的最后一项"
 
-#: ../client.py:5526
+#: ../client.py:5941
 #, python-format
 msgid "Unknown output column '%s'"
 msgstr "未知的输出列 '%s'"
 
-#: ../client.py:5536
+#: ../client.py:5951
 msgid "-H and -l may not be combined"
 msgstr "不能组合使用 -H 和 -l"
 
-#: ../client.py:5539
+#: ../client.py:5954
 msgid "-o and -l may not be combined"
 msgstr "-o 与 -l 不可组合使用"
 
-#: ../client.py:5542
+#: ../client.py:5957
 msgid "-n and -t may not be combined"
 msgstr "-n 与 -t 不可组合使用"
 
-#: ../client.py:5595
+#: ../client.py:5960
+msgid "-o and -N may not be combined"
+msgstr "-o 与 -N 不可组合使用"
+
+#: ../client.py:5963
+msgid "-l and -N may not be combined"
+msgstr "-l 与 -N 不可组合使用"
+
+#: ../client.py:6002
+#, python-format
+msgid "%s: Release notes:"
+msgstr "%s：发行说明："
+
+#: ../client.py:6006
+#, python-format
+msgid "%s: Release notes: None"
+msgstr "%s：发行说明：无"
+
+#: ../client.py:6031
 #, python-format
 msgid ""
 "History operation appeared to end before it started.  Start time: %"
 "(start_time)s, End time: %(end_time)s"
 msgstr "历史记录操作的结束时间好像早于开始时间。开始时间：%(start_time)s，结束时间：%(end_time)s"
 
-#: ../client.py:5641 ../client.py:5644
+#: ../client.py:6082 ../client.py:6085
 msgid "(Unknown)"
 msgstr "（未知）"
 
-#: ../client.py:5647 ../client.py:5650 ../client.py:5653
+#: ../client.py:6088 ../client.py:6091 ../client.py:6094
 msgid "(None)"
 msgstr "（无）"
 
-#: ../client.py:5680
+#: ../client.py:6132
 #, python-format
 msgid "Duplicate column specified: %s"
 msgstr "指定了重复的列：%s"
 
-#: ../client.py:5686
+#: ../client.py:6138
 msgid "Operation"
 msgstr "操作"
 
-#: ../client.py:5688
+#: ../client.py:6140
 msgid "Outcome"
 msgstr "结果"
 
-#: ../client.py:5689
+#: ../client.py:6141
 msgid "Reason"
 msgstr "原因"
 
-#: ../client.py:5690
+#: ../client.py:6142
 msgid "Client"
 msgstr "客户机"
 
-#: ../client.py:5691
+#: ../client.py:6143
 msgid "Version"
 msgstr "版本"
 
-#: ../client.py:5693
+#: ../client.py:6145
 msgid "User"
 msgstr "用户"
 
-#: ../client.py:5697
+#: ../client.py:6149
 msgid "Boot Env."
 msgstr "引导环境"
 
-#: ../client.py:5699
+#: ../client.py:6151
 msgid "Boot Env. UUID"
 msgstr "引导环境 UUID"
 
-#: ../client.py:5701
+#: ../client.py:6153
 msgid "New Boot Env."
 msgstr "新引导环境"
 
-#: ../client.py:5703
+#: ../client.py:6155
 msgid "New Boot Env. UUID"
 msgstr "新引导环境 UUID"
 
-#: ../client.py:5706
+#: ../client.py:6158
 msgid "Snapshot"
 msgstr "快照"
 
-#: ../client.py:5708
+#: ../client.py:6160
 msgid "Start Time"
 msgstr "开始时间"
 
-#: ../client.py:5709
+#: ../client.py:6161
 msgid "End Time"
 msgstr "结束时间"
 
-#: ../client.py:5710
+#: ../client.py:6162
 msgid "Total Time"
 msgstr "总时间"
 
-#: ../client.py:5711
+#: ../client.py:6163
 msgid "Command"
 msgstr "命令"
 
-#: ../client.py:5715
+#: ../client.py:6164
+msgid "Release Notes"
+msgstr "发行说明"
+
+#: ../client.py:6168
 msgid "Start State"
 msgstr "开始状态"
 
-#: ../client.py:5719
+#: ../client.py:6172
 msgid "End State"
 msgstr "结束状态"
 
-#: ../client.py:5723
+#: ../client.py:6176
 msgid "Errors"
 msgstr "错误"
 
-#: ../client.py:5729
+#: ../client.py:6182
 msgid "History purged."
 msgstr "历史记录已清除。"
 
-#: ../client.py:5742
+#: ../client.py:6195
 msgid ""
 "\n"
 "The following proxy configuration is set in the environment:\n"
 msgstr "\n在此环境中设置了以下代理配置：\n"
 
-#: ../client.py:5745
+#: ../client.py:6198
 #, python-format
 msgid "http_proxy: %s\n"
 msgstr "http_proxy: %s\n"
 
-#: ../client.py:5747
+#: ../client.py:6200
 #, python-format
 msgid "https_proxy: %s\n"
 msgstr "https_proxy: %s\n"
 
-#: ../client.py:5759
+#: ../client.py:6212
 msgid "Image format updated."
 msgstr "映像格式已更新。"
 
-#: ../client.py:5762
+#: ../client.py:6215
 msgid "Image format already current."
 msgstr "映像格式已经是最新的。"
 
-#: ../client.py:5767
+#: ../client.py:6220
 #, python-format
 msgid "version: command does not take operands ('%s')"
 msgstr "version: 命令没有操作数 ('%s')"
 
-#: ../client.py:5798 ../pkgdep.py:108 ../pkgdep.py:220 ../pkgdep.py:538
-#: ../pkgrepo.py:1198 ../publish.py:718 ../sign.py:124 ../sysrepo.py:642
+#: ../client.py:6330 ../pkgdep.py:109 ../pkgdep.py:221 ../pkgdep.py:544
+#: ../pkgrepo.py:1203 ../publish.py:724 ../sign.py:124 ../sysrepo.py:863
 #: ../util/publish/pkgdiff.py:86 ../util/publish/pkgfmt.py:522
 #: ../util/publish/pkgmogrify.py:695
 #, python-format
 msgid "illegal global option -- %s"
 msgstr "非法全局选项 -- %s"
 
-#: ../client.py:5811 ../publish.py:711
+#: ../client.py:6343 ../publish.py:717 ../pull.py:389
 #, python-format
 msgid "%(opt)s takes argument of form name=value, not %(arg)s"
 msgstr "%(opt)s 采用“名称=值”格式而不是 %(arg)s 格式的参数"
 
-#: ../client.py:5889 ../client.py:5900 ../pkgdep.py:566 ../pkgrepo.py:1223
-#: ../publish.py:765
+#: ../client.py:6366 ../client.py:6377 ../pkgdep.py:572 ../pkgrepo.py:1228
+#: ../publish.py:771
 #, python-format
 msgid "unknown subcommand '%s'"
 msgstr "未知子命令 '%s'"
 
-#: ../client.py:5904 ../pkgrepo.py:1217
+#: ../client.py:6381 ../pkgrepo.py:1222
 msgid "no subcommand specified"
 msgstr "未指定子命令"
 
-#: ../client.py:5909
+#: ../client.py:6386
 msgid "runid must be an integer"
 msgstr "runid 必须为整数"
 
-#: ../client.py:5929
+#: ../client.py:6407
 #, python-format
 msgid "-R not allowed for %s subcommand"
 msgstr "对于 %s 子命令，不允许使用 -R"
 
-#: ../client.py:5934 ../client.py:5977 ../modules/misc.py:1099
-#: ../pkgrepo.py:1230 ../util/publish/pkgmerge.py:224
+#: ../client.py:6413 ../client.py:6461 ../modules/misc.py:1306
+#: ../pkgrepo.py:1235 ../util/publish/pkgmerge.py:224
 #, python-format
 msgid "illegal option -- %s"
 msgstr "非法选项 -- %s"
 
-#: ../client.py:5949 ../pkgdep.py:274
+#: ../client.py:6428 ../pkgdep.py:275
 msgid ""
 "Could not find image.  Use the -R option or set $PKG_IMAGE to the\n"
 "location of an image."
 msgstr "找不到映像。请使用 -R 选项或者将 $PKG_IMAGE 设置为某个\n映像的位置。"
 
-#: ../client.py:6012
+#: ../client.py:6496
 #, python-format
 msgid ""
 "Linked image exception(s):\n"
 "%s"
 msgstr "链接映像异常:\n%s"
 
-#: ../client.py:6033
+#: ../client.py:6517
 msgid ""
 "\n"
 "Errors were encountered while attempting to retrieve package or file data "
@@ -1636,7 +1731,7 @@ msgid ""
 "the requested operation."
 msgstr "\n尝试为请求的操作检索软件包或文件数据时\n出现错误。"
 
-#: ../client.py:6036
+#: ../client.py:6520
 #, python-format
 msgid ""
 "Details follow:\n"
@@ -1644,7 +1739,7 @@ msgid ""
 "%s"
 msgstr "详细信息如下：\n\n%s"
 
-#: ../client.py:6042
+#: ../client.py:6526
 #, python-format
 msgid ""
 "\n"
@@ -1654,7 +1749,7 @@ msgid ""
 "%s"
 msgstr "\n在尝试读取映像状态信息以执行请求操作时\n出现错误。详细信息如下：\n\n%s"
 
-#: ../client.py:6049
+#: ../client.py:6533
 msgid ""
 "\n"
 "Unable to contact a valid package repository. This may be due to a problem "
@@ -1663,7 +1758,7 @@ msgid ""
 "repository's location."
 msgstr "\n无法连接有效的软件包系统信息库。这可能是由于系统信息库出现问题、网络配置错误或 pkg 客户机配置不正确。请检验客户机的网络配置和系统信息库的位置。"
 
-#: ../client.py:6054
+#: ../client.py:6538
 #, python-format
 msgid ""
 "\n"
@@ -1672,23 +1767,23 @@ msgid ""
 "%s"
 msgstr "\n其他详细信息：\n\n%s"
 
-#: ../client.py:6062
+#: ../client.py:6546
 msgid ""
 "An error was encountered while attempting to load history information\n"
 "about past client operations."
 msgstr "尝试装入有关过去的客户机操作的历史记录信息时\n出现错误。"
 
-#: ../client.py:6071
+#: ../client.py:6555
 msgid ""
 "An error was encountered while attempting to store information about the\n"
 "current operation in client history."
 msgstr "尝试在客户机历史记录中存储有关当前操作的信息时\n出现错误。"
 
-#: ../client.py:6081
+#: ../client.py:6565
 msgid "An error was encountered while attempting to purge client history."
 msgstr "尝试清除客户机历史记录时出现错误。"
 
-#: ../client.py:6088
+#: ../client.py:6572
 #, python-format
 msgid ""
 "The pkg command appears out of sync with the libraries provided\n"
@@ -1696,14 +1791,14 @@ msgid ""
 "API version is %(api)s."
 msgstr "pkg 命令似乎与 pkg:/package/pkg 提供的库\n不同步。客户机版本是 %(client)s，而库\nAPI 版本是 %(api)s。"
 
-#: ../client.py:6103
+#: ../client.py:6587
 #, python-format
 msgid ""
 "\n"
 "%s%s"
 msgstr "\n%s%s"
 
-#: ../client.py:6105
+#: ../client.py:6589
 msgid ""
 "\n"
 "\n"
@@ -2450,7 +2545,8 @@ msgstr "详细信息"
 msgid "Do not notify me about these publishers again."
 msgstr "请不要再通知我有关这些发布者的信息。"
 
-#: ../gui/data/packagemanager.ui.h:64 ../modules/gui/installupdate.py:162
+#: ../gui/data/packagemanager.ui.h:64 ../modules/client/progress.py:706
+#: ../modules/gui/installupdate.py:162
 msgid "Download"
 msgstr "下载"
 
@@ -2566,7 +2662,7 @@ msgstr "首选项"
 msgid "Preparation"
 msgstr "准备"
 
-#: ../gui/data/packagemanager.ui.h:94
+#: ../gui/data/packagemanager.ui.h:94 ../modules/client/progress.py:721
 msgid "Processing"
 msgstr "正在处理"
 
@@ -3042,7 +3138,7 @@ msgstr "无法创建目录 %s；它已替换为一个链接。如果要继续，
 #. or a package has been poorly implemented.
 #. User has replaced item with mountpoint, or a
 #. package has been poorly implemented.
-#: ../modules/actions/directory.py:220 ../modules/actions/generic.py:944
+#: ../modules/actions/directory.py:220 ../modules/actions/generic.py:957
 #, python-format
 msgid ""
 "Unable to remove %s; it is in use as a mountpoint.  To continue, please "
@@ -3052,79 +3148,79 @@ msgstr "无法删除 %s；它正在作为安装点使用。如果要继续，请
 #. os.path.ismount() is broken for lofs
 #. filesystems, so give a more generic
 #. error.
-#: ../modules/actions/directory.py:231 ../modules/actions/generic.py:954
+#: ../modules/actions/directory.py:231 ../modules/actions/generic.py:967
 #, python-format
 msgid ""
 "Unable to remove %s; it is in use by the system, another process, or as a "
 "mountpoint."
 msgstr "无法删除 %s；它正在由系统、其他进程或作为安装点使用。"
 
-#: ../modules/actions/driver.py:825
+#: ../modules/actions/driver.py:839
 #, python-format
 msgid "etc/name_to_major: more than one entry for '%s' is present"
 msgstr "etc/name_to_major: 存在多个 '%s' 条目"
 
-#: ../modules/actions/driver.py:830
+#: ../modules/actions/driver.py:844
 #, python-format
 msgid "etc/name_to_major: '%s' entry not present"
 msgstr "etc/name_to_major: '%s' 条目不存在"
 
-#: ../modules/actions/driver.py:837
+#: ../modules/actions/driver.py:851
 #, python-format
 msgid "extra alias '%s' found in etc/driver_aliases"
 msgstr "在 etc/driver_aliases 中找到附加别名 '%s'"
 
-#: ../modules/actions/driver.py:840
+#: ../modules/actions/driver.py:854
 #, python-format
 msgid "alias '%s' missing from etc/driver_aliases"
 msgstr "etc/driver_aliases 中缺少别名 '%s'"
 
-#: ../modules/actions/driver.py:846
+#: ../modules/actions/driver.py:860
 #, python-format
 msgid "extra class '%s' found in etc/driver_classes"
 msgstr "在 etc/driver_classes 中找到附加类 '%s'"
 
-#: ../modules/actions/driver.py:849
+#: ../modules/actions/driver.py:863
 #, python-format
 msgid "class '%s' missing from etc/driver_classes"
 msgstr "etc/driver_classes 中缺少类 '%s'"
 
-#: ../modules/actions/driver.py:855
+#: ../modules/actions/driver.py:869
 #, python-format
 msgid "extra minor node permission '%s' found in etc/minor_perm"
 msgstr "在 etc/minor_perm 中找到附加次要节点权限 '%s'"
 
-#: ../modules/actions/driver.py:858
+#: ../modules/actions/driver.py:872
 #, python-format
 msgid "minor node permission '%s' missing from etc/minor_perm"
 msgstr "etc/minor_perm 中缺少次要节点权限 '%s'"
 
-#: ../modules/actions/driver.py:876
+#: ../modules/actions/driver.py:890
 #, python-format
 msgid "extra device policy '%s' found in etc/security/device_policy"
 msgstr "在 etc/security/device_policy 中找到附加设备策略 '%s'"
 
-#: ../modules/actions/driver.py:879
+#: ../modules/actions/driver.py:893
 #, python-format
 msgid "device policy '%s' missing from etc/security/device_policy"
 msgstr "etc/security/device_policy 中缺少设备策略 '%s'"
 
-#: ../modules/actions/driver.py:885
+#: ../modules/actions/driver.py:899
 #, python-format
 msgid "extra device privilege '%s' found in etc/security/extra_privs"
 msgstr "在 etc/security/extra_privs 中找到附加设备权限 '%s'"
 
-#: ../modules/actions/driver.py:888
+#: ../modules/actions/driver.py:902
 #, python-format
 msgid "device privilege '%s' missing from etc/security/extra_privs"
 msgstr "etc/security/extra_privs 中缺少设备权限 '%s'"
 
-#: ../modules/actions/file.py:196 ../modules/actions/license.py:97
+#: ../modules/actions/file.py:196 ../modules/actions/license.py:100
 #, python-format
 msgid "Error decompressing payload: %s"
 msgstr "解压缩有效负荷时出错: %s"
 
-#: ../modules/actions/file.py:205 ../modules/actions/license.py:105
+#: ../modules/actions/file.py:205 ../modules/actions/license.py:108
 #, python-format
 msgid ""
 "Action data hash verification failure: expected: %(expected)s computed: %"
@@ -3159,7 +3255,7 @@ msgstr "散列: %(found)s 应为 %(expected)s"
 msgid "Skipping: Permission Denied"
 msgstr "正在跳过：权限被拒绝"
 
-#: ../modules/actions/file.py:371 ../modules/actions/generic.py:844
+#: ../modules/actions/file.py:371 ../modules/actions/generic.py:857
 #: ../modules/actions/hardlink.py:140 ../modules/actions/user.py:214
 #, python-format
 msgid "Unexpected Error: %s"
@@ -3170,131 +3266,131 @@ msgstr "意外的错误: %s"
 msgid "Unexpected Exception: %s"
 msgstr "意外的异常: %s"
 
-#: ../modules/actions/generic.py:185 ../modules/actions/signature.py:100
+#: ../modules/actions/generic.py:197 ../modules/actions/signature.py:100
 #, python-format
 msgid "No such file: '%s'."
 msgstr "没有此类文件: '%s'。"
 
-#: ../modules/actions/generic.py:188 ../modules/actions/signature.py:103
+#: ../modules/actions/generic.py:200 ../modules/actions/signature.py:103
 #, python-format
 msgid "'%s' is not a file."
 msgstr "'%s' 不是一个文件。"
 
-#: ../modules/actions/generic.py:525 ../modules/actions/generic.py:564
+#: ../modules/actions/generic.py:538 ../modules/actions/generic.py:577
 #, python-format
 msgid ""
 "Unable to create %(path)s; a parent directory %(p)s has been replaced with a "
 "file or link.  Please restore the parent directory and try again."
 msgstr "无法创建 %(path)s；父目录 %(p)s 已替换为一个文件或链接。请恢复父目录并重试。"
 
-#: ../modules/actions/generic.py:661
+#: ../modules/actions/generic.py:674
 msgid "mode is required; value must be of the form '644', '0644', or '04755'."
 msgstr "模式是必需的，值的格式必须是 '644'、'0644' 或 '04755'。"
 
-#: ../modules/actions/generic.py:665
+#: ../modules/actions/generic.py:678
 msgid "mode may only be specified once"
 msgstr "模式只可以指定一次"
 
-#: ../modules/actions/generic.py:668
+#: ../modules/actions/generic.py:681
 #, python-format
 msgid ""
 "'%s' is not a valid mode; value must be of the form '644', '0644', or "
 "'04755'."
 msgstr "'%s' 不是有效模式；值的格式必须是 '644'、'0644' 或 '04755'。"
 
-#: ../modules/actions/generic.py:675
+#: ../modules/actions/generic.py:688
 msgid "owner may only be specified once"
 msgstr "所有者只可以指定一次"
 
-#: ../modules/actions/generic.py:681
+#: ../modules/actions/generic.py:694
 msgid "group may only be specified once"
 msgstr "组只可以指定一次"
 
-#: ../modules/actions/generic.py:715
+#: ../modules/actions/generic.py:728
 #, python-format
 msgid ""
 "'%(path)s' cannot be installed; the owner '%(owner)s' was removed by '%"
 "(src_fmri)s'."
 msgstr "无法安装 '%(path)s'；所有者 '%(owner)s' 已由 '%(src_fmri)s' 删除。"
 
-#: ../modules/actions/generic.py:731
+#: ../modules/actions/generic.py:744
 #, python-format
 msgid ""
 "'%(path)s' cannot be installed; '%(owner)s' is an unknown or invalid user."
 msgstr "无法安装 '%(path)s'；'%(owner)s' 是未知或无效用户。"
 
-#: ../modules/actions/generic.py:758
+#: ../modules/actions/generic.py:771
 #, python-format
 msgid ""
 "'%(path)s' cannot be installed; the group '%(group)s' was removed by '%"
 "(src_fmri)s'."
 msgstr "无法安装 '%(path)s'；组 '%(group)s' 已由 '%(src_fmri)s' 删除。"
 
-#: ../modules/actions/generic.py:774
+#: ../modules/actions/generic.py:787
 #, python-format
 msgid ""
 "'%(path)s' cannot be installed; '%(group)s' is an unknown or invalid group."
 msgstr "无法安装 '%(path)s'；'%(group)s' 是未知或无效组。"
 
-#: ../modules/actions/generic.py:814
+#: ../modules/actions/generic.py:827
 #, python-format
 msgid "Owner: %s is unknown"
 msgstr "所有者: %s 未知"
 
-#: ../modules/actions/generic.py:821
+#: ../modules/actions/generic.py:834
 #, python-format
 msgid "Group: %s is unknown "
 msgstr "组: %s 未知"
 
-#: ../modules/actions/generic.py:839
+#: ../modules/actions/generic.py:852
 #, python-format
 msgid "Missing: %s does not exist"
 msgstr "缺失: %s 不存在"
 
-#: ../modules/actions/generic.py:842 ../modules/actions/user.py:212
+#: ../modules/actions/generic.py:855 ../modules/actions/user.py:212
 msgid "Skipping: Permission denied"
 msgstr "正在跳过：权限被拒绝"
 
-#: ../modules/actions/generic.py:851
+#: ../modules/actions/generic.py:864
 #, python-format
 msgid "File Type: '%(found)s' should be '%(expected)s'"
 msgstr "文件类型: '%(found)s' 应为 '%(expected)s'"
 
-#: ../modules/actions/generic.py:858
+#: ../modules/actions/generic.py:871
 #, python-format
 msgid ""
 "Owner: '%(found_name)s (%(found_id)d)' should be '%(expected_name)s (%"
 "(expected_id)d)'"
 msgstr "所有者: '%(found_name)s (%(found_id)d)' 应为 '%(expected_name)s (%(expected_id)d)'"
 
-#: ../modules/actions/generic.py:867
+#: ../modules/actions/generic.py:880
 #, python-format
 msgid ""
 "Group: '%(found_name)s (%(found_id)s)' should be '%(expected_name)s (%"
 "(expected_id)s)'"
 msgstr "组: '%(found_name)s (%(found_id)s)' 应为 '%(expected_name)s (%(expected_id)s)'"
 
-#: ../modules/actions/generic.py:876
+#: ../modules/actions/generic.py:889
 #, python-format
 msgid "Mode: 0%(found).3o should be 0%(expected).3o"
 msgstr "模式: 0%(found).3o 应为 0%(expected).3o"
 
-#: ../modules/actions/generic.py:1039
+#: ../modules/actions/generic.py:1052
 #, python-format
 msgid "%s may only be specified once"
 msgstr "%s 只可以指定一次"
 
-#: ../modules/actions/generic.py:1045
+#: ../modules/actions/generic.py:1058
 #, python-format
 msgid "%s must be an integer"
 msgstr "%s 必须为整数"
 
-#: ../modules/actions/generic.py:1052
+#: ../modules/actions/generic.py:1065
 #, python-format
 msgid "%s is required"
 msgstr "%s 是必需的"
 
-#: ../modules/actions/generic.py:1097
+#: ../modules/actions/generic.py:1110
 #, python-format
 msgid ""
 "Cannot install '%(final_path)s'; parent directory %(parent_dir)s is a link "
@@ -3340,12 +3436,12 @@ msgstr "缺少目录 var/sadm/pkg/%s"
 msgid "Missing file var/sadm/pkg/%s/pkginfo"
 msgstr "缺少文件 var/sadm/pkg/%s/pkginfo"
 
-#: ../modules/actions/license.py:143
+#: ../modules/actions/license.py:146
 #, python-format
 msgid "License file %s does not exist."
 msgstr "许可证文件 %s 不存在。"
 
-#: ../modules/actions/license.py:149
+#: ../modules/actions/license.py:152
 #, python-format
 msgid "Hash: '%(found)s' should be '%(expected)s'"
 msgstr "散列: '%(found)s' 应该是 '%(expected)s'"
@@ -3410,7 +3506,7 @@ msgid "Unknown info_needed type: %s"
 msgstr "未知 info_needed 类型: %s"
 
 #. API consumer passed an unknown type for img_path.
-#: ../modules/client/api.py:377
+#: ../modules/client/api.py:364
 msgid "Unknown img_path type."
 msgstr "未知 img_path 类型。"
 
@@ -3421,24 +3517,24 @@ msgstr "未知 img_path 类型。"
 #. before the format of an image is updated.  Yes, this
 #. means that if the refresh was needed to do that, then
 #. this isn't useful, but this is as good as it gets.)
-#: ../modules/client/api.py:601
+#: ../modules/client/api.py:610
 #, python-format
 msgid ""
 "Skipping publisher metadata refresh;image rooted at %s must have its format "
 "updated before a refresh can occur."
 msgstr "正在跳过发布者元数据刷新；位于 %s 的映像必须更新其格式，然后才能执行刷新操作。"
 
-#: ../modules/client/api.py:1853 ../modules/client/api.py:1917
+#: ../modules/client/api.py:1970 ../modules/client/api.py:2034
 #, python-format
 msgid "Start time must be older than finish time: %s"
 msgstr "开始时间必须早于完成时间：%s"
 
-#: ../modules/client/api.py:1863
+#: ../modules/client/api.py:1980
 #, python-format
 msgid "No history entries found for %s"
 msgstr "未找到 %s 的历史记录条目"
 
-#: ../modules/client/api.py:1931
+#: ../modules/client/api.py:2048
 #, python-format
 msgid ""
 "Invalid time format '%s'.  Please use %%Y-%%m-%%dT%%H:%%M:%%S or\n"
@@ -3580,7 +3676,7 @@ msgstr "'%s' 与多个软件包匹配"
 msgid "'%s' is an illegal FMRI"
 msgstr "'%s' 是一个非法 FMRI"
 
-#: ../modules/client/api_errors.py:442 ../modules/client/api_errors.py:577
+#: ../modules/client/api_errors.py:442
 msgid "The following different patterns specify the same package(s):"
 msgstr "下面的各种模式指定了相同的软件包："
 
@@ -3643,6 +3739,11 @@ msgstr "无法对以下软件包执行建议的操作，因为这些软件包已
 #: ../modules/client/api_errors.py:570
 msgid "The following mediations are not syntactically valid:"
 msgstr "以下仲裁在句法上无效："
+
+#: ../modules/client/api_errors.py:577
+msgid ""
+"The following patterns specify different versions of the same package(s):"
+msgstr "以下模式指定了相同软件包的不同版本："
 
 #: ../modules/client/api_errors.py:587
 msgid "No solution was found to satisfy constraints"
@@ -4124,7 +4225,7 @@ msgstr "'%(value)s' 不是系统信息库属性 '%(attribute)s' 的有效值。"
 msgid "'%s' is not a valid repository collection type."
 msgstr "'%s' 不是有效的系统信息库集合类型。"
 
-#: ../modules/client/api_errors.py:1638
+#: ../modules/client/api_errors.py:1638 ../modules/client/api_errors.py:1953
 #, python-format
 msgid "'%s' is not a valid URI."
 msgstr "'%s' 不是有效的 URI。"
@@ -4163,42 +4264,64 @@ msgstr "指定的发布者的镜像 '%s' 已存在。"
 
 #: ../modules/client/api_errors.py:1703
 #, python-format
-msgid "Origin '%s' already exists for the specified publisher."
-msgstr "指定的发布者的源 '%s' 已存在。"
+msgid "Mirror '%s' is already accessible through the system repository."
+msgstr "镜像 '%s' 已经可以通过系统信息库进行访问。"
 
-#: ../modules/client/api_errors.py:1716
+#: ../modules/client/api_errors.py:1712
+#, python-format
+msgid "Origin '%s' already exists for the specified publisher."
+msgstr "指定的发布者已存在源 '%s'。"
+
+#: ../modules/client/api_errors.py:1721
+#, python-format
+msgid "Origin '%s' is already accessible through the system repository."
+msgstr "源 '%s' 已经可以通过系统信息库进行访问。"
+
+#: ../modules/client/api_errors.py:1730
+#, python-format
+msgid ""
+"Unable to remove origin '%s' since it is provided by the system repository."
+msgstr "无法删除源 '%s'，因为它是由系统信息库提供的。"
+
+#: ../modules/client/api_errors.py:1738
+#, python-format
+msgid ""
+"Unable to remove mirror '%s' since it is provided by the system repository."
+msgstr "无法删除镜像 '%s'，因为它是由系统信息库提供的。"
+
+#: ../modules/client/api_errors.py:1751
 #, python-format
 msgid ""
 "Unable to retrieve requested package data for publisher %s; no repositories "
 "are currently configured for use with this publisher."
 msgstr "无法为发布者 %s 检索所请求的软件包数据；当前没有配置适用于此发布者的系统信息库。"
 
-#: ../modules/client/api_errors.py:1725
+#: ../modules/client/api_errors.py:1760
 msgid "Cannot search a repository before or after itself"
 msgstr "无法在系统信息库本身之前或之后搜索系统信息库"
 
-#: ../modules/client/api_errors.py:1736
+#: ../modules/client/api_errors.py:1771
 #, python-format
 msgid ""
 "%s is an unknown publisher; no other publishers can be ordered relative to "
 "it."
 msgstr "%s 是一个未知发布者；无法相对于它对其他发布者进行排序。"
 
-#: ../modules/client/api_errors.py:1745
+#: ../modules/client/api_errors.py:1780
 msgid "Cannot remove the selected repository for a publisher."
 msgstr "无法删除发布者的选定系统信息库。"
 
-#: ../modules/client/api_errors.py:1754
+#: ../modules/client/api_errors.py:1789
 #, python-format
 msgid "Unknown legal URI '%s'."
 msgstr "未知的合法 URI '%s'。"
 
-#: ../modules/client/api_errors.py:1762
+#: ../modules/client/api_errors.py:1797
 #, python-format
 msgid "Unknown publisher '%s'."
 msgstr "未知的发布者 '%s'。"
 
-#: ../modules/client/api_errors.py:1779
+#: ../modules/client/api_errors.py:1814
 #, python-format
 msgid ""
 "The repository at %(location)s does not contain package data for %(unknown)"
@@ -4208,7 +4331,7 @@ msgid ""
 "provided publisher does not match those known by the repository."
 msgstr "%(location)s 中的系统信息库不包含 %(unknown)s 的软件包数据；仅包含 %(known)s 的软件包数据。\n\n这可能是因为系统信息库位置无效，或者是因为提供的发布者与此系统信息库已知的发布者不匹配。"
 
-#: ../modules/client/api_errors.py:1789
+#: ../modules/client/api_errors.py:1824
 #, python-format
 msgid ""
 "One or more of the repository origin(s) listed below contains package data "
@@ -4221,78 +4344,91 @@ msgid ""
 "repository origin does not match the client."
 msgstr "下面列出的一个或多个系统信息库源包含 %(known)s 的软件包数据，而不包含 %(unknown)s 的软件包数据:\n\n%(origins)s\n\n这可能是因为其中一个系统信息库源对此发布者无效，或者是因为从系统信息库源中检索的已知发布者列表与客户机不匹配。"
 
-#: ../modules/client/api_errors.py:1799
+#: ../modules/client/api_errors.py:1834
 #, python-format
 msgid ""
 "The specified publisher repository does not contain any package data for %"
 "(unknown)s; only %(known)s."
 msgstr "指定的发布者系统信息库不包含 %(unknown)s 的任何软件包数据；仅包含 %(known)s 的软件包数据。"
 
-#: ../modules/client/api_errors.py:1810
+#: ../modules/client/api_errors.py:1845
 #, python-format
 msgid "Unknown related URI '%s'."
 msgstr "未知的相关 URI '%s'。"
 
-#: ../modules/client/api_errors.py:1818
+#: ../modules/client/api_errors.py:1853
 #, python-format
 msgid "Unknown repository '%s'."
 msgstr "未知的系统信息库 '%s'。"
 
-#: ../modules/client/api_errors.py:1826
+#: ../modules/client/api_errors.py:1861
 #, python-format
 msgid "Unknown repository mirror '%s'."
 msgstr "未知的系统信息库镜像 '%s'。"
 
-#: ../modules/client/api_errors.py:1840
+#: ../modules/client/api_errors.py:1875
 #, python-format
 msgid ""
 "Publisher '%(pub)s' has no repositories that support the '%(op)s' operation."
 msgstr "发布者 '%(pub)s' 没有支持 '%(op)s' 操作的系统信息库。"
 
-#: ../modules/client/api_errors.py:1855
+#: ../modules/client/api_errors.py:1890
 msgid ""
 "The specified package repository does not provide publisher configuration "
 "information."
 msgstr "指定的软件包系统信息库未提供发布者配置信息。"
 
-#: ../modules/client/api_errors.py:1858
+#: ../modules/client/api_errors.py:1893
 #, python-format
 msgid ""
 "The package repository at %s does not provide publisher configuration "
 "information or the information provided is incomplete."
 msgstr "%s 中的软件包系统信息库未提供发布者配置信息，或提供的信息不完整。"
 
-#: ../modules/client/api_errors.py:1862
+#: ../modules/client/api_errors.py:1897
 #, python-format
 msgid ""
 "One of the package repository origins for %s does not provide publisher "
 "configuration information or the information provided is incomplete."
 msgstr "%s 的其中一个软件包系统信息库源未提供发布者配置信息，或提供的信息不完整。"
 
-#: ../modules/client/api_errors.py:1872
+#: ../modules/client/api_errors.py:1907
 #, python-format
 msgid "Unknown repository origin '%s'"
 msgstr "未知的系统信息库源 '%s'"
 
-#: ../modules/client/api_errors.py:1883
+#: ../modules/client/api_errors.py:1918
 #, python-format
 msgid ""
 "The URI '%(uri)s' uses the unsupported scheme '%(scheme)s'.  Supported "
 "schemes are file://, http://, and https://."
 msgstr "URI '%(uri)s' 使用了不受支持的模式 '%(scheme)s'。受支持的模式有 file://、http:// 和 https://。"
 
-#: ../modules/client/api_errors.py:1887
+#: ../modules/client/api_errors.py:1922
 msgid ""
 "The specified URI uses an unsupported scheme.  Supported schemes are: "
 "file://, http://, and https://."
 msgstr "指定的 URI 使用了不受支持的模式。受支持的模式有：file://、http:// 和 https://。"
 
-#: ../modules/client/api_errors.py:1896
+#: ../modules/client/api_errors.py:1931
 #, python-format
 msgid "'%(attr)s' is not supported for '%(scheme)s'."
 msgstr "'%(scheme)s' 不支持 '%(attr)s'。"
 
-#: ../modules/client/api_errors.py:1905
+#: ../modules/client/api_errors.py:1942
+#, python-format
+msgid ""
+"The proxy URI '%(uri)s' uses the unsupported scheme '%(scheme)s'.  Supported "
+"schemes are http://, and https://."
+msgstr "代理 URI '%(uri)s' 使用了不受支持的模式 '%(scheme)s'。受支持的模式有 http:// 和 https://。"
+
+#: ../modules/client/api_errors.py:1946
+msgid ""
+"The specified proxy URI uses an unsupported scheme.  Supported schemes are: "
+"http://, and https://."
+msgstr "指定的代理 URI 使用了不受支持的模式。受支持的模式有 http:// 和 https://。"
+
+#: ../modules/client/api_errors.py:1961
 msgid ""
 "pkg is configured to use the system repository (via the use-system-repo\n"
 "property) but it could not get the host and port from\n"
@@ -4303,59 +4439,59 @@ msgid ""
 "of those services or setting the PKG_SYSREPO_URL environment variable.\n"
 msgstr "pkg 被配置为使用系统信息库（通过 use-system-repo\n属性），但它无法从 svc:/application/pkg/zones-proxy-client\n或 svc:/application/pkg/system-repository 获取主机和端口，并且未设置 PKG_SYSREPO_URL \n环境变量。请尝试启用这些服务中的一个\n或设置 PKG_SYSREPO_URL 环境变量。\n"
 
-#: ../modules/client/api_errors.py:1937
+#: ../modules/client/api_errors.py:1993
 #, python-format
 msgid ""
 "The relevant signature action is found in %(pfmri)s and has a hash of %(hsh)s"
 msgstr "在 %(pfmri)s 中找到了相关签名操作，具有的散列值为 %(hsh)s"
 
-#: ../modules/client/api_errors.py:1941
+#: ../modules/client/api_errors.py:1997
 #, python-format
 msgid "The package involved is:%s"
 msgstr "涉及的软件包为:%s"
 
-#: ../modules/client/api_errors.py:1943
+#: ../modules/client/api_errors.py:1999
 #, python-format
 msgid "The relevant signature action's value attribute is %s"
 msgstr "相关签名操作的值属性是 %s"
 
-#: ../modules/client/api_errors.py:1968
+#: ../modules/client/api_errors.py:2024
 #, python-format
 msgid ""
 "The signature action %(act)s was made using a version (%(ver)s) this version "
 "of pkg(5) doesn't understand."
 msgstr "使用此版本的 pkg(5) 无法识别的版本 (%(ver)s) 进行了签名操作 %(act)s。"
 
-#: ../modules/client/api_errors.py:1991
+#: ../modules/client/api_errors.py:2047
 #, python-format
 msgid ""
 "Certificate %s has been modified on disk. Its hash value is not what was "
 "expected."
 msgstr "已修改了磁盘上的证书 %s。其散列值不是所需的值。"
 
-#: ../modules/client/api_errors.py:2000
+#: ../modules/client/api_errors.py:2056
 msgid "Chain was rooted in an untrusted self-signed certificate.\n"
 msgstr "此链是在不可信的自行签名证书中生成的。\n"
 
-#: ../modules/client/api_errors.py:2015
+#: ../modules/client/api_errors.py:2071
 msgid "The following problems were encountered:\n"
 msgstr "遇到了下列问题:\n"
 
-#: ../modules/client/api_errors.py:2017
+#: ../modules/client/api_errors.py:2073
 #, python-format
 msgid ""
 "The certificate which issued this certificate:%(subj)s could not be found. "
 "The issuer is:%(issuer)s\n"
 msgstr "无法找到颁发此证书: %(subj)s 的证书。颁发者是:%(issuer)s\n"
 
-#: ../modules/client/api_errors.py:2033
+#: ../modules/client/api_errors.py:2089
 #, python-format
 msgid ""
 "This certificate was revoked:%(cert)s for this reason:\n"
 "%(reason)s"
 msgstr "已吊销此证书: %(cert)s，原因是:\n%(reason)s"
 
-#: ../modules/client/api_errors.py:2049
+#: ../modules/client/api_errors.py:2105
 #, python-format
 msgid ""
 "A signature in %(pfmri)s could not be verified for this reason:\n"
@@ -4363,7 +4499,7 @@ msgid ""
 "The signature's hash is %(hash)s"
 msgstr "无法验证 %(pfmri)s 中的签名，原因是:\n%(reason)s\n此签名的散列值是 %(hash)s"
 
-#: ../modules/client/api_errors.py:2055
+#: ../modules/client/api_errors.py:2111
 #, python-format
 msgid ""
 "The signature with this signature value:\n"
@@ -4372,21 +4508,21 @@ msgid ""
 "%(reason)s\n"
 msgstr "无法验证具有此签名值:\n%(sigval)s\n的签名，原因是:\n%(reason)s\n"
 
-#: ../modules/client/api_errors.py:2071
+#: ../modules/client/api_errors.py:2127
 #, python-format
 msgid ""
 "The policy for %(pub_str)s requires signatures to be present but no "
 "signature was found in %(fmri_str)s."
 msgstr "%(pub_str)s 的策略要求提供签名，但在 %(fmri_str)s 中未找到任何签名。"
 
-#: ../modules/client/api_errors.py:2075
+#: ../modules/client/api_errors.py:2131
 #, python-format
 msgid ""
 "The policy for %(pub_str)s requires signatures to be present but no "
 "signature was found."
 msgstr "%(pub_str)s 的策略要求提供签名，但未找到任何签名。"
 
-#: ../modules/client/api_errors.py:2092
+#: ../modules/client/api_errors.py:2148
 #, python-format
 msgid ""
 "The policy for %(pub_str)s requires certain CNs to be seen in a chain of "
@@ -4395,7 +4531,7 @@ msgid ""
 "%(missing)s"
 msgstr "%(pub_str)s 的策略要求在信任链中显示某些 CN。在软件包 %(fmri_str)s 中未找到下列所需的名称。\n%(missing)s"
 
-#: ../modules/client/api_errors.py:2098
+#: ../modules/client/api_errors.py:2154
 #, python-format
 msgid ""
 "The policy for %(pub_str)s requires certain CNs to be seen in a chain of "
@@ -4403,7 +4539,7 @@ msgid ""
 "%(missing)s"
 msgstr "%(pub_str)s 的策略要求在信任链中显示某些 CN。未找到下列所需的名称。\n%(missing)s"
 
-#: ../modules/client/api_errors.py:2113
+#: ../modules/client/api_errors.py:2169
 #, python-format
 msgid ""
 "The certificate whose subject is %(cert)s could not be verified because it "
@@ -4412,7 +4548,7 @@ msgid ""
 "Extension value:%(val)s"
 msgstr "无法验证主题为 %(cert)s 的证书，因为它使用了 pkg5 尚不能处理的关键扩展。\n扩展名: %(name)s\n扩展值: %(val)s"
 
-#: ../modules/client/api_errors.py:2131
+#: ../modules/client/api_errors.py:2187
 #, python-format
 msgid ""
 "The certificate whose subject is %(cert)s could not be verified because it "
@@ -4421,14 +4557,14 @@ msgid ""
 "Extension value:%(val)s"
 msgstr "无法验证主题为 %(cert)s 的证书，因为它具有 pkg(5) 无法识别的扩展值。\n扩展名：%(name)s\n扩展值：%(val)s"
 
-#: ../modules/client/api_errors.py:2138
+#: ../modules/client/api_errors.py:2194
 #, python-format
 msgid ""
 "\n"
 "Problematic Value:%s"
 msgstr "\n有问题的值：%s"
 
-#: ../modules/client/api_errors.py:2154
+#: ../modules/client/api_errors.py:2210
 #, python-format
 msgid ""
 "The certificate whose subject is %(cert)s could not be verified because it "
@@ -4436,7 +4572,7 @@ msgid ""
 "extension %(name)s must include '%(use)s' but the value was '%(val)s'."
 msgstr "无法验证主题为 %(cert)s 的证书，因为它使用不当。它的使用方式意味着扩展 %(name)s 的值必须包括 '%(use)s'，但该值为 '%(val)s'。"
 
-#: ../modules/client/api_errors.py:2175
+#: ../modules/client/api_errors.py:2231
 #, python-format
 msgid ""
 "The certificate whose subject is %(cert)s could not be verified because it "
@@ -4445,7 +4581,7 @@ msgid ""
 "certificates between this certificate and the leaf in this chain."
 msgstr "无法验证其主题为 %(cert)s 的证书，因为它的使用不当。在此证书与叶证书之间只能有 %(cl)s 证书。在此证书与此链中的叶之间只能有 %(al)s 证书。"
 
-#: ../modules/client/api_errors.py:2199
+#: ../modules/client/api_errors.py:2255
 #, python-format
 msgid ""
 "The signature to be added to the package has the same hash (%(hash)s), "
@@ -4454,12 +4590,12 @@ msgid ""
 "be added, the existing signature must be removed."
 msgstr "要添加到软件包的签名与某个现有的签名具有相同的散列 (%(hash)s)、算法 (%(algorithm)s) 和版本 (%(version)s)，但是不与该签名完全匹配。要想添加此签名，必须删除现有的签名。"
 
-#: ../modules/client/api_errors.py:2209
+#: ../modules/client/api_errors.py:2265
 #, python-format
 msgid "The package being signed was %(pkg)s"
 msgstr "所签署的软件包为 %(pkg)s"
 
-#: ../modules/client/api_errors.py:2223
+#: ../modules/client/api_errors.py:2279
 #, python-format
 msgid ""
 "%s could not be signed because it already has two copies of this signature "
@@ -4467,284 +4603,284 @@ msgid ""
 "given to users."
 msgstr "无法签署 %s，因为其中已有此签名的两个副本。在将软件包授予用户之前，必须删除其中一个签名操作。"
 
-#: ../modules/client/api_errors.py:2263
+#: ../modules/client/api_errors.py:2319
 #, python-format
 msgid ""
 "Certificate '%(cert)s' for publisher '%(pub)s' needed to access '%(uri)s', "
 "has expired.  Please install a valid certificate."
 msgstr "访问 '%(uri)s' 所需的发布者 '%(pub)s' 的证书 '%(cert)s' 已过期。请安装有效证书。"
 
-#: ../modules/client/api_errors.py:2268
+#: ../modules/client/api_errors.py:2324
 #, python-format
 msgid ""
 "Certificate '%(cert)s' for publisher '%(pub)s', has expired.  Please install "
 "a valid certificate."
 msgstr "发布者 '%(pub)s' 的证书 '%(cert)s' 已过期。请安装有效证书。"
 
-#: ../modules/client/api_errors.py:2273
+#: ../modules/client/api_errors.py:2329
 #, python-format
 msgid ""
 "Certificate '%(cert)s', needed to access '%(uri)s', has expired.  Please "
 "install a valid certificate."
 msgstr "访问 '%(uri)s' 所需的证书 '%(cert)s' 已过期。请安装有效证书。"
 
-#: ../modules/client/api_errors.py:2276
+#: ../modules/client/api_errors.py:2332
 #, python-format
 msgid "Certificate '%s' has expired.  Please install a valid certificate."
 msgstr "证书 '%s' 已过期。请安装有效证书。"
 
-#: ../modules/client/api_errors.py:2289
+#: ../modules/client/api_errors.py:2345
 #, python-format
 msgid ""
 "Certificate '%(cert)s' for publisher '%(pub)s', needed to access '%(uri)s', "
 "will expire in '%(days)s' days."
 msgstr "访问 '%(uri)s' 所需的发布者 '%(pub)s' 的证书 '%(cert)s' 将在 '%(days)s' 天内过期。"
 
-#: ../modules/client/api_errors.py:2294
+#: ../modules/client/api_errors.py:2350
 #, python-format
 msgid ""
 "Certificate '%(cert)s' for publisher '%(pub)s' will expire in '%(days)s' "
 "days."
 msgstr "发布者 '%(pub)s' 的证书 '%(cert)s' 将在 '%(days)s' 天内过期。"
 
-#: ../modules/client/api_errors.py:2298
+#: ../modules/client/api_errors.py:2354
 #, python-format
 msgid ""
 "Certificate '%(cert)s', needed to access '%(uri)s', will expire in '%(days)"
 "s' days."
 msgstr "访问 '%(uri)s' 所需的证书 '%(cert)s' 将在 '%(days)s' 天内过期。"
 
-#: ../modules/client/api_errors.py:2301
+#: ../modules/client/api_errors.py:2357
 #, python-format
 msgid "Certificate '%(cert)s' will expire in '%(days)s' days."
 msgstr "证书 '%(cert)s' 将在 '%(days)s' 天内过期。"
 
-#: ../modules/client/api_errors.py:2313
+#: ../modules/client/api_errors.py:2369
 #, python-format
 msgid ""
 "Certificate '%(cert)s' for publisher '%(pub)s', needed to access '%(uri)s', "
 "is invalid."
 msgstr "访问 '%(uri)s' 所需的发布者 '%(pub)s' 的证书 '%(cert)s' 无效。"
 
-#: ../modules/client/api_errors.py:2317
+#: ../modules/client/api_errors.py:2373
 #, python-format
 msgid "Certificate '%(cert)s' for publisher '%(pub)s' is invalid."
 msgstr "发布者 '%(pub)s' 的证书 '%(cert)s' 无效。"
 
-#: ../modules/client/api_errors.py:2321
+#: ../modules/client/api_errors.py:2377
 #, python-format
 msgid "Certificate '%(cert)s' needed to access '%(uri)s' is invalid."
 msgstr "访问 '%(uri)s' 所需的证书 '%(cert)s' 无效。"
 
-#: ../modules/client/api_errors.py:2324
+#: ../modules/client/api_errors.py:2380
 #, python-format
 msgid "Invalid certificate '%s'."
 msgstr "证书 '%s' 无效。"
 
-#: ../modules/client/api_errors.py:2335
+#: ../modules/client/api_errors.py:2391
 #, python-format
 msgid ""
 "Unable to locate key '%(key)s' for publisher '%(pub)s' needed to access '%"
 "(uri)s'."
 msgstr "找不到访问 '%(uri)s' 所需的发布者 '%(pub)s' 的密钥 '%(key)s'。"
 
-#: ../modules/client/api_errors.py:2339
+#: ../modules/client/api_errors.py:2395
 #, python-format
 msgid "Unable to locate key '%(key)s' for publisher '%(pub)s'."
 msgstr "找不到发布者 '%(pub)s' 的密钥 '%(key)s'。"
 
-#: ../modules/client/api_errors.py:2343
+#: ../modules/client/api_errors.py:2399
 #, python-format
 msgid "Unable to locate key '%(key)s' needed to access '%(uri)s'."
 msgstr "找不到访问 '%(uri)s' 所需的密钥 '%(key)s'。"
 
-#: ../modules/client/api_errors.py:2346
+#: ../modules/client/api_errors.py:2402
 #, python-format
 msgid "Unable to locate key '%s'."
 msgstr "找不到密钥 '%s'。"
 
-#: ../modules/client/api_errors.py:2357
+#: ../modules/client/api_errors.py:2413
 #, python-format
 msgid ""
 "Unable to locate certificate '%(cert)s' for publisher '%(pub)s' needed to "
 "access '%(uri)s'."
 msgstr "找不到访问 '%(uri)s' 所需的发布者 '%(pub)s' 的证书 '%(cert)s'。"
 
-#: ../modules/client/api_errors.py:2362
+#: ../modules/client/api_errors.py:2418
 #, python-format
 msgid "Unable to locate certificate '%(cert)s' for publisher '%(pub)s'."
 msgstr "找不到发布者 '%(pub)s' 的证书 '%(cert)s'。"
 
-#: ../modules/client/api_errors.py:2366
+#: ../modules/client/api_errors.py:2422
 #, python-format
 msgid "Unable to locate certificate '%(cert)s' needed to access '%(uri)s'."
 msgstr "找不到访问 '%(uri)s' 所需的证书 '%(cert)s'。"
 
-#: ../modules/client/api_errors.py:2369
+#: ../modules/client/api_errors.py:2425
 #, python-format
 msgid "Unable to locate certificate '%s'."
 msgstr "找不到证书 '%s'。"
 
-#: ../modules/client/api_errors.py:2381
+#: ../modules/client/api_errors.py:2437
 #, python-format
 msgid ""
 "Certificate '%(cert)s' for publisher '%(pub)s', needed to access '%(uri)s', "
 "has a future effective date."
 msgstr "访问 '%(uri)s' 所需的发布者 '%(pub)s' 的证书 '%(cert)s' 具有一个将来的生效日期。"
 
-#: ../modules/client/api_errors.py:2386
+#: ../modules/client/api_errors.py:2442
 #, python-format
 msgid ""
 "Certificate '%(cert)s' for publisher '%(pub)s' has a future effective date."
 msgstr "发布者 '%(pub)s' 的证书 '%(cert)s' 具有一个将来的生效日期。"
 
-#: ../modules/client/api_errors.py:2390
+#: ../modules/client/api_errors.py:2446
 #, python-format
 msgid ""
 "Certificate '%(cert)s' needed to access '%(uri)s' has a future effective "
 "date."
 msgstr "访问 '%(uri)s' 所需的证书 '%(cert)s' 具有一个将来的生效日期。"
 
-#: ../modules/client/api_errors.py:2393
+#: ../modules/client/api_errors.py:2449
 #, python-format
 msgid "Certificate '%s' has a future effective date."
 msgstr "证书 '%s' 具有一个将来的生效日期。"
 
-#: ../modules/client/api_errors.py:2406
+#: ../modules/client/api_errors.py:2462
 #, python-format
 msgid "Gave a bad response:%s"
 msgstr "给出了一个错误的响应：%s"
 
-#: ../modules/client/api_errors.py:2417
+#: ../modules/client/api_errors.py:2473
 #, python-format
 msgid "Could not find %s"
 msgstr "找不到 %s"
 
-#: ../modules/client/api_errors.py:2440
+#: ../modules/client/api_errors.py:2496
 #, python-format
 msgid "The signature data for the manifest of the '%s' package is not valid."
 msgstr "'%s' 软件包的清单的签名数据无效。"
 
-#: ../modules/client/api_errors.py:2442
+#: ../modules/client/api_errors.py:2498
 msgid "The signature data for the manifest is not valid."
 msgstr "此清单的签名数据无效。"
 
-#: ../modules/client/api_errors.py:2472
+#: ../modules/client/api_errors.py:2528
 #, python-format
 msgid ""
 "there is already an image at: %s.\n"
 "To override, use the -f (force) option."
 msgstr "以下位置中已存在一个映像: %s。\n要进行覆盖，请使用 -f（强制）选项。"
 
-#: ../modules/client/api_errors.py:2480
+#: ../modules/client/api_errors.py:2536
 #, python-format
 msgid "The configuration data for the image rooted at %s is empty or missing."
 msgstr "位于 %s 的映像的配置数据为空或丢失。"
 
-#: ../modules/client/api_errors.py:2493
+#: ../modules/client/api_errors.py:2549
 #, python-format
 msgid ""
 "The image rooted at %s is invalid or is not supported by this version of the "
 "packaging system."
 msgstr "位于 %s 的映像无效或者不受此版本的映像包管理系统支持。"
 
-#: ../modules/client/api_errors.py:2500
+#: ../modules/client/api_errors.py:2556
 #, python-format
 msgid ""
 "the specified image path is not empty: %s.\n"
 "To override, use the -f (force) option."
 msgstr "指定的映像路径不为空: %s。\n要进行覆盖，请使用 -f（强制）选项。"
 
-#: ../modules/client/api_errors.py:2602
+#: ../modules/client/api_errors.py:2660
 #, python-format
 msgid "Invalid linked image attach property: %s"
 msgstr "链接映像附加属性无效: %s"
 
-#: ../modules/client/api_errors.py:2608
+#: ../modules/client/api_errors.py:2666
 #, python-format
 msgid "Invalid linked image attach property value: %s"
 msgstr "链接映像附加属性值无效: %s"
 
-#: ../modules/client/api_errors.py:2612
+#: ../modules/client/api_errors.py:2670
 #, python-format
 msgid "Linked image type does not support child attach: %s"
 msgstr "链接映像类型不支持子附加: %s"
 
-#: ../modules/client/api_errors.py:2616
+#: ../modules/client/api_errors.py:2674
 #, python-format
 msgid "Linked image type does not support parent attach: %s"
 msgstr "链接映像类型不支持父附加: %s"
 
-#: ../modules/client/api_errors.py:2620
+#: ../modules/client/api_errors.py:2678
 msgid "Cannot attach root image as child"
 msgstr "无法将根映像附加为子项"
 
-#: ../modules/client/api_errors.py:2626
+#: ../modules/client/api_errors.py:2684
 #, python-format
 msgid "Can't initialize child image (%(lin)s) at path: %(path)s"
 msgstr "无法初始化位于以下路径的子映像 (%(lin)s)：%(path)s"
 
-#: ../modules/client/api_errors.py:2632
+#: ../modules/client/api_errors.py:2690
 #, python-format
 msgid "Can't initialize child image at path: %s"
 msgstr "无法初始化位于以下路径的子映像：%s"
 
-#: ../modules/client/api_errors.py:2638
+#: ../modules/client/api_errors.py:2696
 #, python-format
 msgid "Linked image is diverged: %s"
 msgstr "链接映像已分离: %s"
 
-#: ../modules/client/api_errors.py:2642
+#: ../modules/client/api_errors.py:2700
 #, python-format
 msgid "A linked child image with this name already exists: %s"
 msgstr "已存在具有此名称的链接子映像: %s"
 
-#: ../modules/client/api_errors.py:2647
+#: ../modules/client/api_errors.py:2705
 #, python-format
 msgid "Child image '%(cpath)s' is nested within another image: '%(ipath)s'"
 msgstr "子映像 '%(cpath)s' 嵌套在了另一映像 '%(ipath)s' 中"
 
-#: ../modules/client/api_errors.py:2655
+#: ../modules/client/api_errors.py:2713
 #, python-format
 msgid ""
 "Child image '%(path)s' is not located within the parent's altroot '%(altroot)"
 "s'"
 msgstr "子映像 '%(path)s' 没有位于父项的 altroot '%(altroot)s' 中"
 
-#: ../modules/client/api_errors.py:2663
+#: ../modules/client/api_errors.py:2721
 #, python-format
 msgid ""
 "Child image '%(cpath)s' is not nested within the parent image '%(ppath)s'"
 msgstr "子映像 '%(cpath)s' 没有嵌套在父映像 '%(ppath)s' 中"
 
-#: ../modules/client/api_errors.py:2673
+#: ../modules/client/api_errors.py:2731
 #, python-format
 msgid "Can't access child image (%(lin)s) at path: %(path)s"
 msgstr "无法访问位于以下路径的子映像 (%(lin)s)：%(path)s"
 
-#: ../modules/client/api_errors.py:2679
+#: ../modules/client/api_errors.py:2737
 #, python-format
 msgid "Can't access child image at path: %s"
 msgstr "无法访问位于以下路径的子映像：%s"
 
-#: ../modules/client/api_errors.py:2683
+#: ../modules/client/api_errors.py:2741
 #, python-format
 msgid "Child path not absolute: %s"
 msgstr "子路径不是绝对路径: %s"
 
-#: ../modules/client/api_errors.py:2687
+#: ../modules/client/api_errors.py:2745
 #, python-format
 msgid "Unknown child linked image: %s"
 msgstr "未知的子链接映像: %s"
 
-#: ../modules/client/api_errors.py:2692
+#: ../modules/client/api_errors.py:2750
 #, python-format
 msgid ""
 "The following subprocess returned an unexpected exit code of %(rv)d:\n"
 "    %(cmd)s"
 msgstr "以下子进程返回了意外的退出代码 %(rv)d:\n    %(cmd)s"
 
-#: ../modules/client/api_errors.py:2697
+#: ../modules/client/api_errors.py:2755
 #, python-format
 msgid ""
 "\n"
@@ -4752,78 +4888,104 @@ msgid ""
 "%(errout)s"
 msgstr "\n并生成了以下错误消息:\n%(errout)s"
 
-#: ../modules/client/api_errors.py:2701
+#: ../modules/client/api_errors.py:2759
 #, python-format
 msgid "Linked image type does not support child detach: %s"
 msgstr "链接映像类型不支持子分离: %s"
 
-#: ../modules/client/api_errors.py:2707
+#: ../modules/client/api_errors.py:2765
 #, python-format
 msgid "Parent linked to child, can not detach child: %s"
 msgstr "父项已链接到子项，无法分离子项: %s"
 
-#: ../modules/client/api_errors.py:2711
+#: ../modules/client/api_errors.py:2769
 #, python-format
 msgid "Linked image type does not support parent detach: %s"
 msgstr "链接映像类型不支持父分离: %s"
 
-#: ../modules/client/api_errors.py:2715
+#: ../modules/client/api_errors.py:2773
 #, python-format
 msgid "Image already a linked child: %s"
 msgstr "映像已经是一个链接子项: %s"
 
-#: ../modules/client/api_errors.py:2719
+#: ../modules/client/api_errors.py:2777
 #, python-format
 msgid "Invalid linked image name: %s"
 msgstr "链接映像名称无效: %s"
 
-#: ../modules/client/api_errors.py:2723
+#: ../modules/client/api_errors.py:2781
 msgid "Can't link image to itself."
 msgstr "无法将映像链接到其自身。"
 
-#: ../modules/client/api_errors.py:2728
+#: ../modules/client/api_errors.py:2786
 #, python-format
 msgid "Can't initialize parent image at path: %s"
 msgstr "无法初始化位于以下路径的父映像：%s"
 
-#: ../modules/client/api_errors.py:2732
+#: ../modules/client/api_errors.py:2790
 #, python-format
 msgid "Parent path not absolute: %s"
 msgstr "父路径不是绝对路径: %s"
 
-#: ../modules/client/api_errors.py:2738
+#: ../modules/client/api_errors.py:2796
 #, python-format
 msgid "Can't access parent image at path: %s"
 msgstr "无法访问位于以下路径的父映像：%s"
 
-#: ../modules/client/api_errors.py:2743
+#: ../modules/client/api_errors.py:2801
 #, python-format
 msgid ""
 "Parent image '%(path)s' is not located within the child's altroot '%(altroot)"
 "s'"
 msgstr "父映像 '%(path)s' 没有位于子项的 altroot '%(altroot)s' 中"
 
-#: ../modules/client/api_errors.py:2756
+#: ../modules/client/api_errors.py:2812
 #, python-format
 msgid ""
 "\n"
 "A '%(op)s' operation failed for child '%(lin)s' with an unexpected\n"
-"return value of %(exitrv)d and the following error message:\n"
+"return value of %(exitrv)d and generated the following output:\n"
 "%(errout)s\n"
 "\n"
-msgstr "\n对子项 '%(lin)s' 的 '%(op)s' 操作失败，返回了异常的\n返回值 %(exitrv)d 和以下错误消息：\n%(errout)s\n\n"
+msgstr "\n对子项 '%(lin)s' 的 '%(op)s' 操作失败，返回了意外的\n返回值 %(exitrv)d 并生成了以下输出：\n%(errout)s\n\n"
 
-#: ../modules/client/api_errors.py:2770
+#: ../modules/client/api_errors.py:2825
+#, python-format
+msgid ""
+"\n"
+"A '%(op)s' operation failed for child '%(lin)s' with an unexpected\n"
+"exception:\n"
+"%(e)s\n"
+"\n"
+"The child generated the following output:\n"
+"%(errout)s\n"
+"\n"
+msgstr "\n对子项 '%(lin)s' 的 '%(op)s' 操作失败，返回了意外的\n异常：\n%(e)s\n\n该子项生成了以下输出：\n%(errout)s\n\n"
+
+#: ../modules/client/api_errors.py:2842
 #, python-format
 msgid "Current image already a linked child: %s"
 msgstr "当前映像已经是一个链接子项: %s"
 
-#: ../modules/client/api_errors.py:2776
+#: ../modules/client/api_errors.py:2848
 #, python-format
 msgid "Current image is not a linked child: %s"
 msgstr "当前映像不是一个链接子项: %s"
 
-#: ../modules/client/api_errors.py:2818
+#: ../modules/client/api_errors.py:2853
+#, python-format
+msgid ""
+"\n"
+"A '%(op)s' operation for child '%(lin)s' generated non-json output.\n"
+"The json parser failed with the following error:\n"
+"%(e)s\n"
+"\n"
+"The child generated the following output:\n"
+"%(errout)s\n"
+"\n"
+msgstr "\n对子项 '%(lin)s' 的 '%(op)s' 操作生成了非 json 输出。\njson 解析器失败并返回以下错误：\n%(e)s\n\n该子项生成了以下输出：\n%(errout)s\n\n"
+
+#: ../modules/client/api_errors.py:2908
 msgid ""
 "The following packages were frozen at two different versions by\n"
 "the patterns provided.  The package stem and the versions it was frozen at "
@@ -4831,45 +4993,36 @@ msgid ""
 "provided:"
 msgstr "提供的模式冻结了以下软件包的两个不同\n版本。下面提供了软件包主干和被冻结的\n版本："
 
-#: ../modules/client/api_errors.py:2828
+#: ../modules/client/api_errors.py:2918
 msgid ""
 "The following patterns contained wildcards but matched no\n"
 "installed packages."
 msgstr "以下模式包含通配符但与任何已安装的软件包\n都不匹配。"
 
-#: ../modules/client/api_errors.py:2836
+#: ../modules/client/api_errors.py:2926
 msgid ""
 "The following patterns attempted to freeze the listed packages\n"
 "at a version different from the version at which the packages are installed."
 msgstr "以下模式试图冻结所列出软件包的已安装版本\n之外的版本。"
 
-#: ../modules/client/api_errors.py:2850
+#: ../modules/client/api_errors.py:2940
 msgid ""
 "The following patterns don't match installed packages and\n"
 "contain no version information.  Uninstalled packages can only be frozen by\n"
 "providing a version at which to freeze them."
 msgstr "以下模式与已安装的软件包不匹配且\n未包含版本信息。对于已卸载的软件包，只能通过\n提供要冻结的版本来冻结它们。"
 
-#: ../modules/client/api_errors.py:2863
+#: ../modules/client/api_errors.py:2953
 #, python-format
 msgid "The freeze state file '%s' is invalid."
 msgstr "冻结状态文件 '%s' 无效。"
 
-#: ../modules/client/api_errors.py:2875
+#: ../modules/client/api_errors.py:2965
 #, python-format
 msgid ""
 "The freeze state file '%(loc)s' was expected to have a version of %(exp)s, "
 "but its version was %(found)s"
 msgstr "冻结状态文件 '%(loc)s' 的版本预期是 %(exp)s，但它的版本是 %(found)s"
-
-#: ../modules/client/api_errors.py:2890
-#, python-format
-msgid ""
-"Because of this error:\n"
-"%(err)s\n"
-"JSON could not parse the following data:\n"
-"%(data)s"
-msgstr "因为此错误:\n%(err)s\nJSON 无法解析以下数据:\n%(data)s"
 
 #: ../modules/client/bootenv.py:136
 msgid "pkg: unable to create an auto snapshot. pkg recovery is disabled."
@@ -5044,7 +5197,7 @@ msgstr "未知"
 msgid "None"
 msgstr "无"
 
-#: ../modules/client/image.py:329
+#: ../modules/client/image.py:326
 #, python-format
 msgid ""
 "The trust anchors for the image were expected to be found in %s, but that is "
@@ -5052,7 +5205,7 @@ msgid ""
 "the correct path."
 msgstr "预期在 %s 中找到映像的信任锚，但它不是一个目录。请将映像属性 'trust-anchor-directory' 设置为正确的路径。"
 
-#: ../modules/client/image.py:364
+#: ../modules/client/image.py:361
 #, python-format
 msgid ""
 "%s is expected to be a certificate but could not be parsed.  The error "
@@ -5060,398 +5213,676 @@ msgid ""
 "\t%s"
 msgstr "%s 应为一个证书，但无法进行解析。遇到的错误为:\n\t%s"
 
-#: ../modules/client/image.py:1942 ../modules/client/imageconfig.py:1280
+#: ../modules/client/image.py:1955 ../modules/client/imageconfig.py:1444
 #, python-format
 msgid "Publisher '%s' is a system publisher and cannot be moved."
 msgstr "发布者 '%s' 是一个系统发布者且无法移动。"
 
-#: ../modules/client/image.py:2491
-msgid "Package State Update Phase"
-msgstr "软件包状态更新阶段"
-
-#. Remove manifests of packages that were removed from the
-#. system.  Some packages may have only had facets or
-#. variants changed, so don't remove those.
-#: ../modules/client/image.py:2589
-msgid "Package Cache Update Phase"
-msgstr "软件包缓存更新阶段"
-
-#: ../modules/client/image.py:2607
-msgid "Image State Update Phase"
-msgstr "映像状态更新阶段"
-
-#: ../modules/client/image.py:4313
+#: ../modules/client/image.py:4401
 msgid "pkg(5) update check failed."
 msgstr "pkg(5) 更新检查失败。"
 
-#: ../modules/client/imageconfig.py:806 ../modules/client/imageconfig.py:868
-#: ../modules/client/publisher.py:2207
+#: ../modules/client/imageconfig.py:933 ../modules/client/imageconfig.py:997
+#: ../modules/client/publisher.py:2525
 msgid ""
 "At least one name must be provided for the signature-required-names policy."
 msgstr "必须为“签名必需的名称”策略至少提供一个名称。"
 
-#: ../modules/client/imageconfig.py:1284
+#: ../modules/client/imageconfig.py:1448
 #, python-format
 msgid ""
 "Publisher '%s' is a system publisher and other publishers cannot be moved "
 "relative to it."
 msgstr "发布者 '%s' 是一个系统发布者，且其他发布者无法相对于它进行移动。"
 
-#: ../modules/client/imageconfig.py:1321
+#: ../modules/client/imageconfig.py:1485
 #, python-format
 msgid "%s is a system publisher and cannot be unset."
 msgstr "%s 是一个系统发布者且无法取消设置。"
 
-#: ../modules/client/imageplan.py:3177
+#: ../modules/client/imageplan.py:3116
 msgid "Download cache"
 msgstr "下载高速缓存"
 
-#: ../modules/client/imageplan.py:3182 ../modules/client/imageplan.py:3257
+#: ../modules/client/imageplan.py:3121 ../modules/client/imageplan.py:3232
 msgid "Root filesystem"
 msgstr "根文件系统"
 
-#: ../modules/client/imageplan.py:3325
-msgid "Removal Phase"
-msgstr "删除阶段"
-
-#: ../modules/client/imageplan.py:3347
-msgid "Install Phase"
-msgstr "安装阶段"
-
-#: ../modules/client/imageplan.py:3361
-msgid "Update Phase"
-msgstr "更新阶段"
-
-#: ../modules/client/imageplan.py:3412
+#: ../modules/client/imageplan.py:3391
 #, python-format
 msgid ""
 "A link targeting itself or part of a link loop was found at '%s'; a file or "
 "directory was expected.  Please remove the link and try again."
 msgstr "在 '%s' 处发现了一个目标是其自身或链接循环的一部分的链接；需要是一个文件或目录。请删除该链接并重试。"
 
-#: ../modules/client/imageplan.py:3470
-msgid "Index Phase"
-msgstr "索引阶段"
-
-#: ../modules/client/pkg_solver.py:321 ../modules/client/pkg_solver.py:680
+#: ../modules/client/pkg_solver.py:341 ../modules/client/pkg_solver.py:705
 msgid "This version rejected by user request"
 msgstr "用户请求拒绝了此版本"
 
-#: ../modules/client/pkg_solver.py:364
+#: ../modules/client/pkg_solver.py:383
 msgid "This version excluded by specified installation version"
 msgstr "此版本被指定的安装版本排除"
 
-#: ../modules/client/pkg_solver.py:373
+#: ../modules/client/pkg_solver.py:391
 msgid "This version is excluded by installed incorporation {0}"
 msgstr "已安装的 incorporation {0} 排除了此版本"
 
-#: ../modules/client/pkg_solver.py:386 ../modules/client/pkg_solver.py:691
+#: ../modules/client/pkg_solver.py:402 ../modules/client/pkg_solver.py:718
 msgid ""
 "This version is excluded by a freeze on {0} at version {1}.  The reason for "
 "the freeze is: {2}"
 msgstr "对 {0} 的版本 {1} 的冻结排除了此版本。该冻结的理由是：{2}"
 
-#: ../modules/client/pkg_solver.py:391 ../modules/client/pkg_solver.py:696
+#: ../modules/client/pkg_solver.py:407 ../modules/client/pkg_solver.py:723
 msgid "This version is excluded by a freeze on {0} at version {1}."
 msgstr "对 {0} 的版本 {1} 的冻结排除了此版本。"
 
-#: ../modules/client/pkg_solver.py:415 ../modules/client/pkg_solver.py:468
+#: ../modules/client/pkg_solver.py:429 ../modules/client/pkg_solver.py:482
 #, python-format
 msgid "No matching version of %s can be installed:"
 msgstr "没有 %s 的匹配版本可供安装："
 
 #. no version of this package is allowed
-#: ../modules/client/pkg_solver.py:530 ../modules/client/pkg_solver.py:766
+#: ../modules/client/pkg_solver.py:542 ../modules/client/pkg_solver.py:793
 #, python-format
 msgid "The installed package %s is not permissible."
 msgstr "不允许所安装的软件包 %s。"
 
-#: ../modules/client/pkg_solver.py:572
+#: ../modules/client/pkg_solver.py:588
 msgid "Plan Creation: dependency error(s) in proposed packages:"
 msgstr "计划创建：建议的软件包中存在相关项错误："
 
-#: ../modules/client/pkg_solver.py:580
+#: ../modules/client/pkg_solver.py:596
 msgid "Plan Creation: Errors in installed packages due to proposed changes:"
 msgstr "计划创建：由于建议的更改而导致已安装的软件包中出现错误："
 
 #. both error detection methods insufficent.
-#: ../modules/client/pkg_solver.py:585
+#: ../modules/client/pkg_solver.py:601
 msgid "Plan Creation: Package solver is unable to compute solution."
 msgstr "计划创建：软件包解析器无法计算解决方案。"
 
-#: ../modules/client/pkg_solver.py:586 ../modules/client/pkg_solver.py:811
+#: ../modules/client/pkg_solver.py:602 ../modules/client/pkg_solver.py:837
 msgid "Dependency analysis is unable to determine exact cause."
 msgstr "相关项分析无法确定确切的原因。"
 
-#: ../modules/client/pkg_solver.py:587 ../modules/client/pkg_solver.py:812
+#: ../modules/client/pkg_solver.py:603 ../modules/client/pkg_solver.py:838
 msgid "Try specifying expected results to obtain more detailed error messages."
 msgstr "尝试指定预期的结果以获取更详细的错误消息。"
 
-#: ../modules/client/pkg_solver.py:588
+#: ../modules/client/pkg_solver.py:604
 msgid "Include specific version of packages you wish installed."
 msgstr "包括您希望安装的软件包的特定版本。"
 
-#: ../modules/client/pkg_solver.py:794
+#: ../modules/client/pkg_solver.py:820
 msgid ""
 "Plan Creation: Package solver has not found a solution to update to latest "
 "available versions."
 msgstr "计划创建：软件包解析器未找到用于更新到最新可用版本的解决方案。"
 
-#: ../modules/client/pkg_solver.py:795
+#: ../modules/client/pkg_solver.py:821
 msgid "This may indicate an overly constrained set of packages are installed."
 msgstr "这可能表明安装了过度受限的软件包集。"
 
-#: ../modules/client/pkg_solver.py:797
+#: ../modules/client/pkg_solver.py:823
 msgid "latest incorporations:"
 msgstr "最新 incorporation："
 
-#: ../modules/client/pkg_solver.py:806
+#: ../modules/client/pkg_solver.py:832
 msgid ""
 "The following indicates why the system cannot update to the latest version:"
 msgstr "下面说明了系统无法更新到最新版本的原因："
 
-#: ../modules/client/pkg_solver.py:1177 ../modules/client/pkg_solver.py:1219
-#: ../modules/client/pkg_solver.py:1235
+#: ../modules/client/pkg_solver.py:1212 ../modules/client/pkg_solver.py:1254
+#: ../modules/client/pkg_solver.py:1270
 msgid "Package contains invalid or unsupported actions"
 msgstr "软件包包含无效或不受支持的操作"
 
-#: ../modules/client/pkg_solver.py:1359
+#: ../modules/client/pkg_solver.py:1394
 msgid "Excluded by proposed incorporation '{0}'"
 msgstr "被建议的 incorporation '{0}' 排除"
 
-#: ../modules/client/pkg_solver.py:1531
+#: ../modules/client/pkg_solver.py:1568
 msgid "Package contains 'exclude' dependency {0} on installed package"
 msgstr "软件包包含依赖于已安装软件包的 'exclude' 相关项 {0}"
 
-#: ../modules/client/pkg_solver.py:1535
+#: ../modules/client/pkg_solver.py:1572
 msgid "All versions matching 'exclude' dependency {0} are rejected"
 msgstr "与 'exclude' 相关项 {0} 匹配的所有版本都被拒绝"
 
-#: ../modules/client/pkg_solver.py:1562
+#: ../modules/client/pkg_solver.py:1599
 msgid "All acceptable versions of '{0}' dependency on {1} are obsolete"
 msgstr "依赖于 {1} 的 '{0}' 相关项的所有可接受版本都已过时"
 
-#: ../modules/client/pkg_solver.py:1566
+#: ../modules/client/pkg_solver.py:1603
 msgid "All acceptable versions of '{0}' dependencies on {1} are obsolete"
 msgstr "依赖于 {1} 的 '{0}' 相关项的所有可接受版本都已过时"
 
-#: ../modules/client/pkg_solver.py:1578
+#: ../modules/client/pkg_solver.py:1615
 msgid "A version for '{0}' dependency on {1} cannot be found"
 msgstr "未找到依赖于 {1} 的 '{0}' 相关项的某个版本"
 
-#: ../modules/client/pkg_solver.py:1582
+#: ../modules/client/pkg_solver.py:1619
 msgid "All versions matching '{0}' dependency {1} are rejected"
 msgstr "与 '{0}' 相关项 {1} 匹配的所有版本都被拒绝"
 
-#: ../modules/client/pkg_solver.py:1629
+#: ../modules/client/pkg_solver.py:1666
 #, python-format
 msgid "No suitable version of installed package %s found"
 msgstr "未找到已安装的软件包 %s 的合适版本"
 
-#: ../modules/client/pkg_solver.py:1663
+#: ../modules/client/pkg_solver.py:1700
 #, python-format
 msgid "%s  Reject:  "
 msgstr "%s  拒绝： "
 
-#: ../modules/client/pkg_solver.py:1665
+#: ../modules/client/pkg_solver.py:1702
 msgid "Reason:"
 msgstr "原因："
 
-#: ../modules/client/pkg_solver.py:1668
+#: ../modules/client/pkg_solver.py:1705
 #, python-format
 msgid "%s  %s  [already rejected; see above]"
 msgstr "%s  %s  [已被拒绝；请参见以上内容]"
 
-#: ../modules/client/pkg_solver.py:1702
+#: ../modules/client/pkg_solver.py:1739
 #, python-format
 msgid "No suitable version of required package %s found:"
 msgstr "未找到所需软件包 %s 的合适版本："
 
-#: ../modules/client/pkg_solver.py:1820
+#: ../modules/client/pkg_solver.py:1857
 #, python-format
 msgid "List of integers, not %s, expected"
 msgstr "应当为整数的列表而不是 %s"
 
-#: ../modules/client/pkg_solver.py:1945
+#: ../modules/client/pkg_solver.py:1982
 msgid "Currently installed package '{0}' is from sticky publisher '{1}'."
 msgstr "当前安装的软件包 '{0}' 来自粘性发布者 '{1}'。"
 
-#: ../modules/client/pkg_solver.py:1948
+#: ../modules/client/pkg_solver.py:1985
 msgid "Package is from publisher other than specified one."
 msgstr "软件包来自的发布者并非指定发布者。"
 
-#: ../modules/client/pkg_solver.py:1963
+#: ../modules/client/pkg_solver.py:2000
 msgid "Higher ranked publisher {0} was selected"
 msgstr "选择了排名较高的发布者 {0}"
 
-#: ../modules/client/pkg_solver.py:1965
+#: ../modules/client/pkg_solver.py:2002
 msgid "Package publisher is ranked lower in search order"
 msgstr "软件包发布者在搜索顺序中的排名较低"
 
-#: ../modules/client/pkg_solver.py:2001
+#: ../modules/client/pkg_solver.py:2039
 msgid "Newer version {0} is already installed"
 msgstr "已安装了更新的版本 {0}"
 
-#: ../modules/client/pkg_solver.py:2011
+#: ../modules/client/pkg_solver.py:2049
 msgid "Package doesn't support image architecture"
 msgstr "软件包不支持映像体系结构"
 
-#: ../modules/client/pkg_solver.py:2013
+#: ../modules/client/pkg_solver.py:2051
 msgid "Package doesn't support image variant {0}"
 msgstr "软件包不支持映像变量 {0}"
 
 #. package is not installed in parent
-#: ../modules/client/pkg_solver.py:2025
+#: ../modules/client/pkg_solver.py:2063
 msgid "Package is not installed in parent image: {0}"
 msgstr "没有在父映像中安装软件包: {0}"
 
 #. package is from a different publisher in the parent
-#: ../modules/client/pkg_solver.py:2033
+#: ../modules/client/pkg_solver.py:2071
 msgid "Package in parent is from a different publisher: {0}"
 msgstr "父项中的软件包来自一个不同的发布者: {0}"
 
-#: ../modules/client/pkg_solver.py:2046
+#: ../modules/client/pkg_solver.py:2084
 msgid "Parent image has a incompatible newer version: {0}"
 msgstr "父映像具有一个不兼容的较新版本: {0}"
 
-#: ../modules/client/pkg_solver.py:2049
+#: ../modules/client/pkg_solver.py:2087
 msgid "Parent image has an older version of package: {0}"
 msgstr "父映像具有一个较旧版本的软件包: {0}"
 
-#: ../modules/client/pkg_solver.py:2114
+#: ../modules/client/pkg_solver.py:2152
 msgid "Installed version in root image is too old for origin dependency {0}"
 msgstr "根映像中的已安装版本对源相关项 {0} 而言太旧"
 
-#: ../modules/client/pkg_solver.py:2120
+#: ../modules/client/pkg_solver.py:2158
 msgid ""
 "Installed version in image being upgraded is too old for origin dependency "
 "{0}"
 msgstr "正在升级的映像中的已安装版本对源相关项 {0} 而言太旧"
 
-#: ../modules/client/progress.py:643 ../modules/client/progress.py:850
+#: ../modules/client/progress.py:457
 #, python-format
-msgid "Image %s "
-msgstr "映像 %s "
+msgid "Goal mismatch '%s': expected goal: %s, current value: %s"
+msgstr "目标不匹配 '%s'：预期的目标：%s，当前值：%s"
 
-#: ../modules/client/progress.py:673 ../modules/client/progress.py:966
+#: ../modules/client/progress.py:704
+msgid "Startup"
+msgstr "启动"
+
+#: ../modules/client/progress.py:705 ../modules/client/progress.py:718
+msgid "Planning"
+msgstr "正在规划"
+
+#: ../modules/client/progress.py:707
+msgid "Actions"
+msgstr "操作"
+
+#: ../modules/client/progress.py:708
+msgid "Finalize"
+msgstr "完成"
+
+#: ../modules/client/progress.py:719
+msgid "Downloading"
+msgstr "正在下载"
+
+#: ../modules/client/progress.py:720
+msgid "Executing"
+msgstr "正在执行"
+
+#: ../modules/client/progress.py:977
+msgid "Download packages"
+msgstr "已下载软件包"
+
+#: ../modules/client/progress.py:978
+msgid "Download files"
+msgstr "已下载文件"
+
+#: ../modules/client/progress.py:979
+msgid "Download bytes"
+msgstr "已下载字节数"
+
+#. republishing support; republishing also uses dl_bytes
+#: ../modules/client/progress.py:984
+msgid "Republished pkgs"
+msgstr "重新发布的软件包"
+
+#: ../modules/client/progress.py:986
+msgid "Republish sent bytes"
+msgstr "重新发布已发送的字节"
+
+#: ../modules/client/progress.py:993
+msgid "Refresh Publishers"
+msgstr "刷新发布者"
+
+#. We don't know the goal in advance for this one
+#: ../modules/client/progress.py:995
+msgid "Refresh bytes"
+msgstr "刷新字节数"
+
+#: ../modules/client/progress.py:999
+msgid "Download Manifests"
+msgstr "下载清单"
+
+#: ../modules/client/progress.py:1000
+msgid "Committed Manifests"
+msgstr "已提交的清单"
+
+#: ../modules/client/progress.py:1002
+msgid "Verify Packages"
+msgstr "检验软件包"
+
+#. archiving support
+#: ../modules/client/progress.py:1005
+msgid "Archived items"
+msgstr "已归档的项数"
+
+#: ../modules/client/progress.py:1006
+msgid "Archived bytes"
+msgstr "已归档的字节数"
+
+#: ../modules/client/progress.py:1014
+msgid "Solver setup"
+msgstr "解析器设置"
+
+#: ../modules/client/progress.py:1016
+msgid "Running solver"
+msgstr "正在运行解析器"
+
+#: ../modules/client/progress.py:1018
+msgid "Finding local manifests"
+msgstr "正在查找本地清单"
+
+#: ../modules/client/progress.py:1020
+msgid "Package planning"
+msgstr "软件包规划"
+
+#: ../modules/client/progress.py:1022
+msgid "Merging actions"
+msgstr "正在合并操作"
+
+#: ../modules/client/progress.py:1024
+msgid "Checking for conflicting actions"
+msgstr "正在检查是否存在冲突的操作"
+
+#: ../modules/client/progress.py:1026
+msgid "Consolidating action changes"
+msgstr "正在合并操作更改"
+
+#: ../modules/client/progress.py:1028
+msgid "Evaluating mediators"
+msgstr "正在评估中介"
+
+#: ../modules/client/progress.py:1030
+msgid "Finalizing action plan"
+msgstr "正在完成操作规划"
+
+#: ../modules/client/progress.py:1032
+msgid "Evaluating mediator changes"
+msgstr "正在评估中介更改"
+
+#: ../modules/client/progress.py:1037
+msgid "Removing old actions"
+msgstr "正在删除旧操作"
+
+#: ../modules/client/progress.py:1039
+msgid "Installing new actions"
+msgstr "正在安装新操作"
+
+#: ../modules/client/progress.py:1041
+msgid "Updating modified actions"
+msgstr "正在更新修改的操作"
+
+#: ../modules/client/progress.py:1046
+msgid "Updating package state database"
+msgstr "正在更新软件包状态数据库"
+
+#: ../modules/client/progress.py:1048
+msgid "Updating image state"
+msgstr "正在更新映像状态"
+
+#: ../modules/client/progress.py:1050
+msgid "Creating fast lookup database"
+msgstr "正在创建快速查找数据库"
+
+#: ../modules/client/progress.py:1052
+msgid "Updating package cache"
+msgstr "正在更新软件包缓存"
+
+#: ../modules/client/progress.py:1054
+msgid "Reading search index"
+msgstr "正在读取搜索索引"
+
+#: ../modules/client/progress.py:1056
+msgid "Updating search index"
+msgstr "正在更新搜索索引"
+
+#: ../modules/client/progress.py:1058
+msgid "Building new search index"
+msgstr "正在生成新的搜索索引"
+
+#: ../modules/client/progress.py:1062
+msgid "Deleting search index"
+msgstr "正在删除搜索索引"
+
+#: ../modules/client/progress.py:1064
+msgid "Updating catalog"
+msgstr "正在更新目录"
+
+#: ../modules/client/progress.py:1066
+msgid "Analyzing removed packages"
+msgstr "正在分析已删除的软件包"
+
+#: ../modules/client/progress.py:1068
+msgid "Analyzing repository packages"
+msgstr "正在分析系统信息库软件包"
+
+#: ../modules/client/progress.py:1070
+msgid "Removing package manifests"
+msgstr "正在删除软件包清单"
+
+#: ../modules/client/progress.py:1072
+msgid "Removing package files"
+msgstr "正在删除软件包文件"
+
+#: ../modules/client/progress.py:1495
 #, python-format
-msgid "Recursing into linked image: %s"
-msgstr "正在递归到链接映像: %s"
+msgid "Lint setup %d"
+msgstr "Lint 设置 %d"
 
-#: ../modules/client/progress.py:685 ../modules/client/progress.py:979
+#: ../modules/client/progress.py:1497
 #, python-format
-msgid "Returning from linked image: %s"
-msgstr "正在从链接映像返回: %s"
+msgid "Lint phase %d"
+msgstr "Lint 阶段 %d"
 
-#: ../modules/client/progress.py:716 ../modules/client/progress.py:734
+#: ../modules/client/progress.py:1749
+#, python-format
+msgid "%*s: "
+msgstr "%*s："
+
+#: ../modules/client/progress.py:1769 ../modules/client/progress.py:1781
+#: ../modules/client/progress.py:1798 ../modules/client/progress.py:2423
 #: ../modules/gui/startpage.py:240
 msgid "Done"
 msgstr "完成"
 
-#: ../modules/client/progress.py:727
+#: ../modules/client/progress.py:1779
 #, python-format
-msgid "Download: %s ... "
-msgstr "下载: %s ... "
+msgid "Done (%(elapsed).3fs)"
+msgstr "完成 (%(elapsed).3fs)"
 
-#: ../modules/client/progress.py:730
+#: ../modules/client/progress.py:1796
+msgid "Checking that pkg(5) is up to date ..."
+msgstr "正在检查 pkg(5) 是否是最新的..."
+
+#: ../modules/client/progress.py:1802 ../modules/client/progress.py:2162
+#: ../modules/gui/progress.py:50
+msgid "Caching catalogs ..."
+msgstr "正在缓存目录..."
+
+#: ../modules/client/progress.py:1808 ../modules/client/progress.py:2168
+#: ../modules/gui/progress.py:59
+msgid "Loading catalog cache ..."
+msgstr "正在装入目录高速缓存..."
+
+#: ../modules/client/progress.py:1819
+#, python-format
+msgid "Retrieving target catalog '%s' ..."
+msgstr "正在检索目标目录 '%s' ..."
+
+#: ../modules/client/progress.py:1821
+#, python-format
+msgid "Retrieving catalog '%s' ..."
+msgstr "正在检索目录 '%s' ..."
+
+#: ../modules/client/progress.py:1823
+#, python-format
+msgid "Refreshing catalog '%s' ..."
+msgstr "正在刷新目录 '%s' ..."
+
+#: ../modules/client/progress.py:1830
+#, python-format
+msgid "%s ..."
+msgstr "%s ..."
+
+#: ../modules/client/progress.py:1836
+#, python-format
+msgid "Planning completed in %.2f seconds"
+msgstr "规划已在 %.2f 秒内完成"
+
+#: ../modules/client/progress.py:1857
+#, python-format
+msgid "Fetching manifests: %s  %d%% complete"
+msgstr "正在提取清单：%s  %d%% 完成"
+
+#: ../modules/client/progress.py:1904
+#, python-format
+msgid "Download: %s items  %sMB  %d%% complete %s"
+msgstr "下载：%s 项  %sMB  %d%% 完成 %s"
+
+#: ../modules/client/progress.py:1911
+#, python-format
+msgid "Download: Completed %s in %.2f seconds %s"
+msgstr "下载：已完成 %s（在 %.2f 秒内）%s"
+
+#: ../modules/client/progress.py:1917
 #, python-format
 msgid "Republish: %s ... "
 msgstr "重新发布：%s ... "
 
-#: ../modules/client/progress.py:879
+#: ../modules/client/progress.py:1932
 #, python-format
-msgid "Retrieving catalog '%s'..."
-msgstr "正在检索目录 '%s'..."
+msgid "Archiving: Completed %s in %.2f seconds"
+msgstr "正在归档：已完成 %s（在 %.2f 秒内）"
 
-#: ../modules/client/progress.py:886
-msgid "Caching catalogs ..."
-msgstr "正在缓存目录..."
+#: ../modules/client/progress.py:1939
+#, python-format
+msgid "Archiving: %s items  %sMB  %d%% complete"
+msgstr "正在归档：%s 项  %sMB  %d%% 完成"
 
-#: ../modules/client/progress.py:892
-msgid "Loading catalog cache ..."
-msgstr "正在装入目录高速缓存..."
+#: ../modules/client/progress.py:1958
+#, python-format
+msgid "%s actions (%s)"
+msgstr "%s 操作 (%s)"
 
-#: ../modules/client/progress.py:898
+#: ../modules/client/progress.py:1970
+#, python-format
+msgid "Completed %d actions in %.2f seconds."
+msgstr "已完成 %d 个操作（在 %.2f 秒内）。"
+
+#: ../modules/client/progress.py:1996
+msgid "Linked image publisher check ..."
+msgstr "链接映像发布者检查..."
+
+#: ../modules/client/progress.py:2004
+msgid "Finished processing linked images."
+msgstr "已完成了对链接映像的处理。"
+
+#: ../modules/client/progress.py:2023 ../modules/client/progress.py:2468
+#, python-format
+msgid "Linked image '%s' output:"
+msgstr "链接映像 '%s' 输出："
+
+#: ../modules/client/progress.py:2033
+#, python-format
+msgid "Linked images: %s done; %d working: %s"
+msgstr "链接映像：已完成 %s；有 %d 个正在执行：%s"
+
+#: ../modules/client/progress.py:2151
+#, python-format
+msgid "Checking that pkg(5) is up to date %c"
+msgstr "正在检查 pkg(5) 是否是最新 %c"
+
+#: ../modules/client/progress.py:2188
+msgid "Retrieving target catalog"
+msgstr "正在检索目标目录"
+
+#: ../modules/client/progress.py:2190
+msgid "Retrieving catalog"
+msgstr "正在检索目录"
+
+#: ../modules/client/progress.py:2192
 msgid "Refreshing catalog"
 msgstr "正在刷新目录"
 
-#: ../modules/client/progress.py:905
+#: ../modules/client/progress.py:2193
 #, python-format
-msgid "Refreshing catalog %(current)d/%(total)d %(publisher)s"
-msgstr "正在刷新目录 %(current)d/%(total)d %(publisher)s"
+msgid "%(prefix)s %(pub_cnt)s %(publisher)s%(bytes)s"
+msgstr "%(prefix)s %(pub_cnt)s %(publisher)s%(bytes)s"
 
-#: ../modules/client/progress.py:927
-msgid "Creating Plan"
-msgstr "正在创建计划"
-
-#: ../modules/client/progress.py:947
+#: ../modules/client/progress.py:2215
 #, python-format
-msgid "Creating Plan %c"
-msgstr "正在创建计划 %c"
+msgid "Creating Plan (%s%s): %s"
+msgstr "正在创建规划 (%s%s)：%s"
 
-#: ../modules/client/progress.py:1064
+#: ../modules/client/progress.py:2237
+#, python-format
+msgid "Creating Plan (%s %s) %c"
+msgstr "正在创建规划 (%s %s) %c"
+
+#: ../modules/client/progress.py:2241
+#, python-format
+msgid "%s (%s) %c"
+msgstr "%s (%s) %c"
+
+#: ../modules/client/progress.py:2255
+#, python-format
+msgid "Creating Plan (Committing Manifests): %c"
+msgstr "正在创建规划（正在提交清单）：%c"
+
+#: ../modules/client/progress.py:2258
+#, python-format
+msgid "Committing Manifests %c"
+msgstr "正在提交清单 %c"
+
+#: ../modules/client/progress.py:2293
 msgid "ARCHIVE"
 msgstr "归档"
 
-#: ../modules/client/progress.py:1065 ../modules/client/progress.py:1101
+#: ../modules/client/progress.py:2293 ../modules/client/progress.py:2313
 msgid "FILES"
 msgstr "文件"
 
-#: ../modules/client/progress.py:1065
+#: ../modules/client/progress.py:2293
 msgid "STORE (MB)"
 msgstr "存储 (MB)"
 
-#: ../modules/client/progress.py:1100
+#: ../modules/client/progress.py:2313
 msgid "DOWNLOAD"
 msgstr "下载"
 
-#: ../modules/client/progress.py:1101
+#: ../modules/client/progress.py:2313
 msgid "PKGS"
 msgstr "软件包"
 
-#: ../modules/client/progress.py:1101
+#: ../modules/client/progress.py:2314
 msgid "XFER (MB)"
 msgstr "XFER (MB)"
 
-#: ../modules/client/progress.py:1155
+#: ../modules/client/progress.py:2314
+msgid "SPEED"
+msgstr "速度"
+
+#: ../modules/client/progress.py:2317
+msgid "Completed"
+msgstr "已完成"
+
+#: ../modules/client/progress.py:2363
 msgid "PROCESS"
 msgstr "处理"
 
-#: ../modules/client/progress.py:1156 ../modules/client/progress.py:1268
-#: ../modules/client/progress.py:1302
+#: ../modules/client/progress.py:2363 ../modules/client/progress.py:2388
 msgid "ITEMS"
 msgstr "项目"
 
-#: ../modules/client/progress.py:1156
+#: ../modules/client/progress.py:2363
 msgid "GET (MB)"
 msgstr "获取 (MB)"
 
-#: ../modules/client/progress.py:1156
+#: ../modules/client/progress.py:2364
 msgid "SEND (MB)"
 msgstr "发送 (MB)"
 
-#: ../modules/client/progress.py:1221 ../modules/client/progress.py:1268
-#: ../modules/client/progress.py:1302
+#: ../modules/client/progress.py:2388
 msgid "PHASE"
 msgstr "阶段"
 
-#: ../modules/client/progress.py:1221
-msgid "ACTIONS"
-msgstr "操作"
+#: ../modules/client/progress.py:2423
+msgid "working"
+msgstr "正在执行"
 
-#: ../modules/client/progress.py:1247
-msgid "Optimizing Index..."
-msgstr "正在优化索引..."
+#: ../modules/client/progress.py:2441
+msgid "Linked image publisher check"
+msgstr "链接映像发布者检查"
 
-#: ../modules/client/publisher.py:981
+#: ../modules/client/progress.py:2481
+#, python-format
+msgid "%s linked: %s done; %d working: %s"
+msgstr "%s 链接映像：已完成 %s；有 %d 个正在执行：%s"
+
+#: ../modules/client/progress.py:2505
+#, python-format
+msgid "Linked progress: %s"
+msgstr "链接映像进度：%s"
+
+#: ../modules/client/publisher.py:1292
 msgid "Cannot enable or disable a system publisher"
 msgstr "无法启用或禁用系统发布者"
 
-#: ../modules/client/publisher.py:1080
+#: ../modules/client/publisher.py:1391
 msgid "Cannot change the stickiness of a system publisher"
 msgstr "无法更改系统发布者的粘性"
 
-#: ../modules/client/publisher.py:1111
+#: ../modules/client/publisher.py:1422
 #, python-format
 msgid ""
 "\n"
@@ -5464,7 +5895,7 @@ msgid ""
 "contains package data for: %(pubs)s.\n"
 msgstr "\n无法从以下源之一检索发布者 '%(prefix)s' 的\n软件包数据：\n\n%(origins)s\n\n从上面所列的源之一中检索到的目录仅\n包含 %(pubs)s 的软件包数据。\n"
 
-#: ../modules/client/publisher.py:1123
+#: ../modules/client/publisher.py:1434
 #, python-format
 msgid ""
 "This is either a result of invalid origin information being provided\n"
@@ -5472,7 +5903,7 @@ msgid ""
 "provided when this publisher was added.\n"
 msgstr "这是因为提供给发布者 '%s' 的源信息\n无效，或者是因为在添加此发布者时提供了\n错误的发布者名称。\n"
 
-#: ../modules/client/publisher.py:1131
+#: ../modules/client/publisher.py:1442
 #, python-format
 msgid ""
 "To resolve this issue, correct the origin information provided for\n"
@@ -5481,7 +5912,7 @@ msgid ""
 "publisher.\n"
 msgstr "要解决此问题，请使用 pkg set-publisher 子命令更正为\n发布者 '%(prefix)s' 提供的源信息，或者使用\n正确的名称重新添加此发布者，然后删除 '%(prefix)s'\n发布者。\n"
 
-#: ../modules/client/publisher.py:1139
+#: ../modules/client/publisher.py:1450
 #, python-format
 msgid ""
 "To re-add this publisher with the correct name, execute the following\n"
@@ -5491,19 +5922,19 @@ msgid ""
 "pkg unset-publisher %(prefix)s\n"
 msgstr "要使用正确的名称重新添加此发布者，请以特权用户\n身份执行以下命令：\n\npkg set-publisher -P -g %(origin)s %(pub)s\npkg unset-publisher %(prefix)s\n"
 
-#: ../modules/client/publisher.py:1148
+#: ../modules/client/publisher.py:1459
 msgid ""
 "The origin(s) listed above contain package data for more than one\n"
 "publisher, but this issue can likely be resolved by executing one\n"
 "of the following commands as a privileged user:\n"
 msgstr "上面所列的源包含多个发布者的软件包\n数据，但通过以特权用户身份执行以下命令之一\n有可能可解决此问题：\n"
 
-#: ../modules/client/publisher.py:1155
+#: ../modules/client/publisher.py:1466
 #, python-format
 msgid "pkg set-publisher -P -g %(origin)s %(pub)s\n"
 msgstr "pkg set-publisher -P -g %(origin)s %(pub)s\n"
 
-#: ../modules/client/publisher.py:1159
+#: ../modules/client/publisher.py:1470
 #, python-format
 msgid ""
 "Afterwards, the old publisher should be removed by executing the\n"
@@ -5512,14 +5943,14 @@ msgid ""
 "pkg unset-publisher %s\n"
 msgstr "然后，应该通过以特权用户身份执行以下\n命令删除旧的发布者：\n\npkg unset-publisher %s\n"
 
-#: ../modules/client/publisher.py:2024
+#: ../modules/client/publisher.py:2342
 #, python-format
 msgid ""
 "The file with hash %s was expected to be a PEM certificate but it could not "
 "be read."
 msgstr "具有散列值 %s 的文件应为 PEM 证书，但它无法读取。"
 
-#: ../modules/client/publisher.py:2028
+#: ../modules/client/publisher.py:2346
 #, python-format
 msgid ""
 "The following string was expected to be a PEM certificate, but it could not "
@@ -5527,64 +5958,100 @@ msgid ""
 "%s"
 msgstr "以下字符串预期是一个 PEM 证书，但无法将其作为证书进行解析:\n%s"
 
-#: ../modules/client/publisher.py:2175
+#: ../modules/client/publisher.py:2493
 #, python-format
 msgid ""
 "Cannot remove a value from the property %(name)s because the property does "
 "not exist."
 msgstr "无法从属性 %(name)s 中删除值，因为此属性不存在。"
 
-#: ../modules/client/publisher.py:2180
+#: ../modules/client/publisher.py:2498
 #, python-format
 msgid ""
 "Cannot remove a value from a single valued property, unset must be used. The "
 "property name is '%(name)s' and the current value is '%(value)s'"
 msgstr "无法从单值属性中删除值，必须使用复位。属性名称是 '%(name)s'，当前值是 '%(value)s'"
 
-#: ../modules/client/publisher.py:2190
+#: ../modules/client/publisher.py:2508
 #, python-format
 msgid ""
 "Cannot remove the value %(value)s from the property %(name)s because the "
 "value is not in the property's list."
 msgstr "无法从属性 %(name)s 中删除值 %(value)s，因为此值没有位于此属性列表中。"
 
-#: ../modules/client/publisher.py:2221
+#: ../modules/client/publisher.py:2539
 #, python-format
 msgid "The CRL file %s is not in a recognized format."
 msgstr "无法识别 CRL 文件 %s 的格式。"
 
-#: ../modules/client/publisher.py:2659
+#: ../modules/client/publisher.py:2977
 #, python-format
 msgid "Cannot set a property for a system publisher. The property was:%s"
 msgstr "无法设置系统发布者的某个属性。该属性为：%s"
 
-#: ../modules/client/publisher.py:2670
+#: ../modules/client/publisher.py:2988
 #, python-format
 msgid "%(val)s is not a valid value for this property:%(prop)s"
 msgstr "%(val)s 不是此属性: %(prop)s 的有效值"
 
-#: ../modules/client/publisher.py:2694
+#: ../modules/client/publisher.py:3012
 #, python-format
 msgid "The %s signature-policy takes no argument."
 msgstr " %s 签名策略没有参数。"
 
-#: ../modules/client/publisher.py:2706
+#: ../modules/client/publisher.py:3024
 #, python-format
 msgid "Cannot unset a property for a system publisher. The property was:%s"
 msgstr "无法取消设置系统发布者的某个属性。该属性为：%s"
 
-#: ../modules/client/publisher.py:2751
+#: ../modules/client/publisher.py:3069
 msgid "Cannot unset a property for a system publisher."
 msgstr "无法取消设置系统发布者的某个属性。"
 
-#: ../modules/client/transport/repo.py:1121
+#: ../modules/client/transport/repo.py:315
+msgid ""
+"\n"
+"This account is not entitled to access this repository. Ensure that the "
+"correct\n"
+"certificate is being used and that the support contract for the product "
+"being\n"
+"accessed is still valid.\n"
+msgstr "\n此帐户无权访问此系统信息库。请确保使用了正确的\n证书并且正在访问的产品的\n支持合同仍然有效。\n"
+
+#: ../modules/client/transport/repo.py:321
+msgid ""
+"\n"
+"The license agreement required to access this repository has not been\n"
+"accepted yet or the license agreement for the product has changed. Please go "
+"to\n"
+"https://pkg-register.oracle.com and accept the license for the product you "
+"are\n"
+"trying to access.\n"
+msgstr "\n尚未接受访问此系统信息库所必需的许可协议\n或者该产品的许可协议已更改。请转到\nhttps://pkg-register.oracle.com 并接受您尝试访问的产品的\n许可协议。\n"
+
+#: ../modules/client/transport/repo.py:328
+msgid ""
+"\n"
+"Repository access is currently unavailable due to service issues. Please "
+"retry\n"
+"later or contact your customer service representative.\n"
+msgstr "\n因为服务问题，系统信息库访问当前不可用。请稍后重试\n或者与您的客户服务代表联系。\n"
+
+#: ../modules/client/transport/repo.py:333
+msgid ""
+"\n"
+"Repository access rights can currently not be verified due to server\n"
+"maintenance. Please retry later.\n"
+msgstr "\n因为正在进行服务器维护，当前无法检验系统信息库访问权限。\n请稍后重试。\n"
+
+#: ../modules/client/transport/repo.py:1147
 #, python-format
 msgid ""
 "The configuration file for the repository is invalid or incomplete:\n"
 "%s"
 msgstr "系统信息库的配置文件无效或不完整:\n%s"
 
-#: ../modules/client/transport/repo.py:1184
+#: ../modules/client/transport/repo.py:1210
 msgid "Search temporarily unavailable."
 msgstr "搜索暂时不可用。"
 
@@ -5677,7 +6144,7 @@ msgstr "未知属性 %s"
 msgid "Unknown property section: %s."
 msgstr "未知属性区段: %s。"
 
-#: ../modules/config.py:1527
+#: ../modules/config.py:1637
 #, python-format
 msgid ""
 "Property name '%(name)s' is not valid.  Property names may not contain: "
@@ -5685,7 +6152,7 @@ msgid ""
 "backslashes and must also match the regular expression: %(exp)s"
 msgstr "属性名称 '%(name)s' 无效。属性名称不可包含：制表符、换行符、回车、换页符、垂直制表符、斜杠或反斜杠，且还必须匹配正则表达式: %(exp)s"
 
-#: ../modules/config.py:1542
+#: ../modules/config.py:1652
 #, python-format
 msgid ""
 "Section name '%(name)s' is not valid.  Section names may not contain: tabs, "
@@ -5693,21 +6160,21 @@ msgid ""
 "backslashes and must also match the regular expression: %(exp)s"
 msgstr "区段名 '%(name)s' 无效。区段名不可包含：制表符、换行符、回车、换页符、垂直制表符、斜杠或反斜杠，且还必须匹配正则表达式: %(exp)s"
 
-#: ../modules/config.py:1560
+#: ../modules/config.py:1670
 #, python-format
 msgid ""
 "Unable to read configuration data for SMF FMRI '%(fmri)s':\n"
 "%(errmsg)s"
 msgstr "无法读取 SMF FMRI '%(fmri)s' 的配置数据:\n%(errmsg)s"
 
-#: ../modules/config.py:1575
+#: ../modules/config.py:1685
 #, python-format
 msgid ""
 "Unable to write configuration data for SMF FMRI '%(fmri)s':\n"
 "%(errmsg)s"
 msgstr "无法写入 SMF FMRI '%(fmri)s' 的配置数据:\n%(errmsg)s"
 
-#: ../modules/config.py:1761
+#: ../modules/config.py:1871
 msgid "Writing configuration data to SMF is not supported at this time."
 msgstr "此时不支持将配置数据写入 SMF。"
 
@@ -5760,7 +6227,12 @@ msgstr "在此清单中，在同一操作上设置了多个 $PKGDEPEND_RUNPATH �
 msgid "Invalid pkg.depend.bypass-generate value %(val)s: %(err)s"
 msgstr "无效的 pkg.depend.bypass-generate 值 %(val)s：%(err)s"
 
-#: ../modules/flavor/base.py:141
+#: ../modules/flavor/base.py:97
+#, python-format
+msgid "Invalid publishing dependency: %s"
+msgstr "无效的发布依赖性：%s"
+
+#: ../modules/flavor/base.py:155
 #, python-format
 msgid "Subclasses of Dependency must implement dep_key. Current class is %s"
 msgstr "相关项的子类必须实现 dep_key。当前类为 %s"
@@ -5831,58 +6303,62 @@ msgstr "要在 %(ip)s 中安装的文件未在其安装路径或文本中指定 
 msgid "%(lp)s says it should be run with '%(bin)s' which is a relative path."
 msgstr "%(lp)s 表明应该使用相对路径 '%(bin)s' 来运行。"
 
-#: ../modules/flavor/smf_manifest.py:146
+#: ../modules/flavor/smf_manifest.py:164
 msgid "FMRI does not appear to be valid"
 msgstr "FMRI 似乎无效"
 
-#: ../modules/flavor/smf_manifest.py:179 ../modules/flavor/smf_manifest.py:186
+#: ../modules/flavor/smf_manifest.py:197 ../modules/flavor/smf_manifest.py:204
 #, python-format
 msgid "more than one set of dependencies found: %s"
 msgstr "找到多组相关项: %s"
 
 #. we can't satisfy the dependency at all
-#: ../modules/flavor/smf_manifest.py:205
+#: ../modules/flavor/smf_manifest.py:223
 msgid "cannot resolve FMRI to a delivered file"
 msgstr "无法将 FMRI 解析为传送的文件"
 
-#: ../modules/flavor/smf_manifest.py:211
-#, python-format
-msgid "FMRI is delivered by multiple files: %s"
-msgstr "FMRI 由多个文件传送: %s"
-
-#: ../modules/flavor/smf_manifest.py:231
+#: ../modules/flavor/smf_manifest.py:241
 #, python-format
 msgid "%s actions cannot deliver SMF manifests"
 msgstr "%s 操作无法传送 SMF 清单"
 
-#: ../modules/flavor/smf_manifest.py:249
+#: ../modules/flavor/smf_manifest.py:259
 #, python-format
 msgid "Unable to parse SMF manifest %s"
 msgstr "无法解析 SMF 清单 %s"
 
-#: ../modules/flavor/smf_manifest.py:261
+#: ../modules/flavor/smf_manifest.py:271
 #, python-format
 msgid "Problem resolving %(fmri)s: %(err)s"
 msgstr "解析 %(fmri)s 时出现问题: %(err)s"
 
-#: ../modules/flavor/smf_manifest.py:272
+#: ../modules/flavor/smf_manifest.py:282
 #, python-format
 msgid "Problem determining dependencies for %(fmri)s:%(err)s"
 msgstr "确定 %(fmri)s 的相关项时出现问题: %(err)s"
 
-#: ../modules/flavor/smf_manifest.py:287
+#: ../modules/flavor/smf_manifest.py:297
 #, python-format
 msgid ""
 "Unable to generate SMF dependency on %(dep_fmri)s declared in %(proto_file)s "
 "by %(fmri)s: %(err)s"
 msgstr "无法生成 %(fmri)s 在 %(proto_file)s 中声明的 %(dep_fmri)s 的 SMF 相关项: %(err)s"
 
+#: ../modules/flavor/smf_manifest.py:314
+#, python-format
+msgid ""
+"Unable to generate SMF dependency on the service FMRI %(dep_fmri)s declared "
+"in %(proto_file)s by %(fmri)s. SMF dependencies should always resolve to SMF "
+"instances rather than SMF services and multiple files deliver instances of "
+"this service: %(manifests)s"
+msgstr "无法生成对由 %(fmri)s 在 %(proto_file)s 中声明的服务 FMRI %(dep_fmri)s 的 SMF 依赖性。SMF 依赖性应当始终解析为 SMF 实例而不是 SMF 服务，并且多个文件提交了该服务的实例：%(manifests)s"
+
 #: ../modules/fmri.py:96
 #, python-format
 msgid "FMRI '%s' is missing version information."
 msgstr "FMRI '%s' 缺少版本信息。"
 
-#: ../modules/fmri.py:185 ../modules/fmri.py:202
+#: ../modules/fmri.py:197 ../modules/fmri.py:214
 msgid "Missing '/' after publisher name"
 msgstr "发布者名称后缺少 '/'"
 
@@ -6094,7 +6570,7 @@ msgstr "更新管理器"
 msgid "Preparing..."
 msgstr "正在准备..."
 
-#: ../modules/gui/installupdate.py:162 ../modules/gui/installupdate.py:890
+#: ../modules/gui/installupdate.py:162 ../modules/gui/installupdate.py:895
 msgid "Downloading..."
 msgstr "正在下载..."
 
@@ -6139,7 +6615,7 @@ msgid_plural "Review the packages to be Installed/Updated"
 msgstr[0] "查看要安装/更新的软件包"
 msgstr[1] "查看要安装/更新的软件包"
 
-#: ../modules/gui/installupdate.py:466 ../modules/gui/installupdate.py:1010
+#: ../modules/gui/installupdate.py:466 ../modules/gui/installupdate.py:1015
 msgid "Updates Confirmation"
 msgstr "更新确认"
 
@@ -6183,11 +6659,16 @@ msgstr "正在取消..."
 msgid "Ensuring %s is up to date..."
 msgstr "正在确认 %s 是否为最新状态..."
 
-#: ../modules/gui/installupdate.py:712
+#: ../modules/gui/installupdate.py:692
+#, python-format
+msgid "%s is up to date.\n"
+msgstr "%s 是最新的。\n"
+
+#: ../modules/gui/installupdate.py:717
 msgid "Inventory exception:\n"
 msgstr "清单异常：\n"
 
-#: ../modules/gui/installupdate.py:725
+#: ../modules/gui/installupdate.py:730
 #, python-format
 msgid ""
 "Please check the network connection.\n"
@@ -6196,7 +6677,7 @@ msgid ""
 "%s"
 msgstr "请检查网络连接。\n该系统信息库是否可访问？\n\n%s"
 
-#: ../modules/gui/installupdate.py:731
+#: ../modules/gui/installupdate.py:736
 #, python-format
 msgid ""
 "\n"
@@ -6206,14 +6687,14 @@ msgid ""
 "%s"
 msgstr "\n无法连接有效的软件包仓库。请检查您的网络设置，并尝试使用 Web 浏览器连接服务器。\n\n%s"
 
-#: ../modules/gui/installupdate.py:738
+#: ../modules/gui/installupdate.py:743
 #, python-format
 msgid ""
 "pkg(5) appears to be out of date and should be updated.\n"
 "Please update %s package"
 msgstr "pkg(5) 似乎已过期，应进行更新。\n请更新 %s 软件包"
 
-#: ../modules/gui/installupdate.py:745
+#: ../modules/gui/installupdate.py:750
 #, python-format
 msgid ""
 "Cannot remove:\n"
@@ -6221,14 +6702,14 @@ msgid ""
 "Due to the following packages that depend on it:\n"
 msgstr "无法删除：\n\t%s\n由于与其相关的以下软件包：\n"
 
-#: ../modules/gui/installupdate.py:766
+#: ../modules/gui/installupdate.py:771
 #, python-format
 msgid ""
 "Press %(button)s button to continue removal without\n"
 "\t%(package)s\n"
 msgstr "请按 %(button)s 按钮继续在没有 \t%(package)s 的\n情况下继续执行删除\n"
 
-#: ../modules/gui/installupdate.py:777
+#: ../modules/gui/installupdate.py:782
 #, python-format
 msgid ""
 "\n"
@@ -6236,19 +6717,19 @@ msgid ""
 "user is often a source of this problem."
 msgstr "\n运行 %s 时无法作为特权用户一致地执行 pkg 命令通常是导致出现此问题的根源。"
 
-#: ../modules/gui/installupdate.py:780
+#: ../modules/gui/installupdate.py:785
 msgid ""
 "\n"
 "To rebuild index, please execute the following command as a privileged user:"
 msgstr "\n要重新生成索引，请作为特权用户执行以下命令："
 
-#: ../modules/gui/installupdate.py:782
+#: ../modules/gui/installupdate.py:787
 msgid ""
 "\n"
 "\tpkg rebuild-index"
 msgstr "\n\tpkg rebuild-index"
 
-#: ../modules/gui/installupdate.py:786
+#: ../modules/gui/installupdate.py:791
 msgid ""
 "There was an error during installation. The search index is corrupted. You "
 "might want try to fix this problem by executing the following command as a "
@@ -6256,18 +6737,18 @@ msgid ""
 "\tpkg rebuild-index"
 msgstr "安装期间发生错误。搜索索引已破坏。您可能需要尝试作为特权用户运行以下命令来修复此问题：\n\tpkg rebuild-index"
 
-#: ../modules/gui/installupdate.py:794
+#: ../modules/gui/installupdate.py:799
 msgid "This is a Live Image. The install operation can't be performed."
 msgstr "这是一个实时映像。无法执行安装操作。"
 
-#: ../modules/gui/installupdate.py:799
+#: ../modules/gui/installupdate.py:804
 msgid ""
 "The requested operation would affect files that cannot be modified in the "
 "Live Image.\n"
 "Please retry this operation on an alternate boot environment."
 msgstr "请求的操作会影响在实时映像中无法修改的文件。\n请在备用引导环境中重试此操作。"
 
-#: ../modules/gui/installupdate.py:805
+#: ../modules/gui/installupdate.py:810
 #, python-format
 msgid ""
 "There was an error during installation.\n"
@@ -6275,7 +6756,7 @@ msgid ""
 "You might want try to fix this problem by restarting %s\n"
 msgstr "安装期间出现错误。\n缺少操作计划，因而操作无法完成。您可能需要通过重新启动 %s 来尝试修复此问题\n"
 
-#: ../modules/gui/installupdate.py:812
+#: ../modules/gui/installupdate.py:817
 #, python-format
 msgid ""
 "There was an error during installation.\n"
@@ -6283,20 +6764,20 @@ msgid ""
 "might want try to fix this problem by restarting %s\n"
 msgstr "安装期间出现错误。\n映像的状态不正确，因而操作无法完成。您可能需要通过重新启动 %s 来尝试修复此问题\n"
 
-#: ../modules/gui/installupdate.py:823
+#: ../modules/gui/installupdate.py:828
 msgid "Specifying BE Name not supported.\n"
 msgstr "不支持指定 BE 名称。\n"
 
-#: ../modules/gui/installupdate.py:886
+#: ../modules/gui/installupdate.py:891
 #, python-format
 msgid "Updating %s"
 msgstr "正在更新 %s"
 
-#: ../modules/gui/installupdate.py:892
+#: ../modules/gui/installupdate.py:897
 msgid "Executing..."
 msgstr "正在执行..."
 
-#: ../modules/gui/installupdate.py:899 ../modules/gui/installupdate.py:1091
+#: ../modules/gui/installupdate.py:904 ../modules/gui/installupdate.py:1096
 msgid ""
 "\n"
 "\n"
@@ -6304,92 +6785,97 @@ msgid ""
 "has completed successfuly."
 msgstr "\n\n尽管在建立索引时出现错误，但映像更新、安装或卸载已成功完成。"
 
-#: ../modules/gui/installupdate.py:910
+#: ../modules/gui/installupdate.py:915
 msgid "Gathering package information, please wait..."
 msgstr "正在收集软件包信息，请稍候..."
 
-#: ../modules/gui/installupdate.py:913
+#: ../modules/gui/installupdate.py:918
 msgid "Gathering package information"
 msgstr "正在收集软件包信息"
 
-#: ../modules/gui/installupdate.py:926 ../modules/gui/installupdate.py:1394
+#: ../modules/gui/installupdate.py:931 ../modules/gui/installupdate.py:1400
 msgid "All packages already installed."
 msgstr "所有软件包都已安装。"
 
-#: ../modules/gui/installupdate.py:930
+#: ../modules/gui/installupdate.py:935
 msgid "No updates necessary"
 msgstr "没有必要的更新"
 
-#: ../modules/gui/installupdate.py:932
+#: ../modules/gui/installupdate.py:937
 msgid "No updates available"
 msgstr "无更新可用"
 
-#: ../modules/gui/installupdate.py:934
+#: ../modules/gui/installupdate.py:939
 msgid "All features already installed"
 msgstr "已安装所有功能"
 
-#: ../modules/gui/installupdate.py:1012
+#: ../modules/gui/installupdate.py:1017
 msgid "Review the package which will be affected by Updates"
 msgid_plural "Review the packages which will be affected by Updates"
 msgstr[0] "查看将受更新影响的该软件包"
 msgstr[1] "查看将受更新影响的软件包"
 
-#: ../modules/gui/installupdate.py:1143 ../modules/gui/installupdate.py:1200
+#: ../modules/gui/installupdate.py:1148 ../modules/gui/installupdate.py:1205
 msgid "No further information available"
 msgstr "没有进一步的信息可用"
 
-#: ../modules/gui/installupdate.py:1147 ../modules/gui/installupdate.py:1192
+#: ../modules/gui/installupdate.py:1152 ../modules/gui/installupdate.py:1197
 msgid ""
 "\n"
 "Error:\n"
 msgstr "\n错误：\n"
 
-#: ../modules/gui/installupdate.py:1150 ../modules/gui/installupdate.py:1184
+#: ../modules/gui/installupdate.py:1155 ../modules/gui/installupdate.py:1189
 msgid " - Failed </b>"
 msgstr " - 失败</b>"
 
-#: ../modules/gui/installupdate.py:1190
+#: ../modules/gui/installupdate.py:1195
 #, python-format
 msgid ""
 "An unknown error occurred in the %s stage.\n"
 "\n"
 msgstr "%s 阶段中出现了未知错误。\n\n"
 
-#: ../modules/gui/installupdate.py:1195
+#: ../modules/gui/installupdate.py:1200
 msgid "Exception traceback:\n"
 msgstr "异常跟踪信息：\n"
 
-#: ../modules/gui/installupdate.py:1202
+#: ../modules/gui/installupdate.py:1207
 msgid "List of configured publishers:"
 msgstr "已配置的发布者列表："
 
-#: ../modules/gui/installupdate.py:1289
+#: ../modules/gui/installupdate.py:1291
 #, python-format
-msgid "Downloaded %(current)s of %(total)s"
-msgstr "已下载 %(current)s（共 %(total)s）"
+msgid "(%s)"
+msgstr "(%s)"
 
-#: ../modules/gui/installupdate.py:1303
+#: ../modules/gui/installupdate.py:1293
+#, python-format
+msgid "Downloaded %(current)s of %(total)s %(speed)s"
+msgstr "已下载 %(current)s（共 %(total)s）%(speed)s"
+
+#: ../modules/gui/installupdate.py:1308
 #, python-format
 msgid "%(cur)d of %(goal)d - %(name)s"
 msgstr "当前为 %(cur)d（共 %(goal)d）- %(name)s"
 
-#: ../modules/gui/installupdate.py:1366 ../modules/gui/installupdate.py:1396
+#: ../modules/gui/installupdate.py:1372 ../modules/gui/installupdate.py:1402
 msgid "Installation completed successfully"
 msgstr "安装已成功完成"
 
-#: ../modules/gui/installupdate.py:1368
+#: ../modules/gui/installupdate.py:1374
 msgid "Packages removed successfully"
 msgstr "软件包已成功删除"
 
-#: ../modules/gui/installupdate.py:1370
+#: ../modules/gui/installupdate.py:1376
 msgid "Packages updated successfully"
 msgstr "软件包已成功更新"
 
-#: ../modules/gui/installupdate.py:1372
+#: ../modules/gui/installupdate.py:1378
 msgid "Optional components updated successfully"
 msgstr "已成功更新可选组件"
 
-#: ../modules/gui/installupdate.py:1418
+#: ../modules/gui/installupdate.py:1424
 msgid ""
 "Not enough disk space, the selected action cannot be performed.\n"
 "\n"
@@ -6397,45 +6883,45 @@ msgid ""
 "cancel the action."
 msgstr "磁盘空间不足，无法执行选定的操作。\n\n单击“确定”以管理现有 BE 并释放磁盘空间，或单击“取消”以取消该操作。"
 
-#: ../modules/gui/installupdate.py:1422
+#: ../modules/gui/installupdate.py:1428
 msgid "Not Enough Disk Space"
 msgstr "磁盘空间不足"
 
-#: ../modules/gui/installupdate.py:1444
+#: ../modules/gui/installupdate.py:1450
 msgid "Packages To Be Updated:\n"
 msgstr "要更新的软件包：\n"
 
-#: ../modules/gui/installupdate.py:1451
+#: ../modules/gui/installupdate.py:1457
 msgid "Packages To Be Installed:\n"
 msgstr "要安装的软件包：\n"
 
-#: ../modules/gui/installupdate.py:1458
+#: ../modules/gui/installupdate.py:1464
 msgid "Packages To Be Removed:\n"
 msgstr "要删除的软件包：\n"
 
-#: ../modules/gui/installupdate.py:1467
+#: ../modules/gui/installupdate.py:1473
 msgid "Optional components\n"
 msgstr "可选组件\n"
 
-#: ../modules/gui/installupdate.py:1469
+#: ../modules/gui/installupdate.py:1475
 #, python-format
 msgid "Number of facets set: %s\n"
 msgstr "设置的侧面数量: %s\\n"
 
-#: ../modules/gui/installupdate.py:1559
+#: ../modules/gui/installupdate.py:1565
 msgid "A_ccept"
 msgstr "接受(_C)"
 
-#: ../modules/gui/installupdate.py:1561
+#: ../modules/gui/installupdate.py:1567
 msgid ""
 "You must accept the terms of the license before downloading this package."
 msgstr "在下载此软件包之前，必须接受许可证条款。"
 
-#: ../modules/gui/installupdate.py:1574
+#: ../modules/gui/installupdate.py:1580
 msgid "You must view the terms of the license before downloading this package."
 msgstr "在下载此软件包之前，必须查看许可证条款。"
 
-#: ../modules/gui/installupdate.py:1582
+#: ../modules/gui/installupdate.py:1588
 #, python-format
 msgid "%s License"
 msgstr "%s 许可证"
@@ -6648,38 +7134,67 @@ msgstr "地区"
 msgid " [latin]"
 msgstr " [拉丁语]"
 
-#: ../modules/gui/progress.py:45 ../modules/gui/progress.py:48
+#: ../modules/gui/progress.py:69
 #, python-format
-msgid "Retrieving catalog '%s'...\n"
-msgstr "正在检索目录 '%s'...\n"
+msgid "Retrieving catalog: %s"
+msgstr "正在检索目录：%s"
 
-#: ../modules/gui/progress.py:57 ../modules/gui/progress.py:59
-msgid "Caching catalogs ...\n"
-msgstr "正在缓存目录...\n"
-
-#: ../modules/gui/progress.py:67 ../modules/gui/progress.py:70
-msgid "Loading catalog cache ...\n"
-msgstr "正在装入目录高速缓存...\n"
-
-#: ../modules/gui/progress.py:82 ../modules/gui/progress.py:85
+#: ../modules/gui/progress.py:72
 #, python-format
-msgid "Refreshing catalog %s\n"
-msgstr "正在刷新目录 %s\n"
+msgid "Refreshing catalog: %s"
+msgstr "正在刷新目录：%s"
 
-#: ../modules/gui/progress.py:91 ../modules/gui/progress.py:95
+#: ../modules/gui/progress.py:86
 #, python-format
-msgid "Finished refreshing catalog %s\n"
-msgstr "刷新目录 %s 已完成\n"
+msgid "Up to date check: planning (%s)"
+msgstr "最新版本检查：正在规划 (%s)"
 
-#: ../modules/gui/progress.py:107
+#: ../modules/gui/progress.py:91
 #, python-format
-msgid "Evaluating: %s"
-msgstr "正在计算: %s"
+msgid "Planning: %s"
+msgstr "正在规划：%s"
 
-#: ../modules/gui/progress.py:128
+#: ../modules/gui/progress.py:95
+msgid "... "
+msgstr "... "
+
+#: ../modules/gui/progress.py:97 ../modules/gui/progress.py:181
+msgid "Done\n"
+msgstr "完成\n"
+
+#: ../modules/gui/progress.py:109
+msgid "Planning: Complete\n"
+msgstr "正在规划：完成\n"
+
+#: ../modules/gui/progress.py:116
+#, python-format
+msgid "Fetching %d manifests"
+msgstr "正在提取 %d 清单"
+
+#: ../modules/gui/progress.py:131
+msgid "Committing manifests"
+msgstr "正在提交清单"
+
+#: ../modules/gui/progress.py:145
 #, python-format
 msgid "Package %d of %d: %s\n"
 msgstr "第 %d 个软件包（共 %d 个）: %s\n"
+
+#: ../modules/gui/progress.py:193
+msgid ""
+"Finished processing linked images.\n"
+"\n"
+msgstr "已完成了对链接映像的处理。\n\n"
+
+#: ../modules/gui/progress.py:214
+#, python-format
+msgid "Linked image '%s' output:\n"
+msgstr "链接映像 '%s' 输出：\n"
+
+#: ../modules/gui/progress.py:227
+#, python-format
+msgid "Linked images: %s done; %d working: %s\n"
+msgstr "链接映像：已完成 %s；有 %d 个正在执行：%s\n"
 
 #: ../modules/gui/repository.py:32
 msgid "Approved"
@@ -7482,17 +7997,9 @@ msgstr "添加 %s 失败。\n"
 msgid "Web Installer Error: %s"
 msgstr "Web 安装程序错误: %s"
 
-#: ../modules/indexer.py:96
+#: ../modules/indexer.py:97
 msgid "sort_file_max_size must be greater than 0"
 msgstr "sort_file_max_size 必须大于 0"
-
-#: ../modules/indexer.py:191
-msgid "Reading Existing Index"
-msgstr "读取现有索引"
-
-#: ../modules/indexer.py:709 ../modules/indexer.py:740
-msgid "Indexing Packages"
-msgstr "建立软件包索引"
 
 #: ../modules/lint/base.py:309
 #, python-format
@@ -7519,52 +8026,52 @@ msgstr "pkglintrc 文件 %(config_file)s 缺少或已损坏：%(err)s"
 msgid "Invalid release string: %s"
 msgstr "无效的发行版字符串：%s"
 
-#: ../modules/lint/engine.py:371
+#: ../modules/lint/engine.py:370
 #, python-format
 msgid "loading extensions: duplicate checker name %(name)s: %(class)s"
 msgstr "正在加载扩展: 重复的检验器名称 %(name)s: %(class)s"
 
-#: ../modules/lint/engine.py:384
+#: ../modules/lint/engine.py:383
 #, python-format
 msgid ""
 "loading extension %(checker)s: duplicate pkglint_id %(pkglint_id)s in %"
 "(method)s"
 msgstr "正在加载扩展 %(checker)s: %(method)s 中有重复的 pkglint_id %(pkglint_id)s"
 
-#: ../modules/lint/engine.py:434
+#: ../modules/lint/engine.py:433
 #, python-format
 msgid "Error parsing config value for %(key)s: %(err)s"
 msgstr "解析 %(key)s 的配置值时出现错误: %(err)s"
 
-#: ../modules/lint/engine.py:506
+#: ../modules/lint/engine.py:505
 msgid ""
 "Either a cache directory, or some local manifest files must be provided."
 msgstr "必须提供一个缓存目录或一些本地清单文件。"
 
-#: ../modules/lint/engine.py:511
+#: ../modules/lint/engine.py:510
 msgid ""
 "A cache directory must be provided if using reference or lint repositories."
 msgstr "如果要使用引用或 lint 系统信息库，必须提供一个缓存目录。"
 
-#: ../modules/lint/engine.py:527
+#: ../modules/lint/engine.py:526
 msgid "Ignoring -l option, existing image found."
 msgstr "正在忽略 -l 选项，已找到现有映像。"
 
-#: ../modules/lint/engine.py:546
+#: ../modules/lint/engine.py:545
 #, python-format
 msgid "Unable to create lint image: %s"
 msgstr "无法创建 lint 映像: %s"
 
-#: ../modules/lint/engine.py:557
+#: ../modules/lint/engine.py:556
 msgid "Ignoring -r option, existing image found."
 msgstr "正在忽略 -r 选项，已找到现有映像。"
 
-#: ../modules/lint/engine.py:581
+#: ../modules/lint/engine.py:580
 #, python-format
 msgid "Unable to create reference image: %s"
 msgstr "无法创建引用映像: %s"
 
-#: ../modules/lint/engine.py:586
+#: ../modules/lint/engine.py:585
 #, python-format
 msgid "Unable to access any pkglint images under %s"
 msgstr "无法访问 %s 下的任何 pkglint 映像"
@@ -7581,56 +8088,56 @@ msgstr "对 pkglint 扩展要使用的已知 Checker 子类，%s 并不生成该
 msgid "Total number of checks found: %s"
 msgstr "已找到检查总数: %s"
 
-#: ../modules/lint/engine.py:698
+#: ../modules/lint/engine.py:700
 #, python-format
 msgid "unable to construct fmri from %s"
 msgstr "无法从 %s 构造 fmri"
 
-#: ../modules/lint/engine.py:707
+#: ../modules/lint/engine.py:709
 #, python-format
 msgid "invalid pkg name %s"
 msgstr "无效的 pkg 名称 %s"
 
-#: ../modules/lint/engine.py:734
+#: ../modules/lint/engine.py:736
 #, python-format
 msgid "get_fmri(pattern) %(pattern)s matched %(count)s packages: %(pkgs)s"
 msgstr "get_fmri(pattern) %(pattern)s 匹配了 %(count)s 个软件包: %(pkgs)s"
 
-#: ../modules/lint/engine.py:822 ../sysrepo.py:184
+#: ../modules/lint/engine.py:824 ../sysrepo.py:190
 #, python-format
 msgid "Unable to get image at %(dir)s: %(reason)s"
 msgstr "无法在 %(dir)s 中获取映像: %(reason)s"
 
-#: ../modules/lint/engine.py:836
+#: ../modules/lint/engine.py:838
 msgid "pkglint only supports a single publisher per image."
 msgstr "pkglint 仅支持一个映像有一个发布者。"
 
-#: ../modules/lint/engine.py:845
+#: ../modules/lint/engine.py:847
 #, python-format
 msgid "Creating image at %s"
 msgstr "正在 %s 中创建映像"
 
-#: ../modules/lint/engine.py:861
+#: ../modules/lint/engine.py:863
 #, python-format
 msgid "Checking %s"
 msgstr "正在检查 %s"
 
-#: ../modules/lint/engine.py:932
+#: ../modules/lint/engine.py:934
 #, python-format
 msgid "Not running %(check)s checks on linted action %(action)s"
 msgstr "未在使用 pkglint 程序检查的操作 %(action)s 上运行 %(check)s 检查"
 
-#: ../modules/lint/engine.py:999
+#: ../modules/lint/engine.py:1002
 #, python-format
 msgid "obsolete package: %s"
 msgstr "过时的软件包：%s"
 
-#: ../modules/lint/engine.py:1007
+#: ../modules/lint/engine.py:1010
 #, python-format
 msgid "loop detected in rename: %s"
 msgstr "在重命名中检测到循环：%s"
 
-#: ../modules/lint/engine.py:1081
+#: ../modules/lint/engine.py:1084
 #, python-format
 msgid "%s is not set in manifest"
 msgstr "清单中没有设置 %s"
@@ -8196,26 +8703,26 @@ msgstr "%(pkg)s 中检测到了 pkg.linted 属性: %(linted)s"
 msgid "Show manifests with pkg.linted attributes."
 msgstr "显示具有 pkg.linted 属性的清单。"
 
-#: ../modules/manifest.py:704
+#: ../modules/manifest.py:701 ../modules/manifest.py:748
 #, python-format
 msgid ""
 "%(fp)s:\n"
 "%(e)s"
 msgstr "%(fp)s:\n%(e)s"
 
-#: ../modules/manifest.py:716
+#: ../modules/manifest.py:760
 #, python-format
 msgid ""
 "%(fp)s contains an action which is missing the expected attribute: %(at)s.\n"
 "The action is:%(act)s"
 msgstr "%(fp)s 包含的操作缺少预期属性: %(at)s。\n此操作是: %(act)s"
 
-#: ../modules/manifest.py:839
+#: ../modules/manifest.py:883
 #, python-format
 msgid "Attribute value '%s' not 'true' or 'false'"
 msgstr "属性值 '%s' 不是 'true' 或 'false'"
 
-#: ../modules/manifest.py:880
+#: ../modules/manifest.py:924
 #, python-format
 msgid "%(forv)s '%(v)s' specified multiple times"
 msgstr "%(forv)s '%(v)s' 指定了多次"
@@ -8256,7 +8763,7 @@ msgid ""
 "'%s' is not a valid mediator-priority; valid values are 'site' or 'vendor'"
 msgstr "'%s' 不是有效的 mediator-priority；有效值为 'site' 或 'vendor'"
 
-#: ../modules/misc.py:72
+#: ../modules/misc.py:86
 #, python-format
 msgid ""
 "\n"
@@ -8266,63 +8773,79 @@ msgid ""
 "message."
 msgstr "\n\n这是 pkg(5) 版本 %(version)s 中的一个内部错误。请为\n此问题记录一个服务请求，在其中包括上述信息和此\n消息。"
 
-#: ../modules/misc.py:408
+#: ../modules/misc.py:437
 msgid "B"
 msgstr "B"
 
-#: ../modules/misc.py:409
+#: ../modules/misc.py:438
 msgid "kB"
 msgstr "kB"
 
-#: ../modules/misc.py:410
+#: ../modules/misc.py:438
+msgid "k"
+msgstr "k"
+
+#: ../modules/misc.py:439
 msgid "MB"
 msgstr "MB"
 
-#: ../modules/misc.py:411
+#: ../modules/misc.py:439
+msgid "M"
+msgstr "M"
+
+#: ../modules/misc.py:440
 msgid "GB"
 msgstr "GB"
 
-#: ../modules/misc.py:412
+#: ../modules/misc.py:440
+msgid "G"
+msgstr "G"
+
+#: ../modules/misc.py:441
 msgid "TB"
 msgstr "TB"
 
-#: ../modules/misc.py:413
+#: ../modules/misc.py:442
 msgid "PB"
 msgstr "PB"
 
-#: ../modules/misc.py:414 ../modules/misc.py:418
+#: ../modules/misc.py:443 ../modules/misc.py:447
 msgid "EB"
 msgstr "EB"
 
-#: ../modules/misc.py:1102
+#: ../modules/misc.py:443
+msgid "E"
+msgstr "E"
+
+#: ../modules/misc.py:1309
 #, python-format
 msgid "illegal argument -- %s"
 msgstr "非法参数 -- %s"
 
-#: ../modules/misc.py:1115
+#: ../modules/misc.py:1322
 #, python-format
 msgid "'%s' and '%s' have the same meaning"
 msgstr "'%s' 和 '%s' 具有相同的含义"
 
-#: ../modules/p5i.py:92 ../modules/p5s.py:76
+#: ../modules/p5i.py:92 ../modules/p5s.py:87
 msgid "missing version"
 msgstr "缺少版本"
 
-#: ../modules/p5i.py:94 ../modules/p5s.py:78
+#: ../modules/p5i.py:94 ../modules/p5s.py:89
 msgid "invalid version"
 msgstr "无效版本"
 
-#: ../modules/p5p.py:60
+#: ../modules/p5p.py:61
 #, python-format
 msgid "%s is not in a supported or recognizable archive index format."
 msgstr "%s 的归档索引格式不受支持或不可识别。"
 
-#: ../modules/p5p.py:213
+#: ../modules/p5p.py:214
 #, python-format
 msgid "Archive %s is missing, unsupported, or corrupt."
 msgstr "归档 %s 丢失、不受支持或已损坏。"
 
-#: ../modules/p5p.py:228
+#: ../modules/p5p.py:229
 #, python-format
 msgid ""
 "Package archive %(arc_name)s contains corrupt entries for the requested "
@@ -8330,7 +8853,7 @@ msgid ""
 "%(files)s."
 msgstr "软件包归档 %(arc_name)s 包含所请求软件包文件的损坏条目：\n%(files)s。"
 
-#: ../modules/p5p.py:245
+#: ../modules/p5p.py:246
 #, python-format
 msgid ""
 "Package archive %(arc_name)s does not contain the requested package file"
@@ -8338,7 +8861,7 @@ msgid ""
 "%(files)s."
 msgstr "软件包归档 %(arc_name)s 未包含所请求的软件包文件：\n%(files)s。"
 
-#: ../modules/p5p.py:262
+#: ../modules/p5p.py:263
 #, python-format
 msgid ""
 "No package manifest for package '%(pfmri)s' exists in archive %(arc_name)s."
@@ -8534,15 +9057,15 @@ msgstr "无法解析查询。"
 msgid "Problem occurred with: %s"
 msgstr "以下项出现问题: %s"
 
-#: ../modules/query_parser.py:552
+#: ../modules/query_parser.py:545
 msgid "This expression produces action results:"
 msgstr "此表达式会生成以下操作结果："
 
-#: ../modules/query_parser.py:554
+#: ../modules/query_parser.py:547
 msgid "This expression produces package results:"
 msgstr "此表达式会生成以下软件包结果："
 
-#: ../modules/query_parser.py:557
+#: ../modules/query_parser.py:550
 msgid ""
 "'AND' and 'OR' require those expressions to produce the same type of results."
 msgstr "'AND' 和 'OR' 需要这些表达式来生成相同类型的结果。"
@@ -8698,60 +9221,30 @@ msgstr "没有为系统信息库指定任何发布者，或尚未为它配置任
 msgid "No publisher matching '%s' could be found."
 msgstr "未找到任何与 '%s' 匹配的发布者。"
 
-#: ../modules/server/repository.py:676
+#: ../modules/server/repository.py:685
 #, python-format
 msgid "Skipping %(name)s; invalid manifest: %(error)s"
 msgstr "跳过 %(name)s；无效的清单: %(error)s"
 
 #. Create the transformed catalog.
-#: ../modules/server/repository.py:845
+#: ../modules/server/repository.py:854
 msgid "Transforming repository catalog; this process will take some time."
 msgstr "正在转换系统信息库目录，此过程需要花费一些时间。"
 
-#: ../modules/server/repository.py:1392
+#: ../modules/server/repository.py:1401
 #, python-format
 msgid ""
 "Index corrupted or out of date. Removing old index directory (%s)  and "
 "rebuilding search indexes."
 msgstr "索引已被破坏或过期。即将删除旧的索引目录 (%s) 并重新生成搜索索引。"
 
-#: ../modules/server/repository.py:1409
+#: ../modules/server/repository.py:1418
 msgid "writable root not writable by current user id or group."
 msgstr "可写根目录不能按当前用户 ID 或组写入。"
 
-#: ../modules/server/repository.py:1412
+#: ../modules/server/repository.py:1421
 msgid "unable to write to index directory."
 msgstr "无法写入到索引目录。"
-
-#. First, dump all search data as it will be invalidated
-#. as soon as the catalog is updated.
-#: ../modules/server/repository.py:1463
-msgid "Delete search index"
-msgstr "删除搜索索引"
-
-#. Next, remove all of the packages to be removed
-#. from the catalog (if they are present).  That way
-#. any active clients are less likely to be surprised
-#. when files for packages start disappearing.
-#: ../modules/server/repository.py:1472
-msgid "Update catalog"
-msgstr "更新目录"
-
-#: ../modules/server/repository.py:1501
-msgid "Analyze removed packages"
-msgstr "分析已删除的软件包"
-
-#: ../modules/server/repository.py:1525
-msgid "Analyze repository packages"
-msgstr "分析系统信息库软件包"
-
-#: ../modules/server/repository.py:1580
-msgid "Remove package manifests"
-msgstr "删除软件包清单"
-
-#: ../modules/server/repository.py:1590
-msgid "Remove package files"
-msgstr "删除软件包文件"
 
 #: ../modules/server/transaction.py:73
 #, python-format
@@ -9054,13 +9547,13 @@ msgstr[1] "找到 %(number)d 个与 %(s1)s%(search_text)s%(e1)s 匹配的软件�
 msgid "Unable to initialize gtk"
 msgstr "无法初始化 gtk"
 
-#: ../pkgdep.py:55
+#: ../pkgdep.py:56
 msgid ""
 "To continue, the target image must be upgraded before it can be used.  See "
 "pkg(1) update-format for more information."
 msgstr "要继续，必须先升级目标映像，然后才能使用该映像。有关更多信息，请参见 pkg(1) update-format。"
 
-#: ../pkgdep.py:84
+#: ../pkgdep.py:85
 msgid ""
 "Usage:\n"
 "        pkgdepend [options] command [cmd_options] [operands]\n"
@@ -9077,64 +9570,64 @@ msgid ""
 "        PKG_IMAGE"
 msgstr "用法：\n        pkgdepend [选项] 命令 [命令选项] [操作数]\n\n子命令：\n        pkgdepend generate [-IMm] -d 目录 [-d 目录] [-D 名称=值] [-k 路径]\n            清单路径\n        pkgdepend [选项] resolve [-dmosv] 清单 ...\n\n选项：\n        -R 目录\n        --help 或 -?\n环境：\n        PKG_IMAGE"
 
-#: ../pkgdep.py:123 ../pkgdep.py:165
+#: ../pkgdep.py:124 ../pkgdep.py:166
 #, python-format
 msgid "The proto directory %s could not be found."
 msgstr "找不到 proto 目录 %s。"
 
-#: ../pkgdep.py:130
+#: ../pkgdep.py:131
 msgid "-D arguments must be of the form 'name=value'."
 msgstr "-D 参数的格式必须是“名称=值”。"
 
-#: ../pkgdep.py:149
+#: ../pkgdep.py:150
 msgid "Generate only accepts one or two arguments."
 msgstr "Generate 仅接受一个或两个参数。"
 
-#: ../pkgdep.py:152
+#: ../pkgdep.py:153
 msgid ""
 "ORIGIN may not be specified using -D. It will be inferred from the\n"
 "install paths of the files."
 msgstr "不能使用 -D 指定 ORIGIN。将根据文件的安装\n路径将其推断出来。"
 
-#: ../pkgdep.py:160 ../pkgdep.py:246
+#: ../pkgdep.py:161 ../pkgdep.py:247
 #, python-format
 msgid "The manifest file %s could not be found."
 msgstr "找不到清单文件 %s。"
 
-#: ../pkgdep.py:169
+#: ../pkgdep.py:170
 msgid "At least one proto directory must be provided."
 msgstr "必须至少提供一个协议目录。"
 
-#: ../pkgdep.py:176
+#: ../pkgdep.py:177
 #, python-format
 msgid ""
 "Could not parse manifest %(manifest)s because of the following line:\n"
 "%(line)s"
 msgstr "无法解析清单 %(manifest)s，因为以下行:\n%(line)s"
 
-#: ../pkgdep.py:240
+#: ../pkgdep.py:241
 msgid "-o cannot be used with -d or -s"
 msgstr "-o 不能与 -d 或 -s 结合使用"
 
-#: ../pkgdep.py:252
+#: ../pkgdep.py:253
 #, python-format
 msgid "The output directory %s is not a directory."
 msgstr "输出目录 %s 不是一个目录。"
 
-#: ../pkgdep.py:292
+#: ../pkgdep.py:298
 msgid ""
 "External package list files were provided but did not contain any fmri "
 "patterns."
 msgstr "外部软件包列表文件已提供，但是不包含任何 fmri 模式。"
 
-#: ../pkgdep.py:328
+#: ../pkgdep.py:334
 #, python-format
 msgid ""
 "Could not parse one or more manifests because of the following line:\n"
 "%s"
 msgstr "无法解析一个或多个清单，这是因为以下行: \n%s"
 
-#: ../pkgdep.py:351
+#: ../pkgdep.py:357
 msgid ""
 "\n"
 "The following fmris matched a pattern in a constraint file but were not used "
@@ -9142,32 +9635,32 @@ msgid ""
 "dependency resolution:"
 msgstr "\n以下 fmri 与约束文件中的模式匹配，但是未用于\n相关项解析："
 
-#: ../pkgdep.py:357
+#: ../pkgdep.py:363
 msgid ""
 "\n"
 "The following fmris had dependencies resolve to them:"
 msgstr "\n以下 fmri 用于相关项解析："
 
-#: ../pkgdep.py:406
+#: ../pkgdep.py:412
 #, python-format
 msgid "Could not open %s to echo manifest"
 msgstr "无法打开 %s 来回显清单"
 
-#: ../pkgdep.py:453
+#: ../pkgdep.py:459
 #, python-format
 msgid "Could not open output file %s for writing"
 msgstr "无法打开输出文件 %s 以进行写入"
 
-#: ../pkgdep.py:486
+#: ../pkgdep.py:492
 #, python-format
 msgid "Out dir %s does not exist and could not be created. Error is: %s"
 msgstr "输出目录 %s 不存在，并且无法创建该目录。错误是: %s"
 
-#: ../pkgdep.py:561
+#: ../pkgdep.py:567
 msgid "generate subcommand doesn't use -R"
 msgstr "generate 子命令不使用 -R"
 
-#: ../pkgdep.py:583
+#: ../pkgdep.py:589
 #, python-format
 msgid ""
 "The %(cmd)s command appears out of sync with the libraries provided\n"
@@ -9225,7 +9718,7 @@ msgid "At least one package pattern must be provided."
 msgstr "必须至少提供一个软件包模式。"
 
 #: ../pkgrepo.py:203 ../pkgrepo.py:416 ../pkgrepo.py:681 ../pkgrepo.py:778
-#: ../pkgrepo.py:932 ../pkgrepo.py:988 ../pkgrepo.py:1073
+#: ../pkgrepo.py:937 ../pkgrepo.py:993 ../pkgrepo.py:1078
 msgid "A package repository location must be provided using -s."
 msgstr "必须使用 -s 提供软件包系统信息库位置。"
 
@@ -9253,7 +9746,7 @@ msgstr "未指定任何系统信息库位置。"
 msgid "At least one publisher must be specified"
 msgstr "必须至少指定一个发布者"
 
-#: ../pkgrepo.py:311 ../pkgrepo.py:913 ../pkgrepo.py:969
+#: ../pkgrepo.py:311 ../pkgrepo.py:918 ../pkgrepo.py:974
 #, python-format
 msgid "Invalid publisher prefix '%s'"
 msgstr "无效的发布者前缀 '%s'"
@@ -9299,8 +9792,8 @@ msgstr "未找到任何匹配的属性"
 msgid "no matching publishers found"
 msgstr "未找到任何匹配的发布者"
 
-#: ../pkgrepo.py:677 ../pkgrepo.py:924 ../pkgrepo.py:980 ../pkgrepo.py:1186
-#: ../publish.py:668
+#: ../pkgrepo.py:677 ../pkgrepo.py:929 ../pkgrepo.py:985 ../pkgrepo.py:1191
+#: ../publish.py:674
 msgid "command does not take operands"
 msgstr "命令没有操作数"
 
@@ -9312,79 +9805,79 @@ msgstr "软件包"
 msgid "UPDATED"
 msgstr "已更新"
 
-#: ../pkgrepo.py:859 ../pkgrepo.py:868
+#: ../pkgrepo.py:864 ../pkgrepo.py:873
 msgid "RELEASE"
 msgstr "发行版"
 
-#: ../pkgrepo.py:860 ../pkgrepo.py:869
+#: ../pkgrepo.py:865 ../pkgrepo.py:874
 msgid "BUILD RELEASE"
 msgstr "内部发行版"
 
-#: ../pkgrepo.py:861 ../pkgrepo.py:869
+#: ../pkgrepo.py:866 ../pkgrepo.py:874
 msgid "BRANCH"
 msgstr "分支"
 
-#: ../pkgrepo.py:862 ../pkgrepo.py:869
+#: ../pkgrepo.py:867 ../pkgrepo.py:874
 msgid "PACKAGING DATE"
 msgstr "打包日期"
 
-#: ../pkgrepo.py:863 ../pkgrepo.py:869
+#: ../pkgrepo.py:868 ../pkgrepo.py:874
 msgid "FMRI"
 msgstr "FMRI"
 
-#: ../pkgrepo.py:868
+#: ../pkgrepo.py:873
 msgid "SUMMARY"
 msgstr "摘要"
 
-#: ../pkgrepo.py:868 ../util/publish/pkglint.py:212
+#: ../pkgrepo.py:873 ../util/publish/pkglint.py:212
 msgid "DESCRIPTION"
 msgstr "描述"
 
-#: ../pkgrepo.py:868
+#: ../pkgrepo.py:873
 msgid "CATEGORIES"
 msgstr "类别"
 
-#: ../pkgrepo.py:870
+#: ../pkgrepo.py:875
 msgid "STATE"
 msgstr "状态"
 
-#: ../pkgrepo.py:1067
+#: ../pkgrepo.py:1072
 msgid ""
 "a property name and value must be provided in the form <section/"
 "property>=<value> or <section/property>=([\"<value>\" ...])"
 msgstr "必须以以下格式提供属性名称和值：<区段/属性>=<值>或<区段/属性>=([\"<值>\" ...])"
 
-#: ../pkgrepo.py:1089
+#: ../pkgrepo.py:1094
 #, python-format
 msgid "unknown property section '%s'"
 msgstr "未知属性区段 '%s'"
 
-#: ../pkgrepo.py:1093
+#: ../pkgrepo.py:1098
 #, python-format
 msgid "'%s' may not be set using this command"
 msgstr "无法使用此命令设置 '%s'"
 
-#: ../pkgrepo.py:1098
+#: ../pkgrepo.py:1103
 #, python-format
 msgid "unknown property '%s'"
 msgstr "未知属性 '%s'"
 
 #. If there are still no known publishers, this
 #. operation cannot succeed, so fail now.
-#: ../pkgrepo.py:1107
+#: ../pkgrepo.py:1112
 msgid ""
 "One or more publishers must be specified to create and set properties for as "
 "none exist yet."
 msgstr "必须指定一个或多个发布者，以在属性不存在时创建和设置属性。"
 
-#: ../pkgrepo.py:1161
+#: ../pkgrepo.py:1166
 #, python-format
 msgid ""
 "Unable to set properties for publisher '%(pfx)s':\n"
 "%(details)s"
 msgstr "无法设置发布者 '%(pfx)s' 的属性:\n%(details)s"
 
-#: ../pkgrepo.py:1266
+#: ../pkgrepo.py:1271
 #, python-format
 msgid ""
 "The pkgrepo command appears out of sync with the libraries provided\n"
@@ -9451,49 +9944,56 @@ msgstr "append 需要一个软件包名称"
 msgid "No transaction ID specified using -t or in $PKG_TRANS_ID."
 msgstr "没有使用 -t 或在 $PKG_TRANS_ID 中指定任何事务 ID。"
 
-#: ../publish.py:273 ../publish.py:457 ../publish.py:573
+#: ../publish.py:273 ../publish.py:463 ../publish.py:579
 msgid "No transaction ID specified in $PKG_TRANS_ID"
 msgstr "在 $PKG_TRANS_ID 中没有指定任何事务 ID"
 
-#: ../publish.py:277 ../publish.py:588 ../publish.py:641
+#: ../publish.py:277 ../publish.py:594 ../publish.py:647
 msgid "No arguments specified for subcommand."
 msgstr "没有为子命令指定任何参数。"
 
-#: ../publish.py:282 ../publish.py:410 ../publish.py:527 ../publish.py:600
+#: ../publish.py:282 ../publish.py:416 ../publish.py:533 ../publish.py:606
 #, python-format
 msgid "invalid action for publication: %s"
 msgstr "发布的操作无效: %s"
 
-#: ../publish.py:319 ../publish.py:736
+#: ../publish.py:319 ../publish.py:742
 msgid "A destination package repository must be provided using -s."
 msgstr "必须使用 -s 提供目标软件包系统信息库。"
 
-#: ../publish.py:361 ../publish.py:504
+#: ../publish.py:361 ../publish.py:510
 #, python-format
 msgid "File %s line %s: %s"
 msgstr "文件 %s 行 %s: %s"
 
-#: ../publish.py:372
+#. Cannot have a FMRI without version
+#: ../publish.py:369
+#, python-format
+msgid ""
+"The pkg.fmri attribute '%s' in the package manifest must include a version."
+msgstr "软件包清单中的 pkg.fmri 属性 '%s' 必须包括一个版本。"
+
+#: ../publish.py:378
 msgid "Manifest does not set pkg.fmri"
 msgstr "清单没有设置 pkg.fmri"
 
-#: ../publish.py:399
+#: ../publish.py:405
 #, python-format
 msgid "WARNING: Omitting signature action '%s'"
 msgstr "警告：将忽略签名操作 '%s'"
 
-#: ../publish.py:785
+#: ../publish.py:791
 #, python-format
 msgid "illegal %s option -- %s"
 msgstr "非法 %s 选项 -- %s"
 
-#: ../pull.py:89
+#: ../pull.py:91
 msgid ""
 "Usage:\n"
 "        pkgrecv [-s src_uri] [-a] [-d (path|dest_uri)] [-c cache_dir]\n"
-"            [-kr] [-m match] [-n] [--raw] [--key keyfile --cert certfile] \n"
+"            [-kr] [-m match] [-n] [--raw] [--key keyfile --cert certfile]\n"
 "            (fmri|pattern) ...\n"
-"        pkgrecv [-s src_repo_uri] --newest \n"
+"        pkgrecv [-s src_repo_uri] --newest\n"
 "\n"
 "Options:\n"
 "        -a              Store the retrieved package data in a pkg(5) "
@@ -9567,9 +10067,9 @@ msgid ""
 "Environment:\n"
 "        PKG_DEST        Destination directory or URI\n"
 "        PKG_SRC         Source URI or path"
-msgstr "用法：\n        pkgrecv [-s src_uri] [-a] [-d (path|dest_uri)] [-c cache_dir]\n            [-kr] [-m match] [-n] [--raw] [--key keyfile --cert certfile] \n            (fmri|pattern) ...\n        pkgrecv [-s src_repo_uri] --newest \n\n选项：\n        -a              将在 pkg(5) 归档中检索到的软件包数据存储在\n                        由 -d 指定的位置。该文件可以不是\n                        预先存在的，且此选项仅适用于基于\n                        文件系统的目标。\n\n        -c cache_dir    用于缓存所下载内容的目录的\n                         路径。如果没有提供该目录，客户机\n                        将自动选取一个高速缓存目录。\n                        如果下载被中断，并且自动选择了\n                        某个高速缓存目录，可使用此选项\n                        继续进行下载。\n\n        -d path_or_uri  要将软件包重新发布到其中的目标系统信息库的\n                        文件系统路径或 URI。该目标必须预先存在。\n                        可以使用 pkgrepo(1) 创建新的系统信息库。\n\n        -h              显示此用法消息。\n\n        -k              使检索到的软件包内容保持压缩状态，在重新发布时\n                        会被忽略。不应与 pkgsend 一起使用。\n\n        -m match        使用下列值控制匹配行为：\n                            all-timestamps\n                                包括所有匹配的时间戳，而不只是\n                                最新时间戳（暗指 all-versions）\n                            all-versions\n                                包括所有匹配的版本，而不只是最新版本\n\n        -n              在不做更改的情况下执行试运行。\n\n        -r              递归评估所提供列表中的软件包的所有依赖项\n                        并将其添加到列表中。\n\n        -s src_repo_uri 表示要从中检索软件包数据的 pkg(5)\n                        系统信息库的位置的 URI。\n\n        --newest        列出指定的系统信息库中可用的软件包的最新版本\n                        并退出。（除 -s 之外的所有其他\n                        选项将被忽略。）\n\n        --raw           按主干和版本检索一组目录结构中的原始\n                        软件包数据并将其存储在由 -d 指定的位置。\n                        仅适用于基于文件系统的目标。\n                        此选项可以与 pkgsend(1)\n                        include 一起使用，以便方便地修改和重新发布软件包，\n                        这可以通过更正文件内容或提供\n                         额外的软件包元数据来实现。\n\n        --key keyfile   指定要用于 pkg 检索的客户机 SSL 密钥文件。\n\n        --cert certfile 指定要用于 pkg 检索的客户机 SSL 证书\n                        文件。\n\n环境：\n        PKG_DEST        目标目录或 URI\n        PKG_SRC         源 URI 或路径"
+msgstr "用法：\n        pkgrecv [-s src_uri] [-a] [-d (path|dest_uri)] [-c cache_dir]\n            [-kr] [-m match] [-n] [--raw] [--key keyfile --cert certfile] \n            (fmri|pattern) ...\n        pkgrecv [-s src_repo_uri] --newest \n\n选项：\n        -a              将在 pkg(5) 归档中检索到的软件包数据存储在\n                        由 -d 指定的位置。该文件可能尚未\n                        存在，且此选项可能仅适用于\n                        基于文件系统的目标。\n\n        -c cache_dir    用于缓存所下载内容的目录的\n                         路径。如果没有提供该目录，客户机\n                        将自动选取一个高速缓存目录。\n                        如果下载被中断，并且自动选择了\n                        某个高速缓存目录，可使用此选项\n                        继续进行下载。\n\n        -d path_or_uri  要将软件包重新发布到其中的目标系统信息库的\n                        文件系统路径或 URI。该目标必须预先存在。\n                        可以使用 pkgrepo(1) 创建新的系统信息库。\n\n        -h              显示此用法消息。\n\n        -k              使检索到的软件包内容保持压缩状态，在重新发布时\n                        会被忽略。不应与 pkgsend 一起使用。\n\n        -m match        使用下列值控制匹配行为：\n                            all-timestamps\n                                包括所有匹配的时间戳，而不只是\n                                最新时间戳（暗指 all-versions）\n                            all-versions\n                                包括所有匹配的版本，而不只是最新版本\n\n        -n              在不做更改的情况下执行试运行。\n\n        -r              递归评估所提供列表中的软件包的所有依赖项\n                        并将其添加到列表中。\n\n        -s src_repo_uri 表示要从中检索软件包数据的 pkg(5)\n                        系统信息库的位置的 URI。\n\n        --newest        列出指定的系统信息库中可用的软件包的最新版本\n                        并退出。（除 -s 之外的所有其他\n                        选项将被忽略。）\n\n        --raw           按主干和版本检索一组目录结构中的原始\n                        软件包数据并将其存储在由 -d 指定的位置。\n                        仅适用于基于文件系统的目标。\n                        此选项可以与 pkgsend(1)\n                        include 一起使用，以便方便地修改和重新发布软件包，\n                        这可以通过更正文件内容或提供\n                         额外的软件包元数据来实现。\n\n        --key keyfile   指定要用于 pkg 检索的客户机 SSL 密钥文件。\n\n        --cert certfile 指定要用于 pkg 检索的客户机 SSL 证书\n                        文件。\n\n环境：\n        PKG_DEST        目标目录或 URI\n        PKG_SRC         源 URI 或路径"
 
-#: ../pull.py:163
+#: ../pull.py:165
 #, python-format
 msgid ""
 "\n"
@@ -9584,61 +10084,69 @@ msgstr "\n\n缓存的文件保留在以下目录中：\n\t%s\n使用 pkgrecv -c 
 msgid "Unable to parse manifest '%(mpath)s' for package '%(pfmri)s'"
 msgstr "无法为软件包 '%(pfmri)s' 解析清单 '%(mpath)s'。"
 
-#: ../pull.py:365
+#: ../pull.py:372
 #, python-format
 msgid "Illegal option -- %s"
 msgstr "非法选项 -- %s"
 
-#: ../pull.py:384
+#: ../pull.py:403
 #, python-format
 msgid "Illegal option value -- %s"
 msgstr "非法选项值 -- %s"
 
-#: ../pull.py:401
+#: ../pull.py:420
 msgid "a destination must be provided"
 msgstr "必须提供一个目标"
 
-#: ../pull.py:404
+#: ../pull.py:423
 msgid "a source repository must be provided"
 msgstr "必须提供一个源系统信息库"
 
-#: ../pull.py:493
+#: ../pull.py:512
 msgid "Retrieving manifests for dependency evaluation ..."
 msgstr "正在检索相关项评估的清单..."
 
-#: ../pull.py:510
+#: ../pull.py:527
 #, python-format
 msgid "Target archive '%s' already exists."
 msgstr "目标归档 '%s' 已存在。"
 
-#: ../pull.py:535
+#: ../pull.py:553
 #, python-format
 msgid "Retrieving packages for publisher %s ..."
 msgstr "正在为发布者 %s 检索软件包..."
 
-#: ../pull.py:538 ../pull.py:661
+#: ../pull.py:556 ../pull.py:700
 msgid "must specify at least one pkgfmri"
 msgstr "必须至少指定一个 pkgfmri"
 
-#: ../pull.py:554 ../pull.py:740
+#: ../pull.py:572 ../pull.py:779
 #, python-format
 msgid "Retrieving and evaluating %d package(s)..."
 msgstr "正在检索和评估 %d 个软件包..."
 
-#: ../pull.py:650
-msgid "-n takes no options"
-msgstr "-n 没有选项"
+#: ../pull.py:659 ../pull.py:933
+#, python-format
+msgid ""
+"The following errors were encountered.  The packages listed were not\n"
+"received.\n"
+"%s"
+msgstr "遇到以下错误。未收到所列出的\n软件包。\n%s"
 
-#: ../pull.py:658
+#: ../pull.py:689
+msgid "--newest takes no options"
+msgstr "--newest 没有选项"
+
+#: ../pull.py:697
 #, python-format
 msgid "Processing packages for publisher %s ..."
 msgstr "正在为发布者 %s 处理软件包..."
 
-#: ../pull.py:687
+#: ../pull.py:726
 msgid "To create a repository, use the pkgrepo command."
 msgstr "要创建系统信息库，请使用 pkgrepo 命令。"
 
-#: ../pull.py:692
+#: ../pull.py:731
 #, python-format
 msgid ""
 "The repository configuration for the repository located at '%s' is not valid "
@@ -9646,20 +10154,20 @@ msgid ""
 "the repository or create a new one."
 msgstr "位于 '%s' 的系统信息库的系统信息库配置无效，或指定的路径不存在。请更正此系统信息库的配置或创建一个新的系统信息库。"
 
-#: ../pull.py:708
+#: ../pull.py:747
 #, python-format
 msgid "Unable to create basedir '%s': %s"
 msgstr "无法创建基目录 '%s'：%s"
 
-#: ../pull.py:935
+#: ../pull.py:986
 msgid "Storage space quota exceeded."
 msgstr "超出了存储空间配额。"
 
-#: ../pull.py:937
+#: ../pull.py:988
 msgid "No storage space left."
 msgstr "没有剩余的存储空间。"
 
-#: ../pull.py:947
+#: ../pull.py:998
 #, python-format
 msgid ""
 "Please verify that the filesystem containing the following directories has "
@@ -9737,7 +10245,7 @@ msgstr "%s 散列算法不使用密钥或证书。请勿对此算法使用 -k �
 msgid "Signed %s"
 msgstr "已签名的 %s"
 
-#: ../sysrepo.py:158
+#: ../sysrepo.py:164
 msgid ""
 "Usage:\n"
 "        pkg.sysrepo -p <port> [-R image_root] [ -c cache_dir] [-h hostname]\n"
@@ -9747,123 +10255,143 @@ msgid ""
 "     "
 msgstr "用法：\n        pkg.sysrepo -p <port> [-R image_root] [ -c cache_dir] [-h hostname]\n                [-l logs_dir] [-r runtime_dir] [-s cache_size] [-t template_dir]\n                [-T http_timeout] [-w http_proxy] [-W https_proxy]\n     "
 
-#: ../sysrepo.py:181
+#: ../sysrepo.py:187
 #, python-format
 msgid "Problem getting image at %s"
 msgstr "在 %s 中获取映像时出现问题"
 
 #. We need to log this, and carry on - the url
 #. could become available at a later date.
-#: ../sysrepo.py:225
+#: ../sysrepo.py:237
 #, python-format
 msgid "WARNING: unable to access %(uri)s when checking for redirects: %(err)s"
 msgstr "警告：检查重定向时无法访问 %(uri)s: %(err)s"
 
-#: ../sysrepo.py:262
+#: ../sysrepo.py:333
+#, python-format
+msgid "Invalid config cache file at %s generating fresh configuration."
+msgstr "在 %s 处有无效的配置缓存文件，正在生成全新的配置。"
+
+#: ../sysrepo.py:339 ../sysrepo.py:350
+#, python-format
+msgid "Invalid config cache at %s generating fresh configuration."
+msgstr "在 %s 处有无效的配置缓存，正在生成全新的配置。"
+
+#: ../sysrepo.py:357
+#, python-format
+msgid "Unable to load config from %(cache_path)s: %(e)s"
+msgstr "无法从 %(cache_path)s 装入配置：%(e)s"
+
+#: ../sysrepo.py:385
+#, python-format
+msgid "Unable to store config to %(cache_path)s: %(e)s"
+msgstr "无法将配置存储到 %(cache_path)s：%(e)s"
+
+#: ../sysrepo.py:463
 #, python-format
 msgid "file repository %s does not exist or is not accessible"
 msgstr "文件系统信息库 %s 不存在或无法访问"
 
-#: ../sysrepo.py:266
-#, python-format
-msgid "p5p-based file repository %s cannot be proxied."
-msgstr "无法对基于 p5p 的文件系统信息库 %s 进行代理。"
-
-#: ../sysrepo.py:271
+#: ../sysrepo.py:469
 #, python-format
 msgid ""
 "file repository %s cannot be proxied. Only file repositories of version 4 or "
 "later are supported."
 msgstr "无法对文件系统信息库 %s 进行代理。仅支持版本 4 或更高版本的文件系统信息库。"
 
-#: ../sysrepo.py:299 ../sysrepo.py:518
+#: ../sysrepo.py:478
+#, python-format
+msgid "unable to read p5p archive file at %s"
+msgstr "无法读取位于 %s 的 p5p 归档文件"
+
+#: ../sysrepo.py:509 ../sysrepo.py:741
 #, python-format
 msgid "Unable to chown to %(user)s:%(group)s: %(err)s"
 msgstr "无法对 %(user)s:%(group)s 执行 chown: %(err)s"
 
-#: ../sysrepo.py:319
+#: ../sysrepo.py:533
 #, python-format
 msgid "%s is not a directory"
 msgstr "%s 不是目录"
 
-#: ../sysrepo.py:336 ../sysrepo.py:339
+#: ../sysrepo.py:550 ../sysrepo.py:553
 #, python-format
 msgid "invalid port: %s"
 msgstr "无效端口: %s"
 
-#: ../sysrepo.py:345 ../sysrepo.py:348
+#: ../sysrepo.py:559 ../sysrepo.py:562
 #, python-format
 msgid "invalid cache size: %s"
 msgstr "无效高速缓存大小: %s"
 
-#: ../sysrepo.py:361
+#: ../sysrepo.py:575
 msgid "scheme must be http"
 msgstr "模式必须是 http"
 
-#: ../sysrepo.py:366
+#: ../sysrepo.py:582
 #, python-format
 msgid "invalid %(key)s: %(val)s: %(err)s"
 msgstr "无效 %(key)s: %(val)s: %(err)s"
 
-#: ../sysrepo.py:393
+#: ../sysrepo.py:615
 #, python-format
 msgid "Unable to write sysrepo_httpd.conf: %(host)s: %(err)s"
 msgstr "无法写入 sysrepo_httpd.conf: %(host)s: %(err)s"
 
-#: ../sysrepo.py:397
+#: ../sysrepo.py:619
 #, python-format
 msgid "Unable to write sysrepo_httpd.conf: %s"
 msgstr "无法写入 sysrepo_httpd.conf: %s"
 
-#: ../sysrepo.py:427
+#: ../sysrepo.py:649
 #, python-format
 msgid "unable to write crypto.txt file: %s"
 msgstr "无法写入 crypto.txt 文件: %s"
 
-#: ../sysrepo.py:466
+#: ../sysrepo.py:689
 #, python-format
 msgid "unable to write publisher response: %s"
 msgstr "无法写入发布者响应: %s"
 
-#: ../sysrepo.py:482
+#: ../sysrepo.py:705
 #, python-format
 msgid "Unable to write versions response: %s"
 msgstr "无法写入版本响应: %s"
 
-#: ../sysrepo.py:501
+#: ../sysrepo.py:724
 #, python-format
 msgid "Unable to write syspub response: %s"
 msgstr "无法写入 syspub 响应: %s"
 
-#: ../sysrepo.py:529
+#: ../sysrepo.py:752
 #, python-format
 msgid "Unable to cleanup old configuration: %s"
 msgstr "无法清除旧配置: %s"
 
-#: ../sysrepo.py:547
+#: ../sysrepo.py:768
 #, python-format
 msgid "invalid value for http_timeout: %s"
 msgstr "http_timeout 的值无效: %s"
 
-#: ../sysrepo.py:550
+#: ../sysrepo.py:771
 msgid "http_timeout must a positive integer"
 msgstr "http_timeout 必须是正整数"
 
-#: ../sysrepo.py:557
+#: ../sysrepo.py:778
 #, python-format
 msgid "unable to get publisher information: %s"
 msgstr "无法获取发布者信息: %s"
 
-#: ../sysrepo.py:565
+#: ../sysrepo.py:786
 #, python-format
 msgid "unable to create htdocs dir: %s"
 msgstr "无法创建 htdocs 目录: %s"
 
-#: ../sysrepo.py:645
+#: ../sysrepo.py:866
 msgid "required port option missing."
 msgstr "缺少必需的端口选项。"
 
-#: ../sysrepo.py:685
+#: ../sysrepo.py:906
 #, python-format
 msgid ""
 "The sysrepo command appears out of sync with the libraries provided\n"
@@ -10231,7 +10759,7 @@ msgid ""
 "all repositories: %s"
 msgstr "与以下模式匹配的 fmri 在所有系统信息库中没有匹配的版本：%s"
 
-#: ../util/publish/pkgmerge.py:641
+#: ../util/publish/pkgmerge.py:640
 #, python-format
 msgid "package %(pkg)s is tagged as not supporting %(var_name)s %(var_value)s"
 msgstr "软件包 %(pkg)s 被标记为不支持 %(var_name)s %(var_value)s"

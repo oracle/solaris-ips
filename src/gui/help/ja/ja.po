@@ -1,1667 +1,1666 @@
 msgid ""
-msgstr "Project-Id-Version: PACKAGE VERSION\nPOT-Creation-Date: 2012-03-30 15:24+0900\nPO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\nLast-Translator: FULL NAME <EMAIL@ADDRESS>\nLanguage-Team: LANGUAGE <LL@li.org>\nMIME-Version: 1.0\nContent-Type: text/plain; charset=UTF-8\nContent-Transfer-Encoding: 8bit\n"
+msgstr "Project-Id-Version: PACKAGE VERSION\nPOT-Creation-Date: 2012-06-24 23:45-0700\nPO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\nLast-Translator: FULL NAME <EMAIL@ADDRESS>\nLanguage-Team: LANGUAGE <LL@li.org>\nMIME-Version: 1.0\nContent-Type: text/plain; charset=UTF-8\nContent-Transfer-Encoding: 8bit\n"
 
-#: gui/help/C/package-manager.xml:3(title)
+#: gui/help/C/package-manager.localizable.xml:3(title)
 msgid "<trademark class=\"registered\">Oracle</trademark> Solaris 11 Package Manager Online Help"
 msgstr "<trademark class=\"registered\">Oracle</trademark> Solaris 11 パッケージマネージャーオンラインヘルプ"
 
-#: gui/help/C/package-manager.xml:4(firstname)
+#: gui/help/C/package-manager.localizable.xml:4(firstname)
 msgid "Oracle"
 msgstr "Oracle"
 
-#: gui/help/C/package-manager.xml:5(surname)
+#: gui/help/C/package-manager.localizable.xml:5(surname)
 msgid "Corporation"
 msgstr "Corporation"
 
-#: gui/help/C/package-manager.xml:8(releaseinfo)
+#: gui/help/C/package-manager.localizable.xml:8(releaseinfo)
 msgid "Oracle Solaris 11"
 msgstr "Oracle Solaris 11"
 
-#: gui/help/C/package-manager.xml:9(pubdate)
+#: gui/help/C/package-manager.localizable.xml:9(pubdate)
 msgid "June 2011"
 msgstr "2011 年 6 月"
 
-#: gui/help/C/package-manager.xml:10(publishername)
+#: gui/help/C/package-manager.localizable.xml:10(publishername)
 msgid "Oracle Corporation"
 msgstr "Oracle Corporation"
 
-#: gui/help/C/package-manager.xml:11(street)
+#: gui/help/C/package-manager.localizable.xml:11(street)
 msgid "500 Oracle Parkway"
 msgstr "500 Oracle Parkway"
 
-#: gui/help/C/package-manager.xml:12(city)
+#: gui/help/C/package-manager.localizable.xml:12(city)
 msgid "Redwood City"
 msgstr "Redwood City"
 
-#: gui/help/C/package-manager.xml:13(state)
+#: gui/help/C/package-manager.localizable.xml:13(state)
 msgid "CA"
 msgstr "CA"
 
-#: gui/help/C/package-manager.xml:14(postcode)
+#: gui/help/C/package-manager.localizable.xml:14(postcode)
 msgid "94065"
 msgstr "94065"
 
-#: gui/help/C/package-manager.xml:15(country)
+#: gui/help/C/package-manager.localizable.xml:15(country)
 msgid "U.S.A."
 msgstr "U.S.A."
 
-#: gui/help/C/package-manager.xml:18(year)
+#: gui/help/C/package-manager.localizable.xml:18(year)
 msgid "2008, 2011"
 msgstr "2008, 2011"
 
-#: gui/help/C/package-manager.xml:19(para)
+#: gui/help/C/package-manager.localizable.xml:19(para)
 msgid "This software and related documentation are provided under a license agreement containing restrictions on use and disclosure and are protected by intellectual property laws. Except as expressly permitted in your license agreement or allowed by law, you may not use, copy, reproduce, translate, broadcast, modify, license, transmit, distribute, exhibit, perform, publish, or display any part, in any form, or by any means. Reverse engineering, disassembly, or decompilation of this software, unless required by law for interoperability, is prohibited."
 msgstr "このソフトウェアおよび関連ドキュメントの使用と開示は、ライセンス契約の制約条件に従うものとし、知的財産に関する法律により保護されています。ライセンス契約で明示的に許諾されている場合もしくは法律によって認められている場合を除き、形式、手段に関係なく、いかなる部分も使用、複写、複製、翻訳、放送、修正、ライセンス供与、送信、配布、発表、実行、公開または表示することはできません。このソフトウェアのリバース・エンジニアリング、逆アセンブル、逆コンパイルは互換性のために法律によって規定されている場合を除き、禁止されています。"
 
-#: gui/help/C/package-manager.xml:20(para)
+#: gui/help/C/package-manager.localizable.xml:20(para)
 msgid "The information contained herein is subject to change without notice and is not warranted to be error-free. If you find any errors, please report them to us in writing."
 msgstr "ここに記載された情報は予告なしに変更される場合があります。また、誤りが無いことの保証はいたしかねます。誤りを見つけた場合は、オラクル社までご連絡ください。"
 
-#: gui/help/C/package-manager.xml:21(para)
+#: gui/help/C/package-manager.localizable.xml:21(para)
 msgid "If this is software or related software documentation that is delivered to the U.S. Government or anyone licensing it on behalf of the U.S. Government, the following notice is applicable:"
 msgstr "このソフトウェアまたは関連ドキュメントを、米国政府機関もしくは米国政府機関に代わってこのソフトウェアまたは関連ドキュメントをライセンスされた者に提供する場合は、次の通知が適用されます。"
 
-#: gui/help/C/package-manager.xml:22(para)
+#: gui/help/C/package-manager.localizable.xml:22(para)
 msgid "U.S. GOVERNMENT RIGHTS Programs, software, databases, and related documentation and technical data delivered to U.S. Government customers are “commercial computer software” or “commercial technical data” pursuant to the applicable Federal Acquisition Regulation and agency-specific supplemental regulations. As such, the use, duplication, disclosure, modification, and adaptation shall be subject to the restrictions and license terms set forth in the applicable Government contract, and, to the extent applicable by the terms of the Government contract, the additional rights set forth in FAR 52.227-19, Commercial Computer Software License (December 2007). Oracle America, Inc., 500 Oracle Parkway, Redwood City, CA 94065."
 msgstr "U.S. GOVERNMENT RIGHTS Programs, software, databases, and related documentation and technical data delivered to U.S. Government customers are “commercial computer software” or “commercial technical data” pursuant to the applicable Federal Acquisition Regulation and agency-specific supplemental regulations. As such, the use, duplication, disclosure, modification, and adaptation shall be subject to the restrictions and license terms set forth in the applicable Government contract, and, to the extent applicable by the terms of the Government contract, the additional rights set forth in FAR 52.227-19, Commercial Computer Software License (December 2007). Oracle America, Inc., 500 Oracle Parkway, Redwood City, CA 94065."
 
-#: gui/help/C/package-manager.xml:23(para)
+#: gui/help/C/package-manager.localizable.xml:23(para)
 msgid "This software or hardware is developed for general use in a variety of information management applications. It is not developed or intended for use in any inherently dangerous applications, including applications which may create a risk of personal injury. If you use this software or hardware in dangerous applications, then you shall be responsible to take all appropriate fail-safe, backup, redundancy, and other measures to ensure its safe use. Oracle Corporation and its affiliates disclaim any liability for any damages caused by use of this software or hardware in dangerous applications."
 msgstr "このソフトウェアもしくはハードウェアは様々な情報管理アプリケーションでの一般的な使用のために開発されたものです。このソフトウェアもしくはハードウェアは、危険が伴うアプリケーション （人的傷害を発生させる可能性があるアプリケーションを含む） への用途を目的として開発されていません。このソフトウェアもしくはハードウェアを危険が伴うアプリケーションで使用する際、安全に使用するために、適切な安全装置、バックアップ、冗長性 （redundancy）、その他の対策を講じることは使用者の責任となります。このソフトウェアもしくはハードウェアを危険が伴うアプリケーションで使用したことに起因して損害が発生しても、オラクル社およびその関連会社は一切の責任を負いかねます。"
 
-#: gui/help/C/package-manager.xml:24(para)
+#: gui/help/C/package-manager.localizable.xml:24(para)
 msgid "Oracle and Java are registered trademarks of Oracle and/or its affiliates. Other names may be trademarks of their respective owners."
 msgstr "Oracle と Java は Oracle Corporation およびその関連企業の登録商標です。その他の名称は、それぞれの所有者の商標または登録商標です。"
 
-#: gui/help/C/package-manager.xml:25(para)
+#: gui/help/C/package-manager.localizable.xml:25(para)
 msgid "AMD, Opteron, the AMD logo, and the AMD Opteron logo are trademarks or registered trademarks of Advanced Micro Devices. Intel and Intel Xeon are trademarks or registered trademarks of Intel Corporation. All SPARC trademarks are used under license and are trademarks or registered trademarks of SPARC International, Inc. UNIX is a registered trademark licensed through X/Open Company, Ltd."
 msgstr "AMD、Opteron、AMDロゴ、AMD Opteronロゴは、Advanced Micro Devices, Inc.の商標または登録商標です。Intel、Intel Xeonは、Intel Corporationの商標または登録商標です。すべてのSPARCの商標はライセンスをもとに使用し、SPARC International, Inc.の商標または登録商標です。UNIXはX/Open Company, Ltd.からライセンスされている登録商標です。"
 
-#: gui/help/C/package-manager.xml:26(para)
+#: gui/help/C/package-manager.localizable.xml:26(para)
 msgid "This software or hardware and documentation may provide access to or information on content, products, and services from third parties. Oracle Corporation and its affiliates are not responsible for and expressly disclaim all warranties of any kind with respect to third-party content, products, and services. Oracle Corporation and its affiliates will not be responsible for any loss, costs, or damages incurred due to your access to or use of third-party content, products, or services."
 msgstr "このソフトウェアまたはハードウェア、そしてドキュメントは、第三者のコンテンツ、製品、サービスへのアクセス、あるいはそれらに関する情報を提供することがあります。オラクル社およびその関連会社は、第三者のコンテンツ、製品、サービスに関して一切の責任を負わず、いかなる保証もいたしません。オラクル社およびその関連会社は、第三者のコンテンツ、製品、サービスへのアクセスまたは使用によって損失、費用、あるいは損害が発生しても一切の責任を負いかねます。"
 
-
-#: gui/help/C/package-manager.xml:37(title)
+#: gui/help/C/package-manager.localizable.xml:29(title)
 msgid "About Package Manager"
 msgstr "パッケージマネージャーについて"
 
-#: gui/help/C/package-manager.xml:38(para)
+#: gui/help/C/package-manager.localizable.xml:30(para)
 msgid "Package Manager is a graphical user interface (GUI) for the Oracle Solaris Image Packaging System (IPS)."
 msgstr "パッケージマネージャーは、Oracle Solaris Image Packaging System (IPS) のグラフィカルユーザーインタフェース (GUI) です。"
 
-#: gui/help/C/package-manager.xml:39(para)
+#: gui/help/C/package-manager.localizable.xml:31(para)
 msgid "See the <xref linkend=\"glossary\"/> for definitions of terms used in this document."
 msgstr "このマニュアルで使用されている用語の定義については、<xref linkend=\"glossary\"/> を参照してください。"
 
-#: gui/help/C/package-manager.xml:40(title)
+#: gui/help/C/package-manager.localizable.xml:32(title)
 msgid "Oracle Solaris Image Packaging System"
 msgstr "Oracle Solaris Image Packaging System"
 
-#: gui/help/C/package-manager.xml:41(para)
+#: gui/help/C/package-manager.localizable.xml:33(para)
 msgid "Oracle Solaris Image Packaging System (IPS) is a software delivery system that interacts with a package repository on a network. IPS is a framework that provides software lifecycle management capabilities, including software installation, upgrade, and removal."
 msgstr "Oracle Solaris Image Packaging System (IPS) は、ネットワーク上のパッケージリポジトリと対話するソフトウェア配布システムです。IPS は、ソフトウェアのインストール、アップグレード、削除といったソフトウェアのライフサイクル管理機能を提供するフレームワークです。"
 
-#: gui/help/C/package-manager.xml:42(para)
+#: gui/help/C/package-manager.localizable.xml:34(para)
 msgid "After you install the Oracle Solaris operating system, you might find that some of the software you want to use is not available. This software probably is available in an IPS package repository. You can use Package Manager or the <literal>pkg</literal>(1M) command to download and install packages from a package repository."
 msgstr "Oracle Solaris オペレーティングシステムのインストールのあと、使用したいソフトウェアのいくつかが使用可能ではない場合があります。このソフトウェアは、IPS パッケージリポジトリに用意されている可能性があります。パッケージマネージャーまたは <literal>pkg</literal>(1M) コマンドを使用して、パッケージリポジトリからパッケージをダウンロードしてインストールすることができます。"
 
-#: gui/help/C/package-manager.xml:43(para)
+#: gui/help/C/package-manager.localizable.xml:35(para)
 msgid "IPS also enables you to create a copy of an existing IPS package repository, create your own IPS package repository, and publish your own IPS packages. For more information about IPS, see the Oracle Solaris 11 Information Library. Go to <literal>download.oracle.com</literal>, select Documentation Index on the left, select Systems Software, select Oracle Solaris 11, and select View Library. See especially <citetitle>Adding and Updating Oracle Solaris 11 Software Packages</citetitle>."
 msgstr "IPS では、既存の IPS パッケージリポジトリのコピーを作成すること、ユーザー独自の IPS パッケージリポジトリを作成すること、およびユーザー独自の IPS パッケージを発行することもできます。IPS の詳細については、Oracle Solaris 11 Information Library を参照してください。<literal>download.oracle.com</literal> にアクセスして、左側の「Documentation Index」を選択し、「Systems Software」、「Oracle Solaris 11」、「View Library」の順に選択します。特に、『<citetitle>Adding and Updating Oracle Solaris 11 Software Packages</citetitle>』を参照してください。"
 
-#: gui/help/C/package-manager.xml:45(title)
+#: gui/help/C/package-manager.localizable.xml:37(title)
 msgid "Package Manager"
 msgstr "パッケージマネージャー"
 
-#: gui/help/C/package-manager.xml:46(para)
+#: gui/help/C/package-manager.localizable.xml:38(para)
 msgid "Package Manager provides a subset of the functionality offered by the IPS command-line interface."
 msgstr "パッケージマネージャーでは、IPS コマンド行インタフェースで提供されている機能の一部を実行できます。"
 
-#: gui/help/C/package-manager.xml:47(para)
+#: gui/help/C/package-manager.localizable.xml:39(para)
 msgid "Package Manager enables you to perform the following tasks:"
 msgstr "パッケージマネージャーを使用すると、次のタスクを実行できます。"
 
-#: gui/help/C/package-manager.xml:48(para)
+#: gui/help/C/package-manager.localizable.xml:40(para)
 msgid "Find, install, update, and remove IPS packages. See <xref linkend=\"manage-pkg\"/>."
 msgstr "IPS パッケージの検索、インストール、更新、および削除。<xref linkend=\"manage-pkg\"/>を参照してください。"
 
-#: gui/help/C/package-manager.xml:50(para)
+#: gui/help/C/package-manager.localizable.xml:42(para)
 msgid "Update your system (update all the packages on your system). See <xref linkend=\"update_all\"/>."
 msgstr "システムの更新 (システム上にあるすべてのパッケージの更新)。<xref linkend=\"update_all\"/>を参照してください。"
 
-#: gui/help/C/package-manager.xml:52(para)
+#: gui/help/C/package-manager.localizable.xml:44(para)
 msgid "Add, modify, and delete IPS package publishers. See <xref linkend=\"manage-publisher\"/>."
 msgstr "IPS パッケージ発行元の追加、変更、および削除。<xref linkend=\"manage-publisher\"/>を参照してください。"
 
-#: gui/help/C/package-manager.xml:54(para)
+#: gui/help/C/package-manager.localizable.xml:46(para)
 msgid "List, rename, delete, and manage boot environments. See <xref linkend=\"manage-be\"/>."
 msgstr "ブート環境の一覧表示、名前の変更、削除、および管理。<xref linkend=\"manage-be\"/>を参照してください。"
 
-#: gui/help/C/package-manager.xml:56(para)
+#: gui/help/C/package-manager.localizable.xml:48(para)
 msgid "Create a WebInstall installation file (<filename>.p5i</filename>). See <xref linkend=\"webinstall\"/>."
 msgstr "WebInstall インストールファイル (<filename>.p5i</filename>) の作成。<xref linkend=\"webinstall\"/>を参照してください。"
 
-#: gui/help/C/package-manager.xml:59(para)
+#: gui/help/C/package-manager.localizable.xml:51(para)
 msgid "This documentation refers to the following features of the Package Manager window:"
 msgstr "このマニュアルでは、パッケージマネージャーウィンドウの次の機能について説明します。"
 
-#: gui/help/C/package-manager.xml:60(para)
+#: gui/help/C/package-manager.localizable.xml:52(para)
 msgid "The large pane in the center of the window is the package list pane. Sometimes this pane shows informational messages, but usually this pane contains a list of packages."
 msgstr "ウィンドウ中央の大きいペインはパッケージリストペインです。このペインには、情報メッセージが表示されることもありますが、通常はパッケージのリストが表示されます。"
 
-#: gui/help/C/package-manager.xml:62(para)
+#: gui/help/C/package-manager.localizable.xml:54(para)
 msgid "The menu bar at the top of the window provides most Package Manager functionality."
 msgstr "ウィンドウ上部のメニューバーには、パッケージマネージャーの機能のほとんどが用意されています。"
 
-#: gui/help/C/package-manager.xml:64(para)
+#: gui/help/C/package-manager.localizable.xml:56(para)
 msgid "The tool bar just below the menu bar has buttons on the left that provide some often-used operations. The buttons on the left of the separator have global functionality: Update all packages that have updates available or refresh the list of packages and package status. The buttons on the right of the separator only operate on selected packages."
 msgstr "メニューバーのすぐ下にあるツールバーの左側には、頻繁に使用されるいくつかの操作のボタンがあります。セパレータの左側にあるボタンはグローバルな機能を持ち、使用可能な更新が存在するすべてのパッケージを更新したり、パッケージとパッケージのステータスのリストをリフレッシュしたりできます。セパレータの右側にあるボタンは、選択されているパッケージのみを操作します。"
 
-#: gui/help/C/package-manager.xml:66(para)
+#: gui/help/C/package-manager.localizable.xml:58(para)
 msgid "The Search field on the right of the tool bar helps control the content of the package list pane. See <xref linkend=\"search-pkg\"/>."
 msgstr "ツールバーの右側の「検索」フィールドを利用すると、パッケージリストペインの内容を制御できます。<xref linkend=\"search-pkg\"/>を参照してください。"
 
-#: gui/help/C/package-manager.xml:68(para)
+#: gui/help/C/package-manager.localizable.xml:60(para)
 msgid "The <guimenu>Publisher</guimenu> drop-down menu below the buttons helps control the content of the package list pane and also enables you to add a new publisher. See <xref linkend=\"list-pkg\"/> “By Publisher.”"
 msgstr "ボタンの下にある<guimenu>「発行元」</guimenu>ドロップダウンメニューを使用すると、パッケージリストペインの内容を制御できるほか、新しい発行元を追加することもできます。<xref linkend=\"list-pkg\"/>の「発行元別」を参照してください。"
 
-#: gui/help/C/package-manager.xml:70(para)
+#: gui/help/C/package-manager.localizable.xml:62(para)
 msgid "The <guimenu>View</guimenu> drop-down menu below the Search field helps control the content of the package list pane. See Listing Packages “By Package Status.”"
 msgstr "「検索」フィールドの下にある<guimenu>「表示」</guimenu>ドロップダウンメニューを使用すると、パッケージリストペインの内容を制御できます。「パッケージの一覧表示」の「パッケージステータス別」を参照してください。"
 
-#: gui/help/C/package-manager.xml:72(para)
+#: gui/help/C/package-manager.localizable.xml:64(para)
 msgid "The category pane below the <guimenu>Publisher</guimenu> menu helps control the content of the package list pane. See Listing Packages “By Category.”"
 msgstr "<guimenu>「発行元」</guimenu>メニューの下にあるカテゴリペインを使用すると、パッケージリストペインの内容を制御できます。「パッケージの一覧表示」の「カテゴリ別」を参照してください。"
 
-#: gui/help/C/package-manager.xml:74(para)
+#: gui/help/C/package-manager.localizable.xml:66(para)
 msgid "Below the list of software categories is a list of searches that you have performed in this session."
 msgstr "ソフトウェアカテゴリのリストの下に、このセッションで実行した検索のリストがあります。"
 
-#: gui/help/C/package-manager.xml:76(para)
+#: gui/help/C/package-manager.localizable.xml:68(para)
 msgid "Below the package list pane is the package details pane. See <xref linkend=\"package-version\"/>."
 msgstr "パッケージリストペインの下に、パッケージの詳細ペインがあります。<xref linkend=\"package-version\"/>を参照してください。"
 
-#: gui/help/C/package-manager.xml:81(title)
+#: gui/help/C/package-manager.localizable.xml:73(title)
 msgid "Managing Packages"
 msgstr "パッケージの管理"
 
-#: gui/help/C/package-manager.xml:82(para)
+#: gui/help/C/package-manager.localizable.xml:74(para)
 msgid "You can list packages according to various criteria. You can install, update, and remove packages."
 msgstr "さまざまな条件に従ってパッケージを一覧表示できます。パッケージのインストール、更新、および削除を行うことができます。"
 
-#: gui/help/C/package-manager.xml:83(title)
+#: gui/help/C/package-manager.localizable.xml:75(title)
 msgid "Listing Packages"
 msgstr "パッケージの一覧表示"
 
-#: gui/help/C/package-manager.xml:84(para)
+#: gui/help/C/package-manager.localizable.xml:76(para)
 msgid "The list of packages in the Package Manager list pane is affected by the selections you make in the <guimenu>Publisher</guimenu> drop-down menu, the <guimenu>View</guimenu> drop-down menu, the categories pane, and the Search field."
 msgstr "パッケージマネージャーのリストペインに表示されるパッケージのリストは、<guimenu>「発行元」</guimenu>ドロップダウンメニュー、<guimenu>「表示」</guimenu>ドロップダウンメニュー、カテゴリペイン、および「検索」フィールドで選択した内容に影響されます。"
 
-#: gui/help/C/package-manager.xml:85(para)
+#: gui/help/C/package-manager.localizable.xml:77(para)
 msgid "You can reorder the package list by clicking the column headings."
 msgstr "列見出しをクリックしてパッケージリストの順序を変更できます。"
 
-#: gui/help/C/package-manager.xml:86(para)
+#: gui/help/C/package-manager.localizable.xml:78(para)
 msgid "You can use the <guibutton>Refresh</guibutton> button or the <menuchoice><guimenu>Package</guimenu><guimenuitem>Refresh</guimenuitem></menuchoice> menu option to reread repository catalogs and update the list of packages and package status. A refresh also is attempted whenever you open Package Manager."
 msgstr "<guibutton>「リフレッシュ」</guibutton>ボタンまたは<menuchoice><guimenu>「パッケージ」</guimenu><guimenuitem>「リフレッシュ」</guimenuitem></menuchoice>メニューオプションを使用すると、リポジトリカタログを再度読み込み、パッケージとパッケージのステータスのリストを更新できます。パッケージマネージャーを開いたときにも毎回リフレッシュが試みられます。"
 
-#: gui/help/C/package-manager.xml:87(title)
+#: gui/help/C/package-manager.localizable.xml:79(title)
 msgid "By Publisher"
 msgstr "発行元別"
 
-#: gui/help/C/package-manager.xml:88(para)
+#: gui/help/C/package-manager.localizable.xml:80(para)
 msgid "The <guimenu>Publisher</guimenu> drop-down menu enables you to list packages according to publisher."
 msgstr "<guimenu>「発行元」</guimenu> ドロップダウンメニューを使用すると、発行元に基づいてパッケージを一覧表示できます。"
 
-#: gui/help/C/package-manager.xml:89(para)
+#: gui/help/C/package-manager.localizable.xml:81(para)
 msgid "The top of the menu lists the name of each publisher that you have added using the Add Publisher dialog or using the <literal>pkg</literal> command. When you select one of these publishers, the package list pane shows only packages that are available from that selected publisher. The package list pane shows only the Name, Status, and Summary columns because the publisher is the same for every package."
 msgstr "メニューの上部には、「発行元を追加」ダイアログまたは <literal>pkg</literal> コマンドを使用して追加した各発行元の名前が表示されます。これらの発行元の 1 つを選択すると、その発行元から利用できるパッケージだけがパッケージリストペインに表示されます。発行元はどのパッケージについても同じなので、パッケージリストペインには「名前」、「ステータス」、および「サマリー」列だけが表示されます。"
 
-#: gui/help/C/package-manager.xml:91(para)
+#: gui/help/C/package-manager.localizable.xml:83(para)
 msgid "<guimenuitem>All Publishers</guimenuitem> — Shows packages from all publishers in the package list pane. The package list pane shows columns Name, Status, Publisher, and Summary."
 msgstr "<guimenuitem>「すべての発行元」</guimenuitem> - すべての発行元のパッケージをパッケージリストペインに表示します。パッケージリストペインには「名前」、「ステータス」、「発行元」、および「サマリー」列が表示されます。"
 
-#: gui/help/C/package-manager.xml:92(para)
+#: gui/help/C/package-manager.localizable.xml:84(para)
 msgid "Example: To list all media device drivers that have updates available from all publishers, select <guimenuitem>All Publishers</guimenuitem> from the <guimenu>Publisher</guimenu> menu, select the <menuchoice><guimenu>Drivers</guimenu><guimenuitem>Media</guimenuitem></menuchoice> category, and select <guimenuitem>Updates</guimenuitem> from the <guimenu>View</guimenu> menu."
 msgstr "例: すべての発行元のメディアデバイスドライバで、使用可能な更新が存在するものをすべて表示するには、<guimenu>「発行元」</guimenu>メニューから<guimenuitem>「すべての発行元」</guimenuitem>を選択し、<menuchoice><guimenu>「ドライバ」</guimenu><guimenuitem>「メディア」</guimenuitem></menuchoice>カテゴリを選択し、<guimenu>「表示」</guimenu>メニューから<guimenuitem>「更新」</guimenuitem>を選択します。"
 
-#: gui/help/C/package-manager.xml:94(para)
+#: gui/help/C/package-manager.localizable.xml:86(para)
 msgid "<guimenuitem>All Installed Packages</guimenuitem> — Shows all packages that are installed from all publishers."
 msgstr "<guimenuitem>「すべてのインストール済みパッケージ」</guimenuitem> — すべての発行元からインストールしたすべてのパッケージを表示します。"
 
-#: gui/help/C/package-manager.xml:95(para)
+#: gui/help/C/package-manager.localizable.xml:87(para)
 msgid "Example: To list all the font packages that are currently installed from the <literal>solaris</literal> publisher, select <guimenuitem>All Installed Packages</guimenuitem> from the <guimenu>Publisher</guimenu> menu, select the <menuchoice><guimenu>System</guimenu><guimenuitem>Fonts</guimenuitem></menuchoice> category, click on the Publisher column heading to sort the list by Publisher, and scroll down to the <literal>solaris</literal> entries."
 msgstr "例: <literal>solaris</literal> 発行元のフォントパッケージで、現在インストールされているものをすべて表示するには、<guimenu>「発行元」</guimenu>メニューから<guimenuitem>「すべてのインストール済みパッケージ」</guimenuitem>を選択し、<menuchoice><guimenu>「システム」</guimenu><guimenuitem>「フォント」</guimenuitem></menuchoice>カテゴリを選択し、「発行元」列見出しをクリックしてリストを発行元別にソートし、<literal>solaris</literal> エントリまで下へスクロールします。"
 
-#: gui/help/C/package-manager.xml:97(para)
+#: gui/help/C/package-manager.localizable.xml:89(para)
 msgid "<guimenuitem>All Publishers (Search)</guimenuitem> — Shows an informational message in the package list pane instead of a list of packages. The message lists all publishers that you have configured and reminds you how to view all packages from those publishers. See <xref linkend=\"search-pkg\"/> for information about searching with <guimenuitem>All Publishers (Search)</guimenuitem>."
 msgstr "<guimenuitem>「すべての発行元 (検索)」</guimenuitem> - パッケージリストペインにパッケージのリストではなく情報メッセージを表示します。メッセージには、構成済みの発行元の一覧と、それらの発行元からのすべてのパッケージを表示する方法が示されます。<guimenuitem>「すべての発行元 (検索)」</guimenuitem>を使用した検索の詳細については、<xref linkend=\"search-pkg\"/>を参照してください。"
 
-#: gui/help/C/package-manager.xml:99(para)
+#: gui/help/C/package-manager.localizable.xml:91(para)
 msgid "<guimenuitem>Add...</guimenuitem> — Opens the Add Publisher window."
 msgstr "<guimenuitem>「追加...」</guimenuitem> — 「発行元を追加」ウィンドウを開きます。"
 
-#: gui/help/C/package-manager.xml:103(title)
+#: gui/help/C/package-manager.localizable.xml:95(title)
 msgid "By Package Status"
 msgstr "パッケージステータス別"
 
-#: gui/help/C/package-manager.xml:104(para)
+#: gui/help/C/package-manager.localizable.xml:96(para)
 msgid "The <guimenu>View</guimenu> drop-down menu enables you to list packages according to package status. Package status can be installed, not installed, or an update is available. The icons displayed on the <guimenu>View</guimenu> menu match the icons displayed in the Status column of the package list pane."
 msgstr "<guimenu>「表示」</guimenu>ドロップダウンメニューを使用すると、パッケージステータスに基づいてパッケージを一覧表示できます。パッケージステータスは、インストール済み、未インストール、更新利用可能のいずれかです。<guimenu>「表示」</guimenu>メニューに表示されるアイコンは、パッケージリストペインの「ステータス」列に表示されるアイコンと一致します。"
 
-#: gui/help/C/package-manager.xml:105(para)
+#: gui/help/C/package-manager.localizable.xml:97(para)
 msgid "<guimenuitem>All Packages</guimenuitem> — Shows all packages available from the selected publisher in the selected category or matching the specified search string."
 msgstr "<guimenuitem>「すべてのパッケージ」</guimenuitem> — 選択した発行元の選択したカテゴリ内のパッケージまたは指定した検索文字列と一致するパッケージをすべて表示します。"
 
-#: gui/help/C/package-manager.xml:106(para)
+#: gui/help/C/package-manager.localizable.xml:98(para)
 msgid "Example: To list all web services packages from the <literal>solaris</literal> publisher that are installed, not installed, or have updates available, select <literal>solaris</literal> from the <guimenu>Publisher</guimenu> menu, select the <menuchoice><guimenu>Web Services</guimenu></menuchoice> category, and select <guimenuitem>All Packages</guimenuitem> from the <guimenu>View</guimenu> menu."
 msgstr "例: <literal>solaris</literal> 発行元の Web サービスパッケージで、インストール済みのもの、インストールされていないもの、または使用可能な更新が存在するものをすべて表示するには、<guimenu>「発行元」</guimenu>メニューから <literal>solaris</literal> を選択し、<menuchoice><guimenu>「Web サービス」</guimenu></menuchoice>カテゴリを選択し、<guimenu>「表示」</guimenu>メニューから<guimenuitem>「すべてのパッケージ」</guimenuitem>を選択します。"
 
-#: gui/help/C/package-manager.xml:109(para)
+#: gui/help/C/package-manager.localizable.xml:101(para)
 msgid "<guimenuitem>Installed Packages</guimenuitem> — Shows all installed packages from the selected publisher in the selected category or matching the specified search string. See also the <menuchoice><guimenu>Publisher</guimenu><guimenuitem>All Installed Packages</guimenuitem></menuchoice> option."
 msgstr "<guimenuitem>「インストール済みパッケージ」</guimenuitem> — 選択した発行元の選択したカテゴリ内のパッケージまたは指定した検索文字列と一致するパッケージで、インストール済みのものをすべて表示します。<menuchoice><guimenu>「発行元」</guimenu><guimenuitem>「すべてのインストール済みパッケージ」</guimenuitem></menuchoice>オプションも参照してください。"
 
-#: gui/help/C/package-manager.xml:110(para)
+#: gui/help/C/package-manager.localizable.xml:102(para)
 msgid "Example: To list only the web server packages that are installed from the <literal>solaris</literal> publisher, select <literal>solaris</literal> from the <guimenu>Publisher</guimenu> menu, select the <menuchoice><guimenu>Web Services</guimenu></menuchoice> category, and select <guimenuitem>Installed Packages</guimenuitem> from the <guimenu>View</guimenu> menu."
 msgstr "例: <literal>solaris</literal> 発行元の Web サービスパッケージで、インストール済みのものだけを一覧表示するには、<guimenu>「発行元」</guimenu>メニューから <literal>solaris</literal> を選択して、<menuchoice><guimenu>「Web サービス」</guimenu></menuchoice>カテゴリを選択し、<guimenu>「表示」</guimenu>メニューから<guimenuitem>「インストール済みパッケージ」</guimenuitem>を選択します。"
 
-#: gui/help/C/package-manager.xml:112(para)
+#: gui/help/C/package-manager.localizable.xml:104(para)
 msgid "<guimenuitem>Updates</guimenuitem> — Shows all packages from the selected publisher in the selected category or matching the specified search string that have updates available."
 msgstr "<guimenuitem>「更新」</guimenuitem> — 選択した発行元の選択したカテゴリ内のパッケージまたは指定した検索文字列と一致するパッケージで、使用可能な更新が存在するものをすべて表示します。"
 
-#: gui/help/C/package-manager.xml:113(para)
+#: gui/help/C/package-manager.localizable.xml:105(para)
 msgid "Example: To list all device drivers that have updates available from all publishers, select <guimenuitem>All Publishers</guimenuitem> from the <guimenu>Publisher</guimenu> menu, select the <guimenu>Drivers</guimenu> category, and select <guimenuitem>Updates</guimenuitem> from the <guimenu>View</guimenu> menu."
 msgstr "例: すべての発行元のデバイスドライバで、使用可能な更新が存在するものをすべて表示するには、<guimenu>「発行元」</guimenu>メニューから<guimenuitem>「すべての発行元」</guimenuitem>を選択し、<guimenu>「ドライバ」</guimenu>カテゴリを選択し、<guimenu>「表示」</guimenu>メニューから<guimenuitem>「更新」</guimenuitem>を選択します。"
 
-#: gui/help/C/package-manager.xml:115(para)
+#: gui/help/C/package-manager.localizable.xml:107(para)
 msgid "<guimenuitem>Not Installed Packages</guimenuitem> — Shows all packages from the selected publisher in the selected category or matching the specified search string that are not installed."
 msgstr "<guimenuitem>「インストールされていないパッケージ」</guimenuitem> — 選択した発行元の選択したカテゴリ内のパッケージまたは指定した検索文字列と一致するパッケージで、インストールされていないものをすべて表示します。"
 
-#: gui/help/C/package-manager.xml:116(para)
+#: gui/help/C/package-manager.localizable.xml:108(para)
 msgid "Example: To list all the font packages that are currently not installed from the <literal>solaris</literal> publisher, select <literal>solaris</literal> from the <guimenu>Publisher</guimenu> menu, select the <menuchoice><guimenu>System</guimenu><guimenuitem>Fonts</guimenuitem></menuchoice> category, and then select <guimenuitem>Not Installed Packages</guimenuitem> from the <guimenu>View</guimenu> menu."
 msgstr "例: <literal>solaris</literal> 発行元のフォントパッケージで、現在インストールされていないものをすべて表示するには、<guimenu>「発行元」</guimenu>メニューから <literal>solaris</literal> を選択し、<menuchoice><guimenu>「システム」</guimenu><guimenuitem>「フォント」</guimenuitem></menuchoice>カテゴリを選択し、<guimenu>「表示」</guimenu>メニューから<guimenuitem>「インストールされていないパッケージ」</guimenuitem>を選択します。"
 
-#: gui/help/C/package-manager.xml:118(para)
+#: gui/help/C/package-manager.localizable.xml:110(para)
 msgid "<guimenuitem>Selected Packages</guimenuitem> — Lists all packages that are currently selected. See <xref linkend=\"select-pkg\"/>."
 msgstr "<guimenuitem>「選択したパッケージ」</guimenuitem> — 現在選択されているすべてのパッケージを表示します。<xref linkend=\"select-pkg\"/>を参照してください。"
 
-#: gui/help/C/package-manager.xml:122(title)
+#: gui/help/C/package-manager.localizable.xml:114(title)
 msgid "By Category"
 msgstr "カテゴリ別"
 
-#: gui/help/C/package-manager.xml:123(para)
+#: gui/help/C/package-manager.localizable.xml:115(para)
 msgid "You can browse the available packages by type of software in the category pane on the left side of the Package Manager window. Click a category name to show subcategories. Packages in the selected category or subcategory are listed in the package list pane according to the selected publisher and package status and the specified search criteria."
 msgstr "パッケージマネージャーウィンドウの左側のカテゴリペインでは、使用可能なパッケージをソフトウェアのタイプ別に参照できます。サブカテゴリを表示するにはカテゴリ名をクリックします。選択した発行元とパッケージステータス、および指定した検索条件に基づいて、選択したカテゴリまたはサブカテゴリのパッケージがパッケージリストペインに一覧表示されます。"
 
-#: gui/help/C/package-manager.xml:124(para)
+#: gui/help/C/package-manager.localizable.xml:116(para)
 msgid "In addition to named types of software, the categories pane also enables you to select <guimenuitem>All Categories</guimenuitem> and <guimenuitem>Recent Searches</guimenuitem>. See <xref linkend=\"search-pkg\"/> “Repeat a Previous Search” for information about <guimenuitem>Recent Searches</guimenuitem>."
 msgstr "指定したタイプのソフトウェアに加え、カテゴリペインでは<guimenuitem>「すべてのカテゴリ」</guimenuitem>および<guimenuitem>「最近の検索」</guimenuitem>を選択することもできます。<guimenuitem>「最近の検索」</guimenuitem>の詳細については、<xref linkend=\"search-pkg\"/>の「以前の検索の繰り返し」を参照してください。"
 
-#: gui/help/C/package-manager.xml:127(title)
+#: gui/help/C/package-manager.localizable.xml:119(title)
 msgid "Searching for Packages"
 msgstr "パッケージの検索"
 
-#: gui/help/C/package-manager.xml:128(para)
+#: gui/help/C/package-manager.localizable.xml:120(para)
 msgid "Use one of the following two methods to search for packages:"
 msgstr "パッケージを検索するには、次の 2 つの方法のいずれかを使用します。"
 
-#: gui/help/C/package-manager.xml:129(para)
+#: gui/help/C/package-manager.localizable.xml:121(para)
 msgid "Focus on the package list pane (for example, select <menuchoice><guimenu>Edit</guimenu><guimenuitem>Go to package list</guimenuitem></menuchoice> and start typing. As you type, matches are identified among the packages currently listed in the package list pane."
 msgstr "パッケージリストペインにフォーカスを移動します (たとえば、<menuchoice><guimenu>「編集」</guimenu><guimenuitem>「パッケージリストへ移動」</guimenuitem></menuchoice>を選択し、入力を開始します。入力するにつれて、パッケージリストペインに現在表示されているパッケージの中で一致するものが特定されます。"
 
-#: gui/help/C/package-manager.xml:131(para)
+#: gui/help/C/package-manager.localizable.xml:123(para)
 msgid "Use the Search field in the tool bar."
 msgstr "ツールバーの「検索」フィールドを使用します。"
 
-#: gui/help/C/package-manager.xml:134(title)
+#: gui/help/C/package-manager.localizable.xml:126(title)
 msgid "Enter a Search String"
 msgstr "検索文字列を入力します。"
 
-#: gui/help/C/package-manager.xml:135(para)
+#: gui/help/C/package-manager.localizable.xml:127(para)
 msgid "Enter a string in the Search field and then press the Enter key or click the magnifying glass icon to the right of the Search field."
 msgstr "「検索」フィールドに文字列を入力したあと、Enter キーを押すか、「検索」フィールドの右にある虫めがねアイコンをクリックします。"
 
-#: gui/help/C/package-manager.xml:136(para)
+#: gui/help/C/package-manager.localizable.xml:128(para)
 msgid "<guimenu>Publisher</guimenu> menu selection — Package Manager searches for the search string in the information about each package from a particular publisher or from all publishers, according to what you have selected on the <guimenu> Publisher</guimenu> menu."
 msgstr "<guimenu>「発行元」</guimenu>メニューの選択 — パッケージマネージャーは、ユーザーが<guimenu>「発行元」</guimenu>メニューで選択した内容に基づいて、特定の発行元またはすべての発行元の各パッケージに関する情報内で検索文字列を検索します。"
 
-#: gui/help/C/package-manager.xml:137(para)
+#: gui/help/C/package-manager.localizable.xml:129(para)
 msgid "Search results are the same whether you select <guimenuitem>All Publishers</guimenuitem> or <guimenuitem>All Publishers (Search)</guimenuitem>. The difference is that using <guimenuitem>All Publishers (Search)</guimenuitem> is faster because you avoid the delay to load data from all publishers that you incur when you select <guimenuitem>All Publishers</guimenuitem>. With <guimenuitem>All Publishers (Search)</guimenuitem>, the search is performed on all publishers without loading data from all publishers in the package list pane."
 msgstr "<guimenuitem>「すべての発行元」</guimenuitem>または<guimenuitem>「すべての発行元 (検索)」</guimenuitem>のどちらを選択しても検索結果は同じです。相違点は、<guimenuitem>「すべての発行元」</guimenuitem>を選択するとすべての発行元のデータを読み込むため遅延が発生しますが、<guimenuitem>「すべての発行元 (検索)」</guimenuitem>を使用するとそれを回避して高速に検索できることです。<guimenuitem>「すべての発行元 (検索)」</guimenuitem>では、すべての発行元のデータをパッケージリストペインに読み込むことなく、すべての発行元に対して検索が実行されます。"
 
-#: gui/help/C/package-manager.xml:139(para)
+#: gui/help/C/package-manager.localizable.xml:131(para)
 msgid "<guimenu>View</guimenu> menu selection — Search results are displayed in the package list pane according to the package status selected on the <guimenu>View</guimenu> menu. You can display different subsets of the same search results in the package list pane by changing the <guimenu>View</guimenu> menu selection without redoing the search."
 msgstr "<guimenu>「表示」</guimenu>メニューの選択 - <guimenu>「表示」</guimenu>メニューで選択したパッケージステータスに基づいて、検索結果がパッケージリストペインに表示されます。<guimenu>「表示」</guimenu>メニューの選択を変更することにより、検索を再度実行することなく、同じ検索結果のさまざまな部分集合をパッケージリストペインに表示できます。"
 
-#: gui/help/C/package-manager.xml:142(para)
+#: gui/help/C/package-manager.localizable.xml:134(para)
 msgid "Package Manager searches package information including name, summary, description, category, and names of files contained within the package. Only exact matches are found if you do not use wild cards."
 msgstr "パッケージマネージャーは、名前、サマリー、説明、カテゴリ、パッケージ内に含まれるファイルの名前などのパッケージ情報を検索します。ワイルドカードを使用しない場合は、完全に一致するものだけが検索されます。"
 
-#: gui/help/C/package-manager.xml:143(literal)
+#: gui/help/C/package-manager.localizable.xml:135(literal)
 msgid "AND"
 msgstr "AND"
 
-#: gui/help/C/package-manager.xml:144(para)
+#: gui/help/C/package-manager.localizable.xml:136(para)
 msgid "When search terms are separated by spaces or by <literal>AND</literal>, Package Manager searches for packages that contain <emphasis role=\"strong\">all</emphasis> of the search terms. This is the default search behavior."
 msgstr "検索語がスペースあるいは <literal>AND</literal> で区切られていると、パッケージマネージャーは<emphasis role=\"strong\">すべて</emphasis>の検索語を含むパッケージを検索します。これはデフォルトの検索動作です。"
 
-#: gui/help/C/package-manager.xml:145(para)
+#: gui/help/C/package-manager.localizable.xml:137(para)
 msgid "Example: If the search string is <literal>python book</literal> or <literal>python AND book</literal>, the search results include only packages that contain <emphasis>both</emphasis><literal>python</literal><emphasis>and</emphasis><literal>book</literal> in their package information. For example, the package <literal>diveintopython</literal>, a book about Python programming, would appear in the search results, but the package <literal>python-26</literal> would not."
 msgstr "例: 検索文字列が <literal>python book</literal> または <literal>python AND book</literal> の場合は、パッケージ情報に <literal>python</literal> <emphasis>と</emphasis> <literal>book</literal> の<emphasis>両方</emphasis>を含むパッケージだけが検索結果に含まれます。たとえば、Python プログラミングに関する本 <literal>diveintopython</literal> は検索結果に含まれますが、パッケージ <literal>python-26</literal> は含まれません。"
 
-#: gui/help/C/package-manager.xml:148(term)
+#: gui/help/C/package-manager.localizable.xml:140(term)
 msgid "Double quotation marks"
 msgstr "二重引用符"
 
-#: gui/help/C/package-manager.xml:149(para)
+#: gui/help/C/package-manager.localizable.xml:141(para)
 msgid "Enclose the search term in double quotation marks to match that search term exactly."
 msgstr "検索語と完全に一致するものを検索するには、検索語を二重引用符で囲みます。"
 
-#: gui/help/C/package-manager.xml:150(para)
+#: gui/help/C/package-manager.localizable.xml:142(para)
 msgid "Example: <literal>\"ethernet driver\"</literal> in double quotation marks matches <literal>Fast Ethernet Driver</literal> but does not match <literal>Ethernet Adapter Driver</literal>."
 msgstr "例: 二重引用符で囲まれた <literal>\"ethernet driver\"</literal> は、<literal>Fast Ethernet Driver</literal> に一致しますが、<literal>Ethernet Adapter Driver</literal> には一致しません。"
 
-#: gui/help/C/package-manager.xml:153(term)
+#: gui/help/C/package-manager.localizable.xml:145(term)
 msgid "Wild card"
 msgstr "ワイルドカード"
 
-#: gui/help/C/package-manager.xml:154(para)
+#: gui/help/C/package-manager.localizable.xml:146(para)
 msgid "You can use the <literal>*</literal> wild card in your search string. Using wild cards can be slower."
 msgstr "検索文字列で <literal>*</literal> ワイルドカードを使用できます。ワイルドカードを使用すると遅くなる場合があります。"
 
-#: gui/help/C/package-manager.xml:155(para)
+#: gui/help/C/package-manager.localizable.xml:147(para)
 msgid "Example: <literal>802.11*</literal> matches <literal>802.11b/g</literal> and <literal>802.11a/b/g</literal>."
 msgstr "例: <literal>802.11*</literal> は <literal>802.11b/g</literal> と <literal>802.11a/b/g</literal> に一致します。"
 
-#: gui/help/C/package-manager.xml:156(para)
+#: gui/help/C/package-manager.localizable.xml:148(para)
 msgid "Note that <literal>802.11*</literal> does not match <literal>IEEE802.11b/g</literal>. To match <literal>IEEE802.11b/g</literal>, use search string <literal>*802.11*</literal>."
 msgstr "<literal>802.11*</literal> は <literal>IEEE802.11b/g</literal> には一致しません。<literal>IEEE802.11b/g</literal> に一致するようにするには、検索文字列 <literal>*802.11*</literal> を使用してください。"
 
-#: gui/help/C/package-manager.xml:159(literal)
+#: gui/help/C/package-manager.localizable.xml:151(literal)
 msgid "OR"
 msgstr "OR"
 
-#: gui/help/C/package-manager.xml:160(para)
+#: gui/help/C/package-manager.localizable.xml:152(para)
 msgid "When search terms are separated by <literal>OR</literal>, Package Manager searches for packages that contain <emphasis role=\"strong\">any</emphasis> of the search terms."
 msgstr "検索語が <literal>OR</literal> で区切られていると、パッケージマネージャーは検索語の<emphasis role=\"strong\">いずれか</emphasis>を含むパッケージを検索します。"
 
-#: gui/help/C/package-manager.xml:161(para)
+#: gui/help/C/package-manager.localizable.xml:153(para)
 msgid "Example: <literal>python OR book</literal> matches all packages that contain <literal>python</literal> in their package information and all packages that contain <literal>book</literal> in their package information."
 msgstr "例: <literal>python OR book</literal> は、パッケージ情報に <literal>python</literal> を含むすべてのパッケージと、パッケージ情報に <literal>book</literal> を含むすべてのパッケージに一致します。"
 
-#: gui/help/C/package-manager.xml:165(para)
+#: gui/help/C/package-manager.localizable.xml:157(para)
 msgid "You can combine these search string modifiers. You can use AND, OR, doublt quotation marks, and * all in one search string."
 msgstr "これらの検索文字列修飾子は組み合わせることができます。AND、OR、二重引用符、および * をすべて 1 つの検索文字列で使用することができます。"
 
-#: gui/help/C/package-manager.xml:167(title)
+#: gui/help/C/package-manager.localizable.xml:159(title)
 msgid "Clear the Search Field"
 msgstr "検索フィールドの消去"
 
-#: gui/help/C/package-manager.xml:168(para)
+#: gui/help/C/package-manager.localizable.xml:160(para)
 msgid "To clear both the search string and the list of search results, use the Search field or the Edit menu."
 msgstr "検索文字列と検索結果リストの両方を消去するには、「検索」フィールドまたは「編集」メニューを使用します。"
 
-#: gui/help/C/package-manager.xml:169(para)
+#: gui/help/C/package-manager.localizable.xml:161(para)
 msgid "In the Search field, click the <literal>X</literal> icon."
 msgstr "「検索」フィールドで <literal>X</literal> アイコンをクリックします。"
 
-#: gui/help/C/package-manager.xml:171(para)
+#: gui/help/C/package-manager.localizable.xml:163(para)
 msgid "On the <guimenu>Edit</guimenu> menu, select the <guimenuitem>Clear Search</guimenuitem> option."
 msgstr "<guimenu>「編集」</guimenu>メニューで<guimenuitem>「検索を消去」</guimenuitem>オプションを選択します。"
 
-#: gui/help/C/package-manager.xml:175(title)
+#: gui/help/C/package-manager.localizable.xml:167(title)
 msgid "Cancel the Search"
 msgstr "検索の取り消し"
 
-#: gui/help/C/package-manager.xml:176(para)
+#: gui/help/C/package-manager.localizable.xml:168(para)
 msgid "During a search operation, a busy bar displays at the right end of the status bar at the bottom of the Package Manager window. On the right end of the busy bar is an <literal>X</literal> icon. Click the <literal>X</literal> icon in the busy bar to cancel the search in progress."
 msgstr "検索の実行中は、パッケージマネージャーウィンドウ下部のステータスバーの右端にビジーバーが表示されます。ビジーバーの右端に <literal>X</literal> アイコンがあります。実行中の検索を取り消すには、ビジーバーの <literal>X</literal> アイコンをクリックします。"
 
-#: gui/help/C/package-manager.xml:178(title)
+#: gui/help/C/package-manager.localizable.xml:170(title)
 msgid "Redisplay Previous Search Results"
 msgstr "以前の検索結果の再表示"
 
-#: gui/help/C/package-manager.xml:179(para)
+#: gui/help/C/package-manager.localizable.xml:171(para)
 msgid "Results from searches that you have already performed during the current Package Manager session are saved in <guimenuitem>Recent Searches</guimenuitem> in the categories pane."
 msgstr "現在のパッケージマネージャーセッションですでに実行した検索の結果は、カテゴリペインの<guimenuitem>「最近の検索」</guimenuitem>に保存されています。"
 
-#: gui/help/C/package-manager.xml:180(para)
+#: gui/help/C/package-manager.localizable.xml:172(para)
 msgid "Select the <guimenuitem>Recent Searches</guimenuitem> label in the categories pane to display an informational message in the package list pane. The package list pane shows the list of previous search results. Click a \"results\" link to redisplay those results."
 msgstr "カテゴリペインで<guimenuitem>「最近の検索」</guimenuitem>ラベルをクリックすると、パッケージリストペインに情報メッセージが表示されます。パッケージリストペインには以前の検索結果が表示されます。それらの結果を再表示するには、「結果」リンクをクリックします。"
 
-#: gui/help/C/package-manager.xml:181(para)
+#: gui/help/C/package-manager.localizable.xml:173(para)
 msgid "Select the arrow to the left of the <guimenuitem>Recent Searches</guimenuitem> label to expand or hide the list of previous search results in the categories pane. Select an item in the list of recent searches to redisplay those search results."
 msgstr "<guimenuitem>「最近の検索」</guimenuitem>ラベルの左にある矢印をクリックすると、カテゴリペインで以前の検索結果のリストを展開したり非表示にしたりできます。最近の検索のリストで項目を選択すると、それらの検索結果が再表示されます。"
 
-#: gui/help/C/package-manager.xml:182(para)
+#: gui/help/C/package-manager.localizable.xml:174(para)
 msgid "A search that matched no packages does not appear in the recent searches list."
 msgstr "どのパッケージにも一致しなかった検索は最近の検索のリストに表示されません。"
 
-#: gui/help/C/package-manager.xml:183(para)
+#: gui/help/C/package-manager.localizable.xml:175(para)
 msgid "Selecting the <guibutton>Refresh</guibutton> button or the <menuchoice><guimenu>Package</guimenu><guimenuitem>Refresh</guimenuitem></menuchoice> menu option deletes all recent searches results."
 msgstr "<guibutton>「リフレッシュ」</guibutton>ボタンまたは<menuchoice><guimenu>「パッケージ」</guimenu><guimenuitem>「リフレッシュ」</guimenuitem></menuchoice>メニューオプションを選択すると、最近の検索結果がすべて削除されます。"
 
-#: gui/help/C/package-manager.xml:186(title)
+#: gui/help/C/package-manager.localizable.xml:178(title)
 msgid "Showing More Information"
 msgstr "詳細情報の表示"
 
-#: gui/help/C/package-manager.xml:187(para)
+#: gui/help/C/package-manager.localizable.xml:179(para)
 msgid "See more information about a package in the package details pane or on the Package Version Info dialog."
 msgstr "パッケージに関する詳細情報をパッケージの詳細ペインまたは「パッケージのバージョン情報」ダイアログで確認します。"
 
-#: gui/help/C/package-manager.xml:188(title)
+#: gui/help/C/package-manager.localizable.xml:180(title)
 msgid "Package Details Pane"
 msgstr "パッケージの詳細ペイン"
 
-#: gui/help/C/package-manager.xml:189(para)
+#: gui/help/C/package-manager.localizable.xml:181(para)
 msgid "To show more information about a package, click your left mouse button to highlight the package in the package list. The package details pane below the package list pane shows information such as the latest version available from this publisher, the size of the package, the files in the package, dependencies, and license terms."
 msgstr "パッケージに関する詳細情報を表示するには、パッケージリストでそのパッケージをマウスの左ボタンでクリックして強調表示します。パッケージリストペインの下にあるパッケージの詳細ペインに、この発行元から利用できる最新のバージョン、パッケージのサイズ、パッケージ内のファイル、依存関係、ライセンス契約条件といった情報が表示されます。"
 
-#: gui/help/C/package-manager.xml:190(para)
+#: gui/help/C/package-manager.localizable.xml:182(para)
 msgid "If a package has been renamed since it was installed, the Renamed To field on the General tab shows the new name of the package."
 msgstr "パッケージのインストール後に名前が変更されている場合は、パッケージの新しい名前が「一般」タブの「変更後の名前」フィールドに表示されます。"
 
-#: gui/help/C/package-manager.xml:191(para)
+#: gui/help/C/package-manager.localizable.xml:183(para)
 msgid "The Versions tab shows a list of versions of this package that are available for you to install. Select a version from the list and click the <guibutton>Install/Update</guibutton> button to the right of the list to install that version. See <xref linkend=\"install-pkg\"/>."
 msgstr "「バージョン」タブには、インストールに使用できるこのパッケージのバージョンのリストが表示されます。リストからバージョンを選択し、リストの右にある<guibutton>「インストール/更新」</guibutton>ボタンをクリックすると、そのバージョンをインストールできます。<xref linkend=\"install-pkg\"/>を参照してください。"
 
-#: gui/help/C/package-manager.xml:192(para)
+#: gui/help/C/package-manager.localizable.xml:184(para)
 msgid "The package details pane is not displayed if the package list pane contains an informational message."
 msgstr "パッケージリストペインに情報メッセージが表示されている場合、パッケージの詳細ペインは表示されません。"
 
-#: gui/help/C/package-manager.xml:194(title)
+#: gui/help/C/package-manager.localizable.xml:186(title)
 msgid "Package Version Info Dialog"
 msgstr "パッケージのバージョン情報ダイアログ"
 
-#: gui/help/C/package-manager.xml:195(para)
+#: gui/help/C/package-manager.localizable.xml:187(para)
 msgid "Click your right mouse button on a package in the package list to pop up the <guimenu>Package</guimenu> menu."
 msgstr "パッケージリストでパッケージをマウスの右ボタンでクリックすると、<guimenu>「パッケージ」</guimenu>メニューがポップアップ表示されます。"
 
-#: gui/help/C/package-manager.xml:196(para)
+#: gui/help/C/package-manager.localizable.xml:188(para)
 msgid "Select the <menuchoice><guimenu>Package</guimenu><guimenuitem>Package Version Info</guimenuitem></menuchoice> menu option either from the pop-up menu or from the menu bar to display a separate window that shows the version of the package that is installed and the latest version that you can install or upgrade to if applicable."
 msgstr "ポップアップメニューまたはメニューバーから<menuchoice><guimenu>「パッケージ」</guimenu><guimenuitem>「パッケージのバージョン情報」</guimenuitem></menuchoice>メニューオプションを選択すると、別のウィンドウが開き、インストールされているパッケージのバージョンと、該当する場合はインストールまたはアップグレードできる最新のバージョンが表示されます。"
 
-#: gui/help/C/package-manager.xml:199(title)
+#: gui/help/C/package-manager.localizable.xml:191(title)
 msgid "Selecting Packages"
 msgstr "パッケージの選択"
 
-#: gui/help/C/package-manager.xml:200(para)
+#: gui/help/C/package-manager.localizable.xml:192(para)
 msgid "Selected packages can be installed, updated, or removed. To select a package, use the package list pane or the <guimenu>Edit</guimenu> menu."
 msgstr "選択したパッケージをインストール、更新、または削除することができます。パッケージを選択するには、パッケージリストペインまたは<guimenu>「編集」</guimenu>メニューを使用します。"
 
-#: gui/help/C/package-manager.xml:201(para)
+#: gui/help/C/package-manager.localizable.xml:193(para)
 msgid "In the package list pane, do one of the following actions to select a package. You can select multiple packages."
 msgstr "パッケージリストペインで、次のいずれかの操作を実行してパッケージを選択します。複数のパッケージを選択することができます。"
 
-#: gui/help/C/package-manager.xml:202(para)
+#: gui/help/C/package-manager.localizable.xml:194(para)
 msgid "Click the box to the left of the package name. Click the box again to deselect the package."
 msgstr "パッケージ名の左にあるボックスをクリックします。パッケージの選択を解除するには、ボックスを再度クリックします。"
 
-#: gui/help/C/package-manager.xml:204(para)
+#: gui/help/C/package-manager.localizable.xml:196(para)
 msgid "Click the package name one time to highlight the package. Then double-click the highlighted package to select the package. Double-click again to deselect the package."
 msgstr "パッケージ名を 1 回クリックしてパッケージを強調表示します。次に、強調表示したパッケージをダブルクリックしてそのパッケージを選択します。パッケージの選択を解除するには、再度ダブルクリックします。"
 
-#: gui/help/C/package-manager.xml:206(para)
+#: gui/help/C/package-manager.localizable.xml:198(para)
 msgid "Click the checkbox icon in the column heading to select all packages that are currently listed in the package list pane. Click the checkbox icon again to deselect all packages currently listed in the package list pane."
 msgstr "列見出し内のチェックボックスアイコンをクリックして、パッケージリストペインに現在表示されているすべてのパッケージを選択します。パッケージリストペインに現在表示されているすべてのパッケージの選択を解除するには、チェックボックスアイコンを再度クリックします。"
 
-#: gui/help/C/package-manager.xml:209(para)
+#: gui/help/C/package-manager.localizable.xml:201(para)
 msgid "The <guimenu>Edit</guimenu> menu has the following options for selecting packages:"
 msgstr "<guimenu>「編集」</guimenu>メニューには、パッケージを選択するための次のオプションがあります。"
 
-#: gui/help/C/package-manager.xml:210(para)
+#: gui/help/C/package-manager.localizable.xml:202(para)
 msgid "<guimenuitem>Select All</guimenuitem> — Selects all packages that are currently listed in the package list pane."
 msgstr "<guimenuitem>「すべてを選択」</guimenuitem> - パッケージリストペインに現在表示されているすべてのパッケージを選択します。"
 
-#: gui/help/C/package-manager.xml:212(para)
+#: gui/help/C/package-manager.localizable.xml:204(para)
 msgid "<guimenuitem>Select Updates</guimenuitem> — Selects all packages that are currently listed in the package list pane that have updates available."
 msgstr "<guimenuitem>「更新を選択」</guimenuitem> - パッケージリストペインに現在表示されているパッケージで、使用可能な更新が存在するものをすべて選択します。"
 
-#: gui/help/C/package-manager.xml:214(para)
+#: gui/help/C/package-manager.localizable.xml:206(para)
 msgid "<guimenuitem>Deselect All</guimenuitem> — Deselects all packages that are currently listed in the package list pane."
 msgstr "<guimenuitem>「すべてを選択解除」</guimenuitem> - パッケージリストペインに現在表示されているすべてのパッケージの選択を解除します。"
 
-#: gui/help/C/package-manager.xml:217(para)
+#: gui/help/C/package-manager.localizable.xml:209(para)
 msgid "In all cases when you select a package, packages that were previously selected are still selected."
 msgstr "どの場合でも、パッケージを 1 つ選択したとき、それまでに選択されていたパッケージは選択されたままになります。"
 
-#: gui/help/C/package-manager.xml:218(para)
+#: gui/help/C/package-manager.localizable.xml:210(para)
 msgid "The number of packages currently listed in the package list pane and the number of those packages that are selected are shown on the left side of the status bar at the bottom of the Package Manager window."
 msgstr "パッケージリストペインに現在表示されているパッケージの数および選択されているパッケージの数が、パッケージマネージャーウィンドウ下部のステータスバーの左側に表示されます。"
 
-#: gui/help/C/package-manager.xml:219(para)
+#: gui/help/C/package-manager.localizable.xml:211(para)
 msgid "Select the <menuchoice><guimenu>Publisher</guimenu><guimenuitem>All Publishers</guimenuitem></menuchoice> option, the <guimenuitem>All Categories</guimenuitem> category, and the <menuchoice><guimenu>View</guimenu><guimenuitem>Selected Packages</guimenuitem></menuchoice> option to list all selected packages from all publishers in the package list pane."
 msgstr "<menuchoice><guimenu>「発行元」</guimenu><guimenuitem>「すべての発行元」</guimenuitem></menuchoice>オプション、<guimenuitem>「すべてのカテゴリ」</guimenuitem>カテゴリ、および<menuchoice><guimenu>「表示」</guimenu><guimenuitem>「選択したパッケージ」</guimenuitem></menuchoice>オプションを選択すると、すべての発行元のパッケージで、選択されているものがすべてパッケージリストペインに表示されます。"
 
-#: gui/help/C/package-manager.xml:220(para)
+#: gui/help/C/package-manager.localizable.xml:212(para)
 msgid "A package can be highlighted but not selected. When a package is highlighted, detailed information about that package is displayed in the package details pane below the package list pane. When a package is selected, a check mark displays in the box to the left of the package name. If you want to install, update, or delete a package, make sure a check mark appears in the selection box for that package."
 msgstr "パッケージは強調表示されていても、選択されていない場合があります。パッケージが強調表示されている場合、パッケージリストペインの下にあるパッケージの詳細ペインに、そのパッケージに関する詳細情報が表示されます。パッケージが選択されている場合、パッケージ名の左にあるボックスにチェックマークが表示されます。パッケージのインストール、更新、または削除を行う場合は、そのパッケージの選択ボックスにチェックマークが表示されていることを確認してください。"
 
-#: gui/help/C/package-manager.xml:222(title)
+#: gui/help/C/package-manager.localizable.xml:214(title)
 msgid "Installing and Updating Packages"
 msgstr "パッケージのインストールと更新"
 
-#: gui/help/C/package-manager.xml:223(para)
+#: gui/help/C/package-manager.localizable.xml:215(para)
 msgid "Before you install or update, check your Optional Components preference settings. Select the <menuchoice><guimenu>Edit</guimenu><guimenuitem>Preferences</guimenuitem></menuchoice> option. In the Preferences window, select the Optional Components tab. By default, Install all languages, Install all development files, and Install all documentation are selected. You can save space in your installation by selecting a subset of languages to install or deselecting development files, for example. Click the OK button to save your changes. These settings apply to all installed packages as well as future package installations and updates."
 msgstr "インストールまたは更新の前に、「オプションのコンポーネント」設定を確認します。<menuchoice><guimenu>「編集」</guimenu><guimenuitem>「設定」</guimenuitem></menuchoice>オプションを選択します。「設定」ウィンドウで「オプションのコンポーネント」タブを選択します。デフォルトでは、「すべての言語のインストール」、「すべての開発ファイルのインストール」、および「すべてのドキュメントのインストール」が選択されています。たとえば、一部の言語を選択してインストールしたり、開発ファイルの選択を解除したりすることで、インストールの領域を節約できます。「了解」ボタンをクリックして変更を保存します。これらの設定は、すべてのインストール済みパッケージおよび今後のパッケージのインストールと更新に適用されます。"
 
-#: gui/help/C/package-manager.xml:224(para)
+#: gui/help/C/package-manager.localizable.xml:216(para)
 msgid "Perform the following steps to install or update a package:"
 msgstr "パッケージをインストールまたは更新するには、次の手順を実行します。"
 
-#: gui/help/C/package-manager.xml:225(para) gui/help/C/package-manager.xml:247(para)
+#: gui/help/C/package-manager.localizable.xml:217(para) gui/help/C/package-manager.localizable.xml:239(para)
 msgid "Select the package. See <xref linkend=\"select-pkg\"/>."
 msgstr "パッケージを選択します。<xref linkend=\"select-pkg\"/>を参照してください。"
 
-#: gui/help/C/package-manager.xml:227(para)
+#: gui/help/C/package-manager.localizable.xml:219(para)
 msgid "Use one of the following methods to install or update the package:"
 msgstr "パッケージをインストールまたは更新するには、次の方法のいずれかを使用します。"
 
-#: gui/help/C/package-manager.xml:228(para)
+#: gui/help/C/package-manager.localizable.xml:220(para)
 msgid "Select the <guibutton>Install/Update</guibutton> button in the tool bar."
 msgstr "ツールバーの<guibutton>「インストール/更新」</guibutton>ボタンをクリックします。"
 
-#: gui/help/C/package-manager.xml:230(para)
+#: gui/help/C/package-manager.localizable.xml:222(para)
 msgid "Select the <menuchoice><guimenu>Package</guimenu><guimenuitem>Install/Update</guimenuitem></menuchoice> option from the menu bar."
 msgstr "メニューバーから<menuchoice><guimenu>「パッケージ」</guimenu><guimenuitem>「インストール/更新」</guimenuitem></menuchoice>オプションを選択します。"
 
-#: gui/help/C/package-manager.xml:232(para)
+#: gui/help/C/package-manager.localizable.xml:224(para)
 msgid "Click your right mouse button on the name of a package to display the pop-up <guimenu>Package</guimenu> menu. Then select the <guimenuitem>Install/Update</guimenuitem> option."
 msgstr "パッケージ名をマウスの右ボタンでクリックして<guimenu>「パッケージ」</guimenu>メニューをポップアップ表示します。次に、<guimenuitem>「インストール/更新」</guimenuitem>オプションを選択します。"
 
-#: gui/help/C/package-manager.xml:234(para)
+#: gui/help/C/package-manager.localizable.xml:226(para)
 msgid "On the Versions tab in the package details pane below the package list pane, select a version from the Version to Install list and click the <guibutton>Install/Update</guibutton> button to the right of the list. The packages in the Version to Install list are available in the repository; they might not be installable. A particular version might not be compatible with other packages that you have installed. If the version that you select is not installable on your system, Package Manager warns you and does not install the package."
 msgstr "パッケージリストペインの下にあるパッケージの詳細ペインの「バージョン」タブで、「インストールするバージョン」リストからバージョンを選択し、リストの右にある<guibutton>「インストール/更新」</guibutton>ボタンをクリックします。「インストールするバージョン」リストのパッケージはリポジトリで使用可能なものですが、インストール可能でない場合もあります。特定のバージョンに、インストール済みのほかのパッケージとの互換性がないこともあります。選択したバージョンがシステムにインストール可能でない場合、パッケージマネージャーで警告が表示され、そのパッケージはインストールされません。"
 
-#: gui/help/C/package-manager.xml:237(para)
+#: gui/help/C/package-manager.localizable.xml:229(para)
 msgid "If the package is already installed and does not have an update available (see the Status column or the <menuchoice><guimenu>Package</guimenu><guimenuitem>Package Version Info</guimenuitem></menuchoice> option), the <guibutton>Install/Update</guibutton> option is grayed out and not selectable."
 msgstr "パッケージがすでにインストールされている場合で、使用可能な更新が存在しないときは (「ステータス」列または<menuchoice><guimenu>「パッケージ」</guimenu><guimenuitem>「パッケージのバージョン情報」</guimenuitem></menuchoice>オプションを参照)、<guibutton>「インストール/更新」</guibutton>オプションはグレー表示され、選択不可になります。"
 
-#: gui/help/C/package-manager.xml:239(para)
+#: gui/help/C/package-manager.localizable.xml:231(para)
 msgid "The Install/Update Confirmation window is displayed. Packages that are not yet installed are listed in the Install Details pane, and packages that are installed are listed in the Update Details pane for you to review. Select the <guibutton>Proceed</guibutton> button to install or update the listed packages."
 msgstr "「インストール/更新の確認」ウィンドウが表示されます。まだインストールされていないパッケージは「インストールの詳細」ペインに一覧表示され、インストール済みのパッケージは「更新の詳細」ペインに一覧表示されます。<guibutton>「続行」</guibutton>ボタンをクリックして、一覧表示されたパッケージをインストールまたは更新します。"
 
-#: gui/help/C/package-manager.xml:240(para)
+#: gui/help/C/package-manager.localizable.xml:232(para)
 msgid "In some cases a license dialog is displayed and you must accept the license to install the package."
 msgstr "ライセンスダイアログが表示された場合、パッケージをインストールするにはライセンスに同意する必要があります。"
 
-#: gui/help/C/package-manager.xml:241(para)
+#: gui/help/C/package-manager.localizable.xml:233(para)
 msgid "If an error occurs during package installation, an error dialog is displayed. Messages explain why the install or update failed."
 msgstr "パッケージのインストール中にエラーが発生すると、エラーダイアログが表示されます。インストールまたは更新の失敗理由がエラーメッセージで示されます。"
 
-#: gui/help/C/package-manager.xml:245(title)
+#: gui/help/C/package-manager.localizable.xml:237(title)
 msgid "Removing Packages"
 msgstr "パッケージの削除"
 
-#: gui/help/C/package-manager.xml:246(para)
+#: gui/help/C/package-manager.localizable.xml:238(para)
 msgid "Perform the following steps to remove a package:"
 msgstr "パッケージを削除するには、次の手順を実行します。"
 
-#: gui/help/C/package-manager.xml:249(para)
+#: gui/help/C/package-manager.localizable.xml:241(para)
 msgid "Use one of the following methods to remove the package:"
 msgstr "パッケージを削除するには、次の方法のいずれかを使用します。"
 
-#: gui/help/C/package-manager.xml:250(para)
+#: gui/help/C/package-manager.localizable.xml:242(para)
 msgid "Select the <guibutton>Remove</guibutton> button in the tool bar."
 msgstr "ツールバーの<guibutton>「削除」</guibutton>ボタンをクリックします。"
 
-#: gui/help/C/package-manager.xml:252(para)
+#: gui/help/C/package-manager.localizable.xml:244(para)
 msgid "Select the <menuchoice><guimenu>Package</guimenu><guimenuitem>Remove</guimenuitem></menuchoice> option from the menu bar."
 msgstr "メニューバーから<menuchoice><guimenu>「パッケージ」</guimenu><guimenuitem>「削除」</guimenuitem></menuchoice>オプションを選択します。"
 
-#: gui/help/C/package-manager.xml:254(para)
+#: gui/help/C/package-manager.localizable.xml:246(para)
 msgid "Click your right mouse button on the name of a package to display the pop-up <guimenu>Package</guimenu> menu. Then select the <guimenuitem>Remove</guimenuitem> option."
 msgstr "パッケージ名をマウスの右ボタンでクリックして<guimenu>「パッケージ」</guimenu>メニューをポップアップ表示します。次に、<guimenuitem>「削除」</guimenuitem>オプションを選択します。"
 
-#: gui/help/C/package-manager.xml:257(para)
+#: gui/help/C/package-manager.localizable.xml:249(para)
 msgid "If the package is not installed, the Remove option is grayed out and not selectable."
 msgstr "パッケージがインストールされていない場合、「削除」オプションはグレー表示され、選択不可になります。"
 
-#: gui/help/C/package-manager.xml:259(para)
+#: gui/help/C/package-manager.localizable.xml:251(para)
 msgid "The Remove Confirmation window is displayed. Packages to be removed are listed in the Remove Details pane for you to review. Select the <guibutton>Proceed</guibutton> button to remove the listed packages."
 msgstr "「削除の確認」ウィンドウが表示されます。削除されるパッケージが確認のために「削除の詳細」ペインに一覧表示されます。<guibutton>「続行」</guibutton>ボタンをクリックして、一覧表示されたパッケージを削除します。"
 
-#: gui/help/C/package-manager.xml:260(para)
+#: gui/help/C/package-manager.localizable.xml:252(para)
 msgid "If a package cannot be removed because other packages depend on it, you can select the <guibutton>Remove Continue</guibutton> option to attempt to remove any remaining packages that you originally selected for removal."
 msgstr "あるパッケージにほかのパッケージが依存しているためそのパッケージを削除できない場合、<guibutton>「削除の続行」</guibutton>オプションを選択すると、削除対象として最初に選択した残りのパッケージの削除を試みることができます。"
 
-#: gui/help/C/package-manager.xml:265(title)
+#: gui/help/C/package-manager.localizable.xml:257(title)
 msgid "Updating Your System"
 msgstr "システムの更新"
 
-#: gui/help/C/package-manager.xml:266(para)
+#: gui/help/C/package-manager.localizable.xml:258(para)
 msgid "When certain key packages such as some drivers and other kernel components are updated, the system performs the following actions:"
 msgstr "一部のドライバやカーネルコンポーネントなど、特定の主要パッケージが更新されると、システムでは次の処理が実行されます。"
 
-#: gui/help/C/package-manager.xml:267(para)
+#: gui/help/C/package-manager.localizable.xml:259(para)
 msgid "Creates a clone of the current boot environment (BE)."
 msgstr "現在のブート環境 (BE) のクローンを作成します。"
 
-#: gui/help/C/package-manager.xml:269(para)
+#: gui/help/C/package-manager.localizable.xml:261(para)
 msgid "Updates the packages in the clone, and does not update any packages in the current BE."
 msgstr "現在の BE 内のパッケージは更新せずに、クローン内のパッケージを更新します。"
 
-#: gui/help/C/package-manager.xml:271(para)
+#: gui/help/C/package-manager.localizable.xml:263(para)
 msgid "Sets the new BE to be the default boot choice the next time the system is rebooted. The current BE remains as an alternate boot choice."
 msgstr "システムの次回リブート時にこの新しい BE がデフォルトでブートされるように設定します。現在の BE は代替ブート環境として残ります。"
 
-#: gui/help/C/package-manager.xml:274(title)
+#: gui/help/C/package-manager.localizable.xml:266(title)
 msgid "Updating All Packages"
 msgstr "すべてのパッケージの更新"
 
-#: gui/help/C/package-manager.xml:275(para)
+#: gui/help/C/package-manager.localizable.xml:267(para)
 msgid "When you select the <guibutton>Updates</guibutton> button in the tool bar or the <menuchoice><guimenu>Package</guimenu><guimenuitem>Updates</guimenuitem></menuchoice> menu option, Package Manager updates all installed packages that have updates available."
 msgstr "ツールバーの<guibutton>「更新」</guibutton>ボタンまたは<menuchoice><guimenu>「パッケージ」</guimenu><guimenuitem>「更新」</guimenuitem></menuchoice>メニューオプションを選択すると、使用可能な更新が存在するインストール済みパッケージがすべて更新されます。"
 
-#: gui/help/C/package-manager.xml:276(para)
+#: gui/help/C/package-manager.localizable.xml:268(para)
 msgid "All packages that have updates available from their current publisher are updated. If a package has an update available from a different publisher in your publisher list, that package is updated only if its current publisher is configured as non-sticky. If its current publisher is configured as sticky, then that package is not updated."
 msgstr "それぞれの現在の発行元から更新が提供されているすべてのパッケージが更新されます。パッケージの更新が発行元リスト内の別の発行元から提供されている場合、そのパッケージが更新されるのは、その現在の発行元が非固定的と構成されている場合だけです。その現在の発行元が固定的と構成されている場合、そのパッケージは更新されません。"
 
-#: gui/help/C/package-manager.xml:277(para)
+#: gui/help/C/package-manager.localizable.xml:269(para)
 msgid "The Updates window displays, and the update process starts:"
 msgstr "「更新」ウィンドウが表示され、更新処理が開始します。"
 
-#: gui/help/C/package-manager.xml:278(para)
+#: gui/help/C/package-manager.localizable.xml:270(para)
 msgid "The system refreshes all catalogs."
 msgstr "すべてのカタログがリフレッシュされます。"
 
-#: gui/help/C/package-manager.xml:280(para)
+#: gui/help/C/package-manager.localizable.xml:272(para)
 msgid "The system evaluates all installed packages to determine which packages have updates available."
 msgstr "すべてのインストール済みパッケージが評価され、使用可能な更新が存在するパッケージが判定されます。"
 
-#: gui/help/C/package-manager.xml:281(para)
+#: gui/help/C/package-manager.localizable.xml:273(para)
 msgid "If no packages have updates available, the message “No Updates Available” is displayed and processing stops."
 msgstr "どのパッケージにも使用可能な更新が存在しない場合、「有効な更新はありません」というメッセージが表示され、処理は停止します。"
 
-#: gui/help/C/package-manager.xml:283(para)
+#: gui/help/C/package-manager.localizable.xml:275(para)
 msgid "If package updates are available, the packages to be updated are listed for your review. This is your last chance to click the <guibutton>Cancel</guibutton> button to abort the update."
 msgstr "使用可能なパッケージ更新が存在する場合、更新されるパッケージが確認のために一覧表示されます。更新を中止するには<guibutton>「取消し」</guibutton>ボタンをクリックします。これ以降は中止できません。"
 
-#: gui/help/C/package-manager.xml:287(para)
+#: gui/help/C/package-manager.localizable.xml:279(para)
 msgid "Click the <guibutton>Proceed</guibutton> button to continue with the update."
 msgstr "更新を続行するには<guibutton>「続行」</guibutton>ボタンをクリックします。"
 
-#: gui/help/C/package-manager.xml:288(para)
+#: gui/help/C/package-manager.localizable.xml:280(para)
 msgid "The system might create a new boot environment (BE), as described in <xref linkend=\"update_all\"/> above, depending on which packages are being updated."
 msgstr "前述の<xref linkend=\"update_all\"/>で説明されているとおり、更新されるパッケージによっては、新しいブート環境 (BE) が作成されることがあります。"
 
-#: gui/help/C/package-manager.xml:289(para)
+#: gui/help/C/package-manager.localizable.xml:281(para)
 msgid "If the system determined that a new BE is required but was not able to create a new BE, an error message is displayed. If the problem is not enough disk space, perform the following steps:"
 msgstr "新しい BE が必要な場合にそれを作成できなかったときは、エラーメッセージが表示されます。問題がディスク容量不足であれば、次の手順を実行してください。"
 
-#: gui/help/C/package-manager.xml:290(para)
+#: gui/help/C/package-manager.localizable.xml:282(para)
 msgid "Click <guibutton>Close</guibutton> to cancel the Updates process."
 msgstr "<guibutton>「閉じる」</guibutton>をクリックして更新処理を取り消します。"
 
-#: gui/help/C/package-manager.xml:292(para)
+#: gui/help/C/package-manager.localizable.xml:284(para)
 msgid "Follow the instructions in <xref linkend=\"remove-be\"/> to remove a BE that is no longer needed."
 msgstr "<xref linkend=\"remove-be\"/>の手順に従って、不要になった BE を削除します。"
 
-#: gui/help/C/package-manager.xml:294(para)
+#: gui/help/C/package-manager.localizable.xml:286(para)
 msgid "Select <guibutton>Updates</guibutton> again to restart the Updates process."
 msgstr "もう一度<guibutton>「更新」</guibutton>をクリックして更新処理を再度開始します。"
 
-#: gui/help/C/package-manager.xml:298(para)
+#: gui/help/C/package-manager.localizable.xml:290(para)
 msgid "The system downloads all package updates."
 msgstr "すべてのパッケージ更新がダウンロードされます。"
 
-#: gui/help/C/package-manager.xml:300(para)
+#: gui/help/C/package-manager.localizable.xml:292(para)
 msgid "The system installs the package updates. If a cloned BE was created, the updates are installed in the clone. If no clone was created, the updates are installed in the current BE."
 msgstr "パッケージ更新がインストールされます。BE のクローンが作成されている場合、更新はクローンにインストールされます。クローンが作成されていない場合、更新は現在の BE にインストールされます。"
 
-#: gui/help/C/package-manager.xml:301(para)
+#: gui/help/C/package-manager.localizable.xml:293(para)
 msgid "If an error occurs at any time during the update process, the Details panel is expanded and the details of the error are displayed. An error status indicator is shown next to the failed stage."
 msgstr "更新処理中にいずれかの時点でエラーが発生した場合は、「詳細」パネルが展開され、エラーの詳細が表示されます。失敗した段階の横に、エラーステータスインジケータが表示されます。"
 
-#: gui/help/C/package-manager.xml:303(para)
+#: gui/help/C/package-manager.localizable.xml:295(para)
 msgid "If the system created a new BE for the update, you can edit the default BE name. When you are satisfied with the BE name, click the <guibutton>Restart Now</guibutton> button to reboot your system immediately. Click the <guibutton>Restart Later</guibutton> button to restart your system at a later time. You must restart to boot into the new BE. The new BE will be your default boot choice. Your current BE will be available as an alternate boot choice."
 msgstr "更新用の新しい BE が作成されている場合は、デフォルトの BE 名を編集することができます。希望の BE 名に変更したあと、システムをただちにリブートする場合は<guibutton>「今すぐ再起動」</guibutton>ボタンをクリックします。システムをあとで再起動する場合は<guibutton>「あとで再起動」</guibutton>ボタンをクリックします。新しい BE からブートするには再起動が必要です。新しい BE がデフォルトのブート環境になります。現在の BE は代替ブート環境として使用可能です。"
 
-#: gui/help/C/package-manager.xml:307(title)
+#: gui/help/C/package-manager.localizable.xml:299(title)
 msgid "Using Update Manager"
 msgstr "更新マネージャーの使用"
 
-#: gui/help/C/package-manager.xml:308(para)
+#: gui/help/C/package-manager.localizable.xml:300(para)
 msgid "You can open Update Manager from a system notification or from the desktop menu bar. Update Manager executes the same process as described above in <xref linkend=\"um_info\"/>."
 msgstr "更新マネージャーはシステム通知またはデスクトップメニューバーから開くことができます。更新マネージャーは、前述の<xref linkend=\"um_info\"/>で説明されているものと同じ処理を実行します。"
 
-#: gui/help/C/package-manager.xml:309(title)
+#: gui/help/C/package-manager.localizable.xml:301(title)
 msgid "Software Updates Notification"
 msgstr "ソフトウェア更新の通知"
 
-#: gui/help/C/package-manager.xml:310(para)
+#: gui/help/C/package-manager.localizable.xml:302(para)
 msgid "The system periodically checks whether updates are available for any of your installed packages. If the system detects that updates are available, an Updates Available notification icon and popup are displayed in the system notification tray. Click the notification icon to open Update Manager."
 msgstr "システムは、インストール済みパッケージのいずれかに使用可能な更新が存在するかどうかを定期的に確認します。使用可能な更新が存在することが検出されると、システム通知トレーに「更新が使用可能です」通知アイコンとポップアップが表示されます。この通知アイコンをクリックして更新マネージャーを開きます。"
 
-#: gui/help/C/package-manager.xml:312(title)
+#: gui/help/C/package-manager.localizable.xml:304(title)
 msgid "Desktop System Menu"
 msgstr "デスクトップのシステムメニュー"
 
-#: gui/help/C/package-manager.xml:313(para)
+#: gui/help/C/package-manager.localizable.xml:305(para)
 msgid "Select <menuchoice><guimenu>System</guimenu><guisubmenu>Administration</guisubmenu><guimenuitem>Update Manager</guimenuitem></menuchoice> from the menu bar on the desktop to open Update Manager."
 msgstr "デスクトップのメニューバーから<menuchoice><guimenu>「システム」</guimenu><guisubmenu>「システム管理」</guisubmenu><guimenuitem>「更新マネージャー」</guimenuitem></menuchoice>を選択して更新マネージャーを開きます。"
 
-#: gui/help/C/package-manager.xml:317(title)
+#: gui/help/C/package-manager.localizable.xml:309(title)
 msgid "Managing Publishers"
 msgstr "発行元の管理"
 
-#: gui/help/C/package-manager.xml:318(para)
+#: gui/help/C/package-manager.localizable.xml:310(para)
 msgid "You can add, modify, and remove IPS package publishers. You can change the priority of a publisher, change the enabled and sticky settings, change the publisher alias, add or remove a publisher origin, and add or remove a publisher mirror. You can manage keys, certificates, and signature policy."
 msgstr "IPS パッケージ発行元の追加、変更、および削除を行うことができます。発行元の優先度の変更、有効設定と固定的設定の変更、発行元の別名の変更、発行元の起点の追加または削除、および発行元のミラーの追加または削除を行うことができます。キー、証明書、および署名ポリシーを管理できます。"
 
-#: gui/help/C/package-manager.xml:319(para)
+#: gui/help/C/package-manager.localizable.xml:311(para)
 msgid "Note that system publishers are an exception. System publishers can only be viewed in the Manage Publishers window. System publishers cannot be removed or modified, and you cannot change their priority. See <xref linkend=\"glossary\"/>. The Details pane indicates whether the selected publisher is a system publisher."
 msgstr "システム発行元は例外です。システム発行元は「発行元の管理」ウィンドウにのみ表示されます。システム発行元は削除したり変更したりできず、優先度を変更することもできません。<xref linkend=\"glossary\"/>を参照してください。選択した発行元がシステム発行元かどうかは、詳細ペインに表示されます。"
 
-#: gui/help/C/package-manager.xml:320(title)
+#: gui/help/C/package-manager.localizable.xml:312(title)
 msgid "Adding Publishers"
 msgstr "発行元の追加"
 
-#: gui/help/C/package-manager.xml:321(para)
+#: gui/help/C/package-manager.localizable.xml:313(para)
 msgid "To add an IPS package publisher, use the Add Publisher window. To open the Add Publisher window, do one of the following actions:"
 msgstr "IPS パッケージ発行元を追加するには、「発行元を追加」ウィンドウを使用します。「発行元を追加」ウィンドウを開くには、次のいずれかの操作を実行します。"
 
-#: gui/help/C/package-manager.xml:322(para)
+#: gui/help/C/package-manager.localizable.xml:314(para)
 msgid "Select the <guimenuitem>Add</guimenuitem> option from the <guimenu>Publisher</guimenu> drop-down menu."
 msgstr "<guimenu>「発行元」</guimenu>ドロップダウンメニューから<guimenuitem>「追加」</guimenuitem>オプションを選択します。"
 
-#: gui/help/C/package-manager.xml:324(para)
+#: gui/help/C/package-manager.localizable.xml:316(para)
 msgid "Select the <menuchoice><guimenu>File</guimenu><guimenuitem>Add Publisher</guimenuitem></menuchoice> menu option."
 msgstr "<menuchoice><guimenu>「ファイル」</guimenu><guimenuitem>「発行元を追加」</guimenuitem></menuchoice>メニューオプションを選択します。"
 
-#: gui/help/C/package-manager.xml:326(para)
+#: gui/help/C/package-manager.localizable.xml:318(para)
 msgid "Select the <menuchoice><guimenu>File</guimenu><guimenuitem>Manage Publishers</guimenuitem></menuchoice> menu option. In the Manage Publishers window, select the <guibutton>Add</guibutton> button."
 msgstr "<menuchoice><guimenu>「ファイル」</guimenu><guimenuitem>「発行元の管理」</guimenuitem></menuchoice>メニューオプションを選択します。「発行元の管理」ウィンドウで、<guibutton>「追加」</guibutton>ボタンをクリックします。"
 
-#: gui/help/C/package-manager.xml:329(para)
+#: gui/help/C/package-manager.localizable.xml:321(para)
 msgid "In the Add Publisher window, perform the following steps to add an IPS package publisher:"
 msgstr "「発行元を追加」ウィンドウで次の手順を実行して、ISP パッケージ発行元を追加します。"
 
-#: gui/help/C/package-manager.xml:330(para)
+#: gui/help/C/package-manager.localizable.xml:322(para)
 msgid "In the URI field, enter the URI of the publisher. The URI is a network location such as <literal>http://pkg.oracle.com/solaris/release/</literal> or <literal>http://localhost:5555</literal>."
 msgstr "「URI」フィールドに発行元の URI を入力します。URI は、<literal>http://pkg.oracle.com/solaris/release/</literal> や <literal>http://localhost:5555</literal> といったネットワークの場所です。"
 
-#: gui/help/C/package-manager.xml:332(para)
+#: gui/help/C/package-manager.localizable.xml:324(para)
 msgid "In the Alias field, you can enter an alternate name for this publisher."
 msgstr "「別名」フィールドには、この発行元の代替名を入力できます。"
 
-#: gui/help/C/package-manager.xml:334(para)
+#: gui/help/C/package-manager.localizable.xml:326(para)
 msgid "Click the <guibutton>Add</guibutton> button."
 msgstr "「<guibutton>追加</guibutton>」ボタンをクリックします。"
 
-#: gui/help/C/package-manager.xml:336(para)
+#: gui/help/C/package-manager.localizable.xml:328(para)
 msgid "The Adding Publisher dialog is displayed. Click <guibutton>Cancel</guibutton> to cancel the process. Click Details to view verbose information."
 msgstr "「発行元を追加」ダイアログが表示されます。処理を取り消すには、<guibutton>「取消し」</guibutton>をクリックします。詳細情報を表示するには、「詳細」をクリックします。"
 
-#: gui/help/C/package-manager.xml:337(para)
+#: gui/help/C/package-manager.localizable.xml:329(para)
 msgid "If the new publisher is added successfully, the Adding Publisher Complete dialog is displayed and shows the new publisher name, alias, and URI."
 msgstr "新しい発行元が正常に追加されると、「発行元を追加しました」ダイアログが表示され、新しい発行元の名前、別名、および URI が表示されます。"
 
-#: gui/help/C/package-manager.xml:339(para)
+#: gui/help/C/package-manager.localizable.xml:331(para)
 msgid "If the new publisher is not added, the Publisher Error dialog is displayed with information about the problem."
 msgstr "新しい発行元が追加されなかった場合、「発行元エラー」ダイアログが表示され、問題に関する情報が表示されます。"
 
-#: gui/help/C/package-manager.xml:344(para)
+#: gui/help/C/package-manager.localizable.xml:336(para)
 msgid "The new publisher is the last publisher listed in the Manage Publishers window and is enabled and sticky."
 msgstr "新しい発行元は、「発行元の管理」ウィンドウで発行元リストの最後に表示され、有効および固定的になります。"
 
-#: gui/help/C/package-manager.xml:345(para)
+#: gui/help/C/package-manager.localizable.xml:337(para)
 msgid "See <xref linkend=\"modify-publisher\"/> for information about changing the priority of the new publisher, changing the enabled and sticky settings, changing the publisher alias, adding a publisher origin, setting an SSL key and certificate, adding a publisher mirror, and managing publisher certificates and signature policy."
 msgstr "新しい発行元の優先度の変更、有効設定と固定的設定の変更、発行元の別名の変更、発行元の起点の追加、SSL キーと証明書の設定、発行元のミラーの追加、および発行元証明書と署名ポリシーの管理については、<xref linkend=\"modify-publisher\"/>を参照してください。"
 
-#: gui/help/C/package-manager.xml:347(title)
+#: gui/help/C/package-manager.localizable.xml:339(title)
 msgid "Modifying Publishers"
 msgstr "発行元の変更"
 
-#: gui/help/C/package-manager.xml:348(para)
+#: gui/help/C/package-manager.localizable.xml:340(para)
 msgid "To modify the attributes of a publisher, select the <menuchoice><guimenu>File</guimenu><guimenuitem>Manage Publishers</guimenuitem></menuchoice> menu option. Currently configured publishers are listed in the Manage Publishers window."
 msgstr "発行元の属性を変更するには、<menuchoice><guimenu>「ファイル」</guimenu><guimenuitem>「発行元の管理」</guimenuitem></menuchoice>メニューオプションを選択します。現在構成されている発行元が「発行元の管理」ウィンドウに一覧表示されます。"
 
-#: gui/help/C/package-manager.xml:349(para)
+#: gui/help/C/package-manager.localizable.xml:341(para)
 msgid "In the Manage Publishers window you can change the priority of a publisher, enable or disable a publisher, set the publisher to be sticky or non-sticky, and remove a publisher. See <xref linkend=\"priority-stickiness\"/> and <xref linkend=\"remove-publisher\"/>."
 msgstr "「発行元の管理」ウィンドウでは、発行元の優先度の変更、発行元の有効化または無効化、発行元を固定的または非固定的に設定すること、および発行元の削除を行うことができます。<xref linkend=\"priority-stickiness\"/>および<xref linkend=\"remove-publisher\"/>を参照してください。"
 
-#: gui/help/C/package-manager.xml:350(para)
+#: gui/help/C/package-manager.localizable.xml:342(para)
 msgid "Click the <guibutton>Modify</guibutton> button to open the Modify Publisher window. In the Modify Publisher window you can change the publisher alias, add or remove a publisher origin, add or remove a publisher mirror, set an SSL key and certificate, and manage publisher certificates and signature policy. See <xref linkend=\"origin-mirror\"/> and <xref linkend=\"pub-security\"/>."
 msgstr "<guibutton>「変更」</guibutton>ボタンをクリックして「発行元の変更」ウィンドウを開きます。「発行元の変更」ウィンドウでは、発行元の別名の変更、発行元の起点の追加または削除、発行元のミラーの追加または削除、SSL キーと証明書の設定、および発行元証明書と署名ポリシーの管理を行うことができます。<xref linkend=\"origin-mirror\"/>および<xref linkend=\"pub-security\"/>を参照してください。"
 
-#: gui/help/C/package-manager.xml:351(title)
+#: gui/help/C/package-manager.localizable.xml:343(title)
 msgid "Changing Priority and Stickiness"
 msgstr "優先度と固定性の変更"
 
-#: gui/help/C/package-manager.xml:352(para)
+#: gui/help/C/package-manager.localizable.xml:344(para)
 msgid "Select the <menuchoice><guimenu>File</guimenu><guimenuitem>Manage Publishers</guimenuitem></menuchoice> menu option to display the Manage Publishers window."
 msgstr "<menuchoice><guimenu>「ファイル」</guimenu><guimenuitem>「発行元の管理」</guimenuitem></menuchoice>メニューオプションを選択して「発行元の管理」ウィンドウを表示します。"
 
-#: gui/help/C/package-manager.xml:353(title)
+#: gui/help/C/package-manager.localizable.xml:345(title)
 msgid "Publisher Priority"
 msgstr "発行元の優先度"
 
-#: gui/help/C/package-manager.xml:354(para)
+#: gui/help/C/package-manager.localizable.xml:346(para)
 msgid "Publishers are listed in priority order in the Manage Publishers window. The publisher at the top of the list is the highest priority publisher. The publisher at the bottom of the list is the lowest priority publisher."
 msgstr "発行元は優先度の順に「発行元の管理」ウィンドウに表示されます。リストの最上部の発行元は優先度のもっとも高い発行元です。リストの最下部の発行元は優先度のもっとも低い発行元です。"
 
-#: gui/help/C/package-manager.xml:355(para)
+#: gui/help/C/package-manager.localizable.xml:347(para)
 msgid "The publisher at the top of the list is also known as the preferred publisher."
 msgstr "リストの最上部の発行元は優先発行元とも呼ばれます。"
 
-#: gui/help/C/package-manager.xml:356(para)
+#: gui/help/C/package-manager.localizable.xml:348(para)
 msgid "The preferred publisher cannot be disabled or removed."
 msgstr "優先発行元を無効にしたり削除したりすることはできません。"
 
-#: gui/help/C/package-manager.xml:357(para)
+#: gui/help/C/package-manager.localizable.xml:349(para)
 msgid "When you search for packages and do not specify a publisher, the catalogs of higher priority publishers are searched first."
 msgstr "発行元を指定せずにパッケージを検索する場合、優先度の高い発行元のカタログから順に検索されます。"
 
-#: gui/help/C/package-manager.xml:358(para)
+#: gui/help/C/package-manager.localizable.xml:350(para)
 msgid "When you update a package that was installed from a non-sticky publisher, the catalogs of higher priority publishers are searched first for updates."
 msgstr "非固定的発行元のインストール済みパッケージを更新する場合、優先度の高い発行元のカタログから順に更新が検索されます。"
 
-#: gui/help/C/package-manager.xml:360(para)
+#: gui/help/C/package-manager.localizable.xml:352(para)
 msgid "To change the priority of a publisher, perform the following steps:"
 msgstr "発行元の優先度を変更するには、次の手順を実行します。"
 
-#: gui/help/C/package-manager.xml:361(para)
+#: gui/help/C/package-manager.localizable.xml:353(para)
 msgid "Click to highlight a publisher row in the list in the Manage Publishers window."
 msgstr "「発行元の管理」ウィンドウのリストで発行元の行をクリックして強調表示します。"
 
-#: gui/help/C/package-manager.xml:363(para)
+#: gui/help/C/package-manager.localizable.xml:355(para)
 msgid "Click the <guibutton>Up</guibutton> and <guibutton>Down</guibutton> buttons to the right of the publisher list to increase or reduce the priority of the selected publisher. The selected publisher listing moves up and down in the list to show its new priority."
 msgstr "発行元リストの右にある<guibutton>「上へ」</guibutton>ボタンと<guibutton>「下へ」</guibutton>ボタンをクリックして、選択した発行元の優先度を高くしたり低くしたりします。選択した発行元がリスト内で上下に移動して新しい優先度を示します。"
 
-#: gui/help/C/package-manager.xml:364(para)
+#: gui/help/C/package-manager.localizable.xml:356(para)
 msgid "If the selected publisher is a system publisher, then the <guibutton>Up</guibutton> and <guibutton>Down</guibutton> buttons are disabled. You cannot change the priority of a system publisher. Because you cannot change the priority of a system publisher, you cannot lower the priority of the publisher that is the next higher priority above a system publisher, and you cannot raise the priority of a publisher that is the next lower priority below a system publisher."
 msgstr "選択した発行元がシステム発行元の場合、<guibutton>「上へ」</guibutton>ボタンと<guibutton>「下へ」</guibutton>ボタンは使用不可になります。システム発行元の優先度を変更することはできません。システム発行元の優先度は変更できないため、システム発行元より 1 つだけ優先度の高い発行元の優先度を低くすることや、システム発行元より 1 つだけ優先度の低い発行元の優先度を高くすることはできません。"
 
-#: gui/help/C/package-manager.xml:365(para) gui/help/C/package-manager.xml:378(para) gui/help/C/package-manager.xml:456(para) gui/help/C/package-manager.xml:481(para) gui/help/C/package-manager.xml:499(para) gui/help/C/package-manager.xml:512(para) gui/help/C/package-manager.xml:526(para)
+#: gui/help/C/package-manager.localizable.xml:357(para) gui/help/C/package-manager.localizable.xml:370(para) gui/help/C/package-manager.localizable.xml:448(para) gui/help/C/package-manager.localizable.xml:473(para) gui/help/C/package-manager.localizable.xml:491(para) gui/help/C/package-manager.localizable.xml:504(para) gui/help/C/package-manager.localizable.xml:518(para)
 msgid "Click the <guibutton>OK</guibutton> button at the bottom of the Manage Publishers window."
 msgstr "「発行元の管理」ウィンドウ下部の<guibutton>「了解」</guibutton>ボタンをクリックします。"
 
-#: gui/help/C/package-manager.xml:369(title)
+#: gui/help/C/package-manager.localizable.xml:361(title)
 msgid "Enabled and Sticky"
 msgstr "有効と固定的"
 
-#: gui/help/C/package-manager.xml:370(para)
+#: gui/help/C/package-manager.localizable.xml:362(para)
 msgid "When you add a publisher, the enabled and sticky attributes are set by default. The preferred publisher (see <xref linkend=\"set-pub-order\"/> above) cannot be disabled. A system publisher cannot be disabled, and the sticky setting of a system publisher cannot be changed. All other enabled and sticky settings can be changed."
 msgstr "発行元を追加すると、有効属性と固定的属性がデフォルトで設定されます。優先発行元 (前述の<xref linkend=\"set-pub-order\"/>を参照) を無効にすることはできません。システム発行元を無効にすることはできず、システム発行元の固定的設定を変更することはできません。ほかの有効設定と固定的設定はすべて変更可能です。"
 
-#: gui/help/C/package-manager.xml:371(para)
+#: gui/help/C/package-manager.localizable.xml:363(para)
 msgid "If the sticky attribute is set for a publisher, then a package that was installed from that publisher cannot be updated from a different publisher. If the sticky attribute is not set for a publisher, then that publisher is non-sticky. If a publisher is non-sticky, then a package that originally came from that publisher can be updated from another publisher. A different publisher might have a newer version of a package than the original publisher of the package. If you want to update to that newer version, the original publisher needs to be non-sticky. Also, if a lower priority publisher is non-sticky, then higher-priority publishers will be searched first for updates for packages installed from that non-sticky publisher."
 msgstr "発行元に固定的属性が設定されている場合、その発行元からインストールされたパッケージは、別の発行元から更新することはできません。発行元に固定的属性が設定されていない場合、その発行元は非固定的です。非固定的発行元の場合、その発行元から最初にインストールされたパッケージは、別の発行元から更新することができます。パッケージの元の発行元よりも新しいバージョンのパッケージが別の発行元に存在することもあります。そのより新しいパッケージに更新するには、元の発行元が非固定的でなければなりません。また、優先度の低い非固定的発行元の場合、その発行元からインストールされたパッケージの更新は、より優先度の高い発行元から順に検索されます。"
 
-#: gui/help/C/package-manager.xml:372(para)
+#: gui/help/C/package-manager.localizable.xml:364(para)
 msgid "A publisher that is disabled is not searched for updates or for packages to install. Catalogs of a disabled publisher are not refreshed. A disabled publisher is not shown on the <guimenu>Publisher</guimenu> drop-down menu."
 msgstr "インストールするパッケージまたは更新を検索するとき、無効になっている発行元は検索対象になりません。無効になっている発行元のカタログはリフレッシュされません。無効になっている発行元は<guimenu>「発行元」</guimenu>ドロップダウンメニューに表示されません。"
 
-#: gui/help/C/package-manager.xml:373(para)
+#: gui/help/C/package-manager.localizable.xml:365(para)
 msgid "To change the Enabled and Sticky settings for a publisher, perform the following steps:"
 msgstr "発行元の「有効」設定または「固定的」設定を変更するには、次の手順を実行します。"
 
-#: gui/help/C/package-manager.xml:374(para) gui/help/C/package-manager.xml:384(para) gui/help/C/package-manager.xml:463(para) gui/help/C/package-manager.xml:519(para)
+#: gui/help/C/package-manager.localizable.xml:366(para) gui/help/C/package-manager.localizable.xml:376(para) gui/help/C/package-manager.localizable.xml:455(para) gui/help/C/package-manager.localizable.xml:511(para)
 msgid "Select the <menuchoice><guimenu>File</guimenu><guimenuitem>Manage Publishers</guimenuitem></menuchoice> menu option to open the Manage Publishers window."
 msgstr "<menuchoice><guimenu>「ファイル」</guimenu><guimenuitem>「発行元の管理」</guimenuitem></menuchoice>メニューオプションを選択して「発行元の管理」ウィンドウを開きます。"
 
-#: gui/help/C/package-manager.xml:376(para)
+#: gui/help/C/package-manager.localizable.xml:368(para)
 msgid "Click an Enabled box or a Sticky box to toggle its setting."
 msgstr "「有効」ボックスまたは「固定的」ボックスをクリックして、それぞれの設定を切り替えます。"
 
-#: gui/help/C/package-manager.xml:383(title)
+#: gui/help/C/package-manager.localizable.xml:375(title)
 msgid "Changing Alias, Origins, and Mirrors"
 msgstr "別名、起点、およびミラーの変更"
 
-#: gui/help/C/package-manager.xml:386(para)
+#: gui/help/C/package-manager.localizable.xml:378(para)
 msgid "Select the publisher you want to modify. The Details pane below the publisher list in the Manage Publishers window displays the current origins for the selected publisher."
 msgstr "変更する発行元を選択します。「発行元の管理」ウィンドウの発行元リストの下にある「詳細」ペインに、選択した発行元の現在の起点が表示されます。"
 
-#: gui/help/C/package-manager.xml:388(para)
+#: gui/help/C/package-manager.localizable.xml:380(para)
 msgid "Click the <guibutton>Modify</guibutton> button to the right of the publisher list to open the Modify Publisher window."
 msgstr "発行元リストの右にある<guibutton>「変更」</guibutton>ボタンをクリックして「発行元の変更」ウィンドウを開きます。"
 
-#: gui/help/C/package-manager.xml:389(para)
+#: gui/help/C/package-manager.localizable.xml:381(para)
 msgid "If the selected publisher is a system publisher, the <guibutton>Modify</guibutton> button is disabled. The Details pane indicates that the selected publisher is a system publisher and displays a message that this publisher cannot be modified or removed."
 msgstr "選択した発行元がシステム発行元の場合、<guibutton>「変更」</guibutton>ボタンは使用不可になります。「詳細」ペインには、選択した発行元がシステム発行元であることが示され、この発行元の変更や削除を行うことはできないというメッセージが表示されます。"
 
-#: gui/help/C/package-manager.xml:391(para)
+#: gui/help/C/package-manager.localizable.xml:383(para)
 msgid "Select the General tab to modify the publisher alias, add and remove origins, and add and remove mirrors."
 msgstr "発行元の別名の変更、起点の追加または削除、およびミラーの追加または削除を行うには、「一般」タブを選択します。"
 
-#: gui/help/C/package-manager.xml:393(title)
+#: gui/help/C/package-manager.localizable.xml:385(title)
 msgid "Publisher Alias"
 msgstr "発行元の別名"
 
-#: gui/help/C/package-manager.xml:394(para)
+#: gui/help/C/package-manager.localizable.xml:386(para)
 msgid "The publisher alias is another name for the publisher. The alias name is used in the <guimenu>Publisher</guimenu> drop-down menu and in the package list pane."
 msgstr "発行元の別名は、発行元の別の名前です。別名は<guimenu>「発行元」</guimenu>ドロップダウンメニューとパッケージリストペインで使用されます。"
 
-#: gui/help/C/package-manager.xml:395(para)
+#: gui/help/C/package-manager.localizable.xml:387(para)
 msgid "To change the alias of this publisher, perform the following steps:"
 msgstr "この発行元の別名を変更するには、次の手順を実行します。"
 
-#: gui/help/C/package-manager.xml:396(para)
+#: gui/help/C/package-manager.localizable.xml:388(para)
 msgid "On the General tab of the Modify Publisher window, enter a new name in the Alias field."
 msgstr "「発行元の変更」ウィンドウの「一般」タブで、「別名」フィールドに新しい名前を入力します。"
 
-#: gui/help/C/package-manager.xml:398(para) gui/help/C/package-manager.xml:426(para) gui/help/C/package-manager.xml:454(para) gui/help/C/package-manager.xml:480(para) gui/help/C/package-manager.xml:498(para) gui/help/C/package-manager.xml:511(para)
+#: gui/help/C/package-manager.localizable.xml:390(para) gui/help/C/package-manager.localizable.xml:418(para) gui/help/C/package-manager.localizable.xml:446(para) gui/help/C/package-manager.localizable.xml:472(para) gui/help/C/package-manager.localizable.xml:490(para) gui/help/C/package-manager.localizable.xml:503(para)
 msgid "Click the <guibutton>OK</guibutton> button at the bottom of the Modify Publisher window."
 msgstr "「発行元の変更」ウィンドウ下部の<guibutton>「了解」</guibutton>ボタンをクリックします。"
 
-#: gui/help/C/package-manager.xml:400(para)
+#: gui/help/C/package-manager.localizable.xml:392(para)
 msgid "The publisher alias has changed in the Manage Publishers window. Click the <guibutton>OK</guibutton> button at the bottom of the Manage Publishers window."
 msgstr "「発行元の管理」ウィンドウで発行元の別名が変更されます。「発行元の管理」ウィンドウ下部の<guibutton>「了解」</guibutton>ボタンをクリックします。"
 
-#: gui/help/C/package-manager.xml:404(title)
+#: gui/help/C/package-manager.localizable.xml:396(title)
 msgid "Publisher Origins"
 msgstr "発行元の起点"
 
-#: gui/help/C/package-manager.xml:405(para)
+#: gui/help/C/package-manager.localizable.xml:397(para)
 msgid "An origin is the location of an IPS package repository or archive that contains both package metadata (package manifests and catalogs) and package content (package files)."
 msgstr "起点は、パッケージのメタデータ (パッケージのマニフェストとカタログ) とパッケージの内容 (パッケージファイル) の両方を含む IPS パッケージリポジトリまたはアーカイブの場所です。"
 
-#: gui/help/C/package-manager.xml:406(para)
+#: gui/help/C/package-manager.localizable.xml:398(para)
 msgid "An origin value is the URI of an IPS package repository."
 msgstr "起点の値は、IPS パッケージリポジトリの URI です。"
 
-#: gui/help/C/package-manager.xml:407(para)
+#: gui/help/C/package-manager.localizable.xml:399(para)
 msgid "To change, add, or remove an origin for this publisher, perform the following steps:"
 msgstr "この発行元の起点を変更、追加、または削除するには、次の手順を実行します。"
 
-#: gui/help/C/package-manager.xml:408(para) gui/help/C/package-manager.xml:435(para)
+#: gui/help/C/package-manager.localizable.xml:400(para) gui/help/C/package-manager.localizable.xml:427(para)
 msgid "Select the General tab of the Modify Publisher window."
 msgstr "「発行元の変更」ウィンドウの「一般」タブを選択します。"
 
-#: gui/help/C/package-manager.xml:409(para)
+#: gui/help/C/package-manager.localizable.xml:401(para)
 msgid "Add an origin."
 msgstr "起点を追加します。"
 
-#: gui/help/C/package-manager.xml:410(para)
+#: gui/help/C/package-manager.localizable.xml:402(para)
 msgid "In the Origin field, enter the URI of the new origin you want to associate with this publisher."
 msgstr "この発行元に関連付ける新しい起点の URI を「起点」フィールドに入力します。"
 
-#: gui/help/C/package-manager.xml:411(para)
+#: gui/help/C/package-manager.localizable.xml:403(para)
 msgid "Click the <guibutton>Add</guibutton> button. The new URI is added to the list below the Origin field."
 msgstr "<guibutton>「追加」</guibutton>ボタンをクリックします。「起点」フィールドの下のリストに、新しい URI が追加されます。"
 
-#: gui/help/C/package-manager.xml:414(para)
+#: gui/help/C/package-manager.localizable.xml:406(para)
 msgid "Remove an origin."
 msgstr "起点を削除します。"
 
-#: gui/help/C/package-manager.xml:415(para)
+#: gui/help/C/package-manager.localizable.xml:407(para)
 msgid "In the list below the Origin field, select the URI you want to delete."
 msgstr "「起点」フィールドの下のリストで、削除する URI を選択します。"
 
-#: gui/help/C/package-manager.xml:416(para)
+#: gui/help/C/package-manager.localizable.xml:408(para)
 msgid "Click the <guibutton>Remove</guibutton> button. The selected URI is removed from the list. If only one origin is defined for this publisher, you cannot remove that origin."
 msgstr "<guibutton>「削除」</guibutton>ボタンをクリックします。選択した URI がリストから削除されます。この発行元に起点が 1 つだけ定義されている場合、その起点を削除することはできません。"
 
-#: gui/help/C/package-manager.xml:419(para)
+#: gui/help/C/package-manager.localizable.xml:411(para)
 msgid "Change an origin."
 msgstr "起点を変更します。"
 
-#: gui/help/C/package-manager.xml:420(para)
+#: gui/help/C/package-manager.localizable.xml:412(para)
 msgid "Add the new origin."
 msgstr "新しい起点を追加します。"
 
-#: gui/help/C/package-manager.xml:421(para)
+#: gui/help/C/package-manager.localizable.xml:413(para)
 msgid "Delete the origin you want to change."
 msgstr "変更する起点を削除します。"
 
-#: gui/help/C/package-manager.xml:428(para)
+#: gui/help/C/package-manager.localizable.xml:420(para)
 msgid "The origin changes are reflected in the Details pane in the Manage Publishers window. Click the <guibutton>OK</guibutton> button at the bottom of the Manage Publishers window."
 msgstr "起点の変更が「発行元の管理」ウィンドウの「詳細」ペインに反映されます。「発行元の管理」ウィンドウ下部の<guibutton>「了解」</guibutton>ボタンをクリックします。"
 
-#: gui/help/C/package-manager.xml:432(title)
+#: gui/help/C/package-manager.localizable.xml:424(title)
 msgid "Publisher Mirrors"
 msgstr "発行元のミラー"
 
-#: gui/help/C/package-manager.xml:433(para)
+#: gui/help/C/package-manager.localizable.xml:425(para)
 msgid "A mirror is a location of an IPS package repository that contains only package content (package files). A mirror does not contain package metadata (package manifests and catalogs). Mirrors provide a subset of the data that origins provide. Mirrors can be used only for downloading package files. Package metadata is downloaded from the origin. IPS clients access the origin to obtain a publisher's catalog, even when the clients download package content from a mirror."
 msgstr "ミラーは、パッケージの内容 (パッケージファイル) だけを含む IPS パッケージリポジトリの場所です。ミラーにパッケージのメタデータ (パッケージのマニフェストとカタログ) は含まれません。ミラーでは、起点で提供されているデータの一部が提供されます。ミラーはパッケージファイルのダウンロードにのみ使用できます。パッケージのメタデータは起点からダウンロードされます。IPS クライアントは、パッケージの内容をミラーからダウンロードする場合でも、発行元のカタログを取得するために起点にアクセスします。"
 
-#: gui/help/C/package-manager.xml:434(para)
+#: gui/help/C/package-manager.localizable.xml:426(para)
 msgid "To add, remove, or change a mirror for this publisher, perform the following steps:"
 msgstr "この発行元のミラーを追加、削除、または変更するには、次の手順を実行します。"
 
-#: gui/help/C/package-manager.xml:436(para)
+#: gui/help/C/package-manager.localizable.xml:428(para)
 msgid "Click the Mirrors label to display the Mirror field and the list of mirrors."
 msgstr "「ミラー」ラベルをクリックして、「ミラー」フィールドとミラーのリストを表示します。"
 
-#: gui/help/C/package-manager.xml:437(para)
+#: gui/help/C/package-manager.localizable.xml:429(para)
 msgid "Add a mirror."
 msgstr "ミラーを追加します。"
 
-#: gui/help/C/package-manager.xml:438(para)
+#: gui/help/C/package-manager.localizable.xml:430(para)
 msgid "In the Mirror field, enter the URI of the new mirror you want to associate with this publisher."
 msgstr "この発行元に関連付ける新しいミラーの URI を「ミラー」フィールドに入力します。"
 
-#: gui/help/C/package-manager.xml:439(para)
+#: gui/help/C/package-manager.localizable.xml:431(para)
 msgid "Click the <guibutton>Add</guibutton> button. The new URI is added to the list below the Mirror field."
 msgstr "<guibutton>「追加」</guibutton>ボタンをクリックします。「ミラー」フィールドの下のリストに、新しい URI が追加されます。"
 
-#: gui/help/C/package-manager.xml:442(para)
+#: gui/help/C/package-manager.localizable.xml:434(para)
 msgid "Remove a mirror."
 msgstr "ミラーを削除します。"
 
-#: gui/help/C/package-manager.xml:443(para)
+#: gui/help/C/package-manager.localizable.xml:435(para)
 msgid "In the list below the Mirror field, select the URI you want to delete."
 msgstr "「ミラー」フィールドの下のリストで、削除する URI を選択します。"
 
-#: gui/help/C/package-manager.xml:444(para)
+#: gui/help/C/package-manager.localizable.xml:436(para)
 msgid "Click the <guibutton>Remove</guibutton> button. The selected URI is removed from the list."
 msgstr "<guibutton>「削除」</guibutton>ボタンをクリックします。選択した URI がリストから削除されます。"
 
-#: gui/help/C/package-manager.xml:447(para)
+#: gui/help/C/package-manager.localizable.xml:439(para)
 msgid "Change a mirror."
 msgstr "ミラーを変更します。"
 
-#: gui/help/C/package-manager.xml:448(para)
+#: gui/help/C/package-manager.localizable.xml:440(para)
 msgid "Delete the mirror you want to change."
 msgstr "変更するミラーを削除します。"
 
-#: gui/help/C/package-manager.xml:449(para)
+#: gui/help/C/package-manager.localizable.xml:441(para)
 msgid "Add a new mirror."
 msgstr "新しいミラーを追加します。"
 
-#: gui/help/C/package-manager.xml:461(title)
+#: gui/help/C/package-manager.localizable.xml:453(title)
 msgid "Managing Publisher Security"
 msgstr "発行元のセキュリティーの管理"
 
-#: gui/help/C/package-manager.xml:462(para)
+#: gui/help/C/package-manager.localizable.xml:454(para)
 msgid "Certificates are used to verify that packages have been appropriately signed before being installed, depending on the signature policy of the image or the publisher, whichever is more restrictive."
 msgstr "パッケージのインストールの前に、パッケージが適切に署名されているかどうかが証明書を使用して確認されます。この確認は、イメージまたは発行元の署名ポリシーのどちらか制限の厳しい方に基づきます。"
 
-#: gui/help/C/package-manager.xml:465(para)
+#: gui/help/C/package-manager.localizable.xml:457(para)
 msgid "Select the publisher whose security you want to modify."
 msgstr "セキュリティーを変更する発行元を選択します。"
 
-#: gui/help/C/package-manager.xml:467(para)
+#: gui/help/C/package-manager.localizable.xml:459(para)
 msgid "Click the <guibutton>Modify</guibutton> button to the right of the publisher list to open the Modify Publisher window. The publisher that was selected in the Manage Publishers window is listed in the title of the Modify Publisher window."
 msgstr "発行元リストの右にある<guibutton>「変更」</guibutton>ボタンをクリックして「発行元の変更」ウィンドウを開きます。「発行元の変更」ウィンドウのタイトルには、「発行元の管理」ウィンドウで選択されていた発行元が表示されます。"
 
-#: gui/help/C/package-manager.xml:468(para)
+#: gui/help/C/package-manager.localizable.xml:460(para)
 msgid "Select the General tab to add the SSL key and SSL certificate if a publisher has a secure origin."
 msgstr "発行元にセキュリティー保護された起点がある場合は、「一般」タブを選択して SSL キーと SSL 証明書を追加します。"
 
-#: gui/help/C/package-manager.xml:469(para)
+#: gui/help/C/package-manager.localizable.xml:461(para)
 msgid "Select the Certificates tab to manage certificates for this publisher."
 msgstr "この発行元の証明書を管理するには、「証明書」タブを選択します。"
 
-#: gui/help/C/package-manager.xml:470(para)
+#: gui/help/C/package-manager.localizable.xml:462(para)
 msgid "Select the Signature Policy tab to manage signature policy for this publisher."
 msgstr "この発行元の署名ポリシーを管理するには、「署名ポリシー」タブを選択します。"
 
-#: gui/help/C/package-manager.xml:474(title)
+#: gui/help/C/package-manager.localizable.xml:466(title)
 msgid "Adding SSL Keys and Certificates"
 msgstr "SSL キーと証明書の追加"
 
-#: gui/help/C/package-manager.xml:475(para)
+#: gui/help/C/package-manager.localizable.xml:467(para)
 msgid "If a publisher has a secure origin, add the SSL key and SSL certificate for the publisher."
 msgstr "発行元にセキュリティー保護された起点がある場合は、発行元の SSL キーと SSL 証明書を追加します。"
 
-#: gui/help/C/package-manager.xml:476(para)
+#: gui/help/C/package-manager.localizable.xml:468(para)
 msgid "Click the General tab of the Modify Publisher window."
 msgstr "「発行元の変更」ウィンドウの「一般」タブをクリックします。"
 
-#: gui/help/C/package-manager.xml:477(para)
+#: gui/help/C/package-manager.localizable.xml:469(para)
 msgid "Click the SSL Key and Certificate label to display the SSL Key field and the SSL Certificate field."
 msgstr "「SSL キーと証明書」ラベルをクリックして、「SSL キー」フィールドと「SSL 証明書」フィールドを表示します。"
 
-#: gui/help/C/package-manager.xml:478(para)
+#: gui/help/C/package-manager.localizable.xml:470(para)
 msgid "Click the <guibutton>Browse</guibutton> button to the right of the SSL Key field to select the SSL Key file."
 msgstr "「SSL キー」フィールドの右にある<guibutton>「参照」</guibutton>ボタンをクリックし、SSL キーファイルを選択します。"
 
-#: gui/help/C/package-manager.xml:479(para)
+#: gui/help/C/package-manager.localizable.xml:471(para)
 msgid "Click the <guibutton>Browse</guibutton> button to the right of the SSL Certificate field to select the SSL Certificate file."
 msgstr "「SSL 証明書」フィールドの右にある<guibutton>「参照」</guibutton>ボタンをクリックし、SSL 証明書ファイルを選択します。"
 
-#: gui/help/C/package-manager.xml:484(title)
+#: gui/help/C/package-manager.localizable.xml:476(title)
 msgid "Managing Certificates"
 msgstr "証明書の管理"
 
-#: gui/help/C/package-manager.xml:485(para)
+#: gui/help/C/package-manager.localizable.xml:477(para)
 msgid "Click the Certificates tab of the Modify Publisher window."
 msgstr "「発行元の変更」ウィンドウの「証明書」タブをクリックします。"
 
-#: gui/help/C/package-manager.xml:486(para)
+#: gui/help/C/package-manager.localizable.xml:478(para)
 msgid "Use the buttons below the list of certificates to add a certificate or to remove, revoke, or reinstate the certificate that is currently selected in the list."
 msgstr "証明書リストの下にあるボタンを使用して、証明書の追加、またはリストで現在選択されている証明書の削除、失効、回復を行います。"
 
-#: gui/help/C/package-manager.xml:487(para)
+#: gui/help/C/package-manager.localizable.xml:479(para)
 msgid "Note that any actions you take in the Modify Publisher window are applied to the selected publisher's certificates only after you click the <guibutton>OK</guibutton> button at the bottom of the Modify Publisher window. If you click the <guibutton>Cancel</guibutton> button, no changes are applied."
 msgstr "「発行元の変更」ウィンドウで行う操作はすべて、「発行元の変更」ウィンドウ下部の<guibutton>「了解」</guibutton>ボタンをクリックしたあとにはじめて、選択した発行元の証明書に適用されます。<guibutton>「取消し」</guibutton>ボタンをクリックした場合、変更は適用されません。"
 
-#: gui/help/C/package-manager.xml:488(para)
+#: gui/help/C/package-manager.localizable.xml:480(para)
 msgid "<guibutton>Add</guibutton>. Add a new publisher certificate for the publisher listed in the Modify Publisher window title. In the Add Publisher Certificate window, browse to select the certificate (<tt>.pem</tt>) file. Click the <guibutton>OK</guibutton> button at the bottom of the Add Publisher Certificate window. The newly added certificate is selected in the certificates list in the Certificates tab of the Modify Publisher window. The details pane indicates that this certificate is \"marked to be added.\" This certificate will be added after you click the <guibutton>OK</guibutton> button on the Modify Publisher window."
 msgstr "<guibutton>「追加」</guibutton>。「発行元の変更」ウィンドウのタイトルに表示された発行元の新しい発行元証明書を追加します。「発行元証明書の追加」ウィンドウで、証明書 (<tt>.pem</tt>) ファイルを参照して選択します。「発行元証明書の追加」ウィンドウ下部の<guibutton>「了解」</guibutton>ボタンをクリックします。「発行元の変更」ウィンドウの「証明書」タブの証明書リストでは、新しく追加された証明書が選択されます。詳細ペインには、この証明書が「追加対象として指定されている」ことが示されます。この証明書は、「発行元の変更」ウィンドウの<guibutton>「了解」</guibutton>ボタンをクリックしたあとで追加されます。"
 
-#: gui/help/C/package-manager.xml:491(para)
+#: gui/help/C/package-manager.localizable.xml:483(para)
 msgid "In the list of certificates for this publisher, select the certificate you want to modify or whose details you want to check. Details about the selected certificate are shown below the list of certificates and row of buttons. Note that an expired certificate can still be Approved and used to validate signed packages that were published (not necessarily installed) before the certificate expired."
 msgstr "この発行元の証明書リストで、変更する証明書または詳細を確認する証明書を選択します。証明書リストと一連のボタンの下に、選択した証明書の詳細が表示されます。有効期限が切れた証明書が、まだ「承認済み」のままで、証明書の有効期限が切れる前に発行された (インストールされている必要はない) 署名付きパッケージの検証に使用されている場合があります。"
 
-#: gui/help/C/package-manager.xml:492(para)
+#: gui/help/C/package-manager.localizable.xml:484(para)
 msgid "Click the headings of the list of certificates to resort the list. The Organization and Name columns are resizable."
 msgstr "証明書リストを再ソートするには、リストの見出しをクリックします。「組織」列と「名前」列のサイズは変更可能です。"
 
-#: gui/help/C/package-manager.xml:493(para)
+#: gui/help/C/package-manager.localizable.xml:485(para)
 msgid "<guibutton>Remove</guibutton>. Remove the certificate that is currently selected in the certificates list."
 msgstr "<guibutton>「削除」</guibutton>。証明書リストで現在選択されている証明書を削除します。"
 
-#: gui/help/C/package-manager.xml:494(para)
+#: gui/help/C/package-manager.localizable.xml:486(para)
 msgid "<guibutton>Revoke</guibutton>. If the certificate currently selected in the certificates list is Approved, click the <guibutton>Revoke</guibutton> button to treat this certificate as revoked. In the certificates list, the Status of this certificate changes to Revoked. This change is applied to the certificate after you click the <guibutton>OK</guibutton> button on the Modify Publisher window."
 msgstr "<guibutton>「失効」</guibutton>。証明書リストで現在選択されている証明書が「承認済み」の場合、<guibutton>「失効」</guibutton>ボタンをクリックすると、この証明書は失効した証明書として扱われます。証明書リストでは、この証明書の「ステータス」が「失効済み」に変わります。この変更は、「発行元の変更」ウィンドウの<guibutton>「了解」</guibutton>ボタンをクリックしたあとで証明書に適用されます。"
 
-#: gui/help/C/package-manager.xml:495(para)
+#: gui/help/C/package-manager.localizable.xml:487(para)
 msgid "<guibutton>Reinstate</guibutton>. If the certificate currently selected in the certificates list is Revoked, click the <guibutton>Reinstate</guibutton> button to treat this certificate as approved. The details pane indicates that this certificate is \"marked to be reinstated.\" This certificate will be reinstated after you click the <guibutton>OK</guibutton> button on the Modify Publisher window."
 msgstr "<guibutton>「回復」</guibutton>。証明書リストで現在選択されている証明書が「失効済み」の場合、<guibutton>「回復」</guibutton>ボタンをクリックすると、この証明書は承認された証明書として扱われます。詳細ペインには、この証明書が「回復対象として指定されている」ことが示されます。この証明書は、「発行元の変更」ウィンドウの<guibutton>「了解」</guibutton>ボタンをクリックしたあとで回復されます。"
 
-#: gui/help/C/package-manager.xml:502(title)
+#: gui/help/C/package-manager.localizable.xml:494(title)
 msgid "Managing Signature Policy"
 msgstr "署名ポリシーの管理"
 
-#: gui/help/C/package-manager.xml:503(para)
+#: gui/help/C/package-manager.localizable.xml:495(para)
 msgid "Click the Signature Policy tab of the Modify Publisher window."
 msgstr "「発行元の変更」ウィンドウの「署名ポリシー」タブをクリックします。"
 
-#: gui/help/C/package-manager.xml:504(para)
+#: gui/help/C/package-manager.localizable.xml:496(para)
 msgid "Use the buttons on the Signature Policy tab to set the signature policy to use when installing packages from the publisher listed in the Modify Publisher window title."
 msgstr "「署名ポリシー」タブのボタンを使用して、「発行元の変更」ウィンドウのタイトルに表示された発行元からパッケージをインストールするときに使用する署名ポリシーを設定します。"
 
-#: gui/help/C/package-manager.xml:505(para)
+#: gui/help/C/package-manager.localizable.xml:497(para)
 msgid "To set the global signature policy, use the Signature Policy tab of the Preferences window (see <xref linkend=\"img-sig-policy\"/>)."
 msgstr "グローバルな署名ポリシーを設定するには、「設定」ウィンドウの「署名ポリシー」タブを使用します (<xref linkend=\"img-sig-policy\"/>を参照)。"
 
-#: gui/help/C/package-manager.xml:506(para)
+#: gui/help/C/package-manager.localizable.xml:498(para)
 msgid "Signatures are ignored: Ignore signatures for all packages."
 msgstr "「署名を無視する」: すべてのパッケージの署名を無視します。"
 
-#: gui/help/C/package-manager.xml:507(para)
+#: gui/help/C/package-manager.localizable.xml:499(para)
 msgid "Signatures are optional, but must be valid if provided: Verify that all packages with signatures are validly signed, but do not require all installed packages to be signed."
 msgstr "「署名は任意であるが、指定する場合は有効である必要がある」: すべての署名付きパッケージが有効であることを確認しますが、インストールされるすべてのパッケージが署名されている必要はありません。"
 
-#: gui/help/C/package-manager.xml:508(para)
+#: gui/help/C/package-manager.localizable.xml:500(para)
 msgid "One or more valid signatures are required: Require that all newly installed packages have at least one valid signature."
 msgstr "「1 つ以上の有効な署名が必要」: 新しくインストールされるすべてのパッケージに少なくとも 1 つ有効な署名があることを要求します。"
 
-#: gui/help/C/package-manager.xml:509(para)
+#: gui/help/C/package-manager.localizable.xml:501(para)
 msgid "Signatures are required and the certificate name must include the name or names specified in the text field when validating the signatures of a package. If more than one name is specified, the names must be comma-separated."
 msgstr "署名は必須であり、パッケージの署名の検証時にテキストフィールドで指定した名前が証明書名に含まれている必要があります。複数の名前を指定する場合は、名前をコンマで区切る必要があります。"
 
-#: gui/help/C/package-manager.xml:517(title)
+#: gui/help/C/package-manager.localizable.xml:509(title)
 msgid "Removing Publishers"
 msgstr "発行元の削除"
 
-#: gui/help/C/package-manager.xml:518(para)
+#: gui/help/C/package-manager.localizable.xml:510(para)
 msgid "Perform the following steps to remove a publisher:"
 msgstr "発行元を削除するには、次の手順を実行します。"
 
-#: gui/help/C/package-manager.xml:521(para)
+#: gui/help/C/package-manager.localizable.xml:513(para)
 msgid "Select the publisher that you want to remove."
 msgstr "削除する発行元を選択します。"
 
-#: gui/help/C/package-manager.xml:523(para)
+#: gui/help/C/package-manager.localizable.xml:515(para)
 msgid "Click the <guibutton>Remove</guibutton> button to the right of the publisher list."
 msgstr "発行元リストの右にある<guibutton>「削除」</guibutton>ボタンをクリックします。"
 
-#: gui/help/C/package-manager.xml:524(para)
+#: gui/help/C/package-manager.localizable.xml:516(para)
 msgid "If the selected publisher is a system publisher, the <guibutton>Remove</guibutton> button is disabled. The Details pane indicates that the selected publisher is a system publisher and displays a message that this publisher cannot be modified or removed."
 msgstr "選択した発行元がシステム発行元の場合、<guibutton>「削除」</guibutton>ボタンは使用不可になります。「詳細」ペインには、選択した発行元がシステム発行元であることが示され、この発行元の変更や削除を行うことはできないというメッセージが表示されます。"
 
-#: gui/help/C/package-manager.xml:531(title)
+#: gui/help/C/package-manager.localizable.xml:523(title)
 msgid "Managing Boot Environments"
 msgstr "ブート環境の管理"
 
-#: gui/help/C/package-manager.xml:532(para)
+#: gui/help/C/package-manager.localizable.xml:524(para)
 msgid "A boot environment (BE) is a bootable image. You can maintain multiple BEs on your Oracle Solaris system. One BE is the default BE at startup or reboot. Other BEs are available as alternate boot selections. The BE you are booted into is the active BE."
 msgstr "ブート環境 (BE) はブート可能なイメージです。Oracle Solaris システムに複数の BE を維持することができます。1 つの BE は、起動時またはリブート時のデフォルトの BE です。ほかの BE は代替ブート環境として使用可能です。ブートした BE がアクティブ BE です。"
 
-#: gui/help/C/package-manager.xml:533(para)
+#: gui/help/C/package-manager.localizable.xml:525(para)
 msgid "You can use the <literal>beadm</literal>(1) command to create, rename, mount, unmount, activate, or destroy BEs. For complete information about BEs, see <citetitle>Creating and Managing Boot Environments After Installation</citetitle>."
 msgstr "<literal>beadm</literal>(1) コマンドを使用して、BE の作成、名前の変更、マウント、マウント解除、アクティブ化、または破棄を行うことができます。BE の詳細については、『<citetitle>Creating and Managing Boot Environments After Installation</citetitle>』を参照してください。"
 
-#: gui/help/C/package-manager.xml:534(para)
+#: gui/help/C/package-manager.localizable.xml:526(para)
 msgid "Package Manager provides a subset of the functionality that the <literal>beadm</literal>(1) command provides. Use the Package Manager <menuchoice><guimenu>File</guimenu><guimenuitem>Manage Boot Environments</guimenuitem></menuchoice> option to open the Manage Boot Environments window. The Manage Boot Environments window lists the BEs on this system and enables you to activate, rename, and delete those BEs as described below."
 msgstr "パッケージマネージャーでは、<literal>beadm</literal>(1) コマンドで提供されている機能の一部を実行できます。パッケージマネージャーの<menuchoice><guimenu>「ファイル」</guimenu><guimenuitem>「ブート環境の管理」</guimenuitem></menuchoice>オプションを使用して、「ブート環境の管理」ウィンドウを開きます。「ブート環境の管理」ウィンドウでは、このシステムの BE が一覧表示され、これらの BE のアクティブ化、名前の変更、および削除を後述の方法で行うことができます。"
 
-#: gui/help/C/package-manager.xml:535(title)
+#: gui/help/C/package-manager.localizable.xml:527(title)
 msgid "Creating a BE"
 msgstr "BE の作成"
 
-#: gui/help/C/package-manager.xml:536(para)
+#: gui/help/C/package-manager.localizable.xml:528(para)
 msgid "A new BE is automatically created when you do one of the following actions:"
 msgstr "次のいずれかの操作を実行すると、新しい BE が自動的に作成されます。"
 
-#: gui/help/C/package-manager.xml:537(para)
+#: gui/help/C/package-manager.localizable.xml:529(para)
 msgid "Install the Oracle Solaris OS."
 msgstr "Oracle Solaris OS をインストールします。"
 
-#: gui/help/C/package-manager.xml:539(para)
+#: gui/help/C/package-manager.localizable.xml:531(para)
 msgid "Install or update particular key system packages such as some drivers and other kernel components."
 msgstr "一部のドライバやカーネルコンポーネントなど、特定の主要システムパッケージをインストールまたは更新します。"
 
-#: gui/help/C/package-manager.xml:541(para)
+#: gui/help/C/package-manager.localizable.xml:533(para)
 msgid "Use the <literal>beadm create</literal> command."
 msgstr "<literal>beadm create</literal> コマンドを使用します。"
 
-#: gui/help/C/package-manager.xml:544(para)
+#: gui/help/C/package-manager.localizable.xml:536(para)
 msgid "Often a new BE is created when you execute the <literal>pkg update</literal> command or use the <guibutton>Updates</guibutton> button to update all packages that have updates available."
 msgstr "<literal>pkg update</literal> コマンドを実行するか<guibutton>「更新」</guibutton>ボタンを使用して使用可能な更新が存在するすべてのパッケージを更新すると、多くの場合は新しい BE が作成されます。"
 
-#: gui/help/C/package-manager.xml:546(title)
+#: gui/help/C/package-manager.localizable.xml:538(title)
 msgid "Activating a BE"
 msgstr "BE のアクティブ化"
 
-#: gui/help/C/package-manager.xml:547(para)
+#: gui/help/C/package-manager.localizable.xml:539(para)
 msgid "Select the <menuchoice><guimenu>File</guimenu><guimenuitem>Manage Boot Environments</guimenuitem></menuchoice> menu option to open the Manage Boot Environments window. Each BE is listed in the window. The BE that you are currently booted into shows a check mark to the left of the BE name."
 msgstr "<menuchoice><guimenu>「ファイル」</guimenu><guimenuitem>「ブート環境の管理」</guimenuitem></menuchoice>メニューオプションを選択して、「ブート環境の管理」ウィンドウを開きます。ウィンドウに BE が一覧表示されます。現在ブートされている BE には、BE 名の左にチェックマークが表示されます。"
 
-#: gui/help/C/package-manager.xml:548(para)
+#: gui/help/C/package-manager.localizable.xml:540(para)
 msgid "To specify a different BE to be the default active BE after the next reboot, perform the following steps:"
 msgstr "次回リブート時にアクティブ化するデフォルトの BE として別の BE を指定するには、次の手順を実行します。"
 
-#: gui/help/C/package-manager.xml:549(para)
+#: gui/help/C/package-manager.localizable.xml:541(para)
 msgid "Select the <guibutton>Active on Reboot</guibutton> button for the BE that you want to be the default active BE after the next reboot."
 msgstr "次回リブート時にアクティブ化するデフォルトの BE として指定する BE の<guibutton>「リブート時にアクティブ化」</guibutton>ボタンを選択します。"
 
-#: gui/help/C/package-manager.xml:551(para) gui/help/C/package-manager.xml:564(para) gui/help/C/package-manager.xml:576(para)
+#: gui/help/C/package-manager.localizable.xml:543(para) gui/help/C/package-manager.localizable.xml:556(para) gui/help/C/package-manager.localizable.xml:568(para)
 msgid "Select the <guibutton>OK</guibutton> button in the Manage Boot Environments window."
 msgstr "「ブート環境の管理」ウィンドウの<guibutton>「了解」</guibutton>ボタンをクリックします。"
 
-#: gui/help/C/package-manager.xml:555(title)
+#: gui/help/C/package-manager.localizable.xml:547(title)
 msgid "Renaming a BE"
 msgstr "BE の名前の変更"
 
-#: gui/help/C/package-manager.xml:556(para)
+#: gui/help/C/package-manager.localizable.xml:548(para)
 msgid "Select the <menuchoice><guimenu>File</guimenu><guimenuitem>Manage Boot Environments</guimenuitem></menuchoice> menu option to open the Manage Boot Environments window. Each BE is listed in the window."
 msgstr "<menuchoice><guimenu>「ファイル」</guimenu><guimenuitem>「ブート環境の管理」</guimenuitem></menuchoice>メニューオプションを選択して、「ブート環境の管理」ウィンドウを開きます。ウィンドウに BE が一覧表示されます。"
 
-#: gui/help/C/package-manager.xml:557(para)
+#: gui/help/C/package-manager.localizable.xml:549(para)
 msgid "You cannot rename the currently active BE."
 msgstr "現在アクティブになっている BE の名前を変更することはできません。"
 
-#: gui/help/C/package-manager.xml:558(para)
+#: gui/help/C/package-manager.localizable.xml:550(para)
 msgid "You cannot rename a BE that you have marked for deletion."
 msgstr "削除対象として指定されている BE の名前を変更することはできません。"
 
-#: gui/help/C/package-manager.xml:559(para)
+#: gui/help/C/package-manager.localizable.xml:551(para)
 msgid "To rename a BE, perform the following steps:"
 msgstr "BE の名前を変更するには、次の手順を実行します。"
 
-#: gui/help/C/package-manager.xml:560(para)
+#: gui/help/C/package-manager.localizable.xml:552(para)
 msgid "Double-click the name of the BE that you want to rename. The name field becomes editable."
 msgstr "名前を変更する BE の名前をダブルクリックします。名前フィールドが編集可能になります。"
 
-#: gui/help/C/package-manager.xml:562(para)
+#: gui/help/C/package-manager.localizable.xml:554(para)
 msgid "Enter the new name."
 msgstr "新しい名前を入力します。"
 
-#: gui/help/C/package-manager.xml:568(title)
+#: gui/help/C/package-manager.localizable.xml:560(title)
 msgid "Removing a BE"
 msgstr "BE の削除"
 
-#: gui/help/C/package-manager.xml:569(para)
+#: gui/help/C/package-manager.localizable.xml:561(para)
 msgid "Select the <menuchoice><guimenu>File</guimenu><guimenuitem>Manage Boot Environments</guimenuitem></menuchoice> menu option to open the Manage Boot Environments window. Each BE is listed in the window. The right-most column in the window is the Delete column."
 msgstr "<menuchoice><guimenu>「ファイル」</guimenu><guimenuitem>「ブート環境の管理」</guimenuitem></menuchoice>メニューオプションを選択して、「ブート環境の管理」ウィンドウを開きます。ウィンドウに BE が一覧表示されます。ウィンドウの右端の列が「削除」列です。"
 
-#: gui/help/C/package-manager.xml:570(para)
+#: gui/help/C/package-manager.localizable.xml:562(para)
 msgid "The middle column in the Manage Boot Environments window shows the size of the BE. You might want to remove a BE to free some space on your storage device."
 msgstr "「ブート環境の管理」ウィンドウの中央の列には、BE のサイズが表示されます。BE を削除してストレージデバイスの領域を解放することができます。"
 
-#: gui/help/C/package-manager.xml:571(para)
+#: gui/help/C/package-manager.localizable.xml:563(para)
 msgid "You cannot delete the currently active BE."
 msgstr "現在アクティブになっている BE を削除することはできません。"
 
-#: gui/help/C/package-manager.xml:572(para)
+#: gui/help/C/package-manager.localizable.xml:564(para)
 msgid "You cannot delete a BE that you have renamed."
 msgstr "名前を変更した BE を削除することはできません。"
 
-#: gui/help/C/package-manager.xml:573(para)
+#: gui/help/C/package-manager.localizable.xml:565(para)
 msgid "To delete a BE, perform the following steps:"
 msgstr "BE を削除するには、次の手順を実行します。"
 
-#: gui/help/C/package-manager.xml:574(para)
+#: gui/help/C/package-manager.localizable.xml:566(para)
 msgid "Select the <guibutton>Delete</guibutton> box for the BE that you want to delete."
 msgstr "削除する BE の<guibutton>「削除」</guibutton>ボックスを選択します。"
 
-#: gui/help/C/package-manager.xml:581(title)
+#: gui/help/C/package-manager.localizable.xml:573(title)
 msgid "Working With WebInstall"
 msgstr "WebInstall の操作"
 
-#: gui/help/C/package-manager.xml:582(para)
+#: gui/help/C/package-manager.localizable.xml:574(para)
 msgid "Package Manager supports installing packages using a simple one-click WebInstall process. The WebInstall process uses a <filename>.p5i</filename> file. A <filename>.p5i</filename> file contains information to add publishers and add packages that can be installed from these publishers. The information in the <filename>.p5i</filename> file is read and used by the WebInstall process."
 msgstr "パッケージマネージャーでは、簡単なワンクリックの WebInstall 処理を使用したパッケージのインストールがサポートされています。WebInstall 処理は <filename>.p5i</filename> ファイルを使用します。<filename>.p5i</filename> ファイルには、発行元を追加するための情報と、これらの発行元からインストール可能なパッケージを追加するための情報が含まれています。<filename>.p5i</filename> ファイルに含まれている情報は WebInstall 処理によって読み込まれ、使用されます。"
 
-#: gui/help/C/package-manager.xml:583(title)
+#: gui/help/C/package-manager.localizable.xml:575(title)
 msgid "Exporting Files Using WebInstall"
 msgstr "WebInstall によるファイルのエクスポート"
 
-#: gui/help/C/package-manager.xml:584(para)
+#: gui/help/C/package-manager.localizable.xml:576(para)
 msgid "If you want other users to be able to install packages that you have installed on your system, you can export the installation instructions for those package files using the WebInstall process. A <filename>.p5i</filename> file consisting of installation instructions for those packages and publishers to be installed is created."
 msgstr "自分のシステムにインストールしたパッケージをほかのユーザーもインストールできるようにする場合は、これらのパッケージファイルのインストール方法を WebInstall 処理でエクスポートできます。これらのパッケージのインストール方法とインストールする発行元を含む <filename>.p5i</filename> ファイルが作成されます。"
 
-#: gui/help/C/package-manager.xml:585(para)
+#: gui/help/C/package-manager.localizable.xml:577(para)
 msgid "To export the installation instructions for your selected packages and their publishers to a <filename>.p5i</filename> file, perform the following steps:"
 msgstr "選択したパッケージのインストール方法と発行元を <filename>.p5i</filename> ファイルにエクスポートするには、次の手順を実行します。"
 
-#: gui/help/C/package-manager.xml:586(para)
+#: gui/help/C/package-manager.localizable.xml:578(para)
 msgid "From the <guimenu>Publisher</guimenu> drop-down menu, select the publisher from which you want to include the packages in the <filename>.p5i</filename> file."
 msgstr "<guimenu>「発行元」</guimenu>ドロップダウンメニューから、<filename>.p5i</filename> ファイルに含めるパッケージを取得する発行元を選択します。"
 
-#: gui/help/C/package-manager.xml:588(para)
+#: gui/help/C/package-manager.localizable.xml:580(para)
 msgid "In the package list pane, select the package whose installation instructions you want to distribute."
 msgstr "パッケージリストペインで、インストール方法を配布するパッケージを選択します。"
 
-#: gui/help/C/package-manager.xml:590(para)
+#: gui/help/C/package-manager.localizable.xml:582(para)
 msgid "Click <menuchoice><guisubmenu>File</guisubmenu><guimenuitem>Export Selections</guimenuitem></menuchoice> to display the Export Selections Confirmation window."
 msgstr "<menuchoice><guisubmenu>「ファイル」</guisubmenu><guimenuitem>「選択項目をエクスポート」</guimenuitem></menuchoice>をクリックして「エクスポート選択項目の確認」ウィンドウを表示します。"
 
-#: gui/help/C/package-manager.xml:592(para)
+#: gui/help/C/package-manager.localizable.xml:584(para)
 msgid "Click the <guibutton>OK</guibutton> button to confirm the selections. The Export Selections window is displayed."
 msgstr "<guibutton>「了解」</guibutton>ボタンをクリックして選択項目を確定します。「選択項目をエクスポート」ウィンドウが表示されます。"
 
-#: gui/help/C/package-manager.xml:594(para)
+#: gui/help/C/package-manager.localizable.xml:586(para)
 msgid "A default name for the <filename>p5i</filename> file with the extension <filename>.p5i</filename> is provided. You can change this file name, but do not change the extension."
 msgstr "<filename>p5i</filename> ファイルのデフォルト名が拡張子 <filename>.p5i</filename> を付けて提示されます。このファイル名は変更できますが、拡張子は変更しないでください。"
 
-#: gui/help/C/package-manager.xml:596(para)
+#: gui/help/C/package-manager.localizable.xml:588(para)
 msgid "A default location for the <filename>p5i</filename> file is provided. You can change the location. If you use the <guibutton>Browse</guibutton> button, you can select the <filename>p5i Files</filename> option from the drop-down menu at the bottom right hand side of the Export Selections window to display only <filename>.p5i</filename> files in the file list."
 msgstr "<filename>p5i</filename> ファイルのデフォルトの場所が提示されます。この場所は変更できます。<guibutton>「参照」</guibutton>ボタンを使用する場合は、「選択項目をエクスポート」ウィンドウの右下にあるドロップダウンメニューから<filename>「p5i ファイル」</filename>オプションを選択すると、ファイルリストに <filename>.p5i</filename> ファイルだけを表示できます。"
 
-#: gui/help/C/package-manager.xml:598(para)
+#: gui/help/C/package-manager.localizable.xml:590(para)
 msgid "Click the <guibutton>Save</guibutton> button to save the file name and location."
 msgstr "<guibutton>「保存」</guibutton>ボタンをクリックしてファイルの名前と場所を保存します。"
 
-#: gui/help/C/package-manager.xml:602(title)
+#: gui/help/C/package-manager.localizable.xml:594(title)
 msgid "Using WebInstall to Add Publishers and Install Packages"
 msgstr "WebInstall による発行元の追加とパッケージのインストール"
 
-#: gui/help/C/package-manager.xml:603(para)
+#: gui/help/C/package-manager.localizable.xml:595(para)
 msgid "The WebInstall process enables you to install packages through a <filename>p5i</filename> file."
 msgstr "WebInstall 処理を使用すると、<filename>p5i</filename> ファイルからパッケージをインストールすることができます。"
 
-#: gui/help/C/package-manager.xml:604(para)
+#: gui/help/C/package-manager.localizable.xml:596(para)
 msgid "Locate the <filename>.p5i</filename> file. This file might be on your desktop or on a web site."
 msgstr "<filename>.p5i</filename> ファイルを見つけます。このファイルは、デスクトップまたは Web サイト上に存在する場合があります。"
 
-#: gui/help/C/package-manager.xml:606(para)
+#: gui/help/C/package-manager.localizable.xml:598(para)
 msgid "Use one of the following methods to start Package Manager in WebInstall mode:"
 msgstr "次のいずれかの方法で、パッケージマネージャーを WebInstall モードで起動します。"
 
-#: gui/help/C/package-manager.xml:607(para)
+#: gui/help/C/package-manager.localizable.xml:599(para)
 msgid "Click on a <filename>.p5i</filename> file on your desktop. The associated application (Package Manager Web Installer) is launched."
 msgstr "デスクトップ上の <filename>.p5i</filename> ファイルをクリックします。関連付けられたアプリケーション (パッケージマネージャー Web インストーラ) が起動します。"
 
-#: gui/help/C/package-manager.xml:609(para)
+#: gui/help/C/package-manager.localizable.xml:601(para)
 msgid "Start Package Manager from the command line along with a path to the <filename>.p5i</filename> file. For example, enter the following command:"
 msgstr "<filename>.p5i</filename> ファイルのパスを指定して、コマンド行からパッケージマネージャーを起動します。たとえば、次のコマンドを入力します。"
 
-#: gui/help/C/package-manager.xml:610(replaceable)
+#: gui/help/C/package-manager.localizable.xml:602(replaceable)
 msgid "path_to_p5i_file/file.p5i"
 msgstr "path_to_p5i_file/file.p5i"
 
-#: gui/help/C/package-manager.xml:610(userinput)
+#: gui/help/C/package-manager.localizable.xml:602(userinput)
 #, no-wrap
 msgid "packagemanager/<placeholder-1/>"
 msgstr "packagemanager/<placeholder-1/>"
 
-#: gui/help/C/package-manager.xml:610(screen)
+#: gui/help/C/package-manager.localizable.xml:602(screen)
 #, no-wrap
 msgid "# <placeholder-1/>"
 msgstr "# <placeholder-1/>"
 
-#: gui/help/C/package-manager.xml:612(para)
+#: gui/help/C/package-manager.localizable.xml:604(para)
 msgid "Go to a URL location that contains a link to <filename>.p5i</filename> file. The <filename>.p5i</filename> file must be located on a web server that has registered this MIME type."
 msgstr "<filename>.p5i</filename> ファイルへのリンクを含んでいる URL に移動します。<filename>.p5i</filename> ファイルは、この MIME タイプが登録されている Web サーバー上に存在する必要があります。"
 
-#: gui/help/C/package-manager.xml:613(para)
+#: gui/help/C/package-manager.localizable.xml:605(para)
 msgid "If the <filename>.p5i</filename> is located on a web server that has not registered this MIME type, save the <filename>.p5i</filename> file to your desktop and then click on it to launch WebInstall."
 msgstr "<filename>.p5i</filename> が、この MIME タイプが登録されていない Web サーバー上に存在する場合は、<filename>.p5i</filename> ファイルをデスクトップに保存してから、それをクリックして WebInstall を起動します。"
 
-#: gui/help/C/package-manager.xml:617(para)
+#: gui/help/C/package-manager.localizable.xml:609(para)
 msgid "The Install/Update window is displayed. The label at the top of the window is: “Package Manager Web Installer/The following will be added to your system:” Then the publishers and packages are listed. Click the <guibutton>Proceed</guibutton> button to continue with the installation."
 msgstr "「インストール/更新」ウィンドウが表示されます。ウィンドウ上部のラベルは「パッケージマネージャー Web インストーラ/次のものがシステムに追加されます:」となります。次に、発行元とパッケージが一覧表示されます。<guibutton>「続行」</guibutton>ボタンをクリックしてインストールを続行します。"
 
-#: gui/help/C/package-manager.xml:618(para)
+#: gui/help/C/package-manager.localizable.xml:610(para)
 msgid "If the package publisher is not already configured on your system, the Add Publisher window is displayed. The name and URI of the publisher are already entered."
 msgstr "パッケージ発行元がまだシステムに構成されていない場合は、「発行元を追加」ウィンドウが表示されます。発行元の名前と URI はすでに入力されています。"
 
-#: gui/help/C/package-manager.xml:619(para)
+#: gui/help/C/package-manager.localizable.xml:611(para)
 msgid "If the publishers to be added are secure publishers, an SSL key and certificate are required. Browse to locate the SSL Key and SSL Certificate on your system."
 msgstr "追加した発行元がセキュリティー保護された発行元ならば、SSL キーと証明書が必要です。システム上にある SSL キーと SSL 証明書を参照してください。"
 
-#: gui/help/C/package-manager.xml:620(para)
+#: gui/help/C/package-manager.localizable.xml:612(para)
 msgid "The Adding Publisher Complete dialog displays if the publisher is added successfully. Click the <guibutton>OK</guibutton> button to continue with the installation."
 msgstr "発行元が正常に追加されると、「発行元を追加しました」ダイアログが表示されます。<guibutton>「了解」</guibutton>ボタンをクリックしてインストールを続行します。"
 
-#: gui/help/C/package-manager.xml:622(para)
+#: gui/help/C/package-manager.localizable.xml:614(para)
 msgid "If a <filename>.p5i</filename> file contains packages from a disabled publisher, WebInstall opens up an Enable Publisher dialog. Use this dialog to enable the publisher so that you can install the packages."
 msgstr "<filename>.p5i</filename> ファイルが無効な発行元からのパッケージを含んでいる場合、WebInstall は「発行元の有効化」ダイアログを開きます。このダイアログを使用して、パッケージをインストールできるように発行元を有効にします。"
 
-#: gui/help/C/package-manager.xml:626(para)
+#: gui/help/C/package-manager.localizable.xml:618(para)
 msgid "The Install/Update window now looks the same as when you select <guibutton>Install/Update</guibutton> from within Package Manager."
 msgstr "この時点で「インストール/更新」ウィンドウの表示は、パッケージマネージャー内から<guibutton>「インストール/更新」</guibutton>を選択したときと同じになります。"
 
-#: gui/help/C/package-manager.xml:631(title)
+#: gui/help/C/package-manager.localizable.xml:623(title)
 msgid "Troubleshooting"
 msgstr "トラブルシューティング"
 
-#: gui/help/C/package-manager.xml:632(para)
+#: gui/help/C/package-manager.localizable.xml:624(para)
 msgid "Error, warning, and informational messages are saved to a log so that you can review them at any time."
 msgstr "エラー、警告、および情報メッセージは、いつでも確認できるようにログに保存されます。"
 
-#: gui/help/C/package-manager.xml:633(title)
+#: gui/help/C/package-manager.localizable.xml:625(title)
 msgid "Viewing Message Logs"
 msgstr "メッセージログの表示"
 
-#: gui/help/C/package-manager.xml:634(para)
+#: gui/help/C/package-manager.localizable.xml:626(para)
 msgid "Select the <menuchoice><guimenu>View</guimenu><guimenuitem>Logs</guimenuitem></menuchoice> menu option to open the Logs window. The Logs window displays error, warning, and informational messages from Package Manager and Update Manager."
 msgstr "<menuchoice><guimenu>「表示」</guimenu><guimenuitem>「ログ」</guimenuitem></menuchoice>メニューオプションを選択して「ログ」ウィンドウを開きます。「ログ」ウィンドウには、パッケージマネージャーと更新マネージャーからのエラー、警告、および情報メッセージが表示されます。"
 
-#: gui/help/C/package-manager.xml:635(para)
+#: gui/help/C/package-manager.localizable.xml:627(para)
 msgid "Select the <guibutton>Clear</guibutton> button at the bottom of the Logs window to delete all the messages."
 msgstr "すべてのメッセージを削除するには、「ログ」ウィンドウ下部の<guibutton>「消去」</guibutton>ボタンをクリックします。"
 
-#: gui/help/C/package-manager.xml:636(para)
+#: gui/help/C/package-manager.localizable.xml:628(para)
 msgid "If an error or warning is logged, a yellow triangle is displayed on the left side of the status bar. Click the yellow triangle to display the Logs window."
 msgstr "エラーまたは警告がログに記録されると、ステータスバーの左側に黄色の三角形が表示されます。黄色の三角形をクリックすると「ログ」ウィンドウが表示されます。"
 
-#: gui/help/C/package-manager.xml:639(title)
+#: gui/help/C/package-manager.localizable.xml:631(title)
 msgid "Setting Preferences"
 msgstr "設定"
 
-#: gui/help/C/package-manager.xml:640(para)
+#: gui/help/C/package-manager.localizable.xml:632(para)
 msgid "Use the <menuchoice><guimenu>Edit</guimenu><guimenuitem>Preferences</guimenuitem></menuchoice> menu option to change some of the Package Manager user interface settings."
 msgstr "パッケージマネージャーのユーザーインタフェースの設定を変更するには、<menuchoice><guimenu>「編集」</guimenu><guimenuitem>「設定」</guimenuitem></menuchoice>メニューオプションを使用します。"
 
-#: gui/help/C/package-manager.xml:641(para)
+#: gui/help/C/package-manager.localizable.xml:633(para)
 msgid "The Preferences window has three tabs:"
 msgstr "「設定」ウィンドウには次の 3 つのタブがあります。"
 
-#: gui/help/C/package-manager.xml:642(para)
+#: gui/help/C/package-manager.localizable.xml:634(para)
 msgid "The General tab enables you to set exit preferences and confirmation dialog preferences."
 msgstr "「一般」タブでは、終了設定と確認ダイアログ設定を指定できます。"
 
-#: gui/help/C/package-manager.xml:643(para)
+#: gui/help/C/package-manager.localizable.xml:635(para)
 msgid "The Optional Components tab enables you to set preferences for which optional package components to install when you install or update a package."
 msgstr "「オプションのコンポーネント」タブでは、パッケージのインストール時または更新時にインストールするオプションのパッケージコンポーネントの設定を指定できます。"
 
-#: gui/help/C/package-manager.xml:644(para)
+#: gui/help/C/package-manager.localizable.xml:636(para)
 msgid "The Signature Policy tab enables you to set signature policy for this image."
 msgstr "「署名ポリシー」タブでは、このイメージの署名ポリシーを設定できます。"
 
-#: gui/help/C/package-manager.xml:646(title)
+#: gui/help/C/package-manager.localizable.xml:638(title)
 msgid "Exit Preferences"
 msgstr "設定を閉じる"
 
-#: gui/help/C/package-manager.xml:647(para) gui/help/C/package-manager.xml:660(para)
+#: gui/help/C/package-manager.localizable.xml:639(para) gui/help/C/package-manager.localizable.xml:652(para)
 msgid "Select the <menuchoice><guimenu>Edit</guimenu><guimenuitem>Preferences</guimenuitem></menuchoice> option and select the General tab."
 msgstr "<menuchoice><guimenu>「編集」</guimenu><guimenuitem>「設定」</guimenuitem></menuchoice>オプションを選択し、「一般」タブを選択します。"
 
-#: gui/help/C/package-manager.xml:648(para)
+#: gui/help/C/package-manager.localizable.xml:640(para)
 msgid "If the “Remember current state on exit” box is checked, Package Manager saves the following settings and restores them the next time you start Package Manager:"
 msgstr "「終了時に現在の状態を記憶する」ボックスにチェックマークが付いている場合、パッケージマネージャーは次の設定を保存し、次回起動時にそれらを復元します。"
 
-#: gui/help/C/package-manager.xml:649(para)
+#: gui/help/C/package-manager.localizable.xml:641(para)
 msgid "<emphasis role=\"strong\">Vertical and horizontal separators</emphasis> — Widths and heights of the panes in the window"
 msgstr "<emphasis role=\"strong\">垂直セパレータと水平セパレータ</emphasis> - ウィンドウ内のペインの幅と高さ"
 
-#: gui/help/C/package-manager.xml:651(para)
+#: gui/help/C/package-manager.localizable.xml:643(para)
 msgid "<emphasis role=\"strong\">Window size</emphasis> — Overall size of the Package Manager window"
 msgstr "<emphasis role=\"strong\">ウィンドウサイズ</emphasis> - パッケージマネージャーウィンドウ全体のサイズ"
 
-#: gui/help/C/package-manager.xml:653(para)
+#: gui/help/C/package-manager.localizable.xml:645(para)
 msgid "<emphasis role=\"strong\">Publisher option</emphasis> — The publisher or other option that is selected in the <guimenu>Publisher</guimenu> drop-down menu when Package Manager is closed"
 msgstr "<emphasis role=\"strong\">発行元のオプション</emphasis> — パッケージマネージャーの終了時に<guimenu>「発行元」</guimenu>ドロップダウンメニューで選択されている発行元やほかのオプション"
 
-#: gui/help/C/package-manager.xml:655(para)
+#: gui/help/C/package-manager.localizable.xml:647(para)
 msgid "<emphasis role=\"strong\">Categories</emphasis> — The selected category and the expanded and collapsed categories for each publisher"
 msgstr "<emphasis role=\"strong\">カテゴリ</emphasis> — 各発行元の選択されているカテゴリおよび展開されたカテゴリと折りたたまれたカテゴリ"
 
-#: gui/help/C/package-manager.xml:659(title)
+#: gui/help/C/package-manager.localizable.xml:651(title)
 msgid "Confirmation Dialog Preferences"
 msgstr "「確認」ダイアログ設定"
 
-#: gui/help/C/package-manager.xml:661(para)
+#: gui/help/C/package-manager.localizable.xml:653(para)
 msgid "When a package is installed, updated, or removed, a confirmation dialog is displayed that shows the list of packages and the action to be performed. If you do not want to see these confirmation dialogs, uncheck these selections in the Preferences window."
 msgstr "パッケージをインストール、更新、または削除するとき、確認ダイアログが表示されてパッケージの一覧と実行するアクションを示します。これらの確認ダイアログを表示しないようにするには、「設定」ウィンドウでこれらのチェックボックスの選択を解除します。"
 
-#: gui/help/C/package-manager.xml:662(para)
+#: gui/help/C/package-manager.localizable.xml:654(para)
 msgid "Clicking the “Do not show this confirmation dialog again” check box in a particular confirmation dialog also unsets this preference for that dialog."
 msgstr "特定の確認ダイアログで「今後、この確認ダイアログを表示しない」チェックボックスをクリックすることによっても、そのダイアログに関するこの設定を解除できます。"
 
-#: gui/help/C/package-manager.xml:664(title)
+#: gui/help/C/package-manager.localizable.xml:656(title)
 msgid "Signature Policy Preferences"
 msgstr "署名ポリシーの設定"
 
-#: gui/help/C/package-manager.xml:665(para)
+#: gui/help/C/package-manager.localizable.xml:657(para)
 msgid "Use the buttons on the Signature Policy tab to ignore or require signatures when installing packages in this image. To set signature policy for specific publishers, select the publisher in the Manage Publishers window, click the <guibutton>Modify</guibutton> button, and use the Signature Policy tab of the Modify Publisher window."
 msgstr "「署名ポリシー」タブのボタンを使用して、このイメージにパッケージをインストールするときに署名を無視するか要求するかを指定します。特定の発行元の署名ポリシーを設定するには、「発行元の管理」ウィンドウで発行元を選択し、<guibutton>「変更」</guibutton>ボタンをクリックし、「発行元の変更」ウィンドウの「署名ポリシー」タブを使用します。"
 
-#: gui/help/C/package-manager.xml:666(para)
+#: gui/help/C/package-manager.localizable.xml:658(para)
 msgid "The choices for image signature policy are the same as the choices for publisher signature policy except that the settings apply to all packages installed in the image, not just to packages installed from a particular publisher. See <xref linkend=\"pub-sig-policy\"/>."
 msgstr "イメージの署名ポリシーの選択肢は発行元の署名ポリシーの選択肢と同じですが、特定の発行元からインストールされたパッケージだけではなく、イメージにインストールされているすべてのパッケージに設定が適用される点が異なります。<xref linkend=\"pub-sig-policy\"/>を参照してください。"
 
-#: gui/help/C/package-manager.xml:668(title)
+#: gui/help/C/package-manager.localizable.xml:660(title)
 msgid "Optional Component Preferences Language Choices"
 msgstr "オプションコンポーネント設定の言語選択"
 
-#: gui/help/C/package-manager.xml:669(para) gui/help/C/package-manager.xml:676(para)
+#: gui/help/C/package-manager.localizable.xml:661(para) gui/help/C/package-manager.localizable.xml:668(para)
 msgid "Select the <menuchoice><guimenu>Edit</guimenu><guimenuitem>Preferences</guimenuitem></menuchoice> option and select the Optional Components tab."
 msgstr "<menuchoice><guimenu>「編集」</guimenu><guimenuitem>「設定」</guimenuitem></menuchoice>オプションを選択し、「オプションのコンポーネント」タブを選択します。"
 
-#: gui/help/C/package-manager.xml:670(para)
+#: gui/help/C/package-manager.localizable.xml:662(para)
 msgid "By default, Install all languages is selected under Language choices for any package. You can save space in your installation by selecting a subset of languages to install."
 msgstr "デフォルトでは、「パッケージの言語選択」には「すべての言語のインストール」が選択されます。一部の言語を選択してインストールすることで、インストールの領域を節約できます。"
 
-#: gui/help/C/package-manager.xml:671(para)
+#: gui/help/C/package-manager.localizable.xml:663(para)
 msgid "When Install only these languages is selected, you can click the checkbox icon in the left most column heading of the language list to select all languages. Click the column heading again to deselect all languages. Click the Language and Territory column headings to sort the list."
 msgstr "「次の言語のみのインストール」が選択されている場合は、言語リストの左端の列見出しにあるチェックボックスアイコンをクリックすると、すべての言語を選択できます。この列見出しを再度クリックすると、すべての言語の選択を解除できます。「言語」列見出しと「地域」列見出しをクリックすると、リストをソートできます。"
 
-#: gui/help/C/package-manager.xml:672(para) gui/help/C/package-manager.xml:678(para)
+#: gui/help/C/package-manager.localizable.xml:664(para) gui/help/C/package-manager.localizable.xml:670(para)
 msgid "Click the OK button to save your changes. These settings apply to currently installed packages as well as future package installations and updates. The image is updated as necessary to install or remove optional package components based on the new settings."
 msgstr "「了解」ボタンをクリックして変更を保存します。これらの設定は、現在インストールされているパッケージおよび今後のパッケージのインストールと更新に適用されます。新しい設定に基づいて、オプションのパッケージコンポーネントのインストールや削除が必要に応じて実行され、イメージが更新されます。"
 
-#: gui/help/C/package-manager.xml:673(para)
+#: gui/help/C/package-manager.localizable.xml:665(para)
 msgid "If you have previously updated your image to include only a subset of languages, Install only these languages is the default selection in this window, and that language list is grayed out if you select the Install all languages option."
 msgstr "以前にイメージを更新して一部の言語だけを含めてある場合、このウィンドウではデフォルトで「次の言語のみのインストール」が選択され、「すべての言語のインストール」オプションを選択するとその言語リストはグレー表示されます。"
 
-#: gui/help/C/package-manager.xml:675(title)
+#: gui/help/C/package-manager.localizable.xml:667(title)
 msgid "Other Optional Component Preferences"
 msgstr "ほかのオプションコンポーネント設定"
 
-#: gui/help/C/package-manager.xml:677(para)
+#: gui/help/C/package-manager.localizable.xml:669(para)
 msgid "By default, Install all development files and Install all documentation are selected under Other component choices. You can save space in your installation by deselecting development files or documentation."
 msgstr "デフォルトでは、「その他のコンポーネント選択」には「すべての開発ファイルのインストール」と「すべてのドキュメントのインストール」が選択されます。開発ファイルやドキュメントの選択を解除することで、インストールの領域を節約できます。"
 
-#: gui/help/C/package-manager.xml:681(title)
+#: gui/help/C/package-manager.localizable.xml:673(title)
 msgid "Glossary"
 msgstr "用語集"
 
-#: gui/help/C/package-manager.xml:682(glossterm)
+#: gui/help/C/package-manager.localizable.xml:674(glossterm)
 msgid "alias"
 msgstr "別名"
 
-#: gui/help/C/package-manager.xml:683(para)
+#: gui/help/C/package-manager.localizable.xml:675(para)
 msgid "Another name for a publisher."
 msgstr "発行元の別の名前。"
 
-#: gui/help/C/package-manager.xml:686(glossterm)
+#: gui/help/C/package-manager.localizable.xml:678(glossterm)
 msgid "boot environment (BE)"
 msgstr "ブート環境 (BE)"
 
-#: gui/help/C/package-manager.xml:687(para)
+#: gui/help/C/package-manager.localizable.xml:679(para)
 msgid "An instance of a bootable Oracle Solaris environment. The root file system and all other file systems of the boot environment that contain system software are required to be ZFS datasets."
 msgstr "ブート可能な Oracle Solaris 環境のインスタンス。ブート環境の、システムソフトウェアを含むルートファイルシステムとその他のすべてのファイルシステムは、ZFS データセットである必要があります。"
 
-#: gui/help/C/package-manager.xml:688(para)
+#: gui/help/C/package-manager.localizable.xml:680(para)
 msgid "The active boot environment is the one that is currently booted. A system can have many boot environments. You can select the one you want to boot into when you reboot."
 msgstr "アクティブブート環境とは、現在ブートされているブート環境のことです。システムには多数のブート環境を維持することができます。リブート時にどれをブートするかを選択できます。"
 
-#: gui/help/C/package-manager.xml:691(glossterm)
+#: gui/help/C/package-manager.localizable.xml:683(glossterm)
 msgid "clone"
 msgstr "クローン"
 
-#: gui/help/C/package-manager.xml:692(para)
+#: gui/help/C/package-manager.localizable.xml:684(para)
 msgid "An exact copy."
 msgstr "正確なコピー。"
 
-#: gui/help/C/package-manager.xml:693(para)
+#: gui/help/C/package-manager.localizable.xml:685(para)
 msgid "A clone could be an exact copy of an operating system, a file system, or a volume. This copy has 100% compatibility with the original."
 msgstr "クローンはオペレーティングシステム、ファイルシステム、またはボリュームの正確なコピーを指すことがあります。このコピーは、元の内容と完全に互換性があります。"
 
-#: gui/help/C/package-manager.xml:696(glossterm)
+#: gui/help/C/package-manager.localizable.xml:688(glossterm)
 msgid "dataset"
 msgstr "データセット"
 
-#: gui/help/C/package-manager.xml:697(para)
+#: gui/help/C/package-manager.localizable.xml:689(para)
 msgid "A generic name for the following ZFS entities: clones, file systems, snapshots, or volumes. Each dataset is identified by a unique name in the ZFS namespace."
 msgstr "クローン、ファイルシステム、スナップショット、またはボリュームという ZFS エンティティーの総称名。各データセットは、ZFS 名前空間内の一意の名前で識別されます。"
 
-#: gui/help/C/package-manager.xml:700(glossterm)
+#: gui/help/C/package-manager.localizable.xml:692(glossterm)
 msgid "image"
 msgstr "イメージ"
 
-#: gui/help/C/package-manager.xml:701(para)
+#: gui/help/C/package-manager.localizable.xml:693(para)
 msgid "A collection of operating system software in a package that can be booted and installed."
 msgstr "ブートとインストールが可能なパッケージ内のオペレーティングシステムソフトウェアのコレクション。"
 
-#: gui/help/C/package-manager.xml:702(para)
+#: gui/help/C/package-manager.localizable.xml:694(para)
 msgid "A location on your system where packages and their associated files, directories, links, and dependencies can be installed."
 msgstr "パッケージとそれに関連付けられたファイル、ディレクトリ、リンク、および依存関係をインストールできるシステム上の場所。"
 
-#: gui/help/C/package-manager.xml:705(glossterm)
+#: gui/help/C/package-manager.localizable.xml:697(glossterm)
 msgid "origin"
 msgstr "起点"
 
-#: gui/help/C/package-manager.xml:706(para)
+#: gui/help/C/package-manager.localizable.xml:698(para)
 msgid "A package server to which a publisher publishes packages."
 msgstr "発行元がパッケージを発行するパッケージサーバー。"
 
-#: gui/help/C/package-manager.xml:709(glossterm)
+#: gui/help/C/package-manager.localizable.xml:701(glossterm)
 msgid "package"
 msgstr "パッケージ"
 
-#: gui/help/C/package-manager.xml:710(para)
+#: gui/help/C/package-manager.localizable.xml:702(para)
 msgid "A collection of files, directories, links, drivers, and dependencies in a defined format."
 msgstr "定義された形式での、ファイル、ディレクトリ、リンク、ドライバ、および依存関係のコレクション。"
 
-#: gui/help/C/package-manager.xml:713(glossterm)
+#: gui/help/C/package-manager.localizable.xml:705(glossterm)
 msgid "publisher"
 msgstr "発行元"
 
-#: gui/help/C/package-manager.xml:714(para)
+#: gui/help/C/package-manager.localizable.xml:706(para)
 msgid "A person, group, or corporation that designs, creates, and publishes a package to a package server. The package server in turn serves the packages from the (default) publisher, for downloading purposes."
 msgstr "パッケージを設計、作成しパッケージサーバーに発行する個人、グループ、または企業。パッケージサーバーは、(デフォルトの) 発行元からのパッケージをダウンロード用に提供します。"
 
-#: gui/help/C/package-manager.xml:717(glossterm)
+#: gui/help/C/package-manager.localizable.xml:709(glossterm)
 msgid "system publisher"
 msgstr "システム発行元"
 
-#: gui/help/C/package-manager.xml:718(para)
+#: gui/help/C/package-manager.localizable.xml:710(para)
 msgid "System publishers are special publishers used in linked images and non-global zones in particular, to ensure that certain packages stay in sync with the global zone. The global zone constrains packages within the non-global zones by configuring these special system publishers in the non-global zone. They are special because the non-global zones cannot make certain changes to them including removing, disabling, modifying, or changing their priority."
 msgstr "システム発行元は、特定のパッケージを大域ゾーンと同期された状態に保つために、特にリンクされたイメージと非大域ゾーンで使用される特殊な発行元です。大域ゾーンは、これらの特殊なシステム発行元を非大域ゾーンに構成することで、非大域ゾーン内のパッケージを制約します。システム発行元が特殊である理由は、非大域ゾーンはそれらに対して削除、無効化、変更、優先度の変更といった特定の変更を行うことができないことにあります。"
 
 #. Put one translator per line, in the form of NAME <EMAIL>, YEAR1, YEAR2
-#: gui/help/C/package-manager.xml:0(None)
+#: gui/help/C/package-manager.localizable.xml:0(None)
 msgid "translator-credits"
 msgstr "Sun Microsystems"
 
