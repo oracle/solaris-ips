@@ -1,7 +1,7 @@
 '\" te
 .\" Copyright (c) 2009, 2012, Oracle and/or its
 .\" affiliates. All rights reserved.
-.TH pkg 5 "5 Jun 2012" "SunOS 5.11" "Standards, Environments, and Macros"
+.TH pkg 5 "22 Jun 2012" "SunOS 5.11" "Standards, Environments, and Macros"
 .SH NAME
 pkg \- Image Packaging System
 .SH DESCRIPTION
@@ -214,6 +214,17 @@ This is the hash of the "interesting" ELF sections in the file. These are the se
 .sp .6
 .RS 4n
 This attribute is used to handle editable files moving from package to package or from place to place, or both. The form this takes is the name of the originating package, followed by a colon and the original path to the file. Any file being deleted is recorded either with its package and path, or with the value of the \fBoriginal_name\fR attribute if specified. Any editable file being installed that has the \fBoriginal_name\fR attribute set uses the file of that name if it is deleted as part of the same packaging operation.
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fBrelease-note\fR\fR
+.ad
+.sp .6
+.RS 4n
+This attribute is used to indicate that this file contains release note text. The value of this attribute is a package FMRI. If the FMRI specifies a package name that is present in the original image and a version that is newer than the version of the package in the original image, this file will be part of the release notes. A special FMRI of \fBfeature/pkg/self\fR refers to the containing package. If the version of \fBfeature/pkg/self\fR is 0, this file will only be part of the release notes on initial installation.
 .RE
 
 .sp

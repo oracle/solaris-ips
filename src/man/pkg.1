@@ -1,7 +1,7 @@
 '\" te
 .\" Copyright (c) 2007, 2012, Oracle and/or its
 .\" affiliates. All rights reserved.
-.TH pkg 1 "22 Jun 2012" "SunOS 5.11" "User Commands"
+.TH pkg 1 "26 Jun 2012" "SunOS 5.11" "User Commands"
 .SH NAME
 pkg \- Image Packaging System retrieval client
 .SH SYNOPSIS
@@ -12,7 +12,7 @@ pkg \- Image Packaging System retrieval client
 
 .LP
 .nf
-/usr/bin/pkg refresh [--full] [\fIpublisher\fR ...]
+/usr/bin/pkg refresh [-q] [--full] [\fIpublisher\fR ...]
 .fi
 
 .LP
@@ -209,7 +209,8 @@ usr/bin/pkg set-mediator [-nv] [-I \fIimplementation\fR]
     [--set-property \fIname_of_property\fR=\fIvalue\fR]
     [--add-property-value \fIname_of_property\fR=\fIvalue_to_add\fR]
     [--remove-property-value \fIname_of_property\fR=\fIvalue_to_remove\fR]
-    [--unset-property \fIname_of_property_to_delete\fR] \fIpublisher\fR
+    [--unset-property \fIname_of_property_to_delete\fR] 
+    [--proxy \fIproxy_to_use\fR] \fIpublisher\fR
 .fi
 
 .LP
@@ -223,7 +224,8 @@ usr/bin/pkg set-mediator [-nv] [-I \fIimplementation\fR]
     [--set-property \fIname_of_property\fR=\fIvalue\fR]
     [--add-property-value \fIname_of_property\fR=\fIvalue_to_add\fR]
     [--remove-property-value \fIname_of_property\fR=\fIvalue_to_remove\fR]
-    [--unset-property \fIname_of_property_to_delete\fR] [\fIpublisher\fR]
+    [--unset-property \fIname_of_property_to_delete\fR] 
+    [--proxy \fIproxy_to_use\fR] [\fIpublisher\fR]
 .fi
 
 .LP
@@ -233,7 +235,7 @@ usr/bin/pkg set-mediator [-nv] [-I \fIimplementation\fR]
 
 .LP
 .nf
-/usr/bin/pkg history [-Hl] [-t [\fItime\fR | \fItime\fR-\fItime\fR],...]
+/usr/bin/pkg history [-HNl] [-t [\fItime\fR | \fItime\fR-\fItime\fR],...]
     [-o \fIcolumn\fR,...] [-n \fInumber\fR]
 .fi
 
@@ -333,7 +335,7 @@ The following subcommands are supported:
 .ne 2
 .mk
 .na
-\fB\fBpkg refresh\fR [\fB--full\fR] [\fIpublisher\fR ...]\fR
+\fB\fBpkg refresh\fR [\fB-q\fR] [\fB--full\fR] [\fIpublisher\fR ...]\fR
 .ad
 .sp .6
 .RS 4n
@@ -347,6 +349,17 @@ Update the client's list of available packages and publisher metadata for all pu
 .sp .6
 .RS 4n
 Update the client's list of available packages and publisher metadata only for the specified publishers.
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB-q\fR\fR
+.ad
+.sp .6
+.RS 4n
+Hide progress messages during the requested operation.
 .RE
 
 .sp
@@ -1908,7 +1921,7 @@ Specify an alternative output format. Currently, only \fBtsv\fR (Tab Separated V
 .ne 2
 .mk
 .na
-\fB\fBpkg set-publisher\fR [\fB-Ped\fR] [\fB-k\fR \fIssl_key\fR] [\fB-c\fR \fIssl_cert\fR] [\fB-g\fR \fIorigin_to_add\fR | \fB--add-origin\fR \fIorigin_to_add\fR ...] [\fB-G\fR \fIorigin_to_remove\fR | \fB--remove-origin\fR \fIorigin_to_remove\fR ...] [\fB-m\fR \fImirror_to_add\fR | \fB--add-mirror\fR \fImirror_to_add\fR ...] [\fB-M\fR \fImirror_to_remove\fR | \fB--remove-mirror\fR \fImirror_to_remove\fR ...] [\fB--enable\fR] [\fB--disable\fR] [\fB--no-refresh\fR] [\fB--reset-uuid\fR] [\fB--non-sticky\fR] [\fB--sticky\fR] [\fB--search-after\fR \fIpublisher\fR] [\fB--search-before\fR \fIpublisher\fR] [\fB--search-first\fR] [\fB--approve-ca-cert\fR \fIpath_to_CA\fR] [\fB--revoke-ca-cert\fR \fIhash_of_CA_to_remove\fR] [\fB--unset-ca-cert\fR \fIhash_of_CA_to_remove\fR] [\fB--set-property\fR \fIname_of_property\fR=\fIvalue\fR] [\fB--add-property-value\fR \fIname_of_property\fR=\fIvalue_to_add\fR] [\fB--remove-property-value\fR \fIname_of_property\fR=\fIvalue_to_remove\fR] [\fB--unset-property\fR \fIname_of_property_to_delete\fR] \fIpublisher\fR\fR
+\fB\fBpkg set-publisher\fR [\fB-Ped\fR] [\fB-k\fR \fIssl_key\fR] [\fB-c\fR \fIssl_cert\fR] [\fB-g\fR \fIorigin_to_add\fR | \fB--add-origin\fR \fIorigin_to_add\fR ...] [\fB-G\fR \fIorigin_to_remove\fR | \fB--remove-origin\fR \fIorigin_to_remove\fR ...] [\fB-m\fR \fImirror_to_add\fR | \fB--add-mirror\fR \fImirror_to_add\fR ...] [\fB-M\fR \fImirror_to_remove\fR | \fB--remove-mirror\fR \fImirror_to_remove\fR ...] [\fB--enable\fR] [\fB--disable\fR] [\fB--no-refresh\fR] [\fB--reset-uuid\fR] [\fB--non-sticky\fR] [\fB--sticky\fR] [\fB--search-after\fR \fIpublisher\fR] [\fB--search-before\fR \fIpublisher\fR] [\fB--search-first\fR] [\fB--approve-ca-cert\fR \fIpath_to_CA\fR] [\fB--revoke-ca-cert\fR \fIhash_of_CA_to_remove\fR] [\fB--unset-ca-cert\fR \fIhash_of_CA_to_remove\fR] [\fB--set-property\fR \fIname_of_property\fR=\fIvalue\fR] [\fB--add-property-value\fR \fIname_of_property\fR=\fIvalue_to_add\fR] [\fB--remove-property-value\fR \fIname_of_property\fR=\fIvalue_to_remove\fR] [\fB--unset-property\fR \fIname_of_property_to_delete\fR] [\fB--proxy\fR \fIproxy_to_use\fR] \fIpublisher\fR\fR
 .ad
 .sp .6
 .RS 4n
@@ -2183,13 +2196,24 @@ Enable the publisher.
 Disable the publisher. A disabled publisher is not used when populating the package list or in certain package operations (install, uninstall, and update). However, the properties for a disabled publisher can still be set and viewed. If only one publisher exists, it cannot be disabled.
 .RE
 
+.sp
+.ne 2
+.mk
+.na
+\fB\fB--proxy\fR \fIproxy_to_use\fR\fR
+.ad
+.sp .6
+.RS 4n
+Use the specified web proxy URI to retrieve content for the specified origin (\fB-g\fR) or mirror (\fB-m\fR). The proxy value is stored as part of the publisher configuration. At run time, \fB$http_proxy\fR or related environment variables override this proxy setting. See the \fBcurl\fR(1) man page for the list of accepted environment variable names.
+.RE
+
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fB\fBpkg set-publisher\fR \fB-p\fR \fIrepo_uri\fR [\fB-Ped\fR] [\fB-k\fR \fIssl_key\fR] [\fB-c\fR \fIssl_cert\fR] [\fB--non-sticky\fR] [\fB--sticky\fR] [\fB--search-after\fR \fIpublisher\fR] [\fB--search-before\fR \fIpublisher\fR] [\fB--search-first\fR] [\fB--approve-ca-cert\fR \fIpath_to_CA\fR] [\fB--revoke-ca-cert\fR \fIhash_of_CA_to_remove\fR] [\fB--unset-ca-cert\fR \fIhash_of_CA_to_remove\fR] [\fB--set-property\fR \fIname_of_property\fR=\fIvalue\fR] [\fB--add-property-value\fR \fIname_of_property\fR=\fIvalue_to_add\fR] [\fB--remove-property-value\fR \fIname_of_property\fR=\fIvalue_to_remove\fR] [\fB--unset-property\fR \fIname_of_property_to_delete\fR] [\fIpublisher\fR]\fR
+\fB\fBpkg set-publisher\fR \fB-p\fR \fIrepo_uri\fR [\fB-Ped\fR] [\fB-k\fR \fIssl_key\fR] [\fB-c\fR \fIssl_cert\fR] [\fB--non-sticky\fR] [\fB--sticky\fR] [\fB--search-after\fR \fIpublisher\fR] [\fB--search-before\fR \fIpublisher\fR] [\fB--search-first\fR] [\fB--approve-ca-cert\fR \fIpath_to_CA\fR] [\fB--revoke-ca-cert\fR \fIhash_of_CA_to_remove\fR] [\fB--unset-ca-cert\fR \fIhash_of_CA_to_remove\fR] [\fB--set-property\fR \fIname_of_property\fR=\fIvalue\fR] [\fB--add-property-value\fR \fIname_of_property\fR=\fIvalue_to_add\fR] [\fB--remove-property-value\fR \fIname_of_property\fR=\fIvalue_to_remove\fR] [\fB--unset-property\fR \fIname_of_property_to_delete\fR] [\fB--proxy\fR \fIproxy_to_use\fR] [\fIpublisher\fR]\fR
 .ad
 .sp .6
 .RS 4n
@@ -2217,7 +2241,7 @@ Remove the configuration associated with the specified publisher or publishers.
 .ne 2
 .mk
 .na
-\fB\fBpkg history\fR [\fB-Hl\fR] [\fB-t\fR [\fItime\fR | \fItime\fR-\fItime\fR],...] [\fB-o\fR \fIcolumn\fR,...] [\fB-n\fR \fInumber\fR]\fR
+\fB\fBpkg history\fR [\fB-HNl\fR] [\fB-t\fR [\fItime\fR | \fItime\fR-\fItime\fR],...] [\fB-o\fR \fIcolumn\fR,...] [\fB-n\fR \fInumber\fR]\fR
 .ad
 .sp .6
 .RS 4n
@@ -2257,6 +2281,17 @@ Display log records for a comma-separated list of timestamps, formatted with \fB
 .sp .6
 .RS 4n
 Display log records in long format, which, in addition to the standard format, includes the outcome of the command, the time the command completed, the version and name of the client used, the name of the user who performed the operation, and any errors that were encountered while executing the command.
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB-N\fR\fR
+.ad
+.sp .6
+.RS 4n
+Display the release note text.
 .RE
 
 .sp
@@ -2409,6 +2444,17 @@ A summary of the outcome of this operation.
 .sp .6
 .RS 4n
 Additional information on the outcome of this operation.
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fBrelease_note\fR\fR
+.ad
+.sp .6
+.RS 4n
+Indicates whether this operation generated release notes.
 .RE
 
 .sp
@@ -2627,7 +2673,7 @@ Apply the default boot environment creation policy, \fBcreate-backup\fR.
 .ad
 .sp .6
 .RS 4n
-Requires a reboot for all package operations by performing them in a new boot environment set as active on the next boot. A backup bootnvironment is not created unless explicitly requested.
+Requires a reboot for all package operations by performing them in a new boot environment set as active on the next boot. A backup boot environment is not created unless explicitly requested.
 .sp
 This policy is the safest, but is more strict than most sites need since no packages can be added without a reboot.
 .RE
@@ -2642,7 +2688,7 @@ This policy is the safest, but is more strict than most sites need since no pack
 .ad
 .sp .6
 .RS 4n
-For package operations that require a reboot, a new bootironment is created and set as active on the next boot. If packages are modified or content that could affect the kernel is installed and the operation affects the live boot environment, a backup boot environment is created but not set as active. A backup boot environment can also be explicitly requested.
+For package operations that require a reboot, a new boot environment is created and set as active on the next boot. If packages are modified or content that could affect the kernel is installed and the operation affects the live boot environment, a backup boot environment is created but not set as active. A backup boot environment can also be explicitly requested.
 .sp
 This policy is potentially risky only if newly installed software causes system instability, which is possible but relatively rare.
 .RE
@@ -3163,7 +3209,22 @@ $ \fBpkg set-publisher -g /export/repo example.com\fR
 .sp
 
 .LP
-\fBExample 17 \fRVerify All Signed Packages
+\fBExample 17 \fRAdd a Publisher and Configure a Proxy
+.sp
+.LP
+Add a new publisher \fBmypub\fR with origin \fBhttp://server/repo\fR and proxy \fBhttp://webcache:8080\fR.
+
+.sp
+.in +2
+.nf
+$ \fBpkg set-publisher -g http://server/repo \e\fR
+\fB--proxy http://webcache:8080 mypub\fR
+.fi
+.in -2
+.sp
+
+.LP
+\fBExample 18 \fRVerify All Signed Packages
 .sp
 .LP
 Configure an image to verify all signed packages.
@@ -3177,7 +3238,7 @@ $ \fBpkg set-property signature-policy verify\fR
 .sp
 
 .LP
-\fBExample 18 \fRRequire All Packages To Be Signed
+\fBExample 19 \fRRequire All Packages To Be Signed
 .sp
 .LP
 Configure an image to require all packages to be signed, and require the string \fBexample.com\fR to be seen as a common name for one of the certificates in the chain of trust.
@@ -3191,7 +3252,7 @@ $ \fBpkg set-property signature-policy require-names example.com\fR
 .sp
 
 .LP
-\fBExample 19 \fRRequire All Packages From a Specified Publisher To Be Signed
+\fBExample 20 \fRRequire All Packages From a Specified Publisher To Be Signed
 .sp
 .LP
 Configure an image so that all packages installed from publisher \fBexample.com\fR must be signed.
@@ -3206,7 +3267,7 @@ $ \fBpkg set-publisher --set-property signature-policy=require-signatures \e\fR
 .sp
 
 .LP
-\fBExample 20 \fRRequire a Specified String in the Chain of Trust
+\fBExample 21 \fRRequire a Specified String in the Chain of Trust
 .sp
 .LP
 Add the string \fBfoo\fR to the image's list of common names that must be seen in a signature's chain of trust to be considered valid.
@@ -3220,7 +3281,7 @@ $ \fBpkg add-property-value signature-require-names foo\fR
 .sp
 
 .LP
-\fBExample 21 \fRRemove a String From the Chain of Trust for a Specified Publisher
+\fBExample 22 \fRRemove a String From the Chain of Trust for a Specified Publisher
 .sp
 .LP
 Remove the string \fBfoo\fR from the list of common names that must be seen to validate a signature for the publisher \fBexample.com\fR.
@@ -3235,7 +3296,7 @@ $ \fBpkg set-publisher --remove-property-value signature-require-names=foo \e\fR
 .sp
 
 .LP
-\fBExample 22 \fRAdd a Trusted CA Certificate
+\fBExample 23 \fRAdd a Trusted CA Certificate
 .sp
 .LP
 Add the certificate stored in \fB/tmp/example_file.pem\fR as a trusted CA certificate for the publisher \fBexample.com\fR.
@@ -3250,7 +3311,7 @@ $ \fBpkg set-publisher --approve-ca-cert /tmp/example_file.pem \e\fR
 .sp
 
 .LP
-\fBExample 23 \fRRevoke a Certificate
+\fBExample 24 \fRRevoke a Certificate
 .sp
 .LP
 Revoke the certificate with the hash \fBa12345\fR for publisher \fBexample.com\fR, preventing the certificate from validating any signatures for packages from \fBexample.com\fR.
@@ -3264,7 +3325,7 @@ $ \fBpkg set-publisher --revoke-ca-cert a12345 example.com\fR
 .sp
 
 .LP
-\fBExample 24 \fRForget About a Certificate
+\fBExample 25 \fRForget About a Certificate
 .sp
 .LP
 Make \fBpkg\fR forget that the certificate \fBa12345\fR was ever added or revoked by the user.
@@ -3278,7 +3339,7 @@ $ \fBpkg set-publisher --unset-ca-cert a12345 example.com\fR
 .sp
 
 .LP
-\fBExample 25 \fRDowngrade a Package
+\fBExample 26 \fRDowngrade a Package
 .sp
 .LP
 Downgrade the installed package \fBfoo@1.1\fR to an older version.
@@ -3292,7 +3353,7 @@ $ \fBpkg update foo@1.0\fR
 .sp
 
 .LP
-\fBExample 26 \fRSwitch Conflicting Package Installation
+\fBExample 27 \fRSwitch Conflicting Package Installation
 .sp
 .LP
 In the case of two conflicting packages, change which package is installed. Suppose package A depends on either package B or package C, and B and C are mutually exclusive. If A and B are installed, use the following command to switch to using C instead of B without uninstalling A:
@@ -3306,7 +3367,7 @@ $ \fBpkg install --reject B C\fR
 .sp
 
 .LP
-\fBExample 27 \fRList Packages in a Package Archive
+\fBExample 28 \fRList Packages in a Package Archive
 .sp
 .LP
 List all versions of all packages in a package archive.
@@ -3320,7 +3381,7 @@ $ \fBpkg list -f -g /my/archive.p5p\fR
 .sp
 
 .LP
-\fBExample 28 \fRList Packages in a Package Repository
+\fBExample 29 \fRList Packages in a Package Repository
 .sp
 .LP
 List all versions of all packages in a repository.
@@ -3334,7 +3395,7 @@ $ \fBpkg list -f -g http://example.com:10000\fR
 .sp
 
 .LP
-\fBExample 29 \fRDisplay Information About a Package in a Package Archive
+\fBExample 30 \fRDisplay Information About a Package in a Package Archive
 .sp
 .LP
 Display the package information for the latest version of a package in a package archive. The package might or might not be currently installed.
@@ -3348,7 +3409,7 @@ $ \fBpkg info -g /my/archive.p5p pkg_name\fR
 .sp
 
 .LP
-\fBExample 30 \fRDisplay Contents of a Package in a Package Archive
+\fBExample 31 \fRDisplay Contents of a Package in a Package Archive
 .sp
 .LP
 Display the contents of a package in a package archive. The package is not currently installed.
@@ -3362,7 +3423,7 @@ $ \fBpkg contents -g /my/archive.p5p pkg_name\fR
 .sp
 
 .LP
-\fBExample 31 \fRRemove All Publisher Origins and Mirrors
+\fBExample 32 \fRRemove All Publisher Origins and Mirrors
 .sp
 .LP
 Remove all of the origins and mirrors for a publisher and add a new origin.
