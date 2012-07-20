@@ -2598,7 +2598,7 @@ class LinkedImageException(ApiException):
             detach_from_parent=None,
             detach_parent_notsup=None,
             img_linked=None,
-            lin_malformed=False,
+            lin_malformed=None,
             link_to_self=False,
             parent_bad_img=None,
             parent_bad_notabs=None,
@@ -2656,28 +2656,28 @@ class LinkedImageException(ApiException):
 
                 err = None
 
-                if attach_bad_prop:
+                if attach_bad_prop is not None:
                         err = _("Invalid linked image attach property: %s") % \
                             attach_bad_prop
 
-                if attach_bad_prop_value:
+                if attach_bad_prop_value is not None:
                         assert type(attach_bad_prop_value) in [tuple, list]
                         assert len(attach_bad_prop_value) == 2
                         err =  _("Invalid linked image attach property "
                             "value: %s") % "=".join(attach_bad_prop_value)
 
-                if attach_child_notsup:
+                if attach_child_notsup is not None:
                         err = _("Linked image type does not support child "
                             "attach: %s") % attach_child_notsup
 
-                if attach_parent_notsup:
+                if attach_parent_notsup is not None:
                         err = _("Linked image type does not support parent "
                             "attach: %s") % attach_parent_notsup
 
-                if attach_root_as_child:
+                if attach_root_as_child is not None:
                         err = _("Cannot attach root image as child")
 
-                if child_bad_img:
+                if child_bad_img is not None:
                         if exitrv == None:
                                 exitrv = pkgdefs.EXIT_EACCESS
                         if lin:
@@ -2690,17 +2690,17 @@ class LinkedImageException(ApiException):
                                 err = _("Can't initialize child image "
                                     "at path: %s") % child_bad_img
 
-                if child_diverged:
+                if child_diverged is not None:
                         if exitrv == None:
                                 exitrv = pkgdefs.EXIT_DIVERGED
                         err = _("Linked image is diverged: %s") % \
                             child_diverged
 
-                if child_dup:
+                if child_dup is not None:
                         err = _("A linked child image with this name "
                             "already exists: %s") % child_dup
 
-                if child_nested:
+                if child_nested is not None:
                         cpath, ipath = child_nested
                         err = _("Child image '%(cpath)s' is nested "
                             "within another image: '%(ipath)s'") % {
@@ -2708,7 +2708,7 @@ class LinkedImageException(ApiException):
                                 "ipath": ipath,
                             }
 
-                if child_not_in_altroot:
+                if child_not_in_altroot is not None:
                         path, altroot = child_not_in_altroot
                         err = _("Child image '%(path)s' is not located "
                            "within the parent's altroot '%(altroot)s'") % {
@@ -2716,7 +2716,7 @@ class LinkedImageException(ApiException):
                                 "altroot": altroot
                             }
 
-                if child_not_nested:
+                if child_not_nested is not None:
                         cpath, ppath = child_not_nested
                         err = _("Child image '%(cpath)s' is not nested "
                             "within the parent image '%(ppath)s'") % {
@@ -2724,7 +2724,7 @@ class LinkedImageException(ApiException):
                                 "ppath": ppath,
                             }
 
-                if child_path_eaccess:
+                if child_path_eaccess is not None:
                         if exitrv == None:
                                 exitrv = pkgdefs.EXIT_EACCESS
                         if lin:
@@ -2737,15 +2737,15 @@ class LinkedImageException(ApiException):
                                 err = _("Can't access child image "
                                     "at path: %s") % child_path_eaccess
 
-                if child_path_notabs:
+                if child_path_notabs is not None:
                         err = _("Child path not absolute: %s") % \
                             child_path_notabs
 
-                if child_unknown:
+                if child_unknown is not None:
                         err = _("Unknown child linked image: %s") % \
                             child_unknown
 
-                if cmd_failed:
+                if cmd_failed is not None:
                         (rv, cmd, errout) = cmd_failed
                         err = _("The following subprocess returned an "
                             "unexpected exit code of %(rv)d:\n    %(cmd)s") % \
@@ -2755,48 +2755,48 @@ class LinkedImageException(ApiException):
                         err += _("\nAnd generated the following error "
                             "message:\n%(errout)s" % {"errout": errout})
 
-                if detach_child_notsup:
+                if detach_child_notsup is not None:
                         err = _("Linked image type does not support "
                             "child detach: %s") % detach_child_notsup
 
-                if detach_from_parent:
+                if detach_from_parent is not None:
                         if exitrv == None:
                                 exitrv = pkgdefs.EXIT_PARENTOP
                         err =  _("Parent linked to child, can not detach "
                             "child: %s") % detach_from_parent
 
-                if detach_parent_notsup:
+                if detach_parent_notsup is not None:
                         err = _("Linked image type does not support "
                             "parent detach: %s") % detach_parent_notsup
 
-                if img_linked:
+                if img_linked is not None:
                         err = _("Image already a linked child: %s") % \
                             img_linked
 
-                if lin_malformed:
-                        err = _("Invalid linked image name: %s") % \
+                if lin_malformed is not None:
+                        err = _("Invalid linked image name: '%s'") % \
                             lin_malformed
 
                 if link_to_self:
                         err = _("Can't link image to itself.")
 
-                if parent_bad_img:
+                if parent_bad_img is not None:
                         if exitrv == None:
                                 exitrv = pkgdefs.EXIT_EACCESS
                         err = _("Can't initialize parent image at path: %s") % \
                             parent_bad_img
 
-                if parent_bad_notabs:
+                if parent_bad_notabs is not None:
                         err = _("Parent path not absolute: %s") % \
                             parent_bad_notabs
 
-                if parent_bad_path:
+                if parent_bad_path is not None:
                         if exitrv == None:
                                 exitrv = pkgdefs.EXIT_EACCESS
                         err = _("Can't access parent image at path: %s") % \
                             parent_bad_path
 
-                if parent_not_in_altroot:
+                if parent_not_in_altroot is not None:
                         path, altroot = parent_not_in_altroot
                         err = _("Parent image '%(path)s' is not located "
                             "within the child's altroot '%(altroot)s'") % {
@@ -2804,9 +2804,10 @@ class LinkedImageException(ApiException):
                                 "altroot": altroot
                             }
 
-                if pkg_op_failed:
+                if pkg_op_failed is not None:
                         assert lin
                         (op, exitrv, errout, e) = pkg_op_failed
+                        assert op is not None
 
                         if e is None:
                                 err = _("""
@@ -2838,17 +2839,17 @@ The child generated the following output:
                                     "e": e,
                                 }
 
-                if self_linked:
+                if self_linked is not None:
                         err = _("Current image already a linked child: %s") % \
                             self_linked
 
-                if self_not_child:
+                if self_not_child is not None:
                         if exitrv == None:
                                 exitrv = pkgdefs.EXIT_NOPARENT
                         err = _("Current image is not a linked child: %s") % \
                             self_not_child
 
-                if unparsable_output:
+                if unparsable_output is not None:
                         (op, errout, e) = unparsable_output
                         err = _("""
 A '%(op)s' operation for child '%(lin)s' generated non-json output.

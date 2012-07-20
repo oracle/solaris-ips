@@ -78,7 +78,7 @@ Got a %s exception:
         if e_member == None:
                 return
 
-        if not getattr(e, e_member):
+        if getattr(e, e_member, None) is None:
                 raise RuntimeError("""
 Expected %s exception of type "%s".
 Got a %s exception with a differnt type:
@@ -108,6 +108,7 @@ class TestLinkedImageName(pkg5unittest.Pkg5TestCase):
 
                 # setup bad linked image names
                 bad_name = []
+                bad_name.append("")
                 bad_name.append("too:many:colons")
                 bad_name.append("notenoughcolons")
                 bad_name.append(":img2")   # no type

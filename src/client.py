@@ -308,6 +308,8 @@ def usage(usage_error=None, cmd=None, retcode=EXIT_BADOPT, full=False):
         adv_usage["rebuild-index"] = ""
         adv_usage["update-format"] = ""
 
+        priv_usage["remote"] = _(
+            "--ctlfd=file_descriptor --progfd=file_descriptor")
         priv_usage["list-linked"] = _("-H")
         priv_usage["attach-linked"] = _(
             "[-fnvq] [-C n] [--accept] [--licenses] [--no-index]\n"

@@ -492,7 +492,7 @@ class PkgRemote(object):
                 # pack up our results and enter the done state
                 self.__set_state_idle()
 
-                return (self.__pkg_op, rv, e, stdout, stderr)
+                return (rv, e, stdout, stderr)
 
         def abort(self):
                 """Public interface to abort an in-progress RPC operation."""

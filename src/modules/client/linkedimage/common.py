@@ -1861,7 +1861,7 @@ class LinkedImage(object):
 
         @staticmethod
         def __children_op(_pkg_op, _lic_list, _rvdict, _progtrack, _failfast,
-	    _expect_plan=False, _ignore_syncmd_nop=True, _pd=None, **kwargs):
+            _expect_plan=False, _ignore_syncmd_nop=True, _pd=None, **kwargs):
                 """An iterator function which performs a linked image
                 operation on multiple children in parallel.
 
@@ -1925,8 +1925,8 @@ class LinkedImage(object):
                         # raise an exception
                         _li_rvdict_raise_exceptions(_rvdict)
 
-                def __child_op_finish(lic, lic_list, _rvdict, _progtrack,
-                    _failfast, _expect_plan):
+                def __child_op_finish(lic, lic_list, _pkg_op, _rvdict,
+                    _progtrack, _failfast, _expect_plan):
                         """An iterator function invoked when a child has
                         finished an operation.
 
@@ -1941,7 +1941,8 @@ class LinkedImage(object):
 
                         lic_list.remove(lic)
 
-                        rvtuple, stdout, stderr = lic.child_op_rv(_expect_plan)
+                        rvtuple, stdout, stderr = lic.child_op_rv(_pkg_op,
+                            _expect_plan)
                         _li_rvtuple_check(rvtuple)
                         _rvdict[lic.child_name] = rvtuple
 
@@ -1979,7 +1980,8 @@ class LinkedImage(object):
                         if not lic.child_op_is_done():
                                 continue
                         for p_dict in __child_op_finish(lic, lic_setup,
-                            _rvdict, _progtrack, _failfast, _expect_plan):
+                            _pkg_op, _rvdict, _progtrack, _failfast,
+                            _expect_plan):
                                 yield p_dict
 
                 # keep track of currently running children
@@ -2018,7 +2020,7 @@ class LinkedImage(object):
                                 # a child finished processing
                                 progtrack_update = True
                                 for p_dict in __child_op_finish(lic,
-                                    lic_running, _rvdict, _progtrack,
+                                    lic_running, _pkg_op, _rvdict, _progtrack,
                                     _failfast, _expect_plan):
                                         yield p_dict
 
@@ -2778,7 +2780,7 @@ class LinkedImageChild(object):
                     noexecute=noexecute,
                     origins=[],
                     parsable_version=\
-			global_settings.client_output_parsable_version,
+                        global_settings.client_output_parsable_version,
                     quiet=global_settings.client_output_quiet,
                     refresh_catalogs=refresh_catalogs,
                     reject_pats=reject_list,
@@ -2818,7 +2820,7 @@ class LinkedImageChild(object):
                     noexecute=noexecute,
                     origins=[],
                     parsable_version=\
-			global_settings.client_output_parsable_version,
+                        global_settings.client_output_parsable_version,
                     quiet=global_settings.client_output_quiet,
                     refresh_catalogs=refresh_catalogs,
                     reject_pats=reject_list,
@@ -2918,7 +2920,7 @@ class LinkedImageChild(object):
                 # make sure there is some data from the child
                 return self.__pkg_remote.is_done()
 
-        def child_op_rv(self, expect_plan):
+        def child_op_rv(self, pkg_op, expect_plan):
                 """Public interface to get the result of an operation on a
                 child image.
 
@@ -2938,7 +2940,7 @@ class LinkedImageChild(object):
                 # make sure we're not going to block
                 assert self.__pkg_remote.is_done()
 
-                (pkg_op, rv, e, stdout, stderr) = self.__pkg_remote.result()
+                (rv, e, stdout, stderr) = self.__pkg_remote.result()
                 if e is not None:
                         rv = pkgdefs.EXIT_OOPS
 
