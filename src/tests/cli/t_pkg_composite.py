@@ -20,7 +20,7 @@
 # CDDL HEADER END
 #
 
-# Copyright (c) 2011, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2011, 2012, Oracle and/or its affiliates. All rights reserved.
 
 import testutils
 if __name__ == "__main__":
@@ -265,15 +265,23 @@ class TestPkgCompositePublishers(pkg5unittest.ManyDepotTestCase):
                 # different combinations of archives and repositories.
                 self.pkg("set-publisher -g %s -g %s test" % (self.signed_arc,
                     self.foo_rurl))
-                self.pkg("list -afH ")
+                self.pkg("list -afH")
                 expected = \
                     ("foo (test) 1.0 ---\n"
                     "signed (test) 1.0 ---\n")
                 output = self.reduceSpaces(self.output)
                 self.assertEqualDiff(expected, output)
 
-                self.pkg("set-publisher -G %s -g %s test" % (self.foo_rurl,
-                    self.foo_arc))
+                # Verify removing origins while others remain configured
+                # works as expected.
+                self.pkg("set-publisher -G %s test" % self.foo_rurl)
+                self.pkg("list -afH")
+                expected = "signed (test) 1.0 ---\n"
+                output = self.reduceSpaces(self.output)
+                self.assertEqualDiff(expected, output)
+
+                # Verify simply adding origins works as expected.
+                self.pkg("set-publisher -g %s test" % self.foo_arc)
                 self.pkg("set-publisher -g %s test" % self.incorp_arc)
                 self.pkg("set-publisher -g %s test2" % self.quux_arc)
                 self.pkg("list -afH")
@@ -287,6 +295,8 @@ class TestPkgCompositePublishers(pkg5unittest.ManyDepotTestCase):
                 output = self.reduceSpaces(self.output)
                 self.assertEqualDiff(expected, output)
 
+                # Verify removing and adding origins at the same time works as
+                # expected.
                 self.pkg("set-publisher -G %s -g %s test" % (self.foo_arc,
                     self.foo_rurl))
                 self.pkg("list -afH")
@@ -446,9 +456,7 @@ Packaging Date: %(pkg_date)s
                 self.pkg("uninstall \*")
                 self.pkg("set-publisher -G %s test" % self.signed_arc)
                 self.pkg("list -aH")
-                expected = \
-                    ("foo 1.0 ---\n"
-                    "signed 1.0 ---\n")
+                expected = "foo 1.0 ---\n"
                 output = self.reduceSpaces(self.output)
                 self.assertEqualDiff(expected, output)
 

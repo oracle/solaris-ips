@@ -1643,6 +1643,7 @@ pkg unset-publisher %s
                     for o in self.repository.origins
                 ]
 
+                removals = False
                 for entry in os.listdir(self.__origin_root):
                         opath = os.path.join(self.__origin_root, entry)
                         try:
@@ -1651,6 +1652,10 @@ pkg unset-publisher %s
                         except Exception:
                                 # Discard anything that isn't an origin.
                                 pass
+
+                        # An origin was removed, so publisher should inform
+                        # image to force image catalog rebuild.
+                        removals = True
 
                         # Not an origin or origin no longer exists; either way,
                         # it shouldn't exist here.
@@ -1688,7 +1693,7 @@ pkg unset-publisher %s
                                             fname)
                                         os.symlink(misc.relpath(src,
                                             self.catalog_root), dest)
-                        return
+                        return removals
 
                 # If there's more than one origin, then create a new catalog
                 # based on a composite of the catalogs for all origins.
@@ -1803,6 +1808,7 @@ pkg unset-publisher %s
                 ncat.batch_mode = False
                 ncat.finalize()
                 ncat.save()
+                return removals
 
         def __convert_v0_catalog(self, v0_cat, v1_root):
                 """Transforms the contents of the provided version 0 Catalog
@@ -2140,7 +2146,8 @@ pkg unset-publisher %s
 
                 # Finally, build a new catalog for this publisher based on a
                 # composite of the catalogs from all origins.
-                self.__rebuild_catalog()
+                if self.__rebuild_catalog():
+                        any_changed = True
 
                 return any_changed
 
