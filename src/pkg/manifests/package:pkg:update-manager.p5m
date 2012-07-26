@@ -18,7 +18,7 @@
 #
 # CDDL HEADER END
 #
-# Copyright (c) 2010, 2011, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2010, 2012, Oracle and/or its affiliates. All rights reserved.
 #
 
 set name=pkg.fmri value=pkg:/package/pkg/update-manager@$(PKGVERS)
@@ -113,7 +113,4 @@ dir  path=usr/share/update-manager/icons/hicolor/48x48/actions
 file path=usr/share/update-manager/icons/hicolor/48x48/actions/updatemanager.png
 legacy pkg=SUNWipkg-um version=0.1.1
 license cr_Oracle license=cr_Oracle
-depend type=require fmri=archiver/gnu-tar
 depend type=require fmri=gnome/config/gconf
-depend type=require fmri=text/gnu-grep
-depend type=require fmri=web/wget
