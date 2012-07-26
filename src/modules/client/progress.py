@@ -1482,7 +1482,12 @@ class ProgressTracker(ProgressTrackerFrontend, ProgressTrackerBackend):
                 self.dl_bytes.done()
 
                 if self.repub_pkgs.goalitems != 0:
-                        self._republish_output(OutSpec(last=True))
+                        outspec = OutSpec(last=True)
+                        # Get the header printed if we've not printed
+                        # anything else thus far (happens in dryrun mode).
+                        outspec.first = not self.repub_pkgs.printed
+                        self._republish_output(outspec)
+                        self.repub_pkgs.printed = True
 
         def lint_next_phase(self, goalitems, lint_phasetype):
                 self.lint_phasetype = lint_phasetype
