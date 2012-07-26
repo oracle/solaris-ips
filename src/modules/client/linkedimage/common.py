@@ -1892,7 +1892,7 @@ class LinkedImage(object):
                 '_pd' a PlanDescription pointer."""
 
                 if _lic_list:
-                        _progtrack.li_recurse_start(_pkg_op)
+                        _progtrack.li_recurse_start(_pkg_op, len(_lic_list))
 
                 if _pkg_op in [ pkgdefs.PKG_OP_AUDIT_LINKED,
                     pkgdefs.PKG_OP_PUBCHECK ]:
@@ -2005,12 +2005,10 @@ class LinkedImage(object):
                                 progtrack_update = False
                                 done = len(_lic_list) - len(lic_setup) - \
                                     len(lic_running)
-                                pending = len(_lic_list) - len(lic_running) - \
-                                    done
                                 lin_running = sorted([
                                     lic.child_name for lic in lic_running])
                                 _progtrack.li_recurse_status(lin_running,
-                                    done, pending)
+                                    done)
 
                         rlistrv = select.select(lic_running, [], [])[0]
                         for lic in rlistrv:

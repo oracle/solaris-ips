@@ -610,7 +610,7 @@ class ProgressTrackerBackend(object):
         def _li_recurse_output_output(self, lin, stdout, stderr): pass
 
         @pt_abstract
-        def _li_recurse_status_output(self, done, pending): pass
+        def _li_recurse_status_output(self, done): pass
 
         @pt_abstract
         def _li_recurse_progress_output(self, lin): pass
@@ -914,7 +914,7 @@ class ProgressTrackerFrontend(object):
                 pass
 
         @pt_abstract
-        def li_recurse_start(self, pkg_op):
+        def li_recurse_start(self, pkg_op, total):
                 """Call when we recurse into a child linked image."""
                 pass
 
@@ -924,7 +924,7 @@ class ProgressTrackerFrontend(object):
                 pass
 
         @pt_abstract
-        def li_recurse_status(self, lin_running, done, pending):
+        def li_recurse_status(self, lin_running, done):
                 """Call to update the progress tracker with the list of
                 images being operated on."""
                 pass
@@ -1087,6 +1087,7 @@ class ProgressTracker(ProgressTrackerFrontend, ProgressTrackerBackend):
                 self.linked_name = None
                 self.linked_running = []
                 self.linked_pkg_op = None
+                self.linked_total = 0
 
         def set_major_phase(self, majorphase):
                 self.major_phase = majorphase
@@ -1517,20 +1518,21 @@ class ProgressTracker(ProgressTrackerFrontend, ProgressTrackerBackend):
                 """Called once an image determines its linked image name."""
                 self.linked_name = lin
 
-        def li_recurse_start(self, pkg_op):
+        def li_recurse_start(self, pkg_op, total):
                 """Called when we recurse into a child linked image."""
                 self.linked_pkg_op = pkg_op
+                self.linked_total = total
                 self._li_recurse_start_output()
 
         def li_recurse_end(self):
                 """Called when we return from a child linked image."""
                 self._li_recurse_end_output()
 
-        def li_recurse_status(self, lin_running, done, pending):
+        def li_recurse_status(self, lin_running, done):
                 """Call to update the progress tracker with the list of
                 images being operated on."""
                 self.linked_running = sorted(lin_running)
-                self._li_recurse_status_output(done, pending)
+                self._li_recurse_status_output(done)
 
         def li_recurse_output(self, lin, stdout, stderr):
                 """Call to display output from linked image operations."""
@@ -2030,14 +2032,13 @@ class CommandLineProgressTracker(ProgressTracker):
                 self.__li_dump_output(stdout)
                 self.__li_dump_output(stderr)
 
-        def _li_recurse_status_output(self, done, pending):
+        def _li_recurse_status_output(self, done):
                 if self.linked_pkg_op == pkgdefs.PKG_OP_PUBCHECK:
                         return
 
-                total = len(self.linked_running) + pending + done
                 running = " ".join([str(i) for i in self.linked_running])
                 msg = _("Linked images: %s done; %d working: %s") % \
-                    (format_pair("%d", done, total),
+                    (format_pair("%d", done, self.linked_total),
                     len(self.linked_running), running)
                 self._pe.cprint(self._phase_prefix() + msg)
 
@@ -2457,8 +2458,11 @@ class FancyUNIXProgressTracker(ProgressTracker):
         def _li_recurse_end_output(self):
                 if self.linked_pkg_op == pkgdefs.PKG_OP_PUBCHECK:
                         return
-                #self._pe.cprint(_("Finished processing linked images."),
-                #    erase=True)
+                msg = _("%(phasename)s linked: %(numdone)s done") % {
+                    "phasename": self.li_phase_names[self.major_phase],
+                    "numdone": format_pair("%d", self.linked_total,
+                        self.linked_total)}
+                self._pe.cprint(msg, erase=True)
 
         def __li_dump_output(self, output):
                 if not output:
@@ -2483,17 +2487,16 @@ class FancyUNIXProgressTracker(ProgressTracker):
                 self.__li_dump_output(stdout)
                 self.__li_dump_output(stderr)
 
-        def _li_recurse_status_output(self, done, pending):
+        def _li_recurse_status_output(self, done):
                 if self.linked_pkg_op == pkgdefs.PKG_OP_PUBCHECK:
                         return
 
                 assert self.major_phase in self.li_phase_names, self.major_phase
 
-                total = len(self.linked_running) + pending + done
                 running = " ".join([str(i) for i in self.linked_running])
                 msg = _("%s linked: %s done; %d working: %s") % \
                     (self.li_phase_names[self.major_phase],
-                    format_pair("%d", done, total),
+                    format_pair("%d", done, self.linked_total),
                     len(self.linked_running), running)
                 self._pe.cprint(msg, erase=True)
 

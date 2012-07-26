@@ -216,16 +216,15 @@ class GuiProgressTracker(progress.ProgressTracker):
                 self.__li_dump_output(stdout)
                 self.__li_dump_output(stderr)
 
-        def _li_recurse_status_output(self, done, pending):
+        def _li_recurse_status_output(self, done):
                 if self.linked_pkg_op == pkgdefs.PKG_OP_PUBCHECK:
                         return
 
                 i = "level1" if self.indent else ""
 
-                total = len(self.linked_running) + pending + done
                 running = " ".join([str(s) for s in self.linked_running])
                 msg = _("Linked images: %s done; %d working: %s\n") % \
-                    (progress.format_pair("%d", done, total),
+                    (progress.format_pair("%d", done, self.linked_total),
                     len(self.linked_running), running)
                 self.update_details_text(msg, i)
 
