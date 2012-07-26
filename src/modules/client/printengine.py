@@ -32,6 +32,7 @@ import errno
 import logging
 import os
 import re
+import termios
 import time
 from abc import ABCMeta, abstractmethod
 import StringIO
@@ -50,6 +51,11 @@ class PrintEngine(object):
         __metaclass__ = ABCMeta
 
         def __init__(self):
+                pass
+
+        @abstractmethod
+        def isslow(self):
+                """Returns true if out_file is 'slow' (<=9600 baud)."""
                 pass
 
         @abstractmethod
@@ -116,6 +122,15 @@ class POSIXPrintEngine(PrintEngine):
                 # to drop delays specified in termcap (delays are in the
                 # form: $<[0-9]+>).
                 self._out_file.write(self.__putp_re.sub("", string))
+
+        def isslow(self):
+                """Returns true if out_file is 'slow' (<=9600 baud)."""
+                b = termios.B38400   # assume it's fast if we can't tell.
+                try:
+                        b = termios.tcgetattr(self._out_file)[5]
+                except termios.error:
+                        pass
+                return b <= termios.B9600
 
         def erase(self):
                 """Send sequence to erase the current line to _out_file."""
@@ -213,6 +228,10 @@ class LoggingPrintEngine(PrintEngine):
                 self._stringio = StringIO.StringIO()
                 self._pxpe = POSIXPrintEngine(self._stringio, False)
 
+        def isslow(self):
+                """Returns true if out_file is 'slow' (<=9600 baud)."""
+                return False
+
         def cprint(self, *args, **kwargs):
                 """Accumulates output into a buffer, emitting messages to
                 the _logger when full lines are available."""
@@ -259,6 +278,8 @@ def test_logging_printengine(output_file):
             "it's working.")
         pe.cprint("You need to see one more line after this one.")
         pe.cprint("This should be the last line, printed by flushing", end='')
+        # just test that it works
+        pe.isslow()
         pe.flush()
 
 
@@ -334,3 +355,6 @@ def test_posix_printengine(output_file, ttymode):
         pe.cprint("testing flush (2)")
         pe.flush()
         pe.cprint("This should be on the next line (with no nl's intervening).")
+        # just test that it works
+        pe.isslow()
+

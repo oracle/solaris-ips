@@ -2086,8 +2086,9 @@ class FancyUNIXProgressTracker(ProgressTracker):
         # avoid spamming a slow terminal.
         #
         TERM_DELAY = 0.10
+        TERM_DELAY_SLOW = 0.25
 
-        def __init__(self, output_file=sys.stdout, term_delay=TERM_DELAY):
+        def __init__(self, output_file=sys.stdout, term_delay=None):
                 ProgressTracker.__init__(self)
 
                 try:
@@ -2096,6 +2097,9 @@ class FancyUNIXProgressTracker(ProgressTracker):
                 except printengine.PrintEngineException:
                         raise ProgressTrackerException()
 
+                if term_delay is None:
+                        term_delay = self.TERM_DELAY_SLOW if self._pe.isslow() \
+                            else self.TERM_DELAY
                 self._ptimer = PrintTimer(term_delay)
 
                 self._phases_hdr_printed = False
