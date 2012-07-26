@@ -312,6 +312,7 @@ pylint_targets = [
         'pkg.client.progress',
         'pkg.misc',
         'pkg.pipeutils',
+        'checkforupdates',
         ]
 
 web_files = []
