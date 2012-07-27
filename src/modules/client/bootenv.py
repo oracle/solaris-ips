@@ -20,7 +20,7 @@
 # CDDL HEADER END
 #
 
-# Copyright (c) 2008, 2011, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2008, 2012, Oracle and/or its affiliates. All rights reserved.
 
 import errno
 import os
@@ -285,32 +285,17 @@ class BootEnv(object):
 
         @staticmethod
         def get_be_list(raise_error=False):
+                # This check enables the test suite to run much more quickly.
+                # It is necessary because pkg5unittest (eventually) imports this
+                # module before the environment is sanitized.
+                if "PKG_NO_LIVE_ROOT" in os.environ:
+                        return BootEnvNull.get_be_list()
                 # Check for the old beList() API since pkg(1) can be
                 # back published and live on a system without the 
                 # latest libbe.
                 rc = 0
 
                 beVals = be.beList()
-                # XXX temporary workaround for ON bug #7043482 (needed for
-                # successful test suite runs on b166-b167).
-                if portable.util.get_canonical_os_name() == "sunos":
-                        for entry in os.listdir("/proc/self/path"):
-                                try:
-                                        int(entry)
-                                except ValueError:
-                                        # Only interested in file descriptors.
-                                        continue
-
-                                fpath = os.path.join("/proc/self/path", entry)
-                                try:
-                                        if os.readlink(fpath) == \
-                                            "/etc/dev/cro_db":
-                                                os.close(int(entry))
-                                except OSError, e:
-                                        if e.errno not in (errno.ENOENT,
-                                            errno.EBADFD):
-                                                raise
-
                 if isinstance(beVals[0], int):
                         rc, beList = beVals
                 else:
@@ -676,6 +661,7 @@ beadm activate %(be_name_clone)s
 
                 self.destroy_snapshot()
 
+
 class BootEnvNull(object):
 
         """BootEnvNull is a class that gets used when libbe doesn't exist."""
@@ -722,7 +708,7 @@ class BootEnvNull(object):
 
         @staticmethod
         def get_be_list():
-                pass
+                return []
 
         @staticmethod
         def get_be_name(path):

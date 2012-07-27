@@ -4770,7 +4770,13 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
         def log_operation_start(self, name):
                 """Marks the start of an operation to be recorded in image
                 history."""
-                be_name, be_uuid = bootenv.BootEnv.get_be_name(self._img.root)
+                # If an operation is going to be discarded, then don't take the
+                # performance hit of actually getting the BE info.
+                if name in history.DISCARDED_OPERATIONS:
+                        be_name, be_uuid = None, None
+                else:
+                        be_name, be_uuid = bootenv.BootEnv.get_be_name(
+                            self._img.root)
                 self._img.history.log_operation_start(name,
                     be_name=be_name, be_uuid=be_uuid)
 
