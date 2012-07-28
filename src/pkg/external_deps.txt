@@ -32,6 +32,7 @@
     pkg:/runtime/python-27
     pkg:/service/network/dns/mdns
     pkg:/shell/ksh
+    pkg:/shell/ksh93
     pkg:/system/core-os
     pkg:/system/font/xorg/xorg-core
     pkg:/system/header
