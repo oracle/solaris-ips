@@ -276,6 +276,11 @@ file path=etc/crypto/kcf.conf group=sys \\
     original_name=SUNWckr:etc/crypto/kcf.conf preserve=true
 file path=etc/name_to_sysnum group=sys original_name=SUNWckr:etc/name_to_sysnum \\
     preserve=renameold
+file path=etc/sys= group=sys hash=tmp/sys=
+file path=etc/sys=123 group=sys hash=tmp/sys=123
+file path="etc/sys white space" group=sys hash='tmp/sys white space'
+file path='etc/sys \" bs' group=sys hash='tmp/sys \" bs'
+file path='etc/sys"' group=sys hash='tmp/sys"'
 file path=etc/system group=sys original_name=SUNWckr:etc/system preserve=true
 $(i386_ONLY)file path=kernel/$(ARCH64)/genunix group=sys mode=0755 \\
     reboot-needed=true
@@ -980,6 +985,19 @@ link path=etc facet.devel=true target=opt/oldetc
 file mode=0755 path=etc/example variant.arch=i386 \\
     group=root facet.devel=true owner=root
 
+# These actions contain path and hash attributes with whitespace, quotes, and
+# equal characters and should retain them when formatted (including hash
+# attributes).
+file path=etc/sys= hash=tmp/sys=
+file path=etc/sys=123 hash=tmp/sys=123
+file path="etc/sys white space" hash='tmp/sys white space'
+file path='etc/sys \" bs' hash='tmp/sys \" bs'
+file path='etc/sys"' hash='tmp/sys"'
+
+# This action contains a hash attribute which doesn't need special handling, so
+# should be transformed to the standard position.
+file path=etc/foo hash=etc/foo
+
 # This action has exactly 80 characters, so shouldn't be wrapped.
 dir mode=0755 path=etc variant.arch=i386 group=root facet.devel=false owner=root
 # This action has one attribute past 80 characters, so only variant should be
@@ -1104,6 +1122,19 @@ driver name=rum clone_perms="rum 0666 root sys" perms="* 0666 root sys" \\
     alias=usbb05,1723 variant.arch=i386
 file path=etc/example group=root mode=0755 owner=root facet.devel=true \\
     variant.arch=i386
+
+# This action contains a hash attribute which doesn't need special handling, so
+# should be transformed to the standard position.
+file etc/foo path=etc/foo
+file path='etc/sys " bs' hash='tmp/sys " bs'
+file path="etc/sys white space" hash="tmp/sys white space"
+file path='etc/sys"' hash='tmp/sys"'
+
+# These actions contain path and hash attributes with whitespace, quotes, and
+# equal characters and should retain them when formatted (including hash
+# attributes).
+file path=etc/sys= hash=tmp/sys=
+file path=etc/sys=123 hash=tmp/sys=123
 # This action has only one attribute past 80 characters, so should be unwrapped.
 file \\
     path=usr/share/software/example/of/really/long/path/that/really/should/be/shorter
@@ -1185,6 +1216,19 @@ link path=etc target=opt/oldetc facet.devel=true
 file path=etc/example owner=root group=root mode=0755 facet.devel=true \\
     variant.arch=i386
 hardlink path=etc/example target=opt/etc/example facet.devel=true
+
+# This action contains a hash attribute which doesn't need special handling, so
+# should be transformed to the standard position.
+file etc/foo path=etc/foo
+file path='etc/sys " bs' hash='tmp/sys " bs'
+file path="etc/sys white space" hash="tmp/sys white space"
+file path='etc/sys"' hash='tmp/sys"'
+
+# These actions contain path and hash attributes with whitespace, quotes, and
+# equal characters and should retain them when formatted (including hash
+# attributes).
+file path=etc/sys= hash=tmp/sys=
+file path=etc/sys=123 hash=tmp/sys=123
 # This action has one attribute past 80 characters, so only variant should be
 # wrapped after the attributes are reordered.
 dir  path=opt/etc owner=root group=root mode=0755 facet.devel=false \\
