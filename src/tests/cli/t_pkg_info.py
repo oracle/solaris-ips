@@ -28,10 +28,11 @@ if __name__ == "__main__":
 import pkg5unittest
 
 import os
-import pkg.fmri as fmri
 import shutil
 import unittest
 
+import pkg.actions as actions
+import pkg.fmri as fmri
 
 class TestPkgInfoBasics(pkg5unittest.SingleDepotTestCase):
         # Only start/stop the depot once (instead of for every test)
@@ -601,6 +602,99 @@ Packaging Date: %(pkg_date)s
                 self.assertEqual("tmp/copyright1\n", self.output)
                 self.pkg("info -r --license bronze@0.5")
                 self.assertEqual("tmp/copyright0\n", self.output)
+
+
+class TestPkgInfoPerTestRepo(pkg5unittest.SingleDepotTestCase):
+        """A separate test class is needed because these tests modify packages
+        after they've been published and need to avoid corrupting packages for
+        other tests."""
+
+        persistent_setup = False
+
+        bronze10 = """
+            open bronze@1.0,5.11-0:20110908T004546Z
+            add dir mode=0755 owner=root group=bin path=/usr
+            add dir mode=0755 owner=root group=bin path=/usr/bin
+            add file tmp/sh mode=0555 owner=root group=bin path=/usr/bin/sh
+            add link path=/usr/bin/jsh target=./sh
+            add file tmp/bronze1 mode=0444 owner=root group=bin path=/etc/bronze1
+            add file tmp/bronze2 mode=0444 owner=root group=bin path=/etc/bronze2
+            add file tmp/bronzeA1 mode=0444 owner=root group=bin path=/A/B/C/D/E/F/bronzeA1
+            add license tmp/copyright1 license=copyright
+            close
+        """
+
+        misc_files = [ "tmp/bronzeA1", "tmp/bronze1", "tmp/bronze2", "tmp/cat",
+            "tmp/copyright1", "tmp/sh"]
+
+        def setUp(self):
+                pkg5unittest.SingleDepotTestCase.setUp(self)
+                self.make_misc_files(self.misc_files)
+                self.plist = self.pkgsend_bulk(self.rurl, (self.bronze10))
+
+        def __mangle_license(self, fmri):
+                repo = self.dc.get_repo()
+                m_path = repo.manifest(fmri)
+                with open(m_path, "rb") as fh:
+                        fmri_lines = fh.readlines()
+                with open(m_path, "wb") as fh:
+                        a = None
+                        for l in fmri_lines:
+                                if "license=copyright" in l:
+                                        continue
+                                elif "path=etc/bronze1" in l:
+                                        a = actions.fromstr(l)
+                                fh.write(l)
+                        self.assert_(a)
+                        l = """\
+license %(hash)s license=foo chash=%(chash)s pkg.csize=%(csize)s \
+pkg.size=%(size)s""" % {
+    "hash":a.hash,
+    "chash":a.attrs["chash"],
+    "csize":a.attrs["pkg.csize"],
+    "size":a.attrs["pkg.size"]
+}
+                        fh.write(l)
+                repo.rebuild()
+
+        def test_info_installed_changed_manifest(self):
+                """Test that if an installed manifest has changed in the
+                repository the original manifest is used for pkg info and info
+                -r."""
+
+                self.image_create(self.rurl)
+                self.pkg("install bronze")
+
+                self.pkg("info --license bronze")
+                self.assert_("tmp/copyright1" in self.output)
+                self.__mangle_license(self.plist[0])
+
+                self.pkg("refresh --full")
+
+                self.pkg("info --license bronze")
+                self.assert_("tmp/bronze1" not in self.output)
+                self.assert_("tmp/copyright1" in self.output)
+
+                self.pkg("info -r --license bronze")
+                self.assert_("tmp/bronze1" not in self.output)
+                self.assert_("tmp/copyright1" in self.output)
+
+        def test_info_uninstalled_changed_manifest(self):
+                """Test that if an uninstalled manifest has changed in the
+                repository but is cached locally, that the changed manifest is
+                reflected in info -r."""
+
+                # First test remote retrieval.
+                self.image_create(self.rurl)
+
+                self.pkg("info -r  --license bronze")
+                self.assert_("tmp/copyright1" in self.output)
+                self.__mangle_license(self.plist[0])
+                self.pkg("refresh --full")
+
+                self.pkg("info -r  --license bronze")
+                self.assert_("tmp/bronze1" in self.output)
+                self.assert_("tmp/copyright1" not in self.output)
 
 
 if __name__ == "__main__":

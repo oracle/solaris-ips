@@ -1644,11 +1644,18 @@ def resolve_deps(manifest_paths, api_inst, system_patterns, prune_attrs=False):
                                 # the information to use.
                                 if stem in resolving_pkgs:
                                         continue
-                                pfmri = fmri.PkgFmri("pkg:/%s@%s" % (stem, ver))
-                                if system_patterns:
-                                        sys_fmris.add(pfmri.pkg_name)
+                                # To get the manifest, we need an fmri with a
+                                # publisher because we need to be able to check
+                                # if the package is installed.
+                                pfmri = fmri.PkgFmri(publisher=pub, name=stem,
+                                    version=ver)
                                 mfst = api_inst.get_manifest(pfmri,
                                     all_variants=True)
+                                # But we don't want fmris with publishers as
+                                # targets of dependencies, so remove the
+                                # publisher.
+                                pfmri.publisher = None
+                                sys_fmris.add(pfmri.pkg_name)
                                 distro_vars.merge_values(
                                     mfst.get_all_variants())
                                 package_vars[stem] = mfst.get_all_variants()

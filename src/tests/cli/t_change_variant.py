@@ -20,7 +20,7 @@
 # CDDL HEADER END
 #
 
-# Copyright (c) 2009, 2011, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2009, 2012, Oracle and/or its affiliates. All rights reserved.
 
 import testutils
 if __name__ == "__main__":
@@ -443,6 +443,68 @@ class TestPkgChangeVariant(pkg5unittest.SingleDepotTestCase):
                 self.pkg("change-variant --parsable=0 variant.arch=i386")
                 self.assertEqualParsable(self.output, change_variants=[
                     ["variant.arch", "i386"]])
+
+
+class TestPkgChangeVariantPerTestRepo(pkg5unittest.SingleDepotTestCase):
+        """A separate test class is needed because these tests modify packages
+        after they've been published and need to avoid corrupting packages for
+        other tests."""
+
+        # Only start/stop the depot once (instead of for every test)
+        persistent_setup = False
+        # Tests in this suite use the read only data directory.
+        need_ro_data = True
+
+        pkg_shared = """
+        open pkg_shared@1.0,5.11-0
+        add set name=variant.arch value=sparc value=i386 value=zos
+        add set name=variant.opensolaris.zone value=global value=nonglobal
+        add dir mode=0755 owner=root group=bin path=/shared
+        add dir mode=0755 owner=root group=bin path=/unique
+        add file tmp/pkg_shared/shared/common mode=0555 owner=root group=bin path=shared/common
+        add file tmp/pkg_shared/shared/pkg_shared_i386 mode=0555 owner=root group=bin path=shared/pkg_shared variant.arch=i386
+        add file tmp/pkg_shared/shared/pkg_shared_sparc mode=0555 owner=root group=bin path=shared/pkg_shared variant.arch=sparc
+        add file tmp/pkg_shared/shared/global_motd mode=0555 owner=root group=bin path=shared/zone_motd variant.opensolaris.zone=global
+        add file tmp/pkg_shared/shared/nonglobal_motd mode=0555 owner=root group=bin path=shared/zone_motd variant.opensolaris.zone=nonglobal
+        add file tmp/pkg_shared/unique/global mode=0555 owner=root group=bin path=unique/global variant.opensolaris.zone=global
+        add file tmp/pkg_shared/unique/nonglobal mode=0555 owner=root group=bin path=unique/nonglobal variant.opensolaris.zone=nonglobal
+
+        close"""
+
+        misc_files = [
+            "tmp/pkg_shared/shared/common",
+            "tmp/pkg_shared/shared/pkg_shared_i386",
+            "tmp/pkg_shared/shared/pkg_shared_sparc",
+            "tmp/pkg_shared/shared/global_motd",
+            "tmp/pkg_shared/shared/nonglobal_motd",
+            "tmp/pkg_shared/unique/global",
+            "tmp/pkg_shared/unique/nonglobal"
+        ]
+
+        def setUp(self):
+                pkg5unittest.SingleDepotTestCase.setUp(self)
+
+                self.make_misc_files(self.misc_files)
+                self.pkgsend_bulk(self.rurl, self.pkg_shared)
+
+        def test_change_variants_with_changed_manifest(self):
+                """Test that if a package is installed but its manifest has
+                changed in the repository, change variants doesn't use the
+                changes."""
+
+                self.image_create(self.rurl, variants={
+                    "variant.arch": "i386",
+                    "variant.opensolaris.zone": "nonglobal"
+                })
+                self.seed_ta_dir("ta3")
+                self.pkg("install pkg_shared")
+                self.pkg("set-property signature-policy require-signatures")
+                self.pkg("change-variant variant.arch=sparc", exit=1)
+
+                # Specify location as filesystem path.
+                self.pkgsign_simple(self.dc.get_repodir(), "pkg_shared")
+
+                self.pkg("change-variant variant.arch=sparc", exit=1)
 
 
 if __name__ == "__main__":

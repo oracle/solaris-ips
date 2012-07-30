@@ -20,7 +20,7 @@
 # CDDL HEADER END
 #
 
-# Copyright (c) 2008, 2011, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2008, 2012, Oracle and/or its affiliates. All rights reserved.
 
 import testutils
 if __name__ == "__main__":
@@ -273,6 +273,62 @@ class TestPkgContentsBasics(pkg5unittest.SingleDepotTestCase):
                 self.assert_(self.output.startswith("pkg://test/bronze"))
                 self.assert_("pkg://test2/bronze" in self.output)
                 self.assert_("pkg://test3/bronze" in self.output)
+
+
+class TestPkgContentsPerTestRepo(pkg5unittest.SingleDepotTestCase):
+        """A separate test class is needed because these tests modify packages
+        after they've been published and need to avoid corrupting packages for
+        other tests."""
+
+        persistent_setup = False
+        # Tests in this suite use the read only data directory.
+        need_ro_data = True
+
+        nopathA10 = """
+            open nopathA@1.0,5.11-0
+            add license tmp/copyright1 license=copyright
+            close
+        """
+
+        misc_files = ["tmp/copyright1"]
+
+        def setUp(self):
+                pkg5unittest.SingleDepotTestCase.setUp(self)
+                self.make_misc_files(self.misc_files)
+                self.plist = self.pkgsend_bulk(self.rurl, (self.nopathA10))
+
+
+        def test_contents_installed_changed_manifest(self):
+                """Test that if an installed manifest has changed in the
+                repository the original manifest is used for pkg contents and
+                contents -r."""
+
+                self.image_create(self.rurl)
+                self.pkg("install nopathA")
+
+                # Specify location as filesystem path.
+                self.pkgsign_simple(self.dc.get_repodir(), "nopathA")
+                self.pkg("refresh --full")
+
+                self.pkg("contents -m nopathA")
+                self.assert_("signature" not in self.output)
+                self.pkg("contents -r -m nopathA")
+                self.assert_("signature" not in self.output)
+
+        def test_contents_uninstalled_changed_manifest(self):
+                """Test that if an uninstalled manifest has changed in the
+                repository but is cached locally, that the changed manifest is
+                reflected in contents -r."""
+
+                self.image_create(self.rurl)
+                self.pkg("contents -r -m nopathA")
+
+                # Specify location as filesystem path.
+                self.pkgsign_simple(self.dc.get_repodir(), "nopathA")
+                self.pkg("refresh")
+
+                self.pkg("contents -r -m nopathA")
+                self.assert_("signature" in self.output)
 
 
 if __name__ == "__main__":

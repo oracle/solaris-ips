@@ -127,12 +127,6 @@ class TestPkgTempSources(pkg5unittest.ManyDepotTestCase):
                             os.path.join(self.raw_trust_anchor_dir, name),
                             os.path.join(dest_dir, name))
 
-        def image_create(self, *args, **kwargs):
-                pkg5unittest.ManyDepotTestCase.image_create(self,
-                    *args, **kwargs)
-                self.ta_dir = os.path.join(self.img_path(), "etc/certs/CA")
-                os.makedirs(self.ta_dir)
-
         def __publish_packages(self, rurl):
                 """Private helper function to publish packages needed for
                 testing.

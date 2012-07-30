@@ -20,7 +20,7 @@
 # CDDL HEADER END
 #
 
-# Copyright (c) 2008, 2011, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2008, 2012, Oracle and/or its affiliates. All rights reserved.
 
 import testutils
 if __name__ == "__main__":
@@ -41,6 +41,8 @@ class TestFix(pkg5unittest.SingleDepotTestCase):
 
         # Don't need to restart depot for every test.
         persistent_setup = True
+        # Tests in this suite use the read only data directory.
+        need_ro_data = True
 
         amber10 = """
             open amber@1.0,5.11-0
@@ -323,6 +325,24 @@ class TestFix(pkg5unittest.SingleDepotTestCase):
 
                 self.pkg("fix drv")
                 self.pkg("verify")
+
+        def test_fix_changed_manifest(self):
+                """Test that running package fix won't change the manifest of an
+                installed package even if it has changed in the repository."""
+
+                self.image_create(self.rurl)
+                self.pkg("install file")
+
+                self.pkg("set-property signature-policy require-signatures")
+                self.pkg("fix", exit=1)
+
+                # Specify location as filesystem path.
+                self.pkgsign_simple(self.dc.get_repodir(), "file")
+
+                self.pkg("fix", exit=1)
+                # Run it one more time to ensure that the manifest on disk
+                # wasn't changed.
+                self.pkg("fix", exit=1)
 
 
 if __name__ == "__main__":

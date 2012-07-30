@@ -459,6 +459,11 @@ if __name__ == "__main__":
                         self.keys_dir = os.path.join(self.path_to_certs, "keys")
                         self.cs_dir = os.path.join(self.path_to_certs,
                             "code_signing_certs")
+                        self.chain_certs_dir = os.path.join(self.path_to_certs,
+                            "chain_certs")
+                        self.raw_trust_anchor_dir = os.path.join(
+                            self.path_to_certs, "trust_anchors")
+                        self.crl_dir = os.path.join(self.path_to_certs, "crl")
 
                 #
                 # TMPDIR affects the behavior of mkdtemp and mkstemp.
@@ -2123,6 +2128,8 @@ class PkgSendOpenException(Pkg5CommonException):
 class CliTestCase(Pkg5TestCase):
         bail_on_fail = False
 
+        image_files = []
+
         def setUp(self, image_count=1):
                 Pkg5TestCase.setUp(self)
 
@@ -2185,6 +2192,16 @@ class CliTestCase(Pkg5TestCase):
                     PKG_CLIENT_NAME, cmdpath=cmd_path)
                 return res
 
+        def __setup_signing_files(self):
+                if not getattr(self, "need_ro_data", False):
+                        return
+                # Set up the trust anchor directory
+                self.ta_dir = os.path.join(self.img_path(), "etc/certs/CA")
+                os.makedirs(self.ta_dir)
+                for f in self.image_files:
+                        with open(os.path.join(self.img_path(), f), "wb") as fh:
+                                fh.close()
+
         def image_create(self, repourl=None, destroy=True, fs=(), **kwargs):
                 """A convenience wrapper for callers that only need basic image
                 creation functionality.  This wrapper creates a full (as opposed
@@ -2215,6 +2232,7 @@ class CliTestCase(Pkg5TestCase):
                     pkg.client.api.IMG_TYPE_ENTIRE, False, repo_uri=repourl,
                     progtrack=progtrack, force=force,
                     **kwargs)
+                self.__setup_signing_files()
                 return api_inst
 
         def pkg_image_create(self, repourl=None, prefix=None,
@@ -2248,6 +2266,7 @@ class CliTestCase(Pkg5TestCase):
                 if retcode != exit:
                         raise UnexpectedExitCodeException(cmdline, 0,
                             retcode, output)
+                self.__setup_signing_files()
                 return retcode
 
         def image_destroy(self):
@@ -2342,6 +2361,17 @@ class CliTestCase(Pkg5TestCase):
                 cmdline = "%s/usr/bin/pkgsign %s" % (g_proto_area,
                     " ".join(args))
                 return self.cmdline_run(cmdline, comment=comment, exit=exit)
+
+        def pkgsign_simple(self, depot_url, pkg_name, exit=0):
+                chain_cert_path = os.path.join(self.chain_certs_dir,
+                    "ch1_ta3_cert.pem")
+                sign_args = "-k %(key)s -c %(cert)s -i %(ch1)s %(name)s" % {
+                    "name": pkg_name,
+                    "key": os.path.join(self.keys_dir, "cs1_ch1_ta3_key.pem"),
+                    "cert": os.path.join(self.cs_dir, "cs1_ch1_ta3_cert.pem"),
+                    "ch1": chain_cert_path,
+                }
+                return self.pkgsign(depot_url, sign_args, exit=exit)
 
         def pkgsend(self, depot_url="", command="", exit=0, comment="",
             allow_timestamp=False):
@@ -2974,6 +3004,19 @@ class CliTestCase(Pkg5TestCase):
                 file_path = os.path.join(self.get_img_path(), path)
                 with open(file_path, "a+") as f:
                         f.write("\n%s\n" % string)
+
+        def seed_ta_dir(self, certs, dest_dir=None):
+                if isinstance(certs, basestring):
+                        certs = [certs]
+                if not dest_dir:
+                        dest_dir = self.ta_dir
+                self.assert_(dest_dir)
+                self.assert_(self.raw_trust_anchor_dir)
+                for c in certs:
+                        name = "%s_cert.pem" % c
+                        portable.copyfile(
+                            os.path.join(self.raw_trust_anchor_dir, name),
+                            os.path.join(dest_dir, name))
 
 
 class ManyDepotTestCase(CliTestCase):

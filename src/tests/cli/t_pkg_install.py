@@ -648,7 +648,8 @@ class TestPkgInstallBasics(pkg5unittest.SingleDepotTestCase):
                                     "'%s'." % bad_mode)
                                 bad_mdata = mdata.replace(src_mode, bad_mode)
                                 self.write_img_manifest(pfmri, bad_mdata)
-                                self.pkg("install %s" % pfmri.pkg_name, exit=1)
+                                self.pkg("--debug skip-verify-manifest=True "
+                                    "install %s" % pfmri.pkg_name, exit=1)
 
                         # Now attempt to corrupt the client's copy of the
                         # manifest in various ways to check if the client
@@ -660,7 +661,8 @@ class TestPkgInstallBasics(pkg5unittest.SingleDepotTestCase):
                                 bad_mdata = mdata.replace("owner=root",
                                     bad_owner)
                                 self.write_img_manifest(pfmri, bad_mdata)
-                                self.pkg("install %s" % pfmri.pkg_name, exit=1)
+                                self.pkg("--debug skip-verify-manifest=True "
+                                    "install %s" % pfmri.pkg_name, exit=1)
 
                         for bad_group in ("", 'group=""', "group=invalidgroup"):
                                 self.debug("Testing with bad group "
@@ -669,7 +671,8 @@ class TestPkgInstallBasics(pkg5unittest.SingleDepotTestCase):
                                 bad_mdata = mdata.replace("group=bin",
                                     bad_group)
                                 self.write_img_manifest(pfmri, bad_mdata)
-                                self.pkg("install %s" % pfmri.pkg_name, exit=1)
+                                self.pkg("--debug skip-verify-manifest=True "
+                                    "install %s" % pfmri.pkg_name, exit=1)
 
                         # Now attempt to corrupt the client's copy of the
                         # manifest such that actions are malformed.
@@ -680,7 +683,8 @@ class TestPkgInstallBasics(pkg5unittest.SingleDepotTestCase):
                                     "'%s'." % bad_act)
                                 bad_mdata = mdata + "%s\n" % bad_act
                                 self.write_img_manifest(pfmri, bad_mdata)
-                                self.pkg("install %s" % pfmri.pkg_name, exit=1)
+                                self.pkg("--debug skip-verify-manifest=True "
+                                    "install %s" % pfmri.pkg_name, exit=1)
 
         def test_bug_3770(self):
                 """ Try to install a package from a publisher with an
@@ -939,6 +943,85 @@ class TestPkgInstallBasics(pkg5unittest.SingleDepotTestCase):
                         if saved_pkg_sysrepo_env:
                                 os.environ["PKG_SYSREPO_URL"] = \
                                     saved_pkg_sysrepo_env
+
+
+class TestPkgInstallRepoPerTest(pkg5unittest.SingleDepotTestCase):
+        persistent_setup = False
+        # Tests in this suite use the read only data directory.
+        need_ro_data = True
+
+        foo10 = """
+            open foo@1.0,5.11-0
+            close """
+
+        disappear10 = """
+            open disappear@1.0,5.11-0
+            add file tmp/cat mode=0555 owner=root group=bin path=/bin/cat
+            close """
+
+        disappear11 = """
+            open disappear@1.1,5.11-0
+            close """
+
+        misc_files = ["tmp/cat"]
+
+        def setUp(self):
+                pkg5unittest.SingleDepotTestCase.setUp(self)
+                self.make_misc_files(self.misc_files)
+
+        def test_install_changed_manifest(self):
+                """Test that if a manifest that is being installed is cached
+                locally has been changed on the repo is updated, the new
+                manifest is used."""
+
+                plist = self.pkgsend_bulk(self.rurl, self.foo10)
+
+                self.image_create(self.rurl)
+                self.seed_ta_dir("ta3")
+                api_inst = self.get_img_api_obj()
+
+                # Use pkg contents to cache the manifest.
+                self.pkg("contents -r foo")
+
+                # Specify location as filesystem path.
+                self.pkgsign_simple(self.dc.get_repodir(), plist[0])
+
+                # Ensure that the image requires signed manifests.
+                self.pkg("set-property signature-policy require-signatures")
+                api_inst.reset()
+
+                # Install the package
+                self._api_install(api_inst, ["foo"])
+
+        def test_keep_installed_changed_manifest(self):
+                """Test that if a manifest that has been installed is changed on
+                the server is updated, the installed manifest is not changed."""
+
+                pfmri = self.pkgsend_bulk(self.rurl, self.disappear10)[0]
+
+                self.image_create(self.rurl)
+                api_inst = self.get_img_api_obj()
+
+                # Install the package
+                self._api_install(api_inst, ["disappear"])
+
+                self.assert_(os.path.isfile(os.path.join(
+                    self.img_path(), "bin", "cat")))
+                repo = self.dc.get_repo()
+                m_path = repo.manifest(pfmri)
+                with open(m_path, "rb") as fh:
+                        fmri_lines = fh.readlines()
+                with open(m_path, "wb") as fh:
+                        for l in fmri_lines:
+                                if "usr/bin/cat" in l:
+                                        continue
+                                fh.write(l)
+                repo.rebuild()
+
+                pfmri = self.pkgsend_bulk(self.rurl, self.disappear11)[0]
+                self._api_update(api_inst)
+                self.assert_(not os.path.isfile(os.path.join(
+                    self.img_path(), "bin", "cat")))
 
 
 class TestPkgInstallUpdateReject(pkg5unittest.SingleDepotTestCase):

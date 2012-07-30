@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2011, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2011, 2012, Oracle and/or its affiliates. All rights reserved.
 #
 import sys
 
@@ -46,18 +46,6 @@ class TestHTTPS(pkg5unittest.SingleDepotTestCase):
             close"""
 
         misc_files = ["tmp/example_file"]
-
-        def pkg_image_create(self, *args, **kwargs):
-                pkg5unittest.SingleDepotTestCase.pkg_image_create(self,
-                    *args, **kwargs)
-                self.ta_dir = os.path.join(self.img_path(), "etc/certs/CA")
-                os.makedirs(self.ta_dir)
-
-        def image_create(self, *args, **kwargs):
-                pkg5unittest.SingleDepotTestCase.image_create(self,
-                    *args, **kwargs)
-                self.ta_dir = os.path.join(self.img_path(), "etc/certs/CA")
-                os.makedirs(self.ta_dir)
 
         def pkg(self, command, *args, **kwargs):
                 # The value for ssl_ca_file is pulled from DebugValues because

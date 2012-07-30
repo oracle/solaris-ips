@@ -20,7 +20,7 @@
 # CDDL HEADER END
 #
 
-# Copyright (c) 2008, 2011, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2008, 2012, Oracle and/or its affiliates. All rights reserved.
 
 import testutils
 if __name__ == "__main__":
@@ -34,6 +34,8 @@ import unittest
 
 
 class TestPkgVerify(pkg5unittest.SingleDepotTestCase):
+        # Tests in this suite use the read only data directory
+        need_ro_data = True
 
         foo10 = """
             open foo@1.0,5.11-0
@@ -193,6 +195,24 @@ class TestPkgVerify(pkg5unittest.SingleDepotTestCase):
                 self.pkg("verify -v foo")
                 self.output.index("etc/preserved")
                 self.output.index("editable file has been changed")
+
+        def test_verify_changed_manifest(self):
+                """Test that running package verify won't change the manifest of
+                an installed package even if it has changed in the repository.
+                """
+
+                self.image_create(self.rurl)
+                self.pkg("install foo")
+
+                self.pkg("verify")
+                self.pkg("set-property signature-policy require-signatures")
+                self.pkg("verify", exit=1)
+
+                # Specify location as filesystem path.
+                self.pkgsign_simple(self.dc.get_repodir(), "foo")
+
+                self.pkg("verify", exit=1)
+
 
 if __name__ == "__main__":
         unittest.main()

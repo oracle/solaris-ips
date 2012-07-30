@@ -76,6 +76,7 @@ import pkg.version
 
 from pkg.client.debugvalues import DebugValues
 from pkg.client.imagetypes import IMG_USER, IMG_ENTIRE
+from pkg.client.transport.exception import InvalidContentException
 from pkg.misc import EmptyI, EmptyDict
 
 img_user_prefix = ".org.opensolaris,pkg"
@@ -2359,8 +2360,30 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
 
                 return True
 
+        def __verify_manifest(self, fmri, mfstpath):
+                """Verify a manifest.  The caller must supply the FMRI
+                for the package in 'fmri', as well as the path to the
+                manifest file that will be verified."""
+
+                try:
+                        return self.transport._verify_manifest(fmri,
+                            mfstpath=mfstpath)
+                except InvalidContentException:
+                        return False
+        
         def has_manifest(self, pfmri):
-                return os.path.exists(self.get_manifest_path(pfmri))
+                """Check to see if the manifest for pfmri is present on disk and
+                has the correct hash."""
+
+                pth = self.get_manifest_path(pfmri)
+                on_disk = os.path.exists(pth)
+
+                if not on_disk or \
+                    DebugValues.get_value("skip-verify-manifest") or \
+                    self.is_pkg_installed(pfmri) or \
+                    self.__verify_manifest(fmri=pfmri, mfstpath=pth):
+                        return on_disk
+                return False
 
         def get_license_dir(self, pfmri):
                 """Return path to package license directory."""
@@ -2421,6 +2444,8 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                 object.... grab from server if needed"""
 
                 try:
+                        if not self.has_manifest(fmri):
+                                raise KeyError
                         ret = manifest.FactoredManifest(fmri,
                             self.get_manifest_dir(fmri),
                             excludes=excludes,

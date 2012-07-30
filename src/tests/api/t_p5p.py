@@ -101,28 +101,9 @@ class TestP5P(pkg5unittest.SingleDepotTestCase):
                             os.path.join(self.raw_trust_anchor_dir, name),
                             os.path.join(dest_dir, name))
 
-        def image_create(self, *args, **kwargs):
-                pkg5unittest.SingleDepotTestCase.image_create(self,
-                    *args, **kwargs)
-                self.ta_dir = os.path.join(self.img_path(), "etc/certs/CA")
-                os.makedirs(self.ta_dir)
-
         def setUp(self):
                 pkg5unittest.SingleDepotTestCase.setUp(self)
                 self.make_misc_files(self.misc_files)
-
-                # Setup base test paths.
-                self.path_to_certs = os.path.join(self.ro_data_root,
-                    "signing_certs", "produced")
-                self.keys_dir = os.path.join(self.path_to_certs, "keys")
-                self.cs_dir = os.path.join(self.path_to_certs,
-                    "code_signing_certs")
-                self.chain_certs_dir = os.path.join(self.path_to_certs,
-                    "chain_certs")
-                self.raw_trust_anchor_dir = os.path.join(self.path_to_certs,
-                    "trust_anchors")
-                self.crl_dir = os.path.join(self.path_to_certs, "crl")
-                self.ta_dir = None
 
                 # Publish packages needed for tests.
                 plist = self.pkgsend_bulk(self.rurl, self.pkgs)
