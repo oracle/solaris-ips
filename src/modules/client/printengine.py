@@ -28,6 +28,7 @@
 LoggingPrintEngine, which take output messages from e.g. a progress tracker and
 render them to a file, a terminal, or a logger."""
 
+import curses
 import errno
 import logging
 import os
@@ -37,14 +38,13 @@ import time
 from abc import ABCMeta, abstractmethod
 import StringIO
 
-import pkg.client.api_errors as api_errors
 from pkg.misc import PipeError
 
 
-class PrintEngineException(api_errors.ApiException):
+class PrintEngineException(Exception):
         """Exception indicating the failure to create PrintEngine."""
-        pass
-
+        def __str__(self):
+                return "PrintEngineException: %s" % " ".join(self.args)
 
 class PrintEngine(object):
         """Abstract class defining what a PrintEngine must know how to do."""
@@ -96,17 +96,13 @@ class POSIXPrintEngine(PrintEngine):
 
                 self.__putp_re = re.compile("\$<[0-9]+>")
                 self.__el = None
-                try:
-                        import curses
-                        # Non-portable API; pylint: disable-msg=E0901
-                        if not os.isatty(self._out_file.fileno()):
-                                raise PrintEngineException(
-                                    "out_file is not a TTY")
+                if not self._out_file.isatty():
+                        raise PrintEngineException("Not a TTY")
 
+                try:
                         curses.setupterm(None, self._out_file.fileno())
                         self.__cr = curses.tigetstr("cr")
                         self.__el = curses.tigetstr("el")
-
                 except curses.error:
                         raise PrintEngineException("Unknown terminal '%s'" %
                             os.environ.get("TERM", ""))
@@ -288,25 +284,15 @@ def test_posix_printengine(output_file, ttymode):
         utility in $SRC/tests/interactive/runprintengine.py; it is also
         called by the test suite."""
 
+        pe = POSIXPrintEngine(output_file, ttymode=ttymode)
+
         standout = ""
         sgr0 = ""
-
         if ttymode:
-                # Non-portable API; pylint: disable-msg=E0901
-                if not os.isatty(output_file.fileno()):
-                        raise RuntimeError, \
-                            "output_file doesn't seem to be a tty"
-                try:
-                        import curses
-                        curses.setupterm()
-                        standout = curses.tigetstr("smso") or ""
-                        sgr0 = curses.tigetstr("sgr0") or ""
-                except KeyboardInterrupt:
-                        raise
-                except:
-                        pass
+                # We assume that setupterm() has been called already.
+                standout = curses.tigetstr("smso") or ""
+                sgr0 = curses.tigetstr("sgr0") or ""
 
-        pe = POSIXPrintEngine(output_file, ttymode=ttymode)
         pe.cprint("Testing POSIX print engine; ttymode is %s\n" % ttymode)
 
         # If we're not in ttymode, then the testing is simple.
@@ -316,6 +302,9 @@ def test_posix_printengine(output_file, ttymode):
                 pe.flush()
                 return
 
+        # We assume setupterm() has been called.
+        standout = curses.tigetstr("smso") or ""
+        sgr0 = curses.tigetstr("sgr0") or ""
         pe.cprint("Now we'll print something and then erase it;")
         pe.cprint("you should see a blank line below this line.")
         pe.cprint("IF YOU CAN SEE THIS, THE TEST HAS FAILED", end='')

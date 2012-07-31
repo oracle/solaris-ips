@@ -24,10 +24,12 @@
 # Copyright (c) 2012, Oracle and/or its affiliates. All rights reserved.
 #
 
+import getopt
 import locale
 import gettext
 import os
 import sys
+import traceback
 
 import pkg.client.printengine as printengine
 import pkg.misc as misc
@@ -36,16 +38,49 @@ if __name__ == "__main__":
         misc.setlocale(locale.LC_ALL, "", None)
         gettext.install("pkg", "/usr/share/locale")
 
-        if len(sys.argv) >= 2:
-                output_file = open(sys.argv[1], "w")
+        test_ttymode = test_nottymode = test_logging = False
+        opts, argv = getopt.getopt(sys.argv[1:], "tTl")
+        for (opt, arg) in opts:
+                if opt == '-t':
+                        test_ttymode = True
+                elif opt == '-T':
+                        test_nottymode = True
+                elif opt == '-l':
+                        test_logging = True
+                else:
+                        print >> sys.stderr, "bad option %s" % opt
+                        sys.exit(2)
+
+        if not (test_ttymode or test_nottymode or test_logging):
+                print >> sys.stderr, \
+                    "must specify one or more of -t, -T or -l"
+                sys.exit(2)
+
+        if len(argv) == 1:
+                output_file = open(argv[0], "w")
+        elif len(argv) > 1:
+                print >> sys.stderr, "too many arguments"
+                sys.exit(2)
         else:
                 output_file = sys.stdout
 
-        if os.isatty(output_file.fileno()):
-                ttymode = True
-        else:
-                ttymode = False
-        print >> output_file, ("-" * 60)
-        printengine.test_logging_printengine(output_file)
-        print >> output_file, "\n\n" + ("-" * 60)
-        printengine.test_posix_printengine(output_file, ttymode)
+        try:
+                if test_ttymode:
+                        print >> output_file, "---test_ttymode---"
+                        print >> output_file, ("-" * 60)
+                        printengine.test_posix_printengine(output_file, True)
+                if test_nottymode:
+                        print >> output_file, "---test_nottymode---"
+                        print >> output_file, ("-" * 60)
+                        printengine.test_posix_printengine(output_file, False)
+                if test_logging:
+                        print >> output_file, "---test_logging---"
+                        print >> output_file, ("-" * 60)
+                        printengine.test_logging_printengine(output_file)
+        except printengine.PrintEngineException, e:
+                print >> sys.stderr, e
+                sys.exit(1)
+        except:
+                traceback.print_exc()
+                sys.exit(99)
+        sys.exit(0)

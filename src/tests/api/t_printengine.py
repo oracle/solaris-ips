@@ -69,6 +69,17 @@ class TestPrintEngine(pkg5unittest.Pkg5TestCase):
                 masterf.close()
                 self.assert_(len(sio.getvalue()) > 0)
 
+        def test_posix_printengine_badtty(self):
+                """Try to make ttymode POSIX print engines on non-ttys."""
+                f = StringIO.StringIO()
+                self.assertRaises(printengine.PrintEngineException,
+                    printengine.POSIXPrintEngine, f, True)
+
+                tpath = self.make_misc_files("testfile")
+                f = open(tpath[0], "w")
+                self.assertRaises(printengine.PrintEngineException,
+                    printengine.POSIXPrintEngine, f, True)
+
         def test_posix_printengine_notty(self):
                 """Smoke test POSIX print engine non-tty mode."""
                 sio = StringIO.StringIO()

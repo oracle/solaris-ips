@@ -365,6 +365,17 @@ class TestProgressTrackers(pkg5unittest.Pkg5TestCase):
                 """Test the terminal-based tracker we have on a pty."""
                 self.__t_pty_tracker(progress.FancyUNIXProgressTracker)
 
+        def test_fancy_unix_tracker_bad_tty(self):
+                """Try to make a terminal-based tracker on non-terminals."""
+                f = StringIO.StringIO()
+                self.assertRaises(progress.ProgressTrackerException,
+                    progress.FancyUNIXProgressTracker, f)
+
+                tpath = self.make_misc_files("testfile")
+                f = open(tpath[0], "w")
+                self.assertRaises(progress.ProgressTrackerException,
+                    progress.FancyUNIXProgressTracker, f)
+
         def test_fancy_unix_tracker_termdelay(self):
                 """Test the fancy tracker with term_delay customized."""
                 self.__t_pty_tracker(progress.FancyUNIXProgressTracker,

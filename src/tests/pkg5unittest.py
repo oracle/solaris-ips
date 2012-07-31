@@ -82,6 +82,8 @@ EmptyDict = dict()
 # These are initialized by pkg5testenv.setup_environment.
 #
 g_proto_area = "TOXIC"
+# Location of root of test suite.
+g_test_dir = "TOXIC"
 # User's value for TEMPDIR
 g_tempdir = "/tmp"
 

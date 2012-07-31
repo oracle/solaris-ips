@@ -124,6 +124,7 @@ def setup_environment(path_to_proto, covdir=None, debug=False):
 
         import pkg5unittest
         pkg5unittest.g_proto_area = proto_area
+        pkg5unittest.g_test_dir = cmddir
 
         # Save off the value for tempdir when we were invoked, since the
         # suite will subsequently modify tempdir to sandbox test cases.

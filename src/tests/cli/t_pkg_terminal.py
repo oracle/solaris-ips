@@ -66,5 +66,56 @@ class TestPkgTerminal(pkg5unittest.SingleDepotTestCase):
                     usepty=True)
 
 
+class TestPkgTerminalTesters(pkg5unittest.CliTestCase):
+        """Test the runprintengine and runprogress test utilities."""
+        def setUp(self):
+                pkg5unittest.CliTestCase.setUp(self)
+                self.runprog = "python2.6 %s/interactive/runprogress.py" % \
+                    pkg5unittest.g_test_dir
+                self.runprint = "python2.6 %s/interactive/runprintengine.py" % \
+                    pkg5unittest.g_test_dir
+
+        #
+        # This is also an effective way to spot-check certain behaviors of
+        # the printengine and progress trackers that are hard to test in
+        # the API suite-- such as interactions with environment variables.
+        #
+ 	def test_runprogress(self):
+                """Smoke test the "runprogress" debugging utility"""
+                self.cmdline_run(self.runprog + " -f fancy -", usepty=True)
+
+ 	def test_runprogress_fancy_notty(self):
+                """Fail when creating a fancy tracker on a non-tty."""
+                self.cmdline_run(self.runprog + " -f fancy -", usepty=False,
+                    exit=1)
+
+ 	def test_runprogress_badterm(self):
+                """Fail when creating a fancy tracker with bad $TERM."""
+                self.cmdline_run(self.runprog + " -f fancy -", usepty=True,
+                    env_arg={"TERM": "moop"}, exit=1)
+                self.cmdline_run(self.runprog + " -f fancy -", usepty=True,
+                    env_arg={"TERM": ""}, exit=1)
+
+ 	def test_runprogress_slowterm(self):
+                """Test fancy progress tracker on a slow terminal."""
+                self.cmdline_run("stty ispeed 9600 ospeed 9600; " +
+                    self.runprog + " -f fancy -", usepty=True)
+
+ 	def test_runprintengine(self):
+                """Smoke test the "runprintengine" debugging utility"""
+                self.cmdline_run(self.runprint + " -tTl", usepty=True)
+
+ 	def test_runprintengine_notty(self):
+                """Fail when creating a ttymode printengine on a non-tty."""
+                self.cmdline_run(self.runprint + " -t", usepty=False, exit=1)
+
+ 	def test_runprintengine_badterm(self):
+                """Fail when creating a ttymode printengine with a bad $TERM."""
+                self.cmdline_run(self.runprint + " -t", usepty=True,
+                    env_arg={"TERM": "moop"}, exit=1)
+                self.cmdline_run(self.runprint + " -t", usepty=True,
+                    env_arg={"TERM": ""}, exit=1)
+
+
 if __name__ == "__main__":
         unittest.main()

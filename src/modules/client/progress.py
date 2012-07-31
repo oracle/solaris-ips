@@ -31,12 +31,10 @@
 import inspect
 import itertools
 import math
-import os
 import sys
 import time
 from functools import wraps
 
-import pkg.client.api_errors as api_errors
 import pkg.client.pkgdefs as pkgdefs
 import pkg.client.publisher as publisher
 import pkg.fmri
@@ -46,16 +44,14 @@ from pkg.client import global_settings
 from pkg.client import printengine
 logger = global_settings.logger
 
-import pkg.portable as portable
-
 from collections import deque
 
-class ProgressTrackerException(api_errors.ApiException):
-        """This exception is currently thrown if a ProgressTracker determines
-        that it can't be instantiated; for example, the tracker which depends on
-        a UNIX style terminal should throw this exception if it can't find a
-        valid terminal."""
-        pass
+class ProgressTrackerException(Exception):
+        """Thrown if a ProgressTracker determines that it can't be instantiated.
+        For example, the tracker which depends on a UNIX style terminal should
+        throw this exception if it can't find a valid terminal."""
+        def __str__(self):
+                return "ProgressTrackerException: %s" % " ".join(self.args)
 
 
 def format_pair(format1, v1, v2, scale=None, targetwidth=None,
@@ -1559,7 +1555,7 @@ class MultiProgressTracker(ProgressTrackerFrontend):
 
                 self._trackers = [t for t in ptlist]
                 if len(self._trackers) == 0:
-                        raise ProgressTrackerException()
+                        raise ProgressTrackerException("No trackers specified")
 
                 #
                 # Returns a multido closure, which will iterate and call the
@@ -2095,8 +2091,9 @@ class FancyUNIXProgressTracker(ProgressTracker):
                 try:
                         self._pe = printengine.POSIXPrintEngine(output_file,
                             ttymode=True)
-                except printengine.PrintEngineException:
-                        raise ProgressTrackerException()
+                except printengine.PrintEngineException, e:
+                        raise ProgressTrackerException(
+                            "Couldn't create print engine: %s" % e.reason)
 
                 if term_delay is None:
                         term_delay = self.TERM_DELAY_SLOW if self._pe.isslow() \
@@ -2106,26 +2103,10 @@ class FancyUNIXProgressTracker(ProgressTracker):
                 self._phases_hdr_printed = False
                 self._jobs_lastjob = None
 
-                try:
-                        # Non-portable API used (os.isatty);
-                        #     pylint: disable-msg=E0901
-                        import curses
-                        if not os.isatty(output_file.fileno()):
-                                raise ProgressTrackerException()
+                if not output_file.isatty():
+                        raise ProgressTrackerException(
+                            "output_file is not a TTY")
 
-                        curses.setupterm()
-                        self.standout = curses.tigetstr("smso") or ""
-                        self.sgr0 = curses.tigetstr("sgr0") or ""
-                except KeyboardInterrupt:
-                        raise
-                except:
-                        # Non-portable API used (os.isatty);
-                        #     pylint: disable-msg=E0901
-                        if portable.ostype == "windows" and \
-                            os.isatty(output_file.fileno()):
-                                self.cr = '\r'
-                        else:
-                                raise ProgressTrackerException()
                 self.__spinner_chars = "|/-\\"
 
                 # For linked image spinners.

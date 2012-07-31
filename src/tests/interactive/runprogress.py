@@ -105,5 +105,11 @@ def parse_argv():
 # Happy hacking.
 #
 if __name__ == "__main__":
-        (_tracker, _gofast) = parse_argv()
-        progress.test_progress_tracker(_tracker, gofast=_gofast)
+        try:
+                (_tracker, _gofast) = parse_argv()
+                progress.test_progress_tracker(_tracker, gofast=_gofast)
+        except progress.ProgressTrackerException, e:
+                print >> sys.stderr, "Error: %s" % e
+                sys.exit(1)
+        sys.exit(0)
+
