@@ -2480,6 +2480,14 @@ class TestApiSearchBasics_nonP(TestApiSearchBasics):
                     _remove_extra_info(v)
                     for v in self._get_lines(fast_remove_loc)
                     )), self.fast_remove_after_first_update)
+                # Check that a local search actually works.
+                test_value = 'pkg:/pkg%s@2.0-0', 'test/pkg%s', \
+                    'set name=pkg.fmri value=pkg://test/pkg%s@2.0,5.11-0:'
+                for n in range(0, 2):
+                        tv = set([tuple(v % n for v in test_value)])
+                        self._search_op(api_obj, remote=False,
+                            token="pkg%s" % n, test_value=tv)
+
                 # Now check that image update also handles fast_add
                 # appropriately when a large number of packages have changed.
                 for i in range(3, indexer.MAX_FAST_INDEXED_PKGS + 3):
@@ -2496,6 +2504,11 @@ class TestApiSearchBasics_nonP(TestApiSearchBasics):
                     _remove_extra_info(v)
                     for v in self._get_lines(fast_remove_loc)
                     )), self.fast_remove_after_second_update)
+                # Check that a local search actually works.
+                for n in range(3, indexer.MAX_FAST_INDEXED_PKGS + 3):
+                        tv = set([tuple(v % n for v in test_value)])
+                        self._search_op(api_obj, remote=False,
+                            token="pkg%s" % n, test_value=tv)
 
         def test_bug_13485(self):
                 """Test that indexer.Indexer's check_for_updates function works

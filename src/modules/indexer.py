@@ -300,12 +300,15 @@ class Indexer(object):
                 nfast_remove = len(self._data_fast_remove._set)
 
                 #
-                # First pass determines whether a fast update makes sense.
+                # First pass determines whether a fast update makes sense and
+                # updates the list of fmris that will be in the index.
                 # 
                 filters, pkgplan_list = filters_pkgplan_list
                 for p in pkgplan_list:
                         d_fmri, o_fmri = p
                         if d_fmri:
+                                self._data_full_fmri.add_entity(
+                                    d_fmri.get_fmri(anarchy=True))
                                 d_tmp = d_fmri.get_fmri(anarchy=True,
                                     include_scheme=False)
                                 if self._data_fast_remove.has_entity(d_tmp):
@@ -313,6 +316,8 @@ class Indexer(object):
                                 else:
                                         nfast_add += 1
                         if o_fmri:
+                                self._data_full_fmri.remove_entity(
+                                    o_fmri.get_fmri(anarchy=True))
                                 o_tmp = o_fmri.get_fmri(anarchy=True,
                                     include_scheme=False)
                                 if self._data_fast_add.has_entity(o_tmp):
@@ -324,7 +329,8 @@ class Indexer(object):
                         return False
 
                 #
-                # Second pass actually does the work.
+                # Second pass actually updates the fast_add and fast_remove
+                # sets and updates progress.
                 #
                 self._progtrack.job_start(self._progtrack.JOB_UPDATE_SEARCH,
                     goal=len(pkgplan_list))
@@ -332,8 +338,6 @@ class Indexer(object):
                         d_fmri, o_fmri = p
 
                         if d_fmri:
-                                self._data_full_fmri.add_entity(
-                                    d_fmri.get_fmri(anarchy=True))
                                 d_tmp = d_fmri.get_fmri(anarchy=True,
                                     include_scheme=False)
                                 assert not self._data_fast_add.has_entity(d_tmp)
@@ -343,8 +347,6 @@ class Indexer(object):
                                 else:
                                         self._data_fast_add.add_entity(d_tmp)
                         if o_fmri:
-                                self._data_full_fmri.remove_entity(
-                                    o_fmri.get_fmri(anarchy=True))
                                 o_tmp = o_fmri.get_fmri(anarchy=True,
                                     include_scheme=False)
                                 assert not self._data_fast_remove.has_entity(
