@@ -29,7 +29,6 @@ import pkg5unittest
 
 import os
 import os.path
-import pty
 import shutil
 import unittest
 import tempfile
@@ -591,46 +590,14 @@ dir group=sys mode=0755 owner=root path=etc
                 mpath1 = self.make_manifest(self.ref_mf["ref-sample1.mf"])
                 cache = tempfile.mkdtemp("pkglint-cache", "", self.test_root)
 
-                # - Allocate a pty
-                # - Create a thread to drain off the master side; without
-                #   this, the slave side will block when trying to write.
-                # - Set it running
-                def __drain(masterf):
-                        while True:
-                                termdata = masterf.read(1024)
-                                if len(termdata) == 0:
-                                        break
-
                 for args in [[mpath1], ["-c", cache, "-l", self.lint_uri]]:
-
-                        (master, slave) = pty.openpty()
-                        slavef = os.fdopen(slave, "w")
-                        masterf = os.fdopen(master, "r")
-
-                        t = threading.Thread(target=__drain, args=(masterf, ))
-                        t.start()
-
                         cmdline = ["%s/usr/bin/pkglint" %
                             pkg5unittest.g_proto_area]
                         cmdline.extend(args)
 
                         # ensure the command works first
                         self.pkglint(" ".join(args))
-
-                        # now try it using our fake tty
-                        p = subprocess.Popen(cmdline, stdout=slavef,
-                            stderr=subprocess.PIPE)
-
-                        self.output, self.errout = p.communicate()
-                        retcode = p.returncode
-                        slavef.close()
-                        t.join()
-                        masterf.close()
-
-                        # it's difficult to obtain the output given the hoops we
-                        # jumped through to setup a fake tty - we'll just report
-                        # the error.
-                        self.assert_(retcode == 0, self.errout)
+                        self.cmdline_run(" ".join(cmdline), exit=0, usepty=True)
 
                 if os.path.exists(cache):
                         shutil.rmtree(cache)

@@ -107,10 +107,9 @@ class POSIXPrintEngine(PrintEngine):
                         self.__cr = curses.tigetstr("cr")
                         self.__el = curses.tigetstr("el")
 
-                except KeyboardInterrupt:
-                        raise
-                except PrintEngineException:
-                        raise
+                except curses.error:
+                        raise PrintEngineException("Unknown terminal '%s'" %
+                            os.environ.get("TERM", ""))
 
         def putp(self, string):
                 """This routine loosely emulates python's curses.putp, but

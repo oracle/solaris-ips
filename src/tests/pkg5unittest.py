@@ -55,11 +55,15 @@ import unittest
 import urllib2
 import urlparse
 import platform
+import pty
 import pwd
 import re
 import ssl
 import StringIO
 import textwrap
+import threading
+import traceback
+import types
 
 import pkg.client.api_errors as apx
 import pkg.client.publisher as publisher
@@ -326,9 +330,64 @@ if __name__ == "__main__":
         def persistent_setup_copy(self, orig):
                 pass
 
+        @staticmethod
+        def ptyPopen(args, executable=None, env=None, shell=False):
+                """Less featureful but inspired by subprocess.Popen.
+                Runs subprocess in a pty"""
+                #
+                # Note: In theory the right answer here is to subclass Popen,
+                # but we found that in practice we'd have to reimplement most
+                # of that class, because its handling of file descriptors is
+                # too brittle in its _execute_child() code.
+                #
+                def __drain(masterf, outlist):
+                        # Use a list as a way to pass by reference
+                        while True:
+                                termdata = masterf.read(1024)
+                                if len(termdata) == 0:
+                                        break
+                                else:
+                                        outlist.append(termdata)
+
+                # This is the arg handling protocol from Popen
+                if isinstance(args, types.StringTypes):
+                        args = [args]
+                else:
+                        args = list(args)
+
+                if shell:
+                        args = ["/bin/sh", "-c"] + args
+                        if executable:
+                                args[0] = executable
+
+                if executable is None:
+                        executable = args[0]
+
+                pid,fd = pty.fork()
+                if pid == 0:
+                        try:
+                                # Child
+                                if env is None:
+                                        os.execvp(executable, args)
+                                else:
+                                        os.execvpe(executable, args, env)
+                        except:
+                                traceback.print_exc()
+                                os._exit(99)
+                else:
+                        masterf = os.fdopen(fd)
+                        outlist = []
+                        t = threading.Thread(target=__drain,
+                            args=(masterf, outlist))
+                        t.start()
+                        waitedpid, retcode = os.waitpid(pid, 0)
+                        retcode = retcode >> 8
+                        t.join()
+                return retcode, "".join(outlist)
+
         def cmdline_run(self, cmdline, comment="", coverage=True, exit=0,
             handle=False, out=False, prefix="", raise_error=True, su_wrap=None,
-            stderr=False, env_arg=None):
+            stderr=False, env_arg=None, usepty=False):
                 wrapper = ""
                 if coverage:
                         wrapper = self.coverage_cmd
@@ -344,17 +403,23 @@ if __name__ == "__main__":
                 if env_arg:
                         newenv.update(env_arg)
 
-                p = subprocess.Popen(cmdline,
-                    env=newenv,
-                    shell=True,
-                    stdout=subprocess.PIPE,
-                    stderr=subprocess.PIPE)
+                if not usepty:
+                        p = subprocess.Popen(cmdline,
+                            env=newenv,
+                            shell=True,
+                            stdout=subprocess.PIPE,
+                            stderr=subprocess.PIPE)
 
-                if handle:
-                        # Do nothing more.
-                        return p
-                self.output, self.errout = p.communicate()
-                retcode = p.returncode
+                        if handle:
+                                # Do nothing more.
+                                return p
+                        self.output, self.errout = p.communicate()
+                        retcode = p.returncode
+                else:
+                        retcode, self.output = self.ptyPopen(cmdline,
+                            env=newenv, shell=True)
+                        self.errout = ""
+
                 self.debugresult(retcode, exit, self.output + self.errout)
 
                 if raise_error and retcode == 99:
