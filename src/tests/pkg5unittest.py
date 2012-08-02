@@ -66,12 +66,14 @@ import traceback
 import types
 
 import pkg.client.api_errors as apx
+import pkg.misc as misc
 import pkg.client.publisher as publisher
 import pkg.portable as portable
 import pkg.server.repository as sr
 import M2Crypto as m2
 
 from pkg.client.debugvalues import DebugValues
+from socket import error as socketerror
 
 EmptyI = tuple()
 EmptyDict = dict()
@@ -1108,8 +1110,10 @@ class _Pkg5TestResult(unittest._TextTestResult):
                         self.stream.write("# Archiving to %s\n" % archive_path)
 
                 if os.path.exists(test.test_root):
-                        shutil.copytree(test.test_root, archive_path,
-                            symlinks=True)
+                        try:
+                                misc.copytree(test.test_root, archive_path)
+                        except socketerror, e:
+                                pass
                 else:
                         # If the test has failed without creating its directory,
                         # make it manually, so that we have a place to write out

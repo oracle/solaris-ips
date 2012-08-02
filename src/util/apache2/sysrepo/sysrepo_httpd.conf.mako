@@ -322,8 +322,13 @@ MCacheMaxObjectCount 200000
 MCacheMinObjectSize 1
 MCacheMaxObjectSize 45690876
 % endif
-CacheDisable /versions/0
-CacheDisable /syspub/0
+CacheDisable /versions
+CacheDisable /syspub
+<%
+	for p in sorted(set(v[0] for l in uri_pub_map.values() for v in l )):
+	        context.write("CacheDisable /%s/catalog\n" % p)
+%>
+
 </IfModule>
 % endif
 
@@ -469,8 +474,9 @@ SSLProxyProtocol all
                           "</Directory>\n" % locals())
 %>
                       % if cache_dir != None:
-CacheDisable /${pub}/${hash}/publisher/0
-CacheDisable /${pub}/${hash}/versions/0
+CacheDisable /${pub}/${hash}/catalog
+CacheDisable /${pub}/${hash}/publisher
+CacheDisable /${pub}/${hash}/versions
                       % endif
 Alias /${pub}/${hash} ${repo_path}
                 % endif

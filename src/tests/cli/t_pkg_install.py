@@ -825,8 +825,6 @@ class TestPkgInstallBasics(pkg5unittest.SingleDepotTestCase):
                     foo_version)),
                     "%s/test/file/1/8535c15c49cbe1e7cb1a0bf8ff87e512abed66f8" %
                     self.durl,
-                    "%s/test/catalog/1/catalog.attrs" % self.durl,
-                    "%s/test/catalog/1/catalog.base.C" % self.durl
                 ]
 
                 proxy_handler = urllib2.ProxyHandler({"http": sysrepo_url})
@@ -834,6 +832,7 @@ class TestPkgInstallBasics(pkg5unittest.SingleDepotTestCase):
 
                 # validate that our cache is returning corrupt urls.
                 for url in urls:
+                        self.debug("url:%s" % url)
                         # we should get clean content when we don't use the
                         # cache
                         u = urllib2.urlopen(url)

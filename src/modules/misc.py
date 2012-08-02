@@ -127,6 +127,7 @@ def copytree(src, dst):
         nor the 'ignore' keyword arguments of the shutil version.
         """
 
+        problem = None
         os.makedirs(dst, PKG_DIR_MODE)
         src_stat = os.stat(src)
         for name in sorted(os.listdir(src)):
@@ -151,8 +152,23 @@ def copytree(src, dst):
                         os.utime(d_path, (s.st_atime, s.st_mtime))
                 elif S_ISSOCK(s.st_mode):
                         sock = socket.socket(socket.AF_UNIX)
-                        sock.bind(d_path)
-                        sock.close()
+                        # The s11 fcs version of python doesn't have os.mknod()
+                        # but sock.bind has a path length limitation that we can
+                        # hit when archiving the test suite.
+                        # E1101 Module '%s' has no '%s' member
+                        # pylint: disable-msg=E1101
+                        if hasattr(os, "mknod"):
+                                os.mknod(d_path, s.st_mode, s.st_dev)
+                        else:
+                                try:
+                                        sock.bind(d_path)
+                                        sock.close()
+                                except sock.error, _e:
+                                        # Store original exception so that the
+                                        # real cause of failure can be raised if
+                                        # this fails.
+                                        problem = sys.exc_info()
+                                        continue
                         os.chown(d_path, s.st_uid, s.st_gid)
                         os.utime(d_path, (s.st_atime, s.st_mtime))
                 elif S_ISCHR(s.st_mode) or S_ISBLK(s.st_mode):
@@ -173,6 +189,8 @@ def copytree(src, dst):
         os.chmod(dst, S_IMODE(src_stat.st_mode))
         os.chown(dst, src_stat.st_uid, src_stat.st_gid)
         os.utime(dst, (src_stat.st_atime, src_stat.st_mtime))
+        if problem:
+                raise problem[0], problem[1], problem[2]
 
 def move(src, dst):
         """Rewrite of shutil.move() that uses our copy of copytree()."""

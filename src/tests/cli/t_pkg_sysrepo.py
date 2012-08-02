@@ -78,8 +78,17 @@ class TestSysrepo(pkg5unittest.ManyDepotTestCase):
             open foo@1.0,5.11-0
             close"""
 
+        foo11 = """
+            open foo@1.1,5.11-0
+            add file tmp/example_file mode=0555 owner=root group=bin path=/usr/bin/example_path2
+            close"""
+
         bar10 = """
             open bar@1.0,5.11-0
+            close"""
+
+        bar11 = """
+            open bar@1.1,5.11-0
             close"""
 
         misc_files = ["tmp/example_file"]
@@ -220,6 +229,9 @@ test4\ttrue\ttrue\ttrue\t\t\t\t
                     "test1-test3": ({}, [
                         PC(self.durl1),
                         PC(self.durl3)]),
+                    "test1-test3-f": ({}, [
+                        PC(self.rurl1),
+                        PC(self.rurl3)]),
                     "test12": ({}, [
                         PC(self.durl2, sticky=False)]),
                     "test12-test3": ({}, [
@@ -719,7 +731,9 @@ test1\ttrue\ttrue\ttrue\tmirror\tonline\t%(rurl1)s/\t-
                 self.pkg("set-publisher -G %s test1" % self.durl1,
                     exit=1)
                 # Check that removing the user configured origin succeeds.
-                self.pkg("set-publisher -G %s test1" % self.rurl1)
+                # --no-refresh is needed because otherwise we attempt to contact
+                # the publisher to update the catalogs.
+                self.pkg("set-publisher -G %s --no-refresh test1" % self.rurl1)
 
                 # Check that the user configured origin is gone.
                 expected = """\
@@ -1805,6 +1819,41 @@ PUBLISHER\tSTICKY\tSYSPUB\tENABLED\tTYPE\tSTATUS\tURI\tPROXY
                                     p.prefix + ":" +
                                     p.properties["signature-policy"],
                                     p.prefix + ":" + "ignore")
+
+        def test_catalog_is_not_cached_http(self):
+                """Test that the catalog response is not cached when dealing
+                with an http repo."""
+
+                conf_name = "test1-test3"
+                self.__prep_configuration([conf_name])
+                self.__set_responses(conf_name)
+                self.sc = pkg5unittest.SysrepoController(
+                    self.apache_confs[conf_name], self.sysrepo_port,
+                    self.common_config_dir, testcase=self)
+                self.sc.start()
+                api_obj = self.image_create(props={"use-system-repo": True})
+                self.pkgsend_bulk(self.rurl1, self.foo11)
+                self.pkgsend_bulk(self.rurl3, self.bar11)
+                self.pkg("install bar@1.1")
+                self.pkg("install foo@1.1")
+
+        def test_catalog_is_not_cached_file(self):
+                """Test that the catalog response is not cached when dealing
+                with an http repo."""
+                
+                conf_name = "test1-test3-f"
+                self.__prep_configuration([conf_name])
+                self.__set_responses(conf_name)
+                self.sc = pkg5unittest.SysrepoController(
+                    self.apache_confs[conf_name], self.sysrepo_port,
+                    self.common_config_dir, testcase=self)
+                self.sc.start()
+                api_obj = self.image_create(props={"use-system-repo": True})
+                self.pkgsend_bulk(self.rurl1, self.foo11)
+                self.pkgsend_bulk(self.rurl3, self.bar11)
+                self.pkg("install foo@1.1")
+                self.pkg("install bar@1.1")
+
 
 
         __smf_cmds_template = { \
