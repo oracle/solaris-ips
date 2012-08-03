@@ -4462,6 +4462,7 @@ assistance."""))
                         # ordered correctly.
                         search_first = False
                         search_after = prefix
+                        search_before = None
                 else:
                         # The update case is special and requires some
                         # finesse.  In particular, the update should

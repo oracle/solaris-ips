@@ -1058,6 +1058,45 @@ class TestPkgPublisherMany(pkg5unittest.ManyDepotTestCase):
                 self.pkg("set-publisher -p %s" % self.durl3)
 
 
+class TestMultiPublisherRepo(pkg5unittest.ManyDepotTestCase):
+
+        foo1 = """
+            open foo@1,5.11-0
+            close """
+
+        bar1 = """
+            open bar@1,5.11-0
+            close """
+
+        baz1 = """
+            open pkg://another-pub/baz@1,5.11-0
+            close """
+
+
+        def setUp(self):
+                # This test suite needs actual depots.
+                pkg5unittest.ManyDepotTestCase.setUp(self, ["test1", "test2"])
+
+                self.rurl1 = self.dcs[1].get_repo_url()
+                self.pkgsend_bulk(self.rurl1, self.foo1 + self.baz1)
+
+                self.rurl2 = self.dcs[2].get_repo_url()
+                self.pkgsend_bulk(self.rurl2, self.bar1)
+
+        def test_multi_publisher_search_before(self):
+                """Test that using search before and -p on a multipublisher
+                repository works."""
+
+                self.image_create(self.rurl2)
+                self.pkg("set-publisher --search-before test2 -p %s" %
+                    self.rurl1)
+                self.pkg("publisher -HF tsv")
+                lines = self.output.splitlines()
+                self.assertEqual(lines[0].split()[0], "another-pub")
+                self.assertEqual(lines[1].split()[0], "test1")
+                self.assertEqual(lines[2].split()[0], "test2")
+
+
 class TestPkgPublisherCACerts(pkg5unittest.ManyDepotTestCase):
         # Tests in this suite use the read only data directory.
         need_ro_data = True
