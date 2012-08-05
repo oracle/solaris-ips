@@ -2093,7 +2093,8 @@ class FancyUNIXProgressTracker(ProgressTracker):
                             ttymode=True)
                 except printengine.PrintEngineException, e:
                         raise ProgressTrackerException(
-                            "Couldn't create print engine: %s" % e.reason)
+                            "Couldn't create print engine: %s" %
+                            " ".join(e.args))
 
                 if term_delay is None:
                         term_delay = self.TERM_DELAY_SLOW if self._pe.isslow() \
