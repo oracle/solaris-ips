@@ -70,9 +70,9 @@ class TestPkgTerminalTesters(pkg5unittest.CliTestCase):
         """Test the runprintengine and runprogress test utilities."""
         def setUp(self):
                 pkg5unittest.CliTestCase.setUp(self)
-                self.runprog = "python2.6 %s/interactive/runprogress.py" % \
+                self.runprog = "%s/interactive/runprogress.py" % \
                     pkg5unittest.g_test_dir
-                self.runprint = "python2.6 %s/interactive/runprintengine.py" % \
+                self.runprint = "%s/interactive/runprintengine.py" % \
                     pkg5unittest.g_test_dir
 
         #
