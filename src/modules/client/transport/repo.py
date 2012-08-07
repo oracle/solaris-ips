@@ -384,12 +384,12 @@ class HTTPRepo(TransportRepo):
                     proxy=self._repouri.proxy)
 
         def _fetch_url(self, url, header=None, compress=False, ccancel=None,
-            failonerror=True):
+            failonerror=True, system=False):
                 return self._engine.get_url(url, header, repourl=self._url,
                     compressible=compress, ccancel=ccancel,
                     failonerror=failonerror,
                     runtime_proxy=self._repouri.runtime_proxy,
-                    proxy=self._repouri.proxy)
+                    proxy=self._repouri.proxy, system=system)
 
         def _fetch_url_header(self, url, header=None, ccancel=None,
             failonerror=True):
@@ -597,7 +597,15 @@ class HTTPRepo(TransportRepo):
                 """Get configuration from the system depot."""
 
                 requesturl = self.__get_request_url("syspub/0/")
-                return self._fetch_url(requesturl, header, ccancel=ccancel)
+                # We set 'system=True' to cause the transport to override any
+                # $http_proxy environment variables. Syspub origins/mirrors
+                # that are normally proxied through the system-repository will
+                # have a proxy attached to their RepositoryURI, and the
+                # corresponding TransportRepoURI runtime_proxy value will be set
+                # to the same value, so we don't need to pass the 'system'
+                # kwarg in those cases.
+                return self._fetch_url(requesturl, header, ccancel=ccancel,
+                    system=True)
 
         def get_status(self, header=None, ccancel=None):
                 """Get status/0 information from the repository."""

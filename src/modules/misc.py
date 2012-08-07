@@ -2429,9 +2429,10 @@ def get_runtime_proxy(proxy, uri):
         if no_proxy or no_proxy_upper:
                 # SplitResult has a netloc member; pylint: disable-msg=E1103
                 netloc = urlparse.urlsplit(uri, allow_fragments=0).netloc
-                if netloc in no_proxy or "*" in no_proxy:
+                host = netloc.split(":")[0]
+                if host in no_proxy or no_proxy == ["*"]:
                         return "-"
-                if netloc in no_proxy_upper or "*" in no_proxy_upper:
+                if host in no_proxy_upper or no_proxy_upper == ["*"]:
                         return "-"
 
         if not runtime_proxy:

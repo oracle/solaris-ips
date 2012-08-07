@@ -1077,7 +1077,14 @@ class BlendedConfig(object):
                                         except smf.NonzeroExitException, e:
                                                 raise apx.UnknownSysrepoConfiguration()
                                 self.__proxy_url = "http://%s:%s" % (host, port)
-                        sysdepot_uri = publisher.RepositoryURI(self.__proxy_url)
+                        # We use system=True so that we don't try to retrieve
+                        # runtime $http_proxy environment variables in
+                        # pkg.client.publisher.TransportRepoURI.__get_runtime_proxy(..)
+                        # See also how 'system' is handled in
+                        # pkg.client.transport.engine.CurlTransportEngine.__setup_handle(..)
+                        # pkg.client.transport.repo.get_syspub_info(..)
+                        sysdepot_uri = publisher.RepositoryURI(self.__proxy_url,
+                            system=True)
                         assert sysdepot_uri.get_host()
                         try:
                                 pubs, props = transport.get_syspub_data(

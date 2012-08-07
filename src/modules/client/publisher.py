@@ -561,9 +561,7 @@ class TransportRepoURI(RepositoryURI):
                 differ from the persisted proxy value.  We check for http_proxy,
                 https_proxy and all_proxy OS environment variables.
 
-                We try to expand any $variables set in the proxy string which
-                may be needed to pass credentials to authenticating proxies. To
-                avoid repeated environment lookups, we cache the results."""
+                To avoid repeated environment lookups, we cache the results."""
 
                 # we don't permit the proxy used by system publishers to be
                 # overridden by environment variables.

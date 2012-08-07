@@ -520,7 +520,7 @@ class CurlTransportEngine(TransportEngine):
 
         def get_url(self, url, header=None, sslcert=None, sslkey=None,
             repourl=None, compressible=False, ccancel=None,
-            failonerror=True, proxy=None, runtime_proxy=None):
+            failonerror=True, proxy=None, runtime_proxy=None, system=False):
                 """Invoke the engine to retrieve a single URL.  Callers
                 wishing to obtain multiple URLs at once should use
                 addUrl() and run().
@@ -532,7 +532,11 @@ class CurlTransportEngine(TransportEngine):
                 stored as part of the transport stats accounting.
 
                 'runtime_proxy' is the actual proxy value that is used by pycurl
-                to retrieve this resource."""
+                to retrieve this resource.
+
+                'system' whether the resource is being retrieved on behalf of
+                a system-publisher or directly from the system-repository.
+                """
 
                 fobj = fileobj.StreamingFileObj(url, self, ccancel=ccancel)
                 progfunc = None
@@ -545,7 +549,7 @@ class CurlTransportEngine(TransportEngine):
                     sslcert=sslcert, sslkey=sslkey, repourl=repourl,
                     compressible=compressible, progfunc=progfunc,
                     uuid=fobj.uuid, failonerror=failonerror, proxy=proxy,
-                    runtime_proxy=runtime_proxy)
+                    runtime_proxy=runtime_proxy, system=system)
 
                 self.__req_q.appendleft(t)
 
@@ -800,12 +804,24 @@ class CurlTransportEngine(TransportEngine):
                 hdl.setopt(pycurl.MAXREDIRS,
                     global_settings.PKG_CLIENT_MAX_REDIRECT)
 
-                # If the TransportRequest has proxy information set, use it
-                # even if it's set to localhost.  Store the proxy in the handle
-                # so it can be used to retrieve transport statistics later.
+                # Store the proxy in the handle so it can be used to retrieve
+                # transport statistics later.
                 hdl.proxy = None
                 hdl.runtime_proxy = None
-                if treq.runtime_proxy:
+
+                if treq.system:
+                        # For requests that are proxied through the system
+                        # repository, we do not want to use $http_proxy
+                        # variables.  For direct access to the
+                        # system-repository, we set an empty proxy, which has
+                        # the same effect.
+                        if treq.proxy:
+                                hdl.proxy = treq.proxy
+                                hdl.setopt(pycurl.PROXY, treq.proxy)
+                        else:
+                                hdl.setopt(pycurl.PROXY, "")
+                elif treq.runtime_proxy:
+                        # Allow $http_proxy environment variables
                         if treq.runtime_proxy != "-":
                                 # a runtime_proxy of '-' means we've found a
                                 # no-proxy environment variable.
@@ -1045,7 +1061,7 @@ class TransportRequest(object):
             progclass=None, progtrack=None, sslcert=None, sslkey=None,
             repourl=None, compressible=False, progfunc=None, uuid=None,
             read_fobj=None, read_filepath=None, failonerror=False, proxy=None,
-            runtime_proxy=None):
+            runtime_proxy=None, system=False):
                 """Create a TransportRequest with the following parameters:
 
                 url - The url that the transport engine should retrieve
@@ -1120,6 +1136,13 @@ class TransportRequest(object):
                 we pass the proxy that should be used at runtime, which may
                 differ from the 'proxy' value.
 
+                system - whether this request is on behalf of a system
+                publisher.  Usually this isn't necessary, as the
+                TransportRepoURI will have been configured with correct proxy
+                and runtime_proxy properties.  However, for direct access to
+                resources served by the system-repository, we use this to
+                prevent $http_proxy environment variables from being used.
+
                 A TransportRequest must contain enough information to uniquely
                 identify any pkg.client.publisher.TransportRepoURI - in
                 particular, it must contain all fields used by
@@ -1147,3 +1170,4 @@ class TransportRequest(object):
                 self.failonerror = failonerror
                 self.proxy = proxy
                 self.runtime_proxy = runtime_proxy
+                self.system = system

@@ -486,9 +486,9 @@ test4\ttrue\ttrue\ttrue\t\t\t\t
                         self.sc.conf = self.apache_confs[name]
 
         def __check_publisher_info(self, expected, set_debug_value=True,
-            su_wrap=False):
+            su_wrap=False, env_arg=None):
                 self.pkg("publisher -F tsv", debug_smf=set_debug_value,
-                    su_wrap=su_wrap)
+                    su_wrap=su_wrap, env_arg=env_arg)
                 output = self.reduceSpaces(self.output)
                 self.assertEqualDiff(expected, output, bound_white_space=True)
 
@@ -602,7 +602,12 @@ test4\ttrue\ttrue\ttrue\t\t\t\t
                 actually going through the proxy. This is done by
                 "misconfiguring" the system repository so that it refuses to
                 proxy to certain depots then operations which would communicate
-                with those depots fail."""
+                with those depots fail.
+
+                We also verify that $http_proxy and $no_proxy environment
+                variables are not used for interactions with the system
+                repository.
+                """
 
                 self.__prep_configuration(["all-access", "none", "test12-test3",
                     "test3"])
@@ -661,6 +666,37 @@ test4\ttrue\ttrue\ttrue\t\t\t\t
                 self.pkg("list -a")
                 self.pkg("contents -rm example_pkg")
                 self._api_install(api_obj, ["example_pkg"])
+
+                # check that $http_proxy environment variables are ignored
+                # by setting http_proxy and no_proxy values that would otherwise
+                # cause us to bypass the system-repository.
+
+                env = {"http_proxy": "http://noodles"}
+                # create an image the long way, allowing us to pass an environ
+                self.image_destroy()
+                os.mkdir(self.img_path())
+                self.pkg("image-create %s" % self.img_path())
+                self.pkg("set-property use-system-repo True", env_arg=env)
+
+                self.pkg("refresh --full", env_arg=env)
+                self.pkg("contents -rm example_pkg", env_arg=env)
+                expected =  self.expected_all_access % \
+                    {"durl1": self.durl1, "durl2": self.durl2,
+                    "durl3": self.durl3, "port": self.sysrepo_port}
+                self.__check_publisher_info(expected, env_arg=env)
+                self.pkg("install example_pkg", env_arg=env)
+
+                env = {"no_proxy": "localhost"}
+                # create an image the long way, allowing us to pass an environ
+                self.image_destroy()
+                os.mkdir(self.img_path())
+                self.pkg("image-create %s" % self.img_path())
+                self.pkg("set-property use-system-repo True", env_arg=env)
+
+                self.pkg("refresh --full", env_arg=env)
+                self.pkg("contents -rm example_pkg", env_arg=env)
+                self.__check_publisher_info(expected, env_arg=env)
+                self.pkg("install example_pkg", env_arg=env)
 
         def test_03_user_modifying_configuration(self):
                 """Test that adding and removing origins to a system publisher
