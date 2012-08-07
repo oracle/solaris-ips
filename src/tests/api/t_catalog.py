@@ -956,6 +956,12 @@ class TestCatalog(pkg5unittest.Pkg5TestCase):
                 )
                 self.assertEqual(sigs, cat_sigs)
 
+                # Check that get_matching_fmris returns the right unmatched
+                # pattern.
+                pdict, references, unmatched = cat.get_matching_fmris(
+                    ["xyzzy", "base"])
+                self.assertEqual(set(["xyzzy"]), unmatched)
+
                 # Next, verify that removal of an FMRI not in the catalog will
                 # raise the expected exception.  Do this by removing an FMRI
                 # and then attempting to remove it again.

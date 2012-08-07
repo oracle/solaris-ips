@@ -3195,7 +3195,7 @@ class Catalog(object):
 
                         if getattr(pfmri.version, "match_latest", None):
                                 latest_pats.add(pat)
-                        pat_data.append((matcher, pfmri))
+                        pat_data.append((pat, matcher, pfmri))
 
                 patterns = npatterns
                 del npatterns, seen
@@ -3208,21 +3208,23 @@ class Catalog(object):
                 ret = dict(zip(patterns, [dict() for i in patterns]))
 
                 for name in self.names():
-                        for pat, (matcher, pfmri) in zip(patterns, pat_data):
+                        for pat, matcher, pfmri in pat_data:
                                 pub = pfmri.publisher
                                 version = pfmri.version
                                 if not matcher(name, pfmri.pkg_name):
                                         continue # name doesn't match
-                                for ver, entries in self.entries_by_version(name):
+                                for ver, entries in \
+                                    self.entries_by_version(name):
                                         if version and not ver.is_successor(
-                                            version, pkg.version.CONSTRAINT_AUTO):
+                                            version,
+                                            pkg.version.CONSTRAINT_AUTO):
                                                 continue # version doesn't match
                                         for f, metadata in entries:
                                                 fpub = f.publisher
                                                 if pub and pub != fpub:
                                                         # specified pubs
                                                         # conflict
-                                                        continue 
+                                                        continue
                                                 ret[pat].setdefault(f.pkg_name,
                                                     []).append(f)
 
