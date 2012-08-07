@@ -5786,6 +5786,10 @@ def image_create(args):
                 usage(_("--no-refresh cannot be used with -p unless a "
                     "publisher prefix is provided."), cmd=cmd_name)
 
+        if not pub_url and (add_origins or add_mirrors):
+                usage(_("A publisher must be specified if -g or -m are used."),
+                    cmd=cmd_name)
+
         if not refresh_allowed and pub_url:
                 # Auto-config can't be done if refresh isn't allowed, so treat
                 # this as a manual configuration case.

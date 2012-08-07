@@ -90,6 +90,12 @@ class TestPkgImageCreateBasics(pkg5unittest.ManyDepotTestCase):
                 self.pkg("image-create --set-property foo=bar --set-property "
                     "foo=baz -p test1=%s %s" % (self.rurl1, self.test_root),
                     exit=2)
+                self.pkg("image-create -g %s %s" % (self.rurl1, self.test_root),
+                    exit=2)
+                self.pkg("image-create -m %s %s" % (self.rurl1, self.test_root),
+                    exit=2)
+                self.pkg("image-create -g %s -m %s %s" % (self.rurl1,
+                    self.rurl1, self.test_root), exit=2)
 
         def __add_install_file(self, imgdir, fmri):
                 """Take an image path and fmri. Write a file to disk that
