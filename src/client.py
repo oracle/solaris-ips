@@ -244,17 +244,19 @@ def usage(usage_error=None, cmd=None, retcode=EXIT_BADOPT, full=False):
             "            [--facet <facet_spec>=(True|False) ...]\n"
             "            [(-p|--publisher) [<name>=]<repo_uri>] dir")
         adv_usage["change-variant"] = _(
-            "[-nvq] [-C n] [-g path_or_uri ...]\n"
-            "            [--accept] [--licenses] [--no-be-activate]\n"
+            "[-nvq] [-C n] [-g path_or_uri ...] [--accept]\n"
+            "            [--licenses] [--no-be-activate] [--no-index] [--no-refresh]\n"
             "            [--no-backup-be | --require-backup-be] [--backup-be-name name]\n"
             "            [--deny-new-be | --require-new-be] [--be-name name]\n"
+            "            [--reject pkg_fmri_pattern ... ]\n"
             "            <variant_spec>=<instance> ...")
 
         adv_usage["change-facet"] = _(
-            "[-nvq] [-C n] [-g path_or_uri ...]\n"
-            "            [--accept] [--licenses] [--no-be-activate]\n"
+            "[-nvq] [-C n] [-g path_or_uri ...] [--accept]\n"
+            "            [--licenses] [--no-be-activate] [--no-index] [--no-refresh]\n"
             "            [--no-backup-be | --require-backup-be] [--backup-be-name name]\n"
             "            [--deny-new-be | --require-new-be] [--be-name name]\n"
+            "            [--reject pkg_fmri_pattern ... ]\n"
             "            <facet_spec>=[True|False|None] ...")
 
         adv_usage["mediator"] = _("[-aH] [-F format] [<mediator> ...]")
