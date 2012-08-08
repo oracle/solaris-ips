@@ -512,8 +512,25 @@ class TestPkgPublisherBasics(pkg5unittest.SingleDepotTestCase):
                             exit=0)
                         self.pkg("set-publisher --no-refresh %(add)s %(url)s "
                             "test" % {"add": add, "url": self.durl}, exit=0)
+                        self.pkg("publisher -F tsv")
                         self.assert_("%s/\thttp://foo" %
                             self.durl not in self.output)
+                        self.pkg("set-publisher --no-refresh %(remove)s "
+                            "%(url)s test" %
+                            {"remove": remove, "url": self.durl})
+
+                        # when we add multiple urls, and they all get the same
+                        # proxy value, leaving an existing non-proxied url
+                        # as non-proxied.
+                        self.pkg("set-publisher --no-refresh %(add)s http://a "
+                            "test" % {"add": add})
+                        self.pkg("set-publisher --no-refresh %(add)s http://b "
+                            "%(add)s http://c --proxy http://foo test" %
+                            {"add": add})
+                        self.pkg("publisher -F tsv")
+                        self.assert_("http://a/\t-" in self.output)
+                        self.assert_("http://b/\thttp://foo" in self.output)
+                        self.assert_("http://c/\thttp://foo" in self.output)
 
 
 class TestPkgPublisherMany(pkg5unittest.ManyDepotTestCase):
@@ -834,6 +851,28 @@ class TestPkgPublisherMany(pkg5unittest.ManyDepotTestCase):
                 self.assertEqual(get_pubs(), ["test1", "test2", "test3"])
                 self.pkg("set-publisher -P -p %s" % durl6)
                 self.assertEqual(get_pubs(), ["test1", "test2", "test3"])
+
+                # Check that --proxy arguments are set on all auto-configured
+                # publishers.  We use $no_proxy='*' in the environment so that
+                # we can persist a dummy --proxy value to the image
+                # configuration, yet still reach the test depot to obtain the
+                # publisher/ response.
+                self.pkg("unset-publisher test3")
+                self.pkg("unset-publisher test2")
+                self.pkg("set-publisher -P --proxy http://myproxy -p %s" %
+                    durl6, env_arg={"no_proxy": "*"})
+                self.assertEqual(get_pubs(), ["test2", "test3", "test1"])
+
+                # Verify that only test2 and test3 have proxies set, since
+                # test1 already existed, it should not use a proxy. The proxy
+                # column is the last one printed on each line.
+                self.pkg("publisher -HF tsv")
+                for l in self.output.splitlines():
+                        if l.startswith("test2") or l.startswith("test3"):
+                                self.assertEqual("http://myproxy",
+                                    l.split()[-1])
+                        else:
+                                self.assertEqual("-", l.split()[-1])
 
         def test_set_mirrors_origins(self):
                 """Test set-publisher functionality for mirrors and origins."""

@@ -4443,6 +4443,15 @@ assistance."""))
                                 # matches the URI provided.
                                 add_origins.append(repo_uri)
 
+                        # Any -p origins/mirrors returned from get_pubs() should
+                        # use the proxy we declared, if any.
+                        if proxy_uri and src_repo:
+                                proxies = [publisher.ProxyURI(proxy_uri)]
+                                for repo_uri in src_repo.origins:
+                                        repo_uri.proxies = proxies
+                                for repo_uri in src_repo.mirrors:
+                                        repo_uri.proxies = proxies
+
                         rval, rmsg = _set_pub_error_wrap(_add_update_pub, name,
                             [], api_inst, prefix, pub=src_pub,
                             add_origins=add_origins, ssl_cert=ssl_cert,
