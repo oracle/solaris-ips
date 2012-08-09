@@ -45,6 +45,7 @@ static PyObject *aclass_unknown;
 static PyObject *aclass_user;
 
 static const char *notident = "hash attribute not identical to positional hash";
+static const char *nohash = "action type doesn't allow payload";
 
 static inline int
 add_to_attrs(PyObject *attrs, PyObject *key, PyObject *attr)
@@ -106,6 +107,7 @@ fromstr(PyObject *self, PyObject *args, PyObject *kwdict)
 	int strl, typestrl;
 	int i, ks, vs, keysize;
 	int smlen, smpos;
+	int hash_allowed;
 	char quote;
 	PyObject *act_args = NULL;
 	PyObject *act_class = NULL;
@@ -175,10 +177,12 @@ fromstr(PyObject *self, PyObject *args, PyObject *kwdict)
 	 * performance out.
 	 */
 	typestrl = s - str;
+	hash_allowed = 0;
 	if (typestrl == 4) {
-		if (strncmp(str, "file", 4) == 0)
+	        if (strncmp(str, "file", 4) == 0) {
 			act_class = aclass_file;
-		else if (strncmp(str, "link", 4) == 0)
+			hash_allowed = 1;
+		} else if (strncmp(str, "link", 4) == 0)
 			act_class = aclass_link;
 		else if (strncmp(str, "user", 4) == 0)
 			act_class = aclass_user;
@@ -198,13 +202,16 @@ fromstr(PyObject *self, PyObject *args, PyObject *kwdict)
 		if (strncmp(str, "hardlink", 8) == 0)
 			act_class = aclass_hardlink;
 	} else if (typestrl == 7) {
-		if (strncmp(str, "license", 7) == 0)
+	        if (strncmp(str, "license", 7) == 0) {
 			act_class = aclass_license;
-		else if (strncmp(str, "unknown", 7) == 0)
+			hash_allowed = 1;
+		} else if (strncmp(str, "unknown", 7) == 0)
 			act_class = aclass_unknown;
 	} else if (typestrl == 9) {
-		if (strncmp(str, "signature", 9) == 0)
+	        if (strncmp(str, "signature", 9) == 0) {
 			act_class = aclass_signature;
+			hash_allowed = 1;
+                }
 	} else if (typestrl == 5) {
 		if (strncmp(str, "group", 5) == 0)
 			act_class = aclass_group;
@@ -250,8 +257,14 @@ fromstr(PyObject *self, PyObject *args, PyObject *kwdict)
 						CLEANUP_REFS;
 						return (NULL);
 					}
+					if (!hash_allowed) {
+					    invalid(nohash);
+					    CLEANUP_REFS;
+					    return (NULL);
+					}
 					hashstr = strndup(keystr, keysize);
 					state = WS;
+
 				}
 			} else if (str[i] == '=') {
 				if ((key = PyString_FromStringAndSize(
@@ -263,6 +276,12 @@ fromstr(PyObject *self, PyObject *args, PyObject *kwdict)
 				if (keysize == 4 && strncmp(keystr, "data",
 				    keysize) == 0) {
 					invalid("invalid key: 'data'");
+					CLEANUP_REFS;
+					return (NULL);
+				}
+				if (!hash_allowed && keysize == 4 && 
+                                    strncmp(keystr, "hash", keysize) == 0) {
+					invalid(nohash);
 					CLEANUP_REFS;
 					return (NULL);
 				}

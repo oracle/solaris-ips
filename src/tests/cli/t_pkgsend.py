@@ -1249,6 +1249,26 @@ dir path=foo/bar mode=0755 owner=root group=bin
                 self.pkgsend("", "-s %s publish -d %s < %s" % (dhurl,
                     dir_1, mfpath), exit=1)
 
+        def test_24_pkgsend_publish_payloaded_link(self):
+                """Verify that publishing a manifest with a link with a payload
+                doesn't traceback."""
+
+                mfpath = os.path.join(self.test_root, "foo.p5m")
+                with open(mfpath, "wb") as mf:
+                        mf.write("""set name=pkg.fmri value=foo@1
+link payload-pathname path=/usr/bin/foo target=bar""")
+                self.pkgsend("", "-s %s publish %s" %
+                    (self.dc.get_depot_url(), mfpath), exit=1)
+                self.pkgsend("", "-s %s publish %s" %
+                    (self.dc.get_repo_url(), mfpath), exit=1)
+                with open(mfpath, "wb") as mf:
+                        mf.write("""set name=pkg.fmri value=foo@1
+dir path=/usr/bin/foo target=bar hash=payload-pathname""")
+                self.pkgsend("", "-s %s publish %s" %
+                    (self.dc.get_depot_url(), mfpath), exit=1)
+                self.pkgsend("", "-s %s publish %s" %
+                    (self.dc.get_repo_url(), mfpath), exit=1)
+
 
 class TestPkgsendHardlinks(pkg5unittest.CliTestCase):
 
