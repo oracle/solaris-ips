@@ -711,6 +711,7 @@ class ProgressTrackerFrontend(object):
                     max(len(x) for x in self.phase_names.values())
 
                 self.li_phase_names = {
+                    self.PHASE_PREPLAN:  _("Startup"),
                     self.PHASE_PLAN:     _("Planning"),
                     self.PHASE_DOWNLOAD: _("Downloading"),
                     self.PHASE_FINALIZE: _("Executing"),
