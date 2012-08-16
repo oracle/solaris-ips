@@ -973,21 +973,32 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                             self.imgdir, self.transport,
                             self.cfg.get_policy("use-system-repo"))
 
-                        # Check to see if any system publishers have been
-                        # removed.  If they have, remove their metadata and
-                        # rebuild the catalogs.
-                        changed = False
-                        for p in self.cfg.removed_pubs:
-                                p.meta_root = self._get_publisher_meta_root(
-                                    p.prefix)
-                                try:
-                                        self.remove_publisher_metadata(p,
-                                            rebuild=False)
-                                        changed = True
-                                except apx.PermissionsException:
-                                        pass
-                        if changed:
-                                self.__rebuild_image_catalogs()
+                # Check to see if any system publishers have been changed.
+                # If so they need to be refreshed, so clear last_refreshed.
+                for p in self.cfg.modified_pubs:
+                        p.meta_root = self._get_publisher_meta_root(p.prefix)
+                        p.last_refreshed = None
+
+                # Check to see if any system publishers have been
+                # removed.  If they have, remove their metadata and
+                # rebuild the catalogs.
+                changed = False
+                for p in self.cfg.removed_pubs:
+                        p.meta_root = self._get_publisher_meta_root(p.prefix)
+                        try:
+                                self.remove_publisher_metadata(p, rebuild=False)
+                                changed = True
+                        except apx.PermissionsException:
+                                pass
+                if changed:
+                        self.__rebuild_image_catalogs()
+
+                # we delay writing out any new system repository configuration
+                # until we've updated on on-disk catalog state.  (otherwise we
+                # could lose track of syspub publishers changes and either
+                # return stale catalog information, or not do refreshes when
+                # we need to.)
+                self.cfg.write_sys_cfg()
 
                 self.__load_publisher_ssl()
                 if purge:

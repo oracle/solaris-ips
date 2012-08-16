@@ -1047,7 +1047,7 @@ class BlendedConfig(object):
                 self.__system_override_properties = (SIGNATURE_POLICY,
                     "signature-required-names")
 
-                write_sys_cfg = True
+                self.__write_sys_cfg = True
                 if use_system_pub:
                         # get new syspub data from sysdepot
                         try:
@@ -1091,7 +1091,7 @@ class BlendedConfig(object):
                                     sysdepot_uri)
                         except TransportFailures:
                                 self.sys_cfg = old_sysconfig
-                                write_sys_cfg = False
+                                self.__write_sys_cfg = False
                         else:
                                 try:
                                         try:
@@ -1125,7 +1125,7 @@ class BlendedConfig(object):
                                                 # the ImageConfig.
                                                 self.sys_cfg = \
                                                     NullSystemPublisher()
-                                                write_sys_cfg = False
+                                                self.__write_sys_cfg = False
                                         else:
                                                 raise
                                 else:
@@ -1165,14 +1165,14 @@ class BlendedConfig(object):
                         self.sys_cfg = NullSystemPublisher()
                         self.__system_override_properties = ()
 
-                self.__publishers, self.added_pubs, self.removed_pubs = \
-                    self.__merge_publishers(self.img_cfg, self.sys_cfg,
-                        pkg_counts, old_sysconfig, self.__proxy_url,
-                        write_sys_cfg)
+                self.__publishers, self.added_pubs, self.removed_pubs, \
+                    self.modified_pubs = \
+                        self.__merge_publishers(self.img_cfg, self.sys_cfg,
+                            pkg_counts, old_sysconfig, self.__proxy_url)
 
         @staticmethod
         def __merge_publishers(img_cfg, sys_cfg, pkg_counts, old_sysconfig,
-            proxy_url, write_sys_cfg):
+            proxy_url):
                 """This function merges an old publisher configuration from the
                 system repository with the new publisher configuration from the
                 system repository.  It returns a tuple containing a dictionary
@@ -1193,19 +1193,17 @@ class BlendedConfig(object):
                 the previous publisher configuration from the system repository.
 
                 The 'proxy_url' parameter is the url for the system repository.
-
-                The 'write_sys_cfg' parameter indicates whether the new sys_cfg
-                object should attempt to save its configuration to disk.
                 """
 
                 pubs_with_installed_pkgs = set()
-
-                added_pubs = set()
-                removed_pubs = set()
-
                 for prefix, cnt, ver_cnt in pkg_counts:
                         if cnt > 0:
                                 pubs_with_installed_pkgs.add(prefix)
+
+                # keep track of old system publishers which are becoming
+                # disabled image publishers (because they have packages
+                # installed).
+                disabled_pubs = set()
 
                 # Merge in previously existing system publishers which have
                 # installed packages.
@@ -1218,10 +1216,17 @@ class BlendedConfig(object):
                         sys_cfg.publishers[prefix] = \
                             old_sysconfig.publishers[prefix]
                         sys_cfg.publishers[prefix].disabled = True
+                        disabled_pubs |= set([prefix])
 
-                # Write out the new system publisher configuration.
-                if write_sys_cfg:
-                        sys_cfg.write()
+                # check if any system publisher have had origin changes.
+                modified_pubs = set()
+                for prefix in set(old_sysconfig.publishers) & \
+                    set(sys_cfg.publishers):
+                        pold = old_sysconfig.publishers[prefix]
+                        pnew = sys_cfg.publishers[prefix]
+                        if map(str, pold.repository.origins) != \
+                            map(str, pnew.repository.origins):
+                                modified_pubs |= set([prefix])
 
                 if proxy_url:
                         # We must replace the temporary "system" proxy with the
@@ -1280,8 +1285,21 @@ class BlendedConfig(object):
                 added_pubs = new_pubs - old_pubs
                 removed_pubs = old_pubs - new_pubs
 
-                return res, [res[p] for p in added_pubs], \
-                    [old_sysconfig.publishers[p] for p in removed_pubs]
+                added_pubs = [res[p] for p in added_pubs]
+                removed_pubs = [
+                    old_sysconfig.publishers[p]
+                    for p in removed_pubs | disabled_pubs
+                ]
+                modified_pubs = [
+                    old_sysconfig.publishers[p]
+                    for p in modified_pubs
+                ]
+                return (res, added_pubs, removed_pubs, modified_pubs)
+
+        def write_sys_cfg(self):
+                # Write out the new system publisher configuration.
+                if self.__write_sys_cfg:
+                        self.sys_cfg.write()
 
         def write(self):
                 """Update the image configuration to reflect any changes made,
@@ -1471,8 +1489,10 @@ class BlendedConfig(object):
                 self.sys_cfg.reset()
                 old_sysconfig = ImageConfig(os.path.join(imgdir, "pkg5.syspub"),
                     None)
-                self.__publishers = self.__merge_publishers(self.img_cfg,
-                    self.sys_cfg, self.__pkg_counts, old_sysconfig)
+                self.__publishers, self.added_pubs, self.removed_pubs, \
+                    self.modified_pubs = \
+                        self.__merge_publishers(self.img_cfg,
+                            self.sys_cfg, self.__pkg_counts, old_sysconfig)
 
         def __get_publisher(self, prefix):
                 """Accessor method for publishers dictionary"""

@@ -48,7 +48,7 @@ class PC(object):
 
         def __init__(self, url, sticky=True, mirrors=misc.EmptyI, https=False,
             server_ta=None, client_ta=None, disabled=False, name=None,
-            sig_pol=None, req_names=None):
+            sig_pol=None, req_names=None, origins=misc.EmptyI):
                 assert (https and server_ta and client_ta) or \
                     not (https or server_ta or client_ta)
                 assert not disabled or name
@@ -62,6 +62,7 @@ class PC(object):
                 self.name = name
                 self.signature_policy = sig_pol
                 self.required_names = req_names
+                self.origins = origins
 
 class TestSysrepo(pkg5unittest.ManyDepotTestCase):
         """Tests pkg interaction with the system repository."""
@@ -147,7 +148,7 @@ test4\ttrue\ttrue\ttrue\t\t\t\t
                             smf_conf_dict
 
                 pkg5unittest.ManyDepotTestCase.setUp(self, ["test1", "test12",
-                    "test3", "test4"], start_depots=True)
+                    "test3", "test4", "test12"], start_depots=True)
                 self.testdata_dir = os.path.join(self.test_root, "testdata")
                 self.make_misc_files(self.misc_files)
 
@@ -155,11 +156,13 @@ test4\ttrue\ttrue\ttrue\t\t\t\t
                 self.durl2 = self.dcs[2].get_depot_url()
                 self.durl3 = self.dcs[3].get_depot_url()
                 self.durl4 = self.dcs[4].get_depot_url()
+                self.durl5 = self.dcs[5].get_depot_url()
 
                 self.rurl1 = self.dcs[1].get_repo_url()
                 self.rurl2 = self.dcs[2].get_repo_url()
                 self.rurl3 = self.dcs[3].get_repo_url()
                 self.rurl4 = self.dcs[4].get_repo_url()
+                self.rurl5 = self.dcs[5].get_repo_url()
 
                 self.apache_dir = os.path.join(self.test_root, "apache")
                 self.apache_log_dir = os.path.join(self.apache_dir,
@@ -169,6 +172,7 @@ test4\ttrue\ttrue\ttrue\t\t\t\t
                 self.pkgsend_bulk(self.rurl2, self.foo10)
                 self.pkgsend_bulk(self.rurl3, self.bar10)
                 self.pkgsend_bulk(self.rurl4, self.bar10)
+                self.pkgsend_bulk(self.rurl5, self.foo11)
 
                 self.common_config_dir = os.path.join(self.test_root,
                     "apache-serve")
@@ -226,6 +230,11 @@ test4\ttrue\ttrue\ttrue\t\t\t\t
                     "test1-test12": ({}, [
                         PC(self.durl1),
                         PC(self.durl2, sticky=False)]),
+                    "test1-test12-test12": ({}, [
+                        PC(self.durl1),
+                        PC(None,
+                            name="test12", origins=[self.durl2, self.durl5],
+                            sticky=False)]),
                     "test1-test3": ({}, [
                         PC(self.durl1),
                         PC(self.durl3)]),
@@ -377,6 +386,8 @@ test4\ttrue\ttrue\ttrue\t\t\t\t
                                 if not pc.https and pc.url:
                                         cmd += " -p %s" % pc.url
                                 elif not pc.https and not pc.url:
+                                        for o in pc.origins:
+                                                cmd += " -g %s" % o
                                         cmd += " %s" % pc.name
                                 else:
                                         if pc.url in self.acs:
@@ -1412,7 +1423,7 @@ test3\ttrue\ttrue\ttrue\tmirror\tonline\t%(durl3)s/\thttp://localhost:%(port)s
     "durl3": self.durl3
 }
                 self.__check_publisher_info(expected)
-                
+
                 self.__set_responses("none")
                 expected = """\
 PUBLISHER\tSTICKY\tSYSPUB\tENABLED\tTYPE\tSTATUS\tURI\tPROXY
@@ -1876,7 +1887,7 @@ PUBLISHER\tSTICKY\tSYSPUB\tENABLED\tTYPE\tSTATUS\tURI\tPROXY
         def test_catalog_is_not_cached_file(self):
                 """Test that the catalog response is not cached when dealing
                 with an http repo."""
-                
+
                 conf_name = "test1-test3-f"
                 self.__prep_configuration([conf_name])
                 self.__set_responses(conf_name)
@@ -1890,7 +1901,229 @@ PUBLISHER\tSTICKY\tSYSPUB\tENABLED\tTYPE\tSTATUS\tURI\tPROXY
                 self.pkg("install foo@1.1")
                 self.pkg("install bar@1.1")
 
+        def test_automatic_refresh(self):
+                """Test that sysrepo publishers get refreshed automatically
+                when sysrepo configuration changes."""
 
+                self.__prep_configuration(["test1", "test1-test12",
+                    "test1-test12-test12"])
+                self.__set_responses("test1-test12")
+                self.sc = pkg5unittest.SysrepoController(
+                    self.apache_confs["test1-test12"], self.sysrepo_port,
+                    self.common_config_dir, testcase=self)
+                self.sc.start()
+
+                api_obj = self.image_create(props={"use-system-repo": True})
+
+                # the client should see packages from the test1 and test12 pubs.
+                self.pkg("list -afH")
+                expected = (
+                    "example_pkg 1.0-0 ---\n"
+                    "foo (test12) 1.0-0 ---\n")
+                output = self.reduceSpaces(self.output)
+                self.assertEqualDiff(expected, output)
+
+                # remove the test12 pub.
+                self.__set_responses("test1")
+                self.pkg("list -afH")
+                expected = "example_pkg 1.0-0 ---\n"
+                output = self.reduceSpaces(self.output)
+                self.assertEqualDiff(expected, output)
+
+                # add the test12 pub.
+                self.__set_responses("test1-test12")
+                self.pkg("list -afH")
+                expected = (
+                    "example_pkg 1.0-0 ---\n"
+                    "foo (test12) 1.0-0 ---\n")
+                output = self.reduceSpaces(self.output)
+                self.assertEqualDiff(expected, output)
+
+                # add an origin (with new packages) to the test12 pub.
+                self.__set_responses("test1-test12-test12")
+                self.pkg("list -afH")
+                expected = (
+                    "example_pkg 1.0-0 ---\n"
+                    "foo (test12) 1.1-0 ---\n"
+                    "foo (test12) 1.0-0 ---\n")
+                output = self.reduceSpaces(self.output)
+                self.assertEqualDiff(expected, output)
+
+                # push a new package into one of the test12 repos.
+                # (we have to do an explicit refresh since "list" won't do it
+                # because last_refreshed is too recent.)
+                self.pkgsend_bulk(self.rurl2, self.bar10)
+                self.pkg("refresh")
+                self.pkg("list -afH")
+                expected = (
+                    "bar (test12) 1.0-0 ---\n"
+                    "example_pkg 1.0-0 ---\n"
+                    "foo (test12) 1.1-0 ---\n"
+                    "foo (test12) 1.0-0 ---\n")
+                output = self.reduceSpaces(self.output)
+                self.assertEqualDiff(expected, output)
+
+                # remove an origin from the test12 pub.
+                self.__set_responses("test1-test12")
+                self.pkg("list -afH")
+                expected = (
+                    "bar (test12) 1.0-0 ---\n"
+                    "example_pkg 1.0-0 ---\n"
+                    "foo (test12) 1.0-0 ---\n")
+                output = self.reduceSpaces(self.output)
+                self.assertEqualDiff(expected, output)
+
+                # install a package from the test12 pub.
+                # then re-do a bunch of the tests above.
+                self.pkg("install foo")
+
+                # remove the test12 pub.
+                self.__set_responses("test1")
+                self.pkg("list -afH")
+                expected = (
+                    "example_pkg 1.0-0 ---\n"
+                    "foo (test12) 1.0-0 i--\n")
+                output = self.reduceSpaces(self.output)
+                self.assertEqualDiff(expected, output)
+
+                # add the test12 pub.
+                self.__set_responses("test1-test12")
+                self.pkg("list -afH")
+                expected = (
+                    "bar (test12) 1.0-0 ---\n"
+                    "example_pkg 1.0-0 ---\n"
+                    "foo (test12) 1.0-0 i--\n")
+                output = self.reduceSpaces(self.output)
+                self.assertEqualDiff(expected, output)
+
+                # add an origin (with new packages) to the test12 pub.
+                self.__set_responses("test1-test12-test12")
+                self.pkg("list -afH")
+                expected = (
+                    "bar (test12) 1.0-0 ---\n"
+                    "example_pkg 1.0-0 ---\n"
+                    "foo (test12) 1.1-0 ---\n"
+                    "foo (test12) 1.0-0 i--\n")
+                output = self.reduceSpaces(self.output)
+                self.assertEqualDiff(expected, output)
+
+                # push a new package into one of the test12 repos.
+                # (we have to do an explicit refresh since "list" won't do it
+                # because last_refreshed is too recent.)
+                self.pkgsend_bulk(self.rurl2, self.bar11)
+                self.pkg("refresh")
+                self.pkg("list -afH")
+                expected = (
+                    "bar (test12) 1.1-0 ---\n"
+                    "bar (test12) 1.0-0 ---\n"
+                    "example_pkg 1.0-0 ---\n"
+                    "foo (test12) 1.1-0 ---\n"
+                    "foo (test12) 1.0-0 i--\n")
+                output = self.reduceSpaces(self.output)
+                self.assertEqualDiff(expected, output)
+
+                # remove an origin from the test12 pub.
+                self.__set_responses("test1-test12")
+                self.pkg("list -afH")
+                expected = (
+                    "bar (test12) 1.1-0 ---\n"
+                    "bar (test12) 1.0-0 ---\n"
+                    "example_pkg 1.0-0 ---\n"
+                    "foo (test12) 1.0-0 i--\n")
+                output = self.reduceSpaces(self.output)
+                self.assertEqualDiff(expected, output)
+
+        def test_syspub_toggle(self):
+                """Test that sysrepo publishers get refreshed automatically
+                when sysrepo configuration changes."""
+
+                self.__prep_configuration(["test1"])
+                self.__set_responses("test1")
+                self.sc = pkg5unittest.SysrepoController(
+                    self.apache_confs["test1"], self.sysrepo_port,
+                    self.common_config_dir, testcase=self)
+                self.sc.start()
+
+                api_obj = self.image_create(props={"use-system-repo": True})
+
+                # the client should see packages from the test1 pubs.
+                self.pkg("list -afH")
+                expected = (
+                    "example_pkg 1.0-0 ---\n")
+                output = self.reduceSpaces(self.output)
+                self.assertEqualDiff(expected, output)
+
+                # push a new package into one of the test12 repos.
+                self.pkgsend_bulk(self.rurl1, self.bar10)
+
+                # verify that the client only sees the new package after an
+                # explicit refresh
+                self.pkg("list -afH")
+                expected = (
+                    "example_pkg 1.0-0 ---\n")
+                output = self.reduceSpaces(self.output)
+                self.assertEqualDiff(expected, output)
+                self.pkg("refresh")
+                self.pkg("list -afH")
+                expected = (
+                    "bar 1.0-0 ---\n"
+                    "example_pkg 1.0-0 ---\n")
+                output = self.reduceSpaces(self.output)
+                self.assertEqualDiff(expected, output)
+
+                # disable the sysrepo.
+                self.pkg("set-property use-system-repo False")
+
+                # the client should not see any packages.
+                self.pkg("list -afH", exit=1)
+                expected = ("")
+                output = self.reduceSpaces(self.output)
+                self.assertEqualDiff(expected, output)
+
+                # push a new package into one of the test12 repos.
+                self.pkgsend_bulk(self.rurl1, self.bar11)
+
+                # enable the sysrepo.
+                self.pkg("set-property use-system-repo True")
+
+                # the client should see packages from the test1 pubs.
+                self.pkg("list -afH")
+                expected = (
+                    "bar 1.1-0 ---\n"
+                    "bar 1.0-0 ---\n"
+                    "example_pkg 1.0-0 ---\n")
+                output = self.reduceSpaces(self.output)
+                self.assertEqualDiff(expected, output)
+
+                # install a package from the test12 pub.
+                # then re-do a bunch of the tests above.
+                self.pkg("install example_pkg")
+
+                # disable the sysrepo.
+                self.pkg("set-property use-system-repo False")
+
+                # the client should only see the installed package.
+                self.pkg("list -afH")
+                expected = (
+                    "example_pkg 1.0-0 i--\n")
+                output = self.reduceSpaces(self.output)
+                self.assertEqualDiff(expected, output)
+
+                # push a new package into one of the test12 repos.
+                self.pkgsend_bulk(self.rurl1, self.foo10)
+
+                # enable the sysrepo.
+                self.pkg("set-property use-system-repo True")
+
+                # the client should see packages from the test1 pubs.
+                self.pkg("list -afH")
+                expected = (
+                    "bar 1.1-0 ---\n"
+                    "bar 1.0-0 ---\n"
+                    "example_pkg 1.0-0 i--\n"
+                    "foo 1.0-0 ---\n")
+                output = self.reduceSpaces(self.output)
+                self.assertEqualDiff(expected, output)
 
         __smf_cmds_template = { \
             "usr/bin/svcprop" : """\
