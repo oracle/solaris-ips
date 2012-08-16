@@ -1665,6 +1665,13 @@ pkg unset-publisher %s
                         except EnvironmentError, e:
                                 raise api_errors._convert_error(e)
 
+                # if the catalog already exists on disk, is empty, and if
+                # no origins are configured, we're done.
+                if self.catalog.exists and \
+                    self.catalog.package_count == 0 and \
+                    len(self.repository.origins) == 0:
+                        return removals
+
                 # Discard existing catalog.
                 self.catalog.destroy()
                 self.__catalog = None

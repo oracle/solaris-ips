@@ -116,6 +116,8 @@ class Image(object):
         IMG_CATALOG_KNOWN = "known"
         IMG_CATALOG_INSTALLED = "installed"
 
+        __STATE_UPDATING_FILE = "state_updating"
+
         def __init__(self, root, user_provided_dir=False, progtrack=None,
             should_exist=True, imgtype=None, force=False,
             augment_ta_from_parent_image=True, allow_ondisk_upgrade=None,
@@ -2896,6 +2898,55 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                 """ Return a copy of the current image facets"""
                 return self.cfg.facets.copy()
 
+        def __state_updating_pathname(self):
+                """Return the path to a flag file indicating that the image
+                catalog is being updated."""
+                return os.path.join(self._statedir, self.__STATE_UPDATING_FILE)
+
+        def __start_state_update(self):
+                """Called when we start updating the image catalog.  Normally
+                returns False, but will return True if a previous update was
+                interrupted."""
+
+                # get the path to the image catalog update flag file
+                pathname = self.__state_updating_pathname()
+
+                # if the flag file exists a previous update was interrupted so
+                # return 1
+                if os.path.exists(pathname):
+                        return True
+
+                # create the flag file and return 0
+                file_mode = misc.PKG_FILE_MODE
+                try:
+                        open(pathname, "w")
+                        os.chmod(pathname, file_mode)
+                except EnvironmentError, e:
+                        if e.errno == errno.EACCES:
+                                raise apx.PermissionsException(e.filename)
+                        if e.errno == errno.EROFS:
+                                raise apx.ReadOnlyFileSystemException(
+                                    e.filename)
+                        raise
+                return False
+
+        def __end_state_update(self):
+                """Called when we're done updating the image catalog."""
+
+                # get the path to the image catalog update flag file
+                pathname = self.__state_updating_pathname()
+
+                # delete the flag file.
+                try:
+                        portable.remove(pathname)
+                except EnvironmentError, e:
+                        if e.errno == errno.EACCES:
+                                raise apx.PermissionsException(e.filename)
+                        if e.errno == errno.EROFS:
+                                raise apx.ReadOnlyFileSystemException(
+                                    e.filename)
+                        raise
+
         def __rebuild_image_catalogs(self, progtrack=None):
                 """Rebuilds the image catalogs based on the available publisher
                 catalogs."""
@@ -2938,6 +2989,9 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
 
                 # Copy any regular files placed in the state directory
                 for p in os.listdir(self._statedir):
+                        if p == self.__STATE_UPDATING_FILE:
+                                # don't copy the state updating file
+                                continue
                         fp = os.path.join(self._statedir, p)
                         if os.path.isfile(fp):
                                 portable.copyfile(fp, os.path.join(tmp_state_root, p))
@@ -3274,14 +3328,14 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                 failed = []
                 total = 0
                 succeeded = set()
-                updated = 0
+                updated = self.__start_state_update()
                 for pub in pubs_to_refresh:
                         total += 1
                         progtrack.refresh_start_pub(pub)
                         try:
                                 if pub.refresh(full_refresh=full_refresh,
                                     immediate=immediate, progtrack=progtrack):
-                                        updated += 1
+                                        updated = True
                         except apx.PermissionsException, e:
                                 failed.append((pub, e))
                                 # No point in continuing since no data can
@@ -3298,6 +3352,8 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
 
                 if updated:
                         self.__rebuild_image_catalogs(progtrack=progtrack)
+                else:
+                        self.__end_state_update()
 
                 if failed:
                         e = apx.CatalogRefreshException(failed, total,
