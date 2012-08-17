@@ -953,20 +953,15 @@ def __display_plan(api_inst, verbose, noexecute):
         if plan.must_display_notes():
                 disp.append("release-notes")
 
-	# If we're a recursive invocation (indicated by client_output_progfd),
-	# we want to elide messages related to BE management.
-	recursive_child = \
-	    True if global_settings.client_output_progfd is not None else False
-
-	if not api_inst.is_active_liveroot_be and not recursive_child:
-			# Warn the user since this isn't likely what they wanted.
-			if plan.new_be:
-				logger.warning(_("""\
+        if api_inst.is_liveroot and not api_inst.is_active_liveroot_be:
+                # Warn the user since this isn't likely what they wanted.
+                if plan.new_be:
+                        logger.warning(_("""\
 WARNING: The boot environment being modified is not the active one.  Changes
 made in the active BE will not be reflected on the next boot.
 """))
-			else:
-				logger.warning(_("""\
+                else:
+                        logger.warning(_("""\
 WARNING: The boot environment being modified is not the active one.  Changes
 made will not be reflected on the next boot.
 """))
@@ -1016,18 +1011,21 @@ made will not be reflected on the next boot.
                 else:
                         cond_show(_("Packages to fix:"), "%d", len(a))
 
-		if not recursive_child:
-			status.append((_("Create boot environment:"),
-			    bool_str(plan.new_be)))
+                # only display BE information if we're operating on the
+                # liveroot environment (since otherwise we'll never be
+                # manipulating BEs).
+                if api_inst.is_liveroot:
+                        status.append((_("Create boot environment:"),
+                            bool_str(plan.new_be)))
 
-			if plan.new_be and (verbose or not plan.activate_be):
-				# Only show activation status if verbose or
-				# if new BE will not be activated.
-				status.append((_("Activate boot environment:"),
-				    bool_str(plan.activate_be)))
+                        if plan.new_be and (verbose or not plan.activate_be):
+                                # Only show activation status if verbose or
+                                # if new BE will not be activated.
+                                status.append((_("Activate boot environment:"),
+                                    bool_str(plan.activate_be)))
 
-			status.append((_("Create backup boot environment:"),
-			    bool_str(plan.backup_be)))
+                        status.append((_("Create backup boot environment:"),
+                            bool_str(plan.backup_be)))
 
                 if not plan.new_be:
                         cond_show(_("Services to change:"), "%d",

@@ -456,7 +456,7 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                 """A boolean indicating whether the image to be modified is
                 the active BE for the system's root image."""
 
-                if not self._img.is_liveroot() or self._img.is_zone():
+                if not self._img.is_liveroot():
                         return False
 
                 try:

@@ -351,6 +351,11 @@ class BootEnv(object):
                         beList = BootEnv.get_be_list()
 
                         for be in beList:
+                                # don't look at active but unbootable BEs.
+                                # (happens in zones when we have ZBEs
+                                # associated with other global zone BEs.)
+                                if be.get("active_unbootable", False):
+                                        continue
                                 if be.get("active_boot"):
                                         return be.get("orig_be_name")
                 except AttributeError:
