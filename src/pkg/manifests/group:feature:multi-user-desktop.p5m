@@ -180,7 +180,20 @@ depend type=group fmri=system/input-method/imf-startup
 depend type=group fmri=system/io/audio
 depend type=group fmri=system/keyboard/kbd_mode
 depend type=group fmri=system/locale/support
-depend type=group fmri=system/management/visual-panels
+#
+# Include the same panels that are delivered by
+# group/system/solaris-desktop.  Those should be the panels that match
+# the underlying technologies included with the desktop group package.
+#
+depend type=group fmri=system/management/visual-panels-core
+depend type=group fmri=system/management/visual-panels/panel-apache
+depend type=group fmri=system/management/visual-panels/panel-coreadm
+depend type=group fmri=system/management/visual-panels/panel-firewall
+depend type=group fmri=system/management/visual-panels/panel-smf
+depend type=group fmri=system/management/visual-panels/panel-sysmon
+depend type=group fmri=system/management/visual-panels/panel-time
+depend type=group fmri=system/management/visual-panels/panel-usermgr
+depend type=group fmri=system/management/visual-panels/panel-zconsole
 depend type=group fmri=system/network/avahi
 $(i386_ONLY)depend type=group fmri=system/storage/parted
 depend type=group fmri=terminal/fbconsole

@@ -24,22 +24,27 @@
 set name=pkg.fmri value=pkg:/package/pkg@$(PKGVERS)
 set name=pkg.summary value="Image Packaging System"
 set name=pkg.description \
-    value="The Image Packaging System (IPS), or pkg(5), is the software delivery system used on OpenSolaris systems.  This package contains the core command-line components and depot server."
-
-# XXX needed due to bug 18673
-set name=pkg.linted.pkglint.manifest003.1 value=true
+    value="The Image Packaging System (IPS), or pkg(5), is the software delivery system used on Oracle Solaris.  This package contains the core command-line components and depot server."
 set name=info.classification \
     value=org.opensolaris.category.2008:System/Packaging
 set name=variant.arch value=$(ARCH)
 dir  path=$(PYDIR)
 dir  path=$(PYDIRVP)
 dir  path=$(PYDIRVP)/pkg
-dir  path=$(PYDIRVP)/pkg/64
 file path=$(PYDIRVP)/pkg-0.1-py2.6.egg-info
+dir  path=$(PYDIRVP)/pkg/64
+file path=$(PYDIRVP)/pkg/64/_varcet.so
 file path=$(PYDIRVP)/pkg/__init__.py
 file path=$(PYDIRVP)/pkg/_varcet.so
-file path=$(PYDIRVP)/pkg/64/_varcet.so
 dir  path=$(PYDIRVP)/pkg/actions
+#
+# We ship a 64-bit version of _actions.so because it's
+# needed by the sysrepo_p5p which is a mod_wsgi application
+# that runs in a 64-bit apache instance.
+#
+dir  path=$(PYDIRVP)/pkg/actions/64
+file path=$(PYDIRVP)/pkg/actions/64/_actions.so
+file path=$(PYDIRVP)/pkg/actions/64/_common.so
 file path=$(PYDIRVP)/pkg/actions/__init__.py
 file path=$(PYDIRVP)/pkg/actions/_actions.so
 file path=$(PYDIRVP)/pkg/actions/_common.so
@@ -57,12 +62,6 @@ file path=$(PYDIRVP)/pkg/actions/link.py
 file path=$(PYDIRVP)/pkg/actions/signature.py
 file path=$(PYDIRVP)/pkg/actions/unknown.py
 file path=$(PYDIRVP)/pkg/actions/user.py
-# We ship a 64-bit version of _actions.so because it's
-# needed by the sysrepo_p5p which is a mod_wsgi application
-# that runs in a 64-bit apache instance.
-dir  path=$(PYDIRVP)/pkg/actions/64
-file path=$(PYDIRVP)/pkg/actions/64/_actions.so
-file path=$(PYDIRVP)/pkg/actions/64/_common.so
 file path=$(PYDIRVP)/pkg/altroot.py
 file path=$(PYDIRVP)/pkg/api_common.py
 file path=$(PYDIRVP)/pkg/arch.so
@@ -80,8 +79,10 @@ file path=$(PYDIRVP)/pkg/client/__init__.py
 file path=$(PYDIRVP)/pkg/client/actuator.py
 file path=$(PYDIRVP)/pkg/client/api.py
 file path=$(PYDIRVP)/pkg/client/api_errors.py
+#
 # Don't worry about the libbe import; the python code looks for it in case
 # it can't import libbe_py, and is graceful in the face of its absence.
+#
 file path=$(PYDIRVP)/pkg/client/bootenv.py pkg.depend.bypass-generate=.*libbe.*
 file path=$(PYDIRVP)/pkg/client/debugvalues.py
 file path=$(PYDIRVP)/pkg/client/history.py
