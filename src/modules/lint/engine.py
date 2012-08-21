@@ -998,7 +998,7 @@ class LintEngine(object):
                 return self.tracker
 
         def follow_renames(self, pkg_name, target=None, old_mfs=[],
-            warn_on_obsolete=False):
+            warn_on_obsolete=False, legacy=False):
                 """Given a package name, and an optional target pfmri that we
                 expect to be ultimately renamed to, follow package renames from
                 pkg_name, looking for the package we expect to be at the end of
@@ -1007,7 +1007,25 @@ class LintEngine(object):
                 If there was a break in the renaming chain, we return None.
                 old_mfs, if passed, should be a list of manifests that were
                 sources of this rename.
+
+                If legacy is True, as well as checking that the target
+                name was reached, we also look for the leaf-name of the target.
+                This lets legacy action checking function properly, allowing,
+                say pkg:/SUNWbip or pkg:/compatibility/package/SUNWbip to
+                satisfy the rename check.
                 """
+
+                # When doing legacy action checks, the leaf of the target pkg
+                # matching the pkg_name is enough so long as that package is
+                # not marked as 'pkg.renamed'
+                if legacy and target:
+                        leaf_name = target.get_name().split("/")[-1]
+                        if leaf_name == pkg_name:
+                                leaf_mf = self.get_manifest(target.get_name(),
+                                    search_type=self.LATEST_SUCCESSOR)
+                                if leaf_mf and leaf_mf.get("pkg.renamed",
+                                    "false") == "false":
+                                        return leaf_mf
 
                 mf = self.get_manifest(pkg_name,
                     search_type=self.LATEST_SUCCESSOR)
@@ -1046,7 +1064,8 @@ class LintEngine(object):
                                         follow = follow.split("@")[0]
                                 mf = self.follow_renames(follow,
                                     target=target, old_mfs=old_mfs,
-                                    warn_on_obsolete=warn_on_obsolete)
+                                    warn_on_obsolete=warn_on_obsolete,
+                                    legacy=legacy)
 
                                 # we can stop looking if we've found a package
                                 # of which our target is a successor

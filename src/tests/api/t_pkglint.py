@@ -2188,6 +2188,7 @@ class TestLintEngine(pkg5unittest.Pkg5TestCase):
                             lint_logger.messages)
                         lint_logger.close()
 
+
 class TestLintEngineDepot(pkg5unittest.ManyDepotTestCase):
         """Tests that exercise reference vs. lint repository checks
         and test linting of multiple packages at once."""
@@ -2372,6 +2373,29 @@ set name=org.opensolaris.consolidation value=osnet
 set name=variant.arch value=i386 value=sparc
 set name=pkg.renamed value=true
 depend fmri=legacy-uses-renamed-ancestor type=require
+"""
+
+        ref_mf["compat-renamed-ancestor-old.mf"] = """
+#
+# A package with a legacy action that points to a package name that has the
+# leaf name that matches the 'pkg' attribute of the legacy action that it
+# delivers. A real-world example of this is the legacy action in
+#   pkg://solaris/compatibility/packages/SUNWbip
+# and the related packages:
+#   pkg://solaris/network/ftp
+#   pkg://solaris/network/ping
+#   pkg://solaris/SUNWbip
+
+set name=pkg.fmri value=pkg://opensolaris.org/compatibility/renamed-ancestor-old@0.5.11,5.11-0.141
+set name=pkg.description value="additional reference actions for pkglint"
+set name=info.classification value=org.opensolaris.category.2008:System/Core
+set name=pkg.summary value="Core Solaris Kernel"
+set name=org.opensolaris.consolidation value=osnet
+set name=variant.arch value=i386 value=sparc
+# (normally a compatibility package would contain dependencies on the
+#  packages that now deliver content previously delivered by the SVR4 pkg
+#  'renamed-ancestor-old'.  They're not necessary for this test.)
+legacy pkg="renamed-ancestor-old" desc="core kernel software for a specific instruction-set architecture" arch=i386 category=system hotline="Please contact your local service provider" name="Core Solaris Kernel (Root)" vendor="Sun Microsystems, Inc." version=11.11,REV=2009.11.11
 """
 
         ref_mf["depend-possibly-obsolete.mf"] = """
@@ -2888,8 +2912,12 @@ dir group=sys mode=0755 owner=root path=etc
                     "legacy-uses-renamed-ancestor.mf")
                 renamed_new = os.path.join(self.test_root,
                     "broken-renamed-ancestor-new.mf")
+                renamed_old = os.path.join(self.test_root,
+                    "renamed-ancestor-old.mf")
                 renamed_self_depend = os.path.join(self.test_root,
                     "self-depend-renamed-ancestor-new.mf")
+                compat_legacy = os.path.join(self.test_root,
+                    "compat-renamed-ancestor-old.mf")
 
                 # look for a rename that didn't ultimately resolve to the
                 # package that contained the legacy action
@@ -2938,7 +2966,6 @@ dir group=sys mode=0755 owner=root path=etc
 
                 lint_msgs = []
                 for msg in lint_logger.messages:
-                        # if "pkglint.action005.1" not in msg:
                         lint_msgs.append(msg)
 
                 self.assert_(len(lint_msgs) == 2, "Unexpected lint messages "
@@ -2954,6 +2981,52 @@ dir group=sys mode=0755 owner=root path=etc
                 self.assert_(seen_2_3 and seen_3_4,
                     "Missing expected broken renaming self-dependent errors "
                     "with legacy pkgs. Got %s" % lint_msgs)
+
+                # make sure we can deal with compatibility packages.  We include
+                # the 'renamed_old' package as well as the 'compat_legacy'
+                # to ensure that pkglint is satisfied by the compatability
+                # package, rather that trying to follow renames from the
+                # 'renamed_old' package. (otherwise, if a package pointed to by
+                # the legacy 'pkg' attribute doesn't exist, pkglint wouldn't
+                # complain)
+                lint_logger = TestLogFormatter()
+                manifests = read_manifests([renamed_old, compat_legacy],
+                    lint_logger)
+
+                lint_engine = engine.LintEngine(lint_logger, use_tracker=False,
+                    config_file=rcfile)
+                lint_engine.setup(cache=self.cache_dir,
+                    ref_uris=[self.ref_uri], lint_manifests=manifests)
+                lint_engine.execute()
+                lint_engine.teardown(clear_cache=True)
+
+                lint_msgs = []
+                for msg in lint_logger.messages:
+                        lint_msgs.append(msg)
+
+                self.debug(lint_msgs)
+                self.assert_(len(lint_msgs) == 0, "Unexpected lint messages "
+                    "produced when linting a compatibility legacy package")
+
+                # the 'legacy' package includes a legacy action which should
+                # also be satisfied by the compat_legacy being installed.
+                lint_logger = TestLogFormatter()
+                manifests = read_manifests([legacy, compat_legacy],
+                    lint_logger)
+
+                lint_engine = engine.LintEngine(lint_logger, use_tracker=False,
+                    config_file=rcfile)
+                lint_engine.setup(cache=self.cache_dir,
+                    ref_uris=[self.ref_uri], lint_manifests=manifests)
+                lint_engine.execute()
+                lint_engine.teardown(clear_cache=True)
+
+                lint_msgs = []
+                for msg in lint_logger.messages:
+                        lint_msgs.append(msg)
+
+                self.assert_(len(lint_msgs) == 0, "Unexpected lint messages "
+                    "produced when linting a compatibility legacy package")
 
         def test_relative_path(self):
                 """The engine can start with a relative path to its cache."""

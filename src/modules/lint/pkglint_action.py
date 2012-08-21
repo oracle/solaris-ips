@@ -1,4 +1,3 @@
-import os.path
 #!/usr/bin/python
 #
 # CDDL HEADER START
@@ -29,6 +28,7 @@ from pkg.lint.engine import lint_fmri_successor
 
 import collections
 import copy
+import os.path
 import pkg.fmri
 import pkg.lint.base as base
 from pkg.actions import ActionError
@@ -1188,18 +1188,31 @@ class PkgActionChecker(base.ActionChecker):
 
         def check_legacy_rename(self, legacy, action, manifest, engine,
             lint_id):
-                """Part of the legacy(..) check, not an individual check,
-                determines that the renaming of a package manifest, "legacy",
-                referred to by a legacy action, "action", was done correctly
-                and ultimately results on a dependency on the package,
-                "manifest"."""
+                """Part of the legacy(..) check, not an individual check.
+                Given a legacy action, if the package pointed to by the 'pkg'
+                attribute of that action exists (say pkg=SUNWlegacy), we check
+                that a user who types:
+
+                pkg install SUNWlegacy
+
+                gets the package containing the legacy action installed on their
+                system, possibly following renames along the way.
+
+                legacy          A package manifest with the same name as the
+                                'pkg' attribute of the legacy action
+                action          The legacy action we're investigating
+                manifest        The manifest we're investigating
+                engine          Our lint engine
+                lint_id         The id of this check
+                """
 
                 if "pkg.renamed" in legacy and \
                     legacy["pkg.renamed"].lower() == "true":
                         mf = None
                         try:
                                 mf = engine.follow_renames(action.attrs["pkg"],
-                                    target=manifest.fmri, old_mfs=[])
+                                    target=manifest.fmri, old_mfs=[],
+                                    legacy=True)
                         except base.LintException, e:
                                 # we've tried to rename to ourselves
                                 engine.error(_("legacy renaming: %s") % str(e),
