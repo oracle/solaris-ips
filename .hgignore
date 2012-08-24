@@ -37,8 +37,9 @@
 ^src/po/pkg.pot$
 ^src/tests/.coverage$
 ^src/tests/.coverage-.*$
+^src/tests/cov_proto.*$
+^src/tests/cov_tests.*$
 ^src/tests/.timing_history.txt$
-^src/tests/htmlcov$
 ^src/tests/ro_data/signing_certs/produced/.*/.*\.csr
 ^src/tests/ro_data/signing_certs/produced/.*\.old
 ^src/tests/ro_data/signing_certs/produced/.*\.tmp

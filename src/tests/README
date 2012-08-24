@@ -14,14 +14,25 @@ tests/README
 
   run.py can also be run standalone with a variety of options:
 
-	Usage: run.py [-ghpv] [-b filename] [-o regexp]
+	Usage: run.py [-ghptv] [-c format] [-b filename] [-o regexp]
+	       run.py [-hptvx] [-c format] [-b filename] [-s regexp] [-o regexp]
+	   -a <dir>       Archive failed test cases to <dir>/$pid/$testcasename
+	   -b <filename>  Baseline filename
+	   -c <format>    Collect code coverage data in xml or html format
+	   -d             Show debug output, including commands run, and outputs
+	   -f             Show fail/error information even when test is expected to fail
 	   -g             Generate result baseline
 	   -h             This help message
-	   -p             Parseable output format
-	   -v             Verbose output
-	   -b <filename>  Baseline filename
+	   -j             Parallelism
 	   -o <regexp>    Run only tests that match regexp
-	   -c             Collect code coverage data
+	   -p             Parseable output format
+	   -q             Quiet output
+	   -s <regexp>    Run tests starting at regexp
+	   -t             Generate timing info file
+	   -u             Enable IPS GUI tests, disabled by default
+	   -v             Verbose output
+	   -x             Stop after the first baseline mismatch
+	   -z <port>      Lowest port the test suite should use
 
   When adding, removing, or changing the results of test cases, make
   sure to update baseline.txt and check it in.  This can be done with the

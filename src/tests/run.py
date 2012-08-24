@@ -214,14 +214,14 @@ def find_tests(testdir, testpats, startatpat=False, output=OUTPUT_DOTS,
         return suite_list
 
 def usage():
-        print >> sys.stderr, "Usage: %s [-cghptv] [-b filename] [-o regexp]" \
-                % sys.argv[0]
-        print >> sys.stderr, "       %s [-chptvx] [-b filename] [-s regexp] "\
+        print >> sys.stderr, "Usage: %s [-ghptv] [-c format] [-b filename] "\
                 "[-o regexp]" % sys.argv[0]
+        print >> sys.stderr, "       %s [-hptvx] [-c format] [-b filename] "\
+                "[-s regexp] [-o regexp]" % sys.argv[0]
         print >> sys.stderr, \
 """   -a <dir>       Archive failed test cases to <dir>/$pid/$testcasename
    -b <filename>  Baseline filename
-   -c             Collect code coverage data
+   -c <format>    Collect code coverage data in xml or html format
    -d             Show debug output, including commands run, and outputs
    -f             Show fail/error information even when test is expected to fail
    -g             Generate result baseline
@@ -239,6 +239,43 @@ def usage():
 """
         sys.exit(2)
 
+def generate_coverage(cov_format, includes, omits, dest):
+        if cov_format == "html":
+                cov_option = "-d"
+                cov_dest = dest + "_html"
+        elif cov_format == "xml":
+                cov_option = "-o"
+                cov_dest = dest + ".xml"
+        else:
+                raise Exception("Unsupported coverage format")
+
+        cmd = ["coverage", cov_format]
+        if includes and len(includes):
+            cmd.extend(["--include", ",".join(includes)])
+        if omits and len(omits):
+            cmd.extend(["--omit", ",".join(omits)])
+        cmd.extend([cov_option, cov_dest])
+
+        print >> sys.stderr, "Generating coverage report via: ", " ".join(cmd)
+        if subprocess.Popen(cmd).wait() != 0:
+                raise Exception("Failed to generate coverage report!")
+
+        # The coverage data file and report are most likely owned by
+        # root, if a true test run was performed.  Make the files owned
+        # by the owner of the test directory, so they can be easily
+        # removed.
+        try:
+                uid, gid = os.stat(".")[4:6]
+                os.chown(cov_dest, uid, gid)
+                if cov_format == "html":
+                        for f in os.listdir(cov_dest):
+                                os.chown("%s/%s" % (cov_dest, f), uid, gid)
+        except EnvironmentError:
+                pass
+
+
+                
+
 if __name__ == "__main__":
         # Make all warnings be errors.
         warnings.simplefilter('error')
@@ -251,7 +288,7 @@ if __name__ == "__main__":
                 # If you add options here, you need to also update setup.py's
                 # test_func to include said options.
                 #
-                opts, pargs = getopt.getopt(sys.argv[1:], "a:cdfghj:pqtuvxb:o:s:z:",
+                opts, pargs = getopt.getopt(sys.argv[1:], "a:c:dfghj:pqtuvxb:o:s:z:",
                     ["generate-baseline", "parseable", "port", "timing",
                     "verbose", "baseline-file", "only"])
         except getopt.GetoptError, e:
@@ -280,6 +317,7 @@ if __name__ == "__main__":
                         output = OUTPUT_PARSEABLE
                 if opt == "-c":
                         do_coverage = True
+                        coverage_format = arg
                 if opt == "-d":
                         pkg5unittest.g_debug_output = True
                 if opt == "-f":
@@ -313,6 +351,7 @@ if __name__ == "__main__":
                         jobs = int(arg)
                 if opt == "-q":
                         quiet = True
+
         if (bailonfail or startattest) and generate:
                 usage()
         if quiet and (output != OUTPUT_DOTS):
@@ -329,6 +368,9 @@ if __name__ == "__main__":
                 cov.stop()
                 shutil.rmtree(covdir)
                 cov = None
+        elif not coverage_format in ("xml", "html"):
+                print >> sys.stderr, "-c <format> must be xml or html"
+                usage()
 
         # Allow relative archive dir, but first convert it to abs. paths.
         if archive_dir is not None:
@@ -467,31 +509,32 @@ if __name__ == "__main__":
                 subprocess.Popen(["coverage", "combine"], env=newenv).wait()
                 os.rename("%s/pkg5" % covdir, ".coverage")
                 shutil.rmtree(covdir)
-                vp = pkg5unittest.g_proto_area + "/usr/lib/python2.6/vendor-packages"
+
                 omits = [
                     # These mako templates fail.
                     "*etc_pkg_*mako",
                     # Complex use of module importer makes this fail.
                     "*sysrepo_p5p.py"
                 ]
-                print >> sys.stderr, "Generating html coverage report"
-                cmd = ["coverage", "html", "--omit", ",".join(omits),
-                    "-d", "htmlcov"]
-                print >> sys.stderr, "# %s" % " ".join(cmd)
-                if subprocess.Popen(cmd).wait() != 0:
-                        print >> sys.stderr, \
-                            "Failed to generate coverage report!"
-                        exitval = 1
+                proto = ["{0}/*".format(pkg5unittest.g_proto_area)]
+
+                try:
+                    generate_coverage(coverage_format,
+                        proto,
+                        omits, "cov_proto")
+                    generate_coverage(coverage_format, None,
+                        proto + omits, "cov_tests")
+                except Exception, e:
+                    print >> sys.stderr, e                        
+                    exitval = 1
+
                 # The coverage data file and report are most likely owned by
                 # root, if a true test run was performed.  Make the files owned
                 # by the owner of the test directory, so they can be easily
                 # removed.
                 try:
                         uid, gid = os.stat(".")[4:6]
-                        os.chown("htmlcov", uid, gid)
                         os.chown(".coverage", uid, gid)
-                        for f in os.listdir("htmlcov"):
-                                os.chown("htmlcov/%s" % f, uid, gid)
                 except EnvironmentError:
                         pass
         sys.exit(exitval)
