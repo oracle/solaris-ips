@@ -225,7 +225,7 @@ class TestPkgImageCreateBasics(pkg5unittest.ManyDepotTestCase):
                 information work as expected for image-create."""
 
                 img_path = os.path.join(self.test_root, "test_4_img")
-                for opt in ("-a", "-p", "--publisher"):
+                for opt in ("-p", "--publisher"):
                         self.pkg("image-create %s test1=%s %s" % (opt,
                             self.rurl1, img_path))
                         shutil.rmtree(img_path)

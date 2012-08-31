@@ -88,15 +88,6 @@ class TestPkgPublisherBasics(pkg5unittest.SingleDepotTestCase):
                 self.pkg("unset-publisher test1")
                 self.pkg("publisher | grep test1", exit=1)
 
-                # Verify that compatibility commands for publisher work (only
-                # minimal verification is needed since these commands map
-                # directly to the publisher ones).  All of these are deprecated
-                # and will be removed at a future date.
-                self.pkg("authority test2")
-                self.pkg("set-authority --no-refresh -O http://%s2 test1" %
-                    self.bogus_url)
-                self.pkg("unset-authority test1")
-
                 # Now verify that partial success (3) or complete failure (1)
                 # is properly returned if an attempt to remove one or more
                 # publishers only results in some of them being removed:

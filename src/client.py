@@ -5710,14 +5710,13 @@ def image_create(args):
         set_props = {}
         version = None
 
-        opts, pargs = getopt.getopt(args, "fFPUza:g:m:p:k:c:",
-            ["force", "full", "partial", "user", "zone", "authority=", "facet=",
-                "mirror=", "origin=", "publisher=", "no-refresh", "variant=",
+        opts, pargs = getopt.getopt(args, "fFPUzg:m:p:k:c:",
+            ["force", "full", "partial", "user", "zone", "facet=", "mirror=",
+                "origin=", "publisher=", "no-refresh", "variant=",
                 "set-property="])
 
         for opt, arg in opts:
-                # -a is deprecated and will be removed at a future date.
-                if opt in ("-a", "-p", "--publisher"):
+                if opt in ("-p", "--publisher"):
                         pub_url = None
                         try:
                                 pub_name, pub_url = arg.split("=", 1)
@@ -6278,7 +6277,6 @@ cmds = {
     "attach-linked"         : (attach_linked, opts_attach_linked, 2),
     "avoid"                 : (avoid, None),
     "audit-linked"          : (audit_linked, opts_audit_linked),
-    "authority"             : (publisher_list, None),
     "change-facet"          : (change_facet, opts_install, -1),
     "change-variant"        : (change_variant, opts_install, -1),
     "contents"              : (list_contents, None),
@@ -6306,7 +6304,6 @@ cmds = {
     "remove-property-value" : (property_remove_value, None),
     "revert"                : (revert, opts_revert, -1),
     "search"                : (search, None),
-    "set-authority"         : (publisher_set, None),
     "set-mediator"          : (set_mediator, opts_set_mediator, -1),
     "set-property"          : (property_set, None),
     "set-property-linked"   : (set_property_linked,
@@ -6316,7 +6313,6 @@ cmds = {
     "unavoid"               : (unavoid, None),
     "unfreeze"              : (unfreeze, None),
     "uninstall"             : (uninstall, opts_uninstall, -1),
-    "unset-authority"       : (publisher_unset, None),
     "unset-property"        : (property_unset, None),
     "update-format"         : (update_format, None),
     "unset-mediator"        : (unset_mediator, opts_unset_mediator, -1),

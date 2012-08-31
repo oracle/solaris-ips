@@ -31,14 +31,14 @@ To be consistent with the system, following the introduction of the
 fault management architecture, each package is named by an FMRI in the
 ``pkg:`` scheme.  That is, we have::
 
-    pkg://authority/pkg_name@version
+    pkg://publisher/pkg_name@version
 
-The authority is generally expected to be a forward or reverse domain
+The publisher is generally expected to be a forward or reverse domain
 name identifying the publisher from which a package can be retrieved.
-Authorities which cannot be determined to be a domain name are
+Publishers which cannot be determined to be a domain name are
 legitimate, but optional functionality, like automatic server discovery
-for a particular authority, may fail to work.  In the examples that
-follow, we use "opensolaris.org" as a generic authority.
+for a particular publisher, may fail to work.  In the examples that
+follow, we use "opensolaris.org" as a generic publisher.
 
 Although RFC 2396 usage would suggest using the "authority" term, we
 instead call it the publisher name, as the role of this section of the
@@ -62,7 +62,7 @@ of the incorporation believes functional.
 Namespace
 ~~~~~~~~~
 
-Single namespace, separate authorities
+Single namespace, separate publishers
 ``````````````````````````````````````
 
 The primary design point of the package namespace is to allow

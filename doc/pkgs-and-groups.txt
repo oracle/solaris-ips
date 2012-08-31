@@ -10,15 +10,15 @@ PACKAGES AND GROUPS
     fault management architecture, each package is named by an FMRI in
     the "pkg:" scheme.  That is, we have
 
-    pkg://authority/pkg_name@version
+    pkg://publisher/pkg_name@version
 
-    The authority is generally expected to be a forward or reverse
+    The publisher is generally expected to be a forward or reverse
     domain name identifying the publisher from which a package can be
-    retrieved.  Authorities which cannot be determined to be a domain
+    retrieved.  Publishers which cannot be determined to be a domain
     name are legitimate, but optional functionality, like automatic
-    server discovery for a particular authority, may fail to work.
+    server discovery for a particular publisher, may fail to work.
     In the examples that follow, we use "opensolaris.org" as a generic
-    authority.
+    publisher.
 
     The pkg_name, like service names, can be split into a category,
     subcategories, and a basename.  This namespace might be populated
@@ -35,7 +35,7 @@ PACKAGES AND GROUPS
 
 2.  Namespace
 
-2.1.  Single namespace, separate authorities
+2.1.  Single namespace, separate publishers
 
     The primary design point of the package namespace is to allow
     multiple package producers to co-exist in a single namespace, so
