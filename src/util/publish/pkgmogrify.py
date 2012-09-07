@@ -34,6 +34,7 @@ import traceback
 import warnings
 
 import pkg.actions
+import pkg.misc as misc
 from pkg.misc import PipeError
 
 macros  = {}
@@ -190,6 +191,11 @@ def add_transform(transform, filename, lineno):
                 operation = add_func
 
         elif op[0] == "edit":
+                if len(op) < 2:
+                        raise RuntimeError, \
+                            _("transform (%s) has 'edit' operation syntax error"
+                            ) % transform
+
                 args = shlex.split(op[1])
                 if len(args) not in [2, 3]:
                         raise RuntimeError, \
@@ -209,7 +215,7 @@ def add_transform(transform, filename, lineno):
                         regexp = args[1]
                 except re.error, e:
                         raise RuntimeError, \
-                            _("transform (%s) has 'edit' operation with malformed"
+                            _("transform (%s) has 'edit' operation with malformed "
                               "regexp (%s)") % (transform, e)
 
                 if len(args) == 3:
@@ -250,6 +256,11 @@ def add_transform(transform, filename, lineno):
                 operation = replace_func
 
         elif op[0] == "delete":
+                if len(op) < 2:
+                        raise RuntimeError, \
+                            _("transform (%s) has 'delete' operation syntax error"
+                            ) % transform
+
                 args = shlex.split(op[1])
                 if len(args) != 2:
                         raise RuntimeError, \
@@ -261,7 +272,7 @@ def add_transform(transform, filename, lineno):
                         regexp = re.compile(args[1])
                 except re.error, e:
                         raise RuntimeError, \
-                            _("transform (%s) has 'edit' operation with malformed"
+                            _("transform (%s) has 'delete' operation with malformed "
                             "regexp (%s)") % (transform, e)
 
                 def delete_func(action, matches, pkg_attrs, filename, lineno):
@@ -281,7 +292,7 @@ def add_transform(transform, filename, lineno):
                                         del action.attrs[attr]
                         except re.error, e:
                                 raise RuntimeError, \
-                                    _("transform (%s) has edit operation with replacement"
+                                    _("transform (%s) has delete operation with replacement"
                                       "string regexp error %e") % (transform, e)
                         return action
 

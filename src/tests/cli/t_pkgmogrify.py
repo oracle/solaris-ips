@@ -20,7 +20,7 @@
 # CDDL HEADER END
 #
 #
-# Copyright (c) 2009, 2010, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2009, 2012, Oracle and/or its affiliates. All rights reserved.
 #
 
 import testutils
@@ -142,6 +142,7 @@ file NOHASH path=kernel/drv/common2 reboot-needed=true
             "bredit2": "<transform file path=usr/share/locale/([^/]+).* -> edit path %%<1> LANG>",
             "edit1": "<transform file path=usr/(share|lib)/locale.* -> edit path usr/(lib|share)/locale place/\\\\1/langs>",
             "doublequote": "<transform legacy -> default name %%{pkg.summary}>",
+            "delete-with-no-operand": "<transform file -> delete >",
         }
 
         basic_defines = {
@@ -288,6 +289,8 @@ file NOHASH path=kernel/drv/common2 reboot-needed=true
 
                 self.pkgmogrify([self.transforms["drop mode=0755"], source_file])
                 self.assertNoMatch("^file.*mode=0755")
+                self.pkgmogrify([self.transforms["delete-with-no-operand"],
+                    source_file], exit=1)
 
         def test_4(self):
                 source_file = os.path.join(self.test_root, "source_file")
