@@ -19,7 +19,7 @@
 #
 # CDDL HEADER END
 #
-# Copyright (c) 2008, 2010, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2008, 2012, Oracle and/or its affiliates. All rights reserved.
 #
 
 import os
@@ -62,7 +62,6 @@ REFRESH_PERIOD_DEFAULT = "Never"
 SHOW_NOTIFY_ICON_DEFAULT = True
 IMAGE_DIRECTORY_DEFAULT = "/"
 LASTCHECK_DIR_NAME = os.path.join(os.path.expanduser("~"),'.updatemanager/notify')
-IMAGE_DIR_COMMAND = "svcprop -p update/image_dir svc:/application/pkg/update"
 CHECKFOR_UPDATES = "/usr/lib/pm-checkforupdates"
 UPDATEMANAGER = "pm-updatemanager"
 
@@ -316,14 +315,9 @@ class UpdateManagerNotifier:
                 gobject.timeout_add(random_delay * 1000, self.check_for_updates)
 
         def check_for_updates(self):
-                image_directory = os.popen(IMAGE_DIR_COMMAND).readline().rstrip()
-                if debug == True:
-                        print "image_directory: %s" % image_directory
-                if len(image_directory) == 0:
-                        image_directory = IMAGE_DIRECTORY_DEFAULT
                 proc = subprocess.Popen([CHECKFOR_UPDATES,
                             '--nice', '--checkupdates-cache',
-                            '--image-dir', image_directory],
+                            '--image-dir', IMAGE_DIRECTORY_DEFAULT],
                             stdout=subprocess.PIPE)
 
                 output = proc.communicate()[0].strip()

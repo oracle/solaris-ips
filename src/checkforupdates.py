@@ -37,6 +37,7 @@ import sys
 import traceback
 import warnings
 
+import pkg.client.api as api
 import pkg.client.api_errors as apx
 import pkg.client.progress as progress
 import pkg.client.printengine as printengine
@@ -63,8 +64,15 @@ class CheckForUpdates:
                 global_settings.client_name = nongui_misc.get_um_name()
                 self.api_lock = nrlock.NRLock()
                 self.image_dir_arg = image_directory
+                self.exact_match = True
                 if self.image_dir_arg == None:
-                        self.image_dir_arg = nongui_misc.get_image_path()
+                        self.image_dir_arg, self.exact_match =  \
+                            api.get_default_image_root()
+                if not self.exact_match:
+                        if debug:
+                                print >> sys.stderr, ("Unable to get image directory")
+                                sys.exit(enumerations.UPDATES_UNDETERMINED)
+                        
                 self.application_path = application_path
                 self.check_all = check_all
                 self.check_cache_only = check_cache
@@ -264,7 +272,7 @@ def main_func():
         """Main routine for this utility"""
         set_check_all = True
         set_check_cache = False
-        image_dir = "/"
+        image_dir = None 
         try:
                 # Unused variable pargs; pylint: disable-msg=W0612
                 opts, pargs = getopt.getopt(sys.argv[1:], "hdnacR:",

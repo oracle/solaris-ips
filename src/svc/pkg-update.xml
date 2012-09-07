@@ -19,7 +19,7 @@
 
 	CDDL HEADER END
 
-	Copyright (c) 2008, 2010, Oracle and/or its affiliates. All rights reserved.
+	Copyright (c) 2008, 2012, Oracle and/or its affiliates. All rights reserved.
 
 	NOTE:  This service manifest is not editable; its contents will
 	be overwritten by package or patch operations, including
@@ -74,10 +74,6 @@
 
 	<property_group name='startd' type='framework'>
 		<propval name='duration' type='astring' value='transient' />
-	</property_group>
-
-	<property_group name='update' type='application'>
-		<propval name='image_dir' type='astring' value='/' />
 	</property_group>
 
 	<stability value='Unstable' />
