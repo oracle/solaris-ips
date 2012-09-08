@@ -77,9 +77,9 @@ let dither=1800*$RANDOM
 let dither=dither/32767
 sleep $dither
 
-image_dir=/
+image_dir=$(svcprop -p update/image_dir $fmri || echo "/")
 pkg -R $image_dir refresh -q 2>/dev/null
 
 # Check and cache whether updates are available
-/usr/lib/pm-checkforupdates --nice
+/usr/lib/pm-checkforupdates -R $image_dir --nice
 exit 0
