@@ -801,7 +801,9 @@ if __name__ == "__main__":
                         assert(not prefix.startswith(os.pathsep))
                         prefix = os.path.join(self.test_root, prefix)
 
-                for f, content in files.items():
+                # Ensure output paths are returned in consistent order.
+                for f in sorted(files):
+                        content = files[f]
                         assert not f.startswith("/"), \
                             ("%s: misc file paths must be relative!" % f)
                         path = os.path.join(prefix, f)

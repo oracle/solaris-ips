@@ -31,6 +31,7 @@ if __name__ == "__main__":
 import pkg5unittest
 
 import os
+import stat
 
 import pkg.portable as portable
 from pkg.client.debugvalues import DebugValues
@@ -440,3 +441,142 @@ SSLRandomSeed connect builtin
 
 
 """
+
+class TestDepotHTTPS(pkg5unittest.SingleDepotTestCase):
+        # Tests in this suite use the read only data directory.
+        need_ro_data = True
+
+        example_pkg10 = """
+            open example_pkg@1.0,5.11-0
+            add file tmp/example_file mode=0555 owner=root group=bin path=/usr/bin/example_path
+            close"""
+
+        misc_files = {
+            "tmp/example_file": "tmp/example_file",
+            "tmp/test_ssl_auth": """
+#!/usr/bin/sh
+reserved=$1
+port=$2
+echo "123"
+""",
+            "tmp/test_ssl_auth_bad": """
+#!/usr/bin/sh
+reserved=$1
+port=$2
+echo "12345"
+""",
+        }
+
+        def pkg(self, command, *args, **kwargs):
+                # The value for ssl_ca_file is pulled from DebugValues because
+                # ssl_ca_file needs to be set there so the api object calls work
+                # as desired.
+                command = "--debug ssl_ca_file=%s %s" % \
+                    (DebugValues["ssl_ca_file"], command)
+                return pkg5unittest.SingleDepotTestCase.pkg(self, command,
+                    *args, **kwargs)
+
+        def seed_ta_dir(self, certs, dest_dir=None):
+                if isinstance(certs, basestring):
+                        certs = [certs]
+                if not dest_dir:
+                        dest_dir = self.ta_dir
+                for c in certs:
+                        name = "%s_cert.pem" % c
+                        portable.copyfile(
+                            os.path.join(self.raw_trust_anchor_dir, name),
+                            os.path.join(dest_dir, name))
+                        DebugValues["ssl_ca_file"] = os.path.join(dest_dir,
+                            name)
+
+        def setUp(self):
+                pkg5unittest.SingleDepotTestCase.setUp(self)
+                self.testdata_dir = os.path.join(self.test_root, "testdata")
+                mpaths = self.make_misc_files(self.misc_files)
+                self.ssl_auth_script = mpaths[1]
+                self.ssl_auth_bad_script = mpaths[2]
+
+                # Make shell scripts executable.
+                os.chmod(self.ssl_auth_script, stat.S_IRWXU)
+                os.chmod(self.ssl_auth_bad_script, stat.S_IRWXU)
+
+                # Set up the paths to the certificates that will be needed.
+                self.path_to_certs = os.path.join(self.ro_data_root,
+                    "signing_certs", "produced")
+                self.keys_dir = os.path.join(self.path_to_certs, "keys")
+                self.cs_dir = os.path.join(self.path_to_certs,
+                    "code_signing_certs")
+                self.chain_certs_dir = os.path.join(self.path_to_certs,
+                    "chain_certs")
+                self.pub_cas_dir = os.path.join(self.path_to_certs,
+                    "publisher_cas")
+                self.inter_certs_dir = os.path.join(self.path_to_certs,
+                    "inter_certs")
+                self.raw_trust_anchor_dir = os.path.join(self.path_to_certs,
+                    "trust_anchors")
+                self.crl_dir = os.path.join(self.path_to_certs, "crl")
+
+                self.pkgsend_bulk(self.rurl, self.example_pkg10)
+
+                self.server_ssl_cert = os.path.join(self.cs_dir,
+                    "cs1_ta7_cert.pem")
+                self.server_ssl_key = os.path.join(self.keys_dir,
+                    "cs1_ta7_key.pem")
+                self.server_ssl_reqpass_key = os.path.join(self.keys_dir,
+                    "cs1_ta7_reqpass_key.pem")
+
+        def test_01_basics(self):
+                """Test that adding an https publisher works and that a package
+                can be installed from that publisher."""
+
+                def test_ssl_settings(exit=0):
+                        # Image must be created first before seeding cert files.
+                        self.pkg_image_create()
+                        self.seed_ta_dir("ta7")
+
+                        if exit != 0:
+                                self.dc.start_expected_fail(exit=exit)
+                                self.dc.disable_ssl()
+                                return
+
+                        # Start depot *after* seeding certs.
+                        self.dc.start()
+
+                        self.pkg("set-publisher -p %s" % self.durl)
+                        api_obj = self.get_img_api_obj()
+                        self._api_install(api_obj, ["example_pkg"])
+
+                        self.dc.stop()
+                        self.dc.disable_ssl()
+
+                # Verify using 'builtin' ssl authentication for server with
+                # a key that has no passphrase.
+                self.dc.enable_ssl(key_path=self.server_ssl_key,
+                    cert_path=self.server_ssl_cert)
+                test_ssl_settings()
+
+                # Verify using 'exec' ssl authentication for server with a key
+                # that has no passphrase.
+                self.dc.enable_ssl(key_path=self.server_ssl_key,
+                    cert_path=self.server_ssl_cert,
+                    dialog="exec:%s" % self.ssl_auth_script)
+                test_ssl_settings()
+
+                # Verify using 'exec' ssl authentication for server with a key
+                # that has a passphrase of '123'.
+                self.dc.enable_ssl(key_path=self.server_ssl_reqpass_key,
+                    cert_path=self.server_ssl_cert,
+                    dialog="exec:%s" % self.ssl_auth_script)
+                test_ssl_settings()
+
+                # Verify using 'exec' ssl authentication for server with a key
+                # that has a passphrase of 123' but the wrong passphrase is
+                # supplied.
+                self.dc.enable_ssl(key_path=self.server_ssl_reqpass_key,
+                    cert_path=self.server_ssl_cert,
+                    dialog="exec:%s" % self.ssl_auth_bad_script)
+                test_ssl_settings(exit=1)
+
+
+if __name__ == "__main__":
+        unittest.main()

@@ -91,7 +91,7 @@ def make_ca_cert(new_loc, new_name, parent_loc, parent_name, ext="v3_ca",
 
 
 def make_cs_cert(new_loc, new_name, parent_loc, parent_name, ext="v3_req",
-    expired=False, future=False, https=False):
+    expired=False, future=False, https=False, passphrase=None):
         """Create a new code signing cert."""
 
         subj_str_to_use = subj_str
@@ -103,6 +103,15 @@ def make_cs_cert(new_loc, new_name, parent_loc, parent_name, ext="v3_req",
             "-sha256", "-subj", subj_str_to_use % (new_name, new_name)]
         p = subprocess.Popen(cmd)
         assert p.wait() == 0
+
+        if passphrase:
+                # Add a passphrase to the key just created using a new filename.
+                cmd = ["openssl", "rsa", "-des3",
+                    "-in", "./keys/%s_key.pem" % new_name,
+                    "-out", "./keys/%s_reqpass_key.pem" % new_name,
+                    "-passout", "pass:%s" % passphrase]
+                p = subprocess.Popen(cmd)
+                assert p.wait() == 0
 
         cmd = ["openssl", "ca", "-policy", "policy_anything",
             "-extensions", ext,
@@ -127,6 +136,7 @@ def make_cs_cert(new_loc, new_name, parent_loc, parent_name, ext="v3_req",
                 cmd.append("1000")
         p = subprocess.Popen(cmd)
         assert p.wait() == 0
+
 
 def make_trust_anchor(name, https=False):
         """Make a new trust anchor."""
@@ -325,8 +335,9 @@ if __name__ == "__main__":
         make_cs_cert("code_signing_certs", "cs1_ta6", "trust_anchors", "ta6",
             https=True)
         make_trust_anchor("ta7", https=True)
+        # A passphrase is added to this one to test depot HTTPS functionality.
         make_cs_cert("code_signing_certs", "cs1_ta7", "trust_anchors", "ta7",
-            https=True)
+            https=True, passphrase="123")
         make_trust_anchor("ta8", https=True)
         make_cs_cert("code_signing_certs", "cs1_ta8", "trust_anchors", "ta8",
             https=True)

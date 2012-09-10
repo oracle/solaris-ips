@@ -690,7 +690,6 @@ if __name__ == "__main__":
                 else:
                         # Redirect the server to the decrypted key file.
                         ssl_key_file = "/dev/fd/%d" % key_data.fileno()
-                        key_data.close()
 
         # Setup our global configuration.
         gconf = {

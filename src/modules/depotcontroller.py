@@ -68,6 +68,9 @@ class DepotController(object):
                 self.__state = self.HALTED
                 self.__writable_root = None
                 self.__sort_file_max_size = None
+                self.__ssl_dialog = None
+                self.__ssl_cert_file = None
+                self.__ssl_key_file = None
                 self.__starttime = 0
                 self.__wrapper_start = []
                 self.__wrapper_end = wrapper_end
@@ -209,7 +212,13 @@ class DepotController(object):
                                 host = "[%s]" % host
                 else:
                         host = "localhost"
-                return "http://%s:%d" % (host, self.__port)
+
+                if self.__ssl_key_file:
+                        scheme = "https"
+                else:
+                        scheme = "http"
+
+                return "%s://%s:%d" % (scheme, host, self.__port)
 
         def set_writable_root(self, wr):
                 self.__writable_root = wr
@@ -234,6 +243,16 @@ class DepotController(object):
 
         def unset_disable_ops(self):
                 self.__disable_ops = None
+
+        def enable_ssl(self, key_path=None, cert_path=None, dialog=None):
+                self.__ssl_key_file = key_path
+                self.__ssl_cert_file = cert_path
+                self.__ssl_dialog = dialog
+
+        def disable_ssl(self):
+                self.__ssl_key_file = None
+                self.__ssl_cert_file = None
+                self.__ssl_dialog = None
 
         def __network_ping(self):
                 try:
@@ -312,6 +331,12 @@ class DepotController(object):
                         args.append("--exit-ready")
                 if self.__cfg_file:
                         args.append("--cfg-file=%s" % self.__cfg_file)
+                if self.__ssl_cert_file:
+                        args.append("--ssl-cert-file=%s" % self.__ssl_cert_file)
+                if self.__ssl_key_file:
+                        args.append("--ssl-key-file=%s" % self.__ssl_key_file)
+                if self.__ssl_dialog:
+                        args.append("--ssl-dialog=%s" % self.__ssl_dialog)
                 if self.__debug_features:
                         args.append("--debug=%s" % ",".join(
                             self.__debug_features))
