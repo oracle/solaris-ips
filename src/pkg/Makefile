@@ -52,7 +52,7 @@ PUBLISHALL        = $(POUND_SIGN)
 # necessary after we stop publishing duplicate packages.
 MANIFESTS.cmd     = \
 	cd manifests; \
-	buildnum=$(BUILDNUM); \
+	buildnum=$(BUILDID); \
 	m=$$($(PKGMOGRIFY) -O /dev/null *.p5m ../transforms/nopublish); \
 	echo "$$m" | while read name build; do \
 		[[ $$build -ge $${buildnum%%.*} ]] && echo $$name; \
