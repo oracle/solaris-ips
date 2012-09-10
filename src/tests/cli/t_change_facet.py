@@ -51,6 +51,13 @@ class TestPkgChangeFacet(pkg5unittest.SingleDepotTestCase):
         add link path=test target=1
         close"""
 
+        pkg_B1 = """
+        open pkg_B@1.0,5.11-0
+        close"""
+        pkg_B2 = """
+        open pkg_B@2.0,5.11-0
+        close"""
+
         misc_files = [
             "tmp/facets_0", "tmp/facets_1", "tmp/facets_2", "tmp/facets_3",
             "tmp/facets_4", "tmp/facets_5", "tmp/facets_6", "tmp/facets_7",
@@ -61,6 +68,8 @@ class TestPkgChangeFacet(pkg5unittest.SingleDepotTestCase):
                 pkg5unittest.SingleDepotTestCase.setUp(self)
                 self.make_misc_files(self.misc_files)
                 self.plist = self.pkgsend_bulk(self.rurl, self.pkg_A)
+                self.plist_B = self.pkgsend_bulk(self.rurl,
+                    [self.pkg_B1, self.pkg_B2])
 
         def assert_file_is_there(self, path, negate=False):
                 """Verify that the specified path exists. If negate is true,
@@ -242,6 +251,127 @@ class TestPkgChangeFacet(pkg5unittest.SingleDepotTestCase):
                 self.pkg("change-facet -v facet.has/some/slashes=True")
                 self.assert_file_is_there("8")
                 self.pkg("verify")
+
+        def test_no_accidental_changes(self):
+                """Verify that non-facet related packaging operation don't
+                accidentally change facets."""
+
+                rurl = self.dc.get_repo_url()
+
+                # create an image w/ two facets set.
+                ic_args = ""
+                ic_args += " --facet 'locale.fr=False' "
+                ic_args += " --facet 'locale.fr_FR=False' "
+                self.pkg_image_create(rurl, additional_args=ic_args)
+                self.pkg("install pkg_A")
+
+                # install a random package and make sure we don't accidentally
+                # change facets.
+                self.pkg("install pkg_B@1.0")
+                self.pkg("facet -H")
+                output = self.reduceSpaces(self.output)
+                expected = (
+                    "facet.locale.fr_FR False\n"
+                    "facet.locale.fr False\n")
+                self.assertEqualDiff(expected, output)
+                for i in [ 0, 3, 4, 5, 6, 7 ]:
+                        self.assert_file_is_there(str(i))
+                for i in [ 1, 2 ]:
+                        self.assert_file_is_there(str(i), negate=True)
+                self.pkg("verify")
+
+                # update an image and make sure we don't accidentally change
+                # facets.
+                self.pkg("update")
+                self.pkg("facet -H")
+                output = self.reduceSpaces(self.output)
+                expected = (
+                    "facet.locale.fr_FR False\n"
+                    "facet.locale.fr False\n")
+                self.assertEqualDiff(expected, output)
+                for i in [ 0, 3, 4, 5, 6, 7 ]:
+                        self.assert_file_is_there(str(i))
+                for i in [ 1, 2 ]:
+                        self.assert_file_is_there(str(i), negate=True)
+                self.pkg("verify")
+
+        def test_reset_facet(self):
+                """Verify that resetting a Facet explicitly set to false
+                restores delivered content."""
+
+                # create an image with pkg_A and no facets
+                self.pkg_image_create(self.rurl)
+                self.pkg("install pkg_A")
+                self.pkg("facet -H")
+                self.assertEqualDiff("", self.output)
+                for i in range(8):
+                        self.assert_file_is_there(str(i))
+                self.pkg("verify")
+
+                # set a facet on an image with no facets
+                self.pkg("change-facet -v locale.fr=False")
+                self.pkg("facet -H")
+                output = self.reduceSpaces(self.output)
+                expected = (
+                    "facet.locale.fr False\n")
+                self.assertEqualDiff(expected, output)
+                for i in [ 0, 2, 3, 4, 5, 6, 7 ]:
+                        self.assert_file_is_there(str(i))
+                for i in [ 1 ]:
+                        self.assert_file_is_there(str(i), negate=True)
+                self.pkg("verify")
+
+                # set a facet on an image with existing facets
+                self.pkg("change-facet -v locale.fr_FR=False")
+                self.pkg("facet -H")
+                output = self.reduceSpaces(self.output)
+                expected = (
+                    "facet.locale.fr_FR False\n"
+                    "facet.locale.fr False\n")
+                self.assertEqualDiff(expected, output)
+                for i in [ 0, 3, 4, 5, 6, 7 ]:
+                        self.assert_file_is_there(str(i))
+                for i in [ 1, 2 ]:
+                        self.assert_file_is_there(str(i), negate=True)
+                self.pkg("verify")
+
+                # clear a facet while setting a facet on an image with other
+                # facets that aren't being changed
+                self.pkg("change-facet -v locale.fr=None locale.nl=False")
+                self.pkg("facet -H")
+                output = self.reduceSpaces(self.output)
+                expected = (
+                    "facet.locale.fr_FR False\n"
+                    "facet.locale.nl False\n")
+                self.assertEqualDiff(expected, output)
+                for i in [ 0, 1, 3, 4, 6, 7 ]:
+                        self.assert_file_is_there(str(i))
+                for i in [ 2, 5 ]:
+                        self.assert_file_is_there(str(i), negate=True)
+                self.pkg("verify")
+
+                # clear a facet on an image with other facets that aren't
+                # being changed
+                self.pkg("change-facet -v locale.nl=None")
+                self.pkg("facet -H")
+                output = self.reduceSpaces(self.output)
+                expected = (
+                    "facet.locale.fr_FR False\n")
+                self.assertEqualDiff(expected, output)
+                for i in [ 0, 1, 3, 4, 5, 6, 7 ]:
+                        self.assert_file_is_there(str(i))
+                for i in [ 2 ]:
+                        self.assert_file_is_there(str(i), negate=True)
+                self.pkg("verify")
+
+                # clear the only facet on an image
+                self.pkg("change-facet -v locale.fr_FR=None")
+                self.pkg("facet -H")
+                self.assertEqualDiff("", self.output)
+                for i in range(8):
+                        self.assert_file_is_there(str(i))
+                self.pkg("verify")
+
 
 if __name__ == "__main__":
         unittest.main()

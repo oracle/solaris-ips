@@ -248,7 +248,7 @@ class ImagePlan(object):
                         if a != b:
                                 fmri_updates.append((a, b))
                                 continue
-                        if new_facets or new_variants:
+                        if new_facets is not None or new_variants:
                                 #
                                 # In the case of a facet change we reinstall
                                 # packages since any action in a package could
@@ -314,6 +314,9 @@ class ImagePlan(object):
                         self.pd._removed_facets = set(old_facets.keys()) - \
                             set(tmp_new_facets.keys())
 
+                if new_facets == old_facets:
+                        new_facets = None
+
                 # get ranking of publishers
                 pub_ranks = self.image.get_publisher_ranks()
 
@@ -362,9 +365,8 @@ class ImagePlan(object):
                 # Solve... will raise exceptions if no solution is found
                 new_vector, self.pd._new_avoid_obs = solver.solve_install(
                         self.image.get_frozen_list(), inst_dict,
-                        new_variants=new_variants, new_facets=new_facets,
-                        excludes=self.__new_excludes, reject_set=reject_set,
-                        relax_all=li_sync_op,
+                        new_variants=new_variants, excludes=self.__new_excludes,
+                        reject_set=reject_set, relax_all=li_sync_op,
                         ignore_inst_parent_deps=ignore_inst_parent_deps)
 
                 self.pd._fmri_changes = self.__vector_2_fmri_changes(

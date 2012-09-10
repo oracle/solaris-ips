@@ -236,7 +236,7 @@ class PkgSolver(object):
                 self.__subphasename = None
 
         def solve_install(self, existing_freezes, proposed_dict,
-            new_variants=None, new_facets=None, excludes=EmptyI,
+            new_variants=None, excludes=EmptyI,
             reject_set=frozenset(), trim_proposed_installed=True,
             relax_all=False, ignore_inst_parent_deps=False):
                 """Logic to install packages, change variants, and/or change
@@ -254,10 +254,6 @@ class PkgSolver(object):
                 'new_variants' a dictionary containing variants which are
                 being updated.  (It should not contain existing variants which
                 are not changing.)
-
-                'new_facets' a dictionary containing all the facets for an
-                image.  (This includes facets which are changing and also
-                facets which are not.)
 
                 'reject_set' contains user specified package names that should
                 not be present within the final image.  (These packages may or

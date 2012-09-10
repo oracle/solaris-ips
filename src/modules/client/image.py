@@ -2894,7 +2894,7 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                         var_call = new_vars.allow_action
                 else:
                         var_call = self.cfg.variants.allow_action
-                if new_facets:
+                if new_facets is not None:
                         fac_call = new_facets.allow_action
                 else:
                         fac_call = self.cfg.facets.allow_action
