@@ -19,7 +19,7 @@
 #
 # CDDL HEADER END
 #
-# Copyright (c) 2008, 2010, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2008, 2012, Oracle and/or its affiliates. All rights reserved.
 #
 
 import getopt
@@ -38,6 +38,7 @@ try:
 except ImportError:
         sys.exit(1)
 
+import pkg.client.api as api
 import pkg.client.progress as progress
 import pkg.gui.enumerations as enumerations
 import pkg.gui.installupdate as installupdate
@@ -64,8 +65,14 @@ class Updatemanager:
                 global_settings.client_name = gui_misc.get_um_name()
                 self.api_lock = nrlock.NRLock()
                 self.image_dir_arg = image_directory
+                self.exact_match = True
                 if self.image_dir_arg == None:
-                        self.image_dir_arg = gui_misc.get_image_path()
+                        self.image_dir_arg, self.exact_match = \
+                            api.get_default_image_root()
+                if not self.exact_match:
+                        if debug:
+                                print >> sys.stderr, ("Unable to get the image directory")
+                        sys.exit(enumerations.UPDATES_UNDETERMINED)
                 self.application_path = application_path
                 self.gconf = pmgconf.PMGConf()
                 try:

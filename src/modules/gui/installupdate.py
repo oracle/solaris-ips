@@ -558,8 +558,11 @@ class InstallUpdate(progress.GuiProgressTracker):
 
         def __on_confirm_cancel_button_clicked(self, widget):
                 self.w_confirm_dialog.hide()
-                if self.top_level and widget: # User clicked cacnel, widget != None
-                        gobject.idle_add(self.parent.install_terminated)
+                if widget: # User clicked cancel, widget != None
+                     if self.top_level:
+                         gobject.idle_add(self.parent.install_terminated)
+                     else:
+                         self.w_dialog.hide()
 
         def __on_createplandialog_delete(self, widget, event):
                 self.__on_cancelcreateplan_clicked(None)
@@ -1023,10 +1026,8 @@ class InstallUpdate(progress.GuiProgressTracker):
                 self.w_confirm_ok_button.grab_focus()
                 self.__start_substage(None,
                             bounce_progress=False)
-                if self.top_level:
+                if not self.top_level:
                         self.__reset_window_title()
-                else:
-                        self.w_dialog.hide()
                 self.w_confirm_dialog.show()
 
 

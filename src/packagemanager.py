@@ -19,7 +19,7 @@
 #
 # CDDL HEADER END
 #
-# Copyright (c) 2008, 2011, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2008, 2012, Oracle and/or its affiliates. All rights reserved.
 #
 
 NOTEBOOK_PACKAGE_LIST_PAGE = 0            # Main Package List page index
@@ -4957,11 +4957,13 @@ Use -U (--update-all) to proceed with Updates"""
                 elif option in ("-i", "--info-install"):
                         info_install_arg = argument
 
+        provided_image_dir = True
         if image_dir == None:
-                try:
-                        image_dir = os.environ["PKG_IMAGE"]
-                except KeyError:
-                        image_dir = "/"
+                image_dir, provided_image_dir = api.get_default_image_root()
+
+        if not provided_image_dir:
+                print _("Unable to get the image directory")
+                sys.exit(1)
 
         try:
                 gtk.init_check()

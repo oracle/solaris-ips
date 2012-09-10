@@ -46,19 +46,6 @@ LOG_DIR = "/var/tmp"
 LOG_ERROR_EXT = "_error.log"
 LOG_INFO_EXT = "_info.log"
 PKG_CLIENT_NAME_UM = "updatemanager"
-IMAGE_DIRECTORY_DEFAULT = "/"   # Image default directory
-IMAGE_DIR_COMMAND = "svcprop -p update/image_dir svc:/application/pkg/update"
-
-
-def get_image_path():
-        try:
-                image_directory = os.environ["PKG_IMAGE"]
-        except KeyError:
-                image_directory = \
-                    os.popen(IMAGE_DIR_COMMAND).readline().rstrip()
-                if len(image_directory) == 0:
-                        image_directory = IMAGE_DIRECTORY_DEFAULT
-        return image_directory
 
 def get_log_dir():
         return LOG_DIR
