@@ -269,8 +269,18 @@ class PkgPlan(object):
                                 sig_pol = self.image.signature_policy.combine(
                                     dest_pub.signature_policy)
 
-                        sigs = list(self.__destination_mfst.gen_actions_by_type(
-                            "signature", new_excludes))
+                        if self.destination_fmri in self._autofix_pkgs:
+                                # Repaired packages use a manifest synthesized
+                                # from the installed one; so retrieve the
+                                # installed one for our signature checks.
+                                sigman = self.image.get_manifest(
+                                    self.destination_fmri,
+                                    ignore_excludes=True)
+                        else:
+                                sigman = self.__destination_mfst
+
+                        sigs = list(sigman.gen_actions_by_type("signature",
+                            new_excludes))
                         if sig_pol and (sigs or sig_pol.name != "ignore"):
                                 # Only perform signature verification logic if
                                 # there are signatures or if signature-policy
@@ -278,7 +288,7 @@ class PkgPlan(object):
 
                                 try:
                                         sig_pol.process_signatures(sigs,
-                                            self.__destination_mfst.gen_actions(),
+                                            sigman.gen_actions(),
                                             dest_pub, self.image.trust_anchors,
                                             self.image.cfg.get_policy(
                                                 "check-certificate-revocation"))

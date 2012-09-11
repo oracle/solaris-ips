@@ -39,6 +39,7 @@ import unittest
 import pkg.actions as action
 import pkg.actions.signature as signature
 import pkg.client.api_errors as apx
+import pkg.facet as facet
 import pkg.fmri as fmri
 import pkg.misc as misc
 import pkg.portable as portable
@@ -95,6 +96,29 @@ class TestPkgSign(pkg5unittest.SingleDepotTestCase):
             add set name=variant.arch value=sparc value=i386
             add dir mode=0755 owner=root group=bin path=/bin variant.arch=sparc
             add dir mode=0755 owner=root group=bin path=/baz variant.arch=i386
+            close """
+
+        facet_pkg = """
+            open facet_pkg@1.0,5.11-0
+            add set name=variant.arch value=sparc value=i386
+            add file tmp/example_file mode=0444 owner=root group=bin path=usr/share/doc/i386_doc.txt facet.doc=true variant.arch=i386
+            add file tmp/example_file mode=0444 owner=root group=bin path=usr/share/doc/sparc_devel.txt facet.devel=true variant.arch=sparc
+            close """
+
+        med_pkg = """
+            open med_pkg@1.0,5.11-0
+            add file tmp/example_file mode=0755 owner=root group=bin path=/bin/example-1.6
+            add file tmp/example_file mode=0755 owner=root group=bin path=/bin/example-1.7
+            add link path=bin/example target=bin/example-1.6 mediator=example mediator-version=1.6
+            add link path=bin/example target=bin/example-1.7 mediator=example mediator-version=1.7
+            close """
+
+        conflict_pkgs = """
+            open conflict_a_pkg@1.0,5.11-0
+            add file tmp/example_file mode=0444 owner=root group=root path=etc/release
+            close
+            open conflict_b_pkg@1.0,5.11-0
+            add file tmp/example_file2 mode=0444 owner=root group=root path=etc/release
             close """
 
         need_renamed_pkg = """
@@ -1794,13 +1818,11 @@ class TestPkgSign(pkg5unittest.SingleDepotTestCase):
                 self.pkg("verify", exit=1)
                 self.assertEqual(cnt_crl_contacts(self.dcs[1].get_logpath()), 2)
 
-        def test_var_pkg(self):
-                """Test that actions tagged with variants don't break signing.
-                """
+        def __setup_signed_simple(self, pkg_srcs, pkg_names):
+                plist = self.pkgsend_bulk(self.rurl1, pkg_srcs)
 
-                plist = self.pkgsend_bulk(self.rurl1, self.var_pkg)
-
-                self.pkgsign_simple(self.rurl1, plist[0])
+                for pfmri in plist:
+                        self.pkgsign_simple(self.rurl1, pfmri)
 
                 self.pkg_image_create(self.rurl1,
                     additional_args="--variant variant.arch=i386")
@@ -1808,12 +1830,122 @@ class TestPkgSign(pkg5unittest.SingleDepotTestCase):
 
                 self.pkg("set-property signature-policy require-signatures")
                 api_obj = self.get_img_api_obj()
-                self._api_install(api_obj, ["var_pkg"])
-                self.assert_(os.path.exists(os.path.join(self.img_path(), "baz")))
+                self._api_install(api_obj, pkg_names)
+                return api_obj
+
+        def test_var_pkg(self):
+                """Test that actions tagged with variants don't break signing.
+                """
+
+                api_obj = self.__setup_signed_simple([self.var_pkg],
+                    ["var_pkg"])
+                self.pkg("verify")
+                self.assert_(os.path.exists(os.path.join(self.img_path(),
+                    "baz")))
                 self.assert_(not os.path.exists(
                     os.path.join(self.img_path(), "bin")))
 
+                # verify changing variant after install also works
+                self._api_change_varcets(api_obj,
+                    variants={ "variant.arch": "sparc" },
+                    refresh_catalogs=False)
+
+                self.assert_(not os.path.exists(
+                    os.path.join(self.img_path(), "baz")))
+                self.assert_(os.path.exists(
+                    os.path.join(self.img_path(), "bin")))
                 self.pkg("verify")
+
+        def test_facet_pkg(self):
+                """Test that actions tagged with facets don't break signing."""
+
+                api_obj = self.__setup_signed_simple([self.facet_pkg],
+                    ["facet_pkg"])
+                self.pkg("verify")
+                self.assert_(os.path.exists(os.path.join(self.img_path(),
+                    "usr", "share", "doc", "i386_doc.txt")))
+                self.assert_(not os.path.exists(os.path.join(self.img_path(),
+                    "usr", "share", "doc", "sparc_devel.txt")))
+
+                # verify changing facet after install also works
+                nfacets = facet.Facets({ "facet.doc": False })
+                self._api_change_varcets(api_obj, facets=nfacets,
+                    refresh_catalogs=False)
+                self.assert_(not os.path.exists(os.path.join(self.img_path(),
+                    "usr", "share", "doc", "i386_doc.txt")))
+                self.assert_(not os.path.exists(os.path.join(self.img_path(),
+                    "usr", "share", "doc", "sparc_devel.txt")))
+                self.pkg("verify")
+
+        def test_mediator_pkg(self):
+                """Test that actions tagged with mediators don't break
+                signing."""
+
+                def check_target(links, target):
+                        for lpath in links:
+                                ltarget = os.readlink(lpath)
+                                self.assert_(ltarget.endswith(target))
+
+                api_obj = self.__setup_signed_simple([self.med_pkg],
+                    ["med_pkg"])
+                self.pkg("verify")
+
+                # verify /bin/example mediation points to example-1.7 by default
+                ex_link = self.get_img_file_path("bin/example")
+                check_target([ex_link], "example-1.7")
+
+                # verify changing mediation after install works as expected
+                self.pkg("set-mediator -V1.6 example")
+                check_target([ex_link], "example-1.6")
+                self.pkg("verify")
+
+                # Verify removal of mediated links when no mediation applies
+                # works as expected.
+                self.pkg("set-mediator -V1.8 example")
+                self.assert_(not os.path.exists(ex_link))
+                self.pkg("verify")
+
+                # Verify mediated links are restored when mediation is reset.
+                self.pkg("set-property signature-policy require-signatures")
+                self.pkg("set-mediator -V1.6 example")
+                check_target([ex_link], "example-1.6")
+                self.pkg("verify")
+
+        def test_fix_revert_pkg(self):
+                """Test that fix and revert works with signed packages."""
+
+                api_obj = self.__setup_signed_simple([self.facet_pkg],
+                    ["facet_pkg"])
+                self.pkg("verify")
+                doc_path = self.get_img_file_path("usr/share/doc/i386_doc.txt")
+                self.assert_(os.path.exists(doc_path))
+
+                # Remove doc, then verify that fix and revert will restore it.
+                for cmd in ("fix", "revert usr/share/doc/i386_doc.txt"):
+                        portable.remove(doc_path)
+                        self.assert_(not os.path.exists(doc_path))
+                        self.pkg(cmd)
+                        self.assert_(os.path.exists(doc_path))
+
+        def test_conflicting_pkgs(self):
+                """Test that conflicting package repair works with signed
+                packages."""
+
+                DebugValues["broken-conflicting-action-handling"] = 1
+                try:
+                        # Install conflicting packages.
+                        api_obj = self.__setup_signed_simple([self.conflict_pkgs],
+                            ["conflict_a_pkg", "conflict_b_pkg"])
+                        rel_path = self.get_img_file_path("etc/release")
+                        self.assert_(os.path.exists(rel_path))
+                finally:
+                        del DebugValues["broken-conflicting-action-handling"]
+
+                # Now remove one of the conflicting packages and verify that the
+                # repair happens as expected.
+                self._api_uninstall(api_obj, ["conflict_b_pkg"])
+                self.pkg("verify")
+                self.file_contains("etc/release", "tmp/example_file")
 
         def test_disabled_append(self):
                 """Test that publishing to a depot which doesn't support append
