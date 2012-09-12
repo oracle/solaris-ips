@@ -38,6 +38,9 @@ _allow_facet(PyObject *self, PyObject *args)
 	PyObject *value = NULL;
 
 	PyObject *res = NULL;
+	PyObject *all_ret = Py_True;
+	PyObject *any_ret = NULL;
+	PyObject *facet_ret = NULL;
 	PyObject *ret = Py_True;
 	Py_ssize_t fpos = 0;
 	Py_ssize_t klen = 0;
@@ -72,13 +75,9 @@ _allow_facet(PyObject *self, PyObject *args)
 			continue;
 
 		PyObject *facet = PyDict_GetItem(facets, attr);
-		if (facet == Py_True) {
-			CLEANUP_FREFS;
-			Py_INCREF(facet);
-			return (facet);
-		}
-
-		if (facet == NULL) {
+		if (facet != NULL) {
+			facet_ret = facet;
+		} else {
 			Py_ssize_t idx = 0;
 
 			/*
@@ -96,42 +95,70 @@ _allow_facet(PyObject *self, PyObject *args)
 
 					Py_DECREF(match);
 
-					if (fval == Py_False)
-						goto next_facet;
+					if (fval != NULL) {
+						facet_ret = fval;
+						goto prep_ret;
+					}
 
 					/*
 					 * If wildcard facet value cannot be
-					 * retrieved or is True, cleanup and
-					 * return.
+					 * retrieved, cleanup and return.
 					 */
 					CLEANUP_FREFS;
-					if (fval == NULL)
-						return (NULL);
-					Py_INCREF(fval);
-					return (fval);
+					return (NULL);
 				}
 				Py_DECREF(match);
 			}
 
 			/*
 			 * If facet is unknown to the system and no facet
-			 * patterns matched it, be inclusive and allow the
-			 * action.
+			 * patterns matched it, be inclusive and assume
+			 * True.
 			 */
-			CLEANUP_FREFS;
-			Py_RETURN_TRUE;
+			facet_ret = Py_True;
 		}
 
-next_facet:
+prep_ret:
+		if (facet_ret != NULL) {
+			char *vs = PyString_AS_STRING(value);
+			if (strcmp(vs, "all") == 0) {
+				/*
+				 * If facet == 'all' and is False, then no more
+				 * facets need to be checked; this action is not
+				 * allowed.
+				 */
+				if (facet_ret == Py_False) {
+					all_ret = Py_False;
+					break;
+				}
+			} else if (facet_ret == Py_True) {
+				/*
+				 * If facet != 'all' and is True, then we've met
+				 * the 'any' condition.
+				 */
+				any_ret = Py_True;
+			} else if (facet_ret == Py_False && any_ret == NULL) {
+				/*
+				 * If facet != 'all' and is False, and no other
+				 * facets are yet True, tentatively reject this
+				 * action.
+				 */
+				any_ret = Py_False;
+			}
+		}
+
 		/*
-		 * Facets are currently OR'd; if this facet (or its wildcard
-		 * match) wasn't explicitly set to True, evaluate the next
-		 * facet.
+		 * All facets must be explicitly checked to determine if all the
+		 * facets that == 'all' are True, and that (if present) at least
+		 * one other facet that is != 'all' is True.
 		 */
-		ret = Py_False;
+		facet_ret = NULL;
 	}
 
 	CLEANUP_FREFS;
+	if (all_ret == Py_False || any_ret == Py_False)
+		ret = Py_False;
+
 	Py_INCREF(ret);
 	return (ret);
 }

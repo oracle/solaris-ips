@@ -58,6 +58,17 @@ class TestPkgChangeFacet(pkg5unittest.SingleDepotTestCase):
         open pkg_B@2.0,5.11-0
         close"""
 
+        # All 'all's must be true AND any 'true's true.
+        pkg_top_level = """
+        open pkg_top_level@1.0,5.11-0
+        add file tmp/facets_0 mode=0555 owner=root group=bin path=top0 facet.devel=all
+        add file tmp/facets_1 mode=0555 owner=root group=bin path=top1 facet.doc=all
+        add file tmp/facets_2 mode=0555 owner=root group=bin path=top2 facet.devel=all facet.doc=all
+        add file tmp/facets_3 mode=0555 owner=root group=bin path=top3 facet.doc=all facet.locale.fr_CA=true
+        add file tmp/facets_4 mode=0555 owner=root group=bin path=top4 facet.doc=all facet.locale.fr_CA=true facet.locale.nl_ZA=true
+        add file tmp/facets_5 mode=0555 owner=root group=bin path=top5 facet.devel=all facet.doc=all facet.locale.fr_CA=true facet.locale.nl_ZA=true
+        close"""
+
         misc_files = [
             "tmp/facets_0", "tmp/facets_1", "tmp/facets_2", "tmp/facets_3",
             "tmp/facets_4", "tmp/facets_5", "tmp/facets_6", "tmp/facets_7",
@@ -67,9 +78,23 @@ class TestPkgChangeFacet(pkg5unittest.SingleDepotTestCase):
         def setUp(self):
                 pkg5unittest.SingleDepotTestCase.setUp(self)
                 self.make_misc_files(self.misc_files)
-                self.plist = self.pkgsend_bulk(self.rurl, self.pkg_A)
+                self.plist = self.pkgsend_bulk(self.rurl, (self.pkg_A,
+                    self.pkg_top_level))
                 self.plist_B = self.pkgsend_bulk(self.rurl,
                     [self.pkg_B1, self.pkg_B2])
+
+        def assert_files_exist(self, flist):
+                error = ""
+                for (path, exist) in flist:
+                        file_path = os.path.join(self.get_img_path(), path)
+                        try:
+                                self.assert_file_is_there(file_path,
+                                    negate=not exist)
+                        except AssertionError, e:
+                                error += "\n{0}".format(e)
+
+                if error:
+                        raise AssertionError(error)
 
         def assert_file_is_there(self, path, negate=False):
                 """Verify that the specified path exists. If negate is true,
@@ -82,28 +107,27 @@ class TestPkgChangeFacet(pkg5unittest.SingleDepotTestCase):
                 except IOError, e:
                         if e.errno == errno.ENOENT and negate:
                                 return
-                        self.assert_(False, "File %s is not there" % path)
+                        self.assert_(False, "File %s is missing" % path)
                 # file is there
                 if negate:
-                        self.assert_(False, "File %s is there" % path)
+                        self.assert_(False, "File %s should not exist" % path)
                 return
 
-        def test_1(self):
+        def test_01_facets(self):
                 # create an image w/ locales set
                 ic_args = "";
                 ic_args += " --facet 'facet.locale*=False' "
                 ic_args += " --facet 'facet.locale.fr*=True' "
                 ic_args += " --facet 'facet.locale.fr_CA=False' "
 
-                rurl = self.dc.get_repo_url()
-                self.pkg_image_create(rurl, additional_args=ic_args)
+                self.pkg_image_create(self.rurl, additional_args=ic_args)
                 self.pkg("facet")
                 self.pkg("facet -H 'facet.locale*' | egrep False")
-                # install a package and verify
 
+                # install a package and verify
+                alist = [self.plist[0]]
                 self.pkg("install --parsable=0 pkg_A")
-                self.assertEqualParsable(self.output,
-                    add_packages=self.plist)
+                self.assertEqualParsable(self.output, add_packages=alist)
                 self.pkg("verify")
                 self.pkg("facet")
 
@@ -121,7 +145,7 @@ class TestPkgChangeFacet(pkg5unittest.SingleDepotTestCase):
                 # are in effect
                 self.pkg("change-facet -n --parsable=0 wombat=false")
                 self.assertEqualParsable(self.output,
-                    affect_packages=self.plist,
+                    affect_packages=alist,
                     change_facets=[["facet.wombat", False]])
 
                 # Again, but this time after removing the publisher cache data
@@ -133,7 +157,7 @@ class TestPkgChangeFacet(pkg5unittest.SingleDepotTestCase):
                 self.pkg("change-facet --no-refresh -n --parsable=0 "
                     "wombat=false", su_wrap=True)
                 self.assertEqualParsable(self.output,
-                    affect_packages=self.plist,
+                    affect_packages=alist,
                     change_facets=[["facet.wombat", False]])
 
                 # Again, but this time after removing the cache directory
@@ -144,14 +168,14 @@ class TestPkgChangeFacet(pkg5unittest.SingleDepotTestCase):
                 self.pkg("change-facet --no-refresh -n --parsable=0 "
                     "wombat=false", su_wrap=True)
                 self.assertEqualParsable(self.output,
-                    affect_packages=self.plist,
+                    affect_packages=alist,
                     change_facets=[["facet.wombat", False]])
 
                 # change to pick up another file w/ two tags and test the
                 # parsable output
                 self.pkg("change-facet --parsable=0 facet.locale.nl_ZA=True")
                 self.assertEqualParsable(self.output,
-                    affect_packages=self.plist,
+                    affect_packages=alist,
                     change_facets=[["facet.locale.nl_ZA", True]])
                 self.pkg("verify")
                 self.pkg("facet")
@@ -169,7 +193,7 @@ class TestPkgChangeFacet(pkg5unittest.SingleDepotTestCase):
                 self.pkg("change-facet --parsable=0 facet.locale*=None "
                     "'facet.locale.fr*'=None facet.locale.fr_CA=None")
                 self.assertEqualParsable(self.output,
-                    affect_packages=self.plist,
+                    affect_packages=alist,
                     change_facets=[
                         ["facet.locale*", None],
                         ["facet.locale.fr*", None],
@@ -199,7 +223,7 @@ class TestPkgChangeFacet(pkg5unittest.SingleDepotTestCase):
                 self.pkg("change-facet --parsable=0 'facet.locale*=None' "
                     "'facet.locale.*=false' facet.locale.fr_CA=true");
                 self.assertEqualParsable(self.output,
-                    affect_packages=self.plist,
+                    affect_packages=alist,
                     change_facets=[
                         ["facet.locale*", None],
                         ["facet.locale.*", False],
@@ -212,7 +236,7 @@ class TestPkgChangeFacet(pkg5unittest.SingleDepotTestCase):
                 self.pkg("change-facet --parsable=0 'facet.locale.*=None' "
                     "facet.locale.fr_*=false facet.locale.fr_CA=None");
                 self.assertEqualParsable(self.output,
-                    affect_packages=self.plist,
+                    affect_packages=alist,
                     change_facets=[
                         ["facet.locale.*", None],
                         ["facet.locale.fr_*", False],
@@ -220,7 +244,7 @@ class TestPkgChangeFacet(pkg5unittest.SingleDepotTestCase):
                     ])
                 self.assert_file_is_there("4")
 
-        def test_removing_facets(self):
+        def test_02_removing_facets(self):
                 self.image_create()
                 # Test that setting an unset, non-existent facet to None works.
                 self.pkg("change-facet foo=None", exit=4)
@@ -238,9 +262,8 @@ class TestPkgChangeFacet(pkg5unittest.SingleDepotTestCase):
 
                 self.pkg("change-facet -v foo=None", exit=4)
 
-        def test_slashed_facets(self):
-                rurl = self.dc.get_repo_url()
-                self.pkg_image_create(rurl)
+        def test_03_slashed_facets(self):
+                self.pkg_image_create(self.rurl)
                 self.pkg("install pkg_A")
                 self.pkg("verify")
 
@@ -252,7 +275,7 @@ class TestPkgChangeFacet(pkg5unittest.SingleDepotTestCase):
                 self.assert_file_is_there("8")
                 self.pkg("verify")
 
-        def test_no_accidental_changes(self):
+        def test_04_no_accidental_changes(self):
                 """Verify that non-facet related packaging operation don't
                 accidentally change facets."""
 
@@ -295,7 +318,7 @@ class TestPkgChangeFacet(pkg5unittest.SingleDepotTestCase):
                         self.assert_file_is_there(str(i), negate=True)
                 self.pkg("verify")
 
-        def test_reset_facet(self):
+        def test_05_reset_facet(self):
                 """Verify that resetting a Facet explicitly set to false
                 restores delivered content."""
 
@@ -371,6 +394,125 @@ class TestPkgChangeFacet(pkg5unittest.SingleDepotTestCase):
                 for i in range(8):
                         self.assert_file_is_there(str(i))
                 self.pkg("verify")
+
+        def test_06_facet_all(self):
+                """Verify that the 'all' value for facets is handled as
+                expected."""
+
+                self.pkg_image_create(self.rurl)
+
+                # All faceted files should be installed.
+                self.pkg("install pkg_top_level")
+                self.assert_files_exist((
+                    ("top0", True),
+                    ("top1", True),
+                    ("top2", True),
+                    ("top3", True),
+                    ("top4", True),
+                    ("top5", True),
+                ))
+
+                # Only top0 should be installed.
+                self.pkg('change-facet -v doc=false')
+                self.assert_files_exist((
+                    ("top0", True),
+                    ("top1", False),
+                    ("top2", False),
+                    ("top3", False),
+                    ("top4", False),
+                    ("top5", False),
+                ))
+
+                # No faceted files should be installed.
+                self.pkg('change-facet -v devel=false')
+                self.assert_files_exist((
+                    ("top0", False),
+                    ("top1", False),
+                    ("top2", False),
+                    ("top3", False),
+                    ("top4", False),
+                    ("top5", False),
+                ))
+
+                # Only top1, top3 and top4 should be installed.
+                self.pkg('change-facet -v doc=true')
+                self.assert_files_exist((
+                    ("top0", False),
+                    ("top1", True),
+                    ("top2", False),
+                    ("top3", True),
+                    ("top4", True),
+                    ("top5", False),
+                ))
+
+                # All faceted files should be installed.
+                self.pkg("change-facet -v devel=true")
+                self.assert_files_exist((
+                    ("top0", True),
+                    ("top1", True),
+                    ("top2", True),
+                    ("top3", True),
+                    ("top4", True),
+                    ("top5", True),
+                ))
+
+                # Only top0, top1, top2, top4, and top5 should be installed.
+                self.pkg("change-facet -v locale.fr_CA=false")
+                self.assert_files_exist((
+                    ("top0", True),
+                    ("top1", True),
+                    ("top2", True),
+                    ("top3", False),
+                    ("top4", True),
+                    ("top5", True),
+                ))
+
+                # Only top0, top1, and top2 should be installed.
+                self.pkg("change-facet -v locale.nl_ZA=false")
+                self.assert_files_exist((
+                    ("top0", True),
+                    ("top1", True),
+                    ("top2", True),
+                    ("top3", False),
+                    ("top4", False),
+                    ("top5", False),
+                ))
+
+                # Reset all facets and verify all files are installed.
+                self.pkg("change-facet -vvv devel=None doc=None locale.fr_CA=None "
+                    "locale.nl_ZA=None")
+                self.assert_files_exist((
+                    ("top0", True),
+                    ("top1", True),
+                    ("top2", True),
+                    ("top3", True),
+                    ("top4", True),
+                    ("top5", True),
+                ))
+
+                # Set a false wildcard for the 'all' facets.  No files should be
+                # installed.
+                self.pkg("change-facet -v 'facet.d*=False'")
+                self.assert_files_exist((
+                    ("top0", False),
+                    ("top1", False),
+                    ("top2", False),
+                    ("top3", False),
+                    ("top4", False),
+                    ("top5", False),
+                ))
+
+                # Set one of the 'all' facets True and verify that explicit sets
+                # trump wildcard matching.  Only top0 should be installed.
+                self.pkg("change-facet -v facet.devel=True")
+                self.assert_files_exist((
+                    ("top0", True),
+                    ("top1", False),
+                    ("top2", False),
+                    ("top3", False),
+                    ("top4", False),
+                    ("top5", False),
+                ))
 
 
 if __name__ == "__main__":
