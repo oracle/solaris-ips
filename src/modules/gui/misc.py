@@ -61,7 +61,7 @@ from pkg.gui.misc_non_gui import shutdown_logging as sd_logging
 from pkg.gui.misc_non_gui import get_version as g_version
 from pkg.gui.misc_non_gui import get_os_version_and_build as g_os_version_and_build
 
-from pkg.gui.misc_non_gui import get_log_dir as ge_log_dir
+from pkg.gui.misc_non_gui import get_log_path as ge_log_path
 from pkg.gui.misc_non_gui import get_log_error_ext as ge_log_error_ext
 from pkg.gui.misc_non_gui import get_log_info_ext as ge_log_info_ext
 from pkg.gui.misc_non_gui import get_catalogrefresh_exception_msg as get_msg
@@ -224,8 +224,8 @@ def get_publishers_for_output(api_o):
                 pass
         return publisher_str
 
-def get_log_dir():
-        return ge_log_dir()
+def get_log_path(client_name):
+        return ge_log_path(client_name)
 
 def get_log_error_ext():
         return ge_log_error_ext()

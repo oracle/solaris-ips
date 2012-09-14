@@ -47,9 +47,6 @@ LOG_ERROR_EXT = "_error.log"
 LOG_INFO_EXT = "_info.log"
 PKG_CLIENT_NAME_UM = "updatemanager"
 
-def get_log_dir():
-        return LOG_DIR
-
 def get_log_error_ext():
         return LOG_ERROR_EXT
 
@@ -74,11 +71,18 @@ def get_os_version_and_build():
                 os_ver += " (" + platform.uname()[3] + ")"
         return os_ver
 
+def get_log_path(client_name):
+        if portable.is_admin():
+                log_path = os.path.join(LOG_DIR, client_name)
+        else:
+                user_name = portable.get_username()
+                log_path = os.path.join(LOG_DIR, client_name + "_" + user_name)
+        return log_path
+
 def setup_logging(client_name):
         normal_setup = True
-        log_path = os.path.join(LOG_DIR, client_name)
         err_str = ""
-
+        log_path = get_log_path(client_name)
         infolog_path = log_path + LOG_INFO_EXT
         try:
                 info_h = logging.handlers.RotatingFileHandler(infolog_path,

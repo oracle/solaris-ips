@@ -19,7 +19,7 @@
 #
 # CDDL HEADER END
 #
-# Copyright (c) 2010, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2010, 2012, Oracle and/or its affiliates. All rights reserved.
 #
 
 import sys
@@ -85,19 +85,18 @@ class PMLogging:
                 self.w_view_log_dialog.hide()
 
         def __on_log_clear_button_clicked(self, widget):
-                log_dir = gui_misc.get_log_dir()
                 ext = gui_misc.get_log_error_ext()
-                self.__clear_logs(log_dir, ext) 
+                self.__clear_logs(ext) 
                 ext = gui_misc.get_log_info_ext()
-                self.__clear_logs(log_dir, ext) 
+                self.__clear_logs(ext) 
                 gui_misc.shutdown_logging()
                 gui_misc.setup_logging()
                 self.log_activate()
 
-        def __clear_logs(self, log_dir, ext):
-                self.__clear_log(os.path.join(log_dir, gui_misc.get_pm_name() + ext))
-                self.__clear_log(os.path.join(log_dir, gui_misc.get_wi_name() + ext))
-                self.__clear_log(os.path.join(log_dir, gui_misc.get_um_name() + ext))
+        def __clear_logs(self, ext):
+                self.__clear_log(gui_misc.get_log_path(gui_misc.get_pm_name()) + ext)
+                self.__clear_log(gui_misc.get_log_path(gui_misc.get_wi_name()) + ext)
+                self.__clear_log(gui_misc.get_log_path(gui_misc.get_um_name()) + ext)
 
         @staticmethod
         def __clear_log(path):
@@ -137,11 +136,10 @@ class PMLogging:
                 textbuffer = self.w_log_errors_textview.get_buffer()
                 textbuffer.set_text("")
                 textiter = textbuffer.get_end_iter()
-                log_dir = gui_misc.get_log_dir()
                 log_err_ext = gui_misc.get_log_error_ext()
-                pm_err_log = os.path.join(log_dir, gui_misc.get_pm_name() + log_err_ext)
-                wi_err_log = os.path.join(log_dir, gui_misc.get_wi_name() + log_err_ext)
-                um_err_log = os.path.join(log_dir, gui_misc.get_um_name() + log_err_ext)
+                pm_err_log = gui_misc.get_log_path(gui_misc.get_pm_name()) + log_err_ext
+                wi_err_log = gui_misc.get_log_path(gui_misc.get_wi_name()) + log_err_ext
+                um_err_log = gui_misc.get_log_path(gui_misc.get_um_name()) + log_err_ext
 
                 self.__write_to_view_log(um_err_log,
                     textbuffer, textiter, _("None: ") + gui_misc.get_um_name() + "\n")
@@ -156,11 +154,10 @@ class PMLogging:
                 textbuffer = self.w_log_info_textview.get_buffer()
                 textbuffer.set_text("")
                 textiter = textbuffer.get_end_iter()
-                log_dir = gui_misc.get_log_dir()
                 log_info_ext = gui_misc.get_log_info_ext()
-                pm_info_log = os.path.join(log_dir, gui_misc.get_pm_name() + log_info_ext)
-                wi_info_log = os.path.join(log_dir, gui_misc.get_wi_name() + log_info_ext)
-                um_info_log = os.path.join(log_dir, gui_misc.get_um_name() + log_info_ext)
+                pm_info_log = gui_misc.get_log_path(gui_misc.get_pm_name()) + log_info_ext
+                wi_info_log = gui_misc.get_log_path(gui_misc.get_wi_name()) + log_info_ext
+                um_info_log = gui_misc.get_log_path(gui_misc.get_um_name()) + log_info_ext
 
                 self.__write_to_view_log(um_info_log,
                     textbuffer, textiter, _("None: ") + gui_misc.get_um_name() + "\n")
