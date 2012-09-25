@@ -346,7 +346,10 @@ def set_action_data(payload, action, basedirs=None, bundles=None):
                 return None, None
 
         if payload == "NOHASH":
-                filepath = os.path.sep + action.attrs["path"]
+                try:
+                        filepath = os.path.sep + action.attrs["path"]
+                except KeyError:
+                        raise InvalidPathAttributeError(action)
         else:
                 filepath = payload
 

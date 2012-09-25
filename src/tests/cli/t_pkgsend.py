@@ -1269,6 +1269,17 @@ dir path=/usr/bin/foo target=bar hash=payload-pathname""")
                 self.pkgsend("", "-s %s publish %s" %
                     (self.dc.get_repo_url(), mfpath), exit=1)
 
+        def test_25_pkgsend_publish_nohash_license(self):
+                """Verify that publishing a manifest with hash attribute
+                missing for license action doesn't traceback"""
+
+                durl = self.dc.get_depot_url()
+                # Should fail because hash attribute is missing.
+                self.pkgsend_bulk(durl,
+                    """open foo@1.0
+                    add license license=copyright
+                    close""", exit=1)
+
 
 class TestPkgsendHardlinks(pkg5unittest.CliTestCase):
 
