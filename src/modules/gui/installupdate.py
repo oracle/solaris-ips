@@ -323,11 +323,17 @@ class InstallUpdate(progress.GuiProgressTracker):
                         widget.connect(signal_name, callback)
 
         def __setup_createplan_dlg_sizes(self):
-                #Get effective screen space available (net of panels and docks)
-                #instead of using gtk.gdk.screen_width() and gtk.gdk.screen_height()
+                # If window manager is absent, _NET_WORKAREA property would not be set,
+                # therefore use gtk.gdk.screen_width and gtk.gdk.screen_height
+                # to get the effective screen space available
                 root_win = gtk.gdk.get_default_root_window()
                 net_workarea_prop = gtk.gdk.atom_intern('_NET_WORKAREA')
-                sw, sh = root_win.property_get(net_workarea_prop)[2][2:4]
+                if net_workarea_prop:
+                        sw, sh = root_win.property_get(net_workarea_prop)[2][2:4]
+                else:
+                        sw = gtk.gdk.screen_width()
+                        sh = gtk.gdk.screen_height()
+
                 sw -= 28 # Default width of Panel accounts for bottom or side System Panel
                 sh -= 28
                 scale = gui_misc.get_scale(self.w_details_textview)

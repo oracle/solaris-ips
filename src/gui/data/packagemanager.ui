@@ -4973,7 +4973,7 @@ Specify the location of these files.</property>
     <property name="window_position">center-on-parent</property>
     <property name="type_hint">dialog</property>
     <property name="program_name">Package Manager</property>
-    <property name="copyright" translatable="yes">Copyright (c) 2008, 2010, Oracle and/or its affiliates.
+    <property name="copyright" translatable="yes">Copyright (c) 2008, 2012, Oracle and/or its affiliates.
 All rights reserved.</property>
     <property name="authors">Ann Kanodia &lt;Ann.Kanodia@oracle.com&gt;
 Frank Ludolph &lt;Frank.Ludolph@oracle.com&gt;
