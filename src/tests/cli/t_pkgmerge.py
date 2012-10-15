@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2011, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2011, 2012, Oracle and/or its affiliates. All rights reserved.
 #
 
 import testutils
@@ -48,7 +48,7 @@ class TestUtilMerge(pkg5unittest.ManyDepotTestCase):
         persistent_setup = True
 
         scheme10 = """
-            open pkg:/scheme@1.0,5.11-0
+            open scheme@1.0,5.11-0
             add file tmp/sparc-only mode=0444 owner=root group=bin path=/etc/tree
             close
         """
@@ -201,9 +201,7 @@ class TestUtilMerge(pkg5unittest.ManyDepotTestCase):
             "tmp/sparc3", "tmp/sparc4", "tmp/i3861", "tmp/i3862", "tmp/i3863"]
 
         def setUp(self):
-                pkg5unittest.ManyDepotTestCase.setUp(self, ["os.org", "os.org",
-                    "os.org", "os.org", "os.org", "os.org", "os.org", "os.org",
-                    "os.org", "os.org", "os.org", "os.org", "os.org"])
+                pkg5unittest.ManyDepotTestCase.setUp(self, 16 * ["os.org"])
                 self.make_misc_files(self.misc_files)
 
                 self.rurl1 = self.dcs[1].get_repo_url()
@@ -223,6 +221,11 @@ class TestUtilMerge(pkg5unittest.ManyDepotTestCase):
                 self.rurl11 = self.dcs[11].get_repo_url()
                 self.rurl12 = self.dcs[12].get_repo_url()
                 self.rurl13 = self.dcs[13].get_repo_url()
+
+                # repositories which will contain several publishers
+                self.rurl14 = self.dcs[14].get_repo_url()
+                self.rurl15 = self.dcs[15].get_repo_url()
+
                 # Publish a set of packages to one repository.
                 self.published = self.pkgsend_bulk(self.rurl1, (self.amber10,
                     self.amber20, self.bronze10, self.bronze20, self.tree10,
@@ -285,6 +288,44 @@ class TestUtilMerge(pkg5unittest.ManyDepotTestCase):
                 time.sleep(1)
                 self.published_blend += self.pkgsend_bulk(self.rurl13, (self.multiD,))
 
+                # Publish to multiple repositories, maintaining lists of which
+                # FMRIs are published to which repository.
+                self.published_multi_14 = []
+                self.published_multi_15 = []
+
+                for url, record in [
+                    (self.rurl14, self.published_multi_14),
+                    (self.rurl15, self.published_multi_15)]:
+                        time.sleep(1)
+                        record += self.pkgsend_bulk(url, (self.scheme10))
+                        time.sleep(1)
+                        record += self.pkgsend_bulk(url, (self.tree10))
+
+                        time.sleep(1)
+                        record += self.pkgsend_bulk(url,
+                            self.bronze20.replace("open ",
+                            "open pkg://altpub/"))
+                        time.sleep(1)
+                        record += self.pkgsend_bulk(url,
+                            (self.amber10.replace("open ",
+                            "open pkg://altpub/")))
+                        time.sleep(1)
+                        record += self.pkgsend_bulk(url,
+                            (self.multiA.replace("open ",
+                            "open pkg://last/")))
+
+                # add bronze20b to one repository so that we have at least one
+                # package where more complex merging happens.
+                time.sleep(1)
+                self.published_multi_15 += self.pkgsend_bulk(self.rurl15,
+                    self.bronze20b.replace("open ", "open pkg://altpub/"))
+
+                # one of our source repositories also contains a newer
+                # version of pkg:/gold (self.multi*)
+                time.sleep(1)
+                self.published_multi_15 += self.pkgsend_bulk(self.rurl15,
+                    (self.multiB.replace("open ", "open pkg://last/")))
+
         def test_0_options(self):
                 """Verify that pkgmerge gracefully fails when given bad option
                 values."""
@@ -339,6 +380,12 @@ class TestUtilMerge(pkg5unittest.ManyDepotTestCase):
                 self.pkgmerge(" ".join([
                     "-s arch=i386,%s" % self.rurl2,
                     "-d %s" % self.test_root,
+                ]), exit=1)
+
+                # Should fail because of no matching -p publishers.
+                self.pkgmerge(" ".join([
+                    "-s arch=i386,%s" % self.rurl2,
+                    "-d %s -p noodles" % self.test_root,
                 ]), exit=1)
 
         def test_1_single_merge(self):
@@ -992,13 +1039,215 @@ set name=variant.debug value=true value=false\
                 self.assertEqualDiff(expected, actual)
                 shutil.rmtree(repodir)
 
-        def get_manifest(self, repodir):
-                repo = self.get_repo(repodir)
-                cat = repo.get_catalog(pub="os.org")
-                for f in cat.fmris():
-                        with open(repo.manifest(f), "rb") as m:
-                                actual = "".join(sorted(l for l in m)).strip()
-                return actual
+        def test_7_multipub_merge(self):
+                """Tests that we can merge packages from repositories with
+                several publishers."""
+
+                repodir = os.path.join(self.test_root, "7merge_repo")
+                self.create_repo(repodir)
+
+                # test dry run
+                self.pkgmerge(" ".join([
+                    "-n",
+                    "-s arch=sparc,debug=false,%s" % self.dcs[14].get_repodir(),
+                    "-s arch=i386,debug=false,%s" % self.dcs[15].get_repodir(),
+                    "-d %s" % repodir]))
+
+                # test dry run with selected publishers
+                self.pkgmerge(" ".join([
+                    "-p os.org",
+                    "-p altpub",
+                    "-n",
+                    "-s arch=sparc,debug=false,%s" % self.dcs[14].get_repodir(),
+                    "-s arch=i386,debug=false,%s" % self.dcs[15].get_repodir(),
+                    "-d %s" % repodir]))
+
+                # this should fail, as no -p noodles publisher exists in any of
+                # the source repositories
+                self.pkgmerge(" ".join([
+                    "-p os.org",
+                    "-p altpub",
+                    "-p noodles",
+                    "-n",
+                    "-s arch=sparc,debug=false,%s" % self.dcs[14].get_repodir(),
+                    "-s arch=i386,debug=false,%s" % self.dcs[15].get_repodir(),
+                    "-d %s" % repodir]), exit=1)
+
+                # now we want to perform the merge operations and validate the
+                # results. This was the order we published packages to multi_15
+                # 0  = pkg://os.org/scheme@1.0,5.11-0:20120920T085857Z
+                # 1  = pkg://os.org/tree@1.0,5.11-0:20120920T085859Z
+                # 2  = pkg://altpub/bronze@2.0,5.11-0:20120920T085902Z
+                # 3  = pkg://altpub/amber@1.0,5.11-0:20120920T085904Z
+                # 4  = pkg://last/gold@1.0,5.11-0:20120920T085906Z
+                # 5  = pkg://altpub/bronze@2.0,5.11-0:20120920T085920Z
+                # 6  = pkg://last/gold@1.0,5.11-0:20120920T085923Z
+
+                # build a dictionary of the FMRIs we're interested in
+                repo15_fmris = {
+                    "osorg_scheme": self.published_multi_15[0],
+                    "osorg_tree": self.published_multi_15[1],
+                    "altpub_amber": self.published_multi_15[3],
+                    # we published two versions of bronze and gold, use the
+                    # latest FMRI
+                    "altpub_bronze": self.published_multi_15[5],
+                    "last_gold": self.published_multi_15[6]
+                }
+
+                # the some expected manifests we should get after merging.
+                expected_osorg_scheme = """\
+file 3a06aa547ffe0186a2b9db55b8853874a048fb47 chash=ab50364de4ce8f847d765d402d80e37431e1f0aa group=bin mode=0444 owner=root path=etc/tree pkg.csize=40 pkg.size=20
+set name=pkg.fmri value=%(osorg_scheme)s
+set name=variant.arch value=sparc value=i386
+set name=variant.debug value=false\
+""" % repo15_fmris
+                expected_osorg_tree = """\
+file 3a06aa547ffe0186a2b9db55b8853874a048fb47 chash=ab50364de4ce8f847d765d402d80e37431e1f0aa group=bin mode=0444 owner=root path=etc/tree pkg.csize=40 pkg.size=20
+set name=pkg.fmri value=%(osorg_tree)s
+set name=variant.arch value=sparc value=i386
+set name=variant.debug value=false\
+""" % repo15_fmris
+                expected_altpub_amber = """\
+depend fmri=pkg:/tree@1.0 type=require
+set name=pkg.fmri value=%(altpub_amber)s
+set name=variant.arch value=sparc value=i386
+set name=variant.debug value=false\
+""" % repo15_fmris
+                expected_altpub_bronze = """\
+depend fmri=pkg:/amber@2.0 type=require
+depend fmri=pkg:/scheme@1.0 type=require variant.arch=i386
+dir group=bin mode=0755 owner=root path=etc
+dir group=bin mode=0755 owner=root path=lib
+file 1abe1a7084720f501912eceb1312ddd799fb2a34 chash=ea7230676e13986491d7405c5a9298e074930575 group=bin mode=0444 owner=root path=etc/bronze1 pkg.csize=37 pkg.size=17
+file 34f88965d55d3a730fa7683bc0f370fc6e42bf95 chash=66eebb69ee0299dcb495162336db81a3188de037 group=bin mode=0555 owner=root path=usr/bin/sh pkg.csize=32 pkg.size=12
+file 6d8f3b9498aa3bbe7db01189b88f1b71f4ce40ad chash=6f3882864ebd7fd1a09e0e7b889fdc524c8c8bb2 group=bin mode=0444 owner=root path=etc/amber2 pkg.csize=37 pkg.size=17 variant.arch=sparc
+file 8535c15c49cbe1e7cb1a0bf8ff87e512abed66f8 chash=6ff2f52d2f894f5c71fb8fdd3b214e22959fccbb group=bin mode=0555 owner=root path=lib/libc.bronze pkg.csize=33 pkg.size=13
+file 91fa26695f9891b2d94fd72c31b640efb5589da5 chash=4eed1e5dc5ab131812da34dc148562e6833fa92b group=bin mode=0444 owner=root path=etc/scheme pkg.csize=36 pkg.size=16 variant.arch=i386
+file cf68b26a90cb9a0d7510f24cfb8cf6d901cec34e chash=0eb6fe69c4492f801c35dcc9175d55f783cc64a2 group=bin mode=0444 owner=root path=A1/B2/C3/D4/E5/F6/bronzeA2 pkg.csize=38 pkg.size=18
+hardlink path=lib/libc.bronze2.0.hardlink target=/lib/libc.so.1
+license 773b94a252723da43e8f969b4384701bcd41ce12 chash=e0715301fc211f6543ce0c444f4c34e38c70f70e license=copyright pkg.csize=40 pkg.size=20
+link path=usr/bin/jsh target=./sh
+set name=pkg.fmri value=%(altpub_bronze)s
+set name=variant.arch value=sparc value=i386
+set name=variant.debug value=false\
+""" % repo15_fmris
+                expected_last_gold = """\
+depend fmri=foo fmri=bar type=require-any
+file 6b7161cb29262ea4924a8874818da189bb70da09 chash=77e271370cec04931346c969a85d6af37c1ea83f group=bin mode=0444 owner=root path=etc/binary pkg.csize=36 pkg.size=16 variant.arch=i386
+file 6b7161cb29262ea4924a8874818da189bb70da09 chash=77e271370cec04931346c969a85d6af37c1ea83f group=bin mode=0444 owner=root path=etc/everywhere-notes pkg.csize=36 pkg.size=16
+file 9e837a70edd530a88c88f8a58b8a5bf2a8f3943c chash=d0323533586e1153bd1701254f45d2eb2c7eb0c4 group=bin mode=0444 owner=root path=etc/debug-notes pkg.csize=36 pkg.size=16
+file a10f11b8559a723bea9ee0cf5980811a9d51afbb chash=9fb8079898da8a2a9faad65c8df4c4a42095f25a group=bin mode=0444 owner=root path=etc/sparc/debug-notes pkg.csize=36 pkg.size=16 variant.arch=sparc
+file aab699c6424ed1fc258b6b39eb113e624a9ee368 chash=43c3b9a83a112727264390002c3db3fcebec2e76 group=bin mode=0444 owner=root path=etc/binary pkg.csize=36 pkg.size=16 variant.arch=sparc
+set name=pkg.fmri value=%(last_gold)s
+set name=variant.arch value=sparc value=i386
+set name=variant.debug value=false\
+""" % repo15_fmris
+
+                # A dictionary of the expected package contents, keyed by FMRI
+                expected = {
+                    repo15_fmris["altpub_bronze"]: expected_altpub_bronze,
+                    repo15_fmris["altpub_amber"]: expected_altpub_amber,
+                    repo15_fmris["osorg_tree"]: expected_osorg_tree,
+                    repo15_fmris["osorg_scheme"]: expected_osorg_scheme,
+                    repo15_fmris["last_gold"]: expected_last_gold
+                }
+
+                def check_repo(repodir, keys, fmri_dic, expected):
+                        """Check that packages corresponding to the list of
+                        keys 'keys' to items in 'fmri_dic' are present in the
+                        repository, and match the contents from the dictionary
+                        'expected'.  We also check that the repository has no
+                        packages other than those specified by 'keys', and no
+                        more publishers than are present in those packages."""
+                        sr = self.get_repo(repodir)
+                        # check that the packages from 'keys' exist,
+                        # and their content matches what we expect.
+                        for key in keys:
+                                f = fmri_dic[key]
+                                with open(sr.manifest(f), "rb") as manf:
+                                        actual = "".join(
+                                            sorted(l for l in manf)).strip()
+                                self.assertEqualDiff(expected[f], actual)
+
+                        # check that we have only the publishers used
+                        # by packages from 'keys' in the repository
+                        fmris = [fmri_dic[key] for key in keys]
+                        pubs = set([fmri.PkgFmri(entry).get_publisher()
+                            for entry in fmris])
+                        known_pubs = set(
+                            [p.prefix for p in sr.get_publishers()])
+                        self.assert_(pubs == known_pubs,
+                            "Repository at %s didn't contain the "
+                            "expected set of publishers")
+
+                        # check that we have only the packages defined
+                        # in 'keys' in the repository by walking all
+                        # publishers, and all packages in the repository
+                        for pub in sr.get_publishers():
+                                cat = sr.get_catalog(pub=p.prefix)
+                                for f in cat.fmris():
+                                        if f.get_fmri() not in fmris:
+                                                self.assert_(False,
+                                                    "%s not in repository" % f)
+
+                # test merging all publishers.
+                self.pkgmerge(" ".join([
+                    "-s arch=sparc,debug=false,%s" % self.dcs[14].get_repodir(),
+                    "-s arch=i386,debug=false,%s" % self.dcs[15].get_repodir(),
+                    "-d %s" % repodir]))
+
+                check_repo(repodir, repo15_fmris.keys(), repo15_fmris, expected)
+
+                # test merging only altpub and os.org.
+                shutil.rmtree(repodir)
+                self.create_repo(repodir)
+                self.pkgmerge(" ".join([
+                    "-p altpub",
+                    "-p os.org",
+                    "-s arch=sparc,debug=false,%s" % self.dcs[14].get_repodir(),
+                    "-s arch=i386,debug=false,%s" % self.dcs[15].get_repodir(),
+                    "-d %s" % repodir]))
+
+                check_repo(repodir, ["altpub_bronze", "altpub_amber",
+                    "osorg_tree", "osorg_scheme"], repo15_fmris, expected)
+
+                # test merging only altpub
+                shutil.rmtree(repodir)
+                self.create_repo(repodir)
+                self.pkgmerge(" ".join([
+                    "-p altpub",
+                    "-s arch=sparc,debug=false,%s" % self.dcs[14].get_repodir(),
+                    "-s arch=i386,debug=false,%s" % self.dcs[15].get_repodir(),
+                    "-d %s" % repodir]))
+
+                check_repo(repodir, ["altpub_bronze", "altpub_amber"],
+                    repo15_fmris, expected)
+
+                # this should exit with a 1, but we should get the same results
+                # in the repository as last time.
+                shutil.rmtree(repodir)
+                self.create_repo(repodir)
+                self.pkgmerge(" ".join([
+                    "-p altpub",
+                    "-p noodles",
+                    "-s arch=sparc,debug=false,%s" % self.dcs[14].get_repodir(),
+                    "-s arch=i386,debug=false,%s" % self.dcs[15].get_repodir(),
+                    "-d %s" % repodir]), exit=1)
+
+                check_repo(repodir, ["altpub_bronze", "altpub_amber"],
+                    repo15_fmris, expected)
+
+        def get_manifest(self, repodir, pubs=["os.org"]):
+                repository = self.get_repo(repodir)
+                actual = ""
+                for pub in pubs:
+                        cat = repository.get_catalog(pub=pub)
+                        for f in cat.fmris():
+                                with open(repository.manifest(f), "rb") as m:
+                                        actual += "".join(
+                                            sorted(l for l in m)).strip()
+                        actual += "\n"
+                return actual.strip()
 
 if __name__ == "__main__":
         unittest.main()

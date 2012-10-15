@@ -52,6 +52,16 @@ except KeyboardInterrupt:
         import sys
         sys.exit(1)
 
+class PkgmergeException(Exception):
+        """An exception raised if something goes wrong during the merging
+        process."""
+
+        def __unicode__(self):
+                # To workaround python issues 6108 and 2517, this provides a
+                # a standard wrapper for this class' exceptions so that they
+                # have a chance of being stringified correctly.
+                return str(self)
+
 BUILD_RELEASE  = "5.11"  # Should be an option to this program some day?
 
 catalog_dict   = {}    # hash table of catalogs by source uri
@@ -95,7 +105,7 @@ def usage(errmsg="", exitcode=2):
         msg(_("""\
 Usage:
         pkgmerge [-n] -d dest_repo -s variant=value[,...],src_repo ...
-            [pkg_fmri_pattern ...]
+            [-p publisher_prefix ... ] [pkg_fmri_pattern ...]
 
 Options:
         -d dest_repo
@@ -114,6 +124,12 @@ Options:
                 may be specified separated by commas.  The same variants must
                 be named for all sources.  This option may be specified multiple
                 times.
+
+        -p publisher_prefix
+                The name of the publisher we should merge packages from.  This
+                option may be specified multiple times.  If no -p option is
+                used, the default is to merge packages from all publishers in
+                all source repositories.
 
         --help or -?
                 Displays a usage message.
@@ -134,15 +150,12 @@ def error(text, exitcode=1):
         if exitcode != None:
                 sys.exit(exitcode)
 
-def get_tracker(quiet=False):
-        if quiet:
-                progresstracker = progress.QuietProgressTracker()
-        else:
-                try:
-                        progresstracker = \
-                            progress.FancyUNIXProgressTracker()
-                except progress.ProgressTrackerException:
-                        progresstracker = progress.CommandLineProgressTracker()
+def get_tracker():
+        try:
+                progresstracker = \
+                    progress.FancyUNIXProgressTracker()
+        except progress.ProgressTrackerException:
+                progresstracker = progress.CommandLineProgressTracker()
         return progresstracker
 
 def load_catalog(repouri, pub):
@@ -187,9 +200,12 @@ def main_func():
         dest_repo     = None
         source_list   = []
         variant_list  = []
+        pub_list      = []
+        use_pub_list  = False
 
         try:
-                opts, pargs = getopt.getopt(sys.argv[1:], "d:ns:?", ["help"])
+                opts, pargs = getopt.getopt(sys.argv[1:], "d:np:s:?",
+                    ["help"])
                 for opt, arg in opts:
                         if opt == "-d":
                                 dest_repo = misc.parse_uri(arg)
@@ -217,6 +233,9 @@ def main_func():
                                 variant_list.append(src_vars)
                                 source_list.append(publisher.RepositoryURI(
                                     misc.parse_uri(s[-1])))
+                        elif opt == "-p":
+                                use_pub_list = True
+                                pub_list.append(arg)
 
                         if opt in ("--help", "-?"):
                                 usage(exitcode=0)
@@ -282,82 +301,187 @@ def main_func():
         xport, xport_cfg = transport.setup_transport()
         xport_cfg.incoming_root = tmpdir
 
-        pub = transport.setup_publisher(source_list,
+        # we don't use the publisher returned by setup_publisher, as that only
+        # returns one of the publishers in source_list.  Instead we use
+        # xport_cfg to access all publishers.
+        transport.setup_publisher(source_list,
             "pkgmerge", xport, xport_cfg, remote_prefix=True)
         cat_dir = tempfile.mkdtemp(dir=tmpdir)
-        pub.meta_root = cat_dir
-        pub.transport = xport
 
-        # Use separate transport for destination repository in case source
-        # and destination have identical publisher configuration.
-        dest_xport, dest_xport_cfg = transport.setup_transport()
-        dest_xport_cfg.incoming_root = tmpdir
+        # we must have at least one matching publisher if -p was used.
+        known_pubs = set([pub.prefix for pub in xport_cfg.gen_publishers()])
+        if pub_list and len(set(pub_list).intersection(known_pubs)) == 0:
+                error(_("no publishers from source repositories match "
+                    "the given -p options."))
 
-        # retrieve catalogs for all specified repositories
-        for s in source_list:
-                load_catalog(s, pub)
+        errors = set()
+        tracker = get_tracker()
 
-        # determine the list of packages we'll be processing
-        if not pargs:
-                # use the latest versions and merge everything
-                fmri_arguments = list(set(
-                    name
+        # iterate over all publishers in our source repositories.  If errors
+        # are encountered for a given publisher, we accumulate those, and
+        # skip to the next publisher.
+        for pub in xport_cfg.gen_publishers():
+
+                if use_pub_list:
+                        if pub.prefix not in pub_list:
+                                continue
+                        else:
+                                # remove publishers from pub_list as we go, so
+                                # that when we're finished, any remaining
+                                # publishers in pub_list suggest superfluous
+                                # -p options, which will cause us to exit with
+                                # an error.
+                                pub_list.remove(pub.prefix)
+
+                pub.meta_root = cat_dir
+                pub.transport = xport
+
+                # Use separate transport for destination repository in case
+                # source and destination have identical publisher configuration.
+                dest_xport, dest_xport_cfg = transport.setup_transport()
+                dest_xport_cfg.incoming_root = tmpdir
+
+                # retrieve catalogs for all specified repositories
+                for s in source_list:
+                        load_catalog(s, pub)
+
+                # determine the list of packages we'll be processing
+                if not pargs:
+                        # use the latest versions and merge everything
+                        fmri_arguments = list(set(
+                            name
+                            for s in source_list
+                            for name in get_all_pkg_names(s)
+                        ))
+                        exclude_args = []
+                else:
+                        fmri_arguments = [
+                            f
+                            for f in pargs
+                            if not f.startswith("!")
+                        ]
+
+                        exclude_args = [
+                            f[1:]
+                            for f in pargs
+                            if f.startswith("!")
+                        ]
+
+                # build fmris to be merged
+                masterlist = [
+                    build_merge_list(fmri_arguments, exclude_args,
+                        catalog_dict[s.uri])
                     for s in source_list
-                    for name in get_all_pkg_names(s)
-                ))
-                exclude_args = []
-        else:
-                fmri_arguments = [
-                    f
-                    for f in pargs
-                    if not f.startswith("!")
                 ]
 
-                exclude_args = [
-                    f[1:]
-                    for f in pargs
-                    if f.startswith("!")
-                ]
+                # check for unmatched patterns
+                in_none = reduce(lambda x, y: x & y,
+                    (set(u) for d, u in masterlist))
+                if in_none:
+                        errors.add(
+                            _("The following pattern(s) did not match any "
+                            "packages in any of the specified repositories for "
+                            "publisher %(pub_name)s:"
+                            "\n%(patterns)s") % {"patterns": "\n".join(in_none),
+                            "pub_name": pub.prefix})
+                        continue
 
-        # build fmris to be merged
-        masterlist = [
-            build_merge_list(fmri_arguments, exclude_args, catalog_dict[s.uri])
-            for s in source_list
-        ]
+                # generate set of all package names to be processed, and dict
+                # of lists indexed by order in source_list; if that repo has no
+                # fmri for this pkg then use None.
+                allpkgs = set(name for d, u in masterlist for name in d)
 
-        # check for unmatched patterns
-        in_none = reduce(lambda x, y: x & y, (set(u) for d, u in masterlist))
-        if in_none:
-                error(_("The following pattern(s) did not match any packages "
-                    "in any of the specified repositories:\n%s") % "\n".join(
-                    in_none))
+                processdict = {}
+                for p in allpkgs:
+                        for d, u in masterlist:
+                                processdict.setdefault(p, []).append(
+                                    d.setdefault(p, None))
 
-        # generate set of all package names to be processed, and dict of lists
-        # indexed by order in source_list; if that repo has no fmri for this
-        # pkg then use None.
-        allpkgs = set(name for d, u in masterlist for name in d)
+                # check to make sure all fmris are at same version modulo
+                # timestamp
+                for entry in processdict:
+                        if len(set([
+                                str(a).rsplit(":")[0]
+                                for a in processdict[entry]
+                                if a is not None
+                            ])) > 1:
+                                errors.add(
+                                    _("fmris matching the following patterns do"
+                                    " not have matching versions across all "
+                                    "repositories for publisher %(pubs)s: "
+                                    "%(patterns)s") % {"pub": pub.prefix,
+                                    "patterns": processdict[entry]})
+                                continue
 
-        processdict = {}
-        for p in allpkgs:
-                for d, u in masterlist:
-                        processdict.setdefault(p, []).append(d.setdefault(p,
-                            None))
+                # we're ready to merge
+                if not dry_run:
+                        target_pub = transport.setup_publisher(dest_repo,
+                            pub.prefix, dest_xport, dest_xport_cfg,
+                            remote_prefix=True)
+                else:
+                        target_pub = None
 
-        # check to make sure all fmris are at same version modulo timestamp
-        for entry in processdict:
-                if len(set([
-                        str(a).rsplit(":")[0]
-                        for a in processdict[entry]
-                        if a is not None
-                    ])) > 1:
-                        error(_("fmris matching the following patterns do not "
-                            "have matching versions across all repositories: "
-                            "%s") % processdict[entry])
+                tracker.republish_set_goal(len(processdict), 0, 0)
+                # republish packages for this publisher. If we encounter any
+                # publication errors, we move on to the next publisher.
+                try:
+                        pkg_tmpdir = tempfile.mkdtemp(dir=tmpdir)
+                        republish_packages(pub, target_pub,
+                            processdict, source_list, variant_list, variants,
+                            tracker, xport, dest_repo, dest_xport, pkg_tmpdir,
+                            dry_run=dry_run)
+                except (trans.TransactionError, PkgmergeException), e:
+                        errors.add(str(e))
+                        tracker.reset()
+                        continue
+                finally:
+                        # if we're handling an exception, this still gets called
+                        # in spite of the 'continue' that the handler ends with.
+                        if os.path.exists(pkg_tmpdir):
+                                shutil.rmtree(pkg_tmpdir)
 
-        # we're ready to merge
-        if not dry_run:
-                target_pub = transport.setup_publisher(dest_repo,
-                    pub.prefix, dest_xport, dest_xport_cfg, remote_prefix=True)
+                tracker.republish_done(dryrun=dry_run)
+                tracker.reset()
+
+        # If -p options were supplied, we should have processed all of them
+        # by now. Remaining entries suggest -p options that were not merged.
+        if use_pub_list and pub_list:
+                errors.add(_("the following publishers were not found in "
+                    "source repositories: %s") % " ".join(pub_list))
+
+        # If we have encountered errors for some publishers, print them now
+        # and exit.
+        tracker.flush()
+        for message in errors:
+                error(message, exitcode=None)
+        if errors:
+                exit(1)
+
+        return 0
+
+def republish_packages(pub, target_pub, processdict, source_list, variant_list,
+        variants, tracker, xport, dest_repo, dest_xport, pkg_tmpdir,
+        dry_run=False):
+        """Republish packages for publisher pub to dest_repo.
+
+        If we try to republish a package that we have already published,
+        an exception is raise.
+
+        pub             the publisher from source_list that we are republishing
+        target_pub      the destination publisher
+        processdict     a dict indexed by package name of the pkgs to merge
+        source_list     a list of source respositories
+        variant_list    a list of dicts containing variant names/values
+        variants        the unique set of variants across all sources.
+        tracker         a progress tracker
+        xport           the transport handling our source repositories
+        dest_repo       our destination repository
+        dest_xport      the transport handling our destination repository
+        pkg_tmpdir      a temporary dir used when downloading pkg content
+                        which may be deleted and recreated by this method.
+
+        dry_run         True if we should not actually publish
+        """
 
         def get_basename(pfmri):
                 open_time = pfmri.get_timestamp()
@@ -365,8 +489,6 @@ def main_func():
                     (calendar.timegm(open_time.utctimetuple()),
                     urllib.quote(str(pfmri), ""))
 
-        tracker = get_tracker()
-        tracker.republish_set_goal(len(processdict), 0, 0)
         for entry in processdict:
                 man, retrievals = merge_fmris(source_list,
                     processdict[entry], variant_list, variants)
@@ -392,70 +514,66 @@ def main_func():
 
                 tracker.republish_start_pkg(f, getbytes=getbytes,
                     sendbytes=sendbytes)
+
                 if dry_run:
                         # Dry-run; attempt a merge of everything but don't
                         # write any data or publish packages.
                         continue
 
-                pkgdir = tempfile.mkdtemp(dir=tmpdir)
+                target_pub.prefix = f.publisher
+
                 # Retrieve package data from each package source.
                 for i, uri in enumerate(source_list):
                         pub.repository.origins = [uri]
-                        mfile = xport.multi_file_ni(pub, pkgdir,
+                        mfile = xport.multi_file_ni(pub, pkg_tmpdir,
                             decompress=True, progtrack=tracker)
                         for a in retrievals[i]:
                                 mfile.add_action(a)
                         mfile.wait_files()
 
+                trans_id = get_basename(f)
+                pkg_name = f.get_fmri()
+                pubs.add(target_pub.prefix)
                 # Publish merged package.
+                t = trans.Transaction(dest_repo,
+                    pkg_name=pkg_name, trans_id=trans_id,
+                    xport=dest_xport, pub=target_pub,
+                    progtrack=tracker)
+
+                # Remove any previous failed attempt to
+                # to republish this package.
                 try:
-                        trans_id = get_basename(f)
-                        pkg_name = f.get_fmri()
-                        target_pub.prefix = f.publisher
-                        pubs.add(f.publisher)
+                        t.close(abandon=True)
+                except:
+                        # It might not exist already.
+                        pass
 
-                        t = trans.Transaction(dest_repo, pkg_name=pkg_name,
-                            trans_id=trans_id, xport=dest_xport, pub=target_pub,
-                            progtrack=tracker)
+                t.open()
+                for a in man.gen_actions():
+                        if (a.name == "set" and
+                            a.attrs["name"] == "pkg.fmri"):
+                                # To be consistent with the
+                                # server, the fmri can't be
+                                # added to the manifest.
+                                continue
 
-                        # Remove any previous failed attempt to
-                        # to republish this package.
-                        try:
-                                t.close(abandon=True)
-                        except:
-                                # It might not exist already.
-                                pass
+                        if hasattr(a, "hash"):
+                                fname = os.path.join(pkg_tmpdir,
+                                    a.hash)
+                                a.data = lambda: open(
+                                    fname, "rb")
+                        t.add(a)
 
-                        t.open()
-                        for a in man.gen_actions():
-                                if (a.name == "set" and
-                                    a.attrs["name"] == "pkg.fmri"):
-                                        # To be consistent with the
-                                        # server, the fmri can't be
-                                        # added to the manifest.
-                                        continue
-
-                                if hasattr(a, "hash"):
-                                        fname = os.path.join(pkgdir,
-                                            a.hash)
-                                        a.data = lambda: open(fname, "rb")
-                                t.add(a)
-
-                        # Always defer catalog update.
-                        t.close(add_to_catalog=False)
-                except trans.TransactionError, e:
-                        error(str(e))
+                # Always defer catalog update.
+                t.close(add_to_catalog=False)
 
                 # Done with this package.
                 tracker.republish_end_pkg(f)
 
-                # Dump retrieved package data after each republication.
-                shutil.rmtree(pkgdir)
-
-        tracker.republish_done(dryrun=dry_run)
-        tracker.reset()
-
-        return 0
+                # Dump retrieved package data after each republication and
+                # recreate the directory for the next package.
+                shutil.rmtree(pkg_tmpdir)
+                os.mkdir(pkg_tmpdir)
 
 def merge_fmris(source_list, fmri_list, variant_list, variants):
         """Merge a list of manifests representing multiple variants,
@@ -637,7 +755,8 @@ def __merge_fmris(new_fmri, manifest_list, fmri_list, variant_list, variant):
 
                         if a.name == "set" and a.attrs["name"] == variant:
                                 if vval not in a.attrlist("value"):
-                                        error(_("package %(pkg)s is tagged as "
+                                        raise PkgmergeException(
+                                            _("package %(pkg)s is tagged as "
                                             "not supporting %(var_name)s "
                                             "%(var_value)s") % {
                                             "pkg": fmri_list[j],
@@ -664,7 +783,8 @@ def __merge_fmris(new_fmri, manifest_list, fmri_list, variant_list, variant):
         try:
                 action_lists = list(manifest.Manifest.comm(manifest_list))
         except manifest.ManifestError, e:
-                error("Duplicate action(s) in package \"%s\": \n%s" %
+                raise PkgmergeException(
+                    "Duplicate action(s) in package \"%s\": \n%s" %
                     (new_fmri.pkg_name, e))
 
         # Declare new package FMRI.
@@ -790,7 +910,7 @@ def match_user_fmris(patterns, cat):
                         fmris.append(fmri)
                 except (pkg.fmri.FmriError,
                     pkg.version.VersionError), e:
-                        error(str(e))
+                        raise PkgmergeException(str(e))
 
         # Create a dictionary of patterns, with each value being a
         # dictionary of pkg names & fmris that match that pattern.
