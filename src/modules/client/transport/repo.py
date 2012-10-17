@@ -1060,11 +1060,10 @@ class HTTPRepo(TransportRepo):
                 its headers then we can try the request with that additional
                 header, which can help where a web cache is serving corrupt
                 content.
-
-                This method returns True if the headers passed haven't got
-                "Cache-Control: no-cache" set, adding that header.  Otherwise
-                it returns False.
                 """
+
+                if header is None:
+                        header = {}
 
                 if header.get("Cache-Control", "") != "no-cache":
                         header["Cache-Control"] = "no-cache"
