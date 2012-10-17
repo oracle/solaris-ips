@@ -664,7 +664,7 @@ class Transport(object):
                                             "search/1")
                                 elif e.code == httplib.NO_CONTENT:
                                         raise apx.NegativeSearchResult(e.url)
-                                elif e.code == (httplib.BAD_REQUEST,
+                                elif e.code in (httplib.BAD_REQUEST,
                                     errno.EINVAL):
                                         raise apx.MalformedSearchRequest(e.url)
                                 elif e.retryable:
