@@ -1442,7 +1442,7 @@ License:
                 self.__set_response_expires("publisher", 86400*365, 86400*365)
                 return buf.getvalue()
 
-        def __get_matching_p5i_data(self, rstore, matcher, pfmri):
+        def __get_matching_p5i_data(self, rstore, pfmri):
                 # Attempt to find matching entries in the catalog.
                 try:
                         pub = self.repo.get_publisher(rstore.publisher)
@@ -1456,10 +1456,10 @@ License:
                         return ""
 
                 try:
-                        matches, unmatched = catalog.extract_matching_fmris(
-                            cat.fmris(), patterns=[pfmri],
-                            constraint=pkg.version.CONSTRAINT_AUTO,
-                            matcher=matcher)
+                        matches = [fmri for fmri, states, attrs in \
+                            cat.gen_packages(patterns=[pfmri],
+                            return_fmris=True)]
+                             
                 except Exception, e:
                         # If this fails, it's ok to raise an exception since bad
                         # input was likely provided.
@@ -1468,7 +1468,8 @@ License:
 
                 if not matches:
                         return ""
-                elif matcher in (fmri.exact_name_match, fmri.glob_match):
+
+                if not "@" in pfmri or "*" in pfmri:
                         # When using wildcards or exact name match, trim the
                         # results to only the unique package stems.
                         matches = sorted(set([m.pkg_name for m in matches]))
@@ -1526,18 +1527,6 @@ License:
                         end = len(pfmri) - len(".p5i")
                         pfmri = pfmri[:end]
 
-                matcher = None
-                if "*" not in pfmri and "@" not in pfmri:
-                        matcher = fmri.exact_name_match
-                elif "*" in pfmri:
-                        matcher = fmri.glob_match
-                        try:
-                                # XXX 5.11 needs to be saner
-                                pfmri = fmri.MatchingPkgFmri(pfmri, "5.11")
-                        except Exception, e:
-                                raise cherrypy.HTTPError(httplib.BAD_REQUEST,
-                                    str(e))
-
                 output = ""
                 prefix = self._get_req_pub()
                 for rstore in self.repo.rstores:
@@ -1545,8 +1534,7 @@ License:
                                 continue
                         if prefix and prefix != rstore.publisher:
                                 continue
-                        output += self.__get_matching_p5i_data(rstore,
-                            matcher, pfmri)
+                        output += self.__get_matching_p5i_data(rstore, pfmri)
 
                 if output == "":
                         raise cherrypy.HTTPError(httplib.NOT_FOUND, _("No "
