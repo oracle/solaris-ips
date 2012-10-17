@@ -21,7 +21,7 @@
 # CDDL HEADER END
 #
 
-# Copyright (c) 2008, 2011, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2008, 2012, Oracle and/or its affiliates. All rights reserved.
 
 import testutils
 if __name__ == "__main__":
@@ -31,6 +31,7 @@ import pkg5unittest
 import errno
 import os
 import shutil
+import simplejson
 import stat
 import unittest
 
@@ -1136,6 +1137,115 @@ class TestEmptyCatalog(pkg5unittest.Pkg5TestCase):
                     for f, actions in self.c.actions([self.c.DEPENDENCY])
                 ]
                 self.assertEqual(returned, [])
+
+
+class TestCorruptCatalog(pkg5unittest.Pkg5TestCase):
+        """Tests against various forms of corrupted catalogs."""
+
+        def test_corrupt_attrs1(self):
+                """Raise InvalidCatalogFile for a catalog.attrs w/ bogus JSON"""
+                f = open(os.path.join(self.test_root, "catalog.attrs"), "w")
+                f.write('{"valid json": "but not a catalog"}')
+                f.close()
+                self.assertRaises(api_errors.InvalidCatalogFile,
+                    catalog.Catalog, meta_root=self.test_root)
+
+        def test_corrupt_attrs2(self):
+                """Raise InvalidCatalogFile for a catalog.attrs w/ garbage"""
+                f = open(os.path.join(self.test_root, "catalog.attrs"), "w")
+                print >> f, 'garbage'
+                f.close()
+                self.assertRaises(api_errors.InvalidCatalogFile,
+                    catalog.Catalog, meta_root=self.test_root)
+
+        def test_corrupt_attrs3(self):
+                """Raise InvalidCatalogFile for a catalog.attrs missing an
+                element"""
+                # make catalog
+                c = catalog.Catalog(meta_root=self.test_root)
+                c.save()
+
+                # corrupt it
+                fname = os.path.join(self.test_root, "catalog.attrs")
+                f = open(fname, "r")
+                struct = simplejson.load(f)
+                f.close()
+                del struct["parts"]
+                f = open(fname, "w")
+                print >> f, simplejson.dumps(struct)
+                f.close()
+
+                self.assertRaises(api_errors.InvalidCatalogFile,
+                    catalog.Catalog, meta_root=self.test_root)
+
+        def test_corrupt_attrs4(self):
+                """Raise BadCatalogSignatures for a catalog.attrs with
+                corrupted _SIGNATURE"""
+                # make catalog
+                c = catalog.Catalog(meta_root=self.test_root)
+                c.save()
+
+                # corrupt it
+                fname = os.path.join(self.test_root, "catalog.attrs")
+                f = open(fname, "r")
+                struct = simplejson.load(f)
+                f.close()
+                # corrupt signature by one digit
+                sig = int(struct["_SIGNATURE"]["sha-1"], 16)
+                struct["_SIGNATURE"]["sha-1"] = "%x" % (sig + 1)
+                f = open(fname, "w")
+                print >> f, simplejson.dumps(struct)
+                f.close()
+
+                c = catalog.Catalog(meta_root=self.test_root)
+                self.assertRaises(api_errors.BadCatalogSignatures, c.validate,
+                    require_signatures=True)
+                self.assertRaises(api_errors.BadCatalogSignatures, c.validate,
+                    require_signatures=False)
+
+        def test_corrupt_attrs5(self):
+                """Raise BadCatalogSignatures for a catalog.attrs with
+                missing _SIGNATURE"""
+                # make catalog
+                c = catalog.Catalog(meta_root=self.test_root)
+                c.save()
+
+                # corrupt it by removing _SIGNATURE
+                fname = os.path.join(self.test_root, "catalog.attrs")
+                f = open(fname, "r")
+                struct = simplejson.load(f)
+                f.close()
+                del struct["_SIGNATURE"]
+                f = open(fname, "w")
+                print >> f, simplejson.dumps(struct)
+                f.close()
+
+                c = catalog.Catalog(meta_root=self.test_root)
+                # Catalog should validate unless require_signatures=True
+                c.validate()
+                self.assertRaises(api_errors.BadCatalogSignatures, c.validate,
+                    require_signatures=True)
+
+        def test_corrupt_attrs6(self):
+                """Raise UnrecognizedCatalogPart for a catalog.attrs{parts}
+                with bogus subpart."""
+                # make catalog
+                c = catalog.Catalog(meta_root=self.test_root)
+                c.save()
+
+                # corrupt it by adding a bad name to the set of parts.
+                fname = os.path.join(self.test_root, "catalog.attrs")
+                f = open(fname, "r")
+                struct = simplejson.load(f)
+                f.close()
+                struct["parts"]["/badpartname/"] = {}
+                f = open(fname, "w")
+                print >> f, simplejson.dumps(struct)
+                f.close()
+
+                # Catalog constructor should reject busted 'parts'
+                self.assertRaises(api_errors.UnrecognizedCatalogPart,
+                    catalog.Catalog, meta_root=self.test_root)
 
 
 if __name__ == "__main__":

@@ -783,15 +783,15 @@ class Transport(object):
         @staticmethod
         def _verify_catalog(filename, dirname):
                 """A wrapper for catalog.verify() that catches
-                BadCatalogSignatures exceptions and translates them to
-                the appropriate InvalidContentException that the transport
-                uses for content verification."""
+                CatalogErrors and translates them to the appropriate
+                InvalidContentException that the transport uses for content
+                verification."""
 
                 filepath = os.path.join(dirname, filename)
 
                 try:
                         catalog.verify(filepath)
-                except (apx.BadCatalogSignatures, apx.InvalidCatalogFile), e:
+                except apx.CatalogError, e:
                         os.remove(filepath)
                         te = tx.InvalidContentException(filepath,
                             "CatalogPart failed validation: %s" % e)

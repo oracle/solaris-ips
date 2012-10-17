@@ -808,7 +808,7 @@ class Archive(object):
 
                 # No catalog data found for publisher; construct a catalog
                 # in memory based on packages found for publisher.
-                cat = pkg.catalog.Catalog(batch_mode=True, sign=False)
+                cat = pkg.catalog.Catalog(batch_mode=True)
                 manpath = os.path.join(pubpath, "pkg") + os.path.sep
                 for name in self.__extract_offsets:
                         if name.startswith(manpath) and name.count("/") == 4:

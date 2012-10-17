@@ -36,6 +36,7 @@ import simplejson as json
 import stat
 import statvfs
 import threading
+import types
 
 import pkg.actions
 import pkg.client.api_errors as api_errors
@@ -61,7 +62,7 @@ class _JSONWriter(object):
                 self.__single_pass = single_pass
 
                 # Default to a 32K buffer.
-                self.__bufsz = 32 * 1024 
+                self.__bufsz = 32 * 1024
 
                 if sign:
                         if not pathname:
@@ -210,6 +211,9 @@ class CatalogPartBase(object):
                 """Initializes a CatalogPartBase object."""
 
                 self.meta_root = meta_root
+                # Sanity check: part names can't be pathname-ish.
+                if name != os.path.basename(name):
+                        raise UnrecognizedCatalogPart(name)
                 self.name = name
                 self.sign = sign
                 self.signatures = {}
@@ -376,6 +380,8 @@ class CatalogPart(CatalogPartBase):
 
                 self.__data = {}
                 self.ordered = ordered
+                if not name.startswith("catalog."):
+                        raise UnrecognizedCatalogPart(name)
                 CatalogPartBase.__init__(self, name, meta_root=meta_root,
                     sign=sign)
 
@@ -915,14 +921,15 @@ class CatalogPart(CatalogPartBase):
                         if cb is None or cb(t, entry):
                                 yield t, entry
 
-        def validate(self, signatures=None):
+        def validate(self, signatures=None, require_signatures=False):
                 """Verifies whether the signatures for the contents of the
                 CatalogPart match the specified signature data, or if not
                 provided, the current signature data.  Raises the exception
                 named 'BadCatalogSignatures' on failure."""
 
-                if not self.signatures and not signatures:
-                        # Nothing to validate.
+                if not self.signatures and not signatures and \
+                    not require_signatures:
+                        # Nothing to validate, and we're not required to.
                         return
 
                 # Ensure content is loaded before attempting to retrieve
@@ -952,6 +959,8 @@ class CatalogUpdate(CatalogPartBase):
                 """Initializes a CatalogUpdate object."""
 
                 self.__data = {}
+                if not name.startswith("update."):
+                        raise UnrecognizedCatalogPart(name)
                 CatalogPartBase.__init__(self, name, meta_root=meta_root,
                     sign=sign)
 
@@ -1070,14 +1079,15 @@ class CatalogUpdate(CatalogPartBase):
                                         yield get_update(pub, stem, entry)
                 return
 
-        def validate(self, signatures=None):
+        def validate(self, signatures=None, require_signatures=False):
                 """Verifies whether the signatures for the contents of the
                 CatalogUpdate match the specified signature data, or if not
                 provided, the current signature data.  Raises the exception
                 named 'BadCatalogSignatures' on failure."""
 
-                if not self.signatures and not signatures:
-                        # Nothing to validate.
+                if not self.signatures and not signatures and \
+                    not require_signatures:
+                        # Nothing to validate, and we're not required to.
                         return
 
                 # Ensure content is loaded before attempting to retrieve
@@ -1098,6 +1108,19 @@ class CatalogAttrs(CatalogPartBase):
         # Properties.
         __data = None
 
+        # This structure defines defaults (for use in __init__) as well as
+        # the set of required elements for this catalog part.  See also the
+        # logic in load().
+        __DEFAULT_ELEMS = {
+            "created": None,
+            "last-modified": None,
+            "package-count": 0,
+            "package-version-count": 0,
+            "parts": {},
+            "updates": {},
+            "version": 1,
+        }
+
         def __init__(self, meta_root=None, sign=True):
                 """Initializes a CatalogAttrs object."""
 
@@ -1110,15 +1133,9 @@ class CatalogAttrs(CatalogPartBase):
                         # this is actually a new object, so setup some sane
                         # defaults.
                         created = self.__data["last-modified"]
-                        self.__data = {
-                            "created": created,
-                            "last-modified": created,
-                            "package-count": 0,
-                            "package-version-count": 0,
-                            "parts": {},
-                            "updates": {},
-                            "version": 1,
-                        }
+                        self.__data = copy.deepcopy(self.__DEFAULT_ELEMS)
+                        self.__data["created"] = created
+                        self.__data["last-modified"] = created
                 else:
                         # Assume that the attributes of the catalog can be
                         # obtained from a file.
@@ -1200,23 +1217,53 @@ class CatalogAttrs(CatalogPartBase):
                 if self.loaded:
                         # Already loaded, or only in-memory.
                         return
+                location = os.path.join(self.meta_root, self.name)
 
                 struct = CatalogPartBase.load(self)
+                # Check to see that struct is as we expect: it must be a dict
+                # and have all of the elements in self.__DEFAULT_ELEMS.
+                if type(struct) != types.DictType or \
+                    not (set(self.__DEFAULT_ELEMS.keys()) <= \
+                    set(struct.keys())):
+                        raise api_errors.InvalidCatalogFile(location)
+
+                def cat_ts_to_datetime(val):
+                        try:
+                                return basic_ts_to_datetime(val)
+                        except ValueError:
+                                raise api_errors.InvalidCatalogFile(location)
+
                 for key, val in struct.iteritems():
                         if key in ("created", "last-modified"):
                                 # Convert ISO-8601 basic format strings to
                                 # datetime objects.  These dates can be
                                 # 'null' due to v0 catalog transformations.
                                 if val:
-                                        struct[key] = basic_ts_to_datetime(val)
+                                        struct[key] = cat_ts_to_datetime(val)
                                 continue
 
                         if key in ("parts", "updates"):
+                                if type(val) != types.DictType:
+                                        raise api_errors.InvalidCatalogFile(
+                                            location)
+
+                                # 'parts' and 'updates' have a more complex
+                                # structure.  Check that all of the subparts
+                                # look sane.
+                                for subpart in val:
+                                        if subpart != os.path.basename(subpart):
+                                                raise api_errors.\
+                                                    UnrecognizedCatalogPart(
+                                                    "%s {%s: %s}" % (self.name,
+                                                    key, subpart))
+
+                                # Build datetimes from timestamps.
                                 for e in val:
                                         lm = val[e].get("last-modified", None)
                                         if lm:
-                                                lm = basic_ts_to_datetime(lm)
+                                                lm = cat_ts_to_datetime(lm)
                                                 val[e]["last-modified"] = lm
+
                 self.__data = struct
 
         def save(self):
@@ -1232,14 +1279,15 @@ class CatalogAttrs(CatalogPartBase):
 
                 CatalogPartBase.save(self, self.__transform(), single_pass=True)
 
-        def validate(self, signatures=None):
+        def validate(self, signatures=None, require_signatures=False):
                 """Verifies whether the signatures for the contents of the
                 CatalogAttrs match the specified signature data, or if not
                 provided, the current signature data.  Raises the exception
                 named 'BadCatalogSignatures' on failure."""
 
-                if not self.signatures and not signatures:
-                        # Nothing to validate.
+                if not self.signatures and not signatures and \
+                    not require_signatures:
+                        # Nothing to validate, and we're not required to.
                         return
 
                 # Ensure content is loaded before attempting to retrieve
@@ -1847,7 +1895,7 @@ class Catalog(object):
                         # current.
 
                         # single-pass encoding is not used for summary part as
-                        # it increases memory usage substantially (30MB at 
+                        # it increases memory usage substantially (30MB at
                         # current for /dev).  No significant difference is
                         # detectable for other parts though.
                         single_pass = name in (self.__BASE_PART,
@@ -3780,12 +3828,12 @@ class Catalog(object):
                 }
                 base.last_modified = op_time
 
-        def validate(self):
+        def validate(self, require_signatures=False):
                 """Verifies whether the signatures for the contents of the
                 catalog match the current signature data.  Raises the
                 exception named 'BadCatalogSignatures' on failure."""
 
-                self._attrs.validate()
+                self._attrs.validate(require_signatures=require_signatures)
 
                 def get_sigs(mdata):
                         sigs = {}
@@ -3805,7 +3853,8 @@ class Catalog(object):
                         if part is None:
                                 # Part does not exist; no validation needed.
                                 continue
-                        part.validate(signatures=get_sigs(mdata))
+                        part.validate(signatures=get_sigs(mdata),
+                            require_signatures=require_signatures)
 
                 for name, mdata in self._attrs.updates.iteritems():
                         ulog = self.__get_update(name, cache=False,
@@ -3813,7 +3862,8 @@ class Catalog(object):
                         if ulog is None:
                                 # Update does not exist; no validation needed.
                                 continue
-                        ulog.validate(signatures=get_sigs(mdata))
+                        ulog.validate(signatures=get_sigs(mdata),
+                            require_signatures=require_signatures)
 
         batch_mode = property(__get_batch_mode, __set_batch_mode)
         last_modified = property(__get_last_modified, __set_last_modified,
@@ -3847,7 +3897,7 @@ def verify(filename):
         # With the else case above, this should never be None.
         assert catobj
 
-        catobj.validate()
+        catobj.validate(require_signatures=True)
 
 # Methods used by Catalog classes.
 def datetime_to_ts(dt):
