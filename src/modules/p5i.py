@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2009, 2011, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2009, 2012, Oracle and/or its affiliates. All rights reserved.
 #
 
 import os
@@ -57,10 +57,10 @@ def parse(data=None, fileobj=None, location=None):
 
         'data' or 'fileobj' or 'location' must be provided."""
 
-        if not data and not location and not fileobj:
+        if data is None and location is None and fileobj is None:
                 raise api_errors.InvalidResourceLocation(location)
 
-        if location:
+        if location is not None:
                 if location.find("://") == -1 and \
                     not location.startswith("file:/"):
                         # Convert the file path to a URI.
@@ -76,7 +76,7 @@ def parse(data=None, fileobj=None, location=None):
                             location=location)
 
         try:
-                if data:
+                if data is not None:
                         dump_struct = json.loads(data)
                 else:
                         dump_struct = json.load(fileobj)
