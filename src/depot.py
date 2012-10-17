@@ -19,7 +19,7 @@
 #
 # CDDL HEADER END
 #
-# Copyright (c) 2007, 2012, Oracle and/or its affiliates.  All rights reserved.
+# Copyright (c) 2007, 2012, Oracle and/or its affiliates. All rights reserved.
 #
 
 # pkg.depotd - package repository daemon
@@ -129,8 +129,8 @@ Usage: /usr/lib/pkg.depotd [-a address] [-d inst_root] [-p port] [-s threads]
            [-t socket_timeout] [--cfg] [--content-root]
            [--disable-ops op[/1][,...]] [--debug feature_list]
            [--image-root dir] [--log-access dest] [--log-errors dest]
-           [--mirror] [--nasty] [--proxy-base url] [--readonly]
-           [--ssl-cert-file] [--ssl-dialog] [--ssl-key-file]
+           [--mirror] [--nasty] [--nasty-sleep] [--proxy-base url]
+           [--readonly] [--ssl-cert-file] [--ssl-dialog] [--ssl-key-file]
            [--sort-file-max-size size] [--writable-root dir]
 
         -a address      The IP address on which to listen for connections.  The
@@ -184,6 +184,8 @@ Usage: /usr/lib/pkg.depotd [-a address] [-d inst_root] [-p port] [-s threads]
                         clients, and generally be hostile.  The option
                         takes a value (1 to 100) for how nasty the server
                         should be.
+        --nasty-sleep   In nasty mode (see --nasty), how many seconds to
+                        randomly sleep when a random sleep occurs.
         --proxy-base    The url to use as the base for generating internal
                         redirects and content.
         --readonly      Read-only operation; modifying operations disallowed.
@@ -236,10 +238,9 @@ if __name__ == "__main__":
         rebuild = False
         reindex = False
         nasty = False
-        nasty_value = 0
 
         # Track initial configuration values.
-        ivalues = { "pkg": {} }
+        ivalues = { "pkg": {}, "nasty": {} }
         if "PKG_REPO" in os.environ:
                 ivalues["pkg"]["inst_root"] = os.environ["PKG_REPO"]
 
@@ -265,10 +266,10 @@ if __name__ == "__main__":
                 long_opts = ["add-content", "cfg=", "cfg-file=",
                     "content-root=", "debug=", "disable-ops=", "exit-ready",
                     "help", "image-root=", "log-access=", "log-errors=",
-                    "llmirror", "mirror", "nasty=", "proxy-base=", "readonly",
-                    "rebuild", "refresh-index", "set-property=",
-                    "ssl-cert-file=", "ssl-dialog=", "ssl-key-file=",
-                    "sort-file-max-size=", "writable-root="]
+                    "llmirror", "mirror", "nasty=", "nasty-sleep=",
+                    "proxy-base=", "readonly", "rebuild", "refresh-index",
+                    "set-property=", "ssl-cert-file=", "ssl-dialog=",
+                    "ssl-key-file=", "sort-file-max-size=", "writable-root="]
 
                 opts, pargs = getopt.getopt(sys.argv[1:], "a:d:np:s:t:?",
                     long_opts)
@@ -348,18 +349,18 @@ if __name__ == "__main__":
                                 ivalues["pkg"]["ll_mirror"] = True
                                 ivalues["pkg"]["readonly"] = True
                         elif opt == "--nasty":
-                                value_err = None
-                                try:
-                                        nasty_value = int(arg)
-                                except ValueError, e:
-                                        value_err = e
-
-                                if value_err or (nasty_value > 100 or
-                                    nasty_value < 1):
+                                # ValueError is caught by caller.
+                                nasty_value = int(arg)
+                                if (nasty_value > 100 or nasty_value < 1):
                                         raise OptionError, "Invalid value " \
                                             "for nasty option.\n Please " \
                                             "choose a value between 1 and 100."
                                 nasty = True
+                                ivalues["nasty"]["nasty_level"] = nasty_value
+                        elif opt == "--nasty-sleep":
+                                # ValueError is caught by caller.
+                                sleep_value = int(arg)
+                                ivalues["nasty"]["nasty_sleep"] = sleep_value
                         elif opt == "--proxy-base":
                                 # Attempt to decompose the url provided into
                                 # its base parts.  This is done so we can
@@ -837,7 +838,6 @@ if __name__ == "__main__":
         # Next, initialize depot.
         if nasty:
                 depot = ds.NastyDepotHTTP(repo, dconf)
-                depot.set_nasty(nasty_value)
         else:
                 depot = ds.DepotHTTP(repo, dconf)
 

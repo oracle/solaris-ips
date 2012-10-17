@@ -21,10 +21,11 @@
 #
 
 #
-# Copyright (c) 2008, 2011, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2008, 2012, Oracle and/or its affiliates. All rights reserved.
 #
 
 import cherrypy
+from cherrypy._cptools import HandlerTool
 from cherrypy.lib.static import serve_file
 from email.utils import formatdate
 from cherrypy.process.plugins import SimplePlugin
@@ -44,6 +45,7 @@ import errno
 import httplib
 import inspect
 import itertools
+import math
 import os
 import random
 import re
@@ -88,56 +90,10 @@ class Dummy(object):
         """Dummy object used for dispatch method mapping."""
         pass
 
+
 class _Depot(object):
         """Private, abstract, base class for all Depot classes."""
-
-        nasty = 0
-
-        def set_nasty(self, level):
-                """Set the nasty level using an integer."""
-
-                self.nasty = level
-
-        def is_nasty(self):
-                """Returns true if nasty has been enabled."""
-
-                if self.nasty > 0:
-                        return True
-                return False
-
-        def need_nasty(self):
-                """Randomly returns true when the server should misbehave."""
-
-                if random.randint(1, 100) <= self.nasty:
-                        return True
-                return False
-
-        def need_nasty_bonus(self, bonus=0):
-                """Used to temporarily apply extra nastiness to an operation."""
-
-                if self.nasty + bonus > 95:
-                        nasty = 95
-                else:
-                        nasty = self.nasty + bonus
-
-                if random.randint(1, 100) <= nasty:
-                        return True
-                return False
-
-        def need_nasty_occasionally(self):
-                if random.randint(1, 500) <= self.nasty:
-                        return True
-                return False
-
-        def need_nasty_infrequently(self):
-                if random.randint(1, 2000) <= self.nasty:
-                        return True
-                return False
-
-        def need_nasty_rarely(self):
-                if random.randint(1, 20000) <= self.nasty:
-                        return True
-                return False
+        pass
 
 
 class DepotHTTP(_Depot):
@@ -196,7 +152,7 @@ class DepotHTTP(_Depot):
 
                 # This lock is used to protect the depot from multiple
                 # threads modifying data structures at the same time.
-                self.__lock = pkg.nrlock.NRLock()
+                self._lock = pkg.nrlock.NRLock()
 
                 self.cfg = dconf
                 self.repo = repo
@@ -433,7 +389,7 @@ class DepotHTTP(_Depot):
         def __map_pub_ops(self, pub_prefix):
                 # Map the publisher into the depot's operation namespace if
                 # needed.
-                self.__lock.acquire() # Prevent race conditions.
+                self._lock.acquire() # Prevent race conditions.
                 try:
                         pubattr = getattr(self, pub_prefix, None)
                         if not pubattr:
@@ -446,7 +402,7 @@ class DepotHTTP(_Depot):
                                         opattr = getattr(self, op)
                                         setattr(pubattr, op, opattr)
                 finally:
-                        self.__lock.release()
+                        self._lock.release()
 
         @cherrypy.expose
         def default(self, *tokens, **params):
@@ -1561,10 +1517,50 @@ License:
                             "to generate statistics."))
                 return out + "\n"
 
+def nasty_before_handler(nasty_depot, maxroll=100):
+        """Cherrypy Tool callable which generates various problems prior to a
+        request.  Possible outcomes: retryable HTTP error, short nap."""
+
+        # Must be set in _cp_config on associated request handler.
+        assert nasty_depot
+
+        # Adjust nastiness values once per incoming request.
+        nasty_depot.nasty_housekeeping()
+
+        # Just roll the main nasty dice once.
+        if not nasty_depot.need_nasty(maxroll=maxroll):
+                return False
+
+        while True:
+                roll = random.randint(0, 10)
+                if roll == 0:
+                        nasty_depot.nasty_nap()
+                        if random.randint(0, 1) == 1:
+                                # Nap was enough. Let the normal handler run.
+                                return False
+                if 1 <= roll <= 8:
+                        nasty_depot.nasty_raise_error()
+                else:
+                        cherrypy.log("NASTY: return bogus or empty response")
+                        response = cherrypy.response
+                        response.body = random.choice(['',
+                            'set this is a bogus action',
+                            'Instead of office chair, '
+                                'package contained bobcat.',
+                            '{"this is a": "fragment of json"}'])
+                        return True
+        return False
+
 
 class NastyDepotHTTP(DepotHTTP):
         """A class that creates a depot that misbehaves.  Naughty
         depots are useful for testing."""
+
+        # Nastiness ebbs and flows in a sinusoidal NASTY_CYCLE length pattern.
+        # The magnitude of the effect is governed by NASTY_MULTIPLIER.
+        # See also nasty_housekeeping().
+        NASTY_CYCLE = 200
+        NASTY_MULTIPLIER = 1.0
 
         def __init__(self, repo, dconf):
                 """Initialize."""
@@ -1581,23 +1577,200 @@ class NastyDepotHTTP(DepotHTTP):
                 self.requested_catalogs = []
                 self.requested_manifests = []
 
-                cherrypy.tools.nasty_httperror = cherrypy.Tool('before_handler',
-                    NastyDepotHTTP.nasty_retryable_error)
+                self.nasty_level = \
+                    int(dconf.get_property("nasty", "nasty_level"))
+                self.nasty_sleep = \
+                    int(dconf.get_property("nasty", "nasty_sleep"))
 
-        # Method for CherryPy tool for Nasty Depot
-        def nasty_retryable_error(self, bonus=0):
-                """A static method that's used by the cherrypy tools,
-                and in depot code, to generate a retryable HTTP error."""
+                self.nasty_cycle = self.NASTY_CYCLE
+                self.maxroll_adj = 1.0
 
-                retryable_errors = [httplib.REQUEST_TIMEOUT,
-                    httplib.BAD_GATEWAY, httplib.GATEWAY_TIMEOUT]
+                cherrypy.log("NASTY Depot Started")
+                cherrypy.log("NASTY nasty=%d, nasty_sleep=%d" % \
+                    (self.nasty_level, self.nasty_sleep))
+
+                # See CherryPy HandlerTool docs; this sets up a special
+                # tool which can prevent the main request body from running
+                # when needed.
+                cherrypy.tools.nasty_before = HandlerTool(nasty_before_handler)
+
+                self._cp_config = {
+                    # Turn on this tool for all requests.
+                    'tools.nasty_before.on': True,
+                    #
+                    # This is tricky: we poke a reference to ourself into our
+                    # own _cp_config, specifically so that we can get this
+                    # reference passed by cherrypy as an input argument to our
+                    # nasty_before tool, so that it can in turn call methods
+                    # back on this object.
+                    #
+                    'tools.nasty_before.nasty_depot': self
+                }
+
+                # Set up a list of errors that we can pick from when we
+                # want to return an error at random to the client.  Errors
+                # are weighted by how often we want them to happen; the loop
+                # below then puts them into a pick-list.
+                errors = {
+                    httplib.REQUEST_TIMEOUT: 10,
+                    httplib.BAD_GATEWAY: 10,
+                    httplib.GATEWAY_TIMEOUT: 10,
+                    httplib.FORBIDDEN: 2,
+                    httplib.NOT_FOUND: 2,
+                    httplib.BAD_REQUEST: 2
+                }
+
+                self.errlist = []
+                for x, n in errors.iteritems():
+                        for i in range(0, n):
+                                self.errlist.append(x)
+                cherrypy.log("NASTY Depot Error List: %s" % str(self.errlist))
+
+        def nasty_housekeeping(self):
+                # Generate a sine wave (well, half of one) which is NASTY_CYCLE
+                # steps long and use that to increase maxroll (thus reducing
+                # the nastiness).  The causes nastiness to come and go in
+                # waves, which helps to prevent excessive nastiness from
+                # impeding all progress.
+                #
+                # The intention is for this to get adjusted once per request.
+
+                # Prevent races updating global nastiness information.
+                # Note that this isn't strictly necessary since nasty_cycle
+                # and maxroll_adj are just numbers and races are essentially
+                # harmless, but this is here so that we don't screw things up
+                # in the future.
+                self._lock.acquire()
+
+                self.nasty_cycle = (self.nasty_cycle + 1) % self.NASTY_CYCLE
+                self.maxroll_adj = 1 + self.NASTY_MULTIPLIER * \
+                    math.sin(self.nasty_cycle *
+                        (math.pi / self.NASTY_CYCLE))
+                if self.nasty_cycle == 0:
+                        cherrypy.log("NASTY nastiness at min")
+                if self.nasty_cycle == self.NASTY_CYCLE / 2:
+                        cherrypy.log("NASTY nastiness at max")
+
+                self._lock.release()
+
+        def need_nasty(self, maxroll=100):
+                """Randomly returns true when the server should misbehave."""
+
+                # Apply the sine wave adjustment to maxroll-- preserving the
+                # possiblity that bad things can still sporadically happen.
+                # n.b. we don't bother to pick up the lock here.
+                maxroll = int(maxroll * self.maxroll_adj)
+
+                roll = random.randint(1, maxroll)
+                if roll <= self.nasty_level:
+                        return True
+                return False
+
+        def need_nasty_2(self):
+                """Nastiness sometimes."""
+                return self.need_nasty(maxroll=500)
+
+        def need_nasty_3(self):
+                """Nastiness less often."""
+                return self.need_nasty(maxroll=2000)
+
+        def need_nasty_4(self):
+                """Nastiness very rarely."""
+                return self.need_nasty(maxroll=20000)
+
+        def nasty_raise_error(self):
+                """Raise an http error from self.errlist."""
+                code = random.choice(self.errlist)
+                cherrypy.log("NASTY: Random HTTP error: %d" % code)
+                raise cherrypy.HTTPError(code)
+
+        def nasty_nap(self):
+                """Sleep for a few seconds."""
+                cherrypy.log("NASTY: sleep for %d secs" % self.nasty_sleep)
+                time.sleep(self.nasty_sleep)
+
+        @cherrypy.expose
+        def nasty(self, *tokens):
+                try:
+                        nasty_level = int(tokens[0])
+                except (IndexError, ValueError):
+                        raise cherrypy.HTTPError(httplib.BAD_REQUEST)
+                if nasty_level < 0 or nasty_level > 100:
+                        raise cherrypy.HTTPError(httplib.BAD_REQUEST)
+                cherrypy.log("Nastiness set to %d by client request" %
+                    nasty_level)
+                self.nasty_level = nasty_level
+
+        # Disable the before handler for this request.
+        nasty._cp_config = { "tools.nasty_before.on": False }
+
+        @cherrypy.tools.response_headers(headers=\
+            [("Content-Type", "text/plain; charset=utf-8")])
+        def versions_0(self, *tokens):
+                """Output a text/plain list of valid operations, and their
+                versions, supported by the repository."""
 
                 # NASTY
-                # emit error code that client should know how to retry
-                if self.need_nasty_bonus(bonus):
-                        code = retryable_errors[random.randint(0,
-                            len(retryable_errors) - 1)]
-                        raise cherrypy.HTTPError(code)
+                # emit an X-Ipkg-Error HTTP unauthorized response.
+                if self.need_nasty_3():
+                        cherrypy.log("NASTY versions_0: X-Ipkg-Error")
+                        response = cherrypy.response
+                        response.status = httplib.UNAUTHORIZED
+                        response.headers["X-Ipkg-Error"] = random.choice(["ENT",
+                            "LIC", "SVR", "MNT", "YYZ", ""])
+                        return ""
+
+                # NASTY
+                # Serve up versions header but no versions
+                if self.need_nasty_3():
+                        cherrypy.log("NASTY versions_0: header but no versions")
+                        versions = "pkg-server %s\n" % pkg.VERSION
+                        return versions
+
+                # NASTY
+                # Serve up bogus versions by adding/subtracting from
+                # the actual version numbers-- we use a normal distribution
+                # to keep the perturbations small.
+                if self.need_nasty_2():
+                        cherrypy.log("NASTY versions_0: modified version #s")
+                        versions = "pkg-server %s-nasty\n" % pkg.VERSION
+                        for op, vers in self.vops.iteritems():
+                                versions += op + " "
+                                verlen = len(vers)
+                                for v in vers:
+                                        # if there are multiple versions,
+                                        # then sometimes leave one out
+                                        if verlen > 1 and \
+                                            random.randint(0, 10) <= 1:
+                                                cherrypy.log(
+                                                    "NASTY versions_0: "
+                                                    "dropped %s/%s" % (op, v))
+                                                verlen -= 1
+                                                continue
+                                        # Periodically increment or
+                                        # decrement the version.
+                                        oldv = v
+                                        v = int(v +
+                                            random.normalvariate(0, 0.8))
+                                        versions += str(v) + " "
+                                        if v != oldv:
+                                                cherrypy.log(
+                                                    "NASTY versions_0: "
+                                                    "Altered %s/%s -> %s/%d" %
+                                                    (op, oldv, op, v))
+                                versions += "\n"
+                        return versions
+
+                versions = "pkg-server %s\n" % pkg.VERSION
+                versions += "\n".join(
+                    "%s %s" % (op, " ".join(str(v) for v in vers))
+                    for op, vers in self.vops.iteritems()
+                ) + "\n"
+                return versions
+
+        # Fire the before handler less often for versions/0; when it
+        # fails everything else comes to a halt.
+        versions_0._cp_config = { "tools.nasty_before.maxroll": 200 }
 
         # Override _cp_config for catalog_0 operation
         def catalog_0(self, *tokens):
@@ -1605,37 +1778,22 @@ class NastyDepotHTTP(DepotHTTP):
                 the requesting client.  Incremental catalogs are not supported
                 for v0 catalog clients."""
 
-                # Response headers have to be setup *outside* of the function
-                # that yields the catalog content.
-                try:
-                        cat = self.repo.get_catalog(pub=self._get_req_pub())
-                except srepo.RepositoryError, e:
-                        cherrypy.log("Request failed: %s" % str(e))
-                        raise cherrypy.HTTPError(httplib.BAD_REQUEST, str(e))
-
-                response = cherrypy.response
-                response.headers["Content-type"] = "text/plain; charset=utf-8"
-                response.headers["Last-Modified"] = \
-                    cat.last_modified.isoformat()
-                response.headers["X-Catalog-Type"] = "full"
-
-                def output():
-                        try:
-                                for l in self.repo.catalog_0(
-                                    pub=self._get_req_pub()):
-                                        yield l
-                        except srepo.RepositoryError, e:
-                                # Can't do anything in a streaming generator
-                                # except log the error and return.
-                                cherrypy.log("Request failed: %s" % str(e))
-                                return
-
-                return output()
+                # We always raise BAD_REQUEST here because v0 catalogs
+                # are toxic to clients who are facing a nasty antagonist--
+                # the client has no way to verify that the content, and
+                # things go badly off the rails.
+                raise cherrypy.HTTPError(httplib.BAD_REQUEST)
 
         catalog_0._cp_config = {
             "response.stream": True,
-            "tools.nasty_httperror.on": True,
-            "tools.nasty_httperror.bonus": 1
+            #
+            # We disable the nasty_before for catalog 0 because clients
+            # who receive a 0 length response for a catalog_0 see that
+            # as a valid but empty catalog.  This causes many issues when
+            # trying to write tests against the nasty depot.  catalog_0
+            # is going away imminently so we don't really care.
+            #
+            "tools.nasty_before.on": False
         }
 
         def manifest_0(self, *tokens):
@@ -1689,30 +1847,20 @@ class NastyDepotHTTP(DepotHTTP):
                         self.requested_manifests.append(fpath)
 
                 # NASTY
-                # Send an error before serving the manifest, perhaps
-                if self.need_nasty():
-                        self.nasty_retryable_error()
-                elif self.need_nasty_infrequently():
-                        # Fall asleep before finishing the request
-                        time.sleep(35)
-                elif self.need_nasty_rarely():
-                        # Forget that the manifest is here
-                        raise cherrypy.HTTPError(httplib.NOT_FOUND)
-
-                # NASTY
                 # Send the wrong manifest
-                if self.need_nasty_rarely():
-                        pick = random.randint(0,
-                            len(self.requested_manifests) - 1)
-                        badpath = self.requested_manifests[pick]
-
+                if self.need_nasty_3():
+                        cherrypy.log("NASTY manifest_0: serve wrong mfst")
+                        badpath = random.choice(self.requested_manifests)
                         return serve_file(badpath, "text/plain; charset=utf-8")
 
                 # NASTY
                 # Call a misbehaving serve_file
                 return self.nasty_serve_file(fpath, "text/plain; charset=utf-8")
 
-        manifest_0._cp_config = { "response.stream": True }
+        manifest_0._cp_config = {
+            "response.stream": True,
+            "tools.nasty_before.maxroll": 200
+        }
 
         def filelist_0(self, *tokens, **params):
                 """Request data contains application/x-www-form-urlencoded
@@ -1723,7 +1871,8 @@ class NastyDepotHTTP(DepotHTTP):
                         self.flist_requests += 1
 
                         # NASTY
-                        if self.need_nasty_occasionally():
+                        if self.need_nasty_2():
+                                cherrypy.log("NASTY filelist_0: empty response")
                                 return
 
                         # Create a dummy file object that hooks to the write()
@@ -1749,10 +1898,6 @@ class NastyDepotHTTP(DepotHTTP):
                         cherrypy.request.hooks.attach("on_end_request",
                             self._tar_stream_close, failsafe=True)
 
-                        # NASTY
-                        if self.need_nasty_infrequently():
-                                time.sleep(35)
-
                         pub = self._get_req_pub()
                         for v in params.values():
 
@@ -1766,15 +1911,19 @@ class NastyDepotHTTP(DepotHTTP):
                                         self.requested_files.append(v)
 
                                 # NASTY
-                                if self.need_nasty_infrequently():
+                                if self.need_nasty_3():
                                         # Give up early
+                                        cherrypy.log(
+                                            "NASTY filelist_0: give up early")
                                         break
-                                elif self.need_nasty_infrequently():
+                                elif self.need_nasty_3():
                                         # Skip this file
+                                        cherrypy.log(
+                                            "NASTY filelist_0: skip a file")
                                         continue
-                                elif self.need_nasty_rarely():
+                                elif self.need_nasty_4():
                                         # Take a nap
-                                        time.sleep(35)
+                                        self.nasty_nap()
 
                                 try:
                                         filepath = self.repo.file(v, pub=pub)
@@ -1784,10 +1933,11 @@ class NastyDepotHTTP(DepotHTTP):
 
                                 # NASTY
                                 # Send a file with the wrong content
-                                if self.need_nasty_rarely():
-                                        pick = random.randint(0,
-                                            len(self.requested_files) - 1)
-                                        badfn = self.requested_files[pick]
+                                if self.need_nasty_4():
+                                        cherrypy.log(
+                                            "NASTY filelist_0: wrong content")
+                                        badfn = \
+                                            random.choice(self.requested_files)
                                         badpath = self.__get_bad_path(badfn)
 
                                         tar_stream.add(badpath, v, False)
@@ -1798,15 +1948,17 @@ class NastyDepotHTTP(DepotHTTP):
 
                         # NASTY
                         # Write garbage into the stream
-                        if self.need_nasty_infrequently():
+                        if self.need_nasty_3():
+                                cherrypy.log(
+                                    "NASTY filelist_0: add stream garbage")
                                 f.write("NASTY!")
 
                         # NASTY
                         # Send an extraneous file
-                        if self.need_nasty_infrequently():
-                                pick = random.randint(0,
-                                    len(self.requested_files) - 1)
-                                extrafn = self.requested_files[pick]
+                        if self.need_nasty_3():
+                                cherrypy.log(
+                                    "NASTY filelist_0: send extra file")
+                                extrafn = random.choice(self.requested_files)
                                 extrapath = self.repo.file(extrafn, pub=pub)
                                 tar_stream.add(extrapath, extrafn, False)
 
@@ -1831,7 +1983,6 @@ class NastyDepotHTTP(DepotHTTP):
         # hooks in is too late.
         filelist_0._cp_config = {
             "response.stream": True,
-            "tools.nasty_httperror.on": True,
             "tools.response_headers.on": True,
             "tools.response_headers.headers": [
                 ("Content-Type", "application/data"),
@@ -1874,21 +2025,16 @@ class NastyDepotHTTP(DepotHTTP):
                         self.requested_files.append(fhash)
 
                 # NASTY
-                # Send an error before serving the file, perhaps
-                if self.need_nasty():
-                        self.nasty_retryable_error()
-                elif self.need_nasty_rarely():
-                        # Fall asleep before finishing the request
-                        time.sleep(35)
-                elif self.need_nasty_rarely():
+                if self.need_nasty_4():
                         # Forget that the file is here
+                        cherrypy.log("NASTY file_0: 404 NOT_FOUND")
                         raise cherrypy.HTTPError(httplib.NOT_FOUND)
 
                 # NASTY
                 # Send the wrong file
-                if self.need_nasty_rarely():
-                        pick = random.randint(0, len(self.requested_files) - 1)
-                        badfn = self.requested_files[pick]
+                if self.need_nasty_4():
+                        cherrypy.log("NASTY file_0: serve wrong file")
+                        badfn = random.choice(self.requested_files)
                         badpath = self.__get_bad_path(badfn)
 
                         return serve_file(badpath, "application/data")
@@ -1898,6 +2044,9 @@ class NastyDepotHTTP(DepotHTTP):
                 return self.nasty_serve_file(fpath, "application/data")
 
         file_0._cp_config = { "response.stream": True }
+
+        # file_1 degenerates to calling file_0 except when publishing, so
+        # there's no need to touch it here.
 
         def catalog_1(self, *tokens):
                 """Outputs the contents of the specified catalog file, using the
@@ -1928,31 +2077,30 @@ class NastyDepotHTTP(DepotHTTP):
                         self.requested_catalogs.append(fpath)
 
                 # NASTY
-                # Send an error before serving the catalog, perhaps
-                if self.need_nasty():
-                        self.nasty_retryable_error()
-                elif self.need_nasty_rarely():
-                        # Fall asleep before finishing the request
-                        time.sleep(35)
-                elif self.need_nasty_rarely():
-                        # Forget that the catalog is here
-                        raise cherrypy.HTTPError(httplib.NOT_FOUND)
-
-                # NASTY
                 # Send the wrong catalog
-                if self.need_nasty_rarely():
-                        pick = random.randint(0,
-                            len(self.requested_catalogs) - 1)
-                        badpath = self.requested_catalogs[pick]
-
+                if self.need_nasty_3():
+                        cherrypy.log("NASTY catalog_1: wrong catalog file")
+                        badpath = random.choice(self.requested_catalogs)
                         return serve_file(badpath, "text/plain; charset=utf-8")
 
                 # NASTY
-                # Call a misbehaving serve_file
                 return self.nasty_serve_file(fpath, "text/plain; charset=utf-8")
 
-        catalog_1._cp_config = { "response.stream": True }
+        catalog_1._cp_config = {
+            "response.stream": True,
+            "tools.nasty_before.maxroll": 200
+        }
 
+        def search_1(self, *args, **params):
+                # Raise assorted errors; if not, call superclass search_1.
+                if self.need_nasty():
+                        errs = [httplib.NOT_FOUND, httplib.BAD_REQUEST,
+                            httplib.SERVICE_UNAVAILABLE]
+                        code = random.choice(errs)
+                        cherrypy.log("NASTY search_1: HTTP %d" % code)
+                        raise cherrypy.HTTPError(code)
+
+                return DepotHTTP.search_1(self, *args, **params)
 
         def nasty_serve_file(self, filepath, content_type):
                 """A method that imitates the functionality of serve_file(),
@@ -1971,16 +2119,19 @@ class NastyDepotHTTP(DepotHTTP):
 
                 # NASTY
                 # Send incorrect content length
-                if self.need_nasty_rarely():
+                if self.need_nasty_4():
                         response.headers["Content-Length"] = str(filesz +
                                 random.randint(1, 1024))
                         already_nasty = True
                 else:
                         response.headers["Content-Length"] = str(filesz)
 
-                # NASTY
-                # Send truncated file
-                if self.need_nasty_rarely() and not already_nasty:
+                if already_nasty:
+                        response.body = nfile.read(filesz)
+                elif self.need_nasty_3():
+                        # NASTY
+                        # Send truncated file
+                        cherrypy.log("NASTY serve_file: truncated file")
                         response.body = nfile.read(filesz - random.randint(1,
                             filesz - 1))
                         # If we're sending data, lie about the length and
@@ -1988,15 +2139,35 @@ class NastyDepotHTTP(DepotHTTP):
                         if content_type == "application/data":
                                 response.headers["Content-Length"] = str(
                                     len(response.body))
-                elif self.need_nasty_rarely() and not already_nasty:
+                elif self.need_nasty_3():
+                        # NASTY
                         # Write garbage into the response
-                        response.body = nfile.read(filesz)
-                        response.body += "NASTY!"
+                        cherrypy.log("NASTY serve_file: prepend garbage")
+                        response.body = "NASTY!"
+                        response.body += nfile.read(filesz)
                         # If we're sending data, lie about the length and
                         # make the client catch us.
                         if content_type == "application/data":
                                 response.headers["Content-Length"] = str(
                                     len(response.body))
+                elif self.need_nasty_3():
+                        # NASTY
+                        # overwrite some garbage into the response, without
+                        # changing the length.
+                        cherrypy.log("NASTY serve_file: flip bits")
+                        body = nfile.read(filesz)
+                        # pick a low number of bytes to corrupt
+                        ncorrupt = 1 + int(abs(random.gauss(0, 1)))
+                        for x in range(0, ncorrupt):
+                                p = random.randint(0, max(0, filesz - 1))
+                                char = ord(body[p])
+                                # pick a bit to flip; favor low numbers, must
+                                # also cap at bit #7.
+                                bit = min(7, int(abs(random.gauss(0, 3))))
+                                # flip it
+                                char ^= (1 << bit)
+                                body = body[:p] + chr(char) + body[p + 1:]
+                        response.body = body
                 else:
                         response.body = nfile.read(filesz)
 
@@ -2149,7 +2320,7 @@ class BackgroundTaskPlugin(SimplePlugin):
         # Priority must be higher than the Daemonizer plugin to avoid threads
         # starting before fork().  Daemonizer has a priority of 65, as noted
         # at this URI: http://www.cherrypy.org/wiki/BuiltinPlugins
-        start.priority = 66 
+        start.priority = 66
 
         def stop(self):
                 """Stop the background task plugin."""
@@ -2233,6 +2404,10 @@ class DepotConfig(object):
                 ]),
                 cfg.PropertySection("pkg_secure", [
                     cfg.PropDefined("ssl_key_passphrase"),
+                ]),
+                cfg.PropertySection("nasty", [
+                    cfg.PropInt("nasty_level"),
+                    cfg.PropInt("nasty_sleep", default=35)
                 ]),
             ],
         }

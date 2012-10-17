@@ -75,6 +75,8 @@ class DepotController(object):
                 self.__wrapper_start = []
                 self.__wrapper_end = wrapper_end
                 self.__env = {}
+                self.__nasty = None
+                self.__nasty_sleep = None
                 if wrapper_start:
                         self.__wrapper_start = wrapper_start
                 if env:
@@ -244,6 +246,25 @@ class DepotController(object):
         def unset_disable_ops(self):
                 self.__disable_ops = None
 
+        def set_nasty(self, nastiness):
+                """Set the nastiness level of the depot.  Also works on
+                running depots."""
+                self.__nasty = nastiness
+                if self.__depot_handle != None:
+                        nastyurl = urlparse.urljoin(self.get_depot_url(),
+                            "nasty/%d" % self.__nasty)
+                        url = urllib2.urlopen(nastyurl)
+                        url.close()
+
+        def get_nasty(self):
+                return self.__nasty
+
+        def set_nasty_sleep(self, sleep):
+                self.__nasty_sleep = sleep
+
+        def get_nasty_sleep(self):
+                return self.__nasty_sleep
+
         def enable_ssl(self, key_path=None, cert_path=None, dialog=None):
                 self.__ssl_key_file = key_path
                 self.__ssl_cert_file = cert_path
@@ -343,6 +364,10 @@ class DepotController(object):
                 if self.__disable_ops:
                         args.append("--disable-ops=%s" % ",".join(
                             self.__disable_ops))
+                if self.__nasty:
+                        args.append("--nasty %d" % self.__nasty)
+                if self.__nasty_sleep:
+                        args.append("--nasty-sleep %d" % self.__nasty_sleep)
                 for section in self.__props:
                         for prop, val in self.__props[section].iteritems():
                                 args.append("--set-property=%s.%s='%s'" %

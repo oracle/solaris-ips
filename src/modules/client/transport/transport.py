@@ -1650,8 +1650,8 @@ class Transport(object):
                             "or content arguments.")
 
                 newhash = manifest.Manifest.hash_create(mcontent)
-                if chash != newhash and \
-                    DebugValues.get("manifest_validation") != "False":
+
+                if chash != newhash:
                         if mfstpath:
                                 sz = os.stat(mfstpath).st_size
                                 os.remove(mfstpath)
@@ -1661,7 +1661,6 @@ class Transport(object):
                             "manifest hash failure: fmri: %s \n"
                             "expected: %s computed: %s" %
                             (fmri, chash, newhash), size=sz)
-
                 return True
 
         @staticmethod

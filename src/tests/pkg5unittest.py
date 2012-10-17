@@ -2309,7 +2309,7 @@ class CliTestCase(Pkg5TestCase):
                 return api_inst
 
         def pkg_image_create(self, repourl=None, prefix=None,
-            additional_args="", exit=0):
+            additional_args="", exit=0, env_arg=None):
                 """Executes pkg(1) client to create a full (as opposed to user)
                 image; returns exit code of client or raises an exception if
                 exit code doesn't match 'exit' or equals 99."""
@@ -2319,26 +2319,14 @@ class CliTestCase(Pkg5TestCase):
 
                 self.image_destroy()
                 os.mkdir(self.img_path())
-                self.debug("pkg_image_create %s" % self.img_path())
                 cmdline = "%s image-create -F " % self.pkg_cmdpath
                 if repourl:
                         cmdline = "%s -p %s=%s " % (cmdline, prefix, repourl)
                 cmdline += additional_args
                 cmdline = "%s %s" % (cmdline, self.img_path())
-                self.debugcmd(cmdline)
 
-                p = subprocess.Popen(cmdline, shell=True,
-                    stdout=subprocess.PIPE,
-                    stderr=subprocess.STDOUT)
-                output = p.stdout.read()
-                retcode = p.wait()
-                self.debugresult(retcode, 0, output)
+                retcode = self.cmdline_run(cmdline, exit=exit, env_arg=env_arg)
 
-                if retcode == 99:
-                        raise TracebackException(cmdline, output)
-                if retcode != exit:
-                        raise UnexpectedExitCodeException(cmdline, 0,
-                            retcode, output)
                 self.__setup_signing_files()
                 return retcode
 
@@ -2371,26 +2359,30 @@ class CliTestCase(Pkg5TestCase):
                     prefix=prefix, su_wrap=su_wrap, out=out, stderr=stderr,
                     env_arg=env_arg)
 
-        def pkgdepend_resolve(self, args, exit=0, comment="", su_wrap=False):
+        def pkgdepend_resolve(self, args, exit=0, comment="", su_wrap=False,
+            env_arg=None):
                 ops = ""
                 if "-R" not in args:
                         ops = "-R %s" % self.get_img_path()
                 cmdline = "%s/usr/bin/pkgdepend %s resolve %s" % (
                     g_proto_area, ops, args)
                 return self.cmdline_run(cmdline, comment=comment, exit=exit,
-                    su_wrap=su_wrap)
+                    su_wrap=su_wrap, env_arg=env_arg)
 
-        def pkgdepend_generate(self, args, exit=0, comment="", su_wrap=False):
+        def pkgdepend_generate(self, args, exit=0, comment="", su_wrap=False,
+            env_arg=None):
                 cmdline = "%s/usr/bin/pkgdepend generate %s" % (g_proto_area,
                     args)
                 return self.cmdline_run(cmdline, comment=comment, exit=exit,
-                    su_wrap=su_wrap)
+                    su_wrap=su_wrap, env_arg=env_arg)
 
-        def pkgfmt(self, args, exit=0, su_wrap=False):
+        def pkgfmt(self, args, exit=0, su_wrap=False, env_arg=None):
                 cmd="%s/usr/bin/pkgfmt %s" % (g_proto_area, args)
-                self.cmdline_run(cmd, exit=exit, su_wrap=su_wrap)
+                self.cmdline_run(cmd, exit=exit, su_wrap=su_wrap,
+                    env_arg=env_arg)
 
-        def pkglint(self, args, exit=0, comment="", testrc=True):
+        def pkglint(self, args, exit=0, comment="", testrc=True,
+            env_arg=None):
                 if testrc:
                         rcpath = "%s/pkglintrc" % self.test_root
                         cmdline = "%s/usr/bin/pkglint -f %s %s" % \
@@ -2398,10 +2390,10 @@ class CliTestCase(Pkg5TestCase):
                 else:
                         cmdline = "%s/usr/bin/pkglint %s" % (g_proto_area, args)
                 return self.cmdline_run(cmdline, exit=exit, out=True,
-                    comment=comment, stderr=True)
+                    comment=comment, stderr=True, env_arg=env_arg)
 
         def pkgrecv(self, server_url=None, command=None, exit=0, out=False,
-            comment=""):
+            comment="", env_arg=None):
                 args = []
                 if server_url:
                         args.append("-s %s" % server_url)
@@ -2412,19 +2404,22 @@ class CliTestCase(Pkg5TestCase):
                 cmdline = "%s/usr/bin/pkgrecv %s" % (g_proto_area,
                     " ".join(args))
                 return self.cmdline_run(cmdline, comment=comment, exit=exit,
-                    out=out)
+                    out=out, env_arg=env_arg)
 
-        def pkgmerge(self, args, comment="", exit=0, su_wrap=False):
+        def pkgmerge(self, args, comment="", exit=0, su_wrap=False,
+            env_arg=None):
                 cmdline = "%s/usr/bin/pkgmerge %s" % (g_proto_area, args)
                 return self.cmdline_run(cmdline, comment=comment, exit=exit,
-                    su_wrap=su_wrap)
+                    su_wrap=su_wrap, env_arg=env_arg)
 
-        def pkgrepo(self, command, comment="", exit=0, su_wrap=False):
+        def pkgrepo(self, command, comment="", exit=0, su_wrap=False,
+            env_arg=None):
                 cmdline = "%s/usr/bin/pkgrepo %s" % (g_proto_area, command)
                 return self.cmdline_run(cmdline, comment=comment, exit=exit,
-                    su_wrap=su_wrap)
+                    su_wrap=su_wrap, env_arg=env_arg)
 
-        def pkgsign(self, depot_url, command, exit=0, comment=""):
+        def pkgsign(self, depot_url, command, exit=0, comment="",
+            env_arg=None):
                 args = []
                 if depot_url:
                         args.append("-s %s" % depot_url)
@@ -2434,9 +2429,10 @@ class CliTestCase(Pkg5TestCase):
 
                 cmdline = "%s/usr/bin/pkgsign %s" % (g_proto_area,
                     " ".join(args))
-                return self.cmdline_run(cmdline, comment=comment, exit=exit)
+                return self.cmdline_run(cmdline, comment=comment, exit=exit,
+                    env_arg=env_arg)
 
-        def pkgsign_simple(self, depot_url, pkg_name, exit=0):
+        def pkgsign_simple(self, depot_url, pkg_name, exit=0, env_arg=None):
                 chain_cert_path = os.path.join(self.chain_certs_dir,
                     "ch1_ta3_cert.pem")
                 sign_args = "-k %(key)s -c %(cert)s -i %(ch1)s %(name)s" % {
@@ -2445,10 +2441,11 @@ class CliTestCase(Pkg5TestCase):
                     "cert": os.path.join(self.cs_dir, "cs1_ch1_ta3_cert.pem"),
                     "ch1": chain_cert_path,
                 }
-                return self.pkgsign(depot_url, sign_args, exit=exit)
+                return self.pkgsign(depot_url, sign_args, exit=exit,
+                    env_arg=env_arg)
 
         def pkgsend(self, depot_url="", command="", exit=0, comment="",
-            allow_timestamp=False):
+            allow_timestamp=False, env_arg=None):
                 args = []
                 if allow_timestamp:
                         args.append("-D allow-timestamp")
@@ -2463,7 +2460,8 @@ class CliTestCase(Pkg5TestCase):
                     " ".join(args))
 
                 retcode, out = self.cmdline_run(cmdline, comment=comment,
-                    exit=exit, out=True, prefix=prefix, raise_error=False)
+                    exit=exit, out=True, prefix=prefix, raise_error=False,
+                    env_arg=env_arg)
                 errout = self.errout
 
                 cmdop = command.split(' ')[0]
@@ -2595,7 +2593,7 @@ class CliTestCase(Pkg5TestCase):
                 self.cmdline_run(cmd, exit=exit)
 
         def sysrepo(self, args, exit=0, out=False, stderr=False, comment="",
-            fill_missing_args=True):
+            env_arg=None, fill_missing_args=True):
                 ops = ""
                 if "-R" not in args:
                         args += " -R %s" % self.get_img_path()
@@ -2613,11 +2611,12 @@ class CliTestCase(Pkg5TestCase):
                 if "-t" not in args:
                         args += " -t %s" % self.template_dir
 
-                cmdline = "%s/usr/lib/pkg.sysrepo %s" % (
-                    g_proto_area, args)
-                e = {"PKG5_TEST_ENV": "1"}
+                cmdline = "%s/usr/lib/pkg.sysrepo %s" % (g_proto_area, args)
+                if env_arg is None:
+                        env_arg = {}
+                env_arg["PKG5_TEST_ENV"] = "1"
                 return self.cmdline_run(cmdline, comment=comment, exit=exit,
-                    out=out, stderr=stderr, env_arg=e)
+                    out=out, stderr=stderr, env_arg=env_arg)
 
         def copy_repository(self, src, dest, pub_map):
                 """Copies the packages from the src repository to a new
@@ -3289,30 +3288,17 @@ class SingleDepotTestCaseCorruptImage(SingleDepotTestCase):
 
                 for s in subdirs:
                         if s == "var/pkg":
-                                cmdline = "pkg image-create -F -p %s=%s %s" % \
+                                cmdline = "image-create -F -p %s=%s %s" % \
                                     (prefix, repourl, self.img_path())
                         elif s == ".org.opensolaris,pkg":
-                                cmdline = "pkg image-create -U -p %s=%s %s" % \
+                                cmdline = "image-create -U -p %s=%s %s" % \
                                     (prefix, repourl, self.img_path())
                         else:
                                 raise RuntimeError("Got unknown subdir option:"
                                     "%s\n" % s)
 
-                        self.debugcmd(cmdline)
-
-                        # Run the command to actually create a good image
-                        p = subprocess.Popen(cmdline, shell=True,
-                                             stdout=subprocess.PIPE,
-                                             stderr=subprocess.STDOUT)
-                        output = p.stdout.read()
-                        retcode = p.wait()
-                        self.debugresult(retcode, 0, output)
-
-                        if retcode == 99:
-                                raise TracebackException(cmdline, output)
-                        if retcode != 0:
-                                raise UnexpectedExitCodeException(cmdline, 0,
-                                    retcode, output)
+                        cmdline = self.pkg_cmdpath + " " + cmdline
+                        self.cmdline_run(cmdline, exit=0)
 
                         tmpDir = os.path.join(self.img_path(), s)
 
