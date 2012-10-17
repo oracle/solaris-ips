@@ -1003,7 +1003,7 @@ class FactoredManifest(Manifest):
 
                 # Do we have a cached copy?
                 if not os.path.exists(self.pathname):
-                        if not contents:
+                        if contents is None:
                                 raise KeyError, fmri
                         # we have no cached copy; save one
                         # don't specify excludes so on-disk copy has

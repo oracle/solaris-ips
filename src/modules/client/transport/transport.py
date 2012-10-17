@@ -1643,7 +1643,7 @@ class Transport(object):
                         mf = file(mfstpath)
                         mcontent = mf.read()
                         mf.close()
-                elif content:
+                elif content is not None:
                         mcontent = content
                 else:
                         raise ValueError("Caller must supply either mfstpath "
