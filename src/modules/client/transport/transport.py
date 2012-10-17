@@ -1021,7 +1021,8 @@ class Transport(object):
 
                         except apx.InvalidP5IFile, e:
                                 repouri_key = d.get_repouri_key()
-                                exc = tx.TransferContentException(url[0],
+                                exc = tx.TransferContentException(
+                                    repouri_key[0],
                                     "api_errors.InvalidP5IFile:%s" %
                                     (" ".join([str(a) for a in e.args])))
                                 repostats = self.stats[repouri_key]
@@ -1143,7 +1144,8 @@ class Transport(object):
                                 failures.extend(e.failures)
 
                         except zlib.error, e:
-                                exc = tx.TransferContentException(repouri_key[0],
+                                exc = tx.TransferContentException(
+                                    repouri_key[0],
                                     "zlib.error:%s" %
                                     (" ".join([str(a) for a in e.args])),
                                     proxy=repouri_key[1])
@@ -1193,7 +1195,8 @@ class Transport(object):
 
                         except (TypeError, ValueError), e:
                                 
-                                exc = tx.TransferContentException(repouri_key[0],
+                                exc = tx.TransferContentException(
+                                    repouri_key[0],
                                     "Invalid stats response: %s" % e,
                                     proxy=repouri_key[1])
                                 repostats.record_error(content=True)
