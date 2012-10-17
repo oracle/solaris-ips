@@ -955,7 +955,7 @@ class TestPkgApiInstall(pkg5unittest.SingleDepotTestCase):
 
                                 bad_mdata = mdata.replace(src_mode, bad_mode)
                                 self.write_img_manifest(pfmri, bad_mdata)
-                                DebugValues["skip-verify-manifest"] = "True"
+                                DebugValues["manifest_validate"] = "Never"
                                 self.assertRaises(api_errors.InvalidPackageErrors,
                                     self.__do_install, api_obj,
                                     [pfmri.pkg_name])

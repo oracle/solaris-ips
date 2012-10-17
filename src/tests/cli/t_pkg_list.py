@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2008, 2011, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2008, 2012, Oracle and/or its affiliates. All rights reserved.
 #
 
 import testutils
@@ -404,10 +404,13 @@ class TestPkgList(pkg5unittest.ManyDepotTestCase):
 
                 # This should work for an unprivileged user, even though it
                 # requires manifest retrieval (because of the v0 repo).
-                self.pkg("list -a", su_wrap=True)
+
+                # we have to disable mandatory validation because v0 has
+                # no catalog checksums.
+                self.pkg("-D manifest_validate=Never list -a", su_wrap=True)
 
                 # This should work for a privileged user.
-                self.pkg("list -a")
+                self.pkg("-D manifest_validate=Never list -a")
 
                 dc.stop()
                 dc.unset_disable_ops()

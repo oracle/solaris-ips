@@ -648,7 +648,7 @@ class TestPkgInstallBasics(pkg5unittest.SingleDepotTestCase):
                                     "'%s'." % bad_mode)
                                 bad_mdata = mdata.replace(src_mode, bad_mode)
                                 self.write_img_manifest(pfmri, bad_mdata)
-                                self.pkg("--debug skip-verify-manifest=True "
+                                self.pkg("--debug manifest_validate=Never "
                                     "install %s" % pfmri.pkg_name, exit=1)
 
                         # Now attempt to corrupt the client's copy of the
@@ -661,7 +661,7 @@ class TestPkgInstallBasics(pkg5unittest.SingleDepotTestCase):
                                 bad_mdata = mdata.replace("owner=root",
                                     bad_owner)
                                 self.write_img_manifest(pfmri, bad_mdata)
-                                self.pkg("--debug skip-verify-manifest=True "
+                                self.pkg("--debug manifest_validate=Never "
                                     "install %s" % pfmri.pkg_name, exit=1)
 
                         for bad_group in ("", 'group=""', "group=invalidgroup"):
@@ -671,7 +671,7 @@ class TestPkgInstallBasics(pkg5unittest.SingleDepotTestCase):
                                 bad_mdata = mdata.replace("group=bin",
                                     bad_group)
                                 self.write_img_manifest(pfmri, bad_mdata)
-                                self.pkg("--debug skip-verify-manifest=True "
+                                self.pkg("--debug manifest_validate=Never "
                                     "install %s" % pfmri.pkg_name, exit=1)
 
                         # Now attempt to corrupt the client's copy of the
@@ -683,7 +683,7 @@ class TestPkgInstallBasics(pkg5unittest.SingleDepotTestCase):
                                     "'%s'." % bad_act)
                                 bad_mdata = mdata + "%s\n" % bad_act
                                 self.write_img_manifest(pfmri, bad_mdata)
-                                self.pkg("--debug skip-verify-manifest=True "
+                                self.pkg("--debug manifest_validate=Never "
                                     "install %s" % pfmri.pkg_name, exit=1)
 
         def test_bug_3770(self):

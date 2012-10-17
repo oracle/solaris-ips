@@ -204,6 +204,16 @@ class TransportCfg(object):
                 """
                 raise NotImplementedError
 
+        def get_pkg_sigs(self, fmri, pub):
+                """Returns a dictionary of the signature data found in the
+                catalog for the given package FMRI and Publisher object or None
+                if no catalog is available."""
+
+                # Check provided publisher's catalog for signature data.
+                if pub.catalog:
+                        return dict(pub.catalog.get_entry_signatures(
+                            fmri))
+
         def get_pkg_alt_repo(self, pfmri):
                 """Returns the repository object containing the origins that
                 should be used to retrieve the specified package or None.
@@ -342,6 +352,26 @@ class ImageTransportCfg(TransportCfg):
                 should be stored in and loaded from."""
 
                 return self.__img.get_manifest_path(pfmri)
+
+        def get_pkg_sigs(self, fmri, pub):
+                """Returns a dictionary of the signature data found in the
+                catalog for the given package FMRI and Publisher object or None
+                if no catalog is available."""
+
+                # Check publisher for entry first.
+                try:
+                        sigs = TransportCfg.get_pkg_sigs(self, fmri, pub)
+                except apx.UnknownCatalogEntry:
+                        sigs = None
+
+                if sigs is None:
+                        # Either package was unknown or publisher catalog
+                        # contained no signature data.  Fallback to the known
+                        # catalog as temporary sources may be in use.
+                        kcat = self.__img.get_catalog(
+                            self.__img.IMG_CATALOG_KNOWN)
+                        return dict(kcat.get_entry_signatures(fmri))
+                return sigs
 
         def get_pkg_alt_repo(self, pfmri):
                 """Returns the repository object containing the origins that
@@ -1570,26 +1600,40 @@ class Transport(object):
                 the manifest content in 'content'.  One of these arguments
                 must be used."""
 
+                # Bail if manifest validation has been turned off for
+                # debugging/testing purposes.
+                if DebugValues.get("manifest_validate") == "Never":
+                        return True
+
+                must_verify = \
+                    DebugValues.get("manifest_validate") == "Always"
+
                 if not isinstance(pub, publisher.Publisher):
                         # Get publisher using information from FMRI.
                         try:
                                 pub = self.cfg.get_publisher(fmri.publisher)
                         except apx.UnknownPublisher:
+                                if must_verify:
+                                        assert False, \
+                                            "Did not validate manifest; " \
+                                            "unknown publisher %s (%s)." % \
+                                            (fmri.publisher, fmri)
                                 return False
 
-                # Handle case where publisher has no Catalog.
-                if not pub.catalog:
-                        return False
-
-                # Use the publisher to get the catalog and its signature info.
                 try:
-                        sigs = dict(pub.catalog.get_entry_signatures(fmri))
+                        sigs = self.cfg.get_pkg_sigs(fmri, pub)
                 except apx.UnknownCatalogEntry:
+                        if must_verify:
+                                assert False, "Did not validate manifest; " \
+                                    "couldn't find sigs."
                         return False
 
                 if sigs and "sha-1" in sigs:
                         chash = sigs["sha-1"]
                 else:
+                        if must_verify:
+                                assert False, \
+                                    "Did not validate manifest; no sha-1 sig."
                         return False
 
                 if mfstpath:

@@ -968,7 +968,7 @@ class TestPkgSign(pkg5unittest.SingleDepotTestCase):
                 s += "\nset name=foo value=bar"
                 self.write_img_manifest(pfmri, s)
 
-                DebugValues["skip-verify-manifest"] = "True"
+                DebugValues["manifest_validate"] = "Never"
                 
                 self.pkg("set-property signature-policy verify")
                 # This should fail because the text of manifest has changed
@@ -1025,7 +1025,7 @@ class TestPkgSign(pkg5unittest.SingleDepotTestCase):
                 s = s.replace("rsa-sha256", "rsa-foobar")
                 self.write_img_manifest(pfmri, s)
 
-                DebugValues["skip-verify-manifest"] = "True"
+                DebugValues["manifest_validate"] = "Never"
 
                 self.pkg("set-property signature-policy require-signatures")
                 api_obj = self.get_img_api_obj()
@@ -1051,7 +1051,7 @@ class TestPkgSign(pkg5unittest.SingleDepotTestCase):
                 api_obj = self.get_img_api_obj()
                 self.assertRaises(apx.RequiredSignaturePolicyException,
                     self._api_install, api_obj, ["example_pkg"])
-                self.pkg("--debug skip-verify-manifest=True install "
+                self.pkg("--debug manifest_validate=Never install "
                     "example_pkg", exit=1)
                 # This passes because 'foobar' isn't a recognized signature
                 # algorithm so the signature action is skipped.

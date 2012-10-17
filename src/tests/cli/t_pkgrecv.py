@@ -53,13 +53,13 @@ class TestPkgrecvMulti(pkg5unittest.ManyDepotTestCase):
 
         scheme10 = """
             open pkg:/scheme@1.0,5.11-0
-            close 
+            close
         """
 
         tree10 = """
             open tree@1.0,5.11-0
             add depend type=require-any fmri=leaf@1.0 fmri=branch@1.0
-            close 
+            close
         """
 
         leaf10 = """
@@ -75,13 +75,13 @@ class TestPkgrecvMulti(pkg5unittest.ManyDepotTestCase):
         amber10 = """
             open amber@1.0,5.11-0
             add depend fmri=pkg:/tree@1.0 type=require
-            close 
+            close
         """
 
         amber20 = """
             open amber@2.0,5.11-0
             add depend fmri=pkg:/tree@1.0 type=require
-            close 
+            close
         """
 
         bronze10 = """
@@ -112,7 +112,7 @@ class TestPkgrecvMulti(pkg5unittest.ManyDepotTestCase):
             add license tmp/copyright3 license=copyright
             add file tmp/bronzeA2 mode=0444 owner=root group=bin path=/A1/B2/C3/D4/E5/F6/bronzeA2
             add depend fmri=pkg:/amber@2.0 type=require
-            close 
+            close
         """
 
         misc_files = [ "tmp/bronzeA1",  "tmp/bronzeA2", "tmp/bronze1",
@@ -709,9 +709,10 @@ class TestPkgrecvMulti(pkg5unittest.ManyDepotTestCase):
                         # otherwise pkgrecv will fail because the manifest
                         # doesn't validate.
 
+                        novalidate = "-D manifest_validate=Never "
                         # Check that invalid action attributes don't cause
                         # tracebacks.
-                        self.pkgrecv(self.durl1, "-D manifest_validation=False "
+                        self.pkgrecv(self.durl1, novalidate +
                             "-d %s %s %s" % (duri, arg_string,
                             " ".join(pfmris)), exit=pkgdefs.EXIT_OOPS)
                         for pfmri in pfmris:
@@ -720,7 +721,7 @@ class TestPkgrecvMulti(pkg5unittest.ManyDepotTestCase):
                         if arg_string:
                                 portable.remove(duri)
 
-                        self.pkgrecv(self.rurl1, "-D manifest_validation=False "
+                        self.pkgrecv(self.rurl1, novalidate +
                             "-d %s %s %s" % (duri, arg_string,
                             " ".join(pfmris)), exit=pkgdefs.EXIT_OOPS)
                         for pfmri in pfmris:
@@ -731,7 +732,7 @@ class TestPkgrecvMulti(pkg5unittest.ManyDepotTestCase):
 
                         # Check that other packages are retrieved and the exit
                         # code reflects partial success.
-                        self.pkgrecv(self.durl1, "-D manifest_validation=False "
+                        self.pkgrecv(self.durl1, novalidate +
                             "-d %s %s -m all-timestamps '*'" %
                             (duri, arg_string), exit=pkgdefs.EXIT_PARTIAL)
                         for pfmri in pfmris:
@@ -740,7 +741,7 @@ class TestPkgrecvMulti(pkg5unittest.ManyDepotTestCase):
                             len(self.published) - len(pfmris))
                         __empty_repo(duri, arg_string)
 
-                        self.pkgrecv(self.rurl1, "-D manifest_validation=False "
+                        self.pkgrecv(self.rurl1, novalidate +
                             "-d %s %s -m all-timestamps '*'" %
                             (duri, arg_string), exit=pkgdefs.EXIT_PARTIAL)
                         for pfmri in pfmris:

@@ -2787,6 +2787,7 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                 pkg_pub_map = {}
                 try:
                         progtrack.refresh_start(len(pubs), full_refresh=False)
+                        failed = []
                         pub_cats = []
                         for pub in pubs:
                                 # Assign a temporary meta root to each
@@ -2800,8 +2801,18 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
 
                                 # Retrieve each publisher's catalog.
                                 progtrack.refresh_start_pub(pub)
-                                pub.refresh()
-                                progtrack.refresh_end_pub(pub)
+                                try:
+                                        pub.refresh()
+                                except apx.PermissionsException, e:
+                                        failed.append((pub, e))
+                                        # No point in continuing since no data
+                                        # can be written.
+                                        break
+                                except apx.ApiException, e:
+                                        failed.append((pub, e))
+                                        continue
+                                finally:
+                                        progtrack.refresh_end_pub(pub)
                                 pub_cats.append((
                                     pub.prefix,
                                     repo,
@@ -2809,6 +2820,12 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                                 ))
 
                         progtrack.refresh_done()
+
+                        if failed:
+                                total = len(pub_cats) + len(failed)
+                                e = apx.CatalogRefreshException(failed, total,
+                                    len(pub_cats))
+                                raise e
 
                         # Determine upgradability.
                         newest = {}
@@ -3004,8 +3021,11 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                                 try:
                                         opub = pub_map[pub.prefix]
                                 except KeyError:
+                                        nrepo = None
+                                        if pub.prefix in pkg_pub_map:
+                                                nrepo = publisher.Repository()
                                         opub = publisher.Publisher(pub.prefix,
-                                            catalog=compkcat)
+                                            catalog=compkcat, repository=nrepo)
                                         pub_map[pub.prefix] = opub
 
                         rid_map = {}
@@ -3024,11 +3044,12 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                                                            pkg_repos.get(rid).origins
                                                            for rid in rids
                                                         ])
-                                                        nrepo = publisher.Repository(
-                                                            origins=origins)
                                                         npub = \
                                                             copy.copy(pub_map[pub])
-                                                        npub.repository = nrepo
+                                                        nrepo = npub.repository
+                                                        nrepo.origins = origins
+                                                        assert npub.catalog == \
+                                                            compkcat
                                                         rid_map[rids] = npub
 
                                                 pkg_pub_map[pub][stem][ver] = \
@@ -3039,12 +3060,10 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                         for pub in pubs:
                                 npub = pub_map[pub.prefix]
                                 nrepo = npub.repository
-                                if not nrepo:
-                                        nrepo = publisher.Repository()
-                                        npub.repository = nrepo
                                 for o in pub.repository.origins:
                                         if not nrepo.has_origin(o):
                                                 nrepo.add_origin(o)
+                                assert npub.catalog == compkcat
 
                         for compcat in (compicat, compkcat):
                                 compcat.batch_mode = False

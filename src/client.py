@@ -578,6 +578,9 @@ def list_inventory(op, api_inst, pargs,
             api_errors.PermissionsException), e:
                 error(e, cmd=op)
                 return EXIT_OOPS
+        except api_errors.CatalogRefreshException, e:
+                display_catalog_failures(e)
+                return EXIT_OOPS
         except api_errors.InventoryException, e:
                 if e.illegal:
                         for i in e.illegal:
@@ -3960,6 +3963,9 @@ def list_contents(api_inst, args):
                 error(str(e), cmd=subcommand)
                 api_inst.log_operation_end(
                     result=RESULT_FAILED_UNKNOWN)
+                return EXIT_OOPS
+        except api_errors.CatalogRefreshException, e:
+                display_catalog_failures(e)
                 return EXIT_OOPS
         except api_errors.InventoryException, e:
                 if e.illegal:

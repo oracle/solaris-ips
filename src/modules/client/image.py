@@ -2373,18 +2373,18 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
 
                 return True
 
-        def __verify_manifest(self, fmri, mfstpath):
+        def __verify_manifest(self, fmri, mfstpath, alt_pub=None):
                 """Verify a manifest.  The caller must supply the FMRI
                 for the package in 'fmri', as well as the path to the
                 manifest file that will be verified."""
 
                 try:
                         return self.transport._verify_manifest(fmri,
-                            mfstpath=mfstpath)
+                            mfstpath=mfstpath, pub=alt_pub)
                 except InvalidContentException:
                         return False
         
-        def has_manifest(self, pfmri):
+        def has_manifest(self, pfmri, alt_pub=None):
                 """Check to see if the manifest for pfmri is present on disk and
                 has the correct hash."""
 
@@ -2392,9 +2392,8 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                 on_disk = os.path.exists(pth)
 
                 if not on_disk or \
-                    DebugValues.get_value("skip-verify-manifest") or \
                     self.is_pkg_installed(pfmri) or \
-                    self.__verify_manifest(fmri=pfmri, mfstpath=pth):
+                    self.__verify_manifest(fmri=pfmri, mfstpath=pth, alt_pub=alt_pub):
                         return on_disk
                 return False
 
@@ -2457,7 +2456,7 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                 object.... grab from server if needed"""
 
                 try:
-                        if not self.has_manifest(fmri):
+                        if not self.has_manifest(fmri, alt_pub=alt_pub):
                                 raise KeyError
                         ret = manifest.FactoredManifest(fmri,
                             self.get_manifest_dir(fmri),

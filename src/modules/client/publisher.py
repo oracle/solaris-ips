@@ -1101,8 +1101,8 @@ class Publisher(object):
         # These properties are declared here so that they show up in the pydoc
         # documentation as private, and for clarity in the property declarations
         # found near the end of the class definition.
+        _catalog = None
         __alias = None
-        __catalog = None
         __client_uuid = None
         __disabled = False
         __meta_root = None
@@ -1189,7 +1189,7 @@ class Publisher(object):
                 self.__issuers = {}
 
                 # Must be done last.
-                self.__catalog = catalog
+                self._catalog = catalog
 
         def __cmp__(self, other):
                 if other is None:
@@ -1216,6 +1216,7 @@ class Publisher(object):
                     revoked_ca_certs=self.revoked_ca_certs,
                     approved_ca_certs=self.approved_ca_certs,
                     sys_pub=self.sys_pub)
+                pub._catalog = self._catalog
                 pub._source_object_id = id(self)
                 return pub
 
@@ -1360,8 +1361,8 @@ class Publisher(object):
                 if pathname:
                         pathname = os.path.abspath(pathname)
                 self.__meta_root = pathname
-                if self.__catalog:
-                        self.__catalog.meta_root = self.catalog_root
+                if self._catalog:
+                        self._catalog.meta_root = self.catalog_root
                 if self.__meta_root:
                         self.__origin_root = os.path.join(self.__meta_root,
                             "origins")
@@ -1379,7 +1380,7 @@ class Publisher(object):
                 if not isinstance(value, Repository):
                         raise api_errors.UnknownRepository(value)
                 self.__repository = value
-                self.__catalog = None
+                self._catalog = None
 
         def __set_client_uuid(self, value):
                 self.__client_uuid = value
@@ -1478,11 +1479,11 @@ pkg unset-publisher %s
                 selected repository, or None if available."""
 
                 if not self.meta_root:
-                        if self.__catalog:
-                                return self.__catalog
+                        if self._catalog:
+                                return self._catalog
                         return None
 
-                if not self.__catalog:
+                if not self._catalog:
                         croot = self.catalog_root
                         if not os.path.isdir(croot):
                                 # Current meta_root structure is likely in
@@ -1491,9 +1492,9 @@ pkg unset-publisher %s
                                 # is desired instead.  (This can happen during
                                 # an image format upgrade.)
                                 croot = None
-                        self.__catalog = pkg.catalog.Catalog(
+                        self._catalog = pkg.catalog.Catalog(
                             meta_root=croot)
-                return self.__catalog
+                return self._catalog
 
         @property
         def catalog_root(self):
@@ -1674,7 +1675,7 @@ pkg unset-publisher %s
 
                 # Discard existing catalog.
                 self.catalog.destroy()
-                self.__catalog = None
+                self._catalog = None
 
                 # Ensure all old catalog files are removed.
                 for entry in os.listdir(self.catalog_root):
@@ -1847,7 +1848,7 @@ pkg unset-publisher %s
                         # avoids many of the problems that could happen due to
                         # deficiencies in the v0 implementation.
                         v1_cat.destroy()
-                        self.__catalog = None
+                        self._catalog = None
                         v1_cat = pkg.catalog.Catalog(meta_root=v1_root,
                             sign=False)
 
@@ -1975,7 +1976,7 @@ pkg unset-publisher %s
                         if v1_cat.exists:
                                 # Ensure v1 -> v0 transition works right.
                                 v1_cat.destroy()
-                                self.__catalog = None
+                                self._catalog = None
                         return self.__refresh_v0(croot, full_refresh, immediate,
                             repo)
 
@@ -2018,8 +2019,8 @@ pkg unset-publisher %s
                                 return self.__refresh_v0(croot, full_refresh,
                                     immediate, repo)
 
-                # Clear __catalog, so we'll read in the new catalog.
-                self.__catalog = None
+                # Clear _catalog, so we'll read in the new catalog.
+                self._catalog = None
                 v1_cat = pkg.catalog.Catalog(meta_root=croot)
 
                 # At this point the client should have a set of the constituent

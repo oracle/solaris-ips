@@ -2360,6 +2360,7 @@ class CliTestCase(Pkg5TestCase):
                         command = "--debug smf_cmds_dir=%s %s" % \
                             (DebugValues["smf_cmds_dir"], command)
                 command = "-D plandesc_validate=1 %s" % command
+                command = "-D manifest_validate=Always %s" % command
                 if use_img_root and "-R" not in command and \
                     "image-create" not in command and "version" not in command:
                         command = "-R %s %s" % (self.get_img_path(), command)
