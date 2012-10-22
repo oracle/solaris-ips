@@ -898,7 +898,11 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                         self.__plan_desc = plan_desc
 
                 self._activity_lock.release()
-                raise
+
+                # re-raise the original exception. (we have to explicitly
+                # restate the original exception since we may have cleared the
+                # current exception scope above.)
+                raise exc_type, exc_value, exc_traceback
 
         def solaris_image(self):
                 """Returns True if the current image is a solaris image, or an
