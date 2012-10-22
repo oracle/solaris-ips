@@ -1981,12 +1981,23 @@ class TestPkgInstallUpgrade(pkg5unittest.SingleDepotTestCase):
             add dir path=var mode=755 owner=root group=root
             add dir path=var/mail mode=755 owner=root group=root
             add dir path=var/log mode=755 owner=root group=root
+            add dir path=var/noodles mode=755 owner=root group=root
+            add dir path=var/persistent mode=755 owner=root group=root
             close
             open salvage@2.0
             add dir path=var mode=755 owner=root group=root
             add dir path=var/.migrate-to-shared mode=755 owner=root group=root
             add dir path=var/.migrate-to-shared/mail salvage-from=var/mail mode=755 owner=root group=root
             add dir path=var/.migrate-to-shared/log salvage-from=var/log mode=755 owner=root group=root
+            add dir path=var/spaghetti mode=755 owner=root group=root
+            add dir path=var/persistent mode=755 owner=root group=root salvage-from=var/noodles
+            close
+            open salvage@3.0
+            add dir path=var mode=755 owner=root group=root
+            add dir path=var/.migrate-to-shared mode=755 owner=root group=root
+            add dir path=var/.migrate-to-shared/mail salvage-from=var/mail mode=755 owner=root group=root
+            add dir path=var/.migrate-to-shared/log salvage-from=var/log mode=755 owner=root group=root
+            add dir path=var/persistent mode=755 owner=root group=root salvage-from=var/noodles salvage-from=var/spaghetti
             close
         """
 
@@ -2786,7 +2797,7 @@ adm
                 self.file_contains("newme", "preserve2")
 
         def test_directory_salvage(self):
-                """Make sure directory salvage works as expected"""
+                """Make sure basic directory salvage works as expected"""
                 self.pkgsend_bulk(self.rurl, self.salvage)
                 self.image_create(self.rurl)
                 self.pkg("install salvage@1.0")
@@ -2797,6 +2808,33 @@ adm
                 self.file_exists("var/.migrate-to-shared/mail/foo")
                 self.file_exists("var/.migrate-to-shared/mail/bar")
                 self.file_exists("var/.migrate-to-shared/mail/baz")
+
+        def test_directory_salvage_persistent(self):
+                """Make sure directory salvage works as expected when salvaging
+                content to an existing packaged directory."""
+
+                # we salvage content from two directories,
+                # var/noodles and var/spaghetti each of which disappear over
+                # subsequent updates.
+                self.pkgsend_bulk(self.rurl, self.salvage)
+                self.image_create(self.rurl)
+                self.pkg("install salvage@1.0")
+                self.file_append("var/mail/foo", "foo's mail")
+                self.file_append("var/noodles/noodles.txt", "yum")
+                self.pkg("update salvage@2.0")
+                self.file_exists("var/.migrate-to-shared/mail/foo")
+                self.file_exists("var/persistent/noodles.txt")
+                self.file_append("var/spaghetti/spaghetti.txt", "yum")
+                self.pkg("update")
+                self.file_exists("var/persistent/noodles.txt")
+                self.file_exists("var/persistent/spaghetti.txt")
+
+                # ensure that we can jump from 1.0 to 3.0 directly.
+                self.image_create(self.rurl)
+                self.pkg("install salvage@1.0")
+                self.file_append("var/noodles/noodles.txt", "yum")
+                self.pkg("update  salvage@3.0")
+                self.file_exists("var/persistent/noodles.txt")
 
         def test_special_salvage(self):
                 """Make sure salvaging directories with special files works as
