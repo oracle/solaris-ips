@@ -65,6 +65,9 @@ from pkg.client.debugvalues import DebugValues
 from pkg.client.imagetypes import img_type_names, IMG_NONE
 from pkg.pkggzip import PkgGzipFile
 
+# Default path where the temporary directories will be created.
+DEFAULT_TEMP_PATH = "/var/tmp"
+
 # Minimum number of days to issue warning before a certificate expires
 MIN_WARN_DAYS = datetime.timedelta(days=30)
 
@@ -1048,8 +1051,6 @@ def config_temp_root():
         settings when creating temporary files/directories.  Otherwise,
         return a path that the caller should pass to tempfile instead."""
 
-        default_root = "/var/tmp"
-
         # In Python's tempfile module, the default temp directory
         # includes some paths that are suboptimal for holding large numbers
         # of files.  If the user hasn't set TMPDIR, TEMP, or TMP in the
@@ -1060,7 +1061,21 @@ def config_temp_root():
                 if env_val:
                         return None
 
-        return default_root
+        return DEFAULT_TEMP_PATH
+
+def get_temp_root_path():
+        """Return the directory path where the temporary directories or 
+        files should be created. If the environment has set TMPDIR
+        or TEMP or TMP then return the corresponding value else return the
+        default value."""
+
+        temp_env = [ "TMPDIR", "TEMP", "TMP" ]
+        for env in temp_env:
+                env_val = os.getenv(env)
+                if env_val:
+                        return env_val
+
+        return DEFAULT_TEMP_PATH 
 
 def parse_uri(uri, cwd=None):
         """Parse the repository location provided and attempt to transform it

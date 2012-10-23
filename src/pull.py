@@ -989,7 +989,8 @@ if __name__ == "__main__":
                 else:
                         txt += _("No storage space left.")
 
-                tdirs = [temp_root]
+                temp_root_path = misc.get_temp_root_path()
+                tdirs = [temp_root_path]
                 if cache_dir not in tmpdirs:
                         # Only include in message if user specified.
                         tdirs.append(cache_dir)
@@ -1000,7 +1001,12 @@ if __name__ == "__main__":
                 error(txt + _("Please verify that the filesystem containing "
                    "the following directories has enough space available:\n"
                    "%s") % "\n".join(tdirs))
-                __ret = 1
+                try:
+                        cleanup()
+                except:
+                        __ret = 99
+                else:
+                        __ret = 1
         except:
                 traceback.print_exc()
                 error(misc.get_traceback_message())
