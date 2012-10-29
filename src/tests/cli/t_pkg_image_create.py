@@ -252,6 +252,17 @@ class TestPkgImageCreateBasics(pkg5unittest.ManyDepotTestCase):
                             img_path, u))
                 shutil.rmtree(img_path, True)
 
+                # Verify that specifying --no-refresh when use-system-repo
+                # is set to true works.
+                saved_sysrepo_env = os.environ.get("PKG_SYSREPO_URL")
+                os.environ["PKG_SYSREPO_URL"] = "http://localhost:1"
+                self.pkg("image-create --no-refresh --set-property \
+                    use-system-repo=true %s"  %(img_path))
+                shutil.rmtree(img_path)
+                if saved_sysrepo_env:
+                        os.environ["PKG_SYSREPO_URL"] = saved_sysrepo_env
+
+
                 # Verify that simple paths to file repositories can be used
                 # (not just file:// URIs).
                 mirrors = " ".join(

@@ -5796,7 +5796,7 @@ def image_create(args):
                     cmd=cmd_name)
         image_dir = pargs[0]
 
-        if not pub_name and not refresh_allowed:
+        if pub_url and not pub_name and not refresh_allowed:
                 usage(_("--no-refresh cannot be used with -p unless a "
                     "publisher prefix is provided."), cmd=cmd_name)
 

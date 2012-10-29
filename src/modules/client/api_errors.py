@@ -2774,7 +2774,9 @@ class LinkedImageException(ApiException):
                             img_linked
 
                 if lin_malformed is not None:
-                        err = _("Invalid linked image name: '%s'") % \
+                        err = _("Invalid linked image name '%s'."
+                            "Linked image names have the following format "
+                            "'<linked_image plugin>:<linked_image name>'") % \
                             lin_malformed
 
                 if link_to_self:
