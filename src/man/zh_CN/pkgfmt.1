@@ -1,6 +1,6 @@
 '\" te
-.\" Copyright (c) 2007, 2011, Oracle and/or its affiliates. All rights reserved.
-.TH pkgfmt 1 "2011 年 7 月 28 日" "SunOS 5.11" "用户命令"
+.\" Copyright (c) 2007, 2012, Oracle and/or its affiliates. All rights reserved.
+.TH pkgfmt 1 "2012 年 5 月 27 日" "SunOS 5.11" "用户命令"
 .SH 名称
 pkgfmt \- 格式化软件包清单
 .SH 用法概要
@@ -27,9 +27,24 @@ pkgfmt \- 格式化软件包清单
 .ne 2
 .mk
 .na
+\fB\fB-?\fR\fR
+.ad
+.br
+.na
+\fB\fB--help\fR\fR
+.ad
+.RS 10n
+.rt  
+显示用法消息。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
 \fB\fB-c\fR\fR
 .ad
-.RS 6n
+.RS 10n
 .rt  
 检查清单是否格式化为 \fBpkgfmt\fR 样式。
 .RE
@@ -40,7 +55,7 @@ pkgfmt \- 格式化软件包清单
 .na
 \fB\fB-d\fR\fR
 .ad
-.RS 6n
+.RS 10n
 .rt  
 以统一格式显示与格式化版本的清单差异。
 .RE
@@ -51,7 +66,7 @@ pkgfmt \- 格式化软件包清单
 .na
 \fB\fB-u\fR\fR
 .ad
-.RS 6n
+.RS 10n
 .rt  
 达到 80 个字符时不自动换行。将传统的文本处理工具应用到软件包清单时，该选项十分有用。
 .RE

@@ -1,6 +1,6 @@
 '\" te
-.\" Copyright (c) 2007, 2011, Oracle and/or its affiliates. All rights reserved.
-.TH pkgmogrify 1 "2011 年 8 月 30 日" "SunOS 5.11" "ユーザーコマンド"
+.\" Copyright (c) 2007, 2012, Oracle and/or its affiliates. All rights reserved.
+.TH pkgmogrify 1 "2012 年 6 月 4 日" "SunOS 5.11" "ユーザーコマンド"
 .SH 名前
 pkgmogrify \- Image Packaging System マニフェスト変換ツール
 .SH 形式
@@ -39,16 +39,31 @@ pkgmogrify \- Image Packaging System マニフェスト変換ツール
 .SH オプション
 .sp
 .LP
-次のオプションがサポートされています。
+サポートしているオプションは、次のとおりです。
 .sp
 .ne 2
 .mk
 .na
-\fB\fB-D\fR \fIname\fR=\fIvalue\fR\fR
+\fB\fB-?\fR\fR
+.ad
+.br
+.na
+\fB\fB--help\fR\fR
 .ad
 .sp .6
 .RS 4n
-\fIname\fR を値 \fIvalue\fR とともにマクロとして定義します。マクロは、入力ファイル内で \fB$(macro)\fR として指定されます。置換は、それ以上の変換が見つからなくなるまで繰り返されます。一般的な語法には次のものがあります。
+使用方法に関するメッセージを表示します。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB-D\fR \fImacro\fR=\fI value\fR\fR
+.ad
+.sp .6
+.RS 4n
+\fImacro\fR を値 \fIvalue\fR とともにマクロとして定義します。マクロは、入力ファイル内で \fB$(macro)\fR として指定されます。置換は、それ以上の変換が見つからなくなるまで繰り返されます。一般的な語法には次のものがあります。
 .RS +4
 .TP
 .ie t \(bu
@@ -83,7 +98,7 @@ file NOHASH path=usr/bin/$(ARCH64)/cputrack ...
 .ne 2
 .mk
 .na
-\fB\fB-I\fR \fIinclude_directory\fR\fR
+\fB\fB-I\fR \fIincludedir\fR\fR
 .ad
 .sp .6
 .RS 4n
@@ -134,17 +149,6 @@ file NOHASH path=usr/bin/$(ARCH64)/cputrack ...
 出力マニフェストに変換の効果を示すコメントを書き込みます。この情報がデバッグに役立つことがあります。
 .RE
 
-.sp
-.ne 2
-.mk
-.na
-\fB\fB--help\fR or \fB-?\fR\fR
-.ad
-.sp .6
-.RS 4n
-使用方法に関するメッセージを表示します。
-.RE
-
 .SH 埋め込みの指令
 .sp
 .LP
@@ -181,13 +185,13 @@ file NOHASH path=usr/bin/$(ARCH64)/cputrack ...
 .sp
 .in +2
 .nf
-[\fIaction-type\fR ... ] [\fIattribute\fR=<\fIvalue-regexp\fR> ...]
+[\fIaction-name\fR ... ] [\fIattribute\fR=<\fIvalue-regexp\fR> ...]
 .fi
 .in -2
 
 .sp
 .LP
-指定された \fIaction-types\fR のいずれかが一致する必要があります。指定された \fIattributes\fR のすべてが一致する必要があります。使用されている正規表現の構文は Python の構文です。Python 正規表現の構文については、コマンド \fBpydoc re\fR を使用するか、または \fBhttp://docs.python.org/dev/howto/regex.html\fR にあるより完全なドキュメントを参照してください。正規表現は先頭に固定され、末尾には固定されません。そのため、ファイルを拡張子で照合する正規表現には先頭に \fB\&.*\fR を含める必要があり、さらに末尾には \fB$\fR を含めるようにしてください。
+指定された \fIaction-name\fR の少なくとも 1 つが一致する必要があります。指定されたすべての \fIattribute\fR が一致する必要があります。アクションの名前と属性が、\fBpkg\fR(5) マニュアルページの「アクション」に一覧表示されます。使用されている正規表現の構文は Python の構文です。Python 正規表現の構文については、コマンド \fBpydoc re\fR を使用するか、または \fBhttp://docs.python.org/dev/howto/regex.html\fR にあるより完全なドキュメントを参照してください。正規表現は先頭に固定され、末尾には固定されません。そのため、ファイルを拡張子で照合する正規表現には先頭に \fB\&.*\fR を含める必要があり、さらに末尾には \fB$\fR を含めるようにしてください。
 .sp
 .LP
 複数の条件をスペースで区切って指定できます。
@@ -316,7 +320,7 @@ file NOHASH path=usr/bin/$(ARCH64)/cputrack ...
 .RE
 .sp
 .LP
-次の 3 つの合成属性は、\fBpkg\fR(1) で使用されるものに似ています。
+次の 3 つの合成属性は、\fBpkg\fR で使用されるものに似ています:
 .RS +4
 .TP
 .ie t \(bu
@@ -333,7 +337,7 @@ file NOHASH path=usr/bin/$(ARCH64)/cputrack ...
 .TP
 .ie t \(bu
 .el o
-\fBaction.name\fR は、アクションタイプの名前を参照します。
+\fBaction.name\fR は、アクションの名前を参照します。
 .RE
 .sp
 .LP
@@ -349,7 +353,7 @@ file NOHASH path=usr/bin/$(ARCH64)/cputrack ...
 これは、パッケージ属性をアクション属性であるかのように参照するためだけでなく、これらの属性を照合したり、一時的に変更したりするためにも有効です。したがって、これらの状況では、合成アクション名 \fBpkg\fR を (\fBpkgmogrify\fR のコンテキストでのみ) 使用できます。
 .sp
 .LP
-\fBpkgmogrify\fR がコマンド行で指定されたマニフェストの読み取りを完了し、そのマニフェストで \fBpkg.fmri\fR パッケージ属性が定義されている場合、\fBpkgmogrify\fR はこの合成アクション \fBpkg\fR を作成します。属性はパッケージの属性になります。その後、\fB<transform>\fR 指令は、ほかのアクションタイプと同様に、このアクションに照合できます。
+\fBpkgmogrify\fR がコマンド行で指定されたマニフェストの読み取りを完了し、そのマニフェストで \fBpkg.fmri\fR パッケージ属性が定義されている場合、\fBpkgmogrify\fR はこの合成アクション \fBpkg\fR を作成します。属性はパッケージの属性になります。その後、\fB<transform>\fR 指令は、ほかのアクションに照合できるのと同様に、このアクションに照合できます。
 .sp
 .LP
 \fBpkg\fR アクションに対する操作は、メモリー内でのみ実行されるために、出力されたマニフェストに直接影響を与えないという点で特殊です。たとえば、\fBadd\fR、\fBdefault\fR、または \fBset\fR 操作を使用して \fBpkg\fR アクションに属性を設定しようとしても、照合するほかの \fB<transform>\fR 指令では使用可能であるにもかかわらず、\fBset\fR アクションがマニフェストに追加されません。\fBpkg\fR アクションに対して \fBemit\fR を実行しようとすると、エラーが発生します。パッケージ属性を追加するには、代わりに \fBset\fR アクションに対して \fBemit\fR を実行します。
@@ -535,7 +539,7 @@ set name=bugs value=12345 value=54321 value=13579 value=97531
 .SH 終了ステータス
 .sp
 .LP
-次の終了値が返されます。
+次の終了ステータスが返されます。
 .sp
 .ne 2
 .mk
@@ -562,11 +566,11 @@ set name=bugs value=12345 value=54321 value=13579 value=97531
 .ne 2
 .mk
 .na
-\fB\fB2\fR \fR
+\fB\fB2\fR\fR
 .ad
 .RS 6n
 .rt  
-無効なコマンド行オプションが指定されました。
+無効なコマンド行オプションが指定された。
 .RE
 
 .sp
@@ -587,8 +591,8 @@ set name=bugs value=12345 value=54321 value=13579 value=97531
 .na
 \fB\fB/usr/share/pkg/transforms\fR\fR
 .ad
-.RS 29n
-.rt  
+.sp .6
+.RS 4n
 このディレクトリには、ファセット、アクチュエータ、およびその他の属性を設定するために役立つ変換を含むファイルが入っています。
 .RE
 

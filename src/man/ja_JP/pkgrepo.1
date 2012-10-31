@@ -1,6 +1,6 @@
 '\" te
-.\" Copyright (c) 2007, 2011, Oracle and/or its affiliates. All rights reserved.
-.TH pkgrepo 1 "2011 年 8 月 30 日" "SunOS 5.11" "ユーザーコマンド"
+.\" Copyright (c) 2007, 2012, Oracle and/or its affiliates. All rights reserved.
+.TH pkgrepo 1 "2012 年 6 月 22 日" "SunOS 5.11" "ユーザーコマンド"
 .SH 名前
 pkgrepo \- Image Packaging System リポジトリ管理ユーティリティー
 .SH 形式
@@ -16,7 +16,7 @@ pkgrepo \- Image Packaging System リポジトリ管理ユーティリティー
 
 .LP
 .nf
-/usr/bin/pkgrepo get [-F \fIformat\fR] [-p \fIpublisher\fR ...]
+/usr/bin/pkgrepo get [-F \fIformat\fR] [-H] [-p \fIpublisher\fR ...]
     -s \fIrepo_uri_or_path\fR [\fIsection/property\fR ...]
 .fi
 
@@ -53,7 +53,12 @@ pkgrepo \- Image Packaging System リポジトリ管理ユーティリティー
 .LP
 .nf
 /usr/bin/pkgrepo set [-p \fIpublisher\fR] -s \fIrepo_uri_or_path\fR
-    \fIsection/property\fR=[\fIvalue\fR] ... or
+    \fIsection/property\fR=[\fIvalue\fR]
+.fi
+
+.LP
+.nf
+/usr/bin/pkgrepo set [-p \fIpublisher\fR] -s \fIrepo_uri_or_path\fR
     \fIsection/property\fR=([\fIvalue\fR]) ...
 .fi
 
@@ -70,31 +75,35 @@ pkgrepo \- Image Packaging System リポジトリ管理ユーティリティー
 .SH 機能説明
 .sp
 .LP
-\fBpkgrepo\fR を使用すると、\fBpkg\fR(5) パッケージリポジトリの作成および管理を行うことができます。パッケージリポジトリは、\fBpkg\fR(1) や、\fBpkgsend\fR(1) または \fBpkgrecv\fR(1) などの公開クライアントがパッケージデータを格納したり取得したりできるようにするための、定義済みの一連のディレクトリおよびファイルです。さらに、パッケージリポジトリへのネットワークベースのアクセスが必要な場合、\fBpkg.depotd\fR(1m) は、クライアントにパッケージデータを格納したり取得したりするためのリポジトリへのアクセスを提供できます。
+\fBpkgrepo\fR を使用すると、\fBpkg\fR(5) パッケージリポジトリの作成および管理を行うことができます。パッケージリポジトリは、\fBpkg\fR や、\fBpkgsend\fR または \fBpkgrecv\fR などの公開クライアントがパッケージデータを格納したり取得したりできるようにするための、定義済みの一連のディレクトリおよびファイルです。さらに、パッケージリポジトリへのネットワークベースのアクセスが必要な場合、\fBpkg.depotd\fR は、クライアントにパッケージデータを格納したり取得したりするためのリポジトリへのアクセスを提供できます。
 .SH オプション
 .sp
 .LP
-次のオプションがサポートされています。
+サポートしているオプションは、次のとおりです。
 .sp
 .ne 2
 .mk
 .na
-\fB\fB--help\fR or \fB-?\fR\fR
+\fB\fB-?\fR\fR
 .ad
-.RS 16n
-.rt  
+.br
+.na
+\fB\fB--help\fR\fR
+.ad
+.sp .6
+.RS 4n
 使用方法に関するメッセージを表示します。
 .RE
 
 .SH サブコマンド
 .sp
 .LP
-次のサブコマンドがサポートされています。
+サポートされているサブコマンドは次のとおりです。
 .sp
 .ne 2
 .mk
 .na
-\fB\fBcreate [\fB--version\fR \fIver\fR] \fI uri_or_path\fR\fR\fR
+\fB\fBpkgrepo create\fR [\fB--version\fR \fI ver\fR] \fIuri_or_path\fR\fR
 .ad
 .sp .6
 .RS 4n
@@ -102,22 +111,37 @@ pkgrepo \- Image Packaging System リポジトリ管理ユーティリティー
 .sp
 このサブコマンドは、ファイルシステムベースのリポジトリでのみ使用できます。
 .sp
-\fB--version\fR が指定されている場合は、指定されたバージョンと互換性がある形式でリポジトリを作成します。デフォルトでは、バージョン 4 のリポジトリが作成されます。サポートされるバージョンは次のとおりです。
+.ne 2
+.mk
+.na
+\fB\fB--version\fR\fR
+.ad
+.sp .6
+.RS 4n
+指定されたバージョンと互換性がある形式でリポジトリを作成します。デフォルトでは、バージョン 4 のリポジトリが作成されます。サポートされるバージョンは次のとおりです。
 .sp
+.ne 2
+.mk
+.na
+\fB3\fR
+.ad
+.RS 5n
+.rt  
+1 つのパブリッシャー、カタログバージョン 1、および検索バージョン 1 でのパッケージの格納をサポートします。
+.RE
 
 .sp
-.TS
-tab();
-lw(.33i) lw(5.17i) 
-lw(.33i) lw(5.17i) 
-.
-3T{
-1 つのパブリッシャー、カタログバージョン 1、および検索バージョン 1 でのパッケージの格納をサポートします。
-T}
-4T{
+.ne 2
+.mk
+.na
+\fB4\fR
+.ad
+.RS 5n
+.rt  
 複数のパブリッシャー、カタログバージョン 1、および検索バージョン 1 でのパッケージの格納をサポートします。
-T}
-.TE
+.RE
+
+.RE
 
 .RE
 
@@ -125,11 +149,11 @@ T}
 .ne 2
 .mk
 .na
-\fB\fBadd-publisher \fB-s\fR \fIrepo_uri_or_path \fR \fIpublisher\fR ...\fR\fR
+\fB\fBpkgrepo add-publisher\fR \fB-s\fR \fI repo_uri_or_path\fR \fIpublisher\fR ...\fR
 .ad
 .sp .6
 .RS 4n
-指定されたパブリッシャーをリポジトリに追加します。新しいパブリッシャーにパッケージや内容は含まれていません。
+指定された発行元をリポジトリに追加します。新しいパブリッシャーにパッケージや内容は含まれていません。
 .sp
 このサブコマンドは、バージョン 4 のファイルシステムベースのリポジトリでのみ使用できます。
 .RE
@@ -138,11 +162,11 @@ T}
 .ne 2
 .mk
 .na
-\fB\fBget [\fB-F\fR \fIformat\fR] [\fB-p\fR \fIpublisher\fR ...] \fB-s\fR \fI repo_uri_or_path\fR [\fIsection/property\fR ...]\fR\fR
+\fB\fBpkgrepo get\fR [\fB-F\fR \fI format\fR] [\fB-H\fR] [\fB-p\fR \fIpublisher \fR ...] \fB-s\fR \fIrepo_uri_or_path\fR [\fI section/property\fR ...]\fR
 .ad
 .sp .6
 .RS 4n
-リポジトリまたはそのパブリッシャーのプロパティー情報を表示します。
+リポジトリまたはその発行元のプロパティー情報を表示します。
 .sp
 デフォルトでは、各プロパティーとその値が個別の行に出力されます。空の ASCII 文字列値は、二重引用符 (\fB""\fR) のペアで表されます。ASCII 文字列値内の次の Bourne シェルのメタキャラクタと、改行、スペース、およびタブは、バックスラッシュ文字 (\fB\e\fR) でエスケープする必要があります。
 .sp
@@ -152,43 +176,126 @@ T}
 .fi
 .in -2
 
-「使用例」の節を参照してください。
+発行元とリポジトリプロパティーの表示例については、「使用例」セクションを参照してください。
 .sp
-指定できるプロパティーのリスト、および各プロパティーの目的と値については、下の \fBset\fR サブコマンドを参照してください。
-.sp
-\fB-F\fR が指定されている場合は、代替の出力形式を指定します。\fIformat\fR の値は、\fBtsv\fR (Tab Separated Values)、\fB json\fR (単一行としての JavaScript Object Notation)、または \fBjson-formatted \fR (読みやすい形式にされた JavaScript Object Notation) にできます。
-.sp
-\fB-H\fR が指定されている場合は、リストのヘッダーを省略します。
-.sp
-\fB-p\fR が指定されている場合は、指定されたパブリッシャーのプロパティー情報を表示します。特殊な値 \fBall\fR により、すべてのパブリッシャーのプロパティーが表示されます。このオプションは複数回指定できます。
-.sp
-\fB-s\fR が指定されている場合は、指定された URI またはファイルシステムのパスにあるリポジトリを操作します。
-.RE
-
+プロパティーのリスト、および各プロパティーの目的と値については、下の \fBset\fR サブコマンドを参照してください。
 .sp
 .ne 2
 .mk
 .na
-\fB\fBinfo [\fB-F\fR \fIformat\fR] [\fB-H\fR] [\fB-p\fR \fIpublisher\fR ...] \fB- s\fR \fIrepo_uri_or_path\fR\fR\fR
+\fB\fB-F\fR \fIformat\fR\fR
 .ad
 .sp .6
 .RS 4n
-リポジトリで認識されているパッケージパブリッシャーのリストを表示します。このリストには、パブリッシャーごとのパッケージの数、パブリッシャーのパッケージデータが最後に更新された日時、およびパブリッシャーのパッケージデータのステータス (現在処理されているかどうかなど) が含まれます。
-.sp
-\fB-F\fR が指定されている場合は、代替の出力形式を指定します。\fIformat\fR の値は、\fBtsv\fR (Tab Separated Values)、\fBjson\fR (単一行としての JavaScript Object Notation)、または \fBjson-formatted\fR (読みやすい形式にされた JavaScript Object Notation) にできます。
-.sp
-\fB-H\fR が指定されている場合は、リストのヘッダーを省略します。
-.sp
-\fB-p\fR が指定されている場合は、指定されたパブリッシャーのデータのみが表示されます。指定されていない場合は、すべてのパブリッシャーのデータが表示されます。このオプションは複数回指定できます。
-.sp
-\fB-s\fR が指定されている場合は、指定された URI またはファイルシステムのパスにあるリポジトリを操作します。
+代替出力形式を指定します。\fIformat\fR の値は、\fBtsv\fR (Tab Separated Values)、\fBjson\fR (単一行としての JavaScript Object Notation)、または \fBjson-formatted\fR (読みやすい形式にされた JavaScript Object Notation) にできます。
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fB\fB list [\fB-F\fR \fIformat\fR] [\fB-H\fR] [\fB-p\fR \fIpublisher\fR ...] \fB-s\fR \fI repo_uri_or_path\fR [\fIpkg_fmri_pattern\fR ...]\fR\fR
+\fB\fB-H\fR \fR
+.ad
+.sp .6
+.RS 4n
+一覧からヘッダーを省略します。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB-p\fR \fIpublisher\fR\fR
+.ad
+.sp .6
+.RS 4n
+指定された発行元のプロパティー情報を表示します。特殊な値 \fBall\fR により、すべてのパブリッシャーのプロパティーが表示されます。このオプションは複数回指定できます。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB-s\fR \fIrepo_uri_or_path\fR\fR
+.ad
+.sp .6
+.RS 4n
+指定された URI またはファイルシステムのパスにあるリポジトリを操作します。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fIsection/property\fR\fR
+.ad
+.sp .6
+.RS 4n
+\fB publisher/prefix\fR や \fBrepository/version\fR などの、指定されたプロパティーの値のみを表示します。プロパティーの完全な一覧については、\fB set\fR サブコマンドを参照してください。
+.RE
+
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fBpkgrepo info\fR [\fB-F\fR \fI format\fR] [\fB-H\fR] [\fB-p\fR \fIpublisher \fR ...] \fB-s\fR \fIrepo_uri_or_path\fR\fR
+.ad
+.sp .6
+.RS 4n
+リポジトリで認識されているパッケージ発行元のリストを表示します。このリストには、パブリッシャーごとのパッケージの数、パブリッシャーのパッケージデータが最後に更新された日時、およびパブリッシャーのパッケージデータのステータス (現在処理されているかどうかなど) が含まれます。
+.sp
+.ne 2
+.mk
+.na
+\fB\fB-F\fR \fIformat\fR\fR
+.ad
+.sp .6
+.RS 4n
+代替出力形式を指定します。\fIformat\fR の値は、\fBtsv\fR (Tab Separated Values)、\fBjson\fR (単一行としての JavaScript Object Notation)、または \fBjson-formatted\fR (読みやすい形式にされた JavaScript Object Notation) にできます。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB-H\fR \fR
+.ad
+.sp .6
+.RS 4n
+一覧からヘッダーを省略します。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB-p\fR \fIpublisher\fR\fR
+.ad
+.sp .6
+.RS 4n
+指定された発行元のデータのみを表示します。指定されていない場合は、すべてのパブリッシャーのデータが表示されます。このオプションは複数回指定できます。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB-s\fR \fIrepo_uri_or_path\fR\fR
+.ad
+.sp .6
+.RS 4n
+指定された URI またはファイルシステムのパスにあるリポジトリを操作します。
+.RE
+
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fBpkgrepo list\fR [\fB-F\fR \fI format\fR] [\fB-H\fR] [\fB-p\fR \fIpublisher \fR ...] \fB-s\fR \fIrepo_uri_or_path\fR [\fI pkg_fmri_pattern\fR ...]\fR
 .ad
 .sp .6
 .RS 4n
@@ -196,62 +303,170 @@ T}
 .sp
 デフォルトの出力では、最初の列にパッケージのパブリッシャーの名前が含まれます。2 番目の列にはパッケージの名前が含まれます。3 番目の列には、パッケージのステータスを示すフラグが含まれます。ステータス列の \fBo\fR の値は、パッケージが廃止されていることを示します。ステータス列の \fBr\fR の値は、パッケージの名前が変更されたことを示します (廃止の形態の 1 つです)。4 番目の列には、パッケージのリリースおよびブランチのバージョンが含まれます。リリースバージョンとブランチバージョンについては、\fBpkg\fR(5) を参照してください。
 .sp
-\fB-F\fR が指定されている場合は、代替の出力形式を指定します。\fIformat\fR の値は、\fBtsv\fR (Tab Separated Values)、\fBjson\fR (単一行としての JavaScript Object Notation)、または \fBjson-formatted\fR (読みやすい形式にされた JavaScript Object Notation) にできます。
-.sp
-\fB-H\fR が指定されている場合は、リストのヘッダーを省略します。
-.sp
-\fB-p\fR が指定されている場合は、指定されたパブリッシャーのパッケージのみが表示されます。指定されていない場合は、すべてのパブリッシャーのパッケージが表示されます。このオプションは複数回指定できます。
-.sp
-\fB-s\fR が指定されている場合は、指定された URI またはファイルシステムのパスにあるリポジトリを操作します。
+.ne 2
+.mk
+.na
+\fB\fB-F\fR \fIformat\fR\fR
+.ad
+.sp .6
+.RS 4n
+代替出力形式を指定します。\fIformat\fR の値は、\fBtsv\fR (Tab Separated Values)、\fBjson\fR (単一行としての JavaScript Object Notation)、または \fBjson-formatted\fR (読みやすい形式にされた JavaScript Object Notation) にできます。
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fB\fBrebuild [\fB-p\fR \fIpublisher\fR ...] \fB- s\fR \fIrepo_uri_or_path\fR [\fB--no-catalog\fR] [\fB--no-index\fR]\fR\fR
+\fB\fB-H\fR \fR
+.ad
+.sp .6
+.RS 4n
+一覧からヘッダーを省略します。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB-p\fR \fIpublisher\fR\fR
+.ad
+.sp .6
+.RS 4n
+指定された発行元のパッケージのみを表示します。指定されていない場合は、すべてのパブリッシャーのパッケージが表示されます。このオプションは複数回指定できます。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB-s\fR \fIrepo_uri_or_path\fR\fR
+.ad
+.sp .6
+.RS 4n
+指定された URI またはファイルシステムのパスにあるリポジトリを操作します。
+.RE
+
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fBpkgrepo rebuild\fR [\fB-p\fR \fI publisher\fR ...] \fB-s\fR \fIrepo_uri_or_path\fR [\fB- -no-catalog\fR] [\fB--no-index\fR]\fR
 .ad
 .sp .6
 .RS 4n
 リポジトリ内に見つかったすべてのカタログ、検索、およびその他のキャッシュされた情報を破棄し、それをリポジトリの現在の内容に基づいて再作成します。
 .sp
-\fB-p\fR が指定されている場合は、指定されたパブリッシャーについてのみ操作を実行します。指定されていない場合や、特殊な値 \fBall\fR が指定されている場合は、すべてのパブリッシャーについて操作が実行されます。このオプションは複数回指定できます。
-.sp
-\fB-s\fR が指定されている場合は、指定された URI またはファイルシステムのパスにあるリポジトリを操作します。
-.sp
-\fB--no-catalog\fR が指定されている場合は、パッケージデータを再構築しません。
-.sp
-\fB--no-index\fR が指定されている場合は、検索インデックスを再構築しません。
+.ne 2
+.mk
+.na
+\fB\fB-p\fR \fIpublisher\fR\fR
+.ad
+.sp .6
+.RS 4n
+指定された発行元についてのみ操作を実行します。指定されていない場合や、特殊な値 \fBall\fR が指定されている場合は、すべてのパブリッシャーについて操作が実行されます。このオプションは複数回指定できます。
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fB\fBrefresh [\fB-p\fR \fIpublisher\fR ...] \fB- s\fR \fIrepo_uri_or_path\fR [\fB--no-catalog\fR] [\fB--no-index\fR]\fR\fR
+\fB\fB-s\fR \fIrepo_uri_or_path\fR\fR
+.ad
+.sp .6
+.RS 4n
+指定された URI またはファイルシステムのパスにあるリポジトリを操作します。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB--no-catalog\fR\fR
+.ad
+.sp .6
+.RS 4n
+パッケージデータを再構築しません。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB--no-index\fR\fR
+.ad
+.sp .6
+.RS 4n
+検索インデックスを再構築しません。
+.RE
+
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fBpkgrepo refresh\fR [\fB-p\fR \fI publisher\fR ...] \fB-s\fR \fIrepo_uri_or_path\fR [\fB- -no-catalog\fR] [\fB--no-index\fR]\fR
 .ad
 .sp .6
 .RS 4n
 リポジトリ内に見つかった新しいパッケージをすべてカタログ化し、すべての検索インデックスを更新します。これは、遅延公開 (\fBpkgsend\fR の \fB--no-catalog\fR または \fB--no-index\fR オプション) で使用されることを目的にしています。
 .sp
-\fB-p\fR が指定されている場合は、指定されたパブリッシャーについてのみ操作を実行します。指定されていない場合や、特殊な値 \fBall\fR が指定されている場合は、すべてのパブリッシャーについて操作が実行されます。このオプションは複数回指定できます。
-.sp
-\fB-s\fR が指定されている場合は、指定された URI またはファイルシステムのパスにあるリポジトリを操作します。
-.sp
-\fB--no-catalog\fR が指定されている場合は、新しいパッケージを追加しません。
-.sp
-\fB--no-index\fR が指定されている場合は、検索インデックスを更新しません。
+.ne 2
+.mk
+.na
+\fB\fB-p\fR \fIpublisher\fR\fR
+.ad
+.sp .6
+.RS 4n
+指定された発行元についてのみ操作を実行します。指定されていない場合や、特殊な値 \fBall\fR が指定されている場合は、すべてのパブリッシャーについて操作が実行されます。このオプションは複数回指定できます。
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fB\fBremove [\fB-n\fR] [\fB-p\fR \fI publisher\fR ...] \fB-s\fR \fIrepo_uri_or_path\fR \fI pkg_fmri_pattern\fR ...\fR\fR
+\fB\fB-s\fR \fIrepo_uri_or_path\fR\fR
 .ad
 .sp .6
 .RS 4n
-リポジトリから、指定されたパターンに一致するパッケージを削除します。これらのパッケージが参照している、ほかのどのパッケージでも使用されていないすべてのファイルも削除されます。
+指定された URI またはファイルシステムのパスにあるリポジトリを操作します。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB--no-catalog\fR\fR
+.ad
+.sp .6
+.RS 4n
+新しいパッケージを追加しません。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB--no-index\fR\fR
+.ad
+.sp .6
+.RS 4n
+検索インデックスを更新しません。
+.RE
+
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fBpkgrepo remove\fR [\fB-n\fR] [\fB-p\fR \fIpublisher\fR ...] \fB-s\fR \fI repo_uri_or_path\fR \fIpkg_fmri_pattern\fR ...\fR
+.ad
+.sp .6
+.RS 4n
+リポジトリから、指定されたパターンに一致するパッケージ (これらのパッケージが参照している、ほかのどのパッケージでも使用されていないすべてのファイルを含む) を削除します。
 .LP
 注 - 
 .sp
@@ -265,29 +480,78 @@ T}
 .RS 2
 この操作は元に戻せません。また、ほかのクライアントがそのリポジトリにアクセスしている間に使用すべきではありません。使用すると、それらのクライアントが取得操作中に失敗する可能性があります。
 .RE
-\fB-n\fR が指定されている場合は、パッケージを変更することなく、操作の試験実行を行います。終了する前に、削除されるパッケージのリストが表示されます。
 .sp
-\fB-p\fR が指定されている場合は、指定されたパブリッシャーの一致するパッケージのみを削除します。指定されていない場合は、すべてのパブリッシャーの一致するパッケージがすべて削除されます。このオプションは複数回指定できます。
-.sp
-\fB-s\fR が指定されている場合は、指定された URI またはファイルシステムのパスにあるリポジトリを操作します。
+.ne 2
+.mk
+.na
+\fB\fB-n\fR\fR
+.ad
+.sp .6
+.RS 4n
+パッケージの変更は行わずに試しに操作を実行します。終了する前に、削除されるパッケージのリストが表示されます。
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fB\fBset [\fB-p\fR \fIpublisher\fR] \fB- s\fR \fIrepo_uri_or_path\fR \fIsection/property \fR=[\fIvalue\fR] ... or \fIsection/property \fR=([\fIvalue\fR]) ...\fR\fR
+\fB\fB-p\fR \fIpublisher\fR\fR
 .ad
 .sp .6
 .RS 4n
-リポジトリまたはパブリッシャーの指定されたプロパティーの値を設定します。
+指定された発行元の一致するパッケージのみを削除します。指定されていない場合は、すべてのパブリッシャーの一致するパッケージがすべて削除されます。このオプションは複数回指定できます。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB-s\fR \fIrepo_uri_or_path\fR\fR
+.ad
+.sp .6
+.RS 4n
+指定された URI またはファイルシステムのパスにあるリポジトリを操作します。
+.RE
+
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fBpkgrepo set\fR [\fB-p\fR \fI publisher\fR] \fB-s\fR \fIrepo_uri_or_path\fR \fI section/property\fR=[\fIvalue\fR] ...\fR
+.ad
+.br
+.na
+\fB\fBset\fR [\fB-p\fR \fIpublisher\fR] \fB- s\fR \fIrepo_uri_or_path\fR \fIsection/property \fR=([\fIvalue\fR]) ...\fR
+.ad
+.sp .6
+.RS 4n
+リポジトリまたは発行元の指定されたプロパティーの値を設定します。
 .sp
 このサブコマンドは、ファイルシステムベースのリポジトリでのみ使用できます。
 .sp
-\fB-p\fR が指定されている場合は、指定されたパブリッシャーのプロパティーデータのみを設定します。パブリッシャーがまだ存在しない場合は、追加されます。特殊な値 \fBall\fR を使用すると、すべてのパブリッシャーのプロパティーを設定できます。
+.ne 2
+.mk
+.na
+\fB\fB-p\fR \fIpublisher\fR\fR
+.ad
+.sp .6
+.RS 4n
+指定された発行元のプロパティーデータのみを設定します。パブリッシャーがまだ存在しない場合は、追加されます。特殊な値 \fBall\fR を使用すると、すべての発行元のプロパティーを設定できます。
+.RE
+
 .sp
-\fB-s\fR が指定されている場合は、指定された URI またはファイルシステムのパスにあるリポジトリを操作します。
-.sp
+.ne 2
+.mk
+.na
+\fB\fB-s\fR \fIrepo_uri_or_path\fR\fR
+.ad
+.sp .6
+.RS 4n
+指定された URI またはファイルシステムのパスにあるリポジトリを操作します。
+.RE
+
 プロパティーと値は、次のいずれかの形式を使用して指定できます。
 .sp
 .ne 2
@@ -327,33 +591,11 @@ T}
 .ne 2
 .mk
 .na
-\fB\fIpublisher\fR/\fIprefix\fR\fR
+\fB\fBpublisher/prefix\fR\fR
 .ad
-.sp .6
-.RS 4n
-デフォルトのパブリッシャーの名前を表す文字列。最初の文字は a-z、A-Z、または 0-9 である必要があります。文字列の残りの部分には、文字 0-9、-、.、a-z、および A-Z のみを含めることができます。この値は、複数のパブリッシャーのパッケージが存在する場合や、パッケージがリポジトリに公開されたときにパブリッシャーが指定されていない場合に使用すべきパブリッシャーを示します。
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fB\fIpublisher\fR/\fIsigning_ca_certs \fR\fR
-.ad
-.sp .6
-.RS 4n
-このパブリッシャーに使用すべき署名元の CA 証明書のハッシュを含む文字列のリスト。
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fB\fIpublisher\fR/\fIintermediate_certs \fR\fR
-.ad
-.sp .6
-.RS 4n
-このパブリッシャーに使用すべき中間証明書のハッシュを含む文字列のリスト。
+.RS 20n
+.rt  
+デフォルトのパブリッシャーの名前を表す文字列。最初の文字は a-z、A-Z、または 0-9 である必要があります。文字列の残りの部分には、文字 0-9、-、.、a-z、および A-Z のみを含めることができます。この値は、複数のパブリッシャーのパッケージが存在するとき、またはパッケージがリポジトリに公開されているが、パブリッシャーが指定されていないときに使用されるべきパブリッシャーを示します。
 .RE
 
 リポジトリバージョン 3 および 4 の場合は、リポジトリ内の個々のパブリッシャーの次のプロパティーを設定できます。
@@ -361,7 +603,7 @@ T}
 .ne 2
 .mk
 .na
-\fB\fIpublisher\fR/\fIalias\fR\fR
+\fB\fBpublisher/alias\fR\fR
 .ad
 .sp .6
 .RS 4n
@@ -372,7 +614,7 @@ T}
 .ne 2
 .mk
 .na
-\fB\fIrepository\fR/\fIcollection_type \fR\fR
+\fB\fBrepository/collection_type\fR\fR
 .ad
 .sp .6
 .RS 4n
@@ -387,7 +629,7 @@ T}
 .ne 2
 .mk
 .na
-\fB\fIrepository\fR/\fIdescription \fR\fR
+\fB\fBrepository/description\fR\fR
 .ad
 .sp .6
 .RS 4n
@@ -398,7 +640,7 @@ T}
 .ne 2
 .mk
 .na
-\fB\fIrepository\fR/\fIdetailed_url \fR\fR
+\fB\fBrepository/detailed_url\fR\fR
 .ad
 .sp .6
 .RS 4n
@@ -409,7 +651,7 @@ T}
 .ne 2
 .mk
 .na
-\fB\fIrepository\fR/\fIlegal_uris \fR\fR
+\fB\fBrepository/legal_uris\fR\fR
 .ad
 .sp .6
 .RS 4n
@@ -420,7 +662,7 @@ T}
 .ne 2
 .mk
 .na
-\fB\fIrepository\fR/\fImirrors\fR\fR
+\fB\fBrepository/mirrors\fR\fR
 .ad
 .sp .6
 .RS 4n
@@ -431,7 +673,7 @@ T}
 .ne 2
 .mk
 .na
-\fB\fIrepository\fR/\fIname\fR\fR
+\fB\fBrepository/name\fR\fR
 .ad
 .sp .6
 .RS 4n
@@ -442,7 +684,7 @@ T}
 .ne 2
 .mk
 .na
-\fB\fIrepository\fR/\fIorigins\fR\fR
+\fB\fBrepository/origins\fR\fR
 .ad
 .sp .6
 .RS 4n
@@ -453,7 +695,7 @@ T}
 .ne 2
 .mk
 .na
-\fB\fIrepository\fR/\fIrefresh_seconds \fR\fR
+\fB\fBrepository/refresh_seconds\fR\fR
 .ad
 .sp .6
 .RS 4n
@@ -464,7 +706,7 @@ T}
 .ne 2
 .mk
 .na
-\fB\fIrepository\fR/\fIregistration_uri \fR\fR
+\fB\fBrepository/registration_uri\fR\fR
 .ad
 .sp .6
 .RS 4n
@@ -475,7 +717,7 @@ T}
 .ne 2
 .mk
 .na
-\fB\fIrepository\fR/\fIrelated_uris \fR\fR
+\fB\fBrepository/related_uris\fR\fR
 .ad
 .sp .6
 .RS 4n
@@ -489,7 +731,18 @@ T}
 .ne 2
 .mk
 .na
-\fB\fBversion\fR\fR
+\fB\fBpkgrepo help\fR\fR
+.ad
+.sp .6
+.RS 4n
+使用方法に関するメッセージを表示します。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fBpkgrepo version\fR\fR
 .ad
 .sp .6
 .RS 4n
@@ -511,7 +764,7 @@ $ \fBpkgrepo create /my/repository\fR
 \fB例 2 \fR情報を表示する
 .sp
 .LP
-パブリッシャーの概要と、リポジトリ内のパッケージの数を表示します。
+パブリッシャーのサマリーと、リポジトリ内のパッケージの数を表示します。
 
 .sp
 .in +2
@@ -560,12 +813,16 @@ $ \fBpkgrepo refresh -s http://example.com/repository\fR
 .sp
 .in +2
 .nf
-$ \fBpkgrepo get -s /my/repository\fR
-SECTION    PROPERTY VALUE
-publisher  prefix   ""
-repository version  4
+$ \fBpkgrepo get -s /export/repoSolaris11\fR
+SECTION    PROPERTY    VALUE
+publisher  prefix      solaris
+repository description Local\e copy\e of\e the\e Oracle\e Solaris\e 11\e repository
+repository name        Oracle\e Solaris\e 11
+repository version     4
 $ \fBpkgrepo get -s http://pkg.oracle.com/solaris/release/\fR
 SECTION    PROPERTY VALUE
+deployment content  s11_11-11
+deployment pubdate  20111102T222051Z
 publisher  prefix   solaris
 repository version  4
 .fi
@@ -582,7 +839,8 @@ PUBLISHER SECTION    PROPERTY         VALUE
 solaris   publisher  alias
 solaris   publisher  prefix           solaris
 solaris   repository collection-type  core
-solaris   repository description      This\e repository\e serves\e the\e Oracle\e Solaris\e 11\e Package\e repository.
+solaris   repository description      This\e repository\e serves\e the\e Oracle\e
+Solaris\e 11\e Package\e repository.
 solaris   repository legal-uris       ()
 solaris   repository mirrors          (http://pkg-cdn1.oracle.com/solaris.release/)
 solaris   repository name             Oracle\e Solaris\e 11\e Package\e Repository
@@ -628,7 +886,7 @@ $ \fBpkgrepo add-publisher -s /my/repository example.com\fR
 .SH 終了ステータス
 .sp
 .LP
-次の終了値が返されます。
+次の終了ステータスが返されます。
 .sp
 .ne 2
 .mk
@@ -648,18 +906,18 @@ $ \fBpkgrepo add-publisher -s /my/repository example.com\fR
 .ad
 .RS 6n
 .rt  
-エラーが発生しました。
+エラーが発生した。
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fB\fB2\fR \fR
+\fB\fB2\fR\fR
 .ad
 .RS 6n
 .rt  
-無効なコマンド行オプションが指定されました。
+無効なコマンド行オプションが指定された。
 .RE
 
 .sp
@@ -670,7 +928,7 @@ $ \fBpkgrepo add-publisher -s /my/repository example.com\fR
 .ad
 .RS 6n
 .rt  
-複数の操作が要求されましたが、その一部しか成功しませんでした。
+複数の操作が要求されましたが、それらの一部のみが成功しました。
 .RE
 
 .sp
@@ -717,7 +975,7 @@ _
 .SH 関連項目
 .sp
 .LP
-\fBpkg\fR(1), \fBpkgrecv\fR(1), \fBpkgsend\fR(1), \fB pkg.depotd\fR(1M), \fBpkg\fR(5)
+\fBpkg\fR(1)、\fBpkgrecv\fR(1)、\fBpkgsend\fR(1)、\fBpkg.depotd\fR(1M)、\fBpkg\fR(5)
 .sp
 .LP
 \fBhttp://hub.opensolaris.org/bin/view/Project+pkg/\fR

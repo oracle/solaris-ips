@@ -1,6 +1,6 @@
 '\" te
-.\" Copyright (c) 2007, 2011, Oracle and/or its affiliates. All rights reserved.
-.TH pkgmogrify 1 "2011 年 8 月 30 日" "SunOS 5.11" "用户命令"
+.\" Copyright (c) 2007, 2012, Oracle and/or its affiliates. All rights reserved.
+.TH pkgmogrify 1 "2012 年 6 月 4 日" "SunOS 5.11" "用户命令"
 .SH 名称
 pkgmogrify \- 映像包管理系统清单变换程序
 .SH 用法概要
@@ -44,11 +44,26 @@ pkgmogrify \- 映像包管理系统清单变换程序
 .ne 2
 .mk
 .na
-\fB\fB-D\fR \fIname\fR=\fI value\fR\fR
+\fB\fB-?\fR\fR
+.ad
+.br
+.na
+\fB\fB--help\fR\fR
 .ad
 .sp .6
 .RS 4n
-将 \fIname\fR 定义为一个宏，其值为 \fIvalue\fR。宏在输入文件中显示为 \fB $(macro)\fR。将重复执行替换操作，直到再也找不到变换。常见用语包括：
+显示用法消息。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB-D\fR \fImacro\fR=\fI value\fR\fR
+.ad
+.sp .6
+.RS 4n
+将 \fImacro\fR 定义为一个宏，其值为 \fIvalue\fR。宏在输入文件中显示为 \fB $(macro)\fR。将重复执行替换操作，直到再也找不到变换。常见用语包括：
 .RS +4
 .TP
 .ie t \(bu
@@ -83,11 +98,11 @@ file NOHASH path=usr/bin/$(ARCH64)/cputrack ...
 .ne 2
 .mk
 .na
-\fB\fB-I\fR \fIinclude_directory\fR\fR
+\fB\fB-I\fR \fIincludedir\fR\fR
 .ad
 .sp .6
 .RS 4n
-将指定目录添加到在命令行中和在嵌入式 include 指令中指定的文件的搜索路径中。
+将指定目录添加到在命令行和在嵌入式 include 指令中指定的文件的搜索路径中。
 .RE
 
 .sp
@@ -134,17 +149,6 @@ file NOHASH path=usr/bin/$(ARCH64)/cputrack ...
 将注释写入显示变换效果的输出清单。该信息可以帮助调试。
 .RE
 
-.sp
-.ne 2
-.mk
-.na
-\fB\fB--help\fR 或 \fB-?\fR\fR
-.ad
-.sp .6
-.RS 4n
-显示用法消息。
-.RE
-
 .SH 嵌入式指令
 .sp
 .LP
@@ -181,13 +185,13 @@ Transform 指令的格式为：
 .sp
 .in +2
 .nf
-[\fIaction-type\fR ... ] [\fIattribute\fR=<\fIvalue-regexp\fR> ...]
+[\fIaction-name\fR ... ] [\fIattribute\fR=<\fIvalue-regexp\fR> ...]
 .fi
 .in -2
 
 .sp
 .LP
-必须匹配其中一个指定的 \fIaction-types\fR。必须匹配所有指定的 \fIattributes\fR。使用的正则表达式语法是 Python 语法。有关 Python 正则表达式语法的更多信息，请使用命令 \fBpydoc re\fR 或参见 \fBhttp://docs.python.org/dev/howto/regex.html \fR 中的更完整文档。该正则表达式固定于开头而非结尾。因此，通过文件扩展名进行匹配的正则表达式匹配文件必须包含前导 \fB\&.*\fR，且应当包含尾随 \fB $\fR。
+必须至少匹配一个指定的 \fIaction-name\fR。必须匹配指定的每个 \fIattribute\fR。操作名称和属性列在 \fBpkg\fR(5) 手册页的“操作”中。使用的正则表达式语法是 Python 语法。有关 Python 正则表达式语法的更多信息，请使用命令 \fBpydoc re\fR 或请参见 \fBhttp://docs.python.org/dev/howto/regex.html \fR 中更为完整的文档。该正则表达式固定于开头而非结尾。因此，通过文件扩展名进行匹配的正则表达式匹配文件必须包含前导 \fB\&.*\fR，且应当包含尾随 \fB $\fR。
 .sp
 .LP
 可以指定多个条件，以空格分隔。
@@ -316,7 +320,7 @@ Transform 指令的格式为：
 .RE
 .sp
 .LP
-以下三个合成属性类似于 \fBpkg\fR(1) 中使用的属性：
+以下三个合成属性类似于 \fBpkg\fR 中使用的属性：
 .RS +4
 .TP
 .ie t \(bu
@@ -333,7 +337,7 @@ Transform 指令的格式为：
 .TP
 .ie t \(bu
 .el o
-\fBaction.name\fR 引用操作类型的名称。
+\fBaction.name\fR 引用操作的名称。
 .RE
 .sp
 .LP
@@ -349,7 +353,7 @@ Transform 指令的格式为：
 这不仅在将软件包属性视为操作属性来引用方面，而且在匹配甚至暂时修改这些属性方面，都很有用。因此，在这些情况下都可以使用合成属性名称 \fBpkg\fR（仅在 \fBpkgmogrify\fR 上下文中）。
 .sp
 .LP
-如果 \fBpkgmogrify\fR 完成读取在命令行中指定的清单并且该清单定义了 \fBpkg.fmri\fR 软件包属性，\fBpkgmogrify\fR 会创建此合成 \fBpkg\fR 操作，其属性为软件包的属性。\fB<transform>\fR 指令随后会对此操作进行匹配（正如任何其他操作类型一样）。
+如果 \fBpkgmogrify\fR 完成读取在命令行中指定的清单并且该清单定义了 \fBpkg.fmri\fR 软件包属性，\fBpkgmogrify\fR 会创建此合成 \fBpkg\fR 操作，其属性为软件包的属性。\fB<transform>\fR 指令随后会对此操作进行匹配，正如它会对任何其他操作进行匹配一样。
 .sp
 .LP
 \fBpkg\fR 操作中的操作是特殊的，它们仅在内存中进行，不会直接影响发出的清单。例如，尝试通过 \fBadd\fR、\fBdefault\fR 或 \fBset\fR 操作设置 \fBpkg\fR 操作的属性时，不会使 \fBset\fR 操作添加到清单中，虽然该操作将可用于其他 \fB<transform>\fR 指令进行匹配。尝试 \fBemit\fR\fBpkg\fR 操作会导致错误。要添加软件包属性，改为 \fBemit\fR\fBset \fR 操作。
@@ -434,7 +438,7 @@ Transform 指令的格式为：
 \fB示例 4 \fR将 FMRI 属性转换为 Depend 操作
 .sp
 .LP
-将软件包属性 \fBpkg.fmri\fR 转换为 \fBdepend\fR 操作，使其成为集合的一部分。
+将软件包属性 \fBpkg.fmri\fR 转换为 \fBdepend\fR 操作，使其成为 incorporation 的一部分。
 
 .sp
 .in +2
@@ -493,7 +497,7 @@ set name=bugs value=12345 value=54321 value=13579 value=97531
 \fB示例 8 \fR将依赖项添加到未标记为已过时的软件包中
 .sp
 .LP
-对于未标记为已过时的任何软件包，为提供软件包的合并添加集合的依赖项。必须在读入清单后执行该组变换，否则始终发出依赖项。因为修改 \fBpkg\fR 操作不会永久起作用，所以无需清除匹配 \fB pkg.obsolete=false\fR 的属性。
+对于未标记为已过时的任何软件包，为提供软件包的合并添加对 incorporation 的依赖。必须在读入清单后执行该组变换，否则始终发出依赖项。因为修改 \fBpkg\fR 操作不会永久起作用，所以无需清除匹配 \fB pkg.obsolete=false\fR 的属性。
 
 .sp
 .in +2
@@ -587,8 +591,8 @@ set name=bugs value=12345 value=54321 value=13579 value=97531
 .na
 \fB\fB/usr/share/pkg/transforms\fR\fR
 .ad
-.RS 29n
-.rt  
+.sp .6
+.RS 4n
 该目录包含使用有用变换设置侧面、执行器和其他属性的文件。
 .RE
 

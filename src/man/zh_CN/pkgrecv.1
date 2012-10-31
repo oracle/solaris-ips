@@ -1,6 +1,6 @@
 '\" te
-.\" Copyright (c) 2007, 2011, Oracle and/or its affiliates. All rights reserved.
-.TH pkgrecv 1 "2011 年 7 月 28 日" "SunOS 5.11" "用户命令"
+.\" Copyright (c) 2007, 2012, Oracle and/or its affiliates. All rights reserved.
+.TH pkgrecv 1 "2012 年 6 月 11 日" "SunOS 5.11" "用户命令"
 .SH 名称
 pkgrecv \- 映像包管理系统内容检索实用程序
 .SH 用法概要
@@ -19,7 +19,10 @@ pkgrecv \- 映像包管理系统内容检索实用程序
 .SH 描述
 .sp
 .LP
-\fBpkgrecv\fR 允许用户检索 \fBpkg\fR(5) 系统信息库或软件包归档文件中的软件包。\fBpkgrecv\fR 还可以选择性地将检索到的软件包重新发布到另一个软件包系统信息库中或者对其进行归档。缺省情况下，会以 \fBpkg\fR(1)、\fBpkg.depotd\fR(1M) 以及软件包发布工具可使用的软件包系统信息库格式检索软件包。
+\fBpkgrecv\fR 允许用户检索 \fBpkg\fR(5) 系统信息库或软件包归档文件中的软件包。\fBpkgrecv\fR 还可以选择性地将检索到的软件包重新发布到另一个软件包系统信息库中或者对其进行归档。缺省情况下，会以 \fBpkg\fR、\fBpkg.depotd\fR 以及软件包发布工具可使用的软件包系统信息库格式检索软件包。
+.sp
+.LP
+完成 \fBpkgrecv\fR 操作后，在系统信息库上运行 \fBpkgrepo refresh\fR 或 \fBpkgrepo rebuild\fR 以构建搜索索引。
 .SH 选项
 .sp
 .LP
@@ -28,10 +31,21 @@ pkgrecv \- 映像包管理系统内容检索实用程序
 .ne 2
 .mk
 .na
+\fB\fB-h\fR\fR
+.ad
+.sp .6
+.RS 4n
+显示用法消息。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
 \fB\fB-a\fR\fR
 .ad
-.RS 19n
-.rt  
+.sp .6
+.RS 4n
 将检索的软件包数据存储在 \fB-d\fR 指定的位置中的 \fBpkg\fR(5) 归档文件中。该文件不能已存在。此选项仅可以与基于文件系统的目标一起使用。尽管不要求，但还是强烈建议使用文件扩展名 \fB\&.p5p\fR（例如：\fB archive.p5p\fR）。该选项不能与 \fB--raw\fR 结合使用。
 .RE
 
@@ -41,31 +55,20 @@ pkgrecv \- 映像包管理系统内容检索实用程序
 .na
 \fB\fB-c\fR \fIcache_dir\fR\fR
 .ad
-.RS 19n
-.rt  
-将用于缓存已下载内容的目录的路径。如果没有提供此目录，客户机将自动选择一个高速缓存目录。如果下载中断并且已自动选择了一个高速缓存目录，可使用该选项继续执行下载。有关如何设置用于存储临时数据的位置的详细信息，请参见下面的"环境变量"部分。
+.sp .6
+.RS 4n
+指定将用于缓存已下载内容的目录的路径。如果没有提供此目录，客户机将自动选择一个高速缓存目录。如果下载中断并且已自动选择了一个高速缓存目录，可使用该选项继续执行下载。有关如何设置用于存储临时数据的位置的详细信息，请参见下文的“环境变量”部分。
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fB\fB-d\fR \fIpath_or_uri\fR\fR
+\fB\fB-d\fR (\fIpath\fR|\fI dest_uri\fR)\fR
 .ad
-.RS 19n
-.rt  
-要将软件包重新发布到的目标的文件系统路径或 URI。该目标必须已存在。可以使用 \fB pkgrepo\fR(1) 创建新的系统信息库。如果指定了 \fB-a\fR，则会假定目标为新的软件包归档文件。
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fB\fB-h\fR\fR
-.ad
-.RS 19n
-.rt  
-显示用法消息。
+.sp .6
+.RS 4n
+指定要将软件包重新发布到的目标的文件系统路径或 URI。如果指定了 \fB-a\fR，则目标为尚不存在的新软件包归档文件。否则，目标必须是已存在的软件包系统信息库。可以使用 \fBpkgrepo\fR 创建新的系统信息库。
 .RE
 
 .sp
@@ -74,9 +77,9 @@ pkgrecv \- 映像包管理系统内容检索实用程序
 .na
 \fB\fB-k\fR\fR
 .ad
-.RS 19n
-.rt  
-使检索的软件包内容保持压缩状态。重新发布时会忽略该选项。压缩的软件包内容不得与 \fBpkgsend\fR(1) 一起使用。
+.sp .6
+.RS 4n
+使检索的软件包内容保持压缩状态。重新发布时会忽略该选项。压缩的软件包内容不得与 \fBpkgsend\fR 一起使用。
 .RE
 
 .sp
@@ -85,8 +88,8 @@ pkgrecv \- 映像包管理系统内容检索实用程序
 .na
 \fB\fB-m\fR \fImatch\fR\fR
 .ad
-.RS 19n
-.rt  
+.sp .6
+.RS 4n
 使用以下值控制匹配行为：
 .sp
 .ne 2
@@ -94,8 +97,8 @@ pkgrecv \- 映像包管理系统内容检索实用程序
 .na
 \fB\fBall-timestamps\fR\fR
 .ad
-.RS 18n
-.rt  
+.sp .6
+.RS 4n
 包括所有匹配的时间戳，而不仅仅是最新的时间戳（意味着 \fB all-versions\fR）。
 .RE
 
@@ -105,8 +108,8 @@ pkgrecv \- 映像包管理系统内容检索实用程序
 .na
 \fB\fBall-versions\fR\fR
 .ad
-.RS 18n
-.rt  
+.sp .6
+.RS 4n
 包括所有匹配的版本，而不仅仅是最新的版本。
 .RE
 
@@ -118,8 +121,8 @@ pkgrecv \- 映像包管理系统内容检索实用程序
 .na
 \fB\fB-n\fR\fR
 .ad
-.RS 19n
-.rt  
+.sp .6
+.RS 4n
 执行试运行，不进行任何更改。
 .RE
 
@@ -129,8 +132,8 @@ pkgrecv \- 映像包管理系统内容检索实用程序
 .na
 \fB\fB-r\fR\fR
 .ad
-.RS 19n
-.rt  
+.sp .6
+.RS 4n
 递归检索提供的软件包列表的所有依赖项。
 .RE
 
@@ -138,21 +141,21 @@ pkgrecv \- 映像包管理系统内容检索实用程序
 .ne 2
 .mk
 .na
-\fB\fB-s\fR \fIsrc_repo_uri\fR\fR
+\fB\fB-s\fR \fIsrc_uri\fR\fR
 .ad
-.RS 19n
-.rt  
-URI 代表要从中接收软件包数据的 \fBpkg\fR(5) 系统信息库或软件包归档文件的位置。
+.sp .6
+.RS 4n
+指定一个 URI，代表要从中接收软件包数据的 \fBpkg\fR(5) 系统信息库或软件包归档文件的位置。
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fB\fB--cert\fR \fIfile\fR\fR
+\fB\fB--cert\fR \fIcertfile\fR\fR
 .ad
-.RS 19n
-.rt  
+.sp .6
+.RS 4n
 指定用于从 HTTPS 系统信息库进行软件包检索的客户机 SSL 证书文件。
 .RE
 
@@ -160,10 +163,10 @@ URI 代表要从中接收软件包数据的 \fBpkg\fR(5) 系统信息库或软�
 .ne 2
 .mk
 .na
-\fB\fB--key\fR \fIfile\fR\fR
+\fB\fB--key\fR \fIkeyfile\fR\fR
 .ad
-.RS 19n
-.rt  
+.sp .6
+.RS 4n
 指定用于从 HTTPS 系统信息库进行软件包检索的客户机 SSL 密钥文件。
 .RE
 
@@ -173,8 +176,8 @@ URI 代表要从中接收软件包数据的 \fBpkg\fR(5) 系统信息库或软�
 .na
 \fB\fB--newest\fR\fR
 .ad
-.RS 19n
-.rt  
+.sp .6
+.RS 4n
 列出指定系统信息库中提供的最新版本的软件包，然后退出。（忽略 \fB-s\fR 以外的所有其他选项。）
 .RE
 
@@ -184,8 +187,8 @@ URI 代表要从中接收软件包数据的 \fBpkg\fR(5) 系统信息库或软�
 .na
 \fB\fB--raw\fR\fR
 .ad
-.RS 19n
-.rt  
+.sp .6
+.RS 4n
 按主干和版本，检索一组目录结构中的原始软件包数据并将其存储在 \fB-d\fR 指定的位置中。此选项仅可以与基于文件系统的目标一起使用。此软件包数据可用于方便地修改和重新发布软件包，也许通过更正文件内容，也许通过提供附加的软件包元数据。该选项不能与 \fB-a\fR 结合使用。
 .RE
 
@@ -200,10 +203,9 @@ URI 代表要从中接收软件包数据的 \fBpkg\fR(5) 系统信息库或软�
 .in +2
 .nf
 $ \fBpkgrecv -s http://test --newest\fR
-pkg:/SUNWlibC@0.5.11,5.11-0.79:20080221T125720Z
-pkg:/SUNWfreetype2@0.5.11,5.11-0.79:20080221T123955Z
-pkg:/SUNWlibm@0.5.11,5.11-0.79:20080221T125728Z
-pkg:/SUNWliboil@0.5.11,5.11-0.79:20080221T125730Z
+pkg://solaris/system/library/c++-runtime@0.5.11,5.11-0.175.0.0.0.2.1:20120921T190358Z
+pkg://solaris/system/library/freetype-2@2.4.8,5.11-0.175.1.0.0.7.1234:20120109T215840Z
+pkg://solaris/system/library/math@0.5.11,5.11-0.175.0.0.0.2.1:20120921T190432Z
 .fi
 .in -2
 .sp
@@ -212,17 +214,20 @@ pkg:/SUNWliboil@0.5.11,5.11-0.79:20080221T125730Z
 \fB示例 2 \fR检索原始软件包数据
 .sp
 .LP
-以 \fBpkgsend include\fR 可以使用的格式接收示例 1 中的 \fBSUNWlibC\fR、\fBSUNWfreetype\fR 和 \fBSUNWlibm\fR 软件包。
+以能够与 \fBpkgsend publish\fR 结合使用的合适格式从示例 1 中接收 \fBc++-runtime\fR 软件包。
 
 .sp
 .in +2
 .nf
 $ \fBpkgrecv -s http://test \e\fR
-\fBSUNWlibC@0.5.11,5.11-0.79:20080221T125720Z --raw\fR
-SUNWfreetype2@0.5.11,5.11-0.79:20080221T123955Z
-SUNWlibm@0.5.11,5.11-0.79:20080221T125728Z
-$ \fBls -d SUNW*\fR
-SUNWfreetype2  SUNWlibC       SUNWlibm
+\fB-d /local/repo --raw \e\fR
+\fBc++-runtime@0.5.11,5.11-0.175.0.0.0.2.1:20120921T190358Z\fR
+Processing packages for publisher solaris ...
+Retrieving and evaluating 1 package(s)...
+PROCESS       ITEMS     GET (MB)    SEND (MB)
+Completed       1/1      3.5/3.5      0.0/0.0
+$ \fBls /local/repo\fR
+pkg5.repository  publisher  system%2Flibrary%2Fc%2B%2B-runtime
 .fi
 .in -2
 .sp
@@ -231,12 +236,12 @@ SUNWfreetype2  SUNWlibC       SUNWlibm
 \fB示例 3 \fR从系统中检索依赖项
 .sp
 .LP
-从名为 \fBtest\fR 的系统中接收软件包 \fBSUNWvim\fR 及其所有依赖项。
+从名为 \fBtest\fR 的系统中接收软件包 \fBeditor/vim\fR 及其所有依赖项。
 
 .sp
 .in +2
 .nf
-$ \fBpkgrecv -s http://test -r SUNWvim\fR
+$ \fBpkgrecv -s http://test -d /local/repo -r editor/vim\fR
 .fi
 .in -2
 .sp
@@ -245,88 +250,97 @@ $ \fBpkgrecv -s http://test -r SUNWvim\fR
 \fB示例 4 \fR检索所有版本
 .sp
 .LP
-从名为 \fBtest\fR 的系统中接收软件包 \fBSUNWvim\fR 的所有版本。
+从名为 \fBtest\fR 的系统中接收软件包 \fBeditor/vim\fR 的所有版本。
 
 .sp
 .in +2
 .nf
-$ \fBpkgrecv -s http://test -m all-versions SUNWvim\fR
+$ \fBpkgrecv -s http://test -d /local/repo -m all-versions \e\fR
+\fBeditor/vim\fR
+Processing packages for publisher solaris ...
+Retrieving and evaluating 2 package(s)...
+PROCESS       ITEMS     GET (MB)    SEND(MB)
+Completed       2/2    16.7/16.7    44.9/44.9
 .fi
 .in -2
 .sp
 
 .LP
-\fB示例 5 \fR检索所有版本并本地重新发布
+\fB示例 5 \fR检索所有版本并远程重新发布
 .sp
 .LP
-从名为 \fBtest\fR 的系统中接收软件包 \fBSUNWvim\fR 的所有版本，然后将其重新发布到本地系统信息库中。
+从名为 \fBtest\fR 的系统中接收软件包 \fBlibrary/zlib\fR 的所有版本，然后将其重新发布到名为 \fBremote\fR 的系统上的远程系统信息库中。
 
 .sp
 .in +2
 .nf
-$ \fBpkgrecv -s http://test -d /local/repo SUNWvim\fR
+$ \fBpkgrecv -s http://test -d http://remote:10000 \e\fR
+\fB-m all-versions library/zlib\fR
 .fi
 .in -2
 .sp
 
 .LP
-\fB示例 6 \fR检索所有版本并远程重新发布
+\fB示例 6 \fR从系统信息库中检索依赖项
 .sp
 .LP
-从名为 \fBtest\fR 的系统中接收软件包 \fBSUNWzlib\fR 的所有版本，然后将其重新发布到名为 \fBremote\fR 的系统上的远程系统信息库中。
+从位于 \fB/export/repo\fR 的系统信息库中接收软件包 \fBeditor/gnu-emacs\fR 及其所有依赖项。
 
 .sp
 .in +2
 .nf
-$ \fBpkgrecv -s http://test -d http://remote:10000 SUNWzlib\fR
+$ \fBpkgrecv -s /export/repo -d /local/repo -r editor/gnu-emacs\fR
 .fi
 .in -2
 .sp
 
 .LP
-\fB示例 7 \fR从系统信息库中检索依赖项
+\fB示例 7 \fR检索其他软件包和更改的内容
 .sp
 .LP
-从位于 \fB/export/repo\fR 的系统信息库中接收软件包 \fBSUNWemacs\fR 及其所有依赖项。
+从位于 \fBhttp://pkg.oracle.com/solaris/release/\fR 的系统信息库中将并非已存在的所有软件包和所有已更改内容接收到位于 \fB/export/repoSolaris11\fR 的系统信息库。
 
 .sp
 .in +2
 .nf
-$ \fBpkgrecv -s /export/repo -r SUNWemacs\fR
+$ \fBpkgrecv -s http://pkg.oracle.com/solaris/release/ \e\fR
+\fB-d /export/repoSolaris11 -m all-timestamps '*'\fR
+.fi
+.in -2
+.sp
+
+.sp
+.LP
+将位于 \fBhttp://pkg.oracle.com/solaris/support/ \fR的安全系统信息库中的所有尚不存在的软件包和所有更改内容接收到位于 \fB/export/repoSolaris11\fR 的系统信息库。
+
+.sp
+.in +2
+.nf
+$ \fBpkgrecv -s http://pkg.oracle.com/solaris/support/ \e\fR
+\fB-d /export/repoSolaris11 -m all-timestamps \e\fR
+\fB--key /var/pkg/ssl/Oracle_Solaris_11_Support.key.pem \e\fR
+\fB--cert /var/pkg/ssl/Oracle_Solaris_11_Support.certificate.pem '*'\fR
 .fi
 .in -2
 .sp
 
 .LP
-\fB示例 8 \fR检索其他软件包
+\fB示例 8 \fR创建软件包归档文件
 .sp
 .LP
-从位于 \fBhttp://example.com:10000\fR 的系统信息库中接收并非已存在的所有软件包。
+根据位于 \fBhttp://example.com:10000 \fR 的系统信息库创建包含软件包 \fBeditor/gnu-emacs\fR 及其所有依赖项的软件包归档文件。
 
 .sp
 .in +2
 .nf
-$ \fBpkgrecv -s http://example.com:10000 -d /my/pkg/repo '*'\fR
+$ \fBpkgrecv -s http://example.com:10000 -d /my/emacs.p5p -a \e\fR
+\fB-r editor/gnu-emacs\fR
 .fi
 .in -2
 .sp
 
 .LP
-\fB示例 9 \fR创建软件包归档文件
-.sp
-.LP
-从位于 \fBhttp://example.com:10000 \fR 的系统信息库中创建包含软件包 \fBSUNWemacs\fR 及其所有依赖项的软件包归档文件。
-
-.sp
-.in +2
-.nf
-$ \fBpkgrecv -s http://example.com:10000 -d /my/emacs.p5p -a -r SUNWemacs\fR
-.fi
-.in -2
-.sp
-
-.LP
-\fB示例 10 \fR将软件包从归档文件复制到系统信息库中
+\fB示例 9 \fR将软件包从归档文件复制到系统信息库中
 .sp
 .LP
 将软件包归档文件中的所有软件包复制到位于 \fB/export/repo\fR 中的现有系统信息库。

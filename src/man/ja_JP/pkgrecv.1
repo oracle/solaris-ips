@@ -1,6 +1,6 @@
 '\" te
-.\" Copyright (c) 2007, 2011, Oracle and/or its affiliates. All rights reserved.
-.TH pkgrecv 1 "2011 年 7 月 28 日" "SunOS 5.11" "ユーザーコマンド"
+.\" Copyright (c) 2007, 2012, Oracle and/or its affiliates. All rights reserved.
+.TH pkgrecv 1 "2012 年 6 月 11 日" "SunOS 5.11" "ユーザーコマンド"
 .SH 名前
 pkgrecv \- Image Packaging System 内容取得ユーティリティー
 .SH 形式
@@ -19,19 +19,33 @@ pkgrecv \- Image Packaging System 内容取得ユーティリティー
 .SH 機能説明
 .sp
 .LP
-\fBpkgrecv\fR を使用すると、ユーザーは \fBpkg\fR(5) リポジトリまたはパッケージアーカイブからパッケージを取得できます。また、\fBpkgrecv\fR はオプションで、取得されたパッケージを別のパッケージリポジトリに再公開したり、アーカイブしたりすることもできます。デフォルトでは、パッケージは \fBpkg\fR(1)、\fBpkg.depotd\fR(1M)、およびパッケージ公開ツールでの使用に適したパッケージリポジトリ形式で取得されます。
+\fBpkgrecv\fR を使用すると、ユーザーは \fBpkg\fR(5) リポジトリまたはパッケージアーカイブからパッケージを取得できます。また、\fBpkgrecv\fR はオプションで、取得されたパッケージを別のパッケージリポジトリに再公開したり、アーカイブしたりすることもできます。デフォルトでは、パッケージは \fBpkg\fR、\fBpkg.depotd\fR、およびパッケージ公開ツールでの使用に適したパッケージリポジトリ形式で取得されます。
+.sp
+.LP
+\fBpkgrecv\fR 操作後に、リポジトリに対して \fBpkgrepo refresh\fR または \fBpkgrepo rebuild\fR を実行し、検索インデックスを構築します。
 .SH オプション
 .sp
 .LP
-次のオプションがサポートされています。
+サポートしているオプションは、次のとおりです。
+.sp
+.ne 2
+.mk
+.na
+\fB\fB-h\fR\fR
+.ad
+.sp .6
+.RS 4n
+使用方法に関するメッセージを表示します。
+.RE
+
 .sp
 .ne 2
 .mk
 .na
 \fB\fB-a\fR\fR
 .ad
-.RS 19n
-.rt  
+.sp .6
+.RS 4n
 取得されたパッケージデータを、\fB-d\fR で指定された場所にある \fBpkg\fR(5) アーカイブ内に格納します。このファイルがすでに存在していてはいけません。このオプションは、ファイルシステムベースの出力先の場合にのみ使用できます。必須ではありませんが、\fB\&.p5p\fR のファイル拡張子 (たとえば、\fBarchive.p5p\fR) を使用することを強くお勧めします。このオプションを \fB--raw\fR と組み合わせることはできません。
 .RE
 
@@ -41,31 +55,20 @@ pkgrecv \- Image Packaging System 内容取得ユーティリティー
 .na
 \fB\fB-c\fR \fIcache_dir\fR\fR
 .ad
-.RS 19n
-.rt  
-ダウンロードされた内容をキャッシュするために使用されるディレクトリのパス。このディレクトリが指定されていない場合は、クライアントによってキャッシュディレクトリが自動的に選択されます。ダウンロードが中断されたときに、キャッシュディレクトリが自動的に選択されていた場合は、このオプションを使用してダウンロードを再開します。一時的なデータストレージに使用される場所を設定する方法についての詳細は、下の「環境変数」の節を参照してください。
+.sp .6
+.RS 4n
+ダウンロードされた内容をキャッシュするために使用されるディレクトリのパスを指定します。このディレクトリが指定されていない場合は、クライアントによってキャッシュディレクトリが自動的に選択されます。ダウンロードが中断されたときに、キャッシュディレクトリが自動的に選択されていた場合は、このオプションを使用してダウンロードを再開します。一時的なデータストレージに使用される場所を設定する方法についての詳細は、下の「環境変数」のセクションを参照してください。
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fB\fB-d\fR \fIpath_or_uri\fR\fR
+\fB\fB-d\fR (\fIpath\fR|\fI dest_uri\fR)\fR
 .ad
-.RS 19n
-.rt  
-パッケージを再公開する先のターゲットのファイルシステムのパスまたは URI。このターゲットはすでに存在する必要があります。新しいリポジトリは、\fBpkgrepo\fR(1) を使用して作成できます。\fB-a\fR が指定されている場合、ターゲットは新しいパッケージアーカイブであると見なされます。
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fB\fB-h\fR\fR
-.ad
-.RS 19n
-.rt  
-使用方法に関するメッセージを表示します。
+.sp .6
+.RS 4n
+パッケージを再公開する先のターゲットのファイルシステムのパスまたは URI を指定します。\fB-a\fR が指定されている場合、ターゲットはまだ存在しない新しいパッケージアーカイブです。指定されていない場合、ターゲットはすでに存在するパッケージリポジトリである必要があります。新しいリポジトリは、\fBpkgrepo\fR を使用して作成できます。
 .RE
 
 .sp
@@ -74,9 +77,9 @@ pkgrecv \- Image Packaging System 内容取得ユーティリティー
 .na
 \fB\fB-k\fR\fR
 .ad
-.RS 19n
-.rt  
-取得されたパッケージの内容を圧縮されたままにします。このオプションは、再公開時には無視されます。圧縮されたパッケージの内容を \fBpkgsend\fR(1) で使用しないようにしてください。
+.sp .6
+.RS 4n
+取得されたパッケージの内容を圧縮されたままにします。このオプションは、再公開時には無視されます。圧縮されたパッケージの内容を \fBpkgsend\fR で使用しないようにしてください。
 .RE
 
 .sp
@@ -85,17 +88,17 @@ pkgrecv \- Image Packaging System 内容取得ユーティリティー
 .na
 \fB\fB-m\fR \fImatch\fR\fR
 .ad
-.RS 19n
-.rt  
-次の値を使用して照合動作を制御します。
+.sp .6
+.RS 4n
+次の値を使用して、マッチング動作を制御します:
 .sp
 .ne 2
 .mk
 .na
 \fB\fBall-timestamps\fR\fR
 .ad
-.RS 18n
-.rt  
+.sp .6
+.RS 4n
 最新のタイムスタンプだけでなく、一致するすべてのタイムスタンプを含めます (\fBall-versions\fR が暗黙的に指定されます)。
 .RE
 
@@ -105,8 +108,8 @@ pkgrecv \- Image Packaging System 内容取得ユーティリティー
 .na
 \fB\fBall-versions\fR\fR
 .ad
-.RS 18n
-.rt  
+.sp .6
+.RS 4n
 最新のバージョンだけでなく、一致するすべてのバージョンを含めます。
 .RE
 
@@ -118,8 +121,8 @@ pkgrecv \- Image Packaging System 内容取得ユーティリティー
 .na
 \fB\fB-n\fR\fR
 .ad
-.RS 19n
-.rt  
+.sp .6
+.RS 4n
 変更を行うことなく、試験実行を行います。
 .RE
 
@@ -129,8 +132,8 @@ pkgrecv \- Image Packaging System 内容取得ユーティリティー
 .na
 \fB\fB-r\fR\fR
 .ad
-.RS 19n
-.rt  
+.sp .6
+.RS 4n
 提供されたパッケージリストのすべての依存関係を再帰的に取得します。
 .RE
 
@@ -138,21 +141,21 @@ pkgrecv \- Image Packaging System 内容取得ユーティリティー
 .ne 2
 .mk
 .na
-\fB\fB-s\fR \fIsrc_repo_uri\fR\fR
+\fB\fB-s\fR \fIsrc_uri\fR\fR
 .ad
-.RS 19n
-.rt  
-パッケージデータ受信先の \fBpkg\fR(5) リポジトリまたはパッケージアーカイブの場所を表す URI。
+.sp .6
+.RS 4n
+パッケージデータ受信先の \fBpkg\fR(5) リポジトリまたはパッケージアーカイブの場所を表す URI を指定します。
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fB\fB--cert\fR \fIfile\fR\fR
+\fB\fB--cert\fR \fIcertfile\fR\fR
 .ad
-.RS 19n
-.rt  
+.sp .6
+.RS 4n
 HTTPS リポジトリからのパッケージ取得に使用するクライアント SSL 証明書ファイルを指定します。
 .RE
 
@@ -160,10 +163,10 @@ HTTPS リポジトリからのパッケージ取得に使用するクライア�
 .ne 2
 .mk
 .na
-\fB\fB--key\fR \fIfile\fR\fR
+\fB\fB--key\fR \fIkeyfile\fR\fR
 .ad
-.RS 19n
-.rt  
+.sp .6
+.RS 4n
 HTTPS リポジトリからのパッケージ取得に使用するクライアント SSL キーファイルを指定します。
 .RE
 
@@ -173,8 +176,8 @@ HTTPS リポジトリからのパッケージ取得に使用するクライア�
 .na
 \fB\fB--newest\fR\fR
 .ad
-.RS 19n
-.rt  
+.sp .6
+.RS 4n
 指定されたリポジトリから使用可能な最新バージョンのパッケージを一覧表示し、終了します (\fB-s\fR を除くその他のオプションはすべて無視されます)。
 .RE
 
@@ -184,8 +187,8 @@ HTTPS リポジトリからのパッケージ取得に使用するクライア�
 .na
 \fB\fB--raw\fR\fR
 .ad
-.RS 19n
-.rt  
+.sp .6
+.RS 4n
 raw パッケージデータを取得し、\fB-d\fR で指定された場所に、幹およびバージョンごとの一連のディレクトリ構造内に格納します。このオプションは、ファイルシステムベースの出力先の場合にのみ使用できます。このパッケージデータを使用すると、一般にはファイルの内容を修正するか、または追加のパッケージメタデータを提供することによって、パッケージを便利に変更して再公開することができます。このオプションを \fB-a\fR と組み合わせることはできません。
 .RE
 
@@ -200,10 +203,9 @@ raw パッケージデータを取得し、\fB-d\fR で指定された場所に�
 .in +2
 .nf
 $ \fBpkgrecv -s http://test --newest\fR
-pkg:/SUNWlibC@0.5.11,5.11-0.79:20080221T125720Z
-pkg:/SUNWfreetype2@0.5.11,5.11-0.79:20080221T123955Z
-pkg:/SUNWlibm@0.5.11,5.11-0.79:20080221T125728Z
-pkg:/SUNWliboil@0.5.11,5.11-0.79:20080221T125730Z
+pkg://solaris/system/library/c++-runtime@0.5.11,5.11-0.175.0.0.0.2.1:20120921T190358Z
+pkg://solaris/system/library/freetype-2@2.4.8,5.11-0.175.1.0.0.7.1234:20120109T215840Z
+pkg://solaris/system/library/math@0.5.11,5.11-0.175.0.0.0.2.1:20120921T190432Z
 .fi
 .in -2
 .sp
@@ -212,17 +214,20 @@ pkg:/SUNWliboil@0.5.11,5.11-0.79:20080221T125730Z
 \fB例 2 \fRraw パッケージデータを取得する
 .sp
 .LP
-例 1 の \fBSUNWlibC\fR、\fBSUNWfreetype\fR、および \fBSUNWlibm\fR パッケージを、\fBpkgsend include\fR での使用に適した形式で受信します。
+例 1 から \fBc++-runtime\fR パッケージを \fBpkgsend publish\fR で使用するために適した形式で受け取ります。
 
 .sp
 .in +2
 .nf
 $ \fBpkgrecv -s http://test \e\fR
-\fBSUNWlibC@0.5.11,5.11-0.79:20080221T125720Z --raw\fR
-SUNWfreetype2@0.5.11,5.11-0.79:20080221T123955Z
-SUNWlibm@0.5.11,5.11-0.79:20080221T125728Z
-$ \fBls -d SUNW*\fR
-SUNWfreetype2  SUNWlibC       SUNWlibm
+\fB-d /local/repo --raw \e\fR
+\fBc++-runtime@0.5.11,5.11-0.175.0.0.0.2.1:20120921T190358Z\fR
+Processing packages for publisher solaris ...
+Retrieving and evaluating 1 package(s)...
+PROCESS       ITEMS     GET (MB)    SEND (MB)
+Completed       1/1      3.5/3.5      0.0/0.0
+$ \fBls /local/repo\fR
+pkg5.repository  publisher  system%2Flibrary%2Fc%2B%2B-runtime
 .fi
 .in -2
 .sp
@@ -231,12 +236,12 @@ SUNWfreetype2  SUNWlibC       SUNWlibm
 \fB例 3 \fRシステムから依存関係を取得する
 .sp
 .LP
-\fBtest\fR という名前のシステムから、パッケージ \fBSUNWvim\fR とそのすべての依存関係を受信します。
+\fBtest\fR という名前のシステムから、パッケージ \fBeditor/vim\fR とそのすべての依存関係を受け取ります。
 
 .sp
 .in +2
 .nf
-$ \fBpkgrecv -s http://test -r SUNWvim\fR
+$ \fBpkgrecv -s http://test -d /local/repo -r editor/vim\fR
 .fi
 .in -2
 .sp
@@ -245,88 +250,97 @@ $ \fBpkgrecv -s http://test -r SUNWvim\fR
 \fB例 4 \fRすべてのバージョンを取得する
 .sp
 .LP
-\fBtest\fR という名前のシステムから、パッケージ \fBSUNWvim\fR のすべてのバージョンを受信します。
+\fBtest\fR という名前のシステムから、パッケージ \fBeditor/vim\fR のすべてのバージョンを受け取ります。
 
 .sp
 .in +2
 .nf
-$ \fBpkgrecv -s http://test -m all-versions SUNWvim\fR
+$ \fBpkgrecv -s http://test -d /local/repo -m all-versions \e\fR
+\fBeditor/vim\fR
+Processing packages for publisher solaris ...
+Retrieving and evaluating 2 package(s)...
+PROCESS       ITEMS     GET (MB)    SEND(MB)
+Completed       2/2    16.7/16.7    44.9/44.9
 .fi
 .in -2
 .sp
 
 .LP
-\fB例 5 \fRすべてのバージョンを取得し、ローカルに再公開する
+\fB例 5 \fRすべてのバージョンを取得し、リモートから再公開する
 .sp
 .LP
-\fBtest\fR という名前のシステムから、パッケージ \fBSUNWvim\fR のすべてのバージョンを受信し、それをローカルリポジトリに再公開します。
+\fBtest\fR という名前のシステムから、パッケージ \fBlibrary/zlib\fR のすべてのバージョンを受け取り、それを \fBremote\fR という名前のシステム上のリモートリポジトリに再公開します。
 
 .sp
 .in +2
 .nf
-$ \fBpkgrecv -s http://test -d /local/repo SUNWvim\fR
+$ \fBpkgrecv -s http://test -d http://remote:10000 \e\fR
+\fB-m all-versions library/zlib\fR
 .fi
 .in -2
 .sp
 
 .LP
-\fB例 6 \fRすべてのバージョンを取得し、リモートから再公開する
+\fB例 6 \fRリポジトリから依存関係を取得する
 .sp
 .LP
-\fBtest\fR という名前のシステムから、パッケージ \fBSUNWzlib\fR のすべてのバージョンを受信し、それを \fBremote\fR という名前のシステム上のリモートリポジトリに再公開します。
+\fB/export/repo\fR にあるリポジトリから、パッケージ \fBeditor/gnu-emacs\fR とそのすべての依存関係を受け取ります。
 
 .sp
 .in +2
 .nf
-$ \fBpkgrecv -s http://test -d http://remote:10000 SUNWzlib\fR
+$ \fBpkgrecv -s /export/repo -d /local/repo -r editor/gnu-emacs\fR
 .fi
 .in -2
 .sp
 
 .LP
-\fB例 7 \fRリポジトリから依存関係を取得する
+\fB例 7 \fR追加パッケージおよび変更された内容の取得
 .sp
 .LP
-\fB/export/repo\fR にあるリポジトリから、パッケージ \fBSUNWemacs\fR とそのすべての依存関係を受信します。
+まだ存在しないすべてのパッケージおよびすべての変更済みの内容を、\fBhttp://pkg.oracle.com/solaris/release/\fR にあるリポジトリから \fB/export/repoSolaris11\fR にあるリポジトリに受信します。
 
 .sp
 .in +2
 .nf
-$ \fBpkgrecv -s /export/repo -r SUNWemacs\fR
+$ \fBpkgrecv -s http://pkg.oracle.com/solaris/release/ \e\fR
+\fB-d /export/repoSolaris11 -m all-timestamps '*'\fR
+.fi
+.in -2
+.sp
+
+.sp
+.LP
+まだ存在しないすべてのパッケージおよびすべての変更済みの内容を、\fBhttp://pkg.oracle.com/solaris/support/\fR にあるセキュアなリポジトリから \fB/export/repoSolaris11\fR にあるリポジトリに受信します。
+
+.sp
+.in +2
+.nf
+$ \fBpkgrecv -s http://pkg.oracle.com/solaris/support/ \e\fR
+\fB-d /export/repoSolaris11 -m all-timestamps \e\fR
+\fB--key /var/pkg/ssl/Oracle_Solaris_11_Support.key.pem \e\fR
+\fB--cert /var/pkg/ssl/Oracle_Solaris_11_Support.certificate.pem '*'\fR
 .fi
 .in -2
 .sp
 
 .LP
-\fB例 8 \fR追加のパッケージを取得する
+\fB例 8 \fRパッケージアーカイブを作成する
 .sp
 .LP
-\fBhttp://example.com:10000\fR にあるリポジトリから、まだ存在しないすべてのパッケージを受信します。
+\fBhttp://example.com:10000\fR にあるリポジトリから、パッケージ \fBeditor/gnu-emacs\fR とそのすべての依存関係を含むパッケージアーカイブを作成します。
 
 .sp
 .in +2
 .nf
-$ \fBpkgrecv -s http://example.com:10000 -d /my/pkg/repo '*'\fR
+$ \fBpkgrecv -s http://example.com:10000 -d /my/emacs.p5p -a \e\fR
+\fB-r editor/gnu-emacs\fR
 .fi
 .in -2
 .sp
 
 .LP
-\fB例 9 \fRパッケージアーカイブを作成する
-.sp
-.LP
-\fBhttp://example.com:10000\fR にあるリポジトリから、パッケージ \fBSUNWemacs\fR とそのすべての依存関係を含むパッケージアーカイブを作成します。
-
-.sp
-.in +2
-.nf
-$ \fBpkgrecv -s http://example.com:10000 -d /my/emacs.p5p -a -r SUNWemacs\fR
-.fi
-.in -2
-.sp
-
-.LP
-\fB例 10 \fRパッケージをアーカイブからリポジトリにコピーする
+\fB例 9 \fRパッケージをアーカイブからリポジトリにコピーする
 .sp
 .LP
 パッケージアーカイブ内のすべてのパッケージを \fB/export/repo\fR にある既存のリポジトリにコピーします。
@@ -379,7 +393,7 @@ $ \fBpkgrecv -s /my/archive.p5p -d /export/repo '*'\fR
 .SH 終了ステータス
 .sp
 .LP
-次の終了値が返されます。
+次の終了ステータスが返されます。
 .sp
 .ne 2
 .mk
@@ -399,18 +413,18 @@ $ \fBpkgrecv -s /my/archive.p5p -d /export/repo '*'\fR
 .ad
 .RS 6n
 .rt  
-エラーが発生しました。
+エラーが発生した。
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fB\fB2\fR \fR
+\fB\fB2\fR\fR
 .ad
 .RS 6n
 .rt  
-無効なコマンド行オプションが指定されました。
+無効なコマンド行オプションが指定された。
 .RE
 
 .sp
@@ -421,7 +435,7 @@ $ \fBpkgrecv -s /my/archive.p5p -d /export/repo '*'\fR
 .ad
 .RS 6n
 .rt  
-複数の操作が要求されましたが、その一部しか成功しませんでした。
+複数の操作が要求されましたが、それらの一部のみが成功しました。
 .RE
 
 .sp

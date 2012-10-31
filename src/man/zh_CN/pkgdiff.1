@@ -1,6 +1,6 @@
 '\" te
-.\" Copyright (c) 2007, 2011, Oracle and/or its affiliates. All rights reserved.
-.TH pkgdiff 1 "2011 年 7 月 28 日" "SunOS 5.11" "用户命令"
+.\" Copyright (c) 2007, 2012, Oracle and/or its affiliates. All rights reserved.
+.TH pkgdiff 1 "2012 年 5 月 27 日" "SunOS 5.11" "用户命令"
 .SH 名称
 pkgdiff \- 比较软件包清单
 .SH 用法概要
@@ -23,8 +23,8 @@ pkgdiff \- 比较软件包清单
 .na
 \fB+ \fIcomplete_action\fR\fR
 .ad
-.RS 21n
-.rt  
+.sp .6
+.RS 4n
 此操作在 \fIfile2\fR 中而不在 \fIfile1\fR 中。
 .RE
 
@@ -34,8 +34,8 @@ pkgdiff \- 比较软件包清单
 .na
 \fB- \fIcomplete_action\fR\fR
 .ad
-.RS 21n
-.rt  
+.sp .6
+.RS 4n
 此操作在 \fIfile1\fR 中而不在 \fIfile2\fR 中。
 .RE
 
@@ -52,8 +52,8 @@ pkgdiff \- 比较软件包清单
 .na
 \fB- \fIattribute1\fR=\fIvalue1\fR\fR
 .ad
-.RS 23n
-.rt  
+.sp .6
+.RS 4n
 此 \fIattribute\fR,\fIvalue\fR 在 \fIfile1\fR 中而不在 \fIfile2\fR 中。
 .RE
 
@@ -63,8 +63,8 @@ pkgdiff \- 比较软件包清单
 .na
 \fB+ \fIattribute2\fR=\fIvalue2\fR\fR
 .ad
-.RS 23n
-.rt  
+.sp .6
+.RS 4n
 此 \fIattribute\fR,\fIvalue\fR 在 \fIfile2\fR 中而不在 \fIfile1\fR 中。
 .RE
 
@@ -79,10 +79,21 @@ pkgdiff \- 比较软件包清单
 .ne 2
 .mk
 .na
+\fB\fB--help\fR\fR
+.ad
+.sp .6
+.RS 4n
+显示用法消息。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
 \fB\fB-i\fR \fIattribute\fR\fR
 .ad
-.RS 18n
-.rt  
+.sp .6
+.RS 4n
 比较期间将忽略 \fIattribute\fR（如果存在）。可以使用 \fB-i\fR\fI hash\fR 忽略文件散列值。该选项不能与 \fB-o\fR 选项一起使用。可以重复该选项。
 .RE
 
@@ -92,8 +103,8 @@ pkgdiff \- 比较软件包清单
 .na
 \fB\fB-o\fR \fIattribute\fR\fR
 .ad
-.RS 18n
-.rt  
+.sp .6
+.RS 4n
 仅报告 \fIattribute\fR 的差异。该选项不能与 \fB-i\fR 选项一起使用。该选项会省略不影响操作 \fIattribute\fR 的任何操作更改。
 .RE
 
@@ -103,8 +114,8 @@ pkgdiff \- 比较软件包清单
 .na
 \fB\fB-v\fR \fIname\fR=\fI value\fR\fR
 .ad
-.RS 18n
-.rt  
+.sp .6
+.RS 4n
 仅计算该变体值的差异。例如，只计算 \fBarch=sparc\fR 的差异。在进行比较之前，将删除所有操作的该变体标记。只能为每个变体指定一个值。可对不同的变体重复该选项。
 .RE
 

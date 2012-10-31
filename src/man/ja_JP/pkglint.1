@@ -1,14 +1,14 @@
 '\" te
-.\" Copyright (c) 2007, 2011, Oracle and/or its affiliates. All rights reserved.
-.TH pkglint 1 "2011 年 7 月 28 日" "SunOS 5.11" "ユーザーコマンド"
+.\" Copyright (c) 2007, 2012, Oracle and/or its affiliates. All rights reserved.
+.TH pkglint 1 "2012 年 5 月 27 日" "SunOS 5.11" "ユーザーコマンド"
 .SH 名前
 pkglint \- Image Packaging System パッケージ lint
 .SH 形式
 .LP
 .nf
-/usr/bin/pkglint [-c \fIdir\fR] [-r \fIuri\fR] [-p \fIregexp\fR]
-    [-f \fIrcfile\fR] [-b \fIbuild_no\fR] [-v]
-    [-l \fIuri\fR] | \fImanifest\fR ...
+/usr/bin/pkglint [-c \fIcache_dir\fR] [-r \fIrepo_uri\fR] [-p \fIregexp\fR]
+    [-f \fIconfig_file\fR] [-b \fIbuild_no\fR] [-v]
+    [-l \fIlint_uri\fR] | \fImanifest\fR ...
 .fi
 
 .LP
@@ -22,7 +22,7 @@ pkglint \- Image Packaging System パッケージ lint
 \fBpkglint\fR は、必要に応じて別のリポジトリを参照しながら、1 つ以上のパッケージマニフェストに対して一連のチェックを実行します。
 .sp
 .LP
-\fBpkglint\fR は、パッケージ公開前の、パッケージ作成処理中に使用するべきです。\fBpkglint\fR は、マニフェストに対して、\fBpkgsend\fR(1) または \fBpkg.depotd\fR(1M) の通常動作中に実行するには負荷が大きすぎる可能性のある徹底的なテストを実行します。\fBpkglint\fR のチェックには、重複したアクション、欠落した属性、および異常なファイルアクセス権に対するテストが含まれます。
+\fBpkglint\fR は、パッケージ公開前の、パッケージ作成処理中に使用するべきです。\fBpkglint\fR は、マニフェストに対して、\fBpkgsend\fR または \fBpkg.depotd\fR の通常動作中に実行するには負荷が大きすぎる可能性のある徹底的なテストを実行します。\fBpkglint\fR のチェックには、重複したアクション、欠落した属性、および異常なファイルアクセス権に対するテストが含まれます。
 .sp
 .LP
 lint のためのマニフェストは、コマンド行で、スペースで区切られたローカルファイルのリストとして渡すことができます。または、リポジトリからマニフェストを取得できます。
@@ -34,7 +34,7 @@ lint のためのマニフェストは、コマンド行で、スペースで区
 \fBpkglint\fR の以降の呼び出しではキャッシュディレクトリを再利用できるため、\fB-r\fR または \fB-l\fR 引数はすべて省略できます。
 .sp
 .LP
-\fBpkglint\fR では、キャッシュディレクトリ内のパブリッシャーを構成するためのサポートが制限されています。これらのイメージに対して、より複雑なパブリッシャーの構成を実行するには、\fBpkg\fR(1) を使用します。
+\fBpkglint\fR では、キャッシュディレクトリ内のパブリッシャーを構成するためのサポートが制限されています。これらのイメージに対して、より複雑な発行元の構成を実行するには、\fBpkg\fR を使用します。
 .sp
 .LP
 \fBpkglint\fR では、パッケージ作成者は、特定のマニフェストまたはアクションに対するチェックをバイパスできます。\fBTrue\fR に設定された属性 \fBpkg.linted\fR を含むマニフェストまたはアクションでは、そのマニフェストまたはアクションに対する lint 出力は生成されません。
@@ -50,15 +50,30 @@ lint の実行中に検出されたエラーまたは警告はすべて \fBstder
 .SH オプション
 .sp
 .LP
-次のオプションがサポートされています。
+サポートしているオプションは、次のとおりです。
+.sp
+.ne 2
+.mk
+.na
+\fB\fB-h\fR\fR
+.ad
+.br
+.na
+\fB\fB--help\fR\fR
+.ad
+.sp .6
+.RS 4n
+使用方法に関するメッセージを表示します。
+.RE
+
 .sp
 .ne 2
 .mk
 .na
 \fB\fB-b\fR \fIbuild_no\fR\fR
 .ad
-.RS 18n
-.rt  
+.sp .6
+.RS 4n
 lint および参照リポジトリからの lint 中に使用されるパッケージのリストを絞り込むために使用されるビルド番号を指定します。\fB-b\fR オプションが指定されていない場合は、最新バージョンのパッケージが使用されます。\fBversion.pattern \fR 設定プロパティーも参照してください。
 .RE
 
@@ -68,8 +83,8 @@ lint および参照リポジトリからの lint 中に使用されるパッケ
 .na
 \fB\fB-c\fR \fIcache_dir\fR\fR
 .ad
-.RS 18n
-.rt  
+.sp .6
+.RS 4n
 lint および参照リポジトリからのパッケージのメタデータをキャッシュするために使用されるローカルディレクトリを指定します。
 .RE
 
@@ -79,8 +94,8 @@ lint および参照リポジトリからのパッケージのメタデータを
 .na
 \fB\fB-l\fR \fIlint_uri\fR\fR
 .ad
-.RS 18n
-.rt  
+.sp .6
+.RS 4n
 lint リポジトリの場所を表す URI を指定します。HTTP ベースとファイルシステムベースの両方の公開がサポートされています。\fB-l\fR を指定する場合は、\fB-c\fR も指定する必要があります。
 .RE
 
@@ -90,8 +105,8 @@ lint リポジトリの場所を表す URI を指定します。HTTP ベース�
 .na
 \fB\fB-L\fR\fR
 .ad
-.RS 18n
-.rt  
+.sp .6
+.RS 4n
 既知の lint チェックと除外された lint チェックを一覧表示してから終了します。各チェックの短縮名と説明を表示します。\fB-v\fR フラグと組み合わせる場合は、説明の代わりに、このチェックを実装するメソッドを表示します。
 .RE
 
@@ -101,8 +116,8 @@ lint リポジトリの場所を表す URI を指定します。HTTP ベース�
 .na
 \fB\fB-f\fR \fIconfig_file\fR\fR
 .ad
-.RS 18n
-.rt  
+.sp .6
+.RS 4n
 \fIconfig_file\fR 構成ファイルを使用して \fBpkglint\fR セッションを構成します。
 .RE
 
@@ -112,8 +127,8 @@ lint リポジトリの場所を表す URI を指定します。HTTP ベース�
 .na
 \fB\fB-p\fR \fIregexp\fR\fR
 .ad
-.RS 18n
-.rt  
+.sp .6
+.RS 4n
 lint リポジトリからチェックされるパッケージのリストを絞り込むために使用される正規表現を指定します。参照リポジトリからはすべてのマニフェストがロードされ (\fB-b\fR が指定されている場合は、その値に一致すると仮定)、このパターンは無視されます。
 .RE
 
@@ -123,8 +138,8 @@ lint リポジトリからチェックされるパッケージのリストを絞
 .na
 \fB\fB-r\fR \fIrepo_uri\fR\fR
 .ad
-.RS 18n
-.rt  
+.sp .6
+.RS 4n
 参照リポジトリの場所を表す URI を指定します。\fB-r\fR を指定する場合は、\fB-c\fR も指定する必要があります。
 .RE
 
@@ -134,20 +149,9 @@ lint リポジトリからチェックされるパッケージのリストを絞
 .na
 \fB\fB-v\fR\fR
 .ad
-.RS 18n
-.rt  
+.sp .6
+.RS 4n
 \fBpkglint\fR を冗長モードで実行し、構成ファイル内の \fBlog_level\fR 設定をすべて上書きします。
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fB\fB--help\fR or \fB-?\fR\fR
-.ad
-.RS 18n
-.rt  
-使用方法に関するメッセージを表示します。
 .RE
 
 .SH ファイル
@@ -160,8 +164,8 @@ lint リポジトリからチェックされるパッケージのリストを絞
 .na
 \fB\fBlog_level\fR\fR
 .ad
-.RS 24n
-.rt  
+.sp .6
+.RS 4n
 lint メッセージを発行する最小のレベル。このレベルより低い lint メッセージは破棄されます。デフォルト値は \fBINFO\fR です。
 .sp
 ログレベルを最小のレベルからもっとも重大なレベルの順に示すと、\fBDEBUG\fR、\fBINFO\fR、\fBWARNING\fR、\fBERROR\fR、\fBCRITICAL\fR になります。
@@ -173,8 +177,8 @@ lint メッセージを発行する最小のレベル。このレベルより低
 .na
 \fB\fBdo_pub_checks\fR\fR
 .ad
-.RS 24n
-.rt  
+.sp .6
+.RS 4n
 \fBTrue\fR の場合は、公開されたパッケージにとってのみ意味がある可能性のあるチェックを実行します。デフォルト値は \fBTrue\fR です。
 .RE
 
@@ -184,9 +188,9 @@ lint メッセージを発行する最小のレベル。このレベルより低
 .na
 \fB\fBpkglint.ext.\fR*\fR
 .ad
-.RS 24n
-.rt  
-\fBpkglint\fR のプラグインメカニズムを使用すると、実行時に lint モジュールを追加できます。\fBpkglint.ext.\fR で始まるキーはすべて、完全に指定された Python モジュールである必要のある値を取ります。詳細は、「開発者」の節を参照してください。
+.sp .6
+.RS 4n
+\fBpkglint\fR のプラグインメカニズムを使用すると、実行時に lint モジュールを追加できます。\fBpkglint.ext.\fR で始まるキーはすべて、完全に指定された Python モジュールである必要のある値を取ります。詳細は、「開発者」のセクションを参照してください。
 .RE
 
 .sp
@@ -195,8 +199,8 @@ lint メッセージを発行する最小のレベル。このレベルより低
 .na
 \fB\fBpkglint.exclude\fR\fR
 .ad
-.RS 24n
-.rt  
+.sp .6
+.RS 4n
 実行されるチェックのセットから省略する、完全に指定された Python モジュール、クラス、または関数名のスペースで区切られたリスト。
 .RE
 
@@ -206,8 +210,8 @@ lint メッセージを発行する最小のレベル。このレベルより低
 .na
 \fB\fBuse_progress_tracker\fR\fR
 .ad
-.RS 24n
-.rt  
+.sp .6
+.RS 4n
 \fBTrue\fR の場合は、lint の実行中にマニフェストに対する処理を繰り返すときに進捗トラッカーを使用します。デフォルト値は \fBTrue\fR です。
 .RE
 
@@ -217,8 +221,8 @@ lint メッセージを発行する最小のレベル。このレベルより低
 .na
 \fB\fBversion.pattern\fR\fR
 .ad
-.RS 24n
-.rt  
+.sp .6
+.RS 4n
 lint の対象となるビルド番号を指定するときに使用されるバージョンのパターン (\fB-b\fR)。構成ファイルで指定されていない場合、\fB-b\fR オプションはパターン \fB*,5.11-0.\fR を使用します。これは、ブランチ接頭辞が 0 である 5.11 ビルドのすべてのコンポーネントに一致します。
 .RE
 
@@ -318,7 +322,7 @@ pkg.lint.opensolaris.OpenSolarisManifestChecker
 .SH 終了ステータス
 .sp
 .LP
-次の終了値が返されます。
+次の終了ステータスが返されます。
 .sp
 .ne 2
 .mk
@@ -345,11 +349,11 @@ pkg.lint.opensolaris.OpenSolarisManifestChecker
 .ne 2
 .mk
 .na
-\fB\fB2\fR \fR
+\fB\fB2\fR\fR
 .ad
 .RS 6n
 .rt  
-無効なコマンド行オプションが指定されました。
+無効なコマンド行オプションが指定された。
 .RE
 
 .sp
@@ -385,7 +389,7 @@ _
 .SH 関連項目
 .sp
 .LP
-\fBpkg\fR(1), \fBpkg.depotd\fR(1M), \fBpkgsend \fR(1), \fBpkg\fR(5)
+\fBpkg\fR(1), \fBpkg.depotd\fR(1M), \fBpkgsend\fR(1), \fBpkg\fR(5)
 .sp
 .LP
 \fBhttp://hub.opensolaris.org/bin/view/Project+pkg/\fR

@@ -1,6 +1,6 @@
 '\" te
-.\" Copyright (c) 2007, 2011, Oracle and/or its affiliates. All rights reserved.
-.TH pkgmerge 1 "2011 年 7 月 28 日" "SunOS 5.11" "ユーザーコマンド"
+.\" Copyright (c) 2007, 2012, Oracle and/or its affiliates. All rights reserved.
+.TH pkgmerge 1 "2012 年 5 月 27 日" "SunOS 5.11" "ユーザーコマンド"
 .SH 名前
 pkgmerge \- Image Packaging System パッケージマージユーティリティー
 .SH 形式
@@ -24,7 +24,22 @@ pkgmerge \- Image Packaging System パッケージマージユーティリティ
 .SH オプション
 .sp
 .LP
-次のオプションがサポートされています。
+サポートしているオプションは、次のとおりです。
+.sp
+.ne 2
+.mk
+.na
+\fB\fB-?\fR\fR
+.ad
+.br
+.na
+\fB\fB--help\fR\fR
+.ad
+.sp .6
+.RS 4n
+使用方法に関するメッセージを表示します。
+.RE
+
 .sp
 .ne 2
 .mk
@@ -33,7 +48,7 @@ pkgmerge \- Image Packaging System パッケージマージユーティリティ
 .ad
 .sp .6
 .RS 4n
-マージされたパッケージを公開する先のターゲットリポジトリのファイルシステムのパスまたは URI。このターゲットリポジトリはすでに存在している必要があります。新しいリポジトリは、\fBpkgrepo\fR(1) を使用して作成できます。
+マージされたパッケージを公開する先のターゲットリポジトリのファイルシステムのパスまたは URI を指定します。このターゲットリポジトリはすでに存在している必要があります。新しいリポジトリは、\fBpkgrepo\fR を使用して作成できます。
 .RE
 
 .sp
@@ -55,18 +70,7 @@ pkgmerge \- Image Packaging System パッケージマージユーティリティ
 .ad
 .sp .6
 .RS 4n
-このソースのパッケージに使用するバリアント名および値。そのあとに、パッケージを取得する元のソースリポジトリまたはパッケージアーカイブのファイルシステムのパスまたは URI が続きます。複数のバリアントをコンマで区切って指定できます。すべてのソースに対して同じバリアントを指定する必要があります。このオプションは複数回指定できます。
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fB\fB--help\fR or \fB-?\fR\fR
-.ad
-.sp .6
-.RS 4n
-使用方法に関するメッセージを表示します。
+このソースのパッケージに使用するバリアント名および値、そのあとに、パッケージを取得する元のソースリポジトリまたはパッケージアーカイブのファイルシステムのパスまたは URI を指定します。複数のバリアントをコンマで区切って指定できます。すべてのソースに対して同じバリアントを指定する必要があります。このオプションは複数回指定できます。
 .RE
 
 .SH 環境
@@ -340,7 +344,7 @@ dir group=sys mode=0755 owner=root path=usr
 .SH 終了ステータス
 .sp
 .LP
-次の終了値が返されます。
+次の終了ステータスが返されます。
 .sp
 .ne 2
 .mk
@@ -360,18 +364,18 @@ dir group=sys mode=0755 owner=root path=usr
 .ad
 .RS 6n
 .rt  
-エラーが発生しました。
+エラーが発生した。
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fB\fB2\fR \fR
+\fB\fB2\fR\fR
 .ad
 .RS 6n
 .rt  
-無効なコマンド行オプションが指定されました。
+無効なコマンド行オプションが指定された。
 .RE
 
 .sp

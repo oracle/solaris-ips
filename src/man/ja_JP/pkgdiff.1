@@ -1,6 +1,6 @@
 '\" te
-.\" Copyright (c) 2007, 2011, Oracle and/or its affiliates. All rights reserved.
-.TH pkgdiff 1 "2011 年 7 月 28 日" "SunOS 5.11" "ユーザーコマンド"
+.\" Copyright (c) 2007, 2012, Oracle and/or its affiliates. All rights reserved.
+.TH pkgdiff 1 "2012 年 5 月 27 日" "SunOS 5.11" "ユーザーコマンド"
 .SH 名前
 pkgdiff \- パッケージマニフェストの比較
 .SH 形式
@@ -23,8 +23,8 @@ pkgdiff \- パッケージマニフェストの比較
 .na
 \fB+ \fIcomplete_action\fR\fR
 .ad
-.RS 21n
-.rt  
+.sp .6
+.RS 4n
 このアクションは \fIfile2\fR に含まれていますが、\fIfile1\fR には含まれていません。
 .RE
 
@@ -34,8 +34,8 @@ pkgdiff \- パッケージマニフェストの比較
 .na
 \fB- \fIcomplete_action\fR\fR
 .ad
-.RS 21n
-.rt  
+.sp .6
+.RS 4n
 このアクションは \fIfile1\fR に含まれていますが、\fIfile2\fR には含まれていません。
 .RE
 
@@ -52,8 +52,8 @@ pkgdiff \- パッケージマニフェストの比較
 .na
 \fB- \fIattribute1\fR=\fIvalue1\fR\fR
 .ad
-.RS 23n
-.rt  
+.sp .6
+.RS 4n
 この \fIattribute\fR,\fIvalue\fR は \fIfile1\fR に含まれていますが、\fIfile2\fR には含まれていません。
 .RE
 
@@ -63,8 +63,8 @@ pkgdiff \- パッケージマニフェストの比較
 .na
 \fB+ \fIattribute2\fR=\fIvalue2\fR\fR
 .ad
-.RS 23n
-.rt  
+.sp .6
+.RS 4n
 この \fIattribute\fR,\fIvalue\fR は \fIfile2\fR に含まれていますが、\fIfile1\fR には含まれていません。
 .RE
 
@@ -74,15 +74,26 @@ pkgdiff \- パッケージマニフェストの比較
 .SH オプション
 .sp
 .LP
-次のオプションがサポートされています。
+サポートしているオプションは、次のとおりです。
+.sp
+.ne 2
+.mk
+.na
+\fB\fB--help\fR\fR
+.ad
+.sp .6
+.RS 4n
+使用方法に関するメッセージを表示します。
+.RE
+
 .sp
 .ne 2
 .mk
 .na
 \fB\fB-i\fR \fIattribute\fR\fR
 .ad
-.RS 17n
-.rt  
+.sp .6
+.RS 4n
 比較中に \fIattribute\fR が存在した場合は、無視します。\fB-i\fR \fIhash\fR により、ファイルのハッシュ値を無視できます。このオプションを \fB-o\fR オプションとともに使用することはできません。このオプションは繰り返すことができます。
 .RE
 
@@ -92,8 +103,8 @@ pkgdiff \- パッケージマニフェストの比較
 .na
 \fB\fB-o\fR \fIattribute\fR\fR
 .ad
-.RS 17n
-.rt  
+.sp .6
+.RS 4n
 \fIattribute\fR の違いのみを報告します。このオプションを \fB-i\fR オプションとともに使用することはできません。このオプションは、アクション時に \fIattribute\fR に影響を与えないアクション変更をすべて省略します。
 .RE
 
@@ -103,15 +114,15 @@ pkgdiff \- パッケージマニフェストの比較
 .na
 \fB\fB-v\fR \fIname\fR=\fIvalue\fR\fR
 .ad
-.RS 17n
-.rt  
+.sp .6
+.RS 4n
 このバリアント値の違いのみを計算します。たとえば、\fBarch=sparc\fR の違いのみを計算します。このバリアントタグは、比較前にすべてのアクションについて削除されます。バリアントあたり 1 つの値のみを指定できます。このオプションは、異なるバリアントに対して繰り返すことができます。
 .RE
 
 .SH 終了ステータス
 .sp
 .LP
-次の終了値が返されます。
+次の終了ステータスが返されます。
 .sp
 .ne 2
 .mk
@@ -142,7 +153,7 @@ pkgdiff \- パッケージマニフェストの比較
 .ad
 .RS 7n
 .rt  
-エラーが発生しました。
+エラーが発生した。
 .RE
 
 .sp

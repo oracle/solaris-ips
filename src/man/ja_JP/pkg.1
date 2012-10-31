@@ -1,6 +1,6 @@
 '\" te
-.\" Copyright (c) 2007, 2011, Oracle and/or its affiliates. All rights reserved.
-.TH pkg 1 "2011 年 8 月 30 日" "SunOS 5.11" "ユーザーコマンド"
+.\" Copyright (c) 2007, 2012, Oracle and/or its affiliates. All rights reserved.
+.TH pkg 1 "2012 年 6 月 26 日" "SunOS 5.11" "ユーザーコマンド"
 .SH 名前
 pkg \- Image Packaging System 取得クライアント
 .SH 形式
@@ -11,31 +11,34 @@ pkg \- Image Packaging System 取得クライアント
 
 .LP
 .nf
-/usr/bin/pkg refresh [--full] [\fIpublisher\fR ...]
+/usr/bin/pkg refresh [-q] [--full] [\fIpublisher\fR ...]
 .fi
 
 .LP
 .nf
-/usr/bin/pkg install [-nvq] [-g \fIpath_or_uri\fR ...] [--accept]
-    [--licenses] [--no-be-activate] [--no-index] [--no-refresh]
-    [--no-backup-be | --require-backup-be] [--backup-be-name \fIname\fR]
+/usr/bin/pkg install [-nvq] [-C \fIn\fR] [-g \fIpath_or_uri\fR ...]
+    [--accept] [--licenses] [--no-be-activate] [--no-index]
+    [--no-refresh] [--no-backup-be | --require-backup-be]
+    [--backup-be-name \fIname\fR]
     [--deny-new-be | --require-new-be] [--be-name \fIname\fR]
     [--reject \fIpkg_fmri_pattern\fR ...] \fIpkg_fmri_pattern\fR ...
 .fi
 
 .LP
 .nf
-/usr/bin/pkg uninstall [-nvq] [--no-be-activate] [--no-index]
-    [--no-backup-be | --require-backup-be] [--backup-be-name \fIname\fR]
+/usr/bin/pkg uninstall [-nvq] [-C \fIn\fR] [--no-be-activate]
+    [--no-index] [--no-backup-be | --require-backup-be]
+    [--backup-be-name \fIname\fR]
     [--deny-new-be | --require-new-be] [--be-name \fIname\fR]
     \fIpkg_fmri_pattern\fR ...
 .fi
 
 .LP
 .nf
-/usr/bin/pkg update [-fnvq] [-g \fIpath_or_uri\fR ...] [--accept]
-    [--licenses] [--no-be-activate] [--no-index] [--no-refresh]
-    [--no-backup-be | --require-backup-be] [--backup-be-name \fIname\fR]
+/usr/bin/pkg update [-fnvq] [-C \fIn\fR] [-g \fIpath_or_uri\fR ...]
+    [--accept] [--licenses] [--no-be-activate] [--no-index]
+    [--no-refresh] [--no-backup-be | --require-backup-be]
+    [--backup-be-name \fIname\fR]
     [--deny-new-be | --require-new-be] [--be-name \fIname\fR]
     [--reject \fIpkg_fmri_pattern\fR ...] [\fIpkg_fmri_pattern\fR ...]
 .fi
@@ -56,7 +59,7 @@ pkg \- Image Packaging System 取得クライアント
 .nf
 /usr/bin/pkg contents [-Hmr] [-a \fIattribute\fR=\fIpattern\fR ...]
     [-g \fIpath_or_uri\fR ...] [-o \fIattribute\fR ...] [-s \fIsort_key\fR]
-    [-t \fIaction_type\fR ...] [\fIpkg_fmri_pattern\fR ...]
+    [-t \fIaction_name\fR ...] [\fIpkg_fmri_pattern\fR ...]
 .fi
 
 .LP
@@ -72,13 +75,15 @@ pkg \- Image Packaging System 取得クライアント
 
 .LP
 .nf
-/usr/bin/pkg fix [--accept] [--licenses] [\fIpkg_fmri_pattern\fR ...]
+/usr/bin/pkg fix [--accept] [--licenses]
+    [\fIpkg_fmri_pattern\fR ...]
 .fi
 
 .LP
 .nf
 /usr/bin/pkg revert [-nv] [--no-be-activate]
-    [--no-backup-be | --require-backup-be] [--backup-be-name \fIname\fR]
+    [--no-backup-be | --require-backup-be]
+    [--backup-be-name \fIname\fR]
     [--deny-new-be | --require-new-be] [--be-name \fIname\fR]
     (--tagged \fItag-name\fR ... | \fIpath-to-file\fR ...)
 .fi
@@ -92,7 +97,8 @@ pkg \- Image Packaging System 取得クライアント
 .nf
 usr/bin/pkg set-mediator [-nv] [-I \fIimplementation\fR]
     [-V \fIversion\fR] [--no-be-activate]
-    [--no-backup-be | --require-backup-be] [--backup-be-name \fIname\fR]
+    [--no-backup-be | --require-backup-be]
+    [--backup-be-name \fIname\fR]
     [--deny-new-be | --require-new-be] [--be-name \fIname\fR]
     \fImediator\fR ...
 .fi
@@ -100,37 +106,40 @@ usr/bin/pkg set-mediator [-nv] [-I \fIimplementation\fR]
 .LP
 .nf
 /usr/bin/pkg unset-mediator [-nvIV] [--no-be-activate]
-    [--no-backup-be | --require-backup-be] [--backup-be-name \fIname\fR]
+    [--no-backup-be | --require-backup-be]
+    [--backup-be-name \fIname\fR]
     [--deny-new-be | --require-new-be] [--be-name \fIname\fR]
     \fImediator\fR ...
 .fi
 
 .LP
 .nf
-/usr/bin/pkg variant [-H] [\fIvariant_spec\fR]
+/usr/bin/pkg variant [-H] [variant.\fIvariant_name\fR ...]
 .fi
 
 .LP
 .nf
-/usr/bin/pkg change-variant [-nvq] [-g \fIpath_or_uri\fR ...]
+/usr/bin/pkg change-variant [-nvq] [-C \fIn\fR] [-g \fIpath_or_uri\fR ...]
     [--accept] [--licenses] [--no-be-activate]
-    [--no-backup-be | --require-backup-be] [--backup-be-name \fIname\fR]
+    [--no-backup-be | --require-backup-be]
+    [--backup-be-name \fIname\fR]
     [--deny-new-be | --require-new-be] [--be-name \fIname\fR]
-    \fIvariant_spec\fR=\fIinstance\fR ...
+    \fIvariant_name\fR=\fIvalue\fR ...
 .fi
 
 .LP
 .nf
-/usr/bin/pkg facet [-H] [\fIfacet_spec\fR]
+/usr/bin/pkg facet [-H] [\fIfacet_name\fR ...]
 .fi
 
 .LP
 .nf
-/usr/bin/pkg change-facet [-nvq] [-g \fIpath_or_uri\fR ...]
+/usr/bin/pkg change-facet [-nvq] [-C \fIn\fR] [-g \fIpath_or_uri\fR ...]
     [--accept] [--licenses] [--no-be-activate]
-    [--no-backup-be | --require-backup-be] [--backup-be-name \fIname\fR]
-    [--deny-new-be | --require-new-be] [--be-name \fIname\fR] 
-    \fIfacet_spec\fR=[True|False|None] ...
+    [--no-backup-be | --require-backup-be]
+    [--backup-be-name \fIname\fR]
+    [--deny-new-be | --require-new-be] [--be-name \fIname\fR]
+    \fIfacet_name\fR=[True|False|None] ...
 .fi
 
 .LP
@@ -180,7 +189,7 @@ usr/bin/pkg set-mediator [-nv] [-I \fIimplementation\fR]
 
 .LP
 .nf
-/usr/bin/pkg publisher [-HPn] [\fIpublisher\fR ...]
+/usr/bin/pkg publisher [-HPn] [-F \fIformat\fR] [\fIpublisher\fR ...]
 .fi
 
 .LP
@@ -190,18 +199,32 @@ usr/bin/pkg set-mediator [-nv] [-I \fIimplementation\fR]
     [-G \fIorigin_to_remove\fR | --remove-origin \fIorigin_to_remove\fR ...]
     [-m \fImirror_to_add\fR | --add-mirror \fImirror_to_add\fR ...]
     [-M \fImirror_to_remove\fR | --remove-mirror \fImirror_to_remove\fR ...]
-    [-p \fIrepo_uri\fR] [--enable] [--disable] [--no-refresh]
-    [--reset-uuid] [--non-sticky] [--sticky]
-    [--search-after \fIpublisher\fR] [--search-before \fIpublisher\fR]
-    [--search-first]
+    [--enable] [--disable] [--no-refresh] [--reset-uuid]
+    [--non-sticky] [--sticky] [--search-after \fIpublisher\fR]
+    [--search-before \fIpublisher\fR] [--search-first]
     [--approve-ca-cert \fIpath_to_CA\fR]
     [--revoke-ca-cert \fIhash_of_CA_to_remove\fR]
     [--unset-ca-cert \fIhash_of_CA_to_remove\fR]
     [--set-property \fIname_of_property\fR=\fIvalue\fR]
     [--add-property-value \fIname_of_property\fR=\fIvalue_to_add\fR]
     [--remove-property-value \fIname_of_property\fR=\fIvalue_to_remove\fR]
-    [--unset-property \fIname_of_property_to_delete\fR]
-    [\fIpublisher\fR]
+    [--unset-property \fIname_of_property_to_delete\fR] 
+    [--proxy \fIproxy_to_use\fR] \fIpublisher\fR
+.fi
+
+.LP
+.nf
+/usr/bin/pkg set-publisher -p \fIrepo_uri\fR [-Ped]
+    [-k \fIssl_key\fR] [-c \fIssl_cert\fR] [--non-sticky] [--sticky]
+    [--search-after \fIpublisher\fR] [--search-before \fIpublisher\fR
+    [--search-first] [--approve-ca-cert \fIpath_to_CA\fR]
+    [--revoke-ca-cert \fIhash_of_CA_to_remove\fR]
+    [--unset-ca-cert \fIhash_of_CA_to_remove\fR]
+    [--set-property \fIname_of_property\fR=\fIvalue\fR]
+    [--add-property-value \fIname_of_property\fR=\fIvalue_to_add\fR]
+    [--remove-property-value \fIname_of_property\fR=\fIvalue_to_remove\fR]
+    [--unset-property \fIname_of_property_to_delete\fR] 
+    [--proxy \fIproxy_to_use\fR] [\fIpublisher\fR]
 .fi
 
 .LP
@@ -211,7 +234,7 @@ usr/bin/pkg set-mediator [-nv] [-I \fIimplementation\fR]
 
 .LP
 .nf
-/usr/bin/pkg history [-Hl] [-t [\fItime\fR | \fItime\fR-\fItime\fR],...]
+/usr/bin/pkg history [-HNl] [-t [\fItime\fR | \fItime\fR-\fItime\fR],...]
     [-o \fIcolumn\fR,...] [-n \fInumber\fR]
 .fi
 
@@ -244,11 +267,12 @@ usr/bin/pkg set-mediator [-nv] [-I \fIimplementation\fR]
 .nf
 /usr/bin/pkg image-create [-FPUfz] [--force]
     [--full | --partial | --user] [--zone]
-    [-k \fIssl_key\fR] [-c \fIssl_cert\fR]
-    [--no-refresh] [--variant \fIvariant_spec\fR=\fIinstance\fR ...]
+    [-k \fIssl_key\fR] [-c \fIssl_cert\fR] [--no-refresh]
+    [--variant \fIvariant_name\fR=\fIvalue\fR ...]
     [-g \fIpath_or_uri\fR | --origin \fIpath_or_uri\fR ...]
     [-m \fIuri\fR | --mirror \fIuri\fR ...]
-    [--facet \fIfacet_spec\fR=(True|False) ...]
+    [--set-property \fIname_of_property\fR=\fIvalue\fR]
+    [--facet \fIfacet_name\fR=(True|False) ...]
     [(-p | --publisher) [\fIname\fR=]\fIrepo_uri\fR] \fIdir\fR
 .fi
 
@@ -264,105 +288,305 @@ usr/bin/pkg set-mediator [-nv] [-I \fIimplementation\fR]
 リポジトリは、クライアントがパッケージの内容 (プログラムやドキュメントなど、パッケージの内部に含まれるファイル) とメタデータ (パッケージの名前や説明など、パッケージについての情報) を公開および取得できる場所です。たとえば、\fBexample.org\fR という名前のパブリッシャーは、\fBhttp://example.org/repository\fR という URI にリポジトリを配置することができます。
 .sp
 .LP
-\fBpkg\fR では、パッケージをアンインストールしたり、(利用可能なパッケージの一覧などの) パブリッシャーメタデータを更新したり、イメージにインストールされたパッケージを検証したり、イメージからさまざまなトークンを照会したりすることもできます。これらのクエリーは \fBpkg\fR(5) リポジトリで構成することもできます。
+\fBpkg\fR では、パッケージをアンインストールしたり、(利用可能なパッケージの一覧などの) パブリッシャーメタデータをリフレッシュしたり、イメージにインストールされたパッケージを検証したり、イメージからさまざまなトークンを照会したりすることもできます。これらのクエリーは \fBpkg\fR(5) リポジトリで構成することもできます。
 .sp
 .LP
 イメージには 3 つの種類があります。完全なシステムを提供できるフルイメージ、フルイメージ (親イメージ) にリンクされるがそれ自身では完全なシステムを提供しない部分イメージ、およびユーザーイメージです。
 .SH オプション
 .sp
 .LP
-次のオプションがサポートされています。
+サポートしているオプションは、次のとおりです。
 .sp
 .ne 2
 .mk
 .na
-\fB\fB-R\fR \fIdir\fR\fR
+\fB\fB-?\fR\fR
 .ad
-.sp .6
-.RS 4n
-\fIdir\fR をルートとするイメージを操作します。ディレクトリが指定、または環境に基づいて判別されなかった場合のデフォルトは / です。詳細は、環境変数に関する節を参照してください。
-.RE
-
-.sp
-.ne 2
-.mk
+.br
 .na
-\fB\fB--help\fR または \fB-?\fR\fR
+\fB\fB--help\fR\fR
 .ad
 .sp .6
 .RS 4n
 使用方法に関するメッセージを表示します。
 .RE
 
+.sp
+.ne 2
+.mk
+.na
+\fB\fB-R\fR \fIdir\fR\fR
+.ad
+.br
+.na
+\fB\fB--image-dir\fR \fIdir\fR\fR
+.ad
+.sp .6
+.RS 4n
+\fIdir\fR をルートとするイメージを操作します。ディレクトリが指定されなかったか、または環境に基づいて決定される場合、デフォルトは / です。詳細は、「環境変数」のセクションを参照してください。
+.RE
+
 .SH サブコマンド
 .sp
 .LP
-次のサブコマンドがサポートされています。
+サポートされているサブコマンドは次のとおりです。
 .sp
 .ne 2
 .mk
 .na
-\fB\fBrefresh [\fB--full\fR] [\fIpublisher \fR ...]\fR\fR
+\fB\fBpkg refresh\fR [\fB-q\fR] [\fB- -full\fR] [\fIpublisher\fR ...]\fR
 .ad
 .sp .6
 .RS 4n
-指定されたパブリッシャーごとに、クライアントの利用可能パッケージの一覧およびパブリッシャーメタデータを更新します。パブリッシャーを指定しない場合、すべてのパブリッシャーを対象に操作が実行されます。
+クライアントの利用可能パッケージの一覧およびすべての発行元の発行元メタデータを更新します。
 .sp
-\fB--full\fR を指定すると、増分更新を試みる代わりにすべてのパブリッシャーメタデータを強制的に完全取得し、操作中に使用されるすべてのプロキシでキャッシュデータを無視するように要求します。このオプションはトラブルシューティング目的に用意されており、通常時は使用しないでください。
+.ne 2
+.mk
+.na
+\fB\fIpublisher\fR\fR
+.ad
+.sp .6
+.RS 4n
+クライアントの利用可能パッケージの一覧、および指定された発行元の発行元メタデータのみを更新します。
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fB\fBinstall [\fB-nvq\fR] [\fB-g\fR \fI path_or_uri\fR ...] [\fB--accept\fR] [\fB--licenses\fR] [\fB--no-be-activate\fR] [\fB--no-index\fR] [\fB--no-refresh \fR] [--no-backup-be | --require-backup-be] [--backup-be-name \fI name\fR] [\fB--deny-new-be\fR | \fB--require-new-be\fR] [\fB--be-name\fR \fIname\fR] [\fB--reject\fR \fI pkg_fmri_pattern\fR ...] \fIpkg_fmri_pattern\fR ... \fR\fR
+\fB\fB-q\fR\fR
 .ad
 .sp .6
 .RS 4n
-パッケージをインストールし、イメージにインストールされたパッケージで許容されている \fIpkg_fmri_pattern\fR と一致する最新バージョンにパッケージを更新します。パッケージの最新バージョンを明示的に要求するには、\fIpkg_fmri_pattern\fR のバージョン部分に \fBlatest\fR を使用します。たとえば、\fBvim@latest\fR のように指定します。
+リクエストされた操作の実行中、進捗状況メッセージを表示しません。
+.RE
+
 .sp
-インストールプロセスの間に、一部の設定ファイルの名前変更または置換が行われる場合があります。どのファイルを保持するかをパッケージシステムが決定する方法と、パッケージ操作中にファイルが保持されるしくみについては、\fBpkg\fR(5) のファイルアクションに関する項目を参照してください。
+.ne 2
+.mk
+.na
+\fB\fB--full\fR\fR
+.ad
+.sp .6
+.RS 4n
+増分更新を試みる代わりにすべての発行元メタデータを強制的に完全取得し、操作中に使用されるすべてのプロキシでキャッシュデータを無視するようにリクエストします。このオプションはトラブルシューティング目的に用意されており、通常時は使用しないでください。
+.RE
+
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fBpkg install\fR [\fB-nvq\fR] [\fB-C\fR \fIn\fR] [\fB-g\fR \fI path_or_uri\fR ...] [\fB--accept\fR] [\fB--licenses\fR] [\fB--no-be-activate\fR] [\fB--no-index\fR] [\fB--no-refresh \fR] [\fB--no-backup-be\fR | \fB--require-backup-be\fR] [\fB--backup-be-name\fR \fIname\fR] [\fB--deny-new-be \fR | \fB--require-new-be\fR] [\fB--be-name\fR \fI name\fR] [\fB--reject\fR \fIpkg_fmri_pattern\fR ...] \fI pkg_fmri_pattern\fR ...\fR
+.ad
+.sp .6
+.RS 4n
+指定されたパッケージをインストールし、イメージにインストールされたパッケージで許容されている \fIpkg_fmri_pattern\fR と一致する最新バージョンにパッケージを更新します。パッケージの最新バージョンを明示的に要求するには、\fIpkg_fmri_pattern\fR のバージョン部分に \fBlatest\fR を使用します。たとえば、\fBvim@latest\fR のように指定します。
+.sp
+パッケージは、発行元検索順およびスティッキネスに基づいて選択されます。検索順およびスティッキネスについては、\fBpkg publisher\fR および \fBpkg set-publisher\fR コマンドを参照してください。\fIpkg_fmri_pattern \fR が発行元を指定しない場合、一致するパッケージを提供する最初の発行元がインストール元として使用されます。該当する発行元がこのイメージ内にインストール可能なパッケージのバージョンを提供しない場合、インストール操作は失敗します。このイメージにインストール可能なパッケージのバージョンを提供する発行元を確認するには、\fBpkg list -a\fR コマンドを使用します。
+.sp
+複数の \fIpkg_fmri_pattern\fR が指定され、かつ指定されたパッケージのいずれかをこのイメージにインストールできない場合、指定されたパッケージは一切インストールされません。
+.sp
+インストールプロセスの間に、一部の設定ファイルの名前変更または置換が行われる場合があります。どのファイルを保持するかをパッケージシステムが決定する方法と、パッケージ操作中にファイルが保持されるしくみについては、\fBpkg\fR(5) のマニュアルページのファイルアクションに関する項目を参照してください。
 .sp
 パッケージが回避リストにある場合は、インストールすると回避リストから削除されます。
 .sp
-\fB-g\fR を指定すると、パッケージデータの取得元である指定のパッケージリポジトリまたはアーカイブが、イメージ内のソースのリストに一時的に追加されます。指定されたソースからのパッケージが、イメージ内に構成されているパブリッシャーからも入手できる場合でも、クライアントは指定されたソースのみからパッケージの内容を取得します。どのバージョンのパッケージを使用するかを決定するときは、イメージ内に構成されているけれども指定されたソースに見つからないパブリッシャーが優先されます。インストールまたは更新のあとに、パブリッシャーによって提供され、イメージ内に見つからないパッケージがある場合は、起点なしでイメージ構成に追加されます。このオプションは複数回指定できます。
+.ne 2
+.mk
+.na
+\fB\fB-g\fR \fIpath_or_uri\fR\fR
+.ad
+.sp .6
+.RS 4n
+指定されたパッケージリポジトリまたはアーカイブを、パッケージデータの取得元になるイメージ内のソースリストに一時的に追加します。クライアント SSL 証明書が必要なリポジトリは、このオプションとともに使用できません。このオプションは複数回指定できます。
 .sp
-\fB-n\fR を指定すると、パッケージの変更は行わずに試しに操作を実行します。
-.sp
-\fB-q\fR を指定すると、要求された操作の実行中、進捗状況メッセージを表示しません。
-.sp
-\fB-v\fR を指定すると、要求された操作の実行中に詳細な進捗状況メッセージを出力し、詳細な計画情報 (ファセット、メディエータ、バリアントの変更など) を表示します。このオプションを複数回指定して、表示される計画情報の量を増やすことができます。
-.sp
-\fB--accept\fR は、更新またはインストールされるパッケージのライセンス条項に同意することを示します。このオプションを指定しないと、パッケージのライセンスに同意が必要になった場合、インストール操作は失敗します。
-.sp
-\fB--licenses\fR を指定すると、この操作の一環としてインストールまたは更新されるパッケージのすべてのライセンスを表示します。
-.sp
-\fB--no-backup-be\fR を指定すると、バックアップブート環境を作成しません。
-.sp
-\fB--no-be-activate\fR を指定すると、ブート環境が作成される場合に、それを次回ブート時にアクティブ BE として設定しません。詳細は、\fBbeadm\fR(1M) を参照してください。
-.sp
-\fB--no-index\fR を指定すると、操作が正常に完了したあとに検索インデックスを更新しません。
-.sp
-\fB--no-refresh\fR を指定すると、入手可能パッケージやその他のメタデータの最新リストを取得するために、イメージのパブリッシャー用のリポジトリへのアクセスを試みません。
-.sp
-\fB--backup-be-name \fR を指定すると、指定された引数を使用して、作成されたバックアップブート環境に名前を付けます。\fB--backup-be-name\fR を使用すると \fB--require-backup-be\fR が暗黙的に指定されます。\fBbeadm\fR(1M) も参照してください。
-.sp
-\fB--be-name\fR を指定すると、新たに作成されたブート環境の名前を、指定された引数になるように変更します。\fB--be-name\fR を使用すると \fB- -require-new-be\fR が暗黙的に指定されます。\fBbeadm\fR(1M) も参照してください。
-.sp
-\fB--require-backup-be \fR を指定すると、新しいブート環境が作成されない場合に常にバックアップブート環境を作成します。このオプションを指定しないと、イメージポリシーに基づいてバックアップブート環境が作成されます。バックアップブート環境がいつ自動的に作成されるかについての説明は、次の「イメージプロパティー」の \fBbe-policy\fR を参照してください。
-.sp
-\fB--require-new-be\fR を指定すると、常に新しいブート環境を作成します。このオプションを指定しないと、イメージポリシーに基づいてブート環境が作成されます。ブート環境がいつ自動的に作成されるかについての説明は、次の「イメージプロパティー」の \fBbe-policy\fR を参照してください。このオプションを \fB--require-backup-be\fR と組み合わせることはできません。
-.sp
-\fB--deny-new-be\fR を指定すると、新しいブート環境を作成しません。新しいブート環境が必要な場合、この操作は実行されません。
-.sp
-\fB--reject\fR を指定すると、指定されたパターンと一致する名前を持つパッケージはインストールされません。一致するパッケージがすでにインストールされている場合、それらはこの操作の一環として削除されます。グループ依存関係のターゲットである拒否対象パッケージは回避リストに登録されます。
+どのバージョンのパッケージを使用するかを決定するときは、イメージ内に構成されているが、指定された \fIpath_or_uri\fR ソースに見つからない発行元が優先されます。インストールするパッケージのバージョンが、イメージ内で構成されている発行元および \fIpath_or_uri\fR ソースから提供されている場合、クライアントはそのパッケージの内容を \fIpath_or_uri \fR ソースから取得します。インストールまたは更新のあとに、発行元によって提供され、イメージ内で構成されていないパッケージがある場合は、起点なしでイメージ構成に追加されます。イメージ内で構成されている発行元を表示するには、\fBpkg publisher\fR コマンドを使用します。
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fB\fBuninstall [\fB-nvq\fR] [\fB--no-be-activate \fR] [\fB--no-index\fR] [--no-backup-be | --require-backup-be] [--backup-be-name \fI name\fR] [\fB--deny-new-be\fR | \fB--require-new-be \fR] [\fB--be-name\fR \fIname\fR] \fI pkg_fmri_pattern\fR ...\fR\fR
+\fB\fB-n\fR\fR
+.ad
+.sp .6
+.RS 4n
+パッケージの変更は行わずに試しに操作を実行します。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB-v\fR\fR
+.ad
+.sp .6
+.RS 4n
+リクエストされた操作の実行中に詳細な進捗状況メッセージを出力し、詳細な計画情報 (ファセット、メディエータ、バリアントの変更など) を表示します。このオプションを複数回指定して、表示される計画情報の量を増やすことができます。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB-q\fR\fR
+.ad
+.sp .6
+.RS 4n
+リクエストされた操作の実行中、進捗状況メッセージを表示しません。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB-C\fR \fIn\fR\fR
+.ad
+.sp .6
+.RS 4n
+同時に更新する子イメージの数を指定します。子イメージ (通常はゾーン) 内への再帰時に、最大 \fIn\fR 個の子イメージを同時に更新します。更新する子イメージのデフォルト数は、1 です。\fIn\fR が 0 または負数の場合は、すべての子イメージが同時に更新されます。「環境変数」セクションの「\fBPKG_CONCURRENCY\fR」も参照してください。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB--accept\fR\fR
+.ad
+.sp .6
+.RS 4n
+更新またはインストールされるパッケージのライセンス条項に同意することを示します。このオプションを指定しないと、パッケージのライセンスに同意が必要になった場合、インストール操作は失敗します。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB--licenses\fR\fR
+.ad
+.sp .6
+.RS 4n
+この操作の一環としてインストールまたは更新されるパッケージのすべてのライセンスを表示します。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB--no-backup-be\fR\fR
+.ad
+.sp .6
+.RS 4n
+バックアップブート環境を作成しません。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB--no-be-activate\fR\fR
+.ad
+.sp .6
+.RS 4n
+ブート環境が作成される場合に、それを次回ブート時にアクティブなブート環境として設定しません。詳細は、\fBbeadm\fR(1M) のマニュアルページを参照してください。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB--no-index\fR\fR
+.ad
+.sp .6
+.RS 4n
+操作が正常に完了したあとに検索インデックスを更新しません。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB--no-refresh\fR\fR
+.ad
+.sp .6
+.RS 4n
+入手可能パッケージやその他のメタデータの最新リストを取得するために、イメージの発行元用のリポジトリへのアクセスを試みません。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB--backup-be-name\fR \fIname\fR\fR
+.ad
+.sp .6
+.RS 4n
+指定された引数を使って、作成されたバックアップブート環境に名前を付けます。\fB--backup-be-name\fR を使用すると \fB--require-backup-be\fR が暗黙的に指定されます。\fBbeadm\fR(1M) のマニュアルページも参照してください。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB--be-name\fR \fIname\fR\fR
+.ad
+.sp .6
+.RS 4n
+新たに作成されたブート環境の名前を、指定された引数になるように変更します。\fB--be-name\fR の使用は、暗黙的に \fB--require-new-be\fR を示します。\fBbeadm\fR(1M) のマニュアルページも参照してください。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB--require-backup-be\fR\fR
+.ad
+.sp .6
+.RS 4n
+新しいブート環境が作成されない場合に、常にバックアップブート環境を作成します。このオプションを指定しないと、イメージポリシーに基づいてバックアップブート環境が作成されます。バックアップブート環境がいつ自動的に作成されるかについての説明は、次の「イメージプロパティー」の \fBbe-policy\fR を参照してください。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB--require-new-be\fR\fR
+.ad
+.sp .6
+.RS 4n
+常に新しいブート環境を作成します。このオプションを指定しないと、イメージポリシーに基づいてブート環境が作成されます。ブート環境がいつ自動的に作成されるかについての説明は、次の「イメージプロパティー」の \fBbe-policy\fR を参照してください。このオプションを \fB--require-backup-be\fR と組み合わせることはできません。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB--deny-new-be\fR\fR
+.ad
+.sp .6
+.RS 4n
+新しいブート環境を作成しません。新しいブート環境が必要な場合、この操作は実行されません。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB--reject\fR \fIpkg_fmri_pattern\fR\fR
+.ad
+.sp .6
+.RS 4n
+指定されたパターンと一致する名前を持つパッケージはインストールされません。一致するパッケージがすでにインストールされている場合、それらはこの操作の一環として削除されます。グループ依存関係のターゲットである拒否対象パッケージは回避リストに登録されます。
+.RE
+
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fBpkg uninstall\fR [\fB-nvq\fR] [\fB-C\fR \fIn\fR] [\fB--no-be-activate\fR] [\fB--no-index\fR] [\fB--no-backup-be\fR | \fB--require-backup-be \fR] [\fB--backup-be-name\fR \fIname\fR] [\fB--deny-new-be\fR | \fB--require-new-be\fR] [\fB--be-name \fR \fIname\fR] \fIpkg_fmri_pattern\fR ... \fR
 .ad
 .sp .6
 .RS 4n
@@ -370,55 +594,82 @@ usr/bin/pkg set-mediator [-nv] [-I \fIimplementation\fR]
 .sp
 パッケージがグループ依存関係の対象である場合、パッケージをアンインストールするとそのパッケージは回避リストに登録されます。後述する \fBavoid\fR サブコマンドを参照してください。
 .sp
-その他すべてのオプションの使用法および効果については、前述した \fBinstall\fR コマンドを参照してください。
+オプションの説明については、前述の \fBinstall\fR コマンドを参照してください。
+.sp
+コマンド出力で、新しいブート環境が作成されたことを示すメッセージに注意してください。新しいブート環境を作成してアクティブにすると、それが次回リブート時のデフォルトのブート環境になります。ブート環境の管理については、\fB beadm\fR(1M) のマニュアルページを参照してください。
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fB\fBupdate [\fB-fnvq\fR] [\fB-g\fR \fI path_or_uri\fR ...] [\fB--accept\fR] [\fB--licenses\fR] [\fB--no-be-activate\fR] [\fB--no-index\fR] [\fB--no-refresh \fR] [--no-backup-be | --require-backup-be] [--backup-be-name \fIname\fR] [\fB--deny-new-be\fR | \fB--require-new-be\fR] [\fB--be-name\fR \fIname\fR] [\fB--reject\fR \fI pkg_fmri_pattern\fR ...] [\fIpkg_fmri_pattern\fR ...] \fR\fR
+\fB\fBpkg update\fR [\fB-fnvq\fR] [\fB-C\fR \fIn\fR] [\fB-g\fR \fI path_or_uri\fR ...] [\fB--accept\fR] [\fB--licenses\fR] [\fB--no-be-activate\fR] [\fB--no-index\fR] [\fB--no-refresh \fR] [\fB--no-backup-be\fR | \fB--require-backup-be\fR] [\fB--backup-be-name\fR \fIname\fR] [\fB--deny-new-be \fR | \fB--require-new-be\fR] [\fB--be-name\fR \fI name\fR] [\fB--reject\fR \fIpkg_fmri_pattern\fR ...] [\fIpkg_fmri_pattern\fR ...]\fR
 .ad
 .sp .6
 .RS 4n
-引数を指定しないか、または提供されたパターンの 1 つがアスタリスク (*) である場合、現在のイメージ内のすべてのインストール済みパッケージを、インストール済みパッケージおよびパブリッシャー構成によってシステムに適用される制約で許可される最新のバージョンに更新します。パッケージの最新バージョンを明示的に要求するには、\fBpkg_fmri_pattern\fR のバージョン部分に \fIlatest\fR を使用します。たとえば、\fBvim@latest\fR のように指定します。
+現在のイメージ内のすべてのインストール済みパッケージを、インストール済みパッケージと発行元構成によりシステムに適用される制約で許可される最新のバージョンに更新します。
 .sp
-\fIpkg_fmri_pattern\fR を指定した場合、\fBupdate\fR は、\fIpkg_fmri_pattern\fR に一致するインストール済みパッケージを、パターンによって許可され、さらにインストール済みパッケージおよびパブリッシャー構成によってシステムに課せられる制約によって許可される、最新のバージョンに置き換えます。すでにインストールされているものより古い、または新しいバージョンを指定することで、特定のパッケージのインプレースダウングレードまたはアップグレードを実行できます。パッケージの名前変更または廃止の境界をまたがった特定パッケージの更新はサポートされていません。
+.ne 2
+.mk
+.na
+\fB\fIpkg_fmri_pattern\fR\fR
+.ad
+.sp .6
+.RS 4n
+現在のイメージにインストール済みの、指定されたパッケージのみを更新します。指定された \fIpkg_fmri_pattern\fR パターンの 1 つがアスタリスク (*) である場合、現在のイメージ内のすべてのインストール済みパッケージを前述のとおりに更新します。
 .sp
-保持される設定ファイルのうち、\fBupdate\fR によってダウングレードされるパッケージの一部であり、元のバージョンがインストールされたあとに変更されたファイルは、拡張子 \fB\&.update\fR を使用して名前が変更されます。どのファイルを保持するかをパッケージシステムが決定する方法と、パッケージのアップグレード中にこれらのファイルが保持されるしくみについては、\fBpkg\fR(5) のファイルアクションに関する項目を参照してください。
+パッケージの最新バージョンを明示的に要求するには、\fIpkg_fmri_pattern\fR のバージョン部分に \fBlatest\fR を使用します。たとえば、\fBvim@latest\fR のように指定します。
 .sp
-\fB-f\fR オプションを指定すると、すべてのインストール済みパッケージを更新するときにクライアントに対する最新状態チェックを実行しません。
+すでにインストールされているものより古い、または新しいバージョンを指定することで、特定のパッケージのインプレースダウングレードまたはアップグレードを実行できます。パッケージの名前変更または廃止の境界をまたがった特定パッケージの更新はサポートされていません。
 .sp
-その他すべてのオプションの使用法および効果については、前述した \fBinstall\fR コマンドを参照してください。
+保持される構成ファイルのうち、ダウングレードされるパッケージの一部であり、元のバージョンがインストールされたあとに変更されたファイルは、拡張子 \fB\&.update\fR を使用して名前が変更されます。どのファイルを保持するかをパッケージシステムが決定する方法と、パッケージアップグレード中にファイルが保持されるしくみについては、\fBpkg\fR(5) のマニュアルページのファイルアクションに関する項目を参照してください。
+.sp
+複数の \fIpkg_fmri_pattern\fR が指定され、かつ指定されたパッケージのいずれかをこのイメージに更新できない場合、指定されたパッケージは一切更新されません。
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fB\fBlist [\fB-Hafnsuv\fR] [\fB-g\fR \fI path_or_uri\fR ...] [\fB--no-refresh\fR] [\fIpkg_fmri_pattern \fR ...]\fR\fR
+\fB\fB-f\fR\fR
 .ad
 .sp .6
 .RS 4n
-現在のイメージ内のパッケージの一覧を、状態やその他の情報を含めて表示します。デフォルトでは、異なるアーキテクチャーまたはゾーンタイプのパッケージバリアントは除外されます。通常の出力は 3 列形式です。
+すべてのインストール済みパッケージを更新するときにクライアントに対する最新状態チェックを実行しません。
+.RE
+
+その他のすべてのオプションについては、前述の \fBinstall\fR コマンドを参照してください。
+.sp
+コマンド出力で、新しいブート環境が作成されたことを示すメッセージに注意してください。新しいブート環境を作成してアクティブにすると、それが次回、\fB--no-be-activate\fR オプションを指定しない場合のリブート時のデフォルトブート環境になります。ブート環境の管理については、\fBbeadm\fR(1M) のマニュアルページを参照してください。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fBpkg list\fR [\fB-Hafnsuv\fR] [\fB-g\fR \fIpath_or_uri\fR ...] [\fB--no-refresh \fR] [\fIpkg_fmri_pattern\fR ...]\fR
+.ad
+.sp .6
+.RS 4n
+バージョンやインストール状態などの情報を含む、現在のイメージ内のインストール済みの全パッケージのリストを表示します。デフォルトでは、異なるアーキテクチャーまたはゾーンタイプのパッケージバリアントは除外されます。通常の出力は 3 列形式です。
 .sp
 .in +2
 .nf
-NAME (PUBLISHER)            VERSION           IFO
-system/core-os              0.5.11-0.169      i--
-x11/wm/fvwm (fvwm.org)      2.6.1-3           i--
+NAME (PUBLISHER)       VERSION                IFO
+system/core-os         0.5.11-0.175.0.0.0.2.1 i--
+x11/wm/fvwm (fvwm.org) 2.6.5                  i--
 .fi
 .in -2
 
-最初の列にはパッケージの名前が表示されます。パッケージのインストール元 (または、インストールされていない場合は提供元) であるパブリッシャーがパブリッシャー検索順で先頭でない場合、パッケージ名のあとに一覧表示されるパブリッシャー名は括弧で囲まれています。2 番目の列にはパッケージのリリースバージョンとブランチバージョンが表示されます。リリースバージョンとブランチバージョンについては、\fBpkg\fR(5) を参照してください。
+最初の列にはパッケージの名前が表示されます。パッケージのインストール元 (または、インストールされていない場合は提供元) であるパブリッシャーがパブリッシャー検索順で先頭でない場合、パッケージ名のあとに一覧表示されるパブリッシャー名は括弧で囲まれています。2 番目の列にはパッケージのリリースバージョンとブランチバージョンが表示されます。リリースバージョンとブランチバージョンについて、およびバリアントについては、\fBpkg\fR(5) のマニュアルページを参照してください。
 .sp
 .LP
-最後の列には、パッケージの状態を示す一連のフラグが表示されます。
+最後の列には、パッケージのステータスを示す一連のフラグが表示されます。
 .RS +4
 .TP
 .ie t \(bu
 .el o
-\fBI\fR 列の \fBi\fR は、パッケージがインストールされていることを示します。.
+\fBI\fR 列の \fBi\fR は、パッケージがインストールされていることを示します。
 .RE
 .RS +4
 .TP
@@ -432,68 +683,292 @@ x11/wm/fvwm (fvwm.org)      2.6.1-3           i--
 .el o
 \fBO\fR 列の \fBo\fR は、パッケージが廃止されていることを示します。\fBO\fR 列の \fBr\fR は、パッケージの名前が変更されたことを示します (廃止の形態の 1 つです)。
 .RE
-\fB-H\fR を指定すると、一覧表示からヘッダーを省略します。
 .sp
-\fB-a\fR を指定すると、インストール済みパッケージと、インストールのために入手可能なパッケージの最新バージョンを一覧表示します。インストール済みの incorporation によって、またイメージのバリアントによって許可されている場合、そのパッケージはインストールのために入手可能であるとみなされます。1 つ以上のパターンを指定した場合、指定されたパターンに一致し、インストール済みの incorporation およびイメージのバリアントによって許可されている最新バージョンが一覧表示されます。\fB-a\fR を指定しない場合、インストール済みパッケージのみを一覧表示します。
-.sp
-\fB-f\fR および \fB-a\fR を指定した場合、incorporation の制約またはインストール状態に関係なく、すべてのバリアントについてすべてのパッケージのすべてのバージョンを一覧表示します。これらのオプションを使用するとき、パッケージの最新バージョンを明示的に一覧表示するには、\fIpkg_fmri_pattern\fR のバージョン部分に \fBlatest\fR を使用します。たとえば、\fBvim@latest\fR のように指定します。
-.sp
-\fB-g\fR を指定すると、指定されたパッケージリポジトリまたはアーカイブを、操作のためのパッケージデータのソースとして使用します。このオプションは複数回指定できます。\fB-n\fR を指定しない場合、\fB-g\fR を使用すると \fB-a\fR が暗黙的に指定されます。
-.sp
-\fB-n\fR を指定すると、インストール状態に関係なく、すべての既知のパッケージの最新バージョンを表示します。
-.sp
-\fB-s\fR を指定すると、パッケージ名と要約を示す 1 行の短縮形式を表示します。このオプションは \fB-a\fR、\fB-n\fR、\fB-u\fR、または \fB-v\fR とともに使用できます。
-.sp
-\fB-u\fR を指定すると、新しいバージョンが入手可能なパッケージのみを一覧表示します。このオプションは \fB-g\fR とともに使用できません。
-.sp
-\fB-v\fR を指定すると、パブリッシャーと完全バージョンを含む、フルパッケージ FMRI をすべて最初の列に表示します (VERSION 列は消えます)。このオプションは \fB-a\fR、\fB-n\fR、または \fB-u\fR とともに使用できます。
-.sp
-\fB--no-refresh\fR を指定すると、入手可能なパッケージの最新リストを取得するために、イメージのパブリッシャー用のリポジトリへのアクセスを試みません。
+.ne 2
+.mk
+.na
+\fB\fIpkg_fmri_pattern\fR\fR
+.ad
+.sp .6
+.RS 4n
+指定したパッケージのみを一覧表示します。
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fB\fBinfo [\fB-lr\fR] [\fB-g\fR \fI path_or_uri\fR ...] [\fB--license\fR] [\fIpkg_fmri_pattern \fR ...]\fR\fR
+\fB\fB-H\fR \fR
 .ad
 .sp .6
 .RS 4n
-パッケージについての情報を人間が判読できる形式で表示します。複数の FMRI パターンを指定できます。パターンを指定しない場合、イメージ内のすべてのインストール済みパッケージについての情報を表示します。
-.sp
-\fB-g\fR を指定すると、指定されたパッケージリポジトリまたはアーカイブを、操作のためのパッケージデータのソースとして使用します。このオプションは複数回指定できます。\fB-g\fR を使用すると \fB-r\fR が暗黙的に指定されます。
-.sp
-\fB-l\fR を指定すると、インストール済みパッケージの情報のみを表示します。これはデフォルトです。
-.sp
-\fB-r\fR を指定すると、最新の入手可能バージョンに基づいてパッケージを照合し、イメージの構成済みパブリッシャーのリポジトリから、現在インストールされていないパッケージの情報を取得します (必要な場合)。このオプションを使用するときは、少なくとも 1 つのパッケージを指定する必要があります。\fB-r\fR を指定しない場合、デフォルトでインストール済みパッケージのみが表示されます。
-.sp
-\fB--license\fR を指定すると、パッケージのライセンステキストを表示します。このオプションは \fB-l\fR または \fB-r\fR と組み合わせることができます。
+一覧からヘッダーを省略します。
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fB\fBcontents [\fB-Hmr\fR] [\fB-a\fR \fI attribute\fR=\fIpattern\fR ...] [\fB-g\fR \fI path_or_uri\fR ...] [\fB-o\fR \fIattribute\fR,...] [\fB-s\fR \fIsort_key\fR] [\fB-t\fR \fI action_type\fR ...] [\fIpkg_fmri_pattern\fR ...]\fR\fR
+\fB\fB-a\fR\fR
 .ad
 .sp .6
 .RS 4n
-現在のイメージ内のパッケージの内容 (アクション属性) を表示します。デフォルトでは、\fBpath\fR 属性のみが表示されます。表示される属性は \fB-o\fR オプションで調べることができます。\fB-o\fR オプションは複数回指定できます。または、属性名をコンマで区切ることにより、1 つの \fB-o\fR オプションの引数として複数の属性を指定できます。要求された属性を持つアクションのみが表示されます。\fB-Ho action.raw\fR の短縮形として \fB-m\fR オプションも使用できます。
+インストール済みパッケージと、インストールのために入手可能なパッケージの最新バージョンを一覧表示します。インストール済みの incorporation によって、またイメージのバリアントによって許可されている場合、そのパッケージはインストールのために入手可能であるとみなされます。1 つ以上のパターンを指定した場合、指定されたパターンに一致し、インストール済みの incorporation およびイメージのバリアントによって許可されている最新バージョンが一覧表示されます。\fB-a\fR を指定しない場合、インストール済みパッケージのみを一覧表示します。
+.RE
+
 .sp
-\fB-a\fR を指定すると、名前がオプション引数で指定され、値がオプション引数 (属性名と等号に続く部分) の (glob) パターンに一致する属性を持つアクションに出力を限定します。複数の \fB-a\fR オプションを指定した場合、それらのいずれかに一致するアクションが表示されます。
+.ne 2
+.mk
+.na
+\fB\fB-af\fR\fR
+.ad
+.sp .6
+.RS 4n
+incorporation の制約またはインストール状態に関係なく、すべてのバリアントについてすべてのパッケージのすべてのバージョンを一覧表示します。これらのオプションを使用するとき、パッケージの最新バージョンを明示的に一覧表示するには、\fIpkg_fmri_pattern\fR のバージョン部分に \fBlatest\fR を使用します。たとえば、\fBvim@latest\fR のように指定します。
+.RE
+
 .sp
-\fB-g\fR を指定すると、指定されたパッケージリポジトリまたはアーカイブを、操作のためのパッケージデータのソースとして使用します。このオプションは複数回指定できます。\fB-g\fR を使用すると \fB-r\fR が暗黙的に指定されます。
+.ne 2
+.mk
+.na
+\fB\fB-g\fR \fIpath_or_uri\fR\fR
+.ad
+.sp .6
+.RS 4n
+指定されたパッケージリポジトリまたはアーカイブを、操作のためのパッケージデータのソースとして使用します。クライアント SSL 証明書が必要なリポジトリは、このオプションとともに使用できません。このオプションは複数回指定できます。\fB-n\fR を指定しない場合、\fB-g\fR を使用すると \fB-a\fR が暗黙的に指定されます。
+.RE
+
 .sp
-\fB-r\fR を指定すると、最新の入手可能バージョンに基づいてパッケージを照合し、イメージの構成済みパブリッシャーのリポジトリから、現在インストールされていないパッケージの情報を取得します (必要な場合)。このオプションを使用するときは、少なくとも 1 つのパッケージを指定する必要があります。\fB-r\fR を指定しない場合、デフォルトでインストール済みパッケージのみが表示されます。
+.ne 2
+.mk
+.na
+\fB\fB-n\fR\fR
+.ad
+.sp .6
+.RS 4n
+インストール状態に関係なく、すべての既知のパッケージの最新バージョンを表示します。
+.RE
+
 .sp
-\fB-s\fR を指定すると、指定されたアクション属性によってアクションをソートします。このオプションを指定しない場合、デフォルトではパスによって、または \fB-o\fR オプションで最初に指定された属性によってソートします。\fB-s\fR オプションは複数回指定できます。.
+.ne 2
+.mk
+.na
+\fB\fB-s\fR\fR
+.ad
+.sp .6
+.RS 4n
+パッケージ名とサマリーを示す 1 行の短縮形式を表示します。このオプションは \fB-a\fR、\fB-n\fR、\fB-u\fR、または \fB-v\fR とともに使用できます。
+.RE
+
 .sp
-\fB-t\fR を指定すると、指定されたタイプのアクションのみを一覧表示します。複数のタイプをコンマ区切りリストで指定できます。このオプションは複数回指定できます。
+.ne 2
+.mk
+.na
+\fB\fB-u\fR\fR
+.ad
+.sp .6
+.RS 4n
+新しいバージョンが入手可能なパッケージのみを一覧表示します。このオプションは \fB-g\fR とともに使用できません。
+.RE
+
 .sp
-\fB-H\fR を指定すると、一覧表示からヘッダーを省略します。
+.ne 2
+.mk
+.na
+\fB\fB-v\fR\fR
+.ad
+.sp .6
+.RS 4n
+発行元と完全バージョンを含む、フルパッケージ FMRI をすべて最初の列に表示します (VERSION 列は消えます)。このオプションは \fB-a\fR、\fB-n\fR、または \fB-u\fR とともに使用できます。
+.RE
+
 .sp
-引数を指定しない場合、出力にはすべてのインストール済みパッケージが含まれます。別の方法として、複数の FMRI パターンを指定し、一致するパッケージの内容に表示を限定することができます。\fB-r\fR を使用するときは、1 つ以上の \fIpkg_fmri_pattern\fR を指定する必要があります。
+.ne 2
+.mk
+.na
+\fB\fB--no-refresh\fR\fR
+.ad
+.sp .6
+.RS 4n
+入手可能パッケージやその他のメタデータの最新リストを取得するために、イメージの発行元用のリポジトリへのアクセスを試みません。
+.RE
+
+.RE
+
 .sp
+.ne 2
+.mk
+.na
+\fB\fBpkg info\fR [\fB-lr\fR] [\fB-g\fR \fI path_or_uri\fR ...] [\fB--license\fR] [\fIpkg_fmri_pattern \fR ...]\fR
+.ad
+.sp .6
+.RS 4n
+現在のイメージにインストールされているすべてのパッケージについての情報を、人間が判読できる形式で表示します。
+.sp
+.ne 2
+.mk
+.na
+\fB\fIpkg_fmri_pattern\fR\fR
+.ad
+.sp .6
+.RS 4n
+指定したパッケージの情報のみを表示します。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB-g\fR \fIpath_or_uri\fR\fR
+.ad
+.sp .6
+.RS 4n
+指定されたパッケージリポジトリまたはアーカイブを、操作のためのパッケージデータのソースとして使用します。クライアント SSL 証明書が必要なリポジトリは、このオプションとともに使用できません。このオプションは複数回指定できます。\fB-g\fR を使用すると \fB-r\fR が暗黙的に指定されます。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB-l\fR\fR
+.ad
+.sp .6
+.RS 4n
+インストール済みのパッケージの情報だけを表示します。これはデフォルトです。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB-r\fR\fR
+.ad
+.sp .6
+.RS 4n
+最新の入手可能バージョンに基づいてパッケージを照合し、イメージの構成済み発行元のリポジトリから、現在インストールされていないパッケージの情報を取得します (必要な場合)。このオプションを使用するときは、少なくとも 1 つのパッケージを指定する必要があります。\fB-r\fR を指定しない場合、デフォルトでインストール済みパッケージのみが表示されます。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB--license\fR\fR
+.ad
+.sp .6
+.RS 4n
+パッケージのライセンステキストを表示します。このオプションは \fB-l\fR または \fB-r\fR と組み合わせることができます。
+.RE
+
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fBpkg contents\fR [\fB-Hmr\fR] [\fB-a\fR \fIattribute\fR=\fIpattern\fR ...] [\fB-g\fR \fIpath_or_uri\fR ...] [\fB-o\fR \fI attribute\fR,...] [\fB-s\fR \fIsort_key\fR] [\fB-t\fR \fIaction_name\fR ...] [\fIpkg_fmri_pattern \fR ...]\fR
+.ad
+.sp .6
+.RS 4n
+イメージ内のすべてのインストール済みパッケージの内容 (アクション属性) を表示します。オプションが指定されていない場合、現在のイメージにインストールされているアクションの \fBpath\fR 属性の値をアルファベット順で並べ替えて表示します。アクションとそれらの属性については、\fBpkg\fR(5) のマニュアルページのアクションに関する項目を参照してください。下の疑似属性名のリストも参照してください。
+.sp
+.ne 2
+.mk
+.na
+\fB\fIpkg_fmri_pattern\fR\fR
+.ad
+.sp .6
+.RS 4n
+指定したパッケージの内容のみを表示します。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB-H\fR \fR
+.ad
+.sp .6
+.RS 4n
+出力からヘッダーを省略します。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB-a\fR \fIattribute\fR=\fI pattern\fR\fR
+.ad
+.sp .6
+.RS 4n
+名前がオプション引数で指定され、値がオプション引数 (属性名と等号に続く部分) の (glob) パターンに一致する属性を持つアクションに出力を限定します。複数の \fB-a\fR オプションを指定した場合、それらのいずれかに一致するアクションが表示されます。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB-g\fR \fIpath_or_uri\fR\fR
+.ad
+.sp .6
+.RS 4n
+指定されたパッケージリポジトリまたはアーカイブからこのイメージにインストール可能なパッケージの情報を表示します。クライアント SSL 証明書が必要なリポジトリは、このオプションとともに使用できません。インストール可能なパッケージには、現在インストールされているパッケージと、バリアントやファセットの制限などのこのイメージへのインストールの条件を満たすその他のパッケージが含まれます。このオプションは複数回指定できます。\fB-g\fR を使用すると \fB-r\fR が暗黙的に指定されます。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB-m\fR\fR
+.ad
+.sp .6
+.RS 4n
+このイメージにインストールできないアクションを含めて、指定されたパッケージのすべてのアクションのすべての属性を表示します。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB-o\fR \fIattribute\fR\fR
+.ad
+.sp .6
+.RS 4n
+指定された属性を、リストの先頭属性の値に従って並べ替えて表示します。\fB-o\fR オプションは複数回指定できます。または、属性名をコンマで区切ることにより、1 つの \fB-o\fR オプションの引数として複数の属性を指定できます。要求された属性を持つアクションのみが表示されます。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB-r\fR\fR
+.ad
+.sp .6
+.RS 4n
+このイメージ内で構成された発行元のリポジトリからこのイメージにインストール可能なパッケージの最新バージョンの情報を表示します。インストール可能なパッケージには、現在インストールされているパッケージと、バリアントやファセットの制限などのこのイメージへのインストールの条件を満たすその他のパッケージが含まれます。このオプションを使用するときは、少なくとも 1 つのパッケージを指定する必要があります。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB-s\fR \fIsort_key\fR\fR
+.ad
+.sp .6
+.RS 4n
+指定されたアクション属性で、アクションをソートします。このオプションを指定しない場合、デフォルトではパスによって、または \fB-o\fR オプションで最初に指定された属性によってソートします。\fB-s\fR オプションは複数回指定できます。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB-t\fR \fIaction_name\fR\fR
+.ad
+.sp .6
+.RS 4n
+指定されたアクションのみを一覧表示します。複数のアクションをコンマ区切りリストで指定できます。\fIaction_name\fR の値は、\fBpkg\fR(5) のマニュアルページの「アクション」内に一覧表示されているアクションのいずれかで、\fBfile\fR、\fBdirectory\fR、\fBdriver\fR、\fBdepend\fR、\fBset\fR などです。このオプションは複数回指定できます。
+.RE
+
 利便性のために、いくつかの特殊な疑似属性名を使用できます。
 .sp
 .ne 2
@@ -501,9 +976,9 @@ x11/wm/fvwm (fvwm.org)      2.6.1-3           i--
 .na
 \fB\fBaction.hash\fR\fR
 .ad
-.RS 17n
-.rt  
-アクションがペイロードを伝送する場合、アクションのハッシュの値に対応します。
+.sp .6
+.RS 4n
+アクションがペイロードを伝送する場合、アクションのハッシュの値です。
 .RE
 
 .sp
@@ -512,9 +987,9 @@ x11/wm/fvwm (fvwm.org)      2.6.1-3           i--
 .na
 \fB\fBaction.key\fR\fR
 .ad
-.RS 17n
-.rt  
-アクションのキー属性の値に対応します。たとえば、ファイルアクションの場合、これはファイルのパスです。
+.sp .6
+.RS 4n
+アクションのキー属性の値です。たとえば、\fBfile\fR アクションの場合、鍵属性はファイルのパスです。キー属性のないアクションもあります。
 .RE
 
 .sp
@@ -523,9 +998,9 @@ x11/wm/fvwm (fvwm.org)      2.6.1-3           i--
 .na
 \fB\fBaction.name\fR\fR
 .ad
-.RS 17n
-.rt  
-アクションの名前に対応します。たとえば、ファイルアクションの場合、これは \fBfile\fR です。
+.sp .6
+.RS 4n
+アクションの名前です。たとえば、ファイルアクションの場合、これは \fBfile\fR です。
 .RE
 
 .sp
@@ -534,9 +1009,9 @@ x11/wm/fvwm (fvwm.org)      2.6.1-3           i--
 .na
 \fB\fBaction.raw\fR\fR
 .ad
-.RS 17n
-.rt  
-パッケージのマニフェストに登録されているアクションの完全な内容に対応します。これは \fBpkg contents -m\fR の出力の行に対応します。
+.sp .6
+.RS 4n
+一致するアクションのすべての属性。
 .RE
 
 .sp
@@ -545,9 +1020,9 @@ x11/wm/fvwm (fvwm.org)      2.6.1-3           i--
 .na
 \fB\fBpkg.fmri\fR\fR
 .ad
-.RS 17n
-.rt  
-アクションを包含しているパッケージのフル形式 FMRI (たとえば、\fBpkg://solaris/web/amp@0.5.11,5.11-0.169:20110705T153434Z \fR) に対応します。
+.sp .6
+.RS 4n
+アクションを包含しているパッケージのフル形式 FMRI (たとえば、\fB pkg://solaris/group/feature/amp@0.5.11,5.11-0.175.0.0.0.2.1:20120705T153434Z\fR) です。
 .RE
 
 .sp
@@ -556,9 +1031,9 @@ x11/wm/fvwm (fvwm.org)      2.6.1-3           i--
 .na
 \fB\fBpkg.name\fR\fR
 .ad
-.RS 17n
-.rt  
-アクションを包含しているパッケージの名前 (たとえば、\fBweb/amp\fR) に対応します。
+.sp .6
+.RS 4n
+アクションを包含しているパッケージの名前 (たとえば、\fBweb/amp\fR) です。
 .RE
 
 .sp
@@ -567,9 +1042,9 @@ x11/wm/fvwm (fvwm.org)      2.6.1-3           i--
 .na
 \fB\fBpkg.publisher\fR\fR
 .ad
-.RS 17n
-.rt  
-アクションを包含しているパッケージのパブリッシャー (たとえば、\fBsolaris\fR) に対応します。
+.sp .6
+.RS 4n
+アクションを包含しているパッケージの発行元 (たとえば、\fBsolaris\fR) です。
 .RE
 
 .sp
@@ -578,12 +1053,12 @@ x11/wm/fvwm (fvwm.org)      2.6.1-3           i--
 .na
 \fB\fBpkg.shortfmri\fR\fR
 .ad
-.RS 17n
-.rt  
-アクションを包含しているパッケージの短縮形式 FMRI (たとえば、\fBpkg://solaris/web/amp@0.5.11,5.11-0.169\fR) に対応します。
+.sp .6
+.RS 4n
+アクションを包含しているパッケージのショート形式 FMRI (\fBpkg://solaris/group/feature/amp@0.5.11,5.11-0.175\fR など) です。
 .RE
 
-関連するサブコマンドは \fBcontents\fR および \fBsearch\fR で、これらはどちらも、パッケージの内容についてシステムを照会するために使用されます。\fBcontents\fR サブコマンドは、1 つ以上のパッケージ内のアクションを表示し、ユーザーが選択したオプションに基づいて出力をフィルタします。\fBsearch\fR サブコマンドは逆方向からクエリーを行い、ユーザーが指定したトークンを含むパッケージを探します。
+関連するサブコマンドは \fBcontents\fR および \fBsearch\fR であり、どちらもパッケージの内容についてシステムをクエリーします。\fBcontents\fR サブコマンドは、1 つまたは複数のインストールされているか、インストール可能なパッケージ内のアクションを、指定されたオプションに基づいて出力をフィルタ処理して表示します。\fBsearch\fR サブコマンドは逆方向からクエリーを行い、ユーザーが指定したトークンを含むすべてのパッケージの名前を表示します。
 .sp
 各サブコマンドで実行できるクエリーの一部は、他方でも実行できます。サブコマンドの選択は慎重に行ってください。クエリーによっては、もう一方のほうがより自然に実行できる場合があります。
 .RE
@@ -592,32 +1067,110 @@ x11/wm/fvwm (fvwm.org)      2.6.1-3           i--
 .ne 2
 .mk
 .na
-\fB\fBsearch [\fB-HIaflpr\fR] [\fB-o\fR \fI attribute\fR,...] [\fB-s\fR \fIrepo_uri\fR] \fI query\fR\fR\fR
+\fB\fBpkg search\fR [\fB-HIaflpr\fR] [\fB-o\fR \fIattribute\fR,...] [\fB-s\fR \fI repo_uri\fR] \fIquery\fR\fR
 .ad
 .sp .6
 .RS 4n
-\fIquery\fR の一致を検索し、結果を表示します。どのトークンがインデックス化されるかはアクションに依存しますが、コンテンツハッシュとパス名を含めることができます。デフォルトでは、クエリーは完全一致する一連の条件として解釈されます。\fB?\fR および \fB*\fR 文字を \fBglob\fR(3C) 形式のワイルドカードとして使用することにより、より柔軟なクエリー一致が可能になります。
+\fIquery\fR の一致を検索し、結果を表示します。次の \fIquery\fR の説明を参照してください。
 .sp
-\fB-H\fR を指定するとヘッダーを省略します。.
+.ne 2
+.mk
+.na
+\fB\fB-H\fR \fR
+.ad
+.sp .6
+.RS 4n
+出力からヘッダーを省略します。
+.RE
+
 .sp
-\fB-I\fR を指定すると、大文字と小文字を区別する検索を使用します。
+.ne 2
+.mk
+.na
+\fB\fB-I\fR\fR
+.ad
+.sp .6
+.RS 4n
+大文字/小文字を区別する検索を使用します。
+.RE
+
 .sp
-デフォルトでは、\fB-a\fR を一緒に指定すると、検索を実行し、一致したアクションについての情報を表示します。
+.ne 2
+.mk
+.na
+\fB\fB-a\fR\fR
+.ad
+.sp .6
+.RS 4n
+検索を実行して、一致するアクションに関する情報を表示します。これはデフォルトです。
+.RE
+
 .sp
-\fBsearch\fR はデフォルトで、現在インストールされているバージョンよりも古いパッケージ、および現在の incorporation によって除外されているパッケージバージョンからの結果を取り除きます。パッケージバージョンに関係なくすべての結果を表示するには \fB-f\fR を使用します。
+.ne 2
+.mk
+.na
+\fB\fB-f\fR\fR
+.ad
+.sp .6
+.RS 4n
+パッケージのバージョンに関係なく、すべての結果を表示します。\fBsearch\fR はデフォルトで、現在インストールされているバージョンよりも古いパッケージ、および現在の incorporation によって除外されているパッケージバージョンからの結果を取り除きます。
+.RE
+
 .sp
-\fB-l\fR を指定すると、イメージのインストール済みパッケージを検索します。
+.ne 2
+.mk
+.na
+\fB\fB-l\fR\fR
+.ad
+.sp .6
+.RS 4n
+イメージのインストール済みパッケージを検索します。
 .sp
-\fB-o\fR を使用して結果の列を制御できます。\fB-o\fR オプションは複数回指定できます。または、属性名をコンマで区切ることにより、1 つの \fB-o\fR オプションの引数として複数の属性を指定できます。前述した疑似属性に加えて、検索結果用の次の属性が定義されています。
+\fB-l\fR と \fB-r\fR (または \fB-s\fR) の両方を同時に指定できます。この場合、ローカル検索とリモート検索の両方が実行されます。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB-p\fR\fR
+.ad
+.sp .6
+.RS 4n
+一部のアクションが各クエリー条件に一致するパッケージを表示します。このオプションを使用することは、クエリーの各条件を山括弧 (\fB<>\fR) で囲むことと等価です。\fB<>\fR 演算子の詳細は、次の \fIquery\fR を参照してください。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB-r\fR\fR
+.ad
+.sp .6
+.RS 4n
+イメージの発行元に対応するリポジトリを検索します。これはデフォルトです。
+.sp
+\fB-l\fR と \fB-r\fR (または \fB-s\fR) の両方を同時に指定できます。この場合、ローカル検索とリモート検索の両方が実行されます。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB-o\fR \fIattribute\fR\fR
+.ad
+.sp .6
+.RS 4n
+結果の列を制御します。\fB-o\fR オプションは複数回指定できます。または、属性名をコンマで区切ることにより、1 つの \fB-o\fR オプションの引数として複数の属性を指定できます。前述した疑似属性に加えて、検索結果用の次の属性が定義されています。
 .sp
 .ne 2
 .mk
 .na
 \fB\fBsearch.match\fR\fR
 .ad
-.RS 21n
-.rt  
-検索クエリーに一致した文字列に対応します。
+.sp .6
+.RS 4n
+検索クエリーに一致した文字列。
 .RE
 
 .sp
@@ -626,261 +1179,638 @@ x11/wm/fvwm (fvwm.org)      2.6.1-3           i--
 .na
 \fB\fBsearch.match_type\fR\fR
 .ad
-.RS 21n
-.rt  
-検索クエリーに一致した文字列を含んでいた属性に対応します。
+.sp .6
+.RS 4n
+検索クエリーに一致した文字列を含む属性。
 .RE
 
-\fB-p\fR を指定すると、一部のアクションが各クエリー条件に一致するパッケージを表示します。このオプションを使用することは、クエリーの各条件を山括弧 (\fB<>\fR) で囲むことと等価です。\fB<>\fR 演算子についての説明は後述します。
-.sp
-デフォルトでは、\fB-r\fR を一緒に指定すると、イメージのパブリッシャーに対応するリポジトリを検索します。
-.sp
-\fB-s\fR を指定すると、指定された URI に位置する \fBpkg\fR(5) リポジトリを検索します。これは複数回指定できます。パッケージアーカイブはサポートされていません。
-.sp
-\fB-l\fR と \fB-r\fR (または \fB-s\fR) の両方を同時に指定できます。この場合、ローカル検索とリモート検索の両方が実行されます。
-.sp
-単純なトークン一致およびワイルドカード検索に加えて、より複雑なクエリー言語がサポートされています。単一引用符または二重引用符 (\fB\&'\fR または \fB"\fR) を使用することにより、語句を検索できます。\fBpkg\fR が実際に \fB\&'\fR または \fB"\fR を認識するように、必ずシェルを考慮に入れてください。
-.sp
-AND と OR を使用する論理検索がサポートされています。フィールド (構造化された) クエリーがサポートされています。これらのための構文は \fB\fIpkg_name\fR:\fI action_type\fR:\fIkey\fR:\fItoken\fR\fR です。欠けているフィールドは、暗黙的にワイルドカード化されます。\fB:basename:pkg\fR の検索は、\fBbasename\fR というキーを持ち、トークン \fBpkg\fR に一致するすべてのパッケージ内のすべてのアクションタイプに一致します。\fBpkg_name\fR および \fBtoken\fR フィールドでは明示的ワイルドカードがサポートされます。\fBaction_type\fR および \fBkey\fR は正確に一致する必要があります。
-.sp
-そのアクションを包含するパッケージにアクションを変換するには、\fB<>\fR を使用します。\fB-a\fR オプションを使用する場合、\fBtoken\fR を検索した結果は \fBtoken\fR に一致したアクションについての情報である一方で、\fB<token>\fR を検索した結果は、\fBtoken\fR に一致したアクションを包含しているパッケージの一覧です。
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fB\fBverify [\fB-Hqv\fR] [\fIpkg_fmri_pattern \fR ...]\fR\fR
+\fB\fB-s\fR \fIrepo_uri\fR\fR
 .ad
 .sp .6
 .RS 4n
-現在のイメージ内でパッケージのインストールを検証します。関連するパブリッシャーの現在の署名ポリシーが \fBignore\fR でない場合、各パッケージの署名がポリシーに基づいて検証されます。署名ポリシーが適用されるしくみについては、後述する「イメージプロパティー」の \fBsignature-policy\fR で説明します。
-.sp
-\fB-H\fR を指定すると、検証の出力からヘッダーを省略します。
-.sp
-\fB-q\fR を指定すると何も出力しませんが、致命的なエラーがある場合はエラーを返します。
-.sp
-\fB-v\fR を指定すると、パッケージに関する情報メッセージを含めます。
+指定された URI に位置する \fBpkg\fR(5) リポジトリを検索します。これは複数回指定できます。パッケージアーカイブはサポートされていません。
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fB\fBfix [\fB--accept\fR] [\fB--licenses\fR] [\fIpkg_fmri_pattern\fR ...]\fR\fR
+\fB\fIquery\fR\fR
+.ad
+.sp .6
+.RS 4n
+デフォルトでは、\fIquery\fR は完全一致する一連の条件として解釈されます。\fB?\fR および \fB*\fR 文字を \fBglob\fR(3C) 形式のワイルドカードとして使用でき、より柔軟なクエリー一致が可能になります。
+.sp
+単純なトークン一致およびワイルドカード検索に加えて、より複雑なクエリー言語がサポートされています。単一引用符または二重引用符 (\fB\&'\fR または \fB"\fR) を使用することにより、語句を検索できます。\fBpkg\fR が実際に \fB\&'\fR または \fB"\fR を認識するように、必ずシェルを考慮に入れてください。
+.sp
+AND と OR を使用する論理検索がサポートされています。
+.sp
+どのトークンがインデックス化されるかはアクションに依存しますが、コンテンツハッシュとパス名を含めることができます。アクションとそれらの属性については、\fBpkg\fR(5) のマニュアルページのアクションに関する項目を参照してください。前述の \fBpkg contents\fR および \fB- o\fR 内の擬似属性名のリストも参照してください。
+.sp
+構造化されたクエリーは、次の構文でサポートされます:
+.sp
+.in +2
+.nf
+\fIpkg_name\fR:\fIaction_name\fR:\fIindex\fR:\fItoken\fR
+.fi
+.in -2
+
+\fIaction_name\fR の値は、\fBpkg\fR(5) マニュアルページの「アクション」に一覧表示されているアクションのいずれかです。\fIindex\fR は、アクションの属性です。\fIindex\fR の値は、\fItoken\fR と一致している必要があります。
+.sp
+すべてのアクション属性が検索可能なわけではありません。たとえば、\fBmode\fR は \fBfile\fR アクションの属性ですが、\fBmode\fR は \fIindex\fR の有効な値ではありません。
+.sp
+\fIindex\fR の一部の値は、アクション属性ではなく、ほかの属性から派生した値です。たとえば、パスの最後のコンポーネントを取ることにより、\fIindex\fR を、どのアクションの属性でもないが、\fBfile\fR または \fB dir\fR アクションの \fBpath\fR 属性から派生した \fBbasename\fR にできます。
+.sp
+アクションタイプが異なると、有効な \fIindex\fR 値も異なります。このドキュメントには、使用可能な値がすべて含まれているわけではありません。より有用な \fI index\fR 値には、ファイルシステムアクションの \fBbasename\fR および \fBpath\fR、\fBdepend\fR アクションの依存性タイプ (たとえば、\fBrequire\fR、\fB optional\fR、\fBgroup\fR)、および \fBdriver \fR アクションの \fBdriver_name\fR および \fBalias\fR などがあります。
+.sp
+特殊な \fIindex\fR 値の 1 つに、\fBset\fR アクションの \fBname\fR 属性の値があります。この場合、\fItoken\fR が、指定された \fB name\fR 属性に対応する \fBvalue\fR 属性の値と照合されます。たとえば、次の検索により、Development/Databases または System/Databases のいずれかに分類されるパッケージを検索します。「使用例」セクションで、SMF サービスを検索する例を参照してください。
+.sp
+.in +2
+.nf
+$ \fBpkg search info.classification:databases\fR
+.fi
+.in -2
+.sp
+
+構造化クエリー内の欠落したフィールドは、暗黙的にワイルドカード化されます。\fBbasename:pkg\fR の検索は、\fBbasename\fR の \fIindex\fR を持ち、次の部分出力に示すような \fItoken\fR \fBpkg\fR に一致するすべてのパッケージ内のすべてのアクションに一致します:
+.sp
+.in +2
+.nf
+$ \fBpkg search basename:pkg\fR
+INDEX    ACTION VALUE         PACKAGE
+basename dir    usr/share/pkg pkg:/package/pkg@0.5.11-0.175.0.0.0.2.1
+basename dir    var/sadm/pkg  pkg:/package/svr4@0.5.11-0.175.0.0.0.2.1
+basename dir    var/spool/pkg pkg:/package/svr4@0.5.11-0.175.0.0.0.2.1
+basename file   usr/bin/pkg   pkg:/package/pkg@0.5.11-0.175.0.0.0.2.1
+.fi
+.in -2
+.sp
+
+次の完全な出力に示すように、別のフィールドを追加すると検索が絞り込まれます:
+.sp
+.in +2
+.nf
+$ \fBpkg search file:basename:pkg\fR
+INDEX    ACTION VALUE       PACKAGE
+basename file   usr/bin/pkg pkg:/package/pkg@0.5.11-0.175.0.0.0.2.1
+.fi
+.in -2
+.sp
+
+\fIpkg_name\fR および \fItoken\fR フィールドでは明示的ワイルドカードがサポートされます。\fIaction_name\fR および \fI index\fR は、正確に一致する必要があります。
+.sp
+ファイルと依存関係の検索例については、「使用例」セクションを参照してください。
+.sp
+アクションをこれらのアクションを含むパッケージに変換するには、次の部分出力に示すように、\fB <>\fR を使用します:
+.sp
+.in +2
+.nf
+$ \fBpkg search \e<pkg\e>\fR
+PACKAGE                                  PUBLISHER
+pkg:/package/pkg@0.5.11-0.175.0.0.0.2.1  solaris
+pkg:/package/svr4@0.5.11-0.175.0.0.0.2.1 solaris
+.fi
+.in -2
+.sp
+
+\fB-a\fR オプションを使用する場合 (デフォルト)、\fBtoken\fR を検索した結果は \fBtoken\fR に一致するアクションについての情報である一方で、\fB<token>\fR を検索した結果は、\fBtoken\fR に一致するアクションを包含しているパッケージの一覧です。
+.RE
+
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fBpkg verify\fR [\fB-Hqv\fR] [\fI pkg_fmri_pattern\fR ...]\fR
+.ad
+.sp .6
+.RS 4n
+現在のイメージ内で、インストールされているすべてのパッケージのインストールを検証します。関連する発行元の現在の署名ポリシーが \fBignore\fR でない場合、各パッケージの署名がポリシーに基づいて検証されます。署名ポリシーが適用されるしくみについては、後述する「イメージプロパティー」の \fBsignature-policy\fR で説明します。
+.sp
+.ne 2
+.mk
+.na
+\fB\fIpkg_fmri_pattern\fR\fR
+.ad
+.sp .6
+.RS 4n
+現在のイメージ内で、指定されたインストール済みパッケージのインストールのみを検証します。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB-H\fR \fR
+.ad
+.sp .6
+.RS 4n
+検証の出力からヘッダーを省略します。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB-q\fR\fR
+.ad
+.sp .6
+.RS 4n
+何も出力しませんが、致命的なエラーがある場合はエラーを返します。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB-v\fR\fR
+.ad
+.sp .6
+.RS 4n
+パッケージに関する情報メッセージを含めます。
+.RE
+
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fBpkg fix\fR [\fB--accept\fR] [\fB--licenses\fR] [\fIpkg_fmri_pattern\fR ...]\fR
 .ad
 .sp .6
 .RS 4n
 \fBpkg verify\fR で報告されたエラーをすべて修正します。インストール済みパッケージの内容は、独自の内容解析に基づいて検証されるため、ほかのプログラムの場合とは異なる結果が返されることがあります。
 .sp
-\fB--accept\fR は、更新またはインストールされるパッケージのライセンス条項に同意することを示します。このオプションを指定しないと、パッケージのライセンスに同意が必要になった場合、操作は失敗します。
-.sp
-\fB--licenses\fR を指定すると、この操作の一環としてインストールまたは更新されるパッケージのすべてのライセンスを表示します。
+.ne 2
+.mk
+.na
+\fB\fIpkg_fmri_pattern\fR\fR
+.ad
+.sp .6
+.RS 4n
+現在のイメージ内で、指定されたインストール済みパッケージに対する \fBpkg verify\fR により報告されたエラーを修正します。
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fB\fBrevert [\fB-nv\fR] [\fB--no-be-activate \fR] [--no-backup-be | --require-backup-be] [--backup-be-name \fIname\fR] [\fB--deny-new-be \fR | \fB--require-new-be\fR] [\fB--be-name\fR \fIname\fR] (\fB--tagged\fR \fItag-name\fR ... | \fIpath-to-file\fR ...)\fR\fR
+\fB\fB--accept\fR\fR
 .ad
 .sp .6
 .RS 4n
-ファイルを配布時の状態に戻します。特定の値でタグ付けされたすべてのファイル、または個別ファイルを元に戻すことができます。ファイルの所有権および保護も復元されます。
+更新またはインストールされるパッケージのライセンス条項に同意することを示します。このオプションを指定しないと、パッケージのライセンスに同意が必要になった場合、操作は失敗します。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB--licenses\fR\fR
+.ad
+.sp .6
+.RS 4n
+この操作の一環としてインストールまたは更新されるパッケージのすべてのライセンスを表示します。
+.RE
+
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fBpkg revert\fR [\fB-nv\fR] [\fB- -no-be-activate\fR] [\fB--no-backup-be\fR | \fB--require-backup-be \fR] [\fB--backup-be-name\fR \fIname\fR] [\fB--deny-new-be\fR | \fB--require-new-be\fR] [\fB--be-name \fR \fIname\fR] (\fB--tagged\fR \fI tag-name\fR ... | \fIpath-to-file\fR ...)\fR
+.ad
+.sp .6
+.RS 4n
+\fBpkg\fR(5) パッケージにより配布されたパッケージを、配布時の状態に戻します。ファイルの所有権および保護も復元されます。
 .LP
 注意 - 
 .sp
 .RS 2
 一部の編集可能ファイルをデフォルト値に戻すと、システムがブート不可になったり、その他の異常動作の原因になったりする可能性があります。
 .RE
-その他すべてのオプションの使用法および効果については、前述した \fBinstall\fR コマンドを参照してください。
-.RE
-
 .sp
 .ne 2
 .mk
 .na
-\fB\fBmediator [\fB-aH\fR] [\fB-F\fR \fI format\fR] [\fImediator\fR ...]\fR\fR
+\fB\fB--tagged\fR \fItag-name\fR\fR
 .ad
 .sp .6
 .RS 4n
-すべてのメディエータの、または引数が使用されている場合は指定されたメディエータのみの、現在選択されているバージョンと実装を表示します。
-.sp
-\fB-a\fR を指定すると、現在インストールされているパッケージに設定可能なメディエーションを一覧表示します。
-.sp
-\fB-F\fR は代替の出力形式を指定します。現時点では \fBtsv\fR (タブ区切り値) のみが有効です。
-.sp
-\fB-H\fR が指定されている場合は、リストのヘッダーを省略します。
+\fItag-name\fR でタグ付けされたすべてのファイルを元に戻します。
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fB\fBset-mediator [\fB-nv\fR] [\fB-I\fR \fI implementation\fR] [\fB-V\fR \fIversion\fR] [\fB--no-be-activate\fR] [--no-backup-be | --require-backup-be] [--backup-be-name \fI name\fR] [\fB--deny-new-be\fR | \fB--require-new-be \fR] [\fB--be-name\fR \fIname\fR] \fI mediator\fR ...\fR\fR
+\fB\fIpath-to-file\fR\fR
+.ad
+.sp .6
+.RS 4n
+指定されたファイルを元に戻します。
+.RE
+
+その他のすべてのオプションについては、前述の \fBinstall\fR コマンドを参照してください。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fBpkg mediator\fR [\fB-aH\fR] [\fB-F\fR \fIformat\fR] [\fImediator\fR ...] \fR
+.ad
+.sp .6
+.RS 4n
+現在選択されているバージョンやすべてのメディエータの実装を表示します。
+.sp
+.ne 2
+.mk
+.na
+\fB\fImediator\fR\fR
+.ad
+.sp .6
+.RS 4n
+現在選択されているバージョンや指定されたメディエータの実装のみを表示します。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB-a\fR\fR
+.ad
+.sp .6
+.RS 4n
+現在インストールされているパッケージに設定可能なメディエーションを一覧表示します。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB-F\fR\fR
+.ad
+.sp .6
+.RS 4n
+代替出力形式を指定します。現時点では \fBtsv\fR (タブ区切り値) のみが有効です。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB-H\fR \fR
+.ad
+.sp .6
+.RS 4n
+一覧からヘッダーを省略します。
+.RE
+
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fBpkg set-mediator\fR [\fB-nv\fR] [\fB-I\fR \fIimplementation\fR] [\fB-V\fR \fI version\fR] [\fB--no-be-activate\fR] [\fB--no-backup-be\fR | \fB- -require-backup-be\fR] [\fB--backup-be-name\fR \fIname\fR] [\fB--deny-new-be\fR | \fB--require-new-be\fR] [\fB--be-name \fR \fIname\fR] \fImediator\fR ... \fR
 .ad
 .sp .6
 .RS 4n
 現在のイメージ内の指定されたメディエータのバージョンと実装を設定します。
 .sp
-\fB-I\fR は、使用するメディエート対象インタフェースの実装を設定します。デフォルトでは、バージョンが指定されない場合、すべての実装バージョンが許可されます。バージョンなしで実装を指定するには、アット記号 (@) を付加します。
-.sp
-\fB-V\fR は、使用するメディエート対象インタフェースのバージョンを設定します。
-.sp
-指定されたメディエータのバージョンと実装のどちらかまたは両方が現在入手できない場合、指定されたメディエータを使用するリンクはすべて削除されます。
-.sp
-その他すべてのオプションの使用方法および効果については、前述の \fBinstall\fR コマンドを参照してください。
+.ne 2
+.mk
+.na
+\fB\fB-I\fR \fIimplementation\fR\fR
+.ad
+.sp .6
+.RS 4n
+使用するメディエート対象インタフェースの実装を設定します。デフォルトでは、バージョンが指定されない場合、すべての実装バージョンが許可されます。バージョンなしで実装を指定するには、アット記号 (@) を付加します。
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fB\fBunset-mediator [\fB-nvIV\fR] [\fB--no-be-activate \fR] [--no-backup-be | --require-backup-be] [--backup-be-name \fIname\fR] [\fB--deny-new-be\fR | \fB--require-new-be\fR] [\fB--be-name\fR \fIname\fR] \fImediator \fR ...\fR\fR
+\fB\fB-V\fR \fIversion\fR\fR
+.ad
+.sp .6
+.RS 4n
+使用するメディエート対象インタフェースのバージョンを設定します。
+.RE
+
+指定されたメディエータのバージョンと実装のどちらかまたは両方が現在入手できない場合、指定されたメディエータを使用するリンクはすべて削除されます。
+.sp
+その他のすべてのオプションについては、前述の \fBinstall\fR コマンドを参照してください。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fBpkg unset-mediator\fR [\fB-nvIV\fR] [\fB--no-be-activate\fR] [\fB--no-backup-be\fR | \fB--require-backup-be \fR] [\fB--backup-be-name\fR \fIname\fR] [\fB--deny-new-be\fR | \fB--require-new-be\fR] [\fB--be-name \fR \fIname\fR] \fImediator\fR ... \fR
 .ad
 .sp .6
 .RS 4n
 指定されたメディエータのバージョンと実装をシステムデフォルトに戻します。
 .sp
-\fB-I\fR は、メディエート対象インタフェースの実装のみを元に戻します。
-.sp
-\fB-V\fR は、メディエート対象インタフェースのバージョンのみを元に戻します。.
-.sp
-その他すべてのオプションの使用方法および効果については、前述の \fBinstall\fR コマンドを参照してください。
-.RE
-
-.sp
 .ne 2
 .mk
 .na
-\fB\fBvariant [\fB-H\fR] [\fIvariant_spec \fR]\fR\fR
+\fB\fB-I\fR\fR
 .ad
 .sp .6
 .RS 4n
-すべてのバリアントの、または引数が使用されている場合は指定されたバリアントのみの、現在値を表示します。
-.sp
-\fB-H\fR が指定されている場合は、リストのヘッダーを省略します。
+メディエート対象インタフェースの実装のみを元に戻します。
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fB\fBchange-variant [\fB-nvq\fR] [\fB-g\fR \fI path_or_uri\fR ...] [\fB--accept\fR] [\fB--licenses\fR] [\fB--no-be-activate\fR] [--no-backup-be | --require-backup-be] [--backup-be-name \fI name\fR] [\fB--deny-new-be\fR | \fB--require-new-be \fR] [\fB--be-name\fR \fIname\fR] \fI variant_spec\fR=\fIinstance\fR ...\fR\fR
+\fB\fB-V\fR \fR
 .ad
 .sp .6
 .RS 4n
-現在のイメージ内の指定されたバリアントを変更します。
-.sp
-オプションの使用法および効果については、前述の \fBinstall\fR コマンドを参照してください。
+メディエート対象インタフェースのバージョンのみを元に戻します。
+.RE
+
+その他のすべてのオプションについては、前述の \fBinstall\fR コマンドを参照してください。
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fB\fBfacet [\fB-H\fR] [\fIfacet_spec\fR] \fR\fR
+\fB\fBpkg variant\fR [\fB-H\fR] [\fB variant.\fR\fIvariant_name\fR ...]\fR
 .ad
 .sp .6
 .RS 4n
-引数を指定しない場合、すべてのファセットの現在値を表示します。引数を指定した場合、各ファセットの真偽を評価して結果を出力します。
-.sp
-\fB-H\fR が指定されている場合は、リストのヘッダーを省略します。
-.RE
-
+このイメージに設定されているすべてのバリアントの現在値を表示します。バリアントの詳細については、\fBpkg\fR(5) のマニュアルページのファセットとバリアントに関する項目を参照してください。
 .sp
 .ne 2
 .mk
 .na
-\fB\fBchange-facet [\fB-nvq\fR] [\fB-g\fR \fI path_or_uri\fR ...] [\fB--accept\fR] [\fB--licenses\fR] [\fB--no-be-activate\fR] [--no-backup-be | --require-backup-be] [--backup-be-name \fI name\fR] [\fB--deny-new-be\fR | \fB--require-new-be \fR] [\fB--be-name\fR \fIname\fR] \fI facet_spec\fR=[True|False|None] ...\fR\fR
+\fB\fBvariant.\fR\fIvariant_name\fR\fR
 .ad
 .sp .6
 .RS 4n
-現在のイメージ内の指定されたファセットを変更します。
-.sp
-ファセットは \fBTrue\fR または \fBFalse\fR に設定できます。ファセットを \fBNone\fR に設定すると、そのファセットの仕様が現在のイメージから削除されます。
-.sp
-オプションの使用法および効果については、前述の \fBinstall\fR コマンドを参照してください。
+このイメージで設定されている、指定されたバリアントのみの現在値を表示します。
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fB\fBavoid [\fIpkg_fmri_pattern\fR ...] \fR\fR
+\fB\fB-H\fR \fR
+.ad
+.sp .6
+.RS 4n
+一覧からヘッダーを省略します。
+.RE
+
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fBpkg change-variant\fR [\fB-nvq\fR] [\fB-C\fR \fIn\fR] [\fB-g\fR \fI path_or_uri\fR ...] [\fB--accept\fR] [\fB--licenses\fR] [\fB--no-be-activate\fR] [\fB--no-backup-be\fR |\fB--require-backup-be \fR] [\fB--backup-be-name\fR \fIname\fR] [\fB--deny-new-be\fR | \fB--require-new-be\fR] [\fB--be-name \fR \fIname\fR] \fIvariant_name\fR=\fI value\fR ...\fR
+.ad
+.sp .6
+.RS 4n
+現在のイメージに設定され、指定されているバリアントの値を変更します。
+.sp
+バリアントの値を変更すると、パッケージの内容が削除、更新、またはインストールされることがあります。バリアントの値を変更すると、新しいイメージ構成を満たすために、パッケージ全体がインストール、更新、または削除されることもあります。バリアントの詳細については、\fBpkg\fR(5) のマニュアルページのファセットとバリアントに関する項目を参照してください。
+.sp
+オプションの説明については、前述の \fBinstall\fR コマンドを参照してください。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fBpkg facet\fR [\fB-H\fR] [\fI facet_name\fR ...]\fR
+.ad
+.sp .6
+.RS 4n
+\fBpkg change-facet\fR コマンドを使用してこのイメージに明示的に設定されているすべてのファセットの現在の値を表示します。ファセットの詳細については、\fBpkg\fR(5) のマニュアルページのファセットとバリアントに関する項目を参照してください。
+.sp
+.ne 2
+.mk
+.na
+\fB\fIfacet_name\fR\fR
+.ad
+.sp .6
+.RS 4n
+このイメージに設定されている、指定されたファセットのみの現在値を表示します。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB-H\fR \fR
+.ad
+.sp .6
+.RS 4n
+一覧からヘッダーを省略します。
+.RE
+
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fBpkg change-facet\fR [\fB-nvq\fR] [\fB-C\fR \fIn\fR] [\fB-g\fR \fI path_or_uri\fR ...] [\fB--accept\fR] [\fB--licenses\fR] [\fB--no-be-activate\fR] [\fB--no-backup-be\fR | \fB--require-backup-be \fR] [\fB--backup-be-name\fR \fIname\fR] [\fB--deny-new-be\fR | \fB--require-new-be\fR] [\fB--be-name \fR \fIname\fR] \fIfacet_name\fR=[\fB True\fR|\fBFalse\fR|\fBNone\fR] ...\fR
+.ad
+.sp .6
+.RS 4n
+現在のイメージに設定され、指定されたファセットの値を変更します。
+.sp
+ファセットは \fBTrue\fR または \fBFalse\fR に設定できます。ファセットを \fBNone\fR に設定すると、\fBTrue\fR のデフォルト値がそのファセットに適用されるため、ファセットに依存するすべてのアクションがインストールされます。アクションについては、\fBpkg\fR(5) のマニュアルページのアクションに関する項目を参照してください。
+.sp
+ファセットの値を変更すると、パッケージの内容が削除、更新、またはインストールされることがあります。ファセットの値を変更すると、新しいイメージ構成を満たすために、パッケージ全体がインストール、更新、または削除されることもあります。ファセットの詳細については、\fBpkg\fR(5) のマニュアルページのファセットとバリアントに関する項目を参照してください。
+.sp
+オプションの説明については、前述の \fBinstall\fR コマンドを参照してください。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fBpkg avoid\fR [\fIpkg_fmri_pattern\fR ...] \fR
+.ad
+.sp .6
+.RS 4n
+回避対象の各パッケージを、そのパッケージにグループ依存関係を持つパッケージとともに表示します。
+.sp
+回避リストに登録されているパッケージは、要求された依存関係を満たすために必要であればインストールされます。その依存関係が削除された場合、パッケージはアンインストールされます。
+.sp
+.ne 2
+.mk
+.na
+\fB\fIpkg_fmri_pattern\fR\fR
 .ad
 .sp .6
 .RS 4n
 指定されたパターンに現在一致するパッケージ名を回避リストに登録することにより、それらがグループ依存関係のターゲットである場合にそれらを回避します。現在インストールされていないパッケージのみを回避できます。パッケージが現在グループ依存関係のターゲットである場合、パッケージをアンインストールするとそのパッケージは回避リストに登録されます。
-.sp
-引数を指定しない場合、回避対象の各パッケージを、そのパッケージにグループ依存関係を持つパッケージとともに表示します。
-.sp
-回避リストに登録されているパッケージは、要求された依存関係を満たすために必要であればインストールされます。その依存関係が削除された場合、パッケージはアンインストールされます。
+.RE
+
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fB\fBunavoid [\fIpkg_fmri_pattern\fR ...] \fR\fR
+\fB\fBpkg unavoid\fR [\fIpkg_fmri_pattern \fR ...]\fR
+.ad
+.sp .6
+.RS 4n
+回避対象のパッケージのリストを表示します。
+.sp
+.ne 2
+.mk
+.na
+\fB\fIpkg_fmri_pattern\fR\fR
 .ad
 .sp .6
 .RS 4n
 指定されたパッケージを回避リストから削除します。回避リストに登録されており、インストール済みパッケージのグループ依存関係に一致するパッケージは、このサブコマンドを使用して削除できません。グループ依存性に一致するパッケージを回避リストから削除するには、パッケージをインストールします。
-.sp
-引数を指定しない場合、回避対象パッケージの一覧を表示します。
+.RE
+
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fB\fBfreeze [\fB-n\fR] [\fB-c\fR \fI reason\fR] [\fIpkg_fmri_pattern\fR] ...\fR\fR
+\fB\fBpkg freeze\fR [\fB-n\fR] [\fB-c \fR \fIreason\fR] [\fIpkg_fmri_pattern\fR] ...\fR
 .ad
 .sp .6
 .RS 4n
-指定されたパッケージを指定されたバージョンに凍結します。バージョンを指定しない場合、パッケージがインストールされている必要があり、そのインストール済みバージョンで凍結されます。凍結されているパッケージをインストールまたは更新するときは、凍結された時点のバージョンと一致するバージョンである必要があります。たとえば、パッケージが 1.2 で凍結された場合、1.2.1、1.2.9、1.2.0.0.1 などのバージョンに更新することはできます。そのパッケージを 1.3 や 1.1 などにすることはできません。一致するパッケージの検索には、\fIpkg_fmri_pattern\fR で提示されたパブリッシャーが使用されます。ただし、パブリッシャー情報は凍結の一環として記録されません。パッケージはパブリッシャーではなくバージョンのみに関して凍結されます。すでに凍結されているパッケージを凍結すると、新しく指定されたバージョンによって凍結バージョンが置き換えられます。
-.sp
-パッケージを提供しない場合、現在凍結されているパッケージについての情報 (パッケージ名、バージョン、パッケージがいつ凍結されたか、関連付けられた理由があればその理由) が表示されます。
+現在凍結されているパッケージについての情報 (パッケージ名、バージョン、パッケージがいつ凍結されたか、パッケージの凍結に関連付けられた理由があればその理由) が表示されます。
 .sp
 パッケージを凍結しても、そのパッケージを削除できなくなるわけではありません。パッケージが削除される場合に警告は表示されません。
 .sp
-\fB-c\fR を指定すると、凍結されるパッケージとともに理由を記録します。\fI\fR凍結が原因でインストールまたは更新に失敗する場合、その理由が示されます。
+.ne 2
+.mk
+.na
+\fB\fIpkg_fmri_pattern\fR\fR
+.ad
+.sp .6
+.RS 4n
+指定されたパッケージを指定されたバージョンに凍結します。バージョンを指定しない場合、パッケージがインストールされている必要があり、そのインストール済みバージョンで凍結されます。すでに凍結されているパッケージを凍結すると、新しく指定されたバージョンによって凍結バージョンが置き換えられます。
 .sp
-\fB-n\fR を指定すると、操作を試しに実行し、凍結されるパッケージの一覧を表示しますが、実際にはどのパッケージも凍結しません。
+凍結されているパッケージをインストールまたは更新するときは、凍結された時点のバージョンと一致するバージョンである必要があります。たとえば、パッケージが 1.2 で凍結された場合、1.2.1、1.2.9、1.2.0.0.1 などのバージョンに更新することはできます。そのパッケージは 1.3 または 1.1 で終了することはできません。\fIpkg_fmri_pattern\fR で提供されるパブリッシャーは、一致するパッケージを検索するために使用されます。ただし、パブリッシャー情報は凍結の一環として記録されません。パッケージは発行元ではなくバージョンのみに関して凍結されます。
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fB\fBunfreeze [\fB-n\fR] [\fIpkg_name_pattern \fR] ...\fR\fR
+\fB\fB-c\fR \fIreason\fR\fR
+.ad
+.sp .6
+.RS 4n
+凍結されるパッケージとともに理由を記録します。\fI\fR凍結が原因でインストールまたは更新に失敗する場合、その理由が示されます。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB-n\fR\fR
+.ad
+.sp .6
+.RS 4n
+凍結操作を試しに実行し、凍結されるパッケージの一覧を表示しますが、実際にはどのパッケージも凍結しません。
+.RE
+
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fBpkg unfreeze\fR [\fB-n\fR] [\fI pkg_name_pattern\fR] ...\fR
+.ad
+.sp .6
+.RS 4n
+現在凍結されているパッケージについての情報 (パッケージ名、バージョン、パッケージがいつ凍結されたか、パッケージの凍結に関連付けられた理由があればその理由) が表示されます。
+.sp
+.ne 2
+.mk
+.na
+\fB\fIpkg_fmri_pattern\fR\fR
 .ad
 .sp .6
 .RS 4n
 凍結によって適用される制約を、指定されたパッケージから削除します。バージョンを提供しても無視されます。
-.sp
-\fB-n\fR を指定すると、凍結解除を試しに実行し、凍結解除されるパッケージの一覧を表示しますが、実際にはどのパッケージも凍結解除しません。
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fB\fBproperty [\fB-H\fR] [\fIpropname \fR ...]\fR\fR
+\fB\fB-n\fR\fR
 .ad
 .sp .6
 .RS 4n
-イメージプロパティー情報を表示します。引数を指定しない場合、すべてのイメージプロパティーの名前および値を表示します。プロパティー名の特定のリストが要求された場合、それらのプロパティーの名前および値を表示します。
-.sp
-\fB-H\fR を指定すると、一覧表示からヘッダーを省略します。
+凍結解除操作を試しに実行し、凍結解除されるパッケージの一覧を表示しますが、実際にはどのパッケージも凍結解除しません。
+.RE
+
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fB\fBset-property \fIpropname\fR \fI propvalue\fR\fR\fR
+\fB\fBpkg property\fR [\fB-H\fR] [\fI propname\fR ...]\fR
+.ad
+.sp .6
+.RS 4n
+すべてのイメージプロパティーの名前と値を表示します。イメージプロパティーの説明については、下の「イメージプロパティー」を参照してください。
+.sp
+.ne 2
+.mk
+.na
+\fB\fIpropname\fR\fR
+.ad
+.sp .6
+.RS 4n
+指定されたプロパティーのみの名前と値を表示します。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB-H\fR \fR
+.ad
+.sp .6
+.RS 4n
+一覧からヘッダーを省略します。
+.RE
+
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fBpkg set-property\fR \fIpropname\fR \fI propvalue\fR\fR
 .ad
 .sp .6
 .RS 4n
@@ -891,7 +1821,7 @@ AND と OR を使用する論理検索がサポートされています。フィ
 .ne 2
 .mk
 .na
-\fB\fBadd-property-value \fIpropname\fR \fI propvalue\fR\fR\fR
+\fB\fBpkg add-property-value\fR \fIpropname \fR \fIpropvalue\fR\fR
 .ad
 .sp .6
 .RS 4n
@@ -902,7 +1832,7 @@ AND と OR を使用する論理検索がサポートされています。フィ
 .ne 2
 .mk
 .na
-\fB\fBremove-property-value \fIpropname\fR \fI propvalue\fR\fR\fR
+\fB\fBpkg remove-property-value\fR \fIpropname \fR \fIpropvalue\fR\fR
 .ad
 .sp .6
 .RS 4n
@@ -913,7 +1843,7 @@ AND と OR を使用する論理検索がサポートされています。フィ
 .ne 2
 .mk
 .na
-\fB\fBunset-property \fIpropname\fR ... \fR\fR
+\fB\fBpkg unset-property\fR \fIpropname\fR ... \fR
 .ad
 .sp .6
 .RS 4n
@@ -924,110 +1854,473 @@ AND と OR を使用する論理検索がサポートされています。フィ
 .ne 2
 .mk
 .na
-\fB\fBpublisher [\fB-HPn\fR] [\fIpublisher \fR ...]\fR\fR
+\fB\fBpkg publisher\fR [\fB-HPn\fR] [\fB-F\fR \fIformat\fR] [\fIpublisher\fR ...] \fR
 .ad
 .sp .6
 .RS 4n
-パブリッシャー情報を表示します。引数を指定しない場合、すべてのパブリッシャー、それらの起点 URI、およびミラーの一覧を、検索の優先順に従って表示します。特定のパブリッシャーが要求された場合、それらのパブリッシャーの詳細な構成を表示します。
+すべての発行元、それらの起点 URI、およびミラーの一覧を、検索の優先順に従って表示します。
 .sp
-\fB-H\fR を指定すると、一覧表示からヘッダーを省略します。
-.sp
-\fB-P\fR を指定すると、パブリッシャー検索順の先頭のパブリッシャーのみを表示します。
-.sp
-\fB-n\fR を指定すると、有効になっているパブリッシャーのみを表示します。.
+.ne 2
+.mk
+.na
+\fB\fIpublisher\fR\fR
+.ad
+.sp .6
+.RS 4n
+指定された発行元のみの詳細な構成を表示します。
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fB\fBset-publisher [\fB-Ped\fR] [\fB-k\fR \fI ssl_key\fR] [\fB-c\fR \fIssl_cert\fR] [\fB-g\fR \fIorigin_to_add\fR | \fB--add-origin \fR \fIorigin_to_add\fR ...] [\fB-G\fR \fI origin_to_remove\fR | \fB--remove-origin\fR \fIorigin_to_remove \fR ...] [\fB-m\fR \fImirror_to_add\fR | \fB- -add-mirror\fR \fImirror_to_add\fR ...] [\fB-M\fR \fI mirror_to_remove\fR | \fB--remove-mirror\fR \fImirror_to_remove \fR ...] [\fB-p\fR \fIrepo_uri\fR] [\fB--enable\fR] [\fB--disable\fR] [\fB--no-refresh\fR] [\fB--reset-uuid\fR] [\fB--non-sticky\fR] [\fB--sticky\fR] [\fB--search-after\fR \fIpublisher\fR] [\fB--search-before \fR \fIpublisher\fR] [\fB--search-first\fR] [\fB--approve-ca-cert\fR \fIpath_to_CA\fR] [\fB--revoke-ca-cert\fR \fIhash_of_CA_to_remove\fR] [\fB--unset-ca-cert\fR \fIhash_of_CA_to_remove\fR] [\fB--set-property\fR \fIname_of_property\fR=\fI value\fR] [\fB--add-property-value\fR \fIname_of_property \fR=\fIvalue_to_add\fR] [\fB--remove-property-value \fR \fIname_of_property\fR=\fIvalue_to_remove \fR] [\fB--unset-property\fR \fIname_of_property_to_delete \fR] [\fIpublisher\fR]\fR\fR
+\fB\fB-H\fR \fR
 .ad
 .sp .6
 .RS 4n
-既存のパブリッシャーを更新するか、パッケージパブリッシャーを追加します。検索順に影響するオプションを指定しない場合、新しいパブリッシャーは検索順の末尾に付加され、最後に検索されます。
-.sp
-\fB-P\fR または \fB--search-first\fR を指定すると、指定されたパブリッシャーを検索順の先頭に設定します。新しいパッケージをインストールするとき、このパブリッシャーが最初に検索されます。インストール済みパッケージの更新は、そのパブリッシャーが sticky であるかぎり、そのパッケージを最初に提供した同じパブリッシャーから取得されます。\fB-P\fR または \fB--search-first\fR を \fB-p\fR とともに使用すると、追加されたパブリッシャーのみが検索順序の先頭に配置されます。
-.sp
-\fB--non-sticky\fR は、このパブリッシャーよりも上位にランクされるパブリッシャーが、このパブリッシャーから最初にインストールされたパッケージに更新を提供できることを指定します。
-.sp
-\fB--sticky\fR は、このパブリッシャーからインストールされたパッケージへの更新を引き続きこのパブリッシャーから取得する必要があることを指定します。これはデフォルトの動作です。
-.sp
-\fB--search-before\fR は、変更されるパブリッシャーが指定されたパブリッシャーの前に検索されるように、パブリッシャー検索順序を変えます。\fB-p\fR とともに使用すると、\fB--search-before\fR は追加されるパブリッシャーのみに適用されます。
-.sp
-\fB--search-after\fR は、変更されるパブリッシャーが指定されたパブリッシャーのあとに検索されるように、パブリッシャー検索順序を変えます。\fB-p\fR とともに使用すると、\fB--search-after\fR は追加されるパブリッシャーのみに適用されます。
-.sp
-\fB--approve-ca-cert\fR を指定すると、指定された証明書を、信頼できる CA 証明書として追加します。ユーザーが承認した CA 証明書の PEM 表現のハッシュは、\fBpkg publisher\fR コマンドの詳細出力に一覧表示されます。
-.sp
-\fB--revoke-ca-cert\fR を指定すると、指定された PEM 表現のハッシュを持つ証明書を失効済みとして扱います。ユーザーが失効させた CA 証明書のハッシュは、\fBpkg publisher\fR コマンドの詳細出力に一覧表示されます。
-.sp
-\fB--unset-ca-cert\fR を指定すると、指定されたハッシュを持つ証明書を、承認済み証明書のリストおよび失効済み証明書のリストから削除します。
-.sp
-\fB--set-property\fR は、既存のパブリッシャープロパティーを更新するか、新しいパブリッシャープロパティーを追加します。
-.sp
-\fB--add-property-value\fR は、既存のパブリッシャープロパティーに値を追加するか、新しいパブリッシャープロパティーを追加します。
-.sp
-\fB--remove-property-value\fR は、既存のパブリッシャープロパティーから値を削除します。
-.sp
-\fB--unset-property\fR は、既存のパブリッシャープロパティーを削除します。
-.sp
-\fB-c\fR はクライアント SSL 証明書を、\fB-k\fR は SSL 鍵をそれぞれ指定します。
-.sp
-\fB-g\fR (\fB--add-origin\fR) は、指定された URI またはパスを、指定されたパブリッシャーの起点として追加します。これはパッケージのリポジトリまたはアーカイブの場所にしてください。
-.sp
-\fB-G\fR (\fB--remove-origin\fR) は、指定されたパブリッシャーの起点のリストから URI またはパスを削除します。特殊値 \fB*\fR を使用して、すべての起点を削除することができます。
-.sp
-\fB--no-refresh\fR を指定すると、入手可能パッケージやその他のメタデータの最新リストを取得するために、イメージのパブリッシャー用のリポジトリへのアクセスを試みません。
-.sp
-\fB--reset-uuid\fR は、このイメージをそのパブリッシャーに対して識別する新しい一意識別子を選択します。
-.sp
-\fB-m\fR (\fB--add-mirror\fR) は、指定されたパブリッシャーのミラーとして URI を追加します。
-.sp
-\fB-M\fR (\fB--remove-mirror\fR) は、指定されたパブリッシャーのミラーのリストから URI を削除します。特殊値 \fB*\fR を使用して、すべてのミラーを削除することができます。
-.sp
-\fB-p\fR は、指定されたリポジトリ URI からパブリッシャー構成情報を取得します。パブリッシャーを指定した場合、一致するパブリッシャーのみが追加または更新されます。パブリッシャーを指定しない場合、すべてのパブリッシャーが必要に応じて追加または更新されます。このオプションは \fB-g\fR、\fB--add-origin\fR、\fB--G\fR、\fB--remove-origin\fR、\fB-m\fR、\fB--add-mirror\fR、\fB-M\fR、\fB--remove-mirror\fR、\fB--disable\fR、\fB--enable\fR、\fB--no-refresh\fR、または \fB--reset-uuid\fR の各オプションとは組み合わせることができません。
-.sp
-\fB-e\fR (\fB--enable\fR) はパブリッシャーを有効にします。\fB-d\fR (\fB--disable\fR) はパブリッシャーを無効にします。無効にされたパブリッシャーは、パッケージリストの生成時に、または特定のパッケージ操作 (インストール、アンインストール、および更新) で使用されません。ただし、無効なパブリッシャーのプロパティーを設定または表示することはできます。パブリッシャーが 1 つだけの場合は、無効にすることはできません。
+一覧からヘッダーを省略します。
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fB\fBunset-publisher \fIpublisher\fR ... \fR\fR
+\fB\fB-P\fR\fR
 .ad
 .sp .6
 .RS 4n
-指定されたパブリッシャーに関連付けられた構成を削除します。
+発行元検索順の先頭の発行元のみを表示します。
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fB\fBhistory [\fB-Hl\fR] [\fB-t\fR [\fI time\fR | \fItime\fR-\fItime\fR],...] [\fB-o\fR \fIcolumn\fR,...] [\fB-n\fR \fI number\fR]\fR\fR
+\fB\fB-n\fR\fR
+.ad
+.sp .6
+.RS 4n
+有効な発行元のみを表示します。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB-F\fR\fR
+.ad
+.sp .6
+.RS 4n
+代替出力形式を指定します。現時点では \fBtsv\fR (タブ区切り値) のみが有効です。
+.RE
+
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fBpkg set-publisher\fR [\fB-Ped\fR] [\fB-k\fR \fIssl_key\fR] [\fB-c\fR \fI ssl_cert\fR] [\fB-g\fR \fIorigin_to_add\fR | \fB- -add-origin\fR \fIorigin_to_add\fR ...] [\fB-G\fR \fI origin_to_remove\fR | \fB--remove-origin\fR \fIorigin_to_remove \fR ...] [\fB-m\fR \fImirror_to_add\fR | \fB- -add-mirror\fR \fImirror_to_add\fR ...] [\fB-M\fR \fI mirror_to_remove\fR | \fB--remove-mirror\fR \fImirror_to_remove \fR ...] [\fB--enable\fR] [\fB--disable\fR] [\fB--no-refresh\fR] [\fB--reset-uuid\fR] [\fB--non-sticky \fR] [\fB--sticky\fR] [\fB--search-after\fR \fI publisher\fR] [\fB--search-before\fR \fIpublisher\fR] [\fB--search-first\fR] [\fB--approve-ca-cert\fR \fI path_to_CA\fR] [\fB--revoke-ca-cert\fR \fIhash_of_CA_to_remove \fR] [\fB--unset-ca-cert\fR \fIhash_of_CA_to_remove \fR] [\fB--set-property\fR \fIname_of_property\fR=\fI value\fR] [\fB--add-property-value\fR \fIname_of_property \fR=\fIvalue_to_add\fR] [\fB--remove-property-value \fR \fIname_of_property\fR=\fIvalue_to_remove \fR] [\fB--unset-property\fR \fIname_of_property_to_delete \fR] [\fB--proxy\fR \fIproxy_to_use\fR] \fI publisher\fR\fR
+.ad
+.sp .6
+.RS 4n
+既存の発行元を更新するか、発行元を追加します。検索順に影響するオプションを指定しない場合、新しいパブリッシャーは検索順の末尾に付加され、最後に検索されます。
+.sp
+.ne 2
+.mk
+.na
+\fB\fB-P\fR\fR
+.ad
+.br
+.na
+\fB\fB--search-first\fR\fR
+.ad
+.sp .6
+.RS 4n
+指定された発行元を、検索順の先頭に設定します。新しいパッケージをインストールするとき、このパブリッシャーが最初に検索されます。インストール済みパッケージの更新は、そのパブリッシャーが sticky であるかぎり、そのパッケージを最初に提供した同じパブリッシャーから取得されます。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB--non-sticky\fR\fR
+.ad
+.sp .6
+.RS 4n
+この発行元よりも上位にランクされる発行元が、この発行元から最初にインストールされたパッケージに更新を提供できます。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB--sticky\fR\fR
+.ad
+.sp .6
+.RS 4n
+この発行元からインストールされたパッケージへの更新も、この発行元から取得する必要があります。これはデフォルトの動作です。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB--search-before\fR \fIpublisher\fR\fR
+.ad
+.sp .6
+.RS 4n
+追加または変更される発行元が、このオプションで指定された発行元の前に検索されるように、発行元検索順序を変えます。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB--search-after\fR \fIpublisher\fR\fR
+.ad
+.sp .6
+.RS 4n
+追加または変更される発行元が、このオプションで指定された発行元のあとに検索されるように、発行元検索順序を変えます。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB--approve-ca-cert\fR \fIpath_to_CA\fR\fR
+.ad
+.sp .6
+.RS 4n
+指定された証明書を信頼できる CA 証明書として追加します。ユーザーが承認した CA 証明書の PEM 表現のハッシュは、\fBpkg publisher\fR コマンドの詳細出力に一覧表示されます。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB--revoke-ca-cert\fR \fIhash_of_CA_to_remove \fR\fR
+.ad
+.sp .6
+.RS 4n
+指定された PEM 表現のハッシュを持つ証明書を失効済みとして扱います。ユーザーが失効させた CA 証明書のハッシュは、\fBpkg publisher\fR コマンドの詳細出力に一覧表示されます。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB--unset-ca-cert\fR \fIhash_of_CA_to_remove \fR\fR
+.ad
+.sp .6
+.RS 4n
+指定されたハッシュを持つ証明書を、承認済み証明書のリストおよび失効済み証明書のリストから削除します。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB--set-property\fR \fIname_of_property\fR=\fI value\fR\fR
+.ad
+.sp .6
+.RS 4n
+既存の発行元プロパティーを更新するか、または新しい発行元プロパティーを追加します。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB--add-property-value\fR \fIname_of_property \fR=\fIvalue_to_add\fR\fR
+.ad
+.sp .6
+.RS 4n
+既存の発行元プロパティーに値を追加するか、または新しい発行元プロパティーを追加します。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB--remove-property-value\fR \fIname_of_property \fR=\fIvalue_to_remove\fR\fR
+.ad
+.sp .6
+.RS 4n
+既存の発行元プロパティーから値を削除します。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB--unset-property\fR \fIname_of_property_to_delete \fR\fR
+.ad
+.sp .6
+.RS 4n
+既存の発行元プロパティーを削除します。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB-k\fR \fIssl_key\fR\fR
+.ad
+.sp .6
+.RS 4n
+クライアント SSL 鍵を指定します。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB-c\fR \fIssl_cert\fR\fR
+.ad
+.sp .6
+.RS 4n
+クライアント SSL 証明書を指定します。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB-g\fR \fIorigin_to_add\fR\fR
+.ad
+.br
+.na
+\fB\fB--add-origin\fR \fIorigin_to_add\fR\fR
+.ad
+.sp .6
+.RS 4n
+指定された URI またはパスを、特定の発行元の起点として追加します。これはパッケージのリポジトリまたはアーカイブの場所にしてください。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB-G\fR \fIorigin_to_remove\fR\fR
+.ad
+.br
+.na
+\fB\fB--remove-origin\fR \fIorigin_to_remove\fR\fR
+.ad
+.sp .6
+.RS 4n
+指定された発行元の起点のリストから URI またはパスを削除します。特殊値 \fB*\fR を使用して、すべての起点を削除することができます。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB--no-refresh\fR\fR
+.ad
+.sp .6
+.RS 4n
+入手可能パッケージやその他のメタデータの最新リストを取得するために、イメージの発行元用のリポジトリへのアクセスを試みません。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB--reset-uuid\fR\fR
+.ad
+.sp .6
+.RS 4n
+このイメージをその発行元に対して識別する新しい一意識別子を選択します。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB-m\fR \fImirror_to_add\fR\fR
+.ad
+.br
+.na
+\fB\fB--add-mirror\fR \fImirror_to_add\fR\fR
+.ad
+.sp .6
+.RS 4n
+URI を指定された発行元のミラーとして追加します。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB-M\fR \fImirror_to_remove\fR\fR
+.ad
+.br
+.na
+\fB\fB--remove-mirror\fR \fImirror_to_remove\fR\fR
+.ad
+.sp .6
+.RS 4n
+指定された発行元のミラーのリストから URI を削除します。特殊値 \fB*\fR を使用して、すべてのミラーを削除することができます。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB-e\fR\fR
+.ad
+.br
+.na
+\fB\fB--enable\fR\fR
+.ad
+.sp .6
+.RS 4n
+発行元を有効にします。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB-d\fR\fR
+.ad
+.br
+.na
+\fB\fB--disable\fR\fR
+.ad
+.sp .6
+.RS 4n
+発行元を無効にします。無効にされたパブリッシャーは、パッケージリストの生成時に、または特定のパッケージ操作 (インストール、アンインストール、および更新) で使用されません。ただし、無効なパブリッシャーのプロパティーを設定または表示することはできます。発行元が 1 つだけの場合は、無効にすることはできません。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB--proxy\fR \fIproxy_to_use\fR\fR
+.ad
+.sp .6
+.RS 4n
+指定した Web プロキシ URI を使用して、指定した起点 (\fB-g\fR) またはミラー(\fB-m\fR) のコンテンツを取得します。プロキシ値は、発行元の構成の一部として格納されます。実行時に、\fB$http_proxy\fR または関連する環境変数は、このプロキシ設定をオーバーライドします。受け入れられる環境変数名のリストについては、\fBcurl\fR(1) のマニュアルページを参照してください。
+.RE
+
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fBpkg set-publisher\fR \fB-p\fR \fI repo_uri\fR [\fB-Ped\fR] [\fB-k\fR \fIssl_key \fR] [\fB-c\fR \fIssl_cert\fR] [\fB- -non-sticky\fR] [\fB--sticky\fR] [\fB--search-after\fR \fI publisher\fR] [\fB--search-before\fR \fIpublisher\fR] [\fB--search-first\fR] [\fB--approve-ca-cert\fR \fI path_to_CA\fR] [\fB--revoke-ca-cert\fR \fIhash_of_CA_to_remove \fR] [\fB--unset-ca-cert\fR \fIhash_of_CA_to_remove \fR] [\fB--set-property\fR \fIname_of_property\fR=\fI value\fR] [\fB--add-property-value\fR \fIname_of_property \fR=\fIvalue_to_add\fR] [\fB--remove-property-value \fR \fIname_of_property\fR=\fIvalue_to_remove \fR] [\fB--unset-property\fR \fIname_of_property_to_delete \fR] [\fB--proxy\fR \fIproxy_to_use\fR] [\fIpublisher\fR]\fR
+.ad
+.sp .6
+.RS 4n
+\fIrepo_uri\fR リポジトリ URI から発行元構成情報を取得します。
+.sp
+発行元オペランドがこの \fBset-publisher\fR サブコマンドに指定されている場合、その発行元のみが追加または更新されます。発行元を指定しない場合、\fIrepo_uri\fR 内のすべての発行元が必要に応じて追加または更新されます。
+.sp
+オプションの説明については、前述の \fBset-publisher\fR コマンドを参照してください。\fB-p\fR と同時に使用する場合、\fB-P\fR、\fB--search-first \fR、\fB--search-before\fR、および \fB--search-after\fR オプションは追加された発行元のみに適用され、更新された発行元には適用されません。
+.sp
+\fB-p\fR オプションは、\fB-g\fR、\fB--add-origin\fR、\fB-G\fR、\fB--remove-origin\fR、\fB-m\fR、\fB--add-mirror\fR、\fB-M\fR、\fB--remove-mirror\fR、\fB--disable\fR、\fB--enable\fR、\fB--no-refresh\fR、または \fB--reset-uuid\fR オプションと組み合わせることはできません。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fBpkg unset-publisher\fR \fIpublisher \fR ...\fR
+.ad
+.sp .6
+.RS 4n
+指定された発行元に関連付けられた構成を削除します。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fBpkg history\fR [\fB-HNl\fR] [\fB-t\fR [\fItime\fR | \fItime\fR-\fI time\fR],...] [\fB-o\fR \fIcolumn\fR,...] [\fB-n\fR \fInumber\fR]\fR
 .ad
 .sp .6
 .RS 4n
 該当するイメージのコマンド履歴を表示します。
 .sp
-\fB-H\fR を指定すると、一覧表示からヘッダーを省略します。
+.ne 2
+.mk
+.na
+\fB\fB-H\fR \fR
+.ad
+.sp .6
+.RS 4n
+一覧からヘッダーを省略します。
+.RE
+
 .sp
-\fB-t\fR を指定すると、\fB%Y-%m-%dT%H:%M:%S\fR 形式のタイムスタンプのコンマ区切りリストでログレコードを表示します (\fB strftime\fR(3C) を参照)。日時の範囲を指定するには、開始と終了のタイムスタンプの間にハイフン (-) を使用します。キーワード \fBnow\fR は、現在の日時の別名として使用できます。指定されたタイムスタンプに、重複したタイムスタンプまたは重複する日付範囲が含まれる場合、重複した各履歴イベントの 1 つのインスタンスのみが出力されます。
+.ne 2
+.mk
+.na
+\fB\fB-t\fR \fItime\fR\fR
+.ad
+.br
+.na
+\fB\fB-t\fR \fItime\fR-\fItime\fR\fR
+.ad
+.sp .6
+.RS 4n
+\fB%Y-%m-%dT%H:%M:%S\fR 形式のタイムスタンプのコンマ区切りリストでログレコードを表示します (\fB strftime\fR(3C) を参照)。日時の範囲を指定するには、開始と終了のタイムスタンプの間にハイフン (-) を使用します。キーワード \fBnow\fR は、現在の日時の別名として使用できます。指定されたタイムスタンプに、重複したタイムスタンプまたは重複する日付範囲が含まれる場合、重複した各履歴イベントの 1 つのインスタンスのみが出力されます。
+.RE
+
 .sp
-\fB-l\fR を指定すると、長い形式でログレコードを表示します。これには標準形式に加えて、コマンドの結果、コマンドが完了した日時、使用されたクライアントのバージョンと名前、操作を実行したユーザーの名前、およびコマンドの実行中に発生したすべてのエラーが含まれます。
+.ne 2
+.mk
+.na
+\fB\fB-l\fR\fR
+.ad
+.sp .6
+.RS 4n
+長い形式でログレコードを表示します。これには標準形式に加えて、コマンドの結果、コマンドが完了した日時、使用されたクライアントのバージョンと名前、操作を実行したユーザーの名前、およびコマンドの実行中に発生したすべてのエラーが含まれます。
+.RE
+
 .sp
-\fB-n\fR は、最新のものから順に指定された数のエントリのみを表示します。
+.ne 2
+.mk
+.na
+\fB\fB-N\fR\fR
+.ad
+.sp .6
+.RS 4n
+リリースノートのテキストを表示します。
+.RE
+
 .sp
-\fB-o\fR は、列名を指定するコンマ区切りリストを使用して出力を表示します。有効な列名は次のとおりです。
+.ne 2
+.mk
+.na
+\fB\fB-n\fR \fInumber\fR\fR
+.ad
+.sp .6
+.RS 4n
+最新のものから順に指定された数のエントリのみを表示します。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB-o\fR \fIcolumn\fR\fR
+.ad
+.sp .6
+.RS 4n
+列名を指定するコンマ区切りリストを使用して出力を表示します。有効な列名は次のとおりです。
 .sp
 .ne 2
 .mk
 .na
 \fB\fBbe\fR\fR
 .ad
-.RS 15n
-.rt  
+.sp .6
+.RS 4n
 この操作が開始されたブート環境の名前。
 .RE
 
@@ -1037,8 +2330,8 @@ AND と OR を使用する論理検索がサポートされています。フィ
 .na
 \fB\fBbe_uuid\fR\fR
 .ad
-.RS 15n
-.rt  
+.sp .6
+.RS 4n
 この操作が開始されたブート環境の \fBUUID\fR。
 .RE
 
@@ -1048,8 +2341,8 @@ AND と OR を使用する論理検索がサポートされています。フィ
 .na
 \fB\fBclient\fR\fR
 .ad
-.RS 15n
-.rt  
+.sp .6
+.RS 4n
 クライアントの名前。
 .RE
 
@@ -1059,8 +2352,8 @@ AND と OR を使用する論理検索がサポートされています。フィ
 .na
 \fB\fBclient_ver\fR\fR
 .ad
-.RS 15n
-.rt  
+.sp .6
+.RS 4n
 クライアントのバージョン。
 .RE
 
@@ -1070,8 +2363,8 @@ AND と OR を使用する論理検索がサポートされています。フィ
 .na
 \fB\fBcommand\fR\fR
 .ad
-.RS 15n
-.rt  
+.sp .6
+.RS 4n
 この操作のために使用されたコマンド行。
 .RE
 
@@ -1081,8 +2374,8 @@ AND と OR を使用する論理検索がサポートされています。フィ
 .na
 \fB\fBfinish\fR\fR
 .ad
-.RS 15n
-.rt  
+.sp .6
+.RS 4n
 この操作が完了した日時。
 .RE
 
@@ -1092,8 +2385,8 @@ AND と OR を使用する論理検索がサポートされています。フィ
 .na
 \fB\fBid\fR\fR
 .ad
-.RS 15n
-.rt  
+.sp .6
+.RS 4n
 この操作を開始したユーザー ID。
 .RE
 
@@ -1103,8 +2396,8 @@ AND と OR を使用する論理検索がサポートされています。フィ
 .na
 \fB\fBnew_be\fR\fR
 .ad
-.RS 15n
-.rt  
+.sp .6
+.RS 4n
 この操作によって作成された新しいブート環境。
 .RE
 
@@ -1114,8 +2407,8 @@ AND と OR を使用する論理検索がサポートされています。フィ
 .na
 \fB\fBnew_be_uuid\fR\fR
 .ad
-.RS 15n
-.rt  
+.sp .6
+.RS 4n
 この操作によって作成された新しいブート環境の \fBUUID\fR。
 .RE
 
@@ -1125,8 +2418,8 @@ AND と OR を使用する論理検索がサポートされています。フィ
 .na
 \fB\fBoperation\fR\fR
 .ad
-.RS 15n
-.rt  
+.sp .6
+.RS 4n
 操作の名前。
 .RE
 
@@ -1136,9 +2429,9 @@ AND と OR を使用する論理検索がサポートされています。フィ
 .na
 \fB\fBoutcome\fR\fR
 .ad
-.RS 15n
-.rt  
-この操作の結果の要約。
+.sp .6
+.RS 4n
+この操作の結果のサマリー。
 .RE
 
 .sp
@@ -1147,9 +2440,20 @@ AND と OR を使用する論理検索がサポートされています。フィ
 .na
 \fB\fBreason\fR\fR
 .ad
-.RS 15n
-.rt  
+.sp .6
+.RS 4n
 この操作の結果に関する追加情報。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fBrelease_note\fR\fR
+.ad
+.sp .6
+.RS 4n
+この操作によってリリースノートが生成されたかどうかを示します。
 .RE
 
 .sp
@@ -1158,8 +2462,8 @@ AND と OR を使用する論理検索がサポートされています。フィ
 .na
 \fB\fBsnapshot\fR\fR
 .ad
-.RS 15n
-.rt  
+.sp .6
+.RS 4n
 この操作中に作成されたスナップショット。これは、操作が正常に完了したあとにスナップショットが自動削除されなかった場合にのみ記録されます。
 .RE
 
@@ -1169,8 +2473,8 @@ AND と OR を使用する論理検索がサポートされています。フィ
 .na
 \fB\fBstart\fR\fR
 .ad
-.RS 15n
-.rt  
+.sp .6
+.RS 4n
 この操作が開始した日時。
 .RE
 
@@ -1180,8 +2484,8 @@ AND と OR を使用する論理検索がサポートされています。フィ
 .na
 \fB\fBtime\fR\fR
 .ad
-.RS 15n
-.rt  
+.sp .6
+.RS 4n
 この操作の実行にかかった合計時間。1 秒未満の操作については 0:00:00 と表示されます。
 .RE
 
@@ -1189,10 +2493,10 @@ AND と OR を使用する論理検索がサポートされています。フィ
 .ne 2
 .mk
 .na
-\fB\fBuser\fR\fR
+\fB\fBuser\fR \fR
 .ad
-.RS 15n
-.rt  
+.sp .6
+.RS 4n
 この操作を開始したユーザー名。
 .RE
 
@@ -1203,11 +2507,13 @@ AND と OR を使用する論理検索がサポートされています。フィ
 \fBbe\fR および \fBnew_be\fR の値は、\fBbe_uuid\fR または \fBnew_be_uuid\fR フィールドを使用して現在のブート環境名を検索することによって取得されます。その後、ブート環境の名前が変更されたあとにその環境が削除された場合、\fBbe\fR および \fBnew_be\fR に表示される値は、\fBpkg\fR 操作の時点で記録された値です。
 .RE
 
+.RE
+
 .sp
 .ne 2
 .mk
 .na
-\fB\fBpurge-history\fR\fR
+\fB\fBpkg purge-history\fR\fR
 .ad
 .sp .6
 .RS 4n
@@ -1218,7 +2524,7 @@ AND と OR を使用する論理検索がサポートされています。フィ
 .ne 2
 .mk
 .na
-\fB\fBrebuild-index\fR\fR
+\fB\fBpkg rebuild-index\fR\fR
 .ad
 .sp .6
 .RS 4n
@@ -1229,7 +2535,7 @@ AND と OR を使用する論理検索がサポートされています。フィ
 .ne 2
 .mk
 .na
-\fB\fBupdate-format\fR\fR
+\fB\fBpkg update-format\fR\fR
 .ad
 .sp .6
 .RS 4n
@@ -1240,22 +2546,33 @@ AND と OR を使用する論理検索がサポートされています。フィ
 .ne 2
 .mk
 .na
-\fB\fBversion\fR\fR
+\fB\fBpkg version\fR\fR
 .ad
 .sp .6
 .RS 4n
-\fBpkg\fR(1) のバージョンを識別する一意な文字列を表示します。この文字列は、バージョン間で何らかの方法で比較可能であることは保証されていません。
+\fBpkg\fR のバージョンを識別する一意な文字列を表示します。この文字列は、バージョン間で何らかの方法で比較可能であることは保証されていません。
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fB\fBimage-create [\fB-FPUfz\fR] [\fB--force \fR] [\fB--full\fR | \fB--partial\fR | \fB--user\fR] [\fB--zone\fR] [\fB-k\fR \fIssl_key\fR] [\fB-c\fR \fIssl_cert\fR] [\fB--no-refresh\fR] [\fB--variant\fR \fIvariant_spec\fR=\fIinstance \fR ...] [\fB-g\fR \fIpath_or_uri\fR | \fB- -origin\fR \fIpath_or_uri\fR ...] [\fB-m\fR \fI uri\fR | \fB--mirror\fR \fIuri\fR ...] [\fB--facet\fR \fIfacet_spec\fR=(True|False) ...] [(\fB-p\fR | \fB--publisher\fR) [\fIname\fR=]\fI repo_uri\fR] \fIdir\fR\fR\fR
+\fB\fBpkg help\fR\fR
 .ad
 .sp .6
 .RS 4n
-\fIdir\fR によって指定された場所に、パッケージ操作に適したイメージを作成します。デフォルトのイメージタイプはユーザーであり、\fB-U\fR (\fB--user\fR) オプションによって指定されます。イメージタイプはフルイメージ (\fB--F\fR または \fB--full\fR)、または指定された \fIdir\fR パスを包含するフルイメージにリンクされた部分イメージ (\fB-P\fR または \fB--partial\fR) に設定できます。\fB-g\fR または \fB--origin\fR を使用して追加の起点を指定できます。\fB--m\fR または \fB--mirror\fR を使用して追加のミラーを指定できます。
+使用方法に関するメッセージを表示します。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fBpkg image-create\fR [\fB-FPUz\fR] [\fB-f\fR |\fB--force\fR] [\fB--full\fR | \fB--partial \fR | \fB--user\fR] [\fB--zone\fR] [\fB-k\fR \fI ssl_key\fR] [\fB-c\fR \fIssl_cert\fR] [\fB--no-refresh\fR] [\fB--variant\fR \fIvariant_name \fR=\fIvalue\fR ...] [\fB-g\fR \fI path_or_uri\fR | \fB--origin\fR \fIpath_or_uri\fR ...] [\fB-m\fR \fIuri\fR | \fB--mirror\fR \fI uri\fR ...] [\fB--set-property\fR \fIname_of_property \fR=\fIvalue\fR] [\fB--facet\fR \fI facet_name\fR=(\fBTrue\fR|\fBFalse\fR) ...] [(\fB-p\fR | \fB--publisher\fR) [\fIname\fR=]\fI repo_uri\fR] \fIdir\fR\fR
+.ad
+.sp .6
+.RS 4n
+\fIdir\fR によって指定された場所に、パッケージ操作に適したイメージを作成します。デフォルトのイメージタイプはユーザーであり、\fB-U\fR (\fB--user\fR) オプションによって指定されます。イメージタイプはフルイメージ (\fB--F\fR または \fB--full\fR)、または指定された \fIdir\fR パスを包含するフルイメージにリンクされた部分イメージ (\fB-P\fR または \fB--partial\fR) に設定できます。\fB-g\fR または \fB--origin\fR を使用して追加の起点を指定できます。\fB-m\fR または \fB--mirror\fR を使用して追加のミラーを指定できます。
 .sp
 パッケージリポジトリの URI は、\fB-p\fR または \fB--publisher\fR オプションを使用して提供する必要があります。パブリッシャーの名前も提供した場合、イメージの作成時にそのパブリッシャーのみが追加されます。パブリッシャーの名前を提供しない場合、指定されたリポジトリによって認識されているすべてのパブリッシャーがイメージに追加されます。このパブリッシャーに関連付けられたカタログは、初期作成操作に続いて取得が試みられます。
 .sp
@@ -1263,19 +2580,70 @@ AND と OR を使用する論理検索がサポートされています。フィ
 .sp
 イメージが非大域ゾーンコンテキストの内部で実行される予定の場合、\fB-z\fR (\fB--zone\fR) オプションを使用して適切なバリアントを設定できます。
 .sp
-\fB-f\fR (\fB--force\fR) を指定すると、強制的に既存のイメージを上書きしてイメージを作成します。このオプションは慎重に使用してください。
+.ne 2
+.mk
+.na
+\fB\fB-f\fR\fR
+.ad
+.br
+.na
+\fB\fB--force\fR\fR
+.ad
+.sp .6
+.RS 4n
+既存のイメージ上にイメージを強制的に作成します。このオプションは慎重に使用してください。
+.RE
+
 .sp
-\fB--no-refresh\fR を指定すると、入手可能パッケージやその他のメタデータの最新リストを取得するために、イメージのパブリッシャー用のリポジトリへのアクセスを試みません。
+.ne 2
+.mk
+.na
+\fB\fB--no-refresh\fR\fR
+.ad
+.sp .6
+.RS 4n
+入手可能パッケージやその他のメタデータの最新リストを取得するために、イメージの発行元用のリポジトリへのアクセスを試みません。
+.RE
+
 .sp
-\fB--variant\fR は、指定されたバリアントを指定された値に設定します。
+.ne 2
+.mk
+.na
+\fB\fB--variant\fR \fIvariant_name\fR=\fI value\fR\fR
+.ad
+.sp .6
+.RS 4n
+指定されたバリアントを指定された値に設定します。バリアントの詳細については、\fBpkg\fR(5) のマニュアルページのファセットとバリアントに関する項目を参照してください。
+.RE
+
 .sp
-\fB--facet\fR は、指定されたファセットを指定された値に設定します。
+.ne 2
+.mk
+.na
+\fB\fB--facet\fR \fIfacet_name\fR=(\fB True\fR|\fBFalse\fR)\fR
+.ad
+.sp .6
+.RS 4n
+指定されたファセットを指定された値に設定します。ファセットの詳細については、\fBpkg\fR(5) のマニュアルページのファセットとバリアントに関する項目を参照してください。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB--set-property\fR \fIname_of_property\fR=\fI value\fR\fR
+.ad
+.sp .6
+.RS 4n
+指定されたイメージプロパティーを指定された値に設定します。イメージプロパティーの説明については、下の「イメージプロパティー」を参照してください。
+.RE
+
 .RE
 
 .SH イメージプロパティー
 .sp
 .LP
-次のプロパティーはイメージの一部であり、\fBset-property\fR サブコマンドを使用して設定できます。これらのプロパティーの値は、\fBproperty\fR サブコマンドを使用して参照できます。
+次のプロパティーはイメージの特性を定義します。これらのプロパティーは、イメージの目的、内容、および動作に関する情報を格納します。イメージ内のこれらのプロパティーの現在の値を表示するには、\fBpkg property\fR コマンドを使用します。これらのプロパティーの値を変更するには、\fBpkg set-property\fR コマンドおよび \fBpkg unset-property\fR コマンドを使用します。
 .sp
 .ne 2
 .mk
@@ -1291,9 +2659,9 @@ AND と OR を使用する論理検索がサポートされています。フィ
 .na
 \fB\fBdefault\fR\fR
 .ad
-.RS 14n
-.rt  
-デフォルトの BE 作成ポリシー \fBcreate-backup\fR を適用します。
+.sp .6
+.RS 4n
+デフォルトブート環境作成ポリシー \fBcreate-backup\fR を適用します。
 .RE
 
 .sp
@@ -1302,9 +2670,9 @@ AND と OR を使用する論理検索がサポートされています。フィ
 .na
 \fB\fBalways-new\fR\fR
 .ad
-.RS 14n
-.rt  
-次のブート時にアクティブに設定されている新しい BE でパッケージ操作を実行するため、すべてのパッケージ操作に対してリブートを必要とします。明示的に要求されないかぎり、バックアップ BE は作成されません。
+.sp .6
+.RS 4n
+次のブート時にアクティブに設定されている新しいブート環境でパッケージ操作を実行するため、すべてのパッケージ操作に対してリブートを必要とします。明示的にリクエストされないかぎり、バックアップブート環境は作成されません。
 .sp
 このポリシーはもっとも安全ですが、リブートしないとパッケージを追加できないため、ほとんどのサイトの要求よりも厳格です。
 .RE
@@ -1319,7 +2687,7 @@ AND と OR を使用する論理検索がサポートされています。フィ
 .ad
 .sp .6
 .RS 4n
-リブートを必要とするパッケージ操作で、新しい BE が作成され、次のブート時にアクティブに設定されます。パッケージが変更されるか、カーネルに影響する可能性のあるコンテンツがインストールされて操作がライブ BE に影響する場合、バックアップ BE は作成されますがアクティブには設定されません。バックアップ BE を明示的に要求することもできます。
+リブートを必要とするパッケージ操作で、新しいブート環境が作成され、次のブート時にアクティブに設定されます。パッケージが変更されるか、カーネルに影響を及ぼす可能性のある内容がインストールされて、ライブブート環境がこの操作の影響を受ける場合、バックアップブート環境は作成されますが、アクティブには設定されません。バックアップブート環境を明示的にリクエストすることもできます。
 .sp
 このポリシーは、新しくインストールされたソフトウェアによりシステムが不安定になっている場合にのみ潜在的に危険です。この可能性はありますが、比較的まれです。
 .RE
@@ -1332,9 +2700,9 @@ AND と OR を使用する論理検索がサポートされています。フィ
 .ad
 .sp .6
 .RS 4n
-リブートを必要とするパッケージ操作で、新しい BE が作成され、次のブート時にアクティブに設定されます。明示的に要求されないかぎり、バックアップ BE は作成されません。
+リブートを必要とするパッケージ操作で、新しいブート環境が作成され、次のブート時にアクティブに設定されます。明示的にリクエストされないかぎり、バックアップブート環境は作成されません。
 .sp
-パッケージの変更によりライブ BE へのこれ以上の変更が不可能になると、フォールバックできる新しい BE がなくなる可能性があるため、このポリシーはもっとも大きな危険を伴います。
+ライブブート環境へのパッケージ変更によりそれ以上の変更が不可能になる場合、フォールバック可能な最近のブート環境が存在しない可能性があるため、このポリシーには最大の危険が伴います。
 .RE
 
 .sp
@@ -1358,7 +2726,7 @@ AND と OR を使用する論理検索がサポートされています。フィ
 .ad
 .sp .6
 .RS 4n
-(文字列) True に設定すると、パッケージクライアントは、署名検証のために使用される証明書の CRL 配布ポイントへのアクセスを試み、発行時よりもあとに証明書が失効していないかどうかを調べます。
+(ブール型) \fBTrue\fR に設定されている場合、パッケージクライアントは、署名検証のために使用される証明書の CRL 配布ポイントへのアクセスを試み、発行時よりもあとに証明書が失効していないかどうかを調べます。
 .sp
 デフォルト値: \fBFalse\fR
 .RE
@@ -1371,7 +2739,7 @@ AND と OR を使用する論理検索がサポートされています。フィ
 .ad
 .sp .6
 .RS 4n
-(ブール型) True に設定すると、パッケージクライアントは、インストールまたは更新操作の完了時にその内容キャッシュ内のファイルを削除します。更新操作の場合、内容はソース BE からのみ削除されます。出力先 BE でパッケージ操作が次に発生したとき、このオプションが変更されていなければ、パッケージクライアントはその内容キャッシュをフラッシュします。
+(ブール型) \fBTrue\fR に設定されている場合、パッケージクライアントは、インストールまたは更新操作の完了時にその内容キャッシュ内のファイルを削除します。更新操作の場合、内容はソースブート環境からのみ削除されます。出力先ブート環境でパッケージ操作が次に発生したとき、このオプションが変更されていなければ、パッケージクライアントはその内容キャッシュをフラッシュします。
 .sp
 このプロパティーを使用して、ディスク容量の限られたシステムで内容キャッシュを小さく保つことができます。このプロパティーを使用すると、操作が完了するまでの時間が長くなる可能性があります。
 .sp
@@ -1386,7 +2754,7 @@ AND と OR を使用する論理検索がサポートされています。フィ
 .ad
 .sp .6
 .RS 4n
-(ブール型) このプロパティーは、mDNS および DNS-SD を使用してリンクローカル内容ミラーを検出するようにクライアントに命令します。このプロパティーを True に設定すると、クライアントはミラーを動的に検出し、そのミラーからパッケージ内容のダウンロードを試みます。mDNS を介してその内容を通知するミラーの実行方法については、\fBpkg.depotd\fR(1M) を参照してください。
+(ブール型) このプロパティーは、mDNS および DNS-SD を使用してリンクローカル内容ミラーを検出するようにクライアントに命令します。このプロパティーを \fBTrue\fR に設定すると、クライアントはミラーを動的に検出し、そのミラーからパッケージ内容のダウンロードを試みます。mDNS を介してその内容を通知するミラーの実行方法については、\fBpkg.depotd\fR(1M) のマニュアルページを参照してください。
 .sp
 デフォルト値: \fBFalse\fR
 .RE
@@ -1412,15 +2780,15 @@ AND と OR を使用する論理検索がサポートされています。フィ
 .ad
 .sp .6
 .RS 4n
-(文字列) イメージ内のパッケージのインストール、更新、修正、または検証時にマニフェストに対してどのチェックが実行されるかを決定します。パッケージに適用される最終的なポリシーは、イメージポリシーとパブリッシャーポリシーの組み合わせに依存します。この組み合わせの厳格さは、少なくとも、この 2 つのポリシーが個別に適用された場合の厳格な方と同じです。デフォルトでは、パッケージクライアントは証明書が失効済みかどうかをチェックしません。そのようなチェック (クライアントから外部 Web サイトへのアクセスが必要な場合がある) を有効にするには、\fBcheck-certificate-revocation\fR イメージプロパティーを \fBtrue\fR に設定します。次の値が許可されます。
+(文字列) イメージ内のパッケージのインストール、更新、修正、または検証時にマニフェストに対してどのチェックが実行されるかを決定します。パッケージに適用される最終的なポリシーは、イメージポリシーと発行元ポリシーの組み合わせに依存します。この組み合わせの厳格さは、少なくとも、この 2 つのポリシーが個別に適用された場合の厳格な方と同じです。デフォルトでは、パッケージクライアントは証明書が失効済みかどうかをチェックしません。そのようなチェック (クライアントから外部 Web サイトへのアクセスが必要な場合がある) を有効にするには、\fBcheck-certificate-revocation\fR イメージプロパティーを \fBTrue\fR に設定します。次の値が許可されます。
 .sp
 .ne 2
 .mk
 .na
 \fB\fBignore\fR\fR
 .ad
-.RS 22n
-.rt  
+.sp .6
+.RS 4n
 すべてのマニフェストの署名を無視します。
 .RE
 
@@ -1430,8 +2798,8 @@ AND と OR を使用する論理検索がサポートされています。フィ
 .na
 \fB\fBverify\fR\fR
 .ad
-.RS 22n
-.rt  
+.sp .6
+.RS 4n
 署名が含まれているすべてのマニフェストが有効に署名されていることを確認しますが、インストール済みパッケージがすべて署名されている必要はありません。これがデフォルト値です。
 .RE
 
@@ -1441,8 +2809,8 @@ AND と OR を使用する論理検索がサポートされています。フィ
 .na
 \fB\fBrequire-signatures\fR\fR
 .ad
-.RS 22n
-.rt  
+.sp .6
+.RS 4n
 新しくインストールされたすべてのパッケージに、有効な署名が少なくとも 1 つ含まれている必要があります。インストール済みパッケージに有効な署名が含まれていない場合は、\fBpkg fix\fR および \fBpkg verify\fR コマンドでも警告が表示されます。
 .RE
 
@@ -1452,8 +2820,8 @@ AND と OR を使用する論理検索がサポートされています。フィ
 .na
 \fB\fBrequire-names\fR\fR
 .ad
-.RS 22n
-.rt  
+.sp .6
+.RS 4n
 \fBrequire-signatures\fR と同じ要件に従いますが、\fBsignature-required-names\fR プロパティーで一覧表示される文字列が、署名の信頼のチェーンを検証するために使用される証明書の共通名としても表示される必要があります。
 .RE
 
@@ -1489,13 +2857,13 @@ AND と OR を使用する論理検索がサポートされています。フィ
 .ad
 .sp .6
 .RS 4n
-(ブール型) このプロパティーではシステムリポジトリを、イメージおよびパブリッシャー構成のソースとして、および提供されたパブリッシャーと通信するためのプロキシとしてイメージで使用するべきかどうかを指定します。デフォルト値は \fBignore\fR です。システムリポジトリについては、\fBpkg.sysrepo\fR(1M) を参照してください。
+(ブール型) このプロパティーではシステムリポジトリを、イメージおよびパブリッシャー構成のソースとして、および提供されたパブリッシャーと通信するためのプロキシとしてイメージで使用するべきかどうかを指定します。デフォルト値は \fBFalse\fR です。システムリポジトリについては、\fBpkg.sysrepo\fR(1M) のマニュアルページを参照してください。
 .RE
 
 .SH パブリッシャープロパティー
 .sp
 .LP
-次のプロパティーはイメージの一部であり、\fBset-publisher\fR サブコマンドの \fB--set-property\fR オプションを使用して設定できます。
+次のプロパティーは、特定の発行元の署名ポリシーを定義します。同じ名前のイメージプロパティーはイメージの署名ポリシーを定義します。特定の発行元のこれらのプロパティーの現在の値を表示するには、\fBpkg publisher\fR \fIpublisher_name\fR コマンドを使用します。これらの発行元の署名ポリシープロパティーの値を変更するには、\fBpkg set-publisher\fR コマンドの \fB--set-property\fR オプションと \fB--unset-property\fR オプションを使用します。
 .sp
 .ne 2
 .mk
@@ -1520,7 +2888,7 @@ AND と OR を使用する論理検索がサポートされています。フィ
 
 .SH 使用例
 .LP
-\fB例 1 \fRパブリッシャーを設定してイメージを作成する
+\fB例 1 \fRパブリッシャーを構成してイメージを作成する
 .sp
 .LP
 パブリッシャーを \fBexample.com\fR として新しいフルイメージを作成し、\fB/aux0/example_root\fR に格納します。
@@ -1553,10 +2921,10 @@ $ \fBpkg image-create -F -p example.com=http://pkg.example.com:10000 \e\fR
 .sp
 
 .LP
-\fB例 3 \fRパブリッシャーを設定せずにイメージを作成する
+\fB例 3 \fRパブリッシャーを構成せずにイメージを作成する
 .sp
 .LP
-パブリッシャーを設定せずに、新しいフルイメージを \fB/aux0/example_root\fR に作成します。
+パブリッシャーを構成せずに、新しいフルイメージを \fB/aux0/example_root\fR に作成します。
 
 .sp
 .in +2
@@ -1567,7 +2935,7 @@ $ \fBpkg image-create -F /aux0/example_root\fR
 .sp
 
 .LP
-\fB例 4 \fRパッケージをインストールする
+\fB例 4 \fRパッケージのインストール
 .sp
 .LP
 \fBwidget\fR パッケージの最新バージョンを現在のイメージにインストールします。
@@ -1642,11 +3010,13 @@ mail/thunderbird    usr/share/pixmaps/thunderbird-icon.png
 .in +2
 .nf
 $ \fBpkg search bge\fR
-INDEX       ACTION VALUE                      PACKAGE
-driver_name driver bge                        pkg:/driver/network/bge@0.5.11-0.169
-basename    file   kernel/drv/sparcv9/bge     pkg:/driver/network/bge@0.5.11-0.169
-basename    file   kernel/drv/amd64/bge       pkg:/driver/network/bge@0.5.11-0.169
-pkg.fmri    set    solaris/driver/network/bge pkg:/driver/network/bge@0.5.11-0.169
+INDEX       ACTION VALUE                                 PACKAGE
+driver_name driver bge                                   pkg:/driver/network/ethernet/bge@0.5.11-0.175.0.0.0.2.1
+basename    file   kernel/drv/sparcv9/bge                pkg:/driver/network/ethernet/bge@0.5.11-0.175.0.0.0.2.1
+basename    file   kernel/drv/amd64/bge                  pkg:/driver/network/ethernet/bge@0.5.11-0.175.0.0.0.2.1
+basename    file   platform/sun4v/kernel/drv/sparcv9/bge pkg:/system/kernel/platform@0.5.11-0.175.0.0.0.2.1
+pkg.fmri    set    solaris/driver/network/bge            pkg:/driver/network/bge@0.5.11-0.173.0.0.0.1.0
+pkg.fmri    set    solaris/driver/network/ethernet/bge   pkg:/driver/network/ethernet/bge@0.5.11-0.175.0.0.0.2.1
 .fi
 .in -2
 .sp
@@ -1656,7 +3026,89 @@ pkg.fmri    set    solaris/driver/network/bge pkg:/driver/network/bge@0.5.11-0.1
 このトークンはパッケージ \fBdriver/network/bge\fR 内に、\fB/kernel/drv/\fI arch\fR/bge\fR を表すファイルアクションのベース名として、およびドライバ名として存在します。
 
 .LP
-\fB例 8 \fR指定されたパッケージに依存するパッケージを検索する
+\fB例 8 \fRファイルの検索
+.sp
+.LP
+先頭のスラッシュ文字を含むファイルのフルパス名を指定して、ファイルを提供するパッケージを検索します。
+
+.sp
+.in +2
+.nf
+$ \fBpkg search -o path,pkg.name -l /usr/bin/vim\fR
+PATH         PKG.NAME
+usr/bin/vim  editor/vim/vim-core
+.fi
+.in -2
+.sp
+
+.sp
+.LP
+\fIaction_name\fR に \fB file\fR を指定し、\fIindex\fR に \fBpath\fR または \fBbasename\fR を指定し、\fItoken\fR に完全または部分的なファイル名を指定することにより、ファイルおよびそのファイルを提供するパッケージを検索します。
+
+.sp
+.in +2
+.nf
+$ \fBpkg search -o path,pkg.name -l file:basename:vim\fR
+PATH         PKG.NAME
+usr/bin/vim  editor/vim/vim-core
+.fi
+.in -2
+.sp
+
+.LP
+\fB例 9 \fRファイルとディレクトリの検索
+.sp
+.LP
+\fI index\fR に \fBpath\fR または \fBbasename\fR を、\fItoken\fR に完全または部分的なファイル名を指定することにより、ファイルとディレクトリ、およびそれらを提供するパッケージを検索します。使用するシェルによっては、ワイルドカードをエスケープする必要があります。
+
+.sp
+.in +2
+.nf
+$ \fBpkg search -o path,pkg.name -l path:*/vim\fR
+PATH           PKG.NAME
+usr/bin/vim    editor/vim/vim-core
+usr/share/vim  editor/vim
+usr/share/vim  editor/vim/vim-core
+$ \fBpkg search -o path,pkg.name -l basename:vim\fR
+PATH           PKG.NAME
+usr/share/vim  editor/vim
+usr/share/vim  editor/vim/vim-core
+usr/bin/vim    editor/vim/vim-core
+.fi
+.in -2
+.sp
+
+.LP
+\fB例 10 \fRどのパッケージがどの SMF サービスを提供するかを表示する
+.sp
+.LP
+構造化された検索内で \fIindex\fR に値 \fBorg.opensolaris.smf.fmri\fR を指定し、\fI token\fR に検索対象のサービスの名前を指定することにより、特定の SMF サービスを提供するのはどのパッケージかを表示します。値 \fBorg.opensolaris.smf.fmri\fR は、\fBset\fR アクションの属性の名前です。サービスの名前では、「:」を確実にエスケープしてください。
+
+.sp
+.LP
+たとえば、使用可能な HTTP サーバーを表示するには、\fItoken\fR に値 \fBsvc:/network/http\fR を指定します。
+
+.sp
+.in +2
+.nf
+$ \fBpkg search 'org.opensolaris.smf.fmri:svc\e:/network/http*'\fR
+INDEX                    ACTION VALUE                        PACKAGE
+org.opensolaris.smf.fmri set    svc:/network/http            pkg:/web/server/lighttpd-14@1.4.23-0.175.0.0.0.2.1
+org.opensolaris.smf.fmri set    svc:/network/http            pkg:/web/proxy/privoxy@3.0.17-0.175.0.0.0.2.1
+org.opensolaris.smf.fmri set    svc:/network/http            pkg:/web/proxy/squid@3.1.18-0.175.0.0.0.2.1
+org.opensolaris.smf.fmri set    svc:/network/http            pkg:/web/java-servlet/tomcat@6.0.35-0.175.0.0.0.2.1
+org.opensolaris.smf.fmri set    svc:/network/http            pkg:/web/server/apache-22@2.2.22-0.175.0.0.0.2.1
+org.opensolaris.smf.fmri set    svc:/network/http:apache22   pkg:/web/server/apache-22@2.2.22-0.175.0.0.0.2.1
+org.opensolaris.smf.fmri set    svc:/network/http:lighttpd14 pkg:/web/server/lighttpd-14@1.4.23-0.175.0.0.0.2.1
+org.opensolaris.smf.fmri set    svc:/network/http:privoxy    pkg:/web/proxy/privoxy@3.0.17-0.175.0.0.0.2.1
+org.opensolaris.smf.fmri set    svc:/network/http:squid      pkg:/web/proxy/squid@3.1.18-0.175.0.0.0.2.1
+org.opensolaris.smf.fmri set    svc:/network/http:tomcat6    pkg:/web/java-servlet/tomcat@6.0.35-0.175.0.0.0.2.1
+.fi
+.in -2
+.sp
+
+.LP
+\fB例 11 \fR指定されたパッケージに依存するパッケージを検索する
 .sp
 .LP
 \fBpackage/pkg\fR に依存するインストール済みパッケージを検索します。
@@ -1664,17 +3116,23 @@ pkg.fmri    set    solaris/driver/network/bge pkg:/driver/network/bge@0.5.11-0.1
 .sp
 .in +2
 .nf
-$ \fBpkg search -l 'depend::package/pkg'\fR
-INDEX       ACTION VALUE                    PACKAGE
-incorporate depend package/pkg@0.5.11-0.169 pkg:/consolidation/ips/ips-incorporation@0.5.11-0.169
-require     depend package/pkg@0.5.11-0.169 pkg:/system/install@0.5.11-0.169
-require     depend package/pkg@0.5.11-0.169 pkg:/package/pkg/system-repository@0.5.11-0.169
+$ \fBpkg search -l depend::package/pkg\fR
+INDEX       ACTION VALUE                                    PACKAGE
+incorporate depend package/pkg@0.5.11-0.175.0.0.0.2.1      pkg:/consolidation/ips/ips-incorporation@0.5.11-0.175.0.0.0.2.1
+require     depend pkg:/package/pkg@0.5.11-0.175.0.0.0.2.1 pkg:/package/pkg/package-manager@0.5.11-0.175.0.0.0.2.1
+require     depend pkg:/package/pkg@0.5.11-0.175.0.0.0.2.1 pkg:/system/library/install@0.5.11-0.175.0.0.0.2.1
+require     depend pkg:/package/pkg@0.5.11-0.175.0.0.0.2.1 pkg:/package/pkg/update-manager@0.5.11-0.175.0.0.0.2.1
+require     depend pkg:/package/pkg@0.5.11-0.175.0.0.0.2.1 pkg:/system/library/boot-management@0.5.11-0.175.0.0.0.2.1
+require     depend package/pkg                             pkg:/system/zones/brand/brand-solaris@0.5.11-0.175.0.0.0.2.1
+require     depend pkg:/package/pkg@0.5.11-0.175.0.0.0.2.1 pkg:/install/distribution-constructor@0.5.11-0.175.0.0.0.2.1
+require     depend pkg:/package/pkg@0.5.11-0.175.0.0.0.2.1 pkg:/system/boot-environment-utilities@0.5.11-0.175.0.0.0.2.1
+require     depend pkg:/package/pkg@0.5.11-0.175.0.0.0.2.1 pkg:/package/pkg/system-repository@0.5.11-0.175.0.0.0.2.1
 .fi
 .in -2
 .sp
 
 .LP
-\fB例 9 \fR依存関係を検索する
+\fB例 12 \fR依存関係を検索する
 .sp
 .LP
 インストール済みパッケージ内のすべての \fBincorporate\fR 依存関係を検索します。
@@ -1682,17 +3140,17 @@ require     depend package/pkg@0.5.11-0.169 pkg:/package/pkg/system-repository@0
 .sp
 .in +2
 .nf
-$ \fBpkg search -l 'depend:incorporate:'\fR
-INDEX       ACTION VALUE                           PACKAGE
-incorporate depend pkg:/BRCMbnx@0.5.11,5.11-0.133  pkg:/consolidation/osnet/osnet-incorporation@0.5.11-0.169
-incorporate depend pkg:/BRCMbnxe@0.5.11,5.11-0.133 pkg:/consolidation/osnet/osnet-incorporation@0.5.11-0.169
+$ \fBpkg search -l depend:incorporate:\fR
+INDEX       ACTION VALUE                                PACKAGE
+incorporate depend pkg:/BRCMbnx@0.5.11-0.175.0.0.0.2.1  pkg:/consolidation/osnet/osnet-incorporation@0.5.11-0.175.0.0.0.2.1
+incorporate depend pkg:/BRCMbnxe@0.5.11-0.175.0.0.0.2.1 pkg:/consolidation/osnet/osnet-incorporation@0.5.11-0.175.0.0.0.2.1
 \&...
 .fi
 .in -2
 .sp
 
 .LP
-\fB例 10 \fRパブリッシャーを追加する
+\fB例 13 \fR発行元を追加
 .sp
 .LP
 新しいパブリッシャー \fBexample.com\fR を追加し、リポジトリの場所を \fBhttp://www.example.com/repo\fR に設定します。
@@ -1706,7 +3164,7 @@ $ \fBpkg set-publisher -g http://www.example.com/repo example.com\fR
 .sp
 
 .LP
-\fB例 11 \fR鍵と証明書を指定してパブリッシャーを追加する
+\fB例 14 \fR鍵と証明書を指定してパブリッシャーを追加する
 .sp
 .LP
 新しいパブリッシャー \fBexample.com\fR を追加し、セキュリティー保護されたリポジトリの場所を \fBhttps://secure.example.com/repo\fR に設定し、鍵および証明書をディレクトリ \fB/root/creds\fR に格納します。
@@ -1722,7 +3180,7 @@ $ \fBpkg set-publisher -k /root/creds/example.key \e\fR
 .sp
 
 .LP
-\fB例 12 \fRパブリッシャーを追加して自動設定する
+\fB例 15 \fRパブリッシャーを追加して自動構成する
 .sp
 .LP
 自動設定を使用して新しいパブリッシャーを追加し、リポジトリの場所を \fB/export/repo\fR に設定します。
@@ -1736,7 +3194,7 @@ $ \fBpkg set-publisher -p /export/repo\fR
 .sp
 
 .LP
-\fB例 13 \fRパブリッシャーを追加して手動設定する
+\fB例 16 \fRパブリッシャーを追加して手動構成する
 .sp
 .LP
 手動設定を使用して新しいパブリッシャー \fBexample.com\fR を追加し、リポジトリの場所を \fB/export/repo/example.com\fR に設定します。
@@ -1750,10 +3208,25 @@ $ \fBpkg set-publisher -g /export/repo example.com\fR
 .sp
 
 .LP
-\fB例 14 \fRすべての署名付きパッケージを検証する
+\fB例 17 \fR発行元を追加してプロキシを構成する
 .sp
 .LP
-すべての署名付きパッケージを検証するようにイメージを設定します。
+起点 \fBhttp://server/repo \fR とプロキシ \fBhttp://webcache:8080\fR を使用して新しい発行元 \fBmypub\fR を追加します。
+
+.sp
+.in +2
+.nf
+$ \fBpkg set-publisher -g http://server/repo \e\fR
+\fB--proxy http://webcache:8080 mypub\fR
+.fi
+.in -2
+.sp
+
+.LP
+\fB例 18 \fRすべての署名付きパッケージを検証する
+.sp
+.LP
+すべての署名付きパッケージを検証するようにイメージを構成します。
 
 .sp
 .in +2
@@ -1764,10 +3237,10 @@ $ \fBpkg set-property signature-policy verify\fR
 .sp
 
 .LP
-\fB例 15 \fRすべてのパッケージで署名を必須にする
+\fB例 19 \fRすべてのパッケージで署名を必須にする
 .sp
 .LP
-すべてのパッケージで署名を必須とするように、また、いずれかの証明書で文字列 \fBexample.com\fR が共通名として信頼チェーンに出現することを必須とするようにイメージを設定します。
+すべてのパッケージで署名を必須とするように、また、いずれかの証明書で文字列 \fBexample.com\fR が共通名として信頼チェーンに出現することを必須とするようにイメージを構成します。
 
 .sp
 .in +2
@@ -1778,10 +3251,10 @@ $ \fBpkg set-property signature-policy require-names example.com\fR
 .sp
 
 .LP
-\fB例 16 \fR指定したパブリッシャーからのすべてのパッケージで署名を必須にする
+\fB例 20 \fR指定したパブリッシャーからのすべてのパッケージで署名を必須にする
 .sp
 .LP
-パブリッシャー \fBexample.com\fR からインストールされるすべてのパッケージで署名を必須とするようにイメージを設定します。
+パブリッシャー \fBexample.com\fR からインストールされるすべてのパッケージで署名を必須とするようにイメージを構成します。
 
 .sp
 .in +2
@@ -1793,7 +3266,7 @@ $ \fBpkg set-publisher --set-property signature-policy=require-signatures \e\fR
 .sp
 
 .LP
-\fB例 17 \fR信頼チェーンで指定された文字列を必須にする
+\fB例 21 \fR信頼チェーンで指定された文字列を必須にする
 .sp
 .LP
 有効とみなされるために署名の信頼チェーンに存在する必要がある文字列 \fBfoo\fR をイメージの共通名の一覧に追加します。
@@ -1807,7 +3280,7 @@ $ \fBpkg add-property-value signature-require-names foo\fR
 .sp
 
 .LP
-\fB例 18 \fR指定されたパブリッシャーの信頼チェーンから文字列を削除する
+\fB例 22 \fR指定されたパブリッシャーの信頼チェーンから文字列を削除する
 .sp
 .LP
 パブリッシャー \fBexample.com\fR の署名を検証するために存在する必要がある文字列 \fBfoo\fR を共通名の一覧から削除します。
@@ -1822,7 +3295,7 @@ $ \fBpkg set-publisher --remove-property-value signature-require-names=foo \e\fR
 .sp
 
 .LP
-\fB例 19 \fR信頼できる CA 証明書を追加する
+\fB例 23 \fR信頼できる CA 証明書を追加する
 .sp
 .LP
 \fB/tmp/example_file.pem\fR に格納された証明書を、パブリッシャー \fBexample.com\fR の信頼できる CA 証明書として追加します。
@@ -1837,7 +3310,7 @@ $ \fBpkg set-publisher --approve-ca-cert /tmp/example_file.pem \e\fR
 .sp
 
 .LP
-\fB例 20 \fR証明書を失効させる
+\fB例 24 \fR証明書を失効させる
 .sp
 .LP
 \fBa12345\fR というハッシュを持つ、パブリッシャー \fBexample.com\fR 用の証明書を失効させ、\fBexample.com\fR からのパッケージの署名をその証明書で検証しないようにします。
@@ -1851,7 +3324,7 @@ $ \fBpkg set-publisher --revoke-ca-cert a12345 example.com\fR
 .sp
 
 .LP
-\fB例 21 \fR証明書を抹消する
+\fB例 25 \fR証明書を抹消する
 .sp
 .LP
 証明書 \fBa12345\fR がユーザーによって追加または失効させられたことを \fBpkg\fR から抹消します。
@@ -1865,7 +3338,7 @@ $ \fBpkg set-publisher --unset-ca-cert a12345 example.com\fR
 .sp
 
 .LP
-\fB例 22 \fRパッケージをダウングレードする
+\fB例 26 \fRパッケージをダウングレードする
 .sp
 .LP
 インストール済みパッケージ \fBfoo@1.1\fR を古いバージョンにダウングレードします。
@@ -1879,7 +3352,7 @@ $ \fBpkg update foo@1.0\fR
 .sp
 
 .LP
-\fB例 23 \fR競合するパッケージインストールを切り替える
+\fB例 27 \fR競合するパッケージインストールを切り替える
 .sp
 .LP
 2 つのパッケージが競合している場合に、どちらのパッケージがインストールされるかを切り替えます。パッケージ A がパッケージ B または C のどちらかに依存し、B および C は相互排他であるとします。A と B がインストールされる場合に、次のコマンドを使用して、A をアンインストールせずに B の代わりに C を使用するように切り替えます。
@@ -1893,7 +3366,7 @@ $ \fBpkg install --reject B C\fR
 .sp
 
 .LP
-\fB例 24 \fRパッケージアーカイブ内のパッケージを一覧表示する
+\fB例 28 \fRパッケージアーカイブ内のパッケージを一覧表示する
 .sp
 .LP
 パッケージアーカイブ内のすべてのパッケージのすべてのバージョンを一覧表示します。
@@ -1907,7 +3380,7 @@ $ \fBpkg list -f -g /my/archive.p5p\fR
 .sp
 
 .LP
-\fB例 25 \fRパッケージリポジトリ内のパッケージを一覧表示する
+\fB例 29 \fRパッケージリポジトリ内のパッケージを一覧表示する
 .sp
 .LP
 リポジトリ内のすべてのパッケージのすべてのバージョンを一覧表示します。
@@ -1921,7 +3394,7 @@ $ \fBpkg list -f -g http://example.com:10000\fR
 .sp
 
 .LP
-\fB例 26 \fRパッケージアーカイブ内のパッケージについての情報を表示する
+\fB例 30 \fRパッケージアーカイブ内のパッケージについての情報を表示する
 .sp
 .LP
 パッケージアーカイブ内のパッケージの最新バージョンのパッケージ情報を表示します。パッケージが現在インストールされていてもいなくてもかまいません。
@@ -1935,7 +3408,7 @@ $ \fBpkg info -g /my/archive.p5p pkg_name\fR
 .sp
 
 .LP
-\fB例 27 \fRパッケージアーカイブ内のパッケージの内容を表示する
+\fB例 31 \fRパッケージアーカイブ内のパッケージの内容を表示する
 .sp
 .LP
 パッケージアーカイブ内のパッケージの内容を表示します。パッケージは現在インストールされていません。
@@ -1949,7 +3422,7 @@ $ \fBpkg contents -g /my/archive.p5p pkg_name\fR
 .sp
 
 .LP
-\fB例 28 \fRパブリッシャーの起点とミラーをすべて削除する
+\fB例 32 \fRパブリッシャーの起点とミラーをすべて削除する
 .sp
 .LP
 パブリッシャーのすべての起点およびミラーを削除し、新しい起点を追加します。
@@ -1983,7 +3456,9 @@ $ \fBpkg set-publisher -G '*' -M '*' -g http://example.com:10000 \e\fR
 .ad
 .sp .6
 .RS 4n
-トランスポート操作中に接続しようとするのを待機する秒数 (試行ごと)。これが経過するとクライアントは操作を中止します。デフォルトの値は 60 です。
+トランスポート操作中に接続しようとするのを待機する秒数 (試行ごと)。これが経過するとクライアントは操作を中止します。値 0 は無制限に待機することを意味します。
+.sp
+デフォルト値: 60
 .RE
 
 .sp
@@ -1994,7 +3469,9 @@ $ \fBpkg set-publisher -G '*' -M '*' -g http://example.com:10000 \e\fR
 .ad
 .sp .6
 .RS 4n
-トランスポート操作中に \fBlowspeed\fR 制限 (1024 バイト/秒) を下回っていられる秒数。これが経過するとクライアントは操作を中止します。デフォルトの値は 30 です。
+トランスポート操作中に \fBlowspeed\fR 制限 (1024 バイト/秒) を下回っていられる秒数。これが経過するとクライアントは操作を中止します。値 0 は、操作を中止しないことを意味します。
+.sp
+デフォルト値: 30
 .RE
 
 .sp
@@ -2005,7 +3482,9 @@ $ \fBpkg set-publisher -G '*' -M '*' -g http://example.com:10000 \e\fR
 .ad
 .sp .6
 .RS 4n
-一時的なトランスポートエラーの最大数。これを上回るとクライアントは操作を中止します。デフォルト値は 4 です。
+一時的なトランスポートエラーの最大数。これを上回るとクライアントは操作を中止します。値 0 は、操作を中止しないことを意味します。
+.sp
+デフォルト値: 4
 .RE
 
 .sp
@@ -2016,7 +3495,24 @@ $ \fBpkg set-publisher -G '*' -M '*' -g http://example.com:10000 \e\fR
 .ad
 .sp .6
 .RS 4n
-トランスポート操作中に許可される HTTP または HTTPS リダイレクトの最大数。これを上回ると接続が中止されます。デフォルト値は 5 です。
+トランスポート操作中に許可される HTTP または HTTPS リダイレクトの最大数。これを上回ると接続が中止されます。値 0 は、操作を中止しないことを意味します。
+.sp
+デフォルト値: 5
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fBPKG_CONCURRENCY\fR\fR
+.ad
+.sp .6
+.RS 4n
+同時に更新する子イメージの数。\fB-C\fR オプションが指定されている場合には、無視されます。
+.sp
+子イメージ (通常はゾーン) 内への再帰時に、最大 \fB$PKG_CONCURRENCY \fR 個の子イメージを同時に更新します。\fB$PKG_CONCURRENCY\fR が 0 または負数の場合は、すべての子イメージが同時に更新されます。
+.sp
+デフォルト値: 1
 .RE
 
 .sp
@@ -2027,7 +3523,9 @@ $ \fBpkg set-publisher -G '*' -M '*' -g http://example.com:10000 \e\fR
 .ad
 .sp .6
 .RS 4n
-ホストあたりのトランスポート試行の最大数。これを上回るとクライアントは操作を中止します。デフォルト値は 4 です。
+ホストあたりのトランスポート試行の最大数。これを上回るとクライアントは操作を中止します。値 0 は、操作を中止しないことを意味します。
+.sp
+デフォルト値: 4
 .RE
 
 .sp
@@ -2044,7 +3542,7 @@ HTTP または HTTPS プロキシサーバー。
 .SH 終了ステータス
 .sp
 .LP
-次の終了値が返されます。
+次の終了ステータスが返されます。
 .sp
 .ne 2
 .mk
@@ -2064,18 +3562,18 @@ HTTP または HTTPS プロキシサーバー。
 .ad
 .RS 6n
 .rt  
-エラーが発生しました。
+エラーが発生した。
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fB\fB2\fR \fR
+\fB\fB2\fR\fR
 .ad
 .RS 6n
 .rt  
-無効なコマンド行オプションが指定されました。
+無効なコマンド行オプションが指定された。
 .RE
 
 .sp
@@ -2086,7 +3584,7 @@ HTTP または HTTPS プロキシサーバー。
 .ad
 .RS 6n
 .rt  
-複数の操作が要求されましたが、そのうちの一部だけが成功しました。
+複数の操作が要求されましたが、それらの一部のみが成功しました。
 .RE
 
 .sp
@@ -2156,7 +3654,7 @@ HTTP または HTTPS プロキシサーバー。
 .ad
 .sp .6
 .RS 4n
-フルイメージまたは部分イメージのメタデータディレクトリ。
+完全または部分的なイメージのメタデータディレクトリ。
 .RE
 
 .sp
@@ -2179,8 +3677,8 @@ HTTP または HTTPS プロキシサーバー。
 .na
 \fB\fB$IMAGE_META/lost+found\fR\fR
 .ad
-.RS 26n
-.rt  
+.sp .6
+.RS 4n
 パッケージ操作中に移動された、競合するディレクトリおよびファイルの場所。削除されたディレクトリのパッケージ化されない内容の場所。
 .RE
 
@@ -2190,8 +3688,8 @@ HTTP または HTTPS プロキシサーバー。
 .na
 \fB\fB$IMAGE_META/publisher\fR\fR
 .ad
-.RS 26n
-.rt  
+.sp .6
+.RS 4n
 パブリッシャーごとに 1 つのディレクトリが含まれます。各ディレクトリにはパブリッシャー固有のメタデータが格納されます。
 .RE
 
@@ -2220,7 +3718,7 @@ _
 .SH 関連項目
 .sp
 .LP
-\fBpkgsend\fR(1), \fBpkg.depotd\fR(1M), \fB glob\fR(3C), \fBpkg\fR(5), \fBbeadm\fR(1M)
+\fBpkgsend\fR(1), \fBpkg.depotd\fR(1M), \fBglob\fR(3C), \fBpkg\fR(5), \fBbeadm\fR(1M)
 .sp
 .LP
 \fBhttp://hub.opensolaris.org/bin/view/Project+pkg/\fR

@@ -1,6 +1,6 @@
 '\" te
-.\" Copyright (c) 2007, 2011, Oracle and/or its affiliates. All rights reserved.
-.TH pkgsign 1 "2011 年 7 月 28 日" "SunOS 5.11" "ユーザーコマンド"
+.\" Copyright (c) 2007, 2012, Oracle and/or its affiliates. All rights reserved.
+.TH pkgsign 1 "2012 年 5 月 27 日" "SunOS 5.11" "ユーザーコマンド"
 .SH 名前
 pkgsign \- Image Packaging System の署名ユーティリティー
 .SH 形式
@@ -21,34 +21,106 @@ pkgsign \- Image Packaging System の署名ユーティリティー
 .SH オプション
 .sp
 .LP
-次のオプションを指定できます。
+サポートしているオプションは、次のとおりです。
 .sp
-.LP
-\fB-a\fR を指定すると、デフォルトの署名アルゴリズムではなく、\fIhash_algorithm\fR 署名アルゴリズムが使用されます。デフォルトの署名アルゴリズムは \fBrsa-sha256\fR です。サポートされている署名アルゴリズムは、\fBrsa-sha256\fR、\fBrsa-sha384\fR、\fBrsa-sha512\fR、\fBsha256\fR、\fBsha384\fR、\fBsha512\fR です。ハッシュアルゴリズムを指定するだけの署名アルゴリズムを使用すると、署名の値は、パッケージのマニフェストのハッシュになります。\fBrsa\fR とハッシュアルゴリズムを指定する署名アルゴリズムを使用すると、署名の値は、提供された非公開鍵で署名が追加されたマニフェストのハッシュになります (\fB-c\fR オプションと \fB-k\fR オプションを参照)。
+.ne 2
+.mk
+.na
+\fB\fB--help\fR\fR
+.ad
+.sp .6
+.RS 4n
+使用方法に関するメッセージを表示します。
+.RE
+
 .sp
-.LP
-\fB-c\fR を指定すると、証明書 \fIpath_to_signing_certificate\fR が、このアクションで署名の値を検証するときに使用する証明書として追加されます。\fB-c\fR オプションは、\fB-k\fR オプションでのみ使用されます。
+.ne 2
+.mk
+.na
+\fB\fB-a\fR \fIhash_algorithm\fR\fR
+.ad
+.sp .6
+.RS 4n
+デフォルトの署名アルゴリズムではなく、\fIhash_algorithm\fR 署名アルゴリズムが使用されます。デフォルトの署名アルゴリズムは \fBrsa-sha256\fR です。サポートされている署名アルゴリズムは、\fBrsa-sha256\fR、\fBrsa-sha384\fR、\fBrsa-sha512\fR、\fBsha256\fR、\fBsha384\fR、\fBsha512\fR です。ハッシュアルゴリズムを指定するだけの署名アルゴリズムを使用すると、署名の値は、パッケージのマニフェストのハッシュになります。\fBrsa\fR とハッシュアルゴリズムを指定する署名アルゴリズムを使用すると、署名の値は、提供された非公開鍵で署名が追加されたマニフェストのハッシュになります (\fB-c\fR オプションと \fB-k\fR オプションを参照)。
+.RE
+
 .sp
-.LP
-\fB-i\fR を指定すると、証明書 \fIpath_to_intermediate_cert\fR が、\fB-c\fR への引数として指定された証明書 \fIpath_to_signing_certificate\fR を検証するときに使用する証明書として追加されます。複数の証明書を追加するには、\fB-i\fR を複数回指定します。
+.ne 2
+.mk
+.na
+\fB\fB-c\fR \fIpath_to_signing_certificate\fR\fR
+.ad
+.sp .6
+.RS 4n
+証明書 \fIpath_to_signing_certificate\fR を、このアクションで署名の値を検証するときに使用する証明書として追加します。\fB-c\fR オプションは、\fB-k\fR オプションでのみ使用されます。
+.RE
+
 .sp
-.LP
-\fB-k\fR を指定すると、\fIpath_to_private_key\fR に格納された非公開鍵を使用してマニフェストに署名が追加されます。\fB-k\fR オプションは、\fB-c\fR オプションでのみ使用されます。\fB-k\fR が設定されていない場合、署名の値はマニフェストのハッシュになります。
+.ne 2
+.mk
+.na
+\fB\fB-i\fR \fIpath_to_intermediate_cert\fR\fR
+.ad
+.sp .6
+.RS 4n
+証明書 \fIpath_to_intermediate_cert\fR を、\fB-c\fR への引数として指定された証明書 \fIpath_to_signing_certificate\fR を検証するときに使用する証明書として追加します。複数の証明書を追加するには、\fB-i\fR を複数回指定します。
+.RE
+
 .sp
-.LP
-\fB-n\fR を指定すると、評価実行が行われ、リポジトリは一切変更されません。
+.ne 2
+.mk
+.na
+\fB\fB-k\fR \fIpath_to_private_key\fR\fR
+.ad
+.sp .6
+.RS 4n
+\fIpath_to_private_key\fR に格納された非公開鍵を使用してマニフェストに署名を追加します。\fB-k\fR オプションは、\fB-c\fR オプションでのみ使用されます。\fB-k\fR が設定されていない場合、署名の値はマニフェストのハッシュになります。
+.RE
+
 .sp
-.LP
-\fB-s\fR を指定すると、\fIpath_or_uri\fR にあるリポジトリ内のパッケージに署名が追加されます。
+.ne 2
+.mk
+.na
+\fB\fB-n\fR\fR
+.ad
+.sp .6
+.RS 4n
+評価実行を行い、リポジトリは一切変更しません。
+.RE
+
 .sp
-.LP
-\fB--help\fR を指定すると、使用法のメッセージが表示されます。
+.ne 2
+.mk
+.na
+\fB\fB-s\fR \fIpath_or_uri\fR\fR
+.ad
+.sp .6
+.RS 4n
+\fIpath_or_uri\fR にあるリポジトリ内のパッケージに署名を追加します。
+.RE
+
 .sp
-.LP
-\fB--no-index\fR を指定すると、署名付きマニフェストが再公開されたあとに、リポジトリの検索インデックスが更新されません。
+.ne 2
+.mk
+.na
+\fB\fB--no-index\fR\fR
+.ad
+.sp .6
+.RS 4n
+署名付きマニフェストが再公開されたあとに、リポジトリの検索インデックスを更新しません。
+.RE
+
 .sp
-.LP
-\fB--no-catalog\fR を指定すると、署名付きマニフェストが再公開されたあとに、リポジトリのカタログが更新されません。
+.ne 2
+.mk
+.na
+\fB\fB--no-catalog\fR\fR
+.ad
+.sp .6
+.RS 4n
+署名付きマニフェストが再公開されたあとに、リポジトリのカタログを更新しません。
+.RE
+
 .SH 使用例
 .LP
 \fB例 1 \fRマニフェストのハッシュ値を使用した署名の追加
@@ -84,7 +156,7 @@ $ \fBpkgsign -s file:///foo/bar/ -a rsa-sha384 \e\fR
 .SH 終了ステータス
 .sp
 .LP
-次の終了値が返されます。
+次の終了ステータスが返されます。
 .sp
 .ne 2
 .mk
@@ -111,7 +183,7 @@ $ \fBpkgsign -s file:///foo/bar/ -a rsa-sha384 \e\fR
 .ne 2
 .mk
 .na
-\fB\fB2\fR \fR
+\fB\fB2\fR\fR
 .ad
 .RS 6n
 .rt  
@@ -162,7 +234,7 @@ _
 .SH 関連項目
 .sp
 .LP
-\fBpkg\fR(1), \fBpkgrecv\fR(1), \fBpkgsend\fR(1), \fBpkgrepo\fR(1M), \fBpkg\fR(5)
+\fBpkg\fR(1), \fBpkgrecv\fR(1), \fBpkgsend\fR(1), \fBpkgrepo\fR(1), \fBpkg\fR(5)
 .sp
 .LP
 \fBhttp://hub.opensolaris.org/bin/view/Project+pkg/\fR

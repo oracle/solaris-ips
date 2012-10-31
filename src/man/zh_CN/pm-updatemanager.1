@@ -1,6 +1,6 @@
 '\" te
-.\" Copyright (c) 2007, 2011, Oracle and/or its affiliates. All rights reserved.
-.TH pm-updatemanager 1 "2011 年 7 月 28 日" "SunOS 5.11" "用户命令"
+.\" Copyright (c) 2007, 2012, Oracle and/or its affiliates. All rights reserved.
+.TH pm-updatemanager 1 "2012 年 5 月 27 日" "SunOS 5.11" "用户命令"
 .SH 名称
 pm-updatemanager \- 用于更新软件包的应用程序
 .SH 用法概要
@@ -11,8 +11,8 @@ pm-updatemanager \- 用于更新软件包的应用程序
 
 .LP
 .nf
-/usr/bin/pm-updatemanager [-hdR] [--help] [--debug]
-    [--image-dir \fIdir\fR]
+/usr/bin/pm-updatemanager [-h | --help] [-d | --debug]
+    [-R \fIdir\fR | --image-dir \fIdir\fR]
 .fi
 
 .SH 描述
@@ -33,10 +33,14 @@ pm-updatemanager \- 用于更新软件包的应用程序
 .ne 2
 .mk
 .na
-\fB\fB-h\fR 或 \fB--help\fR\fR
+\fB\fB-h\fR\fR
 .ad
-.RS 26n
-.rt  
+.br
+.na
+\fB\fB--help\fR\fR
+.ad
+.sp .6
+.RS 4n
 显示用法消息。
 .RE
 
@@ -44,10 +48,14 @@ pm-updatemanager \- 用于更新软件包的应用程序
 .ne 2
 .mk
 .na
-\fB\fB-d\fR 或 \fB--debug\fR\fR
+\fB\fB-d\fR\fR
 .ad
-.RS 26n
-.rt  
+.br
+.na
+\fB\fB--debug\fR\fR
+.ad
+.sp .6
+.RS 4n
 在调试模式下运行 \fBpm-updatemanager\fR。
 .RE
 
@@ -55,10 +63,14 @@ pm-updatemanager \- 用于更新软件包的应用程序
 .ne 2
 .mk
 .na
-\fB\fB-R\fR 或 \fB--image-dir\fR\fI dir\fR\fR
+\fB\fB-R\fR \fIdir\fR\fR
 .ad
-.RS 26n
-.rt  
+.br
+.na
+\fB\fB--image-dir\fR \fIdir\fR\fR
+.ad
+.sp .6
+.RS 4n
 对根目录为 \fIdir\fR 的映像（而不是自动搜索到的映像）执行操作。
 .RE
 
@@ -79,7 +91,7 @@ $ \fB/usr/lib/pm-launch pm-updatemanager\fR
 
 .sp
 .LP
-这是桌面菜单选项"系统">"管理"> "Update Manager" 调用的同一命令。
+这是桌面菜单选项“系统”>“管理”> "Update Manager" 调用的同一命令。
 
 .LP
 \fB示例 2 \fR更新指定映像

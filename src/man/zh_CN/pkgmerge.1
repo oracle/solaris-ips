@@ -1,6 +1,6 @@
 '\" te
-.\" Copyright (c) 2007, 2011, Oracle and/or its affiliates. All rights reserved.
-.TH pkgmerge 1 "2011 年 7 月 28 日" "SunOS 5.11" "用户命令"
+.\" Copyright (c) 2007, 2012, Oracle and/or its affiliates. All rights reserved.
+.TH pkgmerge 1 "2012 年 5 月 27 日" "SunOS 5.11" "用户命令"
 .SH 名称
 pkgmerge \- 映像包管理系统软件包合并实用程序
 .SH 用法概要
@@ -29,11 +29,26 @@ pkgmerge \- 映像包管理系统软件包合并实用程序
 .ne 2
 .mk
 .na
+\fB\fB-?\fR\fR
+.ad
+.br
+.na
+\fB\fB--help\fR\fR
+.ad
+.sp .6
+.RS 4n
+显示用法消息。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
 \fB\fB-d\fR \fIdest_repo\fR\fR
 .ad
 .sp .6
 .RS 4n
-要将合并软件包发布到的目标系统信息库的文件系统路径或 URI。目标系统信息库必须已存在。可以使用 \fBpkgrepo\fR(1) 创建新的系统信息库。
+指定要将合并软件包发布到的目标系统信息库的文件系统路径或 URI。目标系统信息库必须已存在。可以使用 \fBpkgrepo\fR 创建新的系统信息库。
 .RE
 
 .sp
@@ -55,18 +70,7 @@ pkgmerge \- 映像包管理系统软件包合并实用程序
 .ad
 .sp .6
 .RS 4n
-用于该源中软件包的变量名称和值，后跟要从中检索软件包的源系统信息库或软件包归档文件的文件系统路径或 URI。可指定多个变量，以逗号分隔。必须为所有源命名相同的变量。可以多次指定此选项。
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fB\fB--help\fR 或 \fB-?\fR\fR
-.ad
-.sp .6
-.RS 4n
-显示用法消息。
+指定用于该源的软件包的变量名称和值，后跟要从中检索软件包的源系统信息库或软件包归档文件的文件系统路径或 URI。可指定多个变量，以逗号分隔。必须为所有源命名相同的变量。可以多次指定此选项。
 .RE
 
 .SH 环境变量

@@ -1,6 +1,6 @@
 '\" te
-.\" Copyright (c) 2007, 2011, Oracle and/or its affiliates. All rights reserved.
-.TH packagemanager 1 "2011 年 7 月 28 日" "SunOS 5.11" "用户命令"
+.\" Copyright (c) 2007, 2012, Oracle and/or its affiliates. All rights reserved.
+.TH packagemanager 1 "2012 年 5 月 27 日" "SunOS 5.11" "用户命令"
 .SH 名称
 packagemanager \- 映像包管理系统的 GUI
 .SH 用法概要
@@ -11,9 +11,9 @@ packagemanager \- 映像包管理系统的 GUI
 
 .LP
 .nf
-/usr/bin/packagemanager [-hiRu] [--help]
-    [--info-install \fIfile\fR] [--update-all]
-    [--image-dir \fIdir\fR]
+/usr/bin/packagemanager [-h | --help]
+    [-i | --info-install \fIfile\fR] [-U | --update-all]
+    [-R | --image-dir \fIdir\fR]
 .fi
 
 .LP
@@ -57,7 +57,11 @@ packagemanager \- 映像包管理系统的 GUI
 .ne 2
 .mk
 .na
-\fB\fB-h\fR 或 \fB--help\fR\fR
+\fB\fB-h\fR\fR
+.ad
+.br
+.na
+\fB\fB--help\fR\fR
 .ad
 .sp .6
 .RS 4n
@@ -68,18 +72,26 @@ packagemanager \- 映像包管理系统的 GUI
 .ne 2
 .mk
 .na
-\fB\fB-i\fR 或 \fB--info-install\fR\fI file\fR\fR
+\fB\fB-i\fR \fIfile\fR\fR
+.ad
+.br
+.na
+\fB\fB--info-install\fR \fIfile\fR\fR
 .ad
 .sp .6
 .RS 4n
-允许指定 \fB\&.p5i\fR 文件以在 Web 安装模式下运行 \fB packagemanager\fR。\fIfile\fR 必须具有后缀 \fB\&.p5i\fR。
+指定 \fB\&.p5i\fR 文件以在 Web 安装模式下运行 \fBpackagemanager\fR。\fIfile\fR 必须具有后缀 \fB\&.p5i\fR。
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fB\fB-R\fR 或 \fB--image-dir\fR\fI dir\fR\fR
+\fB\fB-R\fR \fIdir\fR\fR
+.ad
+.br
+.na
+\fB\fB--image-dir\fR \fIdir\fR\fR
 .ad
 .sp .6
 .RS 4n
@@ -90,7 +102,11 @@ packagemanager \- 映像包管理系统的 GUI
 .ne 2
 .mk
 .na
-\fB\fB-U\fR 或 \fB--update-all\fR\fR
+\fB\fB-U\fR\fR
+.ad
+.br
+.na
+\fB\fB--update-all\fR\fR
 .ad
 .sp .6
 .RS 4n

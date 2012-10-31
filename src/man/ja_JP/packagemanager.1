@@ -1,6 +1,6 @@
 '\" te
-.\" Copyright (c) 2007, 2011, Oracle and/or its affiliates. All rights reserved.
-.TH packagemanager 1 "2011 年 7 月 28 日" "SunOS 5.11" "ユーザーコマンド"
+.\" Copyright (c) 2007, 2012, Oracle and/or its affiliates. All rights reserved.
+.TH packagemanager 1 "2012 年 5 月 27 日" "SunOS 5.11" "ユーザーコマンド"
 .SH 名前
 packagemanager \- Image Packaging System の GUI 
 .SH 形式
@@ -11,9 +11,9 @@ packagemanager \- Image Packaging System の GUI
 
 .LP
 .nf
-/usr/bin/packagemanager [-hiRu] [--help]
-    [--info-install \fIfile\fR] [--update-all]
-    [--image-dir \fIdir\fR]
+/usr/bin/packagemanager [-h | --help]
+    [-i | --info-install \fIfile\fR] [-U | --update-all]
+    [-R | --image-dir \fIdir\fR]
 .fi
 
 .LP
@@ -27,7 +27,7 @@ packagemanager \- Image Packaging System の GUI
 \fBpackagemanager\fR は、\fB pkg\fR(5) (Image Packaging System ソフトウェア) のグラフィカルユーザーインタフェースです。
 .sp
 .LP
-パッケージマネージャーを使用すると、次の作業を実行できます。
+パッケージマネージャーを使用すると、次のタスクを実行できます。
 .RS +4
 .TP
 .ie t \(bu
@@ -52,12 +52,16 @@ packagemanager \- Image Packaging System の GUI
 .SH オプション
 .sp
 .LP
-次のオプションを指定できます。
+サポートしているオプションは、次のとおりです。
 .sp
 .ne 2
 .mk
 .na
-\fB\fB-h\fR または \fB--help\fR\fR
+\fB\fB-h\fR\fR
+.ad
+.br
+.na
+\fB\fB--help\fR\fR
 .ad
 .sp .6
 .RS 4n
@@ -68,18 +72,26 @@ packagemanager \- Image Packaging System の GUI
 .ne 2
 .mk
 .na
-\fB\fB-i\fR または \fB--info-install\fR \fI file\fR\fR
+\fB\fB-i\fR \fIfile\fR\fR
+.ad
+.br
+.na
+\fB\fB--info-install\fR \fIfile\fR\fR
 .ad
 .sp .6
 .RS 4n
-\fB\&.p5i\fR ファイルを指定して、\fBpackagemanager\fR を Web インストールモードで実行できます。\fIfile\fR の接尾辞は \fB\&.p5i\fR である必要があります。
+\fB\&.p5i\fR ファイルを指定して、\fBpackagemanager\fR を Web インストールモードで実行します。\fIfile\fR の接尾辞は \fB\&.p5i\fR である必要があります。
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fB\fB-R\fR または \fB--image-dir\fR \fI dir\fR\fR
+\fB\fB-R\fR \fIdir\fR\fR
+.ad
+.br
+.na
+\fB\fB--image-dir\fR \fIdir\fR\fR
 .ad
 .sp .6
 .RS 4n
@@ -90,7 +102,11 @@ packagemanager \- Image Packaging System の GUI
 .ne 2
 .mk
 .na
-\fB\fB-U\fR または \fB--update-all\fR\fR
+\fB\fB-U\fR\fR
+.ad
+.br
+.na
+\fB\fB--update-all\fR\fR
 .ad
 .sp .6
 .RS 4n
@@ -161,16 +177,16 @@ $ \fBpackagemanager ~/test.p5i\fR
 .SH 終了ステータス
 .sp
 .LP
-次の終了値が返されます。
+次の終了ステータスが返されます。
 .sp
 .ne 2
 .mk
 .na
 \fB\fB0\fR\fR
 .ad
-.RS 6n
+.RS 5n
 .rt  
-すべて正常に動作しました。
+すべてが動作しました。
 .RE
 
 .sp
@@ -179,20 +195,20 @@ $ \fBpackagemanager ~/test.p5i\fR
 .na
 \fB\fB1\fR\fR
 .ad
-.RS 6n
+.RS 5n
 .rt  
-エラーが発生しました。
+エラーが発生した。
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fB\fB2\fR \fR
+\fB\fB2\fR\fR
 .ad
-.RS 6n
+.RS 5n
 .rt  
-無効なコマンド行オプションが指定されました。
+無効なコマンド行オプションが指定された。
 .RE
 
 .SH ファイル
@@ -259,7 +275,7 @@ _
 .SH 関連項目
 .sp
 .LP
-\fBpm-updatemanager\fR(1), \fBpkg\fR(1), \fB pkg\fR(5)
+\fBpm-updatemanager\fR(1), \fBpkg\fR(1), \fBpkg\fR(5)
 .sp
 .LP
 パッケージマネージャーのオンラインヘルプ

@@ -1,6 +1,6 @@
 '\" te
-.\" Copyright (c) 2007, 2011, Oracle and/or its affiliates. All rights reserved.
-.TH pkgsign 1 "2011 年 7 月 28 日" "SunOS 5.11" "用户命令"
+.\" Copyright (c) 2007, 2012, Oracle and/or its affiliates. All rights reserved.
+.TH pkgsign 1 "2012 年 5 月 27 日" "SunOS 5.11" "用户命令"
 .SH 名称
 pkgsign \- 映像包管理系统签名实用程序
 .SH 用法概要
@@ -23,32 +23,104 @@ pkgsign \- 映像包管理系统签名实用程序
 .LP
 支持以下选项：
 .sp
-.LP
-使用 \fB-a\fR，使用签名算法 \fIhash_algorithm \fR 而不是缺省值。缺省签名算法为 \fB rsa-sha256\fR。支持的签名算法包括 \fBrsa-sha256\fR、\fBrsa-sha384\fR、\fBrsa-sha512\fR、\fBsha256\fR、\fBsha384\fR 和 \fBsha512\fR。仅指定散列算法的签名算法会导致签名值为软件包清单的散列。指定 \fBrsa \fR 和散列算法的签名算法会导致签名值为使用提供的私钥签名的清单的散列（请参见 \fB-c\fR 和 \fB- k\fR 选项）。
+.ne 2
+.mk
+.na
+\fB\fB--help\fR\fR
+.ad
+.sp .6
+.RS 4n
+显示用法消息。
+.RE
+
 .sp
-.LP
-使用 \fB-c\fR，添加证书 \fIpath_to_signing_certificate \fR 以作为验证操作中的签名值时所使用的证书。\fB-c\fR 选项仅可以与 \fB-k\fR 选项一起使用。
+.ne 2
+.mk
+.na
+\fB\fB-a\fR \fIhash_algorithm\fR\fR
+.ad
+.sp .6
+.RS 4n
+使用签名算法 \fIhash_algorithm \fR 而不是缺省值。缺省签名算法为 \fB rsa-sha256\fR。支持的签名算法包括 \fBrsa-sha256\fR、\fBrsa-sha384\fR、\fBrsa-sha512\fR、\fBsha256\fR、\fBsha384\fR 和 \fBsha512\fR。仅指定散列算法的签名算法会导致签名值为软件包清单的散列。指定 \fBrsa \fR 和散列算法的签名算法会导致签名值为使用提供的私钥进行签名的清单的散列（请参见 \fB-c\fR 和 \fB- k\fR 选项）。
+.RE
+
 .sp
-.LP
-使用 \fB-i\fR，添加证书 \fIpath_to_intermediate_cert \fR 以作为验证证书 \fI path_to_signing_certificate\fR（作为参数提供给 \fB-c\fR）时所使用的证书。通过多次指定 \fB-i\fR，可提供多个证书。
+.ne 2
+.mk
+.na
+\fB\fB-c\fR \fIpath_to_signing_certificate\fR\fR
+.ad
+.sp .6
+.RS 4n
+添加证书 \fIpath_to_signing_certificate\fR 作为验证操作中的签名值时所使用的证书。\fB-c\fR 选项仅可以与 \fB-k\fR 选项一起使用。
+.RE
+
 .sp
-.LP
-使用 \fB-k\fR，使用存储在 \fIpath_to_private_key \fR 中的私钥对清单进行签名。\fB-k\fR 选项仅可以与 \fB-c\fR 选项一起使用。如果未设置 \fB-k\fR，则签名值为清单的散列。
+.ne 2
+.mk
+.na
+\fB\fB-i\fR \fIpath_to_intermediate_cert\fR\fR
+.ad
+.sp .6
+.RS 4n
+添加证书 \fIpath_to_intermediate_cert\fR 作为验证证书 \fIpath_to_signing_certificate \fR（作为参数提供给 \fB-c\fR）时所使用的证书。通过多次指定 \fB-i\fR，可提供多个证书。
+.RE
+
 .sp
-.LP
-使用 \fB-n\fR，执行试运行，它不会以任何方式更改系统信息库。
+.ne 2
+.mk
+.na
+\fB\fB-k\fR \fIpath_to_private_key\fR\fR
+.ad
+.sp .6
+.RS 4n
+使用存储在 \fIpath_to_private_key \fR 中的私钥对清单进行签名。\fB-k\fR 选项只能与 \fB-c\fR 选项一起使用。如果未设置 \fB-k\fR，则签名值为清单的散列。
+.RE
+
 .sp
-.LP
-使用 \fB-s\fR，对位于 \fIpath_or_uri \fR 的系统信息库中的软件包进行签名。
+.ne 2
+.mk
+.na
+\fB\fB-n\fR\fR
+.ad
+.sp .6
+.RS 4n
+执行试运行，不以任何方式更改系统信息库。
+.RE
+
 .sp
-.LP
-使用 \fB--help\fR，显示用法消息。
+.ne 2
+.mk
+.na
+\fB\fB-s\fR \fIpath_or_uri\fR\fR
+.ad
+.sp .6
+.RS 4n
+对位于 \fIpath_or_uri \fR 的系统信息库中的软件包进行签名。
+.RE
+
 .sp
-.LP
-使用 \fB--no-index\fR，在重新发布已签名的清单后不更新系统信息库搜索索引。
+.ne 2
+.mk
+.na
+\fB\fB--no-index\fR\fR
+.ad
+.sp .6
+.RS 4n
+在重新发布已签名的清单后不更新系统信息库搜索索引。
+.RE
+
 .sp
-.LP
-使用 \fB--no-catalog\fR，在重新发布已签名的清单后不更新系统信息库目录。
+.ne 2
+.mk
+.na
+\fB\fB--no-catalog\fR\fR
+.ad
+.sp .6
+.RS 4n
+在重新发布已签名的清单后不更新系统信息库目录。
+.RE
+
 .SH 示例
 .LP
 \fB示例 1 \fR使用清单的散列值进行签名
@@ -162,7 +234,7 @@ _
 .SH 另请参见
 .sp
 .LP
-\fBpkg\fR(1)、\fBpkgrecv\fR(1)、\fBpkgsend\fR(1)、\fBpkgrepo\fR(1M)、\fBpkg\fR(5)
+\fBpkg\fR(1)、\fBpkgrecv\fR(1)、\fBpkgsend\fR(1)、\fBpkgrepo\fR(1)、\fBpkg\fR(5)
 .sp
 .LP
 \fBhttp://hub.opensolaris.org/bin/view/Project+pkg/\fR

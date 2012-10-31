@@ -1,7 +1,6 @@
 '\" te
-.\" Copyright (c) 2007, 2012, Oracle and/or its
-.\" affiliates. All rights reserved.
-.TH pkgsend 1 "22 Jun 2012" "SunOS 5.11" "User Commands"
+.\" Copyright (c) 2007, 2012, Oracle and/or its affiliates. All rights reserved.
+.TH pkgsend 1 "12 Oct 2012" "SunOS 5.12" "User Commands"
 .SH NAME
 pkgsend \- Image Packaging System publication client
 .SH SYNOPSIS
@@ -29,7 +28,7 @@ pkgsend \- Image Packaging System publication client
 \fBpkgsend\fR enables the publication of new packages and new package versions to an image packaging repository using package manifests. To create or manage repositories, see \fBpkgrepo\fR(1). To create package archives from packages in an existing repository, see \fBpkgrecv\fR(1). For more information about package manifests, see \fBpkg\fR(5).
 .sp
 .LP
-After a \fBpkgsend\fR operation, run \fBpkgrepo refresh\fR or \fBpkgrepo rebuild\fR on the repository to build search indexes.
+After a \fBpkgsend publish\fR operation, if your \fIrepo_uri_or_path\fR repository must support \fBpkg search\fR operations, run \fBpkgrepo refresh\fR on the repository to update search indexes.
 .SH OPTIONS
 .sp
 .LP

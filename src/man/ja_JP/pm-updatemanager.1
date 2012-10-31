@@ -1,6 +1,6 @@
 '\" te
-.\" Copyright (c) 2007, 2011, Oracle and/or its affiliates. All rights reserved.
-.TH pm-updatemanager 1 "2011 年 7 月 28 日" "SunOS 5.11" "ユーザーコマンド"
+.\" Copyright (c) 2007, 2012, Oracle and/or its affiliates. All rights reserved.
+.TH pm-updatemanager 1 "2012 年 5 月 27 日" "SunOS 5.11" "ユーザーコマンド"
 .SH 名前
 pm-updatemanager \- パッケージを更新するためのアプリケーション
 .SH 形式
@@ -11,8 +11,8 @@ pm-updatemanager \- パッケージを更新するためのアプリケーショ
 
 .LP
 .nf
-/usr/bin/pm-updatemanager [-hdR] [--help] [--debug]
-    [--image-dir \fIdir\fR]
+/usr/bin/pm-updatemanager [-h | --help] [-d | --debug]
+    [-R \fIdir\fR | --image-dir \fIdir\fR]
 .fi
 
 .SH 機能説明
@@ -28,15 +28,19 @@ pm-updatemanager \- パッケージを更新するためのアプリケーショ
 .SH オプション
 .sp
 .LP
-次のオプションを指定できます。
+サポートしているオプションは、次のとおりです。
 .sp
 .ne 2
 .mk
 .na
-\fB\fB-h\fR or \fB--help\fR\fR
+\fB\fB-h\fR\fR
 .ad
-.RS 26n
-.rt  
+.br
+.na
+\fB\fB--help\fR\fR
+.ad
+.sp .6
+.RS 4n
 使用方法に関するメッセージを表示します。
 .RE
 
@@ -44,10 +48,14 @@ pm-updatemanager \- パッケージを更新するためのアプリケーショ
 .ne 2
 .mk
 .na
-\fB\fB-d\fR or \fB--debug\fR\fR
+\fB\fB-d\fR\fR
 .ad
-.RS 26n
-.rt  
+.br
+.na
+\fB\fB--debug\fR\fR
+.ad
+.sp .6
+.RS 4n
 デバッグモードで \fBpm-updatemanager\fR を実行します。
 .RE
 
@@ -55,10 +63,14 @@ pm-updatemanager \- パッケージを更新するためのアプリケーショ
 .ne 2
 .mk
 .na
-\fB\fB-R\fR or \fB--image-dir\fR \fI dir\fR\fR
+\fB\fB-R\fR \fIdir\fR\fR
 .ad
-.RS 26n
-.rt  
+.br
+.na
+\fB\fB--image-dir\fR \fIdir\fR\fR
+.ad
+.sp .6
+.RS 4n
 自動的に検出されたイメージではなく、\fIdir\fR をルートとするイメージに対して処理を行います。
 .RE
 
@@ -98,14 +110,14 @@ $ \fB/usr/lib/pm-launch pm-updatemanager -R /aux0/example_root\fR
 .SH 終了ステータス
 .sp
 .LP
-次の終了値が返されます。
+次の終了ステータスが返されます。
 .sp
 .ne 2
 .mk
 .na
 \fB\fB0\fR\fR
 .ad
-.RS 6n
+.RS 5n
 .rt  
 すべてが動作しました。
 .RE
@@ -116,7 +128,7 @@ $ \fB/usr/lib/pm-launch pm-updatemanager -R /aux0/example_root\fR
 .na
 \fB\fB1\fR\fR
 .ad
-.RS 6n
+.RS 5n
 .rt  
 エラーが発生した。
 .RE
@@ -125,9 +137,9 @@ $ \fB/usr/lib/pm-launch pm-updatemanager -R /aux0/example_root\fR
 .ne 2
 .mk
 .na
-\fB\fB2\fR \fR
+\fB\fB2\fR\fR
 .ad
-.RS 6n
+.RS 5n
 .rt  
 無効なコマンド行オプションが指定された。
 .RE
@@ -154,7 +166,7 @@ _
 .SH 関連項目
 .sp
 .LP
-\fBpackagemanager\fR(1), \fBpkg\fR(1), \fBpkg \fR(5)
+\fBpackagemanager\fR(1), \fBpkg\fR(1), \fBpkg\fR(5)
 .sp
 .LP
 \fBhttp://hub.opensolaris.org/bin/view/Project+pkg/\fR

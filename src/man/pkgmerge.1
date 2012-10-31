@@ -1,13 +1,13 @@
 '\" te
-.\" Copyright (c) 2007, 2012, Oracle and/or its
-.\" affiliates. All rights reserved.
-.TH pkgmerge 1 "27 May 2012" "SunOS 5.11" "User Commands"
+.\" Copyright (c) 2007, 2012, Oracle and/or its affiliates. All rights reserved.
+.TH pkgmerge 1 "15 Oct 2012" "SunOS 5.12" "User Commands"
 .SH NAME
 pkgmerge \- Image Packaging System package merging utility
 .SH SYNOPSIS
 .LP
 .nf
 /usr/bin/pkgmerge [-n] -d \fIdest_repo\fR
+    [-p \fIpublisher_prefix\fR ...]
     -s \fIvariant\fR=\fIvalue\fR[,...],\fIsrc_repo\fR ...
     [\fIpkg_fmri_pattern\fR ...]
 .fi
@@ -61,6 +61,19 @@ Specify the file system path or URI of the target repository to publish the merg
 .sp .6
 .RS 4n
 Perform a trial run with no changes made to the target repository.
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB-p\fR \fIpublisher_prefix\fR\fR
+.ad
+.sp .6
+.RS 4n
+Specify the name of the publisher from which to merge packages. This option can be specified multiple times.
+.sp
+By default, packages from all publishers in all source repositories are merged.
 .RE
 
 .sp
@@ -341,6 +354,22 @@ file 1d5eac1aab628317f9c088d21e4afda9c754bb76 mode=0555 owner=root \e
 dir group=sys mode=0755 owner=root path=usr
 .fi
 .in -2
+
+.LP
+\fBExample 5 \fRMerge Packages With Different Publisher Prefixes
+.sp
+.LP
+Merge only packages with the \fBdev\fR prefix, even though other packages in these repositories have the \fBexample.com\fR prefix.
+
+.sp
+.in +2
+.nf
+$ \fBpkgmerge -p dev -s arch=sparc,http://src1.example.com \e\fR
+\fB-s arch=i386,http://src2.example.com \e\fR
+\fB-d /\fIpath/to/target/repository\fR\fR
+.fi
+.in -2
+.sp
 
 .SH EXIT STATUS
 .sp

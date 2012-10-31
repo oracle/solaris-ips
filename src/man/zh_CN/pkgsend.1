@@ -1,31 +1,31 @@
 '\" te
-.\" Copyright (c) 2007, 2011, Oracle and/or its affiliates. All rights reserved.
-.TH pkgsend 1 "2011 年 7 月 28 日" "SunOS 5.11" "用户命令"
+.\" Copyright (c) 2007, 2012, Oracle and/or its affiliates.All rights reserved.
+.TH pkgsend 1 "2012 年 6 月 22 日" "SunOS 5.11" "用户命令"
 .SH 名称
 pkgsend \- 映像包管理系统发布客户机
 .SH 用法概要
 .LP
 .nf
-/usr/bin/pkgsend [\fIoptions\fR] \fIcommand\fR [\fIcmd_options\fR] [\fIoperands\fR]
+/usr/bin/pkgsend [\fIoptions\fR] \fIcommand \fR [\fIcmd_options\fR] [\fIoperands\fR] 
 .fi
 
 .LP
 .nf
-/usr/bin/pkgsend generate [-T \fIpattern\fR] [--target \fIfile\fR]
-    \fIsource\fR ...
+/usr/bin/pkgsend generate [-T \fIpattern\fR] [--target \fI file\fR] \fIsource\fR ...
 .fi
 
 .LP
 .nf
-/usr/bin/pkgsend publish [-b \fIbundle\fR ...] [-d \fIsource\fR ...] 
-    [-s \fIrepo_uri_or_path\fR] [-T \fIpattern\fR] [--no-catalog]
-    [\fImanifest\fR ...]
+/usr/bin/pkgsend publish [-b \fIbundle\fR ...] [-d \fI source\fR ...] [-s \fIrepo_uri_or_path\fR] [-T \fIpattern\fR] [--no-catalog] [\fImanifest\fR ...]
 .fi
 
 .SH 描述
 .sp
 .LP
 通过 \fBpkgsend\fR，可使用软件包清单将新软件包和新软件包版本发布到映像包管理系统信息库。要创建或管理系统信息库，请参见 \fBpkgrepo\fR(1)。要从现有系统信息库的软件包中创建软件包归档文件，请参见 \fBpkgrecv\fR(1)。有关软件包清单的更多信息，请参见 \fBpkg\fR(5)。
+.sp
+.LP
+完成 \fBpkgsend\fR 操作后，在系统信息库上运行 \fBpkgrepo refresh\fR 或 \fBpkgrepo rebuild\fR 以构建搜索索引。
 .SH 选项
 .sp
 .LP
@@ -34,10 +34,14 @@ pkgsend \- 映像包管理系统发布客户机
 .ne 2
 .mk
 .na
-\fB\fB--help\fR 或 \fB-?\fR\fR
+\fB\fB-?\fR\fR
 .ad
-.RS 17n
-.rt  
+.br
+.na
+\fB\fB--help\fR\fR
+.ad
+.sp .6
+.RS 4n
 显示用法消息。
 .RE
 
@@ -49,11 +53,16 @@ pkgsend \- 映像包管理系统发布客户机
 .ne 2
 .mk
 .na
-\fB\fBgenerate [\fB-T\fR \fIpattern\fR] [\fB--target\fR \fIfile\fR] \fIsource\fR ... \fR\fR
+\fB\fBpkgsend generate\fR [\fB-T\fR \fI pattern\fR] [\fB--target\fR \fIfile\fR] \fI source\fR ...\fR
 .ad
 .sp .6
 .RS 4n
-读取每个 \fIsource\fR（例如，SVR4 软件包、目录或 \fBtar\fR 文件）并将介绍 \fIsource\fR 的清单发送到 \fBstdout\fR。然后可以注释输出清单，使用 \fBpkgdepend\fR(1) 添加或分析依赖项，并在将其传递到 \fBpublish\fR 子命令之前使用 \fB pkglint\fR(1) 验证它的正确性。以下是支持的源：
+读取每个 \fIsource\fR（例如，SVR4 软件包、目录或 \fBtar\fR 文件）并将介绍 \fIsource\fR 的清单发送到 \fBstdout\fR。在输出清单中，\fBfile\fR 和 \fBdir\fR 操作将所有者设置为 \fBroot\fR，并将组设置为 \fBbin\fR。
+.sp
+然后可以注释输出清单，使用 \fBpkgdepend\fR 添加或分析依赖项，并在将其传递到 \fBpublish\fR 子命令之前使用 \fB pkglint\fR 验证它的正确性。
+.sp
+.LP
+以下是支持的源：
 .RS +4
 .TP
 .ie t \(bu
@@ -83,9 +92,9 @@ pkgsend \- 映像包管理系统发布客户机
 .ne 2
 .mk
 .na
-\fB\fB*\fR\fR
+\fB*\fR
 .ad
-.RS 20n
+.RS 10n
 .rt  
 匹配所有内容。
 .RE
@@ -94,9 +103,9 @@ pkgsend \- 映像包管理系统发布客户机
 .ne 2
 .mk
 .na
-\fB\fB?\fR\fR
+\fB?\fR
 .ad
-.RS 20n
+.RS 10n
 .rt  
 匹配任何单个字符。
 .RE
@@ -105,9 +114,9 @@ pkgsend \- 映像包管理系统发布客户机
 .ne 2
 .mk
 .na
-\fB\fB[\fIseq\fR]\fR\fR
+\fB[\fIseq\fR]\fR
 .ad
-.RS 20n
+.RS 10n
 .rt  
 匹配 \fIseq\fR 中的任何字符。
 .RE
@@ -116,9 +125,9 @@ pkgsend \- 映像包管理系统发布客户机
 .ne 2
 .mk
 .na
-\fB\fB![\fIseq\fR]\fR\fR
+\fB![\fIseq\fR]\fR
 .ad
-.RS 20n
+.RS 10n
 .rt  
 匹配不在 \fIseq\fR 中的任何字符。
 .RE
@@ -134,21 +143,58 @@ SVR4 \fBDESC\fR 参数将转换为 \fBpkg.description \fR 值。SVR4 \fBNAME\fR 
 .ne 2
 .mk
 .na
-\fB\fBpublish [\fB-b\fR \fIbundle\fR ...] [\fB-d\fR \fIsource\fR ...] [\fB-s\fR \fI repo_uri_or_path\fR] [\fB-T\fR \fIpattern\fR] [\fB--no-catalog\fR] [\fImanifest\fR ...]\fR\fR
+\fB\fBpkgsend publish\fR [\fB-b\fR \fI bundle\fR ...] [\fB-d\fR \fIsource\fR ...] [\fB-s\fR \fIrepo_uri_or_path\fR] [\fB-T\fR \fI pattern\fR] [\fB--no-catalog\fR] [\fImanifest\fR ...] \fR
 .ad
 .sp .6
 .RS 4n
-将使用指定软件包清单的软件包发布到目标软件包系统信息库，并从提供的源中检索该软件包的文件。如果指定了多个清单，它们将以提供的顺序联接。如果未指定清单，则从 \fB stdin\fR 中读取清单。
+将使用指定软件包清单的软件包发布到目标软件包系统信息库，并从提供的源中检索该软件包的文件。如果指定了多个清单，它们将以提供的顺序联接。如果未指定清单，则从 \fBstdin\fR 中读取清单。
 .sp
-通过 \fB-b\fR，将指定的包添加到源列表，以便在清单中查找文件时进行搜索。包是 tar 文件和 SVR4 软件包等源。如果多次指定该选项，则以在命令行显示的顺序对源进行搜索。如果同时指定 \fB- b\fR 和 \fB-d\fR，则首先搜索 \fB-d\fR 源。有关支持的包及其使用方式的说明，请参阅以上的 \fBgenerate\fR 子命令。
+如果未指定，则 \fBpkgsend publish\fR 向软件包 FMRI 添加内部版本。\fBpublish\fR 工具还向软件包 FMRI 添加时间戳（UTC 中的当前时间）。有关软件包 FMRI 的版本字符串的信息，请参见 \fBpkg \fR(5) 手册页。
 .sp
-通过 \fB-d\fR，将指定的目录添加到源列表，以便在清单中查找文件时进行搜索。如果多次指定该选项，则以在命令行显示的顺序对源进行搜索。有关支持的源及其使用方式的说明，请参阅以上的 \fBgenerate\fR 子命令。
+.ne 2
+.mk
+.na
+\fB\fB-b\fR \fIbundle\fR\fR
+.ad
+.sp .6
+.RS 4n
+将指定的包添加到源列表，以便在查找清单中的文件时搜索该包。包是 tar 文件和 SVR4 软件包等源。如果多次指定该选项，则以在命令行显示的顺序对源进行搜索。如果同时指定 \fB- b\fR 和 \fB-d\fR，则首先搜索 \fB-d\fR 源。有关支持的包及其使用方法的说明，请参见以上的 \fBgenerate\fR 子命令。
+.RE
+
 .sp
-通过 \fB-s\fR，将软件包发布到位于给定 URI 或文件系统路径的系统信息库。有关发布限制和建议的更多信息，请参见下面的"附注"部分。另请参见"环境变量"部分。
+.ne 2
+.mk
+.na
+\fB\fB-d\fR \fIsource\fR\fR
+.ad
+.sp .6
+.RS 4n
+将指定的目录添加到源列表，以便在查找清单中的文件时搜索该目录。如果多次指定该选项，则以在命令行显示的顺序对源进行搜索。有关支持的源及其使用方法的说明，请参见以上的 \fBgenerate\fR 子命令。
+.RE
+
 .sp
-通过 \fB--no-catalog\fR，不将软件包添加到发布者的目录。当一次发布多个软件包，并且必须连续执行发布者目录更新时，建议使用该选项。完成发布后，可使用 \fBpkgrepo \fR(1) 的 \fBrefresh\fR 子命令将新软件包添加到相应的发布者目录。
+.ne 2
+.mk
+.na
+\fB\fB-s\fR \fIrepo_uri_or_path\fR\fR
+.ad
+.sp .6
+.RS 4n
+将软件包发布到位于给定 URI 或文件系统路径的系统信息库。有关发布限制和建议的更多信息，请参见下文的“附注”部分。另请参见“环境变量”部分。
+.RE
+
 .sp
-有关所有其他选项的用法及其影响，请参阅以上的 \fBgenerate\fR 子命令。
+.ne 2
+.mk
+.na
+\fB\fB--no-catalog\fR\fR
+.ad
+.sp .6
+.RS 4n
+不将软件包添加到发布者的目录。当一次发布多个软件包，并且必须连续执行发布者目录更新时，建议使用该选项。完成发布后，可使用 \fBpkgrepo\fR 的 \fBrefresh\fR 子命令将新软件包添加到相应的发布者目录。
+.RE
+
+有关 \fB-T\fR 选项的说明，请参见以上的 \fBgenerate\fR 子命令。
 .RE
 
 .SH 环境变量

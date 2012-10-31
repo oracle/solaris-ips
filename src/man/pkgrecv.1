@@ -1,7 +1,6 @@
 '\" te
-.\" Copyright (c) 2007, 2012, Oracle and/or its
-.\" affiliates. All rights reserved.
-.TH pkgrecv 1 "11 Jun 2012" "SunOS 5.11" "User Commands"
+.\" Copyright (c) 2007, 2012, Oracle and/or its affiliates. All rights reserved.
+.TH pkgrecv 1 "12 Oct 2012" "SunOS 5.12" "User Commands"
 .SH NAME
 pkgrecv \- Image Packaging System content retrieval utility
 .SH SYNOPSIS
@@ -20,10 +19,16 @@ pkgrecv \- Image Packaging System content retrieval utility
 .SH DESCRIPTION
 .sp
 .LP
-\fBpkgrecv\fR allows the user to retrieve packages from a \fBpkg\fR(5) repository or package archive. \fBpkgrecv\fR can also optionally republish the retrieved packages to a different package repository or archive them. By default, packages are retrieved in package repository format suitable for use with \fBpkg\fR, \fBpkg.depotd\fR, and package publication tools.
+\fBpkgrecv\fR retrieves packages from a \fBpkg\fR(5) repository or package archive and republishes the retrieved packages to a different package repository or package archive. By default, packages are retrieved in package repository format suitable for use with \fBpkg\fR, \fBpkg.depotd\fR, and package publication tools.
+.LP
+Note - 
+.sp
+.RS 2
+Do not use multiple instances of \fBpkgrecv\fR simultaneously to republish packages to the same destination repository or archive. In this case, newly received packages could contain duplicate actions.
+.RE
 .sp
 .LP
-After a \fBpkgrecv\fR operation, run \fBpkgrepo refresh\fR or \fBpkgrepo rebuild\fR on the repository to build search indexes.
+After a \fBpkgrecv\fR operation that retrieves packages into a \fIdest_uri\fR, if the \fIdest_uri\fR repository must support \fBpkg search\fR operations, run \fBpkgrepo refresh\fR on that repository to update search indexes.
 .SH OPTIONS
 .sp
 .LP
@@ -69,7 +74,7 @@ Specify the path to a directory that will be used to cache downloaded content. I
 .ad
 .sp .6
 .RS 4n
-Specify the file system path or URI of the target to republish packages to. If \fB-a\fR  is specified, the target is a new package archive that cannot already exist. Otherwise, the target must be a package repository that already exists. New repositories can be created using \fBpkgrepo\fR.
+Specify the file system path or URI of the target to republish packages to. If \fB-a\fR  is specified, the target is a new package archive that cannot already exist. Otherwise, the target must be a package repository that already exists. New repositories can be created using the \fBpkgrepo\fR command. If \fB-d\fR is not specified, the value of \fBPKG_DEST\fR is used. See "Environment Variables" below.
 .RE
 
 .sp
@@ -146,7 +151,7 @@ Recursively retrieve all dependencies for the provided list of packages.
 .ad
 .sp .6
 .RS 4n
-Specify a URI representing the location of a \fBpkg\fR(5) repository or package archive from which to receive package data.
+Specify a URI representing the location of a \fBpkg\fR(5) repository or package archive from which to receive package data. If \fB-s\fR is not specified, the value of \fBPKG_SRC\fR is used. See "Environment Variables" below.
 .RE
 
 .sp
@@ -179,7 +184,7 @@ Specify a client SSL key file to use for package retrieval from an HTTPS reposit
 .ad
 .sp .6
 .RS 4n
-List the most recent versions of the packages available from the specified repository and exit. (All other options except \fB-s\fR are ignored.)
+List the most recent versions of the packages available from the specified repository and exit. All other options except \fB-s\fR are ignored.
 .RE
 
 .sp
@@ -191,6 +196,22 @@ List the most recent versions of the packages available from the specified repos
 .sp .6
 .RS 4n
 Retrieve and store the raw package data in a set of directory structures by stem and version at the location specified by \fB-d\fR. This option can be used only with file system based destinations. This package data can be used to conveniently modify and republish packages, perhaps by correcting file contents or providing additional package metadata. This option cannot be combined with \fB-a\fR.
+.RE
+
+.SH OPERANDS
+.sp
+.ne 2
+.mk
+.na
+\fB\fB\fIfmri\fR|\fIpattern\fR\fR\fR
+.ad
+.sp .6
+.RS 4n
+If \fB\&'*'\fR is specified for \fIpattern\fR, and if the \fB-d\fR argument does not contain any packages published by \fIsrc_uri\fR publishers, the newest versions of all packages in the \fIsrc_uri\fR, and any other dependencies of those packages, are retrieved.
+.sp
+If \fB\&'*'\fR is specified for \fIpattern\fR, and if the \fB-d\fR argument already contains packages published by one or more \fIsrc_uri\fR publishers, only new and changed packages from those publishers in the \fIsrc_uri\fR are retrieved.
+.sp
+If \fB\fIfmri\fR|\fIpattern\fR\fR is not \fB\&'*'\fR, then the specified packages are retrieved. You might want to specify the \fB-r\fR option to be sure to retrieve all the dependencies of the specified packages.
 .RE
 
 .SH EXAMPLES
@@ -473,6 +494,9 @@ Interface StabilityUncommitted
 .sp
 .LP
 \fBpkgrepo\fR(1), \fBpkgsend\fR(1), \fBpkg\fR(5)
+.sp
+.LP
+\fICopying and Creating Oracle Solaris 11.1 Package Repositories\fR
 .sp
 .LP
 \fBhttp://hub.opensolaris.org/bin/view/Project+pkg/\fR

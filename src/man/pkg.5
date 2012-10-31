@@ -1,7 +1,7 @@
 '\" te
 .\" Copyright (c) 2009, 2012, Oracle and/or its
 .\" affiliates. All rights reserved.
-.TH pkg 5 "22 Jun 2012" "SunOS 5.11" "Standards, Environments, and Macros"
+.TH pkg 5 "13 Oct 2012" "SunOS 5.12" "Standards, Environments, and Macros"
 .SH NAME
 pkg \- Image Packaging System
 .SH DESCRIPTION
@@ -665,7 +665,7 @@ The \fBlicense\fR value must be unique within a package. Including the version o
 .ad
 .sp .6
 .RS 4n
-When \fBtrue\fR, this license must be accepted by a user before the related package can be installed or updated. Omission of this attribute is equivalent to \fBfalse\fR. The method of acceptance (interactive or configuration-based, for example) is at the discretion of clients.
+When \fBtrue\fR, this license must be accepted by a user before the related package can be installed or updated. Omission of this attribute is equivalent to \fBfalse\fR. The method of acceptance (interactive or configuration-based, for example) is at the discretion of clients. For package updates, this attribute is ignored if the license action or payload has not changed.
 .RE
 
 .sp
@@ -676,7 +676,7 @@ When \fBtrue\fR, this license must be accepted by a user before the related pack
 .ad
 .sp .6
 .RS 4n
-When \fBtrue\fR, the action's payload must be displayed by clients during packaging operations. Omission of this value is equivalent to \fBfalse\fR. This attribute should not be used for copyright notices, only actual licenses or other material that must be displayed during operations. The method of display is at the discretion of clients.
+When \fBtrue\fR, the action's payload must be displayed by clients during packaging operations. Omission of this value is equivalent to \fBfalse\fR. This attribute should not be used for copyright notices. This attribute should only be used for licenses or other material that must be displayed during operations. The method of display is at the discretion of clients. For package updates, this attribute is ignored if the license action or payload has not changed.
 .RE
 
 .SS "Legacy Actions"
@@ -1185,7 +1185,13 @@ An example of a variant tag is \fBvariant.arch=sparc\fR. An example of a facet t
 Facets and variants are special properties of the image and cannot be set on individual packages. To view the current values of the facets and variants set on the image, use the \fBpkg facet\fR and \fBpkg variant\fR commands as shown in the \fBpkg\fR(1) man page. To modify the values of the facets and variants set on the image, use the \fBpkg change-facet\fR and \fBpkg change-variant\fR commands.
 .sp
 .LP
-Facets are treated as booleans by package clients: They can be set only to \fBtrue\fR (enabled) or \fBfalse\fR (disabled) in the image. By default, all facets are considered to be set to \fBtrue\fR in the image. However, the value of the facet tag on the action can be set to \fBall\fR or \fBtrue\fR to control how clients filter faceted actions; all other values have undefined behavior. When the value of a facet tag is \fBall\fR, all facet tags on an action that have a value of \fBall\fR must be \fBtrue\fR in the image, and (if present on the action) at least one facet tag that does not have a value of \fBall\fR must be \fBtrue\fR in the image.  The \fBall\fR value for a facet is useful when more than a single level of filtering is desired.  For example:
+Facets are treated as boolean values by package clients: Facets can be set only to \fBtrue\fR (enabled) or \fBfalse\fR (disabled) in the image. By default, all facets are considered to be set to \fBtrue\fR in the image.
+.sp
+.LP
+The value of a facet tag on an action can be set to \fBall\fR or \fBtrue\fR to control how clients filter faceted actions. All values other than \fBall\fR or \fBtrue\fR have undefined behavior. See below for a description of the conditions that must exist in the image to install an action that has facet tags.
+.sp
+.LP
+The \fBall\fR value for a facet is useful when more than a single level of filtering is required. In the following example, \fBfoo.txt\fR is installed only if the \fBdoc\fR facet and at least one of the \fBlocale\fR facets is \fBtrue\fR in the image. This enables administrators to exclude documentation, but still enable or disable support for specific locales. In addition, \fBapi.txt\fR is only installed if both the \fBdoc\fR and \fBdevel\fR facets are \fBtrue\fR in the image.
 .sp
 .in +2
 .nf
@@ -1194,9 +1200,6 @@ file path=usr/share/doc/foo/api.txt facet.doc=all facet.devel=all
 .fi
 .in -2
 
-.sp
-.LP
-In the above example, foo.txt will only be installed if the 'doc' facet and at least one of the 'locale' facets is \fBtrue\fR in the image.  This allows administrators to exclude documentation, but still enable or disable support for specific locales.  In addition, api.txt will only be installed if both the 'doc' and 'devel' facets are \fBtrue\fR in the image.
 .sp
 .LP
 A facet set on the image can be a full facet such as \fBdoc.man\fR or a pattern such as \fBlocale.*\fR. This is useful when you want to disable a portion of the facet namespace, and only enable individual facets within it. For example, you could disable all locales and then only enable one or two specific locales, as shown in the following example:
@@ -1243,7 +1246,19 @@ Actions with no facet or variant tags are always installed.
 .TP
 .ie t \(bu
 .el o
-Actions with facet tags are installed if all the facet tags on an action that have a value of \fBall\fR are \fBtrue\fR in the image, and (if present on the action) at least one facet tag that does not have a value of \fBall\fR is \fBtrue\fR in the image (\fBtrue\fR is the default for facets not explicitly set).
+Actions with facet tags are installed if the following conditions exist in the image:
+.RS +4
+.TP
+.ie t \(bu
+.el o
+All facet tags on the action that have a value of \fBall\fR are \fBtrue\fR in the image (\fBtrue\fR is the default).
+.RE
+.RS +4
+.TP
+.ie t \(bu
+.el o
+If any facet tags on the action have a value of \fBtrue\fR, at least one of those facets is \fBtrue\fR in the image.
+.RE
 .RE
 .RS +4
 .TP

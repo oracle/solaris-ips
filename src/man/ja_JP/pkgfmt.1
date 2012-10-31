@@ -1,6 +1,6 @@
 '\" te
-.\" Copyright (c) 2007, 2011, Oracle and/or its affiliates. All rights reserved.
-.TH pkgfmt 1 "2011 年 7 月 28 日" "SunOS 5.11" "ユーザーコマンド"
+.\" Copyright (c) 2007, 2012, Oracle and/or its affiliates. All rights reserved.
+.TH pkgfmt 1 "2012 年 5 月 27 日" "SunOS 5.11" "ユーザーコマンド"
 .SH 名前
 pkgfmt \- パッケージマニフェストの整形
 .SH 形式
@@ -22,14 +22,29 @@ pkgfmt \- パッケージマニフェストの整形
 .SH オプション
 .sp
 .LP
-次のオプションがサポートされています。
+サポートしているオプションは、次のとおりです。
+.sp
+.ne 2
+.mk
+.na
+\fB\fB-?\fR\fR
+.ad
+.br
+.na
+\fB\fB--help\fR\fR
+.ad
+.RS 10n
+.rt  
+使用方法に関するメッセージを表示します。
+.RE
+
 .sp
 .ne 2
 .mk
 .na
 \fB\fB-c\fR\fR
 .ad
-.RS 6n
+.RS 10n
 .rt  
 マニフェストが \fBpkgfmt\fR 形式で整形されているかどうかをチェックします。
 .RE
@@ -40,7 +55,7 @@ pkgfmt \- パッケージマニフェストの整形
 .na
 \fB\fB-d\fR\fR
 .ad
-.RS 6n
+.RS 10n
 .rt  
 統合された形式で整形されたバージョンとのマニフェストの違いを表示します。
 .RE
@@ -51,7 +66,7 @@ pkgfmt \- パッケージマニフェストの整形
 .na
 \fB\fB-u\fR\fR
 .ad
-.RS 6n
+.RS 10n
 .rt  
 80 文字で行を折り返しません。このオプションは、パッケージマニフェストに従来のテキスト処理ツールを適用する場合に有効です。
 .RE
@@ -59,7 +74,7 @@ pkgfmt \- パッケージマニフェストの整形
 .SH 終了ステータス
 .sp
 .LP
-次の終了値が返されます。
+次の終了ステータスが返されます。
 .sp
 .ne 2
 .mk
@@ -86,11 +101,11 @@ pkgfmt \- パッケージマニフェストの整形
 .ne 2
 .mk
 .na
-\fB\fB2\fR \fR
+\fB\fB2\fR\fR
 .ad
 .RS 6n
 .rt  
-無効なコマンド行オプションが指定されました。
+無効なコマンド行オプションが指定された。
 .RE
 
 .sp

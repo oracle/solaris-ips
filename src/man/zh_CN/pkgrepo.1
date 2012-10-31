@@ -1,6 +1,6 @@
 '\" te
-.\" Copyright (c) 2007, 2011, Oracle and/or its affiliates. All rights reserved.
-.TH pkgrepo 1 "2011 年 8 月 30日" "SunOS 5.11" "用户命令"
+.\" Copyright (c) 2007, 2012, Oracle and/or its affiliates.All rights reserved.
+.TH pkgrepo 1 "2012 年 6 月 22 日" "SunOS 5.11" "用户命令"
 .SH 名称
 pkgrepo \- 映像包管理系统的系统信息库管理实用程序
 .SH 用法概要
@@ -16,7 +16,7 @@ pkgrepo \- 映像包管理系统的系统信息库管理实用程序
 
 .LP
 .nf
-/usr/bin/pkgrepo get [-F \fIformat\fR] [-p \fIpublisher\fR ...]
+/usr/bin/pkgrepo get [-F \fIformat\fR] [-H] [-p \fIpublisher\fR ...]
     -s \fIrepo_uri_or_path\fR [\fIsection/property\fR ...]
 .fi
 
@@ -53,7 +53,12 @@ pkgrepo \- 映像包管理系统的系统信息库管理实用程序
 .LP
 .nf
 /usr/bin/pkgrepo set [-p \fIpublisher\fR] -s \fIrepo_uri_or_path\fR
-    \fIsection/property\fR=[\fIvalue\fR] ... or
+    \fIsection/property\fR=[\fIvalue\fR]
+.fi
+
+.LP
+.nf
+/usr/bin/pkgrepo set [-p \fIpublisher\fR] -s \fIrepo_uri_or_path\fR
     \fIsection/property\fR=([\fIvalue\fR]) ...
 .fi
 
@@ -70,7 +75,7 @@ pkgrepo \- 映像包管理系统的系统信息库管理实用程序
 .SH 描述
 .sp
 .LP
-通过 \fBpkgrepo\fR 可以创建和管理 \fB pkg\fR(5) 软件包系统信息库。软件包系统信息库是一组预定义的目录和文件，允许 \fBpkg\fR(1) 和发布客户机（例如 \fBpkgsend \fR(1) 或 \fBpkgrecv\fR(1)）存储和检索软件包数据。此外，当需要对软件包系统信息库进行基于网络的访问时，\fBpkg.depotd\fR(1m) 可以提供对该系统信息库的客户机访问权限，以存储和/或检索软件包数据。
+通过 \fBpkgrepo\fR 可以创建和管理 \fB pkg\fR(5) 软件包系统信息库。软件包系统信息库是一组预定义的目录和文件，允许 \fBpkg\fR 和发布客户机（例如 \fBpkgsend \fR 或 \fBpkgrecv\fR）存储和检索软件包数据。此外，当需要对软件包系统信息库进行基于网络的访问时，\fBpkg.depotd\fR 可以提供对该系统信息库的客户机访问权限，以存储和/或检索软件包数据。
 .SH 选项
 .sp
 .LP
@@ -79,10 +84,14 @@ pkgrepo \- 映像包管理系统的系统信息库管理实用程序
 .ne 2
 .mk
 .na
-\fB\fB--help\fR 或 \fB-?\fR\fR
+\fB\fB-?\fR\fR
 .ad
-.RS 17n
-.rt  
+.br
+.na
+\fB\fB--help\fR\fR
+.ad
+.sp .6
+.RS 4n
 显示用法消息。
 .RE
 
@@ -94,7 +103,7 @@ pkgrepo \- 映像包管理系统的系统信息库管理实用程序
 .ne 2
 .mk
 .na
-\fB\fBcreate [\fB--version\fR \fIver\fR] \fI uri_or_path\fR\fR\fR
+\fB\fBpkgrepo create\fR [\fB--version\fR \fI ver\fR] \fIuri_or_path\fR\fR
 .ad
 .sp .6
 .RS 4n
@@ -102,22 +111,37 @@ pkgrepo \- 映像包管理系统的系统信息库管理实用程序
 .sp
 该子命令仅可以与基于文件系统的系统信息库一起使用。
 .sp
-使用 \fB--version\fR，以与指定版本兼容的格式创建系统信息库。缺省情况下，会创建版本为 4 的系统信息库。支持的版本包括：
+.ne 2
+.mk
+.na
+\fB\fB--version\fR\fR
+.ad
+.sp .6
+.RS 4n
+使用与指定版本兼容的格式创建系统信息库。缺省情况下，会创建版本为 4 的系统信息库。支持的版本包括：
 .sp
+.ne 2
+.mk
+.na
+\fB3\fR
+.ad
+.RS 5n
+.rt  
+支持为单个发布者存储软件包，目录版本为 1 ，搜索版本为 1。
+.RE
 
 .sp
-.TS
-tab();
-lw(.33i) lw(5.17i) 
-lw(.33i) lw(5.17i) 
-.
-3T{
-支持为单个发布者存储软件包，目录版本为 1 ，搜索版本为 1。
-T}
-4T{
+.ne 2
+.mk
+.na
+\fB4\fR
+.ad
+.RS 5n
+.rt  
 支持为多个发布者存储软件包，目录版本为 1 ，搜索版本为 1。
-T}
-.TE
+.RE
+
+.RE
 
 .RE
 
@@ -125,7 +149,7 @@ T}
 .ne 2
 .mk
 .na
-\fB\fBadd-publisher \fB-s\fR \fIrepo_uri_or_path \fR \fIpublisher\fR ...\fR\fR
+\fB\fBpkgrepo add-publisher\fR \fB-s\fR \fI repo_uri_or_path\fR \fIpublisher\fR ...\fR
 .ad
 .sp .6
 .RS 4n
@@ -138,7 +162,7 @@ T}
 .ne 2
 .mk
 .na
-\fB\fBget [\fB-F\fR \fIformat\fR] [\fB-p\fR \fIpublisher\fR ...] \fB-s\fR \fI repo_uri_or_path\fR [\fIsection/property\fR ...]\fR\fR
+\fB\fBpkgrepo get\fR [\fB-F\fR \fI format\fR] [\fB-H\fR] [\fB-p\fR \fIpublisher \fR ...] \fB-s\fR \fIrepo_uri_or_path\fR [\fI section/property\fR ...]\fR
 .ad
 .sp .6
 .RS 4n
@@ -152,43 +176,126 @@ T}
 .fi
 .in -2
 
-请参见"示例"部分。
+有关显示发布者和系统信息库属性的示例，请参见“示例”部分。
 .sp
-有关可能的属性的列表以及每个属性的用途和值，请参见下面的 \fBset\fR 子命令。
+有关属性列表以及每个属性的用途和值，请参见下文的 \fBset\fR 子命令。
 .sp
-使用 \fB-F\fR，指定备用输出格式。\fIformat\fR 的值可以是 \fBtsv\fR（以制表符分隔的值）、\fBjson\fR（单行 JavaScript 对象表示法）或 \fBjson-formatted\fR（格式易于阅读的 JavaScript 对象表示法）。
-.sp
-使用 \fB-H\fR，忽略列表的标题。
-.sp
-使用 \fB-p\fR，显示给定发布者的属性信息。特殊值 \fBall\fR 显示所有发布者的属性。可以多次指定此选项。
-.sp
-使用 \fB-s\fR，对位于给定 URI 或文件系统路径的系统信息库进行操作。
+.ne 2
+.mk
+.na
+\fB\fB-F\fR \fIformat\fR\fR
+.ad
+.sp .6
+.RS 4n
+指定备用输出格式。\fIformat\fR 的值可以是 \fBtsv\fR（以制表符分隔的值）、\fBjson\fR（单行 JavaScript 对象表示法）或 \fBjson-formatted\fR（格式易于阅读的 JavaScript 对象表示法）。
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fB\fBinfo [\fB-F\fR \fIformat\fR] [\fB-H\fR] [\fB-p\fR \fIpublisher\fR ...] \fB- s\fR \fIrepo_uri_or_path\fR\fR\fR
+\fB\fB-H\fR\fR
+.ad
+.sp .6
+.RS 4n
+在列出时省略标题。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB-p\fR \fIpublisher\fR\fR
+.ad
+.sp .6
+.RS 4n
+显示给定发布者的属性信息。特殊值 \fBall\fR 显示所有发布者的属性。可以多次指定此选项。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB-s\fR \fIrepo_uri_or_path\fR\fR
+.ad
+.sp .6
+.RS 4n
+对位于给定 URI 或文件系统路径的系统信息库进行操作。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fIsection/property\fR\fR
+.ad
+.sp .6
+.RS 4n
+仅显示指定属性的值，例如 \fB publisher/prefix\fR 或 \fBrepository/version\fR。有关完整的属性列表，请参见 \fB set\fR 子命令。
+.RE
+
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fBpkgrepo info\fR [\fB-F\fR \fI format\fR] [\fB-H\fR] [\fB-p\fR \fIpublisher \fR ...] \fB-s\fR \fIrepo_uri_or_path\fR\fR
 .ad
 .sp .6
 .RS 4n
 显示系统信息库已知的软件包发布者的列表。该列表包括每个发布者的软件包数量、最后一次更新发布者的软件包数据的时间以及发布者的软件包数据的状态（例如当前是否处于正在处理状态）。
 .sp
-使用 \fB-F\fR，指定备用输出格式。\fIformat\fR 的值可以是 \fBtsv\fR（以制表符分隔的值）、\fBjson\fR（单行 JavaScript 对象表示法）或 \fBjson-formatted\fR（格式易于阅读的 JavaScript 对象表示法）。
-.sp
-使用 \fB-H\fR，忽略列表的标题。
-.sp
-使用 \fB-p\fR，仅显示给定发布者的数据。如果没有提供该选项，将显示所有发布者的数据。可以多次指定此选项。
-.sp
-使用 \fB-s\fR，对位于给定 URI 或文件系统路径的系统信息库进行操作。
+.ne 2
+.mk
+.na
+\fB\fB-F\fR \fIformat\fR\fR
+.ad
+.sp .6
+.RS 4n
+指定备用输出格式。\fIformat\fR 的值可以是 \fBtsv\fR（以制表符分隔的值）、\fBjson\fR（单行 JavaScript 对象表示法）或 \fBjson-formatted\fR（格式易于阅读的 JavaScript 对象表示法）。
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fB\fB list [\fB-F\fR \fIformat\fR] [\fB-H\fR] [\fB-p\fR \fIpublisher\fR ...] \fB-s\fR \fI repo_uri_or_path\fR [\fIpkg_fmri_pattern\fR ...]\fR\fR
+\fB\fB-H\fR\fR
+.ad
+.sp .6
+.RS 4n
+在列出时省略标题。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB-p\fR \fIpublisher\fR\fR
+.ad
+.sp .6
+.RS 4n
+仅显示给定发布者的数据。如果没有提供该选项，将显示所有发布者的数据。可以多次指定此选项。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB-s\fR \fIrepo_uri_or_path\fR\fR
+.ad
+.sp .6
+.RS 4n
+对位于给定 URI 或文件系统路径的系统信息库进行操作。
+.RE
+
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fBpkgrepo list\fR [\fB-F\fR \fI format\fR] [\fB-H\fR] [\fB-p\fR \fIpublisher \fR ...] \fB-s\fR \fIrepo_uri_or_path\fR [\fI pkg_fmri_pattern\fR ...]\fR
 .ad
 .sp .6
 .RS 4n
@@ -196,58 +303,166 @@ T}
 .sp
 在缺省输出中，第一列包含软件包发布者的名称。第二列包含软件包的名称。第三列是显示软件包状态的标志。状态列中的 \fBo\fR 值表示软件包已过时。状态列中的 \fBr\fR 值表示已重命名软件包，但格式已过时。第四列包含软件包的发行版本和分支版本。有关发行版本和分支版本的信息，请参见 \fBpkg\fR(5)。
 .sp
-使用 \fB-F\fR，指定备用输出格式。\fIformat\fR 的唯一值可以是 \fBtsv\fR（以制表符分隔的值）、\fBjson\fR（单行 JavaScript 对象表示法）或 \fBjson-formatted\fR（格式易于阅读的 JavaScript 对象表示法）。
-.sp
-使用 \fB-H\fR，忽略列表的标题。
-.sp
-使用 \fB-p\fR，仅显示给定发布者的软件包。如果没有提供该选项，将显示所有发布者的软件包。可以多次指定此选项。
-.sp
-使用 \fB-s\fR，对位于给定 URI 或文件系统路径的系统信息库进行操作。
+.ne 2
+.mk
+.na
+\fB\fB-F\fR \fIformat\fR\fR
+.ad
+.sp .6
+.RS 4n
+指定备用输出格式。\fIformat\fR 的值可以是 \fBtsv\fR（以制表符分隔的值）、\fBjson\fR（单行 JavaScript 对象表示法）或 \fBjson-formatted\fR（格式易于阅读的 JavaScript 对象表示法）。
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fB\fBrebuild [\fB-p\fR \fIpublisher\fR ...] \fB- s\fR \fIrepo_uri_or_path\fR [\fB--no-catalog\fR] [\fB--no-index\fR]\fR\fR
+\fB\fB-H\fR\fR
+.ad
+.sp .6
+.RS 4n
+在列出时省略标题。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB-p\fR \fIpublisher\fR\fR
+.ad
+.sp .6
+.RS 4n
+仅显示给定发布者的软件包。如果没有提供该选项，将显示所有发布者的软件包。可以多次指定此选项。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB-s\fR \fIrepo_uri_or_path\fR\fR
+.ad
+.sp .6
+.RS 4n
+对位于给定 URI 或文件系统路径的系统信息库进行操作。
+.RE
+
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fBpkgrepo rebuild\fR [\fB-p\fR \fI publisher\fR ...] \fB-s\fR \fIrepo_uri_or_path\fR [\fB- -no-catalog\fR] [\fB--no-index\fR]\fR
 .ad
 .sp .6
 .RS 4n
 放弃在系统信息库中找到的所有目录、搜索以及其他缓存信息，然后根据系统信息库的当前内容重新创建这些信息。
 .sp
-使用 \fB-p\fR，仅对给定发布者执行操作。如果没有提供该选项或者指定了特定值 \fBall\fR，则对所有发布者执行操作。可以多次指定此选项。
-.sp
-使用 \fB-s\fR，对位于给定 URI 或文件系统路径的系统信息库进行操作。
-.sp
-使用 \fB--no-catalog\fR，不重新生成软件包数据。
-.sp
-使用 \fB--no-index\fR，不重新生成搜索索引。
+.ne 2
+.mk
+.na
+\fB\fB-p\fR \fIpublisher\fR\fR
+.ad
+.sp .6
+.RS 4n
+仅针对给定发布者执行操作。如果没有提供该选项或者指定了特定值 \fBall\fR，则对所有发布者执行操作。可以多次指定此选项。
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fB\fBrefresh [\fB-p\fR \fIpublisher\fR ...] \fB- s\fR \fIrepo_uri_or_path\fR [\fB--no-catalog\fR] [\fB--no-index\fR]\fR\fR
+\fB\fB-s\fR \fIrepo_uri_or_path\fR\fR
+.ad
+.sp .6
+.RS 4n
+对位于给定 URI 或文件系统路径的系统信息库进行操作。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB--no-catalog\fR\fR
+.ad
+.sp .6
+.RS 4n
+不重新生成软件包数据。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB--no-index\fR\fR
+.ad
+.sp .6
+.RS 4n
+不重新生成搜索索引。
+.RE
+
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fBpkgrepo refresh\fR [\fB-p\fR \fI publisher\fR ...] \fB-s\fR \fIrepo_uri_or_path\fR [\fB- -no-catalog\fR] [\fB--no-index\fR]\fR
 .ad
 .sp .6
 .RS 4n
 将在系统信息库中找到的所有新软件包编入目录并更新所有搜索索引。这主要供延迟的发布使用（\fBpkgsend\fR 的 \fB--no-catalog \fR 或 \fB--no-index\fR 选项）。
 .sp
-使用 \fB-p\fR，仅对给定发布者执行操作。如果没有提供该选项或者指定了特定值 \fBall\fR，则对所有发布者执行操作。可以多次指定此选项。
-.sp
-使用 \fB-s\fR，对位于给定 URI 或文件系统路径的系统信息库进行操作。
-.sp
-使用 \fB--no-catalog\fR，不添加任何新的软件包。
-.sp
-使用 \fB--no-index\fR，不更新搜索索引。
+.ne 2
+.mk
+.na
+\fB\fB-p\fR \fIpublisher\fR\fR
+.ad
+.sp .6
+.RS 4n
+仅针对给定发布者执行操作。如果没有提供该选项或者指定了特定值 \fBall\fR，则对所有发布者执行操作。可以多次指定此选项。
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fB\fBremove [\fB-n\fR] [\fB-p\fR \fI publisher\fR ...] \fB-s\fR \fIrepo_uri_or_path\fR \fI pkg_fmri_pattern\fR ...\fR\fR
+\fB\fB-s\fR \fIrepo_uri_or_path\fR\fR
+.ad
+.sp .6
+.RS 4n
+对位于给定 URI 或文件系统路径的系统信息库进行操作。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB--no-catalog\fR\fR
+.ad
+.sp .6
+.RS 4n
+不添加任何新软件包。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB--no-index\fR\fR
+.ad
+.sp .6
+.RS 4n
+不更新搜索索引。
+.RE
+
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fBpkgrepo remove\fR [\fB-n\fR] [\fB-p\fR \fIpublisher\fR ...] \fB-s\fR \fI repo_uri_or_path\fR \fIpkg_fmri_pattern\fR ...\fR
 .ad
 .sp .6
 .RS 4n
@@ -265,18 +480,50 @@ T}
 .RS 2
 此操作不可逆并且不得在其他客户机正在访问系统信息库时使用，因为这样会使得它们在执行检索操作期间出现故障。
 .RE
-使用 \fB-n\fR，执行试运行而不更改软件包。在退出之前，会显示要删除的软件包的列表。
 .sp
-使用 \fB-p\fR，仅删除给定发布者的匹配软件包。如果没有提供该选项，会删除所有发布者的所有匹配软件包。可以多次指定此选项。
-.sp
-使用 \fB-s\fR，对位于给定 URI 或文件系统路径的系统信息库进行操作。
+.ne 2
+.mk
+.na
+\fB\fB-n\fR\fR
+.ad
+.sp .6
+.RS 4n
+试运行操作而不进行软件包更改。在退出之前，会显示要删除的软件包的列表。
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fB\fBset [\fB-p\fR \fIpublisher\fR] \fB- s\fR \fIrepo_uri_or_path\fR \fIsection/property \fR=[\fIvalue\fR] ... or \fIsection/property \fR=([\fIvalue\fR]) ...\fR\fR
+\fB\fB-p\fR \fIpublisher\fR\fR
+.ad
+.sp .6
+.RS 4n
+仅删除给定发布者的匹配软件包。如果没有提供该选项，会删除所有发布者的所有匹配软件包。可以多次指定此选项。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB-s\fR \fIrepo_uri_or_path\fR\fR
+.ad
+.sp .6
+.RS 4n
+对位于给定 URI 或文件系统路径的系统信息库进行操作。
+.RE
+
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fBpkgrepo set\fR [\fB-p\fR \fI publisher\fR] \fB-s\fR \fIrepo_uri_or_path\fR \fI section/property\fR=[\fIvalue\fR] ...\fR
+.ad
+.br
+.na
+\fB\fBset\fR [\fB-p\fR \fIpublisher\fR] \fB- s\fR \fIrepo_uri_or_path\fR \fIsection/property \fR=([\fIvalue\fR]) ...\fR
 .ad
 .sp .6
 .RS 4n
@@ -284,10 +531,27 @@ T}
 .sp
 该子命令仅可以与基于文件系统的系统信息库一起使用。
 .sp
-使用 \fB-p\fR，仅设置给定发布者的属性数据。如果发布者尚未存在，将添加该发布者。特殊值 \fB all\fR 可用于设置所有发布者的属性。
+.ne 2
+.mk
+.na
+\fB\fB-p\fR \fIpublisher\fR\fR
+.ad
+.sp .6
+.RS 4n
+仅为给定发布者设置属性数据。如果发布者尚未存在，将添加该发布者。特殊值 \fB all\fR 可用于设置所有发布者的属性。
+.RE
+
 .sp
-使用 \fB-s\fR，对位于给定 URI 或文件系统路径的系统信息库进行操作。
-.sp
+.ne 2
+.mk
+.na
+\fB\fB-s\fR \fIrepo_uri_or_path\fR\fR
+.ad
+.sp .6
+.RS 4n
+对位于给定 URI 或文件系统路径的系统信息库进行操作。
+.RE
+
 可以使用以下格式之一指定属性和值：
 .sp
 .ne 2
@@ -327,33 +591,11 @@ T}
 .ne 2
 .mk
 .na
-\fB\fIpublisher\fR/\fIprefix\fR\fR
+\fB\fBpublisher/prefix\fR\fR
 .ad
-.sp .6
-.RS 4n
-代表缺省发布者名称的字符串。第一个字符必须是 a-z、A-Z 或 0-9。该字符串的剩余部分只能包含字符 0-9、-、.、a-z 以及 A-Z。该值指明存在多个发布者的软件包时或软件包已发布到系统信息库但未指定发布者时应当使用的发布者。
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fB\fIpublisher\fR/\fIsigning_ca_certs \fR\fR
-.ad
-.sp .6
-.RS 4n
-字符串列表，包含签名 CA 证书（应当用于该发布者）的散列。
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fB\fIpublisher\fR/\fIintermediate_certs \fR\fR
-.ad
-.sp .6
-.RS 4n
-字符串列表，包含中间证书（应当用于该发布者）的散列。
+.RS 20n
+.rt  
+代表缺省发布者名称的字符串。第一个字符必须是 a-z、A-Z 或 0-9。该字符串的剩余部分只能包含字符 0-9、-、.、a-z 以及 A-Z。该值指示存在多个发布者的软件包时或者将软件包发布到系统信息库但没有指定发布者时，应当使用的发布者。
 .RE
 
 对于系统信息库第 3 和 4 版，可以为系统信息库中的各发布者设置以下属性：
@@ -361,7 +603,7 @@ T}
 .ne 2
 .mk
 .na
-\fB\fIpublisher\fR/\fIalias\fR\fR
+\fB\fBpublisher/alias\fR\fR
 .ad
 .sp .6
 .RS 4n
@@ -372,7 +614,7 @@ T}
 .ne 2
 .mk
 .na
-\fB\fIrepository\fR/\fIcollection_type \fR\fR
+\fB\fBrepository/collection_type\fR\fR
 .ad
 .sp .6
 .RS 4n
@@ -387,7 +629,7 @@ T}
 .ne 2
 .mk
 .na
-\fB\fIrepository\fR/\fIdescription \fR\fR
+\fB\fBrepository/description\fR\fR
 .ad
 .sp .6
 .RS 4n
@@ -398,7 +640,7 @@ T}
 .ne 2
 .mk
 .na
-\fB\fIrepository\fR/\fIdetailed_url \fR\fR
+\fB\fBrepository/detailed_url\fR\fR
 .ad
 .sp .6
 .RS 4n
@@ -409,7 +651,7 @@ URI，代表提供更多有关系统信息库信息的文档的位置（例如�
 .ne 2
 .mk
 .na
-\fB\fIrepository\fR/\fIlegal_uris \fR\fR
+\fB\fBrepository/legal_uris\fR\fR
 .ad
 .sp .6
 .RS 4n
@@ -420,7 +662,7 @@ URI，代表提供更多有关系统信息库信息的文档的位置（例如�
 .ne 2
 .mk
 .na
-\fB\fIrepository\fR/\fImirrors\fR\fR
+\fB\fBrepository/mirrors\fR\fR
 .ad
 .sp .6
 .RS 4n
@@ -431,7 +673,7 @@ URI，代表提供更多有关系统信息库信息的文档的位置（例如�
 .ne 2
 .mk
 .na
-\fB\fIrepository\fR/\fIname\fR\fR
+\fB\fBrepository/name\fR\fR
 .ad
 .sp .6
 .RS 4n
@@ -442,7 +684,7 @@ URI，代表提供更多有关系统信息库信息的文档的位置（例如�
 .ne 2
 .mk
 .na
-\fB\fIrepository\fR/\fIorigins\fR\fR
+\fB\fBrepository/origins\fR\fR
 .ad
 .sp .6
 .RS 4n
@@ -453,7 +695,7 @@ URI，代表提供更多有关系统信息库信息的文档的位置（例如�
 .ne 2
 .mk
 .na
-\fB\fIrepository\fR/\fIrefresh_seconds \fR\fR
+\fB\fBrepository/refresh_seconds\fR\fR
 .ad
 .sp .6
 .RS 4n
@@ -464,7 +706,7 @@ URI，代表提供更多有关系统信息库信息的文档的位置（例如�
 .ne 2
 .mk
 .na
-\fB\fIrepository\fR/\fIregistration_uri \fR\fR
+\fB\fBrepository/registration_uri\fR\fR
 .ad
 .sp .6
 .RS 4n
@@ -475,7 +717,7 @@ URI，代表提供更多有关系统信息库信息的文档的位置（例如�
 .ne 2
 .mk
 .na
-\fB\fIrepository\fR/\fIrelated_uris \fR\fR
+\fB\fBrepository/related_uris\fR\fR
 .ad
 .sp .6
 .RS 4n
@@ -489,11 +731,22 @@ URI，代表提供更多有关系统信息库信息的文档的位置（例如�
 .ne 2
 .mk
 .na
-\fB\fBversion\fR\fR
+\fB\fBpkgrepo help\fR\fR
 .ad
 .sp .6
 .RS 4n
-显示标识 \fB pkg\fR(5) 系统版本的唯一字符串。由 \fBversion\fR 操作生成的值不能进行排序，并且对于在不平等情况下的比较而言是不安全的。
+显示用法消息。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fBpkgrepo version\fR\fR
+.ad
+.sp .6
+.RS 4n
+显示一个用于唯一标识 \fB pkg\fR(5) 系统版本的字符串。由 \fBversion\fR 操作生成的值不能进行排序，并且对于在不平等情况下的比较而言是不安全的。
 .RE
 
 .SH 示例
@@ -560,12 +813,16 @@ $ \fBpkgrepo refresh -s http://example.com/repository\fR
 .sp
 .in +2
 .nf
-$ \fBpkgrepo get -s /my/repository\fR
-SECTION    PROPERTY VALUE
-publisher  prefix   ""
-repository version  4
+$ \fBpkgrepo get -s /export/repoSolaris11\fR
+SECTION    PROPERTY    VALUE
+publisher  prefix      solaris
+repository description Local\e copy\e of\e the\e Oracle\e Solaris\e 11\e repository
+repository name        Oracle\e Solaris\e 11
+repository version     4
 $ \fBpkgrepo get -s http://pkg.oracle.com/solaris/release/\fR
 SECTION    PROPERTY VALUE
+deployment content  s11_11-11
+deployment pubdate  20111102T222051Z
 publisher  prefix   solaris
 repository version  4
 .fi
@@ -582,7 +839,8 @@ PUBLISHER SECTION    PROPERTY         VALUE
 solaris   publisher  alias
 solaris   publisher  prefix           solaris
 solaris   repository collection-type  core
-solaris   repository description      This\e repository\e serves\e the\e Oracle\e Solaris\e 11\e Package\e repository.
+solaris   repository description      This\e repository\e serves\e the\e Oracle\e
+Solaris\e 11\e Package\e repository.
 solaris   repository legal-uris       ()
 solaris   repository mirrors          (http://pkg-cdn1.oracle.com/solaris.release/)
 solaris   repository name             Oracle\e Solaris\e 11\e Package\e Repository

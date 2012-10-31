@@ -1,6 +1,6 @@
 '\" te
-.\" Copyright (c) 2007, 2011, Oracle and/or its affiliates. All rights reserved.
-.TH pkgdepend 1 "2011 年 7 月 28 日" "SunOS 5.11" "用户命令"
+.\" Copyright (c) 2007, 2012, Oracle and/or its affiliates.All rights reserved.
+.TH pkgdepend 1 "2012 年 6 月 22 日" "SunOS 5.11" "用户命令"
 .SH 名称
 pkgdepend \- 映像包管理系统依赖项分析器
 .SH 用法概要
@@ -12,19 +12,19 @@ pkgdepend \- 映像包管理系统依赖项分析器
 .LP
 .nf
 /usr/bin/pkgdepend generate [-IMm] -d \fIdir\fR [-d \fIdir\fR]
-    [-D \fIname\fR=\fIvalue\fR] [-k \fIpath\fR] \fImanifest_path\fR
+    [-D \fIname\fR=\fIvalue\fR] [-k \fIpath\fR] \fImanifest_file\fR
 .fi
 
 .LP
 .nf
 /usr/bin/pkgdepend resolve [-moSv] [-d \fIoutput_dir\fR]
-    [-s \fIsuffix\fR] \fImanifest_path\fR ...
+    [-s \fIsuffix\fR] \fImanifest_file\fR ...
 .fi
 
 .SH 描述
 .sp
 .LP
-\fBpkgdepend\fR 用于生成并解析软件包的依赖项。软件包可能依赖于其他软件包中的文件。\fBpkgdepend\fR 通常用于两种传递：文件依赖项生成和文件到软件包的解析。
+\fBpkgdepend\fR 命令生成并解析软件包的依赖项。某个软件包可能会依赖于其他软件包中的文件。\fBpkgdepend\fR 命令通常使用两次：一次用于文件依赖项生成和一次用于文件到软件包的解析。
 .sp
 .LP
 \fBgenerate\fR 子命令将检查软件包的内容，并确定该软件包所需的外部文件。
@@ -42,7 +42,7 @@ pkgdepend \- 映像包管理系统依赖项分析器
 .ad
 .RS 13n
 .rt  
-分析提供的文件中的 ELF 头以获取依赖项信息，\fB-k\fR 和 \fB-D\fR 选项可用于修改获取的信息。有关 ELF 依赖项的更多详细信息，请参见 \fBldd\fR(1) 和\fI《Linker and Libraries Guide》\fR。
+分析提供的文件中的 ELF 头以获取依赖项信息，\fB-k\fR 和 \fB-D\fR 选项可用于修改获取的信息。有关 ELF 依赖项的更多详细信息，请参见 \fBldd\fR 和\fI《Linker and Libraries Guide》\fR。
 .RE
 
 .sp
@@ -97,22 +97,30 @@ Python 脚本首先作为脚本进行分析。此外，脚本声明的任何导�
 .ne 2
 .mk
 .na
-\fB\fB-R\fR \fIdir\fR\fR
+\fB\fB-?\fR\fR
 .ad
-.RS 17n
-.rt  
-对根目录为 \fIdir\fR 的映像进行操作。如果未根据环境指定或确定目录，则缺省值为 /。有关更多信息，请参见"环境变量"部分。
+.br
+.na
+\fB\fB--help\fR\fR
+.ad
+.sp .6
+.RS 4n
+显示用法消息。
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fB\fB--help\fR 或 \fB-?\fR\fR
+\fB\fB-R\fR \fIdir\fR\fR
 .ad
-.RS 17n
-.rt  
-显示用法消息。
+.br
+.na
+\fB\fB--image-dir\fR \fIdir\fR\fR
+.ad
+.sp .6
+.RS 4n
+对根目录为 \fIdir\fR 的映像进行操作。如果未根据环境指定或确定目录，则缺省值为 /。有关更多信息，请参见“环境变量”部分。
 .RE
 
 .SH 子命令
@@ -123,33 +131,84 @@ Python 脚本首先作为脚本进行分析。此外，脚本声明的任何导�
 .ne 2
 .mk
 .na
-\fB\fBgenerate [\fB-IMm\fR] \fB-d\fR \fI dir\fR [\fB-d\fR \fIdir\fR] [\fB-D\fR \fI name\fR=\fIvalue\fR] [\fB-k\fR \fI path\fR] \fImanifest_path\fR\fR\fR
+\fB\fBpkgdepend generate\fR [\fB-IMm\fR] \fB- d\fR \fIdir\fR [\fB-d\fR \fIdir\fR] [\fB-D\fR \fIname\fR=\fIvalue\fR] [\fB-k\fR \fIpath\fR] \fImanifest_file\fR\fR
 .ad
 .sp .6
 .RS 4n
-生成由 \fImanifest_path\fR 指定的清单文件的依赖项。
+生成由 \fImanifest_file\fR 指定的清单文件的依赖项。
 .sp
-与 \fB-I\fR 一起使用时，将显示在给定清单中满足条件的依赖项。
+.ne 2
+.mk
+.na
+\fB\fB-I\fR\fR
+.ad
+.sp .6
+.RS 4n
+显示 \fImanifest_file\fR 中满足条件的依赖项。请勿使用带 \fB-I\fR 选项的 \fBpkgdepend resolve\fR 命令产生的结果。
+.RE
+
 .sp
-与 \fB-M\fR 一起使用时，将显示无法分析的文件类型的列表。
+.ne 2
+.mk
+.na
+\fB\fB-M\fR\fR
+.ad
+.sp .6
+.RS 4n
+显示无法分析的文件类型的列表。
+.RE
+
 .sp
-与 \fB-m\fR 一起使用时，将重复原始清单，并在其后添加任何发现的依赖项。
+.ne 2
+.mk
+.na
+\fB\fB-m\fR\fR
+.ad
+.sp .6
+.RS 4n
+重复显示原始清单，并在其后添加发现的任何依赖项。
+.RE
+
 .sp
-与 \fB-d\fR 一起使用时，将 \fIdir\fR 添加到目录列表以搜索清单的文件。
+.ne 2
+.mk
+.na
+\fB\fB-d\fR \fIdir\fR\fR
+.ad
+.sp .6
+.RS 4n
+将 \fIdir\fR 添加到搜索清单文件的目录列表。
+.RE
+
 .sp
-对于每个 \fB-D\fR，将添加 \fIvalue\fR，作为在 ELF 文件依赖项的运行路径中扩展标记 \fIname\fR 的一种方法。
+.ne 2
+.mk
+.na
+\fB\fB-D\fR \fIname\fR=\fI value\fR\fR
+.ad
+.sp .6
+.RS 4n
+添加 \fIvalue\fR，将其作为在 ELF 文件依赖项的运行路径中扩展标记 \fIname\fR 的一种方法。
+.RE
+
 .sp
-对于每个 \fB-k\fR，将 \fIpath\fR 添加到运行路径的列表，以搜索内核模块。使用 \fB-k\fR 参数会删除缺省路径 \fB/kernel\fR 和 \fB/usr/kernel\fR。
+.ne 2
+.mk
+.na
+\fB\fB-k\fR \fIpath\fR\fR
+.ad
+.sp .6
+.RS 4n
+将 \fIpath\fR 添加到搜索内核模块的运行路径列表。使用 \fB-k\fR 选项会删除缺省路径 \fB/kernel\fR 和 \fB/usr/kernel\fR。
 .sp
-运行路径（例如 \fB-k\fR 选项指定的那些运行路径）也可以通过使用操作或清单属性 \fBpkg.depend.runpath\fR 来按操作或清单指定。\fBpkg.depend.runpath \fR 属性的值是要使用的路径的冒号分隔字符串。
-.sp
-使用的 \fB-k\fR 将被清单或操作中设置的任何 \fBpkg.depend.runpath \fR 属性覆盖。
+运行路径（例如 \fB-k\fR 选项指定的那些运行路径）也可以通过使用操作或清单属性 \fBpkg.depend.runpath\fR 来按操作或清单指定。\fBpkg.depend.runpath \fR 属性的值是要使用的路径的冒号分隔字符串。在清单或操作中设置任何 \fBpkg.depend.runpath\fR 属性时均会覆盖使用 \fB-k\fR 选项指定的路径。
 .sp
 特殊标记 \fB$PKGDEPEND_RUNPATH\fR 可用作 \fBpkg.depend.runpath\fR 属性值的一个组件，以包括所分析文件的标准系统运行路径。
-.sp
+.RE
+
 在某些情况下，您可能需要防止自动生成依赖项。例如，如果软件包提供了一个用于导入一组模块的样例 Python 脚本，则该样例脚本导入的那些模块不是提供该样例脚本的软件包的依赖项。使用操作或清单属性 \fBpkg.depend.bypass-generate\fR 可以防止针对指定的文件生成依赖项。
 .sp
-\fBpkg.depend.bypass-generate\fR 值是与文件名匹配的 \fBperl5 \fR 正则表达式。正则表达式隐式固定在文件路径的开头和结尾。以下示例中提供的值与 \fBthis/that\fR 匹配，但与 \fBsomething/this/that/the/other\fR 不匹配。
+\fBpkg.depend.bypass-generate\fR 值是与文件名匹配的 Python 正则表达式。正则表达式隐式固定在文件路径的开头和结尾。以下示例中提供的值与 \fBthis/that\fR 匹配，但与 \fBsomething/this/that/the/other\fR 不匹配。
 .sp
 .in +2
 .nf
@@ -157,29 +216,86 @@ pkg.depend.bypass-generate=this/that
 .fi
 .in -2
 
+有关 Python 正则表达式语法的更多信息，请使用命令 \fBpydoc re\fR 或参见 \fBhttp://docs.python.org/dev/howto/regex.html\fR 中更为完整的文档。
+.sp
+当 \fBpkgdepend generate\fR 输入清单包含 SMF 清单文件时，由这些 SMF 清单文件声明的任何 SMF 服务或实例都将包括在 \fBpkgdepend\fR 输出中。这些 SMF 服务或实例以名称为 \fBorg.opensolaris.smf.fmri\fR 的 \fBset\fR 操作的形式包括在输出中。
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fB\fBresolve [\fB-moSv\fR] [\fB-d\fR \fI output_dir\fR] [\fB-s\fR \fIsuffix\fR] \fI manifest_path\fR ...\fR\fR
+\fB\fBpkgdepend resolve\fR [\fB-moSv\fR] [\fB-d\fR \fIoutput_dir\fR] [\fB-s\fR \fI suffix\fR] \fImanifest_file\fR ...\fR
 .ad
 .sp .6
 .RS 4n
-将文件中的依赖项转换为提供这些文件的软件包中的依赖项。先根据命令行中给定的清单解析依赖项，然后再根据系统上安装的软件包进行解析。缺省情况下，每个清单的依赖项放置在名为 \fB\fI manifest_path\fR.res\fR 的文件中。
+将文件中的依赖项转换为提供这些文件的软件包中的依赖项。先根据命令行中给定的清单解析依赖项，然后再根据系统上安装的软件包进行解析。缺省情况下，每个清单的依赖项放置在名为 \fB\fImanifest_file\fR.res\fR 的文件中。
 .sp
-与 \fB-m\fR 一起使用时，将重复清单，删除 \fBgenerate\fR 步骤生成的任何依赖项，然后添加已解析的依赖项。
+.ne 2
+.mk
+.na
+\fB\fB-m\fR\fR
+.ad
+.sp .6
+.RS 4n
+将重复清单，删除 \fBgenerate\fR 步骤生成的任何依赖项，然后添加已解析的依赖项。
+.RE
+
 .sp
-与 \fB-o\fR 一起使用时，会将结果写入到标准输出。该选项旨在供用户使用。将此输出附加到某个文件可能会导致产生无效的清单。在用于清单处理的管道中使用时，强烈建议使用 \fB-d\fR 或 \fB-s\fR 选项，而不要使用 \fB-o\fR。
+.ne 2
+.mk
+.na
+\fB\fB-o\fR\fR
+.ad
+.sp .6
+.RS 4n
+将结果写入到标准输出。该选项旨在供用户使用。将此输出附加到某个文件可能会导致产生无效的清单。在用于清单处理的管道中使用时，强烈建议使用 \fB-d\fR 或 \fB-s\fR 选项，而不要使用 \fB-o\fR。
+.RE
+
 .sp
-与 \fB-d\fR 一起使用时，会将单独文件中提供的每个清单的已解析依赖项写入 \fIoutput_dir\fR 中。缺省情况下，每个文件与清单（该清单是写入该文件的依赖项的源）具有相同的基名。
+.ne 2
+.mk
+.na
+\fB\fB-d\fR \fIoutput_dir\fR\fR
+.ad
+.sp .6
+.RS 4n
+将单独文件中提供的每个清单的已解析依赖项写入 \fIoutput_dir\fR 中。缺省情况下，每个文件与清单（该清单是写入该文件的依赖项的源）具有相同的基名。
+.RE
+
 .sp
-与 \fB-s\fR 一起使用时，对于每个输出文件，会将 \fIsuffix\fR 附加到文件（该文件是解析的依赖项的源）的基名。"." 附加到 \fIsuffix\fR 的前面（如果未提供）。
+.ne 2
+.mk
+.na
+\fB\fB-s\fR \fIsuffix\fR\fR
+.ad
+.sp .6
+.RS 4n
+对于每个输出文件，将 \fIsuffix\fR 附加到文件（该文件是解析的依赖项的源）的基名。如果 \fIsuffix\fR 不是 \fI\&.suffix\fR 格式，则会将句点 (.) 附加到 \fIsuffix\fR 的前面。
+.RE
+
 .sp
-与 \fB-S\fR 一起使用时，只根据命令行上指定的清单进行解析，而不根据系统上安装的清单进行解析。
+.ne 2
+.mk
+.na
+\fB\fB-S\fR\fR
+.ad
+.sp .6
+.RS 4n
+只根据命令行上指定的清单进行解析，而不根据系统上安装的清单进行解析。
+.RE
+
 .sp
-与 \fB-v\fR 一起使用时，将包括其他软件包依赖项调试元数据。
+.ne 2
+.mk
+.na
+\fB\fB-v\fR\fR
+.ad
+.sp .6
+.RS 4n
+将包括其他软件包依赖项调试元数据。
+.RE
+
 .RE
 
 .SH 示例
@@ -187,7 +303,7 @@ pkg.depend.bypass-generate=this/that
 \fB示例 1 \fR生成依赖项
 .sp
 .LP
-为 \fBfoo\fR 中写入的清单（其内容目录在 \fB\&./bar/baz\fR 中）生成 赖项，并将结果存储在 \fBfoo fdeps\fR 中。
+为 \fBfoo\fR 中写入的清单（其内容目录在 \fB\&./bar/baz\fR 中）生成依赖项，并将结果存储在 \fBfoo fdeps\fR 中。
 
 .sp
 .in +2
@@ -284,10 +400,10 @@ file NOHASH path=opt/python/foo/__init__.py mode=0644 group=sys owner=root
 # Add runpath and bypass-generate attributes:
 #
 file NOHASH path=opt/python/foo/file.py mode=0644 group=sys owner=root \e
-    pkg.depend.bypass-generate=^.*/test.py.*$ \e
-    pkg.depend.bypass-generate=^.*/testmodule.so$ \e
-    pkg.depend.bypass-generate=^.*/test.so$ \e
-    pkg.depend.bypass-generate=^usr/lib/python2.6/vendor-packages/xdg/.*$ \e
+    pkg.depend.bypass-generate=.*/test.py.* \e
+    pkg.depend.bypass-generate=.*/testmodule.so \e
+    pkg.depend.bypass-generate=.*/test.so \e
+    pkg.depend.bypass-generate=usr/lib/python2.6/vendor-packages/xdg/.* \e
     pkg.depend.runpath=$PKGDEPEND_RUNPATH:/opt/python
 
 $ \fBpkgdepend generate -d proto manifest.py\fR
