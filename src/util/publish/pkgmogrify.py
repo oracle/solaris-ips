@@ -79,8 +79,9 @@ def add_transform(transform, filename, lineno):
                         attrdict[a] = re.compile(attrdict[a])
                 except re.error, e:
                         raise RuntimeError, \
-                            _("transform (%s) has regexp error (%s) in matching clause"
-                            ) % (transform, e)
+                            _("transform (%(transform)s) has regexp error "
+                            "(%(err)s) in matching clause"
+                            ) % {"transform": transform, "err": e}
 
         op = s[index+2:].strip().split(None, 1)
 
@@ -215,8 +216,9 @@ def add_transform(transform, filename, lineno):
                         regexp = args[1]
                 except re.error, e:
                         raise RuntimeError, \
-                            _("transform (%s) has 'edit' operation with malformed "
-                              "regexp (%s)") % (transform, e)
+                            _("transform (%(transform)s) has 'edit' operation "
+                            "with malformed regexp (%(err)s)") % \
+                            {"transform": transform, "err": e}
 
                 if len(args) == 3:
                         replace = args[2]
@@ -249,8 +251,10 @@ def add_transform(transform, filename, lineno):
                                 ]
                         except re.error, e:
                                 raise RuntimeError, \
-                                    _("transform (%s) has edit operation with replacement"
-                                      "string regexp error %e") % (transform, e)
+                                    _("transform (%(transform)s) has edit "
+                                    "operation with replacement string regexp "
+                                    "error %(err)e") % \
+                                    {"transform": transform, "err": e}
                         return action
 
                 operation = replace_func
@@ -272,8 +276,9 @@ def add_transform(transform, filename, lineno):
                         regexp = re.compile(args[1])
                 except re.error, e:
                         raise RuntimeError, \
-                            _("transform (%s) has 'delete' operation with malformed "
-                            "regexp (%s)") % (transform, e)
+                            _("transform (%(transform)s) has 'delete' operation"
+                            "with malformed regexp (%(err)s)") % \
+                            {"transform": transform, "err": e}
 
                 def delete_func(action, matches, pkg_attrs, filename, lineno):
                         val = attrval_as_list(action.attrs, attr)
@@ -292,8 +297,10 @@ def add_transform(transform, filename, lineno):
                                         del action.attrs[attr]
                         except re.error, e:
                                 raise RuntimeError, \
-                                    _("transform (%s) has delete operation with replacement"
-                                      "string regexp error %e") % (transform, e)
+                                    _("transform (%(transform)s) has delete "
+                                    "operation with replacement string regexp "
+                                    "error %(err)e") % \
+                                    {"transform": transform, "err": e}
                         return action
 
                 operation = delete_func
@@ -454,8 +461,9 @@ def substitute_values(msg, action, matches, pkg_attrs, filename=None, lineno=Non
                 ref = int(i.string[slice(*i.span())][2:-1])
 
                 if ref == 0 or ref > len(backrefs) - 1:
-                        raise RuntimeError, _("no match group %d (max %d)") % \
-                            (ref, len(backrefs) - 1)
+                        raise RuntimeError, _("no match group %(group)d "
+                            "(max %(maxgroups)d)") % \
+                            {"group": ref, "maxgroups": len(backrefs) - 1}
 
                 newmsg += msg[prevend:i.start()] + backrefs[ref]
                 prevend = i.end()

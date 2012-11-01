@@ -34,6 +34,7 @@
 ^src/gui/help/package-manager-__LOCALE__.omf$
 ^src/pkg/Makefile.link
 ^src/pkg/pkgtmp/
+^src/po/i18n_errs.txt$
 ^src/po/pkg.pot$
 ^src/tests/.coverage$
 ^src/tests/.coverage-.*$

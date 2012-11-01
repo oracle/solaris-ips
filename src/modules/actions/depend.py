@@ -178,9 +178,10 @@ class DependencyAction(generic.Action):
                 if required and pkgdefs.PKG_STATE_OBSOLETE in \
                     image.get_pkg_state(installed_version):
                         errors.append(
-                            _("%s dependency on an obsolete package (%s);"
-                            "this package must be uninstalled manually") %
-                            (ctype, installed_version))
+                            _("%(dep_type)s dependency on an obsolete package "
+                            "(%(obs_pkg)s); this package must be uninstalled "
+                            "manually") %
+                            {"dep_type": ctype, "obs_pkg": installed_version})
                         return errors
                 return errors
 

@@ -359,7 +359,8 @@ def trans_publish(repo_uri, fargs):
                         filename = "???"
                         lineno = "???"
 
-                error(_("File %s line %s: %s") % (filename, lineno, e),
+                error(_("File %(filename)s line %(lineno)s: %(err)s") %
+                    {"filename": filename, "lineno": lineno, "err": e},
                     cmd="publish")
                 return 1
 
@@ -508,7 +509,8 @@ def trans_include(repo_uri, fargs, transaction=None):
                         filename = "???"
                         lineno = "???"
 
-                error(_("File %s line %s: %s") % (filename, lineno, e),
+                error(_("File %(filename)s line %(lineno)s: %(err)s") %
+                    {"filename": filename, "lineno": lineno, "err": e},
                     cmd="include")
                 return 1
 
@@ -790,7 +792,8 @@ def main_func():
                 error(e, cmd=subcommand)
                 ret = 1
         except getopt.GetoptError, e:
-                usage(_("illegal %s option -- %s") % (subcommand, e.opt))
+                usage(_("illegal %(cmd)s option -- %(opt)s") % \
+                    {"cmd": subcommand, "opt": e.opt})
 
         return ret
 

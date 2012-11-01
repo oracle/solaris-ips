@@ -1711,7 +1711,10 @@ class PkgSolver(object):
                 tag = _("Reason:")
 
                 if fmri in already_seen:
-                        reason = _("%s  %s  [already rejected; see above]") % (indent, tag)
+                        # note to translators: 'indent' will be a series of
+                        # whitespaces.
+                        reason = _("%(indent)s  %(tag)s  [already rejected; "
+                            "see above]") % {"indent": indent, "tag": tag}
                         return fmri_id, [reason]
 
                 already_seen.add(fmri)

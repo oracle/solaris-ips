@@ -37,6 +37,7 @@ import urllib
 import py_compile
 import hashlib
 import time
+import StringIO
 
 from distutils.errors import DistutilsError, DistutilsFileError
 from distutils.core import setup
@@ -730,7 +731,7 @@ class install_data_func(_install_data):
                         rm_f(dst)
                         os.symlink(src, dst)
 
-def run_cmd(args, swdir, updenv=None, ignerr=False):
+def run_cmd(args, swdir, updenv=None, ignerr=False, savestderr=None):
                 if updenv:
                         # use temp environment modified with the given dict
                         env = os.environ.copy()
@@ -741,6 +742,8 @@ def run_cmd(args, swdir, updenv=None, ignerr=False):
                 if ignerr:
                         # send stderr to devnull
                         stderr = open(os.devnull)
+                elif savestderr:
+                        stderr = savestderr
                 else:
                         # just use stderr of this (parent) process
                         stderr = None
@@ -876,6 +879,50 @@ def intltool_merge(src, dst):
         ]
         print " ".join(args)
         run_cmd(args, os.getcwd(), updenv={"LC_ALL": "C"})
+
+def i18n_check():
+        """Checks for common i18n messaging bugs in the source."""
+
+        src_files = []
+        # A list of the i18n errors we check for in the code
+        common_i18n_errors = [
+            # This checks that messages with multiple parameters are always
+            # written using "%(name)s" format, rather than just "%s"
+            "format string with unnamed arguments cannot be properly localized"
+        ]
+
+        for line in open("po/POTFILES.in", "r").readlines():
+                if line.startswith("["):
+                        continue
+                if line.startswith("#"):
+                        continue
+                src_files.append(line.rstrip())
+
+        args = [
+            "/usr/gnu/bin/xgettext", "--from-code=UTF-8", "-o", "/dev/null"]
+        args += src_files
+
+        xgettext_output_path = tempfile.mkstemp()[1]
+        xgettext_output = open(xgettext_output_path, "w")
+        run_cmd(args, os.getcwd(), updenv={"LC_ALL": "C"},
+            savestderr=xgettext_output)
+
+        found_errs = False
+        i18n_errs = open("po/i18n_errs.txt", "w")
+        for line in open(xgettext_output_path, "r").readlines():
+                for err in common_i18n_errors:
+                        if err in line:
+                                i18n_errs.write(line)
+                                found_errs = True
+        i18n_errs.close()
+        if found_errs:
+                print >> sys.stderr, \
+"The following i18n errors were detected and should be corrected:\n" \
+"(this list is saved in po/i18n_errs.txt)\n"
+                for line in open("po/i18n_errs.txt", "r"):
+                        print >> sys.stderr, line.rstrip()
+                sys.exit(1)
+        os.remove(xgettext_output_path)
 
 def msgfmt(src, dst):
         if not dep_util.newer(src, dst):
@@ -1227,6 +1274,7 @@ class build_data_func(Command):
         def run(self):
                 # Anything that gets created here should get deleted in
                 # clean_func.run() below.
+                i18n_check()
                 for f in intl_files:
                         intltool_merge(f, f[:-3])
 
@@ -1292,6 +1340,7 @@ class clean_func(_clean):
                 rm_f("gui/help/C/pkg_help.pot")
 
                 rm_f("gui/help/package-manager-__LOCALE__.omf")
+                rm_f("po/i18n_errs.txt")
 
 class clobber_func(Command):
         user_options = []

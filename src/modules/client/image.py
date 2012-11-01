@@ -361,8 +361,9 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                 """A list of strings decribing errors encountered while parsing
                 trust anchors."""
 
-                return [_("%s is expected to be a certificate but could not be "
-                    "parsed.  The error encountered was:\n\t%s") % (p, e)
+                return [_("%(path)s is expected to be a certificate but could "
+                    "not be parsed.  The error encountered was:\n\t%(err)s") %
+                    {"path": p, "err": e}
                     for p, e in self.__bad_trust_anchors
                 ]
 

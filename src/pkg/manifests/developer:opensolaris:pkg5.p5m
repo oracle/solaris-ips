@@ -49,6 +49,7 @@ depend type=require fmri=pkg:/runtime/python-27
 depend type=require fmri=pkg:/system/header
 depend type=require fmri=pkg:/system/linker
 depend type=require fmri=pkg:/system/locale/extra
+depend type=require fmri=pkg:/text/gnu-gettext
 depend type=require fmri=pkg:/text/locale
 depend type=require fmri=pkg:/text/tidy
 depend type=require fmri=pkg:/web/server/apache-22

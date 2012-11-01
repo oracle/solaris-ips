@@ -239,13 +239,15 @@ def read_manifests(names, lint_logger):
                         f = codecs.open(filename, "rb", "utf-8")
                         data = f.read()
                 except UnicodeDecodeError, e:
-                        lint_logger.critical(_("Invalid file %s: "
-                            "manifest not encoded in UTF-8: %s") %
-                            (filename, e), msgid="lint.manifest002")
+                        lint_logger.critical(_("Invalid file %(file)s: "
+                            "manifest not encoded in UTF-8: %(err)s") %
+                            {"file": filename, "err": e},
+                            msgid="lint.manifest002")
                         continue
                 except IOError, e:
                         lint_logger.critical(_("Unable to read manifest file "
-                        "%s: %s") % (filename, e), msgid="lint.manifest001")
+                            "%(file)s: %(err)s") % {"file": filename, "err": e},
+                            msgid="lint.manifest001")
                         continue
                 lines.append(data)
                 linecnt = len(data.splitlines())

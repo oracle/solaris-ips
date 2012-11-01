@@ -551,14 +551,16 @@ class Transaction(object):
                         raise TransactionOperationError(_("A package may not "
                             " be marked for both obsoletion and renaming."))
                 elif self.obsolete and action.name not in ("set", "signature"):
-                        raise TransactionOperationError(_("A '%s' action cannot"
-                            " be present in an obsolete package: %s") %
-                            (action.name, action))
+                        raise TransactionOperationError(_("A '%(type)s' action "
+                            "cannot be present in an obsolete package: "
+                            "%(action)s") %
+                            {"type": action.name, "action": action})
                 elif self.renamed and action.name not in \
                     ("depend", "set", "signature"):
-                        raise TransactionOperationError(_("A '%s' action cannot"
-                            " be present in a renamed package: %s") %
-                            (action.name, action))
+                        raise TransactionOperationError(_("A '%(type)s' action "
+                            "cannot be present in a renamed package: "
+                            "%(action)s") %
+                            {"type": action.name, "action": action})
 
                 # Now that the action is known to be sane, we can add it to the
                 # manifest.

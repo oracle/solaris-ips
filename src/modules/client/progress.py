@@ -450,9 +450,12 @@ class GoalTrackerItem(TrackerItem):
 
                 # See if we indeed met our goal.
                 if goalcheck and not self.metgoal():
-                        exstr = _("Goal mismatch '%s': "
-                            "expected goal: %s, current value: %s") % \
-                            (self.name, str(self.goalitems), str(self.items))
+                        exstr = _("Goal mismatch '%(name)s': "
+                            "expected goal: %(expected)s, "
+                            "current value: %(current)s") % \
+                            {"name": self.name,
+                            "expected": self.goalitems,
+                            "current": self.items}
                         logger.error("\n" + exstr)
                         assert self.metgoal(), exstr
 
@@ -1751,8 +1754,15 @@ class CommandLineProgressTracker(ProgressTracker):
                 if self.major_phase == self.PHASE_UTILITY:
                         return ""
 
-                return _("%*s: ") % (self.phase_max_width,
-                    self.phase_names[self.major_phase])
+                # The following string was originally expressed as
+                # "%*s: " % \
+                #     (self.phase_max_width, self.phase_names[self.major_phase])
+                # however xgettext incorrectly flags this as an improper use of
+                # non-parameterized messages, which gets detected as an error
+                # during our build.  So instead, we express the string using
+                # an equivalent <str>.format(..) function
+                s = _("{phase:>%d}: ") % self.phase_max_width
+                return s.format(phase=self.phase_names[self.major_phase])
 
         #
         # Helper routines
@@ -1859,8 +1869,10 @@ class CommandLineProgressTracker(ProgressTracker):
                 # adjusts the output based on the major phase.
                 #
                 self._pe.cprint(self._phase_prefix() +
-                    _("Fetching manifests: %s  %d%% complete") %
-                    (self.mfst_fetch.pair(), self.mfst_fetch.pctdone()))
+                    _("Fetching manifests: %(num)s  %(pctcomplete)d%% "
+                    "complete") %
+                    {"num": self.mfst_fetch.pair(),
+                    "pctcomplete": self.mfst_fetch.pctdone()})
 
         def _mfst_commit(self, outspec):
                 # For now, manifest commit is hard to handle in this
@@ -1906,15 +1918,19 @@ class CommandLineProgressTracker(ProgressTracker):
                         mbs = format_pair("%.1f", self.dl_bytes.items,
                             self.dl_bytes.goalitems, scale=(1024 * 1024))
                         self._pe.cprint(
-                            _("Download: %s items  %sMB  %d%% complete %s") %
-                            (self.dl_files.pair(), mbs, self.dl_bytes.pctdone(),
-                            speedstr))
+                            _("Download: %(num)s items  %(mbs)sMB  "
+                            "%(pctcomplete)d%% complete %(speed)s") %
+                            {"num": self.dl_files.pair(), "mbs": mbs,
+                            "pctcomplete": self.dl_bytes.pctdone(),
+                            "speed": speedstr})
                 else:
                         # 'last'
                         goal = misc.bytes_to_str(self.dl_bytes.goalitems)
                         self.__generic_done(
-                            msg=_("Download: Completed %s in %.2f seconds %s") %
-                            (goal, self.dl_estimator.elapsed(), speedstr))
+                            msg=_("Download: Completed %(num)s in %(sec).2f "
+                            "seconds %(speed)s") %
+                            {"num": goal, "sec": self.dl_estimator.elapsed(),
+                            "speed": speedstr})
 
         def _republish_output(self, outspec):
                 if "startpkg" in outspec.changed:
@@ -1934,16 +1950,18 @@ class CommandLineProgressTracker(ProgressTracker):
                 if outspec.last:
                         goal = misc.bytes_to_str(self.archive_bytes.goalitems)
                         self.__generic_done(
-                            msg=_("Archiving: Completed %s in %.2f seconds") %
-                            (goal, self.archive_items.elapsed()))
+                            msg=_("Archiving: Completed %(num)s in %(secs).2f "
+                            "seconds") %
+                            {"num": goal, "secs": self.archive_items.elapsed()})
                         return
 
                 mbs = format_pair("%.1f", self.archive_bytes.items,
                     self.archive_bytes.goalitems, scale=(1024 * 1024))
                 self._pe.cprint(
-                    _("Archiving: %s items  %sMB  %d%% complete") %
-                    (self.archive_items.pair(), mbs,
-                    self.archive_bytes.pctdone()))
+                    _("Archiving: %(pair)s items  %(mbs)sMB  %(pctcomplete)d%% "
+                    "complete") %
+                    {"pair": self.archive_items.pair(), "mbs": mbs,
+                    "pctcomplete": self.archive_bytes.pctdone()})
 
         #
         # The progress tracking infrastructure wants to tell us about each
@@ -1960,9 +1978,10 @@ class CommandLineProgressTracker(ProgressTracker):
                     sum(x.items for x in self._actionitems.values())
                 total_goal = \
                     sum(x.goalitems for x in self._actionitems.values())
-                self._pe.cprint(self._phase_prefix() + _("%s actions (%s)") %
-                    (format_pair("%d", total_actions, total_goal),
-                    actionitem.name))
+                self._pe.cprint(self._phase_prefix() +
+                    _("%(num)s actions (%(type)s)") %
+                    {"num": format_pair("%d", total_actions, total_goal),
+                    "type": actionitem.name})
 
         def _act_output_all_done(self):
                 total_goal = \
@@ -1972,8 +1991,9 @@ class CommandLineProgressTracker(ProgressTracker):
                 if total_goal == 0:
                         return
                 self._pe.cprint(self._phase_prefix() +
-                    _("Completed %d actions in %.2f seconds.") %
-                    (total_goal, total_time))
+                    _("Completed %(numactions)d actions in %(time).2f "
+                    "seconds.") %
+                    {"numactions": total_goal, "time": total_time})
 
         def _job_output(self, outspec, jobitem):
                 if outspec.first:
@@ -2034,9 +2054,11 @@ class CommandLineProgressTracker(ProgressTracker):
                         return
 
                 running = " ".join([str(i) for i in self.linked_running])
-                msg = _("Linked images: %s done; %d working: %s") % \
-                    (format_pair("%d", done, self.linked_total),
-                    len(self.linked_running), running)
+                msg = _("Linked images: %(pair)s done; %(numworking)d working: "
+                    "%(running)s") % \
+                    {"pair": format_pair("%d", done, self.linked_total),
+                    "numworking": len(self.linked_running),
+                    "running": running}
                 self._pe.cprint(self._phase_prefix() + msg)
 
         def _li_recurse_progress_output(self, lin):
@@ -2206,8 +2228,10 @@ class FancyUNIXProgressTracker(ProgressTracker):
                 extra_info = ""
                 if isinstance(planitem, GoalTrackerItem):
                         extra_info = ": %s" % planitem.pair()
-                msg = _("Creating Plan (%s%s): %s") % \
-                    (planitem.name, extra_info, self._spinner())
+                msg = _("Creating Plan (%(name)s%(info)s): %(spinner)s") % \
+                    {"name": planitem.name,
+                    "info": extra_info,
+                    "spinner": self._spinner()}
                 self._pe.cprint(msg, sep='', end='', erase=True)
 
         def _plan_output_all_done(self):
@@ -2228,12 +2252,19 @@ class FancyUNIXProgressTracker(ProgressTracker):
                 # the output based on the major mode.
                 #
                 if self.major_phase == self.PHASE_PLAN:
-                        msg = _("Creating Plan (%s %s) %c") % \
-                            (self.mfst_fetch.name, self.mfst_fetch.pair(),
-                                self._spinner())
+                        msg = _("Creating Plan (%(name)s %(pair)s) "
+                            "%(spinner)c") % \
+                            {"name": self.mfst_fetch.name,
+                            "pair": self.mfst_fetch.pair(),
+                            "spinner": self._spinner()}
                 if self.major_phase == self.PHASE_UTILITY:
-                        msg = _("%s (%s) %c") % (self.mfst_fetch.name,
-                            self.mfst_fetch.pair(), self._spinner())
+                        # note to translators: the position of these strings
+                        # should probably be left alone, as they form part of
+                        # the progress output text.
+                        msg = _("%(name)s (%(fetchpair)s) %(spinchar)c") % {
+                            "name": self.mfst_fetch.name,
+                            "fetchpair": self.mfst_fetch.pair(),
+                            "spinchar": self._spinner()}
                 self._pe.cprint(msg, sep='', end='', erase=True)
 
                 if outspec.last:
@@ -2477,10 +2508,12 @@ class FancyUNIXProgressTracker(ProgressTracker):
                 assert self.major_phase in self.li_phase_names, self.major_phase
 
                 running = " ".join([str(i) for i in self.linked_running])
-                msg = _("%s linked: %s done; %d working: %s") % \
-                    (self.li_phase_names[self.major_phase],
-                    format_pair("%d", done, self.linked_total),
-                    len(self.linked_running), running)
+                msg = _("%(phase)s linked: %(numdone)s done; "
+                    "%(numworking)d working: %(running)s") % \
+                    {"phase": self.li_phase_names[self.major_phase],
+                    "numdone": format_pair("%d", done, self.linked_total),
+                    "numworking": len(self.linked_running),
+                    "running": running}
                 self._pe.cprint(msg, erase=True)
 
                 self.__linked_spinners = list(

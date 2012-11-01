@@ -53,9 +53,11 @@ class MissingFile(DependencyAnalysisError):
                 if not self.dirs:
                         return _("Couldn't find '%s'") % self.file_path
                 else:
-                        return _("Couldn't find '%s' in any of the specified "
-                            "search directories:\n%s") % (self.file_path,
-                            "\n".join(["\t" + d for d in sorted(self.dirs)]))
+                        return _("Couldn't find '%(path)s' in any of the "
+                            "specified search directories:\n%(dirs)s") % \
+                            {"path": self.file_path,
+                            "dirs": "\n".join(
+                            ["\t" + d for d in sorted(self.dirs)])}
 
 class MultipleDefaultRunpaths(DependencyAnalysisError):
         """Exception that is raised when multiple $PGKDEPEND_RUNPATH tokens

@@ -1352,8 +1352,9 @@ def opts_parse(op, api_inst, args, table, pargs_limit, usage_cb):
                         if opt == opts_seen[k]:
                                 usage_cb(_("option '%s' repeated") % opt,
                                     cmd=op)
-                        usage_cb(_("'%s' and '%s' have the same meaning") %
-                            (opts_seen[k], opt), cmd=op)
+                        usage_cb(_("'%(optA)s' and '%(optB)s' have the same "
+                            "meaning") % {"optA": opts_seen[k], "optB": opt},
+                            cmd=op)
                 opts_seen[k] = opt
 
                 # update the return dict value

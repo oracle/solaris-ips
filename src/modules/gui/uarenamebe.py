@@ -220,8 +220,9 @@ class RenameBeAfterUpdateAll:
         def __g_be_rename_problem_dialog(new_name, orig_name):
                 msg_type = gtk.MESSAGE_INFO
                 error_msg = _("Could not change the BE name to:\n\t"
-                    "%s\n\nThe following name will be used instead:"
-                    "\n\t%s" % (new_name, orig_name))
+                    "%(targ)s\n\nThe following name will be used instead:"
+                    "\n\t%(instead)s") % \
+                    {"targ": new_name, "instead": orig_name}
                 msg_title = _("BE Name")
                 gui_misc.error_occurred(None, error_msg, msg_title, msg_type)
 

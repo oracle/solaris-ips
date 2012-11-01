@@ -1372,7 +1372,8 @@ def __api_execute_plan(operation, api_inst):
                 api_inst.execute_plan()
                 rval = EXIT_OK
         except RuntimeError, e:
-                error(_("%s failed: %s") % (operation, e))
+                error(_("%(operation)s failed: %(err)s") %
+                    {"operation": operation, "err": e})
                 rval = EXIT_OOPS
         except (api_errors.InvalidPlanError,
             api_errors.ActionExecutionError,
@@ -1382,8 +1383,8 @@ def __api_execute_plan(operation, api_inst):
                 error("\n" + str(e))
                 rval = EXIT_OOPS
         except (api_errors.LinkedImageException), e:
-                error(_("%s failed (linked image exception(s)):\n%s") %
-                      (operation, str(e)))
+                error(_("%(operation)s failed (linked image exception(s)):\n"
+                    "%(err)s") % {"operation": operation, "err": e})
                 rval = e.lix_exitrv
         except api_errors.ImageUpdateOnLiveImageException:
                 error(_("%s cannot be done on live image") % operation)
@@ -1421,7 +1422,8 @@ def __api_execute_plan(operation, api_inst):
                 rval = EXIT_OOPS
         except Exception, e:
                 error(_("An unexpected error happened during "
-                    "%s: %s") % (operation, e))
+                    "%(operation)s: %(err)s") %
+                    {"operation": operation, "err": e})
                 raise
         finally:
                 exc_type = exc_value = exc_tb = None
@@ -1491,12 +1493,12 @@ def __api_plan_exception(op, noexecute, verbose, api_inst):
                 error(_("No image rooted at '%s'") % e.user_dir, cmd=op)
                 return EXIT_OOPS
         if e_type == api_errors.InventoryException:
-                error("\n" + _("%s failed (inventory exception):\n%s") % (op,
-                    e))
+                error("\n" + _("%(operation)s failed (inventory exception):\n"
+                    "%(err)s") % {"operation": op, "err": e})
                 return EXIT_OOPS
         if isinstance(e, api_errors.LinkedImageException):
-                error(_("%s failed (linked image exception(s)):\n%s") %
-                      (op, str(e)))
+                error(_("%(operation)s failed (linked image exception(s)):\n"
+                    "%(err)s") % {"operation": op, "err": e})
                 return e.lix_exitrv
         if e_type == api_errors.IpkgOutOfDateException:
                 msg(_("""\
@@ -2104,12 +2106,14 @@ def opts_cb_int(k, op, api_inst, opts, opts_new, minimum=None):
                 v = int(v)
         except (ValueError, TypeError):
                 # not a valid integer
-                err = _("invalid '%s' value: %s") % (k, v)
+                err = _("invalid '%(opt)s' value: %(val)s") % \
+                    {"opt": k, "val": v}
                 usage(err, cmd=op)
 
         # check the minimum bounds
         if minimum is not None and v < minimum:
-                err = _("'%s' must be >= %d") % (k, minimum)
+                err = _("'%(opt)s' must be >= %(minimum)d") % \
+                    {"opt": k, "minimum": minimum}
                 usage(err, cmd=op)
 
         # update the new options array to make the value an integer
@@ -2118,7 +2122,8 @@ def opts_cb_int(k, op, api_inst, opts, opts_new, minimum=None):
 def opts_cb_fd(k, op, api_inst, opts, opts_new):
         opts_cb_int(k, op, api_inst, opts, opts_new, minimum=0)
 
-        err = _("invalid '%s' value: %s") % (k, opts_new[k])
+        err = _("invalid '%(opt)s' value: %(optval)s") % \
+            {"opt": k, "optval": opts_new[k]}
         try:
                 os.fstat(opts_new[k])
         except OSError:
@@ -2519,8 +2524,8 @@ def change_variant(op, api_inst, pargs,
 
                 # make sure the user didn't specify duplicate variants
                 if name in variants:
-                        usage(_("%s: duplicate variant specified: %s") %
-                            (op, name))
+                        usage(_("%(subcmd)s: duplicate variant specified: "
+                            "%(variant)s") % {"subcmd": op, "variant": name})
                 variants[name] = value
 
         return __api_op(op, api_inst, _accept=accept, _li_ignore=li_ignore,
@@ -2983,8 +2988,10 @@ def __display_avoids(api_inst):
         for a in api_inst.get_avoid_list():
                 tracking = " ".join(a[1])
                 if tracking:
-                        logger.info(_("    %s (group dependency of '%s')")
-                            % (a[0], tracking))
+                        logger.info(_(
+                            "    %(avoid_pkg)s (group dependency of "
+                            "'%(tracking_pkg)s')")
+                            % {"avoid_pkg": a[0], "tracking_pkg": tracking})
                 else:
                         logger.info("    %s" % a[0])
 
@@ -4043,8 +4050,8 @@ def display_catalog_failures(cre, ignore_perms_failure=False):
         total = cre.total
         succeeded = cre.succeeded
 
-        txt = _("pkg: %s/%s catalogs successfully updated:") % (succeeded,
-            total)
+        txt = _("pkg: %(succeeded)s/%(total)s catalogs successfully "
+            "updated:") % {"succeeded": succeeded, "total": total}
         if cre.failed:
                 # This ensures that the text gets printed before the errors.
                 logger.error(txt)
@@ -6609,7 +6616,8 @@ to perform the requested operation.  Details follow:\n\n%s""") % __e)
                 __ret = handle_errors(_wrapper, non_wrap_print=False)
                 s = ""
                 if __ret == 99:
-                        s += _("\n%s%s") % (__e, traceback_str)
+                        s += _("\n%(err)s%(stacktrace)s") % \
+                        {"err": __e, "stacktrace": traceback_str}
 
                 s += _("\n\nDespite the error while indexing, the operation "
                     "has completed successfuly.")

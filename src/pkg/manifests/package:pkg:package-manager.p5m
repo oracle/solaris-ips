@@ -18,7 +18,7 @@
 #
 # CDDL HEADER END
 #
-# Copyright (c) 2010, 2011, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2010, 2012, Oracle and/or its affiliates. All rights reserved.
 #
 
 set name=pkg.fmri value=pkg:/package/pkg/package-manager@$(PKGVERS)
@@ -132,70 +132,6 @@ dir  path=usr/share/icons/hicolor/48x48/apps
 file path=usr/share/icons/hicolor/48x48/apps/packagemanager.png
 dir  path=usr/share/icons/hicolor/48x48/mimetypes
 file path=usr/share/icons/hicolor/48x48/mimetypes/gnome-mime-application-vnd.pkg5.info.png
-dir  path=usr/share/locale
-dir  path=usr/share/locale/ar
-dir  path=usr/share/locale/ar/LC_MESSAGES
-file path=usr/share/locale/ar/LC_MESSAGES/pkg.mo
-dir  path=usr/share/locale/ca
-dir  path=usr/share/locale/ca/LC_MESSAGES
-file path=usr/share/locale/ca/LC_MESSAGES/pkg.mo
-dir  path=usr/share/locale/cs
-dir  path=usr/share/locale/cs/LC_MESSAGES
-file path=usr/share/locale/cs/LC_MESSAGES/pkg.mo
-dir  path=usr/share/locale/de
-dir  path=usr/share/locale/de/LC_MESSAGES
-file path=usr/share/locale/de/LC_MESSAGES/pkg.mo
-dir  path=usr/share/locale/es
-dir  path=usr/share/locale/es/LC_MESSAGES
-file path=usr/share/locale/es/LC_MESSAGES/pkg.mo
-dir  path=usr/share/locale/fr
-dir  path=usr/share/locale/fr/LC_MESSAGES
-file path=usr/share/locale/fr/LC_MESSAGES/pkg.mo
-dir  path=usr/share/locale/he
-dir  path=usr/share/locale/he/LC_MESSAGES
-file path=usr/share/locale/he/LC_MESSAGES/pkg.mo
-dir  path=usr/share/locale/hu
-dir  path=usr/share/locale/hu/LC_MESSAGES
-file path=usr/share/locale/hu/LC_MESSAGES/pkg.mo
-dir  path=usr/share/locale/id
-dir  path=usr/share/locale/id/LC_MESSAGES
-file path=usr/share/locale/id/LC_MESSAGES/pkg.mo
-dir  path=usr/share/locale/it
-dir  path=usr/share/locale/it/LC_MESSAGES
-file path=usr/share/locale/it/LC_MESSAGES/pkg.mo
-dir  path=usr/share/locale/ja
-dir  path=usr/share/locale/ja/LC_MESSAGES
-file path=usr/share/locale/ja/LC_MESSAGES/pkg.mo
-dir  path=usr/share/locale/ko
-dir  path=usr/share/locale/ko/LC_MESSAGES
-file path=usr/share/locale/ko/LC_MESSAGES/pkg.mo
-dir  path=usr/share/locale/nl
-dir  path=usr/share/locale/nl/LC_MESSAGES
-file path=usr/share/locale/nl/LC_MESSAGES/pkg.mo
-dir  path=usr/share/locale/pl
-dir  path=usr/share/locale/pl/LC_MESSAGES
-file path=usr/share/locale/pl/LC_MESSAGES/pkg.mo
-dir  path=usr/share/locale/pt_BR
-dir  path=usr/share/locale/pt_BR/LC_MESSAGES
-file path=usr/share/locale/pt_BR/LC_MESSAGES/pkg.mo
-dir  path=usr/share/locale/ru
-dir  path=usr/share/locale/ru/LC_MESSAGES
-file path=usr/share/locale/ru/LC_MESSAGES/pkg.mo
-dir  path=usr/share/locale/sk
-dir  path=usr/share/locale/sk/LC_MESSAGES
-file path=usr/share/locale/sk/LC_MESSAGES/pkg.mo
-dir  path=usr/share/locale/sv
-dir  path=usr/share/locale/sv/LC_MESSAGES
-file path=usr/share/locale/sv/LC_MESSAGES/pkg.mo
-dir  path=usr/share/locale/zh_CN
-dir  path=usr/share/locale/zh_CN/LC_MESSAGES
-file path=usr/share/locale/zh_CN/LC_MESSAGES/pkg.mo
-dir  path=usr/share/locale/zh_HK
-dir  path=usr/share/locale/zh_HK/LC_MESSAGES
-file path=usr/share/locale/zh_HK/LC_MESSAGES/pkg.mo
-dir  path=usr/share/locale/zh_TW
-dir  path=usr/share/locale/zh_TW/LC_MESSAGES
-file path=usr/share/locale/zh_TW/LC_MESSAGES/pkg.mo
 dir  path=usr/share/man
 dir  path=usr/share/man/ja_JP.UTF-8
 dir  path=usr/share/man/ja_JP.UTF-8/man1

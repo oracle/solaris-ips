@@ -550,10 +550,11 @@ for the current image's architecture, zone type, and/or other variant:""")
                         res += [ s % p for p in self.illegal ]
 
                 if self.badarch:
-                        s = _("'%s' supports the following architectures: %s")
+                        s = _("'%(p)s' supports the following architectures: "
+                            "%(archs)s")
                         a = _("Image architecture is defined as: %s")
-                        res += [ s % (self.badarch[0],
-                            ", ".join(self.badarch[1]))]
+                        res += [ s % {"p": self.badarch[0],
+                            "archs": ", ".join(self.badarch[1])}]
                         res += [ a % (self.badarch[2])]
 
                 s = _("'%(p)s' depends on obsolete package '%(op)s'")
@@ -806,8 +807,8 @@ class InconsistentActionAttributeError(ConflictingActionError):
                                 for pkg in sorted(pkglist):
                                         s += _("        %s\n") % pkg
                         else:
-                                t = _("    %d packages deliver '%s', including:\n")
-                                s += t % (num, action)
+                                t = _("    %(n)d packages deliver '%(a)s', including:\n")
+                                s += t % {"n": num, "a": action}
                                 for pkg in sorted(pkglist)[:5]:
                                         s += _("        %s\n") % pkg
 
@@ -1453,7 +1454,8 @@ class RetrievalError(ApiException):
         def __str__(self):
                 if self.location:
                         return _("Error encountered while retrieving data from "
-                            "'%s':\n%s") % (self.location, self.data)
+                            "'%(location)s':\n%(data)s") % \
+                            {"location": self.location, "data": self.data}
                 return _("Error encountered while retrieving data from: %s") % \
                     self.data
 

@@ -587,9 +587,9 @@ beadm activate %(be_name_clone)s
                                 self.img.history.log_operation_error(error=e)
                                 raise e
 
-                        logger.error(_("%s failed to be updated. No changes "
-                            "have been made to %s.") % (self.be_name,
-                            self.be_name))
+                        logger.error(_("%(bename)s failed to be updated. No "
+                            "changes have been made to %(bename)s.") %
+                            {"bename": self.be_name})
 
         def destroy_snapshot(self):
 
@@ -655,10 +655,11 @@ beadm activate %(be_name_clone)s
 
                         self.destroy_snapshot()
 
-                        logger.error(_("The Boot Environment %s failed to be "
-                            "updated. A snapshot was taken before the failed "
-                            "attempt and has been restored so no changes have "
-                            "been made to %s.") % (self.be_name, self.be_name))
+                        logger.error(_("The Boot Environment %(bename)s failed "
+                            "to be updated. A snapshot was taken before the "
+                            "failed attempt and has been restored so no "
+                            "changes have been made to %(bename)s.") %
+                            {"bename": self.be_name})
 
         def activate_install_uninstall(self):
                 """Activate an install/uninstall attempt. Which just means

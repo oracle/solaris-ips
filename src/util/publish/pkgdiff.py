@@ -144,7 +144,8 @@ def main_func():
         # of the same name have the same values defined.
         for k in set(v1.keys()) & set(v2.keys()):
                 if v1[k] != v2[k]:
-                        error(_("Manifests support different variants %s %s") % (v1, v2))
+                        error(_("Manifests support different variants "
+                            "%(v1)s %(v2)s") % {"v1": v1, "v2": v2})
 
         # Now, get a list of all possible variant values, including None
         # across all variants and both manifests

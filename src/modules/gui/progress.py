@@ -142,9 +142,10 @@ class GuiProgressTracker(progress.ProgressTracker):
                 self.display_download_info()
                 if "startpkg" in outspec.changed:
                         self.update_details_text(
-                            _("Package %d of %d: %s\n") % (
-                            self.dl_pkgs.items + 1,
-                            self.dl_pkgs.goalitems, self.dl_pkgs.curinfo),
+                            _("Package %(num)d of %(goal)d: %(info)s\n") % {
+                            "num": self.dl_pkgs.items + 1,
+                            "goal": self.dl_pkgs.goalitems,
+                            "info": self.dl_pkgs.curinfo},
                             "level1")
 
                 if outspec.last:
@@ -223,9 +224,11 @@ class GuiProgressTracker(progress.ProgressTracker):
                 i = "level1" if self.indent else ""
 
                 running = " ".join([str(s) for s in self.linked_running])
-                msg = _("Linked images: %s done; %d working: %s\n") % \
-                    (progress.format_pair("%d", done, self.linked_total),
-                    len(self.linked_running), running)
+                msg = _("Linked images: %(num)s done; %(numworking)d working: "
+                    "%(running)s\n") % \
+                    {"num": progress.format_pair("%d", done, self.linked_total),
+                    "numworking": len(self.linked_running),
+                    "running": running}
                 self.update_details_text(msg, i)
 
         def _li_recurse_progress_output(self, lin):

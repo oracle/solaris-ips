@@ -257,7 +257,7 @@ class TestPkgImageCreateBasics(pkg5unittest.ManyDepotTestCase):
                 saved_sysrepo_env = os.environ.get("PKG_SYSREPO_URL")
                 os.environ["PKG_SYSREPO_URL"] = "http://localhost:1"
                 self.pkg("image-create --no-refresh --set-property \
-                    use-system-repo=true %s"  %(img_path))
+                    use-system-repo=true %s" % img_path)
                 shutil.rmtree(img_path)
                 if saved_sysrepo_env:
                         os.environ["PKG_SYSREPO_URL"] = saved_sysrepo_env

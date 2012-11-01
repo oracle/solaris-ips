@@ -42,7 +42,8 @@ class BadElfFile(base.DependencyAnalysisError):
                 self.ex = ex
 
         def __str__(self):
-                return _("%s had this elf error:%s") % (self.fp, self.ex)
+                return _("%(file)s had this elf error:%(err)s") % \
+                    {"file": "self.fp", "err": self.ex}
 
 class UnsupportedDynamicToken(base.DependencyAnalysisError):
         """Exception that is used for elf dependencies which have a dynamic

@@ -391,8 +391,10 @@ class Beadmin:
                                 msg += _("<b>Couldn't rename Boot "
                                     "Environments:</b>\n")
                                 for orig in not_renamed:
-                                        msg += _("%s <b>to</b> %s\n") % (orig, \
-                                            not_renamed.get(orig))
+                                        msg += _("%(src)s <b>to</b> "
+                                            "%(targ)s\n") % \
+                                            {"src": orig,
+                                            "targ": not_renamed.get(orig)}
                         gobject.idle_add(self.__error_occurred, msg)
                         return
                 gobject.idle_add(self.__on_cancel_be_clicked, None)

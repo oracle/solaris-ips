@@ -396,8 +396,10 @@ def get_api_object(img_dir, progtrack, parent_dialog):
         try:
                 api_o = ngao(img_dir, progtrack)
         except api_errors.VersionException, ex:
-                message = _("Version mismatch: expected version %d, got version %d") % \
-                    (ex.expected_version, ex.received_version)
+                message = _("Version mismatch: expected version %(expected)d, "
+                    "got version %(found)d") % \
+                    {"expected": ex.expected_version,
+                    "found": ex.received_version}
         except api_errors.ImageNotFoundException, ex:
                 message = _("%s is not an install image") % ex.user_dir
         except api_errors.ImageLockedError, ex:

@@ -747,7 +747,8 @@ def transfer_pkgs(pargs, target, list_newest, all_versions, all_timestamps,
                                         os.makedirs(basedir, misc.PKG_DIR_MODE)
                                 except Exception, e:
                                         error(_("Unable to create basedir "
-                                            "'%s': %s") % (basedir, e))
+                                            "'%(dir)s': %(err)s") %
+                                            {"dir": basedir, "err": e})
                                         abort()
 
                 xport_cfg.pkg_root = basedir

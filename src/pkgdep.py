@@ -489,8 +489,13 @@ def pkgdeps_to_dir(pkg_deps, manifest_paths, out_dir, suffix, echo_manifest):
                 try:
                         os.makedirs(out_dir)
                 except EnvironmentError, e:
-                        emsg(_("Out dir %s does not exist and could not be "
-                            "created. Error is: %s") % e)
+                        e_dic = {"dir": out_dir}
+                        if len(e.args) > 0:
+                                e_dic["err"] = e.args[1]
+                        else:
+                                e_dic["err"] = e.args[0]
+                        emsg(_("Out dir %(out_dir)s does not exist and could "
+                            "not be created. Error is: %(err)s") % e_dic)
                         return 1
         if suffix and suffix[0] != ".":
                 suffix = "." + suffix
