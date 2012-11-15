@@ -143,7 +143,7 @@ class CheckForUpdates:
                         # parent.
                         #
 
-                        # Unused variable; pylint: disable-msg=W0612
+                        # Unused variable; pylint: disable=W0612
                         for pd in self.api_obj.gen_plan_update(
                             refresh_catalogs=True, noexecute=True,
                             force=True, li_ignore=[]):
@@ -179,9 +179,9 @@ class CheckForUpdates:
                         if len(info) == 0:
                                 logger.debug("No cache")
                                 return enumerations.UPDATES_UNDETERMINED
-                        # Non-portable API used; pylint: disable-msg=E0901
+                        # Non-portable API used; pylint: disable=E0901
                         utsname = os.uname()
-                        # pylint: disable-msg=E1103
+                        # pylint: disable=E1103
                         if info.get("version") != CACHE_VERSION:
                                 logger.debug("Cache version mismatch: %s" %
                                     (info.get("version") + " " + CACHE_VERSION))
@@ -212,7 +212,7 @@ class CheckForUpdates:
                                 n_updates = info.get("updates")
                                 n_installs = info.get("installs")
                                 n_removes = info.get("removes")
-                        # pylint: enable-msg=E1103
+                        # pylint: enable=E1103
                         if self.check_cache_only:
                                 print "n_updates: %d" % n_updates
                                 print "n_installs: %d" % n_installs
@@ -250,7 +250,7 @@ class CheckForUpdates:
                                         n_removes += 1
                 dump_info = {}
                 dump_info["version"] = CACHE_VERSION
-                # Non-portable API used; pylint: disable-msg=E0901
+                # Non-portable API used; pylint: disable=E0901
                 dump_info["os_release"] = os.uname()[2]
                 dump_info["os_version"] = os.uname()[3]
                 dump_info["updates_available"] = stuff_to_do
@@ -273,7 +273,7 @@ def main_func():
         set_check_cache = False
         image_dir = None 
         try:
-                # Unused variable pargs; pylint: disable-msg=W0612
+                # Unused variable pargs; pylint: disable=W0612
                 opts, pargs = getopt.getopt(sys.argv[1:], "hdnacR:",
                     ["help", "debug", "nice", "checkupdates-cache",
                     "image-dir="])
@@ -292,7 +292,7 @@ Use -c (--checkupdates-cache) to check for updates from cache only (output resul
 Use -R (--image-dir) to specify image directory (defaults to '/')"""
                         sys.exit(0)
                 elif opt in ( "-n", "--nice"):
-                        # Non-portable API used; pylint: disable-msg=E0901
+                        # Non-portable API used; pylint: disable=E0901
                         os.nice(20)
                 elif opt in ("-d", "--debug"):
                         global_settings.verbose = True

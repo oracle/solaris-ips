@@ -37,6 +37,10 @@ test := TARGET = test
 test-verbose := TARGET = test-verbose
 test-generate := TARGET = test-generate
 
+PYLINT_VER_CMD = /usr/bin/pkg info pkg:/developer/python/pylint | \
+	/usr/bin/grep Version | \
+	/usr/bin/awk -F: '{print $$2}' | /usr/bin/sed -e 's/ //g'
+
 SUBDIRS=zoneproxy tsol
 
 all: $(SUBDIRS)
@@ -66,7 +70,7 @@ clint:
 	@cd zoneproxy; pwd; make lint
 
 pylint: install
-	$(PYTHON) setup.py pylint
+	PYLINT_VER=$(PYLINT_VER_CMD:sh) $(PYTHON) setup.py pylint
 
 #
 # This rule propagates the current make target through all of the

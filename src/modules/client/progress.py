@@ -25,7 +25,7 @@
 #
 
 #
-# Missing docstring; pylint: disable-msg=C0111
+# Missing docstring; pylint: disable=C0111
 #
 
 import inspect
@@ -445,7 +445,7 @@ class GoalTrackerItem(TrackerItem):
 
         def done(self, goalcheck=True):
                 # Arguments number differs from overridden method;
-                #     pylint: disable-msg=W0221
+                #     pylint: disable=W0221
                 TrackerItem.done(self)
 
                 # See if we indeed met our goal.
@@ -511,7 +511,7 @@ class GoalTrackerItem(TrackerItem):
 # the required methods at __init__ time.
 #
 def pt_abstract(func):
-        # Unused argument 'args', 'kwargs'; pylint: disable-msg=W0613
+        # Unused argument 'args', 'kwargs'; pylint: disable=W0613
         @wraps(func)
         def enforce_abstract(*args, **kwargs):
                 raise NotImplementedError("%s is abstract in "
@@ -529,7 +529,7 @@ def pt_abstract(func):
 #
 class ProgressTrackerBackend(object):
         # allow def func(args): pass
-        # More than one statement on a line; pylint: disable-msg=C0321
+        # More than one statement on a line; pylint: disable=C0321
 
         def __init__(self): pass
 
@@ -618,7 +618,7 @@ class ProgressTrackerFrontend(object):
         """This essentially abstract class forms the interface that other
         modules in the system use to record progress against various goals."""
 
-        # More than one statement on a line; pylint: disable-msg=C0321
+        # More than one statement on a line; pylint: disable=C0321
 
         # Major phases of operation
         PHASE_PREPLAN = 1
@@ -969,7 +969,7 @@ class ProgressTracker(ProgressTrackerFrontend, ProgressTrackerBackend):
                 self.reset()
 
         def reset_download(self):
-                # Attribute defined outside __init__; pylint: disable-msg=W0201
+                # Attribute defined outside __init__; pylint: disable=W0201
                 self.dl_mode = None
                 self.dl_caching = 0
                 self.dl_estimator = None
@@ -986,7 +986,7 @@ class ProgressTracker(ProgressTrackerFrontend, ProgressTrackerBackend):
                     GoalTrackerItem(_("Republish sent bytes"))
 
         def reset(self):
-                # Attribute defined outside __init__; pylint: disable-msg=W0201
+                # Attribute defined outside __init__; pylint: disable=W0201
                 self.major_phase = self.PHASE_PREPLAN
                 self.purpose = self.PURPOSE_NORMAL
 
@@ -1090,6 +1090,7 @@ class ProgressTracker(ProgressTrackerFrontend, ProgressTrackerBackend):
                 self.linked_total = 0
 
         def set_major_phase(self, majorphase):
+                # Attribute defined outside __init__; pylint: disable=W0201
                 self.major_phase = majorphase
 
         def flush(self):
@@ -1101,7 +1102,7 @@ class ProgressTracker(ProgressTrackerFrontend, ProgressTrackerBackend):
 
         def set_purpose(self, purpose):
                 op = self.purpose
-                self.purpose = purpose
+                self.purpose = purpose # pylint: disable=W0201
                 if op != self.purpose:
                         self._change_purpose(op, purpose)
 
@@ -1129,6 +1130,7 @@ class ProgressTracker(ProgressTrackerFrontend, ProgressTrackerBackend):
                 self.pub_refresh.reset()
                 self.pub_refresh.goalitems = pub_cnt
                 self.pub_refresh_bytes.reset()
+                # Attribute defined outside __init__; pylint: disable=W0201
                 self.refresh_full_refresh = full_refresh
                 self.refresh_target_catalog = target_catalog
                 if self.refresh_target_catalog:
@@ -1260,7 +1262,7 @@ class ProgressTracker(ProgressTrackerFrontend, ProgressTrackerBackend):
                 self.ver_pkgs.done()
 
         def archive_set_goal(self, arcname, nitems, nbytes):
-                self._archive_name = arcname
+                self._archive_name = arcname # pylint: disable=W0201
                 self.archive_items.goalitems = nitems
                 self.archive_bytes.goalitems = nbytes
 
@@ -1319,10 +1321,11 @@ class ProgressTracker(ProgressTrackerFrontend, ProgressTrackerBackend):
                         self.dl_files.items += nfiles
 
                 if cachehit:
+                        # attr defined outside __init__; pylint: disable=W0201
                         self.dl_caching += 1
                         self.dl_estimator.goalbytes -= nbytes
                 else:
-                        self.dl_caching = 0
+                        self.dl_caching = 0 # pylint: disable=W0201
                         self.dl_estimator.newdata(nbytes)
 
                 if self.dl_bytes.goalitems != 0:
@@ -1412,7 +1415,7 @@ class ProgressTracker(ProgressTrackerFrontend, ProgressTrackerBackend):
                         self._job_output(OutSpec(last=True), jobitem)
 
         def republish_set_goal(self, npkgs, ngetbytes, nsendbytes):
-                self.dl_mode = self.DL_MODE_REPUBLISH
+                self.dl_mode = self.DL_MODE_REPUBLISH # pylint: disable=W0201
 
                 self.repub_pkgs.goalitems = npkgs
                 self.repub_send_bytes.goalitems = nsendbytes
@@ -1420,6 +1423,7 @@ class ProgressTracker(ProgressTrackerFrontend, ProgressTrackerBackend):
                 self.dl_bytes.goalitems = ngetbytes
                 # We don't have a good value to set this to.
                 self.dl_files.goalitems = 1 << 64
+                # Attribute defined outside __init__; pylint: disable=W0201
                 self.dl_estimator = SpeedEstimator(self.dl_bytes.goalitems)
 
         def republish_start_pkg(self, pkgfmri, getbytes=None, sendbytes=None):
@@ -1491,7 +1495,7 @@ class ProgressTracker(ProgressTrackerFrontend, ProgressTrackerBackend):
                         self.repub_pkgs.printed = True
 
         def lint_next_phase(self, goalitems, lint_phasetype):
-                self.lint_phasetype = lint_phasetype
+                self.lint_phasetype = lint_phasetype # pylint: disable=W0201
                 if self.lint_phase is not None:
                         self._lint_output(OutSpec(last=True))
                 if self.lint_phase is None:
@@ -1501,6 +1505,7 @@ class ProgressTracker(ProgressTrackerFrontend, ProgressTrackerBackend):
                         phasename = _("Lint setup %d" % self.lint_phase)
                 else:
                         phasename = _("Lint phase %d" % self.lint_phase)
+                # Attribute defined outside __init__; pylint: disable=W0201
                 self.lintitems = GoalTrackerItem(phasename)
                 self.lintitems.goalitems = goalitems
                 self._lint_output(OutSpec(first=True))
@@ -1510,16 +1515,17 @@ class ProgressTracker(ProgressTrackerFrontend, ProgressTrackerBackend):
                 self._lint_output(OutSpec())
 
         def lint_done(self):
-                self.lint_phase = None
+                self.lint_phase = None # pylint: disable=W0201
                 if self.lintitems:
                         self._lint_output(OutSpec(last=True))
 
         def set_linked_name(self, lin):
                 """Called once an image determines its linked image name."""
-                self.linked_name = lin
+                self.linked_name = lin # pylint: disable=W0201
 
         def li_recurse_start(self, pkg_op, total):
                 """Called when we recurse into a child linked image."""
+                # Attribute defined outside __init__; pylint: disable=W0201
                 self.linked_pkg_op = pkg_op
                 self.linked_total = total
                 self._li_recurse_start_output()
@@ -1531,6 +1537,7 @@ class ProgressTracker(ProgressTrackerFrontend, ProgressTrackerBackend):
         def li_recurse_status(self, lin_running, done):
                 """Call to update the progress tracker with the list of
                 images being operated on."""
+                # Attribute defined outside __init__; pylint: disable=W0201
                 self.linked_running = sorted(lin_running)
                 self._li_recurse_status_output(done)
 
@@ -1604,7 +1611,7 @@ class QuietProgressTracker(ProgressTracker):
 
                 def __donothing(*args, **kwargs):
                         # Unused argument 'args', 'kwargs';
-                        #     pylint: disable-msg=W0613
+                        #     pylint: disable=W0613
                         pass
 
                 for methname in ProgressTrackerBackend.__dict__:
@@ -1646,7 +1653,7 @@ class FunctionProgressTracker(ProgressTracker):
 
                 def __donothing(*args, **kwargs):
                         # Unused argument 'args', 'kwargs';
-                        #     pylint: disable-msg=W0613
+                        #     pylint: disable=W0613
                         pass
 
                 # We modify the instance such that all of the methods it needs
@@ -1717,7 +1724,7 @@ class DotProgressTracker(ProgressTracker):
                 def make_dot():
                         def dot(*args, **kwargs):
                                 # Unused argument 'args', 'kwargs';
-                                #     pylint: disable-msg=W0613
+                                #     pylint: disable=W0613
                                 if self._ptimer.time_to_print():
                                         self._pe.cprint(".", end='')
                         return dot
@@ -2080,7 +2087,7 @@ class LinkedChildProgressTracker(CommandLineProgressTracker):
 
                 def __donothing(*args, **kwargs):
                         # Unused argument 'args', 'kwargs';
-                        #     pylint: disable-msg=W0613
+                        #     pylint: disable=W0613
                         pass
 
                 for methname in ProgressTrackerBackend.__dict__:
@@ -2167,7 +2174,7 @@ class FancyUNIXProgressTracker(ProgressTracker):
                     _("Checking that pkg(5) is up to date %c") %
                     self._spinner(), end='', erase=True)
 
-        # Unused argument 'op'; pylint: disable-msg=W0613
+        # Unused argument 'op'; pylint: disable=W0613
         def _change_purpose(self, op, np):
                 self._ptimer.reset()
                 if np == self.PURPOSE_PKG_UPDATE_CHK:
@@ -2544,7 +2551,7 @@ class FancyUNIXProgressTracker(ProgressTracker):
 # utility.
 #
 def test_progress_tracker(t, gofast=False):
-        # Unused variables (in several loops) pylint: disable-msg=W0612
+        # Unused variables (in several loops) pylint: disable=W0612
         import random
 
         print "Use ctrl-c to skip sections"

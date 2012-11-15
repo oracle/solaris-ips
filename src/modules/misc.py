@@ -75,10 +75,10 @@ MIN_WARN_DAYS = datetime.timedelta(days=30)
 SIGNATURE_POLICY = "signature-policy"
 
 # Bug URI Constants (deprecated)
-# Line too long; pylint: disable-msg=C0301
+# Line too long; pylint: disable=C0301
 BUG_URI_CLI = "https://defect.opensolaris.org/bz/enter_bug.cgi?product=pkg&component=cli"
 BUG_URI_GUI = "https://defect.opensolaris.org/bz/enter_bug.cgi?product=pkg&component=gui"
-# pylint: enable-msg=C0301
+# pylint: enable=C0301
 
 # Traceback message.
 def get_traceback_message():
@@ -101,12 +101,12 @@ def get_release_notes_url():
 
 def time_to_timestamp(t):
         """convert seconds since epoch to %Y%m%dT%H%M%SZ format"""
-        # XXX optimize?; pylint: disable-msg=W0511
+        # XXX optimize?; pylint: disable=W0511
         return time.strftime("%Y%m%dT%H%M%SZ", time.gmtime(t))
 
 def timestamp_to_time(ts):
         """convert %Y%m%dT%H%M%SZ format to seconds since epoch"""
-        # XXX optimize?; pylint: disable-msg=W0511
+        # XXX optimize?; pylint: disable=W0511
         return calendar.timegm(time.strptime(ts, "%Y%m%dT%H%M%SZ"))
 
 def timestamp_to_datetime(ts):
@@ -159,7 +159,7 @@ def copytree(src, dst):
                         # but sock.bind has a path length limitation that we can
                         # hit when archiving the test suite.
                         # E1101 Module '%s' has no '%s' member
-                        # pylint: disable-msg=E1101
+                        # pylint: disable=E1101
                         if hasattr(os, "mknod"):
                                 os.mknod(d_path, s.st_mode, s.st_dev)
                         else:
@@ -177,7 +177,7 @@ def copytree(src, dst):
                 elif S_ISCHR(s.st_mode) or S_ISBLK(s.st_mode):
                         # the s11 fcs version of python doesn't have os.mknod()
                         # E1101 Module '%s' has no '%s' member
-                        # pylint: disable-msg=E1101
+                        # pylint: disable=E1101
                         if hasattr(os, "mknod"):
                                 os.mknod(d_path, s.st_mode, s.st_dev)
                                 os.chown(d_path, s.st_uid, s.st_gid)
@@ -381,11 +381,11 @@ def gunzip_from_stream(gz, outfile):
                 buf = gz.read(64 * 1024)
                 if buf == "":
                         ubuf = dcobj.flush()
-                        shasum.update(ubuf)
+                        shasum.update(ubuf) # pylint: disable=E1101
                         outfile.write(ubuf)
                         break
                 ubuf = dcobj.decompress(buf)
-                shasum.update(ubuf)
+                shasum.update(ubuf) # pylint: disable=E1101
                 outfile.write(ubuf)
 
         return shasum.hexdigest()
@@ -531,7 +531,7 @@ def get_data_digest(data, length=None, return_content=False):
                 data = f.read(min(bufsz, length))
                 if return_content:
                         content.write(data)
-                fhash.update(data)
+                fhash.update(data) # pylint: disable=E1101
 
                 l = len(data)
                 if l == 0:
@@ -598,7 +598,7 @@ def compute_compressed_attrs(fname, file_path, data, size, compress_dir,
                 cdata = cfile.read(bufsz)
                 if cdata == "":
                         break
-                chash.update(cdata)
+                chash.update(cdata) # pylint: disable=E1101
         cfile.close()
         return csize, chash
 
@@ -749,7 +749,7 @@ class ProcFS(object):
                 try:
                         psinfo_data = file("/proc/self/psinfo").read(
                             psinfo_size)
-                # Catch "Exception"; pylint: disable-msg=W0703
+                # Catch "Exception"; pylint: disable=W0703
                 except Exception:
                         return None
 
@@ -814,8 +814,8 @@ EmptyI = tuple()
 
 # ImmutableDict for argument defaults
 class ImmutableDict(dict):
-        # Missing docstring; pylint: disable-msg=C0111
-        # Unused argument; pylint: disable-msg=W0613
+        # Missing docstring; pylint: disable=C0111
+        # Unused argument; pylint: disable=W0613
 
         def __init__(self, default=EmptyI):
                 dict.__init__(self, default)
@@ -851,7 +851,7 @@ class ImmutableDict(dict):
 # A way to have a dictionary be a property
 
 class DictProperty(object):
-        # Missing docstring; pylint: disable-msg=C0111
+        # Missing docstring; pylint: disable=C0111
 
         class __InternalProxy(object):
                 def __init__(self, obj, fget, fset, fdel, iteritems, keys,
@@ -943,7 +943,7 @@ class DictProperty(object):
                 self.__pop = pop
 
         def __get__(self, obj, objtype=None):
-                # Unused argument; pylint: disable-msg=W0613
+                # Unused argument; pylint: disable=W0613
 
                 if obj is None:
                         return self
@@ -1138,13 +1138,13 @@ class DummyLock(object):
         lock object present.  The object has a held value, that is used
         for _is_owned.  This is informational and doesn't actually
         provide mutual exclusion in any way whatsoever."""
-        # Missing docstring; pylint: disable-msg=C0111
+        # Missing docstring; pylint: disable=C0111
 
         def __init__(self):
                 self.held = False
 
         def acquire(self, blocking=1):
-                # Unused argument; pylint: disable-msg=W0613
+                # Unused argument; pylint: disable=W0613
                 self.held = True
                 return True
 
@@ -1387,6 +1387,7 @@ def api_cmdpath():
         if "PKG_CMDPATH" in os.environ:
                 cmdpath = os.environ["PKG_CMDPATH"]
 
+        # DebugValues is a singleton, hence no 'self' arg; pylint: disable=E1120
         if DebugValues.get_value("simulate_cmdpath"):
                 cmdpath = DebugValues.get_value("simulate_cmdpath")
 
@@ -1422,6 +1423,7 @@ def liveroot():
         """Return path to the current live root image, i.e. the image
         that we are running from."""
 
+        # DebugValues is a singleton, hence no 'self' arg; pylint: disable=E1120
         live_root = DebugValues.get_value("simulate_live_root")
         if not live_root and "PKG_LIVE_ROOT" in os.environ:
                 live_root = os.environ["PKG_LIVE_ROOT"]
@@ -1447,7 +1449,7 @@ def get_dir_size(path):
                     for fname in fnames
                 )
         except EnvironmentError, e:
-                # Access to protected member; pylint: disable-msg=W0212
+                # Access to protected member; pylint: disable=W0212
                 raise api_errors._convert_error(e)
 
 def get_listing(desired_field_order, field_data, field_values, out_format,
@@ -1491,7 +1493,7 @@ def get_listing(desired_field_order, field_data, field_values, out_format,
         metacharacters or embedded control sequences should be escaped
         before display.  (If applicable to the specified output format.)
         """
-        # Missing docstring; pylint: disable-msg=C0111
+        # Missing docstring; pylint: disable=C0111
 
         # Custom sort function for preserving field ordering
         def sort_fields(one, two):
@@ -1636,7 +1638,7 @@ def truncate_file(f, size=0):
         except IOError:
                 pass
         except OSError, e:
-                # Access to protected member; pylint: disable-msg=W0212
+                # Access to protected member; pylint: disable=W0212
                 raise api_errors._convert_error(e)
 
 def flush_output():
@@ -1647,7 +1649,7 @@ def flush_output():
         except IOError:
                 pass
         except OSError, e:
-                # Access to protected member; pylint: disable-msg=W0212
+                # Access to protected member; pylint: disable=W0212
                 raise api_errors._convert_error(e)
 
         try:
@@ -1655,7 +1657,7 @@ def flush_output():
         except IOError:
                 pass
         except OSError, e:
-                # Access to protected member; pylint: disable-msg=W0212
+                # Access to protected member; pylint: disable=W0212
                 raise api_errors._convert_error(e)
 
 # valid json types
@@ -1753,7 +1755,7 @@ def json_encode(name, data, desc, commonize=None, je_state=None):
                 then we merge the state data and object cache into a single
                 dictionary and return that.
                 """
-                # Unused argument; pylint: disable-msg=W0613
+                # Unused argument; pylint: disable=W0613
 
                 if not finish:
                         return data
@@ -1976,7 +1978,7 @@ def json_decode(name, data, desc, commonize=None, jd_state=None):
 
         def jd_return(name, data, desc, finish, jd_state):
                 """Check if we're done decoding data."""
-                # Unused argument; pylint: disable-msg=W0613
+                # Unused argument; pylint: disable=W0613
 
                 # check if the description is a type object
                 if isinstance(desc, type):
@@ -2336,7 +2338,7 @@ class AsyncCall(object):
                 We need to be careful here and catch all exceptions.  Since
                 we're executing in our own thread, any exceptions we don't
                 catch get dumped to the console."""
-                # Catch "Exception"; pylint: disable-msg=W0703
+                # Catch "Exception"; pylint: disable=W0703
 
                 try:
                         if DebugValues["async_thread_error"]:
@@ -2400,7 +2402,7 @@ class AsyncCall(object):
                 assert self.is_done()
                 if self.e:
                         # if the calling thread hit an exception, re-raise it
-                        # Raising NoneType; pylint: disable-msg=E0702
+                        # Raising NoneType; pylint: disable=E0702
                         raise self.e
                 return self.rv
 
@@ -2443,7 +2445,7 @@ def get_runtime_proxy(proxy, uri):
                 runtime_proxy = environ_all_proxy_upper
 
         if no_proxy or no_proxy_upper:
-                # SplitResult has a netloc member; pylint: disable-msg=E1103
+                # SplitResult has a netloc member; pylint: disable=E1103
                 netloc = urlparse.urlsplit(uri, allow_fragments=0).netloc
                 host = netloc.split(":")[0]
                 if host in no_proxy or no_proxy == ["*"]:

@@ -199,6 +199,7 @@ class LinkedImagePlugin(object):
         support_attach = False
         support_detach = False
 
+        # Unused argument; pylint: disable=W0613
         def __init__(self, pname, linked):
                 """Initialize a linked image plugin.
 
@@ -277,7 +278,7 @@ class LinkedImageChildPlugin(object):
         private to the linked image subsystem and should not be called
         directly by any other subsystem."""
 
-        def __init__(self, lic):
+        def __init__(self, lic): # Unused argument; pylint: disable=W0613
                 """Initialize a linked image child plugin.
 
                 'lic' is the LinkedImageChild object initializing this plugin.
@@ -322,14 +323,14 @@ class LinkedImageName(object):
         def getstate(obj, je_state=None):
                 """Returns the serialized state of this object in a format
                 that that can be easily stored using JSON, pickle, etc."""
-                # Unused argument; pylint: disable-msg=W0613
+                # Unused argument; pylint: disable=W0613
                 return str(obj)
 
         @staticmethod
         def fromstate(state, jd_state=None):
                 """Allocate a new object using previously serialized state
                 obtained via getstate()."""
-                # Unused argument; pylint: disable-msg=W0613
+                # Unused argument; pylint: disable=W0613
                 return LinkedImageName(state)
 
         def __str__(self):
@@ -484,9 +485,9 @@ class LinkedImage(object):
                 self.__set_altroot(self.__props, old_root=old_root)
 
                 # Tell linked image plugins about the updated paths
-                # Unused variable 'plugin'; pylint: disable-msg=W0612
+                # Unused variable 'plugin'; pylint: disable=W0612
                 for plugin, lip in self.__plugins.iteritems():
-                # pylint: enable-msg=W0612
+                # pylint: enable=W0612
                         lip.init_root(old_altroot)
 
                 # Tell linked image children about the updated paths
@@ -645,9 +646,9 @@ class LinkedImage(object):
                 # check for conflicting altroots
                 altroots = list(set([
                         p_altroot
-                        # Unused variable; pylint: disable-msg=W0612
+                        # Unused variable; pylint: disable=W0612
                         for pname, p_altroot in p_altroots
-                        # pylint: enable-msg=W0612
+                        # pylint: enable=W0612
                 ]))
 
                 if len(altroots) == 1:
@@ -1547,9 +1548,9 @@ class LinkedImage(object):
                         raise apx.LinkedImageException(child_bad_img=path)
 
                 # Does the parent image (ourselves) reside in clonable BE?
-                # Unused variable 'be_uuid'; pylint: disable-msg=W0612
+                # Unused variable 'be_uuid'; pylint: disable=W0612
                 (be_name, be_uuid) = bootenv.BootEnv.get_be_name(self.__root)
-                # pylint: enable-msg=W0612
+                # pylint: enable=W0612
                 if be_name:
                         img_is_clonable = True
                 else:
@@ -1582,7 +1583,7 @@ class LinkedImage(object):
                                 tmp = ar.ar_img_prefix(d)
                         except OSError, e:
                                 # W0212 Access to a protected member
-                                # pylint: disable-msg=W0212
+                                # pylint: disable=W0212
                                 raise apx._convert_error(e)
                         if not tmp:
                                 d = os.path.dirname(d)
@@ -1596,7 +1597,7 @@ class LinkedImage(object):
                                 tmp = ar.ar_img_prefix(d)
                         except OSError, e:
                                 # W0212 Access to a protected member
-                                # pylint: disable-msg=W0212
+                                # pylint: disable=W0212
                                 raise apx._convert_error(e)
                         if not tmp:
                                 d = os.path.dirname(d)
@@ -1609,7 +1610,7 @@ class LinkedImage(object):
                         exists = ar.ar_exists(path, img_li_data_props)
                 except OSError, e:
                         # W0212 Access to a protected member
-                        # pylint: disable-msg=W0212
+                        # pylint: disable=W0212
                         raise apx._convert_error(e)
                 if exists and not allow_relink:
                         raise apx.LinkedImageException(img_linked=path)
@@ -2542,7 +2543,7 @@ class LinkedImageChild(object):
                         exists = ar.ar_exists(root, path)
                 except OSError, e:
                         # W0212 Access to a protected member
-                        # pylint: disable-msg=W0212
+                        # pylint: disable=W0212
                         raise apx._convert_error(e)
 
                 if exists:
@@ -2550,7 +2551,7 @@ class LinkedImageChild(object):
                                 updated = ar.ar_diff(root, path, path_tmp)
                         except OSError, e:
                                 # W0212 Access to a protected member
-                                # pylint: disable-msg=W0212
+                                # pylint: disable=W0212
                                 raise apx._convert_error(e)
 
                 # if we're not actually updating any data, or if we were just
@@ -2566,7 +2567,7 @@ class LinkedImageChild(object):
                                 ar.ar_rename(root, path_tmp, path)
                         except OSError, e:
                                 # W0212 Access to a protected member
-                                # pylint: disable-msg=W0212
+                                # pylint: disable=W0212
                                 raise apx._convert_error(e)
 
                 return True
@@ -3047,7 +3048,7 @@ def save_data(path, data, root="/"):
                 ar.ar_rename(root, pathtmp, path)
         except OSError, e:
                 # W0212 Access to a protected member
-                # pylint: disable-msg=W0212
+                # pylint: disable=W0212
                 raise apx._convert_error(e)
 
 def load_data(path, missing_val=None):
@@ -3062,7 +3063,7 @@ def load_data(path, missing_val=None):
                 fobj.close()
         except OSError, e:
                 # W0212 Access to a protected member
-                # pylint: disable-msg=W0212
+                # pylint: disable=W0212
                 raise apx._convert_error(e)
         return data
 
@@ -3071,7 +3072,7 @@ class PkgEncoder(json.JSONEncoder):
         """Utility class used when json encoding linked image metadata."""
 
         # E0202 An attribute inherited from JSONEncoder hide this method
-        # pylint: disable-msg=E0202
+        # pylint: disable=E0202
         def default(self, obj):
                 """Required routine that overrides the default base
                 class version.  This routine must serialize 'obj' when
@@ -3198,7 +3199,7 @@ def path_exists(path):
                 return ar.ar_exists("/", path)
         except OSError, e:
                 # W0212 Access to a protected member
-                # pylint: disable-msg=W0212
+                # pylint: disable=W0212
                 raise apx._convert_error(e)
 
 def path_isdir(path):
@@ -3208,7 +3209,7 @@ def path_isdir(path):
                 return ar.ar_isdir("/", path)
         except OSError, e:
                 # W0212 Access to a protected member
-                # pylint: disable-msg=W0212
+                # pylint: disable=W0212
                 raise apx._convert_error(e)
 
 def path_mkdir(path, mode):
@@ -3218,7 +3219,7 @@ def path_mkdir(path, mode):
                 return ar.ar_mkdir("/", path, mode)
         except OSError, e:
                 # W0212 Access to a protected member
-                # pylint: disable-msg=W0212
+                # pylint: disable=W0212
                 raise apx._convert_error(e)
 
 def path_unlink(path, noent_ok=False):
@@ -3228,7 +3229,7 @@ def path_unlink(path, noent_ok=False):
                 return ar.ar_unlink("/", path, noent_ok=noent_ok)
         except OSError, e:
                 # W0212 Access to a protected member
-                # pylint: disable-msg=W0212
+                # pylint: disable=W0212
                 raise apx._convert_error(e)
 
 # ---------------------------------------------------------------------------

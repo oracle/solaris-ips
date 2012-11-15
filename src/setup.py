@@ -81,6 +81,9 @@ elif osname == 'aix':
 
 pwd = os.path.normpath(sys.path[0])
 
+# the version of pylint that we must have in order to run the pylint checks.
+req_pylint_version = "0.25.2"
+
 #
 # Unbuffer stdout and stderr.  This helps to ensure that subprocess output
 # is properly interleaved with output from this program.
@@ -475,6 +478,46 @@ class pylint_func(Command):
                 return astring.replace(' ', '\\ ')
 
         def run(self, quiet=False):
+
+                def supported_pylint_ver(version):
+                        """Compare the installed version against the version
+                        we require to build with, returning False if the version
+                        is too old. It's tempting to use pkg.version.Version
+                        here, but since that's a build artifact, we'll do it
+                        the long way."""
+                        inst_pylint_ver = version.split(".")
+                        req_pylint_ver = req_pylint_version.split(".")
+
+                        # if the lists are of different lengths, we just
+                        # compare with the precision we have.
+                        vers_comp = zip(inst_pylint_ver, req_pylint_ver)
+                        for inst, req in vers_comp:
+                                try:
+                                        if int(inst) < int(req):
+                                                return False
+                                except ValueError:
+                                        # if we somehow get non-numeric version
+                                        # components, we ignore them.
+                                        continue
+                        return True
+
+                # it's fine to default to the required version - the build will
+                # break if the installed version is incompatible and $PYLINT_VER
+                # didn't get set, somehow.
+                pylint_ver_str = os.environ.get("PYLINT_VER",
+                    req_pylint_version)
+
+                if os.environ.get("PKG_SKIP_PYLINT"):
+                        log.warn("WARNING: skipping pylint checks: "
+                            "$PKG_SKIP_PYLINT was set")
+                        return
+                elif not pylint_ver_str or \
+                    not supported_pylint_ver(pylint_ver_str):
+                        log.warn("WARNING: skipping pylint checks: the "
+                            "installed version %s is older than version %s" %
+                            (pylint_ver_str, req_pylint_version))
+                        return
+
                 proto = os.path.join(root_dir, py_install_dir)
                 sys.path.insert(0, proto)
 

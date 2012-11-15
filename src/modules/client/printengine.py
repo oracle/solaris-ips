@@ -312,7 +312,7 @@ def test_posix_printengine(output_file, ttymode):
 
         pe.cprint("You should see an X swishing back and forth; from")
         pe.cprint("left to right it should be inverse.")
-        # Unused variable 'y'; pylint: disable-msg=W0612
+        # Unused variable 'y'; pylint: disable=W0612
         for y in range(0, 2):
                 for x in xrange(0, 30, 1):
                         pe.cprint(" " * x, erase=True, end='')

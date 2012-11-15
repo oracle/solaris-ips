@@ -61,7 +61,7 @@
 # W0612: Unused variable                                         (fix)
 # Some of the access methods we use in return a number of elements of which we only need to use one
 
-disable-msg=C0111,W0511,W0613,W0704,W0142,R0921
+disable=C0111,W0511,W0613,W0704,W0142,R0921
 
 
 [REPORTS]

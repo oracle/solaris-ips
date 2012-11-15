@@ -1805,7 +1805,7 @@ class PackageManager:
                 last_name = ""
                 # Sorting results by Name gives best overall appearance and flow
                 sort_col = enumerations.NAME_COLUMN
-                # pylint: disable-msg=C0321
+                # pylint: disable=C0321
                 try:
                         searches.append(self.api_o.remote_search(
                             [api.Query(" ".join(pargs), case_sensitive, return_actions)],

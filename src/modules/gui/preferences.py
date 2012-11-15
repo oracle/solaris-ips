@@ -447,7 +447,7 @@ class Preferences:
                 # the system using loc_pop.get_valid_locales() and strip any codeset
                 if self.facet_g11_locales_dict == None or \
                         len(self.facet_g11_locales_dict) == 0:
-                        # pylint: disable-msg=E1101
+                        # pylint: disable=E1101
                         loc_pop = g11nsvc.G11NSvcLocalePopulate()
                         g11locales_list = loc_pop.get_valid_locales()
                         for g11locale in g11locales_list:
@@ -456,7 +456,7 @@ class Preferences:
                                 facetlocale = strippedlocale
                                 self.facet_g11_locales_dict[facetlocale] = \
                                         strippedlocale
-                # pylint: disable-msg=E1101
+                # pylint: disable=E1101
                 loc_ops = g11nsvc.G11NSvcLocaleOperations(
                     self.facet_g11_locales_dict.values())
 

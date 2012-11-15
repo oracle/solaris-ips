@@ -46,6 +46,7 @@ from pkg.client import global_settings
 from pkg.client.debugvalues import DebugValues
 
 # debugging aids
+# DebugValues is a singleton; pylint: disable=E1120
 pkgremote_debug = (
     DebugValues.get_value("pkgremote_debug") is not None or
     os.environ.get("PKG_PKGREMOTE_DEBUG", None) is not None)
@@ -130,7 +131,7 @@ class PkgRemote(object):
                         p = pkg.pkgsubprocess.Popen(pkg_cmd,
                             stdout=fstdout, stderr=fstderr)
                 except OSError, e:
-                        # Access to protected member; pylint: disable-msg=W0212
+                        # Access to protected member; pylint: disable=W0212
                         raise apx._convert_error(e)
 
                 # initalization successful, update RPC server state
@@ -337,7 +338,7 @@ class PkgRemote(object):
                 rv = e = None
                 rpc_method = getattr(rpc_client, pkg_op)
                 try:
-                        # Catch "Exception"; pylint: disable-msg=W0703
+                        # Catch "Exception"; pylint: disable=W0703
                         rv = rpc_method(**kwargs)
                 except Exception, e:
                         self.__debug_msg("caught exception\n%s" %

@@ -34,7 +34,7 @@ stored within a parent images pkg5.image configuration file.
 import pkg.client.pkgdefs as pkgdefs
 
 # import linked image common code
-import common as li # Relative import; pylint: disable-msg=W0403
+import common as li # Relative import; pylint: disable=W0403
 
 
 class LinkedImageSystemPlugin(li.LinkedImagePlugin):
@@ -54,9 +54,9 @@ class LinkedImageSystemPlugin(li.LinkedImagePlugin):
                 li.LinkedImagePlugin.__init__(self, pname, linked)
 
                 # globals
+                self.__img = linked.image
                 self.__pname = pname
                 self.__linked = linked
-                self.__img = linked.image
 
         def init_root(self, old_altroot):
                 """See parent class for docstring."""
@@ -103,8 +103,8 @@ class LinkedImageSystemPlugin(li.LinkedImagePlugin):
                 """See parent class for docstring."""
 
                 # make sure this child doesn't already exist
-                lin = props[li.PROP_NAME]
                 lin_list = [i[0] for i in self.get_child_list()]
+                lin = props[li.PROP_NAME]
                 assert lin not in lin_list or allow_relink
 
                 # make a copy of the properties

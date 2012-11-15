@@ -38,8 +38,8 @@ error handling.
 #
 # this file is not completely pylint clean
 #
-# pylint: disable-msg=C0111,C0301,C0321,E0702,R0201,W0102
-# pylint: disable-msg=W0212,W0511,W0612,W0613,W0702
+# pylint: disable=C0111,C0301,C0321,E0702,R0201,W0102
+# pylint: disable=W0212,W0511,W0612,W0613,W0702
 #
 # C0111 Missing docstring
 # C0301 Line too long
@@ -95,13 +95,13 @@ from pkg.api_common import (PackageInfo, LicenseInfo, PackageCategory,
     _get_pkg_cat_data)
 from pkg.client import global_settings
 from pkg.client.debugvalues import DebugValues
-from pkg.client.pkgdefs import * # pylint: disable-msg=W0401
+from pkg.client.pkgdefs import * # pylint: disable=W0401
 from pkg.smf import NonzeroExitException
 
 # we import PlanDescription here even though it isn't used so that consumers
 # of the api still have access to the class definition and are able to do
 # things like help(pkg.client.api.PlanDescription)
-from pkg.client.plandesc import PlanDescription # pylint: disable-msg=W0611
+from pkg.client.plandesc import PlanDescription # pylint: disable=W0611
 
 CURRENT_API_VERSION = 74
 COMPATIBLE_API_VERSIONS = frozenset([72, 73, CURRENT_API_VERSION])
@@ -3570,6 +3570,7 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                                                         # Historical summary
                                                         # field.
                                                         summ = atvalue
+                                                        # pylint: disable=W0106
                                                         collect_attrs and \
                                                             attrs["pkg.summary"] \
                                                             [mods]. \
@@ -5228,9 +5229,9 @@ def image_create(pkg_client_name, version_id, root, imgtype, is_zone,
 
                         repo = publisher.Repository()
                         for o in origins:
-                                repo.add_origin(o)
+                                repo.add_origin(o) # pylint: disable=E1103
                         for m in mirrors:
-                                repo.add_mirror(m)
+                                repo.add_mirror(m) # pylint: disable=E1103
                         pub = publisher.Publisher(prefix,
                             repository=repo)
                         pubs = [pub]

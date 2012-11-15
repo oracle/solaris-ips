@@ -43,11 +43,11 @@ import pkg.pkgsubprocess
 from pkg.client.debugvalues import DebugValues
 
 # import linked image common code
-import common as li # Relative import; pylint: disable-msg=W0403
+import common as li # Relative import; pylint: disable=W0403
 
-# W0511 XXX / FIXME Comments; pylint: disable-msg=W0511
+# W0511 XXX / FIXME Comments; pylint: disable=W0511
 # XXX: should be defined by libzonecfg python wrapper
-# pylint: enable-msg=W0511
+# pylint: enable=W0511
 
 ZONE_GLOBAL                  = "global"
 
@@ -156,7 +156,7 @@ class LinkedImageZonePlugin(li.LinkedImagePlugin):
                         self.__in_gz_cached = (_zonename() == ZONE_GLOBAL)
                 except OSError, e:
                         # W0212 Access to a protected member
-                        # pylint: disable-msg=W0212
+                        # pylint: disable=W0212
                         if ignore_errors:
                                 # default to being in the global zone
                                 return True
@@ -199,9 +199,9 @@ class LinkedImageZonePlugin(li.LinkedImagePlugin):
                 cati = self.__img.get_catalog(self.__img.IMG_CATALOG_INSTALLED)
                 pkgs_inst = frozenset([
                         stem
-                        # Unused variable 'pub'; pylint: disable-msg=W0612
+                        # Unused variable 'pub'; pylint: disable=W0612
                         for pub, stem in cati.pkg_names()
-                        # pylint: enable-msg=W0612
+                        # pylint: enable=W0612
                 ])
 
                 # check if the zones packages are installed
@@ -240,7 +240,7 @@ class LinkedImageZonePlugin(li.LinkedImagePlugin):
                         zdict = _list_zones(self.__img.root)
                 except OSError, e:
                         # W0212 Access to a protected member
-                        # pylint: disable-msg=W0212
+                        # pylint: disable=W0212
                         if ignore_errors:
                                 # don't cache the result
                                 return []
@@ -380,7 +380,7 @@ class LinkedImageZoneChildPlugin(li.LinkedImageChildPlugin):
 def _zonename():
         """Get the zonname of the current system."""
 
-        cmd = DebugValues.get_value("zone_name")
+        cmd = DebugValues.get_value("zone_name") # pylint: disable=E1120
         if not cmd:
                 cmd = ["/bin/zonename"]
 
@@ -439,19 +439,19 @@ def _list_zones(root):
         for l in fout.readlines():
                 l = l.rstrip()
 
-                # Unused variable; pylint: disable-msg=W0612
+                # Unused variable; pylint: disable=W0612
                 z_id, z_name, z_state, z_path, z_uuid, z_brand, \
                     z_iptype = l.strip().split(':', 6)
-                # pylint: enable-msg=W0612
+                # pylint: enable=W0612
                 z_rootpath = os.path.join(z_path, "root")
 
                 # we don't care about the global zone.
                 if (z_name == "global"):
                         continue
 
-                # W0511 XXX / FIXME Comments; pylint: disable-msg=W0511
+                # W0511 XXX / FIXME Comments; pylint: disable=W0511
                 # XXX: don't hard code brand names, use a brand attribute
-                # pylint: enable-msg=W0511
+                # pylint: enable=W0511
                 if z_brand not in ["ipkg", "solaris", "sn1", "labeled"]:
                         continue
 

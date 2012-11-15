@@ -36,7 +36,7 @@ modules are supported below.
 import inspect
 
 # import linked image common code
-from pkg.client.linkedimage.common import * # pylint: disable-msg=W0401
+from pkg.client.linkedimage.common import * # pylint: disable=W0401
 
 # names of linked image plugins
 p_types = [ "zone", "system" ]

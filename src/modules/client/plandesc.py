@@ -67,8 +67,8 @@ EXECUTED_ERROR    = 7 # failed
 class _ActionPlan(collections.namedtuple("_ActionPlan", "p src dst")):
         """A named tuple used to keep track of all the actions that will be
         executed during an image-modifying procecure."""
-        # Class has no __init__ method; pylint: disable-msg=W0232
-        # Use __slots__ on an old style class; pylint: disable-msg=E1001
+        # Class has no __init__ method; pylint: disable=W0232
+        # Use __slots__ on an old style class; pylint: disable=E1001
 
         __slots__ = []
 
@@ -89,7 +89,7 @@ class _ActionPlan(collections.namedtuple("_ActionPlan", "p src dst")):
         def fromstate(state, jd_state=None):
                 """Allocate a new object using previously serialized state
                 obtained via getstate()."""
-                # Access to protected member; pylint: disable-msg=W0212
+                # Access to protected member; pylint: disable=W0212
 
                 # get the name of the object we're dealing with
                 name = _ActionPlan.__name__
@@ -231,7 +231,7 @@ class PlanDescription(object):
         def getstate(obj, je_state=None, reset_volatiles=False):
                 """Returns the serialized state of this object in a format
                 that that can be easily stored using JSON, pickle, etc."""
-                # Access to protected member; pylint: disable-msg=W0212
+                # Access to protected member; pylint: disable=W0212
 
                 if reset_volatiles:
                         # backup and clear volatiles
@@ -258,7 +258,7 @@ class PlanDescription(object):
         def setstate(obj, state, jd_state=None):
                 """Update the state of this object using previously serialized
                 state obtained via getstate()."""
-                # Access to protected member; pylint: disable-msg=W0212
+                # Access to protected member; pylint: disable=W0212
 
                 # get the name of the object we're dealing with
                 name = PlanDescription.__name__
@@ -299,7 +299,7 @@ class PlanDescription(object):
                         json.dump(state, fobj, encoding="utf-8")
                         fobj.flush()
                 except OSError, e:
-                        # Access to protected member; pylint: disable-msg=W0212
+                        # Access to protected member; pylint: disable=W0212
                         raise apx._convert_error(e)
 
                 del state
@@ -314,7 +314,7 @@ class PlanDescription(object):
                         fobj.seek(0)
                         state = json.load(fobj, encoding="utf-8")
                 except OSError, e:
-                        # Access to protected member; pylint: disable-msg=W0212
+                        # Access to protected member; pylint: disable=W0212
                         raise apx._convert_error(e)
 
                 PlanDescription.setstate(self, state)
@@ -365,7 +365,7 @@ class PlanDescription(object):
                         return ret
 
                 def get_mediation(mediators, m):
-                        # Missing docstring; pylint: disable-msg=C0111
+                        # Missing docstring; pylint: disable=C0111
                         mimpl = mver = mimpl_source = \
                             mver_source = None
                         if m in mediators:
@@ -510,12 +510,12 @@ class PlanDescription(object):
                 """A generator function that yields action change descriptions
                 in the order they will be performed."""
 
-                # Unused variable '%s'; pylint: disable-msg=W0612
+                # Unused variable '%s'; pylint: disable=W0612
                 for pplan, o_act, d_act in itertools.chain(
                     self.removal_actions,
                     self.update_actions,
                     self.install_actions):
-                # pylint: enable-msg=W0612
+                # pylint: enable=W0612
                         yield "%s -> %s" % (o_act, d_act)
 
         def has_release_notes(self):
@@ -557,7 +557,7 @@ class PlanDescription(object):
                         if pfmri and dfmri != pfmri:
                                 continue
 
-                        # Unused variable; pylint: disable-msg=W0612
+                        # Unused variable; pylint: disable=W0612
                         for lid, entry in pp.get_licenses():
                                 src = entry["src"]
                                 src_li = None

@@ -94,10 +94,10 @@ from jsonrpclib.SimpleJSONRPCServer import SimpleJSONRPCDispatcher as \
 # These includes make it easier for clients to catch the specific
 # exceptions that can be raised by this module.
 #
-# Unused import; pylint: disable-msg=W0611
+# Unused import; pylint: disable=W0611
 from jsonrpclib import ProtocolError as ProtocolError1
 from xmlrpclib import ProtocolError as ProtocolError2
-# Unused import; pylint: enable-msg=W0611
+# Unused import; pylint: enable=W0611
 
 # debugging
 pipeutils_debug = (os.environ.get("PKG_PIPEUTILS_DEBUG", None) is not None)
@@ -297,7 +297,7 @@ class PipeSocket(PipeFile):
                 """Return a file-like object associated with this pipe.
                 The pipe will be duped for this new object so that the object
                 can be closed and garbage-collected independently."""
-                # Unused argument; pylint: disable-msg=W0613
+                # Unused argument; pylint: disable=W0613
 
                 dup_fd = os.dup(self.fileno())
                 self.debug_msg("makefile", "dup fd=%d" % dup_fd)
@@ -306,13 +306,13 @@ class PipeSocket(PipeFile):
         def recv(self, bufsize, flags=0):
                 """Receive data from the pipe.
                 Can block waiting for input."""
-                # Unused argument; pylint: disable-msg=W0613
+                # Unused argument; pylint: disable=W0613
                 return self.read(bufsize)
 
         def send(self, msg, flags=0):
                 """Send data to the Socket.
                 Should never really block."""
-                # Unused argument; pylint: disable-msg=W0613
+                # Unused argument; pylint: disable=W0613
                 return self.write(msg)
 
         def sendall(self, msg):
@@ -323,7 +323,7 @@ class PipeSocket(PipeFile):
         @staticmethod
         def shutdown(how):
                 """Nothing to do here.  Move along."""
-                # Unused argument; pylint: disable-msg=W0613
+                # Unused argument; pylint: disable=W0613
                 return
 
 
@@ -421,7 +421,7 @@ class _PipedTransport(rpc.Transport):
                 to the server, and then wrapping the local end of the pipe
                 with a PipedHTTP object.  This object can then be subsequently
                 used to issue http requests."""
-                # Redefining name from outer scope; pylint: disable-msg=W0621
+                # Redefining name from outer scope; pylint: disable=W0621
 
                 assert self.__pipe_file is not None
 
@@ -521,10 +521,10 @@ class _PipedRequestHandler(_PipedHTTPRequestHandler):
                 request = self.rfile.readline()
                 response = ""
                 try:
-                        # Access to protected member; pylint: disable-msg=W0212
+                        # Access to protected member; pylint: disable=W0212
                         response = self.server._marshaled_dispatch(request)
+                # No exception type specified; pylint: disable=W0702
                 except:
-                        # No exception type specified; pylint: disable-msg=W0702
                         # The server had an unexpected exception.
                         # dump the error to stderr
                         print >> sys.stderr, traceback.format_exc()
@@ -574,7 +574,7 @@ class PipedRPCServer(_PipedServer, SimpleRPCDispatcher):
         def _dispatch(self, *args, **kwargs):
                 """Check for unexpected server exceptions while handling a
                 request."""
-                # pylint: disable-msg=W0221
+                # pylint: disable=W0221
                 # Arguments differ from overridden method;
 
                 response = SimpleRPCDispatcher._dispatch(
@@ -585,7 +585,7 @@ class PipedRPCServer(_PipedServer, SimpleRPCDispatcher):
         def _marshaled_single_dispatch(self, *args, **kwargs):
                 """Check for unexpected server exceptions while handling a
                 request."""
-                # pylint: disable-msg=W0221
+                # pylint: disable=W0221
                 # Arguments differ from overridden method;
 
                 response = SimpleRPCDispatcher._marshaled_single_dispatch(
@@ -596,7 +596,7 @@ class PipedRPCServer(_PipedServer, SimpleRPCDispatcher):
         def _marshaled_dispatch(self, *args, **kwargs):
                 """Check for unexpected server exceptions while handling a
                 request."""
-                # pylint: disable-msg=W0221
+                # pylint: disable=W0221
                 # Arguments differ from overridden method;
 
                 response = SimpleRPCDispatcher._marshaled_dispatch(

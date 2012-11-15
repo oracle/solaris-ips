@@ -24,7 +24,7 @@
 # Copyright (c) 2007, 2012, Oracle and/or its affiliates. All rights reserved.
 #
 
-# Missing docstring; pylint: disable-msg=C0111
+# Missing docstring; pylint: disable=C0111
 
 import logging
 import os
@@ -197,7 +197,7 @@ class GlobalSettings(object):
 
         @property
         def logger(self):
-		# Method could be a function; pylint: disable-msg=R0201
+		# Method could be a function; pylint: disable=R0201
                 return logging.getLogger("pkg")
 
         def reset_logging(self):
