@@ -424,10 +424,6 @@ legacy pkg=SUNWipkg version=0.0.0
 license cr_Oracle license=cr_Oracle
 license lic_gustaebel license=lic_gustaebel
 license lic_minisat license=lic_minisat
-depend type=exclude fmri=system/platform/exadata/firstrun \
-    facet.exclude.exadata-firstrun=true
-depend type=exclude fmri=system/platform/exalogic/firstrun \
-    facet.exclude.exalogic-firstrun=true
 depend type=group fmri=package/pkg/zones-proxy \
     variant.opensolaris.zone=nonglobal
 # cross zone dependency on linked image metadata
