@@ -50,33 +50,18 @@ import pkg.portable as portable
 
 SYSREPO_USER = "pkg5srv"
 
-class TestBasicSysrepoCli(pkg5unittest.CliTestCase):
+class TestBasicSysrepoCli(pkg5unittest.ApacheDepotTestCase):
         """Some basic tests checking that we can deal with all of our arguments
         and that we handle invalid input correctly."""
 
         def setUp(self):
                 self.sc = None
-                pkg5unittest.CliTestCase.setUp(self)
+                pkg5unittest.ApacheDepotTestCase.setUp(self, ["test"])
                 self.image_create()
                 self.default_sc_runtime = os.path.join(self.test_root,
                     "sysrepo_runtime")
                 self.default_sc_conf = os.path.join(self.default_sc_runtime,
                     "sysrepo_httpd.conf")
-
-        def tearDown(self):
-                try:
-                        pkg5unittest.CliTestCase.tearDown(self)
-                finally:
-                        if self.sc:
-                                self.debug("stopping sysrepo")
-                                try:
-                                        self.sc.stop()
-                                except Exception, e:
-                                        try:
-                                                self.debug("killing sysrepo")
-                                                self.sc.kill()
-                                        except Exception, e:
-                                                pass
 
         def _start_sysrepo(self, runtime_dir=None):
                 if not runtime_dir:
@@ -85,6 +70,7 @@ class TestBasicSysrepoCli(pkg5unittest.CliTestCase):
                 self.next_free_port += 1
                 self.sc = pkg5unittest.SysrepoController(self.default_sc_conf,
                     self.sysrepo_port, runtime_dir, testcase=self)
+                self.register_apache_controller("sysrepo", self.sc)
                 self.sc.start()
 
         def test_0_sysrepo(self):
@@ -144,7 +130,7 @@ class TestBasicSysrepoCli(pkg5unittest.CliTestCase):
                         port = self.next_free_port
                         ret, output, err = self.sysrepo("-l %s -p %s" %
                             (invalid_log, port), out=True, stderr=True, exit=0)
-                        self.assertRaises(pkg5unittest.SysrepoStateException,
+                        self.assertRaises(pkg5unittest.ApacheStateException,
                             self._start_sysrepo)
                         self.sc.stop()
 
@@ -208,7 +194,7 @@ class TestBasicSysrepoCli(pkg5unittest.CliTestCase):
                              "did not contain https_proxy: %s" % err)
 
 
-class TestDetailedSysrepoCli(pkg5unittest.ManyDepotTestCase):
+class TestDetailedSysrepoCli(pkg5unittest.ApacheDepotTestCase):
 
         persistent_setup = True
 
@@ -225,13 +211,12 @@ class TestDetailedSysrepoCli(pkg5unittest.ManyDepotTestCase):
         misc_files = ["tmp/sample_file"]
 
         def setUp(self):
-                self.sc = None
                 # see test_7_response_overlaps
                 self.overlap_pubs = ["versions", "versionsX", "syspub",
                     "Xsyspub"]
                 pubs = ["test1", "test2"]
                 pubs.extend(self.overlap_pubs)
-                pkg5unittest.ManyDepotTestCase.setUp(self, pubs,
+                pkg5unittest.ApacheDepotTestCase.setUp(self, pubs,
                     start_depots=True)
 
                 # Most tests use a single system-repository instance, "sc",
@@ -261,32 +246,6 @@ class TestDetailedSysrepoCli(pkg5unittest.ManyDepotTestCase):
                         durl = self.dcs[dc_num].get_depot_url()
                         self.pkgsend_bulk(durl, self.sample_pkg)
 
-        def killalldepots(self):
-                try:
-                        pkg5unittest.ManyDepotTestCase.killalldepots(self)
-                finally:
-                        if self.sc:
-                                self.debug("stopping sysrepo")
-                                try:
-                                        self.sc.stop()
-                                except Exception, e:
-                                        try:
-                                                self.debug("killing sysrepo")
-                                                self.sc.kill()
-                                        except Exception, e:
-                                                pass
-                        if self.alt_sc:
-                                self.debug("stopping alt sysrepo")
-                                try:
-                                        self.alt_sc.stop()
-                                except Exception, e:
-                                        try:
-                                                self.debug(
-                                                    "killing alt sysrepo")
-                                                self.alt_ac.stop()
-                                        except Exception, e:
-                                                pass
-
         def _start_sysrepo(self, runtime_dir=None, alt=False):
                 """Starts a system repository instance, either using the default
                 or alternative configurations."""
@@ -300,11 +259,15 @@ class TestDetailedSysrepoCli(pkg5unittest.ManyDepotTestCase):
                         runtime_dir = self.alt_sc_runtime
                         self.alt_sc = pkg5unittest.SysrepoController(conf,
                             self.sysrepo_port, runtime_dir, testcase=self)
+                        self.register_apache_controller("alt_sysrepo",
+                            self.alt_sc)
                         self.alt_sc.start()
                 else:
                         self.sc = pkg5unittest.SysrepoController(
                             self.default_sc_conf,
                             self.sysrepo_port, runtime_dir, testcase=self)
+                        self.register_apache_controller("sysrepo",
+                            self.sc)
                         self.sc.start()
 
         def test_1_substring_proxy(self):

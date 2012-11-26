@@ -3208,6 +3208,74 @@ class ManyDepotTestCase(CliTestCase):
                 CliTestCase.run(self, result)
 
 
+class ApacheDepotTestCase(ManyDepotTestCase):
+        """A TestCase that uses one or more Apache instances in the course of
+        its work, along with potentially one or more DepotControllers.
+        """
+
+        def __init__(self, methodName="runTest"):
+                super(ManyDepotTestCase, self).__init__(methodName)
+                self.dcs = {}
+                self.acs = {}
+
+        def register_apache_controller(self, name, ac):
+                """Registers an ApacheController with this TestCase.
+                We include this method here to make it easier to kill any
+                instances of Apache that were left floating around at the end
+                of the test.
+
+                We enforce the use of this method in
+                <ApacheController>.start() by refusing to start instances until
+                they are registered, which makes the test suite as a whole more
+                resilient, when setting up and tearing down test classes."""
+
+                if name in self.acs:
+                        # registering an Apache controller that is already
+                        # registered causes us to kill the existing controller
+                        # first.
+                        try:
+                                self.acs[name].stop()
+                        except Exception, e:
+                                try:
+                                        self.acs[name].kill()
+                                except Exception, e:
+                                        pass
+                self.acs[name] = ac
+
+        def __get_ac(self):
+                """If we only use a single ApacheController, self.ac will
+                return that controller, otherwise we return None."""
+                if self.acs and len(self.acs) == 1:
+                        return self.acs[self.acs.keys()[0]]
+                else:
+                        return None
+
+        def killalldepots(self):
+                try:
+                        ManyDepotTestCase.killalldepots(self)
+                finally:
+                        for name, ac in self.acs.items():
+                                self.debug("stopping apache controller %s" %
+                                    name)
+                                try:
+                                        ac.stop()
+                                except Exception, e :
+                                        try:
+                                                self.debug("killing apache "
+                                                    "instance %s" % name)
+                                                ac.kill()
+                                        except Exception, e:
+                                                self.debug("Unable to kill "
+                                                    "apache instance %s. This "
+                                                    "could cause subsequent "
+                                                    "tests to fail." % name)
+
+        # ac is a readonly property which returns a registered ApacheController
+        # provided there is exactly one registered, for convenience of writing
+        # test cases.
+        ac = property(fget=__get_ac)
+
+
 class SingleDepotTestCase(ManyDepotTestCase):
 
         def setUp(self, debug_features=EmptyI, publisher="test",
@@ -3455,7 +3523,7 @@ def eval_assert_raises(ex_type, eval_ex_func, func, *args):
         else:
                 raise RuntimeError("Function did not raise exception.")
 
-class SysrepoStateException(Exception):
+class ApacheStateException(Exception):
         pass
 
 class ApacheController(object):
@@ -3465,19 +3533,21 @@ class ApacheController(object):
                 The 'conf' parameter is a path to a httpd.conf file.  The 'port'
                 parameter is a port to run on.  The 'work_dir' is a temporary
                 directory to store runtime state.  The 'testcase' parameter is
-                the Pkg5TestCase to use when writing output.  The 'https'
+                the ApacheDepotTestCase to use when writing output.  The 'https'
                 parameter is a boolean indicating whether this instance expects
                 to be contacted via https or not.
                 """
 
-                self.apachectl = "/usr/apache2/2.2/bin/httpd"
+                self.apachectl = "/usr/apache2/2.2/bin/httpd.worker"
                 if not os.path.exists(work_dir):
                         os.makedirs(work_dir)
                 self.__conf_path = os.path.join(work_dir, "sysrepo.conf")
                 self.__port = port
                 self.__repo_hdl = None
                 self.__starttime = 0
-                self.__state = None
+                self.__state = "stopped"
+                if not testcase:
+                        raise RuntimeError("No testcase parameter specified")
                 self.__tc = testcase
                 prefix = "http"
                 if https:
@@ -3517,8 +3587,18 @@ class ApacheController(object):
                         self.__tc.debugresult(result, expected, msg)
 
         def start(self):
+                if self not in self.__tc.acs.values():
+                        # An attempt to start an ApacheController that has not
+                        # been registered can result in it not getting cleaned
+                        # up properly when the test completes, which can cause
+                        # other tests to fail. We don't allow that to happen.
+                        raise RuntimeError(
+                            "This ApacheController has not been registered with"
+                            " the ApacheDepotTestCase %s using "
+                            "set_apache_controller(name, ac)" % self.__tc)
+
                 if self._network_ping():
-                        raise SysrepoStateException("A depot (or some " +
+                        raise ApacheStateException("A depot (or some " +
                             "other network process) seems to be " +
                             "running on port %d already!" % self.__port)
                 cmdline = ["/usr/bin/setpgrp", self.apachectl, "-f",
@@ -3530,8 +3610,8 @@ class ApacheController(object):
                                 stdout=subprocess.PIPE,
                                 stderr=subprocess.PIPE)
                         if self.__repo_hdl is None:
-                                raise SysrepoStateException("Could not start "
-                                    "sysrepo")
+                                raise ApacheStateException("Could not start "
+                                    "apache")
                         begintime = time.time()
 
                         check_interval = 0.20
@@ -3539,7 +3619,7 @@ class ApacheController(object):
                         while (time.time() - begintime) <= 40.0:
                                 rc = self.__repo_hdl.poll()
                                 if rc is not None:
-                                        raise SysrepoStateException("Sysrepo "
+                                        raise ApacheStateException("Apache "
                                             "exited unexpectedly while "
                                             "starting (exit code %d)" % rc)
 
@@ -3550,7 +3630,7 @@ class ApacheController(object):
 
                         if contact == False:
                                 self.stop()
-                                raise SysrepoStateException("Sysrepo did not "
+                                raise ApacheStateException("Apache did not "
                                     "respond to repeated attempts to make "
                                     "contact")
                         self.__state = "started"
@@ -3656,8 +3736,8 @@ class SysrepoController(ApacheController):
 
         def __init__(self, conf, port, work_dir, testcase=None, https=False):
                 ApacheController.__init__(self, conf, port, work_dir,
-                    testcase=None, https=False)
-                self.apachectl = "/usr/apache2/2.2/bin/64/httpd"
+                    testcase=testcase, https=False)
+                self.apachectl = "/usr/apache2/2.2/bin/64/httpd.worker"
 
         def _network_ping(self):
                 try:

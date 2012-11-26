@@ -37,7 +37,7 @@ import pkg.portable as portable
 from pkg.client.debugvalues import DebugValues
 from pkg.client.transport.exception import TransportFailures
 
-class TestHTTPS(pkg5unittest.SingleDepotTestCase):
+class TestHTTPS(pkg5unittest.ApacheDepotTestCase):
         # Tests in this suite use the read only data directory.
         need_ro_data = True
 
@@ -54,7 +54,7 @@ class TestHTTPS(pkg5unittest.SingleDepotTestCase):
                 # as desired.
                 command = "--debug ssl_ca_file=%s %s" % \
                     (DebugValues["ssl_ca_file"], command)
-                return pkg5unittest.SingleDepotTestCase.pkg(self, command,
+                return pkg5unittest.ApacheDepotTestCase.pkg(self, command,
                     *args, **kwargs)
 
         def seed_ta_dir(self, certs, dest_dir=None):
@@ -72,20 +72,9 @@ class TestHTTPS(pkg5unittest.SingleDepotTestCase):
                         DebugValues["ssl_ca_file"] = os.path.join(dest_dir,
                             name)
 
-        def killalldepots(self):
-                try:
-                        pkg5unittest.SingleDepotTestCase.killalldepots(self)
-                finally:
-                        if self.ac:
-                                self.debug("killing apache controller")
-                                try:
-                                        self.ac.kill()
-                                except Exception,e :
-                                        pass
-
         def setUp(self):
-                self.ac = None
-                pkg5unittest.SingleDepotTestCase.setUp(self, start_depot=True)
+                pkg5unittest.ApacheDepotTestCase.setUp(self, ["test"],
+                    start_depots=True)
                 self.testdata_dir = os.path.join(self.test_root, "testdata")
                 self.make_misc_files(self.misc_files)
 
@@ -148,8 +137,10 @@ class TestHTTPS(pkg5unittest.SingleDepotTestCase):
                 with open(self.https_conf_path, "wb") as fh:
                         fh.write(self.https_conf % conf_dict)
                 
-                self.ac = pkg5unittest.ApacheController(self.https_conf_path,
-                    self.https_port, self.common_config_dir, https=True)
+                ac = pkg5unittest.ApacheController(self.https_conf_path,
+                    self.https_port, self.common_config_dir, https=True,
+                    testcase=self)
+                self.register_apache_controller("default", ac)
                 self.acurl = self.ac.url
 
         def test_01_basics(self):
