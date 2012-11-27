@@ -951,67 +951,6 @@ adm:NP:6445::::::
                 # Test rebuilding the index with a missing manifest.
                 self.pkg("rebuild-index")
 
-        def test_15807844(self):
-                """ Check that pkg search for temporary sources is successful
-                when there no publishers configured in the image."""
-
-                rurl = self.dc.get_repo_url()
-                self.pkgsend_bulk(rurl, self.example_pkg10)
-                self.image_create()
-                expected = \
-                "INDEX ACTION VALUE PACKAGE\n" \
-                "basename file bin/example_path pkg:/example_pkg@1.0-0\n"
-                self.pkg("search -s %s example_path" % self.rurl)
-                actual = self.reduceSpaces(self.output)
-                expected = self.reduceSpaces(expected)
-                self.assertEqualDiff(expected, actual)
-                self.pkg("search example_path", exit=1)
-
-
-class TestSearchMultiPublisher(pkg5unittest.ManyDepotTestCase):
-
-        same_pub1 = """
-            open same_pub1@1.1,5.11-0
-            add dir mode=0755 owner=root group=bin path=/bin
-            add file tmp/samepub_file1 mode=0555 owner=root group=bin path=/bin/samepub_file1
-            close """
-
-        same_pub2 = """
-            open same_pub2@1.1,5.11-0
-            add dir mode=0755 owner=root group=bin path=/bin
-            add file tmp/samepub_file2 mode=0555 owner=root group=bin path=/bin/samepub_file2
-            close """
-
-        misc_files = {
-            "tmp/samepub_file1": "magic",
-            "tmp/samepub_file2": "magic",
-        }
-
-        def setUp(self):
-                pkg5unittest.ManyDepotTestCase.setUp(self,["samepub", "samepub"],
-                    start_depots=True)
-                self.make_misc_files(self.misc_files)
-                self.durl1 = self.dcs[1].get_depot_url()
-                self.pkgsend_bulk(self.durl1, self.same_pub1, refresh_index=True)
-                self.durl2 = self.dcs[2].get_depot_url()
-                self.pkgsend_bulk(self.durl2, self.same_pub2, refresh_index=True)
-
-        def test_7140657(self):
-                """ Check that pkg search with -s works as intended when there are
-                two repositories with same publisher name configured."""
-
-                self.image_create(self.durl1, prefix="samepub")
-                self.pkg("set-publisher -g %s samepub" % self.durl2)
-                self.pkg("search -s %s samepub_file1" % self.durl1)
-
-                result_same_pub = \
-                "INDEX ACTION VALUE PACKAGE\n" \
-                "basename file bin/samepub_file1 pkg:/same_pub1@1.1-0\n"
-
-                actual = self.reduceSpaces(self.output)
-                expected = self.reduceSpaces(result_same_pub)
-                self.assertEqualDiff(expected, actual)
-                self.pkg("search -s %s samepub_file1" % self.durl2, exit=1)
 
 if __name__ == "__main__":
         unittest.main()

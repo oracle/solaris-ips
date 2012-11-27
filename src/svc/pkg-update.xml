@@ -76,14 +76,6 @@
 		<propval name='duration' type='astring' value='transient' />
 	</property_group>
 
-	<!--
-        Create a property group to allow the update service to
-        record the time it last ran.
-        See /usr/lib/update-manager/update-refresh.sh
-	-->
-	<property_group name='update' type='application'>
-	</property_group>
-
 	<stability value='Unstable' />
 
 	<template>
