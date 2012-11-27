@@ -632,6 +632,7 @@ class Transport(object):
                 # of origins for a publisher without incurring the significant
                 # overhead of performing file-based search unless the network-
                 # based resource is unavailable.
+                no_result_url = None
                 for d, retries, v in self.__gen_repo(pub, retry_count,
                     origin_only=True, prefer_remote=True, alt_repo=alt_repo,
                     operation="search", versions=[0, 1]):
@@ -663,7 +664,7 @@ class Transport(object):
                                         raise apx.UnsupportedSearchError(e.url,
                                             "search/1")
                                 elif e.code == httplib.NO_CONTENT:
-                                        raise apx.NegativeSearchResult(e.url)
+                                        no_result_url = e.url
                                 elif e.code in (httplib.BAD_REQUEST,
                                     errno.EINVAL):
                                         raise apx.MalformedSearchRequest(e.url)
@@ -678,8 +679,10 @@ class Transport(object):
                                         fobj = None
                                 else:
                                         raise
-
-                raise failures
+                if no_result_url:
+                        raise apx.NegativeSearchResult(no_result_url)
+                else:
+                        raise failures
 
         def get_ca_dir(self):
                 """Return the path to the directory that contains CA
