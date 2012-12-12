@@ -342,7 +342,7 @@ class Manifest(object):
                         }
                         for mvariant in mvariants:
                                 a = "set name=pkg.mediator " \
-                                    "value=%s %s %s\n".rstrip() % (mediation[0],
+                                    "value=%s %s %s\n" % (mediation[0],
                                      " ".join((
                                          "=".join(t)
                                           for t in values.iteritems()

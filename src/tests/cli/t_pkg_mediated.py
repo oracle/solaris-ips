@@ -20,7 +20,7 @@
 # CDDL HEADER END
 #
 
-# Copyright (c) 2011, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2011, 2012, Oracle and/or its affiliates. All rights reserved.
 
 import testutils
 if __name__ == "__main__":
@@ -185,6 +185,27 @@ class TestPkgMediated(pkg5unittest.SingleDepotTestCase):
             add link path=/usr/bin/python target=python2.8-unladen-swallow mediator=python mediator-version=2.8 mediator-implementation=unladen-swallow@2.8
             close """
 
+        pkg_multi_python = """
+            open pkg://test/runtime/multi-impl-python-26@2.6.0
+            add set name=pkg.summary value="Example python package with multiple implementations"
+            add file tmp/foopy path=/usr/bin/python2.6 owner=root group=bin mode=0555
+            add link path=/usr/bin/python target=python2.6 mediator=python mediator-implementation=cpython
+            add file tmp/foopyus path=/usr/bin/python2.6-unladen-swallow owner=root group=bin mode=0555
+            add link path=/usr/bin/python target=python2.6-unladen-swallow mediator=python mediator-implementation=unladen-swallow
+            close
+            open pkg://test/runtime/multi-impl-ver-python@2.7.0
+            add set name=pkg.summary value="Example python implementation package with multiple implementations and versions"
+            add file tmp/foopy path=/usr/bin/python2.6 owner=root group=bin mode=0555
+            add link path=/usr/bin/python target=python2.6 mediator=python mediator-version=2.6
+            add file tmp/foopyus path=/usr/bin/python2.6-unladen-swallow owner=root group=bin mode=0555
+            add file tmp/foopy path=/usr/bin/python2.7 owner=root group=bin mode=0555
+            add link path=/usr/bin/python target=python2.7 mediator=python mediator-version=2.7
+            add link path=/usr/bin/python target=python2.6-unladen-swallow mediator=python mediator-version=2.6 mediator-implementation=unladen-swallow
+            add file tmp/foopyus path=/usr/bin/python2.7-unladen-swallow owner=root group=bin mode=0555
+            add link path=/usr/bin/python target=python2.7-unladen-swallow mediator=python mediator-version=2.7 mediator-implementation=unladen-swallow
+            close
+            """
+
         pkg_vi = """
             open pkg://test/editor/nvi@1.0
             add set name=pkg.summary value="Example nvi vendor priority package"
@@ -205,6 +226,15 @@ class TestPkgMediated(pkg5unittest.SingleDepotTestCase):
             add set name=pkg.summary value="Example vim vi site priority package"
             add file tmp/foovim path=/usr/bin/vim owner=root group=bin mode=0555
             add hardlink path=/usr/bin/vi target=vim mediator=vi mediator-implementation=vim mediator-priority=site facet.vi=true
+            close """
+
+        pkg_multi_ver = """
+            open pkg://test/web/server/apache-22/module/apache-php52@5.2.5
+            add set name=pkg.summary value="Example multiple version mod_php package"
+            add file tmp/fooc path=usr/apache2/2.2/libexec/mod_php5.2.so owner=root group=bin mode=0555
+            add link path=usr/apache2/2.2/libexec/mod_php5.so target=mod_php5.2.so mediator=php mediator-version=5.2
+            add file tmp/food path=usr/apache2/2.2/libexec/mod_php5.2.5.so owner=root group=bin mode=0555
+            add link path=usr/apache2/2.2/libexec/mod_php5.so target=mod_php5.2.5.so mediator=php mediator-version=5.2.5
             close """
 
         misc_files = ["tmp/fooc", "tmp/food", "tmp/foopl", "tmp/foopy",
@@ -340,7 +370,7 @@ mta\tlocal\t1.0\tsystem\t\t
 
                 # Now install some packages to test the ability to list
                 # available mediations.
-                self.pkg("install -vvv \*python\* \*perl\* \*vi\*")
+                self.pkg("install -vvv \*/python\* \*perl\* \*vi\*")
 
                 # Test listing all available mediations.
                 self.__assert_available_mediation_matches("""\
@@ -430,6 +460,12 @@ vi\tsystem\t\tsystem\tsvr4\t
                         for lname in ("perl",):
                                 lpath = os.path.join(self.img_path(), "usr",
                                     "bin", lname)
+                                yield lpath
+
+                def gen_php_links():
+                        for lname in ("mod_php5.so",):
+                                lpath = os.path.join(self.img_path(), "usr",
+                                    "apache2", "2.2", "libexec", lname)
                                 yield lpath
 
                 def gen_python_links():
@@ -885,6 +921,88 @@ python\tsystem\t2.7\tlocal\tunladen-swallow@\t
                 self.pkg("verify -v python-unladen-swallow-27", exit=1)
                 self.pkg("fix")
                 self.pkg("verify -v")
+
+                # Remove all packages; then verify that installing a single
+                # package that has multiple version mediations works as
+                # expected.
+                self.pkg("unset-mediator -I python")
+                self.pkg("uninstall \*")
+
+                # Install apache-php52; verify that php 5.2.5 is selected.
+                self.pkg("install -vvv apache-php52")
+                self.__assert_mediation_matches("""\
+php\tsystem\t5.2.5\tsystem\t\t
+""")
+                check_target(gen_php_links(), "5.2.5")
+                self.pkg("verify")
+
+                # Test available mediations.
+                self.__assert_available_mediation_matches("""\
+php\tsystem\t5.2.5\tsystem\t\t
+php\tsystem\t5.2\tsystem\t\t
+""")
+
+                # Set mediation version to 5.2 and verify 5.2.5 is NOT selected.
+                self.pkg("set-mediator -vvv -V 5.2 php")
+                self.__assert_mediation_matches("""\
+php\tlocal\t5.2\tsystem\t\t
+""")
+                check_not_target(gen_php_links(), "5.2.5")
+                self.pkg("verify")
+
+                # Remove all packages; then verify that installing a single
+                # package that has multiple mediation implementations works as
+                # expected.
+                self.pkg("uninstall \*")
+                self.pkg("unset-mediator -V php")
+
+                # Install multi-impl-python; verify that unladen swallow is NOT
+                # selected.
+                self.pkg("install -vvv multi-impl-python-26")
+                self.__assert_mediation_matches("""\
+python\tsystem\t\tsystem\tcpython\t
+""")
+                check_not_target(gen_python_links(), "unladen-swallow")
+                self.pkg("verify")
+
+                # Test available mediations.
+                self.__assert_available_mediation_matches("""\
+python\tsystem\t\tsystem\tcpython\t
+python\tsystem\t\tsystem\tunladen-swallow\t
+""")
+
+                # Set mediation implementation to unladen swallow and verify it
+                # was selected.
+                self.pkg("set-mediator -vvv -I unladen-swallow python")
+                self.__assert_mediation_matches("""\
+python\tsystem\t\tlocal\tunladen-swallow\t
+""")
+                check_target(gen_python_links(), "unladen-swallow")
+                self.pkg("verify")
+
+                # Remove all packages; then verify that installing a single
+                # package that has multiple mediation and version
+                # implementations works as expected.
+                self.pkg("uninstall \*")
+                self.pkg("unset-mediator -I python")
+                self.pkg("install -vvv multi-impl-ver-python")
+
+                # Verify that the default implementation of Python 2.7 was
+                # selected even though the package offers Python 2.6 and an
+                # unladen swallow implemenation of each version of Python.
+                self.__assert_mediation_matches("""\
+python\tsystem\t2.7\tsystem\t\t
+""")
+                check_not_target(gen_python_links(), "unladen-swallow")
+                self.pkg("verify")
+
+                # Test available mediations.
+                self.__assert_available_mediation_matches("""\
+python\tsystem\t2.7\tsystem\t\t
+python\tsystem\t2.7\tsystem\tunladen-swallow\t
+python\tsystem\t2.6\tsystem\t\t
+python\tsystem\t2.6\tsystem\tunladen-swallow\t
+""")
 
         def test_02_hardlink_mediation(self):
                 """Verify that package mediation works as expected for install,
