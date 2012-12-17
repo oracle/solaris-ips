@@ -33,6 +33,7 @@ import shutil
 import unittest
 import tempfile
 
+import pkg.lint.base as base
 import pkg.lint.engine as engine
 import pkg.lint.log as log
 import pkg.fmri as fmri
@@ -3105,6 +3106,127 @@ dir group=sys mode=0755 owner=root path=etc
                 self.assert_(lint_logger.ids[0] == "pkglint.dupaction001.1",
                     "Expected pkglint.dupaction001.1, got %s" %
                     lint_logger.ids[0])
+
+
+class TestVolatileLintEngineDepot(pkg5unittest.ManyDepotTestCase):
+        """Tests that exercise reference vs. lint repository checks and tests
+        linting of multiple packages at once, similar to TestLintEngineDepot,
+        but with less overhead during setUp (this test class is not marked
+        as persistent_setup = True, so test methods are responsible for their
+        own setup)"""
+
+        # used by test_get_manifest(..)
+        get_manifest_data = {}
+# The following two manifests check that given a package in the lint repository,
+# that we can access the latest version of that package from the reference
+# repository using LintEngine.get_manifest(.., reference=True)
+        get_manifest_data["get-manifest-ref.mf"] = """
+set name=pkg.fmri value=pkg://opensolaris.org/check/parent@0.5.11,5.11-0.100:20100603T215050Z
+set name=variant.arch value=i386 value=sparc
+set name=pkg.summary value="additional content"
+set name=pkg.description value="core kernel software for a specific instruction-set architecture"
+set name=org.opensolaris.consolidation value=osnet
+set name=info.classification value=org.opensolaris.category.2008:System/Core
+"""
+        get_manifest_data["get-manifest-oldref.mf"] = """
+set name=pkg.fmri value=pkg://opensolaris.org/check/parent@0.5.11,5.11-0.99:20100603T215050Z
+set name=variant.arch value=i386 value=sparc
+set name=pkg.summary value="additional content"
+set name=pkg.description value="core kernel software for a specific instruction-set architecture"
+set name=org.opensolaris.consolidation value=osnet
+set name=info.classification value=org.opensolaris.category.2008:System/Core
+"""
+        get_manifest_data["get-manifest-lint.mf"] = """
+#
+# This is the manifest that should appear in the lint repository.
+#
+set name=variant.arch value=i386 value=sparc
+set name=pkg.summary value="additional content"
+set name=pkg.fmri value=pkg://opensolaris.org/check/parent@0.5.11,5.11-0.145:20100603T215050Z
+set name=pkg.description value="core kernel software for a specific instruction-set architecture"
+set name=org.opensolaris.consolidation value=osnet
+set name=info.classification value=org.opensolaris.category.2008:System/Core
+"""
+
+        def setUp(self):
+                pkg5unittest.ManyDepotTestCase.setUp(self,
+                    ["opensolaris.org", "opensolaris.org"],
+                    start_depots=True)
+
+                self.ref_uri = self.dcs[1].get_depot_url()
+                self.lint_uri = self.dcs[2].get_depot_url()
+                self.cache_dir = tempfile.mkdtemp("pkglint-cache", "",
+                    self.test_root)
+
+        def test_get_manifest(self):
+                """Check that <LintEngine>.get_manifest works ensuring
+                it returns appropriate manifests for the lint and reference
+                repositories."""
+
+                paths = self.make_misc_files(self.get_manifest_data)
+                rcfile = os.path.join(self.test_root, "pkglintrc")
+                lint_mf = os.path.join(self.test_root, "get-manifest-lint.mf")
+                old_ref_mf = os.path.join(self.test_root,
+                    "get-manifest-oldref.mf")
+                ref_mf = os.path.join(self.test_root, "get-manifest-ref.mf")
+                ret, ref_fmri =  self.pkgsend(self.ref_uri, "publish %s" %
+                    ref_mf)
+                ret, oldref_fmri =  self.pkgsend(self.ref_uri, "publish %s" %
+                    old_ref_mf)
+                ret, lint_fmri =  self.pkgsend(self.lint_uri, "publish %s" %
+                    lint_mf)
+
+                lint_logger = TestLogFormatter()
+                lint_engine = engine.LintEngine(lint_logger, use_tracker=False,
+                    config_file=rcfile)
+                manifests = read_manifests([lint_mf], lint_logger)
+                lint_engine.setup(cache=self.cache_dir,
+                    ref_uris=[self.ref_uri], lint_uris=[self.lint_uri])
+
+                # try retrieving a few names that should match our lint manifest
+                for name in ["check/parent", "pkg:/check/parent",
+                    "pkg://opensolaris.org/check/parent@0.5.10"]:
+                        mf = lint_engine.get_manifest(
+                            name, search_type=lint_engine.LATEST_SUCCESSOR)
+                        self.assert_(str(mf.fmri) == lint_fmri)
+
+                # try retrieving a few names that should match our parent
+                # manifest when using LATEST_SUCCESSOR mode
+                for name in ["check/parent", "pkg:/check/parent",
+                    "pkg://opensolaris.org/check/parent@0.5.10"]:
+                        mf = lint_engine.get_manifest(
+                            name, search_type=lint_engine.LATEST_SUCCESSOR,
+                            reference=True)
+                        self.assert_(str(mf.fmri) == ref_fmri)
+
+                # try retrieving a few names that should not match when using
+                # EXACT mode.
+                for name in ["check/parent@1.0",
+                    "pkg://opensolaris.org/check/parent@0.5.10"]:
+                        mf = lint_engine.get_manifest(
+                            name, search_type=lint_engine.EXACT)
+                        self.assert_(mf == None)
+
+                # try retrieving a specific version of the manifest from the
+                # reference repository.
+                mf = lint_engine.get_manifest(
+                    "pkg://opensolaris.org/check/parent@0.5.11,5.11-0.99",
+                    search_type=lint_engine.EXACT, reference=True)
+                self.assert_(str(mf.fmri) == oldref_fmri)
+
+                # test that we raise an exception when no reference repo is
+                # configured, but that searches for a non-existent package from
+                # the lint manifests do still return None.
+                shutil.rmtree(os.path.join(self.cache_dir, "ref_image"))
+                lint_engine = engine.LintEngine(lint_logger, use_tracker=False,
+                    config_file=rcfile)
+                lint_engine.setup(cache=self.cache_dir,
+                    lint_manifests=manifests)
+                mf = lint_engine.get_manifest("example/package")
+                self.assert_(mf == None)
+                self.assertRaises(base.LintException, lint_engine.get_manifest,
+                    "example/package", reference=True)
+
 
 class TestLintEngineInternals(pkg5unittest.Pkg5TestCase):
 

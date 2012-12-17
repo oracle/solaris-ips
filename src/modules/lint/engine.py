@@ -678,7 +678,7 @@ class LintEngine(object):
         EXACT = 0
         LATEST_SUCCESSOR = 1
 
-        def get_manifest(self, pkg_name, search_type=EXACT):
+        def get_manifest(self, pkg_name, search_type=EXACT, reference=False):
                 """Returns the first available manifest for a given package
                 name, searching hierarchically in the lint manifests,
                 the lint_repo or the ref_repo for that single package.
@@ -689,6 +689,10 @@ class LintEngine(object):
                 When search_type is LintEngine.LATEST_SUCCESSOR, we return the
                 most recent successor of the provided package, using the
                 lint_fmri_successor() method defined in this module.
+
+                If 'reference' is True, only search for the package using the
+                reference image. If no reference image has been configured, this
+                raises a pkg.lint.base.LintException.
                 """
 
                 if not pkg_name.startswith("pkg:/"):
@@ -790,8 +794,16 @@ class LintEngine(object):
                                 return mf
 
                 # search hierarchically for the given package name in our
-                # local manifests, our lint image, or our reference image
-                # and return a manifest for that package.
+                # local manifests, using our lint image, or using our reference
+                # image and return a manifest for that package.
+                if reference:
+                     if not self.ref_api_inst:
+                             raise base.LintException(
+                                _("No reference repository has been "
+                                "configured"))
+                     return mf_from_image(self.ref_api_inst, pkg_name,
+                        search_type)
+
                 for mf in self.lint_manifests:
                         search_fmri = build_fmri(pkg_name)
                         if search_type == self.LATEST_SUCCESSOR and \
