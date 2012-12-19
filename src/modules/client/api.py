@@ -1017,7 +1017,7 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                                         iter(args[a])
                                 except TypeError:
                                         raise AssertionError("%s is not an "
-                                            "iterable") % a 
+                                            "iterable" % a)
 
                         else:
                                 assert (args[a] is None or
@@ -1043,14 +1043,13 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                                         illegals.append(fmris)
 
                 if illegals:
-                        raise apx.PlanCreationException(err,
-                            illegal=illegals)
+                        raise apx.PlanCreationException(illegal=illegals)
 
                 # some logical checks
                 errors = []
                 if not args["_new_be"] and args["_be_name"]:
                         errors.append(apx.InvalidOptionError(
-                            apx.InvalidOptionError.REQUIRED, ["_be_name", 
+                            apx.InvalidOptionError.REQUIRED, ["_be_name",
                             "_new_be"]))
                 if not args["_backup_be"] and args["_backup_be_name"]:
                         errors.append(apx.InvalidOptionError(
@@ -1063,7 +1062,6 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
 
                 if errors:
                         raise apx.InvalidOptionErrors(errors)
-
 
                 # check if repo URIs are valid
                 try:
@@ -1080,7 +1078,7 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                         if type(r) == publisher.RepositoryURI:
                                 # RepoURI objects pass right away
                                 continue
-                        
+
                         if not misc.valid_pub_url(r):
                                 illegals.append(r)
 

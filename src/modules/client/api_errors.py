@@ -1913,7 +1913,6 @@ class UnsupportedRepositoryURI(PublisherError):
         """Used to indicate that the specified repository URI uses an
         unsupported scheme."""
 
-
         def __init__(self, uris=[]):
                 if isinstance(uris, basestring):
                         uris = [uris]
@@ -1947,7 +1946,7 @@ class UnsupportedRepositoryURI(PublisherError):
                             "uri": i, "scheme": s }
                 return _("The specified URI uses an unsupported scheme."
                     "  Supported schemes are: file://, http://, and "
-                    "https://.")          
+                    "https://.")
 
 
 class UnsupportedRepositoryURIAttribute(PublisherError):
@@ -3067,14 +3066,4 @@ class InvalidOptionErrors(ApiException):
                 for e in self.errors:
                         msgs.append(str(e))
                 return "\n".join(msgs)
-                                
-
-
-                        
-
-
-
-
-
-
 
