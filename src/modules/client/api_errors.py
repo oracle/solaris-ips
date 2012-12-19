@@ -1913,16 +1913,41 @@ class UnsupportedRepositoryURI(PublisherError):
         """Used to indicate that the specified repository URI uses an
         unsupported scheme."""
 
+
+        def __init__(self, uris=[]):
+                if isinstance(uris, basestring):
+                        uris = [uris]
+
+                assert isinstance(uris, (list, tuple, set))
+
+                self.uris = uris
+
         def __str__(self):
-                if self.data:
-                        scheme = urlparse.urlsplit(self.data,
+                illegals = []
+
+                for u in self.uris:
+                        assert isinstance(u, basestring)
+                        scheme = urlparse.urlsplit(u,
                             allow_fragments=0)[0]
+                        illegals.append((u, scheme))
+
+                if len(illegals) > 1:
+                        msg = _("The follwing URIs use unsupported "
+                            "schemes.  Supported schemes are "
+                            "file://, http://, and https://.")
+                        for i, s in illegals:
+                                msg += _("\n  %(uri)s (scheme: "
+                                    "%(scheme)s)") % {"uri": i, "scheme": s }
+                        return msg
+                elif len(illegals) == 1:
+                        i, s = illegals[0]
                         return _("The URI '%(uri)s' uses the unsupported "
                             "scheme '%(scheme)s'.  Supported schemes are "
                             "file://, http://, and https://.") % {
-                            "uri": self.data, "scheme": scheme }
+                            "uri": i, "scheme": s }
                 return _("The specified URI uses an unsupported scheme."
-                    "  Supported schemes are: file://, http://, and https://.")
+                    "  Supported schemes are: file://, http://, and "
+                    "https://.")          
 
 
 class UnsupportedRepositoryURIAttribute(PublisherError):
@@ -2973,3 +2998,83 @@ class UnknownFreezeFileVersion(ApiException):
                     "found": self.found,
                     "loc": self.loc,
                 }
+
+class InvalidOptionError(ApiException):
+        """Used to indicate an issue with verifying options passed to a certain
+        operation."""
+
+        GENERIC  = "generic"      # generic option violation
+        REPEATED = "repeated"     # option repetition is not allowed
+        INCOMPAT = "incompat"     # option 'a' can not be specified with option 'b'
+        REQUIRED = "required"     # option 'a' requires option 'b'
+        XOR      = "xor"          # either option 'a' or option 'b' must be specified
+
+	def __init__(self, err_type=GENERIC, options=[], msg=None):
+
+                self.err_type = err_type
+                self.options = options
+                self.msg = msg
+
+        def __str__(self):
+
+                # In case the user provided a custom message we just take it and
+                # append the according options.
+                if self.msg is not None:
+                        if self.options:
+                                self.msg += ": "
+                                self.msg += " ".join(self.options)
+                        return self.msg
+
+       		if self.err_type == self.REPEATED:
+                        assert len(self.options) == 1
+                        return _("Option '%(option)s' repeated ") % {
+                            "option" : options[0]}
+                elif self.err_type == self.INCOMPAT:
+                        assert len(self.options) == 2
+                        return _("The '%(op1)s' and '%(op2)s' option may "
+                            "not be combined") % {"op1" : self.options[0],
+                            "op2" : self.options[1]}
+                elif self.err_type == self.REQUIRED:
+                        assert len(self.options) == 2
+                        return _("'%(op1)s' may only be used with "
+                            "'%(op2)s'") % {"op1" : self.options[0],
+                            "op2" : self.options[1]}
+                elif self.err_type == self.XOR:
+                        assert len(self.options) == 2
+                        return _("Either '%(op1)s' or '%(op2)s' must be "
+                            "specified") % {"op1" : self.options[0],
+                            "op2" : self.options[1]}
+                else:
+                        return _("invalid option(s): ") + " ".join(self.options)
+
+class InvalidOptionErrors(ApiException):
+
+        def __init__(self, errors):
+
+                self.errors = []
+
+                assert (isinstance(errors, list) or isinstance(errors, tuple) or
+                    isinstance(errors, set) or
+                    isinstance(errors, InvalidOptionError))
+
+                if isinstance(errors, InvalidOptionError):
+                        self.errors.append(errors)
+                else:
+                        self.errors = errors
+
+        def __str__(self):
+                msgs = []
+                for e in self.errors:
+                        msgs.append(str(e))
+                return "\n".join(msgs)
+                                
+
+
+                        
+
+
+
+
+
+
+

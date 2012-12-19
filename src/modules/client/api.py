@@ -966,6 +966,127 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
 
                 raise apx.IpkgOutOfDateException()
 
+        def __verify_args(self, args):
+                """Verifies arguments passed into the API.
+                It tests for correct data types of the input args, verifies that
+                passed in FMRIs are valid, checks if repository URIs are valid
+                and does some logical tests for the combination of arguments."""
+
+                arg_types = {
+                    # arg name              type                   nullable
+                    "_noexecute":           (bool,                 False),
+                    "_be_activate":         (bool,                 False),
+                    "_new_be":              (bool,                 True),
+                    "_be_name":             (basestring,           True),
+                    "_backup_be":           (bool,                 True),
+                    "_backup_be_name":      (basestring,           True),
+                    "_pubcheck":            (bool,                 False),
+                    "_refresh_catalogs":    (bool,                 False),
+                    "_repos":               (iter,                 True),
+                    "_update_index":        (bool,                 False),
+                    "_li_ignore":           (iter,                 True),
+                    "_li_parent_sync":      (bool,                 False),
+                    "_li_md_only":          (bool,                 False),
+                    "_ipkg_require_latest": (bool,                 False),
+                    "pkgs_inst":            (iter,                 True),
+                    "pkgs_update":          (iter,                 True),
+                    "pkgs_to_uninstall":    (iter,                 True),
+                    "reject_list":          (iter,                 True),
+                    "mediators":            (iter,                 True),
+                    "variants":             (dict,                 True),
+                    "facets":               (pkg.facet.Facets,     True)
+                }
+
+                # merge kwargs into the main arg dict
+                if "kwargs" in args:
+                        for name, value in args["kwargs"].items():
+                                args[name] = value
+
+                # check arguments for proper type and nullability
+                for a in args:
+                        try:
+                                a_type, nullable = arg_types[a]
+                        except KeyError:
+                                # unknown argument passed, ignore
+                                continue
+
+                        assert nullable or args[a] is not None
+
+                        if args[a] is not None and a_type == iter:
+                                try:
+                                        iter(args[a])
+                                except TypeError:
+                                        raise AssertionError("%s is not an "
+                                            "iterable") % a 
+
+                        else:
+                                assert (args[a] is None or
+                                    isinstance(args[a], a_type)), "%s is " \
+                                    "type %s; expected %s" % (a, type(a),
+                                    a_type)
+
+                # check if passed FMRIs are valid
+                illegals = []
+                for i in ("pkgs_inst", "pkgs_update", "pkgs_to_uninstall",
+                    "reject_list"):
+                        try:
+                                fmris = args[i]
+                        except KeyError:
+                                continue
+                        if fmris is None:
+                                continue
+                        for pat, err, pfmri, matcher in \
+                            self.parse_fmri_patterns(fmris):
+                                if not err:
+                                        continue
+                                else:
+                                        illegals.append(fmris)
+
+                if illegals:
+                        raise apx.PlanCreationException(err,
+                            illegal=illegals)
+
+                # some logical checks
+                errors = []
+                if not args["_new_be"] and args["_be_name"]:
+                        errors.append(apx.InvalidOptionError(
+                            apx.InvalidOptionError.REQUIRED, ["_be_name", 
+                            "_new_be"]))
+                if not args["_backup_be"] and args["_backup_be_name"]:
+                        errors.append(apx.InvalidOptionError(
+                            apx.InvalidOptionError.REQUIRED, ["_backup_be_name",
+                            "_backup_be"]))
+                if args["_backup_be"] and args["_new_be"]:
+                        errors.append(apx.InvalidOptionError(
+                            apx.InvalidOptionError.INCOMPAT, ["_backup_be",
+                            "_new_be"]))
+
+                if errors:
+                        raise apx.InvalidOptionErrors(errors)
+
+
+                # check if repo URIs are valid
+                try:
+                        repos = args["_repos"]
+                except KeyError:
+                        return
+
+                if not repos:
+                        return
+
+                illegals = []
+                for r in repos:
+                        valid = False
+                        if type(r) == publisher.RepositoryURI:
+                                # RepoURI objects pass right away
+                                continue
+                        
+                        if not misc.valid_pub_url(r):
+                                illegals.append(r)
+
+                if illegals:
+                        raise apx.UnsupportedRepositoryURI(illegals)
+
         def __plan_op(self, _op, _ad_kwargs=None,
             _backup_be=None, _backup_be_name=None, _be_activate=True,
             _be_name=None, _ipkg_require_latest=False, _li_ignore=None,
@@ -1011,6 +1132,8 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                 assert not _li_md_only or \
                     _op in [API_OP_ATTACH, API_OP_DETACH, API_OP_SYNC]
                 assert not _li_md_only or _li_parent_sync
+
+                self.__verify_args(locals())
 
                 # make some perf optimizations
                 if _li_md_only:
