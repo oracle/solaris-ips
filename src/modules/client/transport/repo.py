@@ -1091,7 +1091,9 @@ class HTTPSRepo(HTTPRepo):
                     progclass=progclass, progtrack=progtrack,
                     sslcert=self._repouri.ssl_cert,
                     sslkey=self._repouri.ssl_key, repourl=self._url,
-                    header=header, compressible=compress)
+                    header=header, compressible=compress,
+                    runtime_proxy=self._repouri.runtime_proxy,
+                    proxy=self._repouri.proxy)
 
         def _fetch_url(self, url, header=None, compress=False, ccancel=None,
             failonerror=True):
@@ -1099,14 +1101,18 @@ class HTTPSRepo(HTTPRepo):
                     sslcert=self._repouri.ssl_cert,
                     sslkey=self._repouri.ssl_key, repourl=self._url,
                     compressible=compress, ccancel=ccancel,
-                    failonerror=failonerror)
+                    failonerror=failonerror,
+                    runtime_proxy=self._repouri.runtime_proxy,
+                    proxy=self._repouri.proxy)
 
         def _fetch_url_header(self, url, header=None, ccancel=None,
             failonerror=True):
                 return self._engine.get_url_header(url, header=header,
                     sslcert=self._repouri.ssl_cert,
                     sslkey=self._repouri.ssl_key, repourl=self._url,
-                    ccancel=ccancel, failonerror=failonerror)
+                    ccancel=ccancel, failonerror=failonerror,
+                    runtime_proxy=self._repouri.runtime_proxy,
+                    proxy=self._repouri.proxy)
 
         def _post_url(self, url, data=None, header=None, ccancel=None,
             data_fobj=None, data_fp=None, failonerror=True):
@@ -1114,7 +1120,9 @@ class HTTPSRepo(HTTPRepo):
                     sslcert=self._repouri.ssl_cert,
                     sslkey=self._repouri.ssl_key, repourl=self._url,
                     ccancel=ccancel, data_fobj=data_fobj,
-                    data_fp=data_fp, failonerror=failonerror)
+                    data_fp=data_fp, failonerror=failonerror,
+                    runtime_proxy=self._repouri.runtime_proxy,
+                    proxy=self._repouri.proxy)
 
 
 class _FilesystemRepo(TransportRepo):

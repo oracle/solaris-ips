@@ -92,8 +92,13 @@ class TestHTTPS(pkg5unittest.ApacheDepotTestCase):
                 self.pidfile = os.path.join(self.apache_dir, "httpd.pid")
                 self.common_config_dir = os.path.join(self.test_root,
                     "apache-serve")
-                # Choose a port for apache to run on.
+
+                # Choose ports for apache to run on.
                 self.https_port = self.next_free_port
+                self.next_free_port += 1
+                self.proxy_port = self.next_free_port
+                self.next_free_port += 1
+                self.bad_proxy_port = self.next_free_port
                 self.next_free_port += 1
 
                 # Set up the paths to the certificates that will be needed.
@@ -117,6 +122,8 @@ class TestHTTPS(pkg5unittest.ApacheDepotTestCase):
                 conf_dict = {
                     "common_log_format": "%h %l %u %t \\\"%r\\\" %>s %b",
                     "https_port": self.https_port,
+                    "proxy_port": self.proxy_port,
+                    "bad_proxy_port": self.bad_proxy_port,
                     "log_locs": self.apache_log_dir,
                     "pidfile": self.pidfile,
                     "port": self.https_port,
@@ -142,6 +149,11 @@ class TestHTTPS(pkg5unittest.ApacheDepotTestCase):
                     testcase=self)
                 self.register_apache_controller("default", ac)
                 self.acurl = self.ac.url
+                # Our proxy is served by the same Apache controller, but uses
+                # a different port.
+                self.proxyurl = self.ac.url.replace("https", "http")
+                self.proxyurl = self.proxyurl.replace(str(self.https_port),
+                    str(self.proxy_port))
 
         def test_01_basics(self):
                 """Test that adding a https publisher works and that a package
@@ -195,6 +207,47 @@ class TestHTTPS(pkg5unittest.ApacheDepotTestCase):
                 portable.rename(npath, opath)
                 DebugValues["ssl_ca_file"] = odebug
 
+                # verify that we can reach the repository using a HTTPS-capable
+                # HTTP proxy.
+                self.image_create()
+                self.seed_ta_dir("ta7")
+                self.pkg("set-publisher --proxy %(proxy)s "
+                    "-k %(key)s -c %(cert)s -p %(url)s" % {
+                    "url": self.acurl,
+                    "cert": os.path.join(self.cs_dir, "cs1_ta6_cert.pem"),
+                    "key": os.path.join(self.keys_dir, "cs1_ta6_key.pem"),
+                    "proxy": self.proxyurl})
+                self.pkg("install example_pkg")
+
+                # Now try to use the bad proxy, ensuring that we cannot set
+                # the publisher (and verifying that we were indeed using the
+                # proxy previously)
+                bad_proxyurl = self.proxyurl.replace(str(self.proxy_port),
+                    str(self.bad_proxy_port))
+                self.image_create()
+                self.seed_ta_dir("ta7")
+                self.pkg("set-publisher --proxy %(proxy)s "
+                    "-k %(key)s -c %(cert)s -p %(url)s" % {
+                    "url": self.acurl,
+                    "cert": os.path.join(self.cs_dir, "cs1_ta6_cert.pem"),
+                    "key": os.path.join(self.keys_dir, "cs1_ta6_key.pem"),
+                    "proxy": bad_proxyurl}, exit=1)
+
+                # Set the bad proxy in the image, verify we can't refresh,
+                # then use an OS environment override to force the use of a
+                # good proxy.
+                self.pkg("set-publisher --no-refresh --proxy %(proxy)s "
+                    "-k %(key)s -c %(cert)s -g %(url)s test" % {
+                    "url": self.acurl,
+                    "cert": os.path.join(self.cs_dir, "cs1_ta6_cert.pem"),
+                    "key": os.path.join(self.keys_dir, "cs1_ta6_key.pem"),
+                    "proxy": bad_proxyurl}, exit=0)
+                self.pkg("refresh", exit=1)
+                proxy_env = {"https_proxy": self.proxyurl}
+                self.pkg("refresh", env_arg=proxy_env)
+                self.pkg("install example_pkg", env_arg=proxy_env)
+
+
         https_conf = """\
 # Configuration and logfile names: If the filenames you specify for many
 # of the server's control files begin with "/" (or "drive:/" for Win32), the
@@ -225,6 +278,12 @@ PidFile "%(pidfile)s"
 # prevent Apache from glomming onto all bound IP addresses.
 #
 Listen 0.0.0.0:%(https_port)s
+
+# We also make ourselves a general-purpose proxy. This is not needed for the
+# SSL reverse-proxying to the pkg.depotd, but allows us to test that pkg(1)
+# can communicate to HTTPS origins using a proxy.
+Listen 0.0.0.0:%(proxy_port)s
+Listen 0.0.0.0:%(bad_proxy_port)s
 
 #
 # Dynamic Shared Object (DSO) Support
@@ -351,6 +410,7 @@ LogLevel debug
     # a CustomLog directive (see below).
     #
     LogFormat "%(common_log_format)s" common
+    LogFormat "PROXY %(common_log_format)s" proxylog
 
     #
     # The location and format of the access logfile (Common Logfile Format).
@@ -430,7 +490,35 @@ SSLRandomSeed connect builtin
         </Location>
 </VirtualHost>
 
+#
+# We configure this Apache instance as a general-purpose HTTP proxy, accepting
+# requests from localhost, and allowing CONNECTs to our HTTPS port
+#
+<VirtualHost 0.0.0.0:%(proxy_port)s>
+        <Proxy *>
+                Order Deny,Allow
+                Deny from all
+                Allow from 127.0.0.1
+        </Proxy>
+        AllowCONNECT %(https_port)s
+        ProxyRequests on
+        CustomLog "%(log_locs)s/proxy_access_log" proxylog
+</VirtualHost>
 
+<VirtualHost 0.0.0.0:%(bad_proxy_port)s>
+        <Proxy *>
+                Order Deny,Allow
+                Deny from all
+                Allow from 127.0.0.1
+        </Proxy>
+#  We purposely prevent this proxy from being able to connect to our SSL
+#  port, making sure that when we point pkg(1) to this bad proxy, operations
+#  will fail - the following line is commented out:
+#        AllowCONNECT %(https_port)s
+        ProxyRequests on
+        CustomLog "%(log_locs)s/badproxy_access_log" proxylog
+
+</VirtualHost>
 """
 
 class TestDepotHTTPS(pkg5unittest.SingleDepotTestCase):
