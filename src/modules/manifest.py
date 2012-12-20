@@ -178,14 +178,26 @@ class Manifest(object):
                                 return v
                         return frozenset(v)
 
-                sdict = dict(
-                    ((a.name, hashify(a.attrs.get(a.key_attr, id(a)))), a)
-                    for a in self.gen_actions(self_exclude)
-                )
-                odict = dict(
-                    ((a.name, hashify(a.attrs.get(a.key_attr, id(a)))), a)
-                    for a in origin.gen_actions(origin_exclude)
-                )
+                def dictify(mf, excludes):
+                        # Transform list of actions into a dictionary keyed by
+                        # action key attribute, key attribute and mediator, or
+                        # id if there is no key attribute.
+                        for a in mf.gen_actions(excludes):
+                                if (a.name == "link" or
+                                    a.name == "hardlink") and \
+                                    a.attrs.get("mediator"):
+                                        akey = (a.name, frozenset([
+                                            a.key_attr,
+                                            a.attrs.get("mediator-version"),
+                                            a.attrs.get("mediator-implementation")
+                                        ]))
+                                else:
+                                        akey = (a.name, hashify(a.attrs.get(
+                                            a.key_attr, id(a))))
+                                yield (akey, a)
+
+                sdict = dict(dictify(self, self_exclude))
+                odict = dict(dictify(origin, origin_exclude))
 
                 sset = set(sdict.iterkeys())
                 oset = set(odict.iterkeys())

@@ -237,6 +237,19 @@ class TestPkgMediated(pkg5unittest.SingleDepotTestCase):
             add link path=usr/apache2/2.2/libexec/mod_php5.so target=mod_php5.2.5.so mediator=php mediator-version=5.2.5
             close """
 
+        pkg_variant = """
+            open pkg://test/multi-ver-variant@1.0
+            add set name=pkg.summary value="Example mediated varianted package"
+            add file tmp/fooc path=/usr/bin/foo-1-nd owner=root group=bin mode=0555
+            add file tmp/food path=/usr/bin/foo-1-d owner=root group=bin mode=0555
+            add hardlink path=usr/bin/foo target=foo-1-nd mediator=foo mediator-version=1 variant.debug.osnet=false
+            add hardlink path=usr/bin/foo target=foo-1-d mediator=foo mediator-version=1 variant.debug.osnet=true
+            add file tmp/fooc path=/usr/bin/foo-2-nd owner=root group=bin mode=0555
+            add file tmp/food path=/usr/bin/foo-2-d owner=root group=bin mode=0555
+            add hardlink path=usr/bin/foo target=foo-2-nd mediator=foo mediator-version=2 variant.debug.osnet=false
+            add hardlink path=usr/bin/foo target=foo-2-d mediator=foo mediator-version=2 variant.debug.osnet=true
+            close """
+
         misc_files = ["tmp/fooc", "tmp/food", "tmp/foopl", "tmp/foopy",
             "tmp/foopyus", "tmp/foosm", "tmp/foopf", "tmp/foou", "tmp/foonvi",
             "tmp/foovi", "tmp/foovim"]
@@ -1105,6 +1118,52 @@ vi\tsite\t\tsite\tvim\t
                 assert_target(vi_path, vim_path)
                 self.__assert_mediation_matches("""\
 vi\tsite\t\tsite\tvim\t
+""")
+
+                # Uninstall all packages; then verify that a single package
+                # containing multiple varianted, mediated hardlinks works as
+                # expected.
+                self.pkg("uninstall \*")
+
+                foo_path = get_link_path("usr", "bin", "foo")
+                foo_1_nd_path = get_link_path("usr", "bin", "foo-1-nd")
+                foo_1_d_path = get_link_path("usr", "bin", "foo-1-d")
+                foo_2_nd_path = get_link_path("usr", "bin", "foo-2-nd")
+                foo_2_d_path = get_link_path("usr", "bin", "foo-2-d")
+
+                # Install multi-ver-variant and verify version 2 non-debug is
+                # selected.
+                self.pkg("install -vvv multi-ver-variant")
+                assert_target(foo_path, foo_2_nd_path)
+                self.__assert_mediation_matches("""\
+foo\tsystem\t2\tsystem\t\t
+""")
+                self.pkg("verify")
+
+                # Set debug variant and verify version 2 debug is selected.
+                self.pkg("change-variant -vvv debug.osnet=true")
+                assert_target(foo_path, foo_2_d_path)
+                self.__assert_mediation_matches("""\
+foo\tsystem\t2\tsystem\t\t
+""")
+                self.pkg("verify")
+
+                # Set mediator version to 1 and verify version 1 debug is
+                # selected.
+                self.pkg("set-mediator -vvv -V 1 foo")
+                assert_target(foo_path, foo_1_d_path)
+                self.__assert_mediation_matches("""\
+foo\tlocal\t1\tsystem\t\t
+""")
+                self.pkg("verify")
+
+                # Reset debug variant and verify version 1 non-debug is
+                # selected.
+                self.pkg("change-variant -vvv debug.osnet=false")
+                self.pkg("verify")
+                assert_target(foo_path, foo_1_nd_path)
+                self.__assert_mediation_matches("""\
+foo\tlocal\t1\tsystem\t\t
 """)
 
 
