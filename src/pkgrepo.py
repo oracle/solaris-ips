@@ -1414,7 +1414,8 @@ def subcmd_fix(conf, args):
                                         fmri = path
                                 broken_fmris.add(fmri)
                                 if verbose:
-                                        progtrack.repo_fix_yield_info(message)
+                                        progtrack.repo_fix_yield_info(fmri,
+                                            message)
                         else:
                                 failed_fix_paths.add(path)
 

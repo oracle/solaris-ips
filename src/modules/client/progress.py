@@ -579,7 +579,7 @@ class ProgressTrackerBackend(object):
         def _ver_output_done(self): pass
 
         @pt_abstract
-        def _repo_ver_output(self, outspec): pass
+        def _repo_ver_output(self, outspec, repository_scan=False): pass
 
         @pt_abstract
         def _repo_ver_output_error(self, errors): pass
@@ -849,7 +849,7 @@ class ProgressTrackerFrontend(object):
         def repo_verify_start(self, npkgs): pass
 
         @pt_abstract
-        def repo_verify_start_pkg(self, pkgfmri): pass
+        def repo_verify_start_pkg(self, pkgfmri, repository_scan=False): pass
 
         @pt_abstract
         def repo_verify_add_progress(self, pkgfmri): pass
@@ -1065,6 +1065,7 @@ class ProgressTracker(ProgressTrackerFrontend, ProgressTrackerBackend):
                 self.ver_pkgs = GoalTrackerItem(_("Verify Packages"))
                 self.repo_ver_pkgs = GoalTrackerItem(
                     _("Verify Repository Content"))
+                self.repo_fix = GoalTrackerItem(_("Fix Repository Content"))
 
                 # archiving support
                 self.archive_items = GoalTrackerItem(_("Archived items"))
@@ -1359,13 +1360,13 @@ class ProgressTracker(ProgressTrackerFrontend, ProgressTrackerBackend):
                 self.repo_fix.reset()
                 self.repo_fix.goalitems = nitems
 
-        def repo_fix_add_progress(self):
+        def repo_fix_add_progress(self, pkgfmri):
                 self._repo_fix_output(OutSpec())
 
-        def repo_fix_yield_error(self, errors):
+        def repo_fix_yield_error(self, pkgfmri, errors):
                 self._repo_fix_output_error(errors)
 
-        def repo_fix_yield_info(self, info):
+        def repo_fix_yield_info(self, pkgfmri, info):
                 self._repo_fix_output_info(info)
 
         def repo_fix_done(self):
