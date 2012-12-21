@@ -579,6 +579,26 @@ class ProgressTrackerBackend(object):
         def _ver_output_done(self): pass
 
         @pt_abstract
+        def _repo_ver_output(self, outspec): pass
+
+        @pt_abstract
+        def _repo_ver_output_error(self, errors): pass
+
+        @pt_abstract
+        def _repo_ver_output_done(self): pass
+
+        def _repo_fix_output(self, outspec): pass
+
+        @pt_abstract
+        def _repo_fix_output_error(self, errors): pass
+
+        @pt_abstract
+        def _repo_fix_output_info(self, errors): pass
+
+        @pt_abstract
+        def _repo_fix_output_done(self): pass
+
+        @pt_abstract
         def _archive_output(self, outspec): pass
 
         @pt_abstract
@@ -664,6 +684,8 @@ class ProgressTrackerFrontend(object):
         JOB_REPO_ANALYZE_REPO = 310
         JOB_REPO_RM_MFST = 311
         JOB_REPO_RM_FILES = 312
+        JOB_REPO_VERIFY_REPO = 313
+        JOB_REPO_FIX_REPO = 314
 
         # Operation purpose.  This set of modes is used by callers to indicate
         # to the progress tracker what's going on at a high level.  This allows
@@ -821,6 +843,47 @@ class ProgressTrackerFrontend(object):
 
         @pt_abstract
         def verify_done(self): pass
+
+        # verifying the content of a repository
+        @pt_abstract
+        def repo_verify_start(self, npkgs): pass
+
+        @pt_abstract
+        def repo_verify_start_pkg(self, pkgfmri): pass
+
+        @pt_abstract
+        def repo_verify_add_progress(self, pkgfmri): pass
+
+        @pt_abstract
+        def repo_verify_yield_error(self, pkgfmri, errors): pass
+
+        @pt_abstract
+        def repo_verify_yield_warning(self, pkgfmri, warnings): pass
+
+        @pt_abstract
+        def repo_verify_yield_info(self, pkgfmri, info): pass
+
+        @pt_abstract
+        def repo_verify_end_pkg(self, pkgfmri): pass
+
+        @pt_abstract
+        def repo_verify_done(self): pass
+
+        # fixing the content of a repository
+        @pt_abstract
+        def repo_fix_start(self, npkgs): pass
+
+        @pt_abstract
+        def repo_fix_add_progress(self, pkgfmri): pass
+
+        @pt_abstract
+        def repo_fix_yield_error(self, pkgfmri, errors): pass
+
+        @pt_abstract
+        def repo_fix_yield_info(self, pkgfmri, info): pass
+
+        @pt_abstract
+        def repo_fix_done(self): pass
 
         # archiving to .p5p files
         @pt_abstract
@@ -1000,6 +1063,8 @@ class ProgressTracker(ProgressTrackerFrontend, ProgressTrackerBackend):
                 self.mfst_commit = GoalTrackerItem(_("Committed Manifests"))
 
                 self.ver_pkgs = GoalTrackerItem(_("Verify Packages"))
+                self.repo_ver_pkgs = GoalTrackerItem(
+                    _("Verify Repository Content"))
 
                 # archiving support
                 self.archive_items = GoalTrackerItem(_("Archived items"))
@@ -1069,7 +1134,12 @@ class ProgressTracker(ProgressTrackerFrontend, ProgressTrackerBackend):
                         self.JOB_REPO_RM_MFST:
                             GoalTrackerItem(_("Removing package manifests")),
                         self.JOB_REPO_RM_FILES:
-                            GoalTrackerItem(_("Removing package files"))
+                            GoalTrackerItem(_("Removing package files")),
+                        self.JOB_REPO_VERIFY_REPO:
+                            GoalTrackerItem(_("Verifying repository content")),
+                        self.JOB_REPO_FIX_REPO:
+                            GoalTrackerItem(_("Fixing repository content"))
+
                 }
 
                 self.reset_download()
@@ -1260,6 +1330,46 @@ class ProgressTracker(ProgressTrackerFrontend, ProgressTrackerBackend):
 
         def verify_done(self):
                 self.ver_pkgs.done()
+
+        def repo_verify_start(self, npkgs):
+                self.repo_ver_pkgs.reset()
+                self.repo_ver_pkgs.goalitems = npkgs
+
+        def repo_verify_start_pkg(self, pkgfmri, repository_scan=False):
+                if pkgfmri != self.repo_ver_pkgs.curinfo:
+                        self.repo_ver_pkgs.items += 1
+                        self.repo_ver_pkgs.curinfo = pkgfmri
+                self._repo_ver_output(OutSpec(changed=["startpkg"]),
+                    repository_scan=repository_scan)
+
+        def repo_verify_add_progress(self, pkgfmri):
+                self._repo_ver_output(OutSpec())
+
+        def repo_verify_yield_error(self, pkgfmri, errors):
+                self._repo_ver_output_error(errors)
+
+        def repo_verify_end_pkg(self, pkgfmri):
+                self._repo_ver_output(OutSpec(changed=["endpkg"]))
+                self.repo_ver_pkgs.curinfo = None
+
+        def repo_verify_done(self):
+                self.repo_ver_pkgs.done()
+
+        def repo_fix_start(self, nitems):
+                self.repo_fix.reset()
+                self.repo_fix.goalitems = nitems
+
+        def repo_fix_add_progress(self):
+                self._repo_fix_output(OutSpec())
+
+        def repo_fix_yield_error(self, errors):
+                self._repo_fix_output_error(errors)
+
+        def repo_fix_yield_info(self, info):
+                self._repo_fix_output_info(info)
+
+        def repo_fix_done(self):
+                self.repo_fix.done()
 
         def archive_set_goal(self, arcname, nitems, nbytes):
                 self._archive_name = arcname # pylint: disable=W0201
@@ -1903,6 +2013,33 @@ class CommandLineProgressTracker(ProgressTracker):
         def _ver_output_done(self):
                 pass
 
+        def _repo_ver_output(self, outspec, repository_scan=False):
+                pass
+
+        def _repo_ver_output_error(self, errors):
+                self._pe.cprint(errors)
+
+        def _repo_ver_output_warning(self, warnings):
+                pass
+
+        def _repo_ver_output_info(self, info):
+                pass
+
+        def _repo_ver_output_done(self):
+                pass
+
+        def _repo_fix_output(self, outspec):
+                pass
+
+        def _repo_fix_output_error(self, errors):
+                self._pe.cprint(errors)
+
+        def _repo_fix_output_info(self, info):
+                self._pe.cprint(info)
+
+        def _repo_fix_output_done(self):
+                pass
+
         def _dl_output(self, outspec):
                 if not self._ptimer.time_to_print() and not outspec.first and \
                     not outspec.last:
@@ -2314,6 +2451,46 @@ class FancyUNIXProgressTracker(ProgressTracker):
         def _ver_output_info(self, actname, info):
                 # We just erase the "Verifying" progress line.
                 self._pe.cprint("", end='', erase=True)
+
+        def _repo_ver_output(self, outspec, repository_scan=False):
+                """If 'repository_scan' is set and we have no FRMRI set, we emit
+                a message saying that we're performing a scan if the repository.
+                If we have no FMRI, we emit a message saying we don't know what
+                package we're looking at.
+
+                """
+                if not self.repo_ver_pkgs.curinfo:
+                        if repository_scan:
+                                pkg_stem = _("Scanning repository "
+                                    "(this could take some time)")
+                        else:
+                                pkg_stem = _("Unknown package")
+                else:
+                        pkg_stem = self.repo_ver_pkgs.curinfo.get_pkg_stem()
+                if not self._ptimer.time_to_print() and not outspec:
+                        return
+                if "endpkg" in outspec.changed:
+                        self._pe.cprint("", end='', erase=True)
+                        return
+                s = "%-64s %s %c" % \
+                    (pkg_stem, self.repo_ver_pkgs.pair(), self._spinner())
+                self._pe.cprint(s, end='', erase=True)
+
+        def _repo_ver_output_error(self, errors):
+                self._output_flush()
+                self._pe.cprint(errors)
+
+        def _repo_fix_output(self, outspec):
+                s = "%c" %  self._spinner()
+                self._pe.cprint(s, end='', erase=True)
+
+        def _repo_fix_output_error(self, errors):
+                self._output_flush()
+                self._pe.cprint(errors)
+
+        def _repo_fix_output_info(self, info):
+                self._output_flush()
+                self._pe.cprint(info)
 
         def _archive_output(self, outspec):
                 if not self._ptimer.time_to_print() and not outspec:

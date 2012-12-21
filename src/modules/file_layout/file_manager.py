@@ -159,7 +159,7 @@ class FileManager(object):
                                 return cur_full_path, dest_full_path
                 return None, dest_full_path
 
-        def lookup(self, hashval, opener=False):
+        def lookup(self, hashval, opener=False, check_existence=True):
                 """Find the file for hashval.
 
                 The "hashval" parameter contains the name of the file to be
@@ -169,7 +169,7 @@ class FileManager(object):
                 return a path or an open file handle."""
 
                 cur_full_path, dest_full_path = self.__select_path(hashval,
-                    True)
+                    check_existence)
                 if not cur_full_path:
                         return None
 

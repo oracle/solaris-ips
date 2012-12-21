@@ -50,6 +50,7 @@ import shlex
 import shutil
 import sys
 import tempfile
+import textwrap
 import traceback
 import warnings
 
@@ -155,6 +156,10 @@ Subcommands:
          section/property[+|-]=[value] ... or
          section/property[+|-]=([value]) ...
 
+     pkgrepo verify [-p publisher ...] -s repo_uri_or_path
+
+     pkgrepo fix [-v] [-p publisher ...] -s repo_uri_or_path
+
      pkgrepo help
      pkgrepo version
 
@@ -256,7 +261,7 @@ def get_repo(conf, read_only=True, subcommand=None):
         return sr.Repository(read_only=read_only, root=path)
 
 
-def setup_transport(conf, subcommand=None):
+def setup_transport(conf, subcommand=None, verbose=False):
         repo_uri = conf.get("repo_uri", None)
         if not repo_uri:
                 usage(_("No repository location specified."), cmd=subcommand)
@@ -1190,6 +1195,249 @@ def subcmd_version(conf, args):
         if args:
                 usage(_("command does not take operands"), cmd=subcommand)
         msg(pkg.VERSION)
+        return EXIT_OK
+
+
+verify_error_header = None
+verify_warning_header = None
+verify_reason_headers = None
+
+def __load_verify_msgs():
+        """Since our gettext isn't loaded we need to ensure our globals have
+        correct content by calling this method.  These values are used by both
+        fix when in verbose mode, and verify"""
+
+        global verify_error_header
+        global verify_warning_header
+        global verify_reason_headers
+
+        # A map of error detail types to the human-readable description of each
+        # type.  These correspond to keys in the dictionary returned by
+        # sr.Repository.verify(..)
+        verify_reason_headers = {
+            "path": _("Repository path"),
+            "actual": _("Computed hash"),
+            "fpath": _("Path"),
+            "permissionspath": _("Path"),
+            "pkg": _("Package"),
+            "err": _("Detail")
+        }
+
+        verify_error_header = _("ERROR")
+        verify_warning_header = _("WARNING")
+
+
+def __fmt_verify(verify_tuple):
+        """Format a verify_tuple, of the form (error, path, message, reason)
+        returning a formatted error message, and an FMRI indicating what
+        packages within the repository are affected. Note that the returned FMRI
+        may not be valid, in which case a path to the broken manifest in the
+        repository is returned instead."""
+
+        error, path, message, reason = verify_tuple
+
+        formatted_message = "%(error_type)16s: %(message)s\n" % \
+            {"error_type": verify_error_header, "message": message}
+        reason["path"] = path
+
+        if error == sr.REPO_VERIFY_BADMANIFEST:
+                reason_keys = ["path", "err"]
+        elif error in [sr.REPO_VERIFY_PERM, sr.REPO_VERIFY_MFPERM]:
+                reason_keys = ["pkg", "path"]
+        elif error == sr.REPO_VERIFY_BADHASH:
+                reason_keys = ["pkg", "path", "actual", "fpath"]
+        elif error == sr.REPO_VERIFY_UNKNOWN:
+                reason_keys = ["path", "err"]
+        elif error == sr.REPO_VERIFY_BADSIG:
+                reason_keys = ["pkg", "path", "err"]
+        elif error == sr.REPO_VERIFY_WARN_OPENPERMS:
+                formatted_message = \
+                    "%(error_type)16s: %(message)s\n" % \
+                    {"error_type": verify_warning_header, "message": message}
+                reason_keys = ["permissionspath", "err"]
+        else:
+                # A list of the details we provide.  Some error codes
+                # have different details associated with them.
+                reason_keys = ["pkg", "path", "fpath"]
+
+
+        # the detailed error message can be long, so we'll wrap it.  If what we
+        # have fits on a single line, use it, otherwise begin displaying the
+        # message on the next line.
+        if "err" in reason_keys:
+                err_str = ""
+                lines = textwrap.wrap(reason["err"])
+                if len(lines) != 1:
+                        for line in lines:
+                                err_str += "%18s\n" % line
+                        reason["err"] = "\n" + err_str.rstrip()
+                else:
+                        reason["err"] = lines[0]
+
+        for key in reason_keys:
+                # sometimes we don't have the key we want, for example we may
+                # not have a file path from the package if the error is a
+                # missing repository file for a 'license' action (which don't
+                # have 'path' attributes, hence no 'fpath' dictionary entry)
+                if key not in reason:
+                        continue
+                formatted_message += "%(key)16s: %(value)s\n" % \
+                    {"key": verify_reason_headers[key], "value": reason[key]}
+
+        formatted_message += "\n"
+
+        if error == sr.REPO_VERIFY_WARN_OPENPERMS:
+                return formatted_message, None
+        elif "pkg" in reason:
+                return formatted_message, reason["pkg"]
+        return formatted_message, reason["path"]
+
+
+def subcmd_verify(conf, args):
+        """Verify the repository content (file and manifest content only)."""
+
+        subcommand = "verify"
+        __load_verify_msgs()
+
+        opts, pargs = getopt.getopt(args, "p:s:")
+        pubs = set()
+        for opt, arg in opts:
+                if opt == "-s":
+                        conf["repo_uri"] = parse_uri(arg)
+                if opt == "-p":
+                        if not misc.valid_pub_prefix(arg):
+                                error(_("Invalid publisher prefix '%s'") % arg,
+                                    cmd=subcommand)
+                        pubs.add(arg)
+
+        if pargs:
+                usage(_("command does not take operands"), cmd=subcommand)
+
+        repo_uri = conf.get("repo_uri", None)
+        if not repo_uri:
+                usage(_("A package repository location must be provided "
+                    "using -s."), cmd=subcommand)
+
+        if repo_uri.scheme != "file":
+                usage(_("Network repositories are not currently supported "
+                    "for this operation."), cmd=subcommand)
+
+        xport, xpub, tmp_dir = setup_transport(conf, subcommand=subcommand)
+        rval, found, pub_data = _get_matching_pubs(subcommand, pubs, xport,
+            xpub)
+        if rval == EXIT_OOPS:
+                return rval
+
+        logger.info("Initiating repository verification.")
+        bad_fmris = set()
+        for pfx in found:
+                progtrack = get_tracker()
+                repo = sr.Repository(root=repo_uri.get_pathname())
+                xpub.prefix = pfx
+                xpub.transport = xport
+                for verify_tuple in repo.verify(pub=xpub, progtrack=progtrack):
+                        message, bad_fmri = __fmt_verify(verify_tuple)
+                        if bad_fmri:
+                                bad_fmris.add(bad_fmri)
+                        progtrack.repo_verify_yield_error(bad_fmri, message)
+        if bad_fmris:
+                return EXIT_OOPS
+        return EXIT_OK
+
+
+def subcmd_fix(conf, args):
+        """Fix the repository content (file and manifest content only)
+        For index and catalog content corruption, a rebuild should be
+        performed."""
+
+        subcommand = "fix"
+        __load_verify_msgs()
+        verbose = False
+
+        opts, pargs = getopt.getopt(args, "vp:s:")
+        pubs = set()
+        for opt, arg in opts:
+                if opt == "-s":
+                        conf["repo_uri"] = parse_uri(arg)
+                if opt == "-v":
+                        verbose = True
+                if opt == "-p":
+                        if not misc.valid_pub_prefix(arg):
+                                error(_("Invalid publisher prefix '%s'") % arg,
+                                    cmd=subcommand)
+                        pubs.add(arg)
+
+        if pargs:
+                usage(_("command does not take operands"), cmd=subcommand)
+
+        repo_uri = conf.get("repo_uri", None)
+        if not repo_uri:
+                usage(_("A package repository location must be provided "
+                    "using -s."), cmd=subcommand)
+
+        if repo_uri.scheme != "file":
+                usage(_("Network repositories are not currently supported "
+                    "for this operation."), cmd=subcommand)
+
+        xport, xpub, tmp_dir = setup_transport(conf, subcommand=subcommand)
+        rval, found, pub_data = _get_matching_pubs(subcommand, pubs, xport,
+            xpub)
+        if rval == EXIT_OOPS:
+                return rval
+
+        logger.info("Initiating repository fix.")
+        progtrack = get_tracker()
+
+        def verify_cb(tracker, verify_tuple):
+                """A method passed to sr.Repository.fix(..) to emit verify
+                messages if verbose mode is enabled."""
+                if not verbose:
+                        return
+                formatted_message, bad_fmri = __fmt_verify(verify_tuple)
+                tracker.repo_verify_yield_error(bad_fmri, formatted_message)
+
+        repo = sr.Repository(root=repo_uri.get_pathname())
+        broken_fmris = set()
+        failed_fix_paths = set()
+        for pfx in found:
+                xpub.prefix = pfx
+                xpub.transport = xport
+                progtrack = get_tracker()
+                for status_code, path, message, reason in \
+                    repo.fix(pub=xpub, progtrack=progtrack,
+                        verify_callback=verify_cb):
+                        if status_code == sr.REPO_FIX_ITEM:
+                                # When we can't get the FMRI, eg. in the case
+                                # of a corrupt manifest, use the path instead.
+                                fmri = reason["pkg"]
+                                if not fmri:
+                                        fmri = path
+                                broken_fmris.add(fmri)
+                                if verbose:
+                                        progtrack.repo_fix_yield_info(message)
+                        else:
+                                failed_fix_paths.add(path)
+
+        progtrack.flush()
+        logger.info("")
+
+        if broken_fmris:
+                logger.info(_("Use pkgsend(1) or pkgrecv(1) to republish the\n"
+                    "following packages or paths which were quarantined:\n\n\t"
+                    "%s") % \
+                    "\n\t".join([str(f) for f in broken_fmris]))
+        if failed_fix_paths:
+                logger.info(_("\npkgrepo could not repair the following paths "
+                    "in the repository:\n\n\t%s") %
+                    "\n\t".join([p for p in failed_fix_paths]))
+
+        if not (broken_fmris or failed_fix_paths):
+                logger.info(_("No repository fixes required."))
+        else:
+                logger.info(_("Repository repairs completed."))
+
+        if failed_fix_paths:
+                return EXIT_OOPS
         return EXIT_OK
 
 

@@ -32,8 +32,12 @@ actions are dynamically discovered, so that new modules can be placed in this
 package directory and they'll just be picked up.  The current package contents
 can be seen in the section "PACKAGE CONTENTS", below.
 
-This package has one data member: "types".  This is a dictionary which maps the
-action names to the classes that represent them.
+This package has two data members:
+  "types", a dictionary which maps the action names to the classes that
+  represent them.
+
+  "payload_types", a dictionary which maps action names that deliver payload
+  to the classes that represent them.
 
 This package also has one function: "fromstr", which creates an action instance
 based on a str() representation of an action.
@@ -53,6 +57,12 @@ __all__ = [
 # A dictionary of all the types in this package, mapping to the classes that
 # define them.
 types = {}
+
+# A dictionary of the action names in this package that deliver payload,
+# according to the 'has_payload' member in each class. The dictionary is keyed
+# by the action name, and has the action class as its values.
+payload_types = {}
+
 for modname in __all__:
         module = __import__("%s.%s" % (__name__, modname),
             globals(), locals(), [modname])
@@ -69,6 +79,8 @@ for modname in __all__:
         for cls in classes:
                 if hasattr(cls, "name"):
                         types[cls.name] = cls
+                if hasattr(cls, "has_payload") and cls.has_payload:
+                        payload_types[cls.name] = cls
 
 # Clean up after ourselves
 del f, modname, module, nvlist, classes, c, cls

@@ -25,15 +25,18 @@ import cStringIO
 import codecs
 import datetime
 import errno
+import hashlib
 import logging
 import os
 import os.path
-import platform
 import shutil
 import stat
 import sys
 import tempfile
 import urllib
+import zlib
+
+import M2Crypto as m2
 
 import pkg.actions as actions
 import pkg.catalog as catalog
@@ -59,6 +62,22 @@ import pkg.server.transaction as trans
 import pkg.version
 
 CURRENT_REPO_VERSION = 4
+
+REPO_QUARANTINE_DIR = "pkg5-quarantine"
+
+REPO_VERIFY_BADHASH = 0
+REPO_VERIFY_BADMANIFEST = 1
+REPO_VERIFY_BADGZIP = 2
+REPO_VERIFY_NOFILE = 3
+REPO_VERIFY_PERM = 4
+REPO_VERIFY_MFPERM = 5
+REPO_VERIFY_BADSIG = 6
+REPO_VERIFY_WARN_OPENPERMS = 7
+REPO_VERIFY_UNKNOWN = 99
+
+REPO_FIX_ITEM = 0
+REPO_FIX_FAILED = 1
+
 from pkg.pkggzip import PkgGzipFile
 
 class RepositoryError(Exception):
@@ -237,18 +256,37 @@ class RepositoryUnknownPublisher(RepositoryError):
 
 
 class RepositoryVersionError(RepositoryError):
-        """Raised when the repository specified uses an unsupported format
-        (version).
+        """Raised when the repository specified uses a format greater than the
+        current format (version).
         """
 
-        def __init__(self, location, version):
+        def __init__(self, location, version, current_version):
                 RepositoryError.__init__(self)
                 self.location = location
                 self.version = version
+                self.current_version = current_version
 
         def __str__(self):
                 return("The repository at '%(location)s' is version "
-                    "'%(version)s'; only versions up to are supported.") % \
+                    "'%(version)s'; only versions up to %(current_version)s are"
+                    " supported.") %  self.__dict__
+
+
+class RepositoryInvalidVersionError(RepositoryError):
+        """Raised when the repository specified uses an unsupported format.
+        (version).
+        """
+
+        def __init__(self, location, version, supported):
+                RepositoryError.__init__(self)
+                self.location = location
+                self.version = version
+                self.supported = supported
+
+        def __str__(self):
+                return("The repository at '%(location)s' is version "
+                    "'%(version)s'; only version %(supported)s repositories are"
+                    " supported.") % \
                     self.__dict__
 
 
@@ -260,6 +298,22 @@ class RepositoryUnsupportedOperationError(RepositoryError):
         def __str__(self):
                 return("Operation not supported for this configuration.")
 
+
+class RepositoryQuarantinedPathExistsError(RepositoryError):
+        """Raised when the repository is unable to quarantine a file because
+        a file of that name is already in quarantine.
+        """
+
+        def __str__(self):
+                return _("Quarantined path already exists.")
+
+
+class RepositorySigNoTrustAnchorDirError(RepositoryError):
+        """Raised when the repository trust anchor directory could not be found
+        while performing repository verification."""
+
+        def __str__(self):
+                return _("Unable to find trust anchor directory %s") % self.data
 
 class _RepoStore(object):
         """The _RepoStore object provides an interface for performing operations
@@ -1802,6 +1856,597 @@ class _RepoStore(object):
                         if fn and os.path.exists(fn):
                                 os.unlink(fn)
 
+        def __build_verify_error(self, error, path, reason):
+                """Given an integer error code, a path within the repository,
+                and a 'reason' dictionary containing more information about
+                the error, return a tuple of the form:
+
+                (error_code, message, path, reason)
+                """
+
+                # if we're looking at a path to a file hash, and we have a pfmri
+                # we'd like to print the 'path' attribute as well as its
+                # location within the repository.
+                hsh = reason.get("hash")
+                pfmri = reason.get("pkg")
+                if hsh and pfmri:
+                        m = self._get_manifest(pfmri)
+                        for ac in m.gen_actions_by_types(
+                            actions.payload_types.keys()):
+                                if ac.hash == hsh:
+                                        fpath = ac.attrs.get("path")
+                                        if fpath:
+                                                reason["fpath"] = fpath
+
+                message = _("Unknown error")
+                if error == REPO_VERIFY_BADHASH:
+                        message = _("Invalid file hash: %s") % reason["hash"]
+                        del reason["hash"]
+                elif error == REPO_VERIFY_BADMANIFEST:
+                        message = _("Corrupt manifest.")
+                        reason["err"] = _("Use pkglint(1) for more details.")
+                elif error == REPO_VERIFY_NOFILE:
+                        message = _("Missing file: %s") % reason["hash"]
+                        del reason["hash"]
+                elif error == REPO_VERIFY_BADGZIP:
+                        message = _("Corrupted gzip file.")
+                elif error in [REPO_VERIFY_PERM, REPO_VERIFY_MFPERM]:
+                        message = _("Verification failure: %s") % reason["err"]
+                        del reason["err"]
+                elif error == REPO_VERIFY_UNKNOWN:
+                        message = _("Bad manifest.")
+                elif error == REPO_VERIFY_BADSIG:
+                        message = _("Bad signature.")
+                elif error == REPO_VERIFY_WARN_OPENPERMS:
+                        # This message constitutes a warning rather than
+                        # an error. No attempt is made by 'pkgrepo fix'
+                        # to rectify this error, as it is potentially
+                        # outside our responsibility to do so.
+                        message = _("Restrictive permissions.")
+                        reason["err"] = \
+                            _("Some repository content for publisher '%s' "
+                            "or paths leading to the repository were not "
+                            "world-readable or were not readable by "
+                            "'pkg5srv:pkg5srv', which can cause access errors "
+                            "if the repository contents are served by the "
+                            "following services:\n"
+                            " svc:/application/pkg/server\n"
+                            " svc:/application/pkg/system-repository.\n"
+                            "Only the first path found with restrictive "
+                            "permissions is shown.") % reason["pub"]
+                        del reason["pub"]
+                else:
+                        raise Exception(
+                            "Unknown repository verify error code: %s" % error)
+
+                return error, path, message, reason
+
+        def __get_hashes(self, path, pfmri):
+                """Given an PkgFmri, return a set containing all of the
+                hashes of the files its manifest references."""
+
+                hashes = set()
+                errors = []
+                try:
+                        m = self._get_manifest(pfmri)
+                        for a in m.gen_actions():
+                                if not a.has_payload or not a.hash:
+                                        continue
+
+                                # Action payload.
+                                hashes.add(a.hash)
+
+                                # Signature actions have additional payloads
+                                if a.name == "signature":
+                                        hashes.update(
+                                            a.attrs.get("chain", "").split())
+                except apx.PermissionsException:
+                        errors.append((REPO_VERIFY_MFPERM, path,
+                            {"err": _("Permission denied.")}))
+                return hashes, errors
+
+        def __verify_manifest(self, path, pfmri):
+                """Verify that a manifest can be found for this pfmri"""
+                try:
+                        m = self._get_manifest(pfmri)
+                except apx.InvalidPackageErrors:
+                        return (REPO_VERIFY_BADMANIFEST, path, {})
+                except apx.PermissionsException, e:
+                        return (REPO_VERIFY_PERM, path, {"err": str(e),
+                            "pkg": pfmri})
+
+        def __verify_hash(self, path, pfmri, h):
+                """Perform hash verification on the given gzip file."""
+
+                gzf = None
+                hash = os.path.basename(path)
+                try:
+                        gzf = PkgGzipFile(fileobj=open(path, "rb"))
+                        fhash = hashlib.sha1()
+                        fhash.update(gzf.read())
+                        actual = fhash.hexdigest()
+                        if actual != h:
+                                return (REPO_VERIFY_BADHASH, path,
+                                    {"actual": actual, "hash": hash,
+                                    "pkg": pfmri})
+                except (ValueError, zlib.error), e:
+                        return (REPO_VERIFY_BADGZIP, path,
+                            {"hash": hash, "pkg": pfmri})
+                except IOError, e:
+                        if e.errno in [errno.EACCES, errno.EPERM]:
+                                return (REPO_VERIFY_PERM, path,
+                                    {"err": str(e), "hash": hash,
+                                    "pkg": pfmri})
+                        else:
+                                return (REPO_VERIFY_BADGZIP, path,
+                                    {"hash": hash, "pkg": pfmri})
+                finally:
+                        if gzf:
+                                gzf.close()
+
+        def __verify_perm(self, path, pfmri, h):
+                """Check that we don't get any permissions errors when
+                trying to stat the given path."""
+                try:
+                        st = os.stat(path)
+                        # if it's a directory, we'll try to list it
+                        if stat.S_ISDIR(st.st_mode):
+                                os.listdir(path)
+                except OSError, e:
+                        if e.errno in [errno.EPERM, errno.EACCES]:
+                                if not pfmri:
+                                        return (REPO_VERIFY_MFPERM, path,
+                                            {"err": str(e)})
+                                return (REPO_VERIFY_PERM, path,
+                                    {"hash": h, "err": str(e), "pkg": pfmri})
+                        else:
+                                return (REPO_VERIFY_NOFILE, path,
+                                    {"hash": h, "err": str(e), "pkg": pfmri})
+
+        def __verify_signature(self, path, pfmri, pub, trust_anchors,
+            sig_required_names, use_crls):
+                """Verify signatures on a given FMRI."""
+                m = self._get_manifest(pfmri)
+                errors = []
+                for sig in m.gen_actions_by_type("signature"):
+                        try:
+                                sig.verify_sig(m.gen_actions(), pub,
+                                    trust_anchors, use_crls,
+                                    required_names=sig_required_names)
+                        except apx.UnverifiedSignature, e:
+                                errors.append((REPO_VERIFY_BADSIG, path,
+                                    {"err": str(e), "pkg": pfmri}))
+                        except apx.CertificateException, e:
+                                errors.append((REPO_VERIFY_BADSIG, path,
+                                    {"err": str(e), "pkg": pfmri}))
+                return errors
+
+        def __verify_permissions(self):
+                """Determine if any of the files or directories in the
+                repository are not readable by either the pkg5srv user or group,
+                or are not world readable.  We return as soon as we find one
+                inaccessible file, returning the name of that file or directory.
+
+                We also walk up the directory path from the repository to '/'
+                checking that the repository would be accessible.
+
+                We only return the first file found because for large
+                repositories with many files affected, we'd be flooding the user
+                with information.
+
+                This check exists as well as verify_perm() since it causes a
+                warning to be emitted if non-world readable files are found,
+                whereas verify_perm() will emit an error.
+                """
+
+                pkg5srv_uid = \
+                    pkg.portable.get_user_by_name("pkg5srv", "/etc", None)
+                pkg5srv_gid = \
+                    pkg.portable.get_group_by_name("pkg5srv", "/etc", None)
+
+                def pkg5srv_readable(st):
+                        """Returns true if the pkg5srv user can read
+                        this file/dir"""
+                        if stat.S_ISDIR(st.st_mode):
+                                if (st.st_uid == pkg5srv_uid and
+                                    st.st_mode & stat.S_IXUSR and
+                                    st.st_mode & stat.S_IRUSR):
+                                        return True
+                                if (st.st_gid == pkg5srv_gid and
+                                    st.st_mode & stat.S_IXGRP and
+                                    st.st_mode & stat.S_IRGRP):
+                                        return True
+                        else:
+                                if (st.st_uid == pkg5srv_uid and
+                                    st.st_mode & stat.S_IRUSR):
+                                        return True
+                                if (st.st_gid == pkg5srv_gid and
+                                    st.st_mode & stat.S_IRGRP):
+                                        return True
+                        return False
+
+                def world_readable(st):
+                        """Returns true if anyone can read this
+                        file/dir."""
+                        if stat.S_ISDIR(st.st_mode):
+                                if (st.st_mode & stat.S_IROTH and
+                                    st.st_mode & stat.S_IXOTH):
+                                        return True
+                        else:
+                                if st.st_mode & stat.S_IROTH:
+                                        return True
+                        return False
+
+                # Scan directories checking file permissions.  First we
+                # walk up the directory path from self.__root
+                components = self.__root.split("/")
+                path = ""
+                for comp in components:
+                        if not comp:
+                                continue
+                        path = "%s/%s" % (path, comp)
+                        st = os.stat(path)
+                        if not (pkg5srv_readable(st) or
+                            world_readable(st)):
+                                return False, path
+
+                for path, dirnames, filenames in os.walk(self.__root):
+                        # we don't care about anything in our quarantine
+                        # directory.
+                        if REPO_QUARANTINE_DIR in path:
+                                continue
+                        st = os.stat(path)
+                        if not (pkg5srv_readable(st) or
+                            world_readable(st)):
+                                return False, path
+                        for fname in filenames:
+                                pth = os.path.join(path, fname)
+                                st = os.stat(pth)
+                                if not (pkg5srv_readable(st) or
+                                    world_readable(st)):
+                                        return False, pth
+                return True, None
+
+        def __gen_verify(self, progtrack, pub, trust_anchors,
+            sig_required_names, use_crls):
+                """A generator that produces verify errors, each a tuple
+                of the form (error_code, path, message, details)"""
+                # We may not have a manifest_root directory if no
+                # packages have ever been published for this publisher.
+                if not os.path.exists(self.manifest_root):
+                        return
+
+                err = self.__verify_perm(self.manifest_root, None, None)
+                if err:
+                        yield self.__build_verify_error(*err)
+                        return
+
+                # Build a list of all of the manifests that must be
+                # verified.
+                mflist = os.listdir(self.manifest_root)
+                goal = len(mflist)
+
+                # If there is more than one version in the manifest dir,
+                # then we add each one to the goal.
+                for name in mflist:
+                        try:
+                                mfdir = os.path.join(self.manifest_root, name)
+                                vers = len(os.listdir(mfdir))
+                                if vers > 1:
+                                        goal += vers - 1
+                        except OSError, e:
+                                # being unable to read the manifest dir is bad,
+                                # but we'll deal with it later
+                                continue
+
+                # Add the repo permissions error check to the number of items
+                # goal.
+                goal +=1
+                progtrack.repo_verify_start(goal)
+
+                # Scan the entire repository for bad file permissions
+                progtrack.repo_verify_start_pkg(None, repository_scan=True)
+                valid_perms, path = self.__verify_permissions()
+                if not valid_perms:
+                        # We intentionally don't use the path as the first
+                        # argument to __build_verify_error(..) as we do not want
+                        # 'pkgrepo fix' to attempt to fix this particular error,
+                        # since it can include paths outside the repository.
+                        yield self.__build_verify_error(
+                            REPO_VERIFY_WARN_OPENPERMS, None,
+                            {"permissionspath": path, "pub": pub.prefix})
+                progtrack.repo_verify_end_pkg(None)
+
+                for name in mflist:
+                        pdir = os.path.join(self.manifest_root, name)
+                        err = self.__verify_perm(pdir, None, None)
+                        if err:
+                                yield self.__build_verify_error(*err)
+                                continue
+
+                        # Stem must be decoded before use.
+                        try:
+                                pname = urllib.unquote(name)
+                        except Exception:
+                                # Assume error is result of an
+                                # unexpected file in the directory. We
+                                # don't know the FMRI here, so use None.
+                                progtrack.repo_verify_start_pkg(None)
+                                progtrack.repo_verify_add_progress(None)
+                                yield self.__build_verify_error(
+                                    REPO_VERIFY_UNKNOWN, pdir, {"err": str(e)})
+                                progtrack.repo_verify_end_pkg(None)
+                                continue
+
+                        for ver in os.listdir(pdir):
+                                path = os.path.join(pdir, ver)
+                                # Version must be decoded before
+                                # use.
+                                pver = urllib.unquote(ver)
+                                try:
+                                        pfmri = fmri.PkgFmri("@".join((pname,
+                                            pver)),
+                                            publisher=self.publisher)
+                                        if not os.path.isfile(path):
+                                                raise Exception(
+                                                    "%s is not a file" % path)
+                                except Exception, e:
+                                        # Assume the error is result of an
+                                        # unexpected file in the directory. We
+                                        # don't know the FMRI here, so use None.
+                                        progtrack.repo_verify_start_pkg(None)
+                                        progtrack.repo_verify_add_progress(None)
+                                        yield self.__build_verify_error(
+                                            REPO_VERIFY_UNKNOWN, path,
+                                            {"err": str(e)})
+                                        progtrack.repo_verify_end_pkg(None)
+                                        continue
+
+                                progtrack.repo_verify_start_pkg(pfmri)
+                                err = self.__verify_manifest(path, pfmri)
+                                if err:
+                                        # with a bad manifest, we can go no
+                                        # further
+                                        yield self.__build_verify_error(*err)
+                                        progtrack.repo_verify_end_pkg(None)
+                                        continue
+
+                                hashes, errors = self.__get_hashes(path, pfmri)
+                                for err in errors:
+                                        yield self.__build_verify_error(*err)
+
+                                # verify manifest signatures
+                                errs = self.__verify_signature(path, pfmri, pub,
+                                    trust_anchors, sig_required_names, use_crls)
+                                for err in errs:
+                                        yield self.__build_verify_error(*err)
+
+                                # verify payload delivered by this pkg
+                                errors = []
+                                for h in hashes:
+                                        try:
+                                                path = self.cache_store.lookup(
+                                                     h, check_existence=False)
+                                        except apx.PermissionsException, e:
+                                                # if we can't even get the path
+                                                # within the repository, then
+                                                # we'll do the best we can to
+                                                # report the problem.
+                                                errors.append((REPO_VERIFY_PERM,
+                                                    pfmri, {"hash": h,
+                                                    "err": _("Permission "
+                                                    "denied.", "path", h)}))
+                                                continue
+
+                                        err = self.__verify_perm(path, pfmri, h)
+                                        if err:
+                                                errors.append(err)
+                                                continue
+                                        err = self.__verify_hash(path, pfmri, h)
+                                        if err:
+                                                errors.append(err)
+                                for err in errors:
+                                        yield self.__build_verify_error(*err)
+
+                                progtrack.repo_verify_end_pkg(fmri)
+                progtrack.job_done(progtrack.JOB_REPO_VERIFY_REPO)
+
+        def verify(self, pub=None, progtrack=None,
+            trust_anchor_dir=None, sig_required_names=None, use_crls=False):
+                """A generator which verifies the contents of the repository
+                store, checking for several different types of errors.
+                No modifying operations may be performed until complete.
+
+                'progtrack' is an optional ProgressTracker object.
+
+                'trust_anchor_dir' is set in the repository configuration and
+                corresponds to the image property of the same name.
+
+                'sig_required_names' is set in the repository configuration and
+                corresponds to the image property of the same name.
+
+                'use_crls' is set in the repository configuration and
+                corresponds to the image property of the same name.
+
+                The generator yields tuples of the form:
+
+                (error_code, path, message, reason) where
+
+                'error_code'  an integer error, correponding to REPO_VERIFY_*
+                'path'        the path to the broken file in the repository
+                'message'     a human-readable summary of the error
+                'reason'      a dictionary of strings containing more detail
+                              about the nature of the error.
+                """
+
+                if not self.catalog_root or self.catalog_version < 1:
+                        raise RepositoryUnsupportedOperationError()
+                if not self.manifest_root:
+                        raise RepositoryUnsupportedOperationError()
+
+                if not progtrack:
+                        progtrack = progtrack.NullProgressTracker()
+
+                # For signature verification, we need to setup a publisher
+                # meta_root, and build a dictionary of trust-anchors.
+                tmp_metaroot = tempfile.mkdtemp(prefix="pkgrepo-verify.")
+                pub.meta_root = tmp_metaroot
+                trust_anchors = {}
+
+                if not os.path.isdir(trust_anchor_dir):
+                        raise RepositorySigNoTrustAnchorDirError(
+                            trust_anchor_dir)
+
+                for fn in os.listdir(trust_anchor_dir):
+                        pth = os.path.join(trust_anchor_dir, fn)
+                        if os.path.islink(pth):
+                                continue
+                        trusted_ca = m2.X509.load_cert(pth)
+                        # M2Crypto's subject hash doesn't match
+                        # openssl's subject hash so recompute it so all
+                        # hashes are in the same universe.
+                        s = trusted_ca.get_subject().as_hash()
+                        trust_anchors.setdefault(s, [])
+                        trust_anchors[s].append(trusted_ca)
+
+                self.__lock_rstore()
+                try:
+                        for err in self.__gen_verify(progtrack, pub,
+                            trust_anchors, sig_required_names, use_crls):
+                                yield err
+                except (Exception, EnvironmentError), e:
+                        import traceback
+                        traceback.print_exc(e)
+                        raise apx._convert_error(e)
+                finally:
+                        self.__unlock_rstore()
+                        shutil.rmtree(tmp_metaroot)
+
+        def fix(self,  pub=None, progtrack=None, verify_callback=None,
+            trust_anchor_dir=None, sig_required_names=None, use_crls=False):
+                """Verify, then quarantine any packages in the repository that
+                were found to be faulty, according to self.verify(..).
+
+                This method yields tuples of the form:
+
+                (status_code, fmri, message, reason) where
+
+                'status_code'  an int status code, corresponding to REPO_FIX_*
+                'path'         the path that was fixed
+                'message'      a summary of the operation performed
+                'reason'       a dictionary of strings describing the operation
+
+                Note, the 'fmri' value may not be a valid FMRI if the manifest
+                being fixed was corrupt, in which case a path to the corrupted
+                manifest in the repository is used instead.
+
+                If any object referred to by a manifest is quarantined, then
+                the manifest for that package is also quarantined, however other
+                files referenced by the manifest are not moved to quarantine
+                in case they are referenced by other packages.
+                """
+
+                if self.read_only:
+                        raise RepositoryReadOnlyError()
+
+                if not progtrack:
+                        progtrack = progress.NullProgressTracker()
+
+                broken_items = set()
+                for error, path, message, reason in self.verify(pub=pub,
+                    progtrack=progtrack, trust_anchor_dir=trust_anchor_dir,
+                    sig_required_names=sig_required_names, use_crls=use_crls):
+                        if verify_callback:
+                                verify_callback(progtrack, (error, path,
+                                    message, reason))
+                        # we don't attempt to fix this error, since it can
+                        # involve paths outside the repository.
+                        if error == REPO_VERIFY_WARN_OPENPERMS:
+                                continue
+                        fmri = reason.get("pkg")
+                        broken_items.add((path, fmri))
+
+                quarantine_root = None
+
+                def _make_quarantine_root():
+                        """Make a directory where we can quarantine content."""
+                        quarantine_base = os.path.join(self.root,
+                            REPO_QUARANTINE_DIR)
+                        if not os.path.exists(quarantine_base):
+                                os.mkdir(quarantine_base)
+                        qroot = tempfile.mkdtemp(prefix="fix.",
+                            dir=quarantine_base)
+                        return qroot
+
+                # look for broken package content where the bad file doesn't
+                # match the path to the manifest (eg. file content) and add
+                # the manifest path to the list of broken items, so that we
+                # move the manifest to quarantine as well.
+                for path, fmri in broken_items.copy():
+                        if not fmri:
+                                continue
+                        mpath = self.manifest(fmri)
+                        if path == mpath:
+                                continue
+                        broken_items.add((mpath, fmri))
+
+                progtrack.job_start(progtrack.JOB_REPO_FIX_REPO,
+		    goal=len(broken_items))
+
+                # keep a set of all the paths we've applied fixes to
+                fixed_paths = set()
+
+                for path, fmri in broken_items:
+                        progtrack.job_add_progress(progtrack.JOB_REPO_FIX_REPO)
+
+                        # we've already applied a fix to this path
+                        if path in fixed_paths:
+                                continue
+
+                        # we can't do anything about missing files
+                        if not os.path.exists(path):
+                                yield (REPO_FIX_ITEM, path,
+                                    _("Missing file %s must be fixed by "
+                                    "republishing the package.") % path,
+                                    {"pkg": fmri})
+                                continue
+
+                        basename = os.path.basename(path)
+                        dir = os.path.dirname(path)
+                        dir = dir.replace(self.root, "", 1).lstrip("/")
+                        if not quarantine_root:
+                                quarantine_root = _make_quarantine_root()
+                        qdir = os.path.join(quarantine_root, dir)
+                        try:
+                                os.makedirs(qdir)
+                        except OSError, e:
+                                if e.errno != errno.EEXIST:
+                                        raise
+                        dest = os.path.join(qdir, basename)
+                        if os.path.exists(dest):
+                                # this should never happen, since we have a
+                                # unique quarantine root per fix(..) call
+                                raise RepositoryQuarantinedPathExistsError()
+
+                        message = _("Moving %(src)s to %(dest)s") % {
+                            "src": path, "dest": dest}
+                        status = REPO_FIX_ITEM
+                        reason = {"dest": dest, "pkg": fmri}
+                        try:
+                                shutil.move(path, qdir)
+                                fixed_paths.add(path)
+                        except Exception, e:
+                                status = REPO_FIX_FAILED
+                                message = _("Unable to quarantine %(path)s: "
+                                    "%(err)s") % {"path": path, "err": e}
+                        finally:
+                                yield(status, path, message, reason)
+
+                progtrack.job_done(progtrack.JOB_REPO_FIX_REPO)
+
+                if broken_items:
+                        self.rebuild()
+
         def valid_new_fmri(self, pfmri):
                 """Check that the FMRI supplied as an argument would be valid
                 to add to the repository catalog.  This checks to make sure
@@ -1990,7 +2635,7 @@ class Repository(object):
 
                 if self.version > CURRENT_REPO_VERSION:
                         raise RepositoryVersionError(self.root,
-                            self.version)
+                            self.version, CURRENT_REPO_VERSION)
                 if self.version == 4:
                         if self.root and not self.pub_root:
                                 # Don't create the publisher root at this point,
@@ -2849,6 +3494,82 @@ class Repository(object):
                 # Update the publisher's configuration.
                 rstore.update_publisher(pub)
 
+        def verify(self, progtrack=None, pub=None):
+                """A generator that verifies that repository content matches
+                expected state for all or specified publishers.
+
+                'progtrack' is an optional ProgressTracker object.
+
+                'pub' is an optional publisher prefix to limit the operation to.
+
+                The generator yields tuples of the form:
+
+                (error_code, path, message, details) where
+
+                'error_code'  an integer error, correponding to REPO_VERIFY_*
+                'path'        the path to the broken file in the repository
+                'message'     a summary of the error
+                'details'     a dictionary of strings containing more detail
+                              about the nature of the error.
+                """
+
+                if self.cfg.get_property("repository", "version") != 4:
+                        raise RepositoryInvalidVersionError(self.root,
+                            self.cfg.get_property("repository", "version"), 4)
+
+                rstore = self.get_pub_rstore(pub.prefix)
+
+                trust_anchor_dir = self.cfg.get_property("repository",
+                    "trust-anchor-directory")
+                sig_required_names = set(self.cfg.get_property("repository",
+                    "signature-required-names"))
+                use_crls = self.cfg.get_property("repository",
+                    "check-certificate-revocation")
+
+                return rstore.verify(progtrack=progtrack, pub=pub,
+                    trust_anchor_dir=trust_anchor_dir,
+                    sig_required_names=sig_required_names, use_crls=use_crls)
+
+        def fix(self, progtrack=None, pub=None, verify_callback=None):
+                """A generator that corrects any problems in the repository.
+
+                'progtrack' is an optional ProgressTracker object.
+
+                'pub' is an optional publisher prefix to limit the operation to.
+
+                During the operation, we emit progress, printing the details
+                using 'verify_callback', a method which requires the following
+                arguments,  progtrack, error_code, message, reason, which
+                correspond exactly to the tuple generated by self.verify(..)
+
+                This method yields tuples of the form:
+
+                (status_code, message, details) where
+
+                'status_code'  an integerstatus code, corresponding to REPO_FIX*
+                'message'      a summary of the operation performed
+                'details'      a dictionary of strings describing the operation
+
+                """
+
+                if self.cfg.get_property("repository", "version") != 4:
+                        raise RepositoryInvalidVersionError(self.root,
+                            self.cfg.get_property("repository", "version"), 4)
+
+                rstore = self.get_pub_rstore(pub.prefix)
+
+                trust_anchor_dir = self.cfg.get_property("repository",
+                    "trust-anchor-directory")
+                sig_required_names = set(self.cfg.get_property("repository",
+                    "signature-required-names"))
+                use_crls = self.cfg.get_property("repository",
+                    "check-certificate-revocation")
+
+                return rstore.fix(progtrack=progtrack, pub=pub,
+                    verify_callback=verify_callback,
+                    trust_anchor_dir=trust_anchor_dir,
+                    sig_required_names=sig_required_names, use_crls=use_crls)
+
         def valid_new_fmri(self, pfmri):
                 """Check that the FMRI supplied as an argument would be valid
                 to add to the repository catalog.  This checks to make sure
@@ -2978,6 +3699,10 @@ class RepositoryConfig(object):
                 ]),
                 cfg.PropertySection("repository", [
                     cfg.PropInt("version"),
+                    cfg.Property("trust-anchor-directory",
+                        default="/etc/certs/CA/"),
+                    cfg.PropList("signature-required-names"),
+                    cfg.PropBool("check-certificate-revocation", default=False)
                 ]),
             ],
         }

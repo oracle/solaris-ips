@@ -35,6 +35,7 @@ import pkg
 import pkg.catalog
 import pkg.depotcontroller as dc
 import pkg.fmri as fmri
+import pkg.pkggzip
 import pkg.misc as misc
 import pkg.server.repository as sr
 import shutil
@@ -118,7 +119,8 @@ class TestPkgRepo(pkg5unittest.SingleDepotTestCase):
 
         def setUp(self):
                 pkg5unittest.SingleDepotTestCase.setUp(self)
-                self.make_misc_files(["tmp/empty", "tmp/truck1", "tmp/truck2"])
+                self.make_misc_files(["tmp/empty", "tmp/truck1", "tmp/truck2",
+                    "tmp/other"])
 
         def test_00_base(self):
                 """Verify pkgrepo handles basic option and subcommand parsing
@@ -1631,6 +1633,532 @@ test2	zoo		1.0	5.11	0	20110804T203458Z	pkg://test2/zoo@1.0,5.11-0:20110804T20345
                 # in graceful failure when multiple publishers are present.
                 self.pkgrepo("list -s %s -H -F tsv nosuchpackage" % repo_path,
                     exit=1)
+
+        def __get_mf_path(self, fmri_str):
+                """Given an FMRI, return the path to its manifest in our
+                repository."""
+
+                path_comps = [self.dc.get_repodir(), "publisher",
+                    "test", "pkg"]
+                pfmri = pkg.fmri.PkgFmri(fmri_str)
+                path_comps.append(pfmri.get_name())
+                path_comps.append(pfmri.get_link_path().split("@")[1])
+                return os.path.sep.join(path_comps)
+
+        def __get_file_path(self, path):
+                """Returns the path to a file in the repository. The path name
+                must be present in self.fhashes."""
+
+                fpath = os.path.sep.join([self.dc.get_repodir(), "publisher",
+                    "test", "file"])
+                fhash = self.fhashes[path]
+                return os.path.sep.join([fpath, fhash[0:2], fhash])
+
+        def __inject_badhash(self, path, valid_gzip=True):
+                """Corrupt a file in the repository with the given path, where
+                that path is a key in self.fhashes, returning the repository
+                path of the file that was corrupted.  If valid_gzip is set,
+                we write a gzip file into the repository, otherwise the file
+                contains plaintext."""
+
+                corrupt_path = self.__get_file_path(path)
+                other_path = os.path.join(self.test_root, "tmp/other")
+
+                with open(other_path, "rb") as other:
+                        with open(corrupt_path, "wb") as corrupt:
+                                if valid_gzip:
+                                        gz = pkg.pkggzip.PkgGzipFile(
+                                            fileobj=corrupt)
+                                        gz.write(other.read())
+                                        gz.close()
+                                else:
+                                        corrupt.write(other.read())
+                return corrupt_path
+
+        def __repair_badhash(self, path):
+                """Fix a file in the repository that corresponds to this path.
+                """
+                fpath = self.__get_file_path(path)
+                fixed_path = os.path.join(self.test_root, path)
+                with open(fixed_path, "rb") as fixed:
+                        with open(fpath, "wb") as broken:
+                                gz = pkg.pkggzip.PkgGzipFile(
+                                    fileobj=broken)
+                                gz.write(fixed.read())
+                                gz.close()
+
+        def __inject_badmanifest(self, fmri_str):
+                """Corrupt a manifest in the repository for the given fmri,
+                returning the path to that FMRI."""
+                mpath = self.__get_mf_path(fmri_str)
+                other_path = os.path.join(self.test_root, "tmp/other")
+
+                with open(other_path, "r") as other:
+                        with open(mpath, "a") as mf:
+                                mf.write(other.read())
+                return mpath
+
+        def __inject_dir_for_manifest(self, fmri_str):
+                """Put a dir in place of a manifest."""
+                mpath = self.__get_mf_path(fmri_str)
+                os.remove(mpath)
+                os.mkdir(mpath)
+                return mpath
+
+        def __inject_nofile(self, path):
+                fpath = self.__get_file_path(path)
+                os.remove(fpath)
+                return fpath
+
+        def __inject_perm(self, path=None, fmri_str=None, parent=False,
+            chown=False):
+                """Set restrictive file permissions on the given path or fmri in
+                the repository. If 'parent' is set to True, we change
+                permissions on the parent directory of the file or fmri.
+                If chown is set, we chown the file and its parent dir to root.
+                """
+                if path:
+                        fpath = self.__get_file_path(path)
+                        if parent:
+                                fpath = os.path.dirname(fpath)
+                        os.chmod(fpath, 0000)
+                        if chown:
+                                os.chown(fpath, 0, 0)
+                                os.chown(os.path.dirname(mpath), 0, 0)
+                        return fpath
+                elif fmri_str:
+                        mpath = self.__get_mf_path(fmri_str)
+                        if parent:
+                                mpath = os.path.dirname(mpath)
+                        os.chmod(mpath, 0000)
+                        if chown:
+                                os.chown(mpath, 0, 0)
+                                os.chown(os.path.dirname(mpath), 0, 0)
+                        return mpath
+                else:
+                        assert_(False, "Invalid use of __inject_perm(..)!")
+
+        def __repair_perm(self, path, parent=False):
+                """Repair errors introduced by __inject_perm."""
+                if parent:
+                        fpath = os.path.dirname(path)
+                else:
+                        fpath = path
+                if os.path.isdir(fpath):
+                        os.chmod(fpath, misc.PKG_DIR_MODE)
+                elif os.path.isfile(fpath):
+                        os.chmod(fpath, misc.PKG_FILE_MODE)
+
+        def __inject_badsig(self, fmri_str):
+                mpath = self.__get_mf_path(fmri_str)
+                with open(mpath, "ab+") as mf:
+                        mf.write("set name=pkg.t_pkgrepo.bad_sig value=foo")
+                return mpath
+
+        def __repair_badsig(self, path):
+                mpath_new = path + ".new"
+                with open(path, "rb") as mf:
+                        with open(mpath_new, "wb") as mf_new:
+                                for line in mf.readlines():
+                                        if not "pkg.t_pkgrepo.bad_sig" in line:
+                                                mf_new.write(line)
+                os.rename(mpath_new, path)
+
+        def __inject_unknown(self):
+                pass
+
+        def test_11_verify_badhash(self):
+                """Test that verify finds bad hashes and invalid gzip files."""
+
+                repo_path = self.dc.get_repodir()
+                repo_uri = self.dc.get_repo_url()
+
+                # publish a single package and make sure the repository is clean
+                fmris = self.pkgsend_bulk(repo_path, (self.tree10))
+                self.pkgrepo("-s %s verify" % repo_path, exit=0)
+
+                # break a file in the repository and ensure we spot it
+                bad_hash_path = self.__inject_badhash("tmp/truck1")
+
+                self.pkgrepo("-s %s verify" % repo_path, exit=1)
+                self.assert_(
+                    self.output.count("ERROR: Invalid file hash") == 1)
+                self.assert_(bad_hash_path in self.output)
+                self.assert_(fmris[0] in self.output)
+
+                # fix the file in the repository, and publish another package
+                self.__repair_badhash("tmp/truck1")
+                fmris += self.pkgsend_bulk(repo_path, (self.truck10))
+                self.pkgrepo("-s %s verify" % repo_path, exit=0)
+                self.assert_(bad_hash_path not in self.output)
+                bad_hash_path = self.__inject_badhash("tmp/truck1")
+
+                # verify we now get two errors when verifying the repository
+                self.pkgrepo("-s %s verify" % repo_path, exit=1)
+                self.assert_(
+                    self.output.count("ERROR: Invalid file hash") == 2)
+                for fmri in fmris:
+                        self.assert_(fmri in self.output)
+                self.assert_(bad_hash_path in self.output)
+                # check we also print paths which deliver that corrupted file
+                self.assert_("etc/truck1" in self.output)
+                self.assert_("etc/trailer" in self.output)
+
+                # finally, corrupt another file to see that we can also spot
+                # files that aren't gzipped.
+                fmris += self.pkgsend_bulk(repo_path, (self.truck20))
+                bad_gzip_path = self.__inject_badhash("tmp/truck2",
+                    valid_gzip=False)
+                self.pkgrepo("-s %s verify" % repo_path, exit=1)
+                # we should get 3 bad file hashes now, since we've added truck20
+                # which also references etc/truck1, which is bad.
+                self.assert_(
+                    self.output.count("ERROR: Invalid file hash") == 3)
+                self.assert_(
+                    self.output.count("ERROR: Corrupted gzip file") == 1)
+                self.assert_(bad_gzip_path in self.output)
+
+
+        def test_12_verify_badmanifest(self):
+                """Test that verify finds bad manifests."""
+                repo_path = self.dc.get_repodir()
+
+                # publish a single package
+                fmris = self.pkgsend_bulk(repo_path, (self.tree10))
+
+                # corrupt a manifest and make sure pkglint agrees
+                bad_mf = self.__inject_badmanifest(fmris[0])
+                self.pkglint(bad_mf, exit=1)
+
+                self.pkgrepo("-s %s verify" % repo_path, exit=1)
+                self.assert_(bad_mf in self.output)
+                self.assert_("Corrupt manifest." in self.output)
+
+                # publish more packages, and verify we still get the one error
+                fmris += self.pkgsend_bulk(repo_path, (self.truck10,
+                    self.amber10))
+                self.pkgrepo("-s %s verify" % repo_path, exit=1)
+                self.assert_(
+                    self.output.count("ERROR: Corrupt manifest.") == 1)
+
+                # break another manifest, and check we get two errors
+                another_bad_mf = self.__inject_badmanifest(fmris[-1])
+                self.pkgrepo("-s %s verify" % repo_path, exit=1)
+                self.assert_(another_bad_mf in self.output)
+                self.assert_(bad_mf in self.output)
+                self.assert_(
+                    self.output.count("Corrupt manifest.") == 2)
+
+        def test_13_verify_nofile(self):
+                """Test that verify finds missing files."""
+
+                repo_path = self.dc.get_repodir()
+
+                # publish a single package and break it
+                fmris = self.pkgsend_bulk(repo_path, (self.tree10))
+                missing_file = self.__inject_nofile("tmp/truck1")
+
+                self.pkgrepo("-s %s verify" % repo_path, exit=1)
+                self.assert_(missing_file in self.output)
+                self.assert_("ERROR: Missing file: %s" %
+                    self.fhashes["tmp/truck1"] in self.output)
+                self.assert_(fmris[0] in self.output)
+
+                # publish another package that also delivers the file
+                # and inject the error again, checking that both manifests
+                # appear in the output
+                fmris += self.pkgsend_bulk(repo_path, (self.truck10))
+                self.__inject_nofile("tmp/truck1")
+
+                self.pkgrepo("-s %s verify" % repo_path, exit=1)
+                self.assert_(missing_file in self.output)
+                self.assert_(self.output.count("ERROR: Missing file: %s" %
+                    self.fhashes["tmp/truck1"]) == 2)
+                for f in fmris:
+                        self.assert_(f in self.output)
+
+        def test_14_verify_permissions(self):
+                """Check that we can find files and manifests in the
+                repository that have invalid permissions."""
+
+                repo_path = self.dc.get_repodir()
+
+                shutil.rmtree(repo_path)
+                os.mkdir(repo_path)
+                os.chmod(repo_path, 0777)
+                self.pkgrepo("create %s" % repo_path, su_wrap=True)
+                self.pkgrepo("set -s %s publisher/prefix=test" % repo_path,
+                    su_wrap=True)
+                # publish a single package and break it
+                fmris = self.pkgsend_bulk(repo_path, (self.truck10),
+                    su_wrap=True)
+                bad_path = self.__inject_perm(path="tmp/truck1")
+                self.pkgrepo("-s %s verify" % repo_path, exit=1, su_wrap=True)
+                self.assert_(bad_path in self.output)
+                self.assert_("ERROR: Verification failure" in self.output)
+                self.assert_(fmris[0] in self.output)
+                self.__repair_perm(bad_path)
+
+                # Just break the parent directory, we should still report the
+                # hash file as unreadable
+                bad_parent = self.__inject_perm(path="tmp/truck1", parent=True)
+                self.pkgrepo("-s %s verify" % repo_path, exit=1, su_wrap=True)
+                self.assert_(bad_path in self.output)
+                self.assert_("ERROR: Verification failure" in self.output)
+                self.assert_(fmris[0] in self.output)
+                self.__repair_perm(bad_parent)
+                # break some manifests
+                fmris = self.pkgsend_bulk(repo_path, (self.truck20),
+                    su_wrap=True)
+
+                bad_mf_path = self.__inject_perm(fmri_str=fmris[0])
+                self.pkgrepo("-s %s verify" % repo_path, exit=1, su_wrap=True)
+                self.assert_(bad_mf_path in self.output)
+                self.assert_("ERROR: Verification failure" in self.output)
+
+                # this should cause both manifests to report errors
+                bad_mf_path = self.__inject_perm(fmri_str=fmris[0], parent=True)
+                self.pkgrepo("-s %s verify" % repo_path, exit=1, su_wrap=True)
+                self.assert_(bad_mf_path in self.output)
+                self.assert_("ERROR: Verification failure" in self.output)
+                self.__repair_perm(bad_mf_path)
+
+        def test_15_verify_badsig(self):
+                repo_path = self.dc.get_repodir()
+
+                # publish a single package and break it
+                fmris = self.pkgsend_bulk(repo_path, (self.truck10))
+                self.pkgsign(repo_path, "\*")
+                self.pkgrepo("-s %s verify" % repo_path)
+                bad_path = self.__inject_badsig(fmris[0])
+                self.pkgrepo("-s %s verify" % repo_path, exit=1)
+                self.assert_(bad_path in self.output)
+                self.assert_("ERROR: Bad signature." in self.output)
+                self.__repair_badsig(bad_path)
+                self.pkgrepo("-s %s verify" % repo_path, exit=0)
+
+                # now sign with a key, cert and chain cert and check we fail
+                # to verify
+                self.pkgsign_simple(repo_path, "\*")
+                self.pkgrepo("-s %s verify" % repo_path, exit=1)
+                self.assert_("ERROR: Bad signature." in self.output)
+
+                # now set a trust anchor directory, and expect that pkgrepo
+                # verify will now pass
+                ta_dir = os.path.join(self.test_root,
+                    "ro_data/signing_certs/produced/ta3")
+                self.pkgrepo("-s %s set repository/trust-anchor-directory=%s" %
+                    (repo_path, ta_dir))
+                self.pkgrepo("-s %s verify" % repo_path, exit=0)
+
+        def test_16_verify_warn_openperms(self):
+                """Test that we emit a warning message when the repository is
+                not world-readable."""
+
+                repo_path = self.dc.get_repodir()
+                fmris = self.pkgsend_bulk(repo_path, (self.truck10))
+                os.chmod(self.test_root, 0700)
+                self.pkgrepo("-s %s verify" % repo_path, exit=0)
+                self.assert_("WARNING: " in self.output)
+                self.assert_("svc:/application/pkg/system-repository" \
+                    in self.output)
+                self.assert_("ERROR: " not in self.output)
+                os.chmod(self.test_root, 0755)
+                self.pkgrepo("-s %s verify" % repo_path, exit=0)
+                self.assert_("WARNING: " not in self.output)
+
+        def test_17_verify_empty_pub(self):
+                """Test that we can verify a repository that contains a
+                publisher with no packages."""
+                repo_path = self.dc.get_repodir()
+                fmris = self.pkgsend_bulk(repo_path, (self.truck10))
+                self.pkgrepo("-s %s add-publisher empty" % repo_path)
+                self.pkgrepo("-s %s verify -p empty" % repo_path)
+
+        def test_18_verify_invalid_repos(self):
+                """Test that we exit with a usage message for v3 repos and
+                network repositories."""
+                repo_path = self.dc.get_repodir()
+                fmris = self.pkgsend_bulk(repo_path, (self.truck10))
+                depot_uri = self.dc.get_depot_url()
+                self.dc.start()
+                self.pkgrepo("-s %s verify" % depot_uri, exit=2)
+                self.dc.stop()
+                shutil.rmtree(repo_path)
+                self.pkgrepo("create --version=3 %s" % repo_path)
+                self.pkgrepo("set -s %s publisher/prefix=test" % repo_path)
+                fmris = self.pkgsend_bulk(repo_path, (self.truck10))
+                self.pkgrepo("-s %s verify" % repo_path, exit=1)
+
+        def __get_fhashes(self, repodir, pub):
+                """Returns a list of file hashes for the publisher
+                pub in a given repository."""
+                fhashes = []
+                files_dir = os.path.sep.join(["publisher", pub, "file"])
+                for dirpath, dirs, files in os.walk(os.path.join(repodir,
+                    files_dir)):
+                        fhashes.extend(files)
+                return fhashes
+
+        def test_19_fix_brokenmanifest(self):
+                """Test that fix operations correct a bad manifest in a file
+                repo."""
+
+                repo_path = self.dc.get_repodir()
+                fmris = self.pkgsend_bulk(repo_path, (self.truck10))
+                self.pkgsign(repo_path, "\*")
+
+                self.pkgrepo("-s %s fix" % repo_path)
+
+                valid_hashes = self.__get_fhashes(repo_path, "test")
+                self.debug(valid_hashes)
+                bad_path = self.__inject_badsig(fmris[0])
+                self.pkgrepo("-s %s fix" % repo_path)
+                self.assert_(fmris[0] in self.output)
+                self.assert_(not os.path.exists(bad_path))
+
+                # check our quarantine dir has been created
+                q_dir = os.path.sep.join([repo_path, "publisher", "test",
+                    "pkg5-quarantine"])
+                self.assert_(os.path.exists(q_dir))
+
+                # check the broken manifest is in the quarantine dir
+                mf_path_sub = bad_path.replace(
+                    os.path.sep.join([repo_path, "publisher", "test"]), "")
+                # quarantined items are stored in a new tmpdir per-session
+                q_dir_tmp = os.listdir(q_dir)[0]
+                q_mf_path = os.path.sep.join([q_dir, q_dir_tmp, mf_path_sub])
+                self.assert_(os.path.exists(q_mf_path))
+
+                # make sure the package no longer appears in the catalog
+                self.pkgrepo("-s %s list -F tsv" % repo_path)
+                self.assert_(fmris[0] not in self.output)
+
+                # ensure that only the manifest was quarantined - file hashes
+                # were left alone.
+                remaining_hashes = self.__get_fhashes(repo_path, "test")
+                self.assert_(set(valid_hashes) == set(remaining_hashes))
+
+                # finally, ensure we can republish this package
+                fmris = self.pkgsend_bulk(repo_path, (self.truck10))
+                self.pkgrepo("-s %s list -F tsv" % repo_path)
+                self.assert_(fmris[0] in self.output)
+
+        def test_20_fix_brokenfile(self):
+                """Test that operations that cause us to fix a file shared
+                by several packages cause all of those packages to be
+                quarantined.
+
+                This also tests the -v option of pkg fix, which prints the
+                pkgrepo verify output and prints details of which files are
+                being quarantined.
+                """
+
+                repo_path = self.dc.get_repodir()
+                fmris = self.pkgsend_bulk(repo_path, (self.tree10,
+                    self.truck10))
+                self.pkgrepo("-s %s fix" % repo_path)
+                bad_file = self.__inject_badhash("tmp/truck1")
+
+                old_hashes = self.__get_fhashes(repo_path, "test1")
+
+                self.pkgrepo("-s %s fix -v" % repo_path)
+
+                # since the file was shared by two manifests, we should get
+                # the manifest name printed twice: once when we encounter the
+                # broken file, then again when we print the summary of which
+                # packages need to be republished.
+                self.assert_(self.output.count(fmris[0]) == 2)
+                self.assert_(self.output.count(fmris[1]) == 2)
+                self.assert_(self.output.count("ERROR: Invalid file hash") == 2)
+
+                # the bad file name gets printed 3 times, once for each time
+                # a manifest references it and verify discovered the error,
+                # and once when we report where the file was moved to.
+                self.assert_(self.output.count(bad_file) == 3)
+
+                # check the broken file is in the quarantine dir and that
+                # we printed where it moved to
+                bad_file_sub = bad_file.replace(
+                    os.path.sep.join([repo_path, "publisher", "test"]), "")
+                # quarantined items are stored in a new tmpdir per-session
+                q_dir = os.path.sep.join([repo_path, "publisher", "test",
+                    "pkg5-quarantine"])
+                q_dir_tmp = os.listdir(q_dir)[0]
+                q_file_path = os.path.normpath(
+                    os.path.sep.join([q_dir, q_dir_tmp, bad_file_sub]))
+                self.assert_(os.path.exists(q_file_path))
+                self.debug(q_file_path)
+                self.assert_(q_file_path in self.output)
+
+                remaining_hashes = self.__get_fhashes(repo_path, "test1")
+                # check that we only quarantined the bad hash file
+                self.assert_(set(remaining_hashes) == \
+                    set(old_hashes) - set(os.path.basename(bad_file)))
+
+                # Make sure the repository is now clean, and remains so even
+                # after we republish the packages, and that all file content is
+                # replaced.
+                self.pkgrepo("-s %s fix" % repo_path)
+                fmris = self.pkgsend_bulk(repo_path, (self.tree10,
+                    self.truck10))
+                new_hashes = self.__get_fhashes(repo_path, "test1")
+                self.assert_(set(new_hashes) == set(old_hashes))
+                self.pkgrepo("-s %s fix" % repo_path)
+
+        def test_21_fix_brokenperm(self):
+                """Tests that when running fix as an unpriviliged user that we
+                fail to fix the repository."""
+
+                repo_path = self.dc.get_repodir()
+
+                shutil.rmtree(repo_path)
+                os.mkdir(repo_path)
+                os.chmod(repo_path, 0777)
+                self.pkgrepo("create %s" % repo_path, su_wrap=True)
+                self.pkgrepo("set -s %s publisher/prefix=test" % repo_path,
+                    su_wrap=True)
+                # publish a single package and break it
+                fmris = self.pkgsend_bulk(repo_path, (self.truck10),
+                    su_wrap=True)
+                # this breaks the permissions of one of the manifests and
+                # chowns is such that we shouldn't be able to quarantine it.
+                bad_path = self.__inject_perm(fmri_str=fmris[0], chown=True)
+
+                self.pkgrepo("-s %s fix" % repo_path, exit=1, stderr=True,
+                    su_wrap=True)
+                self.assert_(bad_path in self.errout)
+                # the fix should succeed now, but not emit any output, because
+                # it's running as root, and the permissions are fine according
+                # to a root user
+                self.pkgrepo("-s %s fix" % repo_path)
+                # but we should still be able to warn about the bad path for
+                # pkg5srv access.
+                self.pkgrepo("-s %s verify" % repo_path)
+                self.assert_("WARNING: " in self.output)
+
+        def test_22_fix_unsupported_repo(self):
+                """Tests that when running fix on a v3 repo fails"""
+
+                repo_path = self.dc.get_repodir()
+                shutil.rmtree(repo_path)
+                self.pkgrepo("create --version=3 %s" % repo_path)
+                self.pkgrepo("-s %s set publisher/prefix=test" % repo_path)
+                fmris = self.pkgsend_bulk(repo_path, (self.truck10))
+                self.pkgrepo("-s %s fix" % repo_path, exit=1)
+                self.assert_("only version 4 repositories are supported." in
+                    self.errout)
+
+        def test_23_fix_empty_missing_pub(self):
+                """Test that we can attempt to fix a repository that contains a
+                publisher with no packages, and that we fail on missing pubs"""
+
+                repo_path = self.dc.get_repodir()
+                fmris = self.pkgsend_bulk(repo_path, (self.truck10))
+                self.pkgrepo("-s %s add-publisher empty" % repo_path)
+                self.pkgrepo("-s %s fix -p test" % repo_path)
+                self.pkgrepo("-s %s fix -p missing" % repo_path, exit=1)
+                self.assert_("no matching publishers" in self.errout)
 
 
 if __name__ == "__main__":

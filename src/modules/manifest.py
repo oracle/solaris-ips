@@ -501,7 +501,7 @@ class Manifest(object):
                                 yield a
 
         def gen_key_attribute_value_by_type(self, atype, excludes=EmptyI):
-                """Generate the value of the key atrribute for each action
+                """Generate the value of the key attribute for each action
                 of type "type" in the manifest."""
 
                 return (

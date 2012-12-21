@@ -54,6 +54,7 @@ import time
 import unittest
 import urllib2
 import urlparse
+import operator
 import platform
 import pty
 import pwd
@@ -2126,14 +2127,18 @@ class Pkg5TestSuite(unittest.TestSuite):
                 return res
 
 
-def get_su_wrap_user():
+def get_su_wrap_user(uid_gid=False):
         for u in ["noaccess", "nobody"]:
                 try:
-                        pwd.getpwnam(u)
+                        pw = pwd.getpwnam(u)
+                        if uid_gid:
+                                return operator.attrgetter(
+                                    'pw_uid', 'pw_gid')(pw)
                         return u
                 except (KeyError, NameError):
                         pass
         raise RuntimeError("Unable to determine user for su.")
+
 
 class DepotTracebackException(Pkg5CommonException):
         def __init__(self, logfile, output):
@@ -2413,10 +2418,10 @@ class CliTestCase(Pkg5TestCase):
                     su_wrap=su_wrap, env_arg=env_arg)
 
         def pkgrepo(self, command, comment="", exit=0, su_wrap=False,
-            env_arg=None):
+            env_arg=None, stderr=False):
                 cmdline = "%s/usr/bin/pkgrepo %s" % (g_proto_area, command)
                 return self.cmdline_run(cmdline, comment=comment, exit=exit,
-                    su_wrap=su_wrap, env_arg=env_arg)
+                    su_wrap=su_wrap, env_arg=env_arg, stderr=stderr)
 
         def pkgsign(self, depot_url, command, exit=0, comment="",
             env_arg=None):
@@ -2445,7 +2450,7 @@ class CliTestCase(Pkg5TestCase):
                     env_arg=env_arg)
 
         def pkgsend(self, depot_url="", command="", exit=0, comment="",
-            allow_timestamp=False, env_arg=None):
+            allow_timestamp=False, env_arg=None, su_wrap=False):
                 args = []
                 if allow_timestamp:
                         args.append("-D allow-timestamp")
@@ -2461,7 +2466,7 @@ class CliTestCase(Pkg5TestCase):
 
                 retcode, out = self.cmdline_run(cmdline, comment=comment,
                     exit=exit, out=True, prefix=prefix, raise_error=False,
-                    env_arg=env_arg)
+                    env_arg=env_arg, su_wrap=su_wrap)
                 errout = self.errout
 
                 cmdop = command.split(' ')[0]
@@ -2496,7 +2501,7 @@ class CliTestCase(Pkg5TestCase):
                 return retcode, published
 
         def pkgsend_bulk(self, depot_url, commands, exit=0, comment="",
-            no_catalog=False, refresh_index=False):
+            no_catalog=False, refresh_index=False, su_wrap=False):
                 """ Send a series of packaging commands; useful  for quickly
                     doing a bulk-load of stuff into the repo.  All commands are
                     expected to work; if not, the transaction is abandoned.  If
@@ -2544,6 +2549,10 @@ class CliTestCase(Pkg5TestCase):
                                         for l in accumulate:
                                                 os.write(fd, "%s\n" % l)
                                         os.close(fd)
+                                        if su_wrap:
+                                                os.chown(f_path,
+                                                    *get_su_wrap_user(
+                                                    uid_gid=True))
                                         try:
                                                 cmd = "publish %s -d %s %s" % (
                                                     extra_opts, self.test_root,
@@ -2558,7 +2567,8 @@ class CliTestCase(Pkg5TestCase):
                                                 # package behaviour.
                                                 retcode, published = \
                                                     self.pkgsend(depot_url, cmd,
-                                                    allow_timestamp=True)
+                                                    allow_timestamp=True,
+                                                    su_wrap=su_wrap)
                                                 if retcode == 0 and published:
                                                         plist.append(published)
                                         except:
@@ -2576,7 +2586,7 @@ class CliTestCase(Pkg5TestCase):
 
                         if exit == 0 and refresh_index:
                                 self.pkgrepo("-s %s refresh --no-catalog" %
-                                    depot_url)
+                                    depot_url, su_wrap=su_wrap)
                 except UnexpectedExitCodeException, e:
                         if e.exitcode != exit:
                                 raise
