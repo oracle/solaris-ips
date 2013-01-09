@@ -4352,16 +4352,20 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
 
                 slist = []
                 for entry in servers:
-                        descriptive_name = None
                         if isinstance(entry, dict):
                                 origin = entry["origin"]
                                 try:
                                         pub = self._img.get_publisher(
                                             origin=origin)
+                                        pub_uri = publisher.RepositoryURI(
+                                            origin)
+                                        repo = publisher.Repository(
+                                            origins=[pub_uri])
                                 except apx.UnknownPublisher:
                                         pub = publisher.RepositoryURI(origin)
-                                        descriptive_name = origin
-                                slist.append((pub, None, descriptive_name))
+                                        repo = publisher.Repository(
+                                            origins=[pub])
+                                slist.append((pub, repo, origin))
                                 continue
 
                         # Must be a publisher object.
