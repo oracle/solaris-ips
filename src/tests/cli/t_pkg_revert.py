@@ -70,9 +70,18 @@ class TestPkgRevert(pkg5unittest.SingleDepotTestCase):
             open D@1.1,5.11-0
             add dir mode=0755 owner=root group=bin path=etc
             add file etc/file4 mode=0555 owner=root group=bin path=etc/file4 revert-tag=bob revert-tag=ted revert-tag=carol preserve=true
+            close
+            open W@1.0,5.11-0
+            add dir mode=0755 owner=root group=bin path=etc revert-tag=bob=*
+            close
+            open X@1.0,5.11-0
+            add file etc/file5 mode=0555 owner=root group=bin path=etc/wombat/file1
+            close
+            open Y@1.0,5.11-0
+            add dir mode=0755 owner=root group=bin path=etc/y-dir revert-tag=bob=*
             close"""
 
-        misc_files = ["etc/file1", "etc/file2", "etc/file3", "etc/file4"]
+        misc_files = ["etc/file1", "etc/file2", "etc/file3", "etc/file4", "etc/file5"]
 
         def damage_all_files(self):
                 ubin = portable.get_user_by_name("bin", None, False)
@@ -84,15 +93,49 @@ class TestPkgRevert(pkg5unittest.SingleDepotTestCase):
                         os.chown(file_path, ubin, groot)
                         os.chmod(file_path, misc.PKG_RO_FILE_MODE)
 
+	def create_some_files(self, paths):
+                ubin = portable.get_user_by_name("bin", None, False)
+                groot = portable.get_group_by_name("root", None, False)
+		for p in paths:
+			file_path = os.path.join(self.get_img_path(), p)
+			dirpath = os.path.dirname(file_path)
+			if not os.path.exists(dirpath):
+				os.mkdir(dirpath)
+			with open(file_path, "a+") as f:
+				f.write("\ncontents\n")
+			os.chown(file_path, ubin, groot)
+			os.chmod(file_path, misc.PKG_RO_FILE_MODE)
+
+	def files_are_all_there(self, paths):
+		# check that files are there
+		for p in paths:
+			file_path = os.path.join(self.get_img_path(), p)
+			if not os.path.isfile(file_path):
+				print file_path
+				return False 
+		return True
+
+	def files_are_all_missing(self, paths):
+		# make sure all files are gone
+		for p in paths:
+			file_path = os.path.join(self.get_img_path(), p)
+			if os.path.isfile(file_path):
+				print file_path
+				return False 
+		return True
+
         def remove_file(self, path):
                 os.unlink(os.path.join(self.get_img_path(), path))
+
+	def remove_dir(self, path):
+		os.rmdir(os.path.join(self.get_img_path(), path))
 
         def setUp(self):
                 pkg5unittest.SingleDepotTestCase.setUp(self)
                 self.make_misc_files(self.misc_files)
+		self.plist = self.pkgsend_bulk(self.rurl, self.pkgs)
 
         def test_revert(self):
-                plist = self.pkgsend_bulk(self.rurl, self.pkgs)
                 self.image_create(self.rurl)
                 # try reverting non-editable files
                 self.pkg("install A@1.0 B@1.0 C@1.0 D@1.0")
@@ -132,10 +175,10 @@ class TestPkgRevert(pkg5unittest.SingleDepotTestCase):
                 # revert damage to B, C, D by tag and test the parsable output.
                 self.pkg("revert -n --parsable=0 --tagged bob")
                 self.assertEqualParsable(self.output,
-                    affect_packages=[plist[1], plist[2], plist[3]])
+                    affect_packages=[self.plist[1], self.plist[2], self.plist[3]])
                 self.pkg("revert --parsable=0 --tagged bob")
                 self.assertEqualParsable(self.output,
-                    affect_packages=[plist[1], plist[2], plist[3]])
+                    affect_packages=[self.plist[1], self.plist[2], self.plist[3]])
                 self.pkg("verify A", exit=1)
                 self.pkg("verify B")
                 self.pkg("verify C")
@@ -165,6 +208,71 @@ class TestPkgRevert(pkg5unittest.SingleDepotTestCase):
                 # since tags can be missing, just nothing to do for
                 # tags that we cannot find
                 self.pkg("revert --tagged no-such-tag", exit=4)
+
+	def test_revert_2(self):
+		"""exercise new directory revert facility"""
+                self.image_create(self.rurl)
+		some_files = ["etc/A", "etc/B", "etc/C"]
+
+		# first try reverting tag that doesn't exist
+                self.pkg("install A@1.1 W@1")
+                self.pkg("verify")
+		self.pkg("revert --tagged alice", 4)
+                self.pkg("verify")
+
+		# now revert a tag that exists, but doesn't need
+		# any work done
+		self.pkg("revert --tagged bob", 4)
+
+		# now create some unpackaged files
+		self.create_some_files(some_files)
+		self.assert_(self.files_are_all_there(some_files))
+		# revert them
+		self.pkg("revert --tagged bob", 0)
+		self.pkg("verify")
+		self.assert_(self.files_are_all_missing(some_files))
+
+		# now create some unpackaged directories and files
+		some_dirs = ["etc/X/A", "etc/Y/B", "etc/Z/C"]
+		self.create_some_files(some_dirs + some_files)
+		self.assert_(self.files_are_all_there(some_dirs + some_files))
+		# revert them
+		self.pkg("revert --tagged bob", 0)
+		self.pkg("verify")
+		self.assert_(self.files_are_all_missing(some_dirs + some_files))
+
+		# install a package w/ implicit directories
+		self.pkg("install X@1.0")
+		self.create_some_files(some_dirs + some_files + ["etc/wombat/XXX"])
+		self.assert_(self.files_are_all_there(some_dirs + some_files + ["etc/wombat/XXX"]))
+		# revert them
+		self.pkg("revert --tagged bob", 0)
+		self.pkg("verify")
+		self.assert_(self.files_are_all_missing(some_dirs + some_files))
+		self.assert_(self.files_are_all_there(["etc/wombat/XXX"]))
+		# mix and match w/ regular tests
+                self.pkg("install B@1.1 C@1.1 D@1.1")
+		self.pkg("verify")
+                self.damage_all_files()
+		self.create_some_files(some_dirs + some_files + ["etc/wombat/XXX"])
+		self.assert_(self.files_are_all_there(some_dirs + some_files + ["etc/wombat/XXX"]))
+                self.pkg("verify A", exit=1)
+                self.pkg("verify B", exit=1)
+                self.pkg("verify C", exit=1)
+                self.pkg("verify D", exit=1)
+		self.pkg("revert --tagged bob")
+                self.pkg("revert /etc/file1")
+		self.pkg("verify")
+		self.assert_(self.files_are_all_missing(some_dirs + some_files))
+		self.assert_(self.files_are_all_there(["etc/wombat/XXX"]))
+		# generate some problems
+		self.pkg("install Y")
+		self.pkg("verify")
+		self.remove_dir("etc/y-dir")
+		self.pkg("revert --tagged bob", 4)
+		self.pkg("fix Y")
+		self.pkg("verify")
+		self.pkg("revert --tagged bob", 4)
 
 if __name__ == "__main__":
         unittest.main()

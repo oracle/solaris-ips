@@ -21,17 +21,19 @@
 #
 
 #
-# Copyright (c) 2007, 2012, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2007, 2013, Oracle and/or its affiliates. All rights reserved.
 #
 
 from collections import defaultdict, namedtuple
 import contextlib
 import errno
+import fnmatch
 import itertools
 import mmap
 import operator
 import os
 import simplejson as json
+import stat
 import sys
 import tempfile
 import traceback
@@ -714,14 +716,22 @@ class ImagePlan(object):
                 """Plan reverting the specified files or files tagged as
                 specified.  We create the pkgplans here rather than in
                 evaluate; by keeping the list of changed_fmris empty we
-                skip most of the processing in evaluate"""
+                skip most of the processing in evaluate.
+                We also process revert tags on directories here"""
 
                 self.__plan_op()
 
                 revert_dict = defaultdict(list)
+                revert_dirs = defaultdict(list)
 
                 pt = self.__progtrack
                 pt.plan_all_start()
+
+                # since the fmri list stays empty, we can set this;
+                # we need this set so we can build directories and
+                # actions lists as we're doing checking with installed
+                # actions earlier here.
+                self.pd.state = plandesc.EVALUATED_PKGS
 
                 # We could have a specific 'revert' tracker item, but
                 # "package planning" seems as good a term as any.
@@ -734,6 +744,9 @@ class ImagePlan(object):
                         # they differ from the manifests.  Note we don't care
                         # if the file is editable or not.
 
+                        # look through directories to see if any have our
+                        # revert-tag set; we then need to check the value
+                        # to find any unpackaged files that need deletion.
                         tag_set = set(args)
                         for f in self.image.gen_installed_pkgs():
                                 pt.plan_add_progress(pt.PLAN_PKGPLAN)
@@ -745,9 +758,24 @@ class ImagePlan(object):
                                             (set(act.attrlist("revert-tag")) &
                                              tag_set):
                                                 revert_dict[(f, m)].append(act)
+
+                                for act in m.gen_actions_by_type("dir",
+                                    self.__new_excludes):
+                                        if "revert-tag" not in act.attrs:
+                                                continue
+                                        for a in act.attrlist("revert-tag"):
+                                                tag_parts = a.split("=", 2)
+                                                if tag_parts[0] not in tag_set or \
+                                                    len(tag_parts) != 2:
+                                                        continue
+                                                revert_dirs[(f, m)].append(
+                                                    self.__gen_matching_acts(
+                                                    act.attrs["path"],
+                                                    tag_parts[1]))
                 else:
                         # look through all the packages, looking for our files
-                        # we could use search for this.
+                        # we could use search for this.  We don't support reverting
+                        # directories by ad-hoc means.
 
                         revertpaths = set([a.lstrip(os.path.sep) for a in args])
                         overlaypaths = set()
@@ -802,10 +830,106 @@ class ImagePlan(object):
                                     can_exclude=True)
                                 self.pd.pkg_plans.append(pp)
 
+                for f, m in revert_dirs:
+                        needs_delete = []
+                        for unchecked, checked in revert_dirs[(f, m)]:
+                                # just add these...
+                                needs_delete.extend(checked)
+                                # look for these
+                                for un in unchecked:
+                                        path = un.attrs["path"]
+                                        if path not in self.get_actions("file") \
+                                            and path not in self.get_actions("hardlink") \
+                                            and path not in self.get_actions("link"):
+                                                needs_delete.append(un)
+                        if needs_delete:
+                                pp = pkgplan.PkgPlan(self.image)
+                                pp.propose_repair(f, m, misc.EmptyI,
+                                    needs_delete)
+                                pp.evaluate(self.__new_excludes,
+                                    self.__new_excludes,
+                                    can_exclude=True)
+                                self.pd.pkg_plans.append(pp)
+
                 self.pd._fmri_changes = []
-                self.pd.state = plandesc.EVALUATED_PKGS
+
                 pt.plan_done(pt.PLAN_PKGPLAN)
                 pt.plan_all_done()
+
+        def __gen_matching_acts(self, path, pattern):
+                # return two lists of actions that match pattern at path
+                # include (recursively) directories only if they are not
+                # implicitly or explicitly packaged.  First list may
+                # contain packaged objects, second does not.
+
+                if path == os.path.sep: # not doing root
+                        return [], []
+
+                dir_loc  = os.path.join(self.image.root, path)
+
+                # If this is a mount point, disable this; too easy
+                # to break things.  This means this doesn't work
+                # on /var and /tmp - that's ok.
+
+                try:
+                        # if dir is missing, nothing to delete :)
+                        my_dev = os.stat(dir_loc).st_dev
+                except OSError:
+                        return [], []
+
+                # disallow mount points for safety's sake.
+                if my_dev != os.stat(os.path.dirname(dir_loc)).st_dev:
+                                return [], []
+
+                # Any explicit or implicitly packaged directories are
+                # ignored; checking all directory entries is cheap.
+                paths = [
+                    os.path.join(dir_loc, a)
+                    for a in fnmatch.filter(os.listdir(dir_loc), pattern)
+                    if os.path.join(path, a) not in self.__get_directories()
+                ]
+
+                # now we have list of items to be removed.  We know that
+                # any directories are not packaged, so expand those here
+                # and generate actions
+                unchecked = []
+                checked = []
+
+                for path in paths:
+                        if os.path.isdir(path) and not os.path.islink(path):
+                                # we have a directory that needs expanding
+                                for dirpath, dirnames, filenames in os.walk(path):
+                                        # crossed mountpoints - don't go here.
+                                        if os.stat(dirpath).st_dev != my_dev:
+                                                continue
+                                        for name in dirnames + filenames:
+                                                checked.append(
+                                                    self.__gen_del_act(
+                                                    os.path.join(dirpath, name)))
+                        else:
+                                unchecked.append(self.__gen_del_act(path))
+                return unchecked, checked
+
+        def __gen_del_act(self, path):
+                # With fully qualified path, return action suitable for
+                # deletion from image. Don't bother getting owner
+                # and group right; we're just going to blow it up anyway.
+
+                rootdir = self.image.root
+                pubpath = pkg.misc.relpath(path, rootdir)
+                pstat = os.lstat(path)
+                mode = oct(stat.S_IMODE(pstat.st_mode))
+                if stat.S_ISLNK(pstat.st_mode):
+                        return pkg.actions.link.LinkAction(
+                            target=os.readlink(path), path=pubpath)
+                elif stat.S_ISDIR(pstat.st_mode):
+                        return pkg.actions.directory.DirectoryAction(
+                            timestamp=timestamp, mode=mode, owner="root",
+                            group="bin", path=pubpath)
+                else: # treat everything else as a file
+                        return pkg.actions.file.FileAction(
+                            mode=mode, owner="root",
+                            group="bin", path=pubpath)
 
         def plan_noop(self):
                 """Create a plan that doesn't change the package contents of
@@ -2083,15 +2207,15 @@ class ImagePlan(object):
                         installed_dict = ImagePlan.__fmris2dict(
                             self.image.gen_installed_pkgs())
                         for act, pfmri in release_notes:
-                                if self.__include_note(installed_dict, act, 
+                                if self.__include_note(installed_dict, act,
                                     pfmri):
-                                        if act.attrs.get("must-display", 
+                                        if act.attrs.get("must-display",
                                             "false") == "true":
                                                 must_display = True
                                         for l in self.__get_note_text(
                                             act, pfmri).splitlines():
                                                 notes.append(misc.decode(l))
-                                        
+
                         self.pd.release_notes = (must_display, notes)
 
         def save_release_notes(self):
@@ -2999,11 +3123,11 @@ class ImagePlan(object):
                 #
                 # Sort the package plans by fmri to create predictability (and
                 # some sense of order) in the download output; this is not
-		# a perfect sort of this, but we only really care for things
-		# we fetch over the wire.
+                # a perfect sort of this, but we only really care for things
+                # we fetch over the wire.
                 #
                 self.pd.pkg_plans.sort(
-		    key=operator.attrgetter("destination_fmri"))
+                    key=operator.attrgetter("destination_fmri"))
 
                 pt.plan_done(pt.PLAN_ACTION_FINALIZE)
 
@@ -3127,7 +3251,7 @@ class ImagePlan(object):
 
                 #
                 # Calculate size of data retrieval and pass it to progress
-		# tracker.
+                # tracker.
                 #
                 npkgs = nfiles = nbytes = 0
                 for p in self.pd.pkg_plans:

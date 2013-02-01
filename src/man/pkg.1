@@ -1,5 +1,5 @@
 '\" te
-.\" Copyright (c) 2007, 2012, Oracle and/or its affiliates. All rights reserved.
+.\" Copyright (c) 2007, 2013, Oracle and/or its affiliates. All rights reserved.
 .TH pkg 1 "10 Oct 2012" "SunOS 5.12" "User Commands"
 .SH NAME
 pkg \- Image Packaging System retrieval client
@@ -1406,7 +1406,7 @@ Reverting some editable files to their default values can make the system unboot
 .ad
 .sp .6
 .RS 4n
-Revert all files tagged with \fItag-name\fR.
+Revert all files tagged with \fItag-name\fR, and remove any unpackaged files or directories matching pattern in directories with this tag.  See "File Actions" in the \fBpkg\fR(5) manual page.
 .RE
 
 .sp
