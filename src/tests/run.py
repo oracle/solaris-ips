@@ -512,7 +512,7 @@ if __name__ == "__main__":
 
                 omits = [
                     # These mako templates fail.
-                    "*etc_pkg_*mako",
+                    "*etc_pkg_*mako", "_depot_conf_mako",
                     # Complex use of module importer makes this fail.
                     "*sysrepo_p5p.py"
                 ]
