@@ -22,7 +22,7 @@
 #
 
 #
-# Copyright (c) 2011, 2012, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2011, 2013, Oracle and/or its affiliates. All rights reserved.
 #
 
 import testutils
@@ -970,7 +970,7 @@ class TestP5pWsgi(pkg5unittest.SingleDepotTestCase):
                 # lives outside our normal search path
                 mod_name = "sysrepo_p5p"
                 src_name = "%s.py" % mod_name
-                sysrepo_p5p_file = file(os.path.join(self.template_dir,
+                sysrepo_p5p_file = file(os.path.join(self.sysrepo_template_dir,
                     src_name))
                 self.sysrepo_p5p = imp.load_module(mod_name, sysrepo_p5p_file,
                     src_name, ("py", "r", imp.PY_SOURCE))

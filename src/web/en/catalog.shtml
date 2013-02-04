@@ -19,7 +19,7 @@
 ##
 ## CDDL HEADER END
 ##
-## Copyright 2009, 2012 Oracle and/or its affiliates. All rights reserved.
+## Copyright 2009, 2013 Oracle and/or its affiliates. All rights reserved.
 ##
 <%!
         import pkg.fmri
@@ -236,9 +236,8 @@
                 # packagemanager requires it and shouldn't.
                 p5ihref = self.shared.rpath(g_vars, "p5i/0/%s.p5i" % (
                     urllib.quote(pfmri.pkg_name, ""))) 
-                mhref = self.shared.rpath(g_vars, "manifest/0/%s" % (
-                    urllib.quote(pfmri.get_fmri(include_scheme=False,
-                    anarchy=True), "")))
+                mhref = self.shared.rpath(g_vars,
+                    "manifest/0/%s" % (pfmri.get_url_path()))
 %>
                         <tr${rclass}>
                                 <td scope="row">

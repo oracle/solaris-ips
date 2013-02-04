@@ -20,7 +20,7 @@
 # CDDL HEADER END
 
 #
-# Copyright (c) 2007, 2010, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2007, 2013, Oracle and/or its affiliates. All rights reserved.
 #
 
 """face - provides the BUI (Browser User Interface) for the image packaging
@@ -61,10 +61,11 @@ def feed(depot, request, response, pub):
                     "No update history; unable to generate feed.")
         return pkg.server.feed.handle(depot, request, response, pub)
 
-def __render_template(depot, request, path, pub):
+def __render_template(depot, request, path, pub, http_depot=None):
         template = tlookup.get_template(path)
         base = api.BaseInterface(request, depot, pub)
-        return template.render_unicode(g_vars={ "base": base, "pub": pub })
+        return template.render_unicode(g_vars={ "base": base, "pub": pub,
+            "http_depot": http_depot})
 
 def __handle_error(path, error):
         # All errors are treated as a 404 since reverse proxies such as Apache
@@ -76,7 +77,10 @@ def __handle_error(path, error):
 
         raise cherrypy.NotFound()
 
-def respond(depot, request, response, pub):
+def respond(depot, request, response, pub, http_depot=None):
+        """'http_depot' if set should be the resource that points to the top
+        level of repository being served (referred to as the repo_prefix in
+        depot_index.py)"""
         path = request.path_info.strip("/")
         if pub and os.path.exists(os.path.join(depot.web_root, pub)):
                 # If an item exists under the web root
@@ -119,7 +123,7 @@ def respond(depot, request, response, pub):
                 response.headers.update({ "Expires": 0, "Pragma": "no-cache",
                     "Cache-Control": "no-cache, no-transform, must-revalidate"
                     })
-                return __render_template(depot, request, path, pub)
+                return __render_template(depot, request, path, pub, http_depot)
         except sae.VersionException, e:
                 # The user shouldn't see why we can't render a template, but
                 # the reason should be logged (cleanly).

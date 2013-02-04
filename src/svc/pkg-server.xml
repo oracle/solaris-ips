@@ -19,7 +19,7 @@
 
 	CDDL HEADER END
 
-	Copyright (c) 2009, 2011 Oracle and/or its affiliates.  All rights reserved.
+	Copyright (c) 2009, 2013 Oracle and/or its affiliates.  All rights reserved.
 
 	NOTE:  This service manifest is not editable; its contents will
 	be overwritten by package or patch operations, including
@@ -34,7 +34,7 @@
 <service
 	name='application/pkg/server'
 	type='service'
-	version='1'>
+	version='1.1'>
 
 	<create_default_instance enabled='false' />
 
@@ -82,13 +82,13 @@
 	<exec_method
 		type='method'
 		name='start'
-		exec='%{pkg/pkg_root}/lib/svc/method/svc-pkg-depot %m'
+		exec='%{pkg/pkg_root}/lib/svc/method/svc-pkg-server %m'
 		timeout_seconds='0' />
 
 	<exec_method
 		type='method'
 		name='stop'
-		exec='%{pkg/pkg_root}/lib/svc/method/svc-pkg-depot %m %{restarter/contract}'
+		exec='%{pkg/pkg_root}/lib/svc/method/svc-pkg-server %m %{restarter/contract}'
 		timeout_seconds='30' />
 
 	<property_group name='pkg' type='application'>
@@ -116,6 +116,7 @@
 		<propval name='sort_file_max_size' type='astring' value=''/>
 		<propval name='file_root' type='astring' value='' />
 		<property name='address' type='net_address'/>
+                <propval name='standalone' type='boolean' value='true'/>
 	</property_group>
 
 	<property_group name='pkg_bui' type='application'>

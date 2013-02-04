@@ -19,7 +19,7 @@
 ##
 ## CDDL HEADER END
 ##
-## Copyright 2008, 2012 Oracle and/or its affiliates. All rights reserved.
+## Copyright 2008, 2013 Oracle and/or its affiliates. All rights reserved.
 ##
 <%inherit file="layout.shtml"/>\
 <%page args="g_vars"/>\
@@ -27,6 +27,7 @@
         catalog = g_vars["catalog"]
         config = g_vars["config"]
         request = g_vars["request"]
+        http_depot = g_vars["http_depot"]
 %>\
 <%def name="page_title(g_vars)"><%
         req = g_vars["request"]
@@ -132,7 +133,7 @@ the packages available for it.</p>
         </div>
 </div>
 <div class="yui-b">
-% if not config.mirror and request.publisher:
+% if not config.mirror and not http_depot and request.publisher:
         <table class="stats" summary="A summary of information about the
  package repository.">
                 <tr class="first">

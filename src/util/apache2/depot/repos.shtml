@@ -1,0 +1,69 @@
+## -*- coding: utf-8 -*-
+##
+## CDDL HEADER START
+##
+## The contents of this file are subject to the terms of the
+## Common Development and Distribution License (the "License").
+## You may not use this file except in compliance with the License.
+##
+## You can obtain a copy of the license at usr/src/OPENSOLARIS.LICENSE
+## or http://www.opensolaris.org/os/licensing.
+## See the License for the specific language governing permissions
+## and limitations under the License.
+##
+## When distributing Covered Code, include this CDDL HEADER in each
+## file and include the License file at usr/src/OPENSOLARIS.LICENSE.
+## If applicable, add the following below this CDDL HEADER, with the
+## fields enclosed by brackets "[]" replaced with your own identifying
+## information: Portions Copyright [yyyy] [name of copyright owner]
+##
+## CDDL HEADER END
+##
+## Copyright 2013 Oracle and/or its affiliates. All rights reserved.
+##
+<%page args="g_vars, gmenu_items=None"/>\
+<%def name="page_crumbs(g_vars)"><%
+        # None at top level.
+        return []
+%></%def>\
+<%def name="global_menu_items(g_vars)"><%
+        # Just this list of repositories.
+        return [("/", "Repositories")]
+%></%def>\
+<%inherit file="layout.shtml"/>\
+<%
+        repo_list = g_vars["repo_list"]
+        repo_pubs = g_vars["repo_pubs"]
+%>
+<%def name="document_class()"><%
+        return "yui-t4"
+%></%def>\
+<div id="custom-doc" class="${self.document_class()}">
+        <div id="hd">
+<div id="yui-main">
+        <div>
+        <h2 class="section-title">IPS Repositories</h2>
+        <p align="left">The following package repositories are available from this server:
+        <div class="results">
+        <table summary="A list of the package repositories available from this server.">
+            <tr class="first">
+                <th scope="row">URI</th><th scope="row">Publishers</th>
+                </tr>
+% for repo_uri, bui_link in repo_list:
+                <tr><td align="left"><a href="${bui_link}">${repo_uri}</a></td>
+		        <td>
+%         for pub, uri in repo_pubs[repo_uri]:
+		        <a href="${uri}">${pub}</a> 
+%         endfor pub
+                </td>
+		        </tr>
+% endfor repo_uri
+                </table>
+        </div>
+        </div>
+</div>
+
+
+<%def name="page_title(g_vars)"><%
+        return "ips repository server"
+%></%def>\

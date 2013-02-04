@@ -18,13 +18,13 @@
 #
 # CDDL HEADER END
 #
-# Copyright (c) 2010, 2012, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2010, 2013, Oracle and/or its affiliates. All rights reserved.
 #
 
 set name=pkg.fmri value=pkg:/package/pkg@$(PKGVERS)
 set name=pkg.summary value="Image Packaging System"
 set name=pkg.description \
-    value="The Image Packaging System (IPS), or pkg(5), is the software delivery system used on Oracle Solaris.  This package contains the core command-line components and depot server."
+    value="The Image Packaging System (IPS), or pkg(5), is the software delivery system used on Oracle Solaris.  This package contains the core command-line components and pkg.depotd server."
 set name=info.classification \
     value=org.opensolaris.category.2008:System/Packaging
 set name=variant.arch value=$(ARCH)
@@ -210,7 +210,7 @@ dir  path=lib/svc/manifest/application
 file path=lib/svc/manifest/application/pkg/pkg-mdns.xml
 file path=lib/svc/manifest/application/pkg/pkg-server.xml
 dir  path=lib/svc/method
-file path=lib/svc/method/svc-pkg-depot
+file path=lib/svc/method/svc-pkg-server
 file path=lib/svc/method/svc-pkg-mdns
 dir  path=usr
 dir  path=usr/bin

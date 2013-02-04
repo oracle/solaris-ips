@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2009, 2012, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2009, 2013, Oracle and/or its affiliates. All rights reserved.
 #
 
 import cStringIO
@@ -447,7 +447,7 @@ class HTTPRepo(TransportRepo):
                 # Only append the publisher prefix if the publisher of the
                 # request is known, not already part of the URI, if this isn't
                 # an open operation, and if the repository supports version 1
-                # of the publisher opation.  The prefix shouldn't be appended
+                # of the publisher operation.  The prefix shouldn't be appended
                 # for open because the publisher may not yet be known to the
                 # repository, and not in other cases because the repository
                 # doesn't support it.

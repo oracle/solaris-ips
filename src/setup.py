@@ -19,7 +19,7 @@
 #
 # CDDL HEADER END
 #
-# Copyright (c) 2008, 2012, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2008, 2013, Oracle and/or its affiliates. All rights reserved.
 #
 
 import errno
@@ -124,6 +124,10 @@ authattrd_dir = 'etc/security/auth_attr.d'
 sysrepo_dir = 'etc/pkg/sysrepo'
 sysrepo_logs_dir = 'var/log/pkg/sysrepo'
 sysrepo_cache_dir = 'var/cache/pkg/sysrepo'
+depot_dir = 'etc/pkg/depot'
+depot_conf_dir = 'etc/pkg/depot/conf.d'
+depot_logs_dir = 'var/log/pkg/depot'
+depot_cache_dir = 'var/cache/pkg/depot'
 autostart_dir = 'etc/xdg/autostart'
 desktop_dir = 'usr/share/applications'
 gconf_dir = 'etc/gconf/schemas'
@@ -162,14 +166,16 @@ scripts_sunos = {
                 ['updatemanagernotifier.py', 'updatemanagernotifier'],
                 ['launch.py', 'pm-launch'],
                 ['sysrepo.py', 'pkg.sysrepo'],
+                ['depot-config.py', "pkg.depot-config"]
                 ],
         um_lib_dir: [
                 ['um/update-refresh.sh', 'update-refresh.sh'],
         ],
         svc_method_dir: [
-                ['svc/svc-pkg-depot', 'svc-pkg-depot'],
+                ['svc/svc-pkg-server', 'svc-pkg-server'],
                 ['svc/svc-pkg-mdns', 'svc-pkg-mdns'],
                 ['svc/svc-pkg-sysrepo', 'svc-pkg-sysrepo'],
+                ['svc/svc-pkg-depot', 'svc-pkg-depot'],
                 ['um/pkg-update', 'pkg-update'],
                 ],
         }
@@ -236,6 +242,7 @@ man1_files = [
         ]
 man1m_files = [
         'man/pkg.depotd.1m',
+        'man/pkg.depot-config.1m',
         'man/pkg.sysrepo.1m'
         ]
 man5_files = [
@@ -340,6 +347,7 @@ for entry in os.walk("web"):
                     ]))
 
 smf_app_files = [
+        'svc/pkg-depot.xml',
         'svc/pkg-mdns.xml',
         'svc/pkg-server.xml',
         'svc/pkg-update.xml',
@@ -366,6 +374,18 @@ sysrepo_log_stubs = [
         'util/apache2/sysrepo/logs/access_log',
         'util/apache2/sysrepo/logs/error_log',
         ]
+depot_files = [
+        'util/apache2/depot/depot.conf.mako',
+        'util/apache2/depot/depot_httpd.conf.mako',
+        'util/apache2/depot/depot_index.py',
+        ]
+depot_log_stubs = [
+        'util/apache2/depot/logs/access_log',
+        'util/apache2/depot/logs/error_log',
+        ]
+# The apache-based depot includes an shtml file we add to the resource dir
+web_files.append((os.path.join(resource_dir, "web"),
+    ["util/apache2/depot/repos.shtml"]))
 execattrd_files = [
         'util/misc/exec_attr.d/package:pkg',
         'util/misc/exec_attr.d/package:pkg:package-manager'
@@ -1569,6 +1589,10 @@ if osname == 'sunos':
                 (sysrepo_dir, sysrepo_files),
                 (sysrepo_logs_dir, sysrepo_log_stubs),
                 (sysrepo_cache_dir, {}),
+                (depot_dir, depot_files),
+                (depot_conf_dir, {}),
+                (depot_logs_dir, depot_log_stubs),
+                (depot_cache_dir, {}),
                 (autostart_dir, autostart_files),
                 (desktop_dir, desktop_files),
                 (gconf_dir, gconf_files),

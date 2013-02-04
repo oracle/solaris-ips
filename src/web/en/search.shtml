@@ -19,7 +19,7 @@
 ##
 ## CDDL HEADER END
 ##
-## Copyright 2010, 2012 Oracle and/or its affiliates. All rights reserved.
+## Copyright 2010, 2013 Oracle and/or its affiliates. All rights reserved.
 ##
 <%!
         import itertools
@@ -36,6 +36,7 @@
 <%
         catalog = g_vars["catalog"]
         request = g_vars["request"]
+        http_depot = g_vars["http_depot"]
 %>\
 <%def name="page_title(g_vars)"><%
         return "Package Search"
@@ -279,6 +280,12 @@ Next</a>
                         # depot server).
                         uri = request.url(qs=request.query_string,
                             relative=True)
+                        if http_depot:
+                                # if using the http-depot, we need to redirect
+                                # to the appropriate repository within the
+                                # webapp.
+                                lang = request.path_info.split("/")[1]
+                                uri = "/depot/%s/%s/%s" % (http_depot, lang, uri)
                         scheme, netloc, path, params, query, \
                             fragment = urlparse.urlparse(uri)
 
@@ -349,9 +356,9 @@ matching characters use '[' and ']':<br/>
                         # XXX the .p5i extension is a bogus hack because
                         # packagemanager requires it and shouldn't.
                         p5ihref = self.shared.rpath(g_vars, "p5i/0/%s.p5i" % (
-                            urllib.quote(stem, ""))) 
-                        mhref = self.shared.rpath(g_vars, "manifest/0/%s" % (
-                            urllib.quote(pfmri_str, "")))
+                            urllib.quote(stem, "")))
+                        mhref = self.shared.rpath(g_vars,
+                            "manifest/0/%s" % pfmri.get_url_path())
 %>\
                         <tr${rclass}>
                                 <td>

@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2008, 2012, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2008, 2013, Oracle and/or its affiliates. All rights reserved.
 #
 
 import cherrypy
@@ -145,10 +145,15 @@ class DepotHTTP(_Depot):
         content_root = None
         web_root = None
 
-        def __init__(self, repo, dconf):
+        def __init__(self, repo, dconf, request_pub_func=None):
                 """Initialize and map the valid operations for the depot.  While
                 doing so, ensure that the operations have been explicitly
-                "exposed" for external usage."""
+                "exposed" for external usage.
+
+                request_pub_func, if set is a function that gets called with
+                cherrypy.request.path_info that returns the publisher used
+                for a given request.
+                """
 
                 # This lock is used to protect the depot from multiple
                 # threads modifying data structures at the same time.
@@ -158,6 +163,7 @@ class DepotHTTP(_Depot):
                 self.repo = repo
                 self.flist_requests = 0
                 self.flist_file_requests = 0
+                self.request_pub_func = request_pub_func
 
                 content_root = dconf.get_property("pkg", "content_root")
                 pkg_root = dconf.get_property("pkg", "pkg_root")
@@ -304,6 +310,8 @@ class DepotHTTP(_Depot):
                 that isn't viewed as an unreasonable limitation.
                 """
 
+                if self.request_pub_func:
+                        return self.request_pub_func(cherrypy.request.path_info)
                 try:
                         req_pub = cherrypy.request.path_info.strip("/").split(
                             "/")[0]

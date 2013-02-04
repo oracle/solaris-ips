@@ -18,12 +18,13 @@
 # CDDL HEADER END
 #
 
-# Copyright (c) 2008, 2012, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2008, 2013, Oracle and/or its affiliates. All rights reserved.
 
 #
 # Define the basic classes that all test cases are inherited from.
 # The currently defined test case classes are:
 #
+# ApacheDepotTestCase
 # CliTestCase
 # ManyDepotTestCase
 # Pkg5TestCase
@@ -51,6 +52,7 @@ import subprocess
 import sys
 import tempfile
 import time
+import traceback
 import unittest
 import urllib2
 import urlparse
@@ -554,7 +556,8 @@ if __name__ == "__main__":
                     g_proto_area,
                     "pkglint.exclude": ""}, self.test_root, section="pkglint")
 
-                self.template_dir = "%s/etc/pkg/sysrepo" % g_proto_area
+                self.sysrepo_template_dir = "%s/etc/pkg/sysrepo" % g_proto_area
+                self.depot_template_dir = "%s/etc/pkg/depot" % g_proto_area
                 self.make_misc_files(self.smf_cmds, prefix="smf_cmds",
                     mode=0755)
                 DebugValues["smf_cmds_dir"] = \
@@ -2418,10 +2421,10 @@ class CliTestCase(Pkg5TestCase):
                     su_wrap=su_wrap, env_arg=env_arg)
 
         def pkgrepo(self, command, comment="", exit=0, su_wrap=False,
-            env_arg=None, stderr=False):
+            env_arg=None, stderr=False, out=False):
                 cmdline = "%s/usr/bin/pkgrepo %s" % (g_proto_area, command)
                 return self.cmdline_run(cmdline, comment=comment, exit=exit,
-                    su_wrap=su_wrap, env_arg=env_arg, stderr=stderr)
+                    su_wrap=su_wrap, env_arg=env_arg, out=out, stderr=stderr)
 
         def pkgsign(self, depot_url, command, exit=0, comment="",
             env_arg=None):
@@ -2619,12 +2622,57 @@ class CliTestCase(Pkg5TestCase):
                         args += " -r %s" % os.path.join(self.test_root,
                             "sysrepo_runtime")
                 if "-t" not in args:
-                        args += " -t %s" % self.template_dir
+                        args += " -t %s" % self.sysrepo_template_dir
 
                 cmdline = "%s/usr/lib/pkg.sysrepo %s" % (g_proto_area, args)
                 if env_arg is None:
                         env_arg = {}
                 env_arg["PKG5_TEST_ENV"] = "1"
+                return self.cmdline_run(cmdline, comment=comment, exit=exit,
+                    out=out, stderr=stderr, env_arg=env_arg)
+
+        def snooze(self, sleeptime=10800, show_stack=True):
+                """A convenient method to cause test execution to pause for
+                up to 'sleeptime' seconds, which can be helpful during testcase
+                development.  sleeptime defaults to 3 hours."""
+                self.debug("YAWN ... going to sleep now\n")
+                if show_stack:
+                        self.debug("\n\n\n")
+                        self.debug("".join(traceback.format_stack()))
+                time.sleep(sleeptime)
+
+        def depotconfig(self, args, exit=0, out=False, stderr=False, comment="",
+            env_arg=None, fill_missing_args=True, debug_smf=True):
+                """Run pkg.depot-config, with command line arguments in args.
+                If fill_missing_args is set, we use default settings for several
+                arguments to point to template, logs, cache and proto areas
+                within our test root."""
+
+                if "-S" not in args and "-d" not in args and fill_missing_args:
+                        args += " -S "
+                if "-c" not in args and fill_missing_args:
+                        args += " -c %s" % os.path.join(self.test_root,
+                            "depot_cache")
+                if "-l" not in args:
+                        args += " -l %s" % os.path.join(self.test_root,
+                            "depot_logs")
+                if "-p" not in args and "-F" not in args and fill_missing_args:
+                        args += " -p %s" % self.depot_port
+                if "-r" not in args:
+                        args += " -r %s" % os.path.join(self.test_root,
+                            "depot_runtime")
+                if "-T" not in args:
+                        args += " -T %s" % self.depot_template_dir
+
+                if debug_smf and "smf_cmds_dir" not in args:
+                        args += " --debug smf_cmds_dir=%s" % \
+                            DebugValues["smf_cmds_dir"]
+
+                cmdline = "%s/usr/lib/pkg.depot-config %s" % (g_proto_area,
+                    args)
+                if env_arg is None:
+                        env_arg = {}
+                env_arg["PKG5_TEST_PROTO"] = g_proto_area
                 return self.cmdline_run(cmdline, comment=comment, exit=exit,
                     out=out, stderr=stderr, env_arg=env_arg)
 
@@ -3551,7 +3599,7 @@ class ApacheController(object):
                 self.apachectl = "/usr/apache2/2.2/bin/httpd.worker"
                 if not os.path.exists(work_dir):
                         os.makedirs(work_dir)
-                self.__conf_path = os.path.join(work_dir, "sysrepo.conf")
+                self.__conf_path = os.path.join(work_dir, "httpd.conf")
                 self.__port = port
                 self.__repo_hdl = None
                 self.__starttime = 0
@@ -3615,11 +3663,16 @@ class ApacheController(object):
                     self.__conf_path, "-k", "start", "-DFOREGROUND"]
                 try:
                         self.__starttime = time.time()
+                        # change the state so that we try to do work in
+                        # self.stop() in the face of a False result from
+                        # is_alive()
+                        self.__state = "starting"
                         self.debug(" ".join(cmdline))
                         self.__repo_hdl = subprocess.Popen(cmdline, shell=False,
                                 stdout=subprocess.PIPE,
                                 stderr=subprocess.PIPE)
                         if self.__repo_hdl is None:
+                                self.__state = "stopped"
                                 raise ApacheStateException("Could not start "
                                     "apache")
                         begintime = time.time()
@@ -3629,6 +3682,7 @@ class ApacheController(object):
                         while (time.time() - begintime) <= 40.0:
                                 rc = self.__repo_hdl.poll()
                                 if rc is not None:
+                                        self.__state = "stopped"
                                         raise ApacheStateException("Apache "
                                             "exited unexpectedly while "
                                             "starting (exit code %d)" % rc)
@@ -3759,3 +3813,23 @@ class SysrepoController(ApacheController):
                 except urllib2.URLError:
                         return False
                 return True
+
+
+class HttpDepotController(ApacheController):
+
+        def __init__(self, conf, port, work_dir, testcase=None, https=False):
+                ApacheController.__init__(self, conf, port, work_dir,
+                    testcase=testcase, https=False)
+                self.apachectl = "/usr/apache2/2.2/bin/64/httpd.worker"
+
+        def _network_ping(self):
+                try:
+                        urllib2.urlopen(self.url)
+                except urllib2.HTTPError, e:
+                        if e.code == httplib.FORBIDDEN:
+                                return True
+                        return False
+                except urllib2.URLError:
+                        return False
+                return True
+

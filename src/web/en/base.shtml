@@ -19,7 +19,7 @@
 ##
 ## CDDL HEADER END
 ##
-## Copyright (c) 2008, 2012, Oracle and/or its affiliates. All rights reserved.
+## Copyright (c) 2008, 2013, Oracle and/or its affiliates. All rights reserved.
 ##
 <%!
         import pkg.server.api as api
@@ -49,7 +49,14 @@
         if g_vars["config"].mirror:
                 # Only statistics are available in mirror mode.
                 return [("stats.shtml", "Statistics")]
-
+        if g_vars["http_depot"]:
+                # Apache can't return statistics via the BUI
+                # but does have a top level list of all repositories.
+                return [
+                    ("/", "Repositories"),
+                    ("catalog.shtml", "Packages"),
+                    ("search.shtml", "Search"),
+                ]
         return [
                 ("catalog.shtml", "Packages"),
                 ("search.shtml", "Search"),
