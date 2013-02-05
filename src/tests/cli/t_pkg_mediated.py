@@ -20,7 +20,7 @@
 # CDDL HEADER END
 #
 
-# Copyright (c) 2011, 2012, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2011, 2013, Oracle and/or its affiliates. All rights reserved.
 
 import testutils
 if __name__ == "__main__":
@@ -44,6 +44,13 @@ class TestPkgMediated(pkg5unittest.SingleDepotTestCase):
         persistent_setup = True
 
         pkg_sendmail = """
+            open pkg://test/sendmail@0.5
+            add set name=pkg.summary value="Example sendmail package"
+            add file tmp/foosm path=/usr/bin/mailq owner=root group=root mode=0555
+            add file tmp/foosm path=/usr/lib/sendmail owner=root group=root mode=2555
+            add link path=/usr/sbin/newaliases target=../lib/sendmail
+            add link path=/usr/sbin/sendmail target=../lib/sendmail
+            close
             open pkg://test/sendmail@1.0
             add set name=pkg.summary value="Example sendmail package"
             add file tmp/foosm path=/usr/lib/sendmail-mta/sendmail owner=root group=root mode=2555
@@ -61,6 +68,15 @@ class TestPkgMediated(pkg5unittest.SingleDepotTestCase):
             add link path=/usr/lib/sendmail target=../lib/sendmail-mta/sendmail mediator=mta mediator-implementation=sendmail mediator-priority=vendor
             add link path=/usr/sbin/newaliases target=../lib/sendmail-mta/sendmail mediator=mta mediator-implementation=sendmail mediator-priority=vendor
             add link path=/usr/sbin/sendmail target=../lib/sendmail-mta/sendmail mediator=mta mediator-implementation=sendmail mediator-priority=vendor
+            close
+            open pkg://test/sendmail@3.0
+            add set name=pkg.summary value="Example sendmail target change package"
+            add file tmp/foosm path=/usr/lib/sendmail3-mta/sendmail owner=root group=root mode=2555
+            add file tmp/foosm path=/usr/lib/sendmail3-mta/mailq owner=root group=root mode=0555
+            add link path=/usr/bin/mailq target=../lib/sendmail3-mta/mailq3 mediator=mta mediator-implementation=sendmail
+            add link path=/usr/lib/sendmail target=../lib/sendmail3-mta/sendmail mediator=mta mediator-implementation=sendmail
+            add link path=/usr/sbin/newaliases target=../lib/sendmail3-mta/sendmail mediator=mta mediator-implementation=sendmail
+            add link path=/usr/sbin/sendmail target=../lib/sendmail3-mta/sendmail mediator=mta mediator-implementation=sendmail
             close """
 
         pkg_sendmail_links = """
@@ -453,6 +469,17 @@ vi\tsystem\t\tsystem\tsvr4\t
 
                 self.image_create(self.rurl)
 
+                def gen_mta_files():
+                        for fname in ("mailq",):
+                                fpath = os.path.join(self.img_path(), "usr",
+                                    "bin", fname)
+                                yield fpath
+
+                        for fname in ("sendmail",):
+                                fpath = os.path.join(self.img_path(), "usr",
+                                    "lib", fname)
+                                yield fpath
+
                 def gen_mta_links():
                         for lname in ("mailq",):
                                 lpath = os.path.join(self.img_path(), "usr",
@@ -487,6 +514,11 @@ vi\tsystem\t\tsystem\tsvr4\t
                                     "bin", lname)
                                 yield lpath
 
+                def check_files(files):
+                        for fpath in files:
+                                s = os.lstat(fpath)
+                                self.assert_(stat.S_ISREG(s.st_mode))
+
                 def check_target(links, target):
                         for lpath in links:
                                 ltarget = os.readlink(lpath)
@@ -511,8 +543,17 @@ vi\tsystem\t\tsystem\tsvr4\t
 
                 # Some installs are done with extra verbosity to ease in
                 # debugging tests when they fail.
+                self.pkg("install -vvv sendmail@0.5")
+                self.pkg("mediator") # If tests fail, this is helpful.
+
+                # Verify that /usr/bin/mailq and /usr/lib/sendmail are files.
+                check_files(gen_mta_files())
+                self.pkg("verify -v")
+
+                # Upgrading to 1.0 should transition the files to links.
                 self.pkg("install -vvv sendmail@1")
                 self.pkg("mediator") # If tests fail, this is helpful.
+                self.pkg("verify -v")
 
                 # Check that installed links point to sendmail and that
                 # verify passes.
@@ -521,6 +562,25 @@ vi\tsystem\t\tsystem\tsvr4\t
                 self.__assert_mediation_matches("""\
 mta\tsystem\t\tsystem\tsendmail\t
 """)
+
+                # Upgrading to 3.0 should change the targets of every link.
+                self.pkg("install -vvv sendmail@3")
+                self.pkg("mediator") # If tests fail, this is helpful.
+                check_target(gen_mta_links(), "sendmail3-mta")
+                self.pkg("verify -v")
+
+                # Downgrading to 0.5 should change sendmail and mailq links back
+                # to a file.
+                self.pkg("update -vvv sendmail@0.5")
+                self.pkg("mediator") # If tests fail, this is helpful.
+                check_files(gen_mta_files())
+                self.pkg("verify -v")
+
+                # Finally, upgrade to 1.0 again for remaining tests.
+                self.pkg("update -vvv sendmail@1.0")
+                self.pkg("mediator") # If tests fail, this is helpful.
+                check_target(gen_mta_links(), "sendmail-mta")
+                self.pkg("verify -v")
 
                 # Install postfix (this should succeed even though sendmail is
                 # already installed) and the links should be updated to point to

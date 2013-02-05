@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2007, 2012, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2007, 2013, Oracle and/or its affiliates. All rights reserved.
 #
 
 from collections import namedtuple, defaultdict
@@ -176,7 +176,7 @@ class Manifest(object):
                         """handle key values that may be lists"""
                         if type(v) is not list:
                                 return v
-                        return frozenset(v)
+                        return tuple(v)
 
                 def dictify(mf, excludes):
                         # Transform list of actions into a dictionary keyed by
@@ -186,8 +186,8 @@ class Manifest(object):
                                 if (a.name == "link" or
                                     a.name == "hardlink") and \
                                     a.attrs.get("mediator"):
-                                        akey = (a.name, frozenset([
-                                            a.key_attr,
+                                        akey = (a.name, tuple([
+                                            a.attrs[a.key_attr],
                                             a.attrs.get("mediator-version"),
                                             a.attrs.get("mediator-implementation")
                                         ]))
