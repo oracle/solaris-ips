@@ -2326,6 +2326,19 @@ class ImagePlan(object):
                 on the metadata of the links that are still or will be installed.
                 Returns a dictionary of the proposed mediations."""
 
+                #
+                # If we're not changing mediators, and we're not changing
+                # variants or facets (which could affect mediators), and we're
+                # not changing any packages (which could affect mediators),
+                # then mediators can't be changing so there's nothing to do
+                # here.
+                #
+                if not self.pd._mediators_change and \
+                    not self.pd._varcets_change and \
+                    not self.pd._fmri_changes:
+                        # return the currently configured mediators
+                        return defaultdict(set, self.pd._cfg_mediators)
+
                 prop_mediators = defaultdict(set)
                 mediated_installed_paths = defaultdict(set)
                 for a, pfmri in itertools.chain(
@@ -3084,8 +3097,13 @@ class ImagePlan(object):
                 pt.plan_start(pt.PLAN_ACTION_FINALIZE)
 
                 # Go over update actions
-                l_actions = self.get_actions("hardlink", self.hardlink_keyfunc)
                 l_refresh = []
+                l_actions = {}
+                if self.pd.update_actions:
+                        # iterating over actions is slow, so don't do it
+                        # unless we have to.
+                        l_actions = self.get_actions("hardlink",
+                            self.hardlink_keyfunc)
                 for a in self.pd.update_actions:
                         # For any files being updated that are the target of
                         # _any_ hardlink actions, append the hardlink actions
