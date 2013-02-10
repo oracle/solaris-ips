@@ -145,12 +145,11 @@ function run_htcacheclean {
 		# megabytes, being nice about scheduling and removing
 		# empty directories if necessary.
 	       interval=$((60 * 24 * 14))
-               /usr/bin/su pkg5srv \
-		       -c "/usr/apache2/2.2/bin/htcacheclean \
+               /usr/apache2/2.2/bin/htcacheclean \
                        -d${interval} -i -l ${depot_cache_max}M -n \
                        -p ${depot_cache_dir} \
                        -P ${depot_cache_dir}/../depot_htcacheclean.pid \
-                       -t"
+                       -t
                check_failure $? "htcacheclean failed to run cleanly"
        fi
 }
@@ -226,6 +225,8 @@ case "$1" in
 "start")
 	cmd="start"
 	run_depot
+	# drop privileges now that we've written our configuration
+	/usr/bin/ppriv -s E=basic,net_privaddr
 	run_htcacheclean
         emsg=$(/usr/bin/printf ${FAILED_TO_RUN} start)
 	${HTTPD} -f ${depot_runtime_dir}/depot_httpd.conf \
@@ -236,6 +237,8 @@ case "$1" in
 "refresh")
 	cmd="graceful"
 	run_depot
+	# drop privileges now that we've written our configuration
+	/usr/bin/ppriv -s E=basic,net_privaddr
 	kill_htcacheclean
 	run_htcacheclean
         emsg=$(/usr/bin/printf ${FAILED_TO_RUN} refresh)

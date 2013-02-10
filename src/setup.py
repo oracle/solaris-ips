@@ -373,6 +373,7 @@ sysrepo_files = [
 sysrepo_log_stubs = [
         'util/apache2/sysrepo/logs/access_log',
         'util/apache2/sysrepo/logs/error_log',
+        'util/apache2/sysrepo/logs/rewrite.log',
         ]
 depot_files = [
         'util/apache2/depot/depot.conf.mako',
@@ -382,6 +383,7 @@ depot_files = [
 depot_log_stubs = [
         'util/apache2/depot/logs/access_log',
         'util/apache2/depot/logs/error_log',
+        'util/apache2/depot/logs/rewrite.log',
         ]
 # The apache-based depot includes an shtml file we add to the resource dir
 web_files.append((os.path.join(resource_dir, "web"),

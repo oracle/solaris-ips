@@ -55,10 +55,11 @@ dir  path=var/cache/pkg owner=pkg5srv
 dir  path=var/cache/pkg/sysrepo owner=pkg5srv
 dir  path=var/log
 dir  path=var/log/pkg
-dir  path=var/log/pkg/sysrepo
+dir  path=var/log/pkg/sysrepo owner=pkg5srv
 # we deliver 0-byte log file stubs
-file path=var/log/pkg/sysrepo/access_log preserve=renamenew
-file path=var/log/pkg/sysrepo/error_log preserve=renamenew
+file path=var/log/pkg/sysrepo/access_log owner=pkg5srv mode=0644 preserve=true
+file path=var/log/pkg/sysrepo/error_log owner=pkg5srv mode=0644 preserve=true
+file path=var/log/pkg/sysrepo/rewrite.log owner=pkg5srv mode=0644 preserve=true
 license cr_Oracle license=cr_Oracle
 #
 # The manual dependency on apache results from our calling apachectl from

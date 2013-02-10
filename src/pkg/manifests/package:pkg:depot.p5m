@@ -32,9 +32,9 @@ dir  path=etc
 dir  path=etc/pkg
 dir  path=etc/pkg/depot
 dir  path=etc/pkg/depot/conf.d
+file path=etc/pkg/depot/depot.conf.mako
 file path=etc/pkg/depot/depot_httpd.conf.mako
 file path=etc/pkg/depot/depot_index.py pkg.tmp.autopyc=false
-file path=etc/pkg/depot/depot.conf.mako
 dir  path=lib
 dir  path=lib/svc
 dir  path=lib/svc/manifest
@@ -54,10 +54,11 @@ dir  path=var/cache/pkg owner=pkg5srv
 dir  path=var/cache/pkg/depot owner=pkg5srv
 dir  path=var/log
 dir  path=var/log/pkg
-dir  path=var/log/pkg/depot
+dir  path=var/log/pkg/depot owner=pkg5srv
 # we deliver 0-byte log file stubs
-file path=var/log/pkg/depot/access_log preserve=true
-file path=var/log/pkg/depot/error_log preserve=true
+file path=var/log/pkg/depot/access_log owner=pkg5srv mode=0644 preserve=true
+file path=var/log/pkg/depot/error_log owner=pkg5srv mode=0644 preserve=true
+file path=var/log/pkg/depot/rewrite.log owner=pkg5srv mode=0644 preserve=true
 license cr_Oracle license=cr_Oracle
 #
 # The manual dependency on apache results from our calling apachectl from

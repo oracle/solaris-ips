@@ -59,9 +59,9 @@
 		</dependency>
 
 		<!--
-		  We must wait for pkg/server instances to come online, since
-                  any readonly, non-standalone instances contribute to the
-                  configuration of pkg/depot.
+		  We must wait for pkg/server instances to come online,
+		  since any readonly, non-standalone instances
+		  contribute to the configuration of pkg/depot.
 		-->
 		<dependency name='pkg-server'
 		    grouping='require_all'
@@ -84,23 +84,44 @@
 			value='svc:/system/filesystem/autofs:default'/>
 		</dependency>
 
+		<!-- The following methods use the 'all' privilege when
+		     run, but drop privileges once they are no longer
+		     needed using ppriv -s. We need 'all' privileges to
+		     write to /system/volatile. -->
 		<exec_method
 			type='method'
 			name='start'
 			exec='/lib/svc/method/svc-pkg-depot start'
-			timeout_seconds='60' />
+			timeout_seconds='60'>
+			<method_context>
+				<method_credential user='pkg5srv'
+				group='pkg5srv' privileges='all' />
+			</method_context>
+		</exec_method>
 
+		<!-- basic,net_privaddr are suffient for 'stop' -->
 		<exec_method
 			type='method'
 			name='stop'
 			exec='/lib/svc/method/svc-pkg-depot stop'
-			timeout_seconds='60' />
+			timeout_seconds='60'>
+			<method_context>
+				<method_credential user='pkg5srv'
+				group='pkg5srv'
+				privileges='basic,net_privaddr' />
+			</method_context>
+		</exec_method>
 
 		<exec_method
 			type='method'
 			name='refresh'
 			exec='/lib/svc/method/svc-pkg-depot refresh'
-			timeout_seconds='60' />
+			timeout_seconds='60'>
+			<method_context>
+				<method_credential user='pkg5srv'
+				group='pkg5srv' privileges='all' />
+			</method_context>
+		</exec_method>
 
                 <property_group name='config' type='application'>
                         <stability value='Evolving' />

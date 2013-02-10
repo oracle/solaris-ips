@@ -20,7 +20,7 @@
 # CDDL HEADER END
 #
 #
-# Copyright (c) 2011, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2011, 2013 Oracle and/or its affiliates. All rights reserved.
 #
 
 . /lib/svc/share/smf_include.sh
@@ -105,11 +105,11 @@ run_htcacheclean() {
                # nice about scheduling and removing empty directories if
                # necessary.
 	       interval=$((60 * 24 * 14))
-               /usr/bin/su pkg5srv -c "/usr/apache2/2.2/bin/htcacheclean \
+               /usr/apache2/2.2/bin/htcacheclean \
                        -d${interval} -i -l ${SYSREPO_CACHE_MAX}M -n \
                        -p ${SYSREPO_CACHE_DIR} \
                        -P ${SYSREPO_CACHE_DIR}/../sysrepo_htcacheclean.pid \
-                       -t"
+                       -t
                check_failure $? "htcacheclean failed to run cleanly"
        fi
 }
@@ -172,6 +172,8 @@ case "$1" in
 "start")
 	cmd="start"
 	run_sysrepo
+	# drop privileges now that we've written our configuration
+	/usr/bin/ppriv -s E=basic,net_privaddr $$
 	run_htcacheclean
 	${HTTPD} -f ${SYSREPO_RUNTIME_DIR}/sysrepo_httpd.conf \
             ${STARTUP_OPTIONS} -k ${cmd} 2>&1
@@ -180,6 +182,8 @@ case "$1" in
 "refresh")
 	cmd="graceful"
 	run_sysrepo
+	# drop privileges now that we've written our configuration
+	/usr/bin/ppriv -s E=basic,net_privaddr $$
 	/usr/bin/pkill -USR1 -ox zoneproxyd
 	kill_htcacheclean
 	run_htcacheclean

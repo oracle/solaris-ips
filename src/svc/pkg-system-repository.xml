@@ -19,7 +19,7 @@
 
 	CDDL HEADER END
 
-	Copyright (c) 2011, Oracle and/or its affiliates.  All rights reserved.
+	Copyright (c) 2011, 2013 Oracle and/or its affiliates.  All rights reserved.
 
 	NOTE:  This service manifest is not editable; its contents will
 	be overwritten by package or patch operations, including
@@ -71,23 +71,47 @@
 			value='svc:/system/filesystem/autofs:default'/>
 		</dependency>
 
+		<!-- The following methods use the 'all' privilege when
+		     run, but drop privileges once they are no longer
+		     needed using ppriv -s. We need 'all' privileges to
+		     write to /system/volatile. -->
 		<exec_method
 			type='method'
 			name='start'
 			exec='/lib/svc/method/svc-pkg-sysrepo start'
-			timeout_seconds='60' />
+			timeout_seconds='60'>
+			<method_context>
+				<method_credential user='pkg5srv'
+				group='pkg5srv' privileges='all' />
+			</method_context>
+		</exec_method>
 
+
+		<!-- basic,net_privaddr are suffient for 'stop' -->
 		<exec_method
 			type='method'
 			name='stop'
 			exec='/lib/svc/method/svc-pkg-sysrepo stop'
-			timeout_seconds='60' />
+			timeout_seconds='60' >
+			<method_context>
+				<method_credential user='pkg5srv'
+				group='pkg5srv'
+				privileges='basic,net_privaddr' />
+			</method_context>
+		</exec_method>
+
 
 		<exec_method
 			type='method'
 			name='refresh'
 			exec='/lib/svc/method/svc-pkg-sysrepo refresh'
-			timeout_seconds='60' />
+			timeout_seconds='60' >
+			<method_context>
+             			<method_credential user='pkg5srv'
+				group='pkg5srv' privileges='all' />
+		        </method_context>
+		</exec_method>
+
 
                 <property_group name='config' type='application'>
                         <stability value='Evolving' />
@@ -101,7 +125,7 @@
                         <!-- Where we store runtime versions of our
 			 configuration -->
                         <propval name='runtime_dir' type='astring'
-                                value='/system/volatile/pkg/sysrepo' />
+				value='/system/volatile/pkg/sysrepo' />
                         <!-- Where we store our Mako templates for generating
 			 runtime configuration -->
                         <propval name='template_dir' type='astring'
