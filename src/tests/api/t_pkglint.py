@@ -2059,6 +2059,23 @@ file path=usr/perl5/5.6/bin/perl owner=root group=sys mode=0755
 file path=usr/perl5/5.12/bin/perl owner=root group=sys mode=0755
 """
 
+expected_failures["noversion-incorp.mf" ] = ["pkglint.action011"]
+broken_manifests["noversion-incorp.mf" ] = \
+"""
+#
+# We deliver an 'incorporate' dependency without specifying the version.
+#
+set name=pkg.fmri value=pkg://opensolaris.org/pkglint/test@1.0,1.0
+set name=org.opensolaris.consolidation value=osnet
+set name=variant.opensolaris.zone value=global value=nonglobal
+set name=pkg.description value="A pkglint test"
+set name=pkg.summary value="Yet another test"
+set name=variant.arch value=i386 value=sparc
+set name=info.classification value=org.opensolaris.category.2008:System/Packaging
+depend type=incorporate fmri=pkg:/some/package
+"""
+
+
 class TestLogFormatter(log.LogFormatter):
         """Records log messages to a buffer"""
         def __init__(self):

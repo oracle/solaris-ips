@@ -1485,3 +1485,25 @@ class PkgActionChecker(base.ActionChecker):
                             msgid="%s%s.3" % (self.name, pkglint_id))
 
         username_format.pkglint_desc = _("User names should be valid.")
+
+        def version_incorporate(self, action, manifest, engine,
+            pkglint_id="011"):
+                """Checks that 'incorporate' dependencies have a version."""
+
+                if action.name != "depend":
+                        return
+                if action.attrs.get("type") != "incorporate":
+                        return
+
+                fmri = action.attrs["fmri"]
+                pfmri = pkg.fmri.PkgFmri(fmri, build_release="5.11")
+                if not pfmri.version:
+                        engine.error(
+                            _("'incorporate' depend action on %(fmri)s in "
+                            "%(pkg)s does not have a version.") %
+                            {"fmri": fmri,
+                            "pkg": manifest.fmri},
+                            msgid="%s%s" % (self.name, pkglint_id))
+
+        version_incorporate.pkglint_desc = _("'incorporate' dependencies should"
+            " have a version.")
