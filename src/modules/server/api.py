@@ -20,7 +20,7 @@
 # CDDL HEADER END
 
 #
-# Copyright (c) 2008, 2012, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2008, 2013, Oracle and/or its affiliates. All rights reserved.
 #
 
 import cherrypy
@@ -190,6 +190,10 @@ class CatalogInterface(_Interface):
                         ifmri = pkg.fmri.PkgFmri(a.attrs["fmri"],
                             build_release="5.11")
                         iver = ifmri.version
+                        # Versionless incorporations don't make sense so don't
+                        # recurse any further.
+                        if not iver:
+                                continue
                         recurse = False
                         for ver, flist in cat.fmris_by_version(ifmri.pkg_name,
                             pubs=pubs):

@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2008, 2011, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2008, 2013, Oracle and/or its affiliates. All rights reserved.
 #
 
 import testutils
@@ -84,6 +84,11 @@ class TestPkgDepot(pkg5unittest.SingleDepotTestCase):
             add set name="description" value="Package to test package names with slashes"
             add dir path=tmp/foo mode=0755 owner=root group=bin
             add depend type=require fmri=pkg:/SUNWcsl
+            close """
+
+        entire10 = """
+            open entire@1.0,5.11-0
+            add depend type=incorporate fmri=pkg:/foo
             close """
 
         misc_files = [ "tmp/libc.so.1", "tmp/cat" ]
@@ -370,6 +375,21 @@ class TestPkgDepot(pkg5unittest.SingleDepotTestCase):
                 self.dc.stop()
                 self.dc.set_repodir(lsrc)
                 self.dc.start()
+
+        def test_empty_incorp_depend(self):
+                """ Bug 16304629
+                Test that a version-less incorporate dependency in a package
+                doesn't cause a traceback and a 404 in the BUI.
+                """
+                depot_url = self.dc.get_depot_url()
+                self.pkgsend_bulk(depot_url, self.foo10)
+                self.pkgsend_bulk(depot_url, self.entire10)
+
+                repourl = urlparse.urljoin(depot_url,
+                    "/en/catalog.shtml?version=%s&action=Browse" %
+                    urllib.quote("entire@1.0,5.11-0"))
+
+                res = urllib2.urlopen(repourl)
 
 
 class TestDepotController(pkg5unittest.CliTestCase):
