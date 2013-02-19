@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2008, 2012, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2008, 2013, Oracle and/or its affiliates. All rights reserved.
 #
 
 """This module provides the supported, documented interface for clients to
@@ -3146,9 +3146,7 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                                 try:
                                         opub = pub_map[pub.prefix]
                                 except KeyError:
-                                        nrepo = None
-                                        if pub.prefix in pkg_pub_map:
-                                                nrepo = publisher.Repository()
+                                        nrepo = publisher.Repository()
                                         opub = publisher.Publisher(pub.prefix,
                                             catalog=compkcat, repository=nrepo)
                                         pub_map[pub.prefix] = opub

@@ -20,7 +20,7 @@
 # CDDL HEADER END
 #
 
-# Copyright (c) 2011, 2012, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2011, 2013, Oracle and/or its affiliates. All rights reserved.
 
 import testutils
 if __name__ == "__main__":
@@ -177,7 +177,7 @@ class TestPkgCompositePublishers(pkg5unittest.ManyDepotTestCase):
 
         def setUp(self):
                 pkg5unittest.ManyDepotTestCase.setUp(self, ["test", "test",
-                    "test", "empty"])
+                    "test", "empty", "void"])
                 self.make_misc_files(self.misc_files)
 
                 # First repository will contain all packages.
@@ -192,6 +192,10 @@ class TestPkgCompositePublishers(pkg5unittest.ManyDepotTestCase):
                 # Fourth will be empty.
                 self.empty_rurl = self.dcs[4].get_repo_url()
                 self.pkgrepo("refresh -s %s" % self.empty_rurl)
+
+                # Fifth will have a publisher named 'void', but no packages.
+                self.void_rurl = self.dcs[5].get_repo_url()
+                self.pkgrepo("refresh -s %s" % self.void_rurl)
 
                 # Setup base test paths.
                 self.path_to_certs = os.path.join(self.ro_data_root,
@@ -546,6 +550,25 @@ Packaging Date: %(pkg_date)s
                 # Elide error output from client to verify that search
                 # results were returned despite error.
                 output = output[:output.find("pkg: ")] + "\n"
+                self.assertEqualDiff(expected, output)
+
+        def test_05_empty(self):
+                """Verify empty repositories and repositories with a publisher,
+                but no packages, can be used with -g."""
+
+                self.image_create(repourl=None, prefix=None)
+
+                # Verify usage alone.
+                for uri in (self.empty_rurl, self.void_rurl):
+                        self.pkg("list -afH -g %s '*'" % uri, exit=1)
+                        self.pkg("contents -H -g %s '*'" % uri, exit=1)
+
+                # Verify usage in combination with non-empty.
+                self.pkg("list -afH -g %s -g %s -g %s '*'" % (self.empty_rurl,
+                    self.void_rurl, self.foo_rurl))
+                expected = \
+                    ("foo (test) 1.0 ---\n")
+                output = self.reduceSpaces(self.output)
                 self.assertEqualDiff(expected, output)
 
 
