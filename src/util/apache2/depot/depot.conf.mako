@@ -97,7 +97,8 @@ for repo_prefix in repo_prefixes:
                     "/%(root)s%(repo_prefix)s%(pub)s/publisher/%(pub)s/pkg/$1/$2 [NE,PT,C]\n"
                     % locals())
                 context.write(
-                    "RewriteRule ^/%(root)s%(repo_prefix)s%(pub)s/(.*)$ - [NE,L]\n"
+                    "RewriteRule ^/%(root)s%(repo_prefix)s%(pub)s/(.*)$ "
+		    "%%{DOCUMENT_ROOT}/%(root)s%(repo_prefix)s%(pub)s/$1 [NE,L]\n"
                     % locals())
 
                 # file responses require more work, so rewrite to
@@ -125,10 +126,10 @@ for repo_prefix in repo_prefixes:
         root = context.get("sroot")
         context.write(
             "RewriteRule ^/%(root)s%(repo_prefix)s%(pub)s/versions/0 "
-            "/%(root)sversions/0/index.html [L,NE]\n" % locals())
+            "%%{DOCUMENT_ROOT}/%(root)sversions/0/index.html [L,NE]\n" % locals())
         context.write(
             "RewriteRule ^/%(root)s%(repo_prefix)s%(pub)s/publisher/0 "
-            "/%(root)s%(repo_prefix)s%(pub)s/publisher/1/index.html [L,NE]\n" %
+            "%%{DOCUMENT_ROOT}/%(root)s%(repo_prefix)s%(pub)s/publisher/1/index.html [L,NE]\n" %
             locals())
 
 %><%doc>
@@ -186,7 +187,8 @@ for repo_prefix in repo_prefixes:
             "/%(root)s%(repo_prefix)s%(pub)s/publisher/%(pub)s/pkg/$1/$2 [NE,PT,C]\n"
             % locals())
         context.write(
-            "RewriteRule ^/%(root)s%(repo_prefix)s%(pub)s/(.*)$ - [NE,L]\n"
+            "RewriteRule ^/%(root)s%(repo_prefix)s%(pub)s/(.*)$ "
+            "%%{DOCUMENT_ROOT}/%(root)s%(repo_prefix)s%(pub)s/$1 [NE,L]\n"
             % locals())
 %>
 % endfor pub
@@ -208,10 +210,8 @@ for repo_path, repo_prefix in paths:
             "</Directory>\n" % locals())
 %>
 
-# Our versions and publisher responses.
-RewriteRule ^/${sroot}.*[/]?versions/0/?$ - [L]
-RewriteRule ^/${sroot}publisher/0/(.*)$ ${sroot}publisher/1/$1 [NE]
-RewriteRule ^/${sroot}publisher/1/.*$ - [L]
+# Our versions response.
+RewriteRule ^/${sroot}.*[/]?versions/0/?$ %{DOCUMENT_ROOT}/versions/0/index.html [L]
 # allow for 'OPTIONS * HTTP/1.0' requests
 RewriteCond %{REQUEST_METHOD} OPTIONS [NC]
 RewriteRule \* - [L]
@@ -241,6 +241,10 @@ for repo_prefix in repo_prefixes:
 </LocationMatch>
 <LocationMatch ".*/publisher/.*/pkg/.*">
         Header set Cache-Control "must-revalidate, no-transform, max-age=31536000"
+        Header set Content-Type text/plain;charset=utf-8
+</LocationMatch>
+<LocationMatch ".*/catalog/catalog.*.C">
+        Header set Cache-Control "must-revalidate, no-transform, max-age=86400"
         Header set Content-Type text/plain;charset=utf-8
 </LocationMatch>
 <LocationMatch ".*/catalog.attrs">

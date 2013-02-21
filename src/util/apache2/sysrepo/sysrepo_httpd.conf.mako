@@ -59,9 +59,9 @@ LoadModule mime_module libexec/64/mod_mime.so
 LoadModule dir_module libexec/64/mod_dir.so
 LoadModule alias_module libexec/64/mod_alias.so
 LoadModule rewrite_module libexec/64/mod_rewrite.so
-
 LoadModule env_module libexec/64/mod_env.so
 LoadModule wsgi_module libexec/64/mod_wsgi-2.6.so
+
 # We only alias a specific script, not all files in ${sysrepo_template_dir}
 WSGIScriptAlias /wsgi_p5p ${sysrepo_template_dir}/sysrepo_p5p.py
 WSGIDaemonProcess sysrepo processes=1 threads=21 user=pkg5srv group=pkg5srv display-name=pkg5_sysrepo inactivity-timeout=120
@@ -383,9 +383,9 @@ SSLProxyProtocol all
                         # File and p5p-based repositories get our static
                         # versions and publisher responses
                         context.write("RewriteRule ^/%(pub)s/%(hash)s/versions/0 "
-                            "/versions/0/index.html [L,NE]\n" % locals())
+                            "%%{DOCUMENT_ROOT}/versions/0/index.html [L,NE]\n" % locals())
                         context.write("RewriteRule ^/%(pub)s/%(hash)s/publisher/0 "
-                            "/%(pub)s/%(hash)s/publisher/0/index.html [L,NE]\n" % locals())
+                            "%%{DOCUMENT_ROOT}/%(pub)s/%(hash)s/publisher/0/index.html [L,NE]\n" % locals())
                         # A p5p archive repository
                         if os.path.isfile(uri.replace("file:", "")):
 
@@ -447,7 +447,7 @@ SSLProxyProtocol all
                             "/%(pub)s/%(hash)s/manifest/0/([^@]+)@([^\ ]+)(\ HTTP/1.1)$ "
                             "/%(pub)s/%(hash)s/publisher/%(pub)s/pkg/$1/$2 [NE,PT,C]\n"
                             % locals())
-                        context.write("RewriteRule ^/%(pub)s/%(hash)s/(.*)$ - [NE,L]"
+                        context.write("RewriteRule ^/%(pub)s/%(hash)s/(.*)$ %%{DOCUMENT_ROOT}/%(pub)s/%(hash)s/$1 [NE,L]"
                             % locals())
 %>
                 % else:
@@ -495,9 +495,9 @@ context.write("ProxyPass / !")
         % endif
 % endfor uri
 
-# any non-file-based repositories get our local versions and syspub responses
-RewriteRule ^.*/versions/0/?$ - [L]
-RewriteRule ^.*/syspub/0/?$ - [L]
+# any repositories get our local versions and syspub responses
+RewriteRule ^.*/versions/0/?$ %{DOCUMENT_ROOT}/versions/0/index.html [L]
+RewriteRule ^.*/syspub/0/?$ %{DOCUMENT_ROOT}/syspub/0/index.html [L]
 # allow for 'OPTIONS * HTTP/1.0' requests
 RewriteCond %{REQUEST_METHOD} OPTIONS [NC]
 RewriteRule \* - [L]

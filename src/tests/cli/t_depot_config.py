@@ -45,13 +45,20 @@ class TestHttpDepot(pkg5unittest.ApacheDepotTestCase):
         """Tests that exercise the pkg.depot-config CLI as well as checking the
         functionality of the depot-config itself. This test class will
         fail if not run as root, since many of the tests use 'pkg.depot-config -a'
-        which will attempt to chown a directory to pkg5srv:pkg5srv."""
+        which will attempt to chown a directory to pkg5srv:pkg5srv.
+
+        The default_svcs_conf having an instance name of 'usr' is not a
+        coincidence: we use it there so that we catch RewriteRules that
+        mistakenly try to serve content from the root filesystem ('/') rather
+        than from beneath our DocumentRoot (assuming that test systems always
+        have a /usr directory)
+        """
 
         # An array that can be used to build our svcs(1) wrapper.
         default_svcs_conf = [
             # FMRI                                   STATE
             ["svc:/application/pkg/server:default",  "online" ],
-            ["svc:/application/pkg/server:noodles",  "online" ],
+            ["svc:/application/pkg/server:usr",      "online" ],
             # repositories that we will not serve
             ["svc:/application/pkg/server:off",      "offline"],
             ["svc:/application/pkg/server:writable", "online" ],
@@ -126,7 +133,7 @@ class TestHttpDepot(pkg5unittest.ApacheDepotTestCase):
                 following responses are configured using the class variables
                 svcs_conf and svcprop_conf:
 
-                pkg/server:default and pkg/server:noodles can be served by the
+                pkg/server:default and pkg/server:usr can be served by the
                 depot-config as they are marked readonly=true, standalone=false.
 
                 pkg/server:off is ineligible, because it is reported as being
@@ -211,10 +218,10 @@ class TestHttpDepot(pkg5unittest.ApacheDepotTestCase):
                 """We return an error given an invalid image root"""
 
                 # check for incorrectly-formed -d options
-                self.depotconfig("-d noodles -F -r /dev/null", exit=2)
+                self.depotconfig("-d usr -F -r /dev/null", exit=2)
 
                 # ensure we pick up invalid -d directories
-                for invalid_root in ["noodles=/dev/null",
+                for invalid_root in ["usr=/dev/null",
                     "foo=/etc/passwd", "alt=/proc"]:
                         ret, output, err = self.depotconfig(
                             "-d %s -F" % invalid_root, out=True, stderr=True,
@@ -350,7 +357,7 @@ class TestHttpDepot(pkg5unittest.ApacheDepotTestCase):
                         "/default/test1/info/0/%(esc_full_fmri)s",
                         "/default/manifest/0/%(esc_full_fmri)s",
                         "/default/en/search.shtml",
-                        "/noodles/test2/en/catalog.shtml",
+                        "/usr/test2/en/catalog.shtml",
                         "/depot/default/en/search.shtml?token=pkg&action=Search"
                 ]
 
@@ -390,11 +397,11 @@ class TestHttpDepot(pkg5unittest.ApacheDepotTestCase):
 
                 # test that we can access specific publishers, this time from
                 # a different repository, served by the same depot-config.
-                self.pkg("set-publisher -p %s/noodles/test2" % self.ac.url)
+                self.pkg("set-publisher -p %s/usr/test2" % self.ac.url)
                 self.pkg("contents -r new")
                 self.pkg("set-publisher -G '*' test2")
                 ret, output = self.pkg(
-                    "search -o action.raw -s %s/noodles new" % self.ac.url,
+                    "search -o action.raw -s %s/usr new" % self.ac.url,
                     out=True)
                 self.assert_("path=usr/bin/new" in output)
 
@@ -600,7 +607,7 @@ class TestHttpDepot(pkg5unittest.ApacheDepotTestCase):
                     self.carrots_pkg)
                 self.pkgsend_bulk(self.dcs[2].get_repo_url(),
                     self.new_pkg)
-                self.depotconfig("-l %s -F -d noodles=%s -d spaghetti=%s "
+                self.depotconfig("-l %s -F -d usr=%s -d spaghetti=%s "
                     "-P testpkg5" %
                     (self.default_depot_runtime, self.rdir1, self.rdir2))
                 default_httpd_conf_path = os.path.join(self.test_root,
@@ -627,7 +634,7 @@ class TestHttpDepot(pkg5unittest.ApacheDepotTestCase):
                 self.image_create()
                 # add publishers for the two repositories being served by this
                 # Apache instance
-                self.pkg("set-publisher -p %s/testpkg5/noodles" % self.ac.url)
+                self.pkg("set-publisher -p %s/testpkg5/usr" % self.ac.url)
                 self.pkg("set-publisher -p %s/testpkg5/spaghetti" % self.ac.url)
                 # install packages from the two different publishers in the
                 # first repository
@@ -638,7 +645,7 @@ class TestHttpDepot(pkg5unittest.ApacheDepotTestCase):
                 # we can't perform remote search or admin operations, since
                 # we've no supporting mod_wsgi process.
                 self.pkg("search -r new", exit=1)
-                self.pkgrepo("-s %s/testpkg5/noodles refresh" %
+                self.pkgrepo("-s %s/testpkg5/usr refresh" %
                     self.ac.url, exit=1)
 
         __svcs_template = \
@@ -652,7 +659,7 @@ class TestHttpDepot(pkg5unittest.ApacheDepotTestCase):
 # all 'percent' characters.
 #
 # eg.
-# SERVICE_STATUS="svc:/application/pkg/server:foo%%online svc:/application/pkg/server:default%%offline svc:/application/pkg/server:noodles%%online"
+# SERVICE_STATUS="svc:/application/pkg/server:foo%%online svc:/application/pkg/server:default%%offline svc:/application/pkg/server:usr%%online"
 # We expect to be called with 'svcs -H -o fmri <fmri>' but completely ignore
 # the <fmri> argument.
 #
