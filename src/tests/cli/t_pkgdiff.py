@@ -36,6 +36,16 @@ class TestPkgRepo(pkg5unittest.SingleDepotTestCase):
         # Cleanup after every test.
         persistent_setup = False
 
+        stub1 = """
+            dir owner=root group=root mode=0755 path=etc
+            file tmp/empty mode=0555 owner=root group=bin path=/etc/empty
+            file tmp/truck1 mode=0444 owner=root group=bin path=/etc/trailer"""
+
+        stub2 = """
+            dir owner=root group=root mode=0755 path=etc
+            file tmp/empty mode=0555 owner=root group=bin path=/etc/empty
+            file tmp/truck1 mode=0444 owner=root group=bin path=/etc/ditch """
+
         tree10 = """
             set name=pkg.fmri value=tree@1.0,5.11-0:20110804T203458Z
             set name=pkg.summary value="Leafy SPARC package" variant.arch=sparc
@@ -45,11 +55,22 @@ class TestPkgRepo(pkg5unittest.SingleDepotTestCase):
             file tmp/truck1 mode=0444 owner=root group=bin path=/etc/trailer"""
 
         tree20 = """
-            set name=pkg.fmri value=tree@2.0,5.11-0:20110804T203458Z
+            set name=pkg.fmri value=tree@2.0,5.11-0:20120804T203458Z
             set name=pkg.summary value="Leafy SPARC package" variant.arch=sparc
             set name=pkg.summary value="Leafy i386 package" variant.arch=i386
             set name=info.classification value=org.opensolaris.category.2008:System/Core
             set name=variant.arch value=i386 value=sparc
+            dir owner=root group=root mode=0755 path=etc
+            file tmp/empty mode=0555 owner=root group=bin path=/etc/empty
+            file tmp/truck1 mode=0444 owner=root group=bin path=/etc/trailer"""
+
+        tree30 = """
+            set name=pkg.fmri value=tree@3.0,5.11-0:20130804T203458Z
+            set name=pkg.summary value="Leafy SPARC package" variant.arch=sparc
+            set name=pkg.summary value="Leafy i386 package" variant.arch=i386
+            set name=info.classification value=org.opensolaris.category.2008:System/Core
+            set name=variant.arch value=i386 value=sparc
+            dir owner=root group=root mode=0755 path=etc
             file tmp/empty mode=0555 owner=root group=bin path=/etc/empty
             file tmp/truck1 mode=0444 owner=root group=bin path=/etc/trailer"""
 
@@ -57,8 +78,11 @@ class TestPkgRepo(pkg5unittest.SingleDepotTestCase):
                 pkg5unittest.SingleDepotTestCase.setUp(self)
                 tfiles = self.make_misc_files(["tmp/empty", "tmp/truck1",
                     "tmp/noaccess"])
+                self.stub1_p5m = self.make_manifest(self.stub1)
+                self.stub2_p5m = self.make_manifest(self.stub2)
                 self.tree10_p5m = self.make_manifest(self.tree10)
                 self.tree20_p5m = self.make_manifest(self.tree20)
+                self.tree30_p5m = self.make_manifest(self.tree30)
                 self.bogus_p5m = os.path.join(self.test_root, "nosuch.p5m")
                 self.noaccess_p5m = self.make_misc_files(
                     ["tmp/noaccess.p5m"])[0]
@@ -119,6 +143,48 @@ class TestPkgRepo(pkg5unittest.SingleDepotTestCase):
                 # Verify that one argument can be stdin with differences.
                 self.pkgdiff("%s - < %s" % (self.tree10_p5m, self.tree20_p5m),
                     exit=1)
+
+        def test_02_type_filter(self):
+                """Verify that pkgdiff action type filtering works as expected."""
+
+                # Verify unknown types cause graceful failure.
+                self.pkgdiff(" ".join(("-t bogus,nosuchtype", self.tree10_p5m,
+                    self.tree10_p5m)), exit=2)
+                self.pkgdiff(" ".join(("-t bogus", "-t nosuchtype",
+                    self.tree10_p5m, self.tree10_p5m)), exit=2)
+                self.pkgdiff(" ".join(("-t bogus", "-t file", self.tree10_p5m,
+                    self.tree10_p5m)), exit=2)
+
+                # Verify no differences for same manifest.
+                self.pkgdiff(" ".join(("-t file", self.tree10_p5m,
+                    self.tree10_p5m)))
+
+                # Verify differences found for file actions between 1.0 and 2.0.
+                self.pkgdiff(" ".join(("-t file", self.tree10_p5m,
+                    self.tree20_p5m)), exit=1)
+
+                # Verify differences found for dir actions between 1.0 and 2.0.
+                self.pkgdiff(" ".join(("-t dir", self.tree10_p5m,
+                    self.tree20_p5m)), exit=1)
+
+                # Verify no differences found for file actions between 2.0 and
+                # 3.0.
+                self.pkgdiff(" ".join(("-t file", self.tree20_p5m,
+                    self.tree30_p5m)))
+
+                # Verify no differences found for dir and file actions between
+                # 2.0 and 3.0 using both option forms.
+                self.pkgdiff(" ".join(("-t dir,file", self.tree20_p5m,
+                    self.tree30_p5m)), stderr=True)
+
+                self.pkgdiff(" ".join(("-t dir", "-t file", self.tree20_p5m,
+                    self.tree30_p5m)))
+
+                # Verify differences found when only one action of a given type
+                # of two differs between stub1 and stub2 and other actions are
+                # the same.
+                self.pkgdiff(" ".join(("-t file", self.stub1_p5m,
+                    self.stub2_p5m)), exit=1)
 
 
 if __name__ == "__main__":

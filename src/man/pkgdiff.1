@@ -6,8 +6,10 @@ pkgdiff \- compare package manifests
 .SH SYNOPSIS
 .LP
 .nf
-/usr/bin/pkgdiff [-i \fIattribute\fR ...] [-o \fIattribute\fR]
-    [-v \fIname\fR=\fIvalue\fR ...] \fI(file1 | -)\fR \fI(file2 | -)\fR
+/usr/bin/pkgdiff [-i \fIattribute\fR]... [-o \fIattribute\fR]
+    [-t \fIaction_name\fR[,\fIaction_name\fR]...]...
+    [-v \fIname\fR=\fIvalue\fR]...
+    \fI(file1 | -)\fR \fI(file2 | -)\fR
 .fi
 
 .SH DESCRIPTION
@@ -106,6 +108,17 @@ Ignore \fIattribute\fR if present during comparisons. File hash values can be ig
 .sp .6
 .RS 4n
 Only report differences in \fIattribute\fR. This option cannot be used with the \fB-i\fR option. This option elides any action changes that do not affect \fIattribute\fR on an action.
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB-t\fR \fIaction_name\fR\fR
+.ad
+.sp .6
+.RS 4n
+Only compare the specified actions. Multiple actions can be specified in a comma-separated list. The value of \fIaction_name\fR is one of the actions listed in "Actions" in the \fBpkg\fR(5) man page, such as \fBfile\fR, \fBdir\fR, \fBdriver\fR, \fBdepend\fR, and \fBset\fR. This option can be specified multiple times.
 .RE
 
 .sp

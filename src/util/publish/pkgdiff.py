@@ -47,8 +47,9 @@ def usage(errmsg="", exitcode=2):
 
         print _("""\
 Usage:
-        pkgdiff [-i attribute ...] [-o attribute] [-v name=value ...]
-            (file1 | -) (file2 | -)""")
+        pkgdiff [-i attribute]... [-o attribute]
+            [-t action_name[,action_name]...]...
+            [-v name=value]... (file1 | -) (file2 | -)""")
         sys.exit(exitcode)
 
 def error(text, exitcode=3):
@@ -65,23 +66,26 @@ def main_func():
 
         ignoreattrs = []
         onlyattrs = []
+        onlytypes = []
         varattrs = defaultdict(set)
 
         try:
-                opts, pargs = getopt.getopt(sys.argv[1:], "i:o:v:?", ["help"])
+                opts, pargs = getopt.getopt(sys.argv[1:], "i:o:t:v:?", ["help"])
                 for opt, arg in opts:
                         if opt == "-i":
                                 ignoreattrs.append(arg)
-                        if opt == "-o":
+                        elif opt == "-o":
                                 onlyattrs.append(arg)
-                        if opt == "-v":
+                        elif opt == "-t":
+                                onlytypes.extend(arg.split(","))
+                        elif opt == "-v":
                                 args = arg.split("=")
                                 if len(args) != 2:
                                         usage(_("variant option incorrect %s") % arg)
                                 if not args[0].startswith("variant."):
                                         args[0] = "variant." + args[0]
                                 varattrs[args[0]].add(args[1])
-                        if opt in ("--help", "-?"):
+                        elif opt in ("--help", "-?"):
                                 usage(exitcode=0)
 
         except getopt.GetoptError, e:
@@ -103,6 +107,17 @@ def main_func():
 
         ignoreattrs = set(ignoreattrs)
         onlyattrs = set(onlyattrs)
+        onlytypes = set(onlytypes)
+
+        utypes = set(
+            t
+            for t in onlytypes
+            if t == "generic" or t not in pkg.actions.types
+        )
+
+        if utypes:
+                usage(_("unknown action types: %s" %
+                    apx.list_to_lang(list(utypes))))
 
         manifest1 = manifest.Manifest()
         manifest2 = manifest.Manifest()
@@ -118,10 +133,21 @@ def main_func():
         except (EnvironmentError, apx.ApiException), e:
                 error(e)
 
+        #
+        # manifest filtering
+        #
+
+        # filter action type
+        if onlytypes:
+                for m in (manifest1, manifest2):
+                        # Must pass complete list of actions to set_content, not
+                        # a generator, to avoid clobbering manifest contents.
+                        m.set_content(content=list(m.gen_actions_by_types(
+                            onlytypes)))
+
+        # filter variant
         v1 = manifest1.get_all_variants()
         v2 = manifest2.get_all_variants()
-
-        # implement manifest filtering
         for vname in varattrs:
                 for path, v, m in zip(pargs, (v1, v2), (manifest1, manifest2)):
                         if vname not in v:
@@ -140,6 +166,7 @@ def main_func():
                             variant.Variants({vname: filt}).allow_action])
                         ])
                         m[vname] = filt
+
         if varattrs:
                 # need to rebuild these if we're filtering variants
                 v1 = manifest1.get_all_variants()
@@ -189,8 +216,8 @@ def main_func():
                 diffs += a
                 diffs += c
                 diffs += r
-        # License action still causes spurious diffs... check again for now.
 
+        # License action still causes spurious diffs... check again for now.
         real_diffs = [
             (a,b)
             for a, b in diffs
@@ -247,7 +274,7 @@ def main_func():
                         out = k + "=" + v
                 return out
 
-        #figure out when to print diffs
+        # figure out when to print diffs
         def conditional_print(s, a):
                 if onlyattrs:
                         if not set(a.attrs.keys()) & onlyattrs:
