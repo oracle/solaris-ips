@@ -1,5 +1,5 @@
 '\" te
-.\" Copyright (c) 2007, 2012, Oracle and/or its affiliates. All rights reserved.
+.\" Copyright (c) 2007, 2013, Oracle and/or its affiliates. All rights reserved.
 .TH pkgrepo 1 "22 Jun 2012" "SunOS 5.12" "User Commands"
 .SH NAME
 pkgrepo \- Image Packaging System repository management utility
@@ -17,31 +17,35 @@ pkgrepo \- Image Packaging System repository management utility
 .LP
 .nf
 /usr/bin/pkgrepo get [-F \fIformat\fR] [-H] [-p \fIpublisher\fR ...]
-    -s \fIrepo_uri_or_path\fR [\fIsection/property\fR ...]
+    -s \fIrepo_uri_or_path\fR [--key \fIssl_key\fR ... --cert \fIssl_cert\fR ...]
+    [\fIsection/property\fR ...]
 .fi
 
 .LP
 .nf
 /usr/bin/pkgrepo info [-F \fIformat\fR] [-H] [-p \fIpublisher\fR ...]
-    -s \fIrepo_uri_or_path\fR
+    -s \fIrepo_uri_or_path\fR [--key \fIssl_key\fR ... --cert \fIssl_cert\fR ...]
 .fi
 
 .LP
 .nf
 /usr/bin/pkgrepo list [-F \fIformat\fR] [-H] [-p \fIpublisher\fR ...]
-    -s \fIrepo_uri_or_path\fR [\fIpkg_fmri_pattern\fR ...]
+    -s \fIrepo_uri_or_path\fR [--key \fIssl_key\fR ... --cert \fIssl_cert\fR ...]
+    [\fIpkg_fmri_pattern\fR ...]
 .fi
 
 .LP
 .nf
 /usr/bin/pkgrepo rebuild [-p \fIpublisher\fR ...]
-    -s \fIrepo_uri_or_path\fR [--no-catalog] [--no-index]
+    -s \fIrepo_uri_or_path\fR [--key \fIssl_key\fR ... --cert \fIssl_cert\fR ...]
+    [--no-catalog] [--no-index]
 .fi
 
 .LP
 .nf
 /usr/bin/pkgrepo refresh [-p \fIpublisher\fR ...]
-    -s \fIrepo_uri_or_path\fR [--no-catalog] [--no-index]
+    -s \fIrepo_uri_or_path\fR [--key \fIssl_key\fR ... --cert \fIssl_cert\fR ...]
+    [--no-catalog] [--no-index]
 .fi
 
 .LP
@@ -162,7 +166,7 @@ This subcommand can be used only with version 4 file system based repositories.
 .ne 2
 .mk
 .na
-\fB\fBpkgrepo get\fR [\fB-F\fR \fIformat\fR] [\fB-H\fR] [\fB-p\fR \fIpublisher\fR ...] \fB-s\fR \fIrepo_uri_or_path\fR [\fIsection/property\fR ...]\fR
+\fB\fBpkgrepo get\fR [\fB-F\fR \fIformat\fR] [\fB-H\fR] [\fB-p\fR \fIpublisher\fR ...] \fB-s\fR \fIrepo_uri_or_path\fR [\fB--key\fR \fIssl_key\fR ... \fB--cert\fR \fIssl_cert\fR ...] [\fIsection/property\fR ...]\fR
 .ad
 .sp .6
 .RS 4n
@@ -227,6 +231,28 @@ Operate on the repository located at the given URI or file system path.
 .ne 2
 .mk
 .na
+\fB\fB--key\fR \fIssl_key\fR\fR
+.ad
+.sp .6
+.RS 4n
+Specify a client SSL key file to use for package retrieval from an HTTPS repository.
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB--cert\fR \fIssl_cert\fR\fR
+.ad
+.sp .6
+.RS 4n
+Specify a client SSL certificate file to use for package retrieval from an HTTPS repository.
+.RE
+
+.sp
+.ne 2
+.mk
+.na
 \fB\fIsection/property\fR\fR
 .ad
 .sp .6
@@ -240,7 +266,7 @@ Display values for only the specified properties, such as \fBpublisher/prefix\fR
 .ne 2
 .mk
 .na
-\fB\fBpkgrepo info\fR [\fB-F\fR \fIformat\fR] [\fB-H\fR] [\fB-p\fR \fIpublisher\fR ...] \fB-s\fR \fIrepo_uri_or_path\fR\fR
+\fB\fBpkgrepo info\fR [\fB-F\fR \fIformat\fR] [\fB-H\fR] [\fB-p\fR \fIpublisher\fR ...] \fB-s\fR \fIrepo_uri_or_path\fR [\fB--key\fR \fIssl_key\fR ... \fB--cert\fR \fIssl_cert\fR ...]\fR
 .ad
 .sp .6
 .RS 4n
@@ -289,13 +315,35 @@ Only display the data for the given publisher. If not provided, the data for all
 Operate on the repository located at the given URI or file system path.
 .RE
 
+.sp
+.ne 2
+.mk
+.na
+\fB\fB--key\fR \fIssl_key\fR\fR
+.ad
+.sp .6
+.RS 4n
+Specify a client SSL key file to use for package retrieval from an HTTPS repository.
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fB\fBpkgrepo list\fR [\fB-F\fR \fIformat\fR] [\fB-H\fR] [\fB-p\fR \fIpublisher\fR ...] \fB-s\fR \fIrepo_uri_or_path\fR [\fIpkg_fmri_pattern\fR ...]\fR
+\fB\fB--cert\fR \fIssl_cert\fR\fR
+.ad
+.sp .6
+.RS 4n
+Specify a client SSL certificate file to use for package retrieval from an HTTPS repository.
+.RE
+
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fBpkgrepo list\fR [\fB-F\fR \fIformat\fR] [\fB-H\fR] [\fB-p\fR \fIpublisher\fR ...] \fB-s\fR \fIrepo_uri_or_path\fR [\fB--key\fR \fIssl_key\fR ... \fB--cert\fR \fIssl_cert\fR ...] [\fIpkg_fmri_pattern\fR ...]\fR
 .ad
 .sp .6
 .RS 4n
@@ -346,13 +394,35 @@ Only display the packages for the given publisher. If not provided, the packages
 Operate on the repository located at the given URI or file system path.
 .RE
 
+.sp
+.ne 2
+.mk
+.na
+\fB\fB--key\fR \fIssl_key\fR\fR
+.ad
+.sp .6
+.RS 4n
+Specify a client SSL key file to use for package retrieval from an HTTPS repository.
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fB\fBpkgrepo rebuild\fR [\fB-p\fR \fIpublisher\fR ...] \fB-s\fR \fIrepo_uri_or_path\fR [\fB--no-catalog\fR] [\fB--no-index\fR]\fR
+\fB\fB--cert\fR \fIssl_cert\fR\fR
+.ad
+.sp .6
+.RS 4n
+Specify a client SSL certificate file to use for package retrieval from an HTTPS repository.
+.RE
+
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fBpkgrepo rebuild\fR [\fB-p\fR \fIpublisher\fR ...] \fB-s\fR \fIrepo_uri_or_path\fR [\fB--key\fR \fIssl_key\fR ... \fB--cert\fR \fIssl_cert\fR ...] [\fB--no-catalog\fR] [\fB--no-index\fR]\fR
 .ad
 .sp .6
 .RS 4n
@@ -383,6 +453,28 @@ Operate on the repository located at the given URI or file system path.
 .ne 2
 .mk
 .na
+\fB\fB--key\fR \fIssl_key\fR\fR
+.ad
+.sp .6
+.RS 4n
+Specify a client SSL key file to use for package retrieval from an HTTPS repository.
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB--cert\fR \fIssl_cert\fR\fR
+.ad
+.sp .6
+.RS 4n
+Specify a client SSL certificate file to use for package retrieval from an HTTPS repository.
+.RE
+
+.sp
+.ne 2
+.mk
+.na
 \fB\fB--no-catalog\fR\fR
 .ad
 .sp .6
@@ -407,7 +499,7 @@ Do not rebuild search indexes.
 .ne 2
 .mk
 .na
-\fB\fBpkgrepo refresh\fR [\fB-p\fR \fIpublisher\fR ...] \fB-s\fR \fIrepo_uri_or_path\fR [\fB--no-catalog\fR] [\fB--no-index\fR]\fR
+\fB\fBpkgrepo refresh\fR [\fB-p\fR \fIpublisher\fR ...] \fB-s\fR \fIrepo_uri_or_path\fR [\fB--key\fR \fIssl_key\fR ... \fB--cert\fR \fIssl_cert\fR ...] [\fB--no-catalog\fR] [\fB--no-index\fR]\fR
 .ad
 .sp .6
 .RS 4n
@@ -432,6 +524,28 @@ Perform the operation only for the given publisher. If not provided, or if the s
 .sp .6
 .RS 4n
 Operate on the repository located at the given URI or file system path.
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB--key\fR \fIssl_key\fR\fR
+.ad
+.sp .6
+.RS 4n
+Specify a client SSL key file to use for package retrieval from an HTTPS repository.
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB--cert\fR \fIssl_cert\fR\fR
+.ad
+.sp .6
+.RS 4n
+Specify a client SSL certificate file to use for package retrieval from an HTTPS repository.
 .RE
 
 .sp

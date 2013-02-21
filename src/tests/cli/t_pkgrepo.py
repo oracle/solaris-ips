@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2010, 2011, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2010, 2013, Oracle and/or its affiliates. All rights reserved.
 #
 
 import testutils
@@ -2159,6 +2159,114 @@ test2	zoo		1.0	5.11	0	20110804T203458Z	pkg://test2/zoo@1.0,5.11-0:20110804T20345
                 self.pkgrepo("-s %s fix -p test" % repo_path)
                 self.pkgrepo("-s %s fix -p missing" % repo_path, exit=1)
                 self.assert_("no matching publishers" in self.errout)
+
+
+class TestPkgrepoHTTPS(pkg5unittest.HTTPSTestClass):
+
+        example_pkg10 = """
+            open example_pkg@1.0,5.11-0
+            add file tmp/example_file mode=0555 owner=root group=bin path=/usr/bin/example_path
+            close"""
+
+        misc_files = ["tmp/example_file", "tmp/empty", "tmp/verboten"]
+
+        def setUp(self):
+                pub = "test"
+
+                pkg5unittest.HTTPSTestClass.setUp(self, [pub],
+                    start_depots=True)
+                
+                self.url = self.ac.url + "/%s" % pub
+
+                # publish a simple test package
+                self.srurl = self.dcs[1].get_repo_url()
+                self.make_misc_files(self.misc_files)
+                self.pkgsend_bulk(self.srurl, self.example_pkg10)
+
+                #set permissions of tmp/verboten to make it non-readable
+                self.verboten = os.path.join(self.test_root, "tmp/verboten")
+                os.system("chmod 600 %s" % self.verboten) 
+                
+
+        def test_01_basics(self):
+                """Test that running pkgrepo on an SSL-secured repo works for
+                all operations which are valid for network repos"""
+
+                self.ac.start()
+
+                arg_dict = {
+                    "cert": os.path.join(self.cs_dir,
+                    self.get_cli_cert("test")),
+                    "key": os.path.join(self.keys_dir,
+                    self.get_cli_key("test")),
+                    "url": self.url,
+                    "empty": os.path.join(self.test_root, "tmp/empty"),
+                    "noexist": os.path.join(self.test_root, "octopus"),
+                    "verboten": self.verboten,
+                }
+
+                # We need an image for seed_ta_dir() to work.
+                # TODO: there might be a cleaner way of doing this
+                self.image_create()
+                # Add the trust anchor needed to verify the server's identity.
+                self.seed_ta_dir("ta7")
+
+                # Try all pkgrepo operations which are valid for network repos.
+                # pkgrepo info
+                self.pkgrepo("-s %(url)s info --key %(key)s --cert %(cert)s"
+                    % arg_dict)
+
+                # pkgrepo list
+                self.pkgrepo("-s %(url)s list --key %(key)s --cert %(cert)s"
+                    % arg_dict)
+
+                # pkgrepo get
+                self.pkgrepo("-s %(url)s get --key %(key)s --cert %(cert)s"
+                    % arg_dict)
+
+                # pkgrepo refresh
+                self.pkgrepo("-s %(url)s refresh --key %(key)s --cert %(cert)s"
+                    % arg_dict)
+
+                # pkgrepo rebuild
+                self.pkgrepo("-s %(url)s rebuild --key %(key)s --cert %(cert)s"
+                    % arg_dict)
+
+                # Try without key and cert (should fail)
+                self.pkgrepo("-s %(url)s rebuild" % arg_dict, exit=1)
+
+                # Make sure we don't traceback when credential files are invalid
+                # Certificate option missing
+                self.pkgrepo("-s %(url)s rebuild --key %(key)s" % arg_dict,
+                    exit=1)
+
+                # Key option missing
+                self.pkgrepo("-s %(url)s rebuild --cert %(cert)s" % arg_dict,
+                    exit=1)
+
+                # Certificate not found
+                self.pkgrepo("-s %(url)s rebuild --key %(key)s "
+                    "--cert %(noexist)s" % arg_dict, exit=1)
+
+                # Key not found
+                self.pkgrepo("-s %(url)s rebuild --key %(noexist)s "
+                    "--cert %(cert)s" % arg_dict, exit=1)
+
+                # Certificate is empty file
+                self.pkgrepo("-s %(url)s rebuild --key %(key)s "
+                    "--cert %(empty)s" % arg_dict, exit=1)
+
+                # Key is empty file
+                self.pkgrepo("-s %(url)s rebuild --key %(empty)s "
+                    "--cert %(cert)s" % arg_dict, exit=1)
+
+                # No permissions to read certificate 
+                self.pkgrepo("-s %(url)s rebuild --key %(key)s "
+                    "--cert %(verboten)s" % arg_dict, su_wrap=True, exit=1)
+
+                # No permissions to read key 
+                self.pkgrepo("-s %(url)s rebuild --key %(verboten)s "
+                    "--cert %(cert)s" % arg_dict, su_wrap=True, exit=1)
 
 
 if __name__ == "__main__":

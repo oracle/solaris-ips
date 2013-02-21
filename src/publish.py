@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2007, 2012, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2007, 2013, Oracle and/or its affiliates. All rights reserved.
 #
 
 import fnmatch
@@ -85,7 +85,8 @@ Usage:
 Packager subcommands:
         pkgsend generate [-T pattern] [--target file] source ...
         pkgsend publish [-b bundle ...] [-d source ...] [-s repo_uri_or_path]
-            [-T pattern] [--no-catalog] [manifest ...]
+            [-T pattern] [--key ssl_key ... --cert ssl_cert ...]
+            [--no-catalog] [manifest ...]
 
 Options:
         --help or -?    display usage message
@@ -296,12 +297,14 @@ def trans_publish(repo_uri, fargs):
         # --no-index is now silently ignored as the publication process no
         # longer builds search indexes automatically.
         opts, pargs = getopt.getopt(fargs, "b:d:s:T:", ["fmri-in-manifest",
-            "no-index", "no-catalog"])
+            "no-index", "no-catalog", "key=", "cert="])
 
         add_to_catalog = True
         basedirs = []
         bundles = []
         timestamp_files = []
+        key = None
+        cert = None
         for opt, arg in opts:
                 if opt == "-b":
                         bundles.append(arg)
@@ -315,6 +318,10 @@ def trans_publish(repo_uri, fargs):
                         timestamp_files.append(arg)
                 elif opt == "--no-catalog":
                         add_to_catalog = False
+                elif opt == "--key":
+                        key = arg
+                elif opt == "--cert":
+                        cert = arg
 
         if not repo_uri:
                 usage(_("A destination package repository must be provided "
@@ -380,7 +387,8 @@ def trans_publish(repo_uri, fargs):
                 error(_("Manifest does not set pkg.fmri"))
                 return 1
 
-        xport, pub = setup_transport_and_pubs(repo_uri)
+        xport, pub = setup_transport_and_pubs(repo_uri, ssl_key=key,
+            ssl_cert=cert)
         t = trans.Transaction(repo_uri, pkg_name=pkg_name,
             xport=xport, pub=pub)
         t.open()
@@ -686,14 +694,16 @@ def trans_refresh_index(repo_uri, args):
                 return 1
         return 0
 
-def setup_transport_and_pubs(repo_uri, remote=True):
+def setup_transport_and_pubs(repo_uri, remote=True, ssl_key=None,
+    ssl_cert=None):
 
         if repo_uri.startswith("null:"):
                 return None, None
 
         xport, xport_cfg = transport.setup_transport()
         targ_pub = transport.setup_publisher(repo_uri, "default",
-            xport, xport_cfg, remote_prefix=remote)
+            xport, xport_cfg, remote_prefix=remote, ssl_key=ssl_key,
+            ssl_cert=ssl_cert)
 
         return xport, targ_pub
 
@@ -706,11 +716,11 @@ def main_func():
         show_usage = False
         global_settings.client_name = "pkgsend"
         try:
-                opts, pargs = getopt.getopt(sys.argv[1:], "s:D:?", ["help"])
+                opts, pargs = getopt.getopt(sys.argv[1:], "s:D:?", ["help", "debug="])
                 for opt, arg in opts:
                         if opt == "-s":
                                 repo_uri = arg
-                        elif opt == "-D":
+                        elif opt == "-D" or opt == "--debug":
                                 if arg == "allow-timestamp":
                                         key = arg
                                         value = True

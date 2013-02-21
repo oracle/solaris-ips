@@ -1115,12 +1115,14 @@ class HTTPSRepo(HTTPRepo):
                     proxy=self._repouri.proxy)
 
         def _post_url(self, url, data=None, header=None, ccancel=None,
-            data_fobj=None, data_fp=None, failonerror=True):
+            data_fobj=None, data_fp=None, failonerror=True, progclass=None,
+            progtrack=None):
                 return self._engine.send_data(url, data=data, header=header,
                     sslcert=self._repouri.ssl_cert,
                     sslkey=self._repouri.ssl_key, repourl=self._url,
                     ccancel=ccancel, data_fobj=data_fobj,
                     data_fp=data_fp, failonerror=failonerror,
+                    progclass=progclass, progtrack=progtrack,
                     runtime_proxy=self._repouri.runtime_proxy,
                     proxy=self._repouri.proxy)
 

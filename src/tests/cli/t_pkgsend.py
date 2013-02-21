@@ -20,7 +20,7 @@
 # CDDL HEADER END
 #
 
-# Copyright (c) 2008, 2012, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2008, 2013, Oracle and/or its affiliates. All rights reserved.
 
 import testutils
 if __name__ == "__main__":
@@ -1405,6 +1405,102 @@ class TestPkgsendHardlinks(pkg5unittest.CliTestCase):
                 do_test("f1", "f2", "f3")
                 do_test("d1/f1", "d1/f2", "f3")
                 do_test("d1/f1", "d1/f2", "d2/f3")
+
+
+class TestPkgsendHTTPS(pkg5unittest.HTTPSTestClass):
+
+        misc_files = ["tmp/empty", "tmp/verboten"]
+
+        def setUp(self):
+                pub = "test"
+
+                pkg5unittest.HTTPSTestClass.setUp(self, [pub],
+                    start_depots=True)
+
+                self.url = self.ac.url + "/%s" % pub
+                self.make_misc_files(self.misc_files)
+                #set permissions of tmp/verboten to make it non-readable
+                self.verboten = os.path.join(self.test_root, "tmp/verboten")
+                os.system("chmod 600 %s" % self.verboten) 
+
+        def test_01_basics(self):
+                """Test that publishing to an SSL-secured repo works"""
+
+                self.ac.start()
+
+                rootdir = self.test_root
+                dir_1 = os.path.join(rootdir, "dir_1")
+                os.mkdir(dir_1)
+                file(os.path.join(dir_1, "A"), "wb").close()
+                file(os.path.join(dir_1, "B"), "wb").close()
+                mfpath = os.path.join(rootdir, "manifest_test")
+                with open(mfpath, "wb") as mf:
+                        mf.write("""file NOHASH mode=0755 owner=root group=bin path=/A
+                            file NOHASH mode=0755 owner=root group=bin path=/B
+                            set name=pkg.fmri value=httpstest@1.0,5.10
+                            """)
+
+                arg_dict = {
+                    "cert": os.path.join(self.cs_dir, self.get_cli_cert("test")),
+                    "key": os.path.join(self.keys_dir, self.get_cli_key("test")),
+                    "url": self.url,
+                    "dir": dir_1,
+                    "mani": mfpath,
+                    "empty": os.path.join(self.test_root, "tmp/empty"),
+                    "noexist": os.path.join(self.test_root, "octopus"),
+                    "verboten": self.verboten,
+
+                }
+
+                # We need an image for seed_ta_dir() to work.
+                # TODO: there might be a cleaner way of doing this
+                self.image_create()
+                # Add the trust anchor needed to verify the server's identity.
+                self.seed_ta_dir("ta7")
+
+                # Try to publish a simple package to SSL-secured repo  
+                self.pkgsend(self.url, "publish --key %(key)s --cert %(cert)s "
+                    "-d %(dir)s %(mani)s" % arg_dict)
+        
+                # Try to publish a simple package to SSL-secured repo without
+                # prvoviding certs (should fail).  
+                self.pkgsend(self.url, "publish -d %(dir)s %(mani)s" % arg_dict,
+                    exit=1)
+
+                # Make sure we don't traceback when credential files are invalid
+                # Certificate option missing
+                self.pkgsend(self.url, "publish --key %(key)s "
+                    "-d %(dir)s %(mani)s" % arg_dict, exit=1)
+
+                # Key option missing
+                self.pkgsend(self.url, "publish --cert %(cert)s "
+                    "-d %(dir)s %(mani)s" % arg_dict, exit=1)
+
+                # Certificate not found
+                self.pkgsend(self.url, "publish --key %(key)s "
+                    "--cert %(noexist)s -d %(dir)s %(mani)s" % arg_dict, exit=1)
+
+                # Key not found
+                self.pkgsend(self.url, "publish --key %(noexist)s "
+                    "--cert %(cert)s -d %(dir)s %(mani)s" % arg_dict, exit=1)
+
+                # Certificate is empty file
+                self.pkgsend(self.url, "publish --key %(key)s --cert %(empty)s "
+                    "-d %(dir)s %(mani)s" % arg_dict, exit=1)
+
+                # Key is empty file
+                self.pkgsend(self.url, "publish --key %(empty)s "
+                    "--cert %(cert)s -d %(dir)s %(mani)s" % arg_dict, exit=1)
+
+                # No permissions to read certificate 
+                self.pkgsend(self.url, "publish --key %(key)s "
+                    "--cert %(verboten)s -d %(dir)s %(mani)s" % arg_dict,
+                    su_wrap=True, exit=1)
+
+                # No permissions to read key 
+                self.pkgsend(self.url, "publish --key %(verboten)s "
+                    "--cert %(cert)s -d %(dir)s %(mani)s" % arg_dict,
+                    su_wrap=True, exit=1)
 
 
 if __name__ == "__main__":

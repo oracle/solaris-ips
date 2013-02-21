@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2010, 2011, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2010, 2013, Oracle and/or its affiliates. All rights reserved.
 #
 
 import os
@@ -34,8 +34,8 @@ output_dir = "./produced"
 cnf_file = "openssl.cnf"
 mk_file = "Makefile"
 
-subj_str = "/C=US/ST=California/L=Menlo Park/O=pkg5/CN=%s/emailAddress=%s"
-https_subj_str = "/C=US/ST=California/L=Menlo Park/O=pkg5/OU=%s/" \
+subj_str = "/C=US/ST=California/L=Santa Clara/O=pkg5/CN=%s/emailAddress=%s"
+https_subj_str = "/C=US/ST=California/L=Santa Clara/O=pkg5/OU=%s/" \
     "CN=localhost/emailAddress=%s"
 
 def convert_pem_to_text(tmp_pth, out_pth, kind="x509"):
@@ -350,6 +350,18 @@ if __name__ == "__main__":
         make_trust_anchor("ta11", https=True)
         make_cs_cert("code_signing_certs", "cs1_ta11", "trust_anchors", "ta11",
             https=True)
+
+        # Create a combined CA file to test different client certs with Apache
+        fhw = open("combined_cas.pem", "w")
+        for x in range(6,12):
+                if x == 7:
+                        # ta requires a password to unlock cert, don't use 
+                        continue
+                fn = "ta%d/ta%d_cert.pem" % (x,x)
+                fhr = open(fn, "r")
+                fhw.write(fhr.read())
+                fhr.close()
+        fhw.close()
 
         os.remove(cnf_file)
         os.chdir("../")

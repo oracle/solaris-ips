@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2010, 2012, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2010, 2013, Oracle and/or its affiliates. All rights reserved.
 #
 
 PKG_CLIENT_NAME = "pkgrepo"
@@ -55,6 +55,7 @@ import traceback
 import warnings
 
 from pkg.client import global_settings
+from pkg.client.debugvalues import DebugValues
 from pkg.misc import msg, PipeError
 import pkg
 import pkg.catalog
@@ -134,20 +135,20 @@ Subcommands:
 
      pkgrepo add-publisher -s repo_uri_or_path publisher ...
 
-     pkgrepo get [-F format] [-p publisher ...] -s repo_uri_or_path
-         [section/property ...]
+     pkgrepo get [-F format] [-p publisher ...] -s repo_uri_or_path 
+         [--key ssl_key ... --cert ssl_cert ...] [section/property ...]
 
-     pkgrepo info [-F format] [-H] [-p publisher ...]
-         -s repo_uri_or_path
+     pkgrepo info [-F format] [-H] [-p publisher ...] -s repo_uri_or_path
+         [--key ssl_key ... --cert ssl_cert ...]
 
-     pkgrepo list [-F format] [-H] [-p publisher ...] -s repo_uri_or_path
-         [pkg_fmri_pattern ...]
+     pkgrepo list [-F format] [-H] [-p publisher ...] -s repo_uri_or_path 
+         [--key ssl_key ... --cert ssl_cert ...] [pkg_fmri_pattern ...]
 
-     pkgrepo rebuild [-p publisher ...] -s repo_uri_or_path
-         [--no-catalog] [--no-index]
+     pkgrepo rebuild [-p publisher ...] -s repo_uri_or_path [--key ssl_key ...
+         --cert ssl_cert ...] [--no-catalog] [--no-index]
 
-     pkgrepo refresh [-p publisher ...] -s repo_uri_or_path
-         [--no-catalog] [--no-index]
+     pkgrepo refresh [-p publisher ...] -s repo_uri_or_path [--key ssl_key ...
+         --cert ssl_cert ...] [--no-catalog] [--no-index]
 
      pkgrepo remove [-n] [-p publisher ...] -s repo_uri_or_path
          pkg_fmri_pattern ...
@@ -261,7 +262,8 @@ def get_repo(conf, read_only=True, subcommand=None):
         return sr.Repository(read_only=read_only, root=path)
 
 
-def setup_transport(conf, subcommand=None, verbose=False):
+def setup_transport(conf, subcommand=None, verbose=False, ssl_key=None,
+    ssl_cert=None):
         repo_uri = conf.get("repo_uri", None)
         if not repo_uri:
                 usage(_("No repository location specified."), cmd=subcommand)
@@ -284,7 +286,7 @@ def setup_transport(conf, subcommand=None, verbose=False):
 
         # Configure target publisher.
         src_pub = transport.setup_publisher(str(repo_uri), "target", xport,
-            xport_cfg, remote_prefix=True)
+            xport_cfg, remote_prefix=True, ssl_key=ssl_key, ssl_cert=ssl_cert)
 
         return xport, src_pub, tmp_dir
 
@@ -398,8 +400,10 @@ def subcmd_get(conf, args):
         omit_headers = False
         out_format = "default"
         pubs = set()
+        key = None
+        cert = None
 
-        opts, pargs = getopt.getopt(args, "F:Hp:s:")
+        opts, pargs = getopt.getopt(args, "F:Hp:s:", ["key=", "cert="])
         for opt, arg in opts:
                 if opt == "-F":
                         out_format = arg
@@ -415,12 +419,17 @@ def subcmd_get(conf, args):
                         pubs.add(arg)
                 elif opt == "-s":
                         conf["repo_uri"] = parse_uri(arg)
+                elif opt == "--key":
+                        key = arg
+                elif opt == "--cert":
+                        cert = arg
 
         # Setup transport so configuration can be retrieved.
         if not conf.get("repo_uri", None):
                 usage(_("A package repository location must be provided "
                     "using -s."), cmd=subcommand)
-        xport, xpub, tmp_dir = setup_transport(conf, subcommand=subcommand)
+        xport, xpub, tmp_dir = setup_transport(conf, subcommand=subcommand,
+            ssl_key=key, ssl_cert=cert)
 
         # Get properties.
         if pubs:
@@ -660,8 +669,10 @@ def subcmd_info(conf, args):
         omit_headers = False
         out_format = "default"
         pubs = set()
+        key = None
+        cert = None
 
-        opts, pargs = getopt.getopt(args, "F:Hp:s:")
+        opts, pargs = getopt.getopt(args, "F:Hp:s:", ["key=", "cert="])
         for opt, arg in opts:
                 if opt == "-F":
                         if arg not in LISTING_FORMATS:
@@ -677,6 +688,10 @@ def subcmd_info(conf, args):
                         pubs.add(arg)
                 elif opt == "-s":
                         conf["repo_uri"] = parse_uri(arg)
+                elif opt == "--key":
+                        key = arg
+                elif opt == "--cert":
+                        cert = arg
 
         if pargs:
                 usage(_("command does not take operands"), cmd=subcommand)
@@ -685,7 +700,8 @@ def subcmd_info(conf, args):
         if not conf.get("repo_uri", None):
                 usage(_("A package repository location must be provided "
                     "using -s."), cmd=subcommand)
-        xport, xpub, tmp_dir = setup_transport(conf, subcommand=subcommand)
+        xport, xpub, tmp_dir = setup_transport(conf, subcommand=subcommand,
+            ssl_key=key, ssl_cert=cert)
 
         # Retrieve repository status information.
         stat_idx = xport.get_status(xpub)
@@ -760,8 +776,10 @@ def subcmd_list(conf, args):
         omit_headers = False
         out_format = "default"
         pubs = set()
+        key = None
+        cert = None
 
-        opts, pargs = getopt.getopt(args, "F:Hp:s:")
+        opts, pargs = getopt.getopt(args, "F:Hp:s:", ["key=", "cert="])
         for opt, arg in opts:
                 if opt == "-F":
                         out_format = arg
@@ -777,12 +795,18 @@ def subcmd_list(conf, args):
                         pubs.add(arg)
                 elif opt == "-s":
                         conf["repo_uri"] = parse_uri(arg)
+                elif opt == "--key":
+                        key = arg
+                elif opt == "--cert":
+                        cert = arg
+
 
         # Setup transport so configuration can be retrieved.
         if not conf.get("repo_uri", None):
                 usage(_("A package repository location must be provided "
                     "using -s."), cmd=subcommand)
-        xport, xpub, tmp_dir = setup_transport(conf, subcommand=subcommand)
+        xport, xpub, tmp_dir = setup_transport(conf, subcommand=subcommand,
+            ssl_key=key, ssl_cert=cert)
 
         rval, found, pub_data = _get_matching_pubs(subcommand, pubs, xport,
             xpub, out_format=out_format, use_transport=True)
@@ -914,8 +938,11 @@ def subcmd_rebuild(conf, args):
         subcommand = "rebuild"
         build_catalog = True
         build_index = True
+        key = None
+        cert = None
 
-        opts, pargs = getopt.getopt(args, "p:s:", ["no-catalog", "no-index"])
+        opts, pargs = getopt.getopt(args, "p:s:", ["no-catalog", "no-index",
+            "key=", "cert="])
         pubs = set()
         for opt, arg in opts:
                 if opt == "-p":
@@ -929,6 +956,10 @@ def subcmd_rebuild(conf, args):
                         build_catalog = False
                 elif opt == "--no-index":
                         build_index = False
+                elif opt == "--key":
+                        key = arg
+                elif opt == "--cert":
+                        cert = arg
 
         if pargs:
                 usage(_("command does not take operands"), cmd=subcommand)
@@ -950,7 +981,8 @@ def subcmd_rebuild(conf, args):
                 elif build_index:
                         xport.publish_rebuild_indexes(xpub)
 
-        xport, xpub, tmp_dir = setup_transport(conf, subcommand=subcommand)
+        xport, xpub, tmp_dir = setup_transport(conf, subcommand=subcommand,
+            ssl_key=key, ssl_cert=cert)
         rval, found, pub_data = _get_matching_pubs(subcommand, pubs, xport,
             xpub)
         if rval == EXIT_OOPS:
@@ -970,8 +1002,11 @@ def subcmd_refresh(conf, args):
         subcommand = "refresh"
         add_content = True
         refresh_index = True
+        key = None
+        cert = None
 
-        opts, pargs = getopt.getopt(args, "p:s:", ["no-catalog", "no-index"])
+        opts, pargs = getopt.getopt(args, "p:s:", ["no-catalog", "no-index",
+            "key=", "cert="])
         pubs = set()
         for opt, arg in opts:
                 if opt == "-p":
@@ -985,6 +1020,10 @@ def subcmd_refresh(conf, args):
                         add_content = False
                 elif opt == "--no-index":
                         refresh_index = False
+                elif opt == "--key":
+                        key = arg
+                elif opt == "--cert":
+                        cert = arg
 
         if pargs:
                 usage(_("command does not take operands"), cmd=subcommand)
@@ -1006,7 +1045,8 @@ def subcmd_refresh(conf, args):
                 elif refresh_index:
                         xport.publish_refresh_indexes(xpub)
 
-        xport, xpub, tmp_dir = setup_transport(conf, subcommand=subcommand)
+        xport, xpub, tmp_dir = setup_transport(conf, subcommand=subcommand,
+            ssl_key=key, ssl_cert=cert)
         rval, found, pub_data = _get_matching_pubs(subcommand, pubs, xport,
             xpub)
         if rval == EXIT_OOPS:
@@ -1446,8 +1486,8 @@ def main_func():
         global_settings.client_name = PKG_CLIENT_NAME
 
         try:
-                opts, pargs = getopt.getopt(sys.argv[1:], "s:?",
-                    ["help"])
+                opts, pargs = getopt.getopt(sys.argv[1:], "s:D:?",
+                    ["help", "debug="])
         except getopt.GetoptError, e:
                 usage(_("illegal global option -- %s") % e.opt)
 
@@ -1458,6 +1498,14 @@ def main_func():
                         conf["repo_uri"] = parse_uri(arg)
                 elif opt in ("--help", "-?"):
                         show_usage = True
+                elif opt == "-D" or opt == "--debug":
+                        try:
+                                key, value = arg.split("=", 1)
+                        except (AttributeError, ValueError):
+                                usage(_("%(opt)s takes argument of form "
+                                   "name=value, not %(arg)s") % {
+                                   "opt":  opt, "arg": arg })
+                        DebugValues.set_value(key, value)
 
         subcommand = None
         if pargs:

@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2008, 2012, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2008, 2013, Oracle and/or its affiliates. All rights reserved.
 #
 
 import calendar
@@ -92,7 +92,8 @@ def usage(usage_error=None, retcode=2):
         msg(_("""\
 Usage:
         pkgrecv [-s src_uri] [-a] [-d (path|dest_uri)] [-c cache_dir]
-            [-kr] [-m match] [-n] [--raw] [--key keyfile --cert certfile]
+            [-kr] [-m match] [-n] [--raw] [--key src_key --cert src_cert]
+            [--dkey dest_key --dcert dest_cert]
             (fmri|pattern) ...
         pkgrecv [-s src_repo_uri] --newest
 
@@ -145,10 +146,16 @@ Options:
                         perhaps by correcting file contents or providing
                         additional package metadata.
 
-        --key keyfile   Specify a client SSL key file to use for pkg retrieval.
+        --key src_key   Specify a client SSL key file to use for pkg retrieval.
 
-        --cert certfile Specify a client SSL certificate file to use for pkg
+        --cert src_cert Specify a client SSL certificate file to use for pkg
                         retrieval.
+
+        --dkey dest_key Specify a client SSL key file to use for pkg
+                        publication.
+
+        --dcert dest_cert Specify a client SSL certificate file to use for pkg
+                          publication.
 
 Environment:
         PKG_DEST        Destination directory or URI
@@ -357,6 +364,8 @@ def main_func():
         raw = False
         key = None
         cert = None
+        dkey = None
+        dcert = None
 
         temp_root = misc.config_temp_root()
 
@@ -369,7 +378,7 @@ def main_func():
 
         try:
                 opts, pargs = getopt.getopt(sys.argv[1:], "ac:D:d:hkm:nrs:",
-                    ["cert=", "key=", "newest", "raw"])
+                    ["cert=", "key=", "dcert=", "dkey=", "newest", "raw", "debug="])
         except getopt.GetoptError, e:
                 usage(_("Illegal option -- %s") % e.opt)
 
@@ -380,7 +389,7 @@ def main_func():
                         cache_dir = arg
                 elif opt == "-d":
                         target = arg
-                elif opt == "-D":
+                elif opt == "-D" or opt == "--debug":
                         if arg in ["plan", "transport"]:
                                 key = arg
                                 value = "True"
@@ -417,6 +426,10 @@ def main_func():
                         key = arg
                 elif opt == "--cert":
                         cert = arg
+                elif opt == "--dkey":
+                        dkey = arg
+                elif opt == "--dcert":
+                        dcert = arg
 
         if not list_newest and not target:
                 usage(_("a destination must be provided"))
@@ -456,7 +469,7 @@ def main_func():
 
         args = (pargs, target, list_newest, all_versions,
             all_timestamps, keep_compressed, raw, recursive, dry_run,
-            dest_xport_cfg, src_uri)
+            dest_xport_cfg, src_uri, dkey, dcert)
 
         if archive:
                 # Retrieving package data for archival requires a different mode
@@ -519,7 +532,8 @@ def get_matches(src_pub, tracker, xport, pargs, any_unmatched, any_matched,
         return matches
 
 def archive_pkgs(pargs, target, list_newest, all_versions, all_timestamps,
-    keep_compresed, raw, recursive, dry_run, dest_xport_cfg, src_uri):
+    keep_compresed, raw, recursive, dry_run, dest_xport_cfg, src_uri, dkey,
+    dcert):
         """Retrieve source package data completely and then archive it."""
 
         global cache_dir, download_start, xport, xport_cfg
@@ -668,7 +682,8 @@ def archive_pkgs(pargs, target, list_newest, all_versions, all_timestamps,
         return pkgdefs.EXIT_OK
 
 def transfer_pkgs(pargs, target, list_newest, all_versions, all_timestamps,
-    keep_compressed, raw, recursive, dry_run, dest_xport_cfg, src_uri):
+    keep_compressed, raw, recursive, dry_run, dest_xport_cfg, src_uri, dkey,
+    dcert):
         """Retrieve source package data and optionally republish it as each
         package is retrieved.
         """
@@ -714,7 +729,8 @@ def transfer_pkgs(pargs, target, list_newest, all_versions, all_timestamps,
 
                         # Setup target for transport.
                         targ_pub = transport.setup_publisher(target,
-                            src_pub.prefix, dest_xport, dest_xport_cfg)
+                            src_pub.prefix, dest_xport, dest_xport_cfg,
+                            ssl_key=dkey, ssl_cert=dcert)
 
                         # Files have to be decompressed for republishing.
                         keep_compressed = False
@@ -854,7 +870,8 @@ def transfer_pkgs(pargs, target, list_newest, all_versions, all_timestamps,
                         if not targ_pub:
                                 targ_pub = transport.setup_publisher(target,
                                     src_pub.prefix, dest_xport, dest_xport_cfg,
-                                    remote_prefix=True)
+                                    remote_prefix=True, ssl_key=dkey,
+                                    ssl_cert=dcert)
 
                         try:
                                 t = trans.Transaction(target, pkg_name=pkg_name,

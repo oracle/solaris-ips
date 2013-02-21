@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2008, 2012, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2008, 2013, Oracle and/or its affiliates. All rights reserved.
 #
 
 import testutils
@@ -785,6 +785,152 @@ class TestPkgrecvMulti(pkg5unittest.ManyDepotTestCase):
 
                 for duri, arg_string, in dest_uris:
                         __test_rec(duri, arg_string, self.published[4:7])
+
+
+class TestPkgrecvHTTPS(pkg5unittest.HTTPSTestClass):
+
+        example_pkg10 = """
+            open example_pkg@1.0,5.11-0
+            add file tmp/example_file mode=0555 owner=root group=bin path=/usr/bin/example_path
+            close"""
+
+        misc_files = ["tmp/example_file", "tmp/empty", "tmp/verboten"]
+
+        def setUp(self):
+                pubs = ["src", "dst"]
+
+                pkg5unittest.HTTPSTestClass.setUp(self, pubs,
+                    start_depots=True)
+                
+                self.srurl = self.dcs[1].get_repo_url()
+                self.make_misc_files(self.misc_files)
+                self.pkgsend_bulk(self.srurl, self.example_pkg10)
+
+                self.surl = self.ac.url + "/%s" % pubs[0]
+                self.durl = self.ac.url + "/%s" % pubs[1]
+
+                #set permissions of tmp/verboten to make it non-readable
+                self.verboten = os.path.join(self.test_root, "tmp/verboten")
+                os.system("chmod 600 %s" % self.verboten) 
+                
+
+        def test_01_basics(self):
+                """Test that transfering a package from an https repo to
+                another https repo works"""
+
+                self.ac.start()
+
+                arg_dict = {
+                    "cert": os.path.join(self.cs_dir, self.get_cli_cert("src")),
+                    "key": os.path.join(self.keys_dir, self.get_cli_key("src")),
+                    "dst": self.durl,
+                    "dcert": os.path.join(self.cs_dir, self.get_cli_cert("dst")),
+                    "dkey": os.path.join(self.keys_dir, self.get_cli_key("dst")),
+                    "pkg": "example_pkg@1.0,5.11-0",
+                    "empty": os.path.join(self.test_root, "tmp/empty"),
+                    "noexist": os.path.join(self.test_root, "octopus"),
+                    "verboten": self.verboten,
+                }
+
+                # We need an image for seed_ta_dir() to work.
+                # TODO: there might be a cleaner way of doing this
+                self.image_create()
+                # Add the trust anchor needed to verify the server's identity.
+                self.seed_ta_dir("ta7")
+
+                # We try to receive a pkg from a secured repo and publish it to
+                # another secured repo where both repos require different
+                # credentials
+                self.pkgrecv(self.surl, "--key %(key)s --cert %(cert)s "
+                    "-d %(dst)s --dkey %(dkey)s --dcert %(dcert)s "
+                    "%(pkg)s" % arg_dict)
+
+                # Now try to use the same credentials for source and dest.
+                # This should fail.
+                self.pkgrecv(self.surl, "--key %(key)s --cert %(cert)s "
+                    "-d %(dst)s --dkey %(key)s --dcert %(cert)s "
+                    "%(pkg)s" % arg_dict, exit=1)
+
+                # Make sure we don't traceback when credential files are invalid
+                # Src certificate option missing
+                self.pkgrecv(self.surl, "--key %(key)s -d %(dst)s "
+                    "--dkey %(dkey)s --dcert %(dcert)s "
+                    "%(pkg)s" % arg_dict, exit=1)
+
+                # Dst certificate option missing
+                self.pkgrecv(self.surl, "--key %(key)s --cert %(cert)s "
+                    "-d %(dst)s --dkey %(dkey)s "
+                    "%(pkg)s" % arg_dict, exit=1)
+
+                # Src key option missing
+                self.pkgrecv(self.surl, "--cert %(cert)s "
+                    "-d %(dst)s --dkey %(dkey)s --dcert %(dcert)s "
+                    "%(pkg)s" % arg_dict, exit=1)
+
+                # Dst key option missing
+                self.pkgrecv(self.surl, "--key %(key)s --cert %(cert)s "
+                    "-d %(dst)s --dcert %(dcert)s "
+                    "%(pkg)s" % arg_dict, exit=1)
+
+                # Src certificate not found
+                self.pkgrecv(self.surl, "--key %(key)s --cert %(noexist)s "
+                    "-d %(dst)s --dkey %(dkey)s --dcert %(dcert)s "
+                    "%(pkg)s" % arg_dict, exit=1)
+
+                # Dst certificate not found
+                self.pkgrecv(self.surl, "--key %(key)s --cert %(cert)s "
+                    "-d %(dst)s --dkey %(dkey)s --dcert %(noexist)s "
+                    "%(pkg)s" % arg_dict, exit=1)
+
+                # Src key not found
+                self.pkgrecv(self.surl, "--key %(noexist)s --cert %(cert)s "
+                    "-d %(dst)s --dkey %(dkey)s --dcert %(dcert)s "
+                    "%(pkg)s" % arg_dict, exit=1)
+
+                # Dst key not found
+                self.pkgrecv(self.surl, "--key %(key)s --cert %(cert)s "
+                    "-d %(dst)s --dkey %(noexist)s --dcert %(dcert)s "
+                    "%(pkg)s" % arg_dict, exit=1)
+
+                # Src certificate is empty file
+                self.pkgrecv(self.surl, "--key %(key)s --cert %(empty)s "
+                    "-d %(dst)s --dkey %(dkey)s --dcert %(dcert)s "
+                    "%(pkg)s" % arg_dict, exit=1)
+
+                # Dst certificate is empty file
+                self.pkgrecv(self.surl, "--key %(key)s --cert %(cert)s "
+                    "-d %(dst)s --dkey %(dkey)s --dcert %(empty)s "
+                    "%(pkg)s" % arg_dict, exit=1)
+
+                # Src key is empty file
+                self.pkgrecv(self.surl, "--key %(empty)s --cert %(cert)s "
+                    "-d %(dst)s --dkey %(dkey)s --dcert %(dcert)s "
+                    "%(pkg)s" % arg_dict, exit=1)
+
+                # Dst key is empty file
+                self.pkgrecv(self.surl, "--key %(key)s --cert %(cert)s "
+                    "-d %(dst)s --dkey %(empty)s --dcert %(dcert)s "
+                    "%(pkg)s" % arg_dict, exit=1)
+                
+                # No permissions to read src certificate 
+                self.pkgrecv(self.surl, "--key %(key)s --cert %(verboten)s "
+                    "-d %(dst)s --dkey %(dkey)s --dcert %(dcert)s "
+                    "%(pkg)s" % arg_dict, su_wrap=True, exit=1)
+
+                # No permissions to read dst certificate 
+                self.pkgrecv(self.surl, "--key %(key)s --cert %(cert)s "
+                    "-d %(dst)s --dkey %(dkey)s --dcert %(verboten)s "
+                    "%(pkg)s" % arg_dict, su_wrap=True, exit=1)
+
+                # No permissions to read src key 
+                self.pkgrecv(self.surl, "--key %(verboten)s --cert %(cert)s "
+                    "-d %(dst)s --dkey %(dkey)s --dcert %(dcert)s "
+                    "%(pkg)s" % arg_dict, su_wrap=True, exit=1)
+
+                # No permissions to read dst key 
+                self.pkgrecv(self.surl, "--key %(key)s --cert %(cert)s "
+                    "-d %(dst)s --dkey %(verboten)s --dcert %(dcert)s "
+                    "%(pkg)s" % arg_dict, su_wrap=True, exit=1)
 
 
 if __name__ == "__main__":
