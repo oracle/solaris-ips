@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2009, 2012, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2009, 2013, Oracle and/or its affiliates. All rights reserved.
 #
 
 import getopt
@@ -47,11 +47,11 @@ def usage(errmsg="", exitcode=2):
 
         print _("""\
 Usage:
-        pkgdiff [-i attribute ...] [-o attribute] [-v variant=value ...]
-            file1 file2""")
+        pkgdiff [-i attribute ...] [-o attribute] [-v name=value ...]
+            (file1 | -) (file2 | -)""")
         sys.exit(exitcode)
 
-def error(text, exitcode=1):
+def error(text, exitcode=3):
         """Emit an error message prefixed by the command name """
 
         print >> sys.stderr, "pkgdiff: %s" % text
@@ -68,7 +68,7 @@ def main_func():
         varattrs = defaultdict(set)
 
         try:
-                opts, pargs = getopt.getopt(sys.argv[1:], "i:o:v:", ["help"])
+                opts, pargs = getopt.getopt(sys.argv[1:], "i:o:v:?", ["help"])
                 for opt, arg in opts:
                         if opt == "-i":
                                 ignoreattrs.append(arg)
@@ -88,7 +88,10 @@ def main_func():
                 usage(_("illegal global option -- %s") % e.opt)
 
         if len(pargs) != 2:
-                usage(_("two file arguments are required."))
+                usage(_("two manifest arguments are required"))
+
+        if (pargs[0] == "-" and pargs[1] == "-"):
+                usage(_("only one manifest argument can be stdin"))
 
         if ignoreattrs and onlyattrs:
                 usage(_("-i and -o options may not be used at the same time."))
@@ -104,8 +107,12 @@ def main_func():
         manifest1 = manifest.Manifest()
         manifest2 = manifest.Manifest()
         try:
+                # This assumes that both pargs are not '-'.
                 for p, m in zip(pargs, (manifest1, manifest2)):
-                        m.set_content(pathname=p)
+                        if p == "-":
+                                m.set_content(content=sys.stdin.read())
+                        else:
+                                m.set_content(pathname=p)
         except (pkg.actions.ActionError, apx.InvalidPackageErrors), e:
                 error(_("Action error in file %(p)s: %(e)s") % locals())
         except (EnvironmentError, apx.ApiException), e:

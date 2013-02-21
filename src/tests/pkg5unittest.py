@@ -2384,6 +2384,12 @@ class CliTestCase(Pkg5TestCase):
                 return self.cmdline_run(cmdline, comment=comment, exit=exit,
                     su_wrap=su_wrap, env_arg=env_arg)
 
+        def pkgdiff(self, command, comment="", exit=0, su_wrap=False,
+            env_arg=None, stderr=False, out=False):
+                cmdline = "%s/usr/bin/pkgdiff %s" % (g_proto_area, command)
+                return self.cmdline_run(cmdline, comment=comment, exit=exit,
+                    su_wrap=su_wrap, env_arg=env_arg, out=out, stderr=stderr)
+
         def pkgfmt(self, args, exit=0, su_wrap=False, env_arg=None):
                 cmd="%s/usr/bin/pkgfmt %s" % (g_proto_area, args)
                 self.cmdline_run(cmd, exit=exit, su_wrap=su_wrap,
