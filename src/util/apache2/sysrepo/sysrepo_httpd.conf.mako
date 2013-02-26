@@ -5,7 +5,6 @@
 #
 </%doc>
 <%
-      import os.path
       context.write("""
 #
 # This is an automatically generated file for the IPS system publisher, and
@@ -282,7 +281,7 @@ ProxyRemote https ${https_proxy}
        # </%doc>
 % if http_proxy == None and https_proxy == None:
         % for uri in reversed(sorted(uri_pub_map.keys())):
-                % for pub, cert_path, key_path, hash, proxy in uri_pub_map[uri]:
+                % for pub, cert_path, key_path, hash, proxy, utype in uri_pub_map[uri]:
 <%
                         if proxy:
                                 context.write(
@@ -363,7 +362,7 @@ SSLProxyProtocol all
 </%doc>
 
 % for uri in reversed(sorted(uri_pub_map.keys())):
-        % for pub, cert_path, key_path, hash, proxy in uri_pub_map[uri]:
+        % for pub, cert_path, key_path, hash, proxy, utype in uri_pub_map[uri]:
 <%doc>
                 # for any https publishers, we want to allow proxy clients
                 # access the repos using the key/cert from the sysrepo
@@ -387,8 +386,7 @@ SSLProxyProtocol all
                         context.write("RewriteRule ^/%(pub)s/%(hash)s/publisher/0 "
                             "%%{DOCUMENT_ROOT}/%(pub)s/%(hash)s/publisher/0/index.html [L,NE]\n" % locals())
                         # A p5p archive repository
-                        if os.path.isfile(uri.replace("file:", "")):
-
+                        if utype == "file":
                                 repo_path = "/%s" % uri.replace("file:", "").lstrip("/")
                                 context.write("# %s %s\n" % (uri, hash))
                                 # We 'passthrough' (PT), letting our
@@ -459,11 +457,11 @@ SSLProxyProtocol all
 % endfor uri
 
 % for uri in reversed(sorted(uri_pub_map.keys())):
-        % for pub, cert_path, key_path, hash, proxy in uri_pub_map[uri]:
+        % for pub, cert_path, key_path, hash, proxy, utype in uri_pub_map[uri]:
                 <%doc>
                 # Create an alias for the file repository under ${pub}
                 </%doc>
-                % if uri.startswith("file:") and os.path.isdir(uri.replace("file:", "")):
+                % if uri.startswith("file:") and utype == "dir":
 <%
                       repo_path = "/%s" % uri.replace("file:", "").lstrip("/")
                       context.write("# a file repository alias to serve %(uri)s content.\n"

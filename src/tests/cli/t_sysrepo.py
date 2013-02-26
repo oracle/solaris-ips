@@ -46,6 +46,7 @@ import sys
 import time
 import StringIO
 
+import pkg.misc as misc
 import pkg.portable as portable
 
 SYSREPO_USER = "pkg5srv"
@@ -832,6 +833,28 @@ class TestDetailedSysrepoCli(pkg5unittest.ApacheDepotTestCase):
                 self.sysrepo("", stderr=True)
                 self.assert_("Unable to load config" not in self.output)
                 self.assert_("Unable to store config" not in self.output)
+
+                # check that when a file-repository is inaccessible, the
+                # sysrepo_httpd.conf generated from the cache remains identical
+                self.pkg("set-publisher -g %s test1" % self.rurl1)
+                self.sysrepo("", stderr=True)
+                saved_sysrepo_conf = os.path.join(self.test_root,
+                    "test_16_config_cache_sysrepo_httpd.conf.old")
+                os.rename(sysrepo_conf, saved_sysrepo_conf)
+                # Make the file repository inaccessible (simulating eg. an
+                # offline NFS server)
+                # We should still be able to generate the same sysrepo config
+                # using our cached information.
+                repo_dir = self.dcs[1].get_repodir()
+                os.rename(repo_dir, repo_dir + ".new")
+                try:
+                        self.sysrepo("", stderr=True)
+                        self.assert_(misc.get_data_digest(sysrepo_conf)[0] ==
+                            misc.get_data_digest(saved_sysrepo_conf)[0],
+                            "system repository configuration changed "
+                            "unexpectedly.")
+                finally:
+                        os.rename(repo_dir + ".new", repo_dir)
 
         def test_17_proxy(self):
                 """ Ensure that the system repository can proxy access
