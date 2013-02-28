@@ -1,0 +1,72 @@
+#!/usr/bin/ksh -p
+#
+# CDDL HEADER START
+#
+# The contents of this file are subject to the terms of the
+# Common Development and Distribution License (the "License").
+# You may not use this file except in compliance with the License.
+#
+# You can obtain a copy of the license at usr/src/OPENSOLARIS.LICENSE
+# or http://www.opensolaris.org/os/licensing.
+# See the License for the specific language governing permissions
+# and limitations under the License.
+#
+# When distributing Covered Code, include this CDDL HEADER in each
+# file and include the License file at usr/src/OPENSOLARIS.LICENSE.
+# If applicable, add the following below this CDDL HEADER, with the
+# fields enclosed by brackets "[]" replaced with your own identifying
+# information: Portions Copyright [yyyy] [name of copyright owner]
+#
+# CDDL HEADER END
+#
+# Copyright (c) 2013 Oracle and/or its affiliates.  All rights reserved.
+#
+
+# Load SMF constants and functions
+. /lib/svc/share/smf_include.sh
+. /lib/svc/share/fs_include.sh
+. /lib/svc/share/pkg5_include.sh
+
+CHOWN=/usr/bin/chown
+ZFS=/usr/sbin/zfs
+
+result=$SMF_EXIT_ERR_FATAL
+
+case "$1" in
+'start')
+	# check if we already have a mounted /var/share/pkg/repositories
+	readmnttab /var/share/pkg/repositories < /etc/mnttab
+	if [ "$fstype" = zfs ] ; then
+		exit $SMF_EXIT_OK
+	else
+		rootistmpmnt=0
+		readmnttab / < /etc/mnttab
+		if [ "$fstype" = zfs ] ; then
+			#
+			# $special gets set by readmnttab in
+			# /lib/svc/share/fs_include.sh
+			#
+			be=$special
+			rpool=$(print $be | cut -d / -f1)			
+		else
+			# we're on a LiveCD, so exit immediately.
+			exit $SMF_EXIT_OK
+		fi
+		DS="$rpool/VARSHARE/pkg/repositories"
+		$ZFS create -p $DS
+		check_failure $? "Unable to create $DS" $SMF_FMRI exit
+
+		$ZFS allow pkg5srv create,mount,snapshot "$DS"
+		check_failure $? \
+		    "Unable to delegate ZFS permissions on $DS" \
+		    $SMF_FMRI exit
+
+		$CHOWN pkg5srv:pkg5srv /var/share/pkg/repositories
+		check_failure $? \
+		    "Unable to chown /var/share/pkg/repositories" \
+		    $SMF_FMRI exit
+	fi
+	;;
+esac
+
+exit $SMF_EXIT_OK

@@ -18,7 +18,7 @@
 #
 # CDDL HEADER END
 #
-# Copyright (c) 2010, 2012, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2010, 2013, Oracle and/or its affiliates. All rights reserved.
 #
 
 set name=pkg.fmri value=pkg:/package/pkg/update-manager@$(PKGVERS)
@@ -42,7 +42,7 @@ dir  path=lib/svc/manifest/application
 dir  path=lib/svc/manifest/application/pkg
 file path=lib/svc/manifest/application/pkg/pkg-update.xml
 dir  path=lib/svc/method
-file path=lib/svc/method/pkg-update
+file path=lib/svc/method/svc-pkg-update
 dir  path=usr
 dir  path=usr/bin
 file path=usr/bin/pm-updatemanager

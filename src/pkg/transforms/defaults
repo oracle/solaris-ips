@@ -18,14 +18,18 @@
 #
 # CDDL HEADER END
 #
-# Copyright (c) 2010, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2010, 2013 Oracle and/or its affiliates. All rights reserved.
 #
 
 # Set some specific permissions
 <transform dir path=(etc|usr|var)$ -> set group sys>
-<transform dir path=etc/(brand|gconf|pkg|zones)$ -> set group sys>
+<transform dir path=etc/(brand|gconf|pkg|user_attr.d|zones)$ -> set group sys>
 <transform dir path=var/log$ -> set group sys>
+<transform dir path=var/log/pkg/mirror -> set group pkg5srv>
+<transform dir path=var/log/pkg/mirror -> set owner pkg5srv>
 <transform dir path=var/cache$ -> set group bin>
+<transform dir path=var/cache/pkg/mirror -> set group pkg5srv>
+<transform dir path=var/cache/pkg/mirror -> set owner pkg5srv>
 <transform dir file path=etc/gconf/schemas -> set group sys>
 <transform dir file path=etc/(security|xdg) -> set group sys>
 <transform dir path=usr/share$ -> set group sys>

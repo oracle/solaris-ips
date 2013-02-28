@@ -105,6 +105,7 @@ py_install_dir = 'usr/lib/python2.6/vendor-packages'
 scripts_dir = 'usr/bin'
 lib_dir = 'usr/lib'
 svc_method_dir = 'lib/svc/method'
+svc_share_dir = 'lib/svc/share'
 
 man1_dir = 'usr/share/man/man1'
 man1m_dir = 'usr/share/man/man1m'
@@ -121,6 +122,7 @@ transform_dir = 'usr/share/pkg/transforms'
 smf_app_dir = 'lib/svc/manifest/application/pkg'
 execattrd_dir = 'etc/security/exec_attr.d'
 authattrd_dir = 'etc/security/auth_attr.d'
+userattrd_dir = 'etc/user_attr.d'
 sysrepo_dir = 'etc/pkg/sysrepo'
 sysrepo_logs_dir = 'var/log/pkg/sysrepo'
 sysrepo_cache_dir = 'var/cache/pkg/sysrepo'
@@ -138,6 +140,8 @@ um_lib_dir = 'usr/lib/update-manager'
 um_share_dir = 'usr/share/update-manager'
 pm_share_dir = 'usr/share/package-manager'
 locale_dir = 'usr/share/locale'
+mirror_logs_dir = 'var/log/pkg/mirror'
+mirror_cache_dir = 'var/cache/pkg/mirror'
 
 
 # A list of source, destination tuples of modules which should be hardlinked
@@ -172,11 +176,17 @@ scripts_sunos = {
                 ['um/update-refresh.sh', 'update-refresh.sh'],
         ],
         svc_method_dir: [
-                ['svc/svc-pkg-server', 'svc-pkg-server'],
-                ['svc/svc-pkg-mdns', 'svc-pkg-mdns'],
-                ['svc/svc-pkg-sysrepo', 'svc-pkg-sysrepo'],
                 ['svc/svc-pkg-depot', 'svc-pkg-depot'],
-                ['um/pkg-update', 'pkg-update'],
+                ['svc/svc-pkg-mdns', 'svc-pkg-mdns'],
+                ['svc/svc-pkg-mirror', 'svc-pkg-mirror'],
+                ['svc/svc-pkg-repositories-setup',
+                    'svc-pkg-repositories-setup'],
+                ['svc/svc-pkg-server', 'svc-pkg-server'],
+                ['svc/svc-pkg-sysrepo', 'svc-pkg-sysrepo'],
+                ['svc/svc-pkg-update', 'svc-pkg-update'],
+                ],
+        svc_share_dir: [
+                ['svc/pkg5_include.sh', 'pkg5_include.sh'],
                 ],
         }
 
@@ -349,9 +359,11 @@ for entry in os.walk("web"):
 smf_app_files = [
         'svc/pkg-depot.xml',
         'svc/pkg-mdns.xml',
+        'svc/pkg-mirror.xml',
+        'svc/pkg-repositories-setup.xml',
         'svc/pkg-server.xml',
-        'svc/pkg-update.xml',
         'svc/pkg-system-repository.xml',
+        'svc/pkg-update.xml',
         'svc/zoneproxy-client.xml',
         'svc/zoneproxyd.xml'
         ]
@@ -393,6 +405,7 @@ execattrd_files = [
         'util/misc/exec_attr.d/package:pkg:package-manager'
 ]
 authattrd_files = ['util/misc/auth_attr.d/package:pkg']
+userattrd_files = ['util/misc/user_attr.d/package:pkg']
 autostart_files = [
         'um/data/updatemanagernotifier.desktop',
 ]
@@ -1588,6 +1601,7 @@ if osname == 'sunos':
                 (smf_app_dir, smf_app_files),
                 (execattrd_dir, execattrd_files),
                 (authattrd_dir, authattrd_files),
+                (userattrd_dir, userattrd_files),
                 (sysrepo_dir, sysrepo_files),
                 (sysrepo_logs_dir, sysrepo_log_stubs),
                 (sysrepo_cache_dir, {}),
@@ -1603,6 +1617,8 @@ if osname == 'sunos':
                     ['gui/data/gnome-mime-application-vnd.pkg5.info.png']),
                 ('usr/share/mime/packages', ['gui/data/packagemanager-info.xml']),
                 (pm_share_dir, ['gui/data/packagemanager.ui']),
+                (mirror_cache_dir, {}),
+                (mirror_logs_dir, {}),
                 ]
         data_files += [
             (os.path.join(startpage_dir, locale), files)
