@@ -226,7 +226,7 @@ case "$1" in
 	cmd="start"
 	run_depot
 	# drop privileges now that we've written our configuration
-	/usr/bin/ppriv -s E=basic,net_privaddr
+	/usr/bin/ppriv -s E=basic,net_privaddr $$
 	run_htcacheclean
         emsg=$(/usr/bin/printf ${FAILED_TO_RUN} start)
 	${HTTPD} -f ${depot_runtime_dir}/depot_httpd.conf \
@@ -238,7 +238,7 @@ case "$1" in
 	cmd="graceful"
 	run_depot
 	# drop privileges now that we've written our configuration
-	/usr/bin/ppriv -s E=basic,net_privaddr
+	/usr/bin/ppriv -s E=basic,net_privaddr $$
 	kill_htcacheclean
 	run_htcacheclean
         emsg=$(/usr/bin/printf ${FAILED_TO_RUN} refresh)
