@@ -102,11 +102,11 @@ Control matching behavior using the following values:
 .ne 2
 .mk
 .na
-\fB\fBall-timestamps\fR\fR
+\fB\fBall-timestamps (default)\fR\fR
 .ad
 .sp .6
 .RS 4n
-Includes all matching timestamps, not just the latest (implies \fBall-versions\fR).
+Includes all matching timestamps (implies \fBall-versions\fR).
 .RE
 
 .sp
@@ -117,7 +117,18 @@ Includes all matching timestamps, not just the latest (implies \fBall-versions\f
 .ad
 .sp .6
 .RS 4n
-Includes all matching versions, not just the latest.
+Includes all matching versions.
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fBlatest\fR\fR
+.ad
+.sp .6
+.RS 4n
+Includes only the latest version of each package.
 .RE
 
 .RE

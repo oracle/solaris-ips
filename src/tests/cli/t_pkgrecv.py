@@ -458,6 +458,48 @@ class TestPkgrecvMulti(pkg5unittest.ManyDepotTestCase):
                             "manifest")
                         self.assertTrue(os.path.isfile(mpath))
 
+                # Cleanup for next test.
+                shutil.rmtree(os.path.join(self.tempdir, "bronze"))
+
+                # Retrieve bronze using -m latest, this should only
+                # retrieve bronze20_2.
+                self.pkgrecv(self.durl1, "--raw -m latest -r -k "
+                    "-d %s %s" % (self.tempdir, "bronze"))
+
+                # Verify that only expected packages were retrieved.
+                expected = [
+                    bronze20_2.get_dir_path(),
+                ]
+
+                for d in os.listdir(os.path.join(self.tempdir, "bronze")):
+                        self.assertTrue(os.path.join("bronze", d) in expected)
+
+                        mpath = os.path.join(self.tempdir, "bronze", d,
+                            "manifest")
+                        self.assertTrue(os.path.isfile(mpath))
+
+                # Cleanup for next test.
+                shutil.rmtree(os.path.join(self.tempdir, "bronze"))
+
+                # Retrieve bronze using default setting.
+                # This should retrieve bronze10, bronze20_1, and bronze20_2.
+                self.pkgrecv(self.durl1, "--raw -r -k "
+                    "-d %s %s" % (self.tempdir, "bronze"))
+
+                # Verify that all expected packages were retrieved.
+                expected = [
+                    bronze10.get_dir_path(),
+                    bronze20_1.get_dir_path(),
+                    bronze20_2.get_dir_path(),
+                ]
+
+                for d in expected:
+                        paths = os.listdir(os.path.join(self.tempdir, "bronze"))
+                        self.assertTrue(os.path.basename(d) in paths)
+
+                        mpath = os.path.join(self.tempdir, d, "manifest")
+                        self.assertTrue(os.path.isfile(mpath))
+
         def test_5_recv_env(self):
                 """Verify that pkgrecv environment vars work as expected."""
 

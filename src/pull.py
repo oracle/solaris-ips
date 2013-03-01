@@ -120,11 +120,13 @@ Options:
                         when republishing.  Should not be used with pkgsend.
 
         -m match        Controls matching behaviour using the following values:
-                            all-timestamps
-                                includes all matching timestamps, not just
-                                latest (implies all-versions)
+                            all-timestamps (default)
+                                includes all matching timestamps (implies 
+                                all-versions)
                             all-versions
-                                includes all matching versions, not just latest
+                                includes all matching versions
+                            latest
+                                includes only the latest version of each package
 
         -n              Perform a trial run with no changes made.
 
@@ -352,7 +354,7 @@ def main_func():
         global archive, cache_dir, download_start, xport, xport_cfg, \
             dest_xport, temp_root, targ_pub, target
 
-        all_timestamps = False
+        all_timestamps = True
         all_versions = False
         dry_run = False
         keep_compressed = False
@@ -408,8 +410,13 @@ def main_func():
                 elif opt == "-m":
                         if arg == "all-timestamps":
                                 all_timestamps = True
+                                all_versions = False
                         elif arg == "all-versions":
+                                all_timestamps = False
                                 all_versions = True
+                        elif arg == "latest":
+                                all_timestamps = False
+                                all_versions = False
                         else:
                                 usage(_("Illegal option value -- %s") % arg)
                 elif opt == "-n":
