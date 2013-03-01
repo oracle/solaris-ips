@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2008, 2012, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2008, 2013, Oracle and/or its affiliates. All rights reserved.
 #
 
 import testutils
@@ -2077,6 +2077,15 @@ class TestPkgInstallUpgrade(pkg5unittest.SingleDepotTestCase):
             close
         """
 
+        linkpreserve = """
+            open linkpreserve@1.0
+            add file tmp/preserve1 path=etc/ssh/sshd_config mode=0644 owner=root group=root preserve=true
+            close
+            open linkpreserve@2.0
+            add file tmp/preserve2 path=etc/sunssh/sshd_config mode=0644 owner=root group=root preserve=true original_name=linkpreserve:etc/ssh/sshd_config
+            add link path=etc/ssh/sshd_config target=../sunssh/sshd_config
+            close """
+
         salvage = """
             open salvage@1.0
             add dir path=var mode=755 owner=root group=root
@@ -2982,6 +2991,42 @@ adm
                                         # Only want actions with matching path.
                                         continue
                                 self.validate_fsobj_attrs(a, target=dest)
+
+        def test_link_preserve(self):
+                """Ensure that files transitioning to a link still follow
+                original_name preservation rules."""
+
+                self.pkgsend_bulk(self.rurl, (self.linkpreserve))
+                self.image_create(self.rurl, destroy=True, fs=("var",))
+
+                # Install package with original config file location.
+                self.pkg("install linkpreserve@1.0")
+                cfg_path = os.path.join("etc", "ssh", "sshd_config")
+                abs_path = os.path.join(self.get_img_path(), cfg_path)
+
+                self.file_exists(cfg_path)
+                self.assert_(not os.path.islink(abs_path))
+
+                # Modify the file.
+                self.file_append(cfg_path, "modified")
+
+                # Install new package version, verify file replaced with link
+                # and modified version was moved to new location.
+                new_cfg_path = os.path.join("etc", "sunssh", "sshd_config")
+                self.pkg("update linkpreserve@2.0")
+                self.assert_(os.path.islink(abs_path))
+                self.file_exists(new_cfg_path)
+                self.file_contains(new_cfg_path, "modified")
+
+                # Uninstall, then install original version again.
+                self.pkg("uninstall linkpreserve")
+                self.pkg("install linkpreserve@1.0")
+                self.file_contains(cfg_path, "preserve1")
+
+                # Install new package version and verify that unmodified file is
+                # replaced with new configuration file.
+                self.pkg("update linkpreserve@2.0")
+                self.file_contains(new_cfg_path, "preserve2")
 
 
 class TestPkgInstallActions(pkg5unittest.SingleDepotTestCase):
