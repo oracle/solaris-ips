@@ -41,6 +41,7 @@ import pkg.version as version
 
 from pkg.misc import EmptyDict, EmptyI, expanddirs, PKG_FILE_MODE, PKG_DIR_MODE
 from pkg.actions.attribute import AttributeAction
+from pkg.actions.directory import DirectoryAction
 
 class ManifestDifference(
     namedtuple("ManifestDifference", "added changed removed")):
@@ -328,9 +329,8 @@ class Manifest(object):
                 dirs = self._actions_to_dict(gen_references)
                 for d in dirs:
                         for v in dirs[d]:
-                                yield "dir path=%s %s\n" % \
-                                    (d, " ".join("%s=%s" % t \
-                                    for t in v.iteritems()))
+                                a = DirectoryAction(path=d, **v)
+                                yield str(a) + "\n"
 
         def _gen_mediators_to_str(self):
                 """Generate contents of mediatorcache file containing all
@@ -1148,28 +1148,39 @@ class FactoredManifest(Manifest):
                 """
 
                 mpath = self.__cache_path(name)
-                if not os.path.exists(mpath):
-                        # no cached copy
-                        if not self.loaded:
-                                # need to load from disk
-                                self.__load()
-                        assert self.loaded
-                        return
+                if os.path.exists(mpath):
+                        # we have cached copy on disk; use it
+                        try:
+                                with open(mpath, "rb") as f:
+                                        self._cache[name] = [
+                                            a for a in
+                                            (
+                                                actions.fromstr(s.rstrip())
+                                                for s in f
+                                            )
+                                            if not self.excludes or
+                                                a.include_this(self.excludes)
+                                        ]
+                                return
+                        except EnvironmentError, e:
+                                raise apx._convert_error(e)
+                        except actions.ActionError, e:
+                                # Cache file is malformed; hopefully due to bugs
+                                # that have been resolved (as opposed to actual
+                                # corruption).  Assume we should just ignore the
+                                # cache and load action data.
+                                try:
+                                        self.clear_cache(self.__cache_root)
+                                except Exception, e:
+                                        # Ignore errors encountered during cache
+                                        # dump for this specific case.
+                                        pass
 
-                # we have cached copy on disk; use it
-                try:
-                        with open(mpath, "rb") as f:
-                                self._cache[name] = [
-                                    a for a in
-                                    (
-                                        actions.fromstr(s.rstrip())
-                                        for s in f
-                                    )
-                                    if not self.excludes or
-                                        a.include_this(self.excludes)
-                                ]
-                except EnvironmentError, e:
-                        raise apx._convert_error(e)
+                # no cached copy
+                if not self.loaded:
+                        # need to load from disk
+                        self.__load()
+                assert self.loaded
 
         def get_directories(self, excludes):
                 """ return a list of directories implicitly or explicitly

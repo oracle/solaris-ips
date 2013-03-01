@@ -21,7 +21,7 @@
 # CDDL HEADER END
 #
 
-# Copyright (c) 2008, 2012, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2008, 2013, Oracle and/or its affiliates. All rights reserved.
 
 import unittest
 import tempfile
@@ -79,7 +79,9 @@ file ff555ffd mode=0644 owner=root group=bin path=/kernel/drv/foo.conf
 set com.sun,test=false
 depend type=require fmri=pkg:/library/libc
 file fff555ff9 mode=0555 owner=sch group=staff path=/usr/bin/i386/sort isa=i386
-dir owner=root path=usr/bin group=bin mode=0755
+dir owner=root path=usr/bin group=bin mode=0755 variant.arch=i386 variant.arch=sparc
+dir owner=root path="opt/dir with spaces in value" group=bin mode=0755
+dir owner=root path="opt/dir with whitespaces	in value" group=bin mode=0755
 link path=usr/lib/amd64/libjpeg.so \
 target=libjpeg.so.62.0.0
 hardlink path=usr/bin/amd64/rksh93 target=ksh93 variant.opensolaris.zone=global
@@ -275,14 +277,14 @@ file fff555ff9 mode=0555 owner=sch group=staff path=/usr/bin/i386/sort isa=i386
                 #
                 # Expect to see something -> None differences
                 #
-                self.assertEqual(len(diffs), 7)
+                self.assertEqual(len(diffs), 9)
                 for d in diffs:
                         self.assertEqual(type(d[1]), types.NoneType)
 
                 #
                 # Expect to see None -> something differences
                 #
-                self.assertEqual(len(diffs2), 7)
+                self.assertEqual(len(diffs2), 9)
                 for d in diffs2:
                         self.assertEqual(type(d[0]), types.NoneType)
                         self.assertNotEqual(type(d[1]), types.NoneType)
@@ -378,9 +380,18 @@ dir mode=0755 owner=bin group=sys path=usr
 
 class TestFactoredManifest(pkg5unittest.Pkg5TestCase):
 
+        foo_content = """\
+set name=pkg.fmri value=pkg:/foo-content@1.0
+dir owner=root path=usr/bin group=bin mode=0755 variant.arch=i386
+dir owner=root path="opt/dir with spaces in value" group=bin mode=0755
+dir owner=root path="opt/dir with whitespaces	in value" group=bin mode=0755 variant.debug.osnet=true
+"""
+
         def setUp(self):
                 pkg5unittest.Pkg5TestCase.setUp(self)
                 self.cache_dir = tempfile.mkdtemp()
+                self.foo_content_p5m = self.make_misc_files(
+                    { "foo_content.p5m": self.foo_content })[0]
 
         def test_cached_gen_actions_by_type(self):
                 """Test that when a factored manifest generates actions by type
@@ -399,6 +410,77 @@ class TestFactoredManifest(pkg5unittest.Pkg5TestCase):
                 v = variant.Variants({"variant.foo":"one"})
                 m1.exclude_content([v.allow_action, lambda x: True])
                 self.assertEqual(len(list(m1.gen_actions_by_type("dir"))), 1)
+
+        def test_get_directories(self):
+                """Verifies that get_directories() works as expected."""
+
+                v = variant.Variants({ "variant.arch": "sparc" })
+                excludes = [v.allow_action, lambda x: True]
+
+                m1 = manifest.FactoredManifest("foo-content@1.0", self.cache_dir,
+                    pathname=self.foo_content_p5m)
+
+                all_expected = [
+                    "opt/dir with spaces in value",
+                    "opt",
+                    "usr/bin",
+                    "opt/dir with whitespaces	in value",
+                    "usr"
+                ]
+
+                var_expected = [
+                    "opt/dir with spaces in value",
+                    "opt"
+                ]
+
+                def do_get_dirs():
+                        actual = m1.get_directories([])
+                        self.assertEqualDiff(all_expected, actual)
+
+                        actual = m1.get_directories(excludes)
+                        self.assertEqualDiff(var_expected, actual)
+
+                # Verify get_directories works for initial load.
+                do_get_dirs()
+
+                # Now repeat experiment using "cached" FactoredManifest.
+                cfile_path = os.path.join(self.cache_dir, "manifest.dircache")
+                self.assert_(os.path.isfile(cfile_path))
+                m1 = manifest.FactoredManifest("foo-content@1.0", self.cache_dir,
+                    pathname=self.foo_content_p5m)
+
+                do_get_dirs()
+
+                # Now rewrite the dircache so that it contains actions with
+                # paths that are not properly quoted to simulate older, broken
+                # behaviour and verify that the cache will be removed and that
+                # get_directories() still works as expected.
+                m1 = manifest.FactoredManifest("foo-content@1.0", self.cache_dir,
+                    pathname=self.foo_content_p5m)
+
+                with open(cfile_path, "wb") as f:
+                        for a in m1.gen_actions_by_type("dir"):
+                                f.write(
+                                    "dir path=%s %s\n" % (a.attrs["path"],
+                                        " ".join(
+                                            "%s=%s" % (attr, a.attrs[attr])
+                                            for attr in itertools.chain(
+                                                *a.get_varcet_keys())
+                                        )
+                                ))
+
+                # Repeat tests again.
+                do_get_dirs()
+
+                # Verify cache file was removed (presumably because we
+                # detected it was malformed).
+                self.assert_(not os.path.exists(cfile_path))
+
+                # Repeat tests again, verifying cache file is recreated.
+                m1 = manifest.FactoredManifest("foo-content@1.0", self.cache_dir,
+                    pathname=self.foo_content_p5m)
+                do_get_dirs()
+                self.assert_(os.path.isfile(cfile_path))
 
 
 if __name__ == "__main__":

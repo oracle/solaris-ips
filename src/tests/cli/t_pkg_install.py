@@ -181,6 +181,17 @@ class TestPkgInstallBasics(pkg5unittest.SingleDepotTestCase):
             add file tmp/cat mode=0555 owner=root group=bin path=/bin/cat
             close """
 
+        fuzzy = """
+            open fuzzy@1.0,5.11-0
+            add dir mode=0755 owner=root group=bin path="opt/dir with white\tspace"
+            add file tmp/cat mode=0644 owner=root group=bin path="opt/dir with white\tspace/cat in a hat"
+            close
+            open fuzzy@2.0,5.11-0
+            add dir mode=0755 owner=root group=bin path="opt/dir with white\tspace"
+            add file tmp/cat mode=0644 owner=root group=bin path="opt/dir with white\tspace/cat in a hat"
+            add link path=etc/cat_link target="../opt/dir with white\tspace/cat in a hat"
+            close """
+
         misc_files = [ "tmp/libc.so.1", "tmp/cat", "tmp/baz" ]
 
         def setUp(self):
@@ -747,6 +758,29 @@ class TestPkgInstallBasics(pkg5unittest.SingleDepotTestCase):
                 afobj.write("set name=pkg.summary value=\"banana\"\n")
                 afobj.close()
                 self.pkg("install a16189", exit=1)
+
+        def test_install_fuzz(self):
+                """Verify that packages delivering files with whitespace in
+                their paths can be installed, updated, and uninstalled."""
+
+                self.pkgsend_bulk(self.rurl, self.fuzzy)
+                self.image_create(self.rurl)
+
+                self.pkg("install fuzzy@1")
+                self.pkg("verify -v")
+                self.pkg("update -vvv fuzzy@2")
+                self.pkg("verify -v")
+
+                for name in (
+                    "opt/dir with white\tspace/cat in a hat",
+                    "etc/cat_link",
+                ):
+                        self.debug("fname: %s" % name)
+                        self.assert_(os.path.exists(os.path.join(self.get_img_path(),
+                            name)))
+
+                self.pkg("uninstall -vvv fuzzy")
+
 
 class TestPkgInstallApache(pkg5unittest.ApacheDepotTestCase):
 
