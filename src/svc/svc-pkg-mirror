@@ -171,6 +171,11 @@ same 'config/repository' value, which is not supported." $SMF_FMRI exit
 	typeset -f schedule=$(add_date_jitter | $SED -e 's/\\//g')
 	typeset repo=$($SVCPROP -p config/repository $SMF_FMRI)
 
+	SAVED_IFS="$IFS"
+	IFS=,
+	set -A publishers $($SVCPROP -p config/publishers $SMF_FMRI)
+	IFS="$SAVED_IFS"
+
 	if [ ! -f $repo/pkg5.repository ]; then
 		repo_parent=$(dirname $repo)
 		repo_base=$(basename $repo)
@@ -190,6 +195,7 @@ same 'config/repository' value, which is not supported." $SMF_FMRI exit
 		check_failure $? "unable to create repository" \
 		    $SMF_FMRI degrade
 	fi
+	set_default_publisher "$repo" ${publishers[0]}
 	add_cronjob $SMF_FMRI "$schedule" \
 	    "/usr/sbin/svcadm refresh $SMF_FMRI"
 }
@@ -202,6 +208,24 @@ function smf_unschedule_updates {
 
 	remove_cronjob $SMF_FMRI \
 	    "/usr/sbin/svcadm refresh $SMF_FMRI"
+}
+
+#
+# Checks whether the given repository has a publisher/prefix set,
+# and if not, sets it to the given publisher.
+#
+# Usage:
+#     set_default_publisher <path to repo> <publisher>
+#
+function set_default_publisher {
+	typeset repo="$1"
+	typeset pub=$2
+
+	DEFAULT=$($PKGREPO -s "$repo" get -H publisher/prefix | \
+	    $AWK '{print $NF}')
+	if [ "$DEFAULT" = '""' ]; then
+		$PKGREPO -s "$repo" set publisher/prefix=$pub
+	fi
 }
 
 #
@@ -399,6 +423,8 @@ function pkgrecv_from_origin {
 	else
 		# otherwise, we only log messages containing pkg5 FMRIs
 		$GREP 'pkg:/' $LOG.tmp >> $LOG
+		# we only destroy the cache if a pkgrecv was successful
+		$RM -rf "$cachedir"/$instance
 	fi
 	$PKGREPO -s "$repo" refresh
 	$RM $LOG.tmp
