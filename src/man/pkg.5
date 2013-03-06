@@ -1,7 +1,6 @@
 '\" te
-.\" Copyright (c) 2009, 2013, Oracle and/or its
-.\" affiliates. All rights reserved.
-.TH pkg 5 "13 Oct 2012" "SunOS 5.12" "Standards, Environments, and Macros"
+.\" Copyright (c) 2009, 2013, Oracle and/or its affiliates. All rights reserved.
+.TH pkg 5 "1 Mar 2013" "SunOS 5.12" "Standards, Environments, and Macros"
 .SH NAME
 pkg \- Image Packaging System
 .SH DESCRIPTION
@@ -46,7 +45,7 @@ The third part of the version, which if present must follow a hyphen (\fB-\fR), 
 The fourth part of the version, which if present must follow a colon (:), is a timestamp. The timestamp represents when the package was published.
 .sp
 .LP
-When performing comparisons between versions, no component of the full version is considered unless the components to its left are the same. Thus, "4.3-1" is greater than "4.2-7" because "4.3" is greater than "4.2", and "4.3-3" is greater than "4.3-1" because "3" is greater than "1".
+When performing comparisons between versions, no component of the full version is considered unless the components to its left are the same. Thus, \fB4.3-1\fR is greater than \fB4.2-7\fR because \fB4.3\fR is greater than \fB4.2\fR, and \fB4.3-3\fR is greater than \fB4.3-1\fR because \fB3\fR is greater than \fB1\fR.
 .sp
 .LP
 Many parts of the system, when appropriate, abridge FMRIs when displaying them, and accept input in shorter forms to reduce the volume of information displayed or required. Typically, the scheme, publisher, build version, and timestamp can be elided. Sometimes all of the versioning information can be omitted.
@@ -69,7 +68,7 @@ Actions have a simple text representation:
 Names of attributes cannot have whitespace, quotation marks, or equals signs (=) in them. All characters after the first equals sign belong to the value. Values can have all of those, though spaces must be enclosed in single or double quotation marks. Single quotation marks do not need to be escaped inside a string that is enclosed in double quotation marks, and double quotation marks do not need to be escaped inside a string that is enclosed in single quotation marks. A quotation mark can be prefixed with a backslash (\e) character to avoid terminating the quoted string. A backslash can be escaped with a backslash.
 .sp
 .LP
-Attributes can be named more than once with multiple values. These are treated as unordered lists.
+Actions can have multiple attributes. Some attributes can be named multiple times with different values for a single action. Multiple attributes with the same name are treated as unordered lists.
 .sp
 .LP
 Actions with many attributes can create long lines in a manifest file. Such lines can be wrapped by terminating each incomplete line with a backslash. Note that this continuation character must occur between attribute/value pairs. Neither attributes nor their values nor the combination can be split.
@@ -78,7 +77,7 @@ Actions with many attributes can create long lines in a manifest file. Such line
 The attributes listed below are not an exhaustive set. In fact, the attributes that can be attached to an action are arbitrary, and the standard sets of attributes are easy to augment to incorporate future developments.
 .sp
 .LP
-Certain action attributes cause additional operations to be executed outside of the packaging context. These attributes are documented in the "Actuators" section below.
+Some attributes cause additional operations to be executed outside of the packaging context. These attributes are documented in the "Actuators" section below.
 .SS "File Actions"
 .sp
 .LP
@@ -235,19 +234,29 @@ This attribute is used to indicate that this file contains release note text. Th
 .ad
 .sp .6
 .RS 4n
-This attribute is used to tag editable files that should be reverted as a set. Multiple \fBrevert-tag\fR values can be specified. The file reverts to its manifest-defined state when \fBpkg revert\fR is invoked with any of those tags specified. See \fBpkg\fR(1). This attribute can also be used on directories; in that case the value of the attribute should be of the form tagname=pattern.  When \fBpkg revert\fR any unpackaged files or directories in the same filesystem matching the specified pattern (using shell globbing characters) are removed.
+This attribute is used to tag editable files that should be reverted as a set. The value of the \fBrevert-tag\fR attribute is a \fItagname\fR. Multiple \fBrevert-tag\fR attributes can be specified for a single \fBfile\fR action. The file reverts to its manifest-defined state when \fBpkg revert\fR is invoked with any of those tags specified. See the \fBpkg\fR(1) man page for information about the \fBpkg revert\fR command.
+.sp
+The \fBrevert-tag\fR attribute can also be specified at the directory level. See "Directory Actions" below.
 .RE
 
 .SS "Directory Actions"
 .sp
 .LP
-The \fBdir\fR action is like the \fBfile\fR action in that it represents a file system object. The \fBdir\fR action represents a directory instead of an ordinary file. The \fBdir\fR action has the same four standard attributes as the \fBfile\fR action, and \fBpath\fR is the key attribute.  The \fBdir\fR action also accepts the revert-tag attribute as described above.
+The \fBdir\fR action is like the \fBfile\fR action in that it represents a file system object. The \fBdir\fR action represents a directory instead of an ordinary file. The \fBdir\fR action has the same \fBpath\fR, \fBmode\fR, \fBowner\fR, and \fBgroup\fR attributes that the \fBfile\fR action has, and \fBpath\fR is the key attribute. The \fBdir\fR action also accepts the \fBrevert-tag\fR attribute, but the value of the attribute is different for \fBfile\fR and \fBdir\fR actions.
 .sp
 .LP
 Directories are reference counted in IPS. When the last package that either explicitly or implicitly references a directory no longer does so, that directory is removed. If that directory contains unpackaged file system objects, those items are moved into \fB$IMAGE_META/lost+found\fR. See the "Files" section for more information about \fB$IMAGE_META\fR.
 .sp
-.LP
-To move unpackaged contents into a new directory, the following attribute might be useful:
+.ne 2
+.mk
+.na
+\fB\fBrevert-tag\fR\fR
+.ad
+.sp .6
+.RS 4n
+This attribute is used to identify unpackaged files that should be removed as a set. See "File Actions" above for a description of how to specify this attribute for \fBfile\fR actions. For directories, the value of the \fBrevert-tag\fR attribute is \fItagname\fR\fB=\fR\fIpattern\fR. Multiple \fBrevert-tag\fR attributes can be specified for a single \fBdir\fR action. When \fBpkg revert\fR is invoked with a matching \fItagname\fR, any unpackaged files or directories under this \fBdir\fR directory that match \fIpattern\fR (using shell globbing characters) are removed. See the \fBpkg\fR(1) man page for information about the \fBpkg revert\fR command.
+.RE
+
 .sp
 .ne 2
 .mk
@@ -256,7 +265,7 @@ To move unpackaged contents into a new directory, the following attribute might 
 .ad
 .sp .6
 .RS 4n
-This names a directory of salvaged items. A directory with such an attribute inherits on creation the salvaged directory contents if they exist.
+This attribute can be used to move unpackaged contents into a new directory. The value of this attribute is the name of a directory of salvaged items. A directory with a \fBsalvage-from\fR attribute inherits on creation any contents of the directory named in the value of the \fBsalvage-from\fR attribute.
 .RE
 
 .SS "Link Actions"
@@ -890,7 +899,10 @@ The group's unique numerical id. The default value is the first free group under
 .SS "User Actions"
 .sp
 .LP
-The \fBuser\fR action defines a UNIX user as defined in \fB/etc/passwd\fR, \fB/etc/shadow\fR, \fB/etc/group\fR, and \fB/etc/ftpd/ftpusers\fR files. Users defined with this attribute have entries added to the appropriate files.
+The \fBuser\fR action defines a UNIX user as defined in \fB/etc/passwd\fR, \fB/etc/shadow\fR, \fB/etc/group\fR, and \fB/etc/ftpd/ftpusers\fR files. Entries are added to the appropriate files for users defined with this \fBuser\fR action.
+.sp
+.LP
+The  \fBuser\fR action is intended to define a user for a daemon or other software to use. Do not use the \fBuser\fR action to define administrative or interactive accounts.
 .sp
 .LP
 The following attributes are recognized:
@@ -957,7 +969,7 @@ The value of the \fBgcos\fR field in \fB/etc/passwd\fR. Default value is \fBuser
 .ad
 .sp .6
 .RS 4n
-The user's home directory. Default value is /.
+The user's home directory. This directory must be in the system image directories and not under another mount point such as \fB/home\fR. Default value is \fB/\fR.
 .RE
 
 .sp
@@ -1073,10 +1085,10 @@ Set to empty. See \fBshadow\fR(4).
 .SH ACTUATORS
 .sp
 .LP
-In certain contexts, additional operations can be appropriate to execute in preparation for or following the introduction of a particular action. These additional operations are generally needed only on a live system image, and are operating system specific. When multiple actions involved in a package installation or removal have identical actuators, then the operation corresponding to actuator presence is executed once for that installation or removal.
+In certain contexts, additional operations can be appropriate to execute in preparation for or following the introduction of a particular action. These additional operations are operating system specific and are generally needed only on a live system image. A live image is the image mounted at \fB/\fR of the active, running boot environment of the current zone. When multiple actions involved in a package installation or removal have identical actuators, then the operation corresponding to actuator presence is executed once for that installation or removal.
 .sp
 .LP
-Incorrectly specified actuators can result in package installation failure, if the actuator cannot determine a means of making safe installation progress.
+Incorrectly specified actuators can result in package installation failure if the actuator cannot determine a means of making safe installation progress.
 .sp
 .LP
 The following actuators are defined:
@@ -1385,7 +1397,7 @@ Interface StabilityUncommitted
 .SH SEE ALSO
 .sp
 .LP
-\fBpkg\fR(1), \fBpkg\fR(1), \fBpkg\fR(1M), \fBpkg\fR(1M), \fBsvcs\fR(1), \fBsvcadm\fR(1M)
+\fBpkg\fR(1), \fBpkgsend\fR(1), \fBpkg.depotd\fR(1M), \fBpkg.sysrepo\fR(1M), \fBsvcs\fR(1), \fBsvcadm\fR(1M)
 .sp
 .LP
 \fIAdding and Updating Oracle Solaris 11.1 Software Packages\fR

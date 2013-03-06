@@ -1,6 +1,6 @@
 '\" te
-.\" Copyright (c) 2007, 2012, Oracle and/or its affiliates. All rights reserved.
-.TH pkgdepend 1 "22 Jun 2012" "SunOS 5.12" "User Commands"
+.\" Copyright (c) 2007, 2013, Oracle and/or its affiliates. All rights reserved.
+.TH pkgdepend 1 "26 Feb 2013" "SunOS 5.12" "User Commands"
 .SH NAME
 pkgdepend \- Image Packaging System dependency analyzer
 .SH SYNOPSIS
@@ -17,8 +17,9 @@ pkgdepend \- Image Packaging System dependency analyzer
 
 .LP
 .nf
-/usr/bin/pkgdepend resolve [-moSv] [-d \fIoutput_dir\fR]
-    [-s \fIsuffix\fR] \fImanifest_file\fR ...
+/usr/bin/pkgdepend resolve [-EmoSv] [-d \fIoutput_dir\fR]
+    [-e \fIexternal_package_file\fR]... [-s \fIsuffix\fR]
+    \fImanifest_file\fR ...
 .fi
 
 .SH DESCRIPTION
@@ -225,11 +226,35 @@ When \fBpkgdepend generate\fR input manifests contain SMF manifest files, any SM
 .ne 2
 .mk
 .na
-\fB\fBpkgdepend resolve\fR [\fB-moSv\fR] [\fB-d\fR \fIoutput_dir\fR] [\fB-s\fR \fIsuffix\fR] \fImanifest_file\fR ...\fR
+\fB\fBpkgdepend resolve\fR [\fB-EmoSv\fR] [\fB-d\fR \fIoutput_dir\fR] [\fB-e\fR \fIexternal_package_file\fR]... [\fB-s\fR \fIsuffix\fR] \fImanifest_file\fR ...\fR
 .ad
 .sp .6
 .RS 4n
 Transform dependencies on files into dependencies on the packages that deliver those files. Dependencies are first resolved against the manifests given on the command line and then against the packages installed on the system. By default, the dependencies for each manifest are placed in a file named \fB\fImanifest_file\fR.res\fR.
+.sp
+.ne 2
+.mk
+.na
+\fB\fB-e\fR \fIexternal_package_file\fR\fR
+.ad
+.sp .6
+.RS 4n
+Only resolve against packages from the system whose names match a pattern in \fIexternal_package_file\fR. This option can be specified multiple times. The \fB-e\fR option cannot be used with the \fB-S\fR option.
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB-E\fR\fR
+.ad
+.sp .6
+.RS 4n
+If \fB-e\fR is specified, show the packages that were expected to be external dependencies but were not external dependencies. Packages that were expected to be external dependencies are packages from the system whose names match a pattern in \fIexternal_package_file\fR.
+.sp
+If \fB-e\fR is not specified, show the external dependencies of the resolved packages. External dependencies of the resolved packages are packages not named on the command line that are targets of dependencies in the resolved packages.
+.RE
+
 .sp
 .ne 2
 .mk
@@ -356,7 +381,8 @@ Replace all \fBPLATFORM\fR tokens in the run paths in ELF files with \fBsun4v\fR
 .sp
 .in +2
 .nf
-$ \fBpkgdepend generate -d / -D 'PLATFORM=sun4v' -D 'PLATFORM=sun4u' foo\fR
+$ \fBpkgdepend generate -d / -D 'PLATFORM=sun4v' \e\fR
+\fB-D 'PLATFORM=sun4u' foo\fR
 .fi
 .in -2
 .sp

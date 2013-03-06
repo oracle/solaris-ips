@@ -1,6 +1,6 @@
 '\" te
 .\" Copyright (c) 2007, 2013, Oracle and/or its affiliates. All rights reserved.
-.TH pkgrecv 1 "12 Oct 2012" "SunOS 5.12" "User Commands"
+.TH pkgrecv 1 "4 Mar 2013" "SunOS 5.12" "User Commands"
 .SH NAME
 pkgrecv \- Image Packaging System content retrieval utility
 .SH SYNOPSIS
@@ -8,8 +8,9 @@ pkgrecv \- Image Packaging System content retrieval utility
 .nf
 /usr/bin/pkgrecv [-s \fIsrc_uri\fR] [-a] [-d (\fIpath\fR|\fIdest_uri\fR)]
     [-c \fIcache_dir\fR] [-kr] [-m \fImatch\fR] [-n] [--raw]
-    [--key \fIsrc_key\fR --cert \fIsrc_cert\fR] [--dkey \fIdest_key\fR
-    --dcert \fIdest_cert\fR] (\fIfmri\fR|\fIpattern\fR) ...
+    [--key \fIsrc_key\fR --cert \fIsrc_cert\fR]
+    [--dkey \fIdest_key\fR --dcert \fIdest_cert\fR]
+    (\fIfmri\fR|\fIpattern\fR) ...
 .fi
 
 .LP
@@ -20,7 +21,16 @@ pkgrecv \- Image Packaging System content retrieval utility
 .SH DESCRIPTION
 .sp
 .LP
-\fBpkgrecv\fR retrieves packages from a \fBpkg\fR(5) repository or package archive and republishes the retrieved packages to a different package repository or package archive. By default, packages are retrieved in package repository format suitable for use with \fBpkg\fR, \fBpkg.depotd\fR, and package publication tools.
+\fBpkgrecv\fR retrieves all versions of each matching \fIfmri\fR or \fIpattern\fR from the \fIsrc_uri\fR \fBpkg\fR(5) repository or package archive and republishes the retrieved packages to the \fIdest_uri\fR package repository or package archive. By default, packages are retrieved in package repository format suitable for use with \fBpkg\fR, \fBpkg.depotd\fR, and package publication tools.
+.sp
+.LP
+Packages that have not changed are not republished. Therefore, the time to update an existing repository depends on the number of new and changed packages.
+.sp
+.LP
+Use the \fB-m\fR option to specify whether to retrieve all versions of each matching package, or only the newest version of each matching package.
+.sp
+.LP
+If you do not specify \fB\&'*'\fR to be retrieved, you might want to specify the \fB-r\fR option to be sure to retrieve all the dependencies of the specified packages.
 .LP
 Note - 
 .sp
@@ -75,7 +85,7 @@ Specify the path to a directory that will be used to cache downloaded content. I
 .ad
 .sp .6
 .RS 4n
-Specify the file system path or URI of the target to republish packages to. If \fB-a\fR  is specified, the target is a new package archive that cannot already exist. Otherwise, the target must be a package repository that already exists. New repositories can be created using the \fBpkgrepo\fR command. If \fB-d\fR is not specified, the value of \fBPKG_DEST\fR is used. See "Environment Variables" below.
+Specify the file system path or URI where the retrieved packages should be republished. If \fB-a\fR  is specified, this destination is a new package archive that cannot already exist. If \fB-a\fR  is not specified, this destination must be a package repository that already exists. Use the \fBpkgrepo\fR command to create a new package repository. If \fB-d\fR is not specified, the value of \fBPKG_DEST\fR is used. See "Environment Variables" below.
 .RE
 
 .sp
@@ -97,16 +107,26 @@ Keep the retrieved package content compressed. This option is ignored when repub
 .ad
 .sp .6
 .RS 4n
-Control matching behavior using the following values:
+Control which versions of packages are retrieved if \fIpattern\fR is specified or if \fIfmri\fR is not fully specified. For this description, the following four example packages exist in the source specified by the \fB-s\fR option. In these FMRI, the characters between the \fB@\fR and the \fB:\fR denote the numbered package version, and the characters from the \fB:\fR to the end denote the timestamp portion of the version string.
+.sp
+.in +2
+.nf
+pkg://solaris/package/pkg@0.5.11,5.11-0.175.1.0.0.24.0:20120904T180335Z
+pkg://solaris/package/pkg@0.5.11,5.11-0.175.1.0.0.24.0:20120903T170234Z
+pkg://solaris/package/pkg@0.5.11,5.11-0.175.1.0.0.23.0:20120820T165108Z
+pkg://solaris/package/pkg@0.5.11,5.11-0.175.1.0.0.23.0:20120819T155007Z
+.fi
+.in -2
+
 .sp
 .ne 2
 .mk
 .na
-\fB\fBall-timestamps (default)\fR\fR
+\fB\fBall-timestamps\fR\fR
 .ad
 .sp .6
 .RS 4n
-Includes all matching timestamps (implies \fBall-versions\fR).
+Retrieve all versions of each matching \fIfmri\fR or \fIpattern\fR (implies \fBall-versions\fR). This is the default behavior if the \fB-m\fR option is not specified. In the example above, all four packages are retrieved.
 .RE
 
 .sp
@@ -117,7 +137,15 @@ Includes all matching timestamps (implies \fBall-versions\fR).
 .ad
 .sp .6
 .RS 4n
-Includes all matching versions.
+Retrieve the latest timestamp for each version of each matching \fIfmri\fR or \fIpattern\fR. In the example above, the following two packages are retrieved:
+.sp
+.in +2
+.nf
+pkg://solaris/package/pkg@0.5.11,5.11-0.175.1.0.0.24.0:20120904T180335Z
+pkg://solaris/package/pkg@0.5.11,5.11-0.175.1.0.0.23.0:20120820T165108Z
+.fi
+.in -2
+
 .RE
 
 .sp
@@ -128,7 +156,14 @@ Includes all matching versions.
 .ad
 .sp .6
 .RS 4n
-Includes only the latest version of each package.
+Retrieve only the newest version of each matching \fIfmri\fR or \fIpattern\fR. In the example above, only the following package is retrieved:
+.sp
+.in +2
+.nf
+pkg://solaris/package/pkg@0.5.11,5.11-0.175.1.0.0.24.0:20120904T180335Z
+.fi
+.in -2
+
 .RE
 
 .RE
@@ -152,7 +187,7 @@ Perform a trial run with no changes made.
 .ad
 .sp .6
 .RS 4n
-Recursively retrieve all dependencies for the provided list of packages.
+Recursively retrieve all dependencies for each matching \fIfmri\fR or \fIpattern\fR.
 .RE
 
 .sp
@@ -163,18 +198,7 @@ Recursively retrieve all dependencies for the provided list of packages.
 .ad
 .sp .6
 .RS 4n
-Specify a URI representing the location of a \fBpkg\fR(5) repository or package archive from which to receive package data. If \fB-s\fR is not specified, the value of \fBPKG_SRC\fR is used. See "Environment Variables" below.
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fB\fB--cert\fR \fIsrc_cert\fR\fR
-.ad
-.sp .6
-.RS 4n
-Specify a client SSL certificate file to use for package retrieval from an HTTPS repository.
+Specify a URI that represents the location of a \fBpkg\fR(5) repository or package archive from which to receive package data. If \fB-s\fR is not specified, the value of \fBPKG_SRC\fR is used. See "Environment Variables" below.
 .RE
 
 .sp
@@ -185,18 +209,18 @@ Specify a client SSL certificate file to use for package retrieval from an HTTPS
 .ad
 .sp .6
 .RS 4n
-Specify a client SSL key file to use for package retrieval from an HTTPS repository.
+Specify a client SSL key file to use for package retrieval from the source HTTPS repository.
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fB\fB--dcert\fR \fIdest_cert\fR\fR
+\fB\fB--cert\fR \fIsrc_cert\fR\fR
 .ad
 .sp .6
 .RS 4n
-Specify a client SSL certificate file to use for package publication to an HTTPS repository.
+Specify a client SSL certificate file to use for package retrieval from the source HTTPS repository.
 .RE
 
 .sp
@@ -207,7 +231,18 @@ Specify a client SSL certificate file to use for package publication to an HTTPS
 .ad
 .sp .6
 .RS 4n
-Specify a client SSL key file to use for package publication to an HTTPS repository.
+Specify a client SSL key file to use for package publication to the destination HTTPS repository.
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB--dcert\fR \fIdest_cert\fR\fR
+.ad
+.sp .6
+.RS 4n
+Specify a client SSL certificate file to use for package publication to the destination HTTPS repository.
 .RE
 
 .sp
@@ -218,7 +253,7 @@ Specify a client SSL key file to use for package publication to an HTTPS reposit
 .ad
 .sp .6
 .RS 4n
-List the most recent versions of the packages available from the specified repository and exit. All other options except \fB-s\fR are ignored.
+List the most recent versions of the packages available from the repository specified by the \fB-s\fR option. All other options are ignored.
 .RE
 
 .sp
@@ -229,23 +264,7 @@ List the most recent versions of the packages available from the specified repos
 .ad
 .sp .6
 .RS 4n
-Retrieve and store the raw package data in a set of directory structures by stem and version at the location specified by \fB-d\fR. This option can be used only with file system based destinations. This package data can be used to conveniently modify and republish packages, perhaps by correcting file contents or providing additional package metadata. This option cannot be combined with \fB-a\fR.
-.RE
-
-.SH OPERANDS
-.sp
-.ne 2
-.mk
-.na
-\fB\fB\fIfmri\fR|\fIpattern\fR\fR\fR
-.ad
-.sp .6
-.RS 4n
-If \fB\&'*'\fR is specified for \fIpattern\fR, and if the \fB-d\fR argument does not contain any packages published by \fIsrc_uri\fR publishers, the newest versions of all packages in the \fIsrc_uri\fR, and any other dependencies of those packages, are retrieved.
-.sp
-If \fB\&'*'\fR is specified for \fIpattern\fR, and if the \fB-d\fR argument already contains packages published by one or more \fIsrc_uri\fR publishers, only new and changed packages from those publishers in the \fIsrc_uri\fR are retrieved.
-.sp
-If \fB\fIfmri\fR|\fIpattern\fR\fR is not \fB\&'*'\fR, then the specified packages are retrieved. You might want to specify the \fB-r\fR option to be sure to retrieve all the dependencies of the specified packages.
+Retrieve and store the raw package data in a set of directory structures by stem and version at the location specified by \fB-d\fR. The \fB--raw\fR option can be used only with file system based destinations. This package data can be used to conveniently modify and republish packages, perhaps by correcting file contents or providing additional package metadata. The \fB--raw\fR option cannot be combined with \fB-a\fR.
 .RE
 
 .SH EXAMPLES
@@ -303,15 +322,15 @@ $ \fBpkgrecv -s http://test -d /local/repo -r editor/vim\fR
 .sp
 
 .LP
-\fBExample 4 \fRRetrieve All Versions
+\fBExample 4 \fRRetrieve Only the Latest Version
 .sp
 .LP
-Receive all versions of the package \fBeditor/vim\fR from the system named \fBtest\fR.
+Receive only the latest version of the package \fBeditor/vim\fR from the system named \fBtest\fR.
 
 .sp
 .in +2
 .nf
-$ \fBpkgrecv -s http://test -d /local/repo -m all-versions \e\fR
+$ \fBpkgrecv -s http://test -d /local/repo -m latest \e\fR
 \fBeditor/vim\fR
 Processing packages for publisher solaris ...
 Retrieving and evaluating 2 package(s)...

@@ -1,6 +1,6 @@
 '\" te
 .\" Copyright (c) 2007, 2013, Oracle and/or its affiliates. All rights reserved.
-.TH pkgrepo 1 "22 Jun 2012" "SunOS 5.12" "User Commands"
+.TH pkgrepo 1 "26 Feb 2013" "SunOS 5.12" "User Commands"
 .SH NAME
 pkgrepo \- Image Packaging System repository management utility
 .SH SYNOPSIS
@@ -11,59 +11,72 @@ pkgrepo \- Image Packaging System repository management utility
 
 .LP
 .nf
-/usr/bin/pkgrepo add-publisher -s \fIrepo_uri_or_path\fR \fIpublisher\fR ...
+/usr/bin/pkgrepo add-publisher -s \fIrepo_uri_or_path\fR
+    \fIpublisher\fR ...
 .fi
 
 .LP
 .nf
-/usr/bin/pkgrepo get [-F \fIformat\fR] [-H] [-p \fIpublisher\fR ...]
-    -s \fIrepo_uri_or_path\fR [--key \fIssl_key\fR ... --cert \fIssl_cert\fR ...]
+/usr/bin/pkgrepo get [-F \fIformat\fR] [-H] [-p \fIpublisher\fR]...
+    -s \fIrepo_uri_or_path\fR [--key \fIssl_key\fR --cert \fIssl_cert\fR]...
     [\fIsection/property\fR ...]
 .fi
 
 .LP
 .nf
-/usr/bin/pkgrepo info [-F \fIformat\fR] [-H] [-p \fIpublisher\fR ...]
-    -s \fIrepo_uri_or_path\fR [--key \fIssl_key\fR ... --cert \fIssl_cert\fR ...]
+/usr/bin/pkgrepo info [-F \fIformat\fR] [-H] [-p \fIpublisher\fR]...
+    -s \fIrepo_uri_or_path\fR [--key \fIssl_key\fR --cert \fIssl_cert\fR]...
 .fi
 
 .LP
 .nf
-/usr/bin/pkgrepo list [-F \fIformat\fR] [-H] [-p \fIpublisher\fR ...]
-    -s \fIrepo_uri_or_path\fR [--key \fIssl_key\fR ... --cert \fIssl_cert\fR ...]
+/usr/bin/pkgrepo list [-F \fIformat\fR] [-H] [-p \fIpublisher\fR]...
+    -s \fIrepo_uri_or_path\fR [--key \fIssl_key\fR --cert \fIssl_cert\fR]...
     [\fIpkg_fmri_pattern\fR ...]
 .fi
 
 .LP
 .nf
-/usr/bin/pkgrepo rebuild [-p \fIpublisher\fR ...]
-    -s \fIrepo_uri_or_path\fR [--key \fIssl_key\fR ... --cert \fIssl_cert\fR ...]
+/usr/bin/pkgrepo rebuild [-p \fIpublisher\fR]...
+    -s \fIrepo_uri_or_path\fR [--key \fIssl_key\fR --cert \fIssl_cert\fR]...
     [--no-catalog] [--no-index]
 .fi
 
 .LP
 .nf
-/usr/bin/pkgrepo refresh [-p \fIpublisher\fR ...]
-    -s \fIrepo_uri_or_path\fR [--key \fIssl_key\fR ... --cert \fIssl_cert\fR ...]
+/usr/bin/pkgrepo refresh [-p \fIpublisher\fR]...
+    -s \fIrepo_uri_or_path\fR [--key \fIssl_key\fR --cert \fIssl_cert\fR]...
     [--no-catalog] [--no-index]
 .fi
 
 .LP
 .nf
-/usr/bin/pkgrepo remove [-n] [-p \fIpublisher\fR ...]
+/usr/bin/pkgrepo remove [-n] [-p \fIpublisher\fR]...
     -s \fIrepo_uri_or_path\fR \fIpkg_fmri_pattern\fR ...
 .fi
 
 .LP
 .nf
-/usr/bin/pkgrepo set [-p \fIpublisher\fR] -s \fIrepo_uri_or_path\fR
-    \fIsection/property\fR=[\fIvalue\fR]
+/usr/bin/pkgrepo set [-p \fIpublisher\fR]... -s \fIrepo_uri_or_path\fR
+    \fIsection/property\fR=[\fIvalue\fR] ...
 .fi
 
 .LP
 .nf
-/usr/bin/pkgrepo set [-p \fIpublisher\fR] -s \fIrepo_uri_or_path\fR
+/usr/bin/pkgrepo set [-p \fIpublisher\fR]... -s \fIrepo_uri_or_path\fR
     \fIsection/property\fR=([\fIvalue\fR]) ...
+.fi
+
+.LP
+.nf
+/usr/bin/pkgrepo verify [-p \fIpublisher\fR]...
+    -s \fIrepo_uri_or_path\fR
+.fi
+
+.LP
+.nf
+/usr/bin/pkgrepo fix [-v] [-p \fIpublisher\fR]...
+    -s \fIrepo_uri_or_path\fR
 .fi
 
 .LP
@@ -160,13 +173,24 @@ Supports storage of packages for multiple publishers, catalog version 1, and sea
 Add the specified publishers to the repository. The new publishers have no packages or content.
 .sp
 This subcommand can be used only with version 4 file system based repositories.
+.sp
+.ne 2
+.mk
+.na
+\fB\fB-s\fR \fIrepo_uri_or_path\fR\fR
+.ad
+.sp .6
+.RS 4n
+Operate on the repository located at the given URI or file system path.
+.RE
+
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fB\fBpkgrepo get\fR [\fB-F\fR \fIformat\fR] [\fB-H\fR] [\fB-p\fR \fIpublisher\fR ...] \fB-s\fR \fIrepo_uri_or_path\fR [\fB--key\fR \fIssl_key\fR ... \fB--cert\fR \fIssl_cert\fR ...] [\fIsection/property\fR ...]\fR
+\fB\fBpkgrepo get\fR [\fB-F\fR \fIformat\fR] [\fB-H\fR] [\fB-p\fR \fIpublisher\fR]... \fB-s\fR \fIrepo_uri_or_path\fR [\fB--key\fR \fIssl_key\fR \fB--cert\fR \fIssl_cert\fR]... [\fIsection/property\fR ...]\fR
 .ad
 .sp .6
 .RS 4n
@@ -231,22 +255,11 @@ Operate on the repository located at the given URI or file system path.
 .ne 2
 .mk
 .na
-\fB\fB--key\fR \fIssl_key\fR\fR
+\fB\fB--key\fR \fIssl_key\fR \fB--cert\fR \fIssl_cert\fR\fR
 .ad
 .sp .6
 .RS 4n
-Specify a client SSL key file to use for package retrieval from an HTTPS repository.
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fB\fB--cert\fR \fIssl_cert\fR\fR
-.ad
-.sp .6
-.RS 4n
-Specify a client SSL certificate file to use for package retrieval from an HTTPS repository.
+Use the \fB--key\fR option to specify a client SSL key file to use for package retrieval from an HTTPS repository. Use the \fB--cert\fR option to specify a client SSL certificate file to use for package retrieval from an HTTPS repository. This option pair can be specified multiple times.
 .RE
 
 .sp
@@ -266,33 +279,11 @@ Display values for only the specified properties, such as \fBpublisher/prefix\fR
 .ne 2
 .mk
 .na
-\fB\fBpkgrepo info\fR [\fB-F\fR \fIformat\fR] [\fB-H\fR] [\fB-p\fR \fIpublisher\fR ...] \fB-s\fR \fIrepo_uri_or_path\fR [\fB--key\fR \fIssl_key\fR ... \fB--cert\fR \fIssl_cert\fR ...]\fR
+\fB\fBpkgrepo info\fR [\fB-F\fR \fIformat\fR] [\fB-H\fR] [\fB-p\fR \fIpublisher\fR]... \fB-s\fR \fIrepo_uri_or_path\fR [\fB--key\fR \fIssl_key\fR \fB--cert\fR \fIssl_cert\fR]...\fR
 .ad
 .sp .6
 .RS 4n
 Display a listing of the package publishers known by the repository. The listing includes the number of packages for each publisher, when the publisher's package data was last updated, and the status of the publisher's package data (such as whether it is currently being processed).
-.sp
-.ne 2
-.mk
-.na
-\fB\fB-F\fR \fIformat\fR\fR
-.ad
-.sp .6
-.RS 4n
-Specify an alternative output format. The value of \fIformat\fR can be \fBtsv\fR (Tab Separated Values), \fBjson\fR (JavaScript Object Notation as a single line), or \fBjson-formatted\fR (JavaScript Object Notation, formatted for readability).
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fB\fB-H\fR\fR
-.ad
-.sp .6
-.RS 4n
-Omit the headers from the listing.
-.RE
-
 .sp
 .ne 2
 .mk
@@ -304,74 +295,20 @@ Omit the headers from the listing.
 Only display the data for the given publisher. If not provided, the data for all publishers is displayed. This option can be specified multiple times.
 .RE
 
-.sp
-.ne 2
-.mk
-.na
-\fB\fB-s\fR \fIrepo_uri_or_path\fR\fR
-.ad
-.sp .6
-.RS 4n
-Operate on the repository located at the given URI or file system path.
+For descriptions of all other options, see the \fBpkgrepo get\fR command above.
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fB\fB--key\fR \fIssl_key\fR\fR
-.ad
-.sp .6
-.RS 4n
-Specify a client SSL key file to use for package retrieval from an HTTPS repository.
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fB\fB--cert\fR \fIssl_cert\fR\fR
-.ad
-.sp .6
-.RS 4n
-Specify a client SSL certificate file to use for package retrieval from an HTTPS repository.
-.RE
-
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fB\fBpkgrepo list\fR [\fB-F\fR \fIformat\fR] [\fB-H\fR] [\fB-p\fR \fIpublisher\fR ...] \fB-s\fR \fIrepo_uri_or_path\fR [\fB--key\fR \fIssl_key\fR ... \fB--cert\fR \fIssl_cert\fR ...] [\fIpkg_fmri_pattern\fR ...]\fR
+\fB\fBpkgrepo list\fR [\fB-F\fR \fIformat\fR] [\fB-H\fR] [\fB-p\fR \fIpublisher\fR]... \fB-s\fR \fIrepo_uri_or_path\fR [\fB--key\fR \fIssl_key\fR \fB--cert\fR \fIssl_cert\fR]... [\fIpkg_fmri_pattern\fR ...]\fR
 .ad
 .sp .6
 .RS 4n
 List the packages in the \fIrepo_uri_or_path\fR repository that match the specified \fIpkg_fmri_pattern\fR patterns. If no patterns are specified, all packages in the repository are listed.
 .sp
 In the default output, the first column contains the name of the publisher of the package. The second column contains the name of the package. The third column is a flag that shows the status of the package. A value of \fBo\fR in the status column indicates the package is obsolete. A value of \fBr\fR in the status column indicates the package has been renamed, which is a form of obsoletion. The fourth column contains the release and branch versions of the package. See \fBpkg\fR(5) for information about release and branch versions.
-.sp
-.ne 2
-.mk
-.na
-\fB\fB-F\fR \fIformat\fR\fR
-.ad
-.sp .6
-.RS 4n
-Specify an alternative output format. The value of \fIformat\fR can be \fBtsv\fR (Tab Separated Values), \fBjson\fR (JavaScript Object Notation as a single line), or \fBjson-formatted\fR (JavaScript Object Notation, formatted for readability).
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fB\fB-H\fR\fR
-.ad
-.sp .6
-.RS 4n
-Omit the headers from the listing.
-.RE
-
 .sp
 .ne 2
 .mk
@@ -383,50 +320,18 @@ Omit the headers from the listing.
 Only display the packages for the given publisher. If not provided, the packages for all publishers are displayed. This option can be specified multiple times.
 .RE
 
-.sp
-.ne 2
-.mk
-.na
-\fB\fB-s\fR \fIrepo_uri_or_path\fR\fR
-.ad
-.sp .6
-.RS 4n
-Operate on the repository located at the given URI or file system path.
+For descriptions of all other options, see the \fBpkgrepo get\fR command above.
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fB\fB--key\fR \fIssl_key\fR\fR
+\fB\fBpkgrepo rebuild\fR [\fB-p\fR \fIpublisher\fR]... \fB-s\fR \fIrepo_uri_or_path\fR [\fB--key\fR \fIssl_key\fR \fB--cert\fR \fIssl_cert\fR]... [\fB--no-catalog\fR] [\fB--no-index\fR]\fR
 .ad
 .sp .6
 .RS 4n
-Specify a client SSL key file to use for package retrieval from an HTTPS repository.
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fB\fB--cert\fR \fIssl_cert\fR\fR
-.ad
-.sp .6
-.RS 4n
-Specify a client SSL certificate file to use for package retrieval from an HTTPS repository.
-.RE
-
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fB\fBpkgrepo rebuild\fR [\fB-p\fR \fIpublisher\fR ...] \fB-s\fR \fIrepo_uri_or_path\fR [\fB--key\fR \fIssl_key\fR ... \fB--cert\fR \fIssl_cert\fR ...] [\fB--no-catalog\fR] [\fB--no-index\fR]\fR
-.ad
-.sp .6
-.RS 4n
-Discard all catalog, search, and other cached information found in the repository, and then recreates it based on the current contents of the repository.
+Discard all catalog, search, and other cached information found in the repository, and then recreate it based on the current contents of the repository.
 .sp
 .ne 2
 .mk
@@ -436,39 +341,6 @@ Discard all catalog, search, and other cached information found in the repositor
 .sp .6
 .RS 4n
 Perform the operation only for the given publisher. If not provided, or if the special value \fBall\fR is specified, the operation is performed for all publishers. This option can be specified multiple times.
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fB\fB-s\fR \fIrepo_uri_or_path\fR\fR
-.ad
-.sp .6
-.RS 4n
-Operate on the repository located at the given URI or file system path.
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fB\fB--key\fR \fIssl_key\fR\fR
-.ad
-.sp .6
-.RS 4n
-Specify a client SSL key file to use for package retrieval from an HTTPS repository.
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fB\fB--cert\fR \fIssl_cert\fR\fR
-.ad
-.sp .6
-.RS 4n
-Specify a client SSL certificate file to use for package retrieval from an HTTPS repository.
 .RE
 
 .sp
@@ -493,17 +365,18 @@ Do not rebuild package data.
 Do not rebuild search indexes.
 .RE
 
+For descriptions of all other options, see the \fBpkgrepo get\fR command above.
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fB\fBpkgrepo refresh\fR [\fB-p\fR \fIpublisher\fR ...] \fB-s\fR \fIrepo_uri_or_path\fR [\fB--key\fR \fIssl_key\fR ... \fB--cert\fR \fIssl_cert\fR ...] [\fB--no-catalog\fR] [\fB--no-index\fR]\fR
+\fB\fBpkgrepo refresh\fR [\fB-p\fR \fIpublisher\fR]... \fB-s\fR \fIrepo_uri_or_path\fR [\fB--key\fR \fIssl_key\fR \fB--cert\fR \fIssl_cert\fR]... [\fB--no-catalog\fR] [\fB--no-index\fR]\fR
 .ad
 .sp .6
 .RS 4n
-Catalog any new packages found in the repository and updates all search indexes. This is intended for use with deferred publication (\fB--no-catalog\fR or \fB--no-index\fR options of \fBpkgsend\fR).
+Catalog any new packages found in the repository and update all search indexes. This is intended for use with deferred publication (\fB--no-catalog\fR or \fB--no-index\fR options of \fBpkgsend\fR).
 .sp
 .ne 2
 .mk
@@ -513,39 +386,6 @@ Catalog any new packages found in the repository and updates all search indexes.
 .sp .6
 .RS 4n
 Perform the operation only for the given publisher. If not provided, or if the special value \fBall\fR is specified, the operation is performed for all publishers. This option can be specified multiple times.
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fB\fB-s\fR \fIrepo_uri_or_path\fR\fR
-.ad
-.sp .6
-.RS 4n
-Operate on the repository located at the given URI or file system path.
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fB\fB--key\fR \fIssl_key\fR\fR
-.ad
-.sp .6
-.RS 4n
-Specify a client SSL key file to use for package retrieval from an HTTPS repository.
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fB\fB--cert\fR \fIssl_cert\fR\fR
-.ad
-.sp .6
-.RS 4n
-Specify a client SSL certificate file to use for package retrieval from an HTTPS repository.
 .RE
 
 .sp
@@ -570,13 +410,14 @@ Do not add any new packages.
 Do not update search indexes.
 .RE
 
+For descriptions of all other options, see the \fBpkgrepo get\fR command above.
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fB\fBpkgrepo remove\fR [\fB-n\fR] [\fB-p\fR \fIpublisher\fR ...] \fB-s\fR \fIrepo_uri_or_path\fR \fIpkg_fmri_pattern\fR ...\fR
+\fB\fBpkgrepo remove\fR [\fB-n\fR] [\fB-p\fR \fIpublisher\fR]... \fB-s\fR \fIrepo_uri_or_path\fR \fIpkg_fmri_pattern\fR ...\fR
 .ad
 .sp .6
 .RS 4n
@@ -637,7 +478,7 @@ Operate on the repository located at the given URI or file system path.
 .ad
 .br
 .na
-\fB\fBset\fR [\fB-p\fR \fIpublisher\fR] \fB-s\fR \fIrepo_uri_or_path\fR \fIsection/property\fR=([\fIvalue\fR]) ...\fR
+\fB\fBpkgrepo set\fR [\fB-p\fR \fIpublisher\fR] \fB-s\fR \fIrepo_uri_or_path\fR \fIsection/property\fR=([\fIvalue\fR]) ...\fR
 .ad
 .sp .6
 .RS 4n
@@ -707,8 +548,8 @@ For repository versions 3 and 4, the following properties can be set for the rep
 .na
 \fB\fBpublisher/prefix\fR\fR
 .ad
-.RS 20n
-.rt  
+.sp .6
+.RS 4n
 A string that represents the name of the default publisher. The first character must be a-z, A-Z, or 0-9. The remainder of the string can only contain the characters 0-9, -, ., a-z, and A-Z. This value indicates the publisher that should be used when more than one publisher's packages are present, or when packages are published to the repository and a publisher is not specified.
 .RE
 
@@ -722,6 +563,17 @@ For repository versions 3 and 4, the following properties can be set for individ
 .sp .6
 .RS 4n
 A string that represents the default alias that clients should use when adding a publisher using the repository's configuration data. The first character must be a-z, A-Z, or 0-9. The remainder of the string can only contain the characters 0-9, -, ., a-z, and A-Z.
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fBrepository/check-certificate-revocation\fR\fR
+.ad
+.sp .6
+.RS 4n
+A boolean to check whether a certificate has been revoked. When this property is set to \fBTrue\fR, the \fBpkgrepo verify\fR and \fBpkgrepo fix\fR commands attempt to contact any CRL distribution points in the certificates used for signature verification to determine whether the certificate has been revoked since being issued. The default value is \fBFalse\fR. This property is only used by the \fBverify\fR and \fBfix\fR subcommands to validate the contents of the repository. This property does not affect client settings. This value should be the same as the corresponding \fBpkg\fR(1) property value.
 .RE
 
 .sp
@@ -838,7 +690,147 @@ A URI that represents the location of a resource that must be used to obtain cre
 A list of locations (URIs) of repositories that contain packages that users might be interested in.
 .RE
 
+.sp
+.ne 2
+.mk
+.na
+\fB\fBrepository/signature-required-names\fR\fR
+.ad
+.sp .6
+.RS 4n
+A list of names that must be seen as common names of certificates while validating the signatures of a package. This property is only used by the \fBverify\fR and \fBfix\fR subcommands to validate the contents of the repository. This property does not affect client settings. These values should be the same as the corresponding \fBpkg\fR(1) property values.
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fBrepository/trust-anchor-directory\fR\fR
+.ad
+.sp .6
+.RS 4n
+The absolute path name of the directory that contains the trust anchors for packages in this repository. If not specified, \fB/etc/certs/CA/\fR is used. This property is only used by the \fBverify\fR and \fBfix\fR subcommands to validate the contents of the repository. This property does not affect client settings. This value should be the same as the corresponding \fBpkg\fR(1) property value.
+.RE
+
 Properties not documented here, but listed in the output of the \fBget\fR subcommand, are reserved for internal use and should not be set.
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fBpkgrepo verify\fR [\fB-p\fR \fIpublisher\fR]... \fB-s\fR \fIrepo_uri_or_path\fR\fR
+.ad
+.sp .6
+.RS 4n
+Verify that the following attributes of the package repository contents are correct:
+.RS +4
+.TP
+.ie t \(bu
+.el o
+File checksums
+.RE
+.RS +4
+.TP
+.ie t \(bu
+.el o
+File permissions
+.sp
+The path leading to the repository is also checked to ensure that the \fBpkg5srv\fR user can read the repository contents. This check can be necessary for repositories that are made available using the \fBsvc:/application/pkg/server\fR service, or using the \fBsvc:/application/pkg/system-repository\fR service when the system has non-global zones.
+.RE
+.RS +4
+.TP
+.ie t \(bu
+.el o
+Package manifest permissions
+.RE
+.RS +4
+.TP
+.ie t \(bu
+.el o
+Package manifest content
+.RE
+.RS +4
+.TP
+.ie t \(bu
+.el o
+Package signatures
+.sp
+Package manifest signatures are calculated based on the values of the \fBrepository/signature-required-names\fR, \fBrepository/trust-anchor-directory\fR, and \fBrepository/check-certificate-revocation\fR properties.
+.RE
+Errors are emitted to \fBstdout\fR. The \fBpkgrepo\fR command exits with a non-zero return code if any errors are emitted.
+.sp
+This subcommand can be used only with version 4 file system based repositories.
+.sp
+.ne 2
+.mk
+.na
+\fB\fB-p\fR \fIpublisher\fR\fR
+.ad
+.sp .6
+.RS 4n
+Perform the operation only for the specified publisher. If no publisher is specified, or if the special value \fBall\fR is specified, the operation is performed for all publishers. This option can be specified multiple times.
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB-s\fR \fIrepo_uri_or_path\fR\fR
+.ad
+.sp .6
+.RS 4n
+Operate on the repository located at the given URI or file system path.
+.RE
+
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fBpkgrepo fix\fR [\fB-v\fR] [\fB-p\fR \fIpublisher\fR]... \fB-s\fR \fIrepo_uri_or_path\fR\fR
+.ad
+.sp .6
+.RS 4n
+Fix the contents of a repository by first verifying the repository, and then moving any invalid repository contents into a quarantine directory within the repository.
+.sp
+If repository errors are found, a repository rebuild is automatically performed. If any errors are found, a message is emitted to \fBstdout\fR showing which packages must be re-imported using \fBpkgsend\fR(1) or \fBpkgrecv\fR(1) in order to restore the repository contents.
+.sp
+This subcommand can be used only with version 4 file system based repositories.
+.sp
+.ne 2
+.mk
+.na
+\fB\fB-v\fR\fR
+.ad
+.sp .6
+.RS 4n
+Include output detailing the errors found during repository verification.
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB-p\fR \fIpublisher\fR\fR
+.ad
+.sp .6
+.RS 4n
+Perform the operation only for the specified publisher. If no publisher is specified, or if the special value \fBall\fR is specified, the operation is performed for all publishers. This option can be specified multiple times.
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB-s\fR \fIrepo_uri_or_path\fR\fR
+.ad
+.sp .6
+.RS 4n
+Operate on the repository located at the given URI or file system path.
+.RE
+
 .RE
 
 .sp

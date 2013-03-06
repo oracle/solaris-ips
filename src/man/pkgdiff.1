@@ -1,6 +1,6 @@
 '\" te
 .\" Copyright (c) 2007, 2013, Oracle and/or its affiliates. All rights reserved.
-.TH pkgdiff 1 "20 Feb 2013" "SunOS 5.12" "User Commands"
+.TH pkgdiff 1 "26 Feb 2013" "SunOS 5.12" "User Commands"
 .SH NAME
 pkgdiff \- compare package manifests
 .SH SYNOPSIS
@@ -8,14 +8,13 @@ pkgdiff \- compare package manifests
 .nf
 /usr/bin/pkgdiff [-i \fIattribute\fR]... [-o \fIattribute\fR]
     [-t \fIaction_name\fR[,\fIaction_name\fR]...]...
-    [-v \fIname\fR=\fIvalue\fR]...
-    \fI(file1 | -)\fR \fI(file2 | -)\fR
+    [-v \fIname\fR=\fIvalue\fR]...  (\fIfile1\fR | -) (\fIfile2\fR | -)
 .fi
 
 .SH DESCRIPTION
 .sp
 .LP
-\fBpkgdiff\fR compares two package manifests and reports differences. \fBpkgdiff\fR sorts each manifest and action into a consistent order before comparison. One of the manifests can be read from stdin by specifying \fI-\fR in place of the filename.
+\fBpkgdiff\fR compares two package manifests and reports differences. One of the manifests can be read from \fBstdin\fR by specifying \fB-\fR in place of the file name. \fBpkgdiff\fR sorts each manifest and action into a consistent order before comparison.
 .sp
 .LP
 Output is in the following form:
@@ -96,7 +95,7 @@ Display a usage message.
 .ad
 .sp .6
 .RS 4n
-Ignore \fIattribute\fR if present during comparisons. File hash values can be ignored with \fB-i\fR \fIhash\fR. This option cannot be used with the \fB-o\fR option. This option can be repeated.
+Ignore \fIattribute\fR if present during comparisons. File hash values can be ignored with \fB-i\fR \fIhash\fR. This option cannot be used with the \fB-o\fR option. This option can be specified multiple times.
 .RE
 
 .sp
@@ -114,11 +113,11 @@ Only report differences in \fIattribute\fR. This option cannot be used with the 
 .ne 2
 .mk
 .na
-\fB\fB-t\fR \fIaction_name\fR\fR
+\fB\fB-t\fR \fIaction_name\fR[,\fIaction_name\fR]...\fR
 .ad
 .sp .6
 .RS 4n
-Only compare the specified actions. Multiple actions can be specified in a comma-separated list. The value of \fIaction_name\fR is one of the actions listed in "Actions" in the \fBpkg\fR(5) man page, such as \fBfile\fR, \fBdir\fR, \fBdriver\fR, \fBdepend\fR, and \fBset\fR. This option can be specified multiple times.
+Only compare the specified actions. Multiple actions can be specified in a comma-separated list. The value of \fIaction_name\fR is one of the actions listed in "Actions" in the \fBpkg\fR(5) man page. For example, the following values could be specified for \fIaction_name\fR: \fBfile\fR, \fBdir\fR, \fBdriver\fR, \fBdepend\fR, \fBset\fR. This option can be specified multiple times.
 .RE
 
 .sp
@@ -129,7 +128,7 @@ Only compare the specified actions. Multiple actions can be specified in a comma
 .ad
 .sp .6
 .RS 4n
-Only compute differences for this variant value. For example, only compute differences for \fBarch=sparc\fR. This variant tag is removed for all actions before comparison. Only one value can be specified per variant. This option can be repeated for different variants.
+Only compute differences for this variant value. For example, only compute differences for \fBarch=sparc\fR. This variant tag is removed for all actions before comparison. Only one value can be specified per variant. This option can be specified multiple times for different variants.
 .RE
 
 .SH EXIT STATUS
