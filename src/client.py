@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2007, 2012, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2007, 2013, Oracle and/or its affiliates. All rights reserved.
 #
 
 #
@@ -72,6 +72,7 @@ try:
         import pkg.client.progress as progress
         import pkg.client.linkedimage as li
         import pkg.client.publisher as publisher
+        import pkg.client.options as options
         import pkg.fmri as fmri
         import pkg.misc as misc
         import pkg.pipeutils as pipeutils
@@ -625,16 +626,16 @@ def get_tracker():
         elif global_settings.client_output_quiet:
                 progresstracker = progress.QuietProgressTracker()
         elif global_settings.client_output_progfd:
-		# This logic handles linked images: for linked children
-		# we elide the progress output.
+                # This logic handles linked images: for linked children
+                # we elide the progress output.
                 output_file = os.fdopen(global_settings.client_output_progfd,
-		    "w")
+                    "w")
                 child_tracker = progress.LinkedChildProgressTracker(
                     output_file=output_file)
-		dot_tracker = progress.DotProgressTracker(
-		    output_file=output_file)
-		progresstracker = progress.MultiProgressTracker(
-		    [child_tracker, dot_tracker])
+                dot_tracker = progress.DotProgressTracker(
+                    output_file=output_file)
+                progresstracker = progress.MultiProgressTracker(
+                    [child_tracker, dot_tracker])
         else:
                 try:
                         progresstracker = progress.FancyUNIXProgressTracker()
@@ -1039,12 +1040,12 @@ made will not be reflected on the next boot.
                     bool_str(plan.update_boot_archive)))
 
         # Right-justify all status strings based on length of longest string.
-	if status:
-		rjust_status = max(len(s[0]) for s in status)
-		rjust_value = max(len(s[1]) for s in status)
-		for s in status:
-			logger.info("%s %s" % (s[0].rjust(rjust_status),
-			    s[1].rjust(rjust_value)))
+        if status:
+                rjust_status = max(len(s[0]) for s in status)
+                rjust_value = max(len(s[1]) for s in status)
+                for s in status:
+                        logger.info("%s %s" % (s[0].rjust(rjust_status),
+                            s[1].rjust(rjust_value)))
                 # Ensure there is a blank line between status information and
                 # remainder.
                 logger.info("")
@@ -1803,627 +1804,6 @@ def __api_op(_op, _api_inst, _accept=False, _li_ignore=None, _noexecute=False,
                 msg("-" * 75 + "\n")
 
         return ret_code
-
-def opts_err_opt1_req_opt2(opt1, opt2, op):
-        txt = _("%(opt1)s may only be used in combination with %(opt2)s") % \
-            {"opt1": opt1, "opt2": opt2}
-        usage(txt, cmd=op)
-
-def opts_err_incompat(opt1, opt2, op):
-        txt = _("the %(opt1)s and %(opt2)s options may not be combined") % \
-            {"opt1": opt1, "opt2": opt2}
-        usage(txt, cmd=op)
-
-def opts_err_repeated(opt1, op):
-        txt = _("option '%s' repeated") % (opt1)
-        usage(txt, cmd=op)
-
-def opts_table_cb_beopts(op, api_inst, opts, opts_new):
-
-        # synthesize require_new_be and deny_new_be into new_be
-        del opts_new["require_new_be"]
-        del opts_new["deny_new_be"]
-        opts_new["new_be"] = None
-
-        if (opts["be_name"] or opts["require_new_be"]) and opts["deny_new_be"]:
-                opts_err_incompat("--require-new-be", "--deny-new-be", op)
-
-        # create a new key called "backup_be" in the options array
-        if opts["require_new_be"] or opts["be_name"]:
-                opts_new["new_be"] = True
-        if opts["deny_new_be"]:
-                opts_new["new_be"] = False
-
-        # synthesize require_backup_be and no_backup_be into backup_be
-        del opts_new["require_backup_be"]
-        del opts_new["no_backup_be"]
-        opts_new["backup_be"] = None
-
-        if (opts["require_backup_be"] or opts["backup_be_name"]) and \
-            opts["no_backup_be"]:
-                opts_err_incompat("--require-backup-be", "--no-backup-be", op)
-
-        if (opts["require_backup_be"] or opts["backup_be_name"]) and \
-            (opts["require_new_be"] or opts["be_name"]):
-                opts_err_incompat("--require-backup-be", "--require-new-be", op)
-
-        # create a new key called "backup_be" in the options array
-        if opts["require_backup_be"] or opts["backup_be_name"]:
-                opts_new["backup_be"] = True
-        if opts["no_backup_be"]:
-                opts_new["backup_be"] = False
-
-def opts_table_cb_li_ignore(op, api_inst, opts, opts_new):
-
-        # synthesize li_ignore_all and li_ignore_list into li_ignore
-        del opts_new["li_ignore_all"]
-        del opts_new["li_ignore_list"]
-        opts_new["li_ignore"] = None
-
-        # check if there's nothing to ignore
-        if not opts["li_ignore_all"] and not opts["li_ignore_list"]:
-                return
-
-        if opts["li_ignore_all"]:
-
-                # can't ignore all and specific images
-                if opts["li_ignore_list"]:
-                        opts_err_incompat("-I", "-i", op)
-
-                # can't ignore all and target anything.
-                if "li_target_all" in opts and opts["li_target_all"]:
-                        opts_err_incompat("-I", "-a", op)
-                if "li_target_list" in opts and opts["li_target_list"]:
-                        opts_err_incompat("-I", "-l", op)
-                if "li_name" in opts and opts["li_name"]:
-                        opts_err_incompat("-I", "-l", op)
-
-                opts_new["li_ignore"] = []
-                return
-
-        assert opts["li_ignore_list"]
-
-        # it doesn't make sense to specify images to ignore if the
-        # user is already specifying images to operate on.
-        if "li_target_all" in opts and opts["li_target_all"]:
-                opts_err_incompat("-i", "-a", op)
-        if "li_target_list" in opts and opts["li_target_list"]:
-                opts_err_incompat("-i", "-l", op)
-        if "li_name" in opts and opts["li_name"]:
-                opts_err_incompat("-i", "-l", op)
-
-        li_ignore = []
-        for li_name in opts["li_ignore_list"]:
-                # check for repeats
-                if li_name in li_ignore:
-                        opts_err_repeated("-i %s" % (li_name), op)
-                # add to ignore list
-                li_ignore.append(li_name)
-
-        opts_new["li_ignore"] = api_inst.parse_linked_name_list(li_ignore)
-
-def opts_table_cb_li_no_psync(op, api_inst, opts, opts_new):
-        # if a target child linked image was specified, the no-parent-sync
-        # option doesn't make sense since we know that both the parent and
-        # child image are accessible
-
-        if "li_target_all" not in opts:
-                # we don't accept linked image target options
-                assert "li_target_list" not in opts
-                return
-
-        if opts["li_target_all"] and not opts["li_parent_sync"]:
-                opts_err_incompat("-a", "--no-parent-sync", op)
-        if opts["li_target_list"] and not opts["li_parent_sync"]:
-                opts_err_incompat("-l", "--no-parent-sync", op)
-
-def opts_table_cb_li_props(op, api_inst, opts, opts_new):
-        """convert linked image prop list into a dictionary"""
-
-        opts_new["li_props"] = __parse_linked_props(opts["li_props"], op)
-
-def opts_table_cb_li_target(op, api_inst, opts, opts_new):
-        # figure out which option the user specified
-        if opts["li_target_all"] and opts["li_target_list"]:
-                opts_err_incompat("-a", "-l", op)
-        elif opts["li_target_all"]:
-                arg1 = "-a"
-        elif opts["li_target_list"]:
-                arg1 = "-l"
-        else:
-                return
-
-        if "be_activate" in opts and not opts["be_activate"]:
-                opts_err_incompat(arg1, "--no-be-activate", op)
-        if "be_name" in opts and opts["be_name"]:
-                opts_err_incompat(arg1, "--be-name", op)
-        if "deny_new_be" in opts and opts["deny_new_be"]:
-                opts_err_incompat(arg1, "--deny-new-be", op)
-        if "require_new_be" in opts and opts["require_new_be"]:
-                opts_err_incompat(arg1, "--require-new-be", op)
-        if "reject_pats" in opts and opts["reject_pats"]:
-                opts_err_incompat(arg1, "--reject", op)
-        if "origins" in opts and opts["origins"]:
-                opts_err_incompat(arg1, "-g", op)
-
-        # validate linked image name
-        li_target_list = []
-        for li_name in opts["li_target_list"]:
-                # check for repeats
-                if li_name in li_target_list:
-                        opts_err_repeated("-l %s" % (li_name), op)
-                # add to ignore list
-                li_target_list.append(li_name)
-
-        opts_new["li_target_list"] = \
-            api_inst.parse_linked_name_list(li_target_list)
-
-def opts_table_cb_li_target1(op, api_inst, opts, opts_new):
-        # figure out which option the user specified
-        if opts["li_name"]:
-                arg1 = "-l"
-        else:
-                return
-
-        if "be_activate" in opts and not opts["be_activate"]:
-                opts_err_incompat(arg1, "--no-be-activate", op)
-        if "be_name" in opts and opts["be_name"]:
-                opts_err_incompat(arg1, "--be-name", op)
-        if "deny_new_be" in opts and opts["deny_new_be"]:
-                opts_err_incompat(arg1, "--deny-new-be", op)
-        if "require_new_be" in opts and opts["require_new_be"]:
-                opts_err_incompat(arg1, "--require-new-be", op)
-        if "reject_pats" in opts and opts["reject_pats"]:
-                opts_err_incompat(arg1, "--require", op)
-        if "origins" in opts and opts["origins"]:
-                opts_err_incompat(arg1, "-g", op)
-
-def opts_table_cb_no_headers_vs_quiet(op, api_inst, opts, opts_new):
-        # check if we accept the -q option
-        if "quiet" not in opts:
-                return
-
-        # -q implies -H
-        if opts["quiet"]:
-                opts_new["omit_headers"] = True
-
-def opts_table_cb_q(op, api_inst, opts, opts_new):
-        # Be careful not to overwrite global_settings.client_output_quiet
-        # because it might be set "True" from elsewhere, e.g. in
-        # opts_table_cb_parsable.
-        if opts["quiet"] is True:
-                global_settings.client_output_quiet = True
-
-def opts_table_cb_v(op, api_inst, opts, opts_new):
-        global_settings.client_output_verbose = opts["verbose"]
-
-def opts_table_cb_nqv(op, api_inst, opts, opts_new):
-        if opts["verbose"] and opts["quiet"]:
-                opts_err_incompat("-v", "-q", op)
-
-def opts_table_cb_parsable(op, api_inst, opts, opts_new):
-        if opts["parsable_version"] and opts.get("verbose", False):
-                opts_err_incompat("--parsable", "-v", op)
-        if opts["parsable_version"]:
-                try:
-                        opts_new["parsable_version"] = int(
-                            opts["parsable_version"])
-                except ValueError:
-                        usage(_("--parsable expects an integer argument."),
-                            cmd=op)
-                global_settings.client_output_parsable_version = \
-                    opts_new["parsable_version"]
-                opts_new["quiet"] = True
-                global_settings.client_output_quiet = True
-
-def opts_table_cb_origins(op, api_inst, opts, opts_new):
-        origins = set()
-        for o in opts["origins"]:
-                origins.add(misc.parse_uri(o, cwd=orig_cwd))
-        opts_new["origins"] = origins
-
-def opts_table_cb_stage(op, api_inst, opts, opts_new):
-        if opts["stage"] == None:
-                opts_new["stage"] = API_STAGE_DEFAULT
-                return
-
-        if opts_new["stage"] not in api_stage_values:
-                usage(_("invalid operation stage: '%s'") % opts["stage"],
-                    cmd=op)
-
-def opts_cb_li_attach(op, api_inst, opts, opts_new):
-        if opts["attach_parent"] and opts["attach_child"]:
-                opts_err_incompat("-c", "-p", op)
-
-        if not opts["attach_parent"] and not opts["attach_child"]:
-                usage(_("either -c or -p must be specified"), cmd=op)
-
-        if opts["attach_child"]:
-                # if we're attaching a new child then that doesn't affect
-                # any other children, so ignoring them doesn't make sense.
-                if opts["li_ignore_all"]:
-                        opts_err_incompat("-c", "-I", op)
-                if opts["li_ignore_list"]:
-                        opts_err_incompat("-c", "-i", op)
-
-def opts_table_cb_md_only(op, api_inst, opts, opts_new):
-        # if the user didn't specify linked-md-only we're done
-        if not opts["li_md_only"]:
-                return
-
-        # li_md_only implies no li_pkg_updates
-        if "li_pkg_updates" in opts:
-                opts_new["li_pkg_updates"] = False
-
-        #
-        # if li_md_only is false that means we're not updating any packages
-        # within the current image so there are a ton of options that no
-        # longer apply to the current operation, and hence are incompatible
-        # with li_md_only.
-        #
-        arg1 = "--linked-md-only"
-        if "be_name" in opts and opts["be_name"]:
-                opts_err_incompat(arg1, "--be-name", op)
-        if "deny_new_be" in opts and opts["deny_new_be"]:
-                opts_err_incompat(arg1, "--deny-new-be", op)
-        if "require_new_be" in opts and opts["require_new_be"]:
-                opts_err_incompat(arg1, "--require-new-be", op)
-        if "li_parent_sync" in opts and not opts["li_parent_sync"]:
-                opts_err_incompat(arg1, "--no-parent-sync", op)
-        if "reject_pats" in opts and opts["reject_pats"]:
-                opts_err_incompat(arg1, "--reject", op)
-
-def opts_cb_list(op, api_inst, opts, opts_new):
-        if opts_new["origins"] and opts_new["list_upgradable"]:
-                opts_err_incompat("-g", "-u", op)
-
-        if opts_new["origins"] and not opts_new["list_newest"]:
-                # Use of -g implies -a unless -n is provided.
-                opts_new["list_installed_newest"] = True
-
-        if opts_new["list_all"] and not opts_new["list_installed_newest"]:
-                opts_err_opt1_req_opt2("-f", "-a", op)
-
-        if opts_new["list_installed_newest"] and opts_new["list_newest"]:
-                opts_err_incompat("-a", "-n", op)
-
-        if opts_new["list_installed_newest"] and opts_new["list_upgradable"]:
-                opts_err_incompat("-a", "-u", op)
-
-        if opts_new["summary"] and opts_new["verbose"]:
-                opts_err_incompat("-s", "-v", op)
-
-def opts_cb_int(k, op, api_inst, opts, opts_new, minimum=None):
-        if k not in opts:
-                usage(_("missing required parameter: %s" % k), cmd=op)
-                return
-
-        # get the original argument value
-        v = opts[k]
-
-        # make sure it is an integer
-        try:
-                v = int(v)
-        except (ValueError, TypeError):
-                # not a valid integer
-                err = _("invalid '%(opt)s' value: %(val)s") % \
-                    {"opt": k, "val": v}
-                usage(err, cmd=op)
-
-        # check the minimum bounds
-        if minimum is not None and v < minimum:
-                err = _("'%(opt)s' must be >= %(minimum)d") % \
-                    {"opt": k, "minimum": minimum}
-                usage(err, cmd=op)
-
-        # update the new options array to make the value an integer
-        opts_new[k] = v
-
-def opts_cb_fd(k, op, api_inst, opts, opts_new):
-        opts_cb_int(k, op, api_inst, opts, opts_new, minimum=0)
-
-        err = _("invalid '%(opt)s' value: %(optval)s") % \
-            {"opt": k, "optval": opts_new[k]}
-        try:
-                os.fstat(opts_new[k])
-        except OSError:
-                # not a valid file descriptor
-                usage(err, cmd=op)
-
-def opts_cb_remote(op, api_inst, opts, opts_new):
-        opts_cb_fd("ctlfd", op, api_inst, opts, opts_new)
-        opts_cb_fd("progfd", op, api_inst, opts, opts_new)
-
-        # move progfd from opts_new into a global
-        global_settings.client_output_progfd = opts_new["progfd"]
-        del opts_new["progfd"]
-
-def opts_table_cb_concurrency(op, api_inst, opts, opts_new):
-        if opts["concurrency"] is None:
-                # remove concurrency from parameters dict
-                del opts_new["concurrency"]
-                return
-
-        # make sure we have an integer
-        opts_cb_int("concurrency", op, api_inst, opts, opts_new)
-
-        # update global concurrency setting
-        global_settings.client_concurrency = opts_new["concurrency"]
-
-        # remove concurrency from parameters dict
-        del opts_new["concurrency"]
-
-#
-# options common to multiple pkg(1) subcommands.  The format for specifying
-# options is a list which can contain:
-#
-# - Function pointers which define callbacks that are invoked after all
-#   options (aside from extra pargs) have been parsed.  These callbacks can
-#   verify the the contents and combinations of different options.
-#
-# - Tuples formatted as:
-#       (s, l, k, v)
-#   where the values are:
-#       s: a short option, ex: -f
-#       l: a long option, ex: --foo
-#       k: the key value for the options dictionary
-#       v: the default value. valid values are: True/False, None, [], 0
-#
-opts_table_beopts = [
-    opts_table_cb_beopts,
-    ("",  "backup-be-name=",   "backup_be_name",     None),
-    ("",  "be-name=",          "be_name",            None),
-    ("",  "deny-new-be",       "deny_new_be",        False),
-    ("",  "no-backup-be",      "no_backup_be",       False),
-    ("",  "no-be-activate",    "be_activate",        True),
-    ("",  "require-backup-be", "require_backup_be",  False),
-    ("",  "require-new-be",    "require_new_be",     False),
-]
-
-opts_table_concurrency = [
-    opts_table_cb_concurrency,
-    ("C", "concurrency=",      "concurrency",        None),
-]
-
-opts_table_force = [
-    ("f", "",                "force",                False),
-]
-
-opts_table_li_ignore = [
-    opts_table_cb_li_ignore,
-    ("I", "",                "li_ignore_all",        False),
-    ("i", "",                "li_ignore_list",       []),
-]
-
-opts_table_li_md_only = [
-    opts_table_cb_md_only,
-    ("",  "linked-md-only",    "li_md_only",         False),
-]
-
-opts_table_li_no_pkg_updates = [
-    ("",  "no-pkg-updates",  "li_pkg_updates",       True),
-]
-
-opts_table_li_no_psync = [
-    opts_table_cb_li_no_psync,
-    ("",  "no-parent-sync",  "li_parent_sync",       True),
-]
-
-opts_table_li_props = [
-    opts_table_cb_li_props,
-    ("", "prop-linked",      "li_props",             []),
-]
-
-opts_table_li_target = [
-    opts_table_cb_li_target,
-    ("a", "",                "li_target_all",        False),
-    ("l", "",                "li_target_list",       []),
-]
-
-opts_table_li_target1 = [
-    opts_table_cb_li_target1,
-    ("l", "",                "li_name",              None),
-]
-
-opts_table_licenses = [
-    ("",  "accept",          "accept",               False),
-    ("",  "licenses",        "show_licenses",        False),
-]
-
-opts_table_no_headers = [
-    opts_table_cb_no_headers_vs_quiet,
-    ("H", "",                "omit_headers",         False),
-]
-
-opts_table_no_index = [
-    ("",  "no-index",        "update_index",         True),
-]
-
-opts_table_no_refresh = [
-    ("",  "no-refresh",      "refresh_catalogs",     True),
-]
-
-opts_table_reject = [
-    ("", "reject=",          "reject_pats",          []),
-]
-
-opts_table_verbose = [
-    opts_table_cb_v,
-    ("v", "",                "verbose",              0),
-]
-
-opts_table_quiet = [
-    opts_table_cb_q,
-    ("q", "",                "quiet",                False),
-]
-
-opts_table_parsable = [
-    opts_table_cb_parsable,
-    ("", "parsable=",        "parsable_version",     None),
-]
-
-opts_table_nqv = \
-    opts_table_quiet + \
-    opts_table_verbose + \
-    [
-    opts_table_cb_nqv,
-    ("n", "",                "noexecute",            False),
-]
-
-opts_table_origins = [
-    opts_table_cb_origins,
-    ("g", "",                "origins",              []),
-]
-
-opts_table_stage = [
-    opts_table_cb_stage,
-    ("",  "stage",           "stage",                None),
-]
-
-#
-# Options for pkg(1) subcommands.  Built by combining the option tables above,
-# with some optional subcommand unique options defined below.
-#
-opts_install = \
-    opts_table_beopts + \
-    opts_table_concurrency + \
-    opts_table_li_ignore + \
-    opts_table_li_no_psync + \
-    opts_table_licenses + \
-    opts_table_reject + \
-    opts_table_no_index + \
-    opts_table_no_refresh + \
-    opts_table_nqv + \
-    opts_table_parsable + \
-    opts_table_origins + \
-    []
-
-# "update" cmd inherits all "install" cmd options
-opts_update = \
-    opts_install + \
-    opts_table_force + \
-    opts_table_stage + \
-    []
-
-# "attach-linked" cmd inherits all "install" cmd options
-opts_attach_linked = \
-    opts_install + \
-    opts_table_force + \
-    opts_table_li_md_only + \
-    opts_table_li_no_pkg_updates + \
-    opts_table_li_props + \
-    [
-    opts_cb_li_attach,
-    ("",  "allow-relink",   "allow_relink",         False),
-    ("c", "",               "attach_child",         False),
-    ("p", "",               "attach_parent",        False),
-]
-
-opts_list_mediator = \
-    opts_table_no_headers + \
-    [
-    ("a", "",                "list_available",      False),
-    ("F", "output-format",   "output_format",       None)
-]
-
-opts_revert = \
-    opts_table_beopts + \
-    opts_table_nqv + \
-    opts_table_parsable + \
-    [
-    ("",  "tagged",          "tagged",               False),
-]
-
-opts_set_mediator = \
-    opts_table_beopts + \
-    opts_table_no_index + \
-    opts_table_nqv + \
-    opts_table_parsable + \
-    [
-    ("I", "implementation",  "med_implementation",   None),
-    ("V", "version",         "med_version",          None)
-]
-
-opts_unset_mediator = \
-    opts_table_beopts + \
-    opts_table_no_index + \
-    opts_table_nqv + \
-    opts_table_parsable + \
-    [
-    ("I", "",               "med_implementation",   False),
-    ("V", "",               "med_version",          False)
-]
-
-# "set-property-linked" cmd inherits all "install" cmd options
-opts_set_property_linked = \
-    opts_install + \
-    opts_table_li_md_only + \
-    opts_table_li_no_pkg_updates + \
-    opts_table_li_target1 + \
-    []
-
-# "sync-linked" cmd inherits all "install" cmd options
-opts_sync_linked = \
-    opts_install + \
-    opts_table_li_md_only + \
-    opts_table_li_no_pkg_updates + \
-    opts_table_li_target + \
-    opts_table_stage + \
-    []
-
-opts_uninstall = \
-    opts_table_beopts + \
-    opts_table_concurrency + \
-    opts_table_li_ignore + \
-    opts_table_no_index + \
-    opts_table_nqv + \
-    opts_table_parsable + \
-    opts_table_stage
-
-opts_audit_linked = \
-    opts_table_li_no_psync + \
-    opts_table_li_target + \
-    opts_table_no_headers + \
-    opts_table_quiet + \
-    []
-
-opts_detach_linked = \
-    opts_table_force + \
-    opts_table_li_target + \
-    opts_table_nqv + \
-    []
-
-opts_list_linked = \
-    opts_table_li_ignore + \
-    opts_table_no_headers + \
-    []
-
-opts_list_property_linked = \
-    opts_table_li_target1 + \
-    opts_table_no_headers + \
-    []
-
-opts_list_inventory = \
-    opts_table_li_no_psync + \
-    opts_table_no_refresh + \
-    opts_table_no_headers + \
-    opts_table_origins + \
-    opts_table_verbose + \
-    [
-    opts_cb_list,
-    ("a", "",               "list_installed_newest", False),
-    ("f", "",               "list_all",              False),
-    ("n", "",               "list_newest",           False),
-    ("s", "",               "summary",               False),
-    ("u", "",               "list_upgradable",       False),
-]
-
-opts_remote = [
-    opts_cb_remote,
-    ("",  "ctlfd",           "ctlfd",                None),
-    ("",  "progfd",          "progfd",               None),
-]
-
 
 class RemoteDispatch(object):
         """RPC Server Class which invoked by the PipedRPCServer when a RPC
@@ -5583,8 +4963,8 @@ def sync_linked(op, api_inst, pargs, accept, backup_be, backup_be_name,
                     update_index=update_index)
 
         # sync the requested child image(s)
-	api_inst.progresstracker.set_major_phase(
-	    api_inst.progresstracker.PHASE_UTILITY)
+        api_inst.progresstracker.set_major_phase(
+            api_inst.progresstracker.PHASE_UTILITY)
         rvdict = api_inst.sync_linked_children(li_target_list,
             noexecute=noexecute, accept=accept, show_licenses=show_licenses,
             refresh_catalogs=refresh_catalogs, update_index=update_index,
@@ -5654,8 +5034,8 @@ def attach_linked(op, api_inst, pargs,
                     reject_list=reject_pats, update_index=update_index)
 
         # attach the requested child image
-	api_inst.progresstracker.set_major_phase(
-	    api_inst.progresstracker.PHASE_UTILITY)
+        api_inst.progresstracker.set_major_phase(
+            api_inst.progresstracker.PHASE_UTILITY)
         (rv, err, p_dict) = api_inst.attach_linked_child(lin, li_path, li_props,
             accept=accept, allow_relink=allow_relink, force=force,
             li_md_only=li_md_only, li_pkg_updates=li_pkg_updates,
@@ -5687,8 +5067,8 @@ def detach_linked(op, api_inst, pargs, force, li_target_all, li_target_list,
                 return __api_op(op, api_inst, _noexecute=noexecute,
                     _quiet=quiet, _verbose=verbose, force=force)
 
-	api_inst.progresstracker.set_major_phase(
-	    api_inst.progresstracker.PHASE_UTILITY)
+        api_inst.progresstracker.set_major_phase(
+            api_inst.progresstracker.PHASE_UTILITY)
         rvdict = api_inst.detach_linked_children(li_target_list, force=force,
             noexecute=noexecute)
 
@@ -6264,78 +5644,195 @@ img = None
 orig_cwd = None
 
 #
+# Mapping of the internal option name to short and long CLI options.
+#
+# {option_name: (short, long)}
+#
+#
+
+opts_mapping = {
+    "backup_be_name" :    ("",  "backup-be-name"),
+    "be_name" :           ("",  "be-name"),
+    "deny_new_be" :       ("",  "deny-new-be"),
+    "no_backup_be" :      ("",  "no-backup-be"),
+    "be_activate" :       ("",  "no-be-activate"),
+    "require_backup_be" : ("",  "require-backup-be"),
+    "require_new_be" :    ("",  "require-new-be"),
+
+    "concurrency" :       ("C", "concurrency"),
+
+    "force" :             ("f", ""),
+
+    "li_ignore_all" :     ("I", ""),
+    "li_ignore_list" :    ("i", ""),
+    "li_md_only" :        ("",  "linked-md-only"),
+
+    "li_pkg_updates" :    ("",  "no-pkg-updates"),
+
+    "li_parent_sync" :    ("",  "no-parent-sync"),
+
+    "li_props" :          ("",  "prop-linked"),
+
+    "li_target_all" :     ("a", ""),
+    "li_target_list" :    ("l", ""),
+
+    "li_name" :           ("l",  ""),
+
+    "accept" :            ("",  "accept"),
+    "show_licenses" :     ("",  "licenses"),
+
+    "omit_headers" :      ("H",  ""),
+
+    "update_index" :      ("",  "no-index"),
+
+    "refresh_catalogs" :  ("",  "no-refresh"),
+
+    "reject_pats" :       ("",  "reject"),
+
+    "verbose" :           ("v",  ""),
+
+    "quiet" :             ("q",  ""),
+
+    "parsable_version" :  ("",  "parsable"),
+
+    "noexecute" :         ("n",  ""),
+
+    "origins" :           ("g",  ""),
+
+    "stage" :             ("",  "stage"),
+
+    "allow_relink" :      ("",  "allow-relink"),
+    "attach_child" :      ("c",  ""),
+    "attach_parent" :     ("p",  ""),
+
+    "list_available" :    ("a",  ""),
+    "output_format" :     ("F",  "output-format"),
+
+    "tagged" :            ("",  "tagged"),
+
+    # These options are used in set-mediator and unset-mediator but
+    # the long options are only valid in set_mediator (as per the previous
+    # implementation). However, the long options are not documented in the
+    # manpage for set-mediator either, so I think we're good.
+    "med_implementation" : ("I",  "implementation"),
+    "med_version" :        ("V",  "version"),
+
+    "list_installed_newest" : ("a",  ""),
+    "list_all" :              ("f",  ""),
+    "list_newest" :           ("n",  ""),
+    "summary" :               ("s",  ""),
+    "list_upgradable" :       ("u",  ""),
+
+    "ctlfd" :                 ("",  "ctlfd"),
+    "progfd" :                ("",  "progfd"),
+}
+
+#
 # cmds dictionary is used to dispatch subcommands.  The format of this
 # dictionary is:
 #
-#       "subcommand-name" : (
-#               subcommand-cb,
-#               subcommand-opts-table,
-#               arguments-allowed
-#       )
+#       "subcommand-name" : subcommand-cb
 #
 #       subcommand-cb: the callback function invoked for this subcommand
-#       subcommand-opts-table: an arguments options table that is passed to
-#               the common options processing function misc.opts_parse().
-#               if None then misc.opts_parse() is not invoked.
-#
-#       arguments-allowed (optional): the number of additional arguments
-#               allowed to this function, which is also passed to
-#               misc.opts_parse()
 #
 # placeholders in this lookup table for image-create, help and version
 # which don't have dedicated methods
 #
 cmds = {
-    "add-property-value"    : (property_add_value, None),
-    "attach-linked"         : (attach_linked, opts_attach_linked, 2),
-    "avoid"                 : (avoid, None),
-    "audit-linked"          : (audit_linked, opts_audit_linked),
-    "change-facet"          : (change_facet, opts_install, -1),
-    "change-variant"        : (change_variant, opts_install, -1),
-    "contents"              : (list_contents, None),
-    "detach-linked"         : (detach_linked, opts_detach_linked),
-    "facet"                 : (facet_list, None),
-    "fix"                   : (fix_image, None),
-    "freeze"                : (freeze, None),
-    "help"                  : (None, None),
-    "history"               : (history_list, None),
-    "image-create"          : (None, None),
-    "info"                  : (info, None),
-    "install"               : (install, opts_install, -1),
-    "list"                  : (list_inventory, opts_list_inventory, -1),
-    "list-linked"           : (list_linked, opts_list_linked),
-    "mediator"              : (list_mediators, opts_list_mediator, -1),
-    "property"              : (property_list, None),
-    "property-linked"       : (list_property_linked,
-                                  opts_list_property_linked, -1),
-    "pubcheck-linked"       : (pubcheck_linked, []),
-    "publisher"             : (publisher_list, None),
-    "purge-history"         : (history_purge, None),
-    "rebuild-index"         : (rebuild_index, None),
-    "refresh"               : (publisher_refresh, None),
-    "remote"                : (remote, opts_remote, 0),
-    "remove-property-value" : (property_remove_value, None),
-    "revert"                : (revert, opts_revert, -1),
-    "search"                : (search, None),
-    "set-mediator"          : (set_mediator, opts_set_mediator, -1),
-    "set-property"          : (property_set, None),
-    "set-property-linked"   : (set_property_linked,
-                                  opts_set_property_linked, -1),
-    "set-publisher"         : (publisher_set, None),
-    "sync-linked"           : (sync_linked, opts_sync_linked),
-    "unavoid"               : (unavoid, None),
-    "unfreeze"              : (unfreeze, None),
-    "uninstall"             : (uninstall, opts_uninstall, -1),
-    "unset-property"        : (property_unset, None),
-    "update-format"         : (update_format, None),
-    "unset-mediator"        : (unset_mediator, opts_unset_mediator, -1),
-    "unset-publisher"       : (publisher_unset, None),
-    "update"                : (update, opts_update, -1),
-    "update-format"         : (update_format, None),
-    "variant"               : (variant_list, None),
-    "verify"                : (verify_image, None),
-    "version"               : (None, None),
+    "add-property-value"    : [property_add_value],
+    "attach-linked"         : [attach_linked, 2],
+    "avoid"                 : [avoid],
+    "audit-linked"          : [audit_linked, 0],
+    "authority"             : [publisher_list],
+    "change-facet"          : [change_facet],
+    "change-variant"        : [change_variant],
+    "contents"              : [list_contents],
+    "detach-linked"         : [detach_linked, 0],
+    "facet"                 : [facet_list],
+    "fix"                   : [fix_image],
+    "freeze"                : [freeze],
+    "help"                  : [None],
+    "history"               : [history_list],
+    "image-create"          : [None],
+    "info"                  : [info],
+    "install"               : [install],
+    "list"                  : [list_inventory],
+    "list-linked"           : [list_linked, 0],
+    "mediator"              : [list_mediators],
+    "property"              : [property_list],
+    "property-linked"       : [list_property_linked],
+    "pubcheck-linked"       : [pubcheck_linked, 0],
+    "publisher"             : [publisher_list],
+    "purge-history"         : [history_purge],
+    "rebuild-index"         : [rebuild_index],
+    "refresh"               : [publisher_refresh],
+    "remote"                : [remote, 0],
+    "remove-property-value" : [property_remove_value],
+    "revert"                : [revert],
+    "search"                : [search],
+    "set-authority"         : [publisher_set],
+    "set-mediator"          : [set_mediator],
+    "set-property"          : [property_set],
+    "set-property-linked"   : [set_property_linked],
+    "set-publisher"         : [publisher_set],
+    "sync-linked"           : [sync_linked, 0],
+    "unavoid"               : [unavoid],
+    "unfreeze"              : [unfreeze],
+    "uninstall"             : [uninstall],
+    "unset-authority"       : [publisher_unset],
+    "unset-property"        : [property_unset],
+    "update-format"         : [update_format],
+    "unset-mediator"        : [unset_mediator],
+    "unset-publisher"       : [publisher_unset],
+    "update"                : [update],
+    "update-format"         : [update_format],
+    "variant"               : [variant_list],
+    "verify"                : [verify_image],
+    "version"               : [None],
 }
+
+# These tables are an addendum to the the pkg_op_opts/opts_* lists in
+# modules/client/options.py. They contain all the options for functions which
+# are not represented in options.py but go through common option processing.
+# This list should get shortened and eventually removed by moving more/all
+# functions out of client.py.
+
+def opts_cb_remote(api_inst, opts, opts_new):
+        options.opts_cb_fd("ctlfd", api_inst, opts, opts_new)
+        options.opts_cb_fd("progfd", api_inst, opts, opts_new)
+
+        # move progfd from opts_new into a global
+        global_settings.client_output_progfd = opts_new["progfd"]
+        del opts_new["progfd"]
+
+opts_remote = [
+    opts_cb_remote,
+    ("ctlfd",                None),
+    ("progfd",               None),
+]
+
+opts_list_mediator = \
+    options.opts_table_no_headers + \
+    [
+    ("list_available",      False),
+    ("output_format",       None)
+]
+opts_unset_mediator = \
+    options.opts_table_beopts + \
+    options.opts_table_no_index + \
+    options.opts_table_nqv + \
+    options.opts_table_parsable + \
+    [
+    ("med_implementation",   False),
+    ("med_version",          False)
+]
+
+cmd_opts = {
+    "mediator"              : opts_list_mediator,
+    "unset-mediator"        : opts_unset_mediator,
+    "remote"                : opts_remote,
+}
+
 
 def main_func():
         global_settings.client_name = PKG_CLIENT_NAME
@@ -6469,28 +5966,101 @@ def main_func():
         img = api_inst.img
 
         # Find subcommand and execute operation.
-        pargs_limit = 0
         func = cmds[subcommand][0]
-        opts_cmd = cmds[subcommand][1]
-        if len(cmds[subcommand]) > 2:
-                pargs_limit = cmds[subcommand][2]
-        try:
-                if opts_cmd == None:
+        pargs_limit = None
+        if len(cmds[subcommand]) > 1:
+                pargs_limit = cmds[subcommand][1]
+
+        pkg_timer.record("client startup", logger=logger)
+
+        # Get the available options for the requested operation to create the
+        # getopt parsing strings.
+        valid_opts = options.get_pkg_opts(subcommand, add_table=cmd_opts)
+        if not valid_opts:
+                # if there are no options for an op, it has its own processing
+                try:
                         return func(api_inst, pargs)
+                except getopt.GetoptError, e:
+                        usage(_("illegal option -- %s") % e.opt,
+                            cmd=subcommand)
 
-                opts, pargs = misc.opts_parse(subcommand, api_inst, pargs,
-                    opts_cmd, pargs_limit, usage)
+        try:
+                # Parse CLI arguments into dictionary containing corresponding
+                # options and values.
+                opt_dict, pargs = misc.opts_parse(subcommand, pargs, valid_opts,
+                    opts_mapping, usage)
 
-                # Reset the progress tracker here, because we may have
-                # to switch to a different tracker due to the options parse.
-                _api_inst.progresstracker = get_tracker()
+                if pargs_limit is not None and len(pargs) > pargs_limit:
+                        usage(_("illegal argument -- %s") % pargs[pargs_limit],
+                            cmd=subcommand)
 
-                pkg_timer.record("client startup", logger=logger)
-                return func(op=subcommand, api_inst=api_inst,
-                    pargs=pargs, **opts)
+                opts = options.opts_assemble(subcommand, api_inst, opt_dict,
+                    add_table=cmd_opts, cwd=orig_cwd)
 
-        except getopt.GetoptError, e:
-                usage(_("illegal option -- %s") % e.opt, cmd=subcommand)
+        except api_errors.InvalidOptionError, e:
+
+                # We can't use the string representation of the exception since
+                # it references internal option names. We substitute the CLI
+                # options and create a new exception to make sure the messages
+                # are correct.
+
+                # Convert the internal options to CLI options. We make sure that
+                # when there is a short and a long version for the same option
+                # we print both to avoid confusion.
+                def get_cli_opt(option):
+                        out = ""
+                        try:
+                                s, l = opts_mapping[option]
+                                if l and not s:
+                                        return "--%s" % l
+                                elif s and not l:
+                                        return "-%s" % s
+                                else:
+                                        return("-%s/--%s" % (s,l))
+                        except KeyError:
+                                # ignore if we can't find a match
+                                # (happens for repeated arguments)
+                                return option
+
+                cli_opts = []
+                opt_def = []
+
+                for o in e.options:
+                        cli_opts.append(get_cli_opt(o))
+
+                        # collect the default value (see comment below)
+                        opt_def.append(options.get_pkg_opts_defaults(subcommand,
+                            o, add_table=cmd_opts))
+
+                # Prepare for headache:
+                # If we have an option 'b' which is set to True by default it
+                # will be toggled to False if the users specifies the according
+                # option on the CLI.
+                # If we now have an option 'a' which requires option 'b' to be
+                # set, we can't say "'a' requires 'b'" because the user can only
+                # specify 'not b'. So the correct message would be:
+                # "'a' is incompatible with 'not b'".
+                # We can get there by just changing the type of the exception
+                # for all cases where the default value of one of the options is
+                # True.
+                if e.err_type == api_errors.InvalidOptionError.REQUIRED:
+                        if len(opt_def) == 2 and (opt_def[0] or opt_def[1]):
+                                e.err_type = \
+                                    api_errors.InvalidOptionError.INCOMPAT
+
+                # This new exception will have the CLI options, so can be passed
+                # directly to usage().
+                new_e = api_errors.InvalidOptionError(err_type=e.err_type,
+                    options=cli_opts, msg=e.msg)
+
+                usage(str(new_e), cmd=subcommand)
+
+        # Reset the progress tracker here, because we may have
+        # to switch to a different tracker due to the options parse.
+        _api_inst.progresstracker = get_tracker()
+
+        return func(op=subcommand, api_inst=api_inst,
+            pargs=pargs, **opts)
 
 #
 # Establish a specific exit status which means: "python barfed an exception"

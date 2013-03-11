@@ -96,6 +96,7 @@ file path=$(PYDIRVP)/pkg/client/linkedimage/__init__.py
 file path=$(PYDIRVP)/pkg/client/linkedimage/common.py
 file path=$(PYDIRVP)/pkg/client/linkedimage/system.py
 file path=$(PYDIRVP)/pkg/client/linkedimage/zone.py
+file path=$(PYDIRVP)/pkg/client/options.py
 file path=$(PYDIRVP)/pkg/client/pkg_solver.py
 file path=$(PYDIRVP)/pkg/client/pkgdefs.py
 file path=$(PYDIRVP)/pkg/client/pkgplan.py

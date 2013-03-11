@@ -35,6 +35,7 @@ modules/client/image.py
 modules/client/imageconfig.py
 modules/client/imageplan.py
 modules/client/linkedimage/__init__.py
+modules/client/options.py
 modules/client/pkg_solver.py
 modules/client/progress.py
 modules/client/publisher.py

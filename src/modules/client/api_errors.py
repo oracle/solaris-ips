@@ -177,7 +177,7 @@ class ImageInsufficentSpace(ApiException):
                     "needed": bytes_to_str(self.needed),
                     "use": self.use
                     }
-                    
+
 
 class VersionException(ApiException):
         def __init__(self, expected_version, received_version):
@@ -1422,7 +1422,7 @@ class UnsupportedP5SVersion(ApiException):
 
         def __init__(self, v):
                 self.version = v
-        
+
         def __str__(self):
                 return _("%s is not a supported version for creating a "
                     "syspub response.") % self.version
@@ -3002,11 +3002,12 @@ class InvalidOptionError(ApiException):
         """Used to indicate an issue with verifying options passed to a certain
         operation."""
 
-        GENERIC  = "generic"      # generic option violation
-        REPEATED = "repeated"     # option repetition is not allowed
-        INCOMPAT = "incompat"     # option 'a' can not be specified with option 'b'
-        REQUIRED = "required"     # option 'a' requires option 'b'
-        XOR      = "xor"          # either option 'a' or option 'b' must be specified
+        GENERIC    = "generic"      # generic option violation
+        OPT_REPEAT = "opt_repeat"   # option repetition is not allowed
+        ARG_REPEAT = "arg_repeat"   # argument repetition is not allowed
+        INCOMPAT   = "incompat"     # option 'a' can not be specified with option 'b'
+        REQUIRED   = "required"     # option 'a' requires option 'b'
+        XOR        = "xor"          # either option 'a' or option 'b' must be specified
 
 	def __init__(self, err_type=GENERIC, options=[], msg=None):
 
@@ -3024,19 +3025,24 @@ class InvalidOptionError(ApiException):
                                 self.msg += " ".join(self.options)
                         return self.msg
 
-       		if self.err_type == self.REPEATED:
+       		if self.err_type == self.OPT_REPEAT:
                         assert len(self.options) == 1
-                        return _("Option '%(option)s' repeated ") % {
-                            "option" : options[0]}
+                        return _("Option '%(option)s' may not be repeated.") % {
+                            "option" : self.options[0]}
+                elif self.err_type == self.ARG_REPEAT:
+                        assert len(self.options) == 2
+                        return _("Argument '%(op1)s' for option '%(op2)s' may "
+                            "not be repeated.") % {"op1" : self.options[0],
+                            "op2" : self.options[1]}
                 elif self.err_type == self.INCOMPAT:
                         assert len(self.options) == 2
                         return _("The '%(op1)s' and '%(op2)s' option may "
-                            "not be combined") % {"op1" : self.options[0],
+                            "not be combined.") % {"op1" : self.options[0],
                             "op2" : self.options[1]}
                 elif self.err_type == self.REQUIRED:
                         assert len(self.options) == 2
                         return _("'%(op1)s' may only be used with "
-                            "'%(op2)s'") % {"op1" : self.options[0],
+                            "'%(op2)s'.") % {"op1" : self.options[0],
                             "op2" : self.options[1]}
                 elif self.err_type == self.XOR:
                         assert len(self.options) == 2
