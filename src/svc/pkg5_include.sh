@@ -125,6 +125,10 @@ function update_crontab {
 # We perform primitive locking around cron to protect this function from
 # multiple processes.
 #
+# This function assumes only a single occurrence of a given command is
+# valid in a crontab entry: multiple instances of the same command with
+# the same arguments, but with different schedules are not allowed.
+#
 # Usage:
 # add_cronjob <fmri> <schedule> <cmd>
 #
@@ -145,14 +149,19 @@ function add_cronjob {
 	# entry, removing it, and appending a new one.
 	#
 	acquire_crontab_lock
-	$CRONTAB -l | $GREP -v "${CMD}" > $current_crontab
-	$CP $current_crontab $new_crontab
-	echo "$SCHEDULE $CMD" >> $new_crontab	
+	$CRONTAB -l > $current_crontab
+	EXIT=0
+	# if the crontab doesn't already contain our command, add it
+	$GREP -q "^[0-9, \*]+ $CMD"$ $current_crontab
+	if [ $? -ne 0 ]; then
+		$GREP -v " ${CMD}"$ $current_crontab > $new_crontab
+		echo "$SCHEDULE $CMD" >> $new_crontab
 
-	update_crontab $current_crontab $new_crontab
-	EXIT=$?
-
-	$RM $current_crontab $new_crontab
+		update_crontab $current_crontab $new_crontab
+		EXIT=$?
+		$RM $new_crontab
+	fi
+	$RM $current_crontab
 	release_crontab_lock
 
 	return $EXIT
