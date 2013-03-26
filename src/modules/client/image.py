@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2007, 2012, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2007, 2013, Oracle and/or its affiliates. All rights reserved.
 #
 
 import M2Crypto as m2
@@ -3027,7 +3027,8 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                 # by usage of the SAT solver.
                 newest = {}
                 for pfx, cat in [(None, old_icat)] + pub_cats:
-                        for f in cat.fmris(last=True, pubs=[pfx]):
+                        for f in cat.fmris(last=True,
+                            pubs=pfx and [pfx] or EmptyI):
                                 nver, snver = newest.get(f.pkg_name, (None,
                                     None))
                                 if f.version > nver:
