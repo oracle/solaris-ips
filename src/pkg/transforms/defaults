@@ -106,11 +106,11 @@
 
 # only set the info.repository-* values for packages we're responsible for
 <transform pkg pkg.fmri=pkg:/package/.* -> default info.repository-changeset $(CHANGESET)>
-<transform pkg pkg.fmri=pkg:/package/.* -> default info.repository-url ssh://hg.opensolaris.org/hg/pkg/gate>
+<transform pkg pkg.fmri=pkg:/package/.* -> default info.repository-url https://hg.java.net/hg/ips~pkg-gate>
 <transform pkg pkg.fmri=pkg:/system/zones.*-> default info.repository-changeset $(CHANGESET)>
-<transform pkg pkg.fmri=pkg:/system/zones.* -> default info.repository-url ssh://hg.opensolaris.org/hg/pkg/gate>
+<transform pkg pkg.fmri=pkg:/system/zones.* -> default info.repository-url https://hg.java.net/hg/ips~pkg-gate>
 <transform pkg pkg.fmri=pkg:/developer/opensolaris/pkg5 -> default info.repository-changeset $(CHANGESET)>
-<transform pkg pkg.fmri=pkg:/developer/opensolaris/pkg5 -> default info.repository-url ssh://hg.opensolaris.org/hg/pkg/gate>
+<transform pkg pkg.fmri=pkg:/developer/opensolaris/pkg5 -> default info.repository-url https://hg.java.net/hg/ips~pkg-gate>
 # now emit those values
 <transform pkg info.repository-changeset=(.*) -> emit set name=info.repository-changeset value=%<1>>
 <transform pkg info.repository-url=(.*) -> emit set name=info.repository-url value=%<1>>
