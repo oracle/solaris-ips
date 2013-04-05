@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2011, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2011, 2013 Oracle and/or its affiliates. All rights reserved.
 #
 
 import testutils
@@ -32,7 +32,7 @@ import pkg5unittest
 import os
 import pkg.portable as portable
 import pkg.misc as misc
-
+import sys
 
 class TestPkgRevert(pkg5unittest.SingleDepotTestCase):
         # Only start/stop the depot once (instead of for every test)
@@ -79,9 +79,20 @@ class TestPkgRevert(pkg5unittest.SingleDepotTestCase):
             close
             open Y@1.0,5.11-0
             add dir mode=0755 owner=root group=bin path=etc/y-dir revert-tag=bob=*
-            close"""
+            close
+            open dev@1.0,5.11-0
+            add dir mode=0755 owner=root group=bin path=dev revert-tag=init-dev=*
+            add dir mode=0755 owner=root group=bin path=dev/cfg revert-tag=init-dev=*
+            add file dev/foo path=dev/foo mode=0555 owner=root group=bin
+            add file dev/cfg/bar path=dev/cfg/bar mode=0555 owner=root group=bin
+            add file dev/cfg/blah path=dev/cfg/blah mode=0555 owner=root group=bin
+            close
+            """
 
-        misc_files = ["etc/file1", "etc/file2", "etc/file3", "etc/file4", "etc/file5"]
+        misc_files = ["etc/file1", "etc/file2", "etc/file3", "etc/file4", 
+		      "etc/file5"] 
+
+	additional_files = ["dev/foo", "dev/cfg/bar", "dev/cfg/blah"]
 
         def damage_all_files(self):
                 ubin = portable.get_user_by_name("bin", None, False)
@@ -97,10 +108,14 @@ class TestPkgRevert(pkg5unittest.SingleDepotTestCase):
                 ubin = portable.get_user_by_name("bin", None, False)
                 groot = portable.get_group_by_name("root", None, False)
 		for p in paths:
+			if p.startswith(os.path.sep):
+				p = p[1:]
 			file_path = os.path.join(self.get_img_path(), p)
 			dirpath = os.path.dirname(file_path)
 			if not os.path.exists(dirpath):
 				os.mkdir(dirpath)
+			if p.endswith(os.path.sep):
+				continue
 			with open(file_path, "a+") as f:
 				f.write("\ncontents\n")
 			os.chown(file_path, ubin, groot)
@@ -109,10 +124,24 @@ class TestPkgRevert(pkg5unittest.SingleDepotTestCase):
 	def files_are_all_there(self, paths):
 		# check that files are there
 		for p in paths:
+			if p.startswith(os.path.sep):
+				p = p[1:]
 			file_path = os.path.join(self.get_img_path(), p)
-			if not os.path.isfile(file_path):
-				print file_path
-				return False 
+			isthere = os.path.exists(file_path)
+			if p.endswith(os.path.sep):
+				if not os.path.isdir(file_path):
+					if not isthere:
+						print >> sys.stderr, "missing dir %s" % file_path
+					else:
+						print >> sys.stderr, "not dir: %s" % file_path
+					return False 
+			else:
+				if not os.path.isfile(file_path):
+					if not isthere:
+						print >> sys.stderr, "missing file %s" % file_path
+					else:
+						print >> sys.stderr, "not file: %s" % file_path
+					return False 
 		return True
 
 	def files_are_all_missing(self, paths):
@@ -133,6 +162,7 @@ class TestPkgRevert(pkg5unittest.SingleDepotTestCase):
         def setUp(self):
                 pkg5unittest.SingleDepotTestCase.setUp(self)
                 self.make_misc_files(self.misc_files)
+		self.make_misc_files(self.additional_files)
 		self.plist = self.pkgsend_bulk(self.rurl, self.pkgs)
 
         def test_revert(self):
@@ -202,7 +232,14 @@ class TestPkgRevert(pkg5unittest.SingleDepotTestCase):
                 self.pkg("verify A", exit=1)
                 self.pkg("revert /etc/file1")
                 self.pkg("revert /etc/file1", exit=4)
-
+                self.pkg("verify")
+		# check that we handle missing files when tagged
+		self.remove_file("etc/file2")
+                self.pkg("verify", exit=1)
+                self.pkg("revert --tagged bob")
+                self.pkg("verify")
+		# make sure we got the default contents
+                self.pkg("revert --tagged bob", exit=4)
                 # check that we handle files that don't exist correctly
                 self.pkg("revert /no/such/file", exit=1)
                 # since tags can be missing, just nothing to do for
@@ -233,7 +270,7 @@ class TestPkgRevert(pkg5unittest.SingleDepotTestCase):
 		self.assert_(self.files_are_all_missing(some_files))
 
 		# now create some unpackaged directories and files
-		some_dirs = ["etc/X/A", "etc/Y/B", "etc/Z/C"]
+		some_dirs = ["etc/X/", "etc/Y/", "etc/Z/C", "etc/X/XX/"]
 		self.create_some_files(some_dirs + some_files)
 		self.assert_(self.files_are_all_there(some_dirs + some_files))
 		# revert them
@@ -273,6 +310,25 @@ class TestPkgRevert(pkg5unittest.SingleDepotTestCase):
 		self.pkg("fix Y")
 		self.pkg("verify")
 		self.pkg("revert --tagged bob", 4)
+
+	def test_revert_3(self):
+		"""duplicate usage in /dev as per Ethan's mail"""
+                self.image_create(self.rurl)
+		some_files = ["dev/xxx", "dev/yyy", "dev/zzz", 
+			      "dev/dir1/aaaa", "dev/dir1/bbbb", "dev/dir2/cccc",
+			      "dev/cfg/ffff", "dev/cfg/gggg",
+			      "dev/cfg/dir3/iiii", "dev/cfg/dir3/jjjj"]
+
+		some_dirs = ["dev/dir1/", "dev/dir1/", "dev/dir2/", "dev/cfg/dir3/"]
+		self.pkg("install dev")
+		self.pkg("verify")
+		self.assert_(self.files_are_all_missing(some_dirs + some_files))
+		self.create_some_files(some_dirs + some_files)
+		self.assert_(self.files_are_all_there(some_dirs + some_files))
+		self.pkg("verify -v")
+		self.pkg("revert --tagged init-dev")
+		self.pkg("verify -v")
+		self.assert_(self.files_are_all_missing(some_dirs + some_files))
 
 if __name__ == "__main__":
         unittest.main()

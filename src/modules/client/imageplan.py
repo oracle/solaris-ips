@@ -897,7 +897,9 @@ class ImagePlan(object):
 
                 for path in paths:
                         if os.path.isdir(path) and not os.path.islink(path):
-                                # we have a directory that needs expanding
+                                # we have a directory that needs expanding;
+                                # add it in and then walk the contents
+                                checked.append(self.__gen_del_act(path))
                                 for dirpath, dirnames, filenames in os.walk(path):
                                         # crossed mountpoints - don't go here.
                                         if os.stat(dirpath).st_dev != my_dev:
@@ -924,7 +926,7 @@ class ImagePlan(object):
                             target=os.readlink(path), path=pubpath)
                 elif stat.S_ISDIR(pstat.st_mode):
                         return pkg.actions.directory.DirectoryAction(
-                            timestamp=timestamp, mode=mode, owner="root",
+                            mode=mode, owner="root",
                             group="bin", path=pubpath)
                 else: # treat everything else as a file
                         return pkg.actions.file.FileAction(
