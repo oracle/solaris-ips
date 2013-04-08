@@ -4146,7 +4146,8 @@ def _add_update_pub(api_inst, prefix, pub=None, disable=None, sticky=None,
 def publisher_unset(api_inst, args):
         """pkg unset-publisher publisher ..."""
 
-        if len(args) == 0:
+        opts, pargs = getopt.getopt(args, "")
+        if not pargs:
                 usage(_("at least one publisher must be specified"),
                     cmd="unset-publisher")
 

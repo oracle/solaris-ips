@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2008, 2012, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2008, 2013, Oracle and/or its affiliates. All rights reserved.
 #
 
 import testutils
@@ -66,6 +66,7 @@ class TestPkgPublisherBasics(pkg5unittest.SingleDepotTestCase):
                 self.pkg("set-publisher -c", exit=2)
                 self.pkg("set-publisher -O", exit=2)
                 self.pkg("unset-publisher", exit=2)
+                self.pkg("unset-publisher -k", exit=2)
 
         def test_publisher_add_remove(self):
                 """pkg: add and remove a publisher"""
