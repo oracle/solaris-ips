@@ -821,14 +821,8 @@ class ImagePlan(object):
                                 act.verify(self.image, forever=True)
                                 if act.replace_required == True:
                                         needs_change.append(act)
-                        if needs_change:
-                                pp = pkgplan.PkgPlan(self.image)
-                                pp.propose_repair(f, m, needs_change,
-                                    misc.EmptyI)
-                                pp.evaluate(self.__new_excludes,
-                                    self.__new_excludes,
-                                    can_exclude=True)
-                                self.pd.pkg_plans.append(pp)
+
+                        revert_dict[(f, m)] = needs_change
 
                 for f, m in revert_dirs:
                         needs_delete = []
@@ -842,14 +836,21 @@ class ImagePlan(object):
                                             and path not in self.get_actions("hardlink") \
                                             and path not in self.get_actions("link"):
                                                 needs_delete.append(un)
-                        if needs_delete:
-                                pp = pkgplan.PkgPlan(self.image)
-                                pp.propose_repair(f, m, misc.EmptyI,
-                                    needs_delete)
-                                pp.evaluate(self.__new_excludes,
-                                    self.__new_excludes,
-                                    can_exclude=True)
-                                self.pd.pkg_plans.append(pp)
+                        revert_dirs[(f, m)] = needs_delete
+
+                # build the pkg plans, making sure to propose only one repair
+                # per fmri
+                for f, m in set(revert_dirs.keys() + revert_dict.keys()):
+                        needs_delete = revert_dirs[(f, m)]
+                        needs_change = revert_dict[(f, m)]
+                        if not needs_delete and not needs_change:
+                                continue
+
+                        pp = pkgplan.PkgPlan(self.image)
+                        pp.propose_repair(f, m, needs_change, needs_delete)
+                        pp.evaluate(self.__new_excludes, self.__new_excludes,
+                            can_exclude=True)
+                        self.pd.pkg_plans.append(pp)
 
                 self.pd._fmri_changes = []
 
