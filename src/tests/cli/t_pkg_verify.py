@@ -20,7 +20,7 @@
 # CDDL HEADER END
 #
 
-# Copyright (c) 2008, 2012, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2008, 2013, Oracle and/or its affiliates. All rights reserved.
 
 import testutils
 if __name__ == "__main__":
@@ -97,6 +97,10 @@ class TestPkgVerify(pkg5unittest.SingleDepotTestCase):
                 # Should not fail since informational messages are not
                 # fatal.
                 self.pkg("verify foo")
+
+                # Should not output anything when using -q.
+                self.pkg("verify -q foo")
+                assert(self.output == "")
 
                 # Should not fail if publisher is disabled and package is ok.
                 self.pkg("set-publisher -d test")

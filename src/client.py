@@ -811,11 +811,16 @@ def verify_image(api_inst, args):
                 elif opt == "-q":
                         quiet = True
                         display_headers = False
+                        global_settings.client_output_quiet = True
 
         if verbose and quiet:
                 usage(_("-v and -q may not be combined"), cmd="verify")
         if verbose > 2:
                 DebugValues.set_value("plan", "True")
+
+        # Reset the progress tracker here, because we may have
+        # to switch to a different tracker due to the options parse.
+        _api_inst.progresstracker = get_tracker()
 
         # XXX verify should be part of pkg.client.api
         any_errors = False
