@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2008, 2012, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2008, 2013, Oracle and/or its affiliates. All rights reserved.
 #
 
 #
@@ -1505,11 +1505,14 @@ class ProgressTracker(ProgressTrackerFrontend, ProgressTrackerBackend):
         def job_start(self, jobid, goal=None):
                 jobitem = self._jobitems[jobid]
                 jobitem.reset()
+                outspec = OutSpec()
                 if goal:
                         if not isinstance(jobitem, GoalTrackerItem):
                                 raise RuntimeError(
                                     "can't set goal on non-goal tracker")
                         jobitem.goalitems = goal
+                jobitem.printed = True
+                self._job_output(outspec, jobitem)
 
         def job_add_progress(self, jobid, nitems=1):
                 jobitem = self._jobitems[jobid]

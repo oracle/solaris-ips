@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2011, 2012, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2011, 2013, Oracle and/or its affiliates. All rights reserved.
 #
 
 import testutils
@@ -1026,19 +1026,18 @@ PUBLISHER\tSTICKY\tSYSPUB\tENABLED\tTYPE\tSTATUS\tURI\tPROXY
                 # Have the user configure test1 at the same time that test1 is
                 # made a system publisher.
                 self.__set_responses("test1")
-                # This fails in the same way that doing set-publisher -p for a
-                # repository which provides packages for an already configured
-                # publisher fails.
-                self.pkg("set-publisher -p %s" % self.rurl1, exit=1)
-                # Adding the origin to the publisher which now exists should
-                # work fine.
-                self.pkg("set-publisher -g %s test1" % self.rurl1)
+
+                self.pkg("set-publisher -p %s" % self.rurl1)
                 expected = """\
 PUBLISHER\tSTICKY\tSYSPUB\tENABLED\tTYPE\tSTATUS\tURI\tPROXY
 test1\ttrue\ttrue\ttrue\torigin\tonline\t%(rurl1)s/\t-
 test1\ttrue\ttrue\ttrue\torigin\tonline\t%(durl1)s/\thttp://localhost:%(port)s
 """ % {"rurl1": self.rurl1, "durl1": self.durl1, "port": self.sysrepo_port}
                 self.__check_publisher_info(expected)
+
+                # Adding the origin to the publisher which now exists should
+                # fail.
+                self.pkg("set-publisher -g %s test1" % self.rurl1, exit=1)
 
                 # The user adds an origin to test12 at the same time that test12
                 # first becomes known to the image.

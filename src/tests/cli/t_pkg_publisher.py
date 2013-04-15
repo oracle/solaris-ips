@@ -801,13 +801,6 @@ class TestPkgPublisherMany(pkg5unittest.ManyDepotTestCase):
                 self.__update_repo_pub_cfg(self.dcs[6], t6cfg)
                 self.dcs[6].start()
 
-                # Should fail since even though repository publisher prefix
-                # matches test3, the new origin isn't configured for test3,
-                # and as a result isn't a known source for publisher updates.
-                self.pkg("set-publisher -p %s" % durl6, exit=1)
-
-                # So, add the new origin to the publisher.
-                self.pkg("set-publisher -g %s test3" % durl6)
                 self.pkg("set-publisher -p %s" % durl6)
 
                 # Load image configuration to verify publisher was configured

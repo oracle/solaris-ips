@@ -3871,28 +3871,16 @@ assistance."""))
                         search_after = prefix
                         search_before = None
                 else:
-                        # The update case is special and requires some
-                        # finesse.  In particular, the update should
-                        # only happen if the repo_uri specified is
-                        # already known to the existing publisher.  This
-                        # is just a sanity check to ensure that random
-                        # repositories can't attempt to hijack other
-                        # publishers.
+                        add_origins = []
+                        add_mirrors = []
                         dest_pub = api_inst.get_publisher(prefix=prefix,
                             duplicate=True)
                         dest_repo = dest_pub.repository
-
                         if dest_repo.origins and \
-                            not dest_repo.has_origin(repo_uri):
-                                failed.append((prefix, _("""\
-    The specified repository location is not a known source of publisher
-    configuration updates for '%s'.
+                                not dest_repo.has_origin(repo_uri):
+                                        add_origins = [repo_uri]
 
-    This new repository location must be added as an origin to the publisher
-    to accept configuration updates from this repository.""") % prefix))
-                                continue
-
-                        if not src_repo:
+                        if not src_repo and not add_origins:
                                 # The repository doesn't have to provide origin
                                 # information for publishers.  If it doesn't,
                                 # the origin of every publisher returned is
@@ -3901,10 +3889,7 @@ assistance."""))
                                 # nothing special needs to be done.
                                 if not dest_repo.origins:
                                         add_origins = [repo_uri]
-                                else:
-                                        add_origins = []
-                                add_mirrors = []
-                        else:
+                        elif src_repo:
                                 # Avoid duplicates by adding only those mirrors
                                 # or origins not already known.
                                 add_mirrors = [
@@ -4157,7 +4142,11 @@ def publisher_unset(api_inst, args):
                     cmd="unset-publisher")
 
         errors = []
+        goal = len(args)
+        progtrack = api_inst.progresstracker
+        progtrack.job_start(progtrack.JOB_PKG_CACHE, goal=goal)
         for name in args:
+
                 try:
                         api_inst.remove_publisher(prefix=name, alias=name)
                 except api_errors.ImageFormatUpdateNeeded, e:
@@ -4167,7 +4156,10 @@ def publisher_unset(api_inst, args):
                     api_errors.PublisherError,
                     api_errors.ModifyingSyspubException), e:
                         errors.append((name, e))
+                finally:
+                        progtrack.job_add_progress(progtrack.JOB_PKG_CACHE)
 
+        progtrack.job_done(progtrack.JOB_PKG_CACHE)
         retcode = EXIT_OK
         if errors:
                 if len(errors) == len(args):
