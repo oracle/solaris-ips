@@ -541,6 +541,8 @@ class pylint_func(Command):
                 # didn't get set, somehow.
                 pylint_ver_str = os.environ.get("PYLINT_VER",
                     req_pylint_version)
+                if pylint_ver_str == "":
+                        pylint_ver_str = req_pylint_version
 
                 if os.environ.get("PKG_SKIP_PYLINT"):
                         log.warn("WARNING: skipping pylint checks: "

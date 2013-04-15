@@ -20,7 +20,7 @@
 #
 
 #
-# Copyright (c) 2007, 2012, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2007, 2013, Oracle and/or its affiliates. All rights reserved.
 #
 
 PYTHON = /usr/bin/python2.6
@@ -37,7 +37,12 @@ test := TARGET = test
 test-verbose := TARGET = test-verbose
 test-generate := TARGET = test-generate
 
-PYLINT_VER_CMD = /usr/bin/pkg info pkg:/developer/python/pylint | \
+#
+# clear PYTHONPATH when invoking /usr/bin/pkg (we don't want to load any
+# pkg python modules from this workspace since they may be out of sync
+# with the pkg modules in the root filesystem).
+#
+PYLINT_VER_CMD = PYTHONPATH= /usr/bin/pkg info pkg:/developer/python/pylint | \
 	/usr/bin/grep Version | \
 	/usr/bin/awk -F: '{print $$2}' | /usr/bin/sed -e 's/ //g'
 

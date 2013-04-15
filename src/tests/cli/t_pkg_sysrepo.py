@@ -215,6 +215,10 @@ test4\ttrue\ttrue\ttrue\t\t\t\t
                         PC(self.rurl3)]),
                     "test12": ({}, [
                         PC(self.durl2, sticky=False)]),
+                    "test12-test12": ({}, [
+                        PC(None,
+                            name="test12", origins=[self.durl2, self.durl5],
+                            sticky=False)]),
                     "test12-test3": ({}, [
                         PC(self.durl2, sticky=False),
                         PC(self.durl3)]),
@@ -990,9 +994,8 @@ foo 1.0-0 ---
                 expected = """\
 PUBLISHER\tSTICKY\tSYSPUB\tENABLED\tTYPE\tSTATUS\tURI\tPROXY
 test1\tfalse\tfalse\tfalse\torigin\tonline\t%(durl1)s/\t-
-test12\tfalse\ttrue\tfalse\torigin\tonline\t%(durl2)s/\thttp://localhost:%(port)s
-""" % {"durl1": self.durl1, "durl3": self.durl3, "durl2": self.durl2,
-    "port": self.sysrepo_port}
+test12\tfalse\ttrue\tfalse\t\t\t\t
+""" % {"durl1": self.durl1}
                 self.__check_publisher_info(expected)
 
                 # Uninstalling foo should remove test12 from the list of
@@ -1306,8 +1309,8 @@ test3\ttrue\ttrue\ttrue\torigin\tonline\thttp://localhost:%(port)s/test3/%(hash3
                 self.__set_responses("none")
                 expected = """\
 PUBLISHER\tSTICKY\tSYSPUB\tENABLED\tTYPE\tSTATUS\tURI\tPROXY
-test1\ttrue\ttrue\tfalse\torigin\tonline\thttp://localhost:%(port)s/test1/%(hash1)s/\t-
-""" % {"port": self.sysrepo_port, "hash1": hash1}
+test1\ttrue\ttrue\tfalse\t\t\t\t
+"""
                 self.__check_publisher_info(expected)
 
                 # Check that when the user adds an origin to a former system
@@ -1901,6 +1904,49 @@ PUBLISHER\tSTICKY\tSYSPUB\tENABLED\tTYPE\tSTATUS\tURI\tPROXY
                 self.pkgsend_bulk(self.rurl3, self.bar11)
                 self.pkg("install foo@1.1")
                 self.pkg("install bar@1.1")
+
+        def test_no_unnecessary_refresh(self):
+                """Test that the pkg client doesn't rebuild the known image
+                catalog unnecessarily.
+
+                The way we test this is kinda obtuse.  To test this we use a
+                staged image operation.  This allows us to break up pkg
+                execution into three stages, planning, preparation, and
+                execution.  At the end of the planning stage, we create and
+                save an image plan to disk.  This image plan includes the last
+                modified timestamp for the known catalog.  Subsequently when
+                we go to load the plan from disk (during preparation and
+                execution) we check that timestamp to make sure the image
+                hasn't changed since the plan was generated (this ensures that
+                the image plan is still valid). So if the pkg client decides
+                to update the known catalog unnecessarily then we'll fail when
+                we try to reload the plan during preparation
+                (--stage=prepare)."""
+
+                self.__prep_configuration(["test1-test12-test12",
+                    "test12-test12"])
+                self.__set_responses("test1-test12-test12")
+                sc = pkg5unittest.SysrepoController(
+                    self.apache_confs["test1-test12-test12"], self.sysrepo_port,
+                    self.common_config_dir, testcase=self)
+                self.register_apache_controller("sysrepo", sc)
+                sc.start()
+
+                # enable the test1 and test12 publishers
+                self.__set_responses("test1-test12-test12")
+
+                api_obj = self.image_create(props={"use-system-repo": True})
+
+                # install a package from the test1 and test12 publisher
+                self.pkg("install example_pkg foo@1.0")
+
+                # disable the test1 publisher
+                self.__set_responses("test12-test12")
+
+                # do a staged update
+                self.pkg("update --stage=plan")
+                self.pkg("update --stage=prepare")
+                self.pkg("update --stage=execute")
 
         def test_automatic_refresh(self):
                 """Test that sysrepo publishers get refreshed automatically

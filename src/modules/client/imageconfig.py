@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2007, 2012, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2007, 2013, Oracle and/or its affiliates. All rights reserved.
 #
 
 import errno
@@ -1213,10 +1213,21 @@ class BlendedConfig(object):
                             prefix in img_cfg.publishers or \
                             prefix not in pubs_with_installed_pkgs:
                                 continue
+
+                        # only report this publisher as disabled if it wasn't
+                        # previously reported and saved as disabled.
+                        if not old_sysconfig.publishers[prefix].disabled:
+                                disabled_pubs |= set([prefix])
+
                         sys_cfg.publishers[prefix] = \
                             old_sysconfig.publishers[prefix]
                         sys_cfg.publishers[prefix].disabled = True
-                        disabled_pubs |= set([prefix])
+
+                        # if a syspub publisher is no longer available then
+                        # remove all the origin and mirror information
+                        # associated with that publisher.
+                        sys_cfg.publishers[prefix].repository.origins = []
+                        sys_cfg.publishers[prefix].repository.mirrors = []
 
                 # check if any system publisher have had origin changes.
                 modified_pubs = set()
