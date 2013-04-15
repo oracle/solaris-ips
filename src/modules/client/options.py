@@ -432,6 +432,10 @@ def opts_cb_list(api_inst, opts, opts_new):
                 raise InvalidOptionError(InvalidOptionError.INCOMPAT,
                     [SUMMARY, VERBOSE])
 
+        if opts_new[QUIET] and opts_new[VERBOSE]:
+                raise InvalidOptionError(InvalidOptionError.INCOMPAT,
+                    [QUIET, VERBOSE])
+
 def opts_cb_int(k, api_inst, opts, opts_new, minimum=None):
 
         if k not in opts or opts[k] == None:
@@ -716,6 +720,7 @@ opts_list_inventory = \
     opts_table_no_refresh + \
     opts_table_no_headers + \
     opts_table_origins + \
+    opts_table_quiet + \
     opts_table_verbose + \
     [
     opts_cb_list,

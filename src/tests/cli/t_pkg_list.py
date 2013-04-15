@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2008, 2012, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2008, 2013, Oracle and/or its affiliates. All rights reserved.
 #
 
 import testutils
@@ -71,6 +71,15 @@ class TestPkgList(pkg5unittest.ManyDepotTestCase):
             open hier/foo@1.0,5.11-0
             close """
 
+        def __check_qoutput(self, errout=False):
+                self.assertEqualDiff(self.output, "")
+                if errout:
+                        self.assert_(self.errout != "",
+                            "-q must print fatal errors!")
+                else:
+                        self.assert_(self.errout == "",
+                            "-q should only print fatal errors!")
+
         def setUp(self):
                 pkg5unittest.ManyDepotTestCase.setUp(self, ["test1", "test2",
                     "test2"])
@@ -108,6 +117,10 @@ class TestPkgList(pkg5unittest.ManyDepotTestCase):
                 self.pkg("list -a -u", exit=2)
                 self.pkg("list -g pkg://test1/ -u", exit=2)
 
+                # Should only print fatal errors when using -q.
+                self.pkg("list -q -v", exit=2)
+                self.__check_qoutput(errout=True)
+
         def test_00(self):
                 """Verify that sort order and content of a full list matches
                 expected."""
@@ -122,6 +135,10 @@ class TestPkgList(pkg5unittest.ManyDepotTestCase):
                     "hier/foo (test2) 1.0-0 ---\n")
                 output = self.reduceSpaces(self.output)
                 self.assertEqualDiff(expected, output)
+
+                # Should only print fatal errors when using -q.
+                self.pkg("list -aqH")
+                self.__check_qoutput(errout=False)
 
                 self.pkg("list -afH")
                 expected = \
@@ -294,6 +311,12 @@ class TestPkgList(pkg5unittest.ManyDepotTestCase):
                 # Install a package from the second publisher.
                 self.pkg("install pkg://test2/foo@1.0")
 
+                # Should only print fatal errors when using -q.
+                self.pkg("list -q foo")
+                self.__check_qoutput(errout=False)
+                self.pkg("list -q foo bogus", exit=3)
+                self.__check_qoutput(errout=False)
+
                 # Change the origin of the publisher of an installed package to
                 # that of an empty repository.  The package should still be
                 # shown for test1 and installed for test2.
@@ -338,6 +361,9 @@ class TestPkgList(pkg5unittest.ManyDepotTestCase):
                 # privileged user since it hasn't been published yet.
                 self.pkg("list -a | grep newpkg", su_wrap=True, exit=1)
                 self.pkg("list -a | grep newpkg", exit=1)
+                # Should only print fatal errors when using -q.
+                self.pkg("list -aq newpkg", exit=1)
+                self.__check_qoutput(errout=False)
 
                 self.pkgsend_bulk(self.rurl1, self.newpkg10)
 
@@ -369,6 +395,9 @@ class TestPkgList(pkg5unittest.ManyDepotTestCase):
                 # Package should now exist for unprivileged user since the
                 # metadata has been refreshed.
                 self.pkg("list -a | grep newpkg", su_wrap=True)
+                # Should only print fatal errors when using -q.
+                self.pkg("list -aq newpkg")
+                self.__check_qoutput(errout=False)
 
         def test_10_all_known_failed_refresh(self):
                 """Verify that a failed implicit refresh will not prevent pkg
@@ -385,6 +414,9 @@ class TestPkgList(pkg5unittest.ManyDepotTestCase):
                 # Verify pkg list -a fails for a privileged user when a
                 # publisher's repository is unreachable.
                 self.pkg("list -a", exit=1)
+                # Should only print fatal errors when using -q.
+                self.pkg("list -aq newpkg", exit=1)
+                self.__check_qoutput(errout=True)
 
                 # Reset test2's origin.
                 self.pkg("set-publisher -O %s test2" % self.rurl2)
@@ -523,12 +555,16 @@ class TestPkgList(pkg5unittest.ManyDepotTestCase):
                 # parsing has parsed the option too.)
                 self.pkg("list -a bar@a", exit=1)
                 self.assert_(self.output.find("FMRI '-a'") == -1)
+                # Should only print fatal errors when using -q.
+                self.pkg("list -aq bar@a", exit=1)
+                self.__check_qoutput(errout=True)
 
                 # Last, test all at once.
                 self.pkg("list %s" % " ".join(pats), exit=1)
 
         def test_15_latest(self):
-                """Verify that FMRIs using @latest work as expected."""
+                """Verify that FMRIs using @latest work as expected and
+                that -n provides the same results."""
 
                 self.pkg("list -aHf foo@latest")
                 expected = \
@@ -536,6 +572,11 @@ class TestPkgList(pkg5unittest.ManyDepotTestCase):
                     "foo (test2)      1.2.1-0 ---\n" \
                     "hier/foo         1.0-0 ---\n" \
                     "hier/foo (test2) 1.0-0 ---\n"
+                output = self.reduceSpaces(self.output)
+                expected = self.reduceSpaces(expected)
+                self.assertEqualDiff(expected, output)
+
+                self.pkg("list -Hn foo")
                 output = self.reduceSpaces(self.output)
                 expected = self.reduceSpaces(expected)
                 self.assertEqualDiff(expected, output)
@@ -562,6 +603,46 @@ class TestPkgList(pkg5unittest.ManyDepotTestCase):
                 expected = self.reduceSpaces(expected)
                 self.assertEqualDiff(expected, output)
 
+                self.pkg("list -Hn /hier/foo //test1/foo")
+                output = self.reduceSpaces(self.output)
+                expected = self.reduceSpaces(expected)
+                self.assertEqualDiff(expected, output)
+
+        def test_16_upgradable(self):
+                """Verify that pkg list -u works as expected."""
+
+                self.image_create(self.rurl1)
+                self.pkg("install /foo@1.0")
+
+                # 'foo' should be listed since 1.2.1 is available.
+                self.pkg("list -H")
+                expected = \
+                    "foo              1.0-0 i--\n"
+                output = self.reduceSpaces(self.output)
+                expected = self.reduceSpaces(expected)
+                self.assertEqualDiff(expected, output)
+
+                # 'foo' should be listed since 1.2.1 is available.
+                self.pkg("list -Hu foo")
+                output = self.reduceSpaces(self.output)
+                expected = self.reduceSpaces(expected)
+                self.assertEqualDiff(expected, output)
+
+                # Should not print anything if using -q.
+                self.pkg("list -Hqu foo")
+                self.__check_qoutput(errout=False)
+
+                # Upgrade foo.
+                self.pkg("update foo")
+
+                # Should return error as newest version is now installed.
+                self.pkg("list -Hu foo", exit=1)
+                self.assertEqualDiff(self.output, "")
+                self.assert_(self.errout != "")
+                # Should not print anything if using -q.
+                self.pkg("list -Hqu foo", exit=1)
+                self.__check_qoutput(errout=False)
+
 
 class TestPkgListSingle(pkg5unittest.SingleDepotTestCase):
         # Destroy test space every time.
@@ -576,11 +657,24 @@ class TestPkgListSingle(pkg5unittest.SingleDepotTestCase):
             add depend type=require fmri=foo@1.0
             close """
 
+        def __check_qoutput(self, errout=False):
+                self.assertEqualDiff(self.output, "")
+                if errout:
+                        self.assert_(self.errout != "",
+                            "-q must print fatal errors!")
+                else:
+                        self.assert_(self.errout == "",
+                            "-q should only print fatal errors!")
+
         def test_01_empty_image(self):
                 """ pkg list should fail in an empty image """
 
                 self.image_create(self.rurl)
                 self.pkg("list", exit=1)
+
+                # Should not print anything if using -q.
+                self.pkg("list -q", exit=1)
+                self.__check_qoutput(errout=False)
 
         def __populate_repo(self, unsupp_content):
                 # Publish a package and then add some unsupported action data
@@ -639,6 +733,9 @@ class TestPkgListSingle(pkg5unittest.SingleDepotTestCase):
                 expected = self.reduceSpaces(expected)
                 self.assertEqualDiff(expected, output)
 
+                self.pkg("list -qaH foo unsupported")
+                self.__check_qoutput(errout=False)
+
                 # Verify that a package with invalid content doesn't cause
                 # a problem.
                 newact = "depend notvalid"
@@ -652,6 +749,9 @@ class TestPkgListSingle(pkg5unittest.SingleDepotTestCase):
                 output = self.reduceSpaces(self.output)
                 expected = self.reduceSpaces(expected)
                 self.assertEqualDiff(expected, output)
+
+                self.pkg("list -afqH foo unsupported")
+                self.__check_qoutput(errout=False)
 
 
 if __name__ == "__main__":

@@ -172,7 +172,7 @@ def usage(usage_error=None, cmd=None, retcode=EXIT_BADOPT, full=False):
             "            [--deny-new-be | --require-new-be] [--be-name name]\n"
             "            [--reject pkg_fmri_pattern ...] [pkg_fmri_pattern ...]")
         basic_usage["list"] = _(
-            "[-Hafnsuv] [-g path_or_uri ...] [--no-refresh]\n"
+            "[-Hafnqsuv] [-g path_or_uri ...] [--no-refresh]\n"
             "            [pkg_fmri_pattern ...]")
         basic_usage["refresh"] = _("[-q] [--full] [publisher ...]")
         basic_usage["version"] = ""
@@ -221,7 +221,7 @@ def usage(usage_error=None, cmd=None, retcode=EXIT_BADOPT, full=False):
         ]
 
         adv_usage["info"] = \
-            _("[-lr] [-g path_or_uri ...] [--license] [pkg_fmri_pattern ...]")
+            _("[-lqr] [-g path_or_uri ...] [--license] [pkg_fmri_pattern ...]")
         adv_usage["contents"] = _(
             "[-Hmr] [-a attribute=pattern ...] [-g path_or_uri ...]\n"
             "            [-o attribute ...] [-s sort_key] [-t action_type ...]\n"
@@ -414,7 +414,7 @@ def get_fmri_args(api_inst, pargs, cmd=None):
 
 def list_inventory(op, api_inst, pargs,
     li_parent_sync, list_all, list_installed_newest, list_newest,
-    list_upgradable, omit_headers, origins, refresh_catalogs, summary,
+    list_upgradable, omit_headers, origins, quiet, refresh_catalogs, summary,
     verbose):
         """List packages."""
 
@@ -496,6 +496,10 @@ def list_inventory(op, api_inst, pargs,
                     raise_unmatched=True, repos=origins, variants=variants)
                 for pt, summ, cats, states, attrs in res:
                         found = True
+
+                        if quiet:
+                                continue
+
                         if not omit_headers:
                                 if verbose:
                                         msg(fmt_str %
@@ -546,24 +550,29 @@ def list_inventory(op, api_inst, pargs,
 
                 if not found and not pargs:
                         if pkg_list == api_inst.LIST_INSTALLED:
-                                error(_("no packages installed"))
+                                if not quiet:
+                                        error(_("no packages installed"))
                                 api_inst.log_operation_end(
                                     result=RESULT_NOTHING_TO_DO)
                                 return EXIT_OOPS
                         elif pkg_list == api_inst.LIST_INSTALLED_NEWEST:
-                                error(_("no packages installed or available "
-                                    "for installation"))
+                                if not quiet:
+                                        error(_("no packages installed or available "
+                                            "for installation"))
                                 api_inst.log_operation_end(
                                     result=RESULT_NOTHING_TO_DO)
                                 return EXIT_OOPS
                         elif pkg_list == api_inst.LIST_UPGRADABLE:
-                                img = api_inst._img
-                                cat = img.get_catalog(img.IMG_CATALOG_INSTALLED)
-                                if cat.package_count > 0:
-                                        error(_("no packages have newer "
-                                            "versions available"))
-                                else:
-                                        error(_("no packages are installed"))
+                                if not quiet:
+                                        img = api_inst._img
+                                        cat = img.get_catalog(
+                                            img.IMG_CATALOG_INSTALLED)
+                                        if cat.package_count > 0:
+                                                error(_("no packages have "
+                                                    "newer versions available"))
+                                        else:
+                                                error(_("no packages are "
+                                                    "installed"))
                                 api_inst.log_operation_end(
                                     result=RESULT_NOTHING_TO_DO)
                                 return EXIT_OOPS
@@ -590,12 +599,15 @@ def list_inventory(op, api_inst, pargs,
                             result=RESULT_FAILED_BAD_REQUEST)
                         return EXIT_OOPS
 
-                if found:
+                if found and not quiet:
                         # Ensure a blank line is inserted after list for
                         # partial failure case.
                         logger.error(" ")
 
-                if pkg_list == api.ImageInterface.LIST_ALL or \
+                if quiet:
+                        # Print nothing.
+                        pass
+                elif pkg_list == api.ImageInterface.LIST_ALL or \
                     pkg_list == api.ImageInterface.LIST_NEWEST:
                         error(_("no packages matching '%s' known") % \
                             ", ".join(e.notfound), cmd=op)
@@ -2797,14 +2809,18 @@ def info(api_inst, args):
         info_local = False
         info_remote = False
         origins = set()
+        quiet = False
 
-        opts, pargs = getopt.getopt(args, "g:lr", ["license"])
+        opts, pargs = getopt.getopt(args, "g:lqr", ["license"])
         for opt, arg in opts:
                 if opt == "-g":
                         origins.add(misc.parse_uri(arg, cwd=orig_cwd))
                         info_remote = True
                 elif opt == "-l":
                         info_local = True
+                elif opt == "-q":
+                        quiet = True
+                        global_settings.client_output_quiet = True
                 elif opt == "-r":
                         info_remote = True
                 elif opt == "--license":
@@ -2820,6 +2836,10 @@ def info(api_inst, args):
                     cmd="info")
 
         err = 0
+
+        # Reset the progress tracker here, because we may have to switch to a
+        # different tracker due to the options parse.
+        _api_inst.progresstracker = get_tracker()
 
         api_inst.progresstracker.set_purpose(
             api_inst.progresstracker.PURPOSE_LISTING)
@@ -2857,15 +2877,18 @@ def info(api_inst, args):
 
         no_licenses = []
         for i, pi in enumerate(pis):
-                if i > 0:
+                if not quiet and i > 0:
                         msg("")
 
                 if display_license:
                         if not pi.licenses:
                                 no_licenses.append(pi.fmri)
-                        else:
+                        elif not quiet:
                                 for lic in pi.licenses:
                                         msg(lic)
+                        continue
+
+                if quiet:
                         continue
 
                 state = ""
@@ -2943,32 +2966,36 @@ def info(api_inst, args):
         if notfound:
                 if pis:
                         err = EXIT_PARTIAL
-                        logger.error("")
+                        if not quiet:
+                                logger.error("")
                 else:
                         err = EXIT_OOPS
 
-                if info_local:
-                        logger.error(_("""\
+                if not quiet:
+                        if info_local:
+                                logger.error(_("""\
 pkg: info: no packages matching the following patterns you specified are
 installed on the system.  Try specifying -r to query remotely:"""))
-                elif info_remote:
-                        logger.error(_("""\
+                        elif info_remote:
+                                logger.error(_("""\
 pkg: info: no packages matching the following patterns you specified were
 found in the catalog.  Try relaxing the patterns, refreshing, and/or
 examining the catalogs:"""))
-                logger.error("")
-                for p in notfound:
-                        logger.error("        %s" % p)
+                        logger.error("")
+                        for p in notfound:
+                                logger.error("        %s" % p)
 
         if no_licenses:
                 if len(no_licenses) == len(pis):
                         err = EXIT_OOPS
                 else:
                         err = EXIT_PARTIAL
-                error(_("no license information could be found for the "
-                    "following packages:"))
-                for pfmri in no_licenses:
-                        logger.error("\t%s" % pfmri)
+
+                if not quiet:
+                        error(_("no license information could be found for the "
+                            "following packages:"))
+                        for pfmri in no_licenses:
+                                logger.error("\t%s" % pfmri)
         return err
 
 def calc_widths(lines, attrs, widths=None):

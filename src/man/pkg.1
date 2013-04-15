@@ -45,13 +45,13 @@ pkg \- Image Packaging System retrieval client
 
 .LP
 .nf
-/usr/bin/pkg list [-Hafnsuv] [-g \fIpath_or_uri\fR]...
+/usr/bin/pkg list [-Hafnqsuv] [-g \fIpath_or_uri\fR]...
     [--no-refresh] [\fIpkg_fmri_pattern\fR ...]
 .fi
 
 .LP
 .nf
-/usr/bin/pkg info [-lr] [-g \fIpath_or_uri\fR]... [--license]
+/usr/bin/pkg info [-lqr] [-g \fIpath_or_uri\fR]... [--license]
     [\fIpkg_fmri_pattern\fR ...]
 .fi
 
@@ -649,7 +649,7 @@ In the command output, note any messages that say a new boot environment has bee
 .ne 2
 .mk
 .na
-\fB\fBpkg list\fR [\fB-Hafnsuv\fR] [\fB-g\fR \fIpath_or_uri\fR]... [\fB--no-refresh\fR] [\fIpkg_fmri_pattern\fR ...]\fR
+\fB\fBpkg list\fR [\fB-Hafnqsuv\fR] [\fB-g\fR \fIpath_or_uri\fR]... [\fB--no-refresh\fR] [\fIpkg_fmri_pattern\fR ...]\fR
 .ad
 .sp .6
 .RS 4n
@@ -755,6 +755,17 @@ Display the newest versions of all known packages, regardless of installed state
 .ne 2
 .mk
 .na
+\fB\fB-q\fR\fR
+.ad
+.sp .6
+.RS 4n
+Do not list any packages, but return failure if there are any fatal errors.
+.RE
+
+.sp
+.ne 2
+.mk
+.na
 \fB\fB-s\fR\fR
 .ad
 .sp .6
@@ -843,6 +854,17 @@ Only display information for installed packages. This is the default.
 .ne 2
 .mk
 .na
+\fB\fB-q\fR\fR
+.ad
+.sp .6
+.RS 4n
+Do not display any package information, but return failure if there are any fatal errors.
+.RE
+
+.sp
+.ne 2
+.mk
+.na
 \fB\fB-r\fR\fR
 .ad
 .sp .6
@@ -858,7 +880,7 @@ Match packages based on the newest available versions, retrieving information fo
 .ad
 .sp .6
 .RS 4n
-Display the license texts for the packages. This option can be combined with \fB-l\fR or \fB-r\fR.
+Display the license texts for the packages. This option can be combined with \fB-l\fR, \fB-q\f, or R\fB-r\fR. When all patterns match a known package and have licenses, the command will return success. If one or more patterns are unmatched or match packages that do not have licenses, the command will return failure.
 .RE
 
 .RE

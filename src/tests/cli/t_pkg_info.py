@@ -20,7 +20,7 @@
 # CDDL HEADER END
 #
 
-# Copyright (c) 2008, 2012, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2008, 2013, Oracle and/or its affiliates. All rights reserved.
 
 import testutils
 if __name__ == "__main__":
@@ -79,6 +79,15 @@ class TestPkgInfoBasics(pkg5unittest.SingleDepotTestCase):
             "tmp/bronze2", "tmp/copyright1", "tmp/copyright0", "tmp/sh",
             "tmp/baz"]
 
+        def __check_qoutput(self, errout=False):
+                self.assertEqualDiff(self.output, "")
+                if errout:
+                        self.assert_(self.errout != "",
+                            "-q must print fatal errors!")
+                else:
+                        self.assert_(self.errout == "",
+                            "-q should only print fatal errors!")
+
         def setUp(self):
                 pkg5unittest.SingleDepotTestCase.setUp(self)
                 self.make_misc_files(self.misc_files)
@@ -97,6 +106,9 @@ class TestPkgInfoBasics(pkg5unittest.SingleDepotTestCase):
                 self.image_create(self.rurl)
 
                 self.pkg("info foo@x.y", exit=1)
+                # Should only print fatal errors when using -q.
+                self.pkg("info -q foo@x.y", exit=1)
+                self.__check_qoutput(errout=True)
                 self.pkg("info pkg:/man@0.5.11,5.11-0.95:20080807T160129",
                     exit=1)
                 self.pkg("info pkg:/man@0.5.11,5.11-0.95:20080807T1", exit=1)
@@ -174,6 +186,9 @@ class TestPkgInfoBasics(pkg5unittest.SingleDepotTestCase):
                 self.pkg("info 'j*'")
                 self.pkg("info '*a*'")
                 self.pkg("info jade", su_wrap=True)
+                # Should only print fatal errors when using -q.
+                self.pkg("info -q jade")
+                self.__check_qoutput(errout=False)
 
                 # Check remote info
                 self.pkg("info -r jade | grep 'State: Installed'")
@@ -183,6 +198,9 @@ class TestPkgInfoBasics(pkg5unittest.SingleDepotTestCase):
                 self.pkg("info -r turquoise | grep '      Category: System/Security/Foo/bar/Baz'")
                 self.pkg("info -r turquoise | grep '      Category: System/Security/Foo/bar/Baz (org.opensolaris.category.2008)'", exit=1)
                 self.pkg("info -r turquoise | grep '   Description: Short desc'")
+                # Should only print fatal errors when using -q.
+                self.pkg("info -qr turquoise")
+                self.__check_qoutput(errout=False)
                 self.pkg("info -r turquoise")
 
                 # Now remove the manifest for turquoise and retry the info -r
@@ -207,8 +225,16 @@ class TestPkgInfoBasics(pkg5unittest.SingleDepotTestCase):
                 self.assertEqual(lines[4], "                depend on the presence of this incorporation.  Removing this")
                 self.assertEqual(lines[5], "                package will result in an unsupported system.")
                 self.assertEqual(lines[6], "         State: Not installed")
+                # Should only print fatal errors when using -q.
+                self.pkg("info -qr turquoise")
+                self.__check_qoutput(errout=False)
+                # Now check for an unknown remote package.
                 self.pkg("info -r emerald", exit=1)
                 self.pkg("info -r emerald 2>&1 | grep 'no packages matching'")
+                # Should only print fatal errors when using -q.
+                self.pkg("info -qr emerald", exit=1)
+                self.__check_qoutput(errout=False)
+
                 self.dc.stop()
 
         def test_bug_2274(self):
@@ -227,15 +253,29 @@ class TestPkgInfoBasics(pkg5unittest.SingleDepotTestCase):
                 self.image_create(self.rurl)
                 self.pkg("info --license -r bronze")
                 self.pkg("info --license -r silver", exit=1)
+                # Should only print fatal errors when using -q.
+                self.pkg("info --license -qr silver", exit=1)
+                self.__check_qoutput(errout=False)
                 self.pkg("info --license -r bronze silver", exit=3)
                 self.pkg("info --license -r silver 2>&1 | grep 'no license information'")
 
-                self.pkg("install bronze")
-                self.pkg("install silver")
+                self.pkg("install bronze silver")
 
                 self.pkg("info --license bronze")
+                # Should only print fatal errors when using -q.
+                self.pkg("info --license -q bronze")
+                self.__check_qoutput(errout=False)
+
                 self.pkg("info --license silver", exit=1)
+                # Should only print fatal errors when using -q.
+                self.pkg("info --license -q silver", exit=1)
+                self.__check_qoutput(errout=False)
+
                 self.pkg("info --license bronze silver", exit=3)
+                # Should only print fatal errors when using -q.
+                self.pkg("info --license -q bronze silver", exit=3)
+                self.__check_qoutput(errout=False)
+
                 self.pkg("info --license silver 2>&1 | grep 'no license information'")
 
         def test_info_bad_packages(self):
