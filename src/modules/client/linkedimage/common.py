@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2011, 2012, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2011, 2013, Oracle and/or its affiliates. All rights reserved.
 #
 
 """
@@ -1897,8 +1897,14 @@ class LinkedImage(object):
 
                 if _pkg_op in [ pkgdefs.PKG_OP_AUDIT_LINKED,
                     pkgdefs.PKG_OP_PUBCHECK ]:
-                        # these operations are cheap, use full parallelism
-                        concurrency = -1
+                        # these operations are cheap so ideally we'd like to
+                        # use full parallelism.  but if the user specified a
+                        # concurrency limit we should respect that.
+                        if global_settings.client_concurrency_set:
+                                concurrency = global_settings.client_concurrency
+                        else:
+                                # no limit was specified, use full concurrency
+                                concurrency = -1
                 else:
                         concurrency = global_settings.client_concurrency
 
@@ -2011,8 +2017,19 @@ class LinkedImage(object):
                                 _progtrack.li_recurse_status(lin_running,
                                     done)
 
-                        rlistrv = select.select(lic_running, [], [])[0]
-                        for lic in rlistrv:
+                        # poll on all the linked image children and see which
+                        # ones have pending output.
+                        fd_hash = dict([
+                            (lic.fileno(), lic)
+                            for lic in lic_running
+                        ])
+                        p = select.poll()
+                        for fd in fd_hash.keys():
+                                p.register(fd, select.POLLIN)
+                        events = p.poll()
+                        lic_list = [ fd_hash[event[0]] for event in events ]
+
+                        for lic in lic_list:
                                 _progtrack.li_recurse_progress(lic.child_name)
                                 if not lic.child_op_is_done():
                                         continue

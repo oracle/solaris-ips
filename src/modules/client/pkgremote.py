@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2012, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2012, 2013, Oracle and/or its affiliates. All rights reserved.
 #
 
 """
@@ -210,7 +210,9 @@ class PkgRemote(object):
                 """Drain the client progress pipe."""
 
                 progfd = self.__rpc_client_prog_pipe_fobj.fileno()
-                while select.select([progfd], [], [], 0)[0]:
+                p = select.poll()
+                p.register(progfd, select.POLLIN)
+                while p.poll(0):
                         os.read(progfd, 10240)
 
         def __state_verify(self, state=None):

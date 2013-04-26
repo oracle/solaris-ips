@@ -2338,6 +2338,25 @@ class CliTestCase(Pkg5TestCase):
                 self.__setup_signing_files()
                 return retcode
 
+        def image_clone(self, dst):
+
+                # the currently selected image is the source
+                src = self.img_index()
+                src_path = self.img_path()
+
+                # create an empty destination image
+                self.set_image(dst)
+                self.image_destroy()
+                os.mkdir(self.img_path())
+                dst_path = self.img_path()
+
+                # reactivate the source image
+                self.set_image(src)
+
+                # populate the destination image
+                cmdline = "cd %s; find . | cpio -pdm %s" % (src_path, dst_path)
+                retcode = self.cmdline_run(cmdline, coverage=False)
+
         def image_destroy(self):
                 if os.path.exists(self.img_path()):
                         self.debug("image_destroy %s" % self.img_path())
@@ -2351,7 +2370,7 @@ class CliTestCase(Pkg5TestCase):
 
         def pkg(self, command, exit=0, comment="", prefix="", su_wrap=None,
             out=False, stderr=False, cmd_path=None, use_img_root=True,
-            debug_smf=True, env_arg=None):
+            debug_smf=True, env_arg=None, coverage=True):
                 if debug_smf and "smf_cmds_dir" not in command:
                         command = "--debug smf_cmds_dir=%s %s" % \
                             (DebugValues["smf_cmds_dir"], command)
@@ -2365,7 +2384,7 @@ class CliTestCase(Pkg5TestCase):
                 cmdline = "%s %s" % (cmd_path, command)
                 return self.cmdline_run(cmdline, exit=exit, comment=comment,
                     prefix=prefix, su_wrap=su_wrap, out=out, stderr=stderr,
-                    env_arg=env_arg)
+                    env_arg=env_arg, coverage=coverage)
 
         def pkgdepend_resolve(self, args, exit=0, comment="", su_wrap=False,
             env_arg=None):

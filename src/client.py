@@ -1886,6 +1886,19 @@ class RemoteDispatch(object):
 def remote(op, api_inst, pargs, ctlfd):
         """Execute commands from a remote pipe"""
 
+        #
+        # this is kinda a gross hack.  SocketServer.py uses select.select()
+        # which doesn't support file descriptors larger than FD_SETSIZE.
+        # Since ctlfd may have been allocated in a parent process with many
+        # file descriptors, it may be larger than FD_SETSIZE.  Here in the
+        # child, though, the majority of those have been closed, so os.dup()
+        # should return a lower-numbered descriptor which will work with
+        # select.select().
+        #
+        ctlfd_new = os.dup(ctlfd)
+        os.close(ctlfd)
+        ctlfd = ctlfd_new
+
         rpc_server = pipeutils.PipedRPCServer(ctlfd)
         rpc_server.register_introspection_functions()
         rpc_server.register_instance(RemoteDispatch())

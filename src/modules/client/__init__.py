@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2007, 2012, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2007, 2013, Oracle and/or its affiliates. All rights reserved.
 #
 
 # Missing docstring; pylint: disable=C0111
@@ -80,12 +80,15 @@ class GlobalSettings(object):
                 self.client_output_progfd = None
 
                 # concurrency value used for linked image recursion
+                self.client_concurrency_set = False
                 self.client_concurrency_default = 1
                 self.client_concurrency = self.client_concurrency_default
                 try:
                         self.client_concurrency = int(os.environ.get(
                             "PKG_CONCURRENCY",
                             self.client_concurrency_default))
+                        if "PKG_CONCURRENCY" in os.environ:
+                                self.client_concurrency_set = True
                         # remove PKG_CONCURRENCY from the environment so child
                         # processes don't inherit it.
                         os.environ.pop("PKG_CONCURRENCY", None)

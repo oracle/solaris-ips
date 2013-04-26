@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2011, 2012, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2011, 2013, Oracle and/or its affiliates. All rights reserved.
 #
 
 import testutils
@@ -1547,6 +1547,125 @@ class TestPkgLinked3(TestPkgLinked):
                 self._pkg([0], "update --stage=plan", rv=EXIT_NOP)
                 self._pkg([0], "update --stage=prepare")
                 self._pkg([0], "update --stage=execute")
+
+
+class TestPkgLinkedScale(pkg5unittest.ManyDepotTestCase):
+        """Test the scalability of the linked image subsystem."""
+
+        max_image_count = 256
+
+        p_sync1 = []
+        p_vers = [
+            "@1.2,5.11-145:19700101T000001Z",
+            "@1.2,5.11-145:19700101T000000Z", # old time
+            "@1.1,5.11-145:19700101T000000Z", # old ver
+            "@1.1,5.11-144:19700101T000000Z", # old build
+            "@1.0,5.11-144:19700101T000000Z", # oldest
+        ]
+        p_files = [
+            "tmp/bar",
+            "tmp/baz",
+        ]
+
+        # generate packages that do need to be synced
+        p_sunc1_name_gen = "sync1"
+        pkgs = [p_sunc1_name_gen + ver for ver in p_vers]
+        p_sync1_name = dict(zip(range(len(pkgs)), pkgs))
+        for i in p_sync1_name:
+                p_data = "open %s\n" % p_sync1_name[i]
+                p_data += "add depend type=parent fmri=%s" % \
+                    pkg.actions.depend.DEPEND_SELF
+                p_data += """
+                    close\n"""
+                p_sync1.append(p_data)
+
+        def setUp(self):
+                pkg5unittest.ManyDepotTestCase.setUp(self, ["test"],
+                    image_count=self.max_image_count)
+
+                # create files that go in packages
+                self.make_misc_files(self.p_files)
+
+                # get repo url
+                self.rurl1 = self.dcs[1].get_repo_url()
+
+                # populate repository
+                self.pkgsend_bulk(self.rurl1, self.p_sync1)
+
+
+        def __req_phys_mem(self, phys_mem_req):
+                """Verify that the current machine has a minimal amount of
+                physical memory (in GB).  If it doesn't raise
+                TestSkippedException."""
+
+                psize = os.sysconf(os.sysconf_names["SC_PAGESIZE"])
+                ppages = os.sysconf(os.sysconf_names["SC_PHYS_PAGES"])
+                phys_mem = psize * ppages / 1024.0 / 1024.0 / 1024.0
+
+                if phys_mem < phys_mem_req:
+                        raise pkg5unittest.TestSkippedException(
+                            "Not enough memory, "\
+                            "%d GB required, %d GB detected.\n" %
+                            (phys_mem_req, phys_mem))
+
+        def pkg(self, *args, **kwargs):
+                """This is a wrapper function to disable coverage for all
+                tests in this class since these are essentially stress tests.
+                we don't need the coverage data (since other functional tests
+                should have already covered these code paths) and we don't
+                want the added overhead of gathering coverage data (since we
+                want to use all available resource for actually running the
+                tests)."""
+
+                kwargs["coverage"] = False
+                return pkg5unittest.ManyDepotTestCase.pkg(self, *args,
+                    **kwargs);
+
+        def test_li_scale(self):
+                """Verify that we can operate on a large number of linked
+                images in parallel.
+
+                For parallel linked image operations, 256 images is high
+                enough to cause file descriptor allocation to exceed
+                FD_SETSIZE, which in turn can cause select.select() to fail if
+                it's invoked.  In practice that's the only failure mode we've
+                ever seen when people have tried to update a large number of
+                zones in parallel.
+
+                The maximum value successfully tested here has been 512.  I
+                tried 1024 but it resulted in death by swapping on a u27 with
+                12 GB of memory."""
+
+                # we will require at least 11 GB of memory to run this test.
+                # This is a rough estimate of required memory based on
+                # observing this test running on s12_20 on an x86 machine.  on
+                # that machine i observed the peak RSS for pkg child process
+                # was about 24 MB.  with 256 child processes this comes out to
+                # about 6 GB of memory.  we require 11 GB so that the machine
+                # doesn't get bogged down and other things can continue to
+                # run.
+                self.__req_phys_mem(11)
+
+                limit = self.max_image_count
+
+                # create an image with a synced package
+                self.set_image(0)
+                self.image_create(repourl=self.rurl1)
+                self.pkg("install -v %s" % self.p_sync1_name[1])
+
+                # create copies of the image.
+                for i in range(1, self.max_image_count):
+                        self.image_clone(i)
+
+                # attach the copies as children of the original image
+                for i in range(1, self.max_image_count):
+                        name = "system:img%d" % i
+                        cmd = "attach-linked --linked-md-only -c %s %s" % (
+                            name, self.img_path(i))
+                        self.pkg(cmd)
+
+                # update the parent image and all child images in parallel
+                self.pkg("update -C0 -q")
 
 if __name__ == "__main__":
         unittest.main()

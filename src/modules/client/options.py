@@ -482,6 +482,7 @@ def opts_table_cb_concurrency(api_inst, opts, opts_new):
 
         # update global concurrency setting
         global_settings.client_concurrency = opts_new[CONCURRENCY]
+        global_settings.client_concurrency_set = True
 
         # remove concurrency from parameters dict
         del opts_new[CONCURRENCY]
