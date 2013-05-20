@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2009, 2012, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2009, 2013, Oracle and/or its affiliates. All rights reserved.
 #
 
 import cStringIO
@@ -236,9 +236,8 @@ class TransportCfg(object):
         def get_publisher(self, publisher_name):
                 raise NotImplementedError
 
-        def reset_caches(self, shared=False):
-                """Discard any cache information and reconfigure based on
-                current publisher configuration data.
+        def clear_caches(self, shared=False):
+                """Discard any cache information.
 
                 'shared' is an optional boolean value indicating that any
                 shared cache information (caches not specific to any publisher)
@@ -255,6 +254,19 @@ class TransportCfg(object):
                                 # the most current publisher information can be
                                 # used.
                                 del self.__caches[pub]
+
+        def reset_caches(self, shared=False):
+                """Discard any cache information and reconfigure based on
+                current publisher configuration data.
+
+                'shared' is an optional boolean value indicating that any
+                shared cache information (caches not specific to any publisher)
+                should also be discarded.  If True, callers are responsible for
+                ensuring a new set of shared cache information is added again.
+                """
+
+                # Clear the old cache setup.
+                self.clear_caches(shared=shared)
 
                 # Automatically add any publisher repository origins
                 # or mirrors that are filesystem-based as read-only caches.
@@ -2183,6 +2195,7 @@ class Transport(object):
 
                 CHUNK_SMALL = 10
                 CHUNK_LARGE = 100
+                CHUNK_HUGE = 1024
 
                 # Call setup if the transport isn't configured or was shutdown.
                 if not self.__engine:
@@ -2207,6 +2220,8 @@ class Transport(object):
                 repolist = _convert_repouris(repolist)
                 n = len(repolist)
                 m = self.stats.get_num_visited(repolist)
+                if n == 1:
+                        return CHUNK_HUGE
                 if m < n:
                         return CHUNK_SMALL
                 return CHUNK_LARGE
@@ -3090,10 +3105,15 @@ class MultiFileNI(MultiFile):
         are used to identify and verify the content.  Additional parameters
         define what happens when download finishes successfully."""
 
-        def __init__(self, pub, xport, final_dir, decompress=False,
+        def __init__(self, pub, xport, final_dir=None, decompress=False,
             progtrack=None, ccancel=None, alt_repo=None):
                 """Supply the destination publisher in the pub argument.
-                The transport object should be passed in xport."""
+                The transport object should be passed in xport.
+                
+                'final_dir' indicates the directory the retrieved files should
+                be moved to after retrieval. If it is set to None, files will
+                not be moved and remain in the cache directory specified
+                in the 'xport' object."""
 
                 MultiFile.__init__(self, pub, xport, progtrack=progtrack,
                     ccancel=ccancel, alt_repo=alt_repo)
@@ -3111,7 +3131,7 @@ class MultiFileNI(MultiFile):
                     self.get_publisher())
                 hashval = action.hash
 
-                if cpath:
+                if cpath and self._final_dir:
                         self._final_copy(hashval, cpath)
                         if self._progtrack:
                                 filesz = int(misc.get_pkg_otw_size(action))
@@ -3123,7 +3143,7 @@ class MultiFileNI(MultiFile):
                         for c in action.get_chain_certs():
                                 cpath = self._transport._action_cached(action,
                                     self.get_publisher(), in_hash=c)
-                                if cpath:
+                                if cpath and self._final_dir:
                                         self._final_copy(c, cpath)
                                         if self._progtrack:
                                                 self._progtrack.download_add_progress(
@@ -3177,7 +3197,8 @@ class MultiFileNI(MultiFile):
                         self._progtrack.download_add_progress((nactions - 1),
                             nbytes)
 
-                self._final_copy(hashval, current_path)
+                if self._final_dir:
+                        self._final_copy(hashval, current_path)
                 self.del_hash(hashval)
 
         def _final_copy(self, hashval, current_path):

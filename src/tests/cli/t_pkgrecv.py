@@ -40,6 +40,7 @@ import pkg.p5p as p5p
 import pkg.portable as portable
 import pkg.server.repository as repo
 import shutil
+import subprocess
 import tempfile
 import time
 import urllib
@@ -80,6 +81,12 @@ class TestPkgrecvMulti(pkg5unittest.ManyDepotTestCase):
 
         amber20 = """
             open amber@2.0,5.11-0
+            add depend fmri=pkg:/tree@1.0 type=require
+            close
+        """
+
+        amber30 = """
+            open amber@3.0,5.11-0
             add depend fmri=pkg:/tree@1.0 type=require
             close
         """
@@ -702,6 +709,9 @@ class TestPkgrecvMulti(pkg5unittest.ManyDepotTestCase):
                 self.pkgrecv(self.durl1, "-r -n -d %s %s" % (rpth, f))
                 self.assertEqualDiff(expected, os.listdir(rpth))
 
+                self.pkgrecv(self.durl1, "--clone -n -p '*' -d %s" % (rpth))
+                self.assertEqualDiff(expected, os.listdir(rpth))
+
                 arc_path = os.path.join(self.test_root, "test.p5p")
                 self.pkgrecv(self.durl1, "-a -n -d %s \*" % arc_path)
                 self.assert_(not os.path.exists(arc_path))
@@ -827,6 +837,61 @@ class TestPkgrecvMulti(pkg5unittest.ManyDepotTestCase):
 
                 for duri, arg_string, in dest_uris:
                         __test_rec(duri, arg_string, self.published[4:7])
+
+        def test_11_clone(self):
+                """Verify that pkgrecv handles cloning repos as expected."""
+                # Test basic operation of cloning repo which contains one
+                # publisher to repo which contains same publisher
+                self.pkgrecv(self.durl1, "--clone -d %s" % self.dpath2)
+                
+                ret = subprocess.call(["/usr/bin/gdiff", "-Naur", "-x", 
+                    "index", "-x", "trans", self.dpath1, self.dpath2])
+                self.assertTrue(ret==0)
+
+                # Test that packages in dst which are not in src get removed.
+                self.pkgsend_bulk(self.durl2, (self.amber30))
+                self.pkgrecv(self.durl1, "--clone -d %s" % self.dpath2)
+                ret = subprocess.call(["/usr/bin/gdiff", "-Naur", "-x", 
+                    "index", "-x", "trans", self.dpath1, self.dpath2])
+                self.assertTrue(ret==0)
+
+                # Test that clone reports publishers not in the dest repo.
+                amber = self.amber10.replace("open ", "open pkg://test2/")
+                self.pkgsend_bulk(self.durl1, amber)
+                self.pkgrecv(self.durl1, "--clone -d %s" % self.dpath2, exit=1)
+
+                # Test that clone adds new publishers if requested.
+                # Note: adding a publisher will automatically create a pub.p5i
+                # in the repo store. Since that is repo configuration and not
+                # part of the cloning it is ignored.
+                amber = self.amber10.replace("open ", "open pkg://test2/")
+                self.pkgsend_bulk(self.durl1, amber)
+                self.pkgrecv(self.durl1, "--clone -d %s -p test2" % self.dpath2)
+                ret = subprocess.call(["/usr/bin/gdiff", "-Naur", "-x", 
+                    "index", "-x", "trans", "-x", "pub.p5i", self.dpath1,
+                    self.dpath2])
+                self.assertTrue(ret==0)
+
+                # Test that clone removes all packages if source is empty
+                self.pkgrecv(self.durl3, "--clone -d %s" % self.dpath2)
+                self.pkgrepo("-s %s list -H -p test2" % self.dpath2)
+                self.assertEqualDiff("", self.output)
+
+                # Test that clone fails if --raw is specified.
+                self.pkgrecv(self.durl1, "--raw --clone -d %s -p test2" %
+                    self.dpath2, exit=2)
+                
+                # Test that clone fails if -c is specified.
+                self.pkgrecv(self.durl1, "-c /tmp/ --clone -d %s -p test2" %
+                    self.dpath2, exit=2)
+
+                # Test that clone fails if -a is specified.
+                self.pkgrecv(self.durl1, "-a --clone -d %s -p test2" %
+                    self.dpath2, exit=2)
+
+                # Test that clone fails if --newest is specified.
+                self.pkgrecv(self.durl1, "--newest --clone -d %s -p test2" %
+                    self.dpath2, exit=2)
 
 
 class TestPkgrecvHTTPS(pkg5unittest.HTTPSTestClass):

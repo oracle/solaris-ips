@@ -42,6 +42,7 @@
     pkg:/system/linker
     pkg:/system/locale/extra
     pkg:/system/network
+    pkg:/text/gnu-diffutils
     pkg:/text/gnu-gettext
     pkg:/text/gnu-grep
     pkg:/text/locale

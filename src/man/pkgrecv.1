@@ -18,6 +18,12 @@ pkgrecv \- Image Packaging System content retrieval utility
 /usr/bin/pkgrecv [-s \fIsrc_uri\fR] --newest
 .fi
 
+.LP
+.nf
+/usr/bin/pkgrecv [-s \fIsrc_uri\fR] [-d \fIpath\fR] [-p \fIpublisher\fR ...] 
+    [--key \fIsrc_key\fR --cert \fIsrc_cert\fR] [-n] --clone
+.fi
+
 .SH DESCRIPTION
 .sp
 .LP
@@ -183,6 +189,17 @@ Perform a trial run with no changes made.
 .ne 2
 .mk
 .na
+\fB\fB-p\fR \fIpublisher\fR\fR
+.ad
+.sp .6
+.RS 4n
+Only clone the given publisher. Can be specified multiple times. Only valid with --clone.
+.RE
+
+.sp
+.ne 2
+.mk
+.na
 \fB\fB-r\fR\fR
 .ad
 .sp .6
@@ -243,6 +260,17 @@ Specify a client SSL key file to use for package publication to the destination 
 .sp .6
 .RS 4n
 Specify a client SSL certificate file to use for package publication to the destination HTTPS repository.
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB--clone\fR\fR
+.ad
+.sp .6
+.RS 4n
+Make an exact copy of the source repository. By default, the clone operation will only succeed if publishers in the source repository are also present in the destination. By using \fB-p\fR, the operation can be limited to specific publishers which will be added to the destination repository if not already present. Packages in the destination repository which are not in the source will be removed. Cloning will leave the destination repository altered in case of an error. It is therefore strongly advised to have the destination repository in its own zfs dataset and to take a snapshot before cloning.
 .RE
 
 .sp

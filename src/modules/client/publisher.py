@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2009, 2012, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2009, 2013, Oracle and/or its affiliates. All rights reserved.
 #
 
 #
@@ -1689,11 +1689,13 @@ pkg unset-publisher %s
 
                 # If there's only one origin, then just symlink its catalog
                 # files into place.
+                # Symlinking includes updates for publication tools.
                 opaths = [entry for entry in self.__gen_origin_paths()]
                 if len(opaths) == 1:
                         opath = opaths[0][1]
                         for fname in os.listdir(opath):
-                                if fname.startswith("catalog."):
+                                if fname.startswith("catalog.") or \
+                                    fname.startswith("update."):
                                         src = os.path.join(opath, fname)
                                         dest = os.path.join(self.catalog_root,
                                             fname)
@@ -1947,7 +1949,7 @@ pkg unset-publisher %s
                 return False, True
 
         def __refresh_v1(self, croot, tempdir, full_refresh, immediate,
-            mismatched, repo, progtrack=None):
+            mismatched, repo, progtrack=None, include_updates=False):
                 """The method to refresh the publisher's metadata against
                 a catalog/1 source.  If the more recent catalog/1 version
                 isn't supported, __refresh_v0 is invoked as a fallback.
@@ -2004,6 +2006,9 @@ pkg unset-publisher %s
                                 if locale != "C":
                                         continue
                                 flist.append(name)
+                        if include_updates:
+                                for update in attrs.updates:
+                                        flist.append(update)
 
                 if flist:
                         # More catalog files to retrieve.
@@ -2063,7 +2068,7 @@ pkg unset-publisher %s
                 return True, True
 
         def __refresh_origin(self, croot, full_refresh, immediate, mismatched,
-            origin, progtrack=None):
+            origin, progtrack=None, include_updates=False):
                 """Private helper method used to refresh catalog data for each
                 origin.  Returns a tuple of (changed, refreshed) where 'changed'
                 indicates whether new catalog data was found and 'refreshed'
@@ -2093,7 +2098,8 @@ pkg unset-publisher %s
                 try:
                         rval = self.__refresh_v1(croot, tempdir,
                             full_refresh, immediate, mismatched, repo,
-			    progtrack=progtrack)
+			    progtrack=progtrack,
+                            include_updates=include_updates)
 
                         # Perform publisher metadata sanity checks.
                         self.__validate_metadata(croot, repo)
@@ -2104,7 +2110,7 @@ pkg unset-publisher %s
                         shutil.rmtree(tempdir, True)
 
         def __refresh(self, full_refresh, immediate, mismatched=False,
-	    progtrack=None):
+	    progtrack=None, include_updates=False):
                 """The method to handle the overall refresh process.  It
                 determines if a refresh is actually needed, and then calls
                 the first version-specific refresh method in the chain."""
@@ -2140,7 +2146,8 @@ pkg unset-publisher %s
                 for origin, opath in self.__gen_origin_paths():
                         changed, refreshed = self.__refresh_origin(opath,
                             full_refresh, immediate, mismatched, origin,
-			    progtrack=progtrack)
+			    progtrack=progtrack,
+                            include_updates=include_updates)
                         if changed:
                                 any_changed = True
                         if refreshed:
@@ -2157,7 +2164,8 @@ pkg unset-publisher %s
 
                 return any_changed
 
-        def refresh(self, full_refresh=False, immediate=False, progtrack=None):
+        def refresh(self, full_refresh=False, immediate=False, progtrack=None,
+            include_updates=False):
                 """Refreshes the publisher's metadata, returning a boolean
                 value indicating whether any updates to the publisher's
                 metadata occurred.
@@ -2170,11 +2178,16 @@ pkg unset-publisher %s
                 'immediate' is an optional boolean value indicating whether
                 a refresh should occur now.  If False, a publisher's selected
                 repository will be checked for updates only if needs_refresh
-                is True."""
+                is True.
+
+                'include_updates' is an optional boolean value indicating
+                whether all catalog updates should be retrieved additionally to
+                the catalog."""
 
                 try:
                         return self.__refresh(full_refresh, immediate,
-			    progtrack=progtrack)
+			    progtrack=progtrack,
+                            include_updates=include_updates)
                 except (api_errors.BadCatalogUpdateIdentity,
                     api_errors.DuplicateCatalogEntry,
                     api_errors.ObsoleteCatalogUpdate,

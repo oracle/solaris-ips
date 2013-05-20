@@ -43,10 +43,13 @@ import pkg.fmri
 import pkg.manifest as manifest
 import pkg.client.api_errors as apx
 import pkg.client.pkgdefs as pkgdefs
+import pkg.client.publisher as publisher
 import pkg.client.transport.transport as transport
 import pkg.misc as misc
 import pkg.p5p
+import pkg.pkgsubprocess as subprocess
 import pkg.publish.transaction as trans
+import pkg.server.repository as sr
 import pkg.version as version
 
 from pkg.client import global_settings
@@ -96,6 +99,8 @@ Usage:
             [--dkey dest_key --dcert dest_cert]
             (fmri|pattern) ...
         pkgrecv [-s src_repo_uri] --newest
+        pkgrecv [-s src_repo_uri] [-d path] [-p publisher ...]
+            [--key src_key --cert src_cert] [-n] --clone
 
 Options:
         -a              Store the retrieved package data in a pkg(5) archive
@@ -121,7 +126,7 @@ Options:
 
         -m match        Controls matching behaviour using the following values:
                             all-timestamps (default)
-                                includes all matching timestamps (implies 
+                                includes all matching timestamps (implies
                                 all-versions)
                             all-versions
                                 includes all matching versions
@@ -130,11 +135,25 @@ Options:
 
         -n              Perform a trial run with no changes made.
 
+        -p publisher    Only clone the given publisher. Can be specified
+                        multiple times. Only valid with --clone.
+
         -r              Recursively evaluates all dependencies for the provided
                         list of packages and adds them to the list.
 
         -s src_repo_uri A URI representing the location of a pkg(5)
                         repository to retrieve package data from.
+
+        --clone         Make an exact copy of the source repository. By default,
+                        the clone operation will only succeed if publishers in 
+                        the  source  repository  are  also  present  in  the
+                        destination.  By using -p, the operation can be limited
+                        to  specific  publishers  which  will  be  added  to the
+                        destination repository if not already present.
+                        Packages in the destination repository which are not in
+                        the source will be removed.
+                        Cloning will leave the destination repository altered in
+                        case of an error.
 
         --newest        List the most recent versions of the packages available
                         from the specified repository and exit.  (All other
@@ -317,9 +336,10 @@ def prune(fmri_list, all_versions, all_timestamps):
                 fmri_list = [sorted(dedup[f], reverse=True)[0] for f in dedup]
         return fmri_list
 
-def fetch_catalog(src_pub, tracker, txport, target_catalog):
+def fetch_catalog(src_pub, tracker, txport, target_catalog,
+    include_updates=False):
         """Fetch the catalog from src_uri.
-	
+
 	target_catalog is a hint about whether this is a destination catalog,
 	which helps the progress tracker render the refresh output properly."""
 
@@ -337,7 +357,8 @@ def fetch_catalog(src_pub, tracker, txport, target_catalog):
 
         src_pub.transport = txport
         try:
-                src_pub.refresh(True, True, progtrack=tracker)
+                src_pub.refresh(full_refresh=True, immediate=True,
+                    progtrack=tracker, include_updates=include_updates)
         except apx.TransportError, e:
                 # Assume that a catalog doesn't exist for the target publisher,
                 # and drive on.  If there was an actual failure due to a
@@ -368,6 +389,8 @@ def main_func():
         cert = None
         dkey = None
         dcert = None
+        publishers = []
+        clone = False
 
         temp_root = misc.config_temp_root()
 
@@ -379,8 +402,9 @@ def main_func():
         src_uri = os.environ.get("PKG_SRC", None)
 
         try:
-                opts, pargs = getopt.getopt(sys.argv[1:], "ac:D:d:hkm:nrs:",
-                    ["cert=", "key=", "dcert=", "dkey=", "newest", "raw", "debug="])
+                opts, pargs = getopt.getopt(sys.argv[1:], "ac:D:d:hkm:np:rs:",
+                    ["cert=", "key=", "dcert=", "dkey=", "newest", "raw",
+                    "debug=", "clone"])
         except getopt.GetoptError, e:
                 usage(_("Illegal option -- %s") % e.opt)
 
@@ -389,6 +413,8 @@ def main_func():
                         archive = True
                 elif opt == "-c":
                         cache_dir = arg
+                elif opt == "--clone":
+                        clone = True
                 elif opt == "-d":
                         target = arg
                 elif opt == "-D" or opt == "--debug":
@@ -421,6 +447,8 @@ def main_func():
                                 usage(_("Illegal option value -- %s") % arg)
                 elif opt == "-n":
                         dry_run = True
+                elif opt == "-p":
+                        publishers.append(arg)
                 elif opt == "-r":
                         recursive = True
                 elif opt == "-s":
@@ -452,6 +480,24 @@ def main_func():
                 # Only clean-up cache dir if implicitly created by pkgrecv.
                 # User's cache-dirs should be preserved
                 tmpdirs.append(cache_dir)
+        else:
+                if clone:
+                        usage(_("--clone can not be used with -c.\n"
+                            "Content will be downloaded directly to the "
+                            "destination repository and re-downloading after a "
+                            "pkgrecv failure will not be required."))
+
+        if clone and raw:
+                usage(_("--clone can not be used with --raw.\n"))
+
+        if clone and archive:
+                usage(_("--clone can not be used with -a.\n"))
+
+        if clone and list_newest:
+                usage(_("--clone can not be used with --newest.\n"))
+
+        if publishers and not clone:
+                usage(_("-p can only be used with --clone.\n"))
 
         incoming_dir = tempfile.mkdtemp(dir=temp_root,
             prefix=global_settings.client_name + "-")
@@ -477,6 +523,10 @@ def main_func():
         args = (pargs, target, list_newest, all_versions,
             all_timestamps, keep_compressed, raw, recursive, dry_run,
             dest_xport_cfg, src_uri, dkey, dcert)
+
+        if clone:
+                args += (publishers,)
+                return clone_repo(*args)
 
         if archive:
                 # Retrieving package data for archival requires a different mode
@@ -682,6 +732,336 @@ def archive_pkgs(pargs, target, list_newest, all_versions, all_timestamps,
                 error(_("The following errors were encountered.  The packages "
                     "listed were not\nreceived.\n%s") %
                     "\n".join(str(im) for im in invalid_manifests))
+        if invalid_manifests and total_processed:
+                return pkgdefs.EXIT_PARTIAL
+        if invalid_manifests:
+                return pkgdefs.EXIT_OOPS
+        return pkgdefs.EXIT_OK
+
+
+def clone_repo(pargs, target, list_newest, all_versions, all_timestamps,
+    keep_compressed, raw, recursive, dry_run, dest_xport_cfg, src_uri, dkey,
+    dcert, publishers):
+
+        global cache_dir, download_start, xport, xport_cfg, dest_xport
+
+        invalid_manifests = []
+        total_processed = 0
+        modified_pubs = set()
+        deleted_pkgs = False
+        old_c_root = None
+        del_search_index = set()
+
+        # Turn target into a valid URI.
+        target = publisher.RepositoryURI(misc.parse_uri(target))
+
+        if target.scheme != "file":
+                abort(err=_("Destination clone repository must be "
+                    "filesystem-based."))
+
+        # Initialize the target repo.
+        try:
+                repo = sr.Repository(read_only=False,
+                    root=target.get_pathname())
+        except sr.RepositoryInvalidError, e:
+                txt = str(e) + "\n\n"
+                txt += _("To create a repository, use the pkgrepo command.")
+                abort(err=txt)
+
+        def copy_catalog(src_cat_root, pub):
+                # Copy catalog files.
+                c_root = repo.get_pub_rstore(pub).catalog_root
+                rstore_root = repo.get_pub_rstore(pub).root
+                try:
+                        # We just use mkdtemp() to find ourselves a directory
+                        # which does not already exist. The created dir is not
+                        # used.
+                        old_c_root = tempfile.mkdtemp(dir=rstore_root,
+                            prefix='catalog-')
+                        shutil.rmtree(old_c_root)
+                        shutil.move(c_root, old_c_root)
+                        shutil.copytree(src_cat_root, c_root)
+                except Exception, e:
+                        abort(err=_("Unable to copy catalog files: %s") % e)
+                return old_c_root
+
+        # Check if all publishers in src are also in target. If not, add
+        # depending on what publishers were specified by user.
+        pubs_to_sync = []
+        pubs_to_add = []
+        src_pubs = {}
+        for sp in xport_cfg.gen_publishers():
+                src_pubs[sp.prefix] = sp
+        dst_pubs = repo.get_publishers()
+
+        pubs_specified = False
+        unknown_pubs = []
+        for p in publishers:
+                if p not in src_pubs and p != '*':
+                        abort(err=_("The publisher %s does not exist in the "
+                            "source repository." % p))
+                pubs_specified = True
+
+        for sp in src_pubs:
+                if sp not in dst_pubs and (sp in publishers or \
+                    '*' in publishers):
+                        pubs_to_add.append(src_pubs[sp])
+                        pubs_to_sync.append(src_pubs[sp])
+                elif sp in dst_pubs and (sp in publishers or '*' in publishers
+                    or not pubs_specified):
+                        pubs_to_sync.append(src_pubs[sp])
+                elif not pubs_specified:
+                        unknown_pubs.append(sp)
+
+        # We only print warning if the user didn't specify any valid publishers 
+        # to add/sync.
+        if len(unknown_pubs):
+                txt = _("\nThe following publishers are present in the "
+                    "source repository but not in the target repository.\n"
+                    "Please use -p to specify which publishers need to be "
+                    "cloned or -p '*' to clone all publishers.")
+                for p in unknown_pubs:
+                        txt += "\n    %s\n" % p
+                abort(err=txt)
+
+        # Create non-existent publishers.
+        for p in pubs_to_add:
+                if not dry_run:
+                        msg(_("Adding publisher %s ...") % p.prefix)
+                        repo.add_publisher(p)
+                else:
+                        msg(_("Adding publisher %s (dry-run) ...") % p.prefix)
+
+        for src_pub in pubs_to_sync:
+                msg(_("Processing packages for publisher %s ...") %
+                    src_pub.prefix)
+                tracker = get_tracker()
+
+                src_basedir = tempfile.mkdtemp(dir=temp_root,
+                    prefix=global_settings.client_name + "-")
+                tmpdirs.append(src_basedir)
+
+                xport_cfg.pkg_root = src_basedir
+
+                # We make the destination repo our cache directory to save on
+                # IOPs. Have to remove all the old caches first.
+                if not dry_run:
+                        xport_cfg.clear_caches(shared=True)
+                        xport_cfg.add_cache(
+                            repo.get_pub_rstore(src_pub.prefix).file_root,
+                            readonly=False)
+
+                # Retrieve src and dest catalog for comparison.
+                src_pub.meta_root = src_basedir
+
+                src_cat = fetch_catalog(src_pub, tracker, xport, False,
+                    include_updates=True)
+                src_cat_root = src_cat.meta_root
+
+                try:
+                        targ_cat = repo.get_catalog(pub=src_pub.prefix)
+                except sr.RepositoryUnknownPublisher:
+                        targ_cat = catalog.Catalog(read_only=True)
+
+                src_fmris = set([x for x in src_cat.fmris(last=False)])
+                targ_fmris = set([x for x in targ_cat.fmris(last=False)])
+
+                del src_cat
+                del targ_cat
+
+                to_add = []
+                to_rm = []
+
+                # We use bulk prefetching for faster transport of the manifests.
+                # Prefetch requires an intent which it sends to the server. Here
+                # we just use operation=clone for all FMRIs.
+                intent = "operation=clone;"
+
+                # Find FMRIs which need to be added/removed.
+                to_add_set = src_fmris - targ_fmris
+                to_rm = targ_fmris - src_fmris
+
+                for f in to_add_set:
+                        to_add.append((f, intent))
+
+                del src_fmris
+                del targ_fmris
+                del to_add_set
+
+                # We have to do package removal first because after the sync we
+                # don't have the old catalog anymore and if we delete packages
+                # after the sync based on the current catalog we might delete
+                # files required by packages still in the repo.
+                if len(to_rm) > 0:
+                        msg(_("Packages to remove:"))
+                        for f in to_rm:
+                                msg("    %s" % f.get_fmri(anarchy=True))
+
+                        if not dry_run:
+                                msg(_("Removing packages ..."))
+                                if repo.get_pub_rstore(
+                                    src_pub.prefix).search_available:
+                                        del_search_index.add(src_pub.prefix)
+                                repo.remove_packages(to_rm, progtrack=tracker,
+                                    pub=src_pub.prefix)
+                                deleted_pkgs = True
+                                total_processed += len(to_rm)
+                                modified_pubs.add(src_pub.prefix)
+
+                if len(to_add) == 0:
+                        msg(_("No packages to add."))
+                        if deleted_pkgs:
+                                old_c_root = copy_catalog(src_cat_root,
+                                    src_pub.prefix)
+                        continue
+
+                get_bytes = 0
+                get_files = 0
+
+                # Retrieve manifests.
+                # Try prefetching manifests in bulk first for faster, parallel
+                # transport. Retryable errors during prefetch are ignored and
+                # manifests are retrieved again during the "Reading" phase.
+                src_pub.transport.prefetch_manifests(to_add, progtrack=tracker)
+
+                # Need to change the output of mfst_fetch since otherwise we
+                # would see "Download Manifests x/y" twice, once from the
+                # prefetch and once from the actual manifest analysis.
+                old_gti = tracker.mfst_fetch
+                tracker.mfst_fetch = progress.GoalTrackerItem(
+                    _("Reading Manifests"))
+                tracker.manifest_fetch_start(len(to_add))
+                for f, i in to_add:
+                        try:
+                                m = get_manifest(f, xport_cfg)
+                        except apx.InvalidPackageErrors, e:
+                                invalid_manifests.extend(e.errors)
+                                continue
+                        getb, getf, sendb, sendcb = get_sizes(m)
+                        get_bytes += getb
+                        get_files += getf
+
+                        if dry_run:
+                                tracker.manifest_fetch_progress(completion=True)
+                                continue
+
+                        # Move manifest into dest repo.
+                        targ_path = os.path.join(
+                            repo.get_pub_rstore(src_pub.prefix).root, 'pkg')
+                        dp = m.fmri.get_dir_path()
+                        dst_path = os.path.join(targ_path, dp)
+                        src_path = os.path.join(src_basedir, dp, 'manifest')
+                        dir_name = os.path.dirname(dst_path)
+                        try:
+                                misc.makedirs(dir_name)
+                                shutil.move(src_path, dst_path)
+                        except Exception, e:
+                                txt = _("Unable to copy manifest: %s") % e
+                                abort(err=txt)
+
+                        tracker.manifest_fetch_progress(completion=True)
+
+                tracker.manifest_fetch_done()
+                # Restore old GoalTrackerItem for manifest download.
+                tracker.mfst_fetch = old_gti
+
+                if not dry_run:
+                        msg(_("\nAdding packages ..."))
+                else:
+                        msg(_("\nAdding packages (dry-run) ..."))
+
+                status = []
+                status.append((_("Packages to add:"), str(len(to_add))))
+                status.append((_("Files to retrieve:"), str(get_files)))
+                status.append((_("Estimated transfer size:"), misc.bytes_to_str(
+                    get_bytes)))
+
+                rjust_status = max(len(s[0]) for s in status)
+                rjust_value = max(len(s[1]) for s in status)
+                for s in status:
+                        msg("%s %s" % (s[0].rjust(rjust_status),
+                            s[1].rjust(rjust_value)))
+
+                if dry_run:
+                        continue
+
+                tracker.download_set_goal(len(to_add), get_files, get_bytes)
+
+                # Retrieve package files.
+                for f, i in to_add:
+                        tracker.download_start_pkg(f)
+                        mfile = xport.multi_file_ni(src_pub, None,
+                            progtrack=tracker)
+                        m = get_manifest(f, xport_cfg)
+                        add_hashes_to_multi(m, mfile)
+
+                        if mfile:
+                                mfile.wait_files()
+
+                        tracker.download_end_pkg(f)
+                        total_processed += 1
+
+                tracker.download_done
+                tracker.reset()
+
+                modified_pubs.add(src_pub.prefix)
+                old_c_root = copy_catalog(src_cat_root, src_pub.prefix)
+
+        if invalid_manifests:
+                error(_("The following packages could not be retrieved:\n%s") %
+                    "\n".join(str(im) for im in invalid_manifests))
+
+        ret = 0
+        # Run pkgrepo verify to check repo.
+        if total_processed:
+                msg(_("\n\nVerifying repository contents."))
+                cmd = os.path.join(os.path.dirname(misc.api_cmdpath()),
+                    "pkgrepo")
+                args = [cmd, 'verify', '-s',
+                    target.get_pathname()]
+
+                try:
+                        ret = subprocess.call(args)
+                except OSError, e:
+                        raise RuntimeError, "cannot execute %s: %s" % (args, e)
+
+        # Cleanup. If verification was ok, remove backup copy of old catalog.
+        # If not, move old catalog back into place and remove messed up catalog.
+        for pub in modified_pubs:
+                c_root = repo.get_pub_rstore(pub).catalog_root
+                try:
+                        if ret:
+                                shutil.rmtree(c_root)
+                                shutil.move(old_c_root, c_root)
+                        else:
+                                shutil.rmtree(old_c_root)
+                except Exception, e:
+                        error(_("Unable to remove catalog files: %s") % e)
+                        # We don't abort here to make sure we can
+                        # restore/delete as much as we can.
+                        continue
+
+        if ret:
+                txt = _("Pkgrepo verify found errors in the updated repository."
+                    "\nThe original package catalog has been restored.\n")
+                if deleted_pkgs:
+                        txt += _("Deleted packages can not be restored.\n")
+                txt += _("The clone operation can be retried; package content "
+                    "that has already been retrieved will not be downloaded "
+                    "again.")
+                abort(err=txt)
+
+        if del_search_index:
+                txt = _("\nThe search index for the following publishers has "
+                    "been removed due to package removals.\n")
+                for p in del_search_index:
+                        txt += "    %s\n" % p
+                txt += _("\nTo restore the search index for all publishers run"
+                    "\n'pkgrepo refresh --no-catalog -s %s'.\n") % \
+                    target.get_pathname()
+                msg(txt)
+
+        cleanup()
         if invalid_manifests and total_processed:
                 return pkgdefs.EXIT_PARTIAL
         if invalid_manifests:
