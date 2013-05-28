@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2007, 2012, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2007, 2013, Oracle and/or its affiliates. All rights reserved.
 #
 
 import time
@@ -2072,16 +2072,24 @@ class PkgSolver(object):
 
                 if fmri.pkg_name not in self.__parent_dict:
                         # package is not installed in parent
-                        reason = (N_("Package is not installed in "
-                            "parent image: {0}"), (fmri.pkg_name,))
+                        if self.__is_zone():
+                                reason = (N_("Package {0} is not installed in "
+                                    "global zone."), (fmri.pkg_name,))
+                        else:
+                                reason = (N_("Package {0} is not installed in "
+                                    "parent image."), (fmri.pkg_name,))
                         self.__trim(pkg_fmri, reason)
                         return False
 
                 pf = self.__parent_dict[fmri.pkg_name]
                 if fmri.publisher and fmri.publisher != pf.publisher:
                         # package is from a different publisher in the parent
-                        reason = (N_("Package in parent is from a "
-                            "different publisher: {0}"), (pf,))
+                        if self.__is_zone():
+                                reason = (N_("Package in global zone is from "
+                                    "a different publisher: {0}"), (pf,))
+                        else:
+                                reason = (N_("Package in parent is from a "
+                                    "different publisher: {0}"), (pf,))
                         self.__trim(pkg_fmri, reason)
                         return False
 
@@ -2093,11 +2101,19 @@ class PkgSolver(object):
                 # version mismatch
                 if pf.version.is_successor(fmri.version,
                     version.CONSTRAINT_NONE):
-                        reason = (N_("Parent image has a incompatible newer "
-                            "version: {0}"), (pf,))
+                        if self.__is_zone():
+                                reason = (N_("Global zone has a "
+                                    "newer version: {0}"), (pf,))
+                        else:
+                                reason = (N_("Parent image has a "
+                                    "newer version: {0}"), (pf,))
                 else:
-                        reason = (N_("Parent image has an older version of "
-                            "package: {0}"), (pf,))
+                        if self.__is_zone():
+                                reason = (N_("Global zone has an older "
+                                    "version of package: {0}"), (pf,))
+                        else:
+                                reason = (N_("Parent image has an older "
+                                    "version of package: {0}"), (pf,))
 
                 self.__trim(pkg_fmri, reason)
                 return False
@@ -2203,3 +2219,11 @@ class PkgSolver(object):
                         if f not in self.__trim_dict
                         ]
                 return ret
+
+        def __is_zone(self):
+                """Return True if image is a nonglobal zone"""
+                if 'variant.opensolaris.zone' in self.__variants:
+                        return self.__variants['variant.opensolaris.zone'] == \
+                            'nonglobal'
+                else:
+                        return False
