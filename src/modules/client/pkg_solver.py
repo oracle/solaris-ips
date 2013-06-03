@@ -23,12 +23,13 @@
 #
 # Copyright (c) 2007, 2013, Oracle and/or its affiliates. All rights reserved.
 #
-
+import os
 import time
 
 import pkg.actions
 import pkg.catalog           as catalog
 import pkg.client.api_errors as api_errors
+
 import pkg.client.image
 import pkg.fmri
 import pkg.misc as misc
@@ -38,6 +39,7 @@ import pkg.version           as version
 from collections import defaultdict
 from itertools import chain
 from pkg.client.debugvalues import DebugValues
+from pkg.client.firmware import Firmware
 from pkg.misc import EmptyI, EmptyDict, N_
 
 SOLVER_INIT    = "Initialized"
@@ -153,6 +155,9 @@ class PkgSolver(object):
                             for f in self.__parent_pkgs
                         ])
 
+		# cache of firmware dependencies
+		self.__firmware = Firmware()
+
         def __str__(self):
 
                 s = "Solver: ["
@@ -205,6 +210,7 @@ class PkgSolver(object):
                 self.__start_time = None
                 self.__dependents = None
                 self.__fmridict = {}
+		self.__firmware = None
 
                 if DebugValues["plan"]:
                         # Remaining data must be kept.
@@ -2171,22 +2177,32 @@ class PkgSolver(object):
                         req_fmri = pkg.fmri.PkgFmri(da.attrs["fmri"], "5.11")
 
                         if da.attrs.get("root-image", "").lower() == "true":
-                                if self.__root_fmris is None:
-                                        img = pkg.client.image.Image(
-                                            misc.liveroot(),
-                                            allow_ondisk_upgrade=False,
-                                            user_provided_dir=True,
-                                            should_exist=True)
-                                        self.__root_fmris = dict([
-                                            (f.pkg_name, f)
-                                            for f in img.gen_installed_pkgs()
-                                        ])
+				if req_fmri.pkg_name.startswith("feature/firmware/"):
+					# this is a firmware dependency
+					fw_ok, reason = \
+					    self.__firmware.check_firmware(da,
+					    req_fmri.pkg_name)
+					if not fw_ok:
+						self.__trim(fmri, reason)
+						return False
+					continue
+				else:
+					if self.__root_fmris is None:
+						img = pkg.client.image.Image(
+						    misc.liveroot(),
+						    allow_ondisk_upgrade=False,
+						    user_provided_dir=True,
+						    should_exist=True)
+						self.__root_fmris = dict([
+						    (f.pkg_name, f)
+						    for f in img.gen_installed_pkgs()
+						])
 
-                                installed = self.__root_fmris.get(
-                                    req_fmri.pkg_name, None)
-                                reason = (N_("Installed version in root image "
-                                    "is too old for origin dependency {0}"),
-                                    (req_fmri,))
+					installed = self.__root_fmris.get(
+					    req_fmri.pkg_name, None)
+					reason = (N_("Installed version in root image "
+					    "is too old for origin dependency {0}"),
+					    (req_fmri,))
                         else:
                                 installed = self.__installed_dict.get(
                                     req_fmri.pkg_name, None)

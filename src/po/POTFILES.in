@@ -30,6 +30,7 @@ modules/client/actuator.py
 modules/client/api.py
 modules/client/api_errors.py
 modules/client/bootenv.py
+modules/client/firmware.py
 modules/client/history.py
 modules/client/image.py
 modules/client/imageconfig.py

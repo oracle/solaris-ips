@@ -41,6 +41,7 @@ import platform
 import re
 import resource
 import shutil
+import signal
 import simplejson as json
 import socket
 import struct
@@ -51,6 +52,8 @@ import traceback
 import urllib
 import urlparse
 import zlib
+
+from collections import defaultdict
 
 from stat import S_IFMT, S_IMODE, S_IRGRP, S_IROTH, S_IRUSR, S_IRWXU, \
     S_ISBLK, S_ISCHR, S_ISDIR, S_ISFIFO, S_ISLNK, S_ISREG, S_ISSOCK, \
@@ -2424,3 +2427,18 @@ def decode(s):
                 # this will encode 8 bit strings into unicode
                 s = s.decode("utf-8", "replace")
         return s
+
+
+sigdict = None
+
+def signame(signal_number):
+        """convert signal number to name(s)"""
+        global sigdict
+        if sigdict is None:
+                sigdict = defaultdict(list)
+                for name in dir(signal):
+                        if name.startswith("SIG") and "_" not in name:
+                                sigdict[getattr(signal, name)].append(name)
+
+        return "/".join(sigdict.get(signal_number, ["Unnamed signal: %d" %
+            signal_number]))

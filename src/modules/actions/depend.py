@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2007, 2012, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2007, 2013, Oracle and/or its affiliates. All rights reserved.
 #
 
 
@@ -37,6 +37,8 @@ import pkg.actions
 import pkg.client.pkgdefs as pkgdefs
 import pkg.fmri
 import pkg.version
+
+from pkg.client.firmware import Firmware
 
 known_types = (
     "conditional",
@@ -270,12 +272,20 @@ class DependencyAction(generic.Action):
                                         return [], [], []
                                 else:
                                         errors.extend(e)
-
                         if not errors: # none was installed
                                 errors.append(_("Required dependency on one of "
                                     "%s not met") %
                                     ", ".join((str(p) for p in pfmris)))
                         return errors, warnings, info
+                elif ctype == "origin" and pfmri.pkg_name.startswith(
+                    "feature/firmware/"):
+                        ok, reason = Firmware().check_firmware(self, pfmri.pkg_name)
+                        if ok:
+                                return [], [], []
+                        else:
+                                errors.append(reason)
+
+                        # can only check origin firmware dependencies
 
                 # do checking for other dependency types
 

@@ -85,6 +85,7 @@ file path=$(PYDIRVP)/pkg/client/api_errors.py
 #
 file path=$(PYDIRVP)/pkg/client/bootenv.py pkg.depend.bypass-generate=.*libbe.*
 file path=$(PYDIRVP)/pkg/client/debugvalues.py
+file path=$(PYDIRVP)/pkg/client/firmware.py
 file path=$(PYDIRVP)/pkg/client/history.py
 file path=$(PYDIRVP)/pkg/client/image.py
 file path=$(PYDIRVP)/pkg/client/imageconfig.py

@@ -547,7 +547,7 @@ The dependency is required only if the package defined by the \fBpredicate\fR at
 .ad
 .sp .6
 .RS 4n
-The dependency must, if present, be at the specified value or better on the image to be modified prior to installation. If the value of the \fBroot-image\fR attribute is \fBtrue\fR, the dependency must be present on the image rooted at / in order to install this package.
+The dependency must, if present, be at the specified value or better on the image to be modified prior to installation. If the value of the \fBroot-image\fR attribute is \fBtrue\fR, the dependency must be present on the image rooted at / in order to install this package.  If the fmri also starts with pkg:/feature/firmware/, the remainder of the name is treated as a command in /usr/lib/fwenum that evaluates the firmware dependency. See the package developer's guide for details.
 .RE
 
 .sp
