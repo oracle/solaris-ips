@@ -2429,13 +2429,11 @@ def decode(s):
         return s
 
 
-sigdict = None
+sigdict = defaultdict(list)
 
 def signame(signal_number):
         """convert signal number to name(s)"""
-        global sigdict
-        if sigdict is None:
-                sigdict = defaultdict(list)
+        if not sigdict:
                 for name in dir(signal):
                         if name.startswith("SIG") and "_" not in name:
                                 sigdict[getattr(signal, name)].append(name)
