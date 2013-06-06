@@ -3034,7 +3034,7 @@ def calc_justs(attrs):
                 return JUST_UNKNOWN
         return [ __chose_just(attr) for attr in attrs ]
 
-def produce_lines(actionlist, attrs, action_types=None, show_all=False,
+def produce_lines(actionlist, attrs, show_all=False,
     remove_consec_dup_lines=False, last_res=None):
         """Produces a list of n tuples (where n is the length of attrs)
         containing the relevant information about the actions.
@@ -3048,16 +3048,13 @@ def produce_lines(actionlist, attrs, action_types=None, show_all=False,
         The "attrs" parameter is a list of the attributes of the action that
         should be displayed.
 
-        The "action_types" parameter may contain a list of the types of actions
-        that should be displayed.
-
         The "show_all" parameter determines whether an action that lacks one
         or more of the desired attributes will be displayed or not.
 
         The "remove_consec_dup_lines" parameter determines whether consecutive
         duplicate lines should be removed from the results.
 
-        The "last_res" paramter is a seed to compare the first result against
+        The "last_res" parameter is a seed to compare the first result against
         for duplicate removal.
         """
 
@@ -3068,8 +3065,6 @@ def produce_lines(actionlist, attrs, action_types=None, show_all=False,
         if last_res:
                 lines.append(last_res)
         for pfmri, action, pub, match, match_type in actionlist:
-                if action_types and action.name not in action_types:
-                        continue
                 line = []
                 for attr in attrs:
                         if action and attr in action.attrs:
@@ -3193,13 +3188,12 @@ def create_output_format(display_headers, widths, justs, line):
         fmt.rstrip("\t")
         return fmt
 
-def display_contents_results(actionlist, attrs, sort_attrs, action_types,
-    display_headers):
+def display_contents_results(actionlist, attrs, sort_attrs, display_headers):
         """Print results of a "list" operation.  Returns False if no output
         was produced."""
 
         justs = calc_justs(attrs)
-        lines = produce_lines(actionlist, attrs, action_types)
+        lines = produce_lines(actionlist, attrs)
         widths = calc_widths(lines, attrs)
 
         if sort_attrs:
@@ -3414,22 +3408,48 @@ def list_contents(api_inst, args):
                             result=RESULT_NOTHING_TO_DO)
                         return EXIT_OOPS
 
-        actionlist = [
-            (m.fmri, a, None, None, None)
-            for m in manifests
-            for a in m.gen_actions(excludes)
-            if mmatches(a)
-        ]
+        # Build a generator expression based on whether specific action types
+        # were provided.
+        if action_types:
+                # If query is limited to specific action types, use the more
+                # efficient type-based generation mechanism.
+                gen_expr = (
+                    (m.fmri, a, None, None, None)
+                    for m in manifests
+                    for a in m.gen_actions_by_types(action_types,
+                        excludes=excludes)
+                    if mmatches(a)
+                )
+        else:
+                gen_expr = (
+                    (m.fmri, a, None, None, None)
+                    for m in manifests
+                    for a in m.gen_actions(excludes=excludes)
+                    if mmatches(a)
+                )
+
+        # Determine if the query returned any results by "peeking" at the first
+        # value returned from the generator expression.
+        try:
+                found = gen_expr.next()
+        except StopIteration:
+                found = None
+
+        if found:
+                # If any matching entries were found, create a new generator
+                # expression using itertools.chain that includes the first
+                # result.
+                actionlist = itertools.chain([found], gen_expr)
 
         rval = EXIT_OK
-        if attr_match and manifests and not actionlist:
+        if attr_match and manifests and not found:
                 rval = EXIT_OOPS
                 logger.error(_("""\
 pkg: contents: no matching actions found in the listed packages"""))
 
         if manifests and rval == EXIT_OK:
                 displayed_results = display_contents_results(actionlist, attrs,
-                    sort_attrs, action_types, display_headers)
+                    sort_attrs, display_headers)
 
                 if not displayed_results:
                         if output_fields:
