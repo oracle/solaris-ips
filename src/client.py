@@ -3434,6 +3434,7 @@ def list_contents(api_inst, args):
                 found = gen_expr.next()
         except StopIteration:
                 found = None
+                actionlist = []
 
         if found:
                 # If any matching entries were found, create a new generator
