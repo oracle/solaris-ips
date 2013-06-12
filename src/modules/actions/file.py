@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2007, 2012, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2007, 2013, Oracle and/or its affiliates. All rights reserved.
 #
 
 """module describing a file packaging object
@@ -434,10 +434,8 @@ class FileAction(generic.Action):
                 # If the action has been marked with a preserve attribute, and
                 # the file exists and has a content hash different from what the
                 # system expected it to be, then we preserve the original file
-                # in some way, depending on the value of preserve.  If the
-                # action is an overlay, then we always overwrite.
-                overlay = self.attrs.get("overlay") == "true"
-                if is_file and not overlay:
+                # in some way, depending on the value of preserve.
+                if is_file:
                         chash, cdata = misc.get_data_digest(final_path)
                         if not orig or chash != orig.hash:
                                 if pres_type in ("renameold", "renamenew"):
@@ -482,9 +480,17 @@ class FileAction(generic.Action):
                     (pkgplan.image.get_root(), self.attrs["path"])))
 
                 # Are we supposed to save this file to restore it elsewhere
-                # or in another pkg?
-                if "save_file" in self.attrs:
+                # or in another pkg? 'save_file' is set by the imageplan.
+                save_file = self.attrs.get("save_file")
+                if save_file:
+                        # 'save_file' contains a tuple of (orig_name,
+                        # remove_file).
+                        remove = save_file[1]
                         self.save_file(pkgplan.image, path)
+                        if remove != "true":
+                                # File must be left in place (this file is
+                                # likely overlaid and is moving).
+                                return
 
                 try:
                         # Make file writable so it can be deleted.
@@ -553,13 +559,13 @@ class FileAction(generic.Action):
                         saved_name = None
 
                 ip = image.imageplan
-                ip.saved_files[self.attrs["save_file"]] = (self, saved_name)
+                ip.saved_files[self.attrs["save_file"][0]] = (self, saved_name)
 
         def restore_file(self, image):
                 """restore a previously saved file; return cached action """
 
                 ip = image.imageplan
-                orig, saved_name = ip.saved_files[self.attrs["save_file"]]
+                orig, saved_name = ip.saved_files[self.attrs["save_file"][0]]
                 if saved_name is None:
                         # Nothing to restore; original file is missing.
                         return

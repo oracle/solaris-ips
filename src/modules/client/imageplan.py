@@ -1227,10 +1227,24 @@ class ImagePlan(object):
                 # We end up with no actions or start with one or none and end
                 # with exactly one.
                 if len(actions) == 0 or (len(oactions) <= len(actions) == 1):
+                        if (len(oactions) > 1 and 
+                            any(a[0].attrs.get("overlay") == "true"
+                                for a in oactions)):
+                                # If more than one action is being removed and
+                                # one of them is an overlay, then suppress
+                                # removal of the overlaid actions (if any) to
+                                # ensure preserve rules of overlay action apply.
+                                return "overlay", None
                         return None
 
                 # Removing actions.
                 if len(actions) < len(oactions):
+                        # If any of the new actions is an overlay, suppress
+                        # the removal of the overlaid action.
+                        if any(a[0].attrs.get("overlay") == "true"
+                            for a in actions):
+                                return "overlay", None
+
                         # If we still end up in a broken state, signal the
                         # caller that we should move forward, but not remove
                         # any actions.
@@ -1441,29 +1455,82 @@ class ImagePlan(object):
                                         self.pd.removal_actions[i] = None
                 elif msg == "overlay":
                         pp_needs_trimming = {}
+                        moved = set()
+                        # Suppress install and update of overlaid file.
                         for al in (self.pd.install_actions,
                             self.pd.update_actions):
                                 for i, ap in enumerate(al):
-                                        if not (ap and ap.dst.attrs.get(
-                                            ap.dst.key_attr, None) == key):
+                                        if not ap:
+                                                # Action has been removed.
                                                 continue
-                                        if ap.dst.attrs.get("overlay") == \
-                                            "allow":
-                                                # Remove overlaid actions from
-                                                # plan.
-                                                al[i] = None
-                                                pp_needs_trimming.setdefault(id(ap.p),
-                                                    { "plan": ap.p, "trim": [] })
-                                                pp_needs_trimming[id(ap.p)]["trim"].append(
-                                                    id(ap.dst))
-                                                break
+
+                                        attrs = ap.dst.attrs
+                                        if attrs.get(ap.dst.key_attr) != key:
+                                                if ("preserve" in attrs and
+                                                    "original_name" in attrs):
+                                                        # Possible move to a
+                                                        # different location for
+                                                        # editable file.
+                                                        # Overlay attribute is
+                                                        # not checked in case it
+                                                        # was dropped as part of
+                                                        # move.
+                                                        moved.add(
+                                                            attrs["original_name"])
+                                                continue
+
+                                        if attrs.get("overlay") != "allow":
+                                                    # Only care about overlaid
+                                                    # actions.
+                                                    continue
+
+                                        # Remove conflicting, overlaid actions
+                                        # from plan.
+                                        al[i] = None
+                                        pp_needs_trimming.setdefault(id(ap.p),
+                                            { "plan": ap.p, "trim": [] })
+                                        pp_needs_trimming[id(ap.p)]["trim"].append(
+                                            id(ap.dst))
+                                        break
+
+                        # Suppress removal of overlaid file.
+                        al = self.pd.removal_actions
+                        for i, ap in enumerate(al):
+                                if not ap:
+                                        continue
+
+                                attrs = ap.src.attrs
+                                if not attrs.get(ap.src.key_attr) == key:
+                                        continue
+
+                                if attrs.get("overlay") != "allow":
+                                        # Only interested in overlaid actions.
+                                        continue
+
+                                orig_name = attrs.get("original_name",
+                                    "%s:%s" % (ap.p.origin_fmri.get_name(),
+                                        attrs["path"]))
+                                if orig_name in moved:
+                                        # File has moved locations; removal will
+                                        # be executed, but file will be saved
+                                        # for the move skipping unlink.
+                                        ap.src.attrs["save_file"] = \
+                                            [orig_name, "false"]
+                                        break
+
+                                al[i] = None
+                                pp_needs_trimming.setdefault(id(ap.p),
+                                    { "plan": ap.p, "trim": [] })
+                                pp_needs_trimming[id(ap.p)]["trim"].append(
+                                    id(ap.src))
+                                break
 
                         for entry in pp_needs_trimming.values():
                                 p = entry["plan"]
                                 trim = entry["trim"]
                                 # Can't modify the p.actions tuple, so modify
                                 # the added member in-place.
-                                for prop in ("added", "changed"):
+                                for prop in ("added", "changed", "removed"):
                                         pval = getattr(p.actions, prop)
                                         pval[:] = [
                                             a
@@ -1801,6 +1868,32 @@ class ImagePlan(object):
                                     self.__check_inconsistent_attrs,
                                     actions, oactions,
                                     api_errors.InconsistentActionAttributeError,
+                                    errs):
+                                        continue
+
+                # Ensure that overlay and preserve file semantics are handled
+                # as expected when conflicts only exist in packages that are
+                # being removed.
+                for key, oactions in old.iteritems():
+                        self.__progtrack.plan_add_progress(
+                            self.__progtrack.PLAN_ACTION_CONFLICT)
+
+                        if len(oactions) < 2:
+                                continue
+
+                        if key in new:
+                                # Already processed.
+                                continue
+
+                        if any(a[0].name != "file" for a in oactions):
+                                continue
+
+                        entry = oactions[0][0]
+                        if not entry.refcountable and entry.globally_identical:
+                                if self.__process_conflicts(key,
+                                    self.__check_duplicate_actions,
+                                    [], oactions,
+                                    api_errors.DuplicateActionError,
                                     errs):
                                         continue
 
@@ -2990,8 +3083,15 @@ class ImagePlan(object):
                                         del cons_generic[("file", ra.attrs["path"])]
                                         dest_pkgplans[id(ap.dst)] = ap.p
                                 else:
-                                        ra.attrs["save_file"] = cache_name
-                                        ap.dst.attrs["save_file"] = cache_name
+                                        # The 'true' indicates the file should
+                                        # be removed from source.  The removal
+                                        # action is changed using setdefault so
+                                        # that any overlay rules applied during
+                                        # conflict checking remain intact.
+                                        ra.attrs.setdefault("save_file",
+                                            [cache_name, "true"])
+                                        ap.dst.attrs["save_file"] = [cache_name,
+                                            "true"]
 
                                 cache_name = index = ra = None
 

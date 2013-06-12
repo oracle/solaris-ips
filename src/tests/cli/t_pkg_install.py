@@ -6918,6 +6918,10 @@ class TestConflictingActions(pkg5unittest.SingleDepotTestCase):
         actions into the same name in a namespace cannot be installed
         simultaneously."""
 
+        pkg_boring10 = """
+            open boring@1.0,5.11-0
+            close """
+
         pkg_dupfiles = """
             open dupfiles@0,5.11-0
             add file tmp/file1 path=dir/pathname mode=0755 owner=root group=bin
@@ -6986,7 +6990,38 @@ class TestConflictingActions(pkg5unittest.SingleDepotTestCase):
 
         pkg_overlaid = """
             open overlaid@0,5.11-0
+            add dir path=etc mode=0755 owner=root group=root
             add file tmp/file1 path=etc/pam.conf mode=644 owner=root group=sys preserve=true overlay=allow
+            close
+            open overlaid@1,5.11-0
+            add dir path=etc mode=0755 owner=root group=root
+            add file tmp/file1 path=etc/pam.conf mode=644 owner=root group=sys preserve=renamenew overlay=allow
+            close
+            open overlaid@2,5.11-0
+            add dir path=etc mode=0755 owner=root group=root
+            add file tmp/file3 path=etc/pam.conf mode=644 owner=root group=sys preserve=renamenew overlay=allow
+            close
+            open overlaid@3,5.11-0
+            add set name=pkg.renamed value=true
+            add depend type=require fmri=overlaid-renamed@3
+            add depend type=exclude fmri=overlaid-renamed@4
+            close
+            open overlaid-renamed@3,5.11-0
+            add depend type=optional fmri=overlaid@3
+            add dir path=etc mode=0755 owner=root group=root
+            add file tmp/file3 original_name=overlaid:etc/pam.conf path=etc/pam.conf mode=644 owner=root group=sys preserve=renamenew overlay=allow
+            close
+            open overlaid-renamed@4.0,5.11-0
+            add depend type=optional fmri=overlaid@3
+            add dir path=etc mode=0755 owner=root group=root
+            add dir path=etc/pam mode=0755 owner=root group=root
+            add file tmp/file4 original_name=overlaid:etc/pam.conf path=etc/pam/pam.conf mode=644 owner=root group=sys preserve=renamenew
+            close
+            open overlaid-renamed@4.1,5.11-0
+            add depend type=optional fmri=overlaid@3
+            add dir path=etc mode=0755 owner=root group=root
+            add dir path=etc/pam mode=0755 owner=root group=root
+            add file tmp/file4 original_name=overlaid:etc/pam.conf path=etc/pam/pam.conf mode=644 owner=root group=sys preserve=renamenew overlay=allow
             close
         """
 
@@ -7000,6 +7035,30 @@ class TestConflictingActions(pkg5unittest.SingleDepotTestCase):
         pkg_overlayer = """
             open overlayer@0,5.11-0
             add file tmp/file2 path=etc/pam.conf mode=644 owner=root group=sys preserve=true overlay=true
+            close
+        """
+
+        pkg_overlayer_move = """
+            open overlayer-move@0,5.11-0
+            add file tmp/file2 path=etc/pam.conf mode=644 owner=root group=sys preserve=true overlay=true
+            close
+            open overlayer-move@1,5.11-0
+            add file tmp/file3 path=etc/pam/pam.conf mode=644 owner=root group=sys preserve=true overlay=true original_name=overlayer-move:etc/pam.conf
+            close
+        """
+
+        pkg_overlayer_update = """
+            open overlayer-update@0,5.11-0
+            add file tmp/file1 path=etc/pam.conf mode=644 owner=root group=sys overlay=true
+            close
+            open overlayer-update@1,5.11-0
+            add file tmp/file2 path=etc/pam.conf mode=644 owner=root group=sys preserve=true overlay=true
+            close
+            open overlayer-update@2,5.11-0
+            add file tmp/file3 path=etc/pam.conf mode=644 owner=root group=sys preserve=renameold overlay=true
+            close
+            open overlayer-update@3,5.11-0
+            add file tmp/file4 path=etc/pam.conf mode=644 owner=root group=sys preserve=renamenew overlay=true
             close
         """
 
@@ -7027,7 +7086,7 @@ class TestConflictingActions(pkg5unittest.SingleDepotTestCase):
 
         pkg_unpreserved_overlayer = """
             open unpreserved-overlayer@0,5.11-0
-            add file tmp/file2 path=etc/pam.conf mode=644 owner=root group=sys overlay=true
+            add file tmp/unpreserved path=etc/pam.conf mode=644 owner=root group=sys overlay=true
             close
         """
 
@@ -7517,7 +7576,8 @@ adm
             close
         """
 
-        misc_files = ["tmp/file1", "tmp/file2", "tmp/file3"]
+        misc_files = ["tmp/file1", "tmp/file2", "tmp/file3", "tmp/file4",
+            "tmp/unpreserved"]
 
         # Keep the depots around for the duration of the entire class
         persistent_setup = True
@@ -7641,7 +7701,7 @@ adm
                 self.pkg("verify")
 
                 # Re-use the overlay packages for some preserve testing.
-                self.pkg("install overlaid")
+                self.pkg("install overlaid@0")
                 self.pkg("-D broken-conflicting-action-handling=1 install "
                     "invalid-overlayer")
                 # We may have been able to lay down the package, but because the
@@ -7695,6 +7755,11 @@ adm
                 # (preserve does not have to be set).
                 self.image_create(self.rurl)
 
+                # Ensure boring package is installed as conflict checking is
+                # bypassed (and thus, overlay semantics) if all packages are
+                # removed from an image.
+                self.pkg("install boring")
+
                 # Should fail because one action specified overlay=allow,
                 # but not preserve (it isn't editable).
                 self.pkg("install invalid-overlaid")
@@ -7703,7 +7768,7 @@ adm
 
                 # Should fail because one action is overlayable but overlaying
                 # action doesn't declare its intent to overlay.
-                self.pkg("install overlaid")
+                self.pkg("install overlaid@0")
                 self.file_contains("etc/pam.conf", "file1")
                 self.pkg("install invalid-overlayer", exit=1)
 
@@ -7735,7 +7800,7 @@ adm
                 # Verify that the file isn't touched on uninstall of the
                 # overlaying package if package being overlaid is still
                 # installed.
-                self.pkg("uninstall overlayer")
+                self.pkg("uninstall -vvv overlayer")
                 self.file_contains("etc/pam.conf", "zigit")
                 self.file_contains("etc/pam.conf", "file2")
 
@@ -7746,7 +7811,7 @@ adm
 
                 # Verify that installing both packages at the same time results
                 # in only the overlaying file being delivered.
-                self.pkg("install overlaid overlayer")
+                self.pkg("install overlaid@0 overlayer")
                 self.file_contains("etc/pam.conf", "file2")
 
                 # Verify that the file isn't touched on uninstall of the
@@ -7758,7 +7823,7 @@ adm
 
                 # Re-install overlaid package and verify that file content
                 # does not change.
-                self.pkg("install overlaid")
+                self.pkg("install overlaid@0")
                 self.file_contains("etc/pam.conf", "file2")
                 self.file_contains("etc/pam.conf", "zigit")
                 self.pkg("uninstall overlaid overlayer")
@@ -7766,8 +7831,8 @@ adm
                 # Should succeed because one action is overlayable and
                 # overlaying action declares its intent to overlay even
                 # though the overlaying action isn't marked with preserve.
-                self.pkg("install overlaid unpreserved-overlayer")
-                self.file_contains("etc/pam.conf", "file2")
+                self.pkg("install overlaid@0 unpreserved-overlayer")
+                self.file_contains("etc/pam.conf", "unpreserved")
 
                 # Should succeed because overlaid action permits modification
                 # and contents matches overlaying action.
@@ -7784,20 +7849,213 @@ adm
 
                 # Should revert to content delivered by overlaying action.
                 self.pkg("fix unpreserved-overlayer")
-                self.file_contains("etc/pam.conf", "file2")
+                self.file_contains("etc/pam.conf", "unpreserved")
                 self.file_doesnt_contain("etc/pam.conf", "zigit")
 
                 # Should revert to content delivered by overlaying action.
                 self.file_append("etc/pam.conf", "zigit")
                 self.pkg("revert /etc/pam.conf")
-                self.file_contains("etc/pam.conf", "file2")
+                self.file_contains("etc/pam.conf", "unpreserved")
                 self.file_doesnt_contain("etc/pam.conf", "zigit")
                 self.pkg("uninstall unpreserved-overlayer")
 
                 # Should revert to content delivered by overlaid action.
-                self.file_contains("etc/pam.conf", "file2")
+                self.file_contains("etc/pam.conf", "unpreserved")
                 self.pkg("revert /etc/pam.conf")
                 self.file_contains("etc/pam.conf", "file1")
+
+                # Install overlaying package, then update overlaid package and
+                # verify that file content does not change if only preserve
+                # attribute changes.
+                self.pkg("install -vvv unpreserved-overlayer")
+                self.file_contains("etc/pam.conf", "unpreserved")
+                self.pkg("install overlaid@1")
+                self.file_contains("etc/pam.conf", "unpreserved")
+                self.pkg("uninstall -vvv overlaid")
+
+                # Now update overlaid package again, and verify that file
+                # content does not change even though overlaid content has.
+                self.pkg("install -vvv overlaid@2")
+                self.file_contains("etc/pam.conf", "unpreserved")
+
+                # Now update overlaid package again this time as part of a
+                # rename, and verify that file content does not change even
+                # though file has moved between packages.
+                self.pkg("install -vvv overlaid@3")
+                self.file_contains("etc/pam.conf", "unpreserved")
+
+                # Verify that unpreserved overlay is not salvaged when both
+                # overlaid and overlaying package are removed at the same time.
+                # (Preserved files are salvaged if they have been modified on
+                # uninstall.)
+
+                # Ensure directory is empty before testing.
+                api_inst = self.get_img_api_obj()
+                img_inst = api_inst.img
+                sroot = os.path.join(img_inst.imgdir, "lost+found")
+                shutil.rmtree(sroot)
+
+                # Verify etc directory not found after uninstall.
+                self.pkg("uninstall -vvv overlaid-renamed unpreserved-overlayer")
+                salvaged = [
+                    n for n in os.listdir(sroot)
+                    if n.startswith("etc")
+                ]
+                self.assertEqualDiff(salvaged, [])
+
+                # Next, update overlaid package again this time as part of a
+                # file move.  Verify that the configuration file exists at both
+                # the new location and the old location, that the content has
+                # not changed in either, and that the new configuration exists
+                # as expected as ".new".
+                self.pkg("install -vvv overlaid-renamed@3 unpreserved-overlayer")
+                self.pkg("install -vvv overlaid-renamed@4.1")
+                self.file_contains("etc/pam.conf", "unpreserved")
+                self.file_contains("etc/pam/pam.conf", "unpreserved")
+                self.file_contains("etc/pam/pam.conf.new", "file4")
+
+                # Verify etc/pam.conf not salvaged after uninstall as overlay
+                # file has not been changed.
+                self.pkg("uninstall -vvv overlaid-renamed unpreserved-overlayer")
+                salvaged = [
+                    n for n in os.listdir(os.path.join(sroot, "etc"))
+                    if n.startswith("pam.conf")
+                ]
+                self.assertEqualDiff(salvaged, [])
+
+                # Next, repeat the same set of tests performed above for renames
+                # and moves with an overlaying, preserved file.
+                #
+                # Install overlaying package, then update overlaid package and
+                # verify that file content does not change if only preserve
+                # attribute changes.
+                self.pkg("install -vvv overlayer")
+                self.file_contains("etc/pam.conf", "file2")
+                self.file_append("etc/pam.conf", "zigit")
+                self.pkg("install overlaid@1")
+                self.file_contains("etc/pam.conf", "zigit")
+                self.pkg("uninstall -vvv overlaid")
+
+                # Now update overlaid package again, and verify that file
+                # content does not change even though overlaid content has.
+                self.pkg("install -vvv overlaid@2")
+                self.file_contains("etc/pam.conf", "zigit")
+
+                # Now update overlaid package again this time as part of a
+                # rename, and verify that file content does not change even
+                # though file has moved between packages.
+                self.pkg("install -vvv overlaid@3")
+                self.file_contains("etc/pam.conf", "zigit")
+
+                # Verify that preserved overlay is salvaged when both overlaid
+                # and overlaying package are removed at the same time.
+                # (Preserved files are salvaged if they have been modified on
+                # uninstall.)
+
+                # Ensure directory is empty before testing.
+                api_inst = self.get_img_api_obj()
+                img_inst = api_inst.img
+                sroot = os.path.join(img_inst.imgdir, "lost+found")
+                shutil.rmtree(sroot)
+
+                # Verify etc directory found after uninstall.
+                self.pkg("uninstall -vvv overlaid-renamed overlayer")
+                salvaged = [
+                    n for n in os.listdir(sroot)
+                    if n.startswith("etc")
+                ]
+                self.assertEqualDiff(salvaged, ["etc"])
+
+                # Next, update overlaid package again, this time as part of a
+                # file move where the overlay attribute was dropped.  Verify
+                # that the configuration file exists at both the new location
+                # and the old location, that the content has not changed in
+                # either, and that the new configuration exists as expected as
+                # ".new".
+                self.pkg("install -vvv overlaid-renamed@3 overlayer")
+                self.file_append("etc/pam.conf", "zigit")
+                self.pkg("install -vvv overlaid-renamed@4.0")
+                self.file_contains("etc/pam.conf", "zigit")
+                self.file_contains("etc/pam/pam.conf", "zigit")
+                self.file_contains("etc/pam/pam.conf.new", "file4")
+                self.pkg("uninstall -vvv overlaid-renamed overlayer")
+
+                # Next, update overlaid package again, this time as part of a
+                # file move.  Verify that the configuration file exists at both
+                # the new location and the old location, that the content has
+                # not changed in either, and that the new configuration exists
+                # as expected as ".new".
+                self.pkg("install -vvv overlaid-renamed@3 overlayer")
+                self.file_append("etc/pam.conf", "zigit")
+                self.pkg("install -vvv overlaid-renamed@4.1")
+                self.file_contains("etc/pam.conf", "zigit")
+                self.file_contains("etc/pam/pam.conf", "zigit")
+                self.file_contains("etc/pam/pam.conf.new", "file4")
+
+                # Next, downgrade the package and verify that if an overlaid
+                # file moves back to its original location, the content of the
+                # overlay file will not change.
+                self.pkg("update -vvv overlaid-renamed@3")
+                self.file_contains("etc/pam.conf", "zigit")
+
+                # Now upgrade again for remaining tests.
+                self.pkg("install -vvv overlaid-renamed@4.1")
+
+                # Verify etc/pam.conf and etc/pam/pam.conf salvaged after
+                # uninstall as overlay file and overlaid file is different from
+                # packaged.
+                shutil.rmtree(sroot)
+                self.pkg("uninstall -vvv overlaid-renamed overlayer")
+                salvaged = sorted(
+                    n for n in os.listdir(os.path.join(sroot, "etc"))
+                    if n.startswith("pam")
+                )
+                # Should have three entries; one should be 'pam' directory
+                # (presumably containing pam.conf-X...), another a file starting
+                # with 'pam.conf', and finally a 'pam-XXX' directory containing
+                # the 'pam.conf.new-XXX'.
+                self.assertEqualDiff(salvaged[0], "pam")
+                self.assert_(salvaged[1].startswith("pam-"),
+                    msg=str(salvaged))
+                self.assert_(salvaged[2].startswith("pam.conf"),
+                    msg=str(salvaged))
+
+                # Next, install overlaid package and overlaying package, then
+                # upgrade each to a version where the file has changed
+                # locations and verify that the content remains intact.
+                self.pkg("install -vvv overlaid@0 overlayer-move@0")
+                self.file_append("etc/pam.conf", "zigit")
+                self.pkg("install -vvv overlaid@3")
+                self.file_contains("etc/pam.conf", "zigit")
+                self.pkg("install -vvv overlaid-renamed@4.1 overlayer-move@1")
+                self.file_contains("etc/pam/pam.conf", "zigit")
+
+                # Next, downgrade overlaid-renamed and overlaying package to
+                # versions where the file is restored to its original location
+                # and verify that the content is reverted to the original
+                # overlay version since this is a downgrade.
+                self.pkg("update -vvv overlaid-renamed@3 overlayer-move@0")
+                self.file_contains("etc/pam.conf", "file2")
+                self.pkg("uninstall overlaid-renamed overlayer-move")
+
+                # Next, install overlaid package and overlaying package and
+                # verify preserve acts as expected for overlay package as it is
+                # updated.
+                self.pkg("install -vvv overlaid@2 overlayer-update@0")
+                self.file_contains("etc/pam.conf", "file1")
+                # unpreserved -> preserved
+                self.pkg("install -vvv overlayer-update@1")
+                self.file_contains("etc/pam.conf", "file2")
+                self.file_append("etc/pam.conf", "zigit")
+                # preserved -> renameold
+                self.pkg("install -vvv overlayer-update@2")
+                self.file_doesnt_contain("etc/pam.conf", "zigit")
+                self.file_contains("etc/pam.conf.old", "zigit")
+                self.file_append("etc/pam.conf", "zagat")
+                # renameold -> renamenew
+                self.pkg("install -vvv overlayer-update@3")
+                self.file_contains("etc/pam.conf", "zagat")
+                self.file_contains("etc/pam.conf.new", "file4")
 
         def test_different_types(self):
                 """Test the behavior of pkg(1) when multiple actions of
