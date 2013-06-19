@@ -1116,7 +1116,9 @@ dependency resolution:
                                     "\n".join(
                                         [str(d) for d in pkg_deps[col_path]]))
                         d = pkg_deps[one_dep][0]
-                        self.assertEqual(d.attrs["fmri"], exp_pkg)
+                        self.assertEqual(d.attrs["fmri"], exp_pkg,
+                            "Expected dependency %s; found %s." % (exp_pkg,
+                                d.attrs["fmri"]))
 
                 col_path = self.make_manifest(self.collision_manf)
                 col_path_num_var = self.make_manifest(

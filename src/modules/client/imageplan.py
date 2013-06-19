@@ -32,7 +32,6 @@ import itertools
 import mmap
 import operator
 import os
-import simplejson as json
 import stat
 import sys
 import tempfile
@@ -45,7 +44,6 @@ logger = global_settings.logger
 import pkg.actions
 import pkg.actions.driver as driver
 import pkg.catalog
-import pkg.client.actuator as actuator
 import pkg.client.api_errors as api_errors
 import pkg.client.indexer as indexer
 import pkg.client.pkg_solver as pkg_solver
@@ -234,7 +232,8 @@ class ImagePlan(object):
                 return self.pd._cbytes_avail
 
         def __vector_2_fmri_changes(self, installed_dict, vector,
-            li_pkg_updates=True, new_variants=None, new_facets=None):
+            li_pkg_updates=True, new_variants=None, new_facets=None,
+            fmri_changes=None):
                 """Given an installed set of packages, and a proposed vector
                 of package changes determine what, if any, changes should be
                 made to the image.  This takes into account different
@@ -242,37 +241,26 @@ class ImagePlan(object):
                 where the only packages being updated are linked image
                 constraints, etc."""
 
-                cat = self.image.get_catalog(self.image.IMG_CATALOG_KNOWN)
-
                 fmri_updates = []
+                if fmri_changes is not None:
+                        affected = [f[0] for f in fmri_changes]
+                else:
+                        affected = None
+
                 for a, b in ImagePlan.__dicts2fmrichanges(installed_dict,
                     ImagePlan.__fmris2dict(vector)):
                         if a != b:
                                 fmri_updates.append((a, b))
                                 continue
-                        if new_facets is not None or new_variants:
-                                #
-                                # In the case of a facet change we reinstall
-                                # packages since any action in a package could
-                                # have a facet attached to it.
-                                #
-                                # In the case of variants packages should
-                                # declare what variants they contain.  Hence,
-                                # theoretically, we should be able to reduce
-                                # the number of package reinstalls by removing
-                                # re-installs of packages that don't declare
-                                # variants.  But unfortunately we've never
-                                # enforced this requirement that packages with
-                                # action variant tags declare their variants.
-                                # So now we're stuck just re-installing every
-                                # package.  sigh.
-                                #
-                                fmri_updates.append((a, b))
-                                continue
 
-                if not fmri_updates:
-                        # no planned fmri changes
-                        return []
+                        if (new_facets is not None or new_variants):
+                                if affected is None or a in affected:
+                                        # If affected list of packages has not
+                                        # been predetermined for package fmris
+                                        # that are unchanged, or if the fmri
+                                        # exists in the list of affected
+                                        # packages, add it to the list.
+                                        fmri_updates.append((a, a))
 
                 if fmri_updates and not li_pkg_updates:
                         # oops.  the caller requested no package updates and
@@ -288,18 +276,9 @@ class ImagePlan(object):
 
                 self.pd._image_lm = self.image.get_last_modified(string=True)
 
-        def __plan_install_solver(self, li_pkg_updates=True, li_sync_op=False,
-            new_facets=None, new_variants=None, pkgs_inst=None,
-            reject_list=misc.EmptyI):
-                """Use the solver to determine the fmri changes needed to
-                install the specified pkgs, sync the specified image, and/or
-                change facets/variants within the current image."""
-
-                if not (new_variants or pkgs_inst or li_sync_op or
-                    new_facets is not None):
-                        # nothing to do
-                        self.pd._fmri_changes = []
-                        return
+        def __evaluate_varcets(self, new_variants, new_facets):
+                """Private helper function used to determine new facet and
+                variant state for image."""
 
                 old_facets = self.image.cfg.facets
                 if new_variants or \
@@ -318,6 +297,18 @@ class ImagePlan(object):
 
                 if new_facets == old_facets:
                         new_facets = None
+
+                self.__new_excludes = self.image.list_excludes(new_variants,
+                    new_facets)
+
+                return new_variants, new_facets
+
+        def __plan_install_solver(self, li_pkg_updates=True, li_sync_op=False,
+            new_facets=None, new_variants=None, pkgs_inst=None,
+            reject_list=misc.EmptyI, fmri_changes=None):
+                """Use the solver to determine the fmri changes needed to
+                install the specified pkgs, sync the specified image, and/or
+                change facets/variants within the current image."""
 
                 # get ranking of publishers
                 pub_ranks = self.image.get_publisher_ranks()
@@ -340,9 +331,6 @@ class ImagePlan(object):
                         self.__match_inst = references
                 else:
                         inst_dict = {}
-
-                self.__new_excludes = self.image.list_excludes(new_variants,
-                    new_facets)
 
                 if new_variants:
                         variants = new_variants
@@ -374,7 +362,8 @@ class ImagePlan(object):
                 self.pd._fmri_changes = self.__vector_2_fmri_changes(
                     installed_dict, new_vector,
                     li_pkg_updates=li_pkg_updates,
-                    new_variants=new_variants, new_facets=new_facets)
+                    new_variants=new_variants, new_facets=new_facets,
+                    fmri_changes=fmri_changes)
 
                 self.pd._solver_summary = str(solver)
                 if DebugValues["plan"]:
@@ -388,6 +377,20 @@ class ImagePlan(object):
                 current image."""
 
                 self.__plan_op()
+
+                new_variants, new_facets = self.__evaluate_varcets(new_variants,
+                    new_facets)
+
+                if not (new_variants or pkgs_inst or li_sync_op or
+                    new_facets is not None):
+                        # nothing to do
+                        self.pd._fmri_changes = []
+                        self.pd.state = plandesc.EVALUATED_PKGS
+                        return
+
+                # If we ever actually support changing facets and variants at
+                # the same time as performing an install, the optimizations done
+                # for plan_change_varacets should be applied here (shared).
                 self.__plan_install_solver(
                     li_pkg_updates=li_pkg_updates,
                     li_sync_op=li_sync_op,
@@ -420,13 +423,144 @@ class ImagePlan(object):
                 self.__plan_install(pkgs_inst=pkgs_inst,
                      reject_list=reject_list)
 
+        def __get_attr_fmri_changes(self, get_mattrs): 
+                # Attempt to optimize package planning by determining which
+                # packages are actually affected by changing attributes (e.g.,
+                # facets, variants).  This also provides an accurate list of
+                # affected packages as a side effect (normally, all installed
+                # packages are seen as changed).  This assumes that facets and
+                # variants are not both changing at the same time.
+                use_solver = False
+                cat = self.image.get_catalog(
+                    self.image.IMG_CATALOG_INSTALLED)
+                cat_info = frozenset([cat.DEPENDENCY])
+
+                fmri_changes = []
+                pt = self.__progtrack
+                rem_pkgs = self.image.count_installed_pkgs()
+
+                pt.plan_start(pt.PLAN_PKGPLAN, goal=rem_pkgs)
+                for f in self.image.gen_installed_pkgs():
+                        m = self.image.get_manifest(f,
+                            ignore_excludes=True)
+
+                        # Get the list of attributes involved in this operation
+                        # that the package uses and that have changed.
+                        use_solver, mattrs = get_mattrs(m, use_solver)
+                        if not mattrs:
+                                # Changed attributes unused.
+                                pt.plan_add_progress(pt.PLAN_PKGPLAN)
+                                rem_pkgs -= 1
+                                continue
+
+                        # Changed attributes are used in this package.
+                        fmri_changes.append((f, f))
+
+                        # If any dependency actions are tagged with one
+                        # of the changed attributes, assume the solver
+                        # must be used.
+                        for act in cat.get_entry_actions(f, cat_info):
+                                for attr in mattrs:
+                                        if use_solver:
+                                                break
+                                        if (act.name == "depend" and
+                                            attr in act.attrs):
+                                                use_solver = True
+                                                break
+                                if use_solver:
+                                        break
+
+                        rem_pkgs -= 1
+                        pt.plan_add_progress(pt.PLAN_PKGPLAN)
+
+                pt.plan_done(pt.PLAN_PKGPLAN)
+                pt.plan_all_done()
+
+                return use_solver, fmri_changes
+
         def plan_change_varcets(self, new_facets=None, new_variants=None,
             reject_list=misc.EmptyI):
                 """Determine the fmri changes needed to change the specified
                 facets/variants."""
 
-                self.__plan_install(new_facets=new_facets,
-                     new_variants=new_variants, reject_list=reject_list)
+                self.__plan_op()
+                new_variants, new_facets = self.__evaluate_varcets(new_variants,
+                    new_facets)
+
+                if not new_variants and new_facets is None:
+                        # nothing to do
+                        self.pd._fmri_changes = []
+                        self.pd.state = plandesc.EVALUATED_PKGS
+                        return
+
+                # By default, we assume the solver must be used.  If any of the
+                # optimizations below can be applied, they'll determine whether
+                # the solver can be used.
+                use_solver = True
+                fmri_changes = None
+
+                # The following use_solver, fmri_changes checks are only known
+                # to work correctly if only facets or only variants are
+                # changing; not both.  Changing both is not currently supported
+                # anyway so this shouldn't be a problem.
+                if new_facets is not None and not new_variants:
+                        old_facets = self.image.cfg.facets
+
+                        def get_fattrs(m, use_solver):
+                                # Get the list of facets involved in this
+                                # operation that the package uses.  To
+                                # accurately determine which packages are
+                                # actually being changed, we must compare the
+                                # old effective value for each facet that is
+                                # changing with its new effective value.
+                                return use_solver, list(
+                                    f
+                                    for f in m.gen_facets(
+                                        excludes=self.__new_excludes,
+                                        patterns=self.pd._changed_facets)
+                                    if new_facets[f] != old_facets[f]
+                                )
+
+                        use_solver, fmri_changes = \
+                            self.__get_attr_fmri_changes(get_fattrs)
+
+                if new_variants and new_facets is None:
+                        nvariants = self.pd._new_variants
+
+                        def get_vattrs(m, use_solver):
+                                # Get the list of variants involved in this
+                                # operation that the package uses.
+                                mvars = []
+                                for (variant, pvals) in m.gen_variants(
+                                    excludes=self.__new_excludes,
+                                    patterns=nvariants
+                                ):
+                                        if nvariants[variant] not in pvals:
+                                                # If the new value for the
+                                                # variant is unsupported by this
+                                                # package, then the solver
+                                                # should be triggered so the
+                                                # package can be removed.
+                                                use_solver = True
+                                        mvars.append(variant)
+                                return use_solver, mvars
+
+                        use_solver, fmri_changes = \
+                            self.__get_attr_fmri_changes(get_vattrs)
+
+                if use_solver:
+                        self.__plan_install_solver(
+                            fmri_changes=fmri_changes,
+                            new_facets=new_facets,
+                            new_variants=new_variants,
+                            reject_list=reject_list)
+                else:
+                        # If solver isn't involved, assume the list of packages
+                        # has been determined.
+                        self.pd._fmri_changes = fmri_changes and \
+                            fmri_changes or []
+
+                self.pd.state = plandesc.EVALUATED_PKGS
 
         def plan_set_mediators(self, new_mediators):
                 """Determine the changes needed to set the specified mediators.
@@ -880,7 +1014,7 @@ class ImagePlan(object):
 
                 # disallow mount points for safety's sake.
                 if my_dev != os.stat(os.path.dirname(dir_loc)).st_dev:
-                                return [], []
+                        return [], []
 
                 # Any explicit or implicitly packaged directories are
                 # ignored; checking all directory entries is cheap.
@@ -2272,7 +2406,7 @@ class ImagePlan(object):
                                 if str(pfmri.version) == "0,5.11" \
                                     and containing_fmri.pkg_name \
                                     not in installed_dict:
-                                                return True
+                                        return True
                                 else:
                                         pfmri.pkg_name = \
                                             containing_fmri.pkg_name
@@ -2326,7 +2460,7 @@ class ImagePlan(object):
                         for note in self.pd.release_notes[1]:
                                 if isinstance(note, unicode):
                                         note = note.encode("utf-8")
-                                print >>tmpfile, note
+                                print >> tmpfile, note
                         tmpfile.close()
                         self.pd.release_notes_name = os.path.basename(path)
 

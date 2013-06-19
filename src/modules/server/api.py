@@ -327,8 +327,8 @@ class CatalogInterface(_Interface):
                         states = None
 
                         links = hardlinks = files = dirs = dependencies = None
-                        summary = size = licenses = cat_info = description = \
-                            None
+                        summary = csize = size = licenses = cat_info = \
+                            description = None
 
                         if cat_opts & info_needed:
                                 summary, description, cat_info, dependencies = \
@@ -359,7 +359,8 @@ class CatalogInterface(_Interface):
                                         licenses = self.__licenses(mfst)
 
                                 if PackageInfo.SIZE in info_needed:
-                                        size = mfst.get_size(excludes=excludes)
+                                        size, csize = mfst.get_size(
+                                            excludes=excludes)
 
                                 if act_opts & info_needed:
                                         if PackageInfo.LINKS in info_needed:
@@ -384,9 +385,10 @@ class CatalogInterface(_Interface):
                             publisher=pub, version=release,
                             build_release=build_release, branch=branch,
                             packaging_date=packaging_date, size=size,
-                            pfmri=f, licenses=licenses, links=links,
-                            hardlinks=hardlinks, files=files, dirs=dirs,
-                            dependencies=dependencies, description=description))
+                            csize=csize, pfmri=f, licenses=licenses,
+                            links=links, hardlinks=hardlinks, files=files,
+                            dirs=dirs, dependencies=dependencies,
+                            description=description))
                 return {
                     self.INFO_FOUND: pis,
                     self.INFO_MISSING: notfound,

@@ -133,8 +133,9 @@ class PackageInfo(object):
         def __init__(self, pfmri, pkg_stem=None, summary=None,
             category_info_list=None, states=None, publisher=None,
             version=None, build_release=None, branch=None, packaging_date=None,
-            size=None, licenses=None, links=None, hardlinks=None, files=None,
-            dirs=None, dependencies=None, description=None, attrs=None):
+            size=None, csize=None, licenses=None, links=None, hardlinks=None,
+            files=None, dirs=None, dependencies=None, description=None,
+            attrs=None):
                 self.pkg_stem = pkg_stem
 
                 self.summary = summary
@@ -148,6 +149,7 @@ class PackageInfo(object):
                 self.branch = branch
                 self.packaging_date = packaging_date
                 self.size = size
+                self.csize = csize
                 self.fmri = pfmri
                 self.licenses = licenses
                 self.links = links

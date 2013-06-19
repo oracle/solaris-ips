@@ -8472,8 +8472,8 @@ adm
                     "tripledupfilec")
                 self.pkg("-D broken-conflicting-action-handling=1 install "
                     "tripledupfilea")
-                self.pkg("change-variant variant.foo=two")
-                self.pkg("change-variant variant.foo=one", exit=1)
+                self.pkg("change-variant -vvv variant.foo=two")
+                self.pkg("change-variant -vvv variant.foo=one", exit=1)
 
         def dir_exists(self, path, mode=None, owner=None, group=None):
                 dir_path = os.path.join(self.get_img_path(), path)

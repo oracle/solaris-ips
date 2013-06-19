@@ -481,10 +481,13 @@ class PlanDescription(object):
                 """Returns a formatted list of strings representing the
                 variant/facet changes in this plan"""
                 vs, fs = self.varcets
-                ret = []
-                ret.extend(["variant %s: %s" % a for a in vs])
-                ret.extend(["  facet %s: %s" % a for a in fs])
-                return ret
+                return list(itertools.chain((
+                    "variant %s: %s" % (name[8:], val)
+                    for (name, val) in vs
+                ), (
+                    "  facet %s: %s" % (name[6:], val)
+                    for (name, val) in fs
+                )))
 
         def get_changes(self):
                 """A generation function that yields tuples of PackageInfo
@@ -501,10 +504,17 @@ class PlanDescription(object):
                 and 'dest_pi' is the new version of the package it is
                 being upgraded to."""
 
-                for pp in sorted(self.pkg_plans,
-                    key=operator.attrgetter("origin_fmri", "destination_fmri")):
-                        yield (PackageInfo.build_from_fmri(pp.origin_fmri),
-                            PackageInfo.build_from_fmri(pp.destination_fmri))
+                key = operator.attrgetter("origin_fmri", "destination_fmri")
+                for pp in sorted(self.pkg_plans, key=key):
+                        sfmri = pp.origin_fmri
+                        dfmri = pp.destination_fmri
+                        if sfmri == dfmri:
+                                sinfo = dinfo = PackageInfo.build_from_fmri(
+                                    sfmri)
+                        else:
+                                sinfo = PackageInfo.build_from_fmri(sfmri)
+                                dinfo = PackageInfo.build_from_fmri(dfmri)
+                        yield (sinfo, dinfo)
 
         def get_actions(self):
                 """A generator function that yields action change descriptions

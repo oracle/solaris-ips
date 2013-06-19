@@ -20,7 +20,7 @@
 # CDDL HEADER END
 #
 
-# Copyright (c) 2009, 2012, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2009, 2013, Oracle and/or its affiliates. All rights reserved.
 
 import testutils
 if __name__ == "__main__":
@@ -32,6 +32,7 @@ import os
 import re
 import unittest
 
+import pkg.misc as misc
 from pkg.client.pkgdefs import *
 
 class TestPkgChangeVariant(pkg5unittest.SingleDepotTestCase):
@@ -69,8 +70,19 @@ class TestPkgChangeVariant(pkg5unittest.SingleDepotTestCase):
         add file tmp/pkg_shared/shared/nonglobal_motd mode=0555 owner=root group=bin path=shared/zone_motd variant.opensolaris.zone=nonglobal
         add file tmp/pkg_shared/unique/global mode=0555 owner=root group=bin path=unique/global variant.opensolaris.zone=global
         add file tmp/pkg_shared/unique/nonglobal mode=0555 owner=root group=bin path=unique/nonglobal variant.opensolaris.zone=nonglobal
-
         close"""
+
+        pkg_unknown = """
+        open unknown@1.0
+        add set name=variant.unknown value=bar value=foo
+        add file tmp/bar path=usr/bin/bar mode=0755 owner=root group=root variant.unknown=bar
+        add file tmp/foo path=usr/bin/foo mode=0755 owner=root group=root variant.unknown=foo
+        close
+        open unknown@2.0
+        add set name=variant.unknown value=bar value=foo
+        add file tmp/bar path=usr/bin/foobar mode=0755 owner=root group=root variant.unknown=bar
+        add file tmp/foo path=usr/bin/foobar mode=0755 owner=root group=root variant.unknown=foo
+        close """
 
         # this package intentionally has no variant.arch specification.
         pkg_inc = """
@@ -109,7 +121,10 @@ class TestPkgChangeVariant(pkg5unittest.SingleDepotTestCase):
             "tmp/pkg_shared/shared/global_motd",
             "tmp/pkg_shared/shared/nonglobal_motd",
             "tmp/pkg_shared/unique/global",
-            "tmp/pkg_shared/unique/nonglobal"
+            "tmp/pkg_shared/unique/nonglobal",
+
+            "tmp/bar",
+            "tmp/foo"
         ]
 
         def setUp(self):
@@ -117,13 +132,24 @@ class TestPkgChangeVariant(pkg5unittest.SingleDepotTestCase):
 
                 self.make_misc_files(self.misc_files)
                 self.pkgsend_bulk(self.rurl, (self.pkg_i386, self.pkg_sparc,
-                    self.pkg_shared, self.pkg_inc, self.pkg_cluster))
+                    self.pkg_shared, self.pkg_inc, self.pkg_cluster,
+                    self.pkg_unknown))
 
                 # verify pkg search indexes
                 self.verify_search = True
 
                 # verify installed images before changing variants
                 self.verify_install = False
+
+        def __assert_variant_matches_tsv(self, expected, errout=None,
+            exit=0, opts=misc.EmptyI, names=misc.EmptyI, su_wrap=False):
+                self.pkg("variant %s -H -F tsv %s" % (" ".join(opts),
+                    " ".join(names)), exit=exit, su_wrap=su_wrap)
+                self.assertEqualDiff(expected, self.output)
+                if errout:
+                        self.assert_(self.errout != "")
+                else:
+                        self.assertEqualDiff("", self.errout)
 
         def f_verify(self, path, token=None, negate=False):
                 """Verify that the specified path exists and contains
@@ -303,8 +329,12 @@ class TestPkgChangeVariant(pkg5unittest.SingleDepotTestCase):
                     "variant.opensolaris.zone": v_zone
                 }
                 self.image_create(self.rurl, variants=variants)
-                self.pkg("variant -H| egrep %s" % ("'variant.arch[ ]*%s'" % v_arch))
-                self.pkg("variant -H| egrep %s" % ("'variant.opensolaris.zone[ ]*%s'" % v_zone))
+
+                exp_tsv = """\
+variant.arch\t%s
+variant.opensolaris.zone\t%s
+""" % (v_arch, v_zone)
+                self.__assert_variant_matches_tsv(exp_tsv)
 
                 # install the specified packages into the image
                 ii_args = ""
@@ -325,8 +355,11 @@ class TestPkgChangeVariant(pkg5unittest.SingleDepotTestCase):
                 # verify the updated image
                 self.i_verify(v_arch2, v_zone2, pl2)
 
-                self.pkg("variant -H| egrep %s" % ("'variant.arch[ ]*%s'" % v_arch2))
-                self.pkg("variant -H| egrep %s" % ("'variant.opensolaris.zone[ ]*%s'" % v_zone2))
+                exp_tsv = """\
+variant.arch\t%s
+variant.opensolaris.zone\t%s
+""" % (v_arch2, v_zone2)
+                self.__assert_variant_matches_tsv(exp_tsv)
 
                 self.image_destroy()
 
@@ -427,6 +460,44 @@ class TestPkgChangeVariant(pkg5unittest.SingleDepotTestCase):
         def test_cv_11_arch_and_zone_2(self):
                 self.cv_test("sparc", "global", ["pkg_cluster"],
                     "i386", "nonglobal", ["pkg_cluster"])
+
+        def test_cv_12_unknown(self):
+                """Ensure that packages with an unknown variant and
+                non-conflicting content can be installed and subsequently
+                altered using change-variant."""
+
+                self.image_create(self.rurl)
+
+                # Install package with unknown variant and verify both files are
+                # present.
+                self.pkg("install -v unknown@1.0")
+                for fname in ("bar", "foo"):
+                        self.f_verify("usr/bin/%s" % fname, fname)
+
+                # Next, verify upgrade to version of package with unknown
+                # variant fails if new version delivers conflicting content and
+                # variant has not been set.
+                self.pkg("update -vvv unknown@2.0", exit=1)
+
+                # Next, set unknown variant explicitly and verify content
+                # changes as expected.
+                self.pkg("change-variant unknown=foo")
+
+                # Verify bar no longer exists...
+                self.f_verify("usr/bin/bar", "bar", negate=True)
+                # ...and foo still does.
+                self.f_verify("usr/bin/foo", "foo")
+
+                # Next, upgrade to version of package with conflicting content
+                # and verify content changes as expected.
+                self.pkg("update -vvv unknown@2.0")
+
+                # Verify bar and foo no longer exist...
+                for fname in ("bar", "foo"):
+                        self.f_verify("usr/bin/%s" % fname, fname, negate=True)
+
+                # ...and that foo variant of foobar is now installed.
+                self.f_verify("usr/bin/foobar", "foo")
 
         def test_cv_parsable(self):
                 """Test the parsable output of change-variant."""

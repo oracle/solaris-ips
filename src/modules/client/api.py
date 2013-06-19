@@ -103,8 +103,8 @@ from pkg.smf import NonzeroExitException
 # things like help(pkg.client.api.PlanDescription)
 from pkg.client.plandesc import PlanDescription # pylint: disable=W0611
 
-CURRENT_API_VERSION = 74
-COMPATIBLE_API_VERSIONS = frozenset([72, 73, CURRENT_API_VERSION])
+CURRENT_API_VERSION = 75
+COMPATIBLE_API_VERSIONS = frozenset([72, 73, 74, CURRENT_API_VERSION])
 CURRENT_P5I_VERSION = 1
 
 # Image type constants.
@@ -253,6 +253,10 @@ class ImageInterface(object):
         needed.  Cancel may only be invoked while a cancelable method is
         running."""
 
+        FACET_ALL = 0
+        FACET_IMAGE = 1
+        FACET_INSTALLED = 2
+
         # Constants used to reference specific values that info can return.
         INFO_FOUND = 0
         INFO_MISSING = 1
@@ -267,6 +271,13 @@ class ImageInterface(object):
         MATCH_EXACT = 0
         MATCH_FMRI = 1
         MATCH_GLOB = 2
+
+        VARIANT_ALL = 0
+        VARIANT_ALL_POSSIBLE = 1
+        VARIANT_IMAGE = 2
+        VARIANT_IMAGE_POSSIBLE = 3
+        VARIANT_INSTALLED = 4
+        VARIANT_INSTALLED_POSSIBLE = 5
 
         def __init__(self, img_path, version_id, progresstracker,
             cancel_state_callable, pkg_client_name, exact_match=True,
@@ -816,6 +827,173 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                 """Return list of tuples of (pkg stem, pkgs w/ group
                 dependencies on this) """
                 return [a for a in self._img.get_avoid_dict().iteritems()]
+
+        def gen_facets(self, facet_list, patterns=misc.EmptyI):
+                """A generator function that produces tuples of the form:
+
+                    (
+                        name,    - (string) facet name (e.g. facet.doc)
+                        value    - (boolean) current facet value
+                    )
+
+                Results are always sorted by facet name.
+
+                'facet_list' is one of the following constant values indicating
+                which facets should be returned based on how they were set:
+
+                        FACET_ALL
+                                Return all facets set in the image and all
+                                facets listed in installed packages.
+
+                        FACET_IMAGE
+                                Return only the facets set in the image.
+
+                        FACET_INSTALLED
+                                Return only the facets listed in installed
+                                packages.
+
+                'patterns' is an optional list of facet wildcard strings to
+                filter results by."""
+
+                facets = self._img.cfg.facets
+                if facet_list != self.FACET_INSTALLED:
+                        # Include all facets set in image.
+                        fimg = set(facets.keys())
+                else:
+                        # Don't include any set only in image.
+                        fimg = set()
+
+                # Get all facets found in packages and determine state.
+                fpkg = set()
+                excludes = self._img.list_excludes()
+                if facet_list != self.FACET_IMAGE:
+                        for f in self._img.gen_installed_pkgs():
+                                # The manifest must be loaded without
+                                # pre-applying excludes so that gen_facets() can
+                                # choose how to filter the actions.
+                                mfst = self._img.get_manifest(f,
+                                    ignore_excludes=True)
+                                for facet in mfst.gen_facets(excludes=excludes):
+                                        # Use Facets object to determine
+                                        # effective facet state.
+                                        fpkg.add(facet)
+
+                # Generate the results.
+                for name in misc.yield_matching("facet.", sorted(fimg | fpkg),
+                    patterns):
+                        # The image's Facets dictionary will return the
+                        # effective value for any facets not explicitly set in
+                        # the image (wildcards or implicit).
+                        yield (name, facets[name])
+
+        def gen_variants(self, variant_list, patterns=misc.EmptyI):
+                """A generator function that produces tuples of the form:
+
+                    (
+                        name,    - (string) variant name (e.g. variant.arch)
+                        value    - (string) current variant value,
+                        possible - (list) list of possible variant values based
+                                   on installed packages; empty unless using
+                                   *_POSSIBLE variant_list.
+                    )
+
+                Results are always sorted by variant name.
+
+                'variant_list' is one of the following constant values indicating
+                which variants should be returned based on how they were set:
+
+                        VARIANT_ALL
+                                Return all variants set in the image and all
+                                variants listed in installed packages.
+
+                        VARIANT_ALL_POSSIBLE
+                                Return possible variant values (those found in
+                                any installed package) for all variants set in
+                                the image and all variants listed in installed
+                                packages.
+
+                        VARIANT_IMAGE
+                                Return only the variants set in the image.
+
+                        VARIANT_IMAGE_POSSIBLE
+                                Return possible variant values (those found in
+                                any installed package) for only the variants set
+                                in the image.
+
+                        VARIANT_INSTALLED
+                                Return only the variants listed in installed
+                                packages.
+
+                        VARIANT_INSTALLED_POSSIBLE
+                                Return possible variant values (those found in
+                                any installed package) for only the variants
+                                listed in installed packages.
+
+                'patterns' is an optional list of variant wildcard strings to
+                filter results by."""
+
+                variants = self._img.cfg.variants
+                if variant_list != self.VARIANT_INSTALLED and \
+                    variant_list != self.VARIANT_INSTALLED_POSSIBLE:
+                        # Include all variants set in image.
+                        vimg = set(variants.keys())
+                else:
+                        # Don't include any set only in image.
+                        vimg = set()
+
+                # Get all variants found in packages and determine state.
+                vpkg = {}
+                excludes = self._img.list_excludes()
+                vposs = collections.defaultdict(set)
+                if variant_list != self.VARIANT_IMAGE:
+                        # Only incur the overhead of reading through all
+                        # installed packages if not just listing variants set in
+                        # image or listing possible values for them.
+                        for f in self._img.gen_installed_pkgs():
+                                # The manifest must be loaded without
+                                # pre-applying excludes so that gen_variants()
+                                # can choose how to filter the actions.
+                                mfst = self._img.get_manifest(f,
+                                    ignore_excludes=True)
+                                for variant, vals in mfst.gen_variants(
+                                    excludes=excludes):
+                                        # Unlike facets, Variants class doesn't
+                                        # handle implicitly set values.
+                                        if variant[:14] == "variant.debug.":
+                                                # Debug variants are implicitly
+                                                # false and are not required
+                                                # to be set explicitly in the
+                                                # image.
+                                                vpkg[variant] = variants.get(
+                                                    variant, "false")
+                                        elif variant not in vimg:
+                                                # Although rare, packages with
+                                                # unknown variants (those not
+                                                # set in the image) can be
+                                                # installed as long as content
+                                                # does not conflict.  For those
+                                                # variants, return None.
+                                                vpkg[variant] = \
+                                                    variants.get(variant)
+
+                                        if (variant_list == \
+                                            self.VARIANT_ALL_POSSIBLE or
+                                            variant_list == \
+                                                self.VARIANT_IMAGE_POSSIBLE or
+                                            variant_list == \
+                                                self.VARIANT_INSTALLED_POSSIBLE):
+                                                # Build possible list of variant
+                                                # values.
+                                                vposs[variant].update(set(vals))
+
+                # Generate the results.
+                for name in misc.yield_matching("variant.",
+                    sorted(vimg | set(vpkg.keys())), patterns):
+                        try:
+                                yield (name, vpkg[name], sorted(vposs[name]))
+                        except KeyError:
+                                yield (name, variants[name],
+                                    sorted(vposs[name]))
 
         def freeze_pkgs(self, fmri_strings, dry_run=False, comment=None,
             unfreeze=False):
@@ -3915,7 +4093,7 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                                         pub = name = version = None
 
                                 links = hardlinks = files = dirs = \
-                                    size = licenses = cat_info = \
+                                    csize = size = licenses = cat_info = \
                                     description = None
 
                                 if PackageInfo.CATEGORIES in info_needed:
@@ -3966,7 +4144,7 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                                                     mfst, alt_pub=alt_pub)
 
                                         if PackageInfo.SIZE in info_needed:
-                                                size = mfst.get_size(
+                                                size, csize = mfst.get_size(
                                                     excludes=excludes)
 
                                         if act_opts & info_needed:
@@ -3987,7 +4165,7 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                                                             mfst.gen_key_attribute_value_by_type(
                                                             "dir", excludes))
                                 elif PackageInfo.SIZE in info_needed:
-                                        size = 0
+                                        size = csize = 0
 
                                 # Trim response set.
                                 if PackageInfo.STATE in info_needed:
@@ -4016,7 +4194,7 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                                     states=states, publisher=pub, version=release,
                                     build_release=build_release, branch=branch,
                                     packaging_date=packaging_date, size=size,
-                                    pfmri=pfmri, licenses=licenses,
+                                    csize=csize, pfmri=pfmri, licenses=licenses,
                                     links=links, hardlinks=hardlinks, files=files,
                                     dirs=dirs, dependencies=dependencies,
                                     description=description, attrs=attrs))

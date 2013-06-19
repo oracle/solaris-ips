@@ -70,7 +70,6 @@ import Queue
 
 import pkg
 import pkg.actions as actions
-import pkg.catalog as catalog
 import pkg.config as cfg
 import pkg.fmri as fmri
 import pkg.indexer as indexer
@@ -1325,22 +1324,24 @@ class DepotHTTP(_Depot):
                 lsummary.seek(0)
 
                 self.__set_response_expires("info", 86400*365, 86400*365)
+                size, csize = m.get_size()
                 return """\
-          Name: %s
-       Summary: %s
-     Publisher: %s
-       Version: %s
- Build Release: %s
-        Branch: %s
-Packaging Date: %s
-          Size: %s
-          FMRI: %s
+           Name: %s
+        Summary: %s
+      Publisher: %s
+        Version: %s
+  Build Release: %s
+         Branch: %s
+ Packaging Date: %s
+           Size: %s
+Compressed Size: %s
+           FMRI: %s
 
 License:
 %s
 """ % (name, summary, pub, ver.release, ver.build_release,
-    ver.branch, ver.get_timestamp().strftime("%c"),
-    misc.bytes_to_str(m.get_size()), pfmri, lsummary.read())
+    ver.branch, ver.get_timestamp().strftime("%c"), misc.bytes_to_str(size),
+    misc.bytes_to_str(csize), pfmri, lsummary.read())
 
         @cherrypy.tools.response_headers(headers=[(
             "Content-Type", p5i.MIME_TYPE)])

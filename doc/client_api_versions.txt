@@ -1,5 +1,15 @@
+Version 75:
+Compatible with clients using versions 72-74.
+
+    pkg.client.api.ImageInterface has changed as follows:
+
+	* New generator functions 'gen_variants()' and 'gen_facets()' to
+	  retrieve the current list of facets or variants currently
+	  (implicitly or explicitly) set in the image.  See 'pydoc
+	  pkg.client.api' for details.
+
 Version 74:
-Compatible with clients using version 73, 72.
+Compatible with clients using versions 72-74.
      The PlanDescription now has interfaces to
      determine whether or not release notes were generated
      for this operation, whether or not they must be displayed,

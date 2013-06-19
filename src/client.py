@@ -62,7 +62,6 @@ try:
         import textwrap
         import time
         import traceback
-        import tempfile
 
         import pkg
         import pkg.actions as actions
@@ -92,7 +91,7 @@ except KeyboardInterrupt:
         import sys
         sys.exit(1)
 
-CLIENT_API_VERSION = 74
+CLIENT_API_VERSION = 75
 PKG_CLIENT_NAME = "pkg"
 
 JUST_UNKNOWN = 0
@@ -272,8 +271,8 @@ def usage(usage_error=None, cmd=None, retcode=EXIT_BADOPT, full=False):
             "            [--deny-new-be | --require-new-be] [--be-name name]\n"
             "            <mediator> ...")
 
-        adv_usage["variant"] = _("[-H] [<variant_spec>]")
-        adv_usage["facet"] = ("[-H] [<facet_spec>]")
+        adv_usage["variant"] = _("[-Haiv] [-F format] [<variant_pattern> ...]")
+        adv_usage["facet"] = ("[-Hai] [-F format] [<facet_pattern> ...]")
         adv_usage["avoid"] = _("[pkg_fmri_pattern] ...")
         adv_usage["unavoid"] = _("[pkg_fmri_pattern] ...")
         adv_usage["freeze"] = _("[-n] [-c reason] [pkg_fmri_pattern] ...")
@@ -346,10 +345,10 @@ def usage(usage_error=None, cmd=None, retcode=EXIT_BADOPT, full=False):
                                         raise ValueError(
                                             "Unable to find usage str for %s" %
                                             cmd)
-                                usage = cmd_dic[cmd]
-                                if usage is not "":
+                                use_txt = cmd_dic[cmd]
+                                if use_txt is not "":
                                         logger.error(
-                                            "        pkg %(cmd)s %(usage)s" %
+                                            "        pkg %(cmd)s %(use_txt)s" %
                                             locals())
                                 else:
                                         logger.error("        pkg %s" % cmd)
@@ -996,7 +995,9 @@ made will not be reflected on the next boot.
                 elif src != dest:
                         c.append((src, dest))
                 else:
-                        a.append((src, dest))
+                        # Changing or repairing package content (e.g. fix,
+                        # change-facet, etc.)
+                        a.append((dest, dest))
 
         def bool_str(val):
                 if val:
@@ -1014,8 +1015,15 @@ made will not be reflected on the next boot.
                 cond_show(_("Packages to remove:"), "%d", len(r))
                 cond_show(_("Packages to install:"), "%d", len(i))
                 cond_show(_("Packages to update:"), "%d", len(c))
+                if varcets or mediators:
+                        cond_show(_("Packages to change:"), "%d", len(a))
+                else:
+                        cond_show(_("Packages to fix:"), "%d", len(a))
                 cond_show(_("Mediators to change:"), "%d", len(mediators))
                 cond_show(_("Variants/Facets to change:"), "%d", len(varcets))
+                if not plan.new_be:
+                        cond_show(_("Services to change:"), "%d",
+                            len(plan.services))
 
                 if verbose:
                         # Only show space information in verbose mode.
@@ -1026,11 +1034,6 @@ made will not be reflected on the next boot.
                                 status.append((
                                     _("Estimated space to be consumed:"),
                                     misc.bytes_to_str(plan.bytes_added)))
-
-                if varcets or mediators:
-                        cond_show(_("Packages to change:"), "%d", len(a))
-                else:
-                        cond_show(_("Packages to fix:"), "%d", len(a))
 
                 # only display BE information if we're operating on the
                 # liveroot environment (since otherwise we'll never be
@@ -1047,10 +1050,6 @@ made will not be reflected on the next boot.
 
                         status.append((_("Create backup boot environment:"),
                             bool_str(plan.backup_be)))
-
-                if not plan.new_be:
-                        cond_show(_("Services to change:"), "%d",
-                            len(plan.services))
 
         if "boot-archive" in disp:
                 status.append((_("Rebuild boot archive:"),
@@ -1087,7 +1086,7 @@ made will not be reflected on the next boot.
 
         if "fmris" in disp:
                 changed = collections.defaultdict(list)
-                for src, dest in itertools.chain(r, i, c):
+                for src, dest in itertools.chain(r, i, c, a):
                         if src and dest:
                                 if src.publisher != dest.publisher:
                                         pparent = "%s -> %s" % (src.publisher,
@@ -1095,8 +1094,9 @@ made will not be reflected on the next boot.
                                 else:
                                         pparent = dest.publisher
                                 pname = dest.pkg_stem
-                                pver = "%s -> %s" % (src.fmri.version,
-                                    dest.fmri.version)
+                                pver = str(src.fmri.version)
+                                if src != dest:
+                                        pver += " -> %s" % dest.fmri.version
                         elif dest:
                                 pparent = dest.publisher
                                 pname = dest.pkg_stem
@@ -1122,11 +1122,6 @@ made will not be reflected on the next boot.
                                 logger.info("  %s" % pname)
                                 logger.info("    %s" % pver)
                                 last_parent = pparent
-
-                if len(a):
-                        logger.info(_("Affected fmris:"))
-                        for src, dest in a:
-                                logger.info("  %s", src)
 
         if "services" in disp and not plan.new_be:
                 last_action = None
@@ -1324,7 +1319,7 @@ def display_plan(api_inst, child_image_plans, noexecute, op, parsable_version,
                 else:
                         s = _("No updates necessary for this image.")
                 if api_inst.ischild():
-                        s + " (%s)" % api_inst.get_linked_name()
+                        s += " (%s)" % api_inst.get_linked_name()
                 msg(s)
                 return
 
@@ -1474,13 +1469,6 @@ def __api_execute_plan(operation, api_inst):
         return rval
 
 def __api_alloc(imgdir, exact_match, pkg_image_used):
-
-        def qv(val):
-                # Escape shell metacharacters; '\' must be escaped first to
-                # prevent escaping escapes.
-                for c in "\\ \t\n'`;&()|^<>?*":
-                        val = val.replace(c, "\\" + c)
-                return val
 
         progresstracker = get_tracker()
         try:
@@ -3938,8 +3926,8 @@ assistance."""))
                             duplicate=True)
                         dest_repo = dest_pub.repository
                         if dest_repo.origins and \
-                                not dest_repo.has_origin(repo_uri):
-                                        add_origins = [repo_uri]
+                            not dest_repo.has_origin(repo_uri):
+                                add_origins = [repo_uri]
 
                         if not src_repo and not add_origins:
                                 # The repository doesn't have to provide origin
@@ -4746,72 +4734,141 @@ def property_list(api_inst, args):
 
         return EXIT_OK
 
-def variant_list(api_inst, args):
-        """pkg variant [-H] [<variant_spec>]"""
+def list_variant(op, api_inst, pargs, omit_headers, output_format,
+    list_all_items, list_installed, verbose): 
+        """pkg variant [-Haiv] [-F format] [<variant_pattern> ...]"""
 
-        omit_headers = False
+        subcommand = "variant"
+        if output_format is None:
+                output_format = "default"
 
-        opts, pargs = getopt.getopt(args, "H")
+        # To work around Python 2.x's scoping limits, a list is used.
+        found = [False]
+        req_variants = set(pargs)
 
-        for opt, arg in opts:
-                if opt == "-H":
-                        omit_headers = True
+        def gen_current():
+                for (name, val, pvals) in api_inst.gen_variants(variant_list,
+                    patterns=req_variants):
+                        found[0] = True
+                        yield {
+                            "variant": name,
+                            "value": val
+                        }
 
-        # XXX image variants should be accessible through pkg.client.api
-        variants = img.get_variants()
+        def gen_possible():
+                for (name, val, pvals) in api_inst.gen_variants(variant_list,
+                    patterns=req_variants):
+                        found[0] = True
+                        for pval in pvals:
+                                yield {
+                                    "variant": name,
+                                    "value": pval
+                                }
 
-        for p in pargs:
-                if p not in variants:
-                        error(_("no such variant: %s") % p, cmd="variant")
-                        return EXIT_OOPS
+        if verbose:
+                gen_listing = gen_possible
+        else:
+                gen_listing = gen_current
 
-        if not pargs:
-                pargs = variants.keys()
+        if list_all_items:
+                if verbose:
+                        variant_list = api_inst.VARIANT_ALL_POSSIBLE
+                else:
+                        variant_list = api_inst.VARIANT_ALL
+        elif list_installed:
+                if verbose:
+                        variant_list = api_inst.VARIANT_INSTALLED_POSSIBLE
+                else:
+                        variant_list = api_inst.VARIANT_INSTALLED
+        else:
+                if verbose:
+                        variant_list = api_inst.VARIANT_IMAGE_POSSIBLE
+                else:
+                        variant_list = api_inst.VARIANT_IMAGE
 
-        width = max(max([len(p) for p in pargs]), 8)
-        fmt = "%%-%ss %%s" % width
-        if not omit_headers:
-                msg(fmt % ("VARIANT", "VALUE"))
+        #    VARIANT VALUE
+        #    <variant> <value>
+        #    <variant_2> <value_2>
+        #    ...
+        field_data = {
+            "variant" : [("default", "json", "tsv"), _("VARIANT"), ""],
+            "value" : [("default", "json", "tsv"), _("VALUE"), ""],
+        }
+        desired_field_order = (_("VARIANT"), _("VALUE"))
 
-        for p in pargs:
-                msg(fmt % (p, variants[p]))
+        # Default output formatting.
+        def_fmt = "%-70s %s"
 
+        # print without trailing newline.
+        sys.stdout.write(misc.get_listing(desired_field_order,
+            field_data, gen_listing(), output_format, def_fmt,
+            omit_headers))
+
+        if not found[0] and req_variants:
+                if output_format == "default":
+                        # Don't pollute other output formats.
+                        error(_("no matching variants found"),
+                            cmd=subcommand)
+                return EXIT_OOPS
+
+        # Successful if no variants exist or if at least one matched.
         return EXIT_OK
 
-def facet_list(api_inst, args):
-        """pkg facet [-H] [<facet_spec>]"""
+def list_facet(op, api_inst, pargs, omit_headers, output_format, list_all_items,
+    list_installed):
+        """pkg facet [-Hai] [-F format] [<facet_pattern> ...]"""
 
-        omit_headers = False
+        subcommand = "facet"
+        if output_format is None:
+                output_format = "default"
 
-        opts, pargs = getopt.getopt(args, "H")
+        # To work around Python 2.x's scoping limits, a list is used.
+        found = [False]
+        req_facets = set(pargs)
 
-        for opt, arg in opts:
-                if opt == "-H":
-                        omit_headers = True
+        facet_list = api_inst.FACET_IMAGE
+        if list_all_items:
+                facet_list = api_inst.FACET_ALL
+        elif list_installed:
+                facet_list = api_inst.FACET_INSTALLED
 
-        # XXX image facets should be accessible through pkg.client.api
-        facets = img.get_facets()
+        def gen_listing():
+                for (name, val) in api_inst.gen_facets(facet_list,
+                    patterns=req_facets):
+                        found[0] = True
 
-        for i, p in enumerate(pargs[:]):
-                if not p.startswith("facet."):
-                        pargs[i] = "facet." + p
+                        # Values here are intentionally not _().
+                        yield {
+                            "facet": name,
+                            "value": val and "True" or "False"
+                        }
 
-        if not pargs:
-                pargs = facets.keys()
+        #    FACET VALUE
+        #    <facet> <value>
+        #    <facet_2> <value_2>
+        #    ...
+        field_data = {
+            "facet" : [("default", "json", "tsv"), _("FACET"), ""],
+            "value" : [("default", "json", "tsv"), _("VALUE"), ""],
+        }
+        desired_field_order = (_("FACET"), _("VALUE"))
 
-        if pargs:
-                width = max(max([len(p) for p in pargs]), 8)
-        else:
-                width = 8
+        # Default output formatting.
+        def_fmt = "%-70s %s"
 
-        fmt = "%%-%ss %%s" % width
+        # print without trailing newline.
+        sys.stdout.write(misc.get_listing(desired_field_order,
+            field_data, gen_listing(), output_format, def_fmt,
+            omit_headers))
 
-        if not omit_headers:
-                msg(fmt % ("FACETS", "VALUE"))
+        if not found[0] and req_facets:
+                if output_format == "default":
+                        # Don't pollute other output formats.
+                        error(_("no matching facets found"),
+                            cmd=subcommand)
+                return EXIT_OOPS
 
-        for p in pargs:
-                msg(fmt % (p, facets[p]))
-
+        # Successful if no facets exist or if at least one matched.
         return EXIT_OK
 
 def list_linked(op, api_inst, pargs,
@@ -5765,6 +5822,7 @@ opts_mapping = {
     "attach_parent" :     ("p",  ""),
 
     "list_available" :    ("a",  ""),
+    "list_all_items" :    ("a",  ""),
     "output_format" :     ("F",  "output-format"),
 
     "tagged" :            ("",  "tagged"),
@@ -5784,6 +5842,8 @@ opts_mapping = {
 
     "ctlfd" :                 ("",  "ctlfd"),
     "progfd" :                ("",  "progfd"),
+
+    "list_installed" :        ("i",  ""),
 }
 
 #
@@ -5807,7 +5867,7 @@ cmds = {
     "change-variant"        : [change_variant],
     "contents"              : [list_contents],
     "detach-linked"         : [detach_linked, 0],
-    "facet"                 : [facet_list],
+    "facet"                 : [list_facet],
     "fix"                   : [fix_image],
     "freeze"                : [freeze],
     "help"                  : [None],
@@ -5840,12 +5900,11 @@ cmds = {
     "uninstall"             : [uninstall],
     "unset-authority"       : [publisher_unset],
     "unset-property"        : [property_unset],
-    "update-format"         : [update_format],
     "unset-mediator"        : [unset_mediator],
     "unset-publisher"       : [publisher_unset],
     "update"                : [update],
     "update-format"         : [update_format],
-    "variant"               : [variant_list],
+    "variant"               : [list_variant],
     "verify"                : [verify_image],
     "version"               : [None],
 }
@@ -5870,6 +5929,31 @@ opts_remote = [
     ("progfd",               None),
 ]
 
+def opts_cb_varcet(api_inst, opts, opts_new):
+        if opts_new["list_all_items"] and opts_new["list_installed"]:
+                raise api_errors.InvalidOptionError(
+                    api_errors.InvalidOptionError.INCOMPAT,
+                    ["list_all_items", "list_installed"])
+
+opts_list_varcet = \
+    options.opts_table_no_headers + \
+    [
+    opts_cb_varcet,
+    ("list_all_items",          False),
+    ("list_installed",          False),
+    ("output_format",           None)
+]
+
+opts_list_facet = \
+    [opts_cb_varcet] + \
+    opts_list_varcet
+
+opts_list_variant = \
+    opts_list_varcet + \
+    [
+    ("verbose",      False)
+]
+
 opts_list_mediator = \
     options.opts_table_no_headers + \
     [
@@ -5887,9 +5971,11 @@ opts_unset_mediator = \
 ]
 
 cmd_opts = {
-    "mediator"              : opts_list_mediator,
-    "unset-mediator"        : opts_unset_mediator,
-    "remote"                : opts_remote,
+    "facet"             : opts_list_facet,
+    "mediator"          : opts_list_mediator,
+    "unset-mediator"    : opts_unset_mediator,
+    "remote"            : opts_remote,
+    "variant"           : opts_list_variant,
 }
 
 
@@ -6067,7 +6153,6 @@ def main_func():
                 # when there is a short and a long version for the same option
                 # we print both to avoid confusion.
                 def get_cli_opt(option):
-                        out = ""
                         try:
                                 s, l = opts_mapping[option]
                                 if l and not s:
@@ -6075,7 +6160,7 @@ def main_func():
                                 elif s and not l:
                                         return "-%s" % s
                                 else:
-                                        return("-%s/--%s" % (s,l))
+                                        return "-%s/--%s" % (s, l)
                         except KeyError:
                                 # ignore if we can't find a match
                                 # (happens for repeated arguments)

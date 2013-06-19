@@ -29,11 +29,12 @@ import errno
 import hashlib
 import os
 import tempfile
-from itertools import groupby, chain, repeat, izip
+from itertools import groupby, chain, product, repeat, izip
 from operator import itemgetter
 
 import pkg.actions as actions
 import pkg.client.api_errors as apx
+import pkg.facet as facet
 import pkg.misc as misc
 import pkg.portable as portable
 import pkg.variant as variant
@@ -123,8 +124,7 @@ class Manifest(object):
                 self.fmri = pfmri
 
                 self._cache = {}
-                self._facets = None     # facets seen in package
-                self._variants = None   # variants seen in package
+                self._absent_cache = []
                 self.actions = []
                 self.actions_bytype = {}
                 self.attributes = {} # package-wide attributes
@@ -367,13 +367,267 @@ class Manifest(object):
                                 )
                                 yield a
 
+        def _gen_attrs_to_str(self):
+                """Generate set action supplemental data containing all facets
+                and variants from self.actions and size information.  Each
+                returned line must be newline-terminated."""
+
+                emit_variants = "pkg.variant" not in self
+                emit_facets = "pkg.facet" not in self
+                emit_sizes = "pkg.size" not in self and "pkg.csize" not in self
+
+                if not any((emit_variants, emit_facets, emit_sizes)):
+                        # Package already has these attributes.
+                        return
+
+                # List of possible variants and possible values for them.
+                variants = defaultdict(set)
+
+                # Seed with declared set of variants as actions may be common to
+                # both and so will not be tagged with variant.
+                for name in self.attributes:
+                        if name[:8] == "variant.":
+                                variants[name] = set(self.attributes[name])
+
+                # List of possible facets and under what variant combinations
+                # they were seen.
+                facets = defaultdict(set)
+
+                # Unique (facet, value) (variant, value) combinations.
+                refs = defaultdict(lambda: defaultdict(int))
+
+                for a in self.gen_actions():
+                        name = a.name
+                        attrs = a.attrs
+                        if name == "set":
+                                if attrs["name"][:12] == "pkg.variant":
+                                        emit_variants = False
+                                elif attrs["name"][:9] == "pkg.facet":
+                                        emit_facets = False
+
+                        afacets = []
+                        avariants = []
+                        for attr, val in attrs.iteritems():
+                                if attr[:8] == "variant.":
+                                        variants[attr].add(val)
+                                        avariants.append((attr, val))
+                                elif attr[:6] == "facet.":
+                                        afacets.append((attr, val))
+
+                        for name, val in afacets:
+                                # Facet applicable to this particular variant
+                                # combination.
+                                varkey = tuple(sorted(avariants))
+                                facets[varkey].add(name)
+
+                        # This *must* be sorted to ensure reproducible set
+                        # action generation for sizes and to ensure each
+                        # combination is actually unique.
+                        varcetkeys = tuple(sorted(chain(afacets, avariants)))
+                        refs[varcetkeys]["csize"] += misc.get_pkg_otw_size(a)
+                        if name == "signature":
+                                refs[varcetkeys]["csize"] += \
+                                    a.get_action_chain_csize()
+                        refs[varcetkeys]["size"] += a.get_size()
+
+                # Prevent scope leak.
+                afacets = avariants = attrs = varcetkeys = None
+
+                if emit_variants:
+                        # Unnecessary if we can guarantee all variants will be
+                        # declared at package level.  Omit the "variant." prefix
+                        # from attribute values since that's implicit and can be
+                        # added back when the action is parsed.
+                        yield "%s\n" % AttributeAction(None, name="pkg.variant",
+                            value=sorted(v[8:] for v in variants))
+
+                # Emit a set action for every variant used with possible values
+                # if one does not already exist.
+                for name in variants:
+                        # merge_facets needs the variant values sorted and this
+                        # is desirable when generating the variant attr anyway.
+                        variants[name] = sorted(variants[name])
+                        if name not in self.attributes:
+                                yield "%s\n" % AttributeAction(None, name=name,
+                                    value=variants[name])
+
+                if emit_facets:
+                        # Get unvarianted facet set.
+                        cfacets = facets.pop((), set())
+
+                        # For each variant combination, remove unvarianted
+                        # facets since they are common to all variants.
+                        for varkey, fnames in facets.items():
+                                fnames.difference_update(cfacets)
+                                if not fnames:
+                                        # No facets unique to this combo;
+                                        # discard.
+                                        del facets[varkey]
+
+                        # If all possible variant combinations supported by the
+                        # package have at least one facet, then the intersection
+                        # of facets for all variants can be merged with the
+                        # common set.
+                        merge_facets = len(facets) > 0
+                        if merge_facets:
+                                # Determine unique set of variant combinations
+                                # seen for faceted actions.
+                                vcombos = set((
+                                    tuple(
+                                        vpair[0]
+                                        for vpair in varkey
+                                    )
+                                    for varkey in facets
+                                ))
+
+                                # For each unique variant combination, determine
+                                # if the cartesian product of all variant values
+                                # supported by the package for the combination
+                                # has been seen.  In other words, if the
+                                # combination is ((variant.arch,)) and the
+                                # package supports (i386, sparc), then both
+                                # (variant.arch, i386) and (variant.arch, sparc)
+                                # must exist.  This code assumes variant values
+                                # for each variant are already sorted.
+                                for pair in chain.from_iterable(
+                                    product(*(
+                                        tuple((name, val)
+                                            for val in variants[name])
+                                        for name in vcombo)
+                                    )
+                                    for vcombo in vcombos
+                                ):
+                                        if pair not in facets:
+                                                # If any combination the package
+                                                # supports has not been seen for
+                                                # one or more facets, then some
+                                                # facets are unique to one or
+                                                # more combinations.
+                                                merge_facets = False
+                                                break
+
+                        if merge_facets:
+                                # Merge the facets common to all variants if safe;
+                                # if we always merged them, then facets only
+                                # used by a single variant (think i386-only or
+                                # sparc-only content) would be seen unvarianted
+                                # (that's bad).
+                                vfacets = facets.values()
+                                vcfacets = vfacets[0].intersection(*vfacets[1:])
+
+                                if vcfacets:
+                                        # At least one facet is shared between
+                                        # all variant combinations; move the
+                                        # common ones to the unvarianted set.
+                                        cfacets.update(vcfacets)
+
+                                        # Remove facets common to all combos.
+                                        for varkey, fnames in facets.items():
+                                                fnames.difference_update(vcfacets)
+                                                if not fnames:
+                                                        # No facets unique to
+                                                        # this combo; discard.
+                                                        del facets[varkey]
+
+                        # Omit the "facet." prefix from attribute values since
+                        # that's implicit and can be added back when the action
+                        # is parsed.
+                        val = sorted(f[6:] for f in cfacets)
+                        if not val:
+                                # If we don't do this, action stringify will
+                                # emit this as "set name=pkg.facet" which is
+                                # then transformed to "set name=name
+                                # value=pkg.facet".  Not what we wanted, but is
+                                # expected for historical reasons.
+                                val = ""
+
+                        # Always emit an action enumerating the list of facets
+                        # common to all variants, even if there aren't any.
+                        # That way if there are also no variant-specific facets,
+                        # package operations will know that no facets are used
+                        # by the package instead of having to scan the whole
+                        # manifest.
+                        yield "%s\n" % AttributeAction(None,
+                            name="pkg.facet.common", value=val)
+
+                        # Now emit a pkg.facet action for each variant
+                        # combination containing the list of facets unique to
+                        # that combination.
+                        for varkey, fnames in facets.iteritems():
+                                # A unique key for each combination is needed,
+                                # and using a hash obfuscates that interface
+                                # while giving us a reliable way to generate
+                                # a reproducible, unique identifier.  The key
+                                # string below looks like this before hashing:
+                                #     variant.archi386variant.debug.osnetTrue...
+                                key = hashlib.sha1(
+                                    "".join("%s%s" % v for v in varkey)
+                                ).hexdigest()
+
+                                # Omit the "facet." prefix from attribute values
+                                # since that's implicit and can be added back
+                                # when the action is parsed.
+                                act = AttributeAction(None,
+                                    name="pkg.facet.%s" % key,
+                                    value=sorted(f[6:] for f in fnames))
+                                attrs = act.attrs
+                                # Tag action with variants.
+                                for v in varkey:
+                                        attrs[v[0]] = v[1]
+                                yield "%s\n" % act
+
+                # Emit pkg.[c]size attribute for [compressed] size of package
+                # for each facet/variant combination.
+                csize = 0
+                size = 0
+                for varcetkeys in refs:
+                        rcsize = refs[varcetkeys]["csize"]
+                        rsize = refs[varcetkeys]["size"]
+
+                        if not varcetkeys:
+                                # For unfaceted/unvarianted actions, keep a
+                                # running total so a single [c]size action can
+                                # be generated.
+                                csize += rcsize
+                                size += rsize
+                                continue
+
+                        if emit_sizes and (rcsize > 0 or rsize > 0):
+                                # Only emit if > 0; actions may be
+                                # faceted/variant without payload.
+
+                                # A unique key for each combination is needed,
+                                # and using a hash obfuscates that interface
+                                # while giving us a reliable way to generate
+                                # a reproducible, unique identifier.  The key
+                                # string below looks like this before hashing:
+                                #     facet.docTruevariant.archi386...
+                                key = hashlib.sha1(
+                                    "".join("%s%s" % v for v in varcetkeys)
+                                ).hexdigest()
+
+                                # The sizes are abbreviated in the name of byte
+                                # conservation.
+                                act = AttributeAction(None,
+                                    name="pkg.sizes.%s" % key,
+                                    value=["csz=%s" % rcsize, "sz=%s" % rsize])
+                                attrs = act.attrs
+                                for v in varcetkeys:
+                                        attrs[v[0]] = v[1]
+                                yield "%s\n" % act
+
+                if emit_sizes:
+                        act = AttributeAction(None, name="pkg.sizes.common",
+                            value=["csz=%s" % csize, "sz=%s" % size])
+                        yield "%s\n" % act
+
         def _actions_to_dict(self, references):
                 """create dictionary of all actions referenced explicitly or
                 implicitly from self.actions... include variants as values;
                 collapse variants where possible"""
 
                 refs = {}
-                # build a dictionary containing all directories tagged w/
+                # build a dictionary containing all actions tagged w/
                 # variants
                 for a in self.actions:
                         v, f = a.get_varcet_keys()
@@ -418,6 +672,117 @@ class Manifest(object):
                 ])
 
                 return list(s)
+
+        def gen_facets(self, excludes=EmptyI, patterns=EmptyI):
+                """A generator function that returns the supported facet
+                attributes (strings) for this package based on the specified (or
+                current) excludes that also match at least one of the patterns
+                provided.  Facets must be true or false so a list of possible
+                facet values is not returned."""
+
+                if self.excludes == excludes:
+                        excludes = EmptyI
+                assert excludes == EmptyI or self.excludes == EmptyI
+
+                try:
+                        facets = self["pkg.facet"]
+                except KeyError:
+                        facets = None
+
+                if facets is not None and excludes == EmptyI:
+                        # No excludes? Then use the pre-determined set of
+                        # facets.
+                        for f in misc.yield_matching("facet.", facets, patterns):
+                                yield f
+                        return
+
+                # If different excludes were specified, then look for pkg.facet
+                # actions containing the list of facets.
+                found = False
+                seen = set()
+                for a in self.gen_actions_by_type("set", excludes=excludes):
+                        if a.attrs["name"][:10] == "pkg.facet.":
+                                # Either a pkg.facet.common action or a
+                                # pkg.facet.X variant-specific action.
+                                found = True
+                                val = a.attrlist("value")
+                                if len(val) == 1 and val[0] == "":
+                                        # No facets.
+                                        continue
+
+                                for f in misc.yield_matching("facet.", (
+                                    "facet.%s" % n
+                                    for n in val
+                                ), patterns):
+                                        if f in seen:
+                                                # Prevent duplicates; it's
+                                                # possible a given facet may be
+                                                # valid for more than one unique
+                                                # variant combination that's
+                                                # allowed by current excludes.
+                                                continue
+
+                                        seen.add(f)
+                                        yield f
+
+                if not found:
+                        # Fallback to sifting actions to yield possible.
+                        facets = self._get_varcets(excludes=excludes)[1]
+                        for f in misc.yield_matching("facet.", facets, patterns):
+                                yield f
+
+        def gen_variants(self, excludes=EmptyI, patterns=EmptyI):
+                """A generator function that yields a list of tuples of the form
+                (variant, [values]).  Where 'variant' is the variant attribute
+                name (e.g. 'variant.arch') and '[values]' is a list of the
+                variant values supported by this package.  Variants returned are
+                those allowed by the specified (or current) excludes that also
+                match at least one of the patterns provided."""
+
+                if self.excludes == excludes:
+                        excludes = EmptyI
+                assert excludes == EmptyI or self.excludes == EmptyI
+
+                try:
+                        variants = self["pkg.variant"]
+                except KeyError:
+                        variants = None
+
+                if variants is not None and excludes == EmptyI:
+                        # No excludes? Then use the pre-determined set of
+                        # variants.
+                        for v in misc.yield_matching("variant.", variants,
+                            patterns):
+                                yield v, self.attributes.get(v, [])
+                        return
+
+                # If different excludes were specified, then look for
+                # pkg.variant action containing the list of variants.
+                found = False
+                variants = defaultdict(set)
+                for a in self.gen_actions_by_type("set", excludes=excludes):
+                        aname = a.attrs["name"]
+                        if aname == "pkg.variant":
+                                val = a.attrlist("value")
+                                if len(val) == 1 and val[0] == "":
+                                        # No variants.
+                                        return
+                                for v in val:
+                                        found = True
+                                        # Ensure variant entries exist (debug
+                                        # variants may not) via defaultdict.
+                                        variants["variant.%s" % v]
+                        elif aname[:8] == "variant.":
+                                for v in a.attrlist("value"):
+                                        found = True
+                                        variants[aname].add(v)
+
+                if not found:
+                        # Fallback to sifting actions to get possible.
+                        variants = self._get_varcets(excludes=excludes)[0]
+
+                for v in misc.yield_matching("variant.", variants, patterns):
+                        yield v, variants[v]
 
         def gen_mediators(self, excludes=EmptyI):
                 """A generator function that yields tuples of the form (mediator,
@@ -592,10 +957,9 @@ class Manifest(object):
 
                 self.actions = []
                 self.actions_bytype = {}
-                self._variants = None
-                self._facets = None
                 self.attributes = {}
                 self._cache = {}
+                self._absent_cache = []
 
                 # So we could build up here the type/key_attr dictionaries like
                 # sdict and odict in difference() above, and have that be our
@@ -661,12 +1025,6 @@ class Manifest(object):
                 if excludes and not action.include_this(excludes):
                         return
 
-                if self._variants:
-                        # Reset facet/variant cache if needed (if one is set,
-                        # then both are set, so only need to check for one).
-                        self._facets = None
-                        self._variants = None
-
                 self.actions.append(action)
                 try:
                         self.actions_bytype[aname].append(action)
@@ -681,13 +1039,65 @@ class Manifest(object):
                 """Fill attribute array w/ set action contents."""
                 try:
                         keyvalue = action.attrs["name"]
-                        if keyvalue == "fmri":
-                                keyvalue = "pkg.fmri"
-                        if keyvalue not in self.attributes:
-                                self.attributes[keyvalue] = \
-                                    action.attrs["value"]
-                except KeyError: # ignore broken set actions
+                        if keyvalue[:10] == "pkg.sizes.":
+                                # To reduce manifest bloat, size and csize
+                                # are set on a single action so need splitting
+                                # into separate attributes.
+                                attrval = action.attrlist("value")
+                                for entry in attrval:
+                                        szname, szval = entry.split("=", 1)
+                                        if szname == "sz":
+                                                szname = "pkg.size"
+                                        elif szname == "csz":
+                                                szname = "pkg.csize"
+                                        else:
+                                                # Skip unknowns.
+                                                continue
+
+                                        self.attributes.setdefault(szname, 0)
+                                        self.attributes[szname] += int(szval)
+                                return
+                except (KeyError, TypeError, ValueError):
+                        # ignore broken set actions
                         pass
+
+                # Ensure facet and variant attributes are always lists.
+                if keyvalue[:10] == "pkg.facet.":
+                        # Possible facets list is spread over multiple actions.
+                        val = action.attrlist("value")
+                        if len(val) == 1 and val[0] == "":
+                                # No facets.
+                                val = []
+
+                        seen = self.attributes.setdefault("pkg.facet", [])
+                        for f in val:
+                                entry = "facet.%s" % f
+                                if entry not in seen:
+                                        # Prevent duplicates; it's possible a
+                                        # given facet may be valid for more than
+                                        # one unique variant combination that's
+                                        # allowed by current excludes.
+                                        seen.append(f)
+                        return
+                elif keyvalue == "pkg.variant":
+                        val = action.attrlist("value")
+                        if len(val) == 1 and val[0] == "":
+                                # No variants.
+                                val = []
+
+                        self.attributes[keyvalue] = [
+                            "variant.%s" % v
+                            for v in val
+                        ]
+                        return
+                elif keyvalue[:8] == "variant.":
+                        self.attributes[keyvalue] = action.attrlist("value")
+                        return
+
+                if keyvalue == "fmri":
+                        # Ancient manifest compatibility.
+                        keyvalue = "pkg.fmri"
+                self.attributes[keyvalue] = action.attrs["value"]
 
         @staticmethod
         def search_dict(file_path, excludes, return_line=False,
@@ -896,24 +1306,64 @@ class Manifest(object):
                             "'false'" % ret))
 
         def get_size(self, excludes=EmptyI):
-                """Returns an integer representing the total size, in bytes, of
-                the Manifest's data payload.
+                """Returns an integer tuple of the form (size, csize), where
+                'size' represents the total uncompressed size, in bytes, of the
+                Manifest's data payload, and 'csize' represents the compressed
+                version of that.
 
-                'excludes' is a list of variants which should be allowed when
-                calculating the total.
-                """
+                'excludes' is a list of a list of variants and facets which
+                should be allowed when calculating the total."""
 
+                if self.excludes == excludes:
+                        excludes = EmptyI
+                assert excludes == EmptyI or self.excludes == EmptyI
+
+                csize = 0
                 size = 0
-                for a in self.gen_actions(excludes):
+
+                attrs = self.attributes
+                if ("pkg.size" in attrs and "pkg.csize" in attrs) and \
+                    (excludes == EmptyI or self.excludes == excludes):
+                        # If specified excludes match loaded excludes, then use
+                        # cached attributes; this is safe as manifest attributes
+                        # are reset or updated every time exclude_content,
+                        # set_content, or add_action is called.
+                        return (attrs["pkg.size"], attrs["pkg.csize"])
+
+                for a in self.gen_actions(excludes=excludes):
                         size += a.get_size()
-                return size
+                        csize += misc.get_pkg_otw_size(a)
 
-        def __load_varcets(self):
-                """Private helper function to populate list of facets and
-                variants on-demand."""
+                if excludes == EmptyI:
+                        # Cache for future calls.
+                        attrs["pkg.size"] = size
+                        attrs["pkg.csize"] = csize
 
-                self._facets = {}
-                self._variants = {}
+                return (size, csize)
+
+        def _get_varcets(self, excludes=EmptyI):
+                """Private helper function to get list of facets/variants."""
+
+                variants = defaultdict(set)
+                facets = defaultdict(set)
+
+                nexcludes = excludes
+                if nexcludes:
+                        # Facet filtering should never be applied when excluding
+                        # actions; only variant filtering.  This is ugly, but
+                        # our current variant/facet filtering system doesn't
+                        # allow you to be selective and various bits in
+                        # pkg.manifest assume you always filter on both so we
+                        # have to fake up a filter for facets.
+                        nexcludes = [
+                            x for x in excludes
+                            if x.__func__ != facet._allow_facet
+                        ]
+                        # Excludes list must always have zero or two items; so
+                        # fake second entry.
+                        nexcludes.append(lambda x: True)
+                        assert len(nexcludes) == 2
+
                 for action in self.gen_actions():
                         # append any variants and facets to manifest dict
                         attrs = action.attrs
@@ -923,29 +1373,27 @@ class Manifest(object):
                                 continue
 
                         try:
-                                for v, d in chain(
-                                    izip(v_list, repeat(self._variants)),
-                                    izip(f_list, repeat(self._facets))):
-                                        try:
+                                for v, d in izip(v_list, repeat(variants)):
+                                        d[v].add(attrs[v])
+
+                                if not excludes or action.include_this(
+                                    nexcludes):
+                                        # While variants are package level (you
+                                        # can't install a package without
+                                        # setting the variant first), facets
+                                        # from the current action should only be
+                                        # included if the action is not
+                                        # excluded.
+                                        for v, d in izip(f_list, repeat(facets)):
                                                 d[v].add(attrs[v])
-                                        except KeyError:
-                                                d[v] = set([attrs[v]])
                         except TypeError:
                                 # Lists can't be set elements.
                                 raise actions.InvalidActionError(action,
                                     _("%(forv)s '%(v)s' specified multiple times") %
                                     {"forv": v.split(".", 1)[0], "v": v})
 
-        def __get_facets(self):
-                if self._facets is None:
-                        self.__load_varcets()
-                return self._facets
-
-        def __get_variants(self):
-                if self._variants is None:
-                        self.__load_varcets()
-                return self._variants
-
+                return (variants, facets)
+                
         def __getitem__(self, key):
                 """Return the value for the package attribute 'key'."""
                 return self.attributes[key]
@@ -964,9 +1412,6 @@ class Manifest(object):
 
         def __contains__(self, key):
                 return key in self.attributes
-
-        facets = property(lambda self: self.__get_facets())
-        variants = property(lambda self: self.__get_variants())
 
 null = Manifest()
 
@@ -1056,8 +1501,6 @@ class FactoredManifest(Manifest):
                 when downloading new manifests"""
                 self.actions = []
                 self.actions_bytype = {}
-                self._variants = None
-                self._facets = None
                 self.attributes = {}
                 self.loaded = False
 
@@ -1091,24 +1534,47 @@ class FactoredManifest(Manifest):
                 # Ensure target cache directory and intermediates exist.
                 misc.makedirs(t_dir)
 
-                # create per-action type cache; use rename to avoid
-                # corrupt files if ^C'd in the middle
-                for n in self.actions_bytype.keys():
+                # create per-action type cache; use rename to avoid corrupt
+                # files if ^C'd in the middle.  All action types are considered
+                # so that empty cache files are created if no action of that
+                # type exists for the package (avoids full manifest loads
+                # later).
+                for n, acts in self.actions_bytype.iteritems():
                         t_prefix = "manifest.%s." % n
 
-                        fd, fn = tempfile.mkstemp(dir=t_dir, prefix=t_prefix)
-                        f = os.fdopen(fd, "wb")
+                        try:
+                                fd, fn = tempfile.mkstemp(dir=t_dir,
+                                    prefix=t_prefix)
+                        except EnvironmentError, e:
+                                raise apx._convert_error(e)
 
-                        for a in self.actions_bytype[n]:
-                                f.write("%s\n" % a)
-                        f.close()
-                        os.chmod(fn, PKG_FILE_MODE)
-                        portable.rename(fn, self.__cache_path("manifest.%s" % n))
+                        f = os.fdopen(fd, "wb")
+                        try:
+                                for a in acts:
+                                        f.write("%s\n" % a)
+                                if n == "set":
+                                        # Add supplemental action data; yes this
+                                        # does mean the cache is not the same as
+                                        # retrieved manifest, but that's ok.
+                                        # Signature verification is done using
+                                        # the raw manifest.
+                                        f.writelines(self._gen_attrs_to_str())
+                        except EnvironmentError, e:
+                                raise apx._convert_error(e)
+                        finally:
+                                f.close()
+
+                        try:
+                                os.chmod(fn, PKG_FILE_MODE)
+                                portable.rename(fn,
+                                    self.__cache_path("manifest.%s" % n))
+                        except EnvironmentError, e:
+                                raise apx._convert_error(e)
 
                 def create_cache(name, refs):
                         try:
                                 fd, fn = tempfile.mkstemp(dir=t_dir,
-                                    prefix="manifest.dircache.")
+                                    prefix=name + ".")
                                 with os.fdopen(fd, "wb") as f:
                                         f.writelines(refs())
                                 os.chmod(fn, PKG_FILE_MODE)
@@ -1215,30 +1681,66 @@ class FactoredManifest(Manifest):
                         for a in Manifest.gen_actions_by_type(self, atype,
                             excludes):
                                 yield a
-                else:
-                        if excludes == EmptyI:
-                                excludes = self.excludes
-                        assert excludes == self.excludes or \
-                            self.excludes == EmptyI
-                        # we have a cached copy - use it
-                        mpath = self.__cache_path("manifest.%s" % atype)
+                        return
 
-                        if not os.path.exists(mpath):
-                                return # no such action in this manifest
+                if excludes == EmptyI:
+                        excludes = self.excludes
+                assert excludes == self.excludes or self.excludes == EmptyI
 
+                if atype in self._absent_cache:
+                        # No such action in the manifest; must be done *after*
+                        # asserting excludes are correct to avoid hiding
+                        # failures.
+                        return
+
+                # Assume a cached copy exists; if not, tag the action type to
+                # avoid pointless I/O later.
+                mpath = self.__cache_path("manifest.%s" % atype)
+
+                try:
                         with open(mpath, "rb") as f:
                                 for l in f:
                                         a = actions.fromstr(l.rstrip())
                                         if not excludes or \
                                             a.include_this(excludes):
                                                 yield a
+                except EnvironmentError, e:
+                        if e.errno == errno.ENOENT:
+                                self._absent_cache.append(atype)
+                                return # no such action in this manifest
+                        raise apx._convert_error(e)
 
-        def gen_mediators(self, excludes):
+        def gen_facets(self, excludes=EmptyI, patterns=EmptyI):
+                """A generator function that returns the supported facet
+                attributes (strings) for this package based on the specified (or
+                current) excludes that also match at least one of the patterns
+                provided.  Facets must be true or false so a list of possible
+                facet values is not returned."""
+
+                if not self.loaded and not self.__load_attributes():
+                        self.__load()
+                return Manifest.gen_facets(self, excludes=excludes,
+                    patterns=patterns)
+
+        def gen_variants(self, excludes=EmptyI, patterns=EmptyI):
+                """A generator function that yields a list of tuples of the form
+                (variant, [values]).  Where 'variant' is the variant attribute
+                name (e.g. 'variant.arch') and '[values]' is a list of the
+                variant values supported by this package.  Variants returned are
+                those allowed by the specified (or current) excludes that also
+                match at least one of the patterns provided."""
+
+                if not self.loaded and not self.__load_attributes():
+                        self.__load()
+                return Manifest.gen_variants(self, excludes=excludes,
+                    patterns=patterns)
+
+        def gen_mediators(self, excludes=EmptyI):
                 """A generator function that yields set actions expressing the
                 set of possible mediations for this package.
                 """
                 self.__load_cached_data("manifest.mediatorcache")
-                return Manifest.gen_mediators(self, excludes)
+                return Manifest.gen_mediators(self, excludes=excludes)
 
         def __load_attributes(self):
                 """Load attributes dictionary from cached set actions;
@@ -1253,7 +1755,20 @@ class FactoredManifest(Manifest):
                                 if not self.excludes or \
                                     a.include_this(self.excludes):
                                         self.fill_attributes(a)
+
                 return True
+
+        def get_size(self, excludes=EmptyI):
+                """Returns an integer tuple of the form (size, csize), where
+                'size' represents the total uncompressed size, in bytes, of the
+                Manifest's data payload, and 'csize' represents the compressed
+                version of that.
+
+                'excludes' is a list of a list of variants and facets which
+                should be allowed when calculating the total."""
+                if not self.loaded and not self.__load_attributes():
+                        self.__load()
+                return Manifest.get_size(self, excludes=excludes)
 
         def __getitem__(self, key):
                 if not self.loaded and not self.__load_attributes():

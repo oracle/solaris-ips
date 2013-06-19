@@ -1,6 +1,6 @@
 '\" te
 .\" Copyright (c) 2007, 2013, Oracle and/or its affiliates. All rights reserved.
-.TH pkg 1 "26 Feb 2013" "SunOS 5.12" "User Commands"
+.TH pkg 1 "19 Apr 2013" "SunOS 5.12" "User Commands"
 .SH NAME
 pkg \- Image Packaging System retrieval client
 .SH SYNOPSIS
@@ -115,7 +115,7 @@ usr/bin/pkg set-mediator [-nv] [-I \fIimplementation\fR]
 
 .LP
 .nf
-/usr/bin/pkg variant [-H] [variant.\fIvariant_name\fR ...]
+/usr/bin/pkg variant [-Haiv] [-F \fIformat\fR] [\fIvariant_pattern\fR ...]
 .fi
 
 .LP
@@ -130,7 +130,7 @@ usr/bin/pkg set-mediator [-nv] [-I \fIimplementation\fR]
 
 .LP
 .nf
-/usr/bin/pkg facet [-H] [\fIfacet_name\fR ...]
+/usr/bin/pkg facet [-Hai] [-F \fIformat\fR] [\fIfacet_pattern\fR ...]
 .fi
 
 .LP
@@ -1576,7 +1576,7 @@ For all other options, see the \fBinstall\fR command above.
 .ne 2
 .mk
 .na
-\fB\fBpkg variant\fR [\fB-H\fR] [\fBvariant.\fR\fIvariant_name\fR ...]\fR
+\fB\fBpkg variant\fR [\fB-Haiv\fR] [\fB-F\fR \fIformat\fR] [\fIvariant_pattern\fR ...]\fR
 .ad
 .sp .6
 .RS 4n
@@ -1585,11 +1585,22 @@ Display the current values of all variants set in this image. See "Facets and Va
 .ne 2
 .mk
 .na
-\fB\fBvariant.\fR\fIvariant_name\fR\fR
+\fB\fIvariant_pattern\fR\fR
 .ad
 .sp .6
 .RS 4n
 Display the current values of only the specified variants set in this image.
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB-F\fR\fR
+.ad
+.sp .6
+.RS 4n
+Specify an alternative output format. Currently, only \fBtsv\fR (Tab Separated Values) is valid.
 .RE
 
 .sp
@@ -1601,6 +1612,39 @@ Display the current values of only the specified variants set in this image.
 .sp .6
 .RS 4n
 Omit the headers from the listing.
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB-a\fR\fR
+.ad
+.sp .6
+.RS 4n
+Display all variants explicitly set in the image and all variants that are listed in installed packages. This option cannot be combined with \fB-i\fR.
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB-i\fR\fR
+.ad
+.sp .6
+.RS 4n
+Display all variants that are listed in installed packages. This option cannot be combined with \fB-a\fR.
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB-v\fR\fR
+.ad
+.sp .6
+.RS 4n
+Display the possible variant values that can be set for installed packages. This option can be combined with \fB-a\fR and \fB-i\fR.
 .RE
 
 .RE
@@ -1624,7 +1668,7 @@ For descriptions of options, see the \fBinstall\fR command above.
 .ne 2
 .mk
 .na
-\fB\fBpkg facet\fR [\fB-H\fR] [\fIfacet_name\fR ...]\fR
+\fB\fBpkg facet\fR [\fB-Hai\fR] [\fB-F\fR \fIformat\fR] [\fIfacet_pattern\fR ...]\fR
 .ad
 .sp .6
 .RS 4n
@@ -1633,11 +1677,22 @@ Display the current values of all facets that have been explicitly set in this i
 .ne 2
 .mk
 .na
-\fB\fIfacet_name\fR\fR
+\fB\fIfacet_pattern\fR\fR
 .ad
 .sp .6
 .RS 4n
 Display the current values of only the specified facets set in this image.
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB-F\fR\fR
+.ad
+.sp .6
+.RS 4n
+Specify an alternative output format. Currently, only \fBtsv\fR (Tab Separated Values) is valid.
 .RE
 
 .sp
@@ -1649,6 +1704,28 @@ Display the current values of only the specified facets set in this image.
 .sp .6
 .RS 4n
 Omit the headers from the listing.
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB-a\fR\fR
+.ad
+.sp .6
+.RS 4n
+Display all facets explicitly set in the image and all facets that are listed in installed packages. This option cannot be combined with \fB-i\fR.
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB-i\fR\fR
+.ad
+.sp .6
+.RS 4n
+Display all facets that are listed in installed packages. This option cannot be combined with \fB-a\fR.
 .RE
 
 .RE

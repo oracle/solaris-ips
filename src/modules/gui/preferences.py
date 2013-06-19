@@ -19,7 +19,7 @@
 #
 # CDDL HEADER END
 #
-# Copyright (c) 2010, 2011, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2010, 2013, Oracle and/or its affiliates. All rights reserved.
 #
 
 import g11nsvc as g11nsvc
@@ -32,7 +32,7 @@ try:
         import pygtk
         pygtk.require("2.0")
 except ImportError:
-        sys.exit(1)        
+        sys.exit(1)
 import pkg.client.api_errors as api_errors
 import pkg.client.api as api
 import pkg.gui.misc as gui_misc
@@ -536,16 +536,15 @@ class Preferences:
                                 break
                         facets = None
                         if manifest != None:
-                                manifest.gen_actions(())
-                                facets = manifest.facets
+                                facets = list(manifest.gen_facets())
                         if debug and facets != None:
                                 print "DEBUG facets from system/locale:", facets
 
                         facetlocales = []
                         if facets == None:
                                 return facetlocales
-                        
-                        for facet_key in facets.keys():
+
+                        for facet_key in facets:
                                 if not facet_key.startswith(LOCALE_PREFIX):
                                         continue
                                 m = re.match(LOCALE_MATCH, facet_key)
@@ -629,7 +628,7 @@ class Preferences:
                         selected = row[enumerations.LOCALE_SELECTED]
                         locale = row[enumerations.LOCALE]
                         lang = locale.split("_")[0]
-                        
+
                         if not lang_locale_dict.has_key(lang):
                                 lang_locale_dict[lang] = {}
                         lang_locale_dict[lang][locale] = selected
@@ -766,7 +765,7 @@ class Preferences:
 
         def __on_preferencescancel_clicked(self, widget):
                 self.w_preferencesdialog.hide()
-                
+
         def __on_preferencesclose_clicked(self, widget):
                 error_dialog_title = _("Preferences")
                 text = self.w_gsig_name_entry.get_text()

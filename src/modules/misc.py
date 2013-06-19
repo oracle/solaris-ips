@@ -32,6 +32,7 @@ import calendar
 import collections
 import datetime
 import errno
+import fnmatch
 import getopt
 import hashlib
 import itertools
@@ -497,8 +498,8 @@ def get_pkg_otw_size(action):
         pkg.csize.  If that value isn't available, it returns pkg.size.
         If pkg.size isn't available, return zero."""
 
-        size = action.attrs.get("pkg.csize", 0)
-        if size == 0:
+        size = action.attrs.get("pkg.csize")
+        if size is None:
                 size = action.attrs.get("pkg.size", 0)
 
         return int(size)
@@ -2427,6 +2428,42 @@ def decode(s):
                 # this will encode 8 bit strings into unicode
                 s = s.decode("utf-8", "replace")
         return s
+
+def yield_matching(pat_prefix, items, patterns):
+        """Helper function for yielding items that match one of the provided
+        patterns."""
+
+        if patterns:
+                # Normalize patterns and determine whether to glob.
+                npatterns = []
+                for p in patterns:
+                        if pat_prefix:
+                                pat = p.startswith(pat_prefix) and \
+                                    p or (pat_prefix + p)
+                        else:
+                                pat = p
+                        if "*" in p or "?" in p:
+                                pat = re.compile(fnmatch.translate(pat)).match
+                                glob_match = True
+                        else:
+                                glob_match = False
+
+                        npatterns.append((pat, glob_match))
+                patterns = npatterns
+                npatterns = None
+
+        for item in items:
+                for (pat, glob_match) in patterns:
+                        if glob_match:
+                                if pat(item):
+                                        break
+                        elif item == pat:
+                                break
+                else:
+                        if patterns:
+                                continue
+                # No patterns or matched at least one.
+                yield item
 
 
 sigdict = defaultdict(list)
