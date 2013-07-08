@@ -2126,7 +2126,7 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
 
                 # Before continuing, validate SSL information.
                 try:
-                        self.check_cert_validity()
+                        self.check_cert_validity(pubs=[pub])
                 except apx.ExpiringCertificate, e:
                         logger.error(str(e))
 
@@ -3295,13 +3295,6 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                 self.history.log_operation_start("refresh-publishers",
                     be_name=be_name, be_uuid=be_uuid)
 
-                # Verify validity of certificates before attempting network
-                # operations.
-                try:
-                        self.check_cert_validity()
-                except apx.ExpiringCertificate, e:
-                        logger.error(str(e))
-
                 pubs_to_refresh = []
 
                 if not pubs:
@@ -3326,6 +3319,13 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                         self.history.log_operation_end(
                             result=history.RESULT_NOTHING_TO_DO)
                         return
+
+                # Verify validity of certificates before attempting network
+                # operations.
+                try:
+                        self.check_cert_validity(pubs=pubs_to_refresh)
+                except apx.ExpiringCertificate, e:
+                        logger.error(str(e))
 
                 try:
                         # Ensure Image directory structure is valid.

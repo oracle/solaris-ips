@@ -31,8 +31,10 @@ if __name__ == "__main__":
 import pkg5unittest
 
 import os
+import shutil
 import stat
 
+import pkg.misc as misc
 import pkg.portable as portable
 from pkg.client.debugvalues import DebugValues
 from pkg.client.transport.exception import TransportFailures
@@ -48,16 +50,19 @@ class TestHTTPS(pkg5unittest.HTTPSTestClass):
         misc_files = ["tmp/example_file"]
 
         def setUp(self):
-                pub_name = "test"
+                pub1_name = "test"
+                pub2_name = "tmp"
 
-                pkg5unittest.HTTPSTestClass.setUp(self, [pub_name],
+                pkg5unittest.HTTPSTestClass.setUp(self, [pub1_name, pub2_name],
                     start_depots=True)
                 
                 self.rurl1 = self.dcs[1].get_repo_url()
+                self.rurl2 = self.dcs[2].get_repo_url()
+                self.tmppub = pub2_name
 
                 self.make_misc_files(self.misc_files)
                 self.pkgsend_bulk(self.rurl1, self.example_pkg10)
-                self.acurl = self.ac.url + "/%s" % pub_name 
+                self.acurl = self.ac.url + "/%s" % pub1_name 
                 # Our proxy is served by the same Apache controller, but uses
                 # a different port.
                 self.proxyurl = self.ac.url.replace("https", "http")
@@ -155,6 +160,43 @@ class TestHTTPS(pkg5unittest.HTTPSTestClass):
                 proxy_env = {"https_proxy": self.proxyurl}
                 self.pkg("refresh", env_arg=proxy_env)
                 self.pkg("install example_pkg", env_arg=proxy_env)
+
+        def test_correct_cert_validation(self):
+                """ Test that an expired cert for one publisher doesn't prevent
+                making changes to other publishers due to certifcate checks on
+                all configured publishers. (Bug 17018362)"""
+                
+                bad_cert_path = os.path.join(self.cs_dir,
+                    "cs3_ch1_ta3_cert.pem")
+                good_cert_path = os.path.join(self.cs_dir,
+                    self.get_cli_cert("test"))
+                self.ac.start()
+                self.image_create()
+                
+                # Set https-based publisher with correct cert.
+                self.seed_ta_dir("ta7")
+                self.pkg("set-publisher -k %(key)s -c %(cert)s -p %(url)s" % {
+                    "url": self.acurl,
+                    "cert": good_cert_path,
+                    "key": os.path.join(self.keys_dir, self.get_cli_key("test")),
+                    })
+                # Set a second publisher
+                self.pkg("set-publisher -p %(url)s" % {"url": self.rurl2})
+
+                # Replace cert of first publisher with one that is expired.
+                # It doesn't need to match the key because we just want to
+                # test if the cert validation code works correctly so we are not
+                # actually using the cert. 
+
+                # Cert is stored by content hash in the pkg config of the image.
+                ch = misc.get_data_digest(good_cert_path)[0]
+                pkg_cert_path = os.path.join(self.get_img_path(), "var", "pkg",
+                    "ssl", ch)
+                shutil.copy(bad_cert_path, pkg_cert_path)
+
+                # Refreshing the second publisher should not try to validate
+                # the cert for the first publisher.
+                self.pkg("refresh %s" % self.tmppub)
 
 
 class TestDepotHTTPS(pkg5unittest.SingleDepotTestCase):
