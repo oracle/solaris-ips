@@ -323,6 +323,11 @@ class TestPkgInfoBasics(pkg5unittest.SingleDepotTestCase):
                 multiple publishers provide the same package based on
                 publisher search order."""
 
+		# because we compare date strings we must run this in
+		# a consistent locale, which we made 'C'
+
+		os.environ['LC_ALL'] = 'C'
+
                 # Create an isolated repository for this test
                 repodir = os.path.join(self.test_root, "test-ranked")
                 self.create_repo(repodir)
@@ -472,6 +477,11 @@ Packaging Date: Thu Sep 08 00:45:46 2011
         def test_renamed_packages(self):
                 """Verify that info returns the expected output for renamed
                 packages."""
+
+		# because we compare date strings we must run this in
+		# a consistent locale, which we made 'C'
+
+		os.environ['LC_ALL'] = 'C'
 
                 target10 = """
                     open target@1.0

@@ -1145,7 +1145,7 @@ made will not be reflected on the next boot.
                         for a in plan.get_release_notes():
                                 logger.info("  %s", a)
                 else:
-                        if not plan.new_be:
+                        if not plan.new_be and api_inst.is_liveroot and not DebugValues["GenerateNotesFile"]:
                                 logger.info(_("Release notes can be viewed with 'pkg history -n 1 -N'"))
                         else:
                                 tmp_path = __write_tmp_release_notes(plan)
@@ -1155,13 +1155,15 @@ made will not be reflected on the next boot.
                                 logger.info(_("After rebooting, use 'pkg history -n 1 -N' to view release notes."))
 
 def __write_tmp_release_notes(plan):
-        """write release notes out to a file in /tmp and return the name"""
+        """try to write release notes out to a file in /tmp and return the name"""
         if plan.has_release_notes:
                 try:
                         fd, path = tempfile.mkstemp(suffix=".txt", prefix="release-notes")
                         tmpfile = os.fdopen(fd, "w+b")
                         for a in plan.get_release_notes():
-                                tmpfile.write(a)
+			        if isinstance(a, unicode):
+                                        a = a.encode("utf-8")
+                                print >> tmpfile, a
                         tmpfile.close()
                         return path
                 except Exception:
@@ -4735,7 +4737,7 @@ def property_list(api_inst, args):
         return EXIT_OK
 
 def list_variant(op, api_inst, pargs, omit_headers, output_format,
-    list_all_items, list_installed, verbose): 
+    list_all_items, list_installed, verbose):
         """pkg variant [-Haiv] [-F format] [<variant_pattern> ...]"""
 
         subcommand = "variant"

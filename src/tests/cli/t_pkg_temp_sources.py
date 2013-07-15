@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2011, 2012, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2011, 2013, Oracle and/or its affiliates. All rights reserved.
 #
 
 import testutils
@@ -422,6 +422,10 @@ class TestPkgTempSources(pkg5unittest.ManyDepotTestCase):
                 """Verify that the info operation works as expected for
                 temporary origins.
                 """
+		# because we compare date strings we must run this in
+		# a consistent locale, which we made 'C'
+
+		os.environ['LC_ALL'] = 'C'
 
                 # Create an image and verify no packages are known.
                 self.image_create(self.empty_rurl, prefix=None)

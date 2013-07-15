@@ -20,7 +20,7 @@
 # CDDL HEADER END
 #
 
-# Copyright (c) 2008, 2011, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2008, 2013, Oracle and/or its affiliates. All rights reserved.
 
 import testutils
 if __name__ == "__main__":
@@ -468,19 +468,21 @@ class TestPkgReleaseNotes(pkg5unittest.SingleDepotTestCase):
             add file tmp/release-note-6 mode=0644 owner=root group=root path=/usr/share/doc/release-notes/release-note-6 release-note=feature/pkg/self@0
             close """
 
+        multi_unicode = u"Eels are best smoked\nМоё судно на воздушной подушке полно угрей\nHovercraft can be smoked, too.\n"
+        multi_ascii = "multi-line release notes\nshould work too,\nwe'll see if they do.\n"
         misc_files = {
                 "tmp/release-note-1":"bobcats are fun!",
                 "tmp/release-note-2":"wombats are fun!",
                 "tmp/release-note-3":"no animals were hurt...",
                 "tmp/release-note-4":"no vegetables were hurt...",
-                "tmp/release-note-5":"multi-line release notes\nshould work too,\nwe'll see if they do.",
-                "tmp/release-note-6":u"Eels are best smoked\nМоё судно на воздушной подушке полно угрей\nHovercraft can be smoked, too.\n",
+                "tmp/release-note-5":multi_ascii,
+                "tmp/release-note-6":multi_unicode
                 }
 
         def setUp(self):
                 pkg5unittest.SingleDepotTestCase.setUp(self)
                 self.make_misc_files(self.misc_files)
-                self.pkgsend_bulk(self.rurl, self.foo10 + self.foo11 + 
+                self.pkgsend_bulk(self.rurl, self.foo10 + self.foo11 +
                     self.foo12 + self.foo13 + self.bar10 + self.bar11 + self.baz10 +
                     self.hovercraft)
                 self.image_create(self.rurl)
@@ -499,9 +501,9 @@ class TestPkgReleaseNotes(pkg5unittest.SingleDepotTestCase):
                 # but that user is prompted that notes are available.
                 self.pkg("update foo@1.3")
                 assert self.output.find("no vegetables") == -1
+                self.pkg("uninstall '*'")
 
         def test_release_note_2(self):
-                self.pkg("uninstall '*'")
                 # check that release notes are printed with just -n
                 self.pkg("install -vn foo@1.0")
                 self.output.index("bobcats are fun!")
@@ -518,11 +520,11 @@ class TestPkgReleaseNotes(pkg5unittest.SingleDepotTestCase):
                 # check that we say yes that release notes are available
                 self.pkg("history -Hn 1 -o release_notes")
                 self.output.index("Yes")
+                self.pkg("uninstall '*'")
 
         def test_release_note_3(self):
                 # check that release notes are printed properly
                 # when needed and dependency is on other pkg
-                self.pkg("uninstall '*'")
                 self.pkg("install bar@1.0")
                 self.pkg("install -v baz@1.0")
                 self.output.index("multi-line release notes")
@@ -535,27 +537,71 @@ class TestPkgReleaseNotes(pkg5unittest.SingleDepotTestCase):
                 # no output expected here since baz@1.0 isn't part of original image.
                 self.pkg("install bar@1.0 baz@1.0")
                 assert self.output.find("multi-line release notes") == -1
+                self.pkg("uninstall '*'")
 
         def test_release_note_4(self):
                 # make sure that parseable option works properly
-                self.pkg("uninstall '*'")                
                 self.pkg("install bar@1.0")
                 self.pkg("install --parsable 0 baz@1.0")
                 self.output.index("multi-line release notes")
                 self.output.index("should work too,")
                 self.output.index("we'll see if they do.")
                 self.pkg("uninstall '*'")
-                # test unicode character in files
+
+        def test_release_note_5(self):
+                # test unicode character in release notes
                 self.pkg("install -n hovercraft@1.0")
                 unicode(self.output, "utf-8").index(u"Моё судно на воздушной подушке полно угрей")
                 unicode(self.output, "utf-8").index(u"Eels are best smoked")
-                self.pkg("install -v hovercraft@1.0")                
+                self.pkg("install -v hovercraft@1.0")
                 unicode(self.output, "utf-8").index(u"Моё судно на воздушной подушке полно угрей")
                 unicode(self.output, "utf-8").index(u"Eels are best smoked")
                 self.pkg("uninstall '*'")
-                self.pkg("install --parsable 0 hovercraft@1.0")                
+
+        def test_release_note_6(self):
+                # test parsable unicode
+                self.pkg("install --parsable 0 hovercraft@1.0")
                 self.pkg("history -n 1 -N")
                 unicode(self.output, "utf-8").index(u"Моё судно на воздушной подушке полно угрей")
                 unicode(self.output, "utf-8").index(u"Eels are best smoked")
+                self.pkg("uninstall '*'")
+
+        def test_release_note_7(self):
+                # check that multiple release notes are composited properly
+                self.pkg("install bar@1.0")
+                self.pkg("install -n hovercraft@1.0 baz@1.0")
+                uni_out = unicode(self.output, "utf-8")
+                # we indent the release notes for readability, so a strict
+                # index or compare won't work unless we remove indenting
+                # this works for our test cases since they have no leading
+                # spaces
+
+                # removing indent
+                uni_out = "\n".join((n.lstrip() for n in uni_out.split("\n")))
+
+                uni_out.index(self.multi_unicode)
+                uni_out.index(self.multi_ascii)
+                self.pkg("uninstall '*'")
+
+        def test_release_note_8(self):
+                # verify that temporary file is correctly written with /n characters
+                self.pkg("-D GenerateNotesFile=1 install hovercraft@1.0")
+                # find name of file containing release notes in output.
+                for field in unicode(self.output, "utf-8").split(u" "):
+                        try:
+                                if field.index(u"release-note"):
+                                        break
+                        except:
+                                pass
+                else:
+                        assert "output file not found" == 0
+
+                # read release note file and check to make sure
+                # entire contents are there verbatim
+                release_note = unicode(file(field).read(), "utf-8")
+                assert self.multi_unicode == release_note
+                self.pkg("uninstall '*'")
+
+
 if __name__ == "__main__":
         unittest.main()
