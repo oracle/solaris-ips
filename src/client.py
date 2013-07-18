@@ -1159,9 +1159,11 @@ def __write_tmp_release_notes(plan):
         if plan.has_release_notes:
                 try:
                         fd, path = tempfile.mkstemp(suffix=".txt", prefix="release-notes")
+                        # make file world readable
+                        os.chmod(path, 0644)
                         tmpfile = os.fdopen(fd, "w+b")
                         for a in plan.get_release_notes():
-			        if isinstance(a, unicode):
+                                if isinstance(a, unicode):
                                         a = a.encode("utf-8")
                                 print >> tmpfile, a
                         tmpfile.close()

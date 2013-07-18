@@ -29,7 +29,7 @@ if __name__ == "__main__":
 import os
 import pkg5unittest
 import unittest
-
+import stat
 class TestPkgSMFActuators(pkg5unittest.SingleDepotTestCase):
         # Only start/stop the depot once (instead of for every test)
         persistent_setup = True
@@ -569,7 +569,7 @@ class TestPkgReleaseNotes(pkg5unittest.SingleDepotTestCase):
         def test_release_note_7(self):
                 # check that multiple release notes are composited properly
                 self.pkg("install bar@1.0")
-                self.pkg("install -n hovercraft@1.0 baz@1.0")
+                self.pkg("install -v hovercraft@1.0 baz@1.0")
                 uni_out = unicode(self.output, "utf-8")
                 # we indent the release notes for readability, so a strict
                 # index or compare won't work unless we remove indenting
@@ -581,6 +581,23 @@ class TestPkgReleaseNotes(pkg5unittest.SingleDepotTestCase):
 
                 uni_out.index(self.multi_unicode)
                 uni_out.index(self.multi_ascii)
+
+		# repeat test using history to make sure everything is there.
+		# do as unpriv. user
+
+		self.pkg("history -n 1 -HN", su_wrap=True)
+                uni_out = unicode(self.output, "utf-8")
+                # we indent the release notes for readability, so a strict
+                # index or compare won't work unless we remove indenting
+                # this works for our test cases since they have no leading
+                # spaces
+
+                # removing indent
+                uni_out = "\n".join((n.lstrip() for n in uni_out.split("\n")))
+
+                uni_out.index(self.multi_unicode)
+                uni_out.index(self.multi_ascii)
+		
                 self.pkg("uninstall '*'")
 
         def test_release_note_8(self):
@@ -595,6 +612,9 @@ class TestPkgReleaseNotes(pkg5unittest.SingleDepotTestCase):
                                 pass
                 else:
                         assert "output file not found" == 0
+
+                # make sure file is readable by everyone
+                assert(stat.S_IMODE(os.stat(field).st_mode) == 0644)
 
                 # read release note file and check to make sure
                 # entire contents are there verbatim

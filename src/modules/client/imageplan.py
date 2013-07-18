@@ -423,7 +423,7 @@ class ImagePlan(object):
                 self.__plan_install(pkgs_inst=pkgs_inst,
                      reject_list=reject_list)
 
-        def __get_attr_fmri_changes(self, get_mattrs): 
+        def __get_attr_fmri_changes(self, get_mattrs):
                 # Attempt to optimize package planning by determining which
                 # packages are actually affected by changing attributes (e.g.,
                 # facets, variants).  This also provides an accurate list of
@@ -1361,7 +1361,7 @@ class ImagePlan(object):
                 # We end up with no actions or start with one or none and end
                 # with exactly one.
                 if len(actions) == 0 or (len(oactions) <= len(actions) == 1):
-                        if (len(oactions) > 1 and 
+                        if (len(oactions) > 1 and
                             any(a[0].attrs.get("overlay") == "true"
                                 for a in oactions)):
                                 # If more than one action is being removed and
@@ -2461,6 +2461,8 @@ class ImagePlan(object):
                                 if isinstance(note, unicode):
                                         note = note.encode("utf-8")
                                 print >> tmpfile, note
+			# make file world readable
+			os.chmod(path, 0644)
                         tmpfile.close()
                         self.pd.release_notes_name = os.path.basename(path)
 
