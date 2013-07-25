@@ -617,12 +617,39 @@ def list_inventory(op, api_inst, pargs,
                             ", ".join(e.notfound), cmd=op)
                         logger.error("Use -af to allow all versions.")
                 elif pkg_list == api.ImageInterface.LIST_UPGRADABLE:
-                        error(_("no packages matching '%s' are installed "
-                            "and have newer versions available") % \
-                            ", ".join(e.notfound), cmd=op)
-                else:
-                        error(_("no packages matching '%s' installed") % \
-                            ", ".join(e.notfound), cmd=op)
+			# Creating a list of packages that are uptodate
+			# and that are not installed on the system.
+                        no_updates = []
+                        not_installed = []
+                        try:
+                                for entry in api_inst.get_pkg_list(
+				    api.ImageInterface.LIST_INSTALLED,
+                                    patterns=e.notfound, raise_unmatched=True):
+                                        pub, stem, ver = entry[0]
+                                        no_updates.append(stem)
+                        except api_errors.InventoryException, exc:
+                                not_installed = exc.notfound
+
+			err_str = ""
+                        if len(not_installed) == 1:
+				err_str = _("No package matching '%s'"
+					  " is installed. ") % \
+					  not_installed[0]
+                        elif not_installed:
+                                err_str = _("No packages matching '%s'"
+                                    " are installed. ") % \
+                                    ", ".join(not_installed)
+
+                        if len(no_updates) == 1:
+                                err_str = err_str + _("No updates are available"
+                                          " for package '%s'.") % \
+                                            no_updates[0]
+                        elif no_updates:
+                                err_str = err_str + _("No updates are available"
+                                          " for packages '%s'.") % \
+                                            ", ".join(no_updates)
+			if err_str:
+                                error(err_str, cmd=op) 
 
                 if found and e.notfound:
                         # Only some patterns matched.
