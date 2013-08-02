@@ -2688,8 +2688,14 @@ def search(api_inst, args):
 
         searches = []
 
+        # Strip pkg:/ or pkg:/// from the fmri.
+        # If fmri has pkg:// then strip the prefix
+        # from 'pkg://' upto the first slash.
+
+        qtext = re.sub(r"pkg:///|pkg://[^/]*/|pkg:/", "", " ".join(pargs))
+
         try:
-                query = [api.Query(" ".join(pargs), case_sensitive,
+                query = [api.Query(qtext, case_sensitive,
                     return_actions)]
         except api_errors.BooleanQueryException, e:
                 error(e)

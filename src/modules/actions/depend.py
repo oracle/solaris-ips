@@ -32,6 +32,7 @@ relationship between the package containing the action and another package.
 """
 
 import generic
+import re
 
 import pkg.actions
 import pkg.client.pkgdefs as pkgdefs
@@ -318,15 +319,15 @@ class DependencyAction(generic.Action):
                 # it creating a dummy timestamp.  So we have to split it apart
                 # manually.
                 #
-                # XXX This code will need to change if we start using fmris
-                # with publishers in dependencies.
-                #
                 if isinstance(pfmris, basestring):
                         pfmris = [pfmris]
                 inds = []
+                pat = re.compile(r"pkg:///|pkg://[^/]*/|pkg:/") 
                 for p in pfmris:
-                        if p.startswith("pkg:/"):
-                                p = p[5:]
+                        # Strip pkg:/ or pkg:/// from the fmri.
+                        # If fmri has pkg:// then strip the prefix
+                        # from 'pkg://' upto the first slash.
+                        p = pat.sub("", p)
                         # Note that this creates a directory hierarchy!
                         inds.append(
                                 ("depend", ctype, p, None)
