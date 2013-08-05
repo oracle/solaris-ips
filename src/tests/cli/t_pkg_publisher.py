@@ -1120,6 +1120,13 @@ class TestMultiPublisherRepo(pkg5unittest.ManyDepotTestCase):
                 self.assertEqual(lines[1].split()[0], "test1")
                 self.assertEqual(lines[2].split()[0], "test2")
 
+        def test_multiple_p_option(self):
+                """Verify that providing multiple repositories using 
+                -p option fails"""
+                self.image_create()
+                self.pkg("set-publisher -p %s -p %s" % (self.rurl1,
+                    self.rurl2), exit=2)
+
 
 class TestPkgPublisherCACerts(pkg5unittest.ManyDepotTestCase):
         # Tests in this suite use the read only data directory.

@@ -3745,6 +3745,9 @@ def publisher_set(api_inst, args):
                                 remove_mirrors.add(misc.parse_uri(arg,
                                     cwd=orig_cwd))
                 elif opt == "-p":
+			if repo_uri:
+                                usage(_("The -p option can be specified only "
+				    "once."), cmd=cmd_name) 
                         repo_uri = misc.parse_uri(arg, cwd=orig_cwd)
                 elif opt in ("-P", "--search-first"):
                         search_first = True
@@ -5263,7 +5266,9 @@ def image_create(args):
 
         for opt, arg in opts:
                 if opt in ("-p", "--publisher"):
-                        pub_url = None
+			if pub_url:
+                                usage(_("The -p option can be specified only "
+				    "once."), cmd=cmd_name)
                         try:
                                 pub_name, pub_url = arg.split("=", 1)
                         except ValueError:

@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2008, 2012, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2008, 2013, Oracle and/or its affiliates. All rights reserved.
 #
 
 import testutils
@@ -793,6 +793,9 @@ class TestImageCreateNoDepot(pkg5unittest.CliTestCase):
                     self.pkg, "image-create -p test1=ftp://%s1" %
                     self.bogus_url)
 
+                self.assertRaises(pkg5unittest.UnexpectedExitCodeException, \
+                    self.pkg, "image-create -p test1=ftp://%s1 -p test2=http://%s2:abc" %
+                    (self.bogus_url, self.bogus_url))
 
 if __name__ == "__main__":
         unittest.main()
