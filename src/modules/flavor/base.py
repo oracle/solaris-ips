@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2009, 2012, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2009, 2013, Oracle and/or its affiliates. All rights reserved.
 #
 
 import os
@@ -417,9 +417,8 @@ def insert_default_runpath(default_runpath, run_paths):
         try:
                 new_paths = run_paths
                 index = run_paths.index(PD_DEFAULT_RUNPATH)
-                if index >= 0:
-                        new_paths = run_paths[:index] + \
-                            default_runpath + run_paths[index + 1:]
+                new_paths = run_paths[:index] + \
+                    default_runpath + run_paths[index + 1:]
                 if PD_DEFAULT_RUNPATH in new_paths:
                         raise MultipleDefaultRunpaths()
                 return new_paths

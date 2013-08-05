@@ -2,19 +2,37 @@
 # Copyright (c) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009 Python
 # Software Foundation; All Rights Reserved
 #
-# Copyright (c) 2010, 2011, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2012, 2013, Oracle and/or its affiliates. All rights reserved.
 
 
-"""A version of ModuleFinder which limits the depth of exploration for loaded
-modules and discovers where a module might be loaded instead of determining
-which path contains a module to be loaded."""
+"""A standalone version of ModuleFinder which limits the depth of exploration
+for loaded modules and discovers where a module might be loaded instead of
+determining which path contains a module to be loaded.  It is designed to be
+run by any version of python against its set of modules.  To communicate its
+results to the process which ran it, it prints output to stdout.  The format is
+to start a line with 'DEP ' if it contains information about a dependency, and
+'ERR ' if it contains information about a module it couldn't analyze."""
+
+# This module cannot import other pkg modules because pkg modules are not
+# delivered for all versions of python.  Because of this, we have to duplicate
+# code in a couple of places, and we also have to be careful to use the pkg
+# modules when not running standalone.
+#
+# We also have to be careful to make the code in this module compliant with both
+# Python 2 and Python 3 syntax.
+
+if __name__ != "__main__":
+        import pkg.flavor.base as base
 
 import modulefinder
 import os
-import pkg.flavor.base as base
 import sys
 
-from pkg.portable import PD_DEFAULT_RUNPATH
+# A string used as a component of the pkg.depend.runpath value as a special
+# token to determine where to insert the runpath that pkgdepend generates itself
+# (duplicated from pkg.portable.__init__ for reasons above)
+PD_DEFAULT_RUNPATH = "$PKGDEPEND_RUNPATH"
+
 python_path = "PYTHONPATH"
 
 class ModuleInfo(object):
@@ -61,6 +79,23 @@ class ModuleInfo(object):
                 return "name:%s suffixes:%s dirs:%s" % (self.name,
                     " ".join(self.suffixes), len(self.dirs))
 
+
+if __name__ == "__main__":
+        class MultipleDefaultRunPaths(Exception):
+
+                def __unicode__(self):
+                        # To workaround python issues 6108 and 2517, this
+                        # provides a a standard wrapper for this class'
+                        # exceptions so that they have a chance of being
+                        # stringified correctly.
+                        return str(self)
+
+                def __str__(self):
+                        return _(
+                            "More than one $PKGDEPEND_RUNPATH token was set on "
+                            "the same action in this manifest.")
+
+
 class DepthLimitedModuleFinder(modulefinder.ModuleFinder):
 
         def __init__(self, install_dir, *args, **kwargs):
@@ -91,10 +126,27 @@ class DepthLimitedModuleFinder(modulefinder.ModuleFinder):
                 new_path.append(install_dir)
 
                 if run_paths:
-                        # add our detected runpath into the user-supplied one
-                        # (if any)
-                        new_path = base.insert_default_runpath(new_path,
-                            run_paths)
+                        if __name__ != "__main__":
+                                # add our detected runpath into the
+                                # user-supplied one (if any)
+                                new_path = base.insert_default_runpath(new_path,
+                                    run_paths)
+                        else:
+                                # This is a copy of the above function call.
+                                # insert our default search path where the
+                                # PD_DEFAULT_RUNPATH token was found
+                                try:
+                                        index = run_paths.index(
+                                            PD_DEFAULT_RUNPATH)
+                                        run_paths = run_paths[:index] + \
+                                            new_path + run_paths[index + 1:]
+                                        if PD_DEFAULT_RUNPATH in run_paths:
+                                                raise MultipleDefaultRunPaths()
+                                except ValueError:
+                                        # no PD_DEFAULT_PATH token, so we
+                                        # override the whole default search path
+                                        pass
+                                new_path = run_paths
 
                 modulefinder.ModuleFinder.__init__(self, path=new_path,
                     *args, **kwargs)
@@ -130,7 +182,7 @@ class DepthLimitedModuleFinder(modulefinder.ModuleFinder):
                         m.__code__ = co
                         try:
                                 res.extend(self.scan_code(co, m))
-                        except ImportError, msg:
+                        except ImportError as msg:
                                 self.msg(2, "ImportError:", str(msg), fqname,
                                     pathname)
                                 self._add_badmodule(fqname, m)
@@ -196,7 +248,7 @@ class DepthLimitedModuleFinder(modulefinder.ModuleFinder):
                         return []
                 try:
                         res.extend(self.import_hook(name, caller, level=level))
-                except ImportError, msg:
+                except ImportError as msg:
                         self.msg(2, "ImportError:", str(msg))
                         self._add_badmodule(name, caller)
                 else:
@@ -312,3 +364,25 @@ class DepthLimitedModuleFinder(modulefinder.ModuleFinder):
 
                 self.msgout(4, "load_tail ->", q)
                 return res
+
+
+if __name__ == "__main__":
+        """Usage:
+              depthlimitedmf.py <install_path> <script>
+                  [ run_path run_path ... ]
+        """
+        run_paths = sys.argv[3:]
+        try:
+                mf = DepthLimitedModuleFinder(sys.argv[1], run_paths=run_paths)
+                loaded_modules = mf.run_script(sys.argv[2])
+                for res in set([
+                    (tuple(m.get_file_names()), tuple(m.dirs))
+                    for m in loaded_modules
+                ]):
+                        sys.stdout.write("DEP %s\n" % (res,))
+                missing, maybe =  mf.any_missing_maybe()
+                sys.stdout.writelines(("ERR %s\n" % name for name in missing))
+        except ValueError as e:
+                sys.stdout.write("ERR %s\n" % e)
+        except MultipleDefaultRunPaths as e:
+                sys.stdout.write("%s\n" % e)

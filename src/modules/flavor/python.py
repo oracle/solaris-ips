@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2009, 2011, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2009, 2013, Oracle and/or its affiliates. All rights reserved.
 #
 
 import os
@@ -278,8 +278,7 @@ def process_python_dependencies(action, pkg_vars, script_path, run_paths):
         # version of python running, it's necessary to fork and run the
         # appropriate version of python.
         root_dir = os.path.dirname(__file__)
-        exec_file = os.path.join(root_dir,
-            "depthlimitedmf%s%s.py" % (analysis_major, analysis_minor))
+        exec_file = os.path.join(root_dir, "depthlimitedmf.py")
         cmd = ["python%s.%s" % (analysis_major, analysis_minor), exec_file,
             os.path.dirname(action.attrs["path"]), local_file]
 
