@@ -272,7 +272,7 @@ def usage(usage_error=None, cmd=None, retcode=EXIT_BADOPT, full=False):
             "            <mediator> ...")
 
         adv_usage["variant"] = _("[-Haiv] [-F format] [<variant_pattern> ...]")
-        adv_usage["facet"] = ("[-Hai] [-F format] [<facet_pattern> ...]")
+        adv_usage["facet"] = ("[-Haim] [-F format] [<facet_pattern> ...]")
         adv_usage["avoid"] = _("[pkg_fmri_pattern] ...")
         adv_usage["unavoid"] = _("[pkg_fmri_pattern] ...")
         adv_usage["freeze"] = _("[-n] [-c reason] [pkg_fmri_pattern] ...")
@@ -320,9 +320,10 @@ def usage(usage_error=None, cmd=None, retcode=EXIT_BADOPT, full=False):
             "            [--prop-linked <propname>=<propvalue> ...]\n"
             "            (-c|-p) <li-name> <dir>")
         priv_usage["detach-linked"] = _(
-            "[-fnvq] [-a|-l <li-name>] [--linked-md-only]")
+            "[-fnvq] [-a|-l <li-name>] [--no-pkg-updates] [--linked-md-only]")
         priv_usage["property-linked"] = _("[-H] [-l <li-name>] [propname ...]")
-        priv_usage["audit-linked"] = _("[-a|-l <li-name>]")
+        priv_usage["audit-linked"] = _(
+            "[-H] [-a|-l <li-name>] [--no-parent-sync]")
         priv_usage["pubcheck-linked"] = ""
         priv_usage["sync-linked"] = _(
             "[-nvq] [-C n] [--accept] [--licenses] [--no-index]\n"
@@ -2053,7 +2054,8 @@ def install(op, api_inst, pargs,
 
 def uninstall(op, api_inst, pargs,
     be_activate, backup_be, backup_be_name, be_name, new_be, li_ignore,
-    update_index, noexecute, parsable_version, quiet, verbose, stage):
+    li_parent_sync, update_index, noexecute, parsable_version, quiet,
+    verbose, stage):
         """Attempt to take package specified to DELETED state."""
 
         if not pargs:
@@ -2070,7 +2072,8 @@ def uninstall(op, api_inst, pargs,
             _noexecute=noexecute, _quiet=quiet, _stage=stage,
             _verbose=verbose, backup_be=backup_be,
             backup_be_name=backup_be_name, be_activate=be_activate,
-            be_name=be_name, new_be=new_be, _parsable_version=parsable_version,
+            be_name=be_name, li_parent_sync=li_parent_sync, new_be=new_be,
+            _parsable_version=parsable_version,
             pkgs_to_uninstall=pargs, update_index=update_index)
 
 def update(op, api_inst, pargs, accept, backup_be, backup_be_name, be_activate,
@@ -4855,7 +4858,7 @@ def list_variant(op, api_inst, pargs, omit_headers, output_format,
         return EXIT_OK
 
 def list_facet(op, api_inst, pargs, omit_headers, output_format, list_all_items,
-    list_installed):
+    list_masked, list_installed):
         """pkg facet [-Hai] [-F format] [<facet_pattern> ...]"""
 
         subcommand = "facet"
@@ -4873,28 +4876,40 @@ def list_facet(op, api_inst, pargs, omit_headers, output_format, list_all_items,
                 facet_list = api_inst.FACET_INSTALLED
 
         def gen_listing():
-                for (name, val) in api_inst.gen_facets(facet_list,
-                    patterns=req_facets):
+                for (name, val, src, masked) in \
+                    api_inst.gen_facets(facet_list, patterns=req_facets):
                         found[0] = True
 
-                        # Values here are intentionally not _().
+                        if not list_masked and masked:
+                                continue
+
+                        # "value" and "masked" are intentionally not _().
                         yield {
                             "facet": name,
-                            "value": val and "True" or "False"
+                            "value": val and "True" or "False",
+                            "src": src,
+                            "masked": masked and "True" or "False",
                         }
 
         #    FACET VALUE
-        #    <facet> <value>
-        #    <facet_2> <value_2>
+        #    <facet> <value> <src>
+        #    <facet_2> <value_2> <src2>
         #    ...
         field_data = {
-            "facet" : [("default", "json", "tsv"), _("FACET"), ""],
-            "value" : [("default", "json", "tsv"), _("VALUE"), ""],
+            "facet"  : [("default", "json", "tsv"), _("FACET"), ""],
+            "value"  : [("default", "json", "tsv"), _("VALUE"), ""],
+            "src"    : [("default", "json", "tsv"), _("SRC"), ""],
         }
-        desired_field_order = (_("FACET"), _("VALUE"))
+        desired_field_order = (_("FACET"), _("VALUE"), _("SRC"))
+        def_fmt = "%-64s %-5s %s"
 
-        # Default output formatting.
-        def_fmt = "%-70s %s"
+        if list_masked:
+                # if we're displaying masked facets, we should also mark which
+                # facets are masked in the output.
+                field_data["masked"] = \
+                    [("default", "json", "tsv"), _("MASKED"), ""]
+                desired_field_order += (_("MASKED"),)
+                def_fmt = "%-57s %-5s %-6s %-s"
 
         # print without trailing newline.
         sys.stdout.write(misc.get_listing(desired_field_order,
@@ -5211,8 +5226,8 @@ def attach_linked(op, api_inst, pargs,
                         return EXIT_OOPS
         return rv
 
-def detach_linked(op, api_inst, pargs, force, li_target_all, li_target_list,
-    noexecute, quiet, verbose):
+def detach_linked(op, api_inst, pargs, force, li_md_only, li_pkg_updates,
+    li_target_all, li_target_list, noexecute, quiet, verbose):
         """pkg detach-linked
             [-fnvq] [-a|-l <li-name>] [--linked-md-only]
 
@@ -5221,11 +5236,13 @@ def detach_linked(op, api_inst, pargs, force, li_target_all, li_target_list,
         if not li_target_all and not li_target_list:
                 # detach the current image
                 return __api_op(op, api_inst, _noexecute=noexecute,
-                    _quiet=quiet, _verbose=verbose, force=force)
+                    _quiet=quiet, _verbose=verbose, force=force,
+                    li_md_only=li_md_only, li_pkg_updates=li_pkg_updates)
 
         api_inst.progresstracker.set_major_phase(
             api_inst.progresstracker.PHASE_UTILITY)
         rvdict = api_inst.detach_linked_children(li_target_list, force=force,
+            li_md_only=li_md_only, li_pkg_updates=li_pkg_updates,
             noexecute=noexecute)
 
         rv, err, p_dicts = api_inst.detach_linked_rvdict2rv(rvdict)
@@ -5864,6 +5881,7 @@ opts_mapping = {
     "attach_parent" :     ("p",  ""),
 
     "list_available" :    ("a",  ""),
+    "list_masked" :       ("m",  ""),
     "list_all_items" :    ("a",  ""),
     "output_format" :     ("F",  "output-format"),
 
@@ -5987,8 +6005,10 @@ opts_list_varcet = \
 ]
 
 opts_list_facet = \
-    [opts_cb_varcet] + \
-    opts_list_varcet
+    opts_list_varcet + \
+    [
+    ("list_masked",             False),
+]
 
 opts_list_variant = \
     opts_list_varcet + \

@@ -130,7 +130,7 @@ usr/bin/pkg set-mediator [-nv] [-I \fIimplementation\fR]
 
 .LP
 .nf
-/usr/bin/pkg facet [-Hai] [-F \fIformat\fR] [\fIfacet_pattern\fR ...]
+/usr/bin/pkg facet [-Haim] [-F \fIformat\fR] [\fIfacet_pattern\fR ...]
 .fi
 
 .LP
@@ -1668,11 +1668,11 @@ For descriptions of options, see the \fBinstall\fR command above.
 .ne 2
 .mk
 .na
-\fB\fBpkg facet\fR [\fB-Hai\fR] [\fB-F\fR \fIformat\fR] [\fIfacet_pattern\fR ...]\fR
+\fB\fBpkg facet\fR [\fB-Haim\fR] [\fB-F\fR \fIformat\fR] [\fIfacet_pattern\fR ...]\fR
 .ad
 .sp .6
 .RS 4n
-Display the current values of all facets that have been explicitly set in this image by using the \fBpkg change-facet\fR command. See "Facets and Variants" in the \fBpkg\fR(5) man page for more information about facets.
+Display the current values and source of all facets that have been explicitly set in this image by using the \fBpkg change-facet\fR command or inherited from a parent image. See "Facets and Variants" in the \fBpkg\fR(5) man page for more information about facets.
 .sp
 .ne 2
 .mk
@@ -1726,6 +1726,17 @@ Display all facets explicitly set in the image and all facets that are listed in
 .sp .6
 .RS 4n
 Display all facets that are listed in installed packages. This option cannot be combined with \fB-a\fR.
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB-m\fR\fR
+.ad
+.sp .6
+.RS 4n
+Include masked facets in the output. Include a column indicating which (if any) facets are masked.
 .RE
 
 .RE

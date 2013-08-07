@@ -103,8 +103,8 @@ from pkg.smf import NonzeroExitException
 # things like help(pkg.client.api.PlanDescription)
 from pkg.client.plandesc import PlanDescription # pylint: disable=W0611
 
-CURRENT_API_VERSION = 75
-COMPATIBLE_API_VERSIONS = frozenset([72, 73, 74, CURRENT_API_VERSION])
+CURRENT_API_VERSION = 76
+COMPATIBLE_API_VERSIONS = frozenset([72, 73, 74, 75, CURRENT_API_VERSION])
 CURRENT_P5I_VERSION = 1
 
 # Image type constants.
@@ -256,6 +256,10 @@ class ImageInterface(object):
         FACET_ALL = 0
         FACET_IMAGE = 1
         FACET_INSTALLED = 2
+
+        FACET_SRC_SYSTEM = pkg.facet.Facets.FACET_SRC_SYSTEM
+        FACET_SRC_LOCAL = pkg.facet.Facets.FACET_SRC_LOCAL
+        FACET_SRC_PARENT = pkg.facet.Facets.FACET_SRC_PARENT
 
         # Constants used to reference specific values that info can return.
         INFO_FOUND = 0
@@ -834,6 +838,8 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                     (
                         name,    - (string) facet name (e.g. facet.doc)
                         value    - (boolean) current facet value
+                        src      - (string) source for the value
+                        masked   - (boolean) is the facet maksed by another
                     )
 
                 Results are always sorted by facet name.
@@ -881,10 +887,22 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                 # Generate the results.
                 for name in misc.yield_matching("facet.", sorted(fimg | fpkg),
                     patterns):
-                        # The image's Facets dictionary will return the
-                        # effective value for any facets not explicitly set in
-                        # the image (wildcards or implicit).
-                        yield (name, facets[name])
+                        # check if the facet is explicitly set.
+                        if name not in facets:
+                                # The image's Facets dictionary will return
+                                # the effective value for any facets not
+                                # explicitly set in the image (wildcards or
+                                # implicit). _match_src() will tell us how
+                                # that effective value was determined (via a
+                                # local or inherited wildcard facet, or via a
+                                # system default).
+                                src = facets._match_src(name)
+                                yield (name, facets[name], src, False)
+                                continue
+
+                        # This is an explicitly set facet.
+                        for value, src, masked in facets._src_values(name):
+                                yield (name, value, src, masked)
 
         def gen_variants(self, variant_list, patterns=misc.EmptyI):
                 """A generator function that produces tuples of the form:
@@ -1350,7 +1368,7 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
 
                         if _li_parent_sync:
                                 # refresh linked image data from parent image.
-                                self._img.linked.syncmd_from_parent(api_op=_op)
+                                self._img.linked.syncmd_from_parent()
 
                         # initialize recursion state
                         self._img.linked.api_recurse_init(
@@ -1860,7 +1878,8 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
 
         def gen_plan_detach(self, backup_be=None,
             backup_be_name=None, be_activate=True, be_name=None, force=False,
-            li_ignore=None, new_be=False, noexecute=False):
+            li_ignore=None, li_md_only=False, li_pkg_updates=True, new_be=False,
+            noexecute=False):
                 """This is a generator function that yields a PlanDescription
                 object.  If parsable_version is set, it also yields dictionaries
                 containing plan information for child images.
@@ -1885,9 +1904,10 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                 return self.__plan_op(op, _ad_kwargs=ad_kwargs,
                     _backup_be=backup_be, _backup_be_name=backup_be_name,
                     _be_activate=be_activate, _be_name=be_name,
-                    _li_ignore=li_ignore, _new_be=new_be,
-                    _noexecute=noexecute, _refresh_catalogs=False,
-                    _update_index=False, li_pkg_updates=False)
+                    _li_ignore=li_ignore, _li_md_only=li_md_only,
+                    _new_be=new_be, _noexecute=noexecute,
+                    _refresh_catalogs=False, _update_index=False,
+                    li_pkg_updates=li_pkg_updates)
 
         def plan_uninstall(self, pkg_list, noexecute=False, update_index=True,
             be_name=None, new_be=False, be_activate=True):
@@ -1900,8 +1920,8 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
 
         def gen_plan_uninstall(self, pkgs_to_uninstall,
             backup_be=None, backup_be_name=None, be_activate=True,
-            be_name=None, li_ignore=None, new_be=False, noexecute=False,
-            update_index=True):
+            be_name=None, li_ignore=None, li_parent_sync=True, new_be=False,
+            noexecute=False, update_index=True):
                 """This is a generator function that yields a PlanDescription
                 object.  If parsable_version is set, it also yields dictionaries
                 containing plan information for child images.
@@ -1927,7 +1947,7 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                 return self.__plan_op(op,
                     _backup_be=backup_be, _backup_be_name=backup_be_name,
                     _be_activate=be_activate, _be_name=be_name,
-                    _li_ignore=li_ignore, _li_parent_sync=False,
+                    _li_ignore=li_ignore, _li_parent_sync=li_parent_sync,
                     _new_be=new_be, _noexecute=noexecute,
                     _refresh_catalogs=False,
                     _update_index=update_index,
@@ -2128,7 +2148,8 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                     refresh_catalogs=refresh_catalogs, reject_list=reject_list,
                     show_licenses=show_licenses, update_index=update_index)
 
-        def detach_linked_children(self, li_list, force=False, noexecute=False):
+        def detach_linked_children(self, li_list, force=False,
+            li_md_only=False, li_pkg_updates=True, noexecute=False):
                 """Detach one or more children from the current image. This
                 operation results in the removal of any constraint package
                 from the child images.
@@ -2149,7 +2170,9 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                 error."""
 
                 return self._img.linked.detach_children(li_list,
-                    force=force, noexecute=noexecute)
+                    force=force, li_md_only=li_md_only,
+                    li_pkg_updates=li_pkg_updates,
+                    noexecute=noexecute)
 
         def detach_linked_rvdict2rv(self, rvdict):
                 """Convenience function that takes a dictionary returned from
@@ -2216,9 +2239,15 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
 
                 lin = self._img.linked.child_name
                 rvdict = {}
-                ret = self._img.linked.audit_self(
-                    li_parent_sync=li_parent_sync)
-                rvdict[lin] = ret
+
+                if li_parent_sync:
+                        # refresh linked image data from parent image.
+                        rvdict[lin] = self._img.linked.syncmd_from_parent(
+                            catch_exception=True)
+                        if rvdict[lin] is not None:
+                                return rvdict
+
+                rvdict[lin] = self._img.linked.audit_self()
                 return rvdict
 
         def ischild(self):

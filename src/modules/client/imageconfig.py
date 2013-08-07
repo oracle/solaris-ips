@@ -183,6 +183,9 @@ class ImageConfig(cfg.FileConfig):
                 cfg.PropertySection("facet", properties=[
                     cfg.PropertyTemplate("^facet\..*", prop_type=cfg.PropBool),
                 ]),
+                cfg.PropertySection("inherited_facet", properties=[
+                    cfg.PropertyTemplate("^facet\..*", prop_type=cfg.PropBool),
+                ]),
                 cfg.PropertySection("mediators", properties=[
                     cfg.PropertyTemplate("^[A-Za-z0-9\-]+\.implementation$"),
                     cfg.PropertyTemplate("^[A-Za-z0-9\-]+\.implementation-version$",
@@ -400,6 +403,9 @@ class ImageConfig(cfg.FileConfig):
                 for k, v in idx.get("facet", {}).iteritems():
                         # convert facet name from unicode to a string
                         self.facets[str(urllib.unquote(k))] = v
+                for k, v in idx.get("inherited_facet", {}).iteritems():
+                        # convert facet name from unicode to a string
+                        self.facets._set_inherited(str(urllib.unquote(k)), v)
 
                 # Ensure architecture and zone variants are defined.
                 if "variant.arch" not in self.variants:
@@ -537,9 +543,19 @@ class ImageConfig(cfg.FileConfig):
                         self.remove_section("facet")
                 except cfg.UnknownSectionError:
                         pass
-                for f in self.facets:
-                        self.set_property("facet", urllib.quote(f, ""), 
-                            self.facets[f])
+                # save local facets
+                for f in self.facets.local:
+                        self.set_property("facet",
+                            urllib.quote(f, ""), self.facets.local[f])
+
+                try:
+                        self.remove_section("inherited_facet")
+                except cfg.UnknownSectionError:
+                        pass
+                # save inherited facets
+                for f in self.facets.inherited:
+                        self.set_property("inherited_facet",
+                            urllib.quote(f, ""), self.facets.inherited[f])
 
                 try:
                         self.remove_section("mediators")

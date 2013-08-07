@@ -262,11 +262,9 @@ class ImagePlan(object):
                                         # packages, add it to the list.
                                         fmri_updates.append((a, a))
 
-                if fmri_updates and not li_pkg_updates:
-                        # oops.  the caller requested no package updates and
-                        # we couldn't satisfy that request.
-                        raise api_errors.PlanCreationException(
-                            pkg_updates_required=fmri_updates)
+                # cache li_pkg_updates in the plan description for later
+                # evaluation
+                self.pd._li_pkg_updates = li_pkg_updates
 
                 return fmri_updates
 
@@ -276,32 +274,106 @@ class ImagePlan(object):
 
                 self.pd._image_lm = self.image.get_last_modified(string=True)
 
-        def __evaluate_varcets(self, new_variants, new_facets):
+        def __merge_inherited_facets(self, new_facets=None):
+                """Merge any new facets settings with (possibly changing)
+                inherited facets."""
+
+                if new_facets is not None:
+                        # make sure we don't accidentally update the caller
+                        # supplied facets.
+                        new_facets = pkg.facet.Facets(new_facets)
+
+                        # we don't allow callers to specify inherited facets
+                        # (they can only come from parent images.)
+                        new_facets._clear_inherited()
+
+                # get the existing image facets.
+                old_facets = self.image.cfg.facets
+
+                if new_facets is None:
+                        # the user did not request any facet changes, but we
+                        # still need to see if inherited facets are changing.
+                        # so set new_facets to the existing facet set with
+                        # inherited facets removed.
+                        new_facets = pkg.facet.Facets(old_facets)
+                        new_facets._clear_inherited()
+
+                # get the latest inherited facets and merge them into the user
+                # specified facets.
+                new_facets.update(self.image.linked.inherited_facets())
+
+                if new_facets == old_facets:
+                        # there are no caller specified or inherited facet
+                        # changes.
+                        return (None, False, False)
+
+                facet_change = bool(old_facets._cmp_values(new_facets)) or \
+                    bool(old_facets._cmp_priority(new_facets))
+                masked_facet_change = bool(not facet_change) and \
+                    bool(old_facets._cmp_all_values(new_facets))
+
+                # Something better be changing.  But if visible facets are
+                # changing we don't report masked facet changes.
+                assert facet_change != masked_facet_change
+
+                return (new_facets, facet_change, masked_facet_change)
+
+        def __evaluate_varcets(self, new_variants=None, new_facets=None):
                 """Private helper function used to determine new facet and
                 variant state for image."""
 
-                old_facets = self.image.cfg.facets
-                if new_variants or \
-                    (new_facets is not None and new_facets != old_facets):
+                # merge caller supplied and inherited facets
+                new_facets, facet_change, masked_facet_change = \
+                    self.__merge_inherited_facets(new_facets)
+
+                # if we're changing variants or facets, save that to the plan.
+                if new_variants or facet_change or masked_facet_change:
                         self.pd._varcets_change = True
                         self.pd._new_variants = new_variants
+                        self.pd._old_facets   = self.image.cfg.facets
                         self.pd._new_facets   = new_facets
-                        tmp_new_facets = new_facets
-                        if tmp_new_facets is None:
-                                tmp_new_facets = pkg.facet.Facets()
-                        self.pd._changed_facets = pkg.facet.Facets(dict(
-                            set(tmp_new_facets.iteritems()) -
-                            set(old_facets.iteritems())))
-                        self.pd._removed_facets = set(old_facets.keys()) - \
-                            set(tmp_new_facets.keys())
-
-                if new_facets == old_facets:
-                        new_facets = None
+                        self.pd._facet_change = facet_change
+                        self.pd._masked_facet_change = masked_facet_change
 
                 self.__new_excludes = self.image.list_excludes(new_variants,
                     new_facets)
 
-                return new_variants, new_facets
+                return (new_variants, new_facets, facet_change,
+                    masked_facet_change)
+
+        def __run_solver(self, solver_cb, retry_wo_parent_deps=True):
+                """Run the solver, and if it fails, optionally retry the
+                operation once while relaxing installed parent
+                dependencies."""
+
+                # have the solver try to satisfy parent dependencies.
+                ignore_inst_parent_deps = False
+
+                try:
+                        return solver_cb(ignore_inst_parent_deps)
+                except api_errors.PlanCreationException, e:
+                        # if we're currently in sync don't retry the
+                        # operation
+                        if self.image.linked.insync(latest_md=False):
+                                raise e
+                        # if PKG_REQUIRE_SYNC is set in the
+                        # environment we require an in-sync image.
+                        if "PKG_REQUIRE_SYNC" in os.environ:
+                                raise e
+                        # caller doesn't want us to retry
+                        if not retry_wo_parent_deps:
+                                raise e
+                        # we're an out-of-sync child image so retry
+                        # this operation while ignoring parent
+                        # dependencies for any installed packages.  we
+                        # do this so that users can manipulate out of
+                        # sync images in an attempt to bring them back
+                        # in sync.  since we don't ignore parent
+                        # dependencies for uninstalled packages, the
+                        # user won't be able to take the image further
+                        # out of sync.
+                        ignore_inst_parent_deps = True
+                        return solver_cb(ignore_inst_parent_deps)
 
         def __plan_install_solver(self, li_pkg_updates=True, li_sync_op=False,
             new_facets=None, new_variants=None, pkgs_inst=None,
@@ -309,6 +381,21 @@ class ImagePlan(object):
                 """Use the solver to determine the fmri changes needed to
                 install the specified pkgs, sync the specified image, and/or
                 change facets/variants within the current image."""
+
+                # evaluate what varcet changes are required
+                new_variants, new_facets, \
+                    facet_change, masked_facet_change = \
+                    self.__evaluate_varcets(new_variants, new_facets)
+
+                # check if we need to uninstall any packages.
+                uninstall = self.__any_reject_matches(reject_list)
+
+                # check if anything is actually changing.
+                if not (li_sync_op or pkgs_inst or uninstall or
+                    new_variants or facet_change or fmri_changes is not None):
+                        # the solver is not necessary.
+                        self.pd._fmri_changes = []
+                        return
 
                 # get ranking of publishers
                 pub_ranks = self.image.get_publisher_ranks()
@@ -337,27 +424,40 @@ class ImagePlan(object):
                 else:
                         variants = self.image.get_variants()
 
-                # instantiate solver
-                solver = pkg_solver.PkgSolver(
-                    self.image.get_catalog(self.image.IMG_CATALOG_KNOWN),
-                    installed_dict,
-                    pub_ranks,
-                    variants,
-                    self.image.avoid_set_get(),
-                    self.image.linked.parent_fmris(),
-                    self.__progtrack)
+                def solver_cb(ignore_inst_parent_deps):
+                        # instantiate solver
+                        solver = pkg_solver.PkgSolver(
+                            self.image.get_catalog(
+                                self.image.IMG_CATALOG_KNOWN),
+                            installed_dict,
+                            pub_ranks,
+                            variants,
+                            self.image.avoid_set_get(),
+                            self.image.linked.parent_fmris(),
+                            self.__progtrack)
 
-                # If this isn't a sync-linked operation then set
-                # ignore_inst_parent_deps to True to allow us to modify
-                # out of sync images.
-                ignore_inst_parent_deps = not li_sync_op
+                        # run solver
+                        new_vector, new_avoid_obs = \
+                            solver.solve_install(
+                                self.image.get_frozen_list(),
+                                inst_dict,
+                                new_variants=new_variants,
+                                excludes=self.__new_excludes,
+                                reject_set=reject_set,
+                                relax_all=li_sync_op,
+                                ignore_inst_parent_deps=\
+                                    ignore_inst_parent_deps)
 
-                # Solve... will raise exceptions if no solution is found
-                new_vector, self.pd._new_avoid_obs = solver.solve_install(
-                        self.image.get_frozen_list(), inst_dict,
-                        new_variants=new_variants, excludes=self.__new_excludes,
-                        reject_set=reject_set, relax_all=li_sync_op,
-                        ignore_inst_parent_deps=ignore_inst_parent_deps)
+                        return solver, new_vector, new_avoid_obs
+
+                # We can't retry this operation while ignoring parent
+                # dependencies if we're doing a linked image sync.
+                retry_wo_parent_deps = not li_sync_op
+
+                # Solve; will raise exceptions if no solution is found.
+                solver, new_vector, self.pd._new_avoid_obs = \
+                    self.__run_solver(solver_cb, \
+                        retry_wo_parent_deps=retry_wo_parent_deps)
 
                 self.pd._fmri_changes = self.__vector_2_fmri_changes(
                     installed_dict, new_vector,
@@ -377,20 +477,6 @@ class ImagePlan(object):
                 current image."""
 
                 self.__plan_op()
-
-                new_variants, new_facets = self.__evaluate_varcets(new_variants,
-                    new_facets)
-
-                if not (new_variants or pkgs_inst or li_sync_op or
-                    new_facets is not None):
-                        # nothing to do
-                        self.pd._fmri_changes = []
-                        self.pd.state = plandesc.EVALUATED_PKGS
-                        return
-
-                # If we ever actually support changing facets and variants at
-                # the same time as performing an install, the optimizations done
-                # for plan_change_varacets should be applied here (shared).
                 self.__plan_install_solver(
                     li_pkg_updates=li_pkg_updates,
                     li_sync_op=li_sync_op,
@@ -478,88 +564,134 @@ class ImagePlan(object):
 
                 return use_solver, fmri_changes
 
+        def __facet_change_fastpath(self):
+                """The following optimizations only work correctly if only
+                facets are changing (not variants, uninstalls, etc)."""
+
+                old_facets = self.pd._old_facets
+                new_facets = self.pd._new_facets
+
+                changed_facets = [
+                        f
+                        for f in new_facets
+                        if f not in old_facets or \
+                            old_facets[f] != new_facets[f]
+                ]
+
+                def get_fattrs(m, use_solver):
+                        # Get the list of facets involved in this
+                        # operation that the package uses.  To
+                        # accurately determine which packages are
+                        # actually being changed, we must compare the
+                        # old effective value for each facet that is
+                        # changing with its new effective value.
+                        return use_solver, list(
+                            f
+                            for f in m.gen_facets(
+                                excludes=self.__new_excludes,
+                                patterns=changed_facets)
+                            if new_facets[f] != old_facets[f]
+                        )
+
+                return self.__get_attr_fmri_changes(get_fattrs)
+
+        def __variant_change_fastpath(self):
+                """The following optimizations only work correctly if only
+                variants are changing (not facets, uninstalls, etc)."""
+
+                nvariants = self.pd._new_variants
+
+                def get_vattrs(m, use_solver):
+                        # Get the list of variants involved in this
+                        # operation that the package uses.
+                        mvars = []
+                        for (variant, pvals) in m.gen_variants(
+                            excludes=self.__new_excludes,
+                            patterns=nvariants
+                        ):
+                                if nvariants[variant] not in pvals:
+                                        # If the new value for the
+                                        # variant is unsupported by this
+                                        # package, then the solver
+                                        # should be triggered so the
+                                        # package can be removed.
+                                        use_solver = True
+                                mvars.append(variant)
+                        return use_solver, mvars
+
+                return self.__get_attr_fmri_changes(get_vattrs)
+
         def plan_change_varcets(self, new_facets=None, new_variants=None,
             reject_list=misc.EmptyI):
                 """Determine the fmri changes needed to change the specified
                 facets/variants."""
 
                 self.__plan_op()
-                new_variants, new_facets = self.__evaluate_varcets(new_variants,
-                    new_facets)
 
-                if not new_variants and new_facets is None:
-                        # nothing to do
-                        self.pd._fmri_changes = []
+                # assume none of our optimizations will work.
+                fmri_changes = None
+
+                # convenience function to invoke the solver.
+                def plan_install_solver():
+                        self.__plan_install_solver(
+                            new_facets=new_facets,
+                            new_variants=new_variants,
+                            reject_list=reject_list,
+                            fmri_changes=fmri_changes)
                         self.pd.state = plandesc.EVALUATED_PKGS
+
+                # evaluate what varcet changes are required
+                new_variants, new_facets, \
+                    facet_change, masked_facet_change = \
+                    self.__evaluate_varcets(new_variants, new_facets)
+
+                # uninstalling packages requires the solver.
+                uninstall = self.__any_reject_matches(reject_list)
+                if uninstall:
+                        plan_install_solver()
+                        return
+
+                # All operations (including varcet changes) need to try and
+                # keep linked images in sync.  Linked image audits are fast,
+                # so do one now and if we're not in sync we need to invoke the
+                # solver.
+                if not self.image.linked.insync():
+                        plan_install_solver()
+                        return
+
+                # if facets and variants are changing at the same time, then
+                # we need to invoke the solver.
+                if new_variants and facet_change:
+                        plan_install_solver()
                         return
 
                 # By default, we assume the solver must be used.  If any of the
                 # optimizations below can be applied, they'll determine whether
                 # the solver can be used.
                 use_solver = True
-                fmri_changes = None
 
-                # The following use_solver, fmri_changes checks are only known
-                # to work correctly if only facets or only variants are
-                # changing; not both.  Changing both is not currently supported
-                # anyway so this shouldn't be a problem.
-                if new_facets is not None and not new_variants:
-                        old_facets = self.image.cfg.facets
-
-                        def get_fattrs(m, use_solver):
-                                # Get the list of facets involved in this
-                                # operation that the package uses.  To
-                                # accurately determine which packages are
-                                # actually being changed, we must compare the
-                                # old effective value for each facet that is
-                                # changing with its new effective value.
-                                return use_solver, list(
-                                    f
-                                    for f in m.gen_facets(
-                                        excludes=self.__new_excludes,
-                                        patterns=self.pd._changed_facets)
-                                    if new_facets[f] != old_facets[f]
-                                )
-
+                # the following facet optimization only works if we're not
+                # changing variants at the same time.
+                if facet_change:
+                        assert not new_variants
                         use_solver, fmri_changes = \
-                            self.__get_attr_fmri_changes(get_fattrs)
+                            self.__facet_change_fastpath()
 
-                if new_variants and new_facets is None:
-                        nvariants = self.pd._new_variants
-
-                        def get_vattrs(m, use_solver):
-                                # Get the list of variants involved in this
-                                # operation that the package uses.
-                                mvars = []
-                                for (variant, pvals) in m.gen_variants(
-                                    excludes=self.__new_excludes,
-                                    patterns=nvariants
-                                ):
-                                        if nvariants[variant] not in pvals:
-                                                # If the new value for the
-                                                # variant is unsupported by this
-                                                # package, then the solver
-                                                # should be triggered so the
-                                                # package can be removed.
-                                                use_solver = True
-                                        mvars.append(variant)
-                                return use_solver, mvars
-
+                # the following variant optimization only works if we're not
+                # changing facets at the same time.
+                if new_variants:
+                        assert not facet_change
                         use_solver, fmri_changes = \
-                            self.__get_attr_fmri_changes(get_vattrs)
+                            self.__variant_change_fastpath()
 
                 if use_solver:
-                        self.__plan_install_solver(
-                            fmri_changes=fmri_changes,
-                            new_facets=new_facets,
-                            new_variants=new_variants,
-                            reject_list=reject_list)
-                else:
-                        # If solver isn't involved, assume the list of packages
-                        # has been determined.
-                        self.pd._fmri_changes = fmri_changes and \
-                            fmri_changes or []
+                        plan_install_solver()
+                        return
 
+                # If solver isn't involved, assume the list of packages
+                # has been determined.
+                assert fmri_changes is not None
+                self.pd._fmri_changes = fmri_changes
                 self.pd.state = plandesc.EVALUATED_PKGS
 
         def plan_set_mediators(self, new_mediators):
@@ -700,27 +832,36 @@ class ImagePlan(object):
                 pt.plan_done(pt.PLAN_MEDIATION_CHG)
                 self.pd.state = plandesc.EVALUATED_PKGS
 
+        def __any_reject_matches(self, reject_list):
+                """Check if any reject patterns match installed packages (in
+                which case a packaging operation should attempt to uninstall
+                those packages)."""
+
+                # return true if any packages in reject list
+                # match any installed packages
+                return bool(reject_list) and \
+                    bool(self.match_user_stems(self.image, reject_list,
+                        self.MATCH_INST_VERSIONS, raise_not_installed=False))
+
         def plan_sync(self, li_pkg_updates=True, reject_list=misc.EmptyI):
                 """Determine the fmri changes needed to sync the image."""
 
-                # check if the sync will try to uninstall packages.
-                uninstall = False
-                reject_set = self.match_user_stems(self.image, reject_list,
-                    self.MATCH_INST_VERSIONS, raise_not_installed=False)
-                if reject_set:
-                        # at least one reject pattern matched an installed
-                        # package
-                        uninstall = True
+                self.__plan_op()
+
+                # check if we need to uninstall any packages.
+                uninstall = self.__any_reject_matches(reject_list)
+
+                # check if inherited facets are changing
+                new_facets = self.__evaluate_varcets()[1]
 
                 # audits are fast, so do an audit to check if we're in sync.
-                rv, err, p_dict = self.image.linked.audit_self(
-                    li_parent_sync=False)
+                insync = self.image.linked.insync()
 
-                # if we're not trying to uninstall packages and we're
-                # already in sync then don't bother invoking the solver.
-                if not uninstall and rv == pkgdefs.EXIT_OK:
+                # if we're not trying to uninstall packages, and inherited
+                # facets are not changing, and we're already in sync, then
+                # don't bother invoking the solver.
+                if not uninstall and not new_facets is not None and insync:
                         # we don't need to do anything
-                        self.__plan_op()
                         self.pd._fmri_changes = []
                         self.pd.state = plandesc.EVALUATED_PKGS
                         return
@@ -739,33 +880,43 @@ class ImagePlan(object):
                     for f in each
                 ])
 
+                # check if inherited facets are changing
+                new_facets = self.__evaluate_varcets()[1]
+
                 # build installed dict
                 installed_dict = ImagePlan.__fmris2dict(
                     self.image.gen_installed_pkgs())
 
-                # instantiate solver
-                solver = pkg_solver.PkgSolver(
-                    self.image.get_catalog(self.image.IMG_CATALOG_KNOWN),
-                    installed_dict,
-                    self.image.get_publisher_ranks(),
-                    self.image.get_variants(),
-                    self.image.avoid_set_get(),
-                    self.image.linked.parent_fmris(),
-                    self.__progtrack)
+                def solver_cb(ignore_inst_parent_deps):
+                        # instantiate solver
+                        solver = pkg_solver.PkgSolver(
+                            self.image.get_catalog(
+                                self.image.IMG_CATALOG_KNOWN),
+                            installed_dict,
+                            self.image.get_publisher_ranks(),
+                            self.image.get_variants(),
+                            self.image.avoid_set_get(),
+                            self.image.linked.parent_fmris(),
+                            self.__progtrack)
 
-                # Set ignore_inst_parent_deps to True to allow us to
-                # modify out of sync images.
-                new_vector, self.pd._new_avoid_obs = solver.solve_uninstall(
-                    self.image.get_frozen_list(), proposed_removals,
-                    self.__new_excludes,
-                    ignore_inst_parent_deps=True)
+                        # run solver
+                        new_vector, new_avoid_obs = \
+                            solver.solve_uninstall(
+                                self.image.get_frozen_list(),
+                                proposed_removals,
+                                self.__new_excludes,
+                                ignore_inst_parent_deps=\
+                                    ignore_inst_parent_deps)
 
-                self.pd._fmri_changes = [
-                    (a, b)
-                    for a, b in ImagePlan.__dicts2fmrichanges(installed_dict,
-                        ImagePlan.__fmris2dict(new_vector))
-                    if a != b
-                ]
+                        return solver, new_vector, new_avoid_obs
+
+                # Solve; will raise exceptions if no solution is found.
+                solver, new_vector, self.pd._new_avoid_obs = \
+                    self.__run_solver(solver_cb)
+
+                self.pd._fmri_changes = self.__vector_2_fmri_changes(
+                    installed_dict, new_vector,
+                    new_facets=new_facets)
 
                 self.pd._solver_summary = str(solver)
                 if DebugValues["plan"]:
@@ -778,6 +929,10 @@ class ImagePlan(object):
                 """Use the solver to determine the fmri changes needed to
                 update the specified pkgs or all packages if none were
                 specified."""
+
+                # check if inherited facets are changing
+                new_facets = self.__evaluate_varcets()[1]
+
                 # get ranking of publishers
                 pub_ranks = self.image.get_publisher_ranks()
 
@@ -800,37 +955,52 @@ class ImagePlan(object):
                             reject_set=reject_set)
                         self.__match_update = references
 
-                # instantiate solver
-                solver = pkg_solver.PkgSolver(
-                    self.image.get_catalog(self.image.IMG_CATALOG_KNOWN),
-                    installed_dict,
-                    pub_ranks,
-                    self.image.get_variants(),
-                    self.image.avoid_set_get(),
-                    self.image.linked.parent_fmris(),
-                    self.__progtrack)
+                def solver_cb(ignore_inst_parent_deps):
+                        # instantiate solver
+                        solver = pkg_solver.PkgSolver(
+                            self.image.get_catalog(
+                                self.image.IMG_CATALOG_KNOWN),
+                            installed_dict,
+                            pub_ranks,
+                            self.image.get_variants(),
+                            self.image.avoid_set_get(),
+                            self.image.linked.parent_fmris(),
+                            self.__progtrack)
 
-                if pkgs_update:
-                        # Set ignore_inst_parent_deps to True to allow us to
-                        # modify out of sync images.
-                        new_vector, self.pd._new_avoid_obs = \
-                            solver.solve_install(
-                                self.image.get_frozen_list(),
-                                update_dict, excludes=self.__new_excludes,
-                                reject_set=reject_set,
-                                trim_proposed_installed=False,
-                                ignore_inst_parent_deps=True)
-                else:
-                        # Updating all installed packages requires a different
-                        # solution path.
-                        new_vector, self.pd._new_avoid_obs = \
-                            solver.solve_update_all(
-                                self.image.get_frozen_list(),
-                                excludes=self.__new_excludes,
-                                reject_set=reject_set)
+                        # run solver
+                        if pkgs_update:
+                                new_vector, new_avoid_obs = \
+                                    solver.solve_install(
+                                        self.image.get_frozen_list(),
+                                        update_dict,
+                                        excludes=self.__new_excludes,
+                                        reject_set=reject_set,
+                                        trim_proposed_installed=False,
+                                        ignore_inst_parent_deps=\
+                                            ignore_inst_parent_deps)
+                        else:
+                                # Updating all installed packages requires a
+                                # different solution path.
+                                new_vector, new_avoid_obs = \
+                                    solver.solve_update_all(
+                                        self.image.get_frozen_list(),
+                                        excludes=self.__new_excludes,
+                                        reject_set=reject_set)
+
+                        return solver, new_vector, new_avoid_obs
+
+                # We can't retry this operation while ignoring parent
+                # dependencies if we're doing a unconstrained update.
+                retry_wo_parent_deps = bool(pkgs_update)
+
+                # Solve; will raise exceptions if no solution is found.
+                solver, new_vector, self.pd._new_avoid_obs = \
+                    self.__run_solver(solver_cb, \
+                        retry_wo_parent_deps=retry_wo_parent_deps)
 
                 self.pd._fmri_changes = self.__vector_2_fmri_changes(
-                    installed_dict, new_vector)
+                    installed_dict, new_vector,
+                    new_facets=new_facets)
 
                 self.pd._solver_summary = str(solver)
                 if DebugValues["plan"]:
@@ -1702,11 +1872,53 @@ class ImagePlan(object):
                                     []).append((a, pfmri))
                 return d
 
-        def __update_old(self, new, old, offset_dict, action_classes, sf,
-            gone_fmris, fmri_dict):
-                """Update the 'old' dictionary with all actions from the action
-                cache which could conflict with the newly actions delivered
-                actions contained in 'new.'
+        @staticmethod
+        def __act_dup_check(tgt, key, actstr, fmristr):
+                """Check for duplicate actions/fmri tuples in 'tgt', which is
+                indexed by 'key'."""
+
+                #
+                # When checking for duplicate actions we have to account for
+                # the fact that actions which are part of a package plan are
+                # not stripped.  But the actions we're iterating over here are
+                # coming from the stripped action cache, so they have had
+                # assorted attributes removed (like variants, facets, etc.) So
+                # to check for duplicates we have to make sure to strip the
+                # actions we're comparing against.  Of course we can't just
+                # strip the actions which are part of a package plan because
+                # we could be removing data critical to the execution of that
+                # action like original_name, etc.  So before we strip an
+                # action we have to make a copy of it.
+                #
+                # If we're dealing with a directory action and an "implicit"
+                # attribute exists, we need to preserve it.  We assume it's a
+                # synthetic attribute that indicates that the action was
+                # created implicitly (and hence won't conflict with an
+                # explicit directory action defining the same directory).
+                # Note that we've assumed that no one will ever add an
+                # explicit "implicit" attribute to a directory action.
+                #
+                preserve = {"dir": ["implicit"]}
+                if key not in tgt:
+                        return False
+                for act, pfmri in tgt[key]:
+                        # check the fmri first since that's easy
+                        if fmristr != str(pfmri):
+                                continue
+                        act = pkg.actions.fromstr(str(act))
+                        act.strip(preserve=preserve)
+                        if actstr == str(act):
+                                return True
+                return False
+
+        def __update_act(self, keys, tgt, skip_dups, offset_dict,
+            action_classes, sf, skip_fmris, fmri_dict):
+                """Update 'tgt' with action/fmri pairs from the stripped
+                action cache that are associated with the specified action
+                'keys'.
+
+                The 'skip_dups' parameter indicates if we should avoid adding
+                duplicate action/pfmri pairs into 'tgt'.
 
                 The 'offset_dict' parameter contains a mapping from key to
                 offsets into the actions.stripped file and the number of lines
@@ -1719,9 +1931,9 @@ class ImagePlan(object):
                 read the actual actions indicated by the offset dictionary
                 'offset_dict.'
 
-                The 'gone_fmris' parameter contains a set of strings
-                representing the packages which are being removed from the
-                system.
+                The 'skip_fmris' parameter contains a set of strings
+                representing the packages which we should not process actions
+                for.
 
                 The 'fmri_dict' parameter is a cache of previously built PkgFmri
                 objects which is used so the same string isn't translated into
@@ -1729,7 +1941,7 @@ class ImagePlan(object):
 
                 build_release = self.image.attrs["Build-Release"]
 
-                for key in set(itertools.chain(new.iterkeys(), old.keys())):
+                for key in keys:
                         offsets = []
                         for klass in action_classes:
                                 offset = offset_dict.get((klass.name, key),
@@ -1750,86 +1962,7 @@ class ImagePlan(object):
                                         if line == "":
                                                 break
                                         fmristr, actstr = line.split(None, 1)
-                                        if fmristr in gone_fmris:
-                                                continue
-                                        act = pkg.actions.fromstr(actstr)
-                                        assert act.attrs[act.key_attr] == key
-                                        assert pns is None or \
-                                            act.namespace_group == pns
-                                        pns = act.namespace_group
-
-                                        try:
-                                                pfmri = fmri_dict[fmristr]
-                                        except KeyError:
-                                                pfmri = pkg.fmri.PkgFmri(
-                                                    fmristr,
-                                                    build_release)
-                                                fmri_dict[fmristr] = pfmri
-                                        old.setdefault(key, []).append(
-                                            (act, pfmri))
-
-        def __update_new(self, new, old, offset_dict, action_classes, sf,
-            gone_fmris, fmri_dict):
-                """Update 'new' with all the actions from the action cache which
-                are staying on the system and could conflict with the newly
-                installed actions.
-
-                The 'offset_dict' parameter contains a mapping from key to
-                offsets into the actions.stripped file and the number of lines
-                to read.
-
-                The 'action_classes' parameter contains the list of action types
-                where one action can conflict with another action.
-
-                The 'sf' parameter is the actions.stripped file from which we
-                read the actual actions indicated by the offset dictionary
-                'offset_dict.'
-
-                The 'gone_fmris' parameter contains a set of strings
-                representing the packages which are being removed from the
-                system.
-
-                The 'fmri_dict' parameter is a cache of previously built PkgFmri
-                objects which is used so the same string isn't translated into
-                the same PkgFmri object multiple times."""
-
-                # If we're not changing any fmris, as in the case of a
-                # change-facet/variant, revert, fix, or set-mediator, then we
-                # need to skip modifying new, as it'll just end up with
-                # incorrect duplicates.
-                if self.planned_op in (
-                    pkgdefs.API_OP_CHANGE_FACET,
-                    pkgdefs.API_OP_CHANGE_VARIANT,
-                    pkgdefs.API_OP_REPAIR,
-                    pkgdefs.API_OP_REVERT,
-                    pkgdefs.API_OP_SET_MEDIATOR):
-                        return
-
-                build_release = self.image.attrs["Build-Release"]
-
-                for key in old.iterkeys():
-                        offsets = []
-                        for klass in action_classes:
-                                offset = offset_dict.get((klass.name, key),
-                                    None)
-                                if offset is not None:
-                                        offsets.append(offset)
-
-                        for offset, cnt in offsets:
-                                sf.seek(offset)
-                                pns = None
-                                i = 0
-                                while 1:
-                                        line = sf.readline()
-                                        i += 1
-                                        if i > cnt:
-                                                break
-                                        line = line.rstrip()
-                                        if line == "":
-                                                break
-                                        fmristr, actstr = line.rstrip().split(
-                                            None, 1)
-                                        if fmristr in gone_fmris:
+                                        if fmristr in skip_fmris:
                                                 continue
                                         act = pkg.actions.fromstr(actstr)
                                         assert act.attrs[act.key_attr] == key
@@ -1843,7 +1976,10 @@ class ImagePlan(object):
                                                 pfmri = pkg.fmri.PkgFmri(
                                                     fmristr, build_release)
                                                 fmri_dict[fmristr] = pfmri
-                                        new.setdefault(key, []).append(
+                                        if skip_dups and self.__act_dup_check(
+                                            tgt, key, actstr, fmristr):
+                                                continue
+                                        tgt.setdefault(key, []).append(
                                             (act, pfmri))
 
         def __fast_check(self, new, old, ns):
@@ -2113,11 +2249,20 @@ class ImagePlan(object):
                         self.__clear_pkg_plans()
                         return
 
+                # figure out which installed packages are being removed by
+                # this operation
                 old_fmris = set((
                     str(s) for s in self.image.gen_installed_pkgs()
                 ))
                 gone_fmris = old_fmris - new_fmris
 
+                # figure out which new packages are being touched by this
+                # operation.
+                changing_fmris = set([
+                        str(p.destination_fmri)
+                        for p in self.pd.pkg_plans
+                        if p.destination_fmri
+                ])
 
                 # Group action types by namespace groups
                 kf = operator.attrgetter("namespace_group")
@@ -2173,15 +2318,20 @@ class ImagePlan(object):
                                 # cache which could conflict with the new
                                 # actions being installed, or with actions
                                 # already installed, but not getting removed.
-                                self.__update_old(new, old, offset_dict,
-                                    action_classes, msf, gone_fmris, fmri_dict)
+                                keys = set(itertools.chain(new.iterkeys(),
+                                    old.iterkeys()))
+                                self.__update_act(keys, old, False,
+                                    offset_dict, action_classes, msf,
+                                    gone_fmris, fmri_dict)
 
                                 # Now update 'new' with all actions from the
                                 # action cache which are staying on the system,
                                 # and could conflict with the actions being
                                 # installed.
-                                self.__update_new(new, old, offset_dict,
-                                    action_classes, msf, gone_fmris, fmri_dict)
+                                keys = set(old.iterkeys())
+                                self.__update_act(keys, new, True,
+                                    offset_dict, action_classes, msf,
+                                    gone_fmris | changing_fmris, fmri_dict)
 
                         self.__check_conflicts(new, old, action_classes, ns,
                             errs)
@@ -2333,6 +2483,16 @@ class ImagePlan(object):
                 self.evaluate_pkg_plans()
                 self.merge_actions()
                 self.compile_release_notes()
+
+                fmri_updates = [
+                        (p.origin_fmri, p.destination_fmri)
+                        for p in self.pd.pkg_plans
+                ]
+                if not self.pd._li_pkg_updates and fmri_updates:
+                        # oops.  the caller requested no package updates and
+                        # we couldn't satisfy that request.
+                        raise api_errors.PlanCreationException(
+                            pkg_updates_required=fmri_updates)
 
                 for p in self.pd.pkg_plans:
                         cpbytes, pbytes = p.get_bytes_added()
@@ -3376,6 +3536,20 @@ class ImagePlan(object):
                 self.pd.removal_actions.sort(key=remsort, reverse=True)
                 self.pd.update_actions.sort(key=addsort)
                 self.pd.install_actions.sort(key=addsort)
+
+                # cleanup pkg_plan objects which don't actually contain any
+                # changes
+                for p in list(self.pd.pkg_plans):
+                        if p.origin_fmri != p.destination_fmri or \
+                            p.actions.removed or p.actions.changed or \
+                            p.actions.added:
+                                continue
+                        self.pd.pkg_plans.remove(p)
+                        fmri = p.origin_fmri
+                        if (fmri, fmri) in self.pd._fmri_changes:
+                                self.pd._fmri_changes.remove(
+                                    (fmri, fmri))
+                        del p
 
                 #
                 # Sort the package plans by fmri to create predictability (and

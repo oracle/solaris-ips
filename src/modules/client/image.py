@@ -3553,17 +3553,7 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                         for act in m.gen_actions(excludes):
                                 if not act.globally_identical:
                                         continue
-                                for key in act.attrs.keys():
-                                        if (act.unique_attrs and
-                                            key not in act.unique_attrs and
-                                            not (act.name == "file" and
-                                                key == "overlay") and
-                                            not ((act.name == "link" or
-                                                  act.name == "hardlink") and
-                                                 key.startswith("mediator"))) or \
-                                            key.startswith("variant.") or \
-                                            key.startswith("facet."):
-                                                del act.attrs[key]
+                                act.strip()
                                 heappush(heap, (act.name,
                                     act.attrs[act.key_attr], pfmri, act))
                                 nsd.setdefault(act.namespace_group, {})

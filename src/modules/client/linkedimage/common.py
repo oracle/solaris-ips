@@ -59,6 +59,7 @@ import pkg.client.pkgdefs as pkgdefs
 import pkg.client.pkgplan as pkgplan
 import pkg.client.pkgremote
 import pkg.client.progress as progress
+import pkg.facet
 import pkg.fmri
 import pkg.misc as misc
 import pkg.pkgsubprocess
@@ -107,6 +108,7 @@ model_values = frozenset([
 
 # files which contain linked image data
 __DATA_DIR     = "linked"
+PATH_PFACETS    = os.path.join(__DATA_DIR, "linked_pfacets")
 PATH_PPKGS     = os.path.join(__DATA_DIR, "linked_ppkgs")
 PATH_PROP      = os.path.join(__DATA_DIR, "linked_prop")
 PATH_PUBS      = os.path.join(__DATA_DIR, "linked_ppubs")
@@ -409,6 +411,7 @@ class LinkedImage(object):
                 self.__props = dict()
                 self.__ppkgs = frozenset()
                 self.__ppubs = None
+                self.__pfacets = pkg.facet.Facets()
                 self.__pimg = None
 
                 # variables reset by self.__recursion_init()
@@ -420,6 +423,8 @@ class LinkedImage(object):
                 self.__path_ppkgs = None
                 self.__path_prop = None
                 self.__path_ppubs = None
+                self.__path_pfacets = None
+                self.__img_insync = True
 
                 # initialize with no properties
                 self.__update_props()
@@ -469,9 +474,20 @@ class LinkedImage(object):
                 self.__path_ppkgs = os.path.join(imgdir, PATH_PPKGS)
                 self.__path_prop = os.path.join(imgdir, PATH_PROP)
                 self.__path_ppubs = os.path.join(imgdir, PATH_PUBS)
+                self.__path_pfacets = os.path.join(imgdir, PATH_PFACETS)
 
                 # if this isn't a reset, then load data from the image
                 if not old_root:
+                        # the first time around we load non-temporary data (if
+                        # there is any) so that we can audit ourselves and see
+                        # if we're in currently in sync.
+                        self.__load(tmp=False)
+                        if self.ischild():
+                                self.__img_insync = self.__insync()
+
+                        # now re-load all the data taking into account any
+                        # temporary new data associated with an in-progress
+                        # operation.
                         self.__load()
 
                 # we're not linked or we're not changing root paths we're done
@@ -513,6 +529,7 @@ class LinkedImage(object):
                 self.__props = props
                 self.__ppkgs = frozenset()
                 self.__ppubs = None
+                self.__pfacets = pkg.facet.Facets()
                 self.__pimg = None
 
         def __verify_props(self, props):
@@ -707,30 +724,57 @@ class LinkedImage(object):
                 self.__verify_props(props)
                 return props
 
-        def __load_ondisk_ppkgs(self, tmp=True):
-                """Load linked image parent constraints from disk.
+        def __load_ondisk_pfacets(self, tmp=True):
+                """Load linked image inherited facets from disk.
                 Don't update any internal state.
 
                 'tmp' determines if we should read/write to the official
                 linked image metadata files, or if we should access temporary
                 versions (which have ".<runid>" appended to them."""
 
+                pfacets = misc.EmptyDict
+                path = "%s.%d" % (self.__path_pfacets,
+                    global_settings.client_runid)
+                if tmp and path_exists(path):
+                        pfacets = load_data(path)
+                else:
+                        path = self.__path_pfacets
+                        pfacets = load_data(path, missing_ok=True)
+
+                if pfacets is None:
+                        return None
+
+                rv = pkg.facet.Facets()
+                for k, v in pfacets.iteritems():
+                        # W0212 Access to a protected member
+                        # pylint: disable=W0212
+                        rv._set_inherited(k, v)
+                return rv
+
+        def __load_ondisk_ppkgs(self, tmp=True):
+                """Load linked image parent packages from disk.
+                Don't update any internal state.
+
+                'tmp' determines if we should read/write to the official
+                linked image metadata files, or if we should access temporary
+                versions (which have ".<runid>" appended to them."""
+
+                fmri_strs = None
                 path = "%s.%d" % (self.__path_ppkgs,
                     global_settings.client_runid)
                 if tmp and path_exists(path):
-                        return frozenset([
-                            pkg.fmri.PkgFmri(str(s))
-                            for s in load_data(path, missing_val=misc.EmptyI)
-                        ])
+                        fmri_strs = load_data(path)
+                else:
+                        path = self.__path_ppkgs
+                        fmri_strs = load_data(path, missing_ok=True)
 
-                path = self.__path_ppkgs
-                if path_exists(path):
-                        return frozenset([
-                            pkg.fmri.PkgFmri(str(s))
-                            for s in load_data(path, missing_val=misc.EmptyI)
-                        ])
+                if fmri_strs is None:
+                        return None
 
-                return None
+                return frozenset([
+                    pkg.fmri.PkgFmri(str(s))
+                    for s in fmri_strs
+                ])
 
         def __load_ondisk_ppubs(self, tmp=True):
                 """Load linked image parent publishers from disk.
@@ -740,18 +784,18 @@ class LinkedImage(object):
                 linked image metadata files, or if we should access temporary
                 versions (which have ".<runid>" appended to them."""
 
+                ppubs = None
                 path = "%s.%d" % (self.__path_ppubs,
                     global_settings.client_runid)
                 if tmp and path_exists(path):
-                        return load_data(path)
+                        ppubs = load_data(path)
+                else:
+                        path = self.__path_ppubs
+                        ppubs = load_data(path, missing_ok=True)
 
-                path = self.__path_ppubs
-                if path_exists(path):
-                        return load_data(path)
+                return ppubs
 
-                return None
-
-        def __load(self):
+        def __load(self, tmp=True):
                 """Load linked image properties and constraints from disk.
                 Update the linked image internal state with the loaded data."""
 
@@ -772,7 +816,7 @@ class LinkedImage(object):
                 # and the caller will have to specify that they want to ignore
                 # all children to allow the operation to succeed.
                 #
-                props = self.__load_ondisk_props()
+                props = self.__load_ondisk_props(tmp=tmp)
                 if not props and not self.__isparent(ignore_errors=True):
                         # we're not linked
                         return
@@ -792,16 +836,25 @@ class LinkedImage(object):
 
                 self.__update_props(props)
 
-                ppkgs = self.__load_ondisk_ppkgs()
-                if self.ischild() and ppkgs == None:
-                        _rterr(li=self, err="Constraints data missing.")
-                if self.ischild():
+                if not self.ischild():
+                        return
+
+                # load parent packages. if parent package data is missing just
+                # continue along and hope for the best.
+                ppkgs = self.__load_ondisk_ppkgs(tmp=tmp)
+                if ppkgs is not None:
                         self.__ppkgs = ppkgs
+
+                # load inherited facets. if inherited facet data is missing
+                # just continue along and hope for the best.
+                pfacets = self.__load_ondisk_pfacets(tmp=tmp)
+                if pfacets is not None:
+                        self.__pfacets = pfacets
 
                 # load parent publisher data. if publisher data is missing
                 # continue along and we'll just skip the publisher checks,
                 # it's better than failing and preventing any image updates.
-                self.__ppubs = self.__load_ondisk_ppubs()
+                self.__ppubs = self.__load_ondisk_ppubs(tmp=tmp)
 
         @staticmethod
         def __validate_prop_recurse(v):
@@ -886,6 +939,21 @@ class LinkedImage(object):
                 differs then there is stuff to do since the new state needs
                 to be saved to disk."""
 
+                # check if we're not a linked image.
+                if not self.isparent() and not self.ischild():
+                        # if any linked image metadata files exist they need
+                        # to be deleted.
+                        paths = [
+                            self.__path_pfacets,
+                            self.__path_ppkgs,
+                            self.__path_ppubs,
+                            self.__path_prop,
+                        ]
+                        for path in paths:
+                                if path_exists(path):
+                                        return False
+                        return True
+
                 # compare in-memory and on-disk properties
                 li_ondisk_props = self.__load_ondisk_props(tmp=False)
                 if li_ondisk_props == None:
@@ -898,10 +966,35 @@ class LinkedImage(object):
                 if li_ondisk_props != li_inmemory_props:
                         return False
 
-                # compare in-memory and on-disk constraints
+                # linked image metadata files with inherited data
+                paths = [
+                    self.__path_pfacets,
+                    self.__path_ppkgs,
+                    self.__path_ppubs,
+                ]
+
+                # check if we're just a parent image.
+                if not self.ischild():
+                        # parent images only have properties.  if any linked
+                        # image metadata files that contain inherited
+                        # information exist they need to be deleted.
+                        for path in paths:
+                                if path_exists(path):
+                                        return False
+                        return True
+
+                # if we're missing any metadata files then there's work todo
+                for path in paths:
+                        if not path_exists(path):
+                                return False
+
+                # compare in-memory and on-disk inherited facets
+                li_ondisk_pfacets = self.__load_ondisk_pfacets(tmp=False)
+                if self.__pfacets != li_ondisk_pfacets:
+                        return False
+
+                # compare in-memory and on-disk parent packages
                 li_ondisk_ppkgs = self.__load_ondisk_ppkgs(tmp=False)
-                if li_ondisk_ppkgs == None:
-                        li_ondisk_ppkgs = frozenset()
                 if self.__ppkgs != li_ondisk_ppkgs:
                         return False
 
@@ -911,34 +1004,6 @@ class LinkedImage(object):
                         return False
 
                 return True
-
-        def get_pubs(self, img=None):
-                """Return publisher information for the specified image.  If
-                no image is specified we return publisher information for the
-                current image.
-
-                Publisher information is returned in a sorted list of lists
-                of the format:
-                        <publisher name>, <sticky>
-
-                Where:
-                        <publisher name> is a string
-                        <sticky> is a boolean
-
-                The tuples are sorted by publisher rank.
-                """
-
-                # default to ourselves
-                if img == None:
-                        img = self.__img
-
-                # get a sorted list of the images publishers
-                pubs = img.get_sorted_publishers(inc_disabled=False)
-
-                rv = []
-                for p in pubs:
-                        rv.append([str(p), p.sticky])
-                return rv
 
         def pubcheck(self):
                 """If we're a child image's, verify that the parent image
@@ -962,7 +1027,7 @@ class LinkedImage(object):
                 if self.__img.cfg.get_policy("use-system-repo"):
                         return
 
-                pubs = self.get_pubs()
+                pubs = get_pubs(self.__img)
                 ppubs = self.__ppubs
 
                 if ppubs == None:
@@ -982,7 +1047,7 @@ class LinkedImage(object):
                         raise apx.PlanCreationException(
                             linked_pub_error=(pubs, ppubs))
 
-        def syncmd_from_parent(self, api_op=None):
+        def __syncmd_from_parent(self):
                 """Update linked image constraint, publisher data, and
                 state from our parent image."""
 
@@ -999,41 +1064,35 @@ class LinkedImage(object):
                         path = self.__props[PROP_PARENT_PATH]
                         self.__pimg = self.__init_pimg(path)
 
-                # generate new constraints
-                cati = self.__pimg.get_catalog(self.__img.IMG_CATALOG_INSTALLED)
-                ppkgs = frozenset(cati.fmris())
+                # get metadata from our parent image
+                self.__ppubs = get_pubs(self.__pimg)
+                self.__ppkgs = get_packages(self.__pimg)
+                self.__pfacets = get_inheritable_facets(self.__pimg)
 
-                # generate new publishers
-                ppubs = self.get_pubs(img=self.__pimg)
+        def syncmd_from_parent(self, catch_exception=False):
+                """Update linked image constraint, publisher data, and state
+                from our parent image.  If catch_exception is true catch any
+                linked image exceptions and pack them up in a linked image
+                return value tuple."""
 
-                # check if anything has changed
-                need_sync = False
-
-                if self.__ppkgs != ppkgs:
-                        # we have new constraints
-                        self.__ppkgs = ppkgs
-                        need_sync = True
-
-                if self.__ppubs != ppubs:
-                        # parent has new publishers
-                        self.__ppubs = ppubs
-                        need_sync = True
-
-                if not need_sync:
-                        # nothing changed
-                        return
-
-                # if we're not planning an image attach operation then write
-                # the linked image metadata to disk.
-                if api_op != pkgdefs.API_OP_ATTACH:
-                        self.syncmd()
+                try:
+                        self.__syncmd_from_parent()
+                except apx.LinkedImageException, e:
+                        if not catch_exception:
+                                raise e
+                        return LI_RVTuple(e.lix_exitrv, e, None)
+                return
 
         def syncmd(self):
                 """Write in-memory linked image state to disk."""
 
                 # create a list of metadata file paths
-                paths = [self.__path_ppkgs, self.__path_prop,
-                    self.__path_ppubs]
+                paths = [
+                    self.__path_pfacets,
+                    self.__path_ppkgs,
+                    self.__path_ppubs,
+                    self.__path_prop,
+                ]
 
                 # cleanup any temporary files
                 for path in paths:
@@ -1055,11 +1114,14 @@ class LinkedImage(object):
                 save_data(self.__path_prop, props)
 
                 if not self.ischild():
-                        # if we're not a child we don't have constraints
+                        # if we're not a child we don't have parent data
+                        path_unlink(self.__path_pfacets, noent_ok=True)
                         path_unlink(self.__path_ppkgs, noent_ok=True)
+                        path_unlink(self.__path_ppubs, noent_ok=True)
                         return
 
                 # we're a child so save our latest constraints
+                save_data(self.__path_pfacets, self.__pfacets)
                 save_data(self.__path_ppkgs, self.__ppkgs)
                 save_data(self.__path_ppubs, self.__ppubs)
 
@@ -1150,6 +1212,10 @@ class LinkedImage(object):
 
                 for lin in lin_list:
                         self.__verify_child_name(lin, raise_except=True)
+
+        def inherited_facets(self):
+                """Facets inherited from our parent image."""
+                return self.__pfacets
 
         def parent_fmris(self):
                 """A set of the fmris installed in our parent image."""
@@ -1399,7 +1465,7 @@ class LinkedImage(object):
                                 return False
                 return True
 
-        def audit_self(self, li_parent_sync=True):
+        def audit_self(self, latest_md=True):
                 """If the current image is a child image, this function
                 audits the current image to see if it's in sync with its
                 parent."""
@@ -1408,14 +1474,17 @@ class LinkedImage(object):
                         e = self.__apx_not_child()
                         return LI_RVTuple(pkgdefs.EXIT_OOPS, e, None)
 
-                try:
-                        if li_parent_sync:
-                                # try to refresh linked image constraints from
-                                # the parent image.
-                                self.syncmd_from_parent()
-
-                except apx.LinkedImageException, e:
-                        return LI_RVTuple(e.lix_exitrv, e, None)
+                if not latest_md:
+                        # we don't use the latest linked image metadata.
+                        # instead return cached insync value which was
+                        # computed using the initial linked image metadata
+                        # that we loaded from disk.
+                        if not self.__img_insync:
+                                e = apx.LinkedImageException(
+                                    child_diverged=self.child_name)
+                                return LI_RVTuple(pkgdefs.EXIT_DIVERGED, e,
+                                    None)
+                        return LI_RVTuple(pkgdefs.EXIT_OK, None, None)
 
                 if not self.__insync():
                         e = apx.LinkedImageException(
@@ -1423,6 +1492,16 @@ class LinkedImage(object):
                         return LI_RVTuple(pkgdefs.EXIT_DIVERGED, e, None)
 
                 return LI_RVTuple(pkgdefs.EXIT_OK, None, None)
+
+        def insync(self, latest_md=True):
+                """A convenience wrapper for audit_self().  Note that we
+                consider non-child images as always in sync and ignore
+                any runtime errors."""
+
+                rv = self.image.linked.audit_self(latest_md=latest_md)[0]
+                if rv == pkgdefs.EXIT_DIVERGED:
+                        return False
+                return True
 
         @staticmethod
         def __rvdict2rv(rvdict, rv_map=None):
@@ -1711,8 +1790,8 @@ class LinkedImage(object):
                     _progtrack=progtrack,
                     _failfast=False,
                     _expect_plan=True,
+                    _syncmd_tmp=True,
                     accept=accept,
-                    li_attach_sync=True,
                     li_md_only=li_md_only,
                     li_pkg_updates=li_pkg_updates,
                     noexecute=noexecute,
@@ -1761,7 +1840,7 @@ class LinkedImage(object):
                     _failfast=False))
                 return rvdict
 
-        def sync_children(self, lin_list, accept=False, li_attach_sync=False,
+        def sync_children(self, lin_list, accept=False,
             li_md_only=False, li_pkg_updates=True, progtrack=None,
             noexecute=False, refresh_catalogs=True, reject_list=misc.EmptyI,
             show_licenses=False, update_index=True):
@@ -1775,6 +1854,10 @@ class LinkedImage(object):
 
                 lic_dict = self.__children_init(lin_list=lin_list)
 
+                _syncmd_tmp = True
+                if not noexecute and li_md_only:
+                        _syncmd_tmp = False
+
                 rvdict = {}
                 list(self.__children_op(
                     _pkg_op=pkgdefs.PKG_OP_SYNC,
@@ -1783,8 +1866,8 @@ class LinkedImage(object):
                     _progtrack=progtrack,
                     _failfast=False,
                     _expect_plan=True,
+                    _syncmd_tmp=_syncmd_tmp,
                     accept=accept,
-                    li_attach_sync=li_attach_sync,
                     li_md_only=li_md_only,
                     li_pkg_updates=li_pkg_updates,
                     noexecute=noexecute,
@@ -1794,7 +1877,8 @@ class LinkedImage(object):
                     update_index=update_index))
                 return rvdict
 
-        def detach_children(self, lin_list, force=False, noexecute=False):
+        def detach_children(self, lin_list, force=False, noexecute=False,
+            li_md_only=False, li_pkg_updates=True):
                 """Detach one or more children from the current image. This
                 operation results in the removal of any constraint package
                 from the child images."""
@@ -1827,6 +1911,8 @@ class LinkedImage(object):
                     _rvdict=rvdict,
                     _progtrack=progress.NullProgressTracker(),
                     _failfast=False,
+                    li_md_only=li_md_only,
+                    li_pkg_updates=li_pkg_updates,
                     noexecute=noexecute))
 
                 # if any of the children successfully detached, then we want
@@ -1860,9 +1946,9 @@ class LinkedImage(object):
 
                 return rvdict
 
-        @staticmethod
-        def __children_op(_pkg_op, _lic_list, _rvdict, _progtrack, _failfast,
-            _expect_plan=False, _ignore_syncmd_nop=True, _pd=None, **kwargs):
+        def __children_op(self, _pkg_op, _lic_list, _rvdict, _progtrack,
+            _failfast, _expect_plan=False, _ignore_syncmd_nop=True,
+            _syncmd_tmp=False, _pd=None, **kwargs):
                 """An iterator function which performs a linked image
                 operation on multiple children in parallel.
 
@@ -1890,6 +1976,10 @@ class LinkedImage(object):
                 always recurse into a child even if the linked image meta data
                 isn't changing.
 
+                '_syncmd_tmp' a boolean that indicates if we should write
+                linked image metadata in a temporary location in child images,
+                or just overwrite any existing data.
+
                 '_pd' a PlanDescription pointer."""
 
                 if _lic_list:
@@ -1908,12 +1998,27 @@ class LinkedImage(object):
                 else:
                         concurrency = global_settings.client_concurrency
 
+                # If we have a plan for the current image that means linked
+                # image metadata is probably changing so we always save it to
+                # a temporary file (and we don't overwrite the existing
+                # metadata until after we execute the plan).
+                if _pd is not None:
+                        _syncmd_tmp = True
+
+                # get parent metadata common to all child images
+                _pmd = None
+                if _pkg_op != pkgdefs.PKG_OP_DETACH:
+                        ppubs = get_pubs(self.__img)
+                        ppkgs = get_packages(self.__img, pd=_pd)
+                        pfacets = get_inheritable_facets(self.__img, pd=_pd)
+                        _pmd = (ppubs, ppkgs, pfacets)
+
                 # setup operation for each child
                 lic_setup = []
                 for lic in _lic_list:
                         try:
-                                lic.child_op_setup(_pkg_op, _progtrack,
-                                    _ignore_syncmd_nop, _pd, **kwargs)
+                                lic.child_op_setup(_pkg_op, _pmd, _progtrack,
+                                    _ignore_syncmd_nop, _syncmd_tmp, **kwargs)
                                 lic_setup.append(lic)
                         except apx.LinkedImageException, e:
                                 _rvdict[lic.child_name] = \
@@ -2186,7 +2291,7 @@ class LinkedImage(object):
                 # changing.  (this would be required for recursive operations,
                 # update operations, etc.)
                 _ignore_syncmd_nop = True
-                if pkg_op == pkgdefs.API_OP_SYNC:
+                if pd.child_op_implicit:
                         # the exception is if we're doing an implicit sync.
                         # to improve performance we assume the child is
                         # already in sync, so if its linked image metadata
@@ -2241,12 +2346,16 @@ class LinkedImage(object):
                 # of specific packages, etc, then when we recurse we'll do a
                 # sync in the child.
                 #
+                implicit = False
                 if api_op == pkgdefs.API_OP_UPDATE and not \
                     api_kwargs["pkgs_update"]:
                         pkg_op = pkgdefs.PKG_OP_UPDATE
+                elif api_op == pkgdefs.API_OP_SYNC:
+                        pkg_op = pkgdefs.PKG_OP_SYNC
                 else:
                         pkg_op = pkgdefs.PKG_OP_SYNC
-                return pkg_op
+                        implicit = True
+                return pkg_op, implicit
 
         @staticmethod
         def __recursion_args(pd, refresh_catalogs, update_index, api_kwargs):
@@ -2292,7 +2401,8 @@ class LinkedImage(object):
                 api_op = pd.plan_type
 
                 # update the plan arguments
-                pd.child_op = self.__recursion_op(api_op, api_kwargs)
+                pd.child_op, pd.child_op_implicit = \
+                    self.__recursion_op(api_op, api_kwargs)
                 pd.child_kwargs = self.__recursion_args(pd,
                     refresh_catalogs, update_index, api_kwargs)
                 pd.children_ignored = self.__lic_ignore
@@ -2318,6 +2428,7 @@ class LinkedImage(object):
                 pd.li_props = self.__props
                 pd.li_ppkgs = self.__ppkgs
                 pd.li_ppubs = self.__ppubs
+                pd.li_pfacets = self.__pfacets
 
         def setup_plan(self, pd):
                 """Reload a previously created plan."""
@@ -2326,6 +2437,7 @@ class LinkedImage(object):
                 self.__update_props(pd.li_props)
                 self.__ppubs = pd.li_ppubs
                 self.__ppkgs = pd.li_ppkgs
+                self.__pfacets = pd.li_pfacets
 
                 # now initialize our recursion state, this involves allocating
                 # handles to operate on children.  we don't need handles for
@@ -2521,6 +2633,7 @@ class LinkedImageChild(object):
                 self.__path_ppkgs = os.path.join(imgdir, PATH_PPKGS)
                 self.__path_prop = os.path.join(imgdir, PATH_PROP)
                 self.__path_ppubs = os.path.join(imgdir, PATH_PUBS)
+                self.__path_pfacets = os.path.join(imgdir, PATH_PFACETS)
 
                 # initialize a linked image child plugin
                 self.__plugin = \
@@ -2589,36 +2702,28 @@ class LinkedImageChild(object):
 
                 return True
 
-        def __push_ppkgs(self, tmp=False, test=False, pd=None):
+        def __push_ppkgs(self, ppkgs, tmp=False, test=False):
                 """Sync linked image parent constraint data to a child image.
 
                 'tmp' determines if we should read/write to the official
                 linked image metadata files, or if we should access temporary
                 versions (which have ".<runid>" appended to them."""
 
-                # there has to be an image plan to export
-                cati = self.__img.get_catalog(self.__img.IMG_CATALOG_INSTALLED)
-                ppkgs = set(cati.fmris())
-
-                if pd is not None:
-                        # if there's an image plan the we need to update the
-                        # installed packages based on that plan.
-                        for src, dst in pd.plan_desc:
-                                if src == dst:
-                                        continue
-                                if src:
-                                        assert src in ppkgs
-                                        ppkgs -= set([src])
-                                if dst:
-                                        assert dst not in ppkgs
-                                        ppkgs |= set([dst])
-
-                # paranoia
-                ppkgs = frozenset(ppkgs)
-
-                # save the planned cips
+                # save the planned parent packages
                 return self.__push_data(self.child_path, self.__path_ppkgs,
                     ppkgs, tmp, test)
+
+        def __push_pfacets(self, pfacets, tmp=False, test=False):
+                """Sync linked image parent facet data to a child image.
+
+                'tmp' determines if we should read/write to the official
+                linked image metadata files, or if we should access temporary
+                versions (which have ".<runid>" appended to them."""
+
+                # save the planned parent facets
+                return self.__push_data(self.child_path, self.__path_pfacets,
+                    pfacets, tmp, test)
+
 
         def __push_props(self, tmp=False, test=False):
                 """Sync linked image properties data to a child image.
@@ -2639,39 +2744,45 @@ class LinkedImageChild(object):
                 return self.__push_data(self.child_path, self.__path_prop,
                     props, tmp, test)
 
-        def __push_ppubs(self, tmp=False, test=False):
+        def __push_ppubs(self, ppubs, tmp=False, test=False):
                 """Sync linked image parent publisher data to a child image.
 
                 'tmp' determines if we should read/write to the official
                 linked image metadata files, or if we should access temporary
                 versions (which have ".<runid>" appended to them."""
 
-                ppubs = self.__linked.get_pubs()
                 return self.__push_data(self.child_path, self.__path_ppubs,
                     ppubs, tmp, test)
 
-        def __syncmd(self, tmp=False, test=False, pd=None):
+        def __syncmd(self, pmd, tmp=False, test=False):
                 """Sync linked image data to a child image.
 
                 'tmp' determines if we should read/write to the official
                 linked image metadata files, or if we should access temporary
                 versions (which have ".<runid>" appended to them."""
 
-                if pd:
-                        tmp = True
+                # unpack parent metadata tuple
+                ppubs, ppkgs, pfacets = pmd
 
-                ppkgs_updated = self.__push_ppkgs(tmp, test, pd=pd)
+                ppkgs_updated = self.__push_ppkgs(ppkgs, tmp, test)
                 props_updated = self.__push_props(tmp, test)
-                pubs_updated = self.__push_ppubs(tmp, test)
+                pubs_updated = self.__push_ppubs(ppubs, tmp, test)
+                pfacets_updated = self.__push_pfacets(pfacets, tmp, test)
 
-                return (props_updated or ppkgs_updated or pubs_updated)
+                return (props_updated or ppkgs_updated or pubs_updated or
+                    pfacets_updated)
 
-        def __child_op_setup_syncmd(self, ignore_syncmd_nop=True,
-            tmp=False, test=False, pd=None, stage=pkgdefs.API_STAGE_DEFAULT):
+        def __child_op_setup_syncmd(self, pmd, ignore_syncmd_nop=True,
+            tmp=False, test=False, stage=pkgdefs.API_STAGE_DEFAULT):
                 """Prepare to perform an operation on a child image by syncing
                 the latest linked image data to that image.  As part of this
                 operation, if we discover that the meta data hasn't changed we
                 may report back that there is nothing to do (EXIT_NOP).
+
+                'pmd' is a tuple that contains parent metadata that we will
+                sync to the child image.  Note this is not all the metadata
+                that we will sync, just the set which is common to all
+                children.
 
                 'ignore_syncmd_nop' a boolean that indicates if we should
                 always recurse into a child even if the linked image meta data
@@ -2685,23 +2796,16 @@ class LinkedImageChild(object):
                 image meta data, instead we should just test to see if the
                 meta data is changing.
 
-                'pd' an optional plan description object.  this plan
-                description describes changes that will be made to the parent
-                image.  if this is supplied then we derive the meta data that
-                we write into the child from the planned parent image state
-                (instead of the current parent image state).
-
                 'stage' indicates which stage of execution we should be
                 performing on a child image."""
 
-                # we don't actually update metadata during other stages of
-                # operation
+                # we don't update metadata during all stages of operation
                 if stage not in [
                     pkgdefs.API_STAGE_DEFAULT, pkgdefs.API_STAGE_PLAN]:
                         return True
 
                 try:
-                        updated = self.__syncmd(tmp=tmp, test=test, pd=pd)
+                        updated = self.__syncmd(pmd, tmp=tmp, test=test)
                 except apx.LinkedImageException, e:
                         self.__child_op_rvtuple = \
                             LI_RVTuple(e.lix_exitrv, e, None)
@@ -2720,9 +2824,9 @@ class LinkedImageChild(object):
                     LI_RVTuple(pkgdefs.EXIT_NOP, None, None)
                 return False
 
-        def __child_setup_sync(self, _progtrack, _ignore_syncmd_nop, _pd,
+        def __child_setup_sync(self, _pmd, _progtrack, _ignore_syncmd_nop,
+            _syncmd_tmp,
             accept=False,
-            li_attach_sync=False,
             li_md_only=False,
             li_pkg_updates=True,
             noexecute=False,
@@ -2735,9 +2839,6 @@ class LinkedImageChild(object):
                 linked image metadata in the child and then possibly recursing
                 into the child to actually update packages.
 
-                'li_attach_sync' indicates if this sync is part of an attach
-                operation.
-
                 For descriptions of parameters please see the descriptions in
                 api.py`gen_plan_*"""
 
@@ -2749,8 +2850,7 @@ class LinkedImageChild(object):
                         # we don't support updating packages in the parent
                         # during attach metadata only sync.
                         #
-                        assert not _pd
-                        if not self.__child_op_setup_syncmd(
+                        if not self.__child_op_setup_syncmd(_pmd,
                             ignore_syncmd_nop=False,
                             test=noexecute, stage=stage):
                                 # the update failed
@@ -2772,10 +2872,9 @@ class LinkedImageChild(object):
                 # we don't support updating packages in the parent
                 # during attach.
                 #
-                assert not li_attach_sync or _pd is None
-                if not self.__child_op_setup_syncmd(
+                if not self.__child_op_setup_syncmd(_pmd,
                     ignore_syncmd_nop=_ignore_syncmd_nop,
-                    tmp=li_attach_sync, stage=stage, pd=_pd):
+                    tmp=_syncmd_tmp, stage=stage):
                         # the update failed or the metadata didn't change
                         return
 
@@ -2805,7 +2904,8 @@ class LinkedImageChild(object):
                     update_index=update_index,
                     verbose=global_settings.client_output_verbose)
 
-        def __child_setup_update(self, _progtrack, _ignore_syncmd_nop, _pd,
+        def __child_setup_update(self, _pmd, _progtrack, _ignore_syncmd_nop,
+            _syncmd_tmp,
             accept=False,
             force=False,
             noexecute=False,
@@ -2817,8 +2917,9 @@ class LinkedImageChild(object):
                 """Prepare to update a child image."""
 
                 # first sync the metadata
-                if not self.__child_op_setup_syncmd(
-                    ignore_syncmd_nop=_ignore_syncmd_nop, pd=_pd, stage=stage):
+                if not self.__child_op_setup_syncmd(_pmd,
+                    ignore_syncmd_nop=_ignore_syncmd_nop,
+                    tmp=_syncmd_tmp, stage=stage):
                         # the update failed or the metadata didn't change
                         return
 
@@ -2845,23 +2946,27 @@ class LinkedImageChild(object):
                     update_index=update_index,
                     verbose=global_settings.client_output_verbose)
 
-        def __child_setup_detach(self, _progtrack, noexecute=False):
+        def __child_setup_detach(self, _progtrack, li_md_only=False,
+            li_pkg_updates=True, noexecute=False):
                 """Prepare to detach a child image."""
 
                 self.__pkg_remote.setup(self.child_path,
                     pkgdefs.PKG_OP_DETACH,
                     force=True,
+                    li_md_only=li_md_only,
+                    li_pkg_updates=li_pkg_updates,
                     li_target_all=False,
                     li_target_list=[],
                     noexecute=noexecute,
                     quiet=global_settings.client_output_quiet,
                     verbose=global_settings.client_output_verbose)
 
-        def __child_setup_pubcheck(self):
+        def __child_setup_pubcheck(self, _pmd):
                 """Prepare to a check if a child's publishers are in sync."""
 
                 # first sync the metadata
-                if not self.__child_op_setup_syncmd():
+                # a pubcheck should never update persistent meta data
+                if not self.__child_op_setup_syncmd(_pmd, tmp=True):
                         # the update failed
                         return
 
@@ -2869,12 +2974,12 @@ class LinkedImageChild(object):
                 self.__pkg_remote.setup(self.child_path,
                     pkgdefs.PKG_OP_PUBCHECK)
 
-        def __child_setup_audit(self):
+        def __child_setup_audit(self, _pmd):
                 """Prepare to a child image to see if it's in sync with its
                 constraints."""
 
                 # first sync the metadata
-                if not self.__child_op_setup_syncmd():
+                if not self.__child_op_setup_syncmd(_pmd, tmp=True):
                         # the update failed
                         return
 
@@ -2893,25 +2998,25 @@ class LinkedImageChild(object):
                 self.__pkg_remote.abort()
                 self.__child_op_rvtuple = None
 
-        def child_op_setup(self, _pkg_op, _progtrack, _ignore_syncmd_nop, _pd,
-            **kwargs):
+        def child_op_setup(self, _pkg_op, _pmd, _progtrack, _ignore_syncmd_nop,
+            _syncmd_tmp, **kwargs):
                 """Public interface to setup an operation that we'd like to
                 perform on a child image."""
 
                 assert self.__child_op_rvtuple is None
 
                 if _pkg_op == pkgdefs.PKG_OP_AUDIT_LINKED:
-                        self.__child_setup_audit(**kwargs)
+                        self.__child_setup_audit(_pmd, **kwargs)
                 elif _pkg_op == pkgdefs.PKG_OP_DETACH:
                         self.__child_setup_detach(_progtrack, **kwargs)
                 elif _pkg_op == pkgdefs.PKG_OP_PUBCHECK:
-                        self.__child_setup_pubcheck(**kwargs)
+                        self.__child_setup_pubcheck(_pmd, **kwargs)
                 elif _pkg_op == pkgdefs.PKG_OP_SYNC:
-                        self.__child_setup_sync(_progtrack,
-                            _ignore_syncmd_nop, _pd, **kwargs)
+                        self.__child_setup_sync(_pmd, _progtrack,
+                            _ignore_syncmd_nop, _syncmd_tmp, **kwargs)
                 elif _pkg_op == pkgdefs.PKG_OP_UPDATE:
-                        self.__child_setup_update(_progtrack,
-                            _ignore_syncmd_nop, _pd, **kwargs)
+                        self.__child_setup_update(_pmd, _progtrack,
+                            _ignore_syncmd_nop, _syncmd_tmp, **kwargs)
                 else:
                         raise RuntimeError(
                             "Unsupported package client op: %s" % _pkg_op)
@@ -3040,6 +3145,177 @@ class LinkedImageChild(object):
 
 
 # ---------------------------------------------------------------------------
+# Interfaces to obtain linked image metadata from an image
+#
+def get_pubs(img):
+        """Return publisher information for the specified image.
+
+        Publisher information is returned in a sorted list of lists
+        of the format:
+                <publisher name>, <sticky>
+
+        Where:
+                <publisher name> is a string
+                <sticky> is a boolean
+
+        The tuples are sorted by publisher rank.
+        """
+
+        return [
+            [str(p), p.sticky]
+            for p in img.get_sorted_publishers(inc_disabled=False)
+        ]
+
+def get_packages(img, pd=None):
+        """Figure out the current (or planned) list of packages in img."""
+
+        ppkgs = set(img.get_catalog(img.IMG_CATALOG_INSTALLED).fmris())
+
+        # if there's an image plan the we need to update the installed
+        # packages based on that plan.
+        if pd is not None:
+                for src, dst in pd.plan_desc:
+                        if src == dst:
+                                continue
+                        if src:
+                                assert src in ppkgs
+                                ppkgs -= set([src])
+                        if dst:
+                                assert dst not in ppkgs
+                                ppkgs |= set([dst])
+
+        # paranoia
+        return frozenset(ppkgs)
+
+def get_inheritable_facets(img, pd=None):
+        """Get Facets from an image that a child should inherit.
+
+        We only want to sync facets which affect packages that have parent
+        dependencies on themselves.  In practice this essentially limits us to
+        "facet.version-lock.*" facets."""
+
+        # get installed (or planned) parent packages and facets
+        ppkgs = get_packages(img, pd=pd)
+        facets = img.cfg.facets
+        if pd is not None and pd.new_facets is not None:
+                facets = pd.new_facets
+
+        # create a packages dictionary indexed by package stem.
+        ppkgs_dict = dict([
+                (pfmri.pkg_name, pfmri)
+                for pfmri in ppkgs
+        ])
+
+        #
+        # iterate through all installed (or planned) package incorporation
+        # dependency actions and find those that are affected by image facets.
+        #
+        # we don't check for package-wide facets here because they don't do
+        # anything.  (ie, facets defined via "set" actions in a package have
+        # no effect on other actions within that package.)
+        #
+        faceted_deps = dict()
+        cat = img.get_catalog(img.IMG_CATALOG_KNOWN)
+        for pfmri in ppkgs:
+                for act in cat.get_entry_actions(pfmri, [cat.DEPENDENCY]):
+                        # we're only interested in incorporate dependencies
+                        if act.name != "depend" or \
+                            act.attrs["type"] != "incorporate":
+                                continue
+
+                        # check if any image facets affect this dependency
+                        # W0212 Access to a protected member
+                        # pylint: disable=W0212
+                        matching_facets = facets._action_match(act)
+                        # pylint: enable=W0212
+                        if not matching_facets:
+                                continue
+
+                        # if all the matching facets are true we don't care
+                        # about the match.
+                        if set([i[1] for i in matching_facets]) == set([True]):
+                                continue
+
+                        # save this set of facets.
+                        faceted_deps[act] = matching_facets
+
+        #
+        # For each faceted incorporation dependency, check if it affects a
+        # package that has parent dependencies on itself.  This is really a
+        # best effort in that we don't follow package renames or obsoletions,
+        # etc.
+        #
+        # To limit the number of packages we inspect, we'll try to match the
+        # incorporation dependency fmri targets packages by stem to packages
+        # which are installed (or planned) within the parent image.  This
+        # allows us to quickly get a fully qualified fmri and check against a
+        # package for which we have already downloaded a manifest.
+        #
+        # If we can't match the dependency fmri package stem against packages
+        # installed (or planned) in the parent image, we don't bother
+        # searching for allowable packages in the catalog, because even if we
+        # found them in the catalog and they did have a parent dependency,
+        # they'd all still be uninstallable in any children because there
+        # would be no way to satisfy the parent dependency.  (as we already
+        # stated the package is not installed in the parent.)
+        #
+        faceted_linked_deps = dict()
+        for act in faceted_deps:
+                for fmri in act.attrlist("fmri"):
+                        # the build_release specified below ("5.11") doesn't
+                        # matter since we only create a PkgFmri object so we
+                        # can reference pkg_name
+                        pfmri = pkg.fmri.PkgFmri(fmri, "5.11")
+                        pfmri = ppkgs_dict.get(pfmri.pkg_name, None)
+                        if pfmri is None:
+                                continue
+
+                        # check if this package has a dependency on itself in
+                        # its parent image.
+                        for act2 in cat.get_entry_actions(pfmri,
+                            [cat.DEPENDENCY]):
+                                if act2.name != "depend" or \
+                                    act2.attrs["type"] != "parent":
+                                        continue
+                                if pkg.actions.depend.DEPEND_SELF not in \
+                                    act2.attrlist("fmri"):
+                                        continue
+                                faceted_linked_deps[act] = faceted_deps[act]
+                                break
+        del faceted_deps
+
+        #
+        # Create a set of all facets which affect incorporation dependencies
+        # on synced packages.
+        #
+        # Note that we can't limit ourselves to only passing on facets that
+        # affect dependencies which have been disabled.  Doing this could lead
+        # to incorrect results because facets allow for pattern matching.  So
+        # for example say we had the following dependencies on synced
+        # packages:
+        #
+        #    depend type=incorporation fmri=some_synced_pkg1 facet.123456=true
+        #    depend type=incorporation fmri=some_synced_pkg2 facet.456789=true
+        #
+        # and the following image facets:
+        #
+        #    facet.123456 = True
+        #    facet.*456* = False
+        #
+        # if we only passed through facets which affected disabled packages
+        # we'd just pass through "facet.*456*", but this would result in
+        # disabling both dependencies above, not just the second dependency.
+        #
+        pfacets = pkg.facet.Facets()
+        for facets in faceted_linked_deps.values():
+                for k, v in facets:
+                        # W0212 Access to a protected member
+                        # pylint: disable=W0212
+                        pfacets._set_inherited(k, v)
+
+        return pfacets
+
+# ---------------------------------------------------------------------------
 # Utility Functions
 #
 def save_data(path, data, root="/"):
@@ -3068,12 +3344,12 @@ def save_data(path, data, root="/"):
                 # pylint: disable=W0212
                 raise apx._convert_error(e)
 
-def load_data(path, missing_val=None):
+def load_data(path, missing_ok=False):
         """Load JSON encoded linked image metadata from a file."""
 
         try:
-                if (missing_val != None) and not path_exists(path):
-                        return missing_val
+                if missing_ok and not path_exists(path):
+                        return None
                 fobj = open(path)
                 data = json.load(fobj, encoding="utf-8",
                     object_hook=pkg.client.linkedimage.PkgDecoder)

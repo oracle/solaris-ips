@@ -1200,6 +1200,9 @@ Facets and variants are special properties of the image and cannot be set on ind
 Facets are treated as boolean values by package clients: Facets can be set only to \fBtrue\fR (enabled) or \fBfalse\fR (disabled) in the image. By default, all facets are considered to be set to \fBtrue\fR in the image.
 .sp
 .LP
+Facets can either be set locally within an image or inherited from a parent image. Inherited facets are evaluated before, and hence take priority over, any local facets. If the same exact facet is both inherited and set locally, the inherited facet value masks the local value. Facet changes made via \fBpkg change-facet\fR will only affect local facets.
+.sp
+.LP
 The value of a facet tag on an action can be set to \fBall\fR or \fBtrue\fR to control how clients filter faceted actions. All values other than \fBall\fR or \fBtrue\fR have undefined behavior. See below for a description of the conditions that must exist in the image to install an action that has facet tags.
 .sp
 .LP

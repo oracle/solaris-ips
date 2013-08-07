@@ -146,7 +146,8 @@ class TestPkgChangeFacet(pkg5unittest.SingleDepotTestCase):
                 self.pkg("change-facet -n --parsable=0 wombat=false")
                 self.assertEqualParsable(self.output,
                     affect_packages=[],
-                    change_facets=[["facet.wombat", False]])
+                    change_facets=[["facet.wombat", False, None, 'local',
+                       False, False]])
 
                 # Again, but this time after removing the publisher cache data
                 # and as an unprivileged user to verify that cached manifest
@@ -158,7 +159,8 @@ class TestPkgChangeFacet(pkg5unittest.SingleDepotTestCase):
                     "wombat=false", su_wrap=True)
                 self.assertEqualParsable(self.output,
                     affect_packages=[],
-                    change_facets=[["facet.wombat", False]])
+                    change_facets=[["facet.wombat", False, None, 'local',
+                        False, False]])
 
                 # Again, but this time after removing the cache directory
                 # entirely.
@@ -169,14 +171,16 @@ class TestPkgChangeFacet(pkg5unittest.SingleDepotTestCase):
                     "wombat=false", su_wrap=True)
                 self.assertEqualParsable(self.output,
                     affect_packages=[],
-                    change_facets=[["facet.wombat", False]])
+                    change_facets=[["facet.wombat", False, None, 'local',
+                        False, False]])
 
                 # change to pick up another file w/ two tags and test the
                 # parsable output
                 self.pkg("change-facet --parsable=0 facet.locale.nl_ZA=True")
                 self.assertEqualParsable(self.output,
                     affect_packages=alist,
-                    change_facets=[["facet.locale.nl_ZA", True]])
+                    change_facets=[["facet.locale.nl_ZA", True, None, 'local',
+                        False, False]])
                 self.pkg("verify")
                 self.pkg("facet")
 
@@ -195,9 +199,11 @@ class TestPkgChangeFacet(pkg5unittest.SingleDepotTestCase):
                 self.assertEqualParsable(self.output,
                     affect_packages=alist,
                     change_facets=[
-                        ["facet.locale*", None],
-                        ["facet.locale.fr*", None],
-                        ["facet.locale.fr_CA", None]
+                        ["facet.locale*", None, False, 'local', False, False],
+                        ["facet.locale.fr*", None, True, 'local', False,
+                            False],
+                        ["facet.locale.fr_CA", None, False, 'local', False,
+                            False]
                     ])
                 self.pkg("verify")
 
@@ -225,9 +231,10 @@ class TestPkgChangeFacet(pkg5unittest.SingleDepotTestCase):
                 self.assertEqualParsable(self.output,
                     affect_packages=alist,
                     change_facets=[
-                        ["facet.locale*", None],
-                        ["facet.locale.*", False],
-                        ["facet.locale.fr_CA", True]
+                        ["facet.locale*", None, False, 'local', False, False],
+                        ["facet.locale.*", False, None, 'local', False, False],
+                        ["facet.locale.fr_CA", True, None, 'local', False,
+                            False]
                     ])
                 self.assert_file_is_there("4")
 
@@ -238,9 +245,11 @@ class TestPkgChangeFacet(pkg5unittest.SingleDepotTestCase):
                 self.assertEqualParsable(self.output,
                     affect_packages=alist,
                     change_facets=[
-                        ["facet.locale.*", None],
-                        ["facet.locale.fr_*", False],
-                        ["facet.locale.fr_CA", None]
+                        ["facet.locale.*", None, False, 'local', False, False],
+                        ["facet.locale.fr_*", False, None, 'local', False,
+                            False],
+                        ["facet.locale.fr_CA", None, True, 'local', False,
+                            False]
                     ])
                 self.assert_file_is_there("4")
 
@@ -253,10 +262,10 @@ class TestPkgChangeFacet(pkg5unittest.SingleDepotTestCase):
                 # it works.
                 self.pkg("change-facet -v foo=True")
                 self.pkg("facet -H -F tsv")
-                self.assertEqual("facet.foo\tTrue\n", self.output)
+                self.assertEqual("facet.foo\tTrue\tlocal\n", self.output)
                 self.pkg("change-facet --parsable=0 foo=None")
                 self.assertEqualParsable(self.output, change_facets=[
-                    ["facet.foo", None]])
+                    ["facet.foo", None, True, 'local', False, False]])
                 self.pkg("facet -H")
                 self.assertEqual("", self.output)
 
@@ -293,8 +302,8 @@ class TestPkgChangeFacet(pkg5unittest.SingleDepotTestCase):
                 self.pkg("install pkg_B@1.0")
                 self.pkg("facet -H -F tsv")
                 expected = (
-                    "facet.locale.fr\tFalse\n"
-                    "facet.locale.fr_FR\tFalse\n")
+                    "facet.locale.fr\tFalse\tlocal\n"
+                    "facet.locale.fr_FR\tFalse\tlocal\n")
                 self.assertEqualDiff(expected, self.output)
                 for i in [ 0, 3, 4, 5, 6, 7 ]:
                         self.assert_file_is_there(str(i))
@@ -307,8 +316,8 @@ class TestPkgChangeFacet(pkg5unittest.SingleDepotTestCase):
                 self.pkg("update")
                 self.pkg("facet -H -F tsv")
                 expected = (
-                    "facet.locale.fr\tFalse\n"
-                    "facet.locale.fr_FR\tFalse\n")
+                    "facet.locale.fr\tFalse\tlocal\n"
+                    "facet.locale.fr_FR\tFalse\tlocal\n")
                 self.assertEqualDiff(expected, self.output)
                 for i in [ 0, 3, 4, 5, 6, 7 ]:
                         self.assert_file_is_there(str(i))
@@ -334,7 +343,7 @@ class TestPkgChangeFacet(pkg5unittest.SingleDepotTestCase):
                 self.pkg("facet -H -F tsv")
                 output = self.reduceSpaces(self.output)
                 expected = (
-                    "facet.locale.fr\tFalse\n")
+                    "facet.locale.fr\tFalse\tlocal\n")
                 self.assertEqualDiff(expected, output)
                 for i in [ 0, 2, 3, 4, 5, 6, 7 ]:
                         self.assert_file_is_there(str(i))
@@ -346,8 +355,8 @@ class TestPkgChangeFacet(pkg5unittest.SingleDepotTestCase):
                 self.pkg("change-facet -v locale.fr_FR=False")
                 self.pkg("facet -H -F tsv")
                 expected = (
-                    "facet.locale.fr\tFalse\n"
-                    "facet.locale.fr_FR\tFalse\n")
+                    "facet.locale.fr\tFalse\tlocal\n"
+                    "facet.locale.fr_FR\tFalse\tlocal\n")
                 self.assertEqualDiff(expected, self.output)
                 for i in [ 0, 3, 4, 5, 6, 7 ]:
                         self.assert_file_is_there(str(i))
@@ -361,8 +370,8 @@ class TestPkgChangeFacet(pkg5unittest.SingleDepotTestCase):
                 self.pkg("facet -H -F tsv")
                 output = self.reduceSpaces(self.output)
                 expected = (
-                    "facet.locale.fr_FR\tFalse\n"
-                    "facet.locale.nl\tFalse\n")
+                    "facet.locale.fr_FR\tFalse\tlocal\n"
+                    "facet.locale.nl\tFalse\tlocal\n")
                 self.assertEqualDiff(expected, output)
                 for i in [ 0, 1, 3, 4, 6, 7 ]:
                         self.assert_file_is_there(str(i))
@@ -376,7 +385,7 @@ class TestPkgChangeFacet(pkg5unittest.SingleDepotTestCase):
                 self.pkg("facet -H -F tsv")
                 output = self.reduceSpaces(self.output)
                 expected = (
-                    "facet.locale.fr_FR\tFalse\n")
+                    "facet.locale.fr_FR\tFalse\tlocal\n")
                 self.assertEqualDiff(expected, output)
                 for i in [ 0, 1, 3, 4, 5, 6, 7 ]:
                         self.assert_file_is_there(str(i))

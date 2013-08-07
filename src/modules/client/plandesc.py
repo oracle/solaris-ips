@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2012, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2012, 2013, Oracle and/or its affiliates. All rights reserved.
 #
 
 """
@@ -112,17 +112,16 @@ class PlanDescription(object):
                     "implementation-version": pkg.version.Version,
                 }
             },
-            "_changed_facets": pkg.facet.Facets,
             "_fmri_changes": [ ( pkg.fmri.PkgFmri, pkg.fmri.PkgFmri ) ],
             "_new_avoid_obs": ( set(), set() ),
-            "_new_facets": pkg.facet.Facets,
             "_new_mediators": collections.defaultdict(set, {
                 str: {
                     "version": pkg.version.Version,
                     "implementation-version": pkg.version.Version,
                 }
             }),
-            "_removed_facets": set(),
+            "_old_facets": pkg.facet.Facets,
+            "_new_facets": pkg.facet.Facets,
             "_rm_aliases": { str: set() },
             "added_groups": { str: pkg.fmri.PkgFmri },
             "added_users": { str: pkg.fmri.PkgFmri },
@@ -130,6 +129,7 @@ class PlanDescription(object):
             "children_nop": [ li.LinkedImageName ],
             "children_planned": [ li.LinkedImageName ],
             "install_actions": [ _ActionPlan ],
+            "li_pfacets": pkg.facet.Facets,
             "li_ppkgs": frozenset([ pkg.fmri.PkgFmri ]),
             "li_props": { li.PROP_NAME: li.LinkedImageName },
             "pkg_plans": [ pkg.client.pkgplan.PkgPlan ],
@@ -157,9 +157,10 @@ class PlanDescription(object):
                 self._cfg_mediators = {}
                 self._varcets_change = False
                 self._new_variants = None
-                self._changed_facets = pkg.facet.Facets()
-                self._removed_facets = set()
+                self._old_facets = None
                 self._new_facets = None
+                self._facet_change = False
+                self._masked_facet_change = False
                 self._new_mediators = collections.defaultdict(set)
                 self._mediators_change = False
                 self._new_avoid_obs = (set(), set())
@@ -172,6 +173,7 @@ class PlanDescription(object):
                 self.li_ppkgs = frozenset()
                 self.li_ppubs = None
                 self.li_props = {}
+                self._li_pkg_updates = True
 
                 #
                 # Properties set when state >= EVALUATED_OK
@@ -198,6 +200,7 @@ class PlanDescription(object):
                 self._need_boot_archive = None
                 # child properties
                 self.child_op = None
+                self.child_op_implicit = False
                 self.child_kwargs = {}
                 self.children_ignored = None
                 self.children_planned = []
@@ -467,27 +470,88 @@ class PlanDescription(object):
 
         @property
         def varcets(self):
-                """Returns a tuple of two lists containing the facet and variant
-                changes in this plan."""
+                """Returns a tuple of two lists containing the facet and
+                variant changes in this plan.
+
+                The variant list contains tuples with the following format:
+
+                    (<variant>, <new-value>)
+
+                The facet list contains tuples with the following format:
+
+                    (<facet>, <new-value>, <old-value>, <source>,
+                        <new-masked>, <old-masked>)
+
+                """
+
                 vs = []
                 if self._new_variants:
                         vs = self._new_variants.items()
+
+                # sort results by variant name
+                vs.sort(key=lambda x: x[0])
+
                 fs = []
-                fs.extend(self._changed_facets.items())
-                fs.extend([(f, None) for f in self._removed_facets])
+                if self._new_facets is None:
+                        return (vs, fs)
+
+                # create new dictionaries that index facets by name and
+                # source:
+                #    dict[(<facet, src>)] = (<value>, <masked>)
+                old_facets = dict([
+                    ((f, src), (v, masked))
+                    for f in self._old_facets
+                    # W0212 Access to a protected member
+                    # pylint: disable=W0212
+                    for v, src, masked in self._old_facets._src_values(f)
+                ])
+                new_facets = dict([
+                    ((f, src), (v, masked))
+                    for f in self._new_facets
+                    # W0212 Access to a protected member
+                    # pylint: disable=W0212
+                    for v, src, masked in self._new_facets._src_values(f)
+                ])
+
+                # check for removed facets
+                for f, src in set(old_facets) - set(new_facets):
+                        v, masked = old_facets[f, src]
+                        fs.append((f, None, v, src, masked, False))
+
+                # check for added facets
+                for f, src in set(new_facets) - set(old_facets):
+                        v, masked = new_facets[f, src]
+                        fs.append((f, v, None, src, False, masked))
+
+                # check for changing facets
+                for f, src in set(old_facets) & set(new_facets):
+                        if old_facets[f, src] == new_facets[f, src]:
+                                continue
+                        v_old, m_old = old_facets[f, src]
+                        v_new, m_new = new_facets[f, src]
+                        fs.append((f, v_new, v_old, src, m_old, m_new))
+
+                # sort results by facet name
+                fs.sort(key=lambda x: x[0])
+
                 return (vs, fs)
 
         def get_varcets(self):
                 """Returns a formatted list of strings representing the
                 variant/facet changes in this plan"""
                 vs, fs = self.varcets
-                return list(itertools.chain((
+                rv = [
                     "variant %s: %s" % (name[8:], val)
                     for (name, val) in vs
-                ), (
-                    "  facet %s: %s" % (name[6:], val)
-                    for (name, val) in fs
-                )))
+                ]
+                masked_str = _(" (masked)")
+                for name, v_new, v_old, src, m_old, m_new in fs:
+                        m_old = m_old and masked_str or ""
+                        m_new = m_new and masked_str or ""
+                        msg = "  facet %s (%s): %s%s -> %s%s" % \
+                            (name[6:], src, v_old, m_old, v_new, m_new)
+                        rv.append(msg)
+                return rv
 
         def get_changes(self):
                 """A generation function that yields tuples of PackageInfo
@@ -680,3 +744,11 @@ class PlanDescription(object):
         def cbytes_avail(self):
                 """Estimated number of bytes available in download cache"""
                 return self._cbytes_avail
+
+        @property
+        def new_facets(self):
+                """If facets are changing, this is the new set of facets being
+                applied."""
+                if self._new_facets is None:
+                        return None
+                return pkg.facet.Facets(self._new_facets)

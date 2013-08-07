@@ -688,6 +688,7 @@ opts_uninstall = \
     opts_table_beopts + \
     opts_table_concurrency + \
     opts_table_li_ignore + \
+    opts_table_li_no_psync + \
     opts_table_no_index + \
     opts_table_nqv + \
     opts_table_parsable + \
@@ -702,6 +703,8 @@ opts_audit_linked = \
 
 opts_detach_linked = \
     opts_table_force + \
+    opts_table_li_md_only + \
+    opts_table_li_no_pkg_updates + \
     opts_table_li_target + \
     opts_table_nqv + \
     []

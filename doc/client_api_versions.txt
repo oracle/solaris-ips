@@ -1,3 +1,29 @@
+Version 76:
+Compatible with clients using versions 72-75 [1].
+
+    pkg.client.api.ImageInterface has changed as follows:
+
+	* The generator functions 'gen_facets()' has been updated to
+	  give more information about what facets are changing.
+	  Previously a 2 value tuple was returned, now a 4 value tuple
+	  is returned.
+
+	* [1] This is actually an incompatible change to the old
+	  'gen_facets()' behavior, but since gen_facets was only
+	  introduced in the previous version of the client API it's
+	  unlikely that anyone outside of the pkg gate has adopted it's
+	  use.  But since we'd like to avoid an incompatible client API
+	  change we're going to ignore this issue.
+
+	* The parsable package plan output format for facet changes has
+	  been changed.  Previously a tuple with 2 values was returned;
+	  now a tuple with 6 values is returned.
+
+	* Added 'li_parent_sync' parameter to 'gen_plan_uninstall()'.
+
+	* Added 'li_md_only' and 'li_pkg_updates' parameters to
+	  'gen_plan_detach()' and 'detach_linked_children()'
+
 Version 75:
 Compatible with clients using versions 72-74.
 

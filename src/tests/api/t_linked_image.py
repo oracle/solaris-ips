@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2011, 2012, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2011, 2013, Oracle and/or its affiliates. All rights reserved.
 #
 
 import testutils
@@ -796,7 +796,7 @@ packages known:
                 api_objs[1].gen_plan_change_varcets(
                     variants={"variant.foo": "baz"})
 
-                # install a synced package into 1
+                # install a synced package into 0
                 self._api_install(api_objs[0], [self.p_sync1_name[2]],
                     li_ignore=[])
 
@@ -978,10 +978,12 @@ packages known:
                         [self.p_sync1_name_gen])
 
                 # test operations on child nodes
-                rvdict = {1: EXIT_NOP, 2: EXIT_OOPS, 3: EXIT_OOPS,
+                rvdict = {1: EXIT_OK, 2: EXIT_OOPS, 3: EXIT_OOPS,
                     4: EXIT_OOPS}
                 self._children_op(0, [], "sync_linked_children",
                     rvdict=rvdict)
+                rvdict = {1: EXIT_NOP, 2: EXIT_OOPS, 3: EXIT_OOPS,
+                    4: EXIT_OOPS}
                 self._children_op(0, [1, 2, 3, 4], "sync_linked_children",
                     rvdict=rvdict)
 

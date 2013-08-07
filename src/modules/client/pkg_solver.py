@@ -361,7 +361,9 @@ class PkgSolver(object):
                 if relax_all:
                         relax_pkgs = self.__installed_pkgs
                 else:
-                        relax_pkgs = proposed_pkgs
+                        relax_pkgs = proposed_pkgs | \
+                            self.__relax_parent_self_constrained(excludes,
+                                ignore_inst_parent_deps)
 
                 inc_list, con_lists = self.__get_installed_unbound_inc_list(
                     relax_pkgs, excludes=excludes)
@@ -1634,6 +1636,35 @@ class PkgSolver(object):
                             (N_("All versions matching '{0}' dependency {1} are rejected"),
                             (dtype, fmri)),
                             matching)
+
+        def __relax_parent_self_constrained(self, excludes, \
+            ignore_inst_parent_deps):
+                """If we're a child image then we need to relax packages
+                that are dependent upon themselves in the parent image.  This
+                is necessary to keep those packages in sync."""
+
+                relax_pkgs = set()
+
+                # check if we're a child image.
+                if self.__parent_pkgs is None:
+                        return relax_pkgs
+
+                # if we're ignoring parent dependencies there is no reason to
+                # relax install-holds in packages constrained by those
+                # dependencies.
+                if ignore_inst_parent_deps:
+                        return relax_pkgs
+
+                for f in self.__installed_fmris:
+                        for da in self.__get_dependency_actions(f, excludes):
+                                if da.attrs["type"] != "parent":
+                                        continue
+                                if pkg.actions.depend.DEPEND_SELF in \
+                                    da.attrlist("fmri"):
+                                        relax_pkgs.add(f.pkg_name)
+                                        break
+
+                return relax_pkgs
 
         def __generate_dependency_errors(self, fmri_list, excludes=EmptyI):
                 """ Returns a list of strings describing why fmris cannot

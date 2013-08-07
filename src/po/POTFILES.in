@@ -38,6 +38,7 @@ modules/client/imageplan.py
 modules/client/linkedimage/__init__.py
 modules/client/options.py
 modules/client/pkg_solver.py
+modules/client/plandesc.py
 modules/client/progress.py
 modules/client/publisher.py
 modules/client/transport/repo.py

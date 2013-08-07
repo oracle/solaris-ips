@@ -37,6 +37,7 @@ import stat
 import tempfile
 import unittest
 
+from pkg.client.pkgdefs import EXIT_OOPS
 
 class TestPkgVarcet(pkg5unittest.SingleDepotTestCase):
 
@@ -76,6 +77,11 @@ class TestPkgVarcet(pkg5unittest.SingleDepotTestCase):
             add file tmp/non-debug path=usr/bin/bar mode=0755 owner=root group=root variant.unknown=bar
             add file tmp/non-debug path=usr/bin/foo mode=0755 owner=root group=root variant.unknown=foo
             close """
+
+        pkg_need_foo = """
+            open need_foo@1.0
+            add depend type=require fmri=foo
+            """
 
         misc_files = ["tmp/debug", "tmp/non-debug", "tmp/neapolitan",
             "tmp/strawberry", "tmp/doc", "tmp/man", "tmp/pdf"]
@@ -168,10 +174,10 @@ class TestPkgVarcet(pkg5unittest.SingleDepotTestCase):
 
                 # Verify output for no options and no patterns.
                 exp_def = """\
-facet.doc.* False
-facet.doc.html False
-facet.doc.man False
-facet.doc.txt True
+facet.doc.* False local
+facet.doc.html False local
+facet.doc.man False local
+facet.doc.txt True local
 """
                 self.__assert_facet_matches(exp_def)
 
@@ -181,28 +187,28 @@ facet.doc.txt True
 
                 # Matched case for explicitly set.
                 exp_def = """\
-facet.doc.* False
-facet.doc.txt True
+facet.doc.* False local
+facet.doc.txt True local
 """
                 names = ("'facet.doc.[*]'", "doc.txt")
                 self.__assert_facet_matches(exp_def, names=names)
 
                 # Verify -a output.
                 exp_def = """\
-facet.doc.* False
-facet.doc.html False
-facet.doc.man False
-facet.doc.pdf False
-facet.doc.txt True
+facet.doc.* False local
+facet.doc.html False local
+facet.doc.man False local
+facet.doc.pdf False local
+facet.doc.txt True local
 """
                 opts = ("-a",)
                 self.__assert_facet_matches(exp_def, opts=opts)
 
                 # Matched case for explicitly set and those in packages.
                 exp_def = """\
-facet.doc.* False
-facet.doc.pdf False
-facet.doc.txt True
+facet.doc.* False local
+facet.doc.pdf False local
+facet.doc.txt True local
 """
                 names = ("'facet.doc.[*]'", "*pdf", "facet.doc.txt")
                 opts = ("-a",)
@@ -210,9 +216,9 @@ facet.doc.txt True
 
                 # Verify -i output.
                 exp_def = """\
-facet.doc.man False
-facet.doc.pdf False
-facet.doc.txt True
+facet.doc.man False local
+facet.doc.pdf False local
+facet.doc.txt True local
 """
                 opts = ("-i",)
                 self.__assert_facet_matches(exp_def, opts=opts)
@@ -223,15 +229,15 @@ facet.doc.txt True
 
                 # Matched case in packages.
                 exp_def = """\
-facet.doc.man False
-facet.doc.pdf False
+facet.doc.man False local
+facet.doc.pdf False local
 """
                 names = ("'facet.*[!t]'",)
                 opts = ("-i",)
                 self.__assert_facet_matches(exp_def, opts=opts, names=names)
 
                 exp_def = """\
-facet.doc.pdf False
+facet.doc.pdf False local
 """
                 names = ("'*pdf'",)
                 opts = ("-i",)
@@ -242,10 +248,10 @@ facet.doc.pdf False
                 self.pkg("uninstall foo")
 
                 exp_def = """\
-facet.doc.* False
-facet.doc.html False
-facet.doc.man False
-facet.doc.txt True
+facet.doc.* False local
+facet.doc.html False local
+facet.doc.man False local
+facet.doc.txt True local
 """
 
                 # Output should be the same for both -a and default cases with
@@ -300,10 +306,10 @@ facet.doc.txt True
                     "facet.doc.html=False facet.doc.txt=True")
 
                 exp_def = """\
-facet.doc.* False
-facet.doc.html False
-facet.doc.man False
-facet.doc.txt True
+facet.doc.* False local
+facet.doc.html False local
+facet.doc.man False local
+facet.doc.txt True local
 """
 
                 # Output should be the same for both -a and default cases with
@@ -318,10 +324,10 @@ facet.doc.txt True
 
                 # Verify output for no options and no patterns.
                 exp_def = """\
-facet.doc.* False
-facet.doc.html False
-facet.doc.man False
-facet.doc.txt True
+facet.doc.* False local
+facet.doc.html False local
+facet.doc.man False local
+facet.doc.txt True local
 """
                 self.__assert_facet_matches(exp_def)
 
@@ -585,6 +591,41 @@ variant.unknown bar
 variant.unknown foo
 """ % variants
                         self.__assert_variant_matches(exp_def, opts=opts)
+
+        def test_02_varcet_reject(self):
+                """Verify that if we try to --reject packages that should get
+                removed we invoke the solver."""
+
+                # create an image
+                variants = { "variant.icecream": "strawberry" }
+                self.image_create(self.rurl, variants=variants)
+
+                # install a package with a dependency
+                self.pkg("install need_foo@1.0")
+
+                # Set some facets/variant while rejecting a random package.
+                self.pkg("change-facet --reject=nothing "
+                    "facet.doc.txt=True")
+                self.pkg("change-variant --reject=nothing "
+                    "variant.icecream=neapolitan")
+
+                # Reset the facets/variant to the same value (which would
+                # normally be a noop) while rejecting a package and make sure
+                # that package gets uninstalled.
+                self.pkg("change-facet --reject=need_foo "
+                    "facet.doc.txt=True")
+                self.pkg("install need_foo@1.0")
+                self.pkg("change-variant --reject=need_foo "
+                    "variant.icecream=neapolitan")
+                self.pkg("install need_foo@1.0")
+
+                # Reset the facets/variant to the same value (which would
+                # normally be a noop) while rejecting a package we can't
+                # uninstall due to dependencies.  Make sure this fails.
+                self.pkg("change-facet --reject=foo "
+                    "facet.doc.txt=True", exit=EXIT_OOPS)
+                self.pkg("change-variant --reject=foo "
+                    "variant.icecream=neapolitan", exit=EXIT_OOPS)
 
 
 if __name__ == "__main__":

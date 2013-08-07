@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2007, 2012, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2007, 2013, Oracle and/or its affiliates. All rights reserved.
 #
 
 """module describing a generic packaging object
@@ -45,6 +45,8 @@ import pkg.actions
 import pkg.client.api_errors as apx
 import pkg.portable as portable
 import pkg.variant as variant
+
+from pkg.misc import EmptyDict
 
 # Directories must precede all filesystem object actions; hardlinks must follow
 # all filesystem object actions (except links).  Note that user and group
@@ -621,6 +623,33 @@ class Action(object):
                 return variant.VariantCombinationTemplate(dict((
                     (v, self.attrs[v]) for v in self.get_varcet_keys()[0]
                 )))
+
+        def strip(self, preserve=EmptyDict):
+                """Strip actions of attributes which are unnecessary once
+                those actions have been installed in an image.  Stripped
+                actions are saved in an images stripped action cache and used
+                for conflicting actions checks during image planning
+                operations."""
+
+                for key in self.attrs.keys():
+                        # strip out variant and facet information
+                        if key[:8] == "variant." or key[:6] == "facet.":
+                                del self.attrs[key]
+                                continue
+                        # keep unique attributes
+                        if not self.unique_attrs or key in self.unique_attrs:
+                                continue
+                        # keep file action overlay attributes
+                        if self.name == "file" and key == "overlay":
+                                continue
+                        # keep specified keys
+                        if key in preserve.get(self.name, []):
+                                continue
+                        # keep link/hardlink action mediator attributes
+                        if (self.name == "link" or self.name == "hardlink") \
+                            and key[:8] == "mediator":
+                                continue
+                        del self.attrs[key]
 
         def strip_variants(self):
                 """Remove all variant tags from the attrs dictionary."""
