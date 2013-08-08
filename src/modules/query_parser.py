@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2009, 2010, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2009, 2013, Oracle and/or its affiliates. All rights reserved.
 #
 
 import os
@@ -1411,6 +1411,12 @@ class TermQuery(object):
                 elif self._data_token_offset.has_entity(term):
                         offsets = set([
                             self._data_token_offset.get_id(term)])
+                else:
+                        # Close the dictionaries since there are
+                        # no more results to yield.
+                        self._close_dicts()
+                        return
+
                 # Restrict results by package name.
                 if not self.pkg_name_wildcard:
                         try:

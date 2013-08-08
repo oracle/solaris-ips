@@ -137,6 +137,11 @@ close
             "basename   file      bin/example_path          pkg:/example_pkg@1.0-0\n"
         ])
 
+        res_remote_case_sensitive = set([
+            headers,
+            "pkg.fmri	set	test/example_pkg pkg:/example_pkg@1.0-0\n"
+        ])
+
         res_remote_bin = set([
             headers,
             "path       dir       bin                       pkg:/example_pkg@1.0-0\n"
@@ -382,6 +387,8 @@ adm:NP:6445::::::
                 self.pkg("search -a -r example_pkg")
 
                 self._search_op(True, "example_path", self.res_remote_path)
+                self._search_op(True, "':set:pkg.fmri:exAMple_pkg'",
+                    self.res_remote_case_sensitive, case_sensitive=False)
                 self._search_op(True, "'(example_path)'", self.res_remote_path)
                 self._search_op(True, "'<exam*:::>'",
                     self.res_remote_pkg_ret_pkg)
@@ -458,6 +465,8 @@ adm:NP:6445::::::
                 self.pkg("search -a -r '<e*> OR e*'", exit=1)
                 self.pkg("search -a -r 'e* OR <e*>'", exit=1)
                 self._search_op(True, "pkg:/example_path", self.res_remote_path)
+                self.pkg("search -a -r -I ':set:pkg.fmri:exAMple_pkg'", exit=1)
+                self.assert_(self.errout == "" )
 
         def _run_local_tests(self):
                 outfile = os.path.join(self.test_root, "res")
