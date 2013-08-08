@@ -465,7 +465,6 @@ class PlanDescription(object):
                 before it was salvaged, and 'salvage_path' is where the item was
                 moved to.  This property is only valid after plan execution
                 has completed."""
-                assert self.executed
                 return self._salvaged
 
         @property

@@ -1479,7 +1479,12 @@ def __api_execute_plan(operation, api_inst):
 
                 try:
                         salvaged = api_inst.describe().salvaged
-                        if salvaged:
+			newbe = api_inst.describe().new_be
+                        if salvaged and (rval == EXIT_OK or not newbe):
+                                # Only show salvaged file list if populated
+                                # and operation was successful, or if operation
+                                # failed and a new BE was not created for
+                                # the operation.
                                 logger.error("")
                                 logger.error(_("The following unexpected or "
                                     "editable files and directories were\n"
