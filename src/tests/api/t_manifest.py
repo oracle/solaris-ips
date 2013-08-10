@@ -33,6 +33,7 @@ import itertools
 import pkg as pkg
 import pkg.client.api_errors as api_errors
 import pkg.manifest as manifest
+import pkg.misc as misc
 import pkg.actions as actions
 import pkg.fmri as fmri
 import pkg.variant as variant
@@ -410,6 +411,19 @@ dir owner=root path="opt/dir with whitespaces	in value" group=bin mode=0755 vari
                 v = variant.Variants({"variant.foo":"one"})
                 m1.exclude_content([v.allow_action, lambda x: True])
                 self.assertEqual(len(list(m1.gen_actions_by_type("dir"))), 1)
+
+        def test_store_to_disk(self):
+                """Verfies that a FactoredManifest gets force-loaded before it
+                gets stored to disk."""
+ 
+                m1 = manifest.FactoredManifest("foo-content@1.0", self.cache_dir,
+                    pathname=self.foo_content_p5m)
+
+                tmpdir = tempfile.mkdtemp(dir=self.test_root)
+                path = os.path.join(tmpdir, "manifest.p5m")
+                m1.store(path)
+                self.assertEqual(misc.get_data_digest(path),
+                    misc.get_data_digest(self.foo_content_p5m))
 
         def test_get_directories(self):
                 """Verifies that get_directories() works as expected."""

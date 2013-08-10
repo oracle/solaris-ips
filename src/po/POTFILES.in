@@ -107,3 +107,4 @@ util/publish/pkgfmt.py
 util/publish/pkglint.py
 util/publish/pkgmerge.py
 util/publish/pkgmogrify.py
+util/publish/pkgsurf.py

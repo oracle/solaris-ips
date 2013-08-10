@@ -2452,6 +2452,12 @@ class CliTestCase(Pkg5TestCase):
                 return self.cmdline_run(cmdline, comment=comment, exit=exit,
                     su_wrap=su_wrap, env_arg=env_arg, out=out, stderr=stderr)
 
+        def pkgsurf(self, command, comment="", exit=0, su_wrap=False,
+            env_arg=None, stderr=False, out=False):
+                cmdline = "%s/usr/bin/pkgsurf %s" % (g_proto_area, command)
+                return self.cmdline_run(cmdline, comment=comment, exit=exit,
+                    su_wrap=su_wrap, env_arg=env_arg, out=out, stderr=stderr)
+
         def pkgsign(self, depot_url, command, exit=0, comment="",
             env_arg=None):
                 args = []

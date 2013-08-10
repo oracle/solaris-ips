@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2007, 2012, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2007, 2013, Oracle and/or its affiliates. All rights reserved.
 #
 
 import fnmatch
@@ -317,7 +317,7 @@ class PkgFmri(object):
                         pkg_str = "pkg://"
                 return "%s%s/%s" % (pkg_str, self.publisher, self.pkg_name)
 
-        def get_short_fmri(self, default_publisher = None):
+        def get_short_fmri(self, default_publisher=None, anarchy=False):
                 """Return a string representation of the FMRI without a specific
                 version."""
                 publisher = self.publisher
@@ -329,7 +329,8 @@ class PkgFmri(object):
                 else:
                         version = "@" + self.version.get_short_version()
 
-                if not publisher or publisher.startswith(PREF_PUB_PFX):
+                if not publisher or publisher.startswith(PREF_PUB_PFX) \
+                    or anarchy:
                         return "pkg:/%s%s" % (self.pkg_name, version)
 
                 return "pkg://%s/%s%s" % (publisher, self.pkg_name, version)

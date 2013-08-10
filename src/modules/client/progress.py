@@ -634,6 +634,9 @@ class ProgressTrackerBackend(object):
         @pt_abstract
         def _li_recurse_progress_output(self, lin): pass
 
+        @pt_abstract
+        def _reversion(self, pfmri, outspec): pass
+
 class ProgressTrackerFrontend(object):
         """This essentially abstract class forms the interface that other
         modules in the system use to record progress against various goals."""
@@ -1002,6 +1005,18 @@ class ProgressTrackerFrontend(object):
                 """Call to indicate that the named child made progress."""
                 pass
 
+        @pt_abstract
+        def reversion_start(self, goal_pkgs, goal_revs): pass
+
+        @pt_abstract
+        def reversion_add_progress(self, pfmri, pkgs=0, reversioned=0,
+            adjusted=0):
+                pass
+
+        @pt_abstract
+        def reversion_done(self): pass
+
+
 class ProgressTracker(ProgressTrackerFrontend, ProgressTrackerBackend):
         """This class is used by the client to render and track progress
         towards the completion of various tasks, such as download,
@@ -1070,6 +1085,11 @@ class ProgressTracker(ProgressTrackerFrontend, ProgressTrackerBackend):
                 # archiving support
                 self.archive_items = GoalTrackerItem(_("Archived items"))
                 self.archive_bytes = GoalTrackerItem(_("Archived bytes"))
+
+                # reversioning support
+                self.reversion_pkgs = GoalTrackerItem(_("Processed Packages"))
+                self.reversion_revs = GoalTrackerItem(_("Reversioned Packages"))
+                self.reversion_adjs = GoalTrackerItem(_("Adjusted Packages"))
 
                 # Used to measure elapsed time of entire planning; not otherwise
                 # rendered to the user.
@@ -1663,6 +1683,33 @@ class ProgressTracker(ProgressTrackerFrontend, ProgressTrackerBackend):
                 """Call to indicate that the named child made progress."""
                 self._li_recurse_progress_output(lin)
 
+        def reversion_start(self, goal_pkgs, goal_revs):
+                self.reversion_adjs.reset()
+                self.reversion_revs.reset()
+                self.reversion_pkgs.reset()
+                self.reversion_revs.goalitems = goal_revs 
+                self.reversion_pkgs.goalitems = goal_pkgs
+                self.reversion_adjs.goalitems = -1 
+
+        def reversion_add_progress(self, pfmri, pkgs=0, reversioned=0,
+            adjusted=0):
+                outspec = OutSpec()
+                if not self.reversion_pkgs.printed:
+                        self.reversion_pkgs.printed = True
+                        outspec.first = True
+                
+                self.reversion_revs.items += reversioned
+                self.reversion_adjs.items += adjusted
+                self.reversion_pkgs.items += pkgs
+                self._reversion(pfmri, outspec)
+
+        def reversion_done(self):
+                self.reversion_pkgs.done()
+                self.reversion_revs.done()
+                self.reversion_adjs.done(goalcheck=False)
+                if self.reversion_pkgs.printed:
+                        self._reversion("Done", OutSpec(last=True))
+
 
 class MultiProgressTracker(ProgressTrackerFrontend):
         """This class is a proxy, dispatching incoming progress tracking calls
@@ -2213,6 +2260,30 @@ class CommandLineProgressTracker(ProgressTracker):
                 if self.linked_pkg_op == pkgdefs.PKG_OP_PUBCHECK:
                         return
 
+        def _reversion(self, pfmri, outspec):
+                if not self._ptimer.time_to_print() and not outspec:
+                        return
+
+                if outspec.first:
+                        # tell ptimer that we just printed.
+                        self._ptimer.reset_now()
+
+                if outspec.last:
+                        self.__generic_done(
+                            msg=_("Reversioned %(revs)s of %(pkgs)s packages "
+                            "and adjusted %(adjs)s packages.") %
+                            {"revs": self.reversion_revs.items,
+                            "pkgs": self.reversion_pkgs.items,
+                            "adjs": self.reversion_adjs.items})
+                        return
+
+                self._pe.cprint(
+                    _("Reversioning: %(pkgs)s processed, %(revs)s reversioned, "
+                    "%(adjs)s adjusted") %
+                    {"pkgs": self.reversion_pkgs.pair(),
+                    "revs": self.reversion_revs.pair(),
+                    "adjs": self.reversion_adjs.items})
+
 
 class LinkedChildProgressTracker(CommandLineProgressTracker):
         """This tracker is used for recursion with linked children.
@@ -2417,6 +2488,30 @@ class FancyUNIXProgressTracker(ProgressTracker):
 
                 if outspec.last:
                         self.__generic_done()
+
+        def _reversion(self, pfmri, outspec):
+
+                if not self._ptimer.time_to_print() and not outspec:
+                        return
+
+                if isinstance(pfmri, pkg.fmri.PkgFmri):
+                        stem = pfmri.get_pkg_stem(anarchy=True)
+                else:
+                        stem = pfmri
+
+                # The first time, emit header.
+                if outspec.first:
+                        self._pe.cprint("%-38s %13s %13s %11s" %
+                            (_("PKG"), _("Processed"), _("Reversioned"),
+                            _("Adjusted")))
+
+                s = "%-40.40s %11s %13s %11s" % \
+                    (stem, self.reversion_pkgs.pair(),
+                    self.reversion_revs.pair(), self.reversion_adjs.items)
+                self._pe.cprint(s, end='', erase=True)
+
+                if outspec.last:
+                        self.__generic_done_newline()
 
         def _mfst_commit(self, outspec):
                 if self.purpose == self.PURPOSE_PKG_UPDATE_CHK:

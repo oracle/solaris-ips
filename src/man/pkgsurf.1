@@ -1,0 +1,257 @@
+'\" te
+.\" Copyright (c) 2013, Oracle and/or its affiliates. All rights reserved.
+.TH pkgsurf 1 "09 Aug 2013" "SunOS 5.12" "User Commands"
+.SH NAME
+pkgsurf \- Image Packaging System repository re-surfacing utility
+.SH SYNOPSIS
+.LP
+.nf
+/usr/bin/pkgsurf -s \fItarget_repo\fR -r \fIreference_repo\fR [-n]
+    [-p \fIpublisher_prefix\fR]... [-i \fIname\fR]... [-c \fIpattern\fR]...
+.fi
+
+.SH DESCRIPTION
+.sp
+.LP
+\fBpkgsurf\fR is a package publication tool for replacing packages in a target repository that have not changed since the latest published version in the reference repository. The result is a new version surface of all packages in the target repository.
+.sp
+.LP
+\fBpkgsurf\fR operations are irreversible; the target repository should be stored in its own ZFS dataset and a snapshot of the dataset should be taken before running \fBpkgsurf\fR in case the operation must be reverted.
+.sp
+.LP
+Packages in the target repository are compared to a given reference repository and analyzed for content changes. If no content change can be determined, the package manifest will be removed from the target repository and replaced with that of the reference repository. Afterwards, the dependencies of all packages in the repository are adjusted to reflect the version changes and keep the integrity of the repository intact.
+.sp
+.LP
+The target repository must be filesystem-based and should only contain one version of each package. If the target repository contains a package which is newer than the latest version in the reference repository and older than the latest version in the target repository, no package version replacement will occur for that package.  For optimal performance, the reference repository should also be filesystem-based.
+.sp
+.LP
+The reference repository may contain one or more versions of each package, however, only the latest version will be used for comparison.
+.SH OPTIONS
+.sp
+.LP
+The following options are supported:
+.sp
+.ne 2
+.mk
+.na
+\fB\fB-c\fR \fIpattern\fR\fR
+.ad
+.sp .6
+.RS 4n
+Treat every package whose FMRI matches 'pattern' as changed and do not reversion it, even if there is no content change. Can be specified multiple times.
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB-n\fR\fR
+.ad
+.sp .6
+.RS 4n
+Perform a trial run with no changes made to the target repository.
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB-i\fR \fIname\fR\fR
+.ad
+.sp .6
+.RS 4n
+Ignore set actions with the name field set to \fIname\fR for determination of content change. Package will be reversioned even if this action differs between target and reference version. Can be specified multiple times.
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB-p\fR \fIpublisher_prefix\fR\fR
+.ad
+.sp .6
+.RS 4n
+Specify the name of the publisher to be re-surfaced. This option can be specified multiple times.
+.sp
+By default, packages from all publishers found in target and reference repositories are re-surfaced.
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB-r\fR \fIreference_repo\fR\fR
+.ad
+.sp .6
+.RS 4n
+Specify the URI of the reference repository to be used for manifest comparison. Only the latest version of each package is considered.
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB-s\fR \fItarget_repo\fR\fR
+.ad
+.sp .6
+.RS 4n
+Path to target repository. Packages in this repository get reversioned to the versions present in the reference repository. Repository should only contain one version of each package. Must be a filesystem-based repository.
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB-?\fR\fR
+.ad
+.br
+.na
+\fB\fB--help\fR\fR
+.ad
+.sp .6
+.RS 4n
+Display a usage message.
+.RE
+
+.SH ENVIRONMENT VARIABLES
+.sp
+.LP
+The following environment variable is supported:
+.sp
+.ne 2
+.mk
+.na
+\fB\fBPKG_REPO\fR\fR
+.ad
+.RS 10n
+.rt  
+The absolute path of the target repository.
+.RE
+
+.SH EXAMPLES
+.LP
+\fBExample 1 \fRRe-surface repository
+.sp
+.LP
+Reversion each package in the target repository which did not have any content change from the same package in the reference repository.
+
+.sp
+.in +2
+.nf
+$ \fBpkgsurf -s /path/to/target \e\fR
+\fB-r http://reference.example.com\fR
+.fi
+.in -2
+.sp
+
+.sp
+.LP
+Sample package in target:
+
+.sp
+.in +2
+.nf
+set name=pkg.fmri value=pkg://example.com/foo@2.0:20381001T163427Z
+dir group=sys mode=0755 owner=root path=usr
+.fi
+.in -2
+
+.sp
+.LP
+Sample package in reference:
+
+.sp
+.in +2
+.nf
+set name=pkg.fmri value=pkg://example.com/foo@1.0:20381001T163427Z
+dir group=sys mode=0755 owner=root path=usr
+.fi
+.in -2
+
+.sp
+.LP
+Sample package in target after operation:
+
+.sp
+.in +2
+.nf
+set name=pkg.fmri value=pkg://example.com/foo@1.0:20381001T163427Z
+dir group=sys mode=0755 owner=root path=usr
+.fi
+.in -2
+
+
+.SH EXIT STATUS
+.sp
+.LP
+The following exit values are returned:
+.sp
+.ne 2
+.mk
+.na
+\fB\fB0\fR\fR
+.ad
+.RS 6n
+.rt  
+Command succeeded.
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB1\fR\fR
+.ad
+.RS 6n
+.rt  
+An error occurred.
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB2\fR\fR
+.ad
+.RS 6n
+.rt  
+Invalid command line options were specified.
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB99\fR\fR
+.ad
+.RS 6n
+.rt  
+An unanticipated exception occurred.
+.RE
+
+.SH ATTRIBUTES
+.sp
+.LP
+See \fBattributes\fR(5) for descriptions of the following attributes:
+.sp
+
+.sp
+.TS
+tab() box;
+cw(2.75i) |cw(2.75i) 
+lw(2.75i) |lw(2.75i) 
+.
+ATTRIBUTE TYPEATTRIBUTE VALUE
+_
+Availability\fBpackage/pkg\fR
+_
+Interface StabilityUncommitted
+.TE
+
+.SH SEE ALSO
+.sp
+.LP
+\fBpkgrepo\fR(1), \fBpkg\fR(5)
+.sp
+.LP
+\fBhttps://java.net/projects/ips\fR

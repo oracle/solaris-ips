@@ -1828,6 +1828,12 @@ class FactoredManifest(Manifest):
                     origin_exclude=origin_exclude,
                     self_exclude=self_exclude)
 
+        def store(self, mfst_path):
+                """Store the manifest contents to disk."""
+                if not self.loaded:
+                        self.__load()
+                super(FactoredManifest, self).store(mfst_path)
+
         @property
         def pathname(self):
                 """The absolute pathname of the file containing the manifest."""
