@@ -27,8 +27,11 @@ if __name__ == "__main__":
         testutils.setup_environment("../../../proto")
 import pkg5unittest
 
-import unittest
+from pkg.client.pkgdefs import *
+
 import os
+import random
+import unittest
 
 
 class TestImageUpdate(pkg5unittest.ManyDepotTestCase):
@@ -271,6 +274,26 @@ class TestImageUpdate(pkg5unittest.ManyDepotTestCase):
                 self.pkg("set-publisher -p %s" % self.rurl1)
                 self.pkg("update foo@1.1", exit=1)
                 self.assert_("test1" in self.errout)
+
+        def test_nothingtodo(self):
+                """Test that if we have multiple facets of equal length that
+                we don't accidently report that there are image updates when
+                there are not."""
+
+                facet_max = 1000
+                facet_fmt = "%%.%dd" % len("%d" % facet_max)
+
+                facet_set = set()
+                random.seed()
+                self.image_create()
+                for i in range(15):
+                        facet = facet_fmt % random.randint(0, facet_max)
+                        if facet in facet_set:
+                                # skip dups
+                                continue
+                        facet_set.add(facet)
+                        self.pkg("change-facet %s=False" % facet)
+                        self.pkg("update -nv", exit=EXIT_NOP)
 
 
 class TestPkgUpdateOverlappingPatterns(pkg5unittest.SingleDepotTestCase):

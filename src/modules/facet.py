@@ -41,6 +41,10 @@ class Facets(dict):
         # actual facets find match
 
         #
+        # For image planning purposes and to be able to compare facet objects
+        # deterministically, facets must be sorted.  They are first sorted by
+        # source (more details below), then by length, then lexically.
+        #
         # Facets can come from three different sources.
         #
         # SYSTEM facets are facets whose values are assigned by the system.
@@ -222,10 +226,15 @@ class Facets(dict):
                 """Update __keysort, which is used to determine facet matching
                 order.  Inherited facets always take priority over local
                 facets so make sure all inherited facets come before local
-                facets in __keylist."""
+                facets in __keylist.  All facets from a given source are
+                sorted by length, and facets of equal length are sorted
+                lexically."""
 
                 def facet_sort(x, y):
-                        return len(y) - len(x)
+                        i = len(y) - len(x)
+                        if i != 0:
+                                return i
+                        return cmp(x, y)
 
                 self.__keylist = []
                 self.__keylist += sorted([
