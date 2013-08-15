@@ -88,8 +88,9 @@ Usage:
 
 Subcommands:
         pkgdepend generate [-IMm] -d dir [-d dir] [-D name=value] [-k path]
-            manifest_path
-        pkgdepend [options] resolve [-dmosv] manifest ...
+            manifest_file
+        pkgdepend resolve [-EmoSv] [-d output_dir]
+            [-e external_package_file]... [-s suffix] manifest_file ...
 
 Options:
         -R dir
