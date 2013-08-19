@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2008, 2012, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2008, 2013, Oracle and/or its affiliates. All rights reserved.
 #
 
 """module describing a user packaging object
@@ -53,7 +53,7 @@ class UserAction(generic.Action):
         # if these values are different on disk than in action
         # prefer on-disk version
         use_existing_attrs = [ "password", "lastchg", "min",
-                               "max", "expire", "flag", 
+                               "max", "expire", "flag",
                                "warn", "inactive"]
 
         def as_set(self, item):
@@ -65,7 +65,7 @@ class UserAction(generic.Action):
                 """ three way attribute merge between old manifest,
                 what's on disk and new manifest.  For any values
                 on disk that are not in the new plan, use the values
-                on disk.  Use new plan values unless attribute is 
+                on disk.  Use new plan values unless attribute is
                 in self.use_existing_attrs, or if old manifest and
                 on-disk copy match...."""
 
@@ -77,6 +77,13 @@ class UserAction(generic.Action):
                             (attr in old_plan and
                             old_plan[attr] == on_disk[attr]):
                                 continue
+
+                        # prefer manifest version if either NP or *LK*
+                        if attr == "password" and \
+                           (out[attr] == 'NP' or
+                           out[attr] == '*LK*'):
+                                continue
+
                         if attr != "group-list":
                                 out[attr] = on_disk[attr]
                         else:
@@ -86,6 +93,7 @@ class UserAction(generic.Action):
                 return out
 
         def readstate(self, image, username, lock=False):
+                """read state of user from files.  May raise KeyError"""
                 root = image.get_root()
                 pw = PasswordFile(root, lock)
                 gr = GroupFile(image)
@@ -179,6 +187,14 @@ class UserAction(generic.Action):
                         img._users.add(self)
                         img._usersbyname[self.attrs["username"]] = \
                             int(self.attrs["uid"])
+                except KeyError, e:
+                        # cannot find group
+                        self.validate() # should raise error if no group in action
+                        txt = _("%(group)s is an unknown or invalid group") % {
+                                "group": self.attrs.get("group", "None")}
+                        raise apx.ActionExecutionError(self,
+                            details=txt, fmri=pkgplan.destination_fmri)
+
                 finally:
                         if "pw" in locals():
                                 pw.unlock()
@@ -213,6 +229,10 @@ class UserAction(generic.Action):
                         else:
                                 errors.append(_("Unexpected Error: %s") % e)
                         return errors, warnings, info
+                except KeyError, e:
+                        errors.append(_("%(group)s is an unknown or invalid group") % {
+                                "group": self.attrs.get("group", "None")})
+                        return errors, warnings, info
 
                 if "group-list" in self.attrs:
                         self.attrs["group-list"] = \
@@ -237,6 +257,10 @@ class UserAction(generic.Action):
                 pwdefval["ftpuser"] = "true"
                 should_be = pwdefval.copy()
                 should_be.update(self.attrs)
+
+                if should_be["password"] not in ["*LK*", "NP"]:
+                        cur_attrs["password"] = should_be["password"]
+
                 # Note where attributes are missing
                 for k in should_be:
                         cur_attrs.setdefault(k, "<missing>")
@@ -306,4 +330,14 @@ class UserAction(generic.Action):
                     "inactive","expire", "flag"), single_attrs=("password",
                     "uid", "group", "gcos-field", "home-dir", "login-shell",
                     "ftpuser", "lastchg", "min", "max", "warn", "inactive",
-                    "expire", "flag"))
+                    "expire", "flag"),
+                    required_attrs=("group",))
+
+        def compare(self, other):
+                """Arrange for user actions to be installed in uid order.  This
+                will only hold true for actions installed at one time, but that's
+                generally what we need on initial install."""
+                # put unspecified uids at the end
+                return cmp(int(self.attrs.get("uid", 1024)),
+                    int(other.attrs.get("uid", 1024)))
+

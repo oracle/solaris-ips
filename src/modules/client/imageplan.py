@@ -153,6 +153,10 @@ class ImagePlan(object):
                 self.pd = plan
                 self.__update_avail_space()
 
+		# make sure we init this even if we don't call solver
+		self.pd._new_avoid_obs = (self.image.avoid_set_get(),
+                    self.image.obsolete_set_get())
+
                 if self.pd.state == plandesc.UNEVALUATED:
                         self.image.linked.init_plan(plan)
                         return

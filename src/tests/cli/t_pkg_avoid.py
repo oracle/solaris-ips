@@ -21,13 +21,14 @@
 #
 
 #
-# Copyright (c) 2011, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2011, 2013 Oracle and/or its affiliates. All rights reserved.
 #
 
 import testutils
 if __name__ == "__main__":
         testutils.setup_environment("../../../proto")
 import pkg5unittest
+import os
 
 class TestPkgAvoid(pkg5unittest.SingleDepotTestCase):
         # Only start/stop the depot once (instead of for every test)
@@ -58,18 +59,22 @@ class TestPkgAvoid(pkg5unittest.SingleDepotTestCase):
             open E@4.0,5.11-0
             close
             open F@1.0,5.11-0
+            add dir path=etc/breakable mode=0755 owner=root group=bin
             add depend type=group fmri=A@1.0
             close
             open F@2.0,5.11-0
+            add dir path=etc/breakable mode=0755 owner=root group=bin
             add depend type=group fmri=A@1.0
             add depend type=group fmri=B@1.0
             close
             open F@3.0,5.11-0
+            add dir path=etc/breakable mode=0755 owner=root group=bin
             add depend type=group fmri=A@1.0
             add depend type=group fmri=B@1.0
             add depend type=group fmri=C@1.0
             close
             open F@4.0,5.11-0
+            add dir path=etc/breakable mode=0755 owner=root group=bin
             add depend type=group fmri=A@1.0
             add depend type=group fmri=B@1.0
             add depend type=group fmri=C@1.0
@@ -190,15 +195,25 @@ class TestPkgAvoid(pkg5unittest.SingleDepotTestCase):
                 self.pkg("uninstall '*'")
 
         def test_group_reject_1(self):
-                """Make sure --reject places packages
-                on avoid list; insure that multiple
-                group dependencies don't overcome
-                avoid list, and that require dependencies
-                do."""
+                """test aspects of reject."""
                 self.image_create(self.rurl)
-                self.pkg("install F@1.0")
+                # make sure install w/ --reject
+                # places packages w/ group dependencies
+                # on avoid list
+                self.pkg("install --reject A F@1.0")
+                self.pkg("avoid")
+                self.assert_("A" in self.output)
+                # install A and see it removed from avoid list
+                self.pkg("install A")
+                self.pkg("avoid")
+                self.assert_(self.output == "")
                 self.pkg("verify F@1.0 A")
-                self.pkg("update --reject A F@2.0")
+                # remove A and see it added to avoid list
+                self.pkg("uninstall A")
+                self.pkg("avoid")
+                self.assert_("A" in self.output)
+                # update F and see A kept out, but B added
+                self.pkg("update F@2")
                 self.pkg("verify F@2.0 B")
                 self.pkg("verify A", exit=1)
                 self.pkg("avoid")
@@ -210,9 +225,20 @@ class TestPkgAvoid(pkg5unittest.SingleDepotTestCase):
                 self.pkg("verify F@3.0 C")
                 self.pkg("verify A", exit=1)
                 self.pkg("verify B", exit=1)
-                self.pkg("update F@4.0")
+                # update everything
+                self.pkg("update")
+                self.pkg("avoid")
+                assert "A" in self.output
                 self.pkg("verify F@4.0 C D B")
                 self.pkg("verify A", exit=1)
+                # check 17264951
+                # break something so pkg fix will do some work
+                dpath = self.get_img_file_path("etc/breakable")
+                os.chmod(dpath, 0700)
+                self.pkg("fix F")
+                self.pkg("avoid")
+                assert "A" in self.output
+                self.pkg("verify")
 
         def test_group_reject_2(self):
                 """Make sure --reject places packages

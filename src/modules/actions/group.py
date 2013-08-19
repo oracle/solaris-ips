@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2008, 2012, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2008, 2013, Oracle and/or its affiliates. All rights reserved.
 #
 
 """module describing a user packaging object
@@ -72,26 +72,35 @@ class GroupAction(generic.Action):
 
                 cur_attrs = gr.getvalue(template)
 
+                # check for (wrong) pre-existing definition
+                # if so, rewrite entry using existing defs but new group entry
+                #        (XXX this doesn't chown any files on-disk)
+                # else, nothing to do
+                if cur_attrs:
+                        if (cur_attrs["gid"] != self.attrs["gid"]):
+                                template = cur_attrs;
+                                template["gid"] = self.attrs["gid"]
+                        else:
+                                return
                 # XXX needs modification if more attrs are used
-                if not cur_attrs:
-                        gr.setvalue(template)
-                        try:
-                                gr.writefile()
-                        except EnvironmentError, e:
-                                if e.errno != errno.ENOENT:
-                                        raise
-                                # If we're in the postinstall phase and the
-                                # files *still* aren't there, bail gracefully.
-                                if retry:
-                                        txt = _("Group cannot be installed "
-                                            "without group database files "
-                                            "present.")
-                                        raise apx.ActionExecutionError(self, error=e,
-                                            details=txt, fmri=pkgplan.destination_fmri)
-                                img = pkgplan.image
-                                img._groups.add(self)
-                                img._groupsbyname[self.attrs["groupname"]] = \
-                                    int(self.attrs["gid"])
+                gr.setvalue(template)
+                try:
+                        gr.writefile()
+                except EnvironmentError, e:
+                        if e.errno != errno.ENOENT:
+                                raise
+                        # If we're in the postinstall phase and the
+                        # files *still* aren't there, bail gracefully.
+                        if retry:
+                                txt = _("Group cannot be installed "
+                                    "without group database files "
+                                    "present.")
+                                raise apx.ActionExecutionError(self, error=e,
+                                    details=txt, fmri=pkgplan.destination_fmri)
+                        img = pkgplan.image
+                        img._groups.add(self)
+                        img._groupsbyname[self.attrs["groupname"]] = \
+                            int(self.attrs["gid"])
 
         def postinstall(self, pkgplan, orig):
                 groups = pkgplan.image._groups
@@ -186,3 +195,12 @@ class GroupAction(generic.Action):
 
                 generic.Action._validate(self, fmri=fmri,
                     numeric_attrs=("gid",), single_attrs=("gid",))
+
+        def compare(self, other):
+                """Arrange for group actions to be installed in gid order.  This
+                will only hold true for actions installed at one time, but that's
+                generally what we need on initial install."""
+                # put unspecifed gids at the end
+                return cmp(int(self.attrs.get("gid", 1024)),
+                    int(other.attrs.get("gid", 1024)))
+

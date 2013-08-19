@@ -854,7 +854,7 @@ class TestPkgInstallApache(pkg5unittest.ApacheDepotTestCase):
                 def corrupt_path(path, value="noodles\n", rename=False):
                         """Given a path, corrupt its contents."""
                         self.assert_(os.path.exists(path))
-                        if rename:                                
+                        if rename:
                                 os.rename(path, path + ".not-corrupt")
                                 open(path, "wb").write(value)
                         else:
@@ -972,7 +972,7 @@ class TestPkgInstallApache(pkg5unittest.ApacheDepotTestCase):
                             "var/pkg/publisher/test1/pkg"))
                         self.pkg("contents -rm foo@1.1", stderr=True, exit=1)
                         os.rename(mfpath + ".not-corrupt", mfpath)
-                
+
                         # we should get two hash errors, one from the cache, one
                         # from the repo - the one from the repo should repeat.
                         self.assert_(
@@ -2182,7 +2182,7 @@ wigit 1
 foobar 2
 """,
             "tmp/dripol1_dp": """\
-*		read_priv_set=none		write_priv_set=none
+*               read_priv_set=none              write_priv_set=none
 """,
             "tmp/gold-passwd1": """\
 root:x:0:0::/root:/usr/bin/bash
@@ -3532,34 +3532,143 @@ adm:NP:6445::::::
                 """Make sure we correctly verify group actions when users have
                 been added."""
 
-                simplegroup = """
+                simplegroups = """
                 open simplegroup@1
-                add group groupname=muppets
+                add group groupname=muppets gid=100
+                close
+                open simplegroup2@1
+                add group groupname=muppets2 gid=101
                 close"""
 
-                self.pkgsend_bulk(self.rurl, (self.basics0, simplegroup))
+                self.pkgsend_bulk(self.rurl, (self.basics0, simplegroups))
                 self.image_create(self.rurl)
 
                 self.pkg("install basics")
                 self.pkg("install simplegroup")
                 self.pkg("verify simplegroup")
 
-                gpath = self.get_img_path() + "/etc/group"
+		# add additional members to group & verify
+                gpath = self.get_img_file_path("etc/group")
                 gdata = file(gpath).readlines()
                 gdata[-1] = gdata[-1].rstrip() + "kermit,misspiggy\n"
                 file(gpath, "w").writelines(gdata)
                 self.pkg("verify simplegroup")
+		self.pkg("uninstall simplegroup")
+
+		# verify that groups appear in gid order.
+		self.pkg("install simplegroup simplegroup2")
+		self.pkg("verify")
+		gdata = file(gpath).readlines()
+		self.assert_(gdata[-1].find("muppets2") == 0)
+		self.pkg("uninstall simple*")
+		self.pkg("install simplegroup2 simplegroup")
+		gdata = file(gpath).readlines()
+		self.assert_(gdata[-1].find("muppets2") == 0)
+
+        def test_preexisting_group(self):
+                """Make sure we correct any errors in pre-existing group actions"""
+                simplegroup = """
+                open simplegroup@1
+                add group groupname=muppets gid=70
+                close
+                open simplegroup@2
+                add dir path=/etc/muppet owner=root group=muppets mode=755
+		add group groupname=muppets gid=70
+                close"""
+
+                self.pkgsend_bulk(self.rurl, (self.basics0, simplegroup))
+                self.image_create(self.rurl)
+
+                self.pkg("install basics")
+                gpath = self.get_img_file_path("etc/group")
+                gdata = file(gpath).readlines()
+                gdata = ["muppets::1010:\n"] + gdata
+                file(gpath, "w").writelines(gdata)
+                self.pkg("verify")
+                self.pkg("install simplegroup@1")
+                self.pkg("verify simplegroup")
+		# check # lines beginning w/ 'muppets' in group file
+                gdata = file(gpath).readlines()
+		self.assert_(
+		    len([a for a in gdata if a.find("muppets") == 0]) == 1)
+
+		# make sure we can add new version of same package
+		self.pkg("update simplegroup")
+		self.pkg("verify simplegroup")
+
+	def test_missing_ownergroup(self):
+		"""test what happens when a owner or group is missing"""
+		missing = """
+                open missing_group@1
+		add dir path=etc/muppet1 owner=root group=muppets mode=755
+                close
+                open missing_owner@1
+		add dir path=etc/muppet2 owner=muppets group=root mode=755
+                close
+                open muppetsuser@1
+                add user username=muppets group=bozomuppets uid=777
+                close
+                open muppetsuser@2
+                add user username=muppets group=muppets uid=777
+                close
+                 open muppetsgroup@1
+                add group groupname=muppets gid=777
+                close
+                """
+
+                self.pkgsend_bulk(self.rurl, (self.basics0, missing))
+                self.image_create(self.rurl)
+		self.pkg("install basics")
+
+		# try installing directory w/ a non-existing group
+		self.pkg("install missing_group@1", exit=1)
+		# try installing directory w/ a non-existing owner
+		self.pkg("install missing_owner@1", exit=1)
+		# try installing user w/ unknown group
+		self.pkg("install muppetsuser@1", exit=1)
+		# install group
+		self.pkg("install muppetsgroup")
+		# install working user & see if it all works.
+		self.pkg("install muppetsuser@2")
+		self.pkg("install missing_group@1")
+		self.pkg("install missing_owner@1")
+	        self.pkg("verify")
+		# edit group file to remove muppets group
+                gpath = self.get_img_file_path("etc/group")
+                gdata = file(gpath).readlines()
+                file(gpath, "w").writelines(gdata[0:-1])
+		# verify that we catch missing group
+		# in both group and user actions
+		self.pkg("verify muppetsgroup", 1)
+		self.pkg("verify muppetsuser", 1)
+		self.pkg("fix muppetsgroup", 0)
+		self.pkg("verify muppetsgroup muppetsuser missing*")
+		self.pkg("uninstall missing*")		
+		# try installing w/ broken group
+                file(gpath, "w").writelines(gdata[0:-1])
+		self.pkg("install missing_group@1", 1)
+		self.pkg("fix muppetsgroup")
+		self.pkg("install missing_group@1")
+		self.pkg("install missing_owner@1")
+		self.pkg("verify muppetsgroup muppetsuser missing*")
 
         def test_userverify(self):
                 """Make sure we correctly verify user actions when the on-disk
                 databases have been modified."""
 
-                simpleuser = """
+                simpleusers = """
                 open simpleuser@1
-                add user username=misspiggy group=root gcos-field="& loves Kermie" login-shell=/bin/sh
+                add user username=misspiggy group=root gcos-field="& loves Kermie" login-shell=/bin/sh uid=5
+                close
+                open simpleuser2@1
+                add user username=kermit group=root gcos-field="& loves mspiggy" login-shell=/bin/sh password=UP uid=6
+                close
+                open simpleuser2@2
+                add user username=kermit group=root gcos-field="& loves mspiggy" login-shell=/bin/sh uid=6
                 close"""
 
-                self.pkgsend_bulk(self.rurl, (self.basics0, simpleuser))
+
+                self.pkgsend_bulk(self.rurl, (self.basics0, simpleusers))
                 self.image_create(self.rurl)
 
                 self.pkg("install basics")
@@ -3659,6 +3768,47 @@ adm:NP:6445::::::
                 self.pkg("fix simpleuser")
                 self.pkg("verify simpleuser")
 
+                # change the password and show an error
+                self.pkg("verify simpleuser")
+                sdata[-1] = "misspiggy:NP:14579::::::"
+                file(spath, "w").writelines(sdata)
+                self.pkg("verify simpleuser", exit=1)
+                finderr("password: 'NP' should be '*LK*'")
+                self.pkg("fix simpleuser")
+                self.pkg("verify simpleuser")
+
+                # verify that passwords set to anything
+		# other than '*LK*" or 'NP' in manifest
+                # do not cause verify errors if changed.
+                self.pkg("install --reject simpleuser simpleuser2@1")
+                self.pkg("verify simpleuser2")
+                pdata = file(ppath).readlines()
+                sdata = file(spath).readlines()
+                sdata[-1] = "kermit:$5$pWPEsjm2$GXjBRTjGeeWmJ81ytw3q1ah7QTaI7yJeRYZeyvB.Rp1:14579::::::"
+                file(spath, "w").writelines(sdata)
+                self.pkg("verify simpleuser2")
+
+                # verify that upgrading package to version that implicitly
+                # uses *LK* default causes password to change and that it
+                # verifies correctly
+                self.pkg("update simpleuser2@2")
+                self.pkg("verify simpleuser2")
+                sdata = file(spath).readlines()
+                sdata[-1].index("*LK*")
+
+		# ascertain that users are added in uid order when
+		# installed at the same time.
+		self.pkg("uninstall simpleuser2")
+		self.pkg("install simpleuser simpleuser2")
+
+		pdata = file(ppath).readlines()
+		pdata[-1].index("kermit")
+
+		self.pkg("uninstall simpleuser simpleuser2")
+		self.pkg("install simpleuser2 simpleuser")
+
+		pdata = file(ppath).readlines()
+		pdata[-1].index("kermit")
 
         def test_minugid(self):
                 """Ensure that an unspecified uid/gid results in the first
@@ -5422,11 +5572,11 @@ class TestMultipleDepots(pkg5unittest.ManyDepotTestCase):
                 self.pkg("info pkg://test2/upgrade-p@1.1")
 
         def test_19_refresh_failure(self):
-                """Test that pkg client returns with exit code 1 when only one 
+                """Test that pkg client returns with exit code 1 when only one
                 publisher is specified and it's not reachable (bug 7176158)."""
 
                 # Create private image for this test.
-                self.image_create(self.rurl1, prefix="test1") 
+                self.image_create(self.rurl1, prefix="test1")
                 # Set origin to an invalid repo.
                 self.pkg("set-publisher --no-refresh -O http://test.invalid7 "
                     "test1")
