@@ -2997,7 +2997,7 @@ def info(api_inst, args):
                 # XXX even more info on the publisher would be nice?
                 msg(_("     Publisher:"), pi.publisher)
                 hum_ver = pi.get_attr_values("pkg.human-version")
-                if hum_ver and hum_ver[0] != pi.version:
+                if hum_ver and hum_ver[0] != str(pi.version):
                         msg(_("       Version:"), "%s (%s)" %
                             (pi.version, hum_ver[0]))
                 else:

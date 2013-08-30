@@ -75,6 +75,12 @@ class TestPkgInfoBasics(pkg5unittest.SingleDepotTestCase):
             close
         """
 
+        human2 = """
+            open human2@0.9.8.18,5.11-0:20110908T004546Z
+            add set name=pkg.human-version value=0.9.8.18
+            close
+        """
+
         misc_files = [ "tmp/bronzeA1",  "tmp/bronzeA2", "tmp/bronze1",
             "tmp/bronze2", "tmp/copyright1", "tmp/copyright0", "tmp/sh",
             "tmp/baz"]
@@ -92,7 +98,8 @@ class TestPkgInfoBasics(pkg5unittest.SingleDepotTestCase):
                 pkg5unittest.SingleDepotTestCase.setUp(self)
                 self.make_misc_files(self.misc_files)
                 self.plist = self.pkgsend_bulk(self.rurl, (self.badfile10,
-                    self.baddir10, self.bronze10, self.bronze05, self.human))
+                    self.baddir10, self.bronze10, self.bronze05, self.human,
+                    self.human2))
 
         def test_pkg_info_bad_fmri(self):
                 """Test bad frmi's with pkg info."""
@@ -313,10 +320,15 @@ class TestPkgInfoBasics(pkg5unittest.SingleDepotTestCase):
 
         def test_human_version(self):
                 """Verify that info returns the expected output for packages
-                with a human-readable version defined."""
+                with a human-readable version defined. If it is the same as
+                version number, then only version number is displayed"""
 
                 self.image_create(self.rurl)
                 self.pkg("info -r human | grep 'Version: 0.9.8.18 (0.9.8r)'")
+
+                # Verify that human version number should not be displayed
+                # if it is identical to the version number.
+                self.pkg("info -r human2 | grep 'Version: 0.9.8.18$'")
 
         def test_ranked(self):
                 """Verify that pkg info -r returns expected results when
