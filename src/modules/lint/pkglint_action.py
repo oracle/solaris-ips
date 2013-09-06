@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2010, 2012, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2010, 2013, Oracle and/or its affiliates. All rights reserved.
 #
 
 from pkg.lint.engine import lint_fmri_successor
@@ -672,7 +672,7 @@ class PkgDupActionChecker(base.ActionChecker):
                                             "across actions in %(fmris)s") %
                                             {"fmris": " ".join(plist),
                                             "path": p}, msgid=missing_id)
-                
+
                 if len(set([ac.name for ac, pfmri in action_types])) > 1:
                         plist = set([])
                         for ac, pfmri in action_types:
@@ -1507,3 +1507,23 @@ class PkgActionChecker(base.ActionChecker):
 
         version_incorporate.pkglint_desc = _("'incorporate' dependencies should"
             " have a version.")
+
+        def facet_value(self, action, manifest, engine, pkglint_id="012"):
+                """facet values should be set to a valid value in pkg(5)"""
+
+                for key in action.attrs.keys():
+                        if key.startswith("facet"):
+                                value = action.attrs[key].lower()
+                                if value not in ["true", "false", "all"]:
+                                        engine.warning(
+                                            _("facet value should be set to "
+                                            "'true', 'false' or 'all' in "
+                                            "attribute name %(key)s "
+                                            "in %(fmri)s") %
+                                           {"key": key,
+                                           "fmri": manifest.fmri},
+                                           msgid="%s%s" % (self.name,
+                                           pkglint_id))
+
+        facet_value.pkglint_desc = _("facet value should be set to "
+            "a valid value in an action attribute")

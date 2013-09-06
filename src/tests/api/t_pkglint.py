@@ -20,7 +20,7 @@
 # CDDL HEADER END
 #
 
-# Copyright (c) 2010, 2012, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2010, 2013, Oracle and/or its affiliates. All rights reserved.
 
 import testutils
 if __name__ == "__main__":
@@ -2075,6 +2075,24 @@ set name=info.classification value=org.opensolaris.category.2008:System/Packagin
 depend type=incorporate fmri=pkg:/some/package
 """
 
+expected_failures["facetvalue-invalid.mf" ] = ["pkglint.action012"]
+broken_manifests["facetvalue-invalid.mf" ] = \
+"""
+#
+# Intentionally set facet into a value other than 'true', 'false' or 'all'
+#
+set name=pkg.fmri value=pkg://opensolaris.org/pkglint/test@1.0,1.0
+set name=org.opensolaris.consolidation value=osnet
+set name=variant.opensolaris.zone value=global value=nonglobal
+set name=pkg.description value="A pkglint test"
+set name=pkg.summary value="Yet another test"
+set name=variant.arch value=i386 value=sparc
+set name=info.classification value=org.opensolaris.category.2008:System/Packaging
+link path=usr/bin/perl target=usr/perl5/5.6/bin/perl mediator=perl mediator-version=5.6
+link path=usr/bin/perl target=usr/perl5/5.12/bin/perl mediator=perl mediator-version=5.12
+file path=usr/perl5/5.6/bin/perl facet.doc.man=other owner=root group=sys mode=0755
+file path=usr/perl5/5.12/bin/perl owner=root group=sys mode=0755
+"""
 
 class TestLogFormatter(log.LogFormatter):
         """Records log messages to a buffer"""
