@@ -2160,6 +2160,18 @@ test2	zoo		1.0	5.11	0	20110804T203458Z	pkg://test2/zoo@1.0,5.11-0:20110804T20345
                 self.pkgrepo("-s %s fix -p missing" % repo_path, exit=1)
                 self.assert_("no matching publishers" in self.errout)
 
+        def test_24_invalid_repo(self):
+                """Test that trying to open an invalid repository is handled
+                correctly"""
+
+                tmpdir = tempfile.mkdtemp(dir=self.test_root)
+
+                with open(os.path.join(tmpdir, "pkg5.image"), "w") as f:
+                    f.write("[image]\nversion = 2")
+
+                self.assertRaises(sr.RepositoryInvalidError, sr.Repository, 
+                    root=tmpdir)
+                
 
 class TestPkgrepoHTTPS(pkg5unittest.HTTPSTestClass):
 

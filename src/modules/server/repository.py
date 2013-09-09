@@ -2648,9 +2648,9 @@ class Repository(object):
                             not (os.path.exists(self.pub_root) or
                             os.path.exists(os.path.join(
                                 self.root, "pkg5.image")) and
-                            Image(self.root, augment_ta_from_parent_image=False,
-                                allow_ondisk_upgrade=False,
-                                should_exist=True).version >= 3):
+                            int(cfg.FileConfig(os.path.join(
+                                self.root, "pkg5.image")).
+                                    get_property("image", "version")) >= 3):
                                 # If this isn't a repository creation operation,
                                 # and the base configuration file doesn't exist,
                                 # this isn't a valid repository.
