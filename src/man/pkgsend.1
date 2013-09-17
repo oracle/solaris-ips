@@ -1,6 +1,6 @@
 '\" te
 .\" Copyright (c) 2007, 2013, Oracle and/or its affiliates. All rights reserved.
-.TH pkgsend 1 "26 Feb 2013" "SunOS 5.12" "User Commands"
+.TH pkgsend 1 "30 Jul 2013" "SunOS 5.12" "User Commands"
 .SH NAME
 pkgsend \- Image Packaging System publication client
 .SH SYNOPSIS
@@ -154,6 +154,8 @@ Publish a package using the specified package manifests to the target package re
 .sp
 If not specified, \fBpkgsend publish\fR adds the build version to the package FMRI. The \fBpublish\fR tool also adds the timestamp (the current time in UTC) to the package FMRI. See the \fBpkg\fR(5) man page for information about the version string of a package FMRI.
 .sp
+If multiple \fBpkgsend publish\fR processes might be publishing to the same \fB-s\fR repository simultaneously, specifying the \fB--no-catalog\fR option is recommended. See the description of the \fB--no-catalog\fR option below.
+.sp
 .ne 2
 .mk
 .na
@@ -205,10 +207,10 @@ Use the \fB--key\fR option to specify a client SSL key file to use for package r
 .ad
 .sp .6
 .RS 4n
-Do not add the package to the publisher's catalog. This option is recommended whenever multiple packages are being published at one time as updates to publisher catalogs must be performed serially. Once publication is complete, the \fBrefresh\fR subcommand of \fBpkgrepo\fR can be used to add the new packages to the respective publisher catalogs.
+Do not add the package to the publisher's catalog. This option is recommended whenever multiple packages are being published at one time because updates to publisher catalogs must be performed serially. Publication performance might be significantly reduced if this option is not used when multiple processes are simultaneously publishing packages. After publication is complete, the new packages can be added to the respective publisher catalogs by using the \fBpkgrepo refresh\fR command.
 .RE
 
-For a descriptions of the \fB-T\fR option, see the \fBgenerate\fR subcommand above.
+For a description of the \fB-T\fR option, see the \fBgenerate\fR subcommand above.
 .RE
 
 .SH ENVIRONMENT VARIABLES
@@ -386,7 +388,10 @@ Interface StabilityUncommitted
 \fBpkgdepend\fR(1), \fBpkgrepo\fR(1), \fBpkg.depotd\fR(1M), \fBpkg\fR(5)
 .sp
 .LP
-\fBhttp://hub.opensolaris.org/bin/view/Project+pkg/\fR
+\fIPackaging and Delivering Software With the Image Packaging System in Oracle Solaris 11.2\fR
+.sp
+.LP
+\fBhttps://java.net/projects/ips/pages/Home\fR
 .SH NOTES
 .sp
 .LP

@@ -1,6 +1,6 @@
 '\" te
 .\" Copyright (c) 2007, 2013, Oracle and/or its affiliates. All rights reserved.
-.TH pkgdepend 1 "26 Feb 2013" "SunOS 5.12" "User Commands"
+.TH pkgdepend 1 "12 Jul 2013" "SunOS 5.12" "User Commands"
 .SH NAME
 pkgdepend \- Image Packaging System dependency analyzer
 .SH SYNOPSIS
@@ -114,10 +114,6 @@ Display a usage message.
 .mk
 .na
 \fB\fB-R\fR \fIdir\fR\fR
-.ad
-.br
-.na
-\fB\fB--image-dir\fR \fIdir\fR\fR
 .ad
 .sp .6
 .RS 4n
@@ -420,12 +416,12 @@ set name=pkg.summary value="My test package"
 dir path=opt mode=0755 group=sys owner=root
 dir path=opt/python mode=0755 group=sys owner=root
 dir path=opt/python/foo mode=0755 group=sys owner=root
-file NOHASH path=opt/python/__init__.py mode=0644 group=sys owner=root
-file NOHASH path=opt/python/foo/__init__.py mode=0644 group=sys owner=root
+file path=opt/python/__init__.py mode=0644 group=sys owner=root
+file path=opt/python/foo/__init__.py mode=0644 group=sys owner=root
 #
 # Add runpath and bypass-generate attributes:
 #
-file NOHASH path=opt/python/foo/file.py mode=0644 group=sys owner=root \e
+file path=opt/python/foo/file.py mode=0644 group=sys owner=root \e
     pkg.depend.bypass-generate=.*/test.py.* \e
     pkg.depend.bypass-generate=.*/testmodule.so \e
     pkg.depend.bypass-generate=.*/test.so \e
@@ -522,4 +518,4 @@ Interface StabilityUncommitted
 \fBpkg\fR(5)
 .sp
 .LP
-\fBhttp://hub.opensolaris.org/bin/view/Project+pkg/\fR
+\fBhttps://java.net/projects/ips/pages/Home\fR

@@ -2,7 +2,7 @@
 .\" Copyright (c) 2013, Oracle and/or its affiliates. All rights reserved.
 .TH pkgsurf 1 "09 Aug 2013" "SunOS 5.12" "User Commands"
 .SH NAME
-pkgsurf \- Image Packaging System repository re-surfacing utility
+pkgsurf \- Image Packaging System repository resurfacing utility
 .SH SYNOPSIS
 .LP
 .nf
@@ -16,16 +16,19 @@ pkgsurf \- Image Packaging System repository re-surfacing utility
 \fBpkgsurf\fR is a package publication tool for replacing packages in a target repository that have not changed since the latest published version in the reference repository. The result is a new version surface of all packages in the target repository.
 .sp
 .LP
-\fBpkgsurf\fR operations are irreversible; the target repository should be stored in its own ZFS dataset and a snapshot of the dataset should be taken before running \fBpkgsurf\fR in case the operation must be reverted.
+\fBpkgsurf\fR operations are not reversible. In case the \fBpkgsurf\fR operation must be reverted, you should store the target repository in its own ZFS dataset and take a snapshot of the dataset before you run \fBpkgsurf\fR.
 .sp
 .LP
-Packages in the target repository are compared to a given reference repository and analyzed for content changes. If no content change can be determined, the package manifest will be removed from the target repository and replaced with that of the reference repository. Afterwards, the dependencies of all packages in the repository are adjusted to reflect the version changes and keep the integrity of the repository intact.
+Packages in the target repository are compared to packages in the reference repository and analyzed for content changes. For each package, if no content change is found, the package manifest is removed from the target repository and replaced with the manifest of the same package from the reference repository.
 .sp
 .LP
-The target repository must be filesystem-based and should only contain one version of each package. If the target repository contains a package which is newer than the latest version in the reference repository and older than the latest version in the target repository, no package version replacement will occur for that package.  For optimal performance, the reference repository should also be filesystem-based.
+The target repository must be a file system based repository. For optimal performance, the reference repository should also be a file system based repository.
 .sp
 .LP
-The reference repository may contain one or more versions of each package, however, only the latest version will be used for comparison.
+The target repository should contain only one version of each package. If the target repository contains a package that is both newer than the latest version in the reference repository and older than the latest version in the target repository, no package manifest replacement is done for that package.
+.sp
+.LP
+The reference repository can contain one or more versions of each package. However, only the latest version will be used for comparison.
 .SH OPTIONS
 .sp
 .LP
@@ -34,22 +37,26 @@ The following options are supported:
 .ne 2
 .mk
 .na
-\fB\fB-c\fR \fIpattern\fR\fR
+\fB\fB-?\fR\fR
+.ad
+.br
+.na
+\fB\fB--help\fR\fR
 .ad
 .sp .6
 .RS 4n
-Treat every package whose FMRI matches 'pattern' as changed and do not reversion it, even if there is no content change. Can be specified multiple times.
+Display a usage message.
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fB\fB-n\fR\fR
+\fB\fB-c\fR \fIpattern\fR\fR
 .ad
 .sp .6
 .RS 4n
-Perform a trial run with no changes made to the target repository.
+Treat every package whose FMRI matches \fIpattern\fR as changed and do not reversion it, even if there is no content change. This option can be specified multiple times.
 .RE
 
 .sp
@@ -60,7 +67,18 @@ Perform a trial run with no changes made to the target repository.
 .ad
 .sp .6
 .RS 4n
-Ignore set actions with the name field set to \fIname\fR for determination of content change. Package will be reversioned even if this action differs between target and reference version. Can be specified multiple times.
+Ignore \fBset\fR actions with the \fBname\fR field set to \fIname\fR for determination of content change. The package will be reversioned even if this action differs between target and reference versions. This option can be specified multiple times.
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB-n\fR\fR
+.ad
+.sp .6
+.RS 4n
+Perform a trial run of the operation with no changes made to the target repository.
 .RE
 
 .sp
@@ -71,9 +89,9 @@ Ignore set actions with the name field set to \fIname\fR for determination of co
 .ad
 .sp .6
 .RS 4n
-Specify the name of the publisher to be re-surfaced. This option can be specified multiple times.
+Specify the name of the publisher to be resurfaced. This option can be specified multiple times.
 .sp
-By default, packages from all publishers found in target and reference repositories are re-surfaced.
+By default, packages from all publishers found in target and reference repositories are resurfaced.
 .RE
 
 .sp
@@ -95,22 +113,7 @@ Specify the URI of the reference repository to be used for manifest comparison. 
 .ad
 .sp .6
 .RS 4n
-Path to target repository. Packages in this repository get reversioned to the versions present in the reference repository. Repository should only contain one version of each package. Must be a filesystem-based repository.
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fB\fB-?\fR\fR
-.ad
-.br
-.na
-\fB\fB--help\fR\fR
-.ad
-.sp .6
-.RS 4n
-Display a usage message.
+Specify the path to the target repository. Packages in this repository are reversioned to the versions present in the reference repository according to the comparison results. The target repository should contain only one version of each package. The target repository must be a file system based repository.
 .RE
 
 .SH ENVIRONMENT VARIABLES
@@ -123,30 +126,29 @@ The following environment variable is supported:
 .na
 \fB\fBPKG_REPO\fR\fR
 .ad
-.RS 10n
+.RS 12n
 .rt  
 The absolute path of the target repository.
 .RE
 
 .SH EXAMPLES
 .LP
-\fBExample 1 \fRRe-surface repository
+\fBExample 1 \fRResurface a Repository
 .sp
 .LP
-Reversion each package in the target repository which did not have any content change from the same package in the reference repository.
+Reversion each package in the target repository that did not have any content change from the same package in the reference repository.
 
 .sp
 .in +2
 .nf
-$ \fBpkgsurf -s /path/to/target \e\fR
-\fB-r http://reference.example.com\fR
+$ \fBpkgsurf -s /path/to/target -r http://reference.example.com\fR
 .fi
 .in -2
 .sp
 
 .sp
 .LP
-Sample package in target:
+Sample package in the target repository:
 
 .sp
 .in +2
@@ -158,7 +160,7 @@ dir group=sys mode=0755 owner=root path=usr
 
 .sp
 .LP
-Sample package in reference:
+Sample package in the reference repository:
 
 .sp
 .in +2
@@ -170,7 +172,7 @@ dir group=sys mode=0755 owner=root path=usr
 
 .sp
 .LP
-Sample package in target after operation:
+Sample package in the target repository after the \fBpkgsurf\fR operation:
 
 .sp
 .in +2
@@ -179,7 +181,6 @@ set name=pkg.fmri value=pkg://example.com/foo@1.0:20381001T163427Z
 dir group=sys mode=0755 owner=root path=usr
 .fi
 .in -2
-
 
 .SH EXIT STATUS
 .sp
@@ -254,4 +255,7 @@ Interface StabilityUncommitted
 \fBpkgrepo\fR(1), \fBpkg\fR(5)
 .sp
 .LP
-\fBhttps://java.net/projects/ips\fR
+\fICopying and Creating Package Repositories in Oracle Solaris 11.2\fR
+.sp
+.LP
+\fBhttps://java.net/projects/ips/pages/Home\fR

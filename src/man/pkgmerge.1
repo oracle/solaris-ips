@@ -1,6 +1,6 @@
 '\" te
 .\" Copyright (c) 2007, 2013, Oracle and/or its affiliates. All rights reserved.
-.TH pkgmerge 1 "26 Feb 2013" "SunOS 5.12" "User Commands"
+.TH pkgmerge 1 "20 May 2013" "SunOS 5.12" "User Commands"
 .SH NAME
 pkgmerge \- Image Packaging System package merging utility
 .SH SYNOPSIS
@@ -22,6 +22,9 @@ If an action has the attribute \fBpkg.merge.blend\fR set to the name of the vari
 .sp
 .LP
 Non-identical actions that deliver to the same path in an input manifest result in \fBpkgmerge\fR exiting with an error.
+.sp
+.LP
+After a \fBpkgmerge\fR operation, if your destination repository must support \fBpkg search\fR operations, run \fBpkgrepo refresh\fR on the repository to update search indexes.
 .SH OPTIONS
 .sp
 .LP
@@ -364,9 +367,9 @@ Merge only packages with the \fBdev\fR prefix, even though other packages in the
 .sp
 .in +2
 .nf
-$ \fBpkgmerge -p dev -s arch=sparc,http://src1.example.com \e\fR
-\fB-s arch=i386,http://src2.example.com \e\fR
-\fB-d /\fIpath/to/target/repository\fR\fR
+$ \fBpkgmerge -p dev -s arch=sparc,http://src1.example.com \e
+-s arch=i386,http://src2.example.com \e
+-d /path/to/target/repository\fR
 .fi
 .in -2
 .sp
@@ -444,4 +447,7 @@ Interface StabilityUncommitted
 \fBpkgrepo\fR(1), \fBpkg\fR(5)
 .sp
 .LP
-\fBhttp://hub.opensolaris.org/bin/view/Project+pkg/\fR
+\fIPackaging and Delivering Software With the Image Packaging System in Oracle Solaris 11.2\fR
+.sp
+.LP
+\fBhttps://java.net/projects/ips/pages/Home\fR

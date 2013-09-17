@@ -1,6 +1,6 @@
 '\" te
 .\" Copyright (c) 2007, 2013, Oracle and/or its affiliates. All rights reserved.
-.TH pkg 1 "19 Apr 2013" "SunOS 5.12" "User Commands"
+.TH pkg 1 "27 Aug 2013" "SunOS 5.12" "User Commands"
 .SH NAME
 pkg \- Image Packaging System retrieval client
 .SH SYNOPSIS
@@ -209,7 +209,7 @@ usr/bin/pkg set-mediator [-nv] [-I \fIimplementation\fR]
     [--set-property \fIname_of_property\fR=\fIvalue\fR]
     [--add-property-value \fIname_of_property\fR=\fIvalue_to_add\fR]
     [--remove-property-value \fIname_of_property\fR=\fIvalue_to_remove\fR]
-    [--unset-property \fIname_of_property_to_delete\fR] 
+    [--unset-property \fIname_of_property_to_delete\fR]
     [--proxy \fIproxy_to_use\fR] \fIpublisher\fR
 .fi
 
@@ -318,10 +318,6 @@ Display a usage message.
 .mk
 .na
 \fB\fB-R\fR \fIdir\fR\fR
-.ad
-.br
-.na
-\fB\fB--image-dir\fR \fIdir\fR\fR
 .ad
 .sp .6
 .RS 4n
@@ -715,7 +711,7 @@ Omit the headers from the listing.
 .ad
 .sp .6
 .RS 4n
-List installed packages and the newest version of packages that are available for installation. Packages are considered to be available for installation if they are allowed by the installed incorporations and by the image's variants. If one or more patterns are specified, then the newest version matching the specified pattern and allowed by any installed incorporations and the image's variants is listed. Without \fB-a\fR, list only installed packages.
+List installed packages and list the newest version of packages that are not installed but could be installed in this image. Packages can be installed if they are allowed by the installed incorporations and by the image's variants. If one or more patterns are specified, then the newest version matching the specified pattern and allowed by any installed incorporations and the image's variants is listed. Without \fB-a\fR, list only installed packages.
 .RE
 
 .sp
@@ -759,7 +755,7 @@ Display the newest versions of all known packages, regardless of installed state
 .ad
 .sp .6
 .RS 4n
-Do not list any packages, but return failure if there are any fatal errors.
+Do not list any packages, but return failure if a fatal error occurs.
 .RE
 
 .sp
@@ -781,7 +777,7 @@ Display a one-line short-form giving the package name and summary. This option c
 .ad
 .sp .6
 .RS 4n
-List only packages with newer versions available. This option cannot be used with \fB-g\fR.
+List installed packages that have newer versions available. This option cannot be used with \fB-g\fR.
 .RE
 
 .sp
@@ -812,7 +808,7 @@ Do not attempt to contact the repositories for the image's publishers to retriev
 .ne 2
 .mk
 .na
-\fB\fBpkg info\fR [\fB-lr\fR] [\fB-g\fR \fIpath_or_uri\fR]... [\fB--license\fR] [\fIpkg_fmri_pattern\fR ...]\fR
+\fB\fBpkg info\fR [\fB-lqr\fR] [\fB-g\fR \fIpath_or_uri\fR]... [\fB--license\fR] [\fIpkg_fmri_pattern\fR ...]\fR
 .ad
 .sp .6
 .RS 4n
@@ -858,7 +854,7 @@ Only display information for installed packages. This is the default.
 .ad
 .sp .6
 .RS 4n
-Do not display any package information, but return failure if there are any fatal errors.
+Do not display any package information, but return failure if a fatal error occurs.
 .RE
 
 .sp
@@ -880,7 +876,7 @@ Match packages based on the newest available versions, retrieving information fo
 .ad
 .sp .6
 .RS 4n
-Display the license texts for the packages. This option can be combined with \fB-l\fR, \fB-q\f, or R\fB-r\fR. When all patterns match a known package and have licenses, the command will return success. If one or more patterns are unmatched or match packages that do not have licenses, the command will return failure.
+Display the license texts for the packages. This option can be combined with \fB-l\fR, \fB-q\fR, or \fB-r\fR. Return success if all \fIpkg_fmri_pattern\fR patterns match known packages and have licenses. Return failure if one or more patterns are unmatched or match packages that do not have licenses.
 .RE
 
 .RE
@@ -1095,7 +1091,7 @@ Each subcommand is capable of formulating some queries of which the other is cap
 .ad
 .sp .6
 .RS 4n
-Search for matches to the \fIquery\fR, and display the results. See the description of \fIquery\fR below.
+Search for actions that match \fIquery\fR, and display the matching search index, action name, action value, and package name. See the description of \fIquery\fR below. Some searches might yield duplicate results.
 .sp
 .ne 2
 .mk
@@ -1185,7 +1181,7 @@ Both \fB-l\fR and \fB-r\fR (or \fB-s\fR) can be specified together, in which cas
 .ad
 .sp .6
 .RS 4n
-Control the columns of the results. The \fB-o\fR option can be specified multiple times, or multiple attributes can be specified as the argument to one \fB-o\fR option by separating the attribute names with commas. In addition to the pseudo attributes outlined above, the following attributes are defined for search results:
+Control the columns of the results. The \fB-o\fR option can be specified multiple times, or multiple attributes can be specified as the argument to one \fB-o\fR option by separating the attribute names with commas. In addition to the pseudo attributes outlined above, the following attributes are defined for search results. These attributes help show why a particular result was a match:
 .sp
 .ne 2
 .mk
@@ -1229,11 +1225,13 @@ Search the \fBpkg\fR(5) repository located at the given URI. This can be specifi
 .ad
 .sp .6
 .RS 4n
-By default, \fIquery\fR is interpreted as a series of terms to be matched exactly. The \fB?\fR and \fB*\fR characters can be used as \fBglob\fR(3C)\(hystyle wildcards, allowing more flexible query matches.
+By default, \fIquery\fR is interpreted as a series of terms to be matched exactly and multiple terms are ANDed.
 .sp
-In addition to simple token matching and wildcard search, a more complicated query language is supported. Phrases can be searched for by using single or double quotation marks (\fB\&'\fR or \fB"\fR). Be sure to take your shell into account so that \fBpkg\fR actually sees the \fB\&'\fR or \fB"\fR.
+AND and OR are supported.
 .sp
-Boolean search using AND and OR is supported.
+The \fB?\fR and \fB *\fR characters can be used as \fBglob\fR(3C)\(hystyle wildcards, allowing more flexible query matches.
+.sp
+In addition to simple token matching and wildcard search, a more complicated query language is supported. Phrases can be searched for by using single or double quotation marks (\fB'\fR or \fB"\fR). Be sure to take your shell into account so that \fBpkg\fR actually sees the \fB'\fR or \fB"\fR.
 .sp
 Which tokens are indexed is action-dependent, but can include content hashes and path names. For information about actions and their attributes, see "Actions" in the \fBpkg\fR(5) man page. See also the list of pseudo attribute names in \fBpkg contents\fR and \fB-o\fR above.
 .sp
@@ -1347,7 +1345,7 @@ Omit the headers from the verification output.
 .ad
 .sp .6
 .RS 4n
-Print nothing, but return failure if there are any fatal errors.
+Suppress progress messages and all other output during the requested operation.
 .RE
 
 .sp
@@ -1430,7 +1428,7 @@ Reverting some editable files to their default values can make the system unboot
 .ad
 .sp .6
 .RS 4n
-Revert all files tagged with \fItag-name\fR, and remove any unpackaged files or directories that are under directories with this tag and that match \fIpattern\fR. See the description of the \fBrevert-tag\fR attribute in "File Actions" and "Directory Actions" in the \fBpkg\fR(5) man page for more information about \fItag-name\fR and \fIpattern\fR.
+Revert all files tagged with \fItag-name\fR, and remove any unpackaged files or directories that are under directories with this tag and that match \fIpattern\fR. See the description of the \fBrevert-tag\fR attribute in "File Actions" and "Directory Actions" in the \fBpkg\fR(5) man page for more information about \fBtag-name\fR and \fIpattern\fR.
 .RE
 
 .sp
@@ -1482,7 +1480,7 @@ List the mediations that can be set for currently installed packages.
 .ne 2
 .mk
 .na
-\fB\fB-F\fR\fR
+\fB\fB-F\fR \fIformat\fR\fR
 .ad
 .sp .6
 .RS 4n
@@ -1596,7 +1594,7 @@ Display the current values of only the specified variants set in this image.
 .ne 2
 .mk
 .na
-\fB\fB-F\fR\fR
+\fB\fB-F\fR \fIformat\fR\fR
 .ad
 .sp .6
 .RS 4n
@@ -1622,7 +1620,7 @@ Omit the headers from the listing.
 .ad
 .sp .6
 .RS 4n
-Display all variants explicitly set in the image and all variants that are listed in installed packages. This option cannot be combined with \fB-i\fR.
+Display all variants explicitly set in the image and all variants that are listed in installed packages. The \fB-a\fR option cannot be combined with the \fB-i\fR option.
 .RE
 
 .sp
@@ -1633,7 +1631,7 @@ Display all variants explicitly set in the image and all variants that are liste
 .ad
 .sp .6
 .RS 4n
-Display all variants that are listed in installed packages. This option cannot be combined with \fB-a\fR.
+Display all variants that are listed in installed packages. The \fB-i\fR option cannot be combined with the \fB-a\fR option.
 .RE
 
 .sp
@@ -1644,7 +1642,7 @@ Display all variants that are listed in installed packages. This option cannot b
 .ad
 .sp .6
 .RS 4n
-Display the possible variant values that can be set for installed packages. This option can be combined with \fB-a\fR and \fB-i\fR.
+Display the possible variant values that can be set for installed packages. The \fB-v\fR option can be combined with the \fB-a\fR or \fB-i\fR option.
 .RE
 
 .RE
@@ -1672,7 +1670,7 @@ For descriptions of options, see the \fBinstall\fR command above.
 .ad
 .sp .6
 .RS 4n
-Display the current values and source of all facets that have been explicitly set in this image by using the \fBpkg change-facet\fR command or inherited from a parent image. See "Facets and Variants" in the \fBpkg\fR(5) man page for more information about facets.
+Display the current values and source of all facets that have been explicitly set in this image by using the \fBpkg change-facet\fR command or that have been inherited from a parent image . See "Facets and Variants" in the \fBpkg\fR(5) man page for more information about facets.
 .sp
 .ne 2
 .mk
@@ -1688,7 +1686,7 @@ Display the current values of only the specified facets set in this image.
 .ne 2
 .mk
 .na
-\fB\fB-F\fR\fR
+\fB\fB-F\fR \fIformat\fR\fR
 .ad
 .sp .6
 .RS 4n
@@ -1714,7 +1712,7 @@ Omit the headers from the listing.
 .ad
 .sp .6
 .RS 4n
-Display all facets explicitly set in the image and all facets that are listed in installed packages. This option cannot be combined with \fB-i\fR.
+Display all facets explicitly set in the image and all facets that are listed in installed packages. The \fB-a\fR option cannot be combined with the \fB-i\fR option.
 .RE
 
 .sp
@@ -1725,7 +1723,7 @@ Display all facets explicitly set in the image and all facets that are listed in
 .ad
 .sp .6
 .RS 4n
-Display all facets that are listed in installed packages. This option cannot be combined with \fB-a\fR.
+Display all facets that are listed in installed packages. The \fB-i\fR option cannot be combined with the \fB-a\fR option.
 .RE
 
 .sp
@@ -1986,6 +1984,17 @@ Display detailed configuration for only the specified publishers. Additional inf
 .ne 2
 .mk
 .na
+\fB\fB-F\fR \fIformat\fR\fR
+.ad
+.sp .6
+.RS 4n
+Specify an alternative output format. Currently, only \fBtsv\fR (Tab Separated Values) is valid.
+.RE
+
+.sp
+.ne 2
+.mk
+.na
 \fB\fB-H\fR\fR
 .ad
 .sp .6
@@ -2013,17 +2022,6 @@ Display only the first publisher in the publisher search order.
 .sp .6
 .RS 4n
 Display only enabled publishers.
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fB\fB-F\fR\fR
-.ad
-.sp .6
-.RS 4n
-Specify an alternative output format. Currently, only \fBtsv\fR (Tab Separated Values) is valid.
 .RE
 
 .RE
@@ -2104,7 +2102,7 @@ Alter the publisher search order so that the publisher being added or modified i
 .ad
 .sp .6
 .RS 4n
-Add the specified certificate as a CA certificate that is trusted. The hashes of the PEM representation of the user-approved CA certificates are listed in the detailed output of the \fBpkg publisher\fR command.
+For verifying signed packages, add the specified certificate as a CA certificate that is trusted. The hashes of the PEM representation of the user-approved CA certificates are listed in the detailed output of the \fBpkg publisher\fR command.
 .RE
 
 .sp
@@ -2115,7 +2113,7 @@ Add the specified certificate as a CA certificate that is trusted. The hashes of
 .ad
 .sp .6
 .RS 4n
-Treat the certificate with the given hash of its PEM representation as revoked. The hashes of the user-revoked CA certificates are listed in the detailed output of the \fBpkg publisher\fR command.
+For verifying signed packages, treat the certificate with the given hash of its PEM representation as revoked. The hashes of the user-revoked CA certificates are listed in the detailed output of the \fBpkg publisher\fR command.
 .RE
 
 .sp
@@ -2126,7 +2124,7 @@ Treat the certificate with the given hash of its PEM representation as revoked. 
 .ad
 .sp .6
 .RS 4n
-Remove the certificate with the given hash from the list of approved certificates and the list of revoked certificates.
+For verifying signed packages, remove the certificate with the given hash from the list of approved certificates and the list of revoked certificates.
 .RE
 
 .sp
@@ -2315,7 +2313,9 @@ Disable the publisher. A disabled publisher is not used when populating the pack
 .ad
 .sp .6
 .RS 4n
-Use the specified web proxy URI to retrieve content for the specified origin (\fB-g\fR) or mirror (\fB-m\fR). The proxy value is stored as part of the publisher configuration. At run time, \fB$http_proxy\fR or related environment variables override this proxy setting. See the \fBcurl\fR(1) man page for the list of accepted environment variable names.
+Use the specified proxy URI to retrieve content for the specified origin (\fB-g\fR) or mirror (\fB-m\fR). The proxy value is stored as part of the publisher configuration, which means the system repository used by child images is automatically updated. This option cannot be used to set an authenticated proxy. The \fIproxy_to_use\fR value cannot have the form \fBprotocol://user:password@host\fR.
+.sp
+At run time, \fBhttp_proxy\fR or related environment variables override this proxy setting. See the "Environment" section of the \fBcurl\fR(1) man page for the list of accepted environment variable names. If you use an environment variable to set the proxy URI, you must also set the appropriate proxy property of the \fBsvc:/application/pkg/system-repository\fR SMF service to the same value. See "Specifying a Proxy" in \fIAdding and Updating Software in Oracle Solaris 11.2\fR.
 .RE
 
 .RE
@@ -2896,7 +2896,7 @@ Default value: \fBTrue\fR
 .ad
 .sp .6
 .RS 4n
-(string) Determine what checks will be performed on manifests when installing, updating, modifying, or verifying packages in the image. The final policy applied to a package depends on the combination of image policy and publisher policy. The combination will be at least as strict as the stricter of the two policies taken individually. By default, the package client does not check whether certificates have been revoked. To enable those checks, which might require the client to contact external web sites, set the \fBcheck-certificate-revocation\fR image property to \fBTrue\fR. The following values are allowed:
+(string) Determine what checks will be performed on manifests when installing, updating, modifying, or verifying packages in the image. The final policy applied to a package depends on the combination of image policy and publisher policy. The combination will be at least as strict as the stricter of the two policies taken individually. By default, the package client does not check whether certificates have been revoked. To enable those checks, which might require the client to contact external Internet sites, set the \fBcheck-certificate-revocation\fR image property to \fBTrue\fR. The following values are allowed:
 .sp
 .ne 2
 .mk
@@ -3585,7 +3585,7 @@ Default value: 60
 .ad
 .sp .6
 .RS 4n
-Seconds below the \fBlowspeed\fR limit (1024 bytes/sec) during transport operations before the client aborts the operation. A value of 0 means do not abort the operation.
+Seconds below the \fBlowspeed\fR limit (1024 bytes/second) during transport operations before the client aborts the operation. A value of 0 means do not abort the operation.
 .sp
 Default value: 30
 .RE
@@ -3834,10 +3834,10 @@ Interface StabilityUncommitted
 .SH SEE ALSO
 .sp
 .LP
-\fBpkgsend\fR(1), \fBpkg.depotd\fR(1M), \fBglob\fR(3C), \fBpkg\fR(5), \fBbeadm\fR(1M)
+\fBpkgsend\fR(1), \fBbeadm\fR(1M), \fBpkg.depotd\fR(1M), \fBpkg.sysrepo\fR(1M), \fBglob\fR(3C), \fBpkg\fR(5)
 .sp
 .LP
-\fIAdding and Updating Oracle Solaris 11.1 Software Packages\fR
+\fIAdding and Updating Software in Oracle Solaris 11.2\fR
 .sp
 .LP
-\fBhttp://hub.opensolaris.org/bin/view/Project+pkg/\fR
+\fBhttps://java.net/projects/ips/pages/Home\fR
