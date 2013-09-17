@@ -349,7 +349,7 @@ class Facets(dict):
 
         def __delitem__(self, item):
                 """__delitem__ only operates on local facets."""
-                self.__delitem_internal(item, value)
+                self.__delitem_internal(item)
 
         # allow_action is provided as a native function (see end of class
         # declaration).
