@@ -412,21 +412,13 @@ class ParseError(QueryException):
                 self.pos = string_position
                 self.str = input_string
 
-        def __str__(self, html=False):
-                line_break = "\n"
-                pre_tab = ""
-                end_pre_tab = ""
-                if html:
-                        line_break = "<br/>"
-                        pre_tab = "<pre>"
-                        end_pre_tab = "</pre>"
-                return line_break.join([_("Could not parse query."),
-                    _("Problem occurred with: %s") % self.p,
-                    "%s%s" % (pre_tab, cgi.escape(self.str)),
-                    "%s%s" % (" " * max(self.pos - 1, 0) + "^", end_pre_tab)])
-
-        def html(self):
-                return self.__str__(html=True)
+        def __str__(self):
+                # BUI will interpret a line starting with a \t as pre-formatted
+                # and put it in <pre> tags.
+                return "\n".join([_("Could not parse query."),
+                    _("Problem occurred with: %s\t") % self.p,
+                    "\t%s" % self.str,
+                    "\t%s" % (" " * max(self.pos - 1, 0) + "^")])
 
 
 class Query(object):
@@ -529,29 +521,21 @@ class BooleanQueryException(QueryException):
 
         def __init__(self, ac, pc):
                 """The parameter "ac" is the child which returned actions
-                while "pc" is the child which returned pacakges."""
+                while "pc" is the child which returned packages."""
                 QueryException.__init__(self)
                 self.ac = ac
                 self.pc = pc
 
-        def __str__(self, html=False):
-                line_break = "\n"
-                pre_tab = ""
-                end_pre_tab = ""
-                if html:
-                        line_break = "<br/>"
-                        pre_tab = "<pre>"
-                        end_pre_tab = "</pre>"
+        def __str__(self):
+                # BUI will interpret a line starting with a \t as pre-formatted
+                # and put it in <pre> tags.
                 ac_s = _("This expression produces action results:")
-                ac_q = "%s%s%s" % (pre_tab, self.ac, end_pre_tab)
+                ac_q = "\t%s" % self.ac
                 pc_s = _("This expression produces package results:")
-                pc_q = "%s%s%s" % (pre_tab, self.pc, end_pre_tab)
-                return line_break.join([ac_s, ac_q, pc_s, pc_q,
+                pc_q = "\t%s" % self.pc
+                return "\n".join([ac_s, ac_q, pc_s, pc_q,
                     _("'AND' and 'OR' require those expressions to produce "
                     "the same type of results.")])
-
-        def html(self):
-                return self.__str__(html=True)
 
 
 class BooleanQuery(object):

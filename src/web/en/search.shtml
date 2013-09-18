@@ -22,6 +22,7 @@
 ## Copyright 2010, 2013 Oracle and/or its affiliates. All rights reserved.
 ##
 <%!
+        import cgi
         import itertools
         import pkg.actions as actions
         import pkg.query_parser as qp
@@ -112,7 +113,7 @@
                     return_latest=not sav)
         except qp.QueryException, e:
                 results = None
-                query_error = e.html()
+                query_error = str(e)
         except Exception, e:
                 results = None
                 query_error = urllib.quote(str(e))
@@ -258,16 +259,31 @@ Next</a>
         failed = criteria["failed"]
         query_error = criteria["query_error"]
 
-        # Sanitize query_error to prevent misuse; '<' and '>' are not
-        # escaped as HTML is expected in the error text.
-        pat1 = re.compile("""["'][\s]*javascript:(.*)["']""", re.IGNORECASE)
-        pat2 = re.compile("script(.*)", re.IGNORECASE)
-        pat3 = re.compile("eval\((.*)\)", re.IGNORECASE)
-        pat4 = re.compile("<[\s]*(form|input|button)(.*)", re.IGNORECASE)
-        query_error = re.sub(pat1, '""', query_error)
-        query_error = re.sub(pat2, "", query_error)
-        query_error = re.sub(pat3, "", query_error)
-        query_error = re.sub(pat4, "", query_error)
+        if query_error:
+                # Sanitize query_error to prevent misuse;
+                lines = cgi.escape(query_error, True).splitlines(True)
+                n_qe = ""
+                last_pre = False
+
+                # Put all lines which start with a \t in <pre> tags since these
+                # contain pre-formatted error descriptions.
+                for l in lines:
+                        if l.startswith("\t"):
+                                if not last_pre:
+                                        n_qe += "<pre>"
+                                n_qe += l
+                                last_pre = True
+                        else:
+                                if last_pre:
+                                        n_qe += "</pre>"
+                                last_pre = False
+                                n_qe += l.replace("\n","<br/>")
+                else:
+                        if last_pre:
+                                last_pre = False
+                                n_qe += "</pre>"
+
+                query_error = n_qe
 
         if not failed and searched:
                 return_type, results, query_error = self.search(
