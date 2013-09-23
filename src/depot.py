@@ -19,7 +19,7 @@
 #
 # CDDL HEADER END
 #
-# Copyright (c) 2007, 2012, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2007, 2013, Oracle and/or its affiliates. All rights reserved.
 #
 
 # pkg.depotd - package repository daemon
@@ -45,7 +45,7 @@ CONTENT_PATH_DEFAULT = "/usr/share/lib/pkg"
 # body is larger than the specified size (in bytes).  The maximum size supported
 # by cherrypy is 2048 * 1024 * 1024 - 1 (just short of 2048MB), but the default
 # here is purposefully conservative.
-MAX_REQUEST_BODY_SIZE = 128 * 1024 * 1024
+MAX_REQUEST_BODY_SIZE = 512 * 1024 * 1024
 # The default host/port(s) to serve data from.
 HOST_DEFAULT = "0.0.0.0"
 PORT_DEFAULT = 80
