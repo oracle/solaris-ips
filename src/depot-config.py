@@ -356,13 +356,14 @@ def _write_publisher_response(pubs, htdocs_path, repo_prefix):
                 raise DepotException(
                     _("Unable to write publisher response: %s") % err)
 
-def cleanup_conf(runtime_dir=None):
-        """Destroys an old configuration."""
+def cleanup_htdocs(htdocs_dir):
+        """Destroy any existing "htdocs" directory."""
         try:
-                shutil.rmtree(runtime_dir, ignore_errors=True)
+                shutil.rmtree(htdocs_dir, ignore_errors=True)
         except OSError, err:
                 raise DepotException(
-                    _("Unable to cleanup old configuration: %s") % err)
+                    _("Unable to remove an existing 'htdocs' directory "
+                    "in the runtime directory: %s") % err)
 
 def refresh_conf(repo_info, log_dir, host, port, runtime_dir,
             template_dir, cache_dir, cache_size, sroot, fragment=False,
@@ -370,12 +371,12 @@ def refresh_conf(repo_info, log_dir, host, port, runtime_dir,
         """Creates a new configuration for the depot."""
         try:
                 ret = EXIT_OK
-                cleanup_conf(runtime_dir=runtime_dir)
                 if not repo_info:
                         raise DepotException(_("no repositories found"))
 
                 htdocs_path = os.path.join(runtime_dir, DEPOT_HTDOCS_DIRNAME,
                     sroot)
+                cleanup_htdocs(htdocs_path)
                 misc.makedirs(htdocs_path)
 
                 # pubs and default_pubs are lists of tuples of the form:
