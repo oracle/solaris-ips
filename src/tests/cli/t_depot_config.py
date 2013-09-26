@@ -336,6 +336,8 @@ class TestHttpDepot(pkg5unittest.ApacheDepotTestCase):
 
                 fmris = self.pkgsend_bulk(self.dcs[1].get_repo_url(),
                     self.new_pkg)
+                r2_fmris = self.pkgsend_bulk(self.dcs[2].get_repo_url(),
+                    self.sample_pkg)
                 self.depotconfig("")
                 self.start_depot()
 
@@ -361,17 +363,69 @@ class TestHttpDepot(pkg5unittest.ApacheDepotTestCase):
                         "/depot/default/en/search.shtml?token=pkg&action=Search"
                 ]
 
-                for p in paths:
-                        url_path = "%s%s" % (self.ac.url, p % conf)
+                def get_url(url_path):
                         try:
-                                url_obj = urllib2.urlopen(url_path)
+                                url_obj = urllib2.urlopen(url_path, timeout=10)
                                 self.assert_(url_obj.code == 200,
                                     "Failed to open %s: %s" % (url_path,
                                     url_obj.code))
+                                url_obj.close()
                         except urllib2.HTTPError, e:
                                 self.debug("Failed to open %s: %s" %
                                     (url_path, e))
                                 raise
+
+                for p in paths:
+                        get_url("%s%s" % (self.ac.url, p % conf))
+
+                self.ac.stop()
+
+                # test that pkg.depot-config detects missing repos
+                broken_rdir = self.rdir2 + "foo"
+                os.rename(self.rdir2, broken_rdir)
+                self.depotconfig("", exit=1)
+
+                # test that when we break one of the repositories we're
+                # serving, that the remaining repositories are still accessible
+                # from the bui. We need to fix the repo dir before rebuilding
+                # the configuration, then break it once the depot has started
+                os.rename(broken_rdir, self.rdir2)
+                self.depotconfig("")
+                os.rename(self.rdir2, broken_rdir)
+                self.start_depot(build_indexes=False)
+
+                # check the first request to the BUI works as expected
+                get_url(self.ac.url)
+
+                # and check that we get a 404 for the missing repo
+                bad_url = "%s/usr/test2/en/catalog.shtml" % self.ac.url
+                raised_404 = False
+                try:
+                        url_obj = urllib2.urlopen(bad_url, timeout=10)
+                        url_obj.close()
+                except urllib2.HTTPError, e:
+                        if e.code == 404:
+                                raised_404 = True
+                self.assert_(raised_404, "Didn't get a 404 opening %s" %
+                    bad_url)
+
+                # check that we can still reach other valid paths
+                paths = [
+                        "/",
+                        "/default/test1",
+                        "/default/en",
+                        "/default/en/index.shtml",
+                        "/default/en/catalog.shtml",
+                        "/default/p5i/0/new.p5i",
+                        "/default/info/0/%(esc_full_fmri)s",
+                        "/default/test1/info/0/%(esc_full_fmri)s",
+                        "/default/manifest/0/%(esc_full_fmri)s",
+                        "/default/en/search.shtml",
+                ]
+                for p in paths:
+                        self.debug(p)
+                        get_url("%s%s" % (self.ac.url, p % conf))
+                os.rename(broken_rdir, self.rdir2)
 
         def test_12_htpkgclient(self):
                 """A depot-config can act as a repository server for pkg(1)

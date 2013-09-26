@@ -4297,7 +4297,10 @@ class HttpDepotController(ApacheController):
 
         def _network_ping(self):
                 try:
-                        urllib2.urlopen(self.url)
+                        # Ping the versions URL, rather than the default /
+                        # so that we don't initialize the BUI code yet.
+                        urllib2.urlopen(urlparse.urljoin(self.url,
+                            "versions/0"))
                 except urllib2.HTTPError, e:
                         if e.code == httplib.FORBIDDEN:
                                 return True
