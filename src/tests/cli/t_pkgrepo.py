@@ -928,6 +928,32 @@ test\t3\tonline\t%sZ
                 self.assertEqualDiff([pfmri],
                     [str(f) for f in repo.get_catalog("test").fmris()])
  
+                # Now verify that 'pkgrepo rebuild' will still work
+                # (filesystem-based repos only) if the catalog is corrupted.
+                cat = repo.get_catalog("test")
+                part = cat.get_part("catalog.attrs")
+                apath = part.pathname
+
+                with open(apath, "r+b") as cfile:
+                        cfile.truncate(4)
+                        cfile.close()
+
+                # Should fail, since catalog is corrupt.
+                self.pkgrepo("refresh -s %s" % repo_path, exit=1)
+
+                # Should fail, because --no-catalog was specified.
+                self.pkgrepo("rebuild -s %s --no-catalog" % repo_path, exit=1)
+
+                # Should succeed.
+                self.pkgrepo("rebuild -s %s --no-index" % repo_path)
+
+                # Should succeed now that catalog is valid.
+                self.pkgrepo("refresh -s %s" % repo_path)
+
+                # Verify expected package is still known.
+                self.assertEqualDiff([pfmri],
+                    [str(f) for f in repo.get_catalog("test").fmris()])
+
         def __test_refresh(self, repo_path, repo_uri):
                 """Private function to verify refresh subcommand behaviour."""
 

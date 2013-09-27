@@ -251,8 +251,11 @@ def subcmd_remove(conf, args):
         return EXIT_OK
 
 
-def get_repo(conf, read_only=True, subcommand=None):
-        """Return the repository object for current program configuration."""
+def get_repo(conf, allow_invalid=False, read_only=True, subcommand=None):
+        """Return the repository object for current program configuration.
+
+        'allow_invalid' specifies whether potentially corrupt repositories are
+        allowed; should only be True if performing a rebuild operation."""
 
         repo_uri = conf["repo_uri"]
         if repo_uri.scheme != "file":
@@ -263,7 +266,8 @@ def get_repo(conf, read_only=True, subcommand=None):
         if not path:
                 # Bad URI?
                 raise sr.RepositoryInvalidError(str(repo_uri))
-        return sr.Repository(read_only=read_only, root=path)
+        return sr.Repository(allow_invalid=allow_invalid, read_only=read_only,
+            root=path)
 
 
 def setup_transport(conf, subcommand=None, verbose=False, ssl_key=None,
@@ -1022,6 +1026,61 @@ def subcmd_list(conf, args):
         return EXIT_OK
 
 
+def __rebuild_local(subcommand, conf, pubs, build_catalog, build_index):
+        """In an attempt to allow operations on potentially corrupt
+        repositories, 'local' repositories (filesystem-basd ones) are handled
+        separately."""
+
+        repo = get_repo(conf, allow_invalid=build_catalog, read_only=False,
+            subcommand=subcommand)
+
+        rpubs = set(repo.publishers)
+        if not pubs:
+                found = rpubs
+        else:
+                found = rpubs & pubs
+        notfound = pubs - found
+
+        rval = EXIT_OK
+        if found and notfound:
+                rval = EXIT_PARTIAL
+        elif pubs and not found:
+                error(_("no matching publishers found"), cmd=subcommand)
+                return EXIT_OOPS
+
+        logger.info("Initiating repository rebuild.")
+        for pfx in found:
+                repo.rebuild(build_catalog=build_catalog,
+                    build_index=build_index, pub=pfx)
+
+        return rval
+
+
+def __rebuild_remote(subcommand, conf, pubs, key, cert, build_catalog,
+    build_index):
+        def do_rebuild(xport, xpub):
+                if build_catalog and build_index:
+                        xport.publish_rebuild(xpub)
+                elif build_catalog:
+                        xport.publish_rebuild_packages(xpub)
+                elif build_index:
+                        xport.publish_rebuild_indexes(xpub)
+
+        xport, xpub, tmp_dir = setup_transport(conf, subcommand=subcommand,
+            ssl_key=key, ssl_cert=cert)
+        rval, found, pub_data = _get_matching_pubs(subcommand, pubs, xport,
+            xpub)
+        if rval == EXIT_OOPS:
+                return rval
+
+        logger.info("Initiating repository rebuild.")
+        for pfx in found:
+                xpub.prefix = pfx
+                do_rebuild(xport, xpub)
+
+        return rval
+
+
 def subcmd_rebuild(conf, args):
         """Rebuild the repository's catalog and index data (as permitted)."""
 
@@ -1063,27 +1122,12 @@ def subcmd_rebuild(conf, args):
                 usage(_("A package repository location must be provided "
                     "using -s."), cmd=subcommand)
 
-        def do_rebuild(xport, xpub):
-                if build_catalog and build_index:
-                        xport.publish_rebuild(xpub)
-                elif build_catalog:
-                        xport.publish_rebuild_packages(xpub)
-                elif build_index:
-                        xport.publish_rebuild_indexes(xpub)
+        if conf["repo_uri"].scheme == "file":
+                return __rebuild_local(subcommand, conf, pubs, build_catalog,
+                    build_index)
 
-        xport, xpub, tmp_dir = setup_transport(conf, subcommand=subcommand,
-            ssl_key=key, ssl_cert=cert)
-        rval, found, pub_data = _get_matching_pubs(subcommand, pubs, xport,
-            xpub)
-        if rval == EXIT_OOPS:
-                return rval
-
-        logger.info("Initiating repository rebuild.")
-        for pfx in found:
-                xpub.prefix = pfx
-                do_rebuild(xport, xpub)
-
-        return rval
+        return __rebuild_remote(subcommand, conf, pubs, key, cert,
+            build_catalog, build_index)
 
 
 def subcmd_refresh(conf, args):

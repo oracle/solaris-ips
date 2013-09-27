@@ -322,8 +322,9 @@ class _RepoStore(object):
         intended only for use by the Repository class.
         """
 
-        def __init__(self, file_layout=None, file_root=None, log_obj=None,
-            mirror=False, pub=None, read_only=False, root=None,
+        def __init__(self, allow_invalid=False, file_layout=None,
+            file_root=None, log_obj=None, mirror=False, pub=None,
+            read_only=False, root=None,
             sort_file_max_size=indexer.SORT_FILE_MAX_SIZE, writable_root=None):
                 """Prepare the repository for use."""
 
@@ -381,7 +382,7 @@ class _RepoStore(object):
                 # Initialize.
                 self.__lock_rstore(blocking=True)
                 try:
-                        self.__init_state()
+                        self.__init_state(allow_invalid=allow_invalid)
                 finally:
                         self.__unlock_rstore()
 
@@ -800,7 +801,7 @@ class _RepoStore(object):
                         self.__index_log("Search Available")
                 self.__search_available = True
 
-        def __init_state(self):
+        def __init_state(self, allow_invalid=False):
                 """Private version; caller responsible for repository
                 locking."""
 
@@ -809,7 +810,7 @@ class _RepoStore(object):
                 self.__catalog = None
 
                 # Determine location and version of catalog data.
-                self.__init_catalog()
+                self.__init_catalog(allow_invalid=allow_invalid)
 
                 # Prepare search for use (ensuring most current data is loaded).
                 self.reset_search()
@@ -829,12 +830,17 @@ class _RepoStore(object):
 
                 self.__check_search()
 
-        def __init_catalog(self):
+        def __init_catalog(self, allow_invalid=False):
                 """Private function to determine version and location of
                 catalog data.  This will also perform any necessary
                 transformations of existing catalog data if the repository
                 is read-only and a writable_root has been provided.
-                """
+
+                'allow_invalid', if True, will assume the catalog is version 1
+                and use an empty, in-memory catalog if the existing, on-disk
+                catalog is invalid (i.e. corrupted).  This assumes that the
+                caller intends to use the repository as part of a rebuild
+                operation."""
 
                 # Reset versions to default.
                 self.catalog_version = -1
@@ -948,8 +954,22 @@ class _RepoStore(object):
                                 self.__set_catalog_root(v1_cat.meta_root)
                         else:
                                 self.catalog_version = 0
-                elif self.catalog.exists:
-                        self.catalog_version = 1
+                else:
+                        try:
+                                if self.catalog.exists:
+                                        self.catalog_version = 1
+                        except apx.CatalogError, e:
+                                if not allow_invalid:
+                                        raise
+
+                                # Catalog is invalid, but consumer wants to
+                                # proceed; assume version 1.  This will allow
+                                # pkgrepo rebuild, etc.
+                                self.__log(str(e))
+                                self.__catalog = catalog.Catalog(
+                                    read_only=self.read_only)
+                                self.catalog_verison = 1
+                                return
 
                 if self.catalog_version >= 1 and not self.publisher:
                         # If there's no information available to determine
@@ -2550,9 +2570,9 @@ class Repository(object):
         """A Repository object is a representation of data contained within a
         pkg(5) repository and an interface to manipulate it."""
 
-        def __init__(self, cfgpathname=None, create=False, file_root=None,
-            log_obj=None, mirror=False, properties=misc.EmptyDict,
-            read_only=False, root=None,
+        def __init__(self, allow_invalid=False, cfgpathname=None, create=False,
+            file_root=None, log_obj=None, mirror=False,
+            properties=misc.EmptyDict, read_only=False, root=None,
             sort_file_max_size=indexer.SORT_FILE_MAX_SIZE, writable_root=None):
                 """Prepare the repository for use."""
 
@@ -2592,11 +2612,13 @@ class Repository(object):
 
                 self.__lock_repository()
                 try:
-                        self.__init_state(create=create, properties=properties)
+                        self.__init_state(allow_invalid=allow_invalid,
+                            create=create, properties=properties)
                 finally:
                         self.__unlock_repository()
 
-        def __init_format(self, create=False, properties=misc.EmptyI):
+        def __init_format(self, allow_invalid=False, create=False,
+            properties=misc.EmptyI):
                 """Private helper function to determine repository format and
                 validity.
                 """
@@ -2729,18 +2751,21 @@ class Repository(object):
                         # ...and then one for each publisher if any are known.
                         if self.pub_root and os.path.exists(self.pub_root):
                                 for pub in os.listdir(self.pub_root):
-                                        self.__new_rstore(pub)
+                                        self.__new_rstore(pub,
+                                            allow_invalid=allow_invalid)
 
                         # If a default publisher is set, ensure that a storage
                         # object always exists for it.
                         if def_pub and def_pub not in self.__rstores:
-                                self.__new_rstore(def_pub)
+                                self.__new_rstore(def_pub,
+                                    allow_invalid=allow_invalid)
                 else:
                         # For older repository versions, there is only one
                         # repository store, and it might have an associated
                         # publisher prefix.  (This might be in a mix of V0 and
                         # V1 layouts.)
-                        rstore = _RepoStore(file_root=self.file_root,
+                        rstore = _RepoStore(allow_invalid=allow_invalid,
+                            file_root=self.file_root,
                             log_obj=self.log_obj, pub=def_pub,
                             mirror=self.mirror,
                             read_only=self.read_only,
@@ -2780,14 +2805,16 @@ class Repository(object):
                                         # matter.
                                         continue
 
-        def __init_state(self, create=False, properties=misc.EmptyDict):
+        def __init_state(self, allow_invalid=False, create=False,
+            properties=misc.EmptyDict):
                 """Private helper function to initialize state."""
 
                 # Discard current repository storage state data.
                 self.__rstores = {}
 
                 # Determine format, configuration location, and validity.
-                self.__init_format(create=create, properties=properties)
+                self.__init_format(allow_invalid=allow_invalid, create=create,
+                    properties=properties)
 
                 # Ensure default configuration is written.
                 self.__write_config()
@@ -2873,7 +2900,7 @@ class Repository(object):
                             errno.EROFS):
                                 raise
 
-        def __new_rstore(self, pub):
+        def __new_rstore(self, pub, allow_invalid=False):
                 assert pub
                 if pub in self.__rstores:
                         raise RepositoryDuplicatePublisher(pub)
@@ -2905,7 +2932,8 @@ class Repository(object):
                         # might use a mix of layouts.
                         file_layout = layout.V1Layout()
 
-                rstore = _RepoStore(file_layout=file_layout, file_root=froot,
+                rstore = _RepoStore(allow_invalid=allow_invalid,
+                    file_layout=file_layout, file_root=froot,
                     log_obj=self.log_obj, mirror=self.mirror, pub=pub,
                     read_only=self.read_only, root=root,
                     sort_file_max_size=self.__sort_file_max_size,

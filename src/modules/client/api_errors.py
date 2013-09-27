@@ -1052,7 +1052,8 @@ class InvalidCatalogFile(CatalogError):
         """Used to indicate a Catalog file could not be loaded."""
 
         def __str__(self):
-                return _("Catalog file '%s' is invalid.") % self.data
+                return _("Catalog file '%s' is invalid.\nUse 'pkgrepo rebuild' "
+                    "to create a new package catalog.") % self.data
 
 
 class MismatchedCatalog(CatalogError):
