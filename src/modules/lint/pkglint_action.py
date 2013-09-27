@@ -1294,8 +1294,7 @@ class PkgActionChecker(base.ActionChecker):
                         name = declared_fmri.get_name()
                 except pkg.fmri.IllegalFmri:
                         try:
-                                declared_fmri = pkg.fmri.PkgFmri(dep_fmri,
-                                    build_release="5.11")
+                                declared_fmri = pkg.fmri.PkgFmri(dep_fmri)
                                 name = declared_fmri.get_name()
                         except:
                                 # A very broken fmri value - we'll give up now.
@@ -1386,8 +1385,7 @@ class PkgActionChecker(base.ActionChecker):
                                 # we also need to just verify that the fmri
                                 # isn't just missing a build_release value
                                 try:
-                                        pfmri = pkg.fmri.PkgFmri(fmri,
-                                            build_release="5.11")
+                                        pfmri = pkg.fmri.PkgFmri(fmri)
                                 except pkg.fmri.IllegalFmri:
                                         engine.error("invalid FMRI in action "
                                             "%(action)s in %(pkg)s" %
@@ -1496,7 +1494,7 @@ class PkgActionChecker(base.ActionChecker):
                         return
 
                 fmri = action.attrs["fmri"]
-                pfmri = pkg.fmri.PkgFmri(fmri, build_release="5.11")
+                pfmri = pkg.fmri.PkgFmri(fmri)
                 if not pfmri.version:
                         engine.error(
                             _("'incorporate' depend action on %(fmri)s in "

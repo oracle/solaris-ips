@@ -547,7 +547,7 @@ file 6a1ae3def902f5612a43f0c0836fe05bc4f237cf chash=be9c91959ec782acb0f081bf4bf1
                 self.pkgsend(url, "import %s" % src_dir1)
                 self.pkgsend(url, "import %s/" % src_dir2)
                 ret, sfmri = self.pkgsend(url, "close")
-                foo_fmri = fmri.PkgFmri(sfmri, "5.11")
+                foo_fmri = fmri.PkgFmri(sfmri)
 
                 # Test with and without trailing slash on generate path.
                 # This cannot be done using pkgsend_bulk, which doesn't
@@ -571,7 +571,7 @@ file 6a1ae3def902f5612a43f0c0836fe05bc4f237cf chash=be9c91959ec782acb0f081bf4bf1
                 self.pkgsend(url, "include -d %s -d %s %s" % (src_dir1,
                     src_dir2, mpath))
                 ret, sfmri = self.pkgsend(url, "close")
-                bar_fmri = fmri.PkgFmri(sfmri, "5.11")
+                bar_fmri = fmri.PkgFmri(sfmri)
 
                 self.image_create(url)
 
@@ -1218,8 +1218,8 @@ dir path=foo/bar mode=0755 owner=root group=bin
 
                 self.image_create(dhurl)
                 self.pkg("install testmultipledirs")
-                self.pkg("list -vH testmultipledirs@1.0,5.10")
-                self.assert_("testmultipledirs@1.0,5.10" in self.output)
+                self.pkg("list -vH testmultipledirs@1.0")
+                self.assert_("testmultipledirs@1.0" in self.output)
 
                 self.pkg("verify")
                 self.image_destroy()

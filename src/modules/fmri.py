@@ -336,7 +336,7 @@ class PkgFmri(object):
                 return "pkg://%s/%s%s" % (publisher, self.pkg_name, version)
 
         def get_fmri(self, default_publisher=None, anarchy=False,
-            include_scheme=True):
+            include_scheme=True, include_build=True):
                 """Return a string representation of the FMRI.
                 Anarchy returns a string without any publisher."""
                 pkg_str = ""
@@ -352,7 +352,8 @@ class PkgFmri(object):
                                 return "%s%s" % (pkg_str, self.pkg_name)
 
                         return "%s%s@%s" % (pkg_str, self.pkg_name,
-                            self.version)
+                            self.version.get_version(
+                                include_build=include_build))
 
                 if include_scheme:
                         pkg_str = "pkg://"
@@ -360,7 +361,7 @@ class PkgFmri(object):
                         return "%s%s/%s" % (pkg_str, publisher, self.pkg_name)
 
                 return "%s%s/%s@%s" % (pkg_str, publisher, self.pkg_name,
-                                self.version)
+                    self.version.get_version(include_build=include_build))
 
         def hierarchical_names(self):
                 """Generate the different hierarchical names that could be used

@@ -196,7 +196,7 @@ class TestVersion(pkg5unittest.Pkg5TestCase):
                 """ insert a bad char at (almost) every position in a version"""
                 v = "12.34.56-78:19760113T111111Z"
                 # Check that v is valid
-                version.Version(v, "5.11")
+                version.Version(v)
                 badchars = [ "T", "Z", "@", "-", ".", ",", ":" ]
                 becareful = [".", ",", "-"]
                 for b in badchars:
@@ -258,12 +258,6 @@ class TestVersion(pkg5unittest.Pkg5TestCase):
                 self.assert_(self.v9 != None)
                 self.assert_(None != self.v9)
                 self.assert_(not self.v9 != self.v9same)
-
-        def testversionbuildcompat1(self):
-                self.assert_(not self.v9.compatible_with_build(self.d3))
-
-        def testversionbuildcompat2(self):
-                self.assert_(self.v9.compatible_with_build(self.d4))
 
         def testversionsuccessor1(self):
                 self.assert_(self.v13.is_successor(self.v12,

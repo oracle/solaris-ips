@@ -197,15 +197,19 @@ class TestPkgrecvMulti(pkg5unittest.ManyDepotTestCase):
                 # Test list newest.
                 self.pkgrecv(self.durl1, "--newest")
                 output = self.reduceSpaces(self.output)
+                
+                def  _nobuild_fmri(pfmri):
+                        return fmri.PkgFmri(pfmri).get_fmri(
+                            include_build=False)
 
                 # The latest version of amber and bronze should be listed
                 # (sans publisher prefix currently).
-                amber = self.published[1]
-                scheme = self.published[8]
-                bronze = self.published[4]
-                tree = self.published[5]
-                branch = self.published[6]
-                leaf = self.published[7]
+                amber = _nobuild_fmri(self.published[1])
+                scheme = _nobuild_fmri(self.published[8])
+                bronze = _nobuild_fmri(self.published[4])
+                tree = _nobuild_fmri(self.published[5])
+                branch = _nobuild_fmri(self.published[6])
+                leaf = _nobuild_fmri(self.published[7])
 
                 expected = "\n".join((amber, branch, bronze, leaf, scheme, tree)) + "\n"
                 self.assertEqualDiff(expected, output)

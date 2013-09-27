@@ -167,7 +167,6 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                 self.__imgdir = None
                 self.__root = root
 
-                self.attrs = { "Build-Release": "5.11" } # XXX real data needed
                 self.blocking_locks = False
                 self.cfg = None
                 self.history = history.History()
@@ -2232,10 +2231,8 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
 
                         med_version = act.attrs.get("mediator-version")
                         if med_version:
-                                # 5.11 doesn't matter here and is never exposed
-                                # to users.
                                 med_version = pkg.version.Version(
-                                    med_version, "5.11")
+                                    med_version)
                         med_impl = act.attrs.get("mediator-implementation")
 
                         return med_version == cfg_med_version and \
@@ -3135,8 +3132,7 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                                 if stem in frozen_pkgs:
                                         f_ver = frozen_pkgs[stem].version
                                         if f_ver == ver or \
-                                            pkg.version.Version(ver,
-                                            self.attrs["Build-Release"]
+                                            pkg.version.Version(ver
                                             ).is_successor(f_ver,
                                             constraint=
                                             pkg.version.CONSTRAINT_AUTO):
@@ -3815,11 +3811,10 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                 return cat.publishers()
 
         def strtofmri(self, myfmri):
-                return pkg.fmri.PkgFmri(myfmri, self.attrs["Build-Release"])
+                return pkg.fmri.PkgFmri(myfmri)
 
         def strtomatchingfmri(self, myfmri):
-                return pkg.fmri.MatchingPkgFmri(myfmri,
-                    self.attrs["Build-Release"])
+                return pkg.fmri.MatchingPkgFmri(myfmri)
 
         def get_user_by_name(self, name):
                 uid = self._usersbyname.get(name, None)
@@ -4123,7 +4118,7 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                 """
 
                 def __make_publisherless_fmri(pat):
-                        p = pkg.fmri.MatchingPkgFmri(pat, "5.11")
+                        p = pkg.fmri.MatchingPkgFmri(pat)
                         p.publisher = None
                         return p
 
@@ -4337,11 +4332,8 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                                 valid, error = med.valid_mediator_version(
                                     med_version)
                                 if valid:
-                                        # 5.11 doesn't matter here and is never
-                                        # exposed to users.
                                          new_mediators[m]["version"] = \
-                                            pkg.version.Version(
-                                            med_version, "5.11")
+                                            pkg.version.Version(med_version)
                                 else:
                                         invalid_mediations[m]["version"] = \
                                             (med_version, error)
@@ -4618,8 +4610,7 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                 and the reason it was frozen."""
 
                 return [
-                    (pkg.fmri.MatchingPkgFmri(v[0], build_release="5.11"),
-                        v[1], v[2])
+                    (pkg.fmri.MatchingPkgFmri(v[0]), v[1], v[2])
                     for v in self.__freeze_dict_load().values()
                 ]
 

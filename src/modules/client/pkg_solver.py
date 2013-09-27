@@ -1360,8 +1360,7 @@ class PkgSolver(object):
                                                 try:
                                                         tmp = self.__fmridict[f]
                                                 except KeyError:
-                                                        tmp = pkg.fmri.PkgFmri(
-                                                            f, "5.11")
+                                                        tmp = pkg.fmri.PkgFmri(f)
                                                         self.__fmridict[f] = tmp
                                                 name = tmp.pkg_name
                                                 if name not in fmris_by_name:
@@ -1390,7 +1389,7 @@ class PkgSolver(object):
                                         if da.attrs["type"] != "require":
                                                 continue
                                         pkg_name = pkg.fmri.PkgFmri(
-                                            da.attrs["fmri"], "5.11").pkg_name
+                                            da.attrs["fmri"]).pkg_name
                                         self.__dependents.setdefault(
                                             self.__installed_dict[pkg_name],
                                             set()).add(f)
@@ -1468,7 +1467,7 @@ class PkgSolver(object):
                         try:
                                 fmri = self.__fmridict[fmristr]
                         except KeyError:
-                                fmri = pkg.fmri.PkgFmri(fmristr, "5.11")
+                                fmri = pkg.fmri.PkgFmri(fmristr)
                                 self.__fmridict[fmristr] = fmri
                         fmris.append(fmri)
 
@@ -1508,7 +1507,7 @@ class PkgSolver(object):
 
                 elif dtype == "conditional":
                         cond_fmri = pkg.fmri.PkgFmri(
-                            dependency_action.attrs["predicate"], "5.11")
+                            dependency_action.attrs["predicate"])
                         conditional, nonmatching = self.__comb_newer_fmris(
                             cond_fmri, dotrim, obsolete_ok=obsolete_ok)
                         # Required is only really helpful for solver error
@@ -1950,7 +1949,7 @@ class PkgSolver(object):
                                                             fl]
                                                 except KeyError:
                                                         tmp = pkg.fmri.PkgFmri(
-                                                            fl, "5.11")
+                                                            fl)
                                                         self.__fmridict[fl] = \
                                                             tmp
                                                 fmris.append(tmp)
@@ -2176,7 +2175,7 @@ class PkgSolver(object):
                 # Find all the fmris that we depend on in our parent.
                 # Use a set() to eliminate any dups.
                 pkg_deps = set([
-                    pkg.fmri.PkgFmri(f, "5.11")
+                    pkg.fmri.PkgFmri(f)
                     for da in self.__get_dependency_actions(pkg_fmri, excludes)
                     if da.attrs["type"] == "parent"
                     for f in da.attrlist("fmri")
@@ -2205,7 +2204,7 @@ class PkgSolver(object):
                         if da.attrs["type"] != "origin":
                                 continue
 
-                        req_fmri = pkg.fmri.PkgFmri(da.attrs["fmri"], "5.11")
+                        req_fmri = pkg.fmri.PkgFmri(da.attrs["fmri"])
 
                         if da.attrs.get("root-image", "").lower() == "true":
 				if req_fmri.pkg_name.startswith("feature/firmware/"):

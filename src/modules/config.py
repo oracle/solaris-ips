@@ -850,7 +850,7 @@ class PropVersion(Property):
                         nvalue = value
                 else:
                         try:
-                                nvalue = pkg.version.Version(value, "5.11")
+                                nvalue = pkg.version.Version(value)
                         except Exception:
                                 raise InvalidPropertyValueError(prop=self.name,
                                     value=value)

@@ -543,7 +543,7 @@ set name=variant.arch value=i386\
                 # Verify the list of expected packages in the target repository.
                 nlist = {}
                 for s in self.published[:10]:
-                        f = fmri.PkgFmri(s, "5.11")
+                        f = fmri.PkgFmri(s)
                         if f.pkg_name not in nlist or \
                             f.version > nlist[f.pkg_name].version:
                                 nlist[f.pkg_name] = f
@@ -620,7 +620,7 @@ set name=variant.arch value=sparc\
                 # Verify the list of expected packages in the target repository.
                 nlist = {}
                 for s in self.published:
-                        f = fmri.PkgFmri(s, "5.11")
+                        f = fmri.PkgFmri(s)
                         if f.pkg_name not in nlist or \
                             f.version > nlist[f.pkg_name].version:
                                 nlist[f.pkg_name] = f
@@ -766,7 +766,7 @@ set name=variant.arch value=sparc value=i386 value=arm\
                 # Verify the list of expected packages in the target repository.
                 nlist = {}
                 for s in self.published + self.published_debug:
-                        f = fmri.PkgFmri(s, "5.11")
+                        f = fmri.PkgFmri(s)
                         if f.pkg_name not in nlist or \
                             f.version > nlist[f.pkg_name].version:
                                 nlist[f.pkg_name] = f
@@ -870,7 +870,7 @@ set name=variant.debug value=false value=true\
                 # the missing cases.
                 nlist = {}
                 for s in self.published + self.published_debug[:6]:
-                        f = fmri.PkgFmri(s, "5.11")
+                        f = fmri.PkgFmri(s)
                         if f.pkg_name not in nlist or \
                             f.version > nlist[f.pkg_name].version:
                                 nlist[f.pkg_name] = f

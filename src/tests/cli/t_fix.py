@@ -119,7 +119,7 @@ class TestFix(pkg5unittest.SingleDepotTestCase):
                     self.licensed13, self.dir10, self.file10, self.preserve10,
                     self.preserve11, self.preserve12, self.driver10,
                     self.driver_prep10)):
-                        pfmri = fmri.PkgFmri(p, "5.11")
+                        pfmri = fmri.PkgFmri(p)
                         pfmri.publisher = None
                         sfmri = pfmri.get_short_fmri().replace("pkg:/", "")
                         self.plist[sfmri] = pfmri

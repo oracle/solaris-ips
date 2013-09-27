@@ -496,7 +496,9 @@ class TestHttpDepot(pkg5unittest.ApacheDepotTestCase):
 
                 ret, output = self.pkgrecv(command="-s %s/default --newest" %
                     self.ac.url, out=True)
-                self.assert_(str(second[0]) in output)
+                sec_fmri_nobuild = pkg.fmri.PkgFmri(second[0]).get_fmri(
+                    include_build=False)
+                self.assert_(sec_fmri_nobuild in output)
                 dest = os.path.join(self.test_root, "test_13_hgpkgrecv")
                 os.mkdir(dest)
 

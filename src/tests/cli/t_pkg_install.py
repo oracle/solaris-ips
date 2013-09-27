@@ -3007,7 +3007,7 @@ adm
                 etc. match the src items's matching action as expected."""
 
                 for p in plist:
-                        pfmri = fmri.PkgFmri(p, "5.11")
+                        pfmri = fmri.PkgFmri(p)
                         pfmri.publisher = None
                         sfmri = pfmri.get_short_fmri().replace("pkg:/", "")
 
@@ -6891,7 +6891,7 @@ class TestActionErrors(pkg5unittest.SingleDepotTestCase):
 
                 self.plist = {}
                 for p in plist:
-                        pfmri = fmri.PkgFmri(p, "5.11")
+                        pfmri = fmri.PkgFmri(p)
                         self.plist[pfmri.pkg_name] = pfmri
 
         @staticmethod

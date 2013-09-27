@@ -62,8 +62,6 @@ class PkgmergeException(Exception):
                 # have a chance of being stringified correctly.
                 return str(self)
 
-BUILD_RELEASE  = "5.11"  # Should be an option to this program some day?
-
 catalog_dict   = {}    # hash table of catalogs by source uri
 fmri_cache     = {}
 manifest_cache = {}
@@ -882,11 +880,9 @@ def match_user_fmris(patterns, cat):
                                 matcher = pkg.fmri.fmri_match
 
                         if matcher == pkg.fmri.glob_match:
-                                fmri = pkg.fmri.MatchingPkgFmri(
-                                    pat_stem, BUILD_RELEASE)
+                                fmri = pkg.fmri.MatchingPkgFmri(pat_stem)
                         else:
-                                fmri = pkg.fmri.PkgFmri(
-                                    pat_stem, BUILD_RELEASE)
+                                fmri = pkg.fmri.PkgFmri(pat_stem)
 
                         if not pat_ver:
                                 # Do nothing.
@@ -894,12 +890,10 @@ def match_user_fmris(patterns, cat):
                         elif "*" in pat_ver or "?" in pat_ver or \
                             pat_ver == "latest":
                                 fmri.version = \
-                                    pkg.version.MatchingVersion(pat_ver,
-                                        BUILD_RELEASE)
+                                    pkg.version.MatchingVersion(pat_ver)
                         else:
                                 fmri.version = \
-                                    pkg.version.Version(pat_ver,
-                                        BUILD_RELEASE)
+                                    pkg.version.Version(pat_ver)
 
                         if pat_ver and \
                             getattr(fmri.version, "match_latest", None):

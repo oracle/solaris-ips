@@ -830,9 +830,8 @@ class CatalogPart(CatalogPartBase):
                 sorted."""
 
                 def order(a, b):
-                        # XXX version requires build string; 5.11 is not sane.
-                        v1 = pkg.version.Version(a["version"], "5.11")
-                        v2 = pkg.version.Version(b["version"], "5.11")
+                        v1 = pkg.version.Version(a["version"])
+                        v2 = pkg.version.Version(b["version"])
                         return cmp(v1, v2)
 
                 self.load()
@@ -1825,7 +1824,6 @@ class Catalog(object):
                                 wildcards.
                 """
 
-                brelease = "5.11"
                 for pat in patterns:
                         error = None
                         matcher = None
@@ -1846,11 +1844,9 @@ class Catalog(object):
                                         matcher = fmri.fmri_match
 
                                 if matcher == fmri.glob_match:
-                                        npat = fmri.MatchingPkgFmri(pat_stem,
-                                            brelease)
+                                        npat = fmri.MatchingPkgFmri(pat_stem)
                                 else:
-                                        npat = fmri.PkgFmri(pat_stem,
-                                            brelease)
+                                        npat = fmri.PkgFmri(pat_stem)
 
                                 if not pat_ver:
                                         # Do nothing.
@@ -1858,12 +1854,10 @@ class Catalog(object):
                                 elif "*" in pat_ver or "?" in pat_ver or \
                                     pat_ver == "latest":
                                         npat.version = \
-                                            pkg.version.MatchingVersion(pat_ver,
-                                                brelease)
+                                            pkg.version.MatchingVersion(pat_ver)
                                 else:
                                         npat.version = \
-                                            pkg.version.Version(pat_ver,
-                                                brelease)
+                                            pkg.version.Version(pat_ver)
 
                         except (fmri.FmriError, pkg.version.VersionError), e:
                                 # Whatever the error was, return it.
@@ -2927,8 +2921,6 @@ class Catalog(object):
                 an FMRI object should be returned in place of the (pub, stem,
                 ver) tuple that is normally returned."""
 
-                brelease = "5.11"
-
                 # Each pattern in patterns can be a partial or full FMRI, so
                 # extract the individual components for use in filtering.
                 newest = False
@@ -3038,8 +3030,7 @@ class Catalog(object):
                                                         # version object more
                                                         # than once for each
                                                         # entry.
-                                                        ever = pkg.version.Version(ver,
-                                                            brelease)
+                                                        ever = pkg.version.Version(ver)
                                                 if not ever.is_successor(pat_ver,
                                                     pkg.version.CONSTRAINT_AUTO):
                                                         if omit_package is None:
@@ -3152,8 +3143,8 @@ class Catalog(object):
 
                         # Return the requested package data.
                         if return_fmris:
-                                pfmri = fmri.PkgFmri(build_release=brelease,
-                                    name=stem, publisher=pub, version=ver)
+                                pfmri = fmri.PkgFmri(name=stem, publisher=pub,
+                                    version=ver)
                                 yield (pfmri, states, attrs)
                         else:
                                 yield (t, states, attrs)
@@ -3212,8 +3203,6 @@ class Catalog(object):
                 multispec = []
                 pat_data = []
                 wildcard_patterns = set()
-
-                brelease = "5.11"
 
                 # Each pattern in patterns can be a partial or full FMRI, so
                 # extract the individual components for use in filtering.

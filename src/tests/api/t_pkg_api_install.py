@@ -1106,7 +1106,7 @@ class TestActionExecutionErrors(pkg5unittest.SingleDepotTestCase):
 
                 self.plist = {}
                 for p in plist:
-                        pfmri = fmri.PkgFmri(p, "5.11")
+                        pfmri = fmri.PkgFmri(p)
                         self.plist.setdefault(pfmri.pkg_name, []).append(pfmri)
 
         @staticmethod

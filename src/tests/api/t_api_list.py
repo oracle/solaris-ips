@@ -81,8 +81,8 @@ class TestApiList(pkg5unittest.ManyDepotTestCase):
                 rval = cmp(apub, bpub)
                 if rval != 0:
                         return rval
-                aver = version.Version(aver, "5.11")
-                bver = version.Version(bver, "5.11")
+                aver = version.Version(aver)
+                bver = version.Version(bver)
                 return cmp(aver, bver) * -1
 
         def __get_pkg_variant(self, stem, ver):
@@ -186,8 +186,7 @@ class TestApiList(pkg5unittest.ManyDepotTestCase):
                         pkg_data += p
                         stem, ver = p.split("@")
 
-                        # XXX version should not require 5.11
-                        sver = version.Version(ver, "5.11")
+                        sver = version.Version(ver)
                         sver = str(sver).split(":", 1)[0]
 
                         summ, desc = self.__get_pkg_summ_desc(stem, sver)
@@ -1298,8 +1297,7 @@ add set name=pkg.description value="%(desc)s"
                 def get_pkg_cats(p):
                         stem, ver = p.split("@")
 
-                        # XXX version should not require 5.11
-                        sver = version.Version(ver, "5.11")
+                        sver = version.Version(ver)
                         sver = str(sver).split(":", 1)[0]
                         raw_cats = self.__get_pkg_cats(stem, sver)
 

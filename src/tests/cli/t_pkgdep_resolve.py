@@ -1281,7 +1281,7 @@ dependency resolution:
 
                 self.assertEqual(len(pkg_deps[manifests[1]]), 1)
                 for d in pkg_deps[manifests[1]]:
-                        fmri = PkgFmri(d.attrs["fmri"], build_release="5.11")
+                        fmri = PkgFmri(d.attrs["fmri"])
                         if str(fmri).startswith("pkg:/double_provides"):
                                 self.assertEqual(str(fmri.version.branch), "1")
 

@@ -244,7 +244,7 @@
                                         <a title="Package Information Summary"
                                             href="${phref}">${pfmri.pkg_name}</a>
                                 </td>
-                                <td>${pfmri.version}</td>
+                                <td>${pfmri.version.get_version(include_build=False)}</td>
                                 <td>
 %               if not show_obsolete or catalog.PKG_STATE_OBSOLETE not in states:
                                         <a class="p5i"

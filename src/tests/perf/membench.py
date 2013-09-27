@@ -42,10 +42,10 @@ def dotseq_different(num):
         return version.DotSequence("5.%d" % num)
 
 def vers(num):
-        return version.Version("0.5.11-0.111:20090428T172804Z", "5.11")
+        return version.Version("0.5.11-0.111:20090428T172804Z")
 
 def vers_different(num):
-        return version.Version("0.5.11,5.11-0.%d:%08dT172804Z" % (num, num), "5.11")
+        return version.Version("0.5.11,5.11-0.%d:%08dT172804Z" % (num, num))
 
 def mfmri(num):
         return fmri.PkgFmri("pkg:/SUNWttf-google-droid@0.5.11,5.11-0.121:20090816T233516Z")

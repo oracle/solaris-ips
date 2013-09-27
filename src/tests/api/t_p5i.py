@@ -114,7 +114,7 @@ class TestP5I(pkg5unittest.Pkg5TestCase):
 
                 # First, Ensure that PkgFmri and strings are supported properly.
                 # Build a simple list of packages.
-                fmri_foo = fmri.PkgFmri("pkg:/foo@1.0,5.11-0", None)
+                fmri_foo = fmri.PkgFmri("pkg:/foo@1.0,5.11-0")
                 pnames = {
                     "bobcat": [fmri_foo],
                     "": ["pkg:/bar@1.0,5.11-0", "baz"],

@@ -1853,7 +1853,7 @@ class TestFacetInheritance(TestPkgLinked):
                 # populate repository
                 for p in self.p_data:
                         fmristr = self.pkgsend_bulk(self.rurl1, p)[0]
-                        f = fmri.PkgFmri(fmristr, "5.11")
+                        f = fmri.PkgFmri(fmristr)
                         pkgstr = "%s@%s" % (f.pkg_name, f.version.release)
                         self.p_fmri[pkgstr] = fmristr
 
@@ -2511,7 +2511,7 @@ class TestConcurrentFacetChange(TestPkgLinked):
                 # populate repository
                 for p in self.p_data:
                         fmristr = self.pkgsend_bulk(self.rurl1, p)[0]
-                        f = fmri.PkgFmri(fmristr, "5.11")
+                        f = fmri.PkgFmri(fmristr)
                         pkgstr = "%s@%s" % (f.pkg_name, f.version.release)
                         self.p_fmri[pkgstr] = fmristr
 
@@ -2935,7 +2935,7 @@ class TestLinkedInstallHoldRelax(TestPkgLinked):
                 # populate repository
                 for p in self.p_data:
                         fmristr = self.pkgsend_bulk(self.rurl1, p)[0]
-                        f = fmri.PkgFmri(fmristr, "5.11")
+                        f = fmri.PkgFmri(fmristr)
                         pkgstr = "%s@%s" % (f.pkg_name, f.version.release)
                         self.p_fmri[pkgstr] = fmristr
 

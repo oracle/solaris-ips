@@ -589,8 +589,8 @@ class TestCatalog(pkg5unittest.Pkg5TestCase):
                         rval = cmp(apub, bpub)
                         if rval != 0:
                                 return rval
-                        aver = version.Version(aver, "5.11")
-                        bver = version.Version(bver, "5.11")
+                        aver = version.Version(aver)
+                        bver = version.Version(bver)
                         return cmp(aver, bver) * -1
 
                 def tuple_entry_order(a, b):
@@ -602,8 +602,8 @@ class TestCatalog(pkg5unittest.Pkg5TestCase):
                         rval = cmp(apub, bpub)
                         if rval != 0:
                                 return rval
-                        aver = version.Version(aver, "5.11")
-                        bver = version.Version(bver, "5.11")
+                        aver = version.Version(aver)
+                        bver = version.Version(bver)
                         return cmp(aver, bver) * -1
 
                 # test fmris()

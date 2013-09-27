@@ -250,7 +250,7 @@ def expand_fmri(pfmri, constraint=version.CONSTRAINT_AUTO):
         """Find matching fmri using CONSTRAINT_AUTO cache for performance.
         Returns None if no matching fmri is found."""
         if isinstance(pfmri, str):
-                pfmri = pkg.fmri.PkgFmri(pfmri, "5.11")
+                pfmri = pkg.fmri.PkgFmri(pfmri)
 
         # Iterate in reverse so newest version is evaluated first.
         versions = [e for e in src_cat.fmris_by_version(pfmri.pkg_name)]
@@ -895,7 +895,8 @@ def clone_repo(pargs, target, list_newest, all_versions, all_timestamps,
                 if len(to_rm) > 0:
                         msg(_("Packages to remove:"))
                         for f in to_rm:
-                                msg("    %s" % f.get_fmri(anarchy=True))
+                                msg("    %s" % f.get_fmri(anarchy=True,
+                                    include_build=False))
 
                         if not dry_run:
                                 msg(_("Removing packages ..."))
@@ -1095,7 +1096,7 @@ def transfer_pkgs(pargs, target, list_newest, all_versions, all_timestamps,
                         src_cat = fetch_catalog(src_pub, tracker,
                             xport, False)
                         for f in src_cat.fmris(ordered=True, last=True):
-                                msg(f.get_fmri())
+                                msg(f.get_fmri(include_build=False))
                         continue
 
                 msg(_("Processing packages for publisher %s ...") %

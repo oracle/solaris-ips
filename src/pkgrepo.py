@@ -225,7 +225,8 @@ def subcmd_remove(conf, args):
                 # removed and exit.
                 packages = set(f for m in matching.values() for f in m)
                 count = len(packages)
-                plist = "\n".join("\t%s" % p for p in sorted(packages))
+                plist = "\n".join("\t%s" % p.get_fmri(include_build=False) 
+                    for p in sorted(packages))
                 logger.info(_("%(count)d package(s) will be removed:\n"
                     "%(plist)s") % locals())
                 return EXIT_OK
@@ -861,17 +862,25 @@ def subcmd_list(conf, args):
                                             states:
                                                 state = "r"
 
+                                if out_format == "default":
+                                    fver = str(f.version.get_version(
+                                        include_build=False))
+                                    ffmri = str(f.get_fmri(include_build=False))
+                                else:
+                                    fver = str(f.version)
+                                    ffmri = str(f)
+
                                 ret = {
                                     "publisher": f.publisher,
                                     "name": f.pkg_name,
-                                    "version": str(f.version),
+                                    "version": fver,
                                     "release": str(f.version.release),
                                     "build-release":
                                         str(f.version.build_release),
                                     "branch": str(f.version.branch),
                                     "timestamp":
                                         str(f.version.timestr),
-                                    "pkg.fmri": str(f),
+                                    "pkg.fmri": ffmri,
                                     "short_state": state,
                                 }
 

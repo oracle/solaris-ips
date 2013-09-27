@@ -3262,10 +3262,7 @@ def get_inheritable_facets(img, pd=None):
         faceted_linked_deps = dict()
         for act in faceted_deps:
                 for fmri in act.attrlist("fmri"):
-                        # the build_release specified below ("5.11") doesn't
-                        # matter since we only create a PkgFmri object so we
-                        # can reference pkg_name
-                        pfmri = pkg.fmri.PkgFmri(fmri, "5.11")
+                        pfmri = pkg.fmri.PkgFmri(fmri)
                         pfmri = ppkgs_dict.get(pfmri.pkg_name, None)
                         if pfmri is None:
                                 continue

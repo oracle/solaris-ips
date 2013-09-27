@@ -653,7 +653,7 @@ def choose_name(fp, mfst):
         name = mfst.get("pkg.fmri", mfst.get("fmri", None))
         if name is not None:
                 try:
-                        pfmri = fmri.PkgFmri(name, "5.11")
+                        pfmri = fmri.PkgFmri(name)
                 except fmri.IllegalFmri:
                         pfmri = None
                 return name, pfmri
@@ -1085,7 +1085,7 @@ def __collapse_conditionals(deps):
         for d, v in deps:
                 if d.attrs["type"] != "require":
                         continue
-                t_pfmri = fmri.PkgFmri(d.attrs["fmri"], "5.11")
+                t_pfmri = fmri.PkgFmri(d.attrs["fmri"])
                 req_dict.setdefault(t_pfmri.get_pkg_stem(include_scheme=False),
                     []).append((t_pfmri, d, v))
 
@@ -1106,7 +1106,7 @@ def __collapse_conditionals(deps):
                 # Pick a fmri which might be the predicate of a conditional
                 # dependency that could be collapsed.
                 predicate = preds_to_process.pop()
-                t_pfmri = fmri.PkgFmri(predicate, "5.11")
+                t_pfmri = fmri.PkgFmri(predicate)
                 t_name = t_pfmri.get_pkg_stem(include_scheme=False)
                 # If there are no require dependencies with that package name as
                 # a target, then there's nothing to do.
@@ -1182,7 +1182,7 @@ def __collapse_conditionals(deps):
                                                 preds_to_process.add(
                                                     res_dep.attrs["fmri"])
                                                 t_pfmri = fmri.PkgFmri(
-                                                    d.attrs["fmri"], "5.11")
+                                                    d.attrs["fmri"])
                                                 req_dict.setdefault(
                                                     t_pfmri.get_pkg_stem(
                                                         include_scheme=False),
@@ -1217,8 +1217,7 @@ def __collapse_conditionals(deps):
                                         # to the predicates to be processed.
                                         preds_to_process.add(
                                             res_dep.attrs["fmri"])
-                                        t_pfmri = fmri.PkgFmri(d.attrs["fmri"],
-                                            "5.11")
+                                        t_pfmri = fmri.PkgFmri(d.attrs["fmri"])
                                         req_dict.setdefault(
                                             t_pfmri.get_pkg_stem(
                                                 include_scheme=False),
@@ -1257,7 +1256,7 @@ def __remove_unneeded_require_and_require_any(deps, pkg_fmri):
 
                 cur_fmris = []
                 for f in cur_dep.attrlist("fmri"):
-                        cur_fmris.append(fmri.PkgFmri(f, "5.11"))
+                        cur_fmris.append(fmri.PkgFmri(f))
                 skip = False
                 # If we're resolving a pkg with a known name ...
                 if pkg_fmri is not None:
@@ -1295,7 +1294,7 @@ def __remove_unneeded_require_and_require_any(deps, pkg_fmri):
                         if comp_dep.attrs["type"] != "require":
                                 continue
                         successor = False
-                        comp_fmri = fmri.PkgFmri(comp_dep.attrs["fmri"], "5.11")
+                        comp_fmri = fmri.PkgFmri(comp_dep.attrs["fmri"])
                         # Check to see whether the package required by the
                         # require dependency is a successor to any of the
                         # packages required by the require-any dependency.
@@ -1336,7 +1335,7 @@ def __remove_extraneous_conditionals(deps, omitted_req_any):
         reach the require dependency should be retained."""
 
         def fmri_attrget(d):
-                return fmri.PkgFmri(d[0].attrs["fmri"], "5.11").get_pkg_stem(
+                return fmri.PkgFmri(d[0].attrs["fmri"]).get_pkg_stem(
                     include_scheme=False)
 
         def path_id_attrget(d):
@@ -1377,10 +1376,10 @@ def __remove_extraneous_conditionals(deps, omitted_req_any):
                         # of a require dependency, then it can be ignored under
                         # those combinations of variants under which the require
                         # dependency applies.
-                        d_fmri = fmri.PkgFmri(d.attrs["fmri"], "5.11")
+                        d_fmri = fmri.PkgFmri(d.attrs["fmri"])
                         for r_d, r_v in req_dict.get(d_fmri.get_pkg_stem(
                             include_scheme=False), []):
-                                r_fmri = fmri.PkgFmri(r_d.attrs["fmri"], "5.11")
+                                r_fmri = fmri.PkgFmri(r_d.attrs["fmri"])
                                 if not r_fmri.is_successor(d_fmri):
                                         continue
                                 if r_v.is_empty():
@@ -1569,7 +1568,7 @@ def add_fmri_path_mapping(files_dict, links_dict, pfmri, mfst,
 def __safe_fmri_parse(txt):
         dep_name = None
         try:
-                dep_name = fmri.PkgFmri(txt, "5.11").pkg_name
+                dep_name = fmri.PkgFmri(txt).pkg_name
         except fmri.IllegalFmri:
                 pass
         return dep_name
@@ -1700,7 +1699,7 @@ def resolve_deps(manifest_paths, api_inst, system_patterns, prune_attrs=False):
         for mp, (name, pfmri), mfst, pkg_vars, miss_files in manifests:
                 try:
                         if pfmri is None:
-                                pfmri = fmri.PkgFmri(name, "5.11")
+                                pfmri = fmri.PkgFmri(name)
                 except fmri.IllegalFmri, e:
                         raise BadPackageFmri(mp, e)
                 add_fmri_path_mapping(files.delivered, links, pfmri, mfst,

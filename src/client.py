@@ -530,9 +530,15 @@ def list_inventory(op, api_inst, pargs,
                         else:
                                 spub = " (" + pub + ")"
 
-                        # Display full FMRI for verbose case.
+                        # Display full FMRI (without build version) for
+                        # verbose case.
+                        # Use class method instead of creating an object for
+                        # performance reasons.
                         if verbose:
-                                pfmri = "pkg://%s/%s@%s" % (pub, stem, ver)
+                                release, build_release, branch, ts = \
+                                    version.Version.split(ver)[0]
+                                pfmri = "pkg://%s/%s@%s-%s:%s" % \
+                                    (pub, stem, release, branch, ts)
                                 msg(fmt_str % (pfmri, status))
                                 continue
 
@@ -1122,17 +1128,24 @@ made will not be reflected on the next boot.
                                 else:
                                         pparent = dest.publisher
                                 pname = dest.pkg_stem
-                                pver = str(src.fmri.version)
+                                pver = src.fmri.version.get_version(
+                                    include_build=False)
                                 if src != dest:
-                                        pver += " -> %s" % dest.fmri.version
+                                        pver += " -> %s" % \
+                                            dest.fmri.version.get_version(
+                                                include_build=False)
                         elif dest:
                                 pparent = dest.publisher
                                 pname = dest.pkg_stem
-                                pver = "None -> %s" % dest.fmri.version
+                                pver = "None -> %s" % \
+                                    dest.fmri.version.get_version(
+                                        include_build=False)
                         else:
                                 pparent = src.publisher
                                 pname = src.pkg_stem
-                                pver = "%s -> None" % src.fmri.version
+                                pver = "%s -> None" % \
+                                    src.fmri.version.get_version(
+                                        include_build=False)
 
                         changed[pparent].append((pname, pver))
 
@@ -1323,7 +1336,8 @@ def display_plan_licenses(api_inst, show_all=False, show_req=True):
                 lic = dest.license
                 if show_req:
                         logger.info("-" * 60)
-                        logger.info(_("Package: %s") % pfmri)
+                        logger.info(_("Package: %s") % pfmri.get_fmri(
+                            include_build=False))
                         logger.info(_("License: %s\n") % lic)
                         logger.info(dest.get_text())
                         logger.info("\n")
@@ -3002,11 +3016,10 @@ def info(api_inst, args):
                             (pi.version, hum_ver[0]))
                 else:
                         msg(_("       Version:"), pi.version)
-                msg(_(" Build Release:"), pi.build_release)
                 msg(_("        Branch:"), pi.branch)
                 msg(_("Packaging Date:"), pi.packaging_date)
                 msg(_("          Size:"), misc.bytes_to_str(pi.size))
-                msg(_("          FMRI:"), pi.fmri)
+                msg(_("          FMRI:"), pi.fmri.get_fmri(include_build=False))
                 # XXX add license/copyright info here?
 
         if notfound:

@@ -366,7 +366,7 @@ matching characters use '[' and ']':<br/>
 
                         stem = pfmri.pkg_name
                         pfmri_str = pfmri.get_fmri(anarchy=True, 
-                            include_scheme=False)
+                            include_scheme=False, include_build=False)
                         phref = self.shared.rpath(g_vars, "info/0/%s" % (
                             urllib.quote(pfmri_str, "")))
                         # XXX the .p5i extension is a bogus hack because

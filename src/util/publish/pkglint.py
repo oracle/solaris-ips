@@ -282,8 +282,7 @@ def read_manifests(names, lint_logger):
                 if manifest and "pkg.fmri" in manifest:
                         try:
                                 manifest.fmri = \
-                                    pkg.fmri.PkgFmri(manifest["pkg.fmri"],
-                                        "5.11")
+                                    pkg.fmri.PkgFmri(manifest["pkg.fmri"])
                         except fmri.IllegalFmri, e:
                                 lint_logger.critical(
                                     _("Error in file %(file)s: "

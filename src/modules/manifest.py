@@ -812,8 +812,7 @@ class Manifest(object):
                         med_ver = attrs.get("mediator-version")
                         if med_ver:
                                 try:
-                                        med_ver = version.Version(med_ver,
-                                            "5.11")
+                                        med_ver = version.Version(med_ver)
                                 except version.VersionError:
                                         # Consider this mediation unavailable
                                         # if it can't be parsed for whatever

@@ -271,7 +271,7 @@ def subs_undef_fmri_str(fmri_str, latest_ref_pkgs):
         specified dependency FMRI, otherwise substitute the complete version of
         the pkg currently present in the repo."""
 
-        dpfmri = fmri.PkgFmri(fmri_str, "5.11")
+        dpfmri = fmri.PkgFmri(fmri_str)
         ndpfmri = latest_ref_pkgs[dpfmri.get_name()]
 
         if ndpfmri.is_successor(dpfmri):
@@ -287,7 +287,7 @@ def get_dep_fmri_str(fmri_str, pkg, act, latest_ref_pkgs, reversioned_pkgs,
         be adjusted. This has to be passed in separately since in case of
         require-any dependencies an action can contain multiple FMRIs. """
 
-        dpfmri = fmri.PkgFmri(fmri_str, "5.11")
+        dpfmri = fmri.PkgFmri(fmri_str)
 
         # Versionless dependencies don't need to be changed.
         if not dpfmri.version:
@@ -318,7 +318,7 @@ def get_dep_fmri_str(fmri_str, pkg, act, latest_ref_pkgs, reversioned_pkgs,
                 fmris = ra.attrlist("fmri")
 
                 for rf in fmris:
-                        rpfmri = fmri.PkgFmri(rf, "5.11")
+                        rpfmri = fmri.PkgFmri(rf)
                         if rpfmri.get_pkg_stem() != dpfmri.get_pkg_stem():
                                 continue
 
@@ -390,7 +390,7 @@ def use_ref(a, deps, ignores):
                 # For now, treat as content change.
                 if not isinstance(a.attrs["fmri"], basestring):
                         return False
-                dpfmri = fmri.PkgFmri(a.attrs["fmri"], "5.11")
+                dpfmri = fmri.PkgFmri(a.attrs["fmri"])
                 deps.add(dpfmri.get_pkg_stem())
                 return True
 

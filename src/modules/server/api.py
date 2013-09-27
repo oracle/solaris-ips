@@ -107,7 +107,7 @@ class CatalogInterface(_Interface):
                         return iter(())
                 return c.fmris(ordered=ordered)
 
-        def gen_allowed_packages(self, pfmris, build_release="5.11",
+        def gen_allowed_packages(self, pfmris, build_release=None,
             excludes=misc.EmptyI):
                 """A generator function that produces a list of tuples of the
                 form (fmri, states) in the catalog incorporated by the named
@@ -177,7 +177,7 @@ class CatalogInterface(_Interface):
                 )
 
         def __get_allowed_packages(self, cat, pfmri, allowed,
-            build_release="5.11", excludes=misc.EmptyI, pubs=misc.EmptyI):
+            build_release=None, excludes=misc.EmptyI, pubs=misc.EmptyI):
                 cat_info = frozenset([cat.DEPENDENCY])
 
                 for a in cat.get_entry_actions(pfmri, cat_info,
@@ -188,7 +188,7 @@ class CatalogInterface(_Interface):
                                 continue
 
                         ifmri = pkg.fmri.PkgFmri(a.attrs["fmri"],
-                            build_release="5.11")
+                            build_release=build_release)
                         iver = ifmri.version
                         # Versionless incorporations don't make sense so don't
                         # recurse any further.

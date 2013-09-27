@@ -1943,8 +1943,6 @@ class ImagePlan(object):
                 objects which is used so the same string isn't translated into
                 the same PkgFmri object multiple times."""
 
-                build_release = self.image.attrs["Build-Release"]
-
                 for key in keys:
                         offsets = []
                         for klass in action_classes:
@@ -1978,7 +1976,7 @@ class ImagePlan(object):
                                                 pfmri = fmri_dict[fmristr]
                                         except KeyError:
                                                 pfmri = pkg.fmri.PkgFmri(
-                                                    fmristr, build_release)
+                                                    fmristr)
                                                 fmri_dict[fmristr] = pfmri
                                         if skip_dups and self.__act_dup_check(
                                             tgt, key, actstr, fmristr):
@@ -2562,7 +2560,7 @@ class ImagePlan(object):
 
                 for fmristr in act.attrlist("release-note"):
                         try:
-                                pfmri = pkg.fmri.PkgFmri(fmristr, "5.11")
+                                pfmri = pkg.fmri.PkgFmri(fmristr)
                         except pkg.fmri.FmriError:
                                 continue # skip malformed fmris
                         # any special handling here?
@@ -2746,9 +2744,7 @@ class ImagePlan(object):
                                 continue
                         med_ver = a.attrs.get("mediator-version")
                         if med_ver:
-                                # 5.11 doesn't matter here and is never exposed
-                                # to users.
-                                med_ver = pkg.version.Version(med_ver, "5.11")
+                                med_ver = pkg.version.Version(med_ver)
                         med_impl = a.attrs.get("mediator-implementation")
                         if not (med_ver or med_impl):
                                 # Link mediation is incomplete.
@@ -2883,10 +2879,7 @@ class ImagePlan(object):
 
                                 med_ver = ap.dst.attrs.get("mediator-version")
                                 if med_ver:
-                                        # 5.11 doesn't matter here and is never
-                                        # exposed to users.
-                                        med_ver = pkg.version.Version(med_ver,
-                                            "5.11")
+                                        med_ver = pkg.version.Version(med_ver)
                                 med_impl = ap.dst.attrs.get(
                                     "mediator-implementation")
 
@@ -4108,7 +4101,6 @@ class ImagePlan(object):
                 # avoid checking everywhere
                 if not patterns:
                         return set()
-                brelease = image.attrs["Build-Release"]
 
                 illegals      = []
                 nonmatch      = []
@@ -4145,10 +4137,9 @@ class ImagePlan(object):
 
                                 if matcher == pkg.fmri.glob_match:
                                         fmri = pkg.fmri.MatchingPkgFmri(
-                                            pat_stem, brelease)
+                                            pat_stem)
                                 else:
-                                        fmri = pkg.fmri.PkgFmri(
-                                            pat_stem, brelease)
+                                        fmri = pkg.fmri.PkgFmri(pat_stem)
 
                                 sfmri = str(fmri)
                                 if sfmri in seen:
@@ -4325,7 +4316,6 @@ class ImagePlan(object):
                         ))
 
                 # figure out which kind of matching rules to employ
-                brelease = image.attrs["Build-Release"]
                 latest_pats = set()
                 seen = set()
                 npatterns = []
@@ -4348,10 +4338,10 @@ class ImagePlan(object):
 
                                 if matcher == pkg.fmri.glob_match:
                                         fmri = pkg.fmri.MatchingPkgFmri(
-                                            pat_stem, brelease)
+                                            pat_stem)
                                 else:
                                         fmri = pkg.fmri.PkgFmri(
-                                            pat_stem, brelease)
+                                            pat_stem)
 
                                 if not pat_ver:
                                         # Do nothing.
@@ -4359,12 +4349,10 @@ class ImagePlan(object):
                                 elif "*" in pat_ver or "?" in pat_ver or \
                                     pat_ver == "latest":
                                         fmri.version = \
-                                            pkg.version.MatchingVersion(pat_ver,
-                                                brelease)
+                                            pkg.version.MatchingVersion(pat_ver)
                                 else:
                                         fmri.version = \
-                                            pkg.version.Version(pat_ver,
-                                                brelease)
+                                            pkg.version.Version(pat_ver)
 
                                 sfmri = str(fmri)
                                 if sfmri in seen:
@@ -4464,7 +4452,7 @@ class ImagePlan(object):
                                                             a.name == "depend" and \
                                                             a.attrs["type"] == "require":
                                                                 ren_deps.append(pkg.fmri.PkgFmri(
-                                                                    a.attrs["fmri"], "5.11"))
+                                                                    a.attrs["fmri"]))
                                                                 continue
                                                         elif a.name != "set":
                                                                 continue
@@ -4829,9 +4817,8 @@ class ImagePlan(object):
 
                 stems = {}
                 for p in freezes:
-                        stems.setdefault(pkg.fmri.PkgFmri(p,
-                            build_release="5.11").get_pkg_stem(anarchy=True,
-                            include_scheme=False), set()).add(p)
+                        stems.setdefault(pkg.fmri.PkgFmri(p).get_pkg_stem(
+                            anarchy=True, include_scheme=False), set()).add(p)
                 # Check whether one stem has been frozen at non-identical
                 # versions.
                 for k, v in stems.iteritems():

@@ -203,8 +203,7 @@ class DependencyAction(generic.Action):
 
                 # XXX Exclude and range between min and max not yet handled
                 def __min_version():
-                        return pkg.version.Version("0",
-                            image.attrs["Build-Release"])
+                        return pkg.version.Version("0")
 
                 ctype = self.attrs["type"]
 
@@ -216,7 +215,7 @@ class DependencyAction(generic.Action):
                 # get a list of fmris and do fmri token substitution
                 pfmris = []
                 for i in self.attrlist("fmri"):
-                        f = pkg.fmri.PkgFmri(i, image.attrs["Build-Release"])
+                        f = pkg.fmri.PkgFmri(i)
                         if f.pkg_name == DEPEND_SELF:
                                 f = pfmri
                         pfmris.append(f)
@@ -253,8 +252,7 @@ class DependencyAction(generic.Action):
                         min_fmri = pfmri.copy()
                         min_fmri.version = __min_version()
                 elif ctype == "conditional":
-                        cfmri = pkg.fmri.PkgFmri(self.attrs["predicate"],
-                            image.attrs["Build-Release"])
+                        cfmri = pkg.fmri.PkgFmri(self.attrs["predicate"])
                         installed_cversion = image.get_version_installed(cfmri)
                         if installed_cversion is not None and \
                             installed_cversion.is_successor(cfmri):
@@ -477,7 +475,7 @@ class DependencyAction(generic.Action):
                 for attr in ("predicate", "fmri"):
                         for f in self.attrlist(attr):
                                 try:
-                                        pkg.fmri.PkgFmri(f, "5.11")
+                                        pkg.fmri.PkgFmri(f)
                                 except (pkg.version.VersionError,
                                     pkg.fmri.FmriError), e:
                                         if attr == "fmri" and f == "__TBD":

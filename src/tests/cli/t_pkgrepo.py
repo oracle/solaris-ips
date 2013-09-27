@@ -1390,7 +1390,34 @@ publisher\tprefix\texample.net
                         # json output.
                         self.pkgrepo("list -s %s -F json" % src)
                         expected = """\
-[{"branch": "0", "build-release": "5.11", "name": "amber", "pkg.fmri": "pkg://test/amber@4.0,5.11-0:20110804T203458Z", "pkg.obsolete": [{"value": ["true"]}], "publisher": "test", "release": "4.0", "timestamp": "20110804T203458Z", "version": "4.0,5.11-0:20110804T203458Z"}, {"branch": "0", "build-release": "5.11", "name": "amber", "pkg.fmri": "pkg://test/amber@3.0,5.11-0:20110804T203458Z", "pkg.renamed": [{"value": ["true"]}], "publisher": "test", "release": "3.0", "timestamp": "20110804T203458Z", "version": "3.0,5.11-0:20110804T203458Z"}, {"branch": "0", "build-release": "5.11", "name": "amber", "pkg.fmri": "pkg://test/amber@2.0,5.11-0:20110804T203458Z", "publisher": "test", "release": "2.0", "timestamp": "20110804T203458Z", "version": "2.0,5.11-0:20110804T203458Z"}, {"branch": "0", "build-release": "5.11", "name": "amber", "pkg.fmri": "pkg://test/amber@1.0,5.11-0:20110804T203458Z", "pkg.human-version": [{"value": ["1.0a"]}], "pkg.summary": [{"value": ["Millenia old resin"]}], "publisher": "test", "release": "1.0", "timestamp": "20110804T203458Z", "version": "1.0,5.11-0:20110804T203458Z"}, {"branch": "0", "build-release": "5.11", "info.classification": [{"value": ["org.opensolaris.category.2008:System/Core"]}], "name": "tree", "pkg.fmri": "pkg://test/tree@1.0,5.11-0:20110804T203458Z", "pkg.summary": [{"value": ["Leafy i386 package"], "variant.arch": ["i386"]}, {"value": ["Leafy SPARC package"], "variant.arch": ["sparc"]}], "publisher": "test", "release": "1.0", "timestamp": "20110804T203458Z", "variant.arch": [{"value": ["i386", "sparc"]}], "version": "1.0,5.11-0:20110804T203458Z"}]"""
+[{"branch": "0", "build-release": "5.11", "name": "amber", \
+"pkg.fmri": "pkg://test/amber@4.0,5.11-0:20110804T203458Z", \
+"pkg.obsolete": [{"value": ["true"]}], "publisher": "test", \
+"release": "4.0", "timestamp": "20110804T203458Z", \
+"version": "4.0,5.11-0:20110804T203458Z"}, \
+{"branch": "0", "build-release": "5.11", "name": "amber", \
+"pkg.fmri": "pkg://test/amber@3.0,5.11-0:20110804T203458Z", \
+"pkg.renamed": [{"value": ["true"]}], "publisher": "test", \
+"release": "3.0", "timestamp": "20110804T203458Z", \
+"version": "3.0,5.11-0:20110804T203458Z"}, \
+{"branch": "0", "build-release": "5.11", "name": "amber", \
+"pkg.fmri": "pkg://test/amber@2.0,5.11-0:20110804T203458Z", \
+"publisher": "test", "release": "2.0", "timestamp": "20110804T203458Z", \
+"version": "2.0,5.11-0:20110804T203458Z"}, \
+{"branch": "0", "build-release": "5.11", "name": "amber", \
+"pkg.fmri": "pkg://test/amber@1.0,5.11-0:20110804T203458Z", \
+"pkg.human-version": [{"value": ["1.0a"]}], \
+"pkg.summary": [{"value": ["Millenia old resin"]}], \
+"publisher": "test", "release": "1.0", "timestamp": "20110804T203458Z", \
+"version": "1.0,5.11-0:20110804T203458Z"}, \
+{"branch": "0", "build-release": "5.11", \
+"info.classification": [{"value": ["org.opensolaris.category.2008:System/Core"]}], \
+"name": "tree", "pkg.fmri": "pkg://test/tree@1.0,5.11-0:20110804T203458Z", \
+"pkg.summary": [{"value": ["Leafy i386 package"], "variant.arch": ["i386"]}, \
+{"value": ["Leafy SPARC package"], "variant.arch": ["sparc"]}], \
+"publisher": "test", "release": "1.0", "timestamp": "20110804T203458Z", \
+"variant.arch": [{"value": ["i386", "sparc"]}], \
+"version": "1.0,5.11-0:20110804T203458Z"}]"""
                         self.assertEqualDiff(expected, self.output)
 
                 # Now verify list output in different formats but only using
@@ -1400,22 +1427,22 @@ publisher\tprefix\texample.net
                 self.pkgrepo("list -s %s" % src)
                 expected = """\
 PUBLISHER NAME                                          O VERSION
-test      amber                                         o 4.0,5.11-0:20110804T203458Z
-test      amber                                         r 3.0,5.11-0:20110804T203458Z
-test      amber                                           2.0,5.11-0:20110804T203458Z
-test      amber                                           1.0,5.11-0:20110804T203458Z
-test      tree                                            1.0,5.11-0:20110804T203458Z
+test      amber                                         o 4.0-0:20110804T203458Z
+test      amber                                         r 3.0-0:20110804T203458Z
+test      amber                                           2.0-0:20110804T203458Z
+test      amber                                           1.0-0:20110804T203458Z
+test      tree                                            1.0-0:20110804T203458Z
 """
                 self.assertEqualDiff(expected, self.output)
 
                 # Human readable (default) output with no header.
                 self.pkgrepo("list -s %s -H" % repo_path)
                 expected = """\
-test      amber                                         o 4.0,5.11-0:20110804T203458Z
-test      amber                                         r 3.0,5.11-0:20110804T203458Z
-test      amber                                           2.0,5.11-0:20110804T203458Z
-test      amber                                           1.0,5.11-0:20110804T203458Z
-test      tree                                            1.0,5.11-0:20110804T203458Z
+test      amber                                         o 4.0-0:20110804T203458Z
+test      amber                                         r 3.0-0:20110804T203458Z
+test      amber                                           2.0-0:20110804T203458Z
+test      amber                                           1.0-0:20110804T203458Z
+test      tree                                            1.0-0:20110804T203458Z
 """
                 self.assertEqualDiff(expected, self.output)
 

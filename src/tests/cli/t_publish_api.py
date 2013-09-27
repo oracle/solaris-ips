@@ -62,7 +62,7 @@ class TestPkgPublicationApi(pkg5unittest.SingleDepotTestCase):
                 # Each version number must be unique since multiple packages
                 # will be published within the same second.
                 for i in range(100):
-                        pf = fmri.PkgFmri("foo@%d.0" % i, "5.11")
+                        pf = fmri.PkgFmri("foo@%d.0" % i)
                         t = trans.Transaction(durl, pkg_name=str(pf),
                             xport=xport, pub=pub)
                         t.open()
@@ -88,7 +88,7 @@ class TestPkgPublicationApi(pkg5unittest.SingleDepotTestCase):
                 # Each version number must be unique since multiple packages
                 # will be published within the same second.
                 for i in range(100):
-                        pf = fmri.PkgFmri("foo@%d.0" % i, "5.11")
+                        pf = fmri.PkgFmri("foo@%d.0" % i)
                         t = trans.Transaction(location, pkg_name=str(pf),
                             xport=xport, pub=pub)
                         t.open()

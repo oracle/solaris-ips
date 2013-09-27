@@ -75,14 +75,13 @@ class PkgManifestChecker(base.ManifestChecker):
                                 dep = action.attrs["fmri"]
                                 try:
                                         if isinstance(dep, basestring):
-                                                f = fmri.PkgFmri(dep, "5.11")
+                                                f = fmri.PkgFmri(dep)
                                                 dic.setdefault(
                                                     f.get_name(), []
                                                     ).append(name)
                                         elif isinstance(dep, list):
                                                 for d in dep:
-                                                        f = fmri.PkgFmri(d,
-                                                            "5.11")
+                                                        f = fmri.PkgFmri(d)
                                                         dic.setdefault(
                                                             f.get_name(), []
                                                             ).append(name)

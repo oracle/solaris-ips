@@ -101,7 +101,7 @@ f1 = version.Version("5.11-0.72", "0.5.11")""",
 
         [ "fmri create (parts)", 50000,
         """import pkg.fmri as fmri""",
-        """f = fmri.PkgFmri(build_release="5.11", publisher="origin", name="SUNWxwssu", version="0.5.11,5.11-0.72:20070921T203926Z")"""
+        """f = fmri.PkgFmri(publisher="origin", name="SUNWxwssu", version="0.5.11,5.11-0.72:20070921T203926Z")"""
         ],
 
         [ "fmri create (no tstamp)", 50000,
@@ -111,12 +111,12 @@ f1 = version.Version("5.11-0.72", "0.5.11")""",
 
         [ "fmri create (no tstamp, no bld/branch)", 50000,
         """import pkg.fmri as fmri""",
-        """f = fmri.PkgFmri("pkg://origin/SUNWlxml@2.6.31", build_release="5.11")"""
+        """f = fmri.PkgFmri("pkg://origin/SUNWlxml@2.6.31")"""
         ],
 
         [ "fmri create (no tstamp, no bld/branch, no origin)", 50000,
         """import pkg.fmri as fmri""",
-        """f = fmri.PkgFmri("pkg:/SUNWlxml@2.6.31-0.90", build_release="5.11")"""
+        """f = fmri.PkgFmri("pkg:/SUNWlxml@2.6.31-0.90")"""
         ],
 
         [ "fmri to string (no tstamp)", 100000,

@@ -708,8 +708,7 @@ class LintEngine(object):
                                         # FMRIs listed as dependencies often
                                         # omit build_release, use a dummy one
                                         # for now
-                                        fmri = pkg.fmri.PkgFmri(pkg_name,
-                                            build_release="5.11")
+                                        fmri = pkg.fmri.PkgFmri(pkg_name)
                                         return fmri
                                 except:
                                         msg = _("unable to construct fmri from "

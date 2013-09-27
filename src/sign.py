@@ -336,7 +336,8 @@ def main_func():
                                                 if t.trans_id:
                                                         t.close(abandon=True)
                                                 raise
-                                msg(_("Signed %s") % pfmri)
+                                msg(_("Signed %s") % pfmri.get_fmri(
+                                    include_build=False))
                                 successful_publish = True
                         except (api_errors.ApiException, fmri.FmriError,
                             trans.TransactionError), e:

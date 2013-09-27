@@ -45,7 +45,7 @@ def valid_mediator_version(value):
         error = ""
         if isinstance(value, basestring):
                 try:
-                        version.Version(value, "5.11")
+                        version.Version(value)
                         return True, None
                 except version.VersionError, e:
                         error = str(e)
@@ -78,7 +78,7 @@ def parse_mediator_implementation(value):
 
         if impl_ver:
                 try:
-                        impl_ver = version.Version(impl_ver,"5.11")
+                        impl_ver = version.Version(impl_ver)
                 except version.VersionError:
                         # If part of implementation can't be parsed, then
                         # return nothing at all.
@@ -101,7 +101,7 @@ def valid_mediator_implementation(value, allow_empty_version=False):
 
                 if iver or (iver == "" and not allow_empty_version):
                         try:
-                                version.Version(iver, "5.11")
+                                version.Version(iver)
                         except version.VersionError, e:
                                 error = str(e)
 

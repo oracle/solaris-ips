@@ -2871,7 +2871,7 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                             self._img.IMG_CATALOG_KNOWN)
                 return sorted(pkg_cat.categories(excludes=excludes, pubs=pubs))
 
-        def __map_installed_newest(self, brelease, pubs, known_cat=None):
+        def __map_installed_newest(self, pubs, known_cat=None):
                 """Private function.  Maps incorporations and publisher
                 relationships for installed packages and returns them
                 as a tuple of (pub_ranks, inc_stems, inc_vers, inst_stems,
@@ -2918,7 +2918,7 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                                         elif a.attrs["type"] == "incorporate":
                                                 # Record incorporated packages.
                                                 tgt = fmri.PkgFmri(
-                                                    a.attrs["fmri"], brelease)
+                                                    a.attrs["fmri"])
                                                 tver = tgt.version
                                                 # incorporates without a version
                                                 # should be ignored.
@@ -2944,7 +2944,7 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
 
                         if pkgr:
                                 for f in targets:
-                                        tgt = fmri.PkgFmri(f, brelease)
+                                        tgt = fmri.PkgFmri(f)
                                         ren_stems[tgt.pkg_name] = stem
                                         ren_inst_stems.setdefault(stem,
                                             set())
@@ -3026,7 +3026,7 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                         if pkgr:
                                 pub, stem, ver = t
                                 for f in targets:
-                                        tgt = fmri.PkgFmri(f, brelease)
+                                        tgt = fmri.PkgFmri(f)
                                         ren_stems[tgt.pkg_name] = stem
 
                 # Determine highest ranked publisher for package stems
@@ -3521,8 +3521,6 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                 elif pkg_list == self.LIST_UPGRADABLE:
                         upgradable = True
 
-                brelease = self._img.attrs["Build-Release"]
-
                 # Each pattern in patterns can be a partial or full FMRI, so
                 # extract the individual components for use in filtering.
                 illegals = []
@@ -3575,7 +3573,7 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                 if inst_newest:
                         pub_ranks, inc_stems, inc_vers, inst_stems, ren_stems, \
                             ren_inst_stems = self.__map_installed_newest(
-                            brelease, pubs, known_cat=known_cat)
+                            pubs, known_cat=known_cat)
                 else:
                         pub_ranks = inc_stems = inc_vers = inst_stems = \
                             ren_stems = ren_inst_stems = misc.EmptyDict
@@ -3657,7 +3655,7 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                                         return False
 
                                 # XXX version should not require build release.
-                                ever = pkg.version.Version(ver, brelease)
+                                ever = pkg.version.Version(ver)
 
                                 # If the entry's version is a successor to
                                 # the incorporated version, then this is the
@@ -3800,8 +3798,7 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                                                         # version object more
                                                         # than once for each
                                                         # entry.
-                                                        ever = pkg.version.Version(ver,
-                                                            brelease)
+                                                        ever = pkg.version.Version(ver)
                                                 if not ever.is_successor(pat_ver,
                                                     pkg.version.CONSTRAINT_AUTO):
                                                         if omit_package is None:
@@ -4004,8 +4001,8 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                                 ranked_stems.setdefault(stem, pub)
 
                         if return_fmris:
-                                pfmri = fmri.PkgFmri(build_release=brelease,
-                                    name=stem, publisher=pub, version=ver)
+                                pfmri = fmri.PkgFmri(name=stem, publisher=pub,
+                                        version=ver)
                                 yield (pfmri, summ, pcats, states, attrs)
                         else:
                                 yield (t, summ, pcats, states, attrs)
@@ -4659,7 +4656,6 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                 # This maps fmris to the version at which they're incorporated.
                 inc_vers = {}
                 inst_stems = {}
-                brelease = self._img.attrs["Build-Release"]
 
                 img_cat = self._img.get_catalog(
                     self._img.IMG_CATALOG_INSTALLED)
@@ -4674,8 +4670,7 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                                     a.attrs["type"] != "incorporate":
                                         continue
                                 # Record incorporated packages.
-                                tgt = fmri.PkgFmri(
-                                    a.attrs["fmri"], brelease)
+                                tgt = fmri.PkgFmri(a.attrs["fmri"])
                                 tver = tgt.version
                                 # incorporates without a version should be
                                 # ignored.
@@ -5195,7 +5190,6 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                                 wildcards.
                 """
 
-                brelease = self._img.attrs["Build-Release"]
                 for pat in patterns:
                         error = None
                         matcher = None
@@ -5216,10 +5210,9 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                                         matcher = self.MATCH_FMRI
 
                                 if matcher == self.MATCH_GLOB:
-                                        npat = fmri.MatchingPkgFmri(pat_stem,
-                                            brelease)
+                                        npat = fmri.MatchingPkgFmri(pat_stem)
                                 else:
-                                        npat = fmri.PkgFmri(pat_stem, brelease)
+                                        npat = fmri.PkgFmri(pat_stem)
 
                                 if not pat_ver:
                                         # Do nothing.
@@ -5227,12 +5220,10 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                                 elif "*" in pat_ver or "?" in pat_ver or \
                                     pat_ver == "latest":
                                         npat.version = \
-                                            pkg.version.MatchingVersion(pat_ver,
-                                                brelease)
+                                            pkg.version.MatchingVersion(pat_ver)
                                 else:
                                         npat.version = \
-                                            pkg.version.Version(pat_ver,
-                                                brelease)
+                                            pkg.version.Version(pat_ver)
 
                         except (fmri.FmriError, pkg.version.VersionError), e:
                                 # Whatever the error was, return it.

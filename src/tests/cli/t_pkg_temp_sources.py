@@ -461,12 +461,12 @@ class TestPkgTempSources(pkg5unittest.ManyDepotTestCase):
          State: Not installed
      Publisher: test
        Version: 1.0
- Build Release: 5.11
         Branch: None
 Packaging Date: %(pkg_date)s
           Size: 41.00 B
           FMRI: %(pkg_fmri)s
-""" % { "pkg_date": pd(self.foo10), "pkg_fmri": self.foo10 }
+""" % { "pkg_date": pd(self.foo10), "pkg_fmri": self.foo10.get_fmri(
+    include_build=False) }
                 self.assertEqualDiff(expected, self.output)
 
                 # Again, as prvileged user.
@@ -485,7 +485,6 @@ Packaging Date: %(pkg_date)s
          State: Not installed
      Publisher: test
        Version: 1.0
- Build Release: 5.11
         Branch: None
 Packaging Date: %(foo10_pkg_date)s
           Size: 41.00 B
@@ -496,7 +495,6 @@ Packaging Date: %(foo10_pkg_date)s
          State: Not installed
      Publisher: test
        Version: 2.0
- Build Release: 5.11
         Branch: None
 Packaging Date: %(incorp20_pkg_date)s
           Size: 0.00 B
@@ -507,7 +505,6 @@ Packaging Date: %(incorp20_pkg_date)s
          State: Not installed
      Publisher: test2
        Version: 1.0
- Build Release: 5.11
         Branch: 0.2
 Packaging Date: %(quux10_pkg_date)s
           Size: 8.00 B
@@ -518,15 +515,18 @@ Packaging Date: %(quux10_pkg_date)s
          State: Not installed
      Publisher: test
        Version: 1.0
- Build Release: 5.11
         Branch: None
 Packaging Date: %(signed10_pkg_date)s
           Size: 7.79 kB
           FMRI: %(signed10_pkg_fmri)s
-""" % { "foo10_pkg_date": pd(self.foo10), "foo10_pkg_fmri": self.foo10,
-    "incorp20_pkg_date": pd(self.incorp20), "incorp20_pkg_fmri": self.incorp20,
-    "quux10_pkg_date": pd(self.quux10), "quux10_pkg_fmri": self.quux10,
-    "signed10_pkg_date": pd(self.signed10), "signed10_pkg_fmri": self.signed10
+""" % { "foo10_pkg_date": pd(self.foo10), "foo10_pkg_fmri": \
+        self.foo10.get_fmri(include_build=False),
+    "incorp20_pkg_date": pd(self.incorp20), "incorp20_pkg_fmri": \
+        self.incorp20.get_fmri(include_build=False),
+    "quux10_pkg_date": pd(self.quux10), "quux10_pkg_fmri": \
+        self.quux10.get_fmri(include_build=False),
+    "signed10_pkg_date": pd(self.signed10), "signed10_pkg_fmri": \
+        self.signed10.get_fmri(include_build=False),
     }
                 self.assertEqualDiff(expected, self.output)
 
@@ -563,12 +563,12 @@ Packaging Date: %(signed10_pkg_date)s
          State: Installed
      Publisher: test
        Version: 1.0
- Build Release: 5.11
         Branch: None
 Packaging Date: %(pkg_date)s
           Size: 41.00 B
           FMRI: %(pkg_fmri)s
-""" % { "pkg_date": pd(self.foo10), "pkg_fmri": self.foo10 }
+""" % { "pkg_date": pd(self.foo10), "pkg_fmri": self.foo10.get_fmri(
+    include_build=False) }
                 self.assertEqualDiff(expected, self.output)
 
                 # Verify that when showing package info from archive that

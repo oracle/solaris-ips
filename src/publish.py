@@ -372,7 +372,7 @@ def trans_publish(repo_uri, fargs):
                 return 1
 
         try:
-                pfmri = pkg.fmri.PkgFmri(m["pkg.fmri"], "5.11")
+                pfmri = pkg.fmri.PkgFmri(m["pkg.fmri"])
                 if not pfmri.version:
                         # Cannot have a FMRI without version
                         error(_("The pkg.fmri attribute '%s' in the package "

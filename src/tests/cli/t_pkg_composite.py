@@ -370,13 +370,12 @@ class TestPkgCompositePublishers(pkg5unittest.ManyDepotTestCase):
          State: Installed
      Publisher: test
        Version: 1.0
- Build Release: 5.11
         Branch: None
 Packaging Date: %(pkg_date)s
           Size: 41.00 B
           FMRI: %(pkg_fmri)s
 """ % { "pkg_date": self.foo10.version.get_timestamp().strftime("%c"),
-    "pkg_fmri": self.foo10 }
+    "pkg_fmri": self.foo10.get_fmri(include_build=False) }
                 self.assertEqualDiff(expected, self.output)
 
         def test_02_contents(self):

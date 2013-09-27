@@ -153,7 +153,7 @@ class TestUtilMerge(pkg5unittest.ManyDepotTestCase):
                 pkg_names = set()
                 flist = []
                 for p in self.published:
-                        f = fmri.PkgFmri(p, "5.11")
+                        f = fmri.PkgFmri(p)
                         pkg_names.add(f.pkg_name)
                         flist.append(f)
 

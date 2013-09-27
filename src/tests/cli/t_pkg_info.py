@@ -369,22 +369,20 @@ class TestPkgInfoBasics(pkg5unittest.SingleDepotTestCase):
  State: Not installed
  Publisher: test
  Version: 1.0
- Build Release: 5.11
  Branch: 0
 Packaging Date: Thu Sep 08 00:45:46 2011
  Size: 54.00 B
- FMRI: pkg://test/bronze@1.0,5.11-0:20110908T004546Z
+ FMRI: pkg://test/bronze@1.0-0:20110908T004546Z
 
  Name: human
  Summary: 
  State: Not installed
  Publisher: test
  Version: 0.9.8.18 (0.9.8r)
- Build Release: 5.11
  Branch: 0
 Packaging Date: Thu Sep 08 00:45:46 2011
  Size: 0.00 B
- FMRI: pkg://test/human@0.9.8.18,5.11-0:20110908T004546Z
+ FMRI: pkg://test/human@0.9.8.18-0:20110908T004546Z
 """
                 self.assertEqualDiff(expected, self.reduceSpaces(self.output))
 
@@ -397,11 +395,10 @@ Packaging Date: Thu Sep 08 00:45:46 2011
  State: Not installed
  Publisher: test2
  Version: 1.0
- Build Release: 5.11
  Branch: 0
 Packaging Date: Thu Sep 08 00:45:46 2011
  Size: 54.00 B
- FMRI: pkg://test2/bronze@1.0,5.11-0:20110908T004546Z
+ FMRI: pkg://test2/bronze@1.0-0:20110908T004546Z
 """
                 self.assertEqualDiff(expected, self.reduceSpaces(self.output))
 
@@ -415,11 +412,10 @@ Packaging Date: Thu Sep 08 00:45:46 2011
  State: Not installed
  Publisher: test
  Version: 1.0
- Build Release: 5.11
  Branch: 0
 Packaging Date: Thu Sep 08 00:45:46 2011
  Size: 54.00 B
- FMRI: pkg://test/bronze@1.0,5.11-0:20110908T004546Z
+ FMRI: pkg://test/bronze@1.0-0:20110908T004546Z
 """
                 self.assertEqualDiff(expected, self.reduceSpaces(self.output))
 
@@ -430,22 +426,20 @@ Packaging Date: Thu Sep 08 00:45:46 2011
  State: Not installed
  Publisher: test
  Version: 1.0
- Build Release: 5.11
  Branch: 0
 Packaging Date: Thu Sep 08 00:45:46 2011
  Size: 54.00 B
- FMRI: pkg://test/bronze@1.0,5.11-0:20110908T004546Z
+ FMRI: pkg://test/bronze@1.0-0:20110908T004546Z
 
  Name: bronze
  Summary: 
  State: Not installed
  Publisher: test2
  Version: 1.0
- Build Release: 5.11
  Branch: 0
 Packaging Date: Thu Sep 08 00:45:46 2011
  Size: 54.00 B
- FMRI: pkg://test2/bronze@1.0,5.11-0:20110908T004546Z
+ FMRI: pkg://test2/bronze@1.0-0:20110908T004546Z
 """
                 self.assertEqualDiff(expected, self.reduceSpaces(self.output))
 
@@ -456,33 +450,30 @@ Packaging Date: Thu Sep 08 00:45:46 2011
  State: Not installed
  Publisher: test
  Version: 1.0
- Build Release: 5.11
  Branch: 0
 Packaging Date: Thu Sep 08 00:45:46 2011
  Size: 54.00 B
- FMRI: pkg://test/bronze@1.0,5.11-0:20110908T004546Z
+ FMRI: pkg://test/bronze@1.0-0:20110908T004546Z
 
  Name: bronze
  Summary: 
  State: Not installed
  Publisher: test2
  Version: 1.0
- Build Release: 5.11
  Branch: 0
 Packaging Date: Thu Sep 08 00:45:46 2011
  Size: 54.00 B
- FMRI: pkg://test2/bronze@1.0,5.11-0:20110908T004546Z
+ FMRI: pkg://test2/bronze@1.0-0:20110908T004546Z
 
  Name: bronze
  Summary: 
  State: Not installed
  Publisher: test3
  Version: 1.0
- Build Release: 5.11
  Branch: 0
 Packaging Date: Thu Sep 08 00:45:46 2011
  Size: 54.00 B
- FMRI: pkg://test3/bronze@1.0,5.11-0:20110908T004546Z
+ FMRI: pkg://test3/bronze@1.0-0:20110908T004546Z
 """
                 self.assertEqualDiff(expected, self.reduceSpaces(self.output))
 
@@ -548,7 +539,7 @@ Packaging Date: Thu Sep 08 00:45:46 2011
                 # with the correct dependencies will provide the expected info.
                 self.pkg("info -r ren_correct")
                 actual = self.output
-                pfmri = fmri.PkgFmri(plist[1], "5.11")
+                pfmri = fmri.PkgFmri(plist[1])
                 pkg_date = pfmri.version.get_timestamp().strftime("%c")
                 expected = """\
           Name: ren_correct
@@ -557,12 +548,11 @@ Packaging Date: Thu Sep 08 00:45:46 2011
     Renamed to: target@1.0
      Publisher: test
        Version: 1.0
- Build Release: 5.11
         Branch: None
 Packaging Date: %(pkg_date)s
           Size: 0.00 B
           FMRI: %(pkg_fmri)s
-""" % { "pkg_date": pkg_date, "pkg_fmri": pfmri }
+""" % { "pkg_date": pkg_date, "pkg_fmri": pfmri.get_fmri(include_build=False) }
                 self.assertEqualDiff(expected, actual)
 
                 # Next, verify that a renamed package (for a variant not
@@ -572,7 +562,7 @@ Packaging Date: %(pkg_date)s
                 # variant.
                 self.pkg("info -r ren_op_variant")
                 actual = self.output
-                pfmri = fmri.PkgFmri(plist[2], "5.11")
+                pfmri = fmri.PkgFmri(plist[2])
                 pkg_date = pfmri.version.get_timestamp().strftime("%c")
                 expected = """\
           Name: ren_op_variant
@@ -580,12 +570,11 @@ Packaging Date: %(pkg_date)s
          State: Not installed
      Publisher: test
        Version: 1.0
- Build Release: 5.11
         Branch: None
 Packaging Date: %(pkg_date)s
           Size: 0.00 B
           FMRI: %(pkg_fmri)s
-""" % { "pkg_date": pkg_date, "pkg_fmri": pfmri }
+""" % { "pkg_date": pkg_date, "pkg_fmri": pfmri.get_fmri(include_build=False) }
                 self.assertEqualDiff(expected, actual)
 
                 # Next, verify that a renamed package (for a variant applicable
@@ -593,7 +582,7 @@ Packaging Date: %(pkg_date)s
                 # other variant will provide the expected info.
                 self.pkg("info -r ren_variant_missing")
                 actual = self.output
-                pfmri = fmri.PkgFmri(plist[3], "5.11")
+                pfmri = fmri.PkgFmri(plist[3])
                 pkg_date = pfmri.version.get_timestamp().strftime("%c")
                 expected = """\
           Name: ren_variant_missing
@@ -602,12 +591,11 @@ Packaging Date: %(pkg_date)s
     Renamed to: 
      Publisher: test
        Version: 1.0
- Build Release: 5.11
         Branch: None
 Packaging Date: %(pkg_date)s
           Size: 0.00 B
           FMRI: %(pkg_fmri)s
-""" % { "pkg_date": pkg_date, "pkg_fmri": pfmri }
+""" % { "pkg_date": pkg_date, "pkg_fmri": pfmri.get_fmri(include_build=False) }
                 self.assertEqualDiff(expected, actual)
 
 
@@ -616,7 +604,7 @@ Packaging Date: %(pkg_date)s
                 # will provide the expected info.
                 self.pkg("info -r ren_partial_variant")
                 actual = self.output
-                pfmri = fmri.PkgFmri(plist[4], "5.11")
+                pfmri = fmri.PkgFmri(plist[4])
                 pkg_date = pfmri.version.get_timestamp().strftime("%c")
                 expected = """\
           Name: ren_partial_variant
@@ -625,12 +613,11 @@ Packaging Date: %(pkg_date)s
     Renamed to: 
      Publisher: test
        Version: 1.0
- Build Release: 5.11
         Branch: None
 Packaging Date: %(pkg_date)s
           Size: 0.00 B
           FMRI: %(pkg_fmri)s
-""" % { "pkg_date": pkg_date, "pkg_fmri": pfmri }
+""" % { "pkg_date": pkg_date, "pkg_fmri": pfmri.get_fmri(include_build=False) }
                 self.assertEqualDiff(expected, actual)
 
         def test_appropriate_license_files(self):

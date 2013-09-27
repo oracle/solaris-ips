@@ -45,18 +45,13 @@ class TestFMRI(pkg5unittest.Pkg5TestCase):
         }
 
         def setUp(self):
-                self.n1 = fmri.PkgFmri("pkg://pion/sunos/coreutils",
-                    build_release = "5.9")
-                self.n2 = fmri.PkgFmri("sunos/coreutils",
-                    build_release = "5.10")
-                self.n3 = fmri.PkgFmri("sunos/coreutils@5.10",
-                    build_release = "5.10")
+                self.n1 = fmri.PkgFmri("pkg://pion/sunos/coreutils")
+                self.n2 = fmri.PkgFmri("sunos/coreutils")
+                self.n3 = fmri.PkgFmri("sunos/coreutils@5.10")
                 self.n4 = fmri.PkgFmri(
-                    "sunos/coreutils@6.7,5.10-2:20070710T164744Z",
-                    build_release = "5.10")
+                    "sunos/coreutils@6.7,5.10-2:20070710T164744Z")
                 self.n5 = fmri.PkgFmri(
-                    "sunos/coreutils@6.6,5.10-2:20070710T164744Z",
-                    build_release = "5.10")
+                    "sunos/coreutils@6.6,5.10-2:20070710T164744Z")
                 self.n6 = fmri.PkgFmri("coreutils")
                 self.n7 = fmri.PkgFmri(
                     "pkg://origin/SUNWxwssu@0.5.11,5.11-0.72:20070921T203926Z")
@@ -243,7 +238,7 @@ class TestFMRI(pkg5unittest.Pkg5TestCase):
 
         def testgoodfmris_dots(self):
                 fmri.PkgFmri("a.b")
-                fmri.PkgFmri("a.b@1.0", "5.11")
+                fmri.PkgFmri("a.b@1.0")
 
         def testgoodfmris_slashes(self):
                 fmri.PkgFmri("a/b")
@@ -259,7 +254,7 @@ class TestFMRI(pkg5unittest.Pkg5TestCase):
                 fmri.PkgFmri("a+++b+++")
 
         def testgoodfmris_(self):
-                fmri.PkgFmri("pkg:/abcdef01234.-+_/GHIJK@1.0", "5.11")
+                fmri.PkgFmri("pkg:/abcdef01234.-+_/GHIJK@1.0")
                 fmri.PkgFmri("pkg:/a/b/c/d/e/f/g/H/I/J/0/1/2")
 
         def testfmrihash(self):
