@@ -44,6 +44,7 @@ from pkg.choose import choose
 from pkg.misc import EmptyI
 
 FILE_OPEN_TIMEOUT_SECS = 1
+MAX_TOKEN_COUNT = 100
 
 class QueryLexer(object):
         """This class defines the lexer used to separate parse queries into
@@ -374,6 +375,19 @@ class QueryException(Exception):
                 return str(self)
 
 
+class QueryLengthExceeded(QueryException):
+
+        def __init__(self, token_cnt):
+                QueryException.__init__(self)
+                self.token_cnt = token_cnt
+
+        def __str__(self):
+                return _("The number of terms in the query is %(len)i, "
+                    "which exceeds the maximum supported "
+                    "value of %(maxt)i terms.") % { "len": self.token_cnt,
+                    "maxt": MAX_TOKEN_COUNT }
+
+
 class DetailedValueError(QueryException):
 
         def __init__(self, name, bad_value, whole_query):
@@ -448,6 +462,10 @@ class Query(object):
 
                 The "start_point" parameter is the number of results to skip
                 before returning results to the querier."""
+
+                token_cnt = len(text.split(" "))
+                if token_cnt > MAX_TOKEN_COUNT:
+                         raise QueryLengthExceeded(token_cnt)
 
                 self.text = text
                 self.case_sensitive = case_sensitive

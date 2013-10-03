@@ -21,12 +21,12 @@
 #
 
 #
-# Copyright (c) 2009, 2010, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2009, 2013, Oracle and/or its affiliates. All rights reserved.
 #
 
 import sys
 import pkg.query_parser as qp
-from pkg.query_parser import BooleanQueryException, ParseError, QueryException
+from pkg.query_parser import BooleanQueryException, ParseError, QueryException, QueryLengthExceeded
 
 class QueryLexer(qp.QueryLexer):
         pass

@@ -19,7 +19,7 @@
 #
 # CDDL HEADER END
 #
-# Copyright (c) 2009, 2010, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2009, 2013, Oracle and/or its affiliates. All rights reserved.
 
 import os
 import sys
@@ -32,7 +32,7 @@ import pkg.fmri as fmri
 from pkg.choose import choose
 
 import pkg.query_parser as qp
-from pkg.query_parser import BooleanQueryException, ParseError
+from pkg.query_parser import BooleanQueryException, ParseError, QueryLengthExceeded
 import itertools
 
 class QueryLexer(qp.QueryLexer):

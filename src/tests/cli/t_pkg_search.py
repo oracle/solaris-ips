@@ -336,6 +336,14 @@ adm:NP:6445::::::
         res_pkg_options_remote = set([pkg_headers, pkg_results])
         res_pkg_options_local = set([pkg_headers, pkg_results_no_pub])
 
+        # Creating a query string in which the number of terms is > 100
+        large_query = "a b c d e f g h i j k l m n o p q r s t u v w x y z" \
+                      "a b c d e f g h i j k l m n o p q r s t u v w x y z" \
+                      "a b c d e f g h i j k l m n o p q r s t u v w x y z" \
+                      "a b c d e f g h i j k l m n o p q r s t u v w x y z" \
+                      "a b c d e f g h i j k l m n o p q r s t u v w x y z" \
+                      "a b c d e f g h i j k l m n o p q r s t u v w x y z"
+
         def setUp(self):
                 # This test needs an actual depot for now.
                 pkg5unittest.SingleDepotTestCase.setUp(self, start_depot=True)
@@ -468,6 +476,9 @@ adm:NP:6445::::::
                 self.pkg("search -a -r -I ':set:pkg.fmri:exAMple_pkg'", exit=1)
                 self.assert_(self.errout == "" )
 
+                self.pkg("search -a -r %s" %self.large_query, exit=1)
+                self.assert_(self.errout != "") 
+
         def _run_local_tests(self):
                 outfile = os.path.join(self.test_root, "res")
 
@@ -541,6 +552,9 @@ adm:NP:6445::::::
                 self.pkg("search -a -l '<e*> OR e*'", exit=1)
                 self.pkg("search -a -l 'e* OR <e*>'", exit=1)
                 self._search_op(False, "pkg:/example_path", self.res_local_path)
+
+                self.pkg("search -a -l %s" %self.large_query, exit=1)
+                self.assert_(self.errout != "") 
 
         def _run_local_empty_tests(self):
                 self.pkg("search -a -l example_pkg", exit=1)

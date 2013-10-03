@@ -2722,6 +2722,9 @@ def search(api_inst, args):
         except api_errors.BooleanQueryException, e:
                 error(e)
                 return EXIT_OOPS
+        except api_errors.ParseError, e:
+                error(e)
+                return EXIT_OOPS
 
         good_res = False
         bad_res = False

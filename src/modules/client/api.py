@@ -5327,8 +5327,11 @@ class Query(query_p.Query):
                         return_type = query_p.Query.RETURN_ACTIONS
                 else:
                         return_type = query_p.Query.RETURN_PACKAGES
-                query_p.Query.__init__(self, text, case_sensitive, return_type,
-                    num_to_return, start_point)
+                try:
+                        query_p.Query.__init__(self, text, case_sensitive,
+                            return_type, num_to_return, start_point)
+                except query_p.QueryLengthExceeded, e:
+                        raise apx.ParseError(e)
 
 
 def get_default_image_root(orig_cwd=None):
