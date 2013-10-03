@@ -44,6 +44,7 @@ import pkg.client.transport.mdetect as mdetect
 import pkg.client.transport.repo as trepo
 import pkg.client.transport.stats as tstats
 import pkg.client.progress as progress
+import pkg.digest as digest
 import pkg.file_layout.file_manager as fm
 import pkg.fmri
 import pkg.manifest as manifest
@@ -1094,7 +1095,8 @@ class Transport(object):
                 raise failures
 
         @LockedTransport()
-        def get_content(self, pub, fhash, fmri=None, ccancel=None):
+        def get_content(self, pub, fhash, fmri=None, ccancel=None,
+            hash_func=None):
                 """Given a fhash, return the uncompressed content content from
                 the remote object.  This is similar to get_datastream, except
                 that the transport handles retrieving and decompressing the
@@ -1102,6 +1104,8 @@ class Transport(object):
 
                 'fmri' If the fhash corresponds to a known package, the fmri
                 should be specified for optimal transport performance.
+
+                'hash_func' is the hash function that was used to compute fhash.
                 """
 
                 retry_count = global_settings.PKG_CLIENT_MAX_TIMEOUT
@@ -1141,7 +1145,8 @@ class Transport(object):
                                 resp = d.get_datastream(fhash, v, header,
                                     ccancel=ccancel, pub=pub)
                                 s = cStringIO.StringIO()
-                                hash_val = misc.gunzip_from_stream(resp, s)
+                                hash_val = misc.gunzip_from_stream(resp, s,
+                                    hash_func=hash_func)
 
                                 if hash_val != fhash:
                                         exc = tx.InvalidContentException(
@@ -2415,11 +2420,12 @@ class Transport(object):
                 check if this action is cached.  This is used for actions which
                 have more than one effective payload."""
 
-                hashval = action.hash
+                hash_attr, hash_val, hash_func = \
+                    digest.get_least_preferred_hash(action)
                 if in_hash:
-                        hashval = in_hash
+                        hash_val = in_hash
                 for cache in self.cfg.get_caches(pub=pub, readonly=True):
-                        cache_path = cache.lookup(hashval)
+                        cache_path = cache.lookup(hash_val)
                         if not cache_path:
                                 continue
                         try:
@@ -2455,20 +2461,40 @@ class Transport(object):
                 return self._make_opener(self._action_cached(action, pub,
                     verify=False))
 
-        @staticmethod
-        def _verify_content(action, filepath):
+        def _verify_content(self, action, filepath):
                 """If action contains an attribute that has the compressed
                 hash, read the file specified in filepath and verify
                 that the hash values match.  If the values do not match,
                 remove the file and raise an InvalidContentException."""
 
-                chash = action.attrs.get("chash", None)
+                chash_attr, chash, chash_func = digest.get_preferred_hash(
+                    action, hash_type=digest.CHASH)
                 if action.name == "signature":
+                        #
+                        # If we're checking a signature action and the filepath
+                        # parameter points to one of the chain certificates, we
+                        # need to verify against the most-preferred
+                        # [pkg.]chain.chash[.<alg>] attribute that corresponds
+                        # to the filepath we're looking at. We determine the
+                        # index of the least-preferred chain hash that matches
+                        # our filename, and use the most-preferred chash to
+                        # verify against.
+                        #
+                        # i.e. if we have attributes:
+                        # chain="a.a b.b c.c"
+                        # chain.chash="aa bb cc" \
+                        #   pkg.chain.chash.sha256="AA BB CC"
+                        #
+                        # and we're looking at file "b.b" then we must compare
+                        # our computed value against the "BB" chash.
+                        #
                         name = os.path.basename(filepath)
                         found = False
-                        assert len(action.get_chain_certs()) == \
+                        assert len(action.get_chain_certs(
+                            least_preferred=True)) == \
                             len(action.get_chain_certs_chashes())
-                        for n, c in zip(action.get_chain_certs(),
+                        for n, c in zip(
+                            action.get_chain_certs(least_preferred=True),
                             action.get_chain_certs_chashes()):
                                 if name == n:
                                         found = True
@@ -2482,7 +2508,11 @@ class Transport(object):
                         ofile = open(os.devnull, "wb")
 
                         try:
-                                fhash = misc.gunzip_from_stream(ifile, ofile)
+                                hash_attr, hash_val, hash_func = \
+                                    digest.get_preferred_hash(action,
+                                        hash_type=digest.HASH)
+                                fhash = misc.gunzip_from_stream(ifile, ofile,
+                                    hash_func=hash_func)
                         except zlib.error, e:
                                 s = os.stat(filepath)
                                 os.remove(filepath)
@@ -2494,19 +2524,32 @@ class Transport(object):
                         ifile.close()
                         ofile.close()
 
-                        if action.hash != fhash:
+                        if hash_val != fhash:
                                 s = os.stat(filepath)
                                 os.remove(filepath)
                                 raise tx.InvalidContentException(action.path,
                                     "hash failure:  expected: %s"
-                                    "computed: %s" % (action.hash, fhash),
+                                    "computed: %s" % (hash, fhash),
                                     size=s.st_size)
                         return
 
-                newhash = misc.get_data_digest(filepath)[0]
+                newhash = misc.get_data_digest(filepath,
+                    hash_func=chash_func)[0]
                 if chash != newhash:
                         s = os.stat(filepath)
-                        os.remove(filepath)
+                        # Check whether we're using the path as a part of the
+                        # content cache, or whether we're actually looking at a
+                        # file:// repository. It's safe to remove the corrupted
+                        # file only if it is part of a cache. Otherwise,
+                        # "pkgrepo verify/fix" should be used to check
+                        # repositories.
+                        cache_fms = self.cfg.get_caches(readonly=False)
+                        remove_content = False
+                        for fm in cache_fms:
+                                if filepath.startswith(fm.root):
+                                        remove_content = True
+                        if remove_content:
+                                os.remove(filepath)
                         raise tx.InvalidContentException(path,
                             "chash failure: expected: %s computed: %s" % \
                             (chash, newhash), size=s.st_size)
@@ -3026,11 +3069,12 @@ class MultiFile(MultiXfr):
                                     filesz, cachehit=True)
                         return
 
-                hashval = action.hash
-
-                self.add_hash(hashval, action)
+                # only retrieve the least preferred hash for this action
+                hash_attr, hash_val, hash_func = \
+                    digest.get_least_preferred_hash(action)
+                self.add_hash(hash_val, action)
                 if action.name == "signature":
-                        for c in action.get_chain_certs():
+                        for c in action.get_chain_certs(least_preferred=True):
                                 self.add_hash(c, action)
 
         def add_hash(self, hashval, item):
@@ -3109,7 +3153,7 @@ class MultiFileNI(MultiFile):
             progtrack=None, ccancel=None, alt_repo=None):
                 """Supply the destination publisher in the pub argument.
                 The transport object should be passed in xport.
-                
+
                 'final_dir' indicates the directory the retrieved files should
                 be moved to after retrieval. If it is set to None, files will
                 not be moved and remain in the cache directory specified
@@ -3129,18 +3173,19 @@ class MultiFileNI(MultiFile):
 
                 cpath = self._transport._action_cached(action,
                     self.get_publisher())
-                hashval = action.hash
+                hash_attr, hash_val, hash_func = \
+                    digest.get_least_preferred_hash(action)
 
                 if cpath and self._final_dir:
-                        self._final_copy(hashval, cpath)
+                        self._final_copy(hash_val, cpath)
                         if self._progtrack:
                                 filesz = int(misc.get_pkg_otw_size(action))
                                 self._progtrack.download_add_progress(1, filesz,
                                     cachehit=True)
                 else:
-                        self.add_hash(hashval, action)
+                        self.add_hash(hash_val, action)
                 if action.name == "signature":
-                        for c in action.get_chain_certs():
+                        for c in action.get_chain_certs(least_preferred=True):
                                 cpath = self._transport._action_cached(action,
                                     self.get_publisher(), in_hash=c)
                                 if cpath and self._final_dir:
@@ -3234,7 +3279,7 @@ class MultiFileNI(MultiFile):
                 src = file(current_path, "rb")
                 outfile = os.fdopen(fd, "wb")
                 if self._decompress:
-                        misc.gunzip_from_stream(src, outfile)
+                        misc.gunzip_from_stream(src, outfile, ignore_hash=True)
                 else:
                         while True:
                                 buf = src.read(64 * 1024)
@@ -3279,7 +3324,7 @@ def setup_publisher(repo_uri, prefix, xport, xport_cfg,
                 repo = publisher.Repository(origins=repouri_list)
 
         for origin in repo.origins:
-                if origin.scheme == "https": 
+                if origin.scheme == "https":
                         origin.ssl_key = ssl_key
                         origin.ssl_cert = ssl_cert
 
@@ -3316,7 +3361,7 @@ def setup_publisher(repo_uri, prefix, xport, xport_cfg,
                 if p.repository:
                         for origin in p.repository.origins:
                                 if origin.scheme == \
-                                    pkg.client.publisher.SSL_SCHEMES: 
+                                    pkg.client.publisher.SSL_SCHEMES:
                                         origin.ssl_key = ssl_key
                                         origin.ssl_cert = ssl_cert
 

@@ -857,7 +857,7 @@ class DepotHTTP(_Depot):
         file_0._cp_config = { "response.stream": True }
 
         def file_1(self, *tokens):
-                """Outputs the contents of the file, named by the SHA-1 hash
+                """Outputs the contents of the file, named by the SHA hash
                 name in the request path, directly to the client."""
 
                 method = cherrypy.request.method
@@ -1320,7 +1320,8 @@ class DepotHTTP(_Depot):
                                 continue
 
                         with file(lpath, "rb") as lfile:
-                                misc.gunzip_from_stream(lfile, lsummary)
+                                misc.gunzip_from_stream(lfile, lsummary,
+                                    ignore_hash=True)
                 lsummary.seek(0)
 
                 self.__set_response_expires("info", 86400*365, 86400*365)
@@ -2371,7 +2372,8 @@ class DepotConfig(object):
                     cfg.PropList("address"),
                     cfg.PropDefined("cfg_file", allowed=["", "<pathname>"]),
                     cfg.Property("content_root"),
-                    cfg.PropList("debug", allowed=["", "headers"]),
+                    cfg.PropList("debug", allowed=["", "headers",
+                        "hash=sha256", "hash=sha1+sha256"]),
                     cfg.PropList("disable_ops"),
                     cfg.PropDefined("image_root", allowed=["",
                         "<abspathname>"]),

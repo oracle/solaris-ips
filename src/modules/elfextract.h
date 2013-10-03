@@ -20,8 +20,7 @@
  */
 
 /*
- * Copyright 2008 Sun Microsystems, Inc.  All rights reserved.
- * Use is subject to license terms.
+ *  Copyright (c) 2008, 2013, Oracle and/or its affiliates. All rights reserved.
  */
 
 #ifndef _ELFEXTRACT_H
@@ -48,6 +47,8 @@ typedef struct dyninfo {
 	liblist_t 	*vers;		/* version provided list (also	   */
 					/* 	contains offsets)	   */
 	unsigned char	hash[20];	/* SHA1 Hash of significant segs.  */
+     	unsigned char	hash256[32];	/* SHA2 Hash of significant segs.  */
+
 	Elf		*elf;		/* elf data -- must be freed	   */
 } dyninfo_t;
 
@@ -61,7 +62,7 @@ typedef struct hdrinfo {
 
 extern int iself(int fd);
 extern int iself32(int fd);
-extern dyninfo_t *getdynamic(int fd);
+extern dyninfo_t *getdynamic(int fd, int sha1, int sha256);
 extern void dyninfo_free(dyninfo_t *dyn);
 extern hdrinfo_t *getheaderinfo(int fd);
 

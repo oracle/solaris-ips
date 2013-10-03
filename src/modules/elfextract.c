@@ -20,8 +20,7 @@
  */
 
 /*
- * Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
- * Use is subject to license terms.
+ *  Copyright (c) 2009, 2013, Oracle and/or its affiliates. All rights reserved.
  */
 
 #include <libelf.h>
@@ -39,8 +38,9 @@
 #include <netinet/in.h>
 #include <inttypes.h>
 #if defined(__SVR4) && defined(__sun)
-/* Solaris has a built-in SHA-1 library interface */
+/* Solaris has built-in SHA-1 and SHA-2 library interfaces */
 #include <sha1.h>
+#include <sha2.h>
 #else
 /*
  * All others can use OpenSSL, but OpenSSL's method signatures
@@ -293,7 +293,8 @@ hashsection(char *name)
  * Reads a section in 64k increments, adding it to the hash.
  */
 static int
-readhash(int fd, SHA1_CTX *shc, off_t offset, off_t size)
+readhash(int fd, SHA1_CTX *shc, SHA256_CTX *shc2, off_t offset, off_t size,
+    int sha1, int sha256)
 {
 	off_t n;
 	char hashbuf[64 * 1024];
@@ -313,7 +314,12 @@ readhash(int fd, SHA1_CTX *shc, off_t offset, off_t size)
 			PyErr_SetFromErrno(PyExc_IOError);
 			return (-1);
 		}
-		SHA1Update(shc, hashbuf, rbytes);
+                if (sha1 > 0) {
+		        SHA1Update(shc, hashbuf, rbytes);
+                }
+                if (sha256 > 0) {
+                        SHA256Update(shc2, hashbuf, rbytes);
+                }
 		size -= rbytes;
 	} while (size != 0);
 
@@ -325,9 +331,11 @@ readhash(int fd, SHA1_CTX *shc, off_t offset, off_t size)
  * information we want from an ELF file.  Returns NULL
  * if it can't find everything (eg. not ELF file, wrong
  * class of ELF file).
+ * If sha1 is > 0, we produce an SHA1 hash as part of the returned dictionary.
+ * If sha256 is > 0, we include an SHA2 256 hash in the returned dictionary.
  */
 dyninfo_t *
-getdynamic(int fd)
+getdynamic(int fd, int sha1, int sha256)
 {
 	Elf		*elf = NULL;
 	Elf_Scn		*scn = NULL;
@@ -342,6 +350,7 @@ getdynamic(int fd)
 	int		t = 0, num_dyn = 0, dynstr = -1;
 
 	SHA1_CTX	shc;
+        SHA256_CTX      shc2;
 	dyninfo_t	*dyn = NULL;
 
 	liblist_t	*deps = NULL;
@@ -374,7 +383,12 @@ getdynamic(int fd)
 	}
 
 	/* get useful sections */
-	SHA1Init(&shc);
+        if (sha1 > 0) {
+                SHA1Init(&shc);
+        }
+        if (sha256 > 0) {
+                SHA256Init(&shc2);
+        }
 	while ((scn = elf_nextscn(elf, scn))) {
 		if (gelf_getshdr(scn, &shdr) != &shdr) {
 			PyErr_SetString(ElfError, elf_errmsg(-1));
@@ -386,7 +400,7 @@ getdynamic(int fd)
 			goto bad;
 		}
 
-		if (hashsection(name)) {
+		if (hashsection(name) && (sha1 > 0 || sha256 > 0)) {
 			if (shdr.sh_type == SHT_NOBITS) {
 				/*
 				 * We can't just push shdr.sh_size into
@@ -398,12 +412,18 @@ getdynamic(int fd)
 				uint64_t mask = 0xffffffff00000000ULL;
 				uint32_t top = htonl((uint32_t)((n & mask) >> 32));
 				uint32_t bot = htonl((uint32_t)n);
-				SHA1Update(&shc, &top, sizeof (top));
-				SHA1Update(&shc, &bot, sizeof (bot));
+                                if (sha1 > 0) {
+				        SHA1Update(&shc, &top, sizeof (top));
+                                        SHA1Update(&shc, &bot, sizeof (bot));
+                                }
+                                if (sha256 > 0) {
+                                        SHA256Update(&shc2, &top, sizeof (top));
+                                        SHA256Update(&shc2, &bot, sizeof (bot));
+                                }
 			} else {
 				int hash;
-				hash = readhash(fd, &shc, shdr.sh_offset,
-				    shdr.sh_size);
+                                hash = readhash(fd, &shc, &shc2, shdr.sh_offset,
+				    shdr.sh_size, sha1, sha256);
 
 				if (hash == -1)
 					goto bad;
@@ -584,8 +604,12 @@ getdynamic(int fd)
 	dyn->deps = deps;
 	dyn->def = def;
 	dyn->vers = verdef;
-	SHA1Final(dyn->hash, &shc);
-
+        if (sha1 > 0) {
+	        SHA1Final(dyn->hash, &shc);
+        }
+        if (sha256 > 0) {
+                SHA256Final(dyn->hash256, &shc2);
+        }
 	return (dyn);
 
 bad:

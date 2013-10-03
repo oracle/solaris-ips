@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2009, 2012, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2009, 2013, Oracle and/or its affiliates. All rights reserved.
 #
 
 import os
@@ -31,6 +31,7 @@ import tempfile
 import generic
 import pkg.actions
 import pkg.client.api_errors as apx
+import pkg.digest as digest
 import pkg.misc as misc
 import M2Crypto as m2
 
@@ -90,10 +91,20 @@ class SignatureAction(generic.Action):
                 """
 
                 self.chain_cert_openers = []
-                hshes = []
-                sizes = []
-                chshes = []
-                csizes = []
+
+                # chain_hshes and chain_chshes are dictionaries which map a
+                # given hash or compressed hash attribute to a list of the hash
+                # values for each path in chain_certs.
+                chain_hshes = {}
+                chain_chshes = {}
+                chain_csizes = []
+                chain_sizes = []
+
+                for attr in digest.DEFAULT_CHAIN_ATTRS:
+                        chain_hshes[attr] = []
+                for attr in digest.DEFAULT_CHAIN_CHASH_ATTRS:
+                        chain_chshes[attr] = []
+
                 for pth in chain_certs:
                         if not os.path.exists(pth):
                                 raise pkg.actions.ActionDataError(
@@ -104,29 +115,52 @@ class SignatureAction(generic.Action):
                         file_opener = self.make_opener(pth)
                         self.chain_cert_openers.append(file_opener)
                         self.attrs.setdefault("chain.sizes", [])
+                        self.attrs.setdefault("chain.csizes", [])
+
                         try:
                                 fs = os.stat(pth)
-                                sizes.append(str(fs.st_size))
+                                chain_sizes.append(str(fs.st_size))
                         except EnvironmentError, e:
                                 raise pkg.actions.ActionDataError(e, path=pth)
                         # misc.get_data_digest takes care of closing the file
                         # that's opened below.
                         with file_opener() as fh:
-                                hsh, data = misc.get_data_digest(fh,
-                                    length=fs.st_size, return_content=True)
-                        hshes.append(hsh)
-                        csize, chash = misc.compute_compressed_attrs(hsh,
-                            None, data, fs.st_size, chash_dir)
-                        csizes.append(csize)
-                        chshes.append(chash.hexdigest())
-                if hshes:
+                                hshes, data = misc.get_data_digest(fh,
+                                    length=fs.st_size, return_content=True,
+                                    hash_attrs=digest.DEFAULT_CHAIN_ATTRS,
+                                    hash_algs=digest.CHAIN_ALGS)
+
+                        for attr in hshes:
+                                chain_hshes[attr].append(hshes[attr])
+
+                        # We need a filename to use for the uncompressed chain
+                        # cert, so get the preferred chain hash value from the
+                        # chain_hshes
+                        chain_val = None
+                        for attr in digest.RANKED_CHAIN_ATTRS:
+                                if not chain_val and attr in hshes:
+                                        chain_val = hshes[attr]
+
+                        csize, chashes = misc.compute_compressed_attrs(
+                            chain_val, None, data, fs.st_size, chash_dir,
+                            chash_attrs=digest.DEFAULT_CHAIN_CHASH_ATTRS,
+                            chash_algs=digest.CHAIN_CHASH_ALGS)
+
+                        chain_csizes.append(csize)
+                        for attr in chashes:
+                                chain_chshes[attr].append(
+                                    chashes[attr].hexdigest())
+                if chain_hshes:
                         # These attributes are stored as a single value with
                         # spaces in it rather than multiple values to ensure
                         # the ordering remains consistent.
-                        self.attrs["chain.sizes"] = " ".join(sizes)
-                        self.attrs["chain"] = " ".join(hshes)
-                        self.attrs["chain.chashes"] = " ".join(chshes)
-                        self.attrs["chain.csizes"] = " ".join(csizes)
+                        self.attrs["chain.sizes"] = " ".join(chain_sizes)
+                        self.attrs["chain.csizes"] = " ".join(chain_csizes)
+
+                        for attr in digest.DEFAULT_CHAIN_ATTRS:
+                                self.attrs[attr] = " ".join(chain_hshes[attr])
+                        for attr in digest.DEFAULT_CHAIN_CHASH_ATTRS:
+                                self.attrs[attr] = " ".join(chain_chshes[attr])
 
         def get_size(self):
                 res = generic.Action.get_size(self)
@@ -141,6 +175,9 @@ class SignatureAction(generic.Action):
                 return res
 
         def get_chain_csize(self, chain):
+                # The length of 'chain' is also going to be the length
+                # of pkg.chain.<hash alg>, so there's no need to look for
+                # other hash attributes here.
                 for c, s in zip(self.attrs.get("chain", "").split(),
                     self.attrs.get("chain.csizes", "").split()):
                         if c == chain:
@@ -187,39 +224,76 @@ class SignatureAction(generic.Action):
                         size = int(self.attrs.get("pkg.size", 0))
                         tmp_dir = tempfile.mkdtemp()
                         with self.data() as fh:
-                                tmp_a.hash, data = misc.get_data_digest(fh,
-                                    size, return_content=True)
-                        csize, chash = misc.compute_compressed_attrs(
+                                hashes, data = misc.get_data_digest(fh,
+                                    size, return_content=True,
+                                    hash_attrs=digest.DEFAULT_HASH_ATTRS,
+                                    hash_algs=digest.HASH_ALGS)
+                                tmp_a.attrs.update(hashes)
+                                # "hash" is special since it shouldn't appear in
+                                # the action attributes, it gets set as a member
+                                # instead.
+                                if "hash" in tmp_a.attrs:
+                                        tmp_a.hash = tmp_a.attrs["hash"]
+                                        del tmp_a.attrs["hash"]
+
+                        # The use of self.hash here is just to point to a
+                        # filename, the type of hash used for self.hash is
+                        # irrelevant. Note that our use of self.hash for the
+                        # basename will need to be modified when we finally move
+                        # off SHA-1 hashes.
+                        csize, chashes = misc.compute_compressed_attrs(
                             os.path.basename(self.hash), self.hash, data, size,
                             tmp_dir)
                         shutil.rmtree(tmp_dir)
                         tmp_a.attrs["pkg.csize"] = csize
-                        tmp_a.attrs["chash"] = chash.hexdigest()
+                        for attr in chashes:
+                                tmp_a.attrs[attr] = chashes[attr].hexdigest()
                 elif self.hash:
                         tmp_a.hash = self.hash
+                        for attr in digest.DEFAULT_HASH_ATTRS:
+                                if attr in self.attrs:
+                                        tmp_a.attrs[attr] = self.attrs[attr]
 
-                hashes = []
                 csizes = []
-                chashes = []
+                chain_hashes = {}
+                chain_chashes = {}
+                for attr in digest.DEFAULT_CHAIN_ATTRS:
+                        chain_hashes[attr] = []
+                for attr in digest.DEFAULT_CHAIN_CHASH_ATTRS:
+                        chain_chashes[attr] = []
+
                 sizes = self.attrs.get("chain.sizes", "").split()
                 for i, c in enumerate(self.chain_cert_openers):
                         size = int(sizes[i])
                         tmp_dir = tempfile.mkdtemp()
-                        hsh, data = misc.get_data_digest(c(), size,
-                            return_content=True)
-                        hashes.append(hsh)
-                        csize, chash = misc.compute_compressed_attrs("tmp",
-                            None, data, size, tmp_dir)
+                        hshes, data = misc.get_data_digest(c(), size,
+                            return_content=True,
+                            hash_attrs=digest.DEFAULT_CHAIN_ATTRS,
+                            hash_algs=digest.CHAIN_ALGS)
+
+                        for attr in hshes:
+                            chain_hashes[attr].append(hshes[attr])
+
+                        csize, chashes = misc.compute_compressed_attrs("tmp",
+                            None, data, size, tmp_dir,
+                            chash_attrs=digest.DEFAULT_CHAIN_CHASH_ATTRS,
+                            chash_algs=digest.CHAIN_CHASH_ALGS)
                         shutil.rmtree(tmp_dir)
                         csizes.append(csize)
-                        chashes.append(chash.hexdigest())
-                if hashes:
-                        tmp_a.attrs["chain"] = " ".join(hashes)
+                        for attr in chashes:
+                                chain_chashes[attr].append(
+                                    chashes[attr].hexdigest())
+
+                if chain_hashes:
+                        for attr in digest.DEFAULT_CHAIN_ATTRS:
+                                if chain_hashes[attr]:
+                                        tmp_a.attrs[attr] = " ".join(
+                                            chain_hashes[attr])
 
                 # Now that tmp_a looks like the post-published action, transform
                 # it into a string using the generic sig_str method.
                 return generic.Action.sig_str(tmp_a, tmp_a, version)
- 
+
         def actions_to_str(self, acts, version):
                 """Transforms a collection of actions into a string that is
                 used to sign those actions."""
@@ -235,18 +309,50 @@ class SignatureAction(generic.Action):
                 """Retrieve the chain certificates needed to validate this
                 signature."""
 
-                for c in self.attrs.get("chain", "").split():
-                        pub.get_cert_by_hash(c, only_retrieve=True)
+                chain_attr, chain_val, hash_func = \
+                    digest.get_least_preferred_hash(self,
+                    hash_type=digest.CHAIN)
+                # We may not have any chain certs for this signature
+                if not chain_val:
+                        return
+                for c in chain_val.split():
+                        pub.get_cert_by_hash(c, only_retrieve=True,
+                            hash_func=hash_func)
 
-        def get_chain_certs(self):
+        def get_chain_certs(self, least_preferred=False):
+                """Return a list of the chain certificates needed to validate
+                this signature. When retrieving the content from the
+                repository, we use the "least preferred" hash for backwards
+                compatibility, but when verifying the content, we use the
+                "most preferred" hash."""
+
+                if least_preferred:
+                        chain_attr, chain_val, hash_func = \
+                            digest.get_least_preferred_hash(self,
+                            hash_type=digest.CHAIN)
+                else:
+                        chain_attr, chain_val, hash_func = \
+                            digest.get_preferred_hash(self,
+                            hash_type=digest.CHAIN)
+                if not chain_val:
+                        return []
+                return chain_val.split()
+
+        def get_chain_certs_chashes(self, least_preferred=False):
                 """Return a list of the chain certificates needed to validate
                 this signature."""
-                return self.attrs.get("chain", "").split()
 
-        def get_chain_certs_chashes(self):
-                """Return a list of the chain certificates needed to validate
-                this signature."""
-                return self.attrs.get("chain.chashes", "").split()
+                if least_preferred:
+                        chain_chash_attr, chain_chash_val, hash_func = \
+                            digest.get_least_preferred_hash(self,
+                            hash_type=digest.CHAIN_CHASH)
+                else:
+                        chain_chash_attr, chain_chash_val, hash_func = \
+                            digest.get_preferred_hash(self,
+                            hash_type=digest.CHAIN_CHASH)
+                if not chain_chash_val:
+                        return []
+                return chain_chash_val.split()
 
         def is_signed(self):
                 """Returns True if this action is signed using a key, instead
@@ -314,14 +420,17 @@ class SignatureAction(generic.Action):
                             computed_hash:
                                 raise apx.UnverifiedSignature(self,
                                     _("The signature value did not match the "
-                                    "expected value. action:%s") % self)
+                                    "expected value. action: %s") % self)
                         return True
                 # Verify a signature that's not just a hash.
                 if self.sig_alg is None:
                         return None
                 # Get the certificate paired with the key which signed this
                 # action.
-                cert = pub.get_cert_by_hash(self.hash, verify_hash=True)
+                attr, hash_val, hash_func = \
+                    digest.get_least_preferred_hash(self)
+                cert = pub.get_cert_by_hash(hash_val, verify_hash=True,
+                    hash_func=hash_func)
                 # Make sure that the intermediate certificates that are needed
                 # to validate this signature are present.
                 self.retrieve_chain_certs(pub)
@@ -418,6 +527,12 @@ class SignatureAction(generic.Action):
                     self.attrs["algorithm"], self.attrs["algorithm"]))
                 res.append((self.name, "signature", self.attrs["value"],
                     self.attrs["value"]))
+                for attr in digest.DEFAULT_HASH_ATTRS:
+                        # we already have an index entry for self.hash
+                        if attr == "hash":
+                                continue
+                        hash = self.attrs[attr]
+                        res.append((self.name, attr, hash, None))
                 return res
 
         def identical(self, other, hsh):
@@ -429,7 +544,25 @@ class SignatureAction(generic.Action):
                         return False
                 # If the code signing certs are identical, the more checking is
                 # needed.
-                if hsh == other.hash or self.hash == other.hash:
+                # Determine if we share any hash attribute values with the other
+                # action.
+                matching_hash_attrs = set()
+                for attr in digest.DEFAULT_HASH_ATTRS:
+                        if attr == "hash":
+                                # we deal with the 'hash' member later
+                                continue
+                        if attr in self.attrs and attr in other.attrs and \
+                            self.attrs[attr] == other.attrs[attr] and \
+                            self.assrs[attr]:
+                                    matching_hash_attrs.add(attr)
+                        if hsh and hsh == other.attrs.get(attr):
+                                # Technically 'hsh' isn't a hash attr, it's
+                                # a hash attr value, but that's enough for us
+                                # to consider it as potentially identical.
+                                matching_hash_attrs.add(hsh)
+
+                if hsh == other.hash or self.hash == other.hash or \
+                    matching_hash_attrs:
                         # If the algorithms are using different algorithms or
                         # have different versions, then they're not identical.
                         if self.attrs["algorithm"]  != \

@@ -21,11 +21,12 @@
 #
 
 #
-# Copyright (c) 2010, 2012, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2010, 2013, Oracle and/or its affiliates. All rights reserved.
 #
 
 import getopt
 import gettext
+import hashlib
 import locale
 import os
 import shutil
@@ -37,11 +38,13 @@ import pkg
 import pkg.actions as actions
 import pkg.client.api_errors as api_errors
 import pkg.client.transport.transport as transport
+import pkg.digest as digest
 import pkg.fmri as fmri
 import pkg.manifest as manifest
 import pkg.misc as misc
 import pkg.publish.transaction as trans
 from pkg.client import global_settings
+from pkg.client.debugvalues import DebugValues
 from pkg.misc import emsg, msg, PipeError
 import M2Crypto as m2
 
@@ -60,7 +63,7 @@ def error(text, cmd=None):
 
         if cmd:
                 text = "%s: %s" % (cmd, text)
-                
+
         else:
                 text = "%s: %s" % (PKG_CLIENT_NAME, text)
 
@@ -119,7 +122,7 @@ def main_func():
         global_settings.client_name = "pkgsign"
 
         try:
-                opts, pargs = getopt.getopt(sys.argv[1:], "a:c:i:k:ns:",
+                opts, pargs = getopt.getopt(sys.argv[1:], "a:c:i:k:ns:D:",
                     ["help", "no-index", "no-catalog"])
         except getopt.GetoptError, e:
                 usage(_("illegal global option -- %s") % e.opt)
@@ -162,6 +165,14 @@ def main_func():
                         show_usage = True
                 elif opt == "--no-catalog":
                         add_to_catalog = False
+                elif opt == "-D":
+                        try:
+                                key, value = arg.split("=", 1)
+                                DebugValues.set_value(key, value)
+                        except (AttributeError, ValueError):
+                                error(_("%(opt)s takes argument of form "
+                                            "name=value, not %(arg)s") % {
+                                            "opt":  opt, "arg": arg })
 
         if show_usage:
                 usage(retcode=EXIT_OK)
@@ -201,12 +212,15 @@ def main_func():
                     "certificate.  Do not use the -k or -c options with this "
                     "algorithm.") % sig_alg)
 
+        if DebugValues:
+                reload(digest)
+
         errors = []
 
         t = misc.config_temp_root()
         temp_root = tempfile.mkdtemp(dir=t)
         del t
-        
+
         cache_dir = tempfile.mkdtemp(dir=temp_root)
         incoming_dir = tempfile.mkdtemp(dir=temp_root)
         chash_dir = tempfile.mkdtemp(dir=temp_root)
@@ -292,8 +306,12 @@ def main_func():
                                 # comparison to existing signatures.
                                 hsh = None
                                 if cert_path:
+                                        # Action identity still uses the 'hash'
+                                        # member of the action, so we need to
+                                        # stay with the sha1 hash.
                                         hsh, _dummy = \
-                                            misc.get_data_digest(cert_path)
+                                            misc.get_data_digest(cert_path,
+                                            hash_func=hashlib.sha1)
 
                                 # Check whether the signature about to be added
                                 # is identical, or almost identical, to existing

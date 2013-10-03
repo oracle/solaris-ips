@@ -575,7 +575,7 @@ class CatalogInterface(_Interface):
                         s = StringIO.StringIO()
                         lpath = self._depot.repo.file(lic.hash, pub=self._pub)
                         lfile = file(lpath, "rb")
-                        misc.gunzip_from_stream(lfile, s)
+                        misc.gunzip_from_stream(lfile, s, ignore_hash=True)
                         text = s.getvalue()
                         s.close()
                         license_lst.append(LicenseInfo(mfst.fmri, lic,

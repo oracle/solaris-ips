@@ -89,6 +89,9 @@ import cherrypy.process.servers
 from cherrypy.process.plugins import Daemonizer
 
 from pkg.misc import msg, emsg, setlocale
+from pkg.client.debugvalues import DebugValues
+
+import pkg
 import pkg.client.api_errors as api_errors
 import pkg.config as cfg
 import pkg.portable.util as os_util
@@ -164,7 +167,8 @@ Usage: /usr/lib/pkg.depotd [-a address] [-d inst_root] [-p port] [-s threads]
                         operations, simply 'search'.
         --debug         The name of a debug feature to enable; or a whitespace
                         or comma separated list of features to enable.
-                        Possible values are: headers.
+                        Possible values are: headers, hash=sha1+sha256,
+                        hash=sha256
         --image-root    The path to the image whose file information will be
                         used as a cache for file data.
         --log-access    The destination for any access related information
@@ -314,6 +318,16 @@ if __name__ == "__main__":
                                 else:
                                         features = arg.split()
                                 debug_features.extend(features)
+
+                                # We also allow key=value debug flags, which
+                                # get set in pkg.client.debugvalues
+                                for feature in features:
+                                        try:
+                                                key, val = feature.split("=", 1)
+                                                DebugValues.set_value(key, val)
+                                        except (AttributeError, ValueError):
+                                                pass
+
                         elif opt == "--disable-ops":
                                 if arg is None or arg == "":
                                         raise OptionError, \
@@ -484,6 +498,9 @@ if __name__ == "__main__":
                         ivalues["pkg"]["disable_ops"] = disable_ops
                 if addresses:
                         ivalues["pkg"]["address"] = list(addresses)
+
+                if DebugValues:
+                        reload(pkg.digest)
 
                 # Build configuration object.
                 dconf = ds.DepotConfig(target=user_cfg, overrides=ivalues)

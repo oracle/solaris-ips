@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2007, 2012, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2007, 2013, Oracle and/or its affiliates. All rights reserved.
 #
 
 """module describing a license packaging object
@@ -36,6 +36,7 @@ import os
 from stat import S_IWRITE, S_IREAD
 
 import generic
+import pkg.digest as digest
 import pkg.misc as misc
 import pkg.portable as portable
 import urllib
@@ -95,7 +96,10 @@ class LicenseAction(generic.Action):
 
                 lfile = file(path, "wb")
                 try:
-                        shasum = misc.gunzip_from_stream(stream, lfile)
+                        hash_attr, hash_val, hash_func = \
+                            digest.get_preferred_hash(self)
+                        shasum = misc.gunzip_from_stream(stream, lfile,
+                            hash_func=hash_func)
                 except zlib.error, e:
                         raise ActionExecutionError(self, details=_("Error "
                             "decompressing payload: %s") %
@@ -104,12 +108,12 @@ class LicenseAction(generic.Action):
                         lfile.close()
                         stream.close()
 
-                if shasum != self.hash:
+                if shasum != hash_val:
                         raise ActionExecutionError(self, details=_("Action "
                             "data hash verification failure: expected: "
                             "%(expected)s computed: %(actual)s action: "
                             "%(action)s") % {
-                                "expected": self.hash,
+                                "expected": hash_val,
                                 "actual": shasum,
                                 "action": self
                             })
@@ -138,9 +142,12 @@ class LicenseAction(generic.Action):
                 path = os.path.join(img.get_license_dir(pfmri),
                     "license." + urllib.quote(self.attrs["license"], ""))
 
+                hash_attr, hash_val, hash_func = \
+                    digest.get_preferred_hash(self)
                 if args["forever"] == True:
                         try:
-                                chash, cdata = misc.get_data_digest(path)
+                                chash, cdata = misc.get_data_digest(path,
+                                    hash_func=hash_func)
                         except EnvironmentError, e:
                                 if e.errno == errno.ENOENT:
                                         errors.append(_("License file %s does "
@@ -148,10 +155,10 @@ class LicenseAction(generic.Action):
                                         return errors, warnings, info
                                 raise
 
-                        if chash != self.hash:
+                        if chash != hash_val:
                                 errors.append(_("Hash: '%(found)s' should be "
                                     "'%(expected)s'") % { "found": chash,
-                                    "expected": self.hash})
+                                    "expected": hash_val})
                 return errors, warnings, info
 
         def remove(self, pkgplan):
@@ -174,8 +181,14 @@ class LicenseAction(generic.Action):
                 indices = [("license", idx, self.attrs[idx], None)
                            for idx in self.reverse_indices]
                 if hasattr(self, "hash"):
+                        indices.append(("license", "hash", self.hash, None))
                         indices.append(("license", "content", self.hash, None))
-
+                for attr in digest.DEFAULT_HASH_ATTRS:
+                        # we already have an index entry for self.hash
+                        if attr == "hash":
+                                continue
+                        hash = self.attrs[attr]
+                        indices.append(("license", attr, hash, None))
                 return indices
 
         def get_text(self, img, pfmri, alt_pub=None):
@@ -189,12 +202,15 @@ class LicenseAction(generic.Action):
                 """
 
                 path = self.get_local_path(img, pfmri)
+                hash_attr, hash_attr_val, hash_func = \
+                    digest.get_least_preferred_hash(self)
                 try:
                         with open(path, "rb") as fh:
                                 length = os.stat(path).st_size
                                 chash, txt = misc.get_data_digest(fh,
-                                    length=length, return_content=True)
-                                if chash == self.hash:
+                                    length=length, return_content=True,
+                                    hash_func=hash_func)
+                                if chash == hash_attr_val:
                                         return txt
                 except EnvironmentError, e:
                         if e.errno != errno.ENOENT:
@@ -206,8 +222,8 @@ class LicenseAction(generic.Action):
                         if not alt_pub:
                                 alt_pub = img.get_publisher(pfmri.publisher)
                         assert pfmri.publisher == alt_pub.prefix
-                        return img.transport.get_content(alt_pub, self.hash,
-                            fmri=pfmri)
+                        return img.transport.get_content(alt_pub, hash_attr_val,
+                            fmri=pfmri, hash_func=hash_func)
                 finally:
                         img.cleanup_downloads()
 

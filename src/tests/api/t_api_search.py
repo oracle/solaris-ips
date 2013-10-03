@@ -20,7 +20,7 @@
 # CDDL HEADER END
 #
 
-# Copyright (c) 2009, 2012, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2009, 2013, Oracle and/or its affiliates. All rights reserved.
 
 import testutils
 if __name__ == "__main__":
@@ -28,11 +28,8 @@ if __name__ == "__main__":
 import pkg5unittest
 
 import copy
-import difflib
 import os
-import re
 import shutil
-import sys
 import tempfile
 import time
 import unittest
@@ -41,12 +38,10 @@ import urllib2
 import pkg.client.api as api
 import pkg.client.api_errors as api_errors
 import pkg.client.query_parser as query_parser
-import pkg.client.progress as progress
 import pkg.fmri as fmri
 import pkg.indexer as indexer
 import pkg.portable as portable
 import pkg.search_storage as ss
-import pkg.server.repository as srepo
 
 
 class TestApiSearchBasics(pkg5unittest.SingleDepotTestCase):
@@ -426,12 +421,24 @@ close
         ])
 
         res_remote_file = set([
-            ('pkg:/example_pkg@1.0-0',
-             'path',
-             'file a686473102ba73bd7920fc0ab1d97e00a24ed704 chash=f88920ce1f61db185d127ccb32dc8cf401ae7a83 group=bin mode=0555 owner=root path=bin/example_path pkg.csize=30 pkg.size=12'),
-            ('pkg:/example_pkg@1.0-0',
-             'a686473102ba73bd7920fc0ab1d97e00a24ed704',
-             'file a686473102ba73bd7920fc0ab1d97e00a24ed704 chash=f88920ce1f61db185d127ccb32dc8cf401ae7a83 group=bin mode=0555 owner=root path=bin/example_path pkg.csize=30 pkg.size=12')
+            ("pkg:/example_pkg@1.0-0",
+             "path",
+             "file a686473102ba73bd7920fc0ab1d97e00a24ed704 "
+             "chash=f88920ce1f61db185d127ccb32dc8cf401ae7a83 group=bin "
+             "mode=0555 owner=root path=bin/example_path pkg.csize=30 "
+             "pkg.size=12"),
+            ("pkg:/example_pkg@1.0-0",
+             "a686473102ba73bd7920fc0ab1d97e00a24ed704",
+             "file a686473102ba73bd7920fc0ab1d97e00a24ed704 "
+             "chash=f88920ce1f61db185d127ccb32dc8cf401ae7a83 group=bin "
+             "mode=0555 owner=root path=bin/example_path pkg.csize=30 "
+             "pkg.size=12"),
+             ("pkg:/example_pkg@1.0-0",
+             "hash",
+             "file a686473102ba73bd7920fc0ab1d97e00a24ed704 "
+             "chash=f88920ce1f61db185d127ccb32dc8cf401ae7a83 group=bin "
+             "mode=0555 owner=root path=bin/example_path pkg.csize=30 "
+             "pkg.size=12")
         ]) | res_remote_path
 
         res_remote_url = set([
@@ -441,15 +448,30 @@ close
         ])
 
         res_remote_path_extra = set([
-            ('pkg:/example_pkg@1.0-0',
-             'basename',
-             'file a686473102ba73bd7920fc0ab1d97e00a24ed704 chash=f88920ce1f61db185d127ccb32dc8cf401ae7a83 group=bin mode=0555 owner=root path=bin/example_path pkg.csize=30 pkg.size=12'),
-            ('pkg:/example_pkg@1.0-0',
-             'path',
-             'file a686473102ba73bd7920fc0ab1d97e00a24ed704 chash=f88920ce1f61db185d127ccb32dc8cf401ae7a83 group=bin mode=0555 owner=root path=bin/example_path pkg.csize=30 pkg.size=12'),
-            ('pkg:/example_pkg@1.0-0',
-             'a686473102ba73bd7920fc0ab1d97e00a24ed704',
-             'file a686473102ba73bd7920fc0ab1d97e00a24ed704 chash=f88920ce1f61db185d127ccb32dc8cf401ae7a83 group=bin mode=0555 owner=root path=bin/example_path pkg.csize=30 pkg.size=12')
+            ("pkg:/example_pkg@1.0-0",
+             "basename",
+             "file a686473102ba73bd7920fc0ab1d97e00a24ed704 "
+             "chash=f88920ce1f61db185d127ccb32dc8cf401ae7a83 group=bin "
+             "mode=0555 owner=root path=bin/example_path pkg.csize=30 "
+             "pkg.size=12"),
+            ("pkg:/example_pkg@1.0-0",
+             "path",
+             "file a686473102ba73bd7920fc0ab1d97e00a24ed704 "
+             "chash=f88920ce1f61db185d127ccb32dc8cf401ae7a83 group=bin "
+             "mode=0555 owner=root path=bin/example_path pkg.csize=30 "
+             "pkg.size=12"),
+            ("pkg:/example_pkg@1.0-0",
+             "a686473102ba73bd7920fc0ab1d97e00a24ed704",
+             "file a686473102ba73bd7920fc0ab1d97e00a24ed704 "
+             "chash=f88920ce1f61db185d127ccb32dc8cf401ae7a83 group=bin "
+             "mode=0555 owner=root path=bin/example_path pkg.csize=30 "
+             "pkg.size=12"),
+            ("pkg:/example_pkg@1.0-0",
+            "hash",
+            "file a686473102ba73bd7920fc0ab1d97e00a24ed704 "
+            "chash=f88920ce1f61db185d127ccb32dc8cf401ae7a83 group=bin "
+            "mode=0555 owner=root path=bin/example_path pkg.csize=30 "
+            "pkg.size=12")
         ])
 
         res_bad_pkg = set([

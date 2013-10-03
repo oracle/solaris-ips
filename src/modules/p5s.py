@@ -21,14 +21,14 @@
 #
 
 #
-# Copyright (c) 2011, 2012, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2011, 2013, Oracle and/or its affiliates. All rights reserved.
 #
 
 import copy
-import hashlib
 import os
 import pkg.client.api_errors as api_errors
 import pkg.client.publisher as publisher
+import pkg.digest as digest
 import pkg.fmri as fmri
 import simplejson as json
 import urllib
@@ -74,7 +74,7 @@ def parse(proxy_host, data):
                                     system=True)]
                         res.append(r)
                 return res
-        
+
         try:
                 dump_struct = json.loads(data)
         except ValueError, e:
@@ -102,7 +102,7 @@ def parse(proxy_host, data):
                         alias = p.get("alias", None)
                         prefix = p.get("name", None)
                         sticky = p.get("sticky", True)
-                        
+
                         if not prefix:
                                 prefix = "Unknown"
 
@@ -190,7 +190,8 @@ def write(fileobj, pubs, cfg):
                                 # to communicate with the system repository.
                                 res.append("http://%s/%s/%s" %
                                     (publisher.SYSREPO_PROXY, prefix,
-                                    hashlib.sha1(m.uri.rstrip("/")).hexdigest()
+                                    digest.DEFAULT_HASH_FUNC(
+                                    m.uri.rstrip("/")).hexdigest()
                                     ))
                         else:
                                 assert False, "%s is an unknown scheme." % \

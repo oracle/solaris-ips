@@ -20,7 +20,7 @@
 # CDDL HEADER END
 #
 
-# Copyright (c) 2008, 2012, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2008, 2013, Oracle and/or its affiliates. All rights reserved.
 
 import testutils
 if __name__ == "__main__":
@@ -28,6 +28,7 @@ if __name__ == "__main__":
 import pkg5unittest
 
 import difflib
+import hashlib
 import os
 import re
 import shutil
@@ -331,10 +332,15 @@ class TestPkgRefreshMulti(pkg5unittest.ManyDepotTestCase):
                 self.pkg("set-publisher --no-refresh -k %s test1" % key_path)
 
 
+                # This test relies on using the same implementation used in
+                # image.py __store_publisher_ssl() which sets the paths to the
+                # SSL keys/certs.
                 img_key_path = os.path.join(self.img_path(), "var", "pkg",
-                    "ssl", pkg.misc.get_data_digest(key_path)[0])
+                    "ssl", pkg.misc.get_data_digest(key_path,
+                    hash_func=hashlib.sha1)[0])
                 img_cert_path = os.path.join(self.img_path(), "var", "pkg",
-                    "ssl", pkg.misc.get_data_digest(cert_path)[0])
+                    "ssl", pkg.misc.get_data_digest(cert_path,
+                    hash_func=hashlib.sha1)[0])
 
                 # Make the cert/key unreadable by unprivileged users.
                 os.chmod(img_key_path, 0000)

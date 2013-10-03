@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2011, 2012, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2011, 2013, Oracle and/or its affiliates. All rights reserved.
 #
 
 import testutils
@@ -31,10 +31,12 @@ import pkg5unittest
 
 import difflib
 import errno
+import hashlib
 import unittest
 import os
 import pkg.catalog
 import pkg.client.progress
+import pkg.digest as digest
 import pkg.fmri
 import pkg.misc
 import pkg.p5p
@@ -632,18 +634,25 @@ class TestP5P(pkg5unittest.SingleDepotTestCase):
                 arc = pkg.p5p.Archive(arc_path, mode="r",
                     archive_index=archive_index)
 
+                # We always store content using the least_preferred hash, so
+                # determine what that is so that we can verify it using
+                # gunzip_from_stream.
+                hash_func = digest.get_least_preferred_hash(None)[2]
+
                 # Test behaviour when specifying publisher.
                 nullf = open(os.devnull, "wb")
                 for h in hashes["test"]:
                         fobj = arc.get_package_file(h, pub="test")
-                        uchash = pkg.misc.gunzip_from_stream(fobj, nullf)
+                        uchash = pkg.misc.gunzip_from_stream(fobj, nullf,
+                            hash_func=hash_func)
                         self.assertEqual(uchash, h)
                         fobj.close()
 
                 # Test behaviour when not specifying publisher.
                 for h in hashes["test"]:
                         fobj = arc.get_package_file(h)
-                        uchash = pkg.misc.gunzip_from_stream(fobj, nullf)
+                        uchash = pkg.misc.gunzip_from_stream(fobj, nullf,
+                            hash_func=hash_func)
                         self.assertEqual(uchash, h)
                         fobj.close()
 
@@ -723,7 +732,8 @@ class TestP5P(pkg5unittest.SingleDepotTestCase):
                 arc.add_repo_package(self.quux, repo)
                 arc.close()
 
-                # Get list of file hashes.
+                # Get list of file hashes. These will be the "least-preferred"
+                # hash for the actions being stored.
                 hashes = { "all": set() }
                 for rstore in repo.rstores:
                         for dirpath, dirnames, filenames in os.walk(

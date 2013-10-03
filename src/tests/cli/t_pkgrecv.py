@@ -48,6 +48,8 @@ import urlparse
 import unittest
 import zlib
 
+from pkg.digest import DEFAULT_HASH_FUNC
+
 class TestPkgrecvMulti(pkg5unittest.ManyDepotTestCase):
         # Cleanup after every test.
         persistent_setup = False
@@ -245,7 +247,8 @@ class TestPkgrecvMulti(pkg5unittest.ManyDepotTestCase):
                                 # Since the file shouldn't be compressed, this
                                 # should return a zlib.error.
                                 self.assertRaises(zlib.error,
-                                    misc.gunzip_from_stream, ifile, ofile)
+                                    misc.gunzip_from_stream, ifile, ofile,
+                                    ignore_hash=True)
 
                 # Next, send it to another depot
                 self.pkgsend(self.durl2, "open foo@1.0-1")
@@ -270,8 +273,9 @@ class TestPkgrecvMulti(pkg5unittest.ManyDepotTestCase):
                 old = orepo.manifest(f)
                 new = os.path.join(self.tempdir, f.get_dir_path(), "manifest")
 
-                self.assertEqual(misc.get_data_digest(old),
-                    misc.get_data_digest(new))
+                self.assertEqual(
+                    misc.get_data_digest(old, hash_func=DEFAULT_HASH_FUNC),
+                    misc.get_data_digest(new, hash_func=DEFAULT_HASH_FUNC))
 
                 # Next, load the manifest.
                 m = manifest.Manifest()
@@ -288,8 +292,10 @@ class TestPkgrecvMulti(pkg5unittest.ManyDepotTestCase):
                                 new = os.path.join(self.tempdir,
                                     f.get_dir_path(), a.hash)
                                 self.assertNotEqual(old, new)
-                                self.assertEqual(misc.get_data_digest(old),
-                                    misc.get_data_digest(new))
+                                self.assertEqual(misc.get_data_digest(old,
+                                    hash_func=DEFAULT_HASH_FUNC),
+                                    misc.get_data_digest(new,
+                                    hash_func=DEFAULT_HASH_FUNC))
 
                 # Second, pkgrecv to the pkg to a file repository.
                 npath = tempfile.mkdtemp(dir=self.test_root)
@@ -305,8 +311,9 @@ class TestPkgrecvMulti(pkg5unittest.ManyDepotTestCase):
 
                 self.debug(old)
                 self.debug(new)
-                self.assertEqual(misc.get_data_digest(old),
-                    misc.get_data_digest(new))
+                self.assertEqual(
+                    misc.get_data_digest(old, hash_func=DEFAULT_HASH_FUNC),
+                    misc.get_data_digest(new, hash_func=DEFAULT_HASH_FUNC))
 
                 # Next, load the manifest.
                 m = manifest.Manifest()
@@ -322,8 +329,10 @@ class TestPkgrecvMulti(pkg5unittest.ManyDepotTestCase):
                                 old = orepo.file(a.hash)
                                 new = nrepo.file(a.hash)
                                 self.assertNotEqual(old, new)
-                                self.assertEqual(misc.get_data_digest(old),
-                                    misc.get_data_digest(new))
+                                self.assertEqual(misc.get_data_digest(old,
+                                    hash_func=DEFAULT_HASH_FUNC),
+                                    misc.get_data_digest(new,
+                                    hash_func=DEFAULT_HASH_FUNC))
 
                 # Third, pkgrecv to the pkg to a http repository from the
                 # file repository from the last test.
@@ -336,8 +345,9 @@ class TestPkgrecvMulti(pkg5unittest.ManyDepotTestCase):
                 old = orepo.manifest(f)
                 new = nrepo.manifest(f)
 
-                self.assertEqual(misc.get_data_digest(old),
-                    misc.get_data_digest(new))
+                self.assertEqual(
+                    misc.get_data_digest(old, hash_func=DEFAULT_HASH_FUNC),
+                    misc.get_data_digest(new, hash_func=DEFAULT_HASH_FUNC))
 
                 # Next, load the manifest.
                 m = manifest.Manifest()
@@ -353,8 +363,11 @@ class TestPkgrecvMulti(pkg5unittest.ManyDepotTestCase):
                                 old = orepo.file(a.hash)
                                 new = nrepo.file(a.hash)
                                 self.assertNotEqual(old, new)
-                                self.assertEqual(misc.get_data_digest(old),
-                                    misc.get_data_digest(new))
+                                self.assertEqual(
+                                    misc.get_data_digest(old,
+                                    hash_func=DEFAULT_HASH_FUNC),
+                                    misc.get_data_digest(new,
+                                    hash_func=DEFAULT_HASH_FUNC))
 
                 # Fourth, create an image and verify that the sent package is
                 # seen by the client.
@@ -377,8 +390,9 @@ class TestPkgrecvMulti(pkg5unittest.ManyDepotTestCase):
                 old = orepo.manifest(f)
                 new = nrepo.manifest(f)
 
-                self.assertEqual(misc.get_data_digest(old),
-                    misc.get_data_digest(new))
+                self.assertEqual(
+                    misc.get_data_digest(old, hash_func=DEFAULT_HASH_FUNC),
+                    misc.get_data_digest(new, hash_func=DEFAULT_HASH_FUNC))
 
         def test_3_recursive(self):
                 """Verify that retrieving a package recursively will retrieve
@@ -544,7 +558,8 @@ class TestPkgrecvMulti(pkg5unittest.ManyDepotTestCase):
                                 # Since the file shouldn't be compressed, this
                                 # should return a zlib.error.
                                 self.assertRaises(zlib.error,
-                                    misc.gunzip_from_stream, ifile, ofile)
+                                    misc.gunzip_from_stream, ifile, ofile,
+                                    ignore_hash=True)
 
                 for var in ("PKG_SRC", "PKG_DEST"):
                         del os.environ[var]
@@ -847,7 +862,7 @@ class TestPkgrecvMulti(pkg5unittest.ManyDepotTestCase):
                 # Test basic operation of cloning repo which contains one
                 # publisher to repo which contains same publisher
                 self.pkgrecv(self.durl1, "--clone -d %s" % self.dpath2)
-                
+
                 ret = subprocess.call(["/usr/bin/gdiff", "-Naur", "-x", 
                     "index", "-x", "trans", self.dpath1, self.dpath2])
                 self.assertTrue(ret==0)
@@ -884,7 +899,7 @@ class TestPkgrecvMulti(pkg5unittest.ManyDepotTestCase):
                 # Test that clone fails if --raw is specified.
                 self.pkgrecv(self.durl1, "--raw --clone -d %s -p test2" %
                     self.dpath2, exit=2)
-                
+
                 # Test that clone fails if -c is specified.
                 self.pkgrecv(self.durl1, "-c /tmp/ --clone -d %s -p test2" %
                     self.dpath2, exit=2)
@@ -897,6 +912,54 @@ class TestPkgrecvMulti(pkg5unittest.ManyDepotTestCase):
                 self.pkgrecv(self.durl1, "--newest --clone -d %s -p test2" %
                     self.dpath2, exit=2)
 
+        def test_12_multihash(self):
+                """Tests that we can recv to and from repositories with
+                multi-hash support, interoperating with repositories without
+                multi-hash support."""
+
+                f = fmri.PkgFmri(self.published[3], None)
+
+                # We create an image simply so we can use "contents -g" to
+                # inspect the repository.
+                self.image_create()
+
+                # First, recv the package and verify it has no extended hashes
+                self.pkgrecv(self.durl1, "-d %s %s" % (self.durl3, f))
+                self.pkg("contents -g %s -m %s" % (self.durl3, f))
+                self.assert_("pkg.hash.sha256" not in self.output)
+
+                # Now stop and start the repository as multi-hash aware, and
+                # recv it again, making sure that we do not get multiple hashes
+                # added (because modifying the manifest would break signatures)
+                self.dcs[3].stop()
+                self.dcs[3].set_debug_feature("hash=sha1+sha256")
+                self.dcs[3].start()
+                self.pkgrecv(self.durl1, "-d %s %s" % (self.durl3, f))
+                self.pkg("contents -g %s -m %s" % (self.durl3, f))
+                self.assert_("pkg.hash.sha256" not in self.output)
+
+                # Now check the reverse - that a package with multiple hashes
+                # can be received into a repository that is not multi-hash aware
+                b = "bronze@1.0,5.11-0"
+                self.pkgsend_bulk(self.durl3, self.bronze10)
+                self.pkg("contents -g %s -m %s" % (self.durl3, b))
+                self.assert_("pkg.hash.sha256" in self.output)
+                self.pkgrecv(self.durl3, "-d %s %s" % (self.durl4, b))
+                self.pkg("contents -g %s -m %s" % (self.durl4, b))
+                self.assert_("pkg.hash.sha256" in self.output)
+
+                # Ensure that we can recv multi-hash packages into p5p files
+                p5p_path = os.path.join(self.test_root, "multi-hash.p5p")
+                self.pkgrecv(self.durl3, "-ad %s %s" % (p5p_path, b))
+                self.pkg("contents -g %s -m %s" % (p5p_path, b))
+                self.assert_("pkg.hash.sha256" in self.output)
+
+                # Finally, stop and start our scratch repository to clear the
+                # debug feature. If this doesn't happen because we've failed
+                # before now, it's not the end of the world.
+                self.dcs[3].stop()
+                self.dcs[3].unset_debug_feature("hash=sha1+sha256")
+                self.dcs[3].start()
 
 class TestPkgrecvHTTPS(pkg5unittest.HTTPSTestClass):
 
@@ -912,7 +975,7 @@ class TestPkgrecvHTTPS(pkg5unittest.HTTPSTestClass):
 
                 pkg5unittest.HTTPSTestClass.setUp(self, pubs,
                     start_depots=True)
-                
+
                 self.srurl = self.dcs[1].get_repo_url()
                 self.make_misc_files(self.misc_files)
                 self.pkgsend_bulk(self.srurl, self.example_pkg10)

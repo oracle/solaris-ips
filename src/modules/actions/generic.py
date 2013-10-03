@@ -43,6 +43,7 @@ import types
 import _common
 import pkg.actions
 import pkg.client.api_errors as apx
+import pkg.digest as digest
 import pkg.portable as portable
 import pkg.variant as variant
 
@@ -255,7 +256,9 @@ class Action(object):
         def __str__(self):
                 """Serialize the action into manifest form.
 
-                The form is the name, followed by the hash, if it exists,
+                The form is the name, followed by the SHA1 hash, if it exists,
+                (this use of a positional SHA1 hash is deprecated, with
+                pkg.*hash.* attributes being preferred over positional hashes)
                 followed by attributes in the form 'key=value'.  All fields are
                 space-separated; fields with spaces in the values are quoted.
 
@@ -427,9 +430,14 @@ class Action(object):
                 if cmp_hash:
                         shash = ohash = None
                         try:
-                                shash = self.hash
-                                ohash = other.hash
-                                if shash != other.hash:
+                                attr, shash, ohash, hfunc = \
+                                    digest.get_common_preferred_hash(
+                                    self, other)
+                                if shash != ohash:
+                                        return True
+                                # If there's no common preferred hash, we have
+                                # to treat these actions as different
+                                if shash is None and ohash is None:
                                         return True
                         except AttributeError:
                                 if shash or ohash:
@@ -477,6 +485,8 @@ class Action(object):
                 desired user output is.
                 """
 
+                # Indexing based on the SHA-1 hash is enough for the generic
+                # case.
                 if hasattr(self, "hash"):
                         return [
                             (self.name, "content", self.hash, self.hash),

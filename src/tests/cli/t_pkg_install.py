@@ -1915,6 +1915,7 @@ class TestPkgInstallUpgrade(pkg5unittest.SingleDepotTestCase):
             add dir mode=0755 owner=root group=bin path=etc
             add file tmp/config1 mode=0644 owner=root group=bin path=etc/foo
             add hardlink path=etc/foo.link target=foo
+            add license tmp/copyright1 license=copyright
             close
         """
         iron20 = """
@@ -1922,6 +1923,7 @@ class TestPkgInstallUpgrade(pkg5unittest.SingleDepotTestCase):
             add dir mode=0755 owner=root group=bin path=etc
             add file tmp/config2 mode=0644 owner=root group=bin path=etc/foo
             add hardlink path=etc/foo.link target=foo
+            add license tmp/copyright2 license=copyright
             close
         """
 
@@ -3061,6 +3063,53 @@ adm
                 # replaced with new configuration file.
                 self.pkg("update linkpreserve@2.0")
                 self.file_contains(new_cfg_path, "preserve2")
+
+        def test_many_hashalgs(self):
+                """Test that when upgrading actions where the new action
+                contains more hash attributes than the old action, that the
+                upgrade works."""
+
+                self.pkgsend_bulk(self.rurl, (self.iron10))
+                self.image_create(self.rurl, destroy=True)
+                self.pkg("install iron@1.0")
+                self.pkg("contents -m iron")
+                # We have not enabled SHA2 hash publication yet.
+                self.assert_("pkg.hash.sha256" not in self.output)
+
+                # publish with SHA1 and SHA2 hashes
+                self.pkgsend_bulk(self.rurl, self.iron20,
+                    debug_hash="sha1+sha256")
+
+                # verify that a non-SHA2 aware client can install these bits
+                self.pkg("-D hash=sha1 update")
+                self.image_create(self.rurl, destroy=True)
+
+                # This also tests package retrieval: we always retrieve packages
+                # with the least-preferred hash, but verify with the
+                # most-preferred hash.
+                self.pkg("install iron@2.0")
+                self.pkg("contents -m iron")
+                self.assert_("pkg.hash.sha256" in self.output)
+
+                # publish with only SHA-2 hashes
+                self.pkgsend_bulk(self.rurl, self.iron20, debug_hash="sha256")
+
+                # verify that a non-SHA2 aware client cannot install these bits
+                # since there are no SHA1 hashes present
+                self.pkg("-D hash=sha1 update", exit=1)
+                self.assert_(
+                    "No file could be found for the specified hash name: "
+                    "'NOHASH'" in self.errout)
+
+                # Make sure we've been publishing only with sha256 by removing
+                # those known attributes, then checking for the presence of
+                # the SHA-1 attributes.
+                self.pkg("-D hash=sha256 update")
+                self.pkg("contents -m iron")
+                for attr in ["pkg.hash.sha256", "pkg.chash.sha256"]:
+                        self.output = self.output.replace(attr, "")
+                self.assert_("hash" not in self.output)
+                self.assert_("chash" not in self.output)
 
 
 class TestPkgInstallActions(pkg5unittest.SingleDepotTestCase):

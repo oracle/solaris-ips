@@ -22,7 +22,6 @@
 # Copyright (c) 2013, Oracle and/or its affiliates. All rights reserved.
 
 import cherrypy
-import hashlib
 import httplib
 import logging
 import mako
@@ -35,6 +34,7 @@ import traceback
 import urllib
 import Queue
 
+import pkg.digest as digest
 import pkg.p5i
 import pkg.server.api
 import pkg.server.repository as sr
@@ -295,7 +295,7 @@ class WsgiDepot(object):
 
                 for prefix in repo_paths:
                         path = repo_paths[prefix]
-                        repo_hash = hashlib.sha1(path).hexdigest()
+                        repo_hash = digest.DEFAULT_HASH_FUNC(path).hexdigest()
                         index_dir = os.path.sep.join(
                             [self.cache_dir, "indexes", repo_hash])
 

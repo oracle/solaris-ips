@@ -23,13 +23,13 @@
 #
 # Copyright (c) 2011, 2013, Oracle and/or its affiliates. All rights reserved.
 #
-import sys
 
 import testutils
 if __name__ == "__main__":
         testutils.setup_environment("../../../proto")
 import pkg5unittest
 
+import hashlib
 import os
 import shutil
 import stat
@@ -165,14 +165,14 @@ class TestHTTPS(pkg5unittest.HTTPSTestClass):
                 """ Test that an expired cert for one publisher doesn't prevent
                 making changes to other publishers due to certifcate checks on
                 all configured publishers. (Bug 17018362)"""
-                
+
                 bad_cert_path = os.path.join(self.cs_dir,
                     "cs3_ch1_ta3_cert.pem")
                 good_cert_path = os.path.join(self.cs_dir,
                     self.get_cli_cert("test"))
                 self.ac.start()
                 self.image_create()
-                
+
                 # Set https-based publisher with correct cert.
                 self.seed_ta_dir("ta7")
                 self.pkg("set-publisher -k %(key)s -c %(cert)s -p %(url)s" % {
@@ -186,10 +186,12 @@ class TestHTTPS(pkg5unittest.HTTPSTestClass):
                 # Replace cert of first publisher with one that is expired.
                 # It doesn't need to match the key because we just want to
                 # test if the cert validation code works correctly so we are not
-                # actually using the cert. 
+                # actually using the cert.
 
-                # Cert is stored by content hash in the pkg config of the image.
-                ch = misc.get_data_digest(good_cert_path)[0]
+                # Cert is stored by content hash in the pkg config of the image,
+                # which must be a SHA-1 hash for backwards compatibility.
+                ch = misc.get_data_digest(good_cert_path,
+                    hash_func=hashlib.sha1)[0]
                 pkg_cert_path = os.path.join(self.get_img_path(), "var", "pkg",
                     "ssl", ch)
                 shutil.copy(bad_cert_path, pkg_cert_path)

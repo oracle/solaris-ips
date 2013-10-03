@@ -977,7 +977,8 @@ class Manifest(object):
                         if signatures:
                                 # Generate manifest signature based upon
                                 # input content, but only if signatures
-                                # were requested.
+                                # were requested. In order to interoperate with
+                                # older clients, we must use sha-1 here.
                                 self.signatures = {
                                     "sha-1": self.hash_create(content)
                                 }
@@ -1205,6 +1206,8 @@ class Manifest(object):
                 """This method takes a string representing the on-disk
                 manifest content, and returns a hash value."""
 
+                # This must be an SHA-1 hash in order to interoperate with
+                # older clients.
                 sha_1 = hashlib.sha1()
                 if isinstance(mfstcontent, unicode):
                         # Byte stream expected, so pass encoded.

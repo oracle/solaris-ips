@@ -30,6 +30,7 @@ if __name__ == "__main__":
 import pkg5unittest
 
 import copy
+import hashlib
 import os
 import shutil
 import sys
@@ -65,7 +66,7 @@ class TestPkgSearchBasics(pkg5unittest.SingleDepotTestCase):
             add dir mode=0755 owner=root group=bin path=/bin
             add file tmp/example_file mode=0555 owner=root group=bin path=/bin/example_path11
             close """
-        
+
         incorp_pkg10 = """
             open incorp_pkg@1.0,5.11-0
             add depend fmri=example_pkg@1.0,5.11-0 type=incorporate
@@ -295,7 +296,8 @@ adm:NP:6445::::::
 
         res_remote_file = set([
             'path       file      bin/example_path          pkg:/example_pkg@1.0-0\n',
-            'b40981aab75932c5b2f555f50769d878e44913d7 file      bin/example_path          pkg:/example_pkg@1.0-0\n'
+            'b40981aab75932c5b2f555f50769d878e44913d7 file      bin/example_path          pkg:/example_pkg@1.0-0\n',
+            'hash                                     file   bin/example_path pkg:/example_pkg@1.0-0\n'
         ]) | res_remote_path
 
 
@@ -308,7 +310,8 @@ adm:NP:6445::::::
              headers,
              'path       file      bin/example_path          pkg:/example_pkg@1.0-0\n',
              'basename   file      bin/example_path          pkg:/example_pkg@1.0-0\n',
-             'b40981aab75932c5b2f555f50769d878e44913d7 file      bin/example_path          pkg:/example_pkg@1.0-0\n'
+             'b40981aab75932c5b2f555f50769d878e44913d7 file      bin/example_path          pkg:/example_pkg@1.0-0\n',
+             'hash                                     file   bin/example_path pkg:/example_pkg@1.0-0\n'
         ])
 
         o_headers = \
@@ -992,6 +995,7 @@ adm:NP:6445::::::
                 self.assertEqualDiff(expected, actual)
                 self.pkg("search example_path", exit=1)
 
+
 class TestSearchMultiPublisher(pkg5unittest.ManyDepotTestCase):
 
         same_pub1 = """
@@ -1035,11 +1039,20 @@ class TestSearchMultiPublisher(pkg5unittest.ManyDepotTestCase):
         }
 
         def setUp(self):
-                pkg5unittest.ManyDepotTestCase.setUp(self,["samepub", "samepub"],
-                    start_depots=True)
+                pkg5unittest.ManyDepotTestCase.setUp(self, ["samepub",
+                    "samepub"], start_depots=True)
                 self.make_misc_files(self.misc_files)
                 self.durl1 = self.dcs[1].get_depot_url()
+                self.pkgsend_bulk(self.durl1, self.same_pub1, refresh_index=True)
                 self.durl2 = self.dcs[2].get_depot_url()
+                self.rurl2 = self.dcs[2].get_repo_url()
+                # our 2nd depot gets the package published with multiple hash
+                # attributes, but served from a single-hash-aware depot
+                # (the fact that it's single-hash-aware should make no
+                # difference to the content it serves so long as the index was
+                # generated while we were aware of multiple hashes.
+                self.pkgsend_bulk(self.rurl2, self.same_pub2,
+                    refresh_index=True, debug_hash="sha1+sha256")
 
         def test_7140657(self):
                 """ Check that pkg search with -s works as intended when there are
@@ -1096,6 +1109,54 @@ class TestSearchMultiPublisher(pkg5unittest.ManyDepotTestCase):
                 actual = self.reduceSpaces(self.output)
                 expected = self.reduceSpaces(expected_out2)
                 self.assertEqualDiff(expected, actual)
+
+        def test_search_multi_hash(self):
+                """Check that when searching a repository with multiple
+                hashes, all hash attributes are indexed and we can search
+                against all hash attributes.
+
+                This test depends on pkg.digest having DebugValue settings
+                that add sha256 hashes to the set of hashes we append to
+                actions at publication time."""
+
+                self.image_create(self.durl2, prefix="samepub")
+
+                # manually calculate the hashes, in case of bugs in
+                # pkg.misc.get_data_digest
+                sha1_hash = hashlib.sha1("magic").hexdigest()
+                sha2_hash = hashlib.sha256("magic").hexdigest()
+
+                self.pkg("search %s" % sha1_hash)
+                self.pkg("search %s" % sha2_hash)
+
+                # Check that we're matching on the correct index.
+                # For sha1 hashes, our the 'index' returned is actually the
+                # hash itself - that seems unusual, but it's the way the
+                # index was built. We also emit a 2nd search result that shows
+                # 'hash', in order to be consistent with the way we print
+                # the pkg.hash.sha* attribute when dealing with other hashes.
+                self.pkg("search -H -o search.match_type %s" % sha1_hash)
+                self.assertEqualDiff(
+                    self.reduceSpaces(self.output), "%s\nhash\n" % sha1_hash)
+
+                self.pkg("search -H -o search.match_type %s" % sha2_hash)
+                self.assertEqualDiff(
+                    self.reduceSpaces(self.output), "pkg.hash.sha256\n")
+
+                # check that both searches match the same action
+                self.pkg("search -o action.raw %s" % sha1_hash)
+                sha1_action = self.reduceSpaces(self.output)
+
+                self.pkg("search -o action.raw %s" % sha2_hash)
+                sha2_action = self.reduceSpaces(self.output)
+                self.assertEqualDiff(sha1_action, sha2_action)
+
+                # check that the same searches in the non-multihash-aware
+                # repository only return a result for the sha-1 hash
+                # (which checks that we're only setting multiple hashes
+                # on actions when hash=sha1+sha256 is set)
+                self.pkg("search -s %s %s" % (self.durl1, sha1_hash))
+                self.pkg("search -s %s %s" % (self.durl1, sha2_hash), exit=1)
 
 
 if __name__ == "__main__":

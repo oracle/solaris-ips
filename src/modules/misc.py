@@ -34,7 +34,6 @@ import datetime
 import errno
 import fnmatch
 import getopt
-import hashlib
 import itertools
 import locale
 import os
@@ -62,6 +61,7 @@ from stat import S_IFMT, S_IMODE, S_IRGRP, S_IROTH, S_IRUSR, S_IRWXU, \
 
 import pkg.client.api_errors as api_errors
 import pkg.portable as portable
+import pkg.digest as digest
 
 from pkg import VERSION
 from pkg.client import global_settings
@@ -330,19 +330,31 @@ def valid_pub_url(url, proxy=False):
 
         return False
 
-def gunzip_from_stream(gz, outfile):
+def gunzip_from_stream(gz, outfile, hash_func=None, hash_funcs=None,
+    ignore_hash=False):
         """Decompress a gzipped input stream into an output stream.
 
         The argument 'gz' is an input stream of a gzipped file and 'outfile'
         is is an output stream.  gunzip_from_stream() decompresses data from
-        'gz' and writes it to 'outfile', and returns the hexadecimal SHA-1 sum
-        of that data.
+        'gz' and writes it to 'outfile', and returns the hexadecimal SHA sum
+        of that data using the hash_func supplied.
+
+        'hash_funcs', if supplied, is a list of hash functions which we should
+        use to compute the hash. If 'hash_funcs' is supplied, a list of
+        hexadecimal digests computed using those functions is returned. The
+        returned list is in the same order as 'hash_funcs'.
+
+        If 'ignore_hash' is False, we do not compute a hash when decompressing
+        the content and do not return any value.
         """
 
         FHCRC = 2
         FEXTRA = 4
         FNAME = 8
         FCOMMENT = 16
+
+        if not (hash_func or hash_funcs) and not ignore_hash:
+                raise ValueError("no hash functions for gunzip_from_stream")
 
         # Read the header
         magic = gz.read(2)
@@ -378,20 +390,46 @@ def gunzip_from_stream(gz, outfile):
         if flag & FHCRC:
                 gz.read(2)
 
-        shasum = hashlib.sha1()
+        if ignore_hash:
+                pass
+        elif hash_funcs:
+                shasums = []
+                for f in hash_funcs:
+                        shasums.append(digest.HASH_ALGS[f]())
+        else:
+                shasum = hash_func()
         dcobj = zlib.decompressobj(-zlib.MAX_WBITS)
 
         while True:
                 buf = gz.read(64 * 1024)
                 if buf == "":
                         ubuf = dcobj.flush()
-                        shasum.update(ubuf) # pylint: disable=E1101
+                        if ignore_hash:
+                                pass
+                        elif hash_funcs:
+                                for sha in shasums:
+                                        sha.update(ubuf)
+                        else:
+                                shasum.update(ubuf) # pylint: disable=E1101
                         outfile.write(ubuf)
                         break
                 ubuf = dcobj.decompress(buf)
-                shasum.update(ubuf) # pylint: disable=E1101
+                if ignore_hash:
+                        pass
+                elif hash_funcs:
+                        for sha in shasums:
+                                sha.update(ubuf)
+                else:
+                        shasum.update(ubuf) # pylint: disable=E1101
                 outfile.write(ubuf)
 
+        if ignore_hash:
+                return
+        elif hash_funcs:
+                hexdigests = []
+                for sha in shasums:
+                        hexdigests.append(sha.hexdigest())
+                return hexdigests
         return shasum.hexdigest()
 
 class PipeError(Exception):
@@ -504,8 +542,10 @@ def get_pkg_otw_size(action):
 
         return int(size)
 
-def get_data_digest(data, length=None, return_content=False):
-        """Returns a tuple of (SHA-1 hexdigest, content).
+def get_data_digest(data, length=None, return_content=False,
+    hash_attrs=None, hash_algs=None, hash_func=None):
+        """Returns a tuple of ({hash attribute name: hash value}, content)
+        or a tuple of (hash value, content) if hash_attrs has only one element.
 
         'data' should be a file-like object or a pathname to a file.
 
@@ -514,7 +554,20 @@ def get_data_digest(data, length=None, return_content=False):
 
         'return_content' is a boolean value indicating whether the
         second tuple value should contain the content of 'data' or
-        if the content should be discarded during processing."""
+        if the content should be discarded during processing.
+
+        'hash_attrs' is a list of keys describing the hashes we want to compute
+        for this data. The keys must be present in 'hash_algs', a dictionary
+        mapping keys to the factory methods that are used to create objects
+        to compute them. The factory method must take no parameters, and must
+        return an object that has 'update()' and 'hexdigest()' methods. In the
+        current implementation, these are all hashlib factory methods.
+
+        'hash_func' is provided as a convenience to simply hash the data with
+        a single hash algorithm. The value of 'hash_func' should be the factory
+        method used to compute that hash value, as described in the previous
+        paragraph.
+        """
 
         bufsz = 128 * 1024
         closefobj = False
@@ -527,15 +580,31 @@ def get_data_digest(data, length=None, return_content=False):
         if length is None:
                 length = os.stat(data).st_size
 
-        # Read the data in chunks and compute the SHA1 hash as it comes in.  A
-        # large read on some platforms (e.g. Windows XP) may fail.
+        # Setup our results dictionary so that each attribute maps to a
+        # new hashlib object.
+        if hash_func:
+                hsh = hash_func()
+        else:
+                if hash_algs is None or hash_attrs is None:
+                        assert False, "get_data_digest without hash_attrs/algs"
+                hash_results = {}
+                for attr in hash_attrs:
+                        hash_results[attr] = hash_algs[attr]()
+
+        # Read the data in chunks and compute the SHA hashes as the data comes
+        # in.  A large read on some platforms (e.g. Windows XP) may fail.
         content = cStringIO.StringIO()
-        fhash = hashlib.sha1()
         while length > 0:
                 data = f.read(min(bufsz, length))
                 if return_content:
                         content.write(data)
-                fhash.update(data) # pylint: disable=E1101
+                if hash_func:
+                        hsh.update(data)
+                else:
+                        # update each hash with this data
+                        for attr in hash_attrs:
+                                hash_results[attr].update(
+                                    data) # pylint: disable=E1101
 
                 l = len(data)
                 if l == 0:
@@ -545,13 +614,30 @@ def get_data_digest(data, length=None, return_content=False):
         if closefobj:
                 f.close()
 
-        return fhash.hexdigest(), content.read()
+        if hash_func:
+                return hsh.hexdigest(), content.read()
+
+        # The returned dictionary can now be populated with the hexdigests
+        # instead of the hashlib objects themselves.
+        for attr in hash_results:
+                hash_results[attr] = hash_results[attr].hexdigest()
+        return hash_results, content.read()
 
 def compute_compressed_attrs(fname, file_path, data, size, compress_dir,
-    bufsz=64*1024):
-        """Returns the size and hash of the compressed data.  If the file
-        located at file_path doesn't exist or isn't gzipped, it creates a file
-        in compress_dir named fname."""
+    bufsz=64*1024, chash_attrs=None, chash_algs=None):
+        """Returns the size and one or more hashes of the compressed data.  If
+        the file located at file_path doesn't exist or isn't gzipped, it creates
+        a file in compress_dir named fname.
+
+        'chash_attrs' is a list of the chash attributes we should compute, with
+        'chash_algs' being a dictionary that maps the attribute names to the
+        algorithms used to compute them.
+        """
+
+        if chash_attrs is None:
+                chash_attrs = digest.DEFAULT_CHASH_ATTRS
+        if chash_algs is None:
+                chash_algs = digest.CHASH_ALGS
 
         #
         # This check prevents compressing a file which is already compressed.
@@ -597,14 +683,18 @@ def compute_compressed_attrs(fname, file_path, data, size, compress_dir,
         # to generate deterministic hashes for different files with identical
         # content.
         cfile = open(opath, "rb")
-        chash = hashlib.sha1()
+        chashes = {}
+        for chash_attr in chash_attrs:
+                chashes[chash_attr] = chash_algs[chash_attr]()
         while True:
                 cdata = cfile.read(bufsz)
                 if cdata == "":
                         break
-                chash.update(cdata) # pylint: disable=E1101
+                for chash_attr in chashes:
+                        chashes[chash_attr].update(
+                            cdata) # pylint: disable=E1101
         cfile.close()
-        return csize, chash
+        return csize, chashes
 
 class ProcFS(object):
         """This class is used as an interface to procfs."""

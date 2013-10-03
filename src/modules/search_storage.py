@@ -21,8 +21,7 @@
 #
 
 #
-# Copyright 2010 Sun Microsystems, Inc.  All rights reserved.
-# Use is subject to license terms.
+# Copyright (c) 2010, 2013, Oracle and/or its affiliates. All rights reserved.
 #
 
 import os
@@ -614,21 +613,25 @@ class IndexStoreDictMutable(IndexStoreBase):
 class IndexStoreSetHash(IndexStoreBase):
         def __init__(self, file_name):
                 IndexStoreBase.__init__(self, file_name)
+                # In order to interoperate with older clients, we must use sha-1
+                # here.
                 self.hash_val = hashlib.sha1().hexdigest()
 
         def set_hash(self, vals):
                 """Set the has value."""
-                self.hash_val = self.calc_hash(vals) 
+                self.hash_val = self.calc_hash(vals)
 
         def calc_hash(self, vals):
                 """Calculate the hash value of the sorted members of vals."""
                 vl = list(vals)
                 vl.sort()
+                # In order to interoperate with older clients, we must use sha-1
+                # here.
                 shasum = hashlib.sha1()
                 for v in vl:
                         shasum.update(v)
                 return shasum.hexdigest()
-                
+
         def write_dict_file(self, path, version_num):
                 """Write self.hash_val out to a line in a file """
                 IndexStoreBase._protected_write_dict_file(self, path,

@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2008, 2012, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2008, 2013, Oracle and/or its affiliates. All rights reserved.
 #
 
 import errno
@@ -2020,7 +2020,7 @@ class SigningException(ApiException):
                                     "found in %(pfmri)s and has a hash of "
                                     "%(hsh)s") % \
                                     {"pfmri": self.pfmri, "hsh": self.sig.hash}
-                        return _("The package involved is:%s") % self.pfmri
+                        return _("The package involved is %s") % self.pfmri
                 if self.sig:
                         return _("The relevant signature action's value "
                             "attribute is %s") % self.sig.attrs["value"]
@@ -2097,8 +2097,8 @@ class BrokenChain(CertificateException):
                         s = _("The following problems were encountered:\n") + \
                         "\n".join([str(e) for e in self.ext_exs])
                 return _("The certificate which issued this "
-                    "certificate:%(subj)s could not be found. The issuer "
-                    "is:%(issuer)s\n") % {"subj":self.cert.get_subject(),
+                    "certificate: %(subj)s could not be found. The issuer "
+                    "is: %(issuer)s\n") % {"subj":self.cert.get_subject(),
                     "issuer":self.cert.get_issuer()} + s + \
                     CertificateException.__str__(self)
 

@@ -30,16 +30,12 @@ if __name__ == "__main__":
 import pkg5unittest
 
 import copy
-import hashlib
 import os
 import shutil
-import signal
-import sys
-import time
 
-import pkg.client.api as api
 import pkg.client.api_errors as apx
 import pkg.client.transport.exception as tx
+import pkg.digest as digest
 import pkg.misc as misc
 
 class PC(object):
@@ -86,13 +82,22 @@ class TestSysrepo(pkg5unittest.ApacheDepotTestCase):
 
         bar10 = """
             open bar@1.0,5.11-0
+            add file tmp/example_two mode=0555 owner=root group=bin path=/usr/bin/example_path3
             close"""
 
         bar11 = """
             open bar@1.1,5.11-0
+            add file tmp/example_two mode=0555 owner=root group=bin path=/usr/bin/example_path3
+            add file tmp/example_two mode=0555 owner=root group=bin path=/usr/bin/example_path4
             close"""
 
-        misc_files = ["tmp/example_file"]
+        baz10 = """
+            open baz@1.0,5.11-0
+            add file tmp/example_three mode=0555 owner=root group=bin path=/usr/bin/another
+            close"""
+
+        misc_files = ["tmp/example_file", "tmp/example_two",
+            "tmp/example_three"]
 
         expected_all_access =  """\
 PUBLISHER\tSTICKY\tSYSPUB\tENABLED\tTYPE\tSTATUS\tURI\tPROXY
@@ -127,6 +132,14 @@ test4\ttrue\ttrue\ttrue\t\t\t\t
                 self.durl1 = self.dcs[1].get_depot_url()
                 self.durl2 = self.dcs[2].get_depot_url()
                 self.durl3 = self.dcs[3].get_depot_url()
+
+                # we make self.durl3 multi-hash aware, to ensure that the
+                # system-repository can serve packages published with multiple
+                # hashes.
+                self.dcs[3].stop()
+                self.dcs[3].set_debug_feature("hash=sha1+sha256")
+                self.dcs[3].start()
+
                 self.durl4 = self.dcs[4].get_depot_url()
                 self.durl5 = self.dcs[5].get_depot_url()
 
@@ -142,7 +155,11 @@ test4\ttrue\ttrue\ttrue\t\t\t\t
 
                 self.pkgsend_bulk(self.rurl1, self.example_pkg10)
                 self.pkgsend_bulk(self.rurl2, self.foo10)
-                self.pkgsend_bulk(self.rurl3, self.bar10)
+                # We send to rurl3 using multi-hash aware publication
+                self.pkgsend_bulk(self.rurl3, self.bar10,
+                    debug_hash="sha1+sha256")
+                self.pkgsend_bulk(self.rurl3, self.baz10,
+                    debug_hash="sha1+sha256")
                 self.pkgsend_bulk(self.rurl4, self.bar10)
                 self.pkgsend_bulk(self.rurl5, self.foo11)
 
@@ -593,6 +610,11 @@ test4\ttrue\ttrue\ttrue\t\t\t\t
                 # Test that the current api object has the right catalog.
                 self._api_install(api_obj, ["foo", "bar"])
 
+                # Test that we can install a multi-hash package
+                self.pkg("install baz")
+                self.pkg("contents -m baz")
+                self.assert_("pkg.hash.sha256" in self.output)
+
         def test_02_communication(self):
                 """Test that the transport for communicating with the depots is
                 actually going through the proxy. This is done by
@@ -789,9 +811,9 @@ test1\ttrue\ttrue\ttrue\tmirror\tonline\t%(rurl1)s/\t-
 
                 # Find the hashes that will be included in the urls of the
                 # proxied file repos.
-                hash1 = hashlib.sha1("file://" +
+                hash1 = digest.DEFAULT_HASH_FUNC("file://" +
                     self.dcs[1].get_repodir().rstrip("/")).hexdigest()
-                hash3 = hashlib.sha1("file://" +
+                hash3 = digest.DEFAULT_HASH_FUNC("file://" +
                     self.dcs[3].get_repodir().rstrip("/")).hexdigest()
 
                 # Check that a user can add and remove mirrors,
@@ -926,6 +948,7 @@ test3\ttrue\ttrue\ttrue\torigin\tonline\t%(durl3)s/\thttp://localhost:%(port)s
 
                 expected = """\
 bar (test3) 1.0-0 ---
+baz (test3) 1.0-0 ---
 example_pkg 1.0-0 ---
 """
                 self.__check_package_lists(expected)
@@ -953,6 +976,7 @@ test3\ttrue\ttrue\ttrue\torigin\tonline\t%(durl3)s/\thttp://localhost:%(port)s
 
                 expected = """\
 bar (test3) 1.0-0 ---
+baz (test3) 1.0-0 ---
 example_pkg 1.0-0 ---
 """
                 self.__check_package_lists(expected)
@@ -1281,11 +1305,11 @@ test1\ttrue\tfalse\ttrue\torigin\tonline\t%s/\t-
 
                 # Find the hashes that will be included in the urls of the
                 # proxied file repos.
-                hash1 = hashlib.sha1("file://" +
+                hash1 = digest.DEFAULT_HASH_FUNC("file://" +
                     self.dcs[1].get_repodir().rstrip("/")).hexdigest()
-                hash2 = hashlib.sha1("file://" +
+                hash2 = digest.DEFAULT_HASH_FUNC("file://" +
                     self.dcs[2].get_repodir().rstrip("/")).hexdigest()
-                hash3 = hashlib.sha1("file://" +
+                hash3 = digest.DEFAULT_HASH_FUNC("file://" +
                     self.dcs[3].get_repodir().rstrip("/")).hexdigest()
 
                 expected = """\
@@ -1339,11 +1363,11 @@ test1\ttrue\tfalse\ttrue\torigin\tonline\t%(rurl1)s/\t-
 
                 # Find the hashes that will be included in the urls of the
                 # proxied file repos.
-                hash1 = hashlib.sha1("file://" +
+                hash1 = digest.DEFAULT_HASH_FUNC("file://" +
                     self.dcs[1].get_repodir().rstrip("/")).hexdigest()
-                hash2 = hashlib.sha1("file://" +
+                hash2 = digest.DEFAULT_HASH_FUNC("file://" +
                     self.dcs[2].get_repodir().rstrip("/")).hexdigest()
-                hash3 = hashlib.sha1("file://" +
+                hash3 = digest.DEFAULT_HASH_FUNC("file://" +
                     self.dcs[3].get_repodir().rstrip("/")).hexdigest()
 
                 self.__set_responses("all-access-f")
@@ -1379,11 +1403,11 @@ test3\ttrue\ttrue\ttrue\torigin\tonline\thttp://localhost:%(port)s/test3/%(hash3
 
                 # Find the hashes that will be included in the urls of the
                 # proxied file repos.
-                hash1 = hashlib.sha1("file://" +
+                hash1 = digest.DEFAULT_HASH_FUNC("file://" +
                     self.dcs[1].get_repodir().rstrip("/")).hexdigest()
-                hash2 = hashlib.sha1("file://" +
+                hash2 = digest.DEFAULT_HASH_FUNC("file://" +
                     self.dcs[2].get_repodir().rstrip("/")).hexdigest()
-                hash3 = hashlib.sha1("file://" +
+                hash3 = digest.DEFAULT_HASH_FUNC("file://" +
                     self.dcs[3].get_repodir().rstrip("/")).hexdigest()
 
                 expected = """\

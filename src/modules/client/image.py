@@ -31,6 +31,7 @@ import collections
 import copy
 import datetime
 import errno
+import hashlib
 import os
 import platform
 import shutil
@@ -595,8 +596,12 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
 
                         try:
                                 # Destination name is based on digest of file.
+                                # In order for this image to interoperate with
+                                # older and newer clients, we must use sha-1
+                                # here.
                                 dest = os.path.join(ssl_dir,
-                                    misc.get_data_digest(src)[0])
+                                    misc.get_data_digest(src,
+                                        hash_func=hashlib.sha1)[0])
                                 if src != dest:
                                         portable.copyfile(src, dest)
 

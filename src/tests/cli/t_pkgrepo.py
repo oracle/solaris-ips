@@ -111,6 +111,8 @@ class TestPkgRepo(pkg5unittest.SingleDepotTestCase):
             close
         """
 
+        # These hashes should remain as SHA-1 until such time as we bump the
+        # least-preferred hash for actions.
         fhashes = {
              "tmp/empty": "5f5fb715934e0fa2bfb5611fd941d33228027006",
              "tmp/truck1": "c9e257b659ace6c3fbc4d334f49326b3889fd109",
@@ -1354,6 +1356,38 @@ publisher\tprefix\texample.net
                                 continue
                         self.assert_(not os.listdir(rstore.file_root))
 
+                # Reset the src_repo for the rest of the test.
+                shutil.rmtree(src_repo)
+                self.create_repo(src_repo)
+                self.pkgrepo("set -s %s publisher/prefix=test" % src_repo)
+
+                published = self.pkgsend_bulk(src_repo, (self.tree10),
+                    debug_hash="sha1+sha256")
+
+                # Verify that we only have SHA-1 hashes in the rstore
+                repo = self.get_repo(src_repo)
+                known_hashes = self.fhashes.values()
+                for rstore in repo.rstores:
+                        if not rstore.publisher:
+                                continue
+                        for dir, dnames, fnames in os.walk(rstore.file_root):
+                                for f in fnames:
+                                        if f not in known_hashes:
+                                                self.assert_(False,
+                                                    "Unexpected content in "
+                                                    "repodir: %s" % f)
+
+                # Verify that when a repository has been published with multiple
+                # hashes, on removal, we only attempt to remove files using the
+                # least-preferred hash.
+                self.pkgrepo("remove -s %s tree" % src_repo)
+
+                # Verify repository file_root is empty.
+                for rstore in repo.rstores:
+                        if not rstore.publisher:
+                                continue
+                        self.assert_(not os.listdir(rstore.file_root))
+
                 # Cleanup.
                 shutil.rmtree(src_repo)
                 shutil.rmtree(dest_repo)
@@ -1831,8 +1865,8 @@ test2	zoo		1.0	5.11	0	20110804T203458Z	pkg://test2/zoo@1.0,5.11-0:20110804T20345
                 self.assert_("etc/truck1" in self.output)
                 self.assert_("etc/trailer" in self.output)
 
-                # finally, corrupt another file to see that we can also spot
-                # files that aren't gzipped.
+                # Corrupt another file to see that we can also spot files that
+                # aren't gzipped.
                 fmris += self.pkgsend_bulk(repo_path, (self.truck20))
                 bad_gzip_path = self.__inject_badhash("tmp/truck2",
                     valid_gzip=False)
@@ -1845,6 +1879,37 @@ test2	zoo		1.0	5.11	0	20110804T203458Z	pkg://test2/zoo@1.0,5.11-0:20110804T20345
                     self.output.count("ERROR: Corrupted gzip file") == 1)
                 self.assert_(bad_gzip_path in self.output)
 
+                # Check that when verifying content, we always use the most
+                # preferred hash. Remove all existing packages first.
+                self.pkgrepo("-s %s remove %s" % (repo_path, " ".join(fmris)))
+                fmris = self.pkgsend_bulk(repo_path, (self.tree10),
+                    debug_hash="sha1+sha256")
+                self.pkgrepo("-s %s verify" % repo_path, exit=0)
+
+                # break a file in the repository and ensure we spot it.
+                bad_hash_path = self.__inject_badhash("tmp/truck1")
+                bad_basename = os.path.basename(bad_hash_path)
+
+                self.pkgrepo("-s %s verify" % repo_path, exit=1)
+                self.assert_(
+                    self.output.count("ERROR: Invalid file hash") == 1)
+
+                # We should be verifying using the SHA-2 hash, and so we should
+                # only see the SHA-1 value in the output once, when printing
+                # the path to the file in the repository, not when reporting
+                # the computed or expected hash.
+                self.assert_(self.output.count(bad_basename) == 1)
+
+                # Verify that when we publish using SHA-1 only, that we get
+                # the SHA-1 value printed twice: once when printing the path
+                # to the file in the repository, and once when printing the
+                # expected hash.
+                self.pkgrepo("-s %s remove %s" % (repo_path, " ".join(fmris)))
+                fmris = self.pkgsend_bulk(repo_path, (self.tree10))
+                self.__inject_badhash("tmp/truck1")
+
+                self.pkgrepo("-s %s verify" % repo_path, exit=1)
+                self.assert_(self.output.count(bad_basename) == 2)
 
         def test_12_verify_badmanifest(self):
                 """Test that verify finds bad manifests."""

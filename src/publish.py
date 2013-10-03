@@ -326,7 +326,7 @@ def trans_publish(repo_uri, fargs):
         if not repo_uri:
                 usage(_("A destination package repository must be provided "
                     "using -s."), cmd="publish")
- 
+
         if not pargs:
                 filelist = [("<stdin>", sys.stdin)]
         else:
@@ -740,6 +740,8 @@ def main_func():
         if repo_uri and not repo_uri.startswith("null:"):
                 repo_uri = misc.parse_uri(repo_uri)
 
+        if DebugValues:
+                reload(pkg.digest)
         subcommand = None
         if pargs:
                 subcommand = pargs.pop(0)

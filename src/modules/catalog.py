@@ -19,7 +19,7 @@
 #
 # CDDL HEADER END
 #
-# Copyright (c) 2007, 2012, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2007, 2013, Oracle and/or its affiliates. All rights reserved.
 
 """Interfaces and implementation for the Catalog object, as well as functions
 that operate on lists of package FMRIs."""
@@ -64,6 +64,13 @@ class _JSONWriter(object):
                 # Default to a 32K buffer.
                 self.__bufsz = 32 * 1024
 
+                # catalog signatures *must* use sha-1 only since clients
+                # compare entire dictionaries against the reported hash from
+                # the catalog in the various <CatalogPartBase>.validate()
+                # methods rather than just attributes within those dictionaries.
+                # If old clients are to interoperate with new repositories, the
+                # computed and expected dictionaries must be identical at
+                # present, so we must use sha-1.
                 if sign:
                         if not pathname:
                                 # Only needed if not writing to __fileobj.
@@ -158,7 +165,8 @@ class _JSONWriter(object):
                 # Calculating sha-1 this way is much faster than intercepting
                 # write calls because of the excessive number of write calls
                 # that json.dump() triggers (1M+ for /dev catalog files).
-                self.__sha_1_value = misc.get_data_digest(self.pathname)[0]
+                self.__sha_1_value = misc.get_data_digest(self.pathname,
+                    hash_func=hashlib.sha1)[0]
 
                 # Open the JSON file so that the signature data can be added.
                 sfile = file(self.pathname, "rb+", self.__bufsz)

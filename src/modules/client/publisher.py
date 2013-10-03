@@ -58,6 +58,7 @@ import pkg.catalog
 import pkg.client.api_errors as api_errors
 import pkg.client.sigpolicy as sigpolicy
 import pkg.client.pkgdefs as pkgdefs
+import pkg.digest as digest
 import pkg.misc as misc
 import pkg.portable as portable
 import pkg.server.catalog as old_catalog
@@ -1622,7 +1623,8 @@ pkg unset-publisher %s
                 if not os.path.exists(self.__origin_root):
                         return
                 # A digest of the URI string is used here to attempt to avoid
-                # path length problems.
+                # path length problems. In order for this image to interoperate
+                # with older clients, we must use sha-1 here.
                 return os.path.join(self.__origin_root,
                     hashlib.sha1(origin.uri).hexdigest())
 
@@ -1637,6 +1639,8 @@ pkg unset-publisher %s
                 on catalog from each origin."""
 
                 # First, remove catalogs for any origins that no longer exist.
+                # We must interoperate with older clients, so force the use of
+                # sha-1 here.
                 ohashes = [
                     hashlib.sha1(o.uri).hexdigest()
                     for o in self.repository.origins
@@ -2355,6 +2359,8 @@ pkg unset-publisher %s
 
         @staticmethod
         def __hash_cert(c):
+                # In order to interoperate with older images, we must use SHA-1
+                # here.
                 return hashlib.sha1(c.as_pem()).hexdigest()
 
         @staticmethod
@@ -2412,7 +2418,7 @@ pkg unset-publisher %s
                 return pkg_hash
 
         def get_cert_by_hash(self, pkg_hash, verify_hash=False,
-            only_retrieve=False):
+            only_retrieve=False, hash_func=digest.DEFAULT_HASH_FUNC):
                 """Given a pkg5 hash, retrieve the cert that's associated with
                 it.
 
@@ -2435,7 +2441,8 @@ pkg unset-publisher %s
                         with open(pth, "rb") as fh:
                                 s = fh.read()
                 else:
-                        s = self.transport.get_content(self, pkg_hash)
+                        s = self.transport.get_content(self, pkg_hash,
+                            hash_func=hash_func)
                 c = self.__string_to_cert(s, pkg_hash)
                 if not pth_exists:
                         try:
@@ -2447,7 +2454,7 @@ pkg unset-publisher %s
 
                 if verify_hash:
                         h = misc.get_data_digest(cStringIO.StringIO(s),
-                            length=len(s))[0]
+                            length=len(s), hash_func=hash_func)[0]
                         if h != pkg_hash:
                                 raise api_errors.ModifiedCertificateException(c,
                                     pth)

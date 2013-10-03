@@ -29,6 +29,7 @@ if __name__ == "__main__":
         testutils.setup_environment("../../../proto")
 import pkg5unittest
 
+import hashlib
 import os
 import pkg.client.image as image
 import pkg.misc
@@ -160,8 +161,12 @@ class TestPkgPublisherBasics(pkg5unittest.SingleDepotTestCase):
                     exit=2)
 
                 # Listing publishers should succeed even if key file is gone.
+                # This test relies on using the same implementation used in
+                # image.py __store_publisher_ssl() which sets the paths to the
+                # SSL keys/certs.
                 img_key_path = os.path.join(self.img_path(), "var", "pkg",
-                    "ssl", pkg.misc.get_data_digest(key_path)[0])
+                    "ssl", pkg.misc.get_data_digest(key_path,
+                    hash_func=hashlib.sha1)[0])
                 os.unlink(img_key_path)
                 self.pkg("publisher test1")
 
@@ -187,7 +192,8 @@ class TestPkgPublisherBasics(pkg5unittest.SingleDepotTestCase):
 
                 # Listing publishers should be possible if cert file is gone.
                 img_cert_path = os.path.join(self.img_path(), "var", "pkg",
-                    "ssl", pkg.misc.get_data_digest(cert_path)[0])
+                    "ssl", pkg.misc.get_data_digest(cert_path,
+                    hash_func=hashlib.sha1)[0])
                 os.unlink(img_cert_path)
                 self.pkg("publisher test1", exit=3)
 
@@ -311,10 +317,15 @@ class TestPkgPublisherBasics(pkg5unittest.SingleDepotTestCase):
                 self.pkg("set-publisher --no-refresh -c %s test1" % cert_path)
                 self.pkg("set-publisher --no-refresh -k %s test1" % key_path)
 
+                # This test relies on using the same implementation used in
+                # image.py __store_publisher_ssl() which sets the paths to the
+                # SSL keys/certs.
                 img_key_path = os.path.join(self.img_path(), "var", "pkg",
-                    "ssl", pkg.misc.get_data_digest(key_path)[0])
+                    "ssl", pkg.misc.get_data_digest(key_path,
+                    hash_func=hashlib.sha1)[0])
                 img_cert_path = os.path.join(self.img_path(), "var", "pkg",
-                    "ssl", pkg.misc.get_data_digest(cert_path)[0])
+                    "ssl", pkg.misc.get_data_digest(cert_path,
+                    hash_func=hashlib.sha1)[0])
 
                 # Make the cert/key unreadable by unprivileged users.
                 os.chmod(img_key_path, 0000)
@@ -881,10 +892,15 @@ class TestPkgPublisherMany(pkg5unittest.ManyDepotTestCase):
                     (key_path, cert_path))
                 self.pkg("publisher test1")
 
+                # This test relies on using the same implementation used in
+                # image.py __store_publisher_ssl() which sets the paths to the
+                # SSL keys/certs.
                 img_key_path = os.path.join(self.img_path(), "var", "pkg",
-                    "ssl", pkg.misc.get_data_digest(key_path)[0])
+                    "ssl", pkg.misc.get_data_digest(key_path,
+                    hash_func=hashlib.sha1)[0])
                 img_cert_path = os.path.join(self.img_path(), "var", "pkg",
-                    "ssl", pkg.misc.get_data_digest(cert_path)[0])
+                    "ssl", pkg.misc.get_data_digest(cert_path,
+                    hash_func=hashlib.sha1)[0])
                 self.assert_(img_key_path in self.output)
                 self.assert_(img_cert_path in self.output)
 

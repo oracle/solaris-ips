@@ -813,7 +813,7 @@ def clone_repo(pargs, target, list_newest, all_versions, all_timestamps,
                 elif not pubs_specified:
                         unknown_pubs.append(sp)
 
-        # We only print warning if the user didn't specify any valid publishers 
+        # We only print warning if the user didn't specify any valid publishers
         # to add/sync.
         if len(unknown_pubs):
                 txt = _("\nThe following publishers are present in the "
@@ -1291,7 +1291,11 @@ def transfer_pkgs(pargs, target, list_newest, all_versions, all_timestamps,
                                                     "rb")
                                         t.add(a)
                                         if a.name == "signature":
-                                                for fp in a.get_chain_certs():
+                                                # We always store content in the
+                                                # repository by the least-
+                                                # preferred hash.
+                                                for fp in a.get_chain_certs(
+                                                    least_preferred=True):
                                                         fname = os.path.join(
                                                             pkgdir, fp)
                                                         t.add_file(fname)

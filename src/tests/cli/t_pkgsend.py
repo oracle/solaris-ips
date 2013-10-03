@@ -39,6 +39,7 @@ import urllib2
 
 from pkg import misc
 from pkg.actions import fromstr
+from pkg.digest import DEFAULT_HASH_FUNC
 import pkg.portable as portable
 
 
@@ -689,10 +690,11 @@ file 6a1ae3def902f5612a43f0c0836fe05bc4f237cf chash=be9c91959ec782acb0f081bf4bf1
                                 f = file(fpath, "wb")
                                 f.write("test" + entry)
                                 f.close()
-                                # compute a digest of the file we just created, which
-                                # we can use when validating later.
+                                # compute a digest of the file we just created,
+                                # which we can use when validating later.
                                 contents_dict[entry][4] = \
-                                    misc.get_data_digest(fpath)[0]
+                                    misc.get_data_digest(fpath,
+                                    hash_func=DEFAULT_HASH_FUNC)[0]
 
                         elif ftype == "d":
                                 try:
@@ -845,9 +847,16 @@ file 6a1ae3def902f5612a43f0c0836fe05bc4f237cf chash=be9c91959ec782acb0f081bf4bf1
                                 continue
 
                         if digest:
-                                pkg5_digest, contents = misc.get_data_digest(name, return_content=True)
+                                # the hash_func used here just needs to
+                                # correspond with the one used when creating
+                                # the svr4 package - it does not consult the
+                                # pkg(5) hash or chash attributes.
+                                pkg5_digest, contents = misc.get_data_digest(
+                                    name, return_content=True,
+                                    hash_func=DEFAULT_HASH_FUNC)
                                 self.assertEqual(digest, pkg5_digest,
-                                    "%s: %s != %s, '%s'" % (name, digest, pkg5_digest, contents))
+                                    "%s: %s != %s, '%s'" % (name, digest,
+                                    pkg5_digest, contents))
 
                         st = os.stat(os.path.join(self.img_path(), name))
                         if mode is not None:
@@ -1279,6 +1288,39 @@ dir path=/usr/bin/foo target=bar hash=payload-pathname""")
                     """open foo@1.0
                     add license license=copyright
                     close""", exit=1)
+
+        def test_26_pkgsend_multihash(self):
+                """Tests that when publishing packages with mutiple hashes,
+                we only overwrite those hashes if we're in multi-hash mode
+                and only if they match the hash attributes we know how to
+                compute, other attributes are left alone."""
+
+                # we use a file:// URI rather than the repo URI so we don't have
+                # to worry about starting the depot in SHA-2 mode. Other tests
+                # in the test suite ensure SHA-2 publication is working over
+                # HTTP.
+                furi = self.dc.get_repo_url()
+                mfpath = os.path.join(self.test_root, "pkgsend_multihash.mf")
+                payload = self.make_misc_files(["pkgsend_multihash"])[0]
+
+                with open(mfpath, "wb") as mf:
+                        mf.write("""
+set name=pkg.fmri value=pkg:/multihash@1.0
+file %s path=/foo owner=root group=sys mode=0644 pkg.hash.sha256=spaghetti \
+    pkg.hash.rot13=caesar
+""" % payload)
+                self.pkgsend("", "-s %s publish %s" % (furi, mfpath))
+                self.image_create(furi)
+                self.pkg("contents -rm multihash")
+                self.assert_("pkg.hash.sha256=spaghetti" in self.output)
+
+                self.pkgsend("", "-s %s publish %s" % (furi, mfpath),
+                    debug_hash="sha1+sha256")
+                self.pkg("refresh")
+
+                self.pkg("contents -rm multihash")
+                self.assert_("pkg.hash.sha256=spaghetti" not in self.output)
+                self.assert_("pkg.hash.rot13=caesar" in self.output)
 
 
 class TestPkgsendHardlinks(pkg5unittest.CliTestCase):

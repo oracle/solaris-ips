@@ -1516,6 +1516,9 @@ def main_func():
                                    "opt":  opt, "arg": arg })
                         DebugValues.set_value(key, value)
 
+        if DebugValues:
+                reload(pkg.digest)
+
         subcommand = None
         if pargs:
                 subcommand = pargs.pop(0)

@@ -40,6 +40,7 @@ import zlib
 import _common
 import pkg.actions
 import pkg.client.api_errors as api_errors
+import pkg.digest as digest
 import pkg.misc as misc
 import pkg.portable as portable
 
@@ -190,7 +191,11 @@ class FileAction(generic.Action):
                         stream = self.data()
                         tfile = os.fdopen(tfilefd, "wb")
                         try:
-                                shasum = misc.gunzip_from_stream(stream, tfile)
+                                # Always verify using the most preferred hash
+                                hash_attr, hash_val, hash_func  = \
+                                    digest.get_preferred_hash(self)
+                                shasum = misc.gunzip_from_stream(stream, tfile,
+                                    hash_func)
                         except zlib.error, e:
                                 raise ActionExecutionError(self,
                                     details=_("Error decompressing payload: %s")
@@ -200,15 +205,16 @@ class FileAction(generic.Action):
                                 tfile.close()
                                 stream.close()
 
-                        if shasum != self.hash:
+                        if shasum != hash_val:
                                 raise ActionExecutionError(self,
                                     details=_("Action data hash verification "
                                     "failure: expected: %(expected)s computed: "
                                     "%(actual)s action: %(action)s") % {
-                                        "expected": self.hash,
+                                        "expected": hash_val,
                                         "actual": shasum,
                                         "action": self
                                     })
+
                 else:
                         temp = final_path
 
@@ -294,11 +300,12 @@ class FileAction(generic.Action):
                             "found": misc.time_to_timestamp(lstat.st_mtime),
                             "expected": self.attrs["timestamp"] })
 
-                # avoid checking pkg.size if elfhash present;
-                # different size files may have the same elfhash
+                # avoid checking pkg.size if we have any content-hashes present;
+                # different size files may have the same content-hash
                 if "preserve" not in self.attrs and \
                     "pkg.size" in self.attrs and    \
-                    "elfhash" not in self.attrs and \
+                    not set(digest.RANKED_CONTENT_HASH_ATTRS).intersection(
+                    set(self.attrs.keys())) and \
                     lstat.st_size != int(self.attrs["pkg.size"]):
                         errors.append(_("Size: %(found)d bytes should be "
                             "%(expected)d") % { "found": lstat.st_size,
@@ -312,7 +319,9 @@ class FileAction(generic.Action):
                         return errors, warnings, info
 
                 #
-                # Check file contents
+                # Check file contents. At the moment, the only content-hash
+                # supported in pkg(5) is for ELF files, so this will need work
+                # when additional content-hashes are added.
                 #
                 try:
                         # This is a generic mechanism, but only used for libc on
@@ -322,7 +331,10 @@ class FileAction(generic.Action):
                         is_mtpt = self.attrs.get("mountpoint", "").lower() == "true"
                         elfhash = None
                         elferror = None
-                        if "elfhash" in self.attrs and haveelf and not is_mtpt:
+                        ehash_attr, elfhash_val, hash_func = \
+                            digest.get_preferred_hash(self,
+                                hash_type=pkg.digest.CONTENT_HASH)
+                        if ehash_attr and haveelf and not is_mtpt:
                                 #
                                 # It's possible for the elf module to
                                 # throw while computing the hash,
@@ -330,16 +342,28 @@ class FileAction(generic.Action):
                                 # corrupted or truncated.
                                 #
                                 try:
-                                        elfhash = elf.get_dynamic(path)["hash"]
+                                        # Annoying that we have to hardcode this
+                                        if ehash_attr == \
+                                            "pkg.content-hash.sha256":
+                                                get_sha256 = True
+                                                get_sha1 = False
+                                        else:
+                                                get_sha256 = False
+                                                get_sha1 = True
+                                        elfhash = elf.get_dynamic(path,
+                                            sha1=get_sha1,
+                                            sha256=get_sha256)[ehash_attr]
                                 except RuntimeError, e:
-                                        errors.append("Elfhash: %s" % e)
+                                        errors.append("ELF content hash: %s" %
+                                            e)
 
                                 if elfhash is not None and \
-                                    elfhash != self.attrs["elfhash"]:
-                                        elferror = _("Elfhash: %(found)s "
+                                    elfhash != elfhash_val:
+                                        elferror = _("ELF content hash: "
+                                            "%(found)s "
                                             "should be %(expected)s") % {
                                             "found": elfhash,
-                                            "expected": self.attrs["elfhash"] }
+                                            "expected": elfhash_val }
 
                         # If we failed to compute the content hash, or the
                         # content hash failed to verify, try the file hash.
@@ -348,21 +372,24 @@ class FileAction(generic.Action):
                         # changed, since obviously the file hash is a superset
                         # of the content hash.
                         if (elfhash is None or elferror) and not is_mtpt:
-                                hashvalue, data = misc.get_data_digest(path)
-                                if hashvalue != self.hash:
+                                hash_attr, hash_val, hash_func = \
+                                    digest.get_preferred_hash(self)
+                                sha_hash, data = misc.get_data_digest(path,
+                                    hash_func=hash_func)
+                                if sha_hash != hash_val:
                                         # Prefer the content hash error message.
                                         if "preserve" in self.attrs:
                                                 info.append(_(
-                                                    "editable file has" 
-                                                    " been changed"))
+                                                    "editable file has "
+                                                    "been changed"))
                                         elif elferror:
                                                 errors.append(elferror)
                                         else:
                                                 errors.append(_("Hash: "
                                                     "%(found)s should be "
                                                     "%(expected)s") % {
-                                                    "found": hashvalue,
-                                                    "expected": self.hash })
+                                                    "found": sha_hash,
+                                                    "expected": hash_val })
                                         self.replace_required = True
                 except EnvironmentError, e:
                         if e.errno == errno.EACCES:
@@ -414,30 +441,60 @@ class FileAction(generic.Action):
                 # a downgrade since that isn't allowed across rename or obsolete
                 # boundaries.
                 is_file = os.path.isfile(final_path)
-                if orig and pkgplan.destination_fmri and \
-                    self.hash != orig.hash and \
-                    pkgplan.origin_fmri and \
-                    pkgplan.destination_fmri.version < pkgplan.origin_fmri.version:
-                        # Installed, preserved file is for a package newer than
-                        # what will be installed.  So check if the version on
-                        # disk is different than what was originally delivered,
-                        # and if so, preserve it.
-                        if is_file:
-                                ihash, cdata = misc.get_data_digest(final_path)
-                                if ihash != orig.hash:
-                                        # .old is intentionally avoided here to
-                                        # prevent accidental collisions with the
-                                        # normal install process.
-                                        return "renameold.update"
-                        return False
+
+                if orig:
+                        # We must use the same hash algorithm when comparing old
+                        # and new actions. Look for the most-preferred common
+                        # hash between old and new. Since the two actions may
+                        # not share a common hash (in which case, we get a tuple
+                        # of 'None' objects) we also need to know the preferred
+                        # hash to use when examining the old action on its own.
+                        common_hash_attr, common_hash_val, \
+                            common_orig_hash_val, common_hash_func = \
+                            digest.get_common_preferred_hash(self, orig)
+
+                        hattr, orig_hash_val, orig_hash_func = \
+                            digest.get_preferred_hash(orig)
+
+                        if common_orig_hash_val and common_hash_val:
+                                changed_hash = common_hash_val != common_orig_hash_val
+                        else:
+                                # we don't have a common hash, so we must treat
+                                # this as a changed action
+                                changed_hash = True
+
+                        if pkgplan.destination_fmri and \
+                            changed_hash and \
+                            pkgplan.origin_fmri and \
+                            pkgplan.destination_fmri.version < pkgplan.origin_fmri.version:
+                                # Installed, preserved file is for a package
+                                # newer than what will be installed. So check if
+                                # the version on disk is different than what
+                                # was originally delivered, and if so, preserve
+                                # it.
+                                if is_file:
+                                        ihash, cdata = misc.get_data_digest(
+                                            final_path,
+                                            hash_func=orig_hash_func)
+                                        if ihash != orig_hash_val:
+                                                # .old is intentionally avoided
+                                                # here to prevent accidental
+                                                # collisions with the normal
+                                                # install process.
+                                                return "renameold.update"
+                                return False
 
                 # If the action has been marked with a preserve attribute, and
                 # the file exists and has a content hash different from what the
                 # system expected it to be, then we preserve the original file
                 # in some way, depending on the value of preserve.
                 if is_file:
-                        chash, cdata = misc.get_data_digest(final_path)
-                        if not orig or chash != orig.hash:
+                        # if we had an action installed, then we know what hash
+                        # function was used to compute it's hash attribute.
+                        if orig:
+                                chash, cdata = misc.get_data_digest(final_path,
+                                    hash_func=orig_hash_func)
+                        if not orig or chash != orig_hash_val:
                                 if pres_type in ("renameold", "renamenew"):
                                         return pres_type
                                 return True
@@ -446,15 +503,40 @@ class FileAction(generic.Action):
 
         # If we're not upgrading, or the file contents have changed,
         # retrieve the file and write it to a temporary location.
-        # For ELF files, only write the new file if the elfhash changed.
+        # For files with content-hash attributes, only write the new file if the
+        # content-hash changed.
         def needsdata(self, orig, pkgplan):
                 if self.replace_required:
                         return True
+                # check for the presence of a simple elfhash attribute,
+                # and if that's present, look for the common preferred elfhash.
+                # For now, this is sufficient, but when additional content
+                # types are supported (and we stop publishing SHA-1 hashes) more
+                # work will be needed to compute 'bothelf'.
                 bothelf = orig and "elfhash" in orig.attrs and \
                     "elfhash" in self.attrs
-                if not orig or \
-                    (orig.hash != self.hash and (not bothelf or
-                        orig.attrs["elfhash"] != self.attrs["elfhash"])):
+                if bothelf:
+                        common_elf_attr, common_elfhash, common_orig_elfhash, \
+                            common_elf_func = \
+                            digest.get_common_preferred_hash(self, orig,
+                            hash_type=digest.CONTENT_HASH)
+
+                common_hash_attr, common_hash_val, \
+                    common_orig_hash_val, common_hash_func = \
+                    digest.get_common_preferred_hash(self, orig)
+
+                if not orig:
+                        changed_hash = True
+                elif orig and (common_orig_hash_val is None or
+                    common_hash_val is None):
+                        # we have no common hash so we have to treat this as a
+                        # changed action
+                        changed_hash = True
+                else:
+                        changed_hash = common_hash_val != common_orig_hash_val
+
+                if (changed_hash and (not bothelf or
+                    common_orig_elfhash != common_elfhash)):
                         return True
                 elif orig:
                         # It's possible that the file content hasn't changed
@@ -507,8 +589,11 @@ class FileAction(generic.Action):
                         # modified since they were installed and this is
                         # not an upgrade.
                         try:
-                                ihash, cdata = misc.get_data_digest(path)
-                                if ihash != self.hash:
+                                hash_attr, hash_val, hash_func  = \
+                                    digest.get_preferred_hash(self)
+                                ihash, cdata = misc.get_data_digest(path,
+                                    hash_func=hash_func)
+                                if ihash != hash_val:
                                         pkgplan.salvage(path)
                                         # Nothing more to do.
                                         return
@@ -524,7 +609,8 @@ class FileAction(generic.Action):
         def different(self, other, cmp_hash=True):
                 # Override the generic different() method to ignore the file
                 # hash for ELF files and compare the ELF hash instead.
-                # XXX This should be modularized and controlled by policy.
+                # XXX This should be modularized and controlled by policy and
+                # needs work once additional content-type hashes are added.
 
                 # One of these isn't an ELF file, so call the generic method
                 if "elfhash" in self.attrs and "elfhash" in other.attrs:
@@ -535,12 +621,27 @@ class FileAction(generic.Action):
                 """Generates the indices needed by the search dictionary.  See
                 generic.py for a more detailed explanation."""
 
-                return [
+                index_list = [
+                    # this entry shows the hash as the 'index', and the
+                    # file path as the 'value' when showing results when the
+                    # user has searched for the SHA-1 hash. This seems unusual,
+                    # but maintains the behaviour we had for S11.
                     ("file", "content", self.hash, self.hash),
+                    # This will result in a 2nd row of output when searching for
+                    # the SHA-1 hash, but is consistent with our behaviour for
+                    # the other hash attributes.
+                    ("file", "hash", self.hash, None),
                     ("file", "basename", os.path.basename(self.attrs["path"]),
                     None),
                     ("file", "path", os.path.sep + self.attrs["path"], None)
                 ]
+                for attr in digest.DEFAULT_HASH_ATTRS:
+                        # we already have an index entry for self.hash
+                        if attr == "hash":
+                                continue
+                        hash = self.attrs[attr]
+                        index_list.append(("file", attr, hash, None))
+                return index_list
 
         def save_file(self, image, full_path):
                 """Save a file for later installation (in same process

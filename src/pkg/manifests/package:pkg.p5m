@@ -121,6 +121,7 @@ file path=$(PYDIRVP)/pkg/config.py
 file path=$(PYDIRVP)/pkg/cpiofile.py
 file path=$(PYDIRVP)/pkg/dependency.py
 file path=$(PYDIRVP)/pkg/depotcontroller.py
+file path=$(PYDIRVP)/pkg/digest.py
 file path=$(PYDIRVP)/pkg/elf.so
 file path=$(PYDIRVP)/pkg/facet.py
 dir  path=$(PYDIRVP)/pkg/file_layout

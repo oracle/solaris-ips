@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2007, 2011, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2007, 2013, Oracle and/or its affiliates. All rights reserved.
 #
 
 import calendar
@@ -34,6 +34,7 @@ import time
 import urllib
 
 import pkg.actions as actions
+import pkg.digest as digest
 import pkg.fmri as fmri
 import pkg.manifest
 import pkg.misc as misc
@@ -467,10 +468,22 @@ class Transaction(object):
                         action.data = lambda: open(os.devnull, "rb")
 
                 if action.data is not None:
-                        fname, data = misc.get_data_digest(action.data(),
-                            length=size, return_content=True)
+                        # get all hashes for this action
+                        hashes, data = misc.get_data_digest(action.data(),
+                            length=size, return_content=True,
+                            hash_attrs=digest.DEFAULT_HASH_ATTRS,
+                            hash_algs=digest.HASH_ALGS)
 
-                        action.hash = fname
+                        # set the hash member for backwards compatibility and
+                        # remove it from the dictionary
+                        action.hash = hashes.pop("hash", None)
+                        action.attrs.update(hashes)
+
+                        # now set the hash value that will be used for storing
+                        # the file in the repository.
+                        hash_attr, hash_val, hash_func = \
+                            digest.get_least_preferred_hash(action)
+                        fname = hash_val
 
                         # Extract ELF information
                         # XXX This needs to be modularized.
@@ -487,9 +500,34 @@ class Transaction(object):
                                         raise TransactionContentError(e)
 
                                 try:
-                                        elf_hash = elf.get_dynamic(
-                                            elf_name)["hash"]
-                                        action.attrs["elfhash"] = elf_hash
+                                        # Check which content checksums to
+                                        # compute and add to the action
+                                        elf256 = "pkg.content-type.sha256"
+                                        elf1 = "elfhash"
+
+                                        if elf256 in \
+                                            digest.DEFAULT_CONTENT_HASH_ATTRS:
+                                                get_sha256 = True
+                                        else:
+                                                get_sha256 = False
+
+                                        if elf1 in \
+                                            digest.DEFAULT_CONTENT_HASH_ATTRS:
+                                                get_sha1 = True
+                                        else:
+                                                get_sha1 = False
+
+                                        dyn = elf.get_dynamic(
+                                            elf_name, sha1=get_sha1,
+                                            sha256=get_sha256)
+
+                                        if get_sha1:
+                                                action.attrs[elf1] = dyn["hash"]
+
+                                        if get_sha256:
+                                                action.attrs[elf256] = \
+                                                    dyn[elf256]
+
                                 except elf.ElfError:
                                         pass
                                 action.attrs["elfbits"] = str(elf_info["bits"])
@@ -506,9 +544,10 @@ class Transaction(object):
                                         raise
                                 dst_path = None
 
-                        csize, chash = misc.compute_compressed_attrs(
+                        csize, chashes = misc.compute_compressed_attrs(
                             fname, dst_path, data, size, self.dir)
-                        action.attrs["chash"] = chash.hexdigest()
+                        for attr in chashes:
+                                action.attrs[attr] = chashes[attr].hexdigest()
                         action.attrs["pkg.csize"] = csize
                         chash = None
                         data = None
@@ -573,14 +612,18 @@ class Transaction(object):
 
         def add_file(self, f, size=None):
                 """Adds the file to the Transaction."""
-
-                fname, data = misc.get_data_digest(f, length=size,
-                    return_content=True)
+                hashes, data = misc.get_data_digest(f, length=size,
+                    return_content=True, hash_attrs=digest.DEFAULT_HASH_ATTRS,
+                    hash_algs=digest.HASH_ALGS)
 
                 if size is None:
                         size = len(data)
 
                 try:
+                        # We don't have an Action yet, so passing None is fine.
+                        default_hash_attr = digest.get_least_preferred_hash(
+                            None)[0]
+                        fname = hashes[default_hash_attr]
                         dst_path = self.rstore.file(fname)
                 except Exception, e:
                         # The specific exception can't be named here due
@@ -590,9 +633,11 @@ class Transaction(object):
                                 raise
                         dst_path = None
 
-                csize, chash = misc.compute_compressed_attrs(fname, dst_path,
-                    data, size, self.dir)
-                chash = None
+                csize, chashes = misc.compute_compressed_attrs(fname, dst_path,
+                    data, size, self.dir,
+                    chash_attrs=digest.DEFAULT_CHASH_ATTRS,
+                    chash_algs=digest.CHASH_ALGS)
+                chashes = None
                 data = None
 
                 self.remaining_payload_cnt -= 1
@@ -633,7 +678,7 @@ class Transaction(object):
                 # XXX If we are going to publish, then we should augment
                 # our response with any other packages that moved to
                 # PUBLISHED due to the package's arrival.
-                
+
                 self.publish_package()
 
                 if add_to_catalog:

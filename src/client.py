@@ -6105,6 +6105,10 @@ def main_func():
                 elif opt in ("--help", "-?"):
                         show_usage = True
 
+        # The globals in pkg.digest can be influenced by debug flags
+        if DebugValues:
+                reload(pkg.digest)
+
         subcommand = None
         if pargs:
                 subcommand = pargs.pop(0)

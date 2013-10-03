@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2010, 2012, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2010, 2013, Oracle and/or its affiliates. All rights reserved.
 #
 
 import testutils
@@ -39,6 +39,7 @@ import unittest
 import pkg.actions as action
 import pkg.actions.signature as signature
 import pkg.client.api_errors as apx
+import pkg.digest as digest
 import pkg.facet as facet
 import pkg.fmri as fmri
 import pkg.misc as misc
@@ -551,7 +552,7 @@ class TestPkgSign(pkg5unittest.SingleDepotTestCase):
                             "ch5_ta1_cert.pem"),
                         "pkg": plist[0]
                     }
-                self.pkgsign(self.rurl1, sign_args)
+                self.pkgsign(self.rurl1, sign_args, debug_hash="sha1+sha256")
 
                 sign_args = "-k %(key)s -c %(cert)s %(name)s" % {
                     "name": plist[0],
@@ -565,6 +566,15 @@ class TestPkgSign(pkg5unittest.SingleDepotTestCase):
                 self.pkg("set-property signature-policy verify")
                 api_obj = self.get_img_api_obj()
                 self._api_install(api_obj, ["example_pkg"])
+
+                # Make sure we've got exactly 1 signature with SHA2 hashes
+                self.pkg("contents -m")
+                self.assert_(self.output.count("pkg.chain.sha256") == 1)
+                self.assert_(self.output.count("pkg.chain.chashes") == 1)
+                # and SHA1 hashes on both signatures
+                self.assert_(self.output.count("chain=") == 2)
+                self.assert_(self.output.count("chain.chashes=") == 2)
+
                 self._api_uninstall(api_obj, ["example_pkg"])
                 self.pkg("set-property signature-policy require-signatures")
                 api_obj = self.get_img_api_obj()
@@ -969,7 +979,7 @@ class TestPkgSign(pkg5unittest.SingleDepotTestCase):
                 self.write_img_manifest(pfmri, s)
 
                 DebugValues["manifest_validate"] = "Never"
-                
+
                 self.pkg("set-property signature-policy verify")
                 # This should fail because the text of manifest has changed
                 # so the hash should no longer validate.
@@ -2372,6 +2382,11 @@ class TestPkgSign(pkg5unittest.SingleDepotTestCase):
                 # signature actions in it.
                 self.pkgsign_simple(self.rurl1, plist[0], exit=1)
 
+                # The addition of SHA-256 hashes should still result in us
+                # believing the signatures are identical
+                self.pkgsign_simple(self.rurl1, plist[0], exit=1,
+                    debug_hash="sha1+sha256")
+
                 self.pkg_image_create(self.rurl1)
                 self.seed_ta_dir("ta3")
                 self.pkg("set-property signature-policy verify")
@@ -2943,7 +2958,12 @@ close
                 fd, new_cert = tempfile.mkstemp(dir=self.test_root)
                 with os.fdopen(fd, "wb") as fh:
                         fh.write(cert.as_pem())
-                file_name = misc.get_data_digest(new_cert)[0]
+
+                # the file-store uses the least-preferred hash when storing
+                # content
+                alg = digest.HASH_ALGS[digest.REVERSE_RANKED_HASH_ATTRS[0]]
+                file_name = misc.get_data_digest(new_cert,
+                    hash_func=alg)[0]
                 subdir = os.path.join(cache_dir, file_name[:2])
                 os.mkdir(subdir)
                 fp = os.path.join(subdir, file_name)
@@ -2986,13 +3006,16 @@ close
                 fd, new_cert = tempfile.mkstemp(dir=self.test_root)
                 with os.fdopen(fd, "wb") as fh:
                         fh.write(cert.as_pem())
-                file_name = misc.get_data_digest(new_cert)[0]
-                subdir = os.path.join(cache_dir, file_name[:2])
-                os.mkdir(subdir)
-                fp = os.path.join(subdir, file_name)
-                fh = PkgGzipFile(fp, "wb")
-                fh.write(cert.as_pem())
-                fh.close()
+                for attr in digest.DEFAULT_HASH_ATTRS:
+                        alg = digest.HASH_ALGS[attr]
+                        file_name = misc.get_data_digest(new_cert,
+                            hash_func=alg)[0]
+                        subdir = os.path.join(cache_dir, file_name[:2])
+                        os.mkdir(subdir)
+                        fp = os.path.join(subdir, file_name)
+                        fh = PkgGzipFile(fp, "wb")
+                        fh.write(cert.as_pem())
+                        fh.close()
 
                 self.pkgrecv(self.rurl2, "-c %s -d %s '*'" %
                     (cache_dir, self.rurl1))

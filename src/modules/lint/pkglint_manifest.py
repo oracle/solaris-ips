@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2010, 2012, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2010, 2013, Oracle and/or its affiliates. All rights reserved.
 #
 
 # Some pkg(5) specific lint manifest checks
@@ -304,6 +304,7 @@ class PkgManifestChecker(base.ManifestChecker):
                                 continue
 
                         if action.name == "file" and \
+                            action.attrs.get("pkg.filetype") == "elf" or \
                             "elfarch" in action.attrs:
                                 has_arch_file = True
 

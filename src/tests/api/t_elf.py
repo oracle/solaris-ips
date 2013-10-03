@@ -20,7 +20,7 @@
 # CDDL HEADER END
 #
 
-# Copyright (c) 2008, 2012, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2008, 2013, Oracle and/or its affiliates. All rights reserved.
 
 import testutils
 if __name__ == "__main__":
@@ -31,7 +31,6 @@ import unittest
 import pkg.elf as elf
 import os
 import re
-import sys
 import pkg.portable
 
 class TestElf(pkg5unittest.Pkg5TestCase):
@@ -81,6 +80,33 @@ class TestElf(pkg5unittest.Pkg5TestCase):
                         self.assertEqual(elf.is_elf_object(p), True)
                         elf.get_dynamic(p)
                         elf.get_info(p)
+
+        def test_get_dynamic_params(self):
+                """Test that get_dynamic(..) returns checksums according to the
+                parameters passed to the method."""
+
+                # Check that the hashes generated have the correct length
+                # depending on the algorithm used to generated.
+                sha1_len = 40
+                sha256_len = 64
+
+                # the default is to return an SHA-1 elfhash only
+                d = elf.get_dynamic(self.elf_paths[0])
+                self.assert_(len(d["hash"]) == sha1_len)
+                self.assert_("pkg.content-type.sha256" not in d)
+
+                d = elf.get_dynamic(self.elf_paths[0], sha256=True)
+                self.assert_(len(d["hash"]) == sha1_len)
+                self.assert_(len(d["pkg.content-type.sha256"]) == sha256_len)
+
+                d = elf.get_dynamic(self.elf_paths[0], sha1=False, sha256=True)
+                self.assert_("hash" not in d)
+                self.assert_(len(d["pkg.content-type.sha256"]) == sha256_len)
+
+                d = elf.get_dynamic(self.elf_paths[0], sha1=False, sha256=False)
+                self.assert_("hash" not in d)
+                self.assert_("pkg.content-type.sha256" not in d)
+
 
 if __name__ == "__main__":
         unittest.main()

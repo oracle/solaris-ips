@@ -50,6 +50,7 @@ import pkg.client.pkg_solver as pkg_solver
 import pkg.client.pkgdefs as pkgdefs
 import pkg.client.pkgplan as pkgplan
 import pkg.client.plandesc as plandesc
+import pkg.digest as digest
 import pkg.fmri
 import pkg.manifest as manifest
 import pkg.misc as misc
@@ -2584,8 +2585,10 @@ class ImagePlan(object):
                 """Retrieve text for release note from repo"""
                 try:
                         pub = self.image.get_publisher(pfmri.publisher)
-                        return self.image.transport.get_content(pub, act.hash,
-                            fmri=pfmri)
+                        hash_attr, hash_val, hash_func = \
+                            digest.get_least_preferred_hash(act)
+                        return self.image.transport.get_content(pub, hash_val,
+                            fmri=pfmri, hash_func=hash_func)
                 finally:
                         self.image.cleanup_downloads()
 

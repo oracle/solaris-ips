@@ -30,23 +30,14 @@ if __name__ == "__main__":
 import pkg5unittest
 
 import os
-import pkg.catalog as catalog
-import pkg.config as cfg
-import pkg.client.pkgdefs as pkgdefs
+import pkg.digest as digest
 import pkg.fmri as fmri
 import pkg.manifest as manifest
 import pkg.misc as misc
-import pkg.p5p as p5p
-import pkg.portable as portable
-import pkg.server.repository as repo
 import shutil
 import subprocess
 import tempfile
-import time
-import urllib
-import urlparse
 import unittest
-import zlib
 
 class TestPkgsurf(pkg5unittest.ManyDepotTestCase):
         # Cleanup after every test.
@@ -57,7 +48,7 @@ class TestPkgsurf(pkg5unittest.ManyDepotTestCase):
         # Since we publish the expected package to an additional repo, we have
         # to set the timestamps to make sure the target and expected packages
         # are equal.
-        
+
         # The test cases are mainly in the different types of packages we
         # have in the repo.
 
@@ -122,7 +113,7 @@ class TestPkgsurf(pkg5unittest.ManyDepotTestCase):
 
         hammerhead_exp = hammerhead_targ
 
-        # Package has only dep change but dependency package changed, 
+        # Package has only dep change but dependency package changed,
         # should not be reversioned.
         blue_ref = """
             open blue@1.0,5.11-0:20000101T000000Z
@@ -152,7 +143,7 @@ class TestPkgsurf(pkg5unittest.ManyDepotTestCase):
         """
 
         bull_exp = bull_targ
-        
+
         # Package has only dep change and dependency package didn't change,
         # should be reversioned.
         mako_ref = """
@@ -188,7 +179,7 @@ class TestPkgsurf(pkg5unittest.ManyDepotTestCase):
         # dependencies should be fixed.
         # Pkg has all sorts of actions to make sure everything gets moved
         # correctly.
-        
+
         angel_ref = """
             open angel@1.0,5.11-0:20000101T000000Z
             add file tmp/bat mode=0444 owner=root group=bin path=/etc/angel
@@ -236,7 +227,7 @@ class TestPkgsurf(pkg5unittest.ManyDepotTestCase):
 
         # Package has content change and depends on package which didn't get
         # reversioned, shouldn't be touched.
-        
+
         horn_ref = """
             open horn@1.0,5.11-0:20000101T000000Z
             add file tmp/bat mode=0444 owner=root group=bin path=/etc/horn
@@ -254,9 +245,9 @@ class TestPkgsurf(pkg5unittest.ManyDepotTestCase):
         horn_exp = horn_targ
 
 
-        # Package has content change but has require-any dep on package which 
+        # Package has content change but has require-any dep on package which
         # got reversioned, dependencies should be fixed.
-        
+
         lemon_ref = """
             open lemon@1.0,5.11-0:20000101T000000Z
             add file tmp/bat mode=0444 owner=root group=bin path=/etc/lemon
@@ -283,7 +274,7 @@ class TestPkgsurf(pkg5unittest.ManyDepotTestCase):
         # version. The version of the pkg in the ref repo should be substituted
         # for tiger but not for sandtiger (since dep pkg is still successor of
         # dep FMRI).
-        
+
         leopard_ref = """
             open leopard@1.0,5.11-0:20000101T000000Z
             add file tmp/bat mode=0444 owner=root group=bin path=/etc/leopard
@@ -347,18 +338,18 @@ class TestPkgsurf(pkg5unittest.ManyDepotTestCase):
         # Package has no content change but a change in an attribute,
         # should be treated as content change by default but reversioned if
         # proper CLI options are given (goblin_exp is just for the default
-        # behavior, gets modified in actual test case) 
+        # behavior, gets modified in actual test case)
 
         goblin_ref = """
             open goblin@1.0,5.11-0:20000101T000000Z
-            add set name=info.home value="deep sea" 
+            add set name=info.home value="deep sea"
             add file tmp/bat mode=0444 owner=root group=bin path=/etc/goblin
             close
         """
 
         goblin_targ = """
             open goblin@2.0,5.11-0:20000101T000000Z
-            add set name=info.home value="deeper sea" 
+            add set name=info.home value="deeper sea"
             add file tmp/bat mode=0444 owner=root group=bin path=/etc/goblin
             close
         """
@@ -422,7 +413,7 @@ class TestPkgsurf(pkg5unittest.ManyDepotTestCase):
             close
         """
 
-        sleeper_exp = sleeper_ref    
+        sleeper_exp = sleeper_ref
 
 
         # Check for correct handling of Varcets. Pkg contains same dep FMRI stem
@@ -456,7 +447,7 @@ class TestPkgsurf(pkg5unittest.ManyDepotTestCase):
         """
 
         # Pkg in ref repo is newer than the one in target.
-        # Should not be reversioned. 
+        # Should not be reversioned.
         thresher_ref = """
             open thresher@2.0,5.11-0:20000101T000000Z
             close
@@ -470,7 +461,7 @@ class TestPkgsurf(pkg5unittest.ManyDepotTestCase):
         thresher_exp = thresher_targ
 
         # Package only found in target, not in ref.
-        # Package has a dep on a reversioned pkg, but the reversioned pkg is 
+        # Package has a dep on a reversioned pkg, but the reversioned pkg is
         # still a successor of the dep FMRI.
         # The dep should not be changed.
         bamboo_targ = """
@@ -480,7 +471,7 @@ class TestPkgsurf(pkg5unittest.ManyDepotTestCase):
         """
 
         bamboo_exp = bamboo_targ
-        
+
 
         # Create some packages for an additional publisher
         humpback_targ = """
@@ -488,10 +479,10 @@ class TestPkgsurf(pkg5unittest.ManyDepotTestCase):
             close
         """
 
-        humpback_ref = """                                                     
-            open pkg://cetacea/humpback@1.0,5.11-0:20000101T000000Z             
-            close                                                               
-        """                                                                     
+        humpback_ref = """
+            open pkg://cetacea/humpback@1.0,5.11-0:20000101T000000Z
+            close
+        """
 
         humpback_exp = humpback_targ
 
@@ -522,7 +513,7 @@ class TestPkgsurf(pkg5unittest.ManyDepotTestCase):
                                 pass
                         self.targ_pkgs.append(getattr(self, targ))
                         self.exp_pkgs.append(getattr(self, exp))
-                        
+
                 pkg5unittest.ManyDepotTestCase.setUp(self, ["selachii",
                     "selachii", "selachii", "selachii"], start_depots=True)
 
@@ -543,9 +534,9 @@ class TestPkgsurf(pkg5unittest.ManyDepotTestCase):
                 self.published_exp = self.pkgsend_bulk(self.dpath3,
                     self.exp_pkgs)
 
-                # keep a tmp repo to copy the target into for each new test 
+                # keep a tmp repo to copy the target into for each new test
                 self.dpath_tmp = self.dcs[4].get_repodir()
-                
+
         def test_0_options(self):
                 """Check for correct input handling."""
                 self.pkgsurf("-x", exit=2)
@@ -584,7 +575,7 @@ class TestPkgsurf(pkg5unittest.ManyDepotTestCase):
                 self.pkgsurf("-s %s -r %s" % (tempdir, self.dpath1), exit=1)
                 self.pkgsurf("-s %s -r %s" % (self.dpath1, tempdir), exit=1)
 
-                # Repo empty 
+                # Repo empty
                 self.pkgrepo("create -s %s" % tempdir)
                 self.pkgsurf("-s %s -r %s" % (tempdir, self.dpath1), exit=1)
                 self.pkgsurf("-s %s -r %s" % (self.dpath1, tempdir), exit=1)
@@ -595,7 +586,7 @@ class TestPkgsurf(pkg5unittest.ManyDepotTestCase):
                 self.assertTrue("No packages to reversion." in self.output)
                 self.pkgsurf("-s %s -r %s" % (self.dpath1, tempdir))
                 self.assertTrue("No packages to reversion." in self.output)
-                shutil.rmtree(tempdir)             
+                shutil.rmtree(tempdir)
 
                 # Now check if it actually works.
                 self.pkgsurf("-s %s -r %s" % (self.dpath_tmp, self.dpath1))
@@ -632,7 +623,7 @@ class TestPkgsurf(pkg5unittest.ManyDepotTestCase):
                 # Just run again and see if goblin pkg now gets reversioned.
                 self.pkgsurf("-s %s -r %s -i info.home" % (self.dpath_tmp,
                     self.dpath1))
-                
+
                 # Find goblin package
                 for s in self.published_ref:
                         if "goblin" in s:
@@ -640,8 +631,10 @@ class TestPkgsurf(pkg5unittest.ManyDepotTestCase):
                 f = fmri.PkgFmri(s, None)
                 targ = targ_repo.manifest(f)
                 ref = ref_repo.manifest(f)
-                self.assertEqual(misc.get_data_digest(targ),
-                    misc.get_data_digest(ref))
+                self.assertEqual(misc.get_data_digest(targ,
+                    hash_func=digest.DEFAULT_HASH_FUNC),
+                    misc.get_data_digest(ref,
+                    hash_func=digest.DEFAULT_HASH_FUNC))
 
                 # Check that running the tool again doesn't find any pkgs
                 # to reversion. Use http for accessing reference repo this time.

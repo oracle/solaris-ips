@@ -19,13 +19,12 @@
 #
 # CDDL HEADER END
 #
-# Copyright (c) 2008, 2012, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2008, 2013, Oracle and/or its affiliates. All rights reserved.
 
 import cStringIO
 import codecs
 import datetime
 import errno
-import hashlib
 import logging
 import os
 import os.path
@@ -44,6 +43,7 @@ import pkg.client.api_errors as apx
 import pkg.client.progress as progress
 import pkg.client.publisher as publisher
 import pkg.config as cfg
+import pkg.digest as digest
 import pkg.file_layout.file_manager as file_manager
 import pkg.file_layout.layout as layout
 import pkg.fmri as fmri
@@ -1325,7 +1325,11 @@ class _RepoStore(object):
 
         def file(self, fhash):
                 """Returns the absolute pathname of the file specified by the
-                provided SHA1-hash name."""
+                provided SHA-n hash name. (At present, the repository format
+                always uses the least-preferred hash to content in order to
+                remain backwards compatible with older clients. Actions may be
+                published that have additional hashes set, but those do not
+                influence where the content is stored in the repository.)"""
 
                 if not self.file_root:
                         raise RepositoryUnsupportedOperationError()
@@ -1499,23 +1503,29 @@ class _RepoStore(object):
                         progtrack = progress.NullProgressTracker()
 
                 def get_hashes(pfmri):
-                        """Given an FMRI, return a set containing all of the
-                        hashes of the files its manifest references."""
+                        """Given an FMRI, return a set of tuples containing all
+                        of the hashes of the files its manifest references.
+                        Each tuple is of the form (hash value, hash function)"""
 
                         m = self._get_manifest(pfmri)
                         hashes = set()
                         for a in m.gen_actions():
-                                if not a.has_payload or not a.hash:
+                                if not a.has_payload:
                                         # Nothing to archive.
                                         continue
 
                                 # Action payload.
-                                hashes.add(a.hash)
+                                hattr, hval, hfunc = \
+                                    digest.get_least_preferred_hash(a)
+                                hashes.add(hval)
 
                                 # Signature actions have additional payloads.
                                 if a.name == "signature":
-                                        hashes.update(a.attrs.get("chain",
-                                            "").split())
+                                        chain_attr, chain_val, chain_func = \
+                                            digest.get_least_preferred_hash(a,
+                                            hash_type=digest.CHAIN)
+                                        for chain in chain_val.split():
+                                                hashes.add(chain)
                         return hashes
 
                 self.__lock_rstore()
@@ -1871,8 +1881,15 @@ class _RepoStore(object):
                 pfmri = reason.get("pkg")
                 if hsh and pfmri:
                         m = self._get_manifest(pfmri)
+                        # this is not terribly efficient, but the expectation is
+                        # that this will rarely happen.
                         for ac in m.gen_actions_by_types(
                             actions.payload_types.keys()):
+                                for hash in digest.DEFAULT_HASH_ATTRS:
+                                        if ac.attrs.get(hash) == hsh:
+                                                fpath = ac.attrs.get("path")
+                                                if fpath:
+                                                        reason["fpath"] = fpath
                                 if ac.hash == hsh:
                                         fpath = ac.attrs.get("path")
                                         if fpath:
@@ -1922,24 +1939,42 @@ class _RepoStore(object):
                 return error, path, message, reason
 
         def __get_hashes(self, path, pfmri):
-                """Given an PkgFmri, return a set containing all of the
-                hashes of the files its manifest references."""
+                """Given a PkgFmri, return a set containing tuples of all of
+                the hashes of the files its manifest references which should
+                correspond to files in the repository. Each tuple is of the form
+                (file_name, hash_value, hash_func) where hash_func is the
+                function used to compute that hash and file_name is the name
+                of the hash used to store the file in the repository."""
 
                 hashes = set()
                 errors = []
                 try:
                         m = self._get_manifest(pfmri)
                         for a in m.gen_actions():
-                                if not a.has_payload or not a.hash:
+                                if not a.has_payload:
                                         continue
 
+                                # We store files using the least preferred hash
+                                # in the repository to remain as backwards-
+                                # compatible as possible.
+                                attr, fname, hfunc = \
+                                    digest.get_least_preferred_hash(a)
+                                attr, hval, hfunc = \
+                                    digest.get_preferred_hash(a)
                                 # Action payload.
-                                hashes.add(a.hash)
+                                hashes.add((fname, hval, hfunc))
 
                                 # Signature actions have additional payloads
                                 if a.name == "signature":
-                                        hashes.update(
-                                            a.attrs.get("chain", "").split())
+                                        attr, fname, hfunc = \
+                                            digest.get_least_preferred_hash(a,
+                                            hash_type=digest.CHAIN)
+                                        attr, hval, hfunc = \
+                                            digest.get_preferred_hash(a,
+                                            hash_type=digest.CHAIN)
+                                        hashes.update([
+                                            (fname, chain, hfunc)
+                                            for chain in hval.split()])
                 except apx.PermissionsException:
                         errors.append((REPO_VERIFY_MFPERM, path,
                             {"err": _("Permission denied.")}))
@@ -1955,31 +1990,34 @@ class _RepoStore(object):
                         return (REPO_VERIFY_PERM, path, {"err": str(e),
                             "pkg": pfmri})
 
-        def __verify_hash(self, path, pfmri, h):
-                """Perform hash verification on the given gzip file."""
+        def __verify_hash(self, path, pfmri, h, alg=digest.DEFAULT_HASH_FUNC):
+                """Perform hash verification on the given gzip file.
+                'path' is the full path to the file in the repository. 'pfmri'
+                is the package that we're verifying. 'h' is the expected hash
+                of the path. 'alg' is the hash function used to compute the
+                hash."""
 
                 gzf = None
-                hash = os.path.basename(path)
                 try:
                         gzf = PkgGzipFile(fileobj=open(path, "rb"))
-                        fhash = hashlib.sha1()
+                        fhash = alg()
                         fhash.update(gzf.read())
                         actual = fhash.hexdigest()
                         if actual != h:
                                 return (REPO_VERIFY_BADHASH, path,
-                                    {"actual": actual, "hash": hash,
+                                    {"actual": actual, "hash": h,
                                     "pkg": pfmri})
                 except (ValueError, zlib.error), e:
                         return (REPO_VERIFY_BADGZIP, path,
-                            {"hash": hash, "pkg": pfmri})
+                            {"hash": h, "pkg": pfmri})
                 except IOError, e:
                         if e.errno in [errno.EACCES, errno.EPERM]:
                                 return (REPO_VERIFY_PERM, path,
-                                    {"err": str(e), "hash": hash,
+                                    {"err": str(e), "hash": h,
                                     "pkg": pfmri})
                         else:
                                 return (REPO_VERIFY_BADGZIP, path,
-                                    {"hash": hash, "pkg": pfmri})
+                                    {"hash": h, "pkg": pfmri})
                 finally:
                         if gzf:
                                 gzf.close()
@@ -2223,17 +2261,18 @@ class _RepoStore(object):
 
                                 # verify payload delivered by this pkg
                                 errors = []
-                                for h in hashes:
+                                for fname, h, alg in hashes:
                                         try:
                                                 path = self.cache_store.lookup(
-                                                     h, check_existence=False)
+                                                     fname,
+                                                     check_existence=False)
                                         except apx.PermissionsException, e:
                                                 # if we can't even get the path
                                                 # within the repository, then
                                                 # we'll do the best we can to
                                                 # report the problem.
                                                 errors.append((REPO_VERIFY_PERM,
-                                                    pfmri, {"hash": h,
+                                                    pfmri, {"hash": fname,
                                                     "err": _("Permission "
                                                     "denied.", "path", h)}))
                                                 continue
@@ -2242,7 +2281,8 @@ class _RepoStore(object):
                                         if err:
                                                 errors.append(err)
                                                 continue
-                                        err = self.__verify_hash(path, pfmri, h)
+                                        err = self.__verify_hash(path, pfmri, h,
+                                            alg=alg)
                                         if err:
                                                 errors.append(err)
                                 for err in errors:
@@ -2921,7 +2961,7 @@ class Repository(object):
                                 pfmri = fmri.PkgFmri(pfmri, client_release)
                 except fmri.FmriError, e:
                         raise RepositoryInvalidFMRIError(e)
- 
+
                 if pub and not pfmri.publisher:
                         pfmri.publisher = pub
 
@@ -3167,7 +3207,7 @@ class Repository(object):
                                 pfmri = fmri.PkgFmri(pfmri)
                 except fmri.FmriError, e:
                         raise RepositoryInvalidFMRIError(e)
- 
+
                 if not pub and pfmri.publisher:
                         pub = pfmri.publisher
                 elif pub and not pfmri.publisher:
@@ -3205,7 +3245,7 @@ class Repository(object):
                                 pfmri = fmri.PkgFmri(pfmri, client_release)
                 except fmri.FmriError, e:
                         raise RepositoryInvalidFMRIError(e)
- 
+
                 if pub and not pfmri.publisher:
                         pfmri.publisher = pub
 

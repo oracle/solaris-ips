@@ -49,6 +49,8 @@ import StringIO
 import pkg.misc as misc
 import pkg.portable as portable
 
+from pkg.digest import DEFAULT_HASH_FUNC
+
 SYSREPO_USER = "pkg5srv"
 
 class TestBasicSysrepoCli(pkg5unittest.ApacheDepotTestCase):
@@ -849,8 +851,10 @@ class TestDetailedSysrepoCli(pkg5unittest.ApacheDepotTestCase):
                 os.rename(repo_dir, repo_dir + ".new")
                 try:
                         self.sysrepo("", stderr=True)
-                        self.assert_(misc.get_data_digest(sysrepo_conf)[0] ==
-                            misc.get_data_digest(saved_sysrepo_conf)[0],
+                        self.assert_(misc.get_data_digest(sysrepo_conf,
+                            hash_func=DEFAULT_HASH_FUNC)[0] ==
+                            misc.get_data_digest(saved_sysrepo_conf,
+                            hash_func=DEFAULT_HASH_FUNC)[0],
                             "system repository configuration changed "
                             "unexpectedly.")
                 finally:

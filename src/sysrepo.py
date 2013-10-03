@@ -28,7 +28,6 @@ import atexit
 import errno
 import getopt
 import gettext
-import hashlib
 import locale
 import logging
 import os
@@ -51,6 +50,7 @@ import pkg.catalog
 import pkg.client.api
 import pkg.client.progress as progress
 import pkg.client.api_errors as apx
+import pkg.digest as digest
 import pkg.misc as misc
 import pkg.portable as portable
 import pkg.p5p as p5p
@@ -747,7 +747,7 @@ def _write_sysrepo_response(api_inst, htdocs_path, uri_pub_map, no_uri_pubs):
 
 def _uri_hash(uri):
         """Returns a string hash of the given URI"""
-        return hashlib.sha1(uri).hexdigest()
+        return digest.DEFAULT_HASH_FUNC(uri).hexdigest()
 
 def _chown_runtime_dir(runtime_dir):
         """Change the ownership of all files under runtime_dir to our sysrepo

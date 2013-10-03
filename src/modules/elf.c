@@ -20,8 +20,7 @@
  */
 
 /*
- * Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
- * Use is subject to license terms.
+ *  Copyright (c) 2009, 2013, Oracle and/or its affiliates. All rights reserved.
  */
 
 #include <sys/stat.h>
@@ -37,6 +36,23 @@
 #include <elfextract.h>
 
 #include <Python.h>
+
+/*
+ * When getting information about ELF files, sometimes we want to decide
+ * which types of hash we want to calculate. This structure is used to
+ * return information from arg parsing Python method arguments.
+ *
+ * 'fd'      the file descriptor of an ELF file
+ * 'sha1'    an integer > 0 if we should calculate an SHA-1 hash
+ * 'sha256'  an integer > 0 if we should calculate an SHA-2 256 hash
+ *
+ */
+typedef struct
+{
+    int fd;
+    int sha1;
+    int sha256;
+} dargs_t;
 
 static int
 pythonify_ver_liblist_cb(libnode_t *n, void *info, void *info2)
@@ -114,6 +130,42 @@ py_get_fd(PyObject *args)
 	return (fd);
 }
 
+static dargs_t
+py_get_dyn_args(PyObject *args, PyObject *kwargs)
+{
+	int fd = -1;
+	char *f;
+        int get_sha1 = 1;
+        int get_sha256 = 0;
+
+        dargs_t dargs;
+        dargs.fd = -1;
+        /*
+         * By default, we always get an SHA-1 hash, and never get an SHA-2
+         * hash.
+         */
+        dargs.sha1 = 1;
+        dargs.sha256 = 0;
+
+        static char *kwlist[] = {"fd", "sha1", "sha256", NULL};
+
+	if (!PyArg_ParseTupleAndKeywords(args, kwargs, "s|ii", kwlist, &f,
+            &get_sha1, &get_sha256)) {
+		PyErr_SetString(PyExc_ValueError, "could not parse argument");
+		return (dargs);
+	}
+
+	if ((fd = open(f, O_RDONLY)) < 0) {
+		PyErr_SetFromErrnoWithFilename(PyExc_OSError, f);
+		return (dargs);
+	}
+
+        dargs.fd = fd;
+        dargs.sha1 = get_sha1;
+        dargs.sha256 = get_sha256;
+	return (dargs);
+}
+
 /*
  * For ELF operations: Need to check if a file is an ELF object.
  */
@@ -185,7 +237,7 @@ out:
 
 /*
  * Returns a dictionary with the relevant information.  No longer
- * accurately titled "get_dynamic," as it returns the hash as well.
+ * accurately titled "get_dynamic," as can return hashes as well.
  *
  * The hash is currently of the following sections (when present):
  * 		.text .data .data1 .rodata .rodata1
@@ -197,10 +249,15 @@ out:
  *	defs: ["version", ... ],
  *	deps: [["file", ["versionlist"]], ...],
  * 	hash: "sha1hash"
+ *      pkg.elf.sha256: "sha2hash"
  * }
  *
  * If any item is empty or has no value, it is omitted from the
  * dictionary.
+ *
+ * The keyword arguments "sha1" and "sha256" are allowed, which
+ * take Python booleans, declaring which hashes should be
+ * computed on the input file.
  *
  * XXX: Currently, defs contains some duplicate entries.  There
  * may be meaning attached to this, or it may just be something
@@ -209,20 +266,23 @@ out:
  */
 /*ARGSUSED*/
 static PyObject *
-get_dynamic(PyObject *self, PyObject *args)
+get_dynamic(PyObject *self, PyObject *args, PyObject *keywords)
 {
-	int 	fd, i;
+	int 	i;
+        dargs_t         dargs;
 	dyninfo_t 	*dyn = NULL;
 	PyObject	*pdep = NULL;
 	PyObject	*pdef = NULL;
 	PyObject	*pdict = NULL;
 	char		hexhash[41];
+        char            hexsha256[65];
 	char		hexchars[17] = "0123456789abcdef";
 
-	if ((fd = py_get_fd(args)) < 0)
+	dargs = py_get_dyn_args(args, keywords);
+        if (dargs.fd < 0)
 		return (NULL);
 
-	if ((dyn = getdynamic(fd)) == NULL)
+	if ((dyn = getdynamic(dargs.fd, dargs.sha1, dargs.sha256)) == NULL)
 		goto out;
 
 	pdict = PyDict_New();
@@ -259,13 +319,25 @@ get_dynamic(PyObject *self, PyObject *args)
 		PyDict_SetItemString(pdict, "runpath", Py_BuildValue("s", str));
 	}
 
-	for (i = 0; i < 20; i++) {
-		hexhash[2 * i] = hexchars[(dyn->hash[i] & 0xf0) >> 4];
-		hexhash[2 * i + 1] = hexchars[dyn->hash[i] & 0x0f];
-	}
-	hexhash[40] = '\0';
+        if (dargs.sha1 > 0) {
+                for (i = 0; i < 20; i++) {
+                        hexhash[2 * i] = hexchars[(dyn->hash[i] & 0xf0) >> 4];
+                        hexhash[2 * i + 1] = hexchars[dyn->hash[i] & 0x0f];
+                }
+                hexhash[40] = '\0';
+        	PyDict_SetItemString(pdict, "hash", Py_BuildValue("s", hexhash));
+        }
 
-	PyDict_SetItemString(pdict, "hash", Py_BuildValue("s", hexhash));
+        if (dargs.sha256 > 0) {
+                for (i = 0; i < 32; i++) {
+                        hexsha256[2 * i] = \
+                            hexchars[(dyn->hash256[i] & 0xf0) >> 4];
+                        hexsha256[2 * i + 1] = hexchars[dyn->hash256[i] & 0x0f];
+                }
+                hexsha256[64] = '\0';
+                PyDict_SetItemString(pdict, "pkg.content-type.sha256",
+                    Py_BuildValue("s", hexsha256));
+        }
 	goto out;
 
 err:
@@ -275,16 +347,17 @@ err:
 
 out:
 	if (dyn != NULL)
-		dyninfo_free(dyn);
+            dyninfo_free(dyn);
 
-	(void) close(fd);
+	(void) close(dargs.fd);
 	return (pdict);
 }
 
 static PyMethodDef methods[] = {
 	{ "is_elf_object", elf_is_elf_object, METH_VARARGS },
 	{ "get_info", get_info, METH_VARARGS },
-	{ "get_dynamic", get_dynamic, METH_VARARGS },
+	{ "get_dynamic", (PyCFunction)get_dynamic,
+        METH_VARARGS | METH_KEYWORDS},
 	{ NULL, NULL }
 };
 

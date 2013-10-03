@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2011, 2012, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2011, 2013, Oracle and/or its affiliates. All rights reserved.
 #
 
 import atexit
@@ -34,6 +34,7 @@ import os
 import pkg
 import pkg.client.api_errors as apx
 import pkg.client.publisher
+import pkg.digest as digest
 import pkg.fmri
 import pkg.manifest
 import pkg.misc
@@ -545,7 +546,7 @@ class Archive(object):
 
                 'pathname' is an optional string specifying the absolute path
                 of a file to add to the archive.  The file may be a regular
-                file, directory, symbolic link, or hard link. 
+                file, directory, symbolic link, or hard link.
 
                 'arcname' is an optional string specifying an alternative name
                 for the file in the archive.  If not given, the full pathname
@@ -667,16 +668,26 @@ class Archive(object):
                 # payload.  (That payload can consist of multiple files.)
                 file_dir = os.path.join(pub_dir, "file")
                 for a in m.gen_actions():
-                        if not a.has_payload or not a.hash:
+                        if not a.has_payload:
                                 # Nothing to archive.
                                 continue
 
-                        payloads = set([a.hash])
+                        pref_hattr, hval, hfunc = \
+                            digest.get_least_preferred_hash(a)
+                        if not hval:
+                                # Nothing to archive
+                                continue
+
+                        payloads = set([hval])
 
                         # Signature actions require special handling.
                         if a.name == "signature":
-                                payloads.update(a.attrs.get("chain",
-                                    "").split())
+                                pref_cattr, chain_val, func = \
+                                    digest.get_least_preferred_hash(a,
+                                    hash_type=digest.CHAIN)
+
+                                for chain in chain_val.split():
+                                        payloads.add(chain)
 
                                 if repo:
                                         # This bit of logic only possible if
@@ -1221,7 +1232,7 @@ class Archive(object):
                         # A new publisher object is created with a copy of only
                         # the information that's needed for the archive.
                         npub = pkg.client.publisher.Publisher(pub.prefix,
-                            alias=pub.alias, 
+                            alias=pub.alias,
                             revoked_ca_certs=pub.revoked_ca_certs,
                             approved_ca_certs=pub.approved_ca_certs)
 

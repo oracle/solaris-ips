@@ -2447,8 +2447,14 @@ class CliTestCase(Pkg5TestCase):
                     su_wrap=su_wrap, env_arg=env_arg)
 
         def pkgrepo(self, command, comment="", exit=0, su_wrap=False,
-            env_arg=None, stderr=False, out=False):
-                cmdline = "%s/usr/bin/pkgrepo %s" % (g_proto_area, command)
+            env_arg=None, stderr=False, out=False, debug_hash=None):
+                if debug_hash:
+                        debug_arg = "-D hash=%s " % debug_hash
+                else:
+                        debug_arg = ""
+
+                cmdline = "%s/usr/bin/pkgrepo %s%s" % (g_proto_area, debug_arg,
+                    command)
                 return self.cmdline_run(cmdline, comment=comment, exit=exit,
                     su_wrap=su_wrap, env_arg=env_arg, out=out, stderr=stderr)
 
@@ -2459,10 +2465,13 @@ class CliTestCase(Pkg5TestCase):
                     su_wrap=su_wrap, env_arg=env_arg, out=out, stderr=stderr)
 
         def pkgsign(self, depot_url, command, exit=0, comment="",
-            env_arg=None):
+            env_arg=None, debug_hash=None):
                 args = []
                 if depot_url:
                         args.append("-s %s" % depot_url)
+
+                if debug_hash:
+                        args.append("-D hash=%s" % debug_hash)
 
                 if command:
                         args.append(command)
@@ -2472,7 +2481,8 @@ class CliTestCase(Pkg5TestCase):
                 return self.cmdline_run(cmdline, comment=comment, exit=exit,
                     env_arg=env_arg)
 
-        def pkgsign_simple(self, depot_url, pkg_name, exit=0, env_arg=None):
+        def pkgsign_simple(self, depot_url, pkg_name, exit=0, env_arg=None,
+            debug_hash=None):
                 chain_cert_path = os.path.join(self.chain_certs_dir,
                     "ch1_ta3_cert.pem")
                 sign_args = "-k %(key)s -c %(cert)s -i %(ch1)s %(name)s" % {
@@ -2482,15 +2492,22 @@ class CliTestCase(Pkg5TestCase):
                     "ch1": chain_cert_path,
                 }
                 return self.pkgsign(depot_url, sign_args, exit=exit,
-                    env_arg=env_arg)
+                    env_arg=env_arg, debug_hash=debug_hash)
 
         def pkgsend(self, depot_url="", command="", exit=0, comment="",
-            allow_timestamp=False, env_arg=None, su_wrap=False):
+            allow_timestamp=False, env_arg=None, su_wrap=False,
+            debug_hash=None):
                 args = []
                 if allow_timestamp:
                         args.append("-D allow-timestamp")
                 if depot_url:
                         args.append("-s " + depot_url)
+
+                # debug_hash lets us choose the type of hash attributes that
+                # should be added to this package on publication. Valid values
+                # are: sha1, sha1+sha256, sha256
+                if debug_hash:
+                        args.append("-D hash=%s" % debug_hash)
 
                 if command:
                         args.append(command)
@@ -2536,7 +2553,8 @@ class CliTestCase(Pkg5TestCase):
                 return retcode, published
 
         def pkgsend_bulk(self, depot_url, commands, exit=0, comment="",
-            no_catalog=False, refresh_index=False, su_wrap=False):
+            no_catalog=False, refresh_index=False, su_wrap=False,
+            debug_hash=None):
                 """ Send a series of packaging commands; useful  for quickly
                     doing a bulk-load of stuff into the repo.  All commands are
                     expected to work; if not, the transaction is abandoned.  If
@@ -2603,7 +2621,8 @@ class CliTestCase(Pkg5TestCase):
                                                 retcode, published = \
                                                     self.pkgsend(depot_url, cmd,
                                                     allow_timestamp=True,
-                                                    su_wrap=su_wrap)
+                                                    su_wrap=su_wrap,
+                                                    debug_hash=debug_hash)
                                                 if retcode == 0 and published:
                                                         plist.append(published)
                                         except:
@@ -2621,7 +2640,8 @@ class CliTestCase(Pkg5TestCase):
 
                         if exit == 0 and refresh_index:
                                 self.pkgrepo("-s %s refresh --no-catalog" %
-                                    depot_url, su_wrap=su_wrap)
+                                    depot_url, su_wrap=su_wrap,
+                                    debug_hash=debug_hash)
                 except UnexpectedExitCodeException, e:
                         if e.exitcode != exit:
                                 raise

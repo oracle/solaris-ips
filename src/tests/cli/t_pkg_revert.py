@@ -43,10 +43,7 @@ class TestPkgRevert(pkg5unittest.SingleDepotTestCase):
             add dir mode=0755 owner=root group=bin path=etc
             add file etc/file1 mode=0555 owner=root group=bin path=etc/file1
             close
-            open B@1.0,5.11-0
-            add dir mode=0755 owner=root group=bin path=etc
-            add file etc/file2 mode=0555 owner=root group=bin path=etc/file2 revert-tag=bob
-            close
+            # B@1.0 is published as part of pkgs2
             open C@1.0,5.11-0
             add dir mode=0755 owner=root group=bin path=etc
             add file etc/file3 mode=0555 owner=root group=bin path=etc/file3 revert-tag=bob revert-tag=ted
@@ -79,6 +76,14 @@ class TestPkgRevert(pkg5unittest.SingleDepotTestCase):
             close
             open Y@1.0,5.11-0
             add dir mode=0755 owner=root group=bin path=etc/y-dir revert-tag=bob=*
+            close
+            """
+
+        # A set of packages that we publish with additional hash attributes
+        pkgs2 = """
+            open B@1.0,5.11-0
+            add dir mode=0755 owner=root group=bin path=etc
+            add file etc/file2 mode=0555 owner=root group=bin path=etc/file2 revert-tag=bob
             close
             open dev@1.0,5.11-0
             add dir mode=0755 owner=root group=bin path=dev revert-tag=init-dev=*
@@ -174,6 +179,8 @@ class TestPkgRevert(pkg5unittest.SingleDepotTestCase):
                 self.make_misc_files(self.misc_files)
                 self.make_misc_files(self.additional_files)
                 self.plist = self.pkgsend_bulk(self.rurl, self.pkgs)
+                self.plist.extend(self.pkgsend_bulk(self.rurl, self.pkgs2,
+                    debug_hash="sha1+sha256"))
 
         def test_revert(self):
                 self.image_create(self.rurl)
@@ -184,7 +191,17 @@ class TestPkgRevert(pkg5unittest.SingleDepotTestCase):
                 self.damage_all_files()
                 # make sure we broke 'em
                 self.pkg("verify A", exit=1)
+
+                # We expect that the SHA-2 hash is used whenever there are SHA-2
+                # hashes on the action. Even though this client is run in
+                # "SHA-1" mode as well as "SHA-2" mode, we always verify with
+                # the most-preferred hash available.
+                self.pkg("-D hash=sha1+sha256 verify B", exit=1)
+                sha2 = "e3868252b2b2de64e85f5b221e46eb23c428fe5168848eb36d113c66628131ce"
+                self.assert_(sha2 in self.output)
                 self.pkg("verify B", exit=1)
+                self.assert_(sha2 in self.output)
+
                 self.pkg("verify C", exit=1)
                 self.pkg("verify D", exit=1)
 
@@ -214,11 +231,21 @@ class TestPkgRevert(pkg5unittest.SingleDepotTestCase):
 
                 # revert damage to B, C, D by tag and test the parsable output.
                 self.pkg("revert -n --parsable=0 --tagged bob")
+                self.debug("\n".join(self.plist))
                 self.assertEqualParsable(self.output,
-                    affect_packages=[self.plist[1], self.plist[2], self.plist[3]])
-                self.pkg("revert --parsable=0 --tagged bob")
+                    affect_packages=[self.plist[10], self.plist[1],
+                    self.plist[2]])
+                # When reverting damage, we always verify using the
+                # most-preferred hash, but retrieve content with the
+                # least-preferred hash: -D hash=sha1+sha256 should have no
+                # effect here whatsoever, but -D hash=sha256 should fail because
+                # our repository stores its files by the SHA1 hash.
+                self.pkg("-D hash=sha256 revert --parsable=0 --tagged bob",
+                    exit=1)
+                self.pkg("-D hash=sha1+sha256 revert --parsable=0 --tagged bob")
                 self.assertEqualParsable(self.output,
-                    affect_packages=[self.plist[1], self.plist[2], self.plist[3]])
+                    affect_packages=[self.plist[10], self.plist[1],
+                    self.plist[2]])
                 self.pkg("verify A", exit=1)
                 self.pkg("verify B")
                 self.pkg("verify C")

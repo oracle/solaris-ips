@@ -19,7 +19,7 @@
 #
 # CDDL HEADER END
 #
-# Copyright (c) 2008, 2012, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2008, 2013, Oracle and/or its affiliates. All rights reserved.
 #
 
 import httplib
@@ -386,6 +386,9 @@ class DepotController(object):
                 return args
 
         def __initial_start(self):
+                """'env_arg' can be a dictionary of additional os.environ
+                entries to use when starting the depot."""
+
                 if self.__state != self.HALTED:
                         raise DepotStateException("Depot already starting or "
                             "running")
@@ -416,6 +419,7 @@ class DepotController(object):
                 self.__starttime = time.time()
 
         def start(self):
+
                 try:
                         self.__initial_start()
 
