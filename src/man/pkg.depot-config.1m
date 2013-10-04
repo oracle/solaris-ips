@@ -1,8 +1,8 @@
 '\" te
 .\" Copyright (c) 2007, 2013, Oracle and/or its affiliates. All rights reserved.
-.TH pkg.depotd-config 1M "14 Feb 2013" "SunOS 5.12" "System Administration Commands"
+.TH pkg.depot-config 1M "02 Oct 2013" "SunOS 5.12" "System Administration Commands"
 .SH NAME
-pkg.depotd-config \- Image Packaging System HTTP depot configuration generator
+pkg.depot-config \- Image Packaging System HTTP depot configuration generator
 .SH SYNOPSIS
 .LP
 .nf
@@ -15,7 +15,7 @@ pkg.depotd-config \- Image Packaging System HTTP depot configuration generator
 .SH DESCRIPTION
 .sp
 .LP
-\fBpkg.depotd-config\fR generates the configuration files for the Image Packaging System (IPS) depot. The IPS depot provides scalable read-only access to IPS package repositories over HTTP.
+\fBpkg.depot-config\fR generates the configuration files for the Image Packaging System (IPS) depot. The IPS depot provides scalable read-only access to IPS package repositories over HTTP.
 .sp
 .LP
 The IPS depot is configured using the \fBsvc:/application/pkg/depot\fR Service Management Facility (SMF) service in conjunction with one or more instances of the \fBsvc:/application/pkg/server\fR service.
@@ -27,7 +27,19 @@ The IPS depot is configured using the \fBsvc:/application/pkg/depot\fR Service M
 To change depot configuration, modify the properties of the \fBpkg/depot\fR service or the appropriate \fBpkg/server\fR service instance and refresh the instance. Modifying \fBpkg/server\fR service instance states can cause the \fBpkg/depot\fR service to be refreshed and the depot configuration files to be regenerated.
 .sp
 .LP
-To serve multiple repositories, you need a separate \fBpkg/server\fR service instance for each repository but only one \fBpkg/depot\fR service instance. Each instance of the \fBpkg/server\fR service provides a read/write depot server that supports HTTP and HTTPS for an individual repository. The \fBpkg/depot:default\fR service instance provides a scalable, read-only depot server that supports HTTP for multiple repositories.
+To serve multiple repositories, you need a separate \fBpkg/server\fR service instance for each repository but only one \fBpkg/depot\fR service instance. Each instance of the \fBpkg/server\fR service maps to an IPS repository specified by the \fBpkg/inst_root\fR service property. The  \fBpkg/server\fR service does one of the following:
+.RS +4
+.TP
+.ie t \(bu
+.el o
+Runs an associated \fBpkg.depotd\fR process to serve the content of the repository.
+.RE
+.RS +4
+.TP
+.ie t \(bu
+.el o
+Runs no processes and instead helps to configure the \fBpkg.depot\fR service.
+.RE
 .sp
 .LP
 Each repository is supported by a \fBpkg/server\fR service instance. A repository might also be supported by the \fBpkg/depot:default\fR service. If the \fBpkg/standalone\fR property of a particular \fBpkg/server\fR instance is set to \fBtrue\fR, then the repository is served by the \fBpkg.depotd\fR process. If the \fBpkg/standalone\fR property of a particular \fBpkg/server\fR instance is set to \fBfalse\fR, then the repository is served by the \fBpkg/depot:default\fR service. Each \fBpkg/server\fR instance either runs \fBpkg.depotd\fR or contributes configuration information to \fBpkg/depot:default\fR.

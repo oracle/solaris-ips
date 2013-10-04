@@ -1,6 +1,6 @@
 '\" te
 .\" Copyright (c) 2007, 2013, Oracle and/or its affiliates. All rights reserved.
-.TH pkg.depotd 1M "21 May 2013" "SunOS 5.12" "System Administration Commands"
+.TH pkg.depotd 1M "02 Oct 2013" "SunOS 5.12" "System Administration Commands"
 .SH NAME
 pkg.depotd \- Image Packaging System depot server
 .SH SYNOPSIS
@@ -33,7 +33,10 @@ The depot does not provide any access control methods of its own. By default, al
 .SH SMF PROPERTIES
 .sp
 .LP
-The \fBpkg.depot\fR server is generally configured via the SMF properties associated with its service. See the \fBsmf\fR(5) man page for information about SMF properties. The following properties are recognized:
+The \fBpkg.depotd\fR server is generally configured via the SMF properties associated with its service. The \fBsvc:/application/pkg/server\fR service runs a \fBpkg.depot\fR server process, or contributes configuration to the \fBsvc:/application/pkg/depot\fR service. See the \fBpkg.depot-config\fR(1M) man page and the \fBpkg/standalone\fR property below.
+.sp
+.LP
+See the \fBsmf\fR(5) man page for information about SMF properties. The following properties are recognized:
 .sp
 .ne 2
 .mk
@@ -108,7 +111,7 @@ Logs the headers of every request to the error log.
 .ad
 .sp .6
 .RS 4n
-(\fBastring\fR) The file system path at which the instance should find its repository data. Required unless \fBfile_root\fR or \fBPKG_REPO\fR has been provided. The default value is \fB/var/pkgrepo\fR.
+(\fBastring\fR) The file system path at which the instance should find its repository data. Required unless \fBPKG_REPO\fR has been provided. The default value is \fB/var/pkgrepo\fR.
 .RE
 
 .sp
@@ -263,6 +266,17 @@ Attempt to retrieve the value of the property \fBpkg_secure/ssl_key_passphrase\f
 .sp .6
 .RS 4n
 (\fBastring\fR) The absolute path name to a PEM-encoded Private Key file. This property must be used with the property \fBssl_cert_file\fR. The depot only responds to SSL requests if both \fB/ssl_key_file\fR and \fBssl_cert_file\fR are provided.
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fBpkg/standalone\fR\fR
+.ad
+.sp .6
+.RS 4n
+(\fBboolean\fR) To easily serve multiple repositories from a single Apache instance with minimal Apache configuration, set this property to \fBfalse\fR and set the \fBpkg/readonly\fR property of this \fBpkg/server\fR instance to \fBtrue\fR. The default value of \fBpkg/standalone\fR is \fBfalse\fR and the default value of \fBpkg/readonly\fR is \fBtrue\fR. See the \fBpkg.depot-config\fR(1M) man page for more information.
 .RE
 
 .sp
@@ -787,7 +801,7 @@ Interface StabilityUncommitted
 .SH SEE ALSO
 .sp
 .LP
-\fBdns-sd\fR(1M), \fBmdnsd\fR(1M), \fBpkg\fR(1), \fBpkgrepo\fR(1), \fBpkgsend\fR(1), \fBsyslogd\fR(1M), \fBsmf\fR(5)
+\fBpkg.depot-config\fR(1M), \fBdns-sd\fR(1M), \fBmdnsd\fR(1M), \fBpkg\fR(1), \fBpkgrepo\fR(1), \fBpkgsend\fR(1), \fBsyslogd\fR(1M), \fBsmf\fR(5)
 .sp
 .LP
 \fICopying and Creating Package Repositories in Oracle Solaris 11.2\fR
@@ -804,6 +818,9 @@ The mDNS mirror service is managed by SMF under the service identifier \fBsvc:/a
 .sp
 .LP
 To control read access to the depot, you can use an HTTP reverse proxy in combination with authentication methods such as client based SSL certificate access, which \fBpkg\fR natively supports.
+.sp
+.LP
+To easily serve multiple repositories from a single Apache instance with minimal Apache configuration, set the \fBpkg/standalone\fR property of a particular \fBpkg/server\fR instance to \fBfalse\fR and set the \fBpkg/readonly\fR property of that instance to \fBtrue\fR. See the \fBpkg.depot-config\fR(1M) man page for more information.
 .sp
 .LP
 Changes to configuration, or changes to package data using file system based operations, require a restart of the depot server process so that the changes can be reflected in operations and output. Use one of the following methods to restart the depot server process:
