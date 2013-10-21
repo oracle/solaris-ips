@@ -2386,6 +2386,23 @@ class CliTestCase(Pkg5TestCase):
                     prefix=prefix, su_wrap=su_wrap, out=out, stderr=stderr,
                     env_arg=env_arg, coverage=coverage)
 
+        def pkg_verify(self, command, exit=0, comment="", prefix="",
+            su_wrap=None, out=False, stderr=False, cmd_path=None,
+            use_img_root=True, debug_smf=True, env_arg=None, coverage=True):
+                """Wraps self.pkg(..) and checks that the 'verify' command run
+                does not contain the string 'Unexpected Exception', indicating
+                something has gone wrong during package verification."""
+
+                cmd = "verify %s" % command
+                res = self.pkg(command=cmd, exit=exit, comment=comment,
+                    prefix=prefix, su_wrap=su_wrap, out=out, stderr=stderr,
+                    cmd_path=cmd_path, use_img_root=use_img_root,
+                    debug_smf=debug_smf, env_arg=env_arg, coverage=coverage)
+                if "Unexpected Exception" in self.output:
+                        raise TracebackException(cmd, self.output,
+                            "Unexpected errors encountered while verifying.")
+                return res
+
         def pkgdepend_resolve(self, args, exit=0, comment="", su_wrap=False,
             env_arg=None):
                 ops = ""

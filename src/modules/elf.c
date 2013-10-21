@@ -248,7 +248,7 @@ out:
  *	runpath: "/path:/entries",
  *	defs: ["version", ... ],
  *	deps: [["file", ["versionlist"]], ...],
- * 	hash: "sha1hash"
+ * 	elfhash: "sha1hash"
  *      pkg.elf.sha256: "sha2hash"
  * }
  *
@@ -325,7 +325,8 @@ get_dynamic(PyObject *self, PyObject *args, PyObject *keywords)
                         hexhash[2 * i + 1] = hexchars[dyn->hash[i] & 0x0f];
                 }
                 hexhash[40] = '\0';
-        	PyDict_SetItemString(pdict, "hash", Py_BuildValue("s", hexhash));
+        	PyDict_SetItemString(pdict, "elfhash",
+                    Py_BuildValue("s", hexhash));
         }
 
         if (dargs.sha256 > 0) {

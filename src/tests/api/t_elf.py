@@ -92,19 +92,19 @@ class TestElf(pkg5unittest.Pkg5TestCase):
 
                 # the default is to return an SHA-1 elfhash only
                 d = elf.get_dynamic(self.elf_paths[0])
-                self.assert_(len(d["hash"]) == sha1_len)
+                self.assert_(len(d["elfhash"]) == sha1_len)
                 self.assert_("pkg.content-type.sha256" not in d)
 
                 d = elf.get_dynamic(self.elf_paths[0], sha256=True)
-                self.assert_(len(d["hash"]) == sha1_len)
+                self.assert_(len(d["elfhash"]) == sha1_len)
                 self.assert_(len(d["pkg.content-type.sha256"]) == sha256_len)
 
                 d = elf.get_dynamic(self.elf_paths[0], sha1=False, sha256=True)
-                self.assert_("hash" not in d)
+                self.assert_("elfhash" not in d)
                 self.assert_(len(d["pkg.content-type.sha256"]) == sha256_len)
 
                 d = elf.get_dynamic(self.elf_paths[0], sha1=False, sha256=False)
-                self.assert_("hash" not in d)
+                self.assert_("elfhash" not in d)
                 self.assert_("pkg.content-type.sha256" not in d)
 
 

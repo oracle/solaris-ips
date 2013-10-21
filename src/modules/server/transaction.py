@@ -522,7 +522,7 @@ class Transaction(object):
                                             sha256=get_sha256)
 
                                         if get_sha1:
-                                                action.attrs[elf1] = dyn["hash"]
+                                                action.attrs[elf1] = dyn[elf1]
 
                                         if get_sha256:
                                                 action.attrs[elf256] = \
