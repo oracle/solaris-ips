@@ -4813,6 +4813,9 @@ def list_variant(op, api_inst, pargs, omit_headers, output_format,
         def gen_current():
                 for (name, val, pvals) in api_inst.gen_variants(variant_list,
                     patterns=req_variants):
+                        if output_format == "default":
+                                name_list = name.split(".")[1:]
+                                name = ".".join(name_list)
                         found[0] = True
                         yield {
                             "variant": name,
@@ -4822,6 +4825,9 @@ def list_variant(op, api_inst, pargs, omit_headers, output_format,
         def gen_possible():
                 for (name, val, pvals) in api_inst.gen_variants(variant_list,
                     patterns=req_variants):
+                        if output_format == "default":
+                                name_list = name.split(".")[1:]
+                                name = ".".join(name_list)
                         found[0] = True
                         for pval in pvals:
                                 yield {
@@ -4899,6 +4905,9 @@ def list_facet(op, api_inst, pargs, omit_headers, output_format, list_all_items,
         def gen_listing():
                 for (name, val, src, masked) in \
                     api_inst.gen_facets(facet_list, patterns=req_facets):
+                        if output_format == "default":
+                                name_list = name.split(".")[1:]
+                                name = ".".join(name_list)
                         found[0] = True
 
                         if not list_masked and masked:
