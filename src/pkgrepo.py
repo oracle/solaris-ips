@@ -135,6 +135,9 @@ Subcommands:
 
      pkgrepo add-publisher -s repo_uri_or_path publisher ...
 
+     pkgrepo remove-publisher [-n] [--synchronous] -s repo_uri_or_path
+         publisher ...
+
      pkgrepo get [-F format] [-p publisher ...] -s repo_uri_or_path 
          [--key ssl_key ... --cert ssl_cert ...] [section/property ...]
 
@@ -353,6 +356,84 @@ def subcmd_add_publisher(conf, args):
                 return EXIT_OOPS
         return rval
 
+def subcmd_remove_publisher(conf, args):
+        """Remove publisher(s) from a repository"""
+
+        subcommand = "remove-publisher"
+
+        dry_run = False
+        synch = False
+        opts, pargs = getopt.getopt(args, "ns:", ["synchronous"])
+        for opt, arg in opts:
+                if opt == "-s":
+                        conf["repo_uri"] = parse_uri(arg)
+                elif opt == "-n":
+                        dry_run = True
+                elif opt == "--synchronous":
+                        synch = True
+        repo_uri = conf.get("repo_uri", None)
+        if not repo_uri:
+                usage(_("No repository location specified."), cmd=subcommand)
+        if repo_uri.scheme != "file":
+                usage(_("Network repositories are not currently supported "
+                    "for this operation."), cmd=subcommand)
+
+        if not pargs:
+                usage(_("At least one publisher must be specified"),
+                    cmd=subcommand)
+
+        inv_pfxs = []
+        for pfx in pargs:
+                if not misc.valid_pub_prefix(pfx):
+                        inv_pfxs.append(pfx)
+
+        if inv_pfxs:
+                error(_("Invalid publisher prefix(es):\n %s") %
+                    "\n ".join(inv_pfxs), cmd=subcommand)
+                return EXIT_OOPS
+
+        repo = get_repo(conf, read_only=False, subcommand=subcommand)
+        existing = repo.publishers & set(pargs)
+        noexisting = [pfx for pfx in pargs
+            if pfx not in repo.publishers]
+        # Publishers left if remove succeeds.
+        left = [pfx for pfx in repo.publishers if pfx not in pargs]
+
+        if noexisting:
+                error(_("The following publisher(s) could not be found:\n %s")
+                    % "\n ".join(noexisting), cmd=subcommand)
+                return EXIT_OOPS
+
+        logger.info(_("Removing publisher(s)"))
+        for pfx in existing:
+                rstore = repo.get_pub_rstore(pfx)
+                numpkg = rstore.catalog.package_count
+                logger.info(_("\'%(pfx)s\'\t(%(num)s package(s))") %
+                    {"pfx":pfx, "num":str(numpkg)})
+
+        if dry_run:
+                return EXIT_OK
+
+        defaultpfx = repo.cfg.get_property("publisher", "prefix")
+        repo_path = repo_uri.get_pathname()
+
+        repo.remove_publisher(existing, repo_path, synch)
+        # Change the repository publisher/prefix property, if necessary.
+        if defaultpfx in existing:
+                if len(left) == 1:
+                        _set_repo(conf, subcommand, { "publisher" :  {
+                            "prefix" :  left[0]} }, repo)
+                        msg(_("The default publisher was removed."
+                            " Setting 'publisher/prefix' to '%s',"
+                            " the only publisher left") % left[0])
+                else:
+                        _set_repo(conf, subcommand, { "publisher": {
+                            "prefix" :  ""} }, repo)
+                        msg(_("The default publisher was removed."
+                            " The 'publisher/prefix' property has been"
+                            " unset"))
+
+        return EXIT_OK
 
 def subcmd_create(conf, args):
         """Create a package repository at the given location."""

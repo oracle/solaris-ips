@@ -38,6 +38,7 @@ import pkg.fmri as fmri
 import pkg.pkggzip
 import pkg.misc as misc
 import pkg.server.repository as sr
+import pkg.client.api_errors as apx
 import shutil
 import tempfile
 import time
@@ -2263,7 +2264,175 @@ test2	zoo		1.0	5.11	0	20110804T203458Z	pkg://test2/zoo@1.0,5.11-0:20110804T20345
 
                 self.assertRaises(sr.RepositoryInvalidError, sr.Repository, 
                     root=tmpdir)
-                
+
+        def test_25_remove_publisher(self):
+                """Verify that remove-publisher subcommand works as expected."""
+
+                # Create a repository.
+                repo_path = os.path.join(self.test_root, "repo")
+                self.create_repo(repo_path)
+
+                # Verify invalid publisher prefixes are rejected gracefully.
+                self.pkgrepo("-s %s remove-publisher !valid" % repo_path, exit=1)
+                self.pkgrepo("-s %s remove-publisher file:%s" % (repo_path,
+                    repo_path), exit=1)
+                self.pkgrepo("-s %s remove-publisher valid !valid" % repo_path,
+                    exit=1)
+
+                # Verify that remove-publisher will exit with complete failure
+                # if no publisher in the repo.
+                self.pkgrepo("-s %s remove-publisher example.com" %
+                    repo_path, exit=1)
+
+                # Verify that single publisher can be removed at a time, and
+                # if it is default publisher, the prefix field is unset.
+                self.pkgrepo("-s %s add-publisher example.com" %
+                    repo_path)
+
+                # If a depot is running, this will trigger a reload of the
+                # configuration data.
+                self.dc.refresh()
+
+                # Publish some packages.
+                self.pkgsend_bulk(repo_path, (self.tree10, self.amber10,
+                    self.amber20, self.truck10, self.truck20))
+                self.pkgrepo("-s %s remove-publisher example.com" %
+                    repo_path)
+                self.assert_("has been unset" in self.output)
+                self.pkgrepo("get -s %s -HFtsv publisher/prefix" % repo_path)
+                expected = """\
+publisher\tprefix\t""
+"""
+                self.assertEqualDiff(expected, self.output)
+                pdir = os.path.join(repo_path, "publisher", "example.com")
+                self.assert_(not os.path.exists(pdir))
+
+                # Verify that multiple publishers can be removed at a time
+                # if there is a default one, the prefix field in repo con-
+                # figuration file will be set to empty
+                self.pkgrepo("-s %s add-publisher example.com example.net" %
+                    repo_path)
+                self.pkgrepo("-s %s remove-publisher example.com example.net" %
+                    repo_path)
+                self.assert_("has been unset"
+                    in self.output)
+                self.pkgrepo("get -s %s -HFtsv publisher/prefix" % repo_path)
+                expected = """\
+publisher\tprefix\t""
+"""
+                self.assertEqualDiff(expected, self.output)
+                pdir = os.path.join(repo_path, "publisher", "example.com")
+                self.assert_(not os.path.exists(pdir))
+                pdir = os.path.join(repo_path, "publisher", "example.net")
+                self.assert_(not os.path.exists(pdir))
+
+                # Verify that if one publisher is removed and only one left
+                # if the removed one a default one, the prefix field in repo con-
+                # figuration file will be set to the one left
+                self.pkgrepo("-s %s add-publisher example.com example.net" %
+                    repo_path)
+                self.pkgrepo("-s %s remove-publisher example.com" %
+                    repo_path)
+                self.assert_("the only publisher left" in self.output)
+                self.pkgrepo("get -s %s -HFtsv publisher/prefix" % repo_path)
+                expected = """\
+publisher\tprefix\texample.net
+"""
+                self.assertEqualDiff(expected, self.output)
+                pdir = os.path.join(repo_path, "publisher", "example.com")
+                self.assert_(not os.path.exists(pdir))
+                pdir = os.path.join(repo_path, "publisher", "example.net")
+                self.assert_(os.path.exists(pdir))
+
+                # Verify that remove-publisher will exit with complete failure
+                # if all publishers do not exist.
+                self.pkgrepo("-s %s remove-publisher example.some example.what" %
+                    repo_path, exit=1)
+
+                # Verify that remove-publisher will exit with complete failure if
+                # only some publishers already exist.
+                self.pkgrepo("-s %s remove-publisher example.net example.org" %
+                    repo_path, exit=1)
+                pdir = os.path.join(repo_path, "publisher", "example.net")
+                self.assert_(os.path.exists(pdir))
+                self.pkgrepo("get -s %s -HFtsv publisher/prefix" % repo_path)
+                expected = """\
+publisher\tprefix\texample.net
+"""
+                self.assertEqualDiff(expected, self.output)
+
+                # Verify that dry-run will not remove anything, and print correct
+                # message
+                # First publish some packages
+                self.pkgsend_bulk(repo_path, (self.tree10, self.amber10,
+                    self.amber20, self.truck10, self.truck20))
+
+                # Secondly copy the whole publisher folder into a tmp folder
+                dry_pubpath = os.path.join(repo_path, "tmp_dry", "example.net")
+                pubpath = os.path.join(repo_path, "publisher", "example.net")
+                misc.copytree(pubpath, dry_pubpath)
+                self.pkgrepo("-s %s remove-publisher -n example.net" %
+                    repo_path)
+                expected = """\
+Removing publisher(s)\n\
+\'example.net\'\t(3 package(s))
+"""
+                self.assertEqualDiff(expected, self.output)
+
+                # Thirdly check whether two folders are identical
+                self.cmdline_run("/usr/bin/gdiff %(pub_path)s %(dry_path)s " %
+                    {"pub_path":pubpath, "dry_path":dry_pubpath}, exit=0)
+
+                self.pkgrepo("get -s %s -HFtsv publisher/prefix" % repo_path)
+                expected = """\
+publisher\tprefix\texample.net
+"""
+                self.assertEqualDiff(expected, self.output)
+
+                # Verify that if one publisher is removed and there are
+                # more than one left, and one of the removed publishers
+                # was the default publisher, that we unset the publisher/prefix
+                # property.
+                self.pkgrepo("-s %s add-publisher example.com example.org" %
+                    repo_path)
+                self.pkgrepo("-s %s remove-publisher example.net" %
+                    repo_path)
+                self.assert_("has been unset" in self.output)
+                self.pkgrepo("get -s %s -HFtsv publisher/prefix" % repo_path)
+                expected = """\
+publisher\tprefix\t""
+"""
+                self.assertEqualDiff(expected, self.output)
+                pdir = os.path.join(repo_path, "publisher", "example.net")
+                self.assert_(not os.path.exists(pdir))
+
+                # Verify that inaccessible publishers are handled correctly
+                shutil.rmtree(repo_path)
+                os.system("chown noaccess %s" % self.test_root)
+                self.pkgrepo("create %s" % repo_path, su_wrap=True)
+                self.pkgrepo("-s %s add-publisher example.com" % repo_path)
+                self.pkgrepo("-s %s remove-publisher example.com" % repo_path,
+                    su_wrap=True, exit=1)
+                os.system("chown root %s" % self.test_root)
+
+                # Verify that synchronous option works as specified.
+                shutil.rmtree(repo_path)
+                self.pkgrepo("create %s" % repo_path)
+                self.pkgrepo("-s %s add-publisher example.com" % repo_path)
+                self.pkgsend_bulk(repo_path, (self.tree10, self.amber10,
+                    self.amber20, self.truck10, self.truck20))
+                self.pkgrepo("-s %s remove-publisher --synchronous example.com"
+                    % repo_path)
+                repo_tmp_path = os.path.join(repo_path, "tmp")
+                self.assert_(os.listdir(repo_tmp_path) == [])
+                self.pkgrepo("get -s %s -HFtsv publisher/prefix" % repo_path)
+                expected = """\
+publisher\tprefix\t""
+"""
+                self.assertEqualDiff(expected, self.output)
+                pdir = os.path.join(repo_path, "publisher", "example.com")
+                self.assert_(not os.path.exists(pdir))
+
 
 class TestPkgrepoHTTPS(pkg5unittest.HTTPSTestClass):
 

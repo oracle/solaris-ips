@@ -59,6 +59,7 @@ import pkg.query_parser as qp
 import pkg.server.catalog as old_catalog
 import pkg.server.query_parser as sqp
 import pkg.server.transaction as trans
+import pkg.pkgsubprocess as subprocess
 import pkg.version
 
 CURRENT_REPO_VERSION = 4
@@ -702,7 +703,7 @@ class _RepoStore(object):
                         # Set batch_mode for catalog to speed up rebuild.
                         self.catalog.batch_mode = True
 
-                        # Pointless to log incremental updates since a new 
+                        # Pointless to log incremental updates since a new
                         # catalog is being built.  This also helps speed up
                         # rebuild.
                         self.catalog.log_updates = incremental
@@ -2944,6 +2945,84 @@ class Repository(object):
                                 # This ensures that the original exception and
                                 # traceback are used.
                                 raise exc_value, None, exc_tb
+
+        def remove_publisher(self, pfxs, repo_path, synch=False):
+                """Removes a repository storage area and configuration
+                information for the publisher defined by the provided
+                publisher prefix. pfxs must be an iterable.
+                """
+
+                if self.mirror:
+                        raise RepositoryMirrorError()
+                if self.read_only:
+                        raise RepositoryReadOnlyError()
+                if not self.pub_root or self.version < 4:
+                        raise RepositoryUnsupportedOperationError()
+
+                # create a temp folder, move the publisher folder into it
+                # and then remove the temp folder recursively
+                tmp_paths = []
+                self.__lock_repository()
+                try:
+                        for pfx in pfxs:
+                                repo_tmp_path = self.__mkdtemppub(pfx)
+                                tmp_paths.append(repo_tmp_path)
+                                pub_path = os.path.join(repo_path, "publisher",
+                                    pfx)
+                                if os.path.exists(pub_path) and \
+                                    os.path.exists(repo_tmp_path) :
+                                        portable.rename(pub_path,
+                                        repo_tmp_path)
+                except EnvironmentError, e:
+                        if e.errno == errno.EACCES:
+                                raise apx.PermissionsException(
+                                    e.filename)
+                        if e.errno == errno.EROFS:
+                                raise apx.ReadOnlyFileSystemException(
+                                    e.filename)
+                        raise
+                finally:
+                        self.__unlock_repository()
+
+                nullf = open(os.devnull, "w")
+                args = "/usr/bin/rm -rf " + " ".join(tmp_paths)
+                if not synch:
+                        args = "/usr/bin/nohup " + args
+                subp = subprocess.Popen(args, shell=True,
+                    stdout=nullf, stderr=nullf)
+
+                if synch:
+                        subp.wait()
+
+        def __mkdtemppub(self, pfx):
+                """Create a temp directory under repository directory
+                and corresponding temp pub folder with format
+                rm.pubname.xxxxxx under this folder
+                """
+
+                if not self.root:
+                        return
+
+                if self.writable_root:
+                        root = self.writable_root
+                else:
+                        root = self.root
+
+                tempdir = os.path.normpath(os.path.join(root, "tmp"))
+
+                try:
+                        misc.makedirs(tempdir)
+                        return tempfile.mkdtemp(prefix="rm." + pfx + ".",
+                            dir=tempdir)
+
+                except EnvironmentError, e:
+                        if e.errno == errno.EACCES:
+                                raise apx.PermissionsException(
+                                    e.filename)
+                        if e.errno == errno.EROFS:
+                                raise apx.ReadOnlyFileSystemException(
+                                    e.filename)
+                        raise
 
         def add_package(self, pfmri):
                 """Adds the specified FMRI to the repository's catalog."""
