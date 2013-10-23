@@ -2380,8 +2380,9 @@ Removing publisher(s)\n\
                 self.assertEqualDiff(expected, self.output)
 
                 # Thirdly check whether two folders are identical
-                self.cmdline_run("/usr/bin/gdiff %(pub_path)s %(dry_path)s " %
-                    {"pub_path":pubpath, "dry_path":dry_pubpath}, exit=0)
+                self.cmdline_run("/usr/bin/gdiff %(pub_path)s %(dry_path)s" %
+                    {"pub_path":pubpath, "dry_path":dry_pubpath},
+                    coverage=False)
 
                 self.pkgrepo("get -s %s -HFtsv publisher/prefix" % repo_path)
                 expected = """\
