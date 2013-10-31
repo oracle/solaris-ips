@@ -406,6 +406,17 @@ class ReadOnlyFileSystemException(PermissionsException):
                         "filesystem.")
 
 
+class InvalidLockException(ApiException):
+        def __init__(self, path):
+                ApiException.__init__(self)
+                self.path = path
+
+        def __str__(self):
+                return _("Unable to obtain or operate on lock at %s.\n"
+                    "Please try the operation again as a privileged user.") \
+                    % self.path
+
+
 class PackageMatchErrors(ApiException):
         """Used to indicate which patterns were not matched or illegal during
         a package name matching operation."""

@@ -631,6 +631,10 @@ class _RepoStore(object):
                                 self.__lock.release()
                                 raise apx.ReadOnlyFileSystemException(
                                     e.filename)
+                        if e.errno == errno.EINVAL:
+                                self.__lock.release()
+                                raise apx.InvalidLockException(
+                                    e.filename)
 
                         self.__lock.release()
                         raise
