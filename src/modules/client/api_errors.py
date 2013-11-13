@@ -148,6 +148,9 @@ class ImageNotFoundException(ApiException):
                 self.user_dir = user_dir
                 self.root_dir = root_dir
 
+        def __str__(self):
+                return _("No image rooted at '%s'") % self.user_dir
+
 
 class ImageFormatUpdateNeeded(ApiException):
         """Used to indicate that an image cannot be used until its format is
@@ -335,13 +338,21 @@ class ImagePkgStateError(ApiException):
 
 
 class IpkgOutOfDateException(ApiException):
-        pass
+        def __str__(self):
+                return _("pkg(5) out of date")
+
 
 class ImageUpdateOnLiveImageException(ApiException):
-        pass
+        def __str__(self):
+                return _("Requested operation cannot be performed "
+                    "in live image.")
+
 
 class RebootNeededOnLiveImageException(ApiException):
-        pass
+        def __str__(self):
+                return _("Requested operation cannot be performed "
+                    "in live image.")
+
 
 class CanceledException(ApiException):
         pass
@@ -1242,7 +1253,8 @@ class IndexingException(SearchException):
 
 class CorruptedIndexException(IndexingException):
         """This is used when the index is not in a correct state."""
-        pass
+        def __str__(self):
+                return _("The search index appears corrupted.")
 
 
 class InconsistentIndexException(IndexingException):
@@ -1338,6 +1350,12 @@ class NonLeafPackageException(ApiException):
 
                 self.fmri = args[0]
                 self.dependents = args[1]
+
+        def __str__(self):
+                s = _("Unable to remove '%s' due to the following packages"
+                    "that depend on it:\n") % self.fmri
+                s += "\n".join(str(f) for f in self.dependents)
+                return s
 
 def _str_autofix(self):
 
