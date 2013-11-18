@@ -1352,7 +1352,7 @@ class NonLeafPackageException(ApiException):
                 self.dependents = args[1]
 
         def __str__(self):
-                s = _("Unable to remove '%s' due to the following packages"
+                s = _("Unable to remove '%s' due to the following packages "
                     "that depend on it:\n") % self.fmri
                 s += "\n".join(str(f) for f in self.dependents)
                 return s
