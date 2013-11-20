@@ -1772,13 +1772,19 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                 if not pubs:
                         pubs = self.gen_publishers()
 
+                errors = []
                 for p in pubs:
                         r = p.repository
                         for uri in r.origins:
                                 if uri.ssl_cert:
-                                        misc.validate_ssl_cert(
-                                            uri.ssl_cert,
-                                            prefix=p.prefix, uri=uri)
+                                        try:
+                                                misc.validate_ssl_cert(
+                                                    uri.ssl_cert,
+                                                    prefix=p.prefix,
+                                                    uri=uri)
+                                        except apx.ExpiredCertificate, e:
+                                                errors.append(e)
+                                                
                                 if uri.ssl_key:
                                         try:
                                                 if not os.path.exists(
@@ -1789,6 +1795,9 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                                                             uri=uri)
                                         except EnvironmentError, e:
                                                 raise apx._convert_error(e)
+
+                if errors:
+                        raise apx.ExpiredCertificates(errors)
 
         def has_publisher(self, prefix=None, alias=None):
                 """Returns a boolean value indicating whether a publisher

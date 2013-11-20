@@ -2366,26 +2366,69 @@ class CertificateError(ApiException):
 class ExpiredCertificate(CertificateError):
         """Used to indicate that a certificate has expired."""
 
+        def __init__(self, *args, **kwargs):
+                CertificateError.__init__(self, *args, **kwargs)
+                self.publisher = self._args.get("publisher", None)
+                self.uri = self._args.get("uri", None)
+
         def __str__(self):
-                publisher = self._args.get("publisher", None)
-                uri = self._args.get("uri", None)
-                if publisher:
-                        if uri:
+                if self.publisher:
+                        if self.uri:
                                 return _("Certificate '%(cert)s' for publisher "
                                     "'%(pub)s' needed to access '%(uri)s', "
                                     "has expired.  Please install a valid "
                                     "certificate.") % { "cert": self.data,
-                                    "pub": publisher, "uri": uri }
+                                    "pub": self.publisher, "uri": self.uri }
                         return _("Certificate '%(cert)s' for publisher "
                             "'%(pub)s', has expired.  Please install a valid "
                             "certificate.") % { "cert": self.data,
-                            "pub": publisher }
-                if uri:
+                            "pub": self.publisher }
+                if self.uri:
                         return _("Certificate '%(cert)s', needed to access "
                             "'%(uri)s', has expired.  Please install a valid "
-                            "certificate.") % { "cert": self.data, "uri": uri }
+                            "certificate.") % { "cert": self.data,
+                            "uri": self.uri }
                 return _("Certificate '%s' has expired.  Please install a "
                     "valid certificate.") % self.data
+
+
+class ExpiredCertificates(CertificateError):
+        """Used to collect ExpiredCertficate exceptions."""
+
+        def __init__(self, errors):
+                
+                self.errors = []
+
+                assert (isinstance(errors, (list, tuple,
+                    set, ExpiredCertificate)))
+
+                if isinstance(errors, ExpiredCertificate):
+                        self.errors.append(errors)
+                else:
+                        self.errors = errors
+
+        def __str__(self):
+                pdict = dict()
+                for e in self.errors:
+                        if e.publisher in pdict:
+                                pdict[e.publisher].append(e.uri)
+                        else:
+                                pdict[e.publisher] = [e.uri]
+
+                msg = ""
+                for pub, uris in pdict.items():
+                        msg += "\n%s:" % _("Publisher")
+                        msg += " %s" % pub
+                        for uri in uris:
+                                msg += "\n  %s:\n" % _("Origin URI")
+                                msg += "    %s\n" % uri
+                                msg += "  %s:\n" % _("Certificate")
+                                msg += "    %s\n" % uri.ssl_cert
+                                msg += "  %s:\n" % _("Key")
+                                msg += "    %s\n" % uri.ssl_key
+                return _("One or more client key and certificate files have "
+                    "expired. Please\nupdate the configuration for the "
+                    "publishers or origins listed below:\n %s") % msg
 
 
 class ExpiringCertificate(CertificateError):
@@ -3038,7 +3081,7 @@ class InvalidOptionError(ApiException):
         REQUIRED   = "required"     # option 'a' requires option 'b'
         XOR        = "xor"          # either option 'a' or option 'b' must be specified
 
-	def __init__(self, err_type=GENERIC, options=[], msg=None):
+        def __init__(self, err_type=GENERIC, options=[], msg=None):
 
                 self.err_type = err_type
                 self.options = options
@@ -3054,7 +3097,7 @@ class InvalidOptionError(ApiException):
                                 self.msg += " ".join(self.options)
                         return self.msg
 
-       		if self.err_type == self.OPT_REPEAT:
+                if self.err_type == self.OPT_REPEAT:
                         assert len(self.options) == 1
                         return _("Option '%(option)s' may not be repeated.") % {
                             "option" : self.options[0]}

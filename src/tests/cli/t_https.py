@@ -62,7 +62,8 @@ class TestHTTPS(pkg5unittest.HTTPSTestClass):
 
                 self.make_misc_files(self.misc_files)
                 self.pkgsend_bulk(self.rurl1, self.example_pkg10)
-                self.acurl = self.ac.url + "/%s" % pub1_name 
+                self.acurl1 = self.ac.url + "/%s" % pub1_name
+                self.acurl2 = self.ac.url + "/%s" % pub2_name
                 # Our proxy is served by the same Apache controller, but uses
                 # a different port.
                 self.proxyurl = self.ac.url.replace("https", "http")
@@ -77,14 +78,14 @@ class TestHTTPS(pkg5unittest.HTTPSTestClass):
                 # Test that creating an image using a HTTPS repo without
                 # providing any keys or certificates fails.
                 self.assertRaises(TransportFailures, self.image_create,
-                    self.acurl)
-                self.pkg_image_create(repourl=self.acurl, exit=1)
+                    self.acurl1)
+                self.pkg_image_create(repourl=self.acurl1, exit=1)
                 api_obj = self.image_create()
 
                 # Test that adding a HTTPS repo fails if the image does not
                 # contain the trust anchor to verify the server's identity.
                 self.pkg("set-publisher -k %(key)s -c %(cert)s -p %(url)s" % {
-                    "url": self.acurl,
+                    "url": self.acurl1,
                     "cert": os.path.join(self.cs_dir, self.get_cli_cert("test")),
                     "key": os.path.join(self.keys_dir, self.get_cli_key("test")),
                     }, exit=1)
@@ -93,7 +94,7 @@ class TestHTTPS(pkg5unittest.HTTPSTestClass):
                 # the image.
                 self.seed_ta_dir("ta7")
                 self.pkg("set-publisher -k %(key)s -c %(cert)s -p %(url)s" % {
-                    "url": self.acurl,
+                    "url": self.acurl1,
                     "cert": os.path.join(self.cs_dir, self.get_cli_cert("test")),
                     "key": os.path.join(self.keys_dir, self.get_cli_key("test")),
                     })
@@ -127,7 +128,7 @@ class TestHTTPS(pkg5unittest.HTTPSTestClass):
                 self.seed_ta_dir("ta7")
                 self.pkg("set-publisher --proxy %(proxy)s "
                     "-k %(key)s -c %(cert)s -p %(url)s" % {
-                    "url": self.acurl,
+                    "url": self.acurl1,
                     "cert": os.path.join(self.cs_dir, self.get_cli_cert("test")),
                     "key": os.path.join(self.keys_dir, self.get_cli_key("test")),
                     "proxy": self.proxyurl})
@@ -142,7 +143,7 @@ class TestHTTPS(pkg5unittest.HTTPSTestClass):
                 self.seed_ta_dir("ta7")
                 self.pkg("set-publisher --proxy %(proxy)s "
                     "-k %(key)s -c %(cert)s -p %(url)s" % {
-                    "url": self.acurl,
+                    "url": self.acurl1,
                     "cert": os.path.join(self.cs_dir, self.get_cli_cert("test")),
                     "key": os.path.join(self.keys_dir, self.get_cli_key("test")),
                     "proxy": bad_proxyurl}, exit=1)
@@ -152,7 +153,7 @@ class TestHTTPS(pkg5unittest.HTTPSTestClass):
                 # good proxy.
                 self.pkg("set-publisher --no-refresh --proxy %(proxy)s "
                     "-k %(key)s -c %(cert)s -g %(url)s test" % {
-                    "url": self.acurl,
+                    "url": self.acurl1,
                     "cert": os.path.join(self.cs_dir, self.get_cli_cert("test")),
                     "key": os.path.join(self.keys_dir, self.get_cli_key("test")),
                     "proxy": bad_proxyurl}, exit=0)
@@ -176,7 +177,7 @@ class TestHTTPS(pkg5unittest.HTTPSTestClass):
                 # Set https-based publisher with correct cert.
                 self.seed_ta_dir("ta7")
                 self.pkg("set-publisher -k %(key)s -c %(cert)s -p %(url)s" % {
-                    "url": self.acurl,
+                    "url": self.acurl1,
                     "cert": good_cert_path,
                     "key": os.path.join(self.keys_dir, self.get_cli_key("test")),
                     })
@@ -199,6 +200,55 @@ class TestHTTPS(pkg5unittest.HTTPSTestClass):
                 # Refreshing the second publisher should not try to validate
                 # the cert for the first publisher.
                 self.pkg("refresh %s" % self.tmppub)
+
+        def test_expired_certs(self):
+                """ Test that certificate validation needs to validate all
+                certificates before raising an exception. (Bug 15507548)"""
+
+                bad_cert_path = os.path.join(self.cs_dir,
+                    "cs3_ch1_ta3_cert.pem")
+                good_cert_path_1 = os.path.join(self.cs_dir,
+                    self.get_cli_cert("test"))
+                good_cert_path_2 = os.path.join(self.cs_dir,
+                    self.get_cli_cert("tmp"))
+                self.ac.start()
+                self.image_create()
+
+                # Set https-based publisher with correct cert.
+                self.seed_ta_dir("ta7")
+                self.pkg("set-publisher -k %(key)s -c %(cert)s -p %(url)s" % {
+                    "url": self.acurl1,
+                    "cert": good_cert_path_1,
+                    "key": os.path.join(self.keys_dir, self.get_cli_key("test")),
+                    })
+                # Set a second publisher
+                self.pkg("set-publisher -k %(key)s -c %(cert)s -p %(url)s" % {
+                    "url": self.acurl2,
+                    "cert": good_cert_path_2,
+                    "key": os.path.join(self.keys_dir, self.get_cli_key("tmp")),
+                    })
+ 
+                # Replace cert of first publisher with one that is expired.
+
+                # Cert is stored by content hash in the pkg config of the image,
+                # which must be a SHA-1 hash for backwards compatibility.
+                ch = misc.get_data_digest(good_cert_path_1,
+                    hash_func=hashlib.sha1)[0]
+                pkg_cert_path = os.path.join(self.get_img_path(), "var", "pkg",
+                    "ssl", ch)
+                shutil.copy(bad_cert_path, pkg_cert_path)
+
+                # Replace the second certificate with one that is expired.
+                ch = misc.get_data_digest(good_cert_path_2,
+                    hash_func=hashlib.sha1)[0]
+                pkg_cert_path = os.path.join(self.get_img_path(), "var", "pkg",
+                    "ssl", ch)
+                shutil.copy(bad_cert_path, pkg_cert_path)
+
+                # Refresh all publishers should try to validate all certs.
+                self.pkg("refresh", exit=1)
+                self.assert_("Publisher: tmp" in self.errout, self.errout)
+                self.assert_("Publisher: test" in self.errout, self.errout)
 
 
 class TestDepotHTTPS(pkg5unittest.SingleDepotTestCase):
