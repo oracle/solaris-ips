@@ -961,6 +961,59 @@ class TestPkgrecvMulti(pkg5unittest.ManyDepotTestCase):
                 self.dcs[3].unset_debug_feature("hash=sha1+sha256")
                 self.dcs[3].start()
 
+        def test_13_output(self):
+                """Verify that pkgrecv handles verbose output as expected."""
+
+                # Now attempt to receive from a repository.
+                self.pkgrepo("create %s" % self.tempdir)
+                self.pkgrecv(self.dpath1, "-d %s -n -v \*" % self.tempdir)
+                expected = """\
+Retrieving packages (dry-run) ...
+        Packages to add:        9
+      Files to retrieve:       17
+Estimated transfer size: 528.00 B
+"""
+                self.assert_(expected in self.output, self.output)
+                for s in self.published:
+                        self.assert_(fmri.PkgFmri(s).get_fmri(anarchy=True,
+                            include_scheme=False) in self.output)
+
+                # Clean up for next test.
+                shutil.rmtree(self.tempdir)
+
+                # Now attempt to receive from a repository to a package archive.
+                self.pkgrecv(self.dpath1, "-a -d %s -n -v \*" % self.tempdir)
+                expected = """\
+Archiving packages (dry-run) ...
+        Packages to add:        9
+      Files to retrieve:       17
+Estimated transfer size: 528.00 B
+"""
+                self.assert_(expected in self.output, self.output)
+                for s in self.published:
+                        self.assert_(fmri.PkgFmri(s).get_fmri(anarchy=True,
+                            include_scheme=False) in self.output)
+
+                # Now attempt to clone a repository.
+                self.pkgrepo("create %s" % self.tempdir)
+                self.pkgrecv(self.dpath1, "--clone -d %s -p \* -n -v \*" \
+                    % self.tempdir)
+                expected = """\
+Retrieving packages (dry-run) ...
+        Packages to add:        9
+      Files to retrieve:       17
+Estimated transfer size: 528.00 B
+"""
+                self.assert_(expected in self.output, self.output)
+                for s in self.published:
+                        self.assert_(fmri.PkgFmri(s).get_fmri(anarchy=True,
+                            include_scheme=False) in self.output)
+
+                # Test that output is correct if -n is not specified.
+                self.pkgrecv(self.dpath1, "-d %s -v \*" % self.tempdir)
+                self.assert_("dry-run" not in self.output)
+
+
 class TestPkgrecvHTTPS(pkg5unittest.HTTPSTestClass):
 
         example_pkg10 = """

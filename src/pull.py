@@ -94,13 +94,13 @@ def usage(usage_error=None, retcode=2):
 
         msg(_("""\
 Usage:
-        pkgrecv [-s src_uri] [-a] [-d (path|dest_uri)] [-c cache_dir]
-            [-kr] [-m match] [-n] [--raw] [--key src_key --cert src_cert]
+        pkgrecv [-aknrv] [-s src_uri] [-d (path|dest_uri)] [-c cache_dir]
+            [-m match] [--raw] [--key src_key --cert src_cert]
             [--dkey dest_key --dcert dest_cert]
             (fmri|pattern) ...
         pkgrecv [-s src_repo_uri] --newest
-        pkgrecv [-s src_repo_uri] [-d path] [-p publisher ...]
-            [--key src_key --cert src_cert] [-n] --clone
+        pkgrecv [-nv] [-s src_repo_uri] [-d path] [-p publisher ...]
+            [--key src_key --cert src_cert] --clone
 
 Options:
         -a              Store the retrieved package data in a pkg(5) archive
@@ -134,6 +134,8 @@ Options:
                                 includes only the latest version of each package
 
         -n              Perform a trial run with no changes made.
+        
+        -v              Display verbose output.
 
         -p publisher    Only clone the given publisher. Can be specified
                         multiple times. Only valid with --clone.
@@ -391,6 +393,7 @@ def main_func():
         dcert = None
         publishers = []
         clone = False
+        verbose = False
 
         temp_root = misc.config_temp_root()
 
@@ -402,7 +405,7 @@ def main_func():
         src_uri = os.environ.get("PKG_SRC", None)
 
         try:
-                opts, pargs = getopt.getopt(sys.argv[1:], "ac:D:d:hkm:np:rs:",
+                opts, pargs = getopt.getopt(sys.argv[1:], "ac:D:d:hkm:np:rs:v",
                     ["cert=", "key=", "dcert=", "dkey=", "newest", "raw",
                     "debug=", "clone"])
         except getopt.GetoptError, e:
@@ -453,6 +456,8 @@ def main_func():
                         recursive = True
                 elif opt == "-s":
                         src_uri = arg
+                elif opt == "-v":
+                        verbose = True
                 elif opt == "--newest":
                         list_newest = True
                 elif opt == "--raw":
@@ -521,7 +526,7 @@ def main_func():
             remote_prefix=True, ssl_key=key, ssl_cert=cert)
 
         args = (pargs, target, list_newest, all_versions,
-            all_timestamps, keep_compressed, raw, recursive, dry_run,
+            all_timestamps, keep_compressed, raw, recursive, dry_run, verbose,
             dest_xport_cfg, src_uri, dkey, dcert)
 
         if clone:
@@ -589,8 +594,8 @@ def get_matches(src_pub, tracker, xport, pargs, any_unmatched, any_matched,
         return matches
 
 def archive_pkgs(pargs, target, list_newest, all_versions, all_timestamps,
-    keep_compresed, raw, recursive, dry_run, dest_xport_cfg, src_uri, dkey,
-    dcert):
+    keep_compresed, raw, recursive, dry_run, verbose, dest_xport_cfg, src_uri,
+    dkey, dcert):
         """Retrieve source package data completely and then archive it."""
 
         global cache_dir, download_start, xport, xport_cfg
@@ -682,6 +687,30 @@ def archive_pkgs(pargs, target, list_newest, all_versions, all_timestamps,
                 tracker.download_set_goal(len(matches), get_files,
                     get_bytes)
 
+                if verbose:
+                        if not dry_run:
+                                msg(_("\nArchiving packages ..."))
+                        else:
+                                msg(_("\nArchiving packages (dry-run) ..."))
+                        status = []
+                        status.append((_("Packages to add:"), str(len(matches))))
+                        status.append((_("Files to retrieve:"), str(get_files)))
+                        status.append((_("Estimated transfer size:"),
+                            misc.bytes_to_str(get_bytes)))
+
+                        rjust_status = max(len(s[0]) for s in status)
+                        rjust_value = max(len(s[1]) for s in status)
+                        for s in status:
+                                msg("%s %s" % (s[0].rjust(rjust_status),
+                                    s[1].rjust(rjust_value)))
+
+                        msg(_("\nPackages to archive:"))
+                        for f in sorted(matches):
+                                fmri = f.get_fmri(anarchy=True,
+                                    include_scheme=False)
+                                msg(fmri)
+                        msg()
+
                 if dry_run:
                         # Don't call download_done here; it would cause an
                         # assertion failure since nothing was downloaded.
@@ -740,8 +769,8 @@ def archive_pkgs(pargs, target, list_newest, all_versions, all_timestamps,
 
 
 def clone_repo(pargs, target, list_newest, all_versions, all_timestamps,
-    keep_compressed, raw, recursive, dry_run, dest_xport_cfg, src_uri, dkey,
-    dcert, publishers):
+    keep_compressed, raw, recursive, dry_run, verbose, dest_xport_cfg, src_uri,
+    dkey, dcert, publishers):
 
         global cache_dir, download_start, xport, xport_cfg, dest_xport
 
@@ -919,6 +948,9 @@ def clone_repo(pargs, target, list_newest, all_versions, all_timestamps,
                 get_bytes = 0
                 get_files = 0
 
+                msg(_("Retrieving and evaluating %d package(s)...") %
+                    len(to_add))
+
                 # Retrieve manifests.
                 # Try prefetching manifests in bulk first for faster, parallel
                 # transport. Retryable errors during prefetch are ignored and
@@ -966,22 +998,30 @@ def clone_repo(pargs, target, list_newest, all_versions, all_timestamps,
                 # Restore old GoalTrackerItem for manifest download.
                 tracker.mfst_fetch = old_gti
 
-                if not dry_run:
-                        msg(_("\nAdding packages ..."))
-                else:
-                        msg(_("\nAdding packages (dry-run) ..."))
+                if verbose:
+                        if not dry_run:
+                                msg(_("\nRetrieving packages ..."))
+                        else:
+                                msg(_("\nRetrieving packages (dry-run) ..."))
 
-                status = []
-                status.append((_("Packages to add:"), str(len(to_add))))
-                status.append((_("Files to retrieve:"), str(get_files)))
-                status.append((_("Estimated transfer size:"), misc.bytes_to_str(
-                    get_bytes)))
+                        status = []
+                        status.append((_("Packages to add:"), str(len(to_add))))
+                        status.append((_("Files to retrieve:"), str(get_files)))
+                        status.append((_("Estimated transfer size:"),
+                            misc.bytes_to_str(get_bytes)))
 
-                rjust_status = max(len(s[0]) for s in status)
-                rjust_value = max(len(s[1]) for s in status)
-                for s in status:
-                        msg("%s %s" % (s[0].rjust(rjust_status),
-                            s[1].rjust(rjust_value)))
+                        rjust_status = max(len(s[0]) for s in status)
+                        rjust_value = max(len(s[1]) for s in status)
+                        for s in status:
+                                msg("%s %s" % (s[0].rjust(rjust_status),
+                                    s[1].rjust(rjust_value)))
+ 
+                        msg(_("\nPackages to transfer:"))
+                        for f, i in sorted(to_add):
+                                fmri = f.get_fmri(anarchy=True,
+                                    include_scheme=False)
+                                msg("%s" % fmri)
+                        msg()
 
                 if dry_run:
                         continue
@@ -1070,8 +1110,8 @@ def clone_repo(pargs, target, list_newest, all_versions, all_timestamps,
         return pkgdefs.EXIT_OK
 
 def transfer_pkgs(pargs, target, list_newest, all_versions, all_timestamps,
-    keep_compressed, raw, recursive, dry_run, dest_xport_cfg, src_uri, dkey,
-    dcert):
+    keep_compressed, raw, recursive, dry_run, verbose, dest_xport_cfg, src_uri,
+    dkey, dcert):
         """Retrieve source package data and optionally republish it as each
         package is retrieved.
         """
@@ -1216,6 +1256,32 @@ def transfer_pkgs(pargs, target, list_newest, all_versions, all_timestamps,
                 # Next, retrieve and store the content for each package.
                 tracker.republish_set_goal(len(pkgs_to_get), get_bytes,
                     send_bytes)
+
+                if verbose:
+                        if not dry_run:
+                                msg(_("\nRetrieving packages ..."))
+                        else:
+                                msg(_("\nRetrieving packages (dry-run) ..."))
+                        status = []
+                        status.append((_("Packages to add:"),
+                            str(len(pkgs_to_get))))
+                        status.append((_("Files to retrieve:"),
+                            str(get_files)))
+                        status.append((_("Estimated transfer size:"),
+                            misc.bytes_to_str(get_bytes)))
+
+                        rjust_status = max(len(s[0]) for s in status)
+                        rjust_value = max(len(s[1]) for s in status)
+                        for s in status:
+                                msg("%s %s" % (s[0].rjust(rjust_status),
+                                    s[1].rjust(rjust_value)))
+ 
+                        msg(_("\nPackages to transfer:"))
+                        for f in sorted(pkgs_to_get):
+                                fmri = f.get_fmri(anarchy=True,
+                                    include_scheme=False)
+                                msg("%s" % fmri)
+                        msg()
 
                 if dry_run:
                         tracker.republish_done(dryrun=True)
