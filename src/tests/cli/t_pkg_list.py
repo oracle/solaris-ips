@@ -518,6 +518,9 @@ class TestPkgList(pkg5unittest.ManyDepotTestCase):
                     ("'fo*' food bogus", 3), ("'f?o*' bogus", 3)):
                         self.pkg("list -a %s" % pat, exit=ecode)
 
+                self.pkg("list junk_pkg_name", exit=1)
+                self.assert_("junk_pkg_name" in self.errout)
+
         def test_13_multi_name(self):
                 """Test for multiple name match listing."""
                 self.pkg("list -aHf '/foo*@1.2'")
@@ -549,6 +552,7 @@ class TestPkgList(pkg5unittest.ManyDepotTestCase):
                 # First, test individually.
                 for val in pats:
                         self.pkg("list %s" % val, exit=1)
+                        self.assert_(self.errout)
 
                 # Next, test invalid input but with options.  The option
                 # should not be in the error output. (If it is, the FMRI
@@ -671,6 +675,7 @@ class TestPkgListSingle(pkg5unittest.SingleDepotTestCase):
 
                 self.image_create(self.rurl)
                 self.pkg("list", exit=1)
+                self.assert_(self.errout)
 
                 # Should not print anything if using -q.
                 self.pkg("list -q", exit=1)

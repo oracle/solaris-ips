@@ -657,6 +657,9 @@ def list_inventory(op, api_inst, pargs,
                                             ", ".join(no_updates)
                         if err_str:
                                 error(err_str, cmd=op)
+                else:
+                        error(_("No packages matching '%s' installed") % \
+                            ", ".join(e.notfound), cmd=op) 
 
                 if found and e.notfound:
                         # Only some patterns matched.
