@@ -39,8 +39,8 @@ class TestElf(pkg5unittest.Pkg5TestCase):
         # tests may fail.  At some point if someone moves paths around in
         # ON, this might fail.  Sorry!
         elf_paths = [
-            "/usr/bin/ls",
-            "/usr/bin/__ARCH__/ls",
+            "/usr/bin/mdb",
+            "/usr/bin/__ARCH__/mdb",
             "/dev/ksyms",
             "/usr/lib/libc.so",
             "/usr/lib/__ARCH__/libc.so",
@@ -76,7 +76,7 @@ class TestElf(pkg5unittest.Pkg5TestCase):
                 for p in self.elf_paths:
                         p = re.sub("__ARCH__", arch, p)
                         self.debug("testing elf file %s" % p)
-                        self.assert_(os.path.exists(p))
+                        self.assert_(os.path.exists(p), "%s does not exist" % p)
                         self.assertEqual(elf.is_elf_object(p), True)
                         elf.get_dynamic(p)
                         elf.get_info(p)
