@@ -33,6 +33,7 @@ from pkg.server.query_parser import Query
 import os
 import pkg
 import pkg.catalog
+import pkg.manifest
 import pkg.depotcontroller as dc
 import pkg.fmri as fmri
 import pkg.pkggzip
@@ -1826,6 +1827,40 @@ test2	zoo		1.0	5.11	0	20110804T203458Z	pkg://test2/zoo@1.0,5.11-0:20110804T20345
                                                 mf_new.write(line)
                 os.rename(mpath_new, path)
 
+        def __inject_badchain(self, fmri_str):
+                """Given an fmri with a signature action, locate the chain
+                hashes used by that signature action in that package, and
+                remove the corresponding file from the repository. If the chain
+                references more one file, those subsequent files are
+                corrupted."""
+
+                mpath = self.__get_mf_path(fmri_str)
+                mf = pkg.manifest.Manifest()
+                mf.set_content(pathname=mpath)
+                fpath = os.path.sep.join([self.dc.get_repodir(), "publisher",
+                    "test", "file"])
+
+                bad_paths = []
+                removed_file = False
+                corrupted_file = False
+                for ac in mf.gen_actions_by_type("signature"):
+                        for chain in ac.attrs["chain"].split():
+                                cpath = os.path.join(fpath, chain[0:2], chain)
+                                if not removed_file:
+                                        os.unlink(cpath)
+                                        removed_file = True
+                                elif not corrupted_file:
+                                        open(cpath, "w").write("noodles")
+                                        corrupted_file = True
+                                else:
+                                        with open(cpath, "w") as badfile:
+                                                gz = pkg.pkggzip.PkgGzipFile(
+                                                    fileobj=badfile)
+                                                gz.write("noodles")
+                                                gz.close()
+                                bad_paths.append(cpath)
+                return bad_paths
+
         def __inject_unknown(self):
                 pass
 
@@ -2043,6 +2078,45 @@ test2	zoo		1.0	5.11	0	20110804T203458Z	pkg://test2/zoo@1.0,5.11-0:20110804T20345
                 self.pkgrepo("-s %s set repository/trust-anchor-directory=%s" %
                     (repo_path, ta_dir))
                 self.pkgrepo("-s %s verify" % repo_path, exit=0)
+
+                # remove the old package and republish it so it can be signed
+                # again.
+                self.pkgrepo("-s %s remove %s" % (repo_path, fmris[0]))
+                fmris = self.pkgsend_bulk(repo_path, (self.truck10))
+
+                # Create an image, setup its trust-anchor dir, then use that
+                # for our repository so that pkgrepo verify can perform
+                # signature verification against it.
+                self.image_create()
+                self.seed_ta_dir("ta1")
+                self.pkgrepo("-s %s set repository/trust-anchor-directory=%s" %
+                    (repo_path, self.raw_trust_anchor_dir))
+
+                # We sign with several certs so that we get a 'chain' attribute
+                # that contains several hashes.
+                sign_args = "-k %(key)s -c %(cert)s -i %(i1)s -i %(i2)s " \
+                    "-i %(i3)s -i %(i4)s -i %(i5)s" % {
+                      "key": os.path.join(self.keys_dir, "cs1_ch5_ta1_key.pem"),
+                      "cert": os.path.join(self.cs_dir, "cs1_ch5_ta1_cert.pem"),
+                      "i1": os.path.join(self.chain_certs_dir,
+                          "ch1_ta1_cert.pem"),
+                      "i2": os.path.join(self.chain_certs_dir,
+                          "ch2_ta1_cert.pem"),
+                      "i3": os.path.join(self.chain_certs_dir,
+                          "ch3_ta1_cert.pem"),
+                      "i4": os.path.join(self.chain_certs_dir,
+                          "ch4_ta1_cert.pem"),
+                      "i5": os.path.join(self.chain_certs_dir,
+                          "ch5_ta1_cert.pem"),
+                    }
+
+                self.pkgsign(repo_path, "%s \*" % sign_args)
+                self.pkgrepo("-s %s verify" % repo_path)
+
+                bad_paths = self.__inject_badchain(fmris[0])
+                self.pkgrepo("-s %s verify" % repo_path, exit=1)
+                for bad_path in bad_paths:
+                        self.assert_(bad_path in self.output)
 
         def test_16_verify_warn_openperms(self):
                 """Test that we emit a warning message when the repository is
