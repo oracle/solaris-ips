@@ -115,7 +115,6 @@ WSGISocketPrefix ${runtime_dir}/wsgi
 LimitRequestBody 102400
 # Set environment variables used by our wsgi application
 SetEnv PKG5_RUNTIME_DIR ${runtime_dir}
-SetEnv PKG5_CACHE_DIR ${cache_dir}
 
 #
 # If you wish httpd to run as a different user or group, you must run
@@ -345,12 +344,17 @@ RewriteRule ^${sroot}[/]?$ ${sroot}/depot/repos.shtml [NE,PT]
         path_info = set()
         root = context.get("sroot")
         context.write("# the repositories our search app should index.\n")
-        for pub, repo_path, repo_prefix in pubs:
-                path_info.add((repo_path, repo_prefix.rstrip("/")))
-        for repo_path, repo_prefix in path_info:
+        for pub, repo_path, repo_prefix, writable_root in pubs:
+                path_info.add(
+                    (repo_path, repo_prefix.rstrip("/"), writable_root))
+        for repo_path, repo_prefix, writable_root in path_info:
                 context.write(
                     "SetEnv PKG5_REPOSITORY_%(repo_prefix)s %(repo_path)s\n" %
                     locals())
+                if writable_root:
+                        context.write(
+                            "SetEnv PKG5_WRITABLE_ROOT_%(repo_prefix)s "
+                            "%(writable_root)s\n" % locals())
                 context.write("RewriteRule ^/%(root)s%(repo_prefix)s/[/]?$ "
                     "%(root)s/depot/%(repo_prefix)s/ [NE,PT]\n" %
                     locals())
@@ -358,7 +362,7 @@ RewriteRule ^${sroot}[/]?$ ${sroot}/depot/repos.shtml [NE,PT]
                     "%(root)s/depot/%(repo_prefix)s/$1 [NE,PT]\n" %
                     locals())
 %>
-% for pub, repo_path, repo_prefix in pubs:
+% for pub, repo_path, repo_prefix, writable_root in pubs:
 % if int(cache_size) > 0:
 CacheEnable disk /${root}${repo_prefix}${pub}/file
 CacheEnable disk /${root}${repo_prefix}${pub}/manifest

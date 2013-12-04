@@ -56,9 +56,9 @@ repo_prefixes = set()
 root = context.get("sroot")
 runtime_dir = context.get("runtime_dir")
 
-for pub, repo_path, repo_prefix in pubs:
+for pub, repo_path, repo_prefix, writable_root in pubs:
         repo_prefixes.add(repo_prefix)
-context.write("# per-repository versions and publishers responses\n")
+context.write("# per-repository versions, publishers and status responses\n")
 
 for repo_prefix in repo_prefixes:
         context.write(
@@ -67,6 +67,9 @@ for repo_prefix in repo_prefixes:
         context.write("RewriteRule ^/%(root)s%(repo_prefix)spublisher/0 "
             "/%(root)s%(repo_prefix)spublisher/1/index.html [PT,NE]\n" %
             locals())
+        context.write(
+            "RewriteRule ^/%(root)s%(repo_prefix)sstatus/0 "
+            "/%(root)s%(repo_prefix)sstatus/0/index.html [PT,NE]\n" % locals())
 %>
 
 <%doc>
@@ -116,7 +119,7 @@ for repo_prefix in repo_prefixes:
 %>
 
 # Write per-publisher rules for publisher, version, file and manifest responses
-% for pub, repo_path, repo_prefix in pubs:
+% for pub, repo_path, repo_prefix, writable_root in pubs:
         <%doc>
         # Point to our local versions/0 response or
         # publisher-specific publisher/1, response, then stop.
@@ -196,7 +199,7 @@ for repo_prefix in repo_prefixes:
 <%
 paths = set()
 root = context.get("sroot")
-for pub, repo_path, repo_prefix in pubs:
+for pub, repo_path, repo_prefix, writable_root in pubs:
         paths.add((repo_path, repo_prefix))
         context.write(
             "Alias /%(root)s%(repo_prefix)s%(pub)s %(repo_path)s\n" %

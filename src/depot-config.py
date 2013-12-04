@@ -32,6 +32,7 @@ import logging
 import os
 import re
 import shutil
+import simplejson as json
 import socket
 import sys
 import traceback
@@ -71,6 +72,7 @@ DEPOT_PUB_FILENAME = "index.html"
 DEPOT_HTDOCS_DIRNAME = "htdocs"
 
 DEPOT_VERSIONS_DIRNAME = ["versions", "0"]
+DEPOT_STATUS_DIRNAME = ["status", "0"]
 DEPOT_PUB_DIRNAME = ["publisher", "1"]
 
 DEPOT_CACHE_FILENAME = "depot.cache"
@@ -87,6 +89,7 @@ versions 0
 catalog 1
 file 1
 manifest 0
+status 0
 """ % pkg.VERSION
 
 # versions response used when we provide search capability
@@ -177,7 +180,7 @@ def _get_publishers(root):
                 default_pub = repository.cfg.get_property("publisher", "prefix")
         except cfg.UnknownPropertyError:
                 default_pub = None
-        return all_pubs, default_pub
+        return all_pubs, default_pub, repository.get_status()
 
 def _write_httpd_conf(pubs, default_pubs, runtime_dir, log_dir, template_dir,
         cache_dir, cache_size, host, port, sroot,
@@ -185,7 +188,8 @@ def _write_httpd_conf(pubs, default_pubs, runtime_dir, log_dir, template_dir,
         """Writes the webserver configuration for the depot.
 
         pubs            repository and publisher information, a list in the form
-                        [(publisher_prefix, repo_dir, repo_prefix), ... ]
+                        [(publisher_prefix, repo_dir, repo_prefix,
+                            writable_root), ... ]
         default_pubs    default publishers, per repository, a list in the form
                         [(default_publisher_prefix, repo_dir, repo_prefix) ... ]
 
@@ -356,6 +360,19 @@ def _write_publisher_response(pubs, htdocs_path, repo_prefix):
                 raise DepotException(
                     _("Unable to write publisher response: %s") % err)
 
+def _write_status_response(status, htdocs_path, repo_prefix):
+        """Writes a status status/0 response for the depot."""
+        try:
+                status_path = os.path.join(htdocs_path, repo_prefix,
+                    os.path.sep.join(DEPOT_STATUS_DIRNAME), "index.html")
+                misc.makedirs(os.path.dirname(status_path))
+                with file(status_path, "w") as status_file:
+                        status_file.write(json.dumps(status, ensure_ascii=False,
+                            indent=2, sort_keys=True))
+        except OSError, err:
+                raise DepotException(
+                    _("Unable to write status response: %s") % err)
+
 def cleanup_htdocs(htdocs_dir):
         """Destroy any existing "htdocs" directory."""
         try:
@@ -380,34 +397,40 @@ def refresh_conf(repo_info, log_dir, host, port, runtime_dir,
                 misc.makedirs(htdocs_path)
 
                 # pubs and default_pubs are lists of tuples of the form:
-                # (publisher prefix, repository root dir, repository prefix)
+                # (publisher prefix, repository root dir, repository prefix,
+                #     writable_root)
                 pubs = []
                 default_pubs = []
-
-                repo_prefixes = [prefix for root, prefix in repo_info]
                 errors = []
 
                 # Query each repository for its publisher information.
-                for (repo_root, repo_prefix) in repo_info:
+                for (repo_root, repo_prefix, writable_root) in repo_info:
                         try:
-                                publishers, default_pub = \
+                                publishers, default_pub, status = \
                                     _get_publishers(repo_root)
                                 for pub in publishers:
                                         pubs.append(
                                             (pub, repo_root,
-                                            repo_prefix))
+                                            repo_prefix, writable_root))
                                 default_pubs.append((default_pub,
                                     repo_root, repo_prefix))
+                                _write_status_response(status, htdocs_path,
+                                    repo_prefix)
+                                # The writable root must exist and must be
+                                # owned by pkg5srv:pkg5srv
+                                if writable_root:
+                                        misc.makedirs(writable_root)
+                                        _chown_dir(writable_root)
 
                         except DepotException, err:
                                 errors.append(str(err))
                 if errors:
-                        raise DepotException(_("Unable to get publisher "
-                            "information: %s") % "\n".join(errors))
+                        raise DepotException(_("Unable to write configuration: "
+                            "%s") % "\n".join(errors))
 
                 # Write the publisher/0 response for each repository
                 pubs_by_repo = {}
-                for pub_prefix, repo_root, repo_prefix in pubs:
+                for pub_prefix, repo_root, repo_prefix, writable_root in pubs:
                         pubs_by_repo.setdefault(repo_prefix, []).append(
                             pub_prefix)
                 for repo_prefix in pubs_by_repo:
@@ -439,6 +462,9 @@ def get_smf_repo_info():
         for fmri in smf_instances:
                 repo_prefix = fmri.split(":")[-1]
                 repo_root = smf.get_prop(fmri, "pkg/inst_root")
+                writable_root = smf.get_prop(fmri, "pkg/writable_root")
+                if not writable_root or writable_root == '""':
+                        writable_root = None
                 state = smf.get_prop(fmri, "restarter/state")
                 readonly = smf.get_prop(fmri, "pkg/readonly")
                 standalone = smf.get_prop(fmri, "pkg/standalone")
@@ -447,7 +473,7 @@ def get_smf_repo_info():
                     readonly == "true" and
                     standalone == "false"):
                         repo_info.append((repo_root,
-                            _affix_slash(repo_prefix)))
+                            _affix_slash(repo_prefix), writable_root))
         if not repo_info:
                 raise DepotException(_(
                     "No online, readonly, non-standalone instances of "
@@ -462,14 +488,22 @@ def _check_unique_repo_properties(repo_info):
 
         prefixes = set()
         roots = set()
+        writable_roots = set()
         errors = []
-        for root, prefix in repo_info:
+        for root, prefix, writable_root in repo_info:
                 if prefix in prefixes:
-                        errors.append(_("instance %s already exists") % prefix)
+                        errors.append(_("prefix %s cannot be used more than "
+                            "once in a given depot configuration") % prefix)
                 prefixes.add(prefix)
                 if root in roots:
-                        errors.append(_("repo_root %s already exists") % root)
+                        errors.append(_("repo_root %s cannot be used more "
+                            "than once in a given depot configuration") % root)
                 roots.add(root)
+                if writable_root and writable_root in writable_roots:
+                        errors.append(_("writable_root %s cannot be used more "
+                            "than once in a given depot configuration") %
+                            writable_root)
+                writable_roots.add(writable_root)
         if errors:
                 raise DepotException("\n".join(errors))
         return True
@@ -492,7 +526,7 @@ def main_func():
         port = None
         # a list of (repo_dir, repo_prefix) tuples
         repo_info = []
-        # the path where we store indexes and disk caches
+        # the path where we store disk caches
         cache_dir = None
         # our maximum cache size, in megabytes
         cache_size = 0
@@ -516,6 +550,8 @@ def main_func():
         allow_refresh = False
         # the current server_type
         server_type = "apache2"
+
+        writable_root_set = False
 
         try:
                 opts, pargs = getopt.getopt(sys.argv[1:],
@@ -542,9 +578,17 @@ def main_func():
                         elif opt == "-d":
                                 if "=" not in arg:
                                         usage(_("-d arguments must be in the "
-                                            "form <prefix>=<repo path>"))
-                                prefix, root = arg.split("=", 1)
-                                repo_info.append((root, _affix_slash(prefix)))
+                                            "form <prefix>=<repo path>"
+                                            "[=writable root]"))
+                                components = arg.split("=", 2)
+                                if len(components) == 3:
+                                        prefix, root, writable_root = components
+                                        writable_root_set = True
+                                elif len(components) == 2:
+                                        prefix, root = components
+                                        writable_root = None
+                                repo_info.append((root, _affix_slash(prefix),
+                                    writable_root))
                         elif opt == "-P":
                                 sroot = _affix_slash(arg)
                         elif opt == "-F":
@@ -571,7 +615,7 @@ def main_func():
         if not runtime_dir:
                 usage(_("required runtime dir option -r missing."))
 
-        # we need a cache_dir to store the search indexes
+        # we need a cache_dir to store the SSLSessionCache
         if not cache_dir and not fragment:
                 usage(_("cache_dir option -c is required if -F is not used."))
 
@@ -584,6 +628,13 @@ def main_func():
 
         if repo_info and use_smf_instances:
                 usage(_("cannot use -d and -S together."))
+
+        # We can't support httpd.conf fragments with writable root, because
+        # we don't have the mod_wsgi app that can build the index or serve
+        # search requests everywhere the fragments might be used. (eg. on
+        # non-Solaris systems)
+        if writable_root_set and fragment:
+                usage(_("cannot use -d with writable roots and -F together."))
 
         if fragment and port:
                 usage(_("cannot use -F and -p together."))
@@ -608,7 +659,10 @@ def main_func():
                     {"type": server_type,
                     "known": ", ".join(KNOWN_SERVER_TYPES)})
 
-        _check_unique_repo_properties(repo_info)
+        try:
+                _check_unique_repo_properties(repo_info)
+        except DepotException, e:
+                error(e)
 
         ret = refresh_conf(repo_info, log_dir, host, port, runtime_dir,
             template_dir, cache_dir, cache_size, sroot, fragment=fragment,

@@ -21,20 +21,22 @@
 #
 # Copyright (c) 2013, Oracle and/or its affiliates. All rights reserved.
 
+import atexit
 import cherrypy
 import httplib
 import logging
 import mako
 import os
 import re
+import shutil
 import sys
+import tempfile
 import threading
 import time
 import traceback
 import urllib
 import Queue
 
-import pkg.digest as digest
 import pkg.p5i
 import pkg.server.api
 import pkg.server.repository as sr
@@ -44,13 +46,17 @@ import pkg.server.face as face
 # redirecting stdout for proper WSGI portability
 sys.stdout = sys.stderr
 
-# a global dictionary containing lists of sr.Repository objects, keyed by
+# a global dictionary containing sr.Repository objects, keyed by
 # repository prefix (not publisher prefix).
 repositories = {}
 
-# a global dictionary containing lists of DepotBUI objects, keyed by repository
+# a global dictionary containing DepotBUI objects, keyed by repository
 # prefix.
 depot_buis = {}
+
+# a global dictionary containing sd.DepotHTTP objects, keyed by repository
+# prefix
+depot_https = {}
 
 # a lock used during server startup to ensure we don't try to index the same
 # repository at once.
@@ -59,10 +65,10 @@ repository_lock = threading.Lock()
 import gettext
 gettext.install("/")
 
-# How often we ping the depot while long-running background tasks are running
-# this should be set to less than the mod_wsgi inactivity-timeout (since
+# How often we ping the depot while long-running background tasks are running.
+# This should be set to less than the mod_wsgi inactivity-timeout (since
 # pinging the depot causes activity, preventing mod_wsgi from shutting down the
-# Python interpreter.
+# Python interpreter.)
 KEEP_BUSY_INTERVAL = 120
 
 class DepotException(Exception):
@@ -74,6 +80,7 @@ class DepotException(Exception):
 
         def __str__(self):
                 return "%s: %s" % (self.message, self.request)
+
 
 class AdminOpsDisabledException(DepotException):
         """An exception thrown when this wsgi application hasn't been configured
@@ -103,6 +110,22 @@ class AdminOpNotSupportedException(DepotException):
                     "supported by this repository. " \
                     "Request was: %(request)s" % {"request": self.request,
                     "type": self.cmd}
+
+
+class IndexOpDisabledException(DepotException):
+        """An exception thrown when we've been asked to refresh an index for
+        a repository that doesn't have a writable_root property set."""
+
+        def __init__(self, request):
+                self.request = request
+                self.http_status = httplib.FORBIDDEN
+
+        def __str__(self):
+                return "admin/0 operations to refresh indexes are not " \
+                    "allowed on this repository because it is read-only and " \
+                    "the svc:/application/pkg/server instance does not have " \
+                    "a config/writable_root SMF property set. " \
+                    "Request was: %s" % self.request
 
 
 class BackgroundTask(object):
@@ -199,10 +222,17 @@ class DepotBUI(object):
         web resources (css, html, etc)
         """
 
-        def __init__(self, repo, dconf, tmp_root, pkg5_test_proto=""):
+        def __init__(self, repo, dconf, writable_root, pkg5_test_proto=""):
                 self.repo = repo
                 self.cfg = dconf
-                self.tmp_root = tmp_root
+                if writable_root:
+                        self.tmp_root = writable_root
+                else:
+                        self.tmp_root = tempfile.mkdtemp(prefix="pkg-depot.")
+                        # try to clean up the temporary area on exit
+                        atexit.register(shutil.rmtree, self.tmp_root,
+                            ignore_errors=True)
+
                 # we hardcode these for the depot.
                 self.content_root = "%s/usr/share/lib/pkg" % pkg5_test_proto
                 self.web_root = "%s/usr/share/lib/pkg/web/" % pkg5_test_proto
@@ -211,6 +241,7 @@ class DepotBUI(object):
                 # creating DepotHTTP objects.
                 self.cfg.set_property("pkg", "content_root", self.content_root)
                 self.cfg.set_property("pkg", "pkg_root", self.repo.root)
+                self.cfg.set_property("pkg", "writable_root", self.tmp_root)
                 face.init(self)
 
 
@@ -226,15 +257,18 @@ class WsgiDepot(object):
         PKG5_RUNTIME_DIR  A directory that contains runtime state, notably
                           a htdocs/ directory.
 
-        PKG5_CACHE_DIR    Where we can store search indices for the repositories
-                          we're managing.
+        PKG5_REPOSITORY_<repo_prefix> A path to the repository root for the
+                          given <repo_prefix>.  <repo_prefix> is a unique
+                          alphanumeric prefix for the depot, each corresponding
+                          to a given <repo_root>.  Many PKG5_REPOSITORY_*
+                          variables can be configured, possibly containing
+                          pkg5 publishers of the same name.
 
-        PKG5_REPOSITORY_* A colon-separated pair of values, in the form
-                          <repo_prefix>:<repo_root>.  <repo_prefix> is a unique
-                          alphanumeric prefix that maps to the given
-                          <repo_root>.  Many PKG5_REPOSITORY_* variables can be
-                          configured, possibly containing identical pkg5
-                          publishers.
+        PKG5_WRITABLE_ROOT_<repo_prefix> A path to the writable root for the
+                          given <repo_prefix>. If a writable root is not set,
+                          and a search index does not already exist in the
+                          repository root, search functionality is not
+                          available.
 
         PKG5_ALLOW_REFRESH Set to 'true', this determines whether we process
                           admin/0 requests that have the query 'cmd=refresh' or
@@ -254,7 +288,6 @@ class WsgiDepot(object):
         """
 
         def __init__(self):
-                self.cache_dir = None
                 self.bgtask = None
 
         def setup(self, request):
@@ -262,6 +295,9 @@ class WsgiDepot(object):
                 repository prefix, and ensures our search indexes exist."""
 
                 def get_repo_paths():
+                        """Return a dictionary of repository paths, and writable
+                        root directories for the repositories we're serving."""
+
                         repo_paths = {}
                         for key in request.wsgi_environ:
                                 if key.startswith("PKG5_REPOSITORY"):
@@ -269,6 +305,12 @@ class WsgiDepot(object):
                                             "")
                                         repo_paths[prefix] = \
                                             request.wsgi_environ[key]
+                                        writable_root = \
+                                            request.wsgi_environ.get(
+                                            "PKG5_WRITABLE_ROOT_%s" % prefix)
+                                        repo_paths[prefix] = \
+                                            (request.wsgi_environ[key],
+                                            writable_root)
                         return repo_paths
 
                 if repositories:
@@ -280,8 +322,6 @@ class WsgiDepot(object):
 
                 repository_lock.acquire()
                 repo_paths = get_repo_paths()
-                self.cache_dir = request.wsgi_environ.get("PKG5_CACHE_DIR",
-                    "/var/cache/pkg/depot")
 
                 # We must ensure our BackgroundTask object has at least as many
                 # slots available as we have repositories, to allow the indexes
@@ -294,28 +334,20 @@ class WsgiDepot(object):
                 self.bgtask.start()
 
                 for prefix in repo_paths:
-                        path = repo_paths[prefix]
-                        repo_hash = digest.DEFAULT_HASH_FUNC(path).hexdigest()
-                        index_dir = os.path.sep.join(
-                            [self.cache_dir, "indexes", repo_hash])
-
-                        # if the index dir exists for this repository, we do not
-                        # automatically attempt a refresh.
-                        refresh_index = not os.path.exists(index_dir)
+                        path, writable_root = repo_paths[prefix]
                         try:
-                                repo = sr.Repository(root=path,
-                                    read_only=True, writable_root=index_dir)
+                                repo = sr.Repository(root=path, read_only=True,
+                                    writable_root=writable_root)
                         except sr.RepositoryError, e:
-                                print("Error initializing repository at %s: "
-                                    "%s" % (path, e))
+                                print "Unable to load repository: %s" % e
                                 continue
 
                         repositories[prefix] = repo
                         dconf = sd.DepotConfig()
-                        if refresh_index:
+                        if writable_root is not None:
                                 self.bgtask.put(repo.refresh_index)
 
-                        depot = DepotBUI(repo, dconf, index_dir,
+                        depot = DepotBUI(repo, dconf, writable_root,
                             pkg5_test_proto=pkg5_test_proto)
                         depot_buis[prefix] = depot
 
@@ -493,6 +525,9 @@ class WsgiDepot(object):
 
                 repo = repositories[repo_prefix]
                 depot_bui = depot_buis[repo_prefix]
+                if repo_prefix in depot_https:
+                        return depot_https[repo_prefix]
+
                 def request_pub_func(path_info):
                         """A function that can be called to determine the
                         publisher for a given request. We always want None
@@ -502,8 +537,9 @@ class WsgiDepot(object):
                         """
                         return None
 
-                return sd.DepotHTTP(repo, depot_bui.cfg,
+                depot_https[repo_prefix] = sd.DepotHTTP(repo, depot_bui.cfg,
                     request_pub_func=request_pub_func)
+                return depot_https[repo_prefix]
 
         def __strip_pub(self, tokens, repo):
                 """Attempt to strip at most one publisher from the path
@@ -532,7 +568,7 @@ class WsgiDepot(object):
                 return dh.info_0(*tokens[3:])
 
         def p5i(self, *tokens):
-                """Use a into DepotHTTP to return a p5i response."""
+                """Use a DepotHTTP to return a p5i response."""
 
                 dh = self.__build_depot_http()
                 tokens = self.__strip_pub(tokens, dh.repo)
@@ -596,6 +632,12 @@ class WsgiDepot(object):
                         repo = repositories[repo_prefix]
                         if pub_prefix not in repo.publishers:
                                 raise cherrypy.NotFound()
+
+                        # Since the repository is read-only, we only honour
+                        # index refresh requests if we have a writable root.
+                        if not repo.writable_root:
+                                raise IndexOpDisabledException(
+                                    request.wsgi_environ["REQUEST_URI"])
 
                         # we need to reload the repository in order to get
                         # any new catalog contents before refreshing the
@@ -746,6 +788,10 @@ class Pkg5Dispatch(object):
                         elif isinstance(e, AdminOpNotSupportedException):
                                 raise cherrypy.HTTPError(e.http_status,
                                     "This operation is not supported.")
+                        elif isinstance(e, IndexOpDisabledException):
+                                raise cherrypy.HTTPError(e.http_status,
+                                    "This operation has been disabled by the "
+                                    "server administrator.")
                         else:
                                 # we leave this as a 500 for now. It will be
                                 # converted and logged by our error handler

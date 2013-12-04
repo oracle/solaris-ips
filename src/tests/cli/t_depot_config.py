@@ -59,6 +59,8 @@ class TestHttpDepot(pkg5unittest.ApacheDepotTestCase):
             # FMRI                                   STATE
             ["svc:/application/pkg/server:default",  "online" ],
             ["svc:/application/pkg/server:usr",      "online" ],
+            # an instance which we have a writable_root for
+            ["svc:/application/pkg/server:windex",   "online" ],
             # repositories that we will not serve
             ["svc:/application/pkg/server:off",      "offline"],
             ["svc:/application/pkg/server:writable", "online" ],
@@ -70,15 +72,16 @@ class TestHttpDepot(pkg5unittest.ApacheDepotTestCase):
         # must be in the same order as svcs_conf and the rows
         # must correspond.
         default_svcprop_conf = [
-            # inst_root           readonly  standalone
-            ["%(rdir1)s",         "true",   "false"   ],
-            ["%(rdir2)s",         "true",   "false"   ],
+            # inst_root           readonly  standalone  writable_root
+            ["%(rdir1)s",         "true",   "false",    "\"\""],
+            ["%(rdir2)s",         "true",   "false",    "\"\""],
+            ["%(rdir3)s",         "true",   "false",    "%(index_dir)s"],
             # we intentionally use non-existent repository
             # paths in these services, and check they aren't
             # present in the httpd.conf later.
-            ["/pkg5/there/aint", "true",    "false",   "offline"],
-            ["/pkg5/nobody/here", "false",   "false"  ],
-            ["/pkg5/but/us/chickens",  "true",    "true"   ],
+            ["/pkg5/there/aint", "true",    "false",    "\"\""],
+            ["/pkg5/nobody/here", "false",  "false",    "\"\""],
+            ["/pkg5/but/us/chickens", "true", "true",   "\"\""],
         ]
 
         sample_pkg = """
@@ -110,10 +113,14 @@ class TestHttpDepot(pkg5unittest.ApacheDepotTestCase):
 
         def setUp(self):
                 self.sc = None
-                pkg5unittest.ApacheDepotTestCase.setUp(self, ["test1", "test2"])
+                pkg5unittest.ApacheDepotTestCase.setUp(self, ["test1", "test2",
+                    "test3"])
                 self.rdir1 = self.dcs[1].get_repodir()
                 self.rdir2 = self.dcs[2].get_repodir()
+                self.rdir3 = self.dcs[3].get_repodir()
 
+                self.index_dir = os.path.join(self.test_root,
+                    "depot_writable_root")
                 self.default_depot_runtime = os.path.join(self.test_root,
                     "depot_runtime")
                 self.default_depot_conf = os.path.join(
@@ -157,7 +164,8 @@ class TestHttpDepot(pkg5unittest.ApacheDepotTestCase):
                         _svcprop_conf[index].insert(0, fmri)
                         _svcprop_conf[index].insert(1, state)
 
-                rdirs = {"rdir1": self.rdir1, "rdir2": self.rdir2}
+                rdirs = {"rdir1": self.rdir1, "rdir2": self.rdir2,
+                    "rdir3": self.rdir3, "index_dir": self.index_dir}
 
                 # construct two strings we can use as parameters to our
                 # __svc*_template values
@@ -197,6 +205,8 @@ class TestHttpDepot(pkg5unittest.ApacheDepotTestCase):
                 # the httpd.conf should reference our repositories
                 self.file_contains(self.ac.conf, self.rdir1)
                 self.file_contains(self.ac.conf, self.rdir2)
+                self.file_contains(self.ac.conf, self.rdir3)
+                self.file_contains(self.ac.conf, self.index_dir)
                 # it should not reference the repositories that we have
                 # marked as offline, writable or standalone
                 self.file_doesnt_contain(self.ac.conf, "/pkg5/there/aint")
@@ -239,6 +249,16 @@ class TestHttpDepot(pkg5unittest.ApacheDepotTestCase):
                     exit=1)
                 self.assert_("/tmp" in err, "error message did not contain "
                     "/tmp")
+
+                # ensure we pick up invalid writable_root directories
+                ret, output, err = self.depotconfig("-d blah=%s=/dev/null" %
+                    self.rdir1, out=True, stderr=True, exit=1)
+
+                # but check that we allow valid writeable_roots
+                ret, output, err = self.depotconfig("-d blah=%s=%s" %
+                    (self.rdir1, self.index_dir), out=True, stderr=True)
+                self.file_contains(self.default_depot_conf,
+                    "PKG5_WRITABLE_ROOT_blah %s" % self.index_dir)
 
         def test_3_invalid_htcache_dir(self):
                 """We return an error given an invalid cache_dir"""
@@ -386,9 +406,9 @@ class TestHttpDepot(pkg5unittest.ApacheDepotTestCase):
                 self.depotconfig("", exit=1)
 
                 # test that when we break one of the repositories we're
-                # serving, that the remaining repositories are still accessible
+                # serving, the remaining repositories are still accessible
                 # from the bui. We need to fix the repo dir before rebuilding
-                # the configuration, then break it once the depot has started
+                # the configuration, then break it once the depot has started.
                 os.rename(broken_rdir, self.rdir2)
                 self.depotconfig("")
                 os.rename(self.rdir2, broken_rdir)
@@ -437,6 +457,7 @@ class TestHttpDepot(pkg5unittest.ApacheDepotTestCase):
                         self.pkgsend_bulk(rurl, self.sample_pkg)
                         self.pkgsend_bulk(rurl, self.sample_pkg_11)
                 self.pkgsend_bulk(self.dcs[2].get_repo_url(), self.new_pkg)
+                self.pkgrepo("-s %s refresh" % self.dcs[2].get_repo_url())
 
                 self.depotconfig("")
                 self.image_create()
@@ -525,17 +546,32 @@ class TestHttpDepot(pkg5unittest.ApacheDepotTestCase):
 
         def test_14_htpkgrepo(self):
                 """Test that only the 'pkgrepo refresh' command works with the
-                depot-config only when the -A flag is enabled. Test that
-                the index does indeed get updated when a refresh is performed
-                and that new package contents are visible."""
+                depot-config only when the -A flag is enabled and only on
+                the repository that has a writable root. Test that the index
+                does indeed get updated when a refresh is performed and that
+                new package contents are visible."""
 
                 rurl = self.dcs[1].get_repo_url()
+                nosearch_rurl = self.dcs[2].get_repo_url()
+                writable_rurl = self.dcs[3].get_repo_url()
+
                 self.pkgsend_bulk(rurl, self.sample_pkg)
-                # allow index refreshes
+                # we have a search index on rurl
+                self.pkgrepo("-s %s refresh" % rurl)
+                self.pkgsend_bulk(writable_rurl, self.sample_pkg)
+
+                # we have no search index on nosearch_rurl
+                self.pkgsend_bulk(nosearch_rurl, self.sample_pkg)
+
+                # allow index refreshes for repositories that support them
+                # (ie. have a writable root)
                 self.depotconfig("-A")
                 self.start_depot()
                 self.image_create()
+
                 depot_url = "%s/default" % self.ac.url
+                windex_url = "%s/windex" % self.ac.url
+                nosearch_url = "%s/usr" % self.ac.url
 
                 # verify that list commands work
                 ret, output = self.pkgrepo("-s %s list -F tsv" % depot_url,
@@ -550,40 +586,54 @@ class TestHttpDepot(pkg5unittest.ApacheDepotTestCase):
                 self.pkgrepo("-s %s set -p test1 foo/bar=baz" % depot_url,
                     exit=2)
 
+                # verify that status works
+                self.pkgrepo("-s %s info" % depot_url)
+                self.assert_("test1 1 online" in self.reduceSpaces(self.output))
+
                 # verify search works for packages in the repository
                 self.pkg("set-publisher -p %s" % depot_url)
                 self.pkg("search -s %s msgsh" % "%s" % depot_url,
                     exit=1)
                 self.pkg("search -s %s /usr/bin/sample" % depot_url)
 
-                # publish a new package, and verify it doesn't appear in the
-                # search results
-                self.pkgsend_bulk(rurl, self.new_pkg)
-                self.pkg("search -s %s /usr/bin/new" % depot_url, exit=1)
+                # Can't refresh this repo since it doesn't have a writable root
+                self.pkgrepo("-s %s refresh" % depot_url, exit=1)
 
-                # refresh the index
-                self.pkgrepo("-s %s refresh" % depot_url)
+                # verify that search fails for repositories that don't have
+                # a pre-existing search index in the repository
+                self.pkg("search -s %s /usr/bin/sample" % nosearch_url, exit=1)
+
+                # publish a new package, and verify it doesn't appear in the
+                # search results for the repo with the writable_root
+                self.pkgsend_bulk(writable_rurl, self.new_pkg)
+                self.pkg("search -s %s /usr/bin/new" % windex_url, exit=1)
+
+                # now refresh the index
+                self.pkgrepo("-s %s refresh" % windex_url)
+
                 # there isn't a synchronous option to pkgrepo, so wait a bit
                 # then make sure we do see this new package.
                 time.sleep(3)
-                ret, output = self.pkg("search -s %s /usr/bin/new" % depot_url,
+
+                # we should now get search results for that new package
+                ret, output = self.pkg("search -s %s /usr/bin/new" % windex_url,
                     out=True)
                 self.assert_("usr/bin/new" in output)
-                ret, output = self.pkgrepo("-s %s list -F tsv" % depot_url,
+                ret, output = self.pkgrepo("-s %s list -F tsv" % windex_url,
                     out=True)
-                self.assert_("pkg://test1/sample@1.0" in output)
-                self.assert_("pkg://test1/new@1.0" in output)
+                self.assert_("pkg://test3/sample@1.0" in output)
+                self.assert_("pkg://test3/new@1.0" in output)
 
                 # ensure that refresh --no-catalog works, but refresh --no-index
                 # does not.
-                self.pkgrepo("-s %s refresh --no-catalog" % depot_url)
-                self.pkgrepo("-s %s refresh --no-index" % depot_url, exit=1)
+                self.pkgrepo("-s %s refresh --no-catalog" % windex_url)
+                self.pkgrepo("-s %s refresh --no-index" % windex_url, exit=1)
 
                 # check that when we start the depot without -A, we cannot
                 # issue refresh commands.
                 self.depotconfig("")
                 self.start_depot()
-                self.pkgrepo("-s %s refresh" % depot_url, exit=1)
+                self.pkgrepo("-s %s refresh" % windex_url, exit=1)
 
         def test_15_htheaders(self):
                 """Test that the correct Content-Type and Cache-control headers
@@ -591,15 +641,20 @@ class TestHttpDepot(pkg5unittest.ApacheDepotTestCase):
 
                 fmris = self.pkgsend_bulk(self.dcs[1].get_repo_url(),
                     self.sample_pkg)
+                self.pkgrepo("-s %s refresh" % self.dcs[1].get_repo_url())
                 self.depotconfig("")
                 self.start_depot()
-                # create an image so we have something to search with
-                # (bug 15807844) then retrieve the hash of a file we have
-                # published
+
+                # Create an image so we have something to search with.
+                # This technically isn't necessary anymore, but the test suite
+                # runs with some debug flags to make it (intentionally)
+                # difficult to mess with the root image of the test system
+                # (even though calling 'pkg search -s' would never actually
+                # modify it) Creating an image is just the easier thing to do
+                # here.
                 self.image_create()
-                self.pkg("set-publisher -p %s/default" % self.ac.url)
-                ret, output = self.pkg("search -H -o action.hash "
-                     "-r /usr/bin/sample", out=True)
+                ret, output = self.pkg("search -s %s/default -H -o action.hash "
+                     "-r /usr/bin/sample" % self.ac.url, out=True)
                 file_hash = output.strip()
 
                 fmri = pkg.fmri.PkgFmri(fmris[0])
@@ -663,9 +718,18 @@ class TestHttpDepot(pkg5unittest.ApacheDepotTestCase):
                     self.carrots_pkg)
                 self.pkgsend_bulk(self.dcs[2].get_repo_url(),
                     self.new_pkg)
+
+                # We shouldn't be able to supply a writable root when running
+                # in fragment mode
+                self.depotconfig("-l %s -F -d usr=%s -d spaghetti=%s=%s "
+                    "-P testpkg5" %
+                    (self.default_depot_runtime, self.rdir1, self.rdir2,
+                    self.index_dir), exit=2)
+
                 self.depotconfig("-l %s -F -d usr=%s -d spaghetti=%s "
                     "-P testpkg5" %
                     (self.default_depot_runtime, self.rdir1, self.rdir2))
+
                 default_httpd_conf_path = os.path.join(self.test_root,
                     "default_httpd.conf")
                 httpd_conf = open(default_httpd_conf_path, "w")
@@ -755,10 +819,10 @@ done
 #
 # This script produces false svcprop(1) output, using
 # a list of space separated strings, with each string
-# of the format <fmri>%%<state>%%<inst_root>%%<readonly>%%<standalone>
+# of the format <fmri>%%<state>%%<inst_root>%%<readonly>%%<standalone>%%<writable_root>
 #
 # eg.
-# SERVICE_PROPS="svc:/application/pkg/server:foo%%online%%/space/repo%%true%%false"
+# SERVICE_PROPS="svc:/application/pkg/server:foo%%online%%/space/repo%%true%%false%%/space/writable_root"
 #
 # we expect to be called as "svcprop -c -p <property> <fmri>"
 # which is enough svcprop(1) functionalty for these tests. Any other
@@ -769,17 +833,19 @@ typeset -A prop_state
 typeset -A prop_readonly
 typeset -A prop_inst_root
 typeset -A prop_standalone
+typeset -A prop_writable_root
 
 SERVICE_PROPS="%s"
 for service in $SERVICE_PROPS ; do
         echo $service | sed -e 's/%%/ /g' | \
-            read fmri state inst_root readonly standalone
+            read fmri state inst_root readonly standalone writable_root
         # create a hashable version of the FMRI
         fmri=$(echo $fmri | sed -e 's/\///g' -e 's/://g')
         prop_state[$fmri]=$state
         prop_inst_root[$fmri]=$inst_root
         prop_readonly[$fmri]=$readonly
         prop_standalone[$fmri]=$standalone
+        prop_writable_root[$fmri]=$writable_root
 done
 
 
@@ -793,6 +859,9 @@ case $3 in
                 ;;
         "pkg/standalone")
                 echo ${prop_standalone[$FMRI]}
+                ;;
+        "pkg/writable_root")
+                echo ${prop_writable_root[$FMRI]}
                 ;;
         "restarter/state")
                 echo ${prop_state[$FMRI]}
