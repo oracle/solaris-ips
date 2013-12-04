@@ -370,8 +370,10 @@ matching characters use '[' and ']':<br/>
                         stem = pfmri.pkg_name
                         pfmri_str = pfmri.get_fmri(anarchy=True, 
                             include_scheme=False, include_build=False)
+                        pfmri_uri = pfmri.get_fmri(anarchy=True,
+                            include_scheme=False)
                         phref = self.shared.rpath(g_vars, "info/0/%s" % (
-                            urllib.quote(pfmri_str, "")))
+                            urllib.quote(pfmri_uri, "")))
                         # XXX the .p5i extension is a bogus hack because
                         # packagemanager requires it and shouldn't.
                         p5ihref = self.shared.rpath(g_vars, "p5i/0/%s.p5i" % (
