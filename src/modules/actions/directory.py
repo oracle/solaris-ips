@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2007, 2012, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2007, 2013, Oracle and/or its affiliates. All rights reserved.
 #
 
 """module describing a directory packaging object
@@ -219,23 +219,27 @@ class DirectoryAction(generic.Action):
                         elif e.errno == errno.EBUSY and os.path.ismount(path):
                                 # User has replaced directory with mountpoint,
                                 # or a package has been poorly implemented.
-                                err_txt = _("Unable to remove %s; it is in use "
-                                    "as a mountpoint.  To continue, please "
-                                    "unmount the filesystem at the target "
-                                    "location and try again.") % path
-                                raise apx.ActionExecutionError(self,
-                                    details=err_txt, error=e,
-                                    fmri=pkgplan.origin_fmri)
+				if not self.attrs.get("implicit"):
+                                        err_txt = _("Unable to remove %s; it is "
+                                            "in use as a mountpoint. To "
+                                            "continue, please unmount the "
+                                            "filesystem at the target "
+                                            "location and try again.") % path
+                                        raise apx.ActionExecutionError(self,
+                                            details=err_txt, error=e,
+                                            fmri=pkgplan.origin_fmri) 
                         elif e.errno == errno.EBUSY:
                                 # os.path.ismount() is broken for lofs
                                 # filesystems, so give a more generic
                                 # error.
-                                err_txt = _("Unable to remove %s; it is in use "
-                                    "by the system, another process, or as a "
-                                    "mountpoint.") % path
-                                raise apx.ActionExecutionError(self,
-                                    details=err_txt, error=e,
-                                    fmri=pkgplan.origin_fmri)
+				if not self.attrs.get("implicit"):
+                                        err_txt = _("Unable to remove %s; it "
+                                            "is in use by the system, another "
+                                            "process, or as a mountpoint.") \
+                                            % path
+                                        raise apx.ActionExecutionError(self,
+                                            details=err_txt, error=e,
+                                            fmri=pkgplan.origin_fmri)
                         elif e.errno != errno.EACCES: # this happens on Windows
                                 raise
 

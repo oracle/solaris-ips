@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2007, 2012, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2007, 2013, Oracle and/or its affiliates. All rights reserved.
 #
 
 import copy
@@ -334,7 +334,8 @@ class PkgPlan(object):
 
                         for a in absent_dirs:
                                 self.actions.removed.append(
-                                    (directory.DirectoryAction(path=a), None))
+                                    (directory.DirectoryAction(path=a,
+                                    implicit="True"), None))
 
                 # Stash information needed by legacy actions.
                 self.pkg_summary = \

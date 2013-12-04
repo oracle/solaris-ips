@@ -20,7 +20,7 @@
 # CDDL HEADER END
 #
 
-# Copyright (c) 2008, 2010, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2008, 2013, Oracle and/or its affiliates. All rights reserved.
 
 import testutils
 if __name__ == "__main__":
@@ -115,6 +115,11 @@ class TestCommandLine(pkg5unittest.ManyDepotTestCase):
             add depend type=require fmri=renamed@1.0
             close """
 
+        implicit11 = """
+            open implicit@1.1,5.11-0
+            add file tmp/file1 mode=0644 owner=root group=bin path=implicit/file1
+            close """
+
         def test_uninstalled_state(self):
                 """Uninstalling a package that is no longer known should result
                 in its removal from the output of pkg list -a, even if it has
@@ -134,6 +139,22 @@ class TestCommandLine(pkg5unittest.ManyDepotTestCase):
                 self.pkg("list -a quux@1.0", exit=1)
                 self.image_destroy()
 
+        def test_uninstall_implicit(self):
+                """Test for bug 16769328.""" 
 
+                self.make_misc_files("tmp/file1")
+                self.pkgsend_bulk(self.rurl1, (self.implicit11))
+                self.image_create(self.rurl1)
+                lofs_dir = os.path.join(self.test_root, "image0", "implicit")
+                os.mkdir(lofs_dir)
+                tmp_dir = os.path.join(self.test_root, "image0", "tmp_impl_dir")
+                os.mkdir(tmp_dir)
+                os.system("mount -F lofs %s %s" % (tmp_dir, lofs_dir))
+                self.pkg("install implicit")
+                self.pkg("uninstall implicit")
+                os.system("umount %s " % lofs_dir)
+                os.rmdir(lofs_dir)
+                os.rmdir(tmp_dir)
+               
 if __name__ == "__main__":
         unittest.main()
