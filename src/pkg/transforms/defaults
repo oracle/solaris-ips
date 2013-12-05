@@ -18,7 +18,7 @@
 #
 # CDDL HEADER END
 #
-# Copyright (c) 2010, 2013 Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2010, 2013, Oracle and/or its affiliates. All rights reserved.
 #
 
 # Set some specific permissions
@@ -33,11 +33,10 @@
 <transform dir file path=etc/gconf/schemas -> set group sys>
 <transform dir file path=etc/(security|xdg) -> set group sys>
 <transform dir path=usr/share$ -> set group sys>
-<transform dir path=usr/share/(doc|gnome)$ -> set group other>
-<transform file dir path=usr/share/(applications|icons|locale) -> default group other>
+<transform dir path=usr/share/doc$ -> set group other>
+<transform file dir path=usr/share/locale -> default group other>
 <transform dir path=usr/share/lib -> set group sys>
 <transform file dir path=usr/share/mime -> default group root>
-<transform file path=usr/share/(package|update)-manager/icons -> default group other>
 <transform dir path=lib/svc$ -> default group bin>
 <transform dir file path=lib/svc/manifest -> default group sys>
 <transform dir file path=lib/svc/method -> default group bin>
@@ -68,17 +67,10 @@
 
 # Add actuators
 <transform file path=(var|lib)/svc/manifest/.*\.xml -> add restart_fmri svc:/system/manifest-import:default>
-<transform file path=etc/gconf/schemas/.*\.(entries|schemas) -> add restart_fmri svc:/application/desktop-cache/gconf-cache:default>
-<transform file path=usr/share/applications/.*\.desktop -> add restart_fmri svc:/application/desktop-cache/desktop-mime-cache:default>
-<transform file path=usr/share/icons/.* -> add restart_fmri svc:/application/desktop-cache/icon-cache:default>
-<transform file path=usr/share/mime/packages/.*\.xml -> add restart_fmri svc:/application/desktop-cache/mime-types-cache:default>
 
 # Add locale facets
 <transform dir file \
     path=usr/share/locale/([a-z]{2,3}(_[A-Z]{2,3})?)([.@][^/]+)?(/.+)?$ -> \
-    default facet.locale.%<1> true>
-<transform dir file \
-    path=usr/share/gnome/help/package-manager/([a-z]{2,3}(_[A-Z]{2,3})?)(/.*)?$ -> \
     default facet.locale.%<1> true>
 <transform dir file \
     path=usr/share/man/([a-z]{2,3}(_[A-Z]{2,3})?)([.@][^/]+)?(/.+)?$ -> \
@@ -86,9 +78,6 @@
 # locale dir, section dir, and manpages (add zh_SG to zh_CN)
 <transform dir file link path=usr/share/man/zh_CN([/.@].+)?$ -> \
     default facet.locale.zh_SG true>
-<transform file \
-    path=usr/share/omf/package-manager/package-manager-([a-z]{2,3}(_[A-Z]{2,3})?)\.omf$ -> \
-    default facet.locale.%<1> true>
 
 # Add manpage facets
 <transform dir file link hardlink path=usr.*/man(/.+){0,1}$ -> \

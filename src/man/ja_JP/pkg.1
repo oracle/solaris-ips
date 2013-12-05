@@ -1,5 +1,5 @@
 '\" te
-.\" Copyright (c) 2007, 2012, Oracle and/or its affiliates. All rights reserved.
+.\" Copyright (c) 2007, 2013, Oracle and/or its affiliates. All rights reserved.
 .TH pkg 1 "2012 年 6 月 26 日" "SunOS 5.11" "ユーザーコマンド"
 .SH 名前
 pkg \- Image Packaging System 取得クライアント
@@ -3119,9 +3119,7 @@ org.opensolaris.smf.fmri set    svc:/network/http:tomcat6    pkg:/web/java-servl
 $ \fBpkg search -l depend::package/pkg\fR
 INDEX       ACTION VALUE                                    PACKAGE
 incorporate depend package/pkg@0.5.11-0.175.0.0.0.2.1      pkg:/consolidation/ips/ips-incorporation@0.5.11-0.175.0.0.0.2.1
-require     depend pkg:/package/pkg@0.5.11-0.175.0.0.0.2.1 pkg:/package/pkg/package-manager@0.5.11-0.175.0.0.0.2.1
 require     depend pkg:/package/pkg@0.5.11-0.175.0.0.0.2.1 pkg:/system/library/install@0.5.11-0.175.0.0.0.2.1
-require     depend pkg:/package/pkg@0.5.11-0.175.0.0.0.2.1 pkg:/package/pkg/update-manager@0.5.11-0.175.0.0.0.2.1
 require     depend pkg:/package/pkg@0.5.11-0.175.0.0.0.2.1 pkg:/system/library/boot-management@0.5.11-0.175.0.0.0.2.1
 require     depend package/pkg                             pkg:/system/zones/brand/brand-solaris@0.5.11-0.175.0.0.0.2.1
 require     depend pkg:/package/pkg@0.5.11-0.175.0.0.0.2.1 pkg:/install/distribution-constructor@0.5.11-0.175.0.0.0.2.1

@@ -18,7 +18,7 @@
 #
 # CDDL HEADER END
 #
-# Copyright (c) 2012, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2012, 2013, Oracle and/or its affiliates. All rights reserved.
 #
 
 #
@@ -38,12 +38,6 @@ set name=info.classification \
 set name=variant.arch value=$(ARCH)
 dir  path=usr
 dir  path=usr/share
-dir  path=usr/share/gnome
-dir  path=usr/share/gnome/help
-dir  path=usr/share/gnome/help/package-manager
-dir  path=usr/share/gnome/help/package-manager/__LOCALE__
-file path=usr/share/gnome/help/package-manager/__LOCALE__/package-manager.xml
-file path=usr/share/gnome/help/package-manager/__LOCALE__/pkg_help.pot
 dir  path=usr/share/lib/pkg/web
 dir  path=usr/share/lib/pkg/web/__LOCALE__
 file path=usr/share/lib/pkg/web/__LOCALE__/advanced_search.shtml
@@ -65,7 +59,4 @@ dir  path=usr/share/locale
 dir  path=usr/share/locale/__LOCALE__
 dir  path=usr/share/locale/__LOCALE__/LC_MESSAGES
 file path=usr/share/locale/__LOCALE__/LC_MESSAGES/pkg.pot
-dir  path=usr/share/omf
-dir  path=usr/share/omf/package-manager
-file path=usr/share/omf/package-manager/package-manager-__LOCALE__.omf
 license cr_Oracle license=cr_Oracle

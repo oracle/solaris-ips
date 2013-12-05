@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2008, 2012, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2008, 2013, Oracle and/or its affiliates. All rights reserved.
 #
 
 import simplejson as json
@@ -232,7 +232,6 @@ def usage():
    -q             Quiet output
    -s <regexp>    Run tests starting at regexp
    -t             Generate timing info file
-   -u             Enable IPS GUI tests, disabled by default
    -v             Verbose output
    -x             Stop after the first baseline mismatch
    -z <port>      Lowest port the test suite should use
@@ -305,7 +304,6 @@ if __name__ == "__main__":
         do_coverage = False
         debug_output = False
         show_on_expected_fail = False
-        enable_gui_tests = False
         archive_dir = None
         port = 12001
         quiet = False
@@ -328,8 +326,6 @@ if __name__ == "__main__":
                         bfile = arg
                 if opt == "-o":
                         onlyval.append(arg)
-                if opt == "-u":
-                        enable_gui_tests = True
                 if opt == "-x":
                         bailonfail = True
                 if opt == "-t":
@@ -409,22 +405,6 @@ if __name__ == "__main__":
         suites.append(api_suite)
         if ostype == "posix":
                 suites.append(cli_suite)
-                if enable_gui_tests:
-                        try:
-                                import gui.testutils
-                        except Exception, e:
-                                print "# %s" % e
-                        else:
-                                if not gui.testutils.check_for_gtk():
-                                        print "# GTK not present or $DISPLAY not " \
-                                            "set, GUI tests disabled."
-                                elif not gui.testutils.check_if_a11y_enabled():
-                                        print "# Accessibility not enabled, GUI " \
-                                            "tests disabled."
-                                else:
-                                        gui_suite = find_tests("gui", onlyval,
-                                            startattest, output, time_estimates)
-                                        suites.append(gui_suite)
 
         # This is primarily of interest to developers altering the test suite,
         # so don't enable it for now.  The testsuite suite tends to emit a bunch

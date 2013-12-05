@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2008, 2012, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2008, 2013, Oracle and/or its affiliates. All rights reserved.
 #
 
 import copy
@@ -251,7 +251,7 @@ class History(object):
         # The directory where the history directory can be found (or
         # created if it doesn't exist).
         root_dir = None
-        # The name of the client (e.g. pkg, packagemanager, etc.)
+        # The name of the client (e.g. pkg, etc.)
         client_name = None
         # The version of the client (e.g. 093ca22da67c).
         client_version = None

@@ -20,16 +20,16 @@
 # CDDL HEADER END
 #
 
-# Copyright 2008 Sun Microsystems, Inc.  All rights reserved.
-# Use is subject to license terms.
+#
+# Copyright (c) 2008, 2013, Oracle and/or its affiliates. All rights reserved.
+#
 
 """\
 an_catalog.py - analyze pre-processed Apache combined log of catalog entries
 
 The catalog operation presents interactions similar to the web-ping interaction.
 The only distinct aspect is that, since the agent for a catalog operation is
-usually pkg(1) or packagemanager(1), we can assess the distribution across
-versions of these clients.
+usually pkg(1), we can assess the distribution across versions of these clients.
 
 Our list of measurements is:
 

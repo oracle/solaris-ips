@@ -20,10 +20,9 @@
 #
 
 #
-# Copyright (c) 2010, 2012, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2010, 2013, Oracle and/or its affiliates. All rights reserved.
 #
 
-set name=pkg.fmri value=pkg:/SUNWipkg-um@0.5.11,5.11-0.133
-set name=pkg.renamed value=true
+set name=pkg.fmri value=pkg:/SUNWipkg-um@5.12,5.12-5.12.0.0.0.37.0
+set name=pkg.obsolete value=true
 set name=nopublish.after value=0
-depend type=require fmri=package/pkg/update-manager@0.5.11-0.133

@@ -20,7 +20,7 @@
 #
 
 #
-# Copyright (c) 2011, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2011, 2013, Oracle and/or its affiliates. All rights reserved.
 #
 
 set name=pkg.fmri value=pkg:/group/feature/trusted-desktop@$(PKGVERS)
@@ -78,7 +78,6 @@ depend type=group fmri=pkg:/library/gnome/gnome-component
 depend type=group fmri=pkg:/library/spell-checking/enchant
 depend type=group fmri=pkg:/mail/thunderbird
 depend type=group fmri=pkg:/mail/thunderbird/plugin/thunderbird-lightning
-depend type=group fmri=pkg:/package/pkg/package-manager
 depend type=group fmri=pkg:/package/svr4
 depend type=group fmri=pkg:/system/font/isas-misc
 depend type=group fmri=pkg:/system/font/truetype/bh-luxi

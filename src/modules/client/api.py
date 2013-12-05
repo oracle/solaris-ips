@@ -303,7 +303,7 @@ class ImageInterface(object):
                 changes.
 
                 'pkg_client_name' is a string containing the name of the client,
-                such as "pkg" or "packagemanager".
+                such as "pkg".
 
                 'exact_match' is a boolean indicating whether the API should
                 attempt to find a usable image starting from the specified
@@ -5383,7 +5383,7 @@ def image_create(pkg_client_name, version_id, root, imgtype, is_zone,
         """Creates an image at the specified location.
 
         'pkg_client_name' is a string containing the name of the client,
-        such as "pkg" or "packagemanager".
+        such as "pkg".
 
         'version_id' indicates the version of the api the client is
         expecting to use.
