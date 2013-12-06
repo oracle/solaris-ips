@@ -738,6 +738,32 @@ if __name__ == "__main__":
                     "on_start_resource",
                     cherrypy.lib.cptools.log_request_headers)
 
+        log_cfg = {
+            "access": dconf.get_property("pkg", "log_access"),
+            "errors": dconf.get_property("pkg", "log_errors")
+        }
+
+        # If stdin is not a tty and the pkgdepot controller isn't being used,
+        # then assume process will be daemonized and redirect output.
+        if not os.environ.get("PKGDEPOT_CONTROLLER") and \
+            not os.isatty(sys.stdin.fileno()):
+                # Ensure log handlers are setup to use the file descriptors for
+                # stdout and stderr as the Daemonizer (used for test suite and
+                # SMF service) requires this.
+                if log_cfg["access"] == "stdout":
+                        log_cfg["access"] = "/dev/fd/%d" % sys.stdout.fileno()
+                elif log_cfg["access"] == "stderr":
+                        log_cfg["access"] = "/dev/fd/%d" % sys.stderr.fileno()
+                elif log_cfg["access"] == "none":
+                        log_cfg["access"] = "/dev/null"
+
+                if log_cfg["errors"] == "stderr":
+                        log_cfg["errors"] = "/dev/fd/%d" % sys.stderr.fileno()
+                elif log_cfg["errors"] == "stdout":
+                        log_cfg["errors"] = "/dev/fd/%d" % sys.stdout.fileno()
+                elif log_cfg["errors"] == "none":
+                        log_cfg["errors"] = "/dev/null"
+
         log_type_map = {
             "errors": {
                 "param": "log.error_file",
@@ -750,7 +776,7 @@ if __name__ == "__main__":
         }
 
         for log_type in log_type_map:
-                dest = dconf.get_property("pkg", "log_%s" % log_type)
+                dest = log_cfg[log_type]
                 if dest in ("stdout", "stderr", "none"):
                         if dest == "none":
                                 h = logging.StreamHandler(LogSink())
@@ -906,7 +932,9 @@ if __name__ == "__main__":
         # then assume process should be daemonized.
         if not os.environ.get("PKGDEPOT_CONTROLLER") and \
             not os.isatty(sys.stdin.fileno()):
-                Daemonizer(cherrypy.engine).subscribe()
+                # Translate the values in log_cfg into paths.
+                Daemonizer(cherrypy.engine, stderr=log_cfg["errors"],
+                    stdout=log_cfg["access"]).subscribe()
 
         try:
                 root = cherrypy.Application(depot)

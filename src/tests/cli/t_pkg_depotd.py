@@ -45,6 +45,8 @@ import pkg.fmri as fmri
 import pkg.misc as misc
 import pkg.server.repository as sr
 import pkg.p5i as p5i
+import re
+import subprocess
 
 class TestPkgDepot(pkg5unittest.SingleDepotTestCase):
         # Only start/stop the depot once (instead of for every test)
@@ -691,6 +693,95 @@ class TestDepotOutput(pkg5unittest.SingleDepotTestCase):
 
                 self.make_misc_files("tmp/file")
 
+        def __depot_daemon_start(self, repopath, out_path, err_path):
+                """Helper function: start a depot daemon and return a handler
+                for its parent process and the port number it is running on.
+                The parent process is a ctrun process. It is the user's
+                responsibility to call depot_daemon_stop to stop the process.
+                ctrun is used to kill the depot daemon process after finishing
+                testing. It is needed because the double fork machanism of the
+                daemonizer make the daemonized depot server indenpendent from
+                its parent process.
+
+                repopath: The repository path that a depot daemon will run on.
+
+                out_path: The depot daemon stdout log file path.
+
+                err_path: The depot daemon stderr log file path."""
+
+                # Make sure the PKGDEPOT_CONTROLLER is not set in the newenv.
+                newenv = os.environ.copy()
+                newenv.pop("PKGDEPOT_CONTROLLER", None)
+                cmdargs = "/usr/bin/ctrun -o noorphan %s/usr/lib/pkg.depotd " \
+                    "-p %s -d %s --readonly </dev/null > %s 2> %s" % \
+                    (pkg5unittest.g_proto_area, self.next_free_port, repopath,
+                    out_path, err_path)
+
+                curport = self.next_free_port
+                self.next_free_port += 1
+
+                # Start a depot daemon process.
+                try:
+                        depot_handle = subprocess.Popen(cmdargs, env=newenv,
+                            shell=True)
+
+                        self.assert_(depot_handle != None, msg="Could not "
+                            "start depot")
+                        begintime = time.time()
+                        check_interval = 0.20
+                        daemon_started = False
+                        durl = "http://localhost:%s/en/index.shtml" % curport
+
+                        while (time.time() - begintime) <= 40.0:
+                                rc = depot_handle.poll()
+                                self.assert_(rc is None, msg="Depot exited "
+                                    "unexpectedly")
+
+                                try:
+                                        f = urllib2.urlopen(durl)
+                                        daemon_started = True
+                                        break
+                                except urllib2.URLError, e:
+                                        time.sleep(check_interval)
+
+                        if not daemon_started:
+                                if depot_handle:
+                                        depot_handle.kill()
+                                self.assert_(daemon_started, msg="Could not "
+                                    "access depot daemon")
+
+                        # Read the msgs from the err log file to verify log
+                        # msgs.
+                        with open(err_path, "r") as read_err:
+                                msgs = read_err.readlines()
+                                self.assert_(msgs, "Log message is "
+                                    "empty. Check if the previous "
+                                    "ctrun process shut down "
+                                    "properly")
+                        return (depot_handle, curport)
+                except:
+                        try:
+                                if depot_handle:
+                                        depot_handle.kill()
+                        except:
+                                pass
+                        raise
+
+        def __depot_daemon_stop(self, depot_handle):
+                """Helper function: stop the depot daemon process by sending
+                signal to its handle."""
+
+                # Terminate the depot daemon. If failed, kill it.
+                try:
+                        if depot_handle:
+                                depot_handle.terminate()
+                except:
+                        try:
+                                if depot_handle:
+                                        depot_handle.kill()
+                        except:
+                                pass
+
         def test_0_depot_bui_output(self):
                 """Verify that a non-error response and valid HTML is returned
                 for each known BUI page in every available depot mode."""
@@ -987,6 +1078,45 @@ class TestDepotOutput(pkg5unittest.SingleDepotTestCase):
                 # Check that we can retrieve something.
                 durl = self.dc.get_depot_url()
                 verdata = urllib2.urlopen("%s/versions/0/" % durl)
+
+        def test_log_depot_daemon(self):
+                """Verify that depot daemon works properly and the error
+                 message is logged properly."""
+
+                if self.dc.started:
+                        self.dc.stop()
+
+                # Create a test repo.
+                repopath = os.path.join(self.test_root, "repo_tmp_depot")
+                self.create_repo(repopath)
+
+                out_path = os.path.join(self.test_root, "daemon_out_log")
+                err_path = os.path.join(self.test_root, "daemon_err_log")
+
+                depot_handle = None
+                try:
+                        depot_handle, curport = self.__depot_daemon_start(
+                            repopath, out_path, err_path)
+
+                        # Issue a bad request to trigger the server logging
+                        # the error msg.
+                        durl = "http://localhost:%s/catalog/0" % curport
+                        try:
+                                urllib2.urlopen(durl)
+                        except urllib2.URLError, e:
+                                pass
+                        # Stop the depot daemon.
+                        self.__depot_daemon_stop(depot_handle)
+
+                        # Read the msgs from the err log file to verify log
+                        # msgs.
+                        with open(err_path, "r") as read_err:
+                                msgs = read_err.readlines()
+                        self.assertRegexp(msgs[-1], "\[[\w:/]+\]  Request "
+                            "failed")
+                except:
+                        self.__depot_daemon_stop(depot_handle)
+                        raise
 
 
 if __name__ == "__main__":
