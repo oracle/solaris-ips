@@ -713,9 +713,10 @@ class TestDepotOutput(pkg5unittest.SingleDepotTestCase):
                 newenv = os.environ.copy()
                 newenv.pop("PKGDEPOT_CONTROLLER", None)
                 cmdargs = "/usr/bin/ctrun -o noorphan %s/usr/lib/pkg.depotd " \
-                    "-p %s -d %s --readonly </dev/null > %s 2> %s" % \
+                    "-p %s -d %s --content-root %s/usr/share/lib/pkg " \
+                    "--readonly </dev/null > %s 2> %s" % \
                     (pkg5unittest.g_proto_area, self.next_free_port, repopath,
-                    out_path, err_path)
+                    pkg5unittest.g_proto_area, out_path, err_path)
 
                 curport = self.next_free_port
                 self.next_free_port += 1
@@ -1087,7 +1088,7 @@ class TestDepotOutput(pkg5unittest.SingleDepotTestCase):
                         self.dc.stop()
 
                 # Create a test repo.
-                repopath = os.path.join(self.test_root, "repo_tmp_depot")
+                repopath = os.path.join(self.test_root, "repo_tmp_depot_log")
                 self.create_repo(repopath)
 
                 out_path = os.path.join(self.test_root, "daemon_out_log")
