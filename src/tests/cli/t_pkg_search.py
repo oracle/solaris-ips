@@ -734,6 +734,18 @@ adm:NP:6445::::::
                 self._search_op(True, '/bin', res_both_actions,
                     prune_versions=False)
 
+        def test_fmri_output(self):
+                """Test that the build_release is dropped from version string
+                of pkg FMRIS for the special case '-o pkg.fmri'."""
+
+                durl = self.dc.get_depot_url()
+                plist = self.pkgsend_bulk(durl, self.incorp_pkg10)
+
+                self.image_create(durl)
+                self.pkg("search -Ho pkg.fmri incorp_pkg")
+                self.assert_(fmri.PkgFmri(plist[0]).get_fmri(
+                    include_build=False, anarchy=True) in self.output)
+
         def test_versionless_incorp(self):
                 """Test that versionless incorporates are ignored by search when
                 restricting results to incorporated packages (see bug 7149895).

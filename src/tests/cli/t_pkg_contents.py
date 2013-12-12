@@ -20,7 +20,7 @@
 # CDDL HEADER END
 #
 
-# Copyright (c) 2008, 2012, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2008, 2013, Oracle and/or its affiliates. All rights reserved.
 
 import testutils
 if __name__ == "__main__":
@@ -166,14 +166,20 @@ class TestPkgContentsBasics(pkg5unittest.SingleDepotTestCase):
                 # Non-matching pattern should exit 1
                 self.pkg("contents -a path=usr/bin/notthere", 1)
 
-        def test_contents_nocolumns(self):
-                """Test that when pkg contents doesn't find any actions that
-                match the specified output columns, we produce appropriate
-                error messages """
+        def test_contents_dash_o(self):
+                """Test the -o option of contents. When pkg contents doesn't
+                find any actions that match the specified output columns, we
+                produce appropriate error messages."""
 
                 self.image_create(self.rurl)
                 self.pkg("install nopathA")
                 self.pkg("install nopathB")
+
+                # Test that the build_release is dropped from version string of
+                # pkg FMRIS for the special case '-o pkg.fmri'.(Bug 17659776)"""
+                self.pkg("contents -o pkg.fmri nopathA")
+                self.assert_(pfmri.PkgFmri(self.plist[1]).get_fmri(
+                    include_build=False) in self.output)
 
                 # part of the messages that result in running pkg contents
                 # when no output would result.  Note that pkg still returns 0

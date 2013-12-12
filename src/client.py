@@ -3132,7 +3132,7 @@ def produce_lines(actionlist, attrs, show_all=False,
                         elif attr == "pkg.name":
                                 a = pfmri.get_name()
                         elif attr == "pkg.fmri":
-                                a = pfmri
+                                a = pfmri.get_fmri(include_build=False)
                         elif attr == "pkg.shortfmri":
                                 a = pfmri.get_short_fmri()
                         elif attr == "pkg.publisher":
