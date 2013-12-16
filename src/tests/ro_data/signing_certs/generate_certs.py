@@ -97,8 +97,13 @@ def make_cs_cert(new_loc, new_name, parent_loc, parent_name, ext="v3_req",
         subj_str_to_use = subj_str
         if https:
                 subj_str_to_use = https_subj_str
+        cmd = ["openssl", "genrsa", "-out", "./keys/%s_key.pem" % new_name,
+            "1024"]
+        p = subprocess.Popen(cmd)
+        assert p.wait() == 0
+
         cmd = ["openssl", "req", "-new", "-nodes",
-            "-keyout", "./keys/%s_key.pem" % new_name,
+            "-key", "./keys/%s_key.pem" % new_name,
             "-out", "./%s/%s.csr" % (new_loc, new_name),
             "-sha256", "-subj", subj_str_to_use % (new_name, new_name)]
         p = subprocess.Popen(cmd)
