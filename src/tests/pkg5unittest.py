@@ -950,7 +950,7 @@ if __name__ == "__main__":
                 new_rcfile = file("%s/%s%s" % (test_root, os.path.basename(rcfile),
                     suffix), "w")
 
-                conf = ConfigParser.SafeConfigParser()
+                conf = ConfigParser.RawConfigParser()
                 conf.readfp(open(rcfile))
 
                 for key in config:

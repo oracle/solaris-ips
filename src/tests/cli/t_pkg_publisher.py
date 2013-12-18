@@ -535,6 +535,37 @@ class TestPkgPublisherBasics(pkg5unittest.SingleDepotTestCase):
                         self.assert_("http://b/\thttp://foo" in self.output)
                         self.assert_("http://c/\thttp://foo" in self.output)
 
+        def test_publisher_special_repo_name(self):
+                """Tests that set-publisher can use the repository name with
+                special characters."""
+
+                self.image_create()
+
+                # "%" is a special character in SafeConfigParser, but needs
+                # to be supported anyway.
+                repo_dir = os.path.join(self.test_root, "repotest%symbol")
+                self.create_repo(repo_dir, properties={ "publisher": {
+                    "prefix": "test1" } })
+                self.pkg("set-publisher -p %s test1" % repo_dir)
+                shutil.rmtree(repo_dir)
+
+                # "+" will be converted into "%2B" by URL quoting routines.
+                # "%" is a special character in SafeConfigParser, but we need
+                # to support it here.
+                repo_dir = os.path.join(self.test_root, "repotest+symbol")
+                self.create_repo(repo_dir, properties={ "publisher": {
+                    "prefix": "test2" } })
+                self.pkg("set-publisher -g %s test2" % repo_dir)
+                shutil.rmtree(repo_dir)
+
+                # "%()" is the syntax of expansion language in SafeConfigParser
+                # but needs to be raw characters here.
+                repo_dir = os.path.join(self.test_root, "%(junkrepo)s")
+                self.create_repo(repo_dir, properties={ "publisher": {
+                    "prefix": "test3" } })
+                self.pkg("set-publisher -g %s test3" % repo_dir)
+                shutil.rmtree(repo_dir)
+
 
 class TestPkgPublisherMany(pkg5unittest.ManyDepotTestCase):
         # Only start/stop the depot once (instead of for every test)

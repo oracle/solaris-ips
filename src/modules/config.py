@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2010, 2012, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2010, 2013, Oracle and/or its affiliates. All rights reserved.
 #
 
 """The pkg.config module provides a set of classes for managing both 'flat'
@@ -1471,7 +1471,7 @@ class FileConfig(Config):
                 """
 
                 # First, attempt to read the target.
-                cp = ConfigParser.SafeConfigParser()
+                cp = ConfigParser.RawConfigParser()
                 # Disabled ConfigParser's inane option transformation to ensure
                 # option case is preserved.
                 cp.optionxform = lambda x: x
@@ -1565,7 +1565,7 @@ class FileConfig(Config):
                 if os.path.exists(self._target) and not self._dirty:
                         return
 
-                cp = ConfigParser.SafeConfigParser()
+                cp = ConfigParser.RawConfigParser()
                 # Disabled ConfigParser's inane option transformation to ensure
                 # option case is preserved.
                 cp.optionxform = lambda x: x
