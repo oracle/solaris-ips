@@ -2571,7 +2571,8 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                                 raise apx.AlreadyExecutedException()
 
                         try:
-                                be = bootenv.BootEnv(self._img)
+                                be = bootenv.BootEnv(self._img,
+                                    self.__progresstracker)
                         except RuntimeError:
                                 be = bootenv.BootEnvNull(self._img)
                         self._img.bootenv = be
