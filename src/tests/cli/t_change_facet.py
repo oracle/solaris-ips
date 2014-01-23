@@ -20,7 +20,7 @@
 # CDDL HEADER END
 #
 
-# Copyright (c) 2009, 2013, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2009, 2014, Oracle and/or its affiliates. All rights reserved.
 
 import testutils
 if __name__ == "__main__":
@@ -100,7 +100,7 @@ class TestPkgChangeFacet(pkg5unittest.SingleDepotTestCase):
                 """Verify that the specified path exists. If negate is true,
                 then make sure the path doesn't exist"""
 
-                file_path = os.path.join(self.get_img_path(), path)
+                file_path = os.path.join(self.get_img_path(), str(path))
 
                 try:
                         f = file(file_path)
@@ -254,7 +254,7 @@ class TestPkgChangeFacet(pkg5unittest.SingleDepotTestCase):
                 self.assert_file_is_there("4")
 
         def test_02_removing_facets(self):
-                self.image_create()
+                self.image_create(self.rurl)
                 # Test that setting an unset, non-existent facet to None works.
                 self.pkg("change-facet foo=None", exit=4)
 
@@ -270,6 +270,31 @@ class TestPkgChangeFacet(pkg5unittest.SingleDepotTestCase):
                 self.assertEqual("", self.output)
 
                 self.pkg("change-facet -v foo=None", exit=4)
+
+                # Test that setting a facet at the same time as removing a facet
+                # sees both as changing.
+
+                # First, install faceted package.
+                self.pkg("install pkg_A")
+                for i in xrange(9):
+                        self.assert_file_is_there(i)
+
+                # Next, set general locale.*=False, but locale.fr=True.
+                self.pkg("change-facet 'locale.*=False' 'locale.fr=True'")
+
+                # General 0 file, locale.fr file, and has slashes file should be
+                # there.
+                for i in (0, 1, 8):
+                        self.assert_file_is_there(i)
+
+                # No other locale files should be present.
+                for i in (2, 3, 4, 5, 6, 7):
+                        self.assert_file_is_there(i, negate=True)
+
+                # Now set wombat=False and unset locale.fr.
+                self.pkg("change-facet -vv locale.fr=None wombat=False")
+                self.assert_file_is_there(0) # general 0 file exists
+                self.assert_file_is_there(1, negate=True) # locale.fr file gone
 
         def test_03_slashed_facets(self):
                 self.pkg_image_create(self.rurl)

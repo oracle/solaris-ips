@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2007, 2013, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2007, 2014, Oracle and/or its affiliates. All rights reserved.
 #
 
 from collections import defaultdict, namedtuple
@@ -576,12 +576,19 @@ class ImagePlan(object):
                 old_facets = self.pd._old_facets
                 new_facets = self.pd._new_facets
 
+                # List of changed facets are those that have a new value,
+                # and those that have been removed.
                 changed_facets = [
                         f
                         for f in new_facets
                         if f not in old_facets or \
                             old_facets[f] != new_facets[f]
                 ]
+                changed_facets.extend(
+                        f
+                        for f in old_facets
+                        if f not in new_facets
+                )
 
                 def get_fattrs(m, use_solver):
                         # Get the list of facets involved in this
