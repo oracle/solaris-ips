@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2008, 2013, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2008, 2014, Oracle and/or its affiliates. All rights reserved.
 #
 
 """This module provides the supported, documented interface for clients to
@@ -595,7 +595,7 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                 try:
                         self._img.check_cert_validity()
                 except apx.ExpiringCertificate, e:
-                        logger.error(e)
+                        logger.warning(e)
                 except:
                         exc_type, exc_value, exc_traceback = sys.exc_info()
                         if exc_type in log_op_end:
@@ -4925,7 +4925,7 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                 try:
                         self._img.check_cert_validity(pubs=[pub])
                 except apx.ExpiringCertificate, e:
-                        logger.error(str(e))
+                        logger.warning(str(e))
 
                 def origins_changed(oldr, newr):
                         old_origins = set([
@@ -5500,8 +5500,13 @@ def image_create(pkg_client_name, version_id, root, imgtype, is_zone,
                 if repo_uri:
                         # Assume auto configuration.
                         if ssl_cert:
-                                misc.validate_ssl_cert(ssl_cert, prefix=prefix,
-                                    uri=repo_uri)
+                                try:
+                                        misc.validate_ssl_cert(
+                                            ssl_cert,
+                                            prefix=prefix,
+                                            uri=repo_uri)
+                                except apx.ExpiringCertificate, e:
+                                        logger.warning(e)
 
                         repo = publisher.RepositoryURI(repo_uri,
                             ssl_cert=ssl_cert, ssl_key=ssl_key)
@@ -5549,8 +5554,13 @@ def image_create(pkg_client_name, version_id, root, imgtype, is_zone,
                 if prefix and not repo_uri:
                         # Auto-configuration not possible or not requested.
                         if ssl_cert:
-                                misc.validate_ssl_cert(ssl_cert, prefix=prefix,
-                                    uri=origins[0])
+                                try:
+                                        misc.validate_ssl_cert(
+                                            ssl_cert,
+                                            prefix=prefix,
+                                            uri=origins[0])
+                                except apx.ExpiringCertificate, e:
+                                        logger.warning(e)
 
                         repo = publisher.Repository()
                         for o in origins:

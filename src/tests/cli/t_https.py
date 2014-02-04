@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2011, 2013, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2011, 2014, Oracle and/or its affiliates. All rights reserved.
 #
 
 import testutils
@@ -33,6 +33,8 @@ import hashlib
 import os
 import shutil
 import stat
+import tempfile
+import certgenerator
 
 import pkg.misc as misc
 import pkg.portable as portable
@@ -249,6 +251,34 @@ class TestHTTPS(pkg5unittest.HTTPSTestClass):
                 self.pkg("refresh", exit=1)
                 self.assert_("Publisher: tmp" in self.errout, self.errout)
                 self.assert_("Publisher: test" in self.errout, self.errout)
+
+        def test_expiring_certs(self):
+                """Test that image-create will not raise exception for
+                expiring certificates. (Bug 17768096)"""
+
+                tmp_dir = tempfile.mkdtemp(dir=self.test_root)
+
+                # Retrive the correct CA and use it to generate a new cert.
+                test_ca = self.get_pub_ta("test")
+                test_cs = "cs1_%s" % test_ca
+
+                # Add a certificate to the length 2 chain that is going to
+                # expire in 27 days.
+                cg = certgenerator.CertGenerator(base_dir=tmp_dir)
+                cg.make_cs_cert(test_cs, test_ca, ca_path=self.path_to_certs,
+                    expiring=True, https=True)
+                self.ac.start()
+                self.image_create()
+
+                # Set https-based publisher with expiring cert.
+                self.seed_ta_dir("ta7")
+                self.pkg("image-create -f --user -k %(key)s -c %(cert)s "
+                    "-p test=%(url)s %(path)s/image"% {
+                    "url": self.acurl1,
+                    "cert": os.path.join(cg.cs_dir, "%s_cert.pem" % test_cs),
+                    "key": os.path.join(cg.keys_dir, "%s_key.pem" % test_cs),
+                    "path": tmp_dir
+                    })
 
 
 class TestDepotHTTPS(pkg5unittest.SingleDepotTestCase):

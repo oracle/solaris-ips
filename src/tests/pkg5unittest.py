@@ -18,7 +18,7 @@
 # CDDL HEADER END
 #
 
-# Copyright (c) 2008, 2013, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2008, 2014, Oracle and/or its affiliates. All rights reserved.
 
 #
 # Define the basic classes that all test cases are inherited from.
@@ -3464,6 +3464,10 @@ class HTTPSTestClass(ApacheDepotTestCase):
         def get_cli_key(self, publisher):
                 ta = self.pub_ta_map[publisher]
                 return "cs1_ta%d_key.pem" % ta
+
+        def get_pub_ta(self, publisher):
+                ta = self.pub_ta_map[publisher]
+                return "ta%d" % ta
 
         def setUp(self, publishers, start_depots=True):
                 # We only have 5 usable CA certs and there are not many usecases
