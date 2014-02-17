@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2008, 2012, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2008, 2014, Oracle and/or its affiliates. All rights reserved.
 #
 
 import pkg.smf as smf
@@ -87,6 +87,8 @@ class Actuator(object):
                 self.tmp_suspend_fmris = None
                 self.do_nothing = True
                 self.cmd_path = ""
+                self.sync_timeout = 0
+                self.act_timed_out = False
 
         @staticmethod
         def getstate(obj, je_state=None):
@@ -117,6 +119,19 @@ class Actuator(object):
                 rv = Actuator()
                 Actuator.setstate(rv, state, jd_state)
                 return rv
+
+        def set_timeout(self, timeout):
+                """ Set actuator timeout.
+                'timeout'       Actuator timeout in seconds. The following
+                                special values are allowed:
+                                  0: don't use synchronous actuators
+                                 -1: no timeout, wait until finished
+                """
+                self.sync_timeout = timeout
+
+        @property
+        def timed_out(self):
+                return self.act_timed_out
 
         def __bool__(self):
                 return self.install or self.removal or self.update
@@ -201,6 +216,16 @@ class Actuator(object):
                 return bool("true" in self.update.get("reboot-needed", [])) or \
                     bool("true" in self.removal.get("reboot-needed", []))
 
+        def __invoke(self, func, *args, **kwargs):
+                """Execute SMF command. Remember if command timed out."""
+                try:
+                        func(*args, **kwargs)
+                except smf.NonzeroExitException, nze:
+                        if nze.return_code == smf.EXIT_TIMEOUT:
+                                self.act_timed_out = True
+                        else:
+                                raise
+
         def exec_prep(self, image):
                 if not image.is_liveroot():
                         # we're doing off-line pkg ops; we need
@@ -253,12 +278,12 @@ class Actuator(object):
                 params = tuple(suspend_fmris | tmp_suspend_fmris)
 
                 if params:
-                        smf.disable(params, temporary=True)
+                        self.__invoke(smf.disable, params, temporary=True)
 
                 params = tuple(disable_fmris)
 
                 if params:
-                        smf.disable(params)
+                        self.__invoke(smf.disable, params)
 
         def exec_fail_actuators(self, image):
                 """handle a failed install"""
@@ -270,7 +295,7 @@ class Actuator(object):
                     self.tmp_suspend_fmris)
 
                 if params:
-                        smf.mark("maintenance", params)
+                        self.__invoke(smf.mark, "maintenance", params)
 
         def exec_post_actuators(self, image):
                 """do post execution actuator processing"""
@@ -314,7 +339,7 @@ class Actuator(object):
                 params = tuple(refresh_fmris)
 
                 if params:
-                        smf.refresh(params)
+                        self.__invoke(smf.refresh, params, sync_timeout=self.sync_timeout)
 
                 for fmri in restart_fmris.copy():
                         if smf.is_disabled(fmri):
@@ -322,7 +347,7 @@ class Actuator(object):
 
                 params = tuple(restart_fmris)
                 if params:
-                        smf.restart(params)
+                        self.__invoke(smf.restart, params, sync_timeout=self.sync_timeout)
 
                 # reenable suspended services that were running
                 # be sure to not enable services that weren't running
@@ -331,8 +356,10 @@ class Actuator(object):
 
                 params = tuple(self.suspend_fmris)
                 if params:
-                        smf.enable(params)
+                        self.__invoke(smf.enable, params, sync_timeout=self.sync_timeout)
 
                 params = tuple(self.tmp_suspend_fmris)
                 if params:
-                        smf.enable(params, temporary=True)
+                        self.__invoke(smf.enable, params, temporary=True,
+                            sync_timeout=self.sync_timeout)
+

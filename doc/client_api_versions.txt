@@ -1,3 +1,17 @@
+Version 77:
+Compatible with clients using versions 72-76.
+
+    pkg.client.api.ImageInterface has changed as follows:
+
+        * Added 'act_timeout' parameter to
+            - gen_plan_update()
+            - gen_plan_uninstall()
+            - gen_plan_install()
+            - gen_plan_change_varcets()
+
+          These allow to use synchronous SMF actuators including a timeout. 
+
+
 Version 76:
 Compatible with clients using versions 72-75 [1].
 

@@ -230,6 +230,8 @@ class PlanDescription(object):
                 self._cbytes_avail = 0  # avail space for downloads
                 self._bytes_avail = 0   # avail space for fs
 
+                self._act_timed_out = False
+
         @staticmethod
         def getstate(obj, je_state=None, reset_volatiles=False):
                 """Returns the serialized state of this object in a format
@@ -329,6 +331,8 @@ class PlanDescription(object):
 
                 # reduce memory consumption
                 self._fmri_changes = []
+                # We have to save the timed_out state.
+                self._act_timed_out = self._actuators.timed_out
                 self._actuators = pkg.client.actuator.Actuator()
                 self.added_groups = {}
                 self.added_users = {}
@@ -666,6 +670,17 @@ class PlanDescription(object):
                         return []
 
                 return self._solver_errors
+
+        def set_actuator_timeout(self, timeout):
+                """Set timeout for synchronous actuators."""
+                assert type(timeout) == int, "Actuator timeout must be an "\
+                    "integer."
+                self._actuators.set_timeout(timeout)
+
+        @property
+        def actuator_timed_out(self):
+                """Indicates that a synchronous actuator timed out."""
+                return self._act_timed_out
 
         @property
         def plan_type(self):

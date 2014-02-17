@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2011, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2011, 2014, Oracle and/or its affiliates. All rights reserved.
 #
 
 # This module provides a basic interface to smf.
@@ -42,6 +42,13 @@ SMF_SVC_MAINTENANCE  = 2
 SMF_SVC_TMP_DISABLED = 3
 SMF_SVC_TMP_ENABLED  = 4
 SMF_SVC_ENABLED      = 5
+
+EXIT_OK              = 0
+EXIT_FATAL           = 1
+EXIT_INVALID_OPTION  = 2
+EXIT_INSTANCE        = 3
+EXIT_DEPENDENCY      = 4
+EXIT_TIMEOUT         = 5
 
 svcprop_path = "/usr/bin/svcprop"
 svcadm_path  = "/usr/sbin/svcadm"
@@ -168,22 +175,28 @@ def get_prop(fmri, prop):
         buf = buf[0].rstrip("\n")
         return buf
 
-def enable(fmris, temporary=False):
+def enable(fmris, temporary=False, sync_timeout=0):
         if not fmris:
                 return
         if isinstance(fmris, basestring):
                 fmris = (fmris,)
         args = [svcadm_path, "enable"]
+        if sync_timeout:
+                args.append("-s")
+                if sync_timeout != -1:
+                        args.append("-T %d" % sync_timeout)
         if temporary:
                 args.append("-t")
         __call(tuple(args) + fmris)
 
-def disable(fmris, temporary=False):
+def disable(fmris, temporary=False, sync_timeout=0):
         if not fmris:
                 return
         if isinstance(fmris, basestring):
                 fmris = (fmris,)
         args = [svcadm_path, "disable", "-s"]
+        if sync_timeout > 0:
+                args.append("-T %d" % sync_timeout)
         if temporary:
                 args.append("-t")
         __call(tuple(args) + fmris)
@@ -193,18 +206,29 @@ def mark(state, fmris):
                 return
         if isinstance(fmris, basestring):
                 fmris = (fmris,)
-        __call((svcadm_path, "mark", state) + tuple(fmris))
+        args = [svcadm_path, "mark", state]
+        __call(tuple(args) + fmris)
 
-def refresh(fmris):
+def refresh(fmris, sync_timeout=0):
         if not fmris:
                 return
         if isinstance(fmris, basestring):
                 fmris = (fmris,)
-        __call((svcadm_path, "refresh") + tuple(fmris))
+        args = [svcadm_path, "refresh"]
+        if sync_timeout:
+                args.append("-s")
+                if sync_timeout != -1:
+                        args.append("-T %d" % sync_timeout)
+        __call(tuple(args) + fmris)
 
-def restart(fmris):
+def restart(fmris, sync_timeout=0):
         if not fmris:
                 return
         if isinstance(fmris, basestring):
                 fmris = (fmris,)
-        __call((svcadm_path, "restart") + tuple(fmris))
+        args = [svcadm_path, "restart"]
+        if sync_timeout:
+                args.append("-s")
+                if sync_timeout != -1:
+                        args.append("-T %d" % sync_timeout)
+        __call(tuple(args) + fmris)

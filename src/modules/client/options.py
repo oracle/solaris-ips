@@ -20,7 +20,7 @@
 # CDDL HEADER END
 #
 
-# Copyright (c) 2013, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2014, Oracle and/or its affiliates. All rights reserved.
 
 import os
 
@@ -78,6 +78,8 @@ SUMMARY               = "summary"
 TAGGED                = "tagged"
 UPDATE_INDEX          = "update_index"
 VERBOSE               = "verbose"
+SYNC_ACT              = "sync_act"
+ACT_TIMEOUT           = "act_timeout"
 
 
 
@@ -487,6 +489,21 @@ def opts_table_cb_concurrency(api_inst, opts, opts_new):
         # remove concurrency from parameters dict
         del opts_new[CONCURRENCY]
 
+def opts_table_cb_actuators(api_inst, opts, opts_new):
+
+        del opts_new[ACT_TIMEOUT]
+        del opts_new[SYNC_ACT]
+
+        if opts[ACT_TIMEOUT]:
+                # make sure we have an integer
+                opts_cb_int(ACT_TIMEOUT, api_inst, opts, opts_new)
+        elif opts[SYNC_ACT]:
+                # -1 is no timeout
+                opts_new[ACT_TIMEOUT] = -1
+        else:
+                # 0 is no sync actuators are used (timeout=0)
+                opts_new[ACT_TIMEOUT] = 0
+
 #
 # options common to multiple pkg(1) operations.  The format for specifying
 # options is a list which can contain:
@@ -610,11 +627,17 @@ opts_table_stage = [
     (STAGE,                None),
 ]
 
+opts_table_actuators = [
+    opts_table_cb_actuators,
+    (SYNC_ACT,             False),
+    (ACT_TIMEOUT,          None)
+]
+
 #
 # Options for pkg(1) subcommands.  Built by combining the option tables above,
 # with some optional subcommand unique options defined below.
 #
-opts_install = \
+opts_main = \
     opts_table_beopts + \
     opts_table_concurrency + \
     opts_table_li_ignore + \
@@ -628,16 +651,23 @@ opts_install = \
     opts_table_origins + \
     []
 
-# "update" cmd inherits all "install" cmd options
-opts_update = \
-    opts_install + \
-    opts_table_force + \
-    opts_table_stage + \
+opts_install = \
+    opts_main + \
+    opts_table_actuators + \
     []
 
-# "attach-linked" cmd inherits all "install" cmd options
+# "update" cmd inherits all main cmd options
+# TODO fix back to opts_install
+opts_update = \
+    opts_main + \
+    opts_table_force + \
+    opts_table_stage + \
+    opts_table_actuators + \
+    []
+
+# "attach-linked" cmd inherits all main cmd options
 opts_attach_linked = \
-    opts_install + \
+    opts_main + \
     opts_table_force + \
     opts_table_li_md_only + \
     opts_table_li_no_pkg_updates + \
@@ -667,17 +697,17 @@ opts_set_mediator = \
     (MED_VERSION,          None)
 ]
 
-# "set-property-linked" cmd inherits all "install" cmd options
+# "set-property-linked" cmd inherits all main cmd options
 opts_set_property_linked = \
-    opts_install + \
+    opts_main + \
     opts_table_li_md_only + \
     opts_table_li_no_pkg_updates + \
     opts_table_li_target1 + \
     []
 
-# "sync-linked" cmd inherits all "install" cmd options
+# "sync-linked" cmd inherits all main cmd options
 opts_sync_linked = \
-    opts_install + \
+    opts_main + \
     opts_table_li_md_only + \
     opts_table_li_no_pkg_updates + \
     opts_table_li_target + \
@@ -692,7 +722,8 @@ opts_uninstall = \
     opts_table_no_index + \
     opts_table_nqv + \
     opts_table_parsable + \
-    opts_table_stage
+    opts_table_stage + \
+    opts_table_actuators
 
 opts_audit_linked = \
     opts_table_li_no_psync + \

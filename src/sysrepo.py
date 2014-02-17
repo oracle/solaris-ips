@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2011, 2013, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2011, 2014, Oracle and/or its affiliates. All rights reserved.
 #
 
 import atexit
@@ -59,7 +59,7 @@ logger = global_settings.logger
 orig_cwd = None
 
 PKG_CLIENT_NAME = "pkg.sysrepo"
-CLIENT_API_VERSION = 75
+CLIENT_API_VERSION = 77
 pkg.client.global_settings.client_name = PKG_CLIENT_NAME
 
 # exit codes

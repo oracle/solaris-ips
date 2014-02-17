@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2009, 2012, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2009, 2014, Oracle and/or its affiliates. All rights reserved.
 #
 
 import errno
@@ -43,7 +43,7 @@ import pkg.misc as misc
 import pkg.publish.dependencies as dependencies
 from pkg.misc import msg, emsg, PipeError
 
-CLIENT_API_VERSION = 75
+CLIENT_API_VERSION = 77
 PKG_CLIENT_NAME = "pkgdepend"
 
 DEFAULT_SUFFIX = ".res"

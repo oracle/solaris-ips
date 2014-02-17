@@ -1,6 +1,6 @@
 '\" te
-.\" Copyright (c) 2007, 2013, Oracle and/or its affiliates. All rights reserved.
-.TH pkg 1 "04 Oct 2013" "SunOS 5.12" "User Commands"
+.\" Copyright (c) 2007, 2014, Oracle and/or its affiliates. All rights reserved.
+.TH pkg 1 "17 Feb 2014" "SunOS 5.12" "User Commands"
 .SH NAME
 pkg \- Image Packaging System retrieval client
 .SH SYNOPSIS
@@ -21,6 +21,7 @@ pkg \- Image Packaging System retrieval client
     [--no-refresh] [--no-backup-be | --require-backup-be]
     [--backup-be-name \fIname\fR]
     [--deny-new-be | --require-new-be] [--be-name \fIname\fR]
+    [--sync-actuators | --sync-actuators-timeout \fItimeout\fR]
     [--reject \fIpkg_fmri_pattern\fR]... \fIpkg_fmri_pattern\fR ...
 .fi
 
@@ -30,6 +31,7 @@ pkg \- Image Packaging System retrieval client
     [--no-index] [--no-backup-be | --require-backup-be]
     [--backup-be-name \fIname\fR]
     [--deny-new-be | --require-new-be] [--be-name \fIname\fR]
+    [--sync-actuators | --sync-actuators-timeout \fItimeout\fR]
     \fIpkg_fmri_pattern\fR ...
 .fi
 
@@ -40,6 +42,7 @@ pkg \- Image Packaging System retrieval client
     [--no-refresh] [--no-backup-be | --require-backup-be]
     [--backup-be-name \fIname\fR]
     [--deny-new-be | --require-new-be] [--be-name \fIname\fR]
+    [--sync-actuators | --sync-actuators-timeout \fItimeout\fR]
     [--reject \fIpkg_fmri_pattern\fR]... [\fIpkg_fmri_pattern\fR ...]
 .fi
 
@@ -125,6 +128,7 @@ usr/bin/pkg set-mediator [-nv] [-I \fIimplementation\fR]
     [--no-backup-be | --require-backup-be]
     [--backup-be-name \fIname\fR]
     [--deny-new-be | --require-new-be] [--be-name \fIname\fR]
+    [--sync-actuators | --sync-actuators-timeout \fItimeout\fR]
     \fIvariant_name\fR=\fIvalue\fR ...
 .fi
 
@@ -140,6 +144,7 @@ usr/bin/pkg set-mediator [-nv] [-I \fIimplementation\fR]
     [--no-backup-be | --require-backup-be]
     [--backup-be-name \fIname\fR]
     [--deny-new-be | --require-new-be] [--be-name \fIname\fR]
+    [--sync-actuators | --sync-actuators-timeout \fItimeout\fR]
     \fIfacet_name\fR=(True|False|None) ...
 .fi
 
@@ -376,7 +381,7 @@ Force a full retrieval of all publisher metadata, instead of attempting an incre
 .ne 2
 .mk
 .na
-\fB\fBpkg install\fR [\fB-nvq\fR] [\fB-C\fR \fIn\fR] [\fB-g\fR \fIpath_or_uri\fR]... [\fB--accept\fR] [\fB--licenses\fR] [\fB--no-be-activate\fR] [\fB--no-index\fR] [\fB--no-refresh\fR] [\fB--no-backup-be\fR | \fB--require-backup-be\fR] [\fB--backup-be-name\fR \fIname\fR] [\fB--deny-new-be\fR | \fB--require-new-be\fR] [\fB--be-name\fR \fIname\fR] [\fB--reject\fR \fIpkg_fmri_pattern\fR]... \fIpkg_fmri_pattern\fR ...\fR
+\fB\fBpkg install\fR [\fB-nvq\fR] [\fB-C\fR \fIn\fR] [\fB-g\fR \fIpath_or_uri\fR]... [\fB--accept\fR] [\fB--licenses\fR] [\fB--no-be-activate\fR] [\fB--no-index\fR] [\fB--no-refresh\fR] [\fB--no-backup-be\fR | \fB--require-backup-be\fR] [\fB--backup-be-name\fR \fIname\fR] [\fB--deny-new-be\fR | \fB--require-new-be\fR] [\fB--be-name\fR \fIname\fR] [--sync-actuators | --sync-actuators-timeout \fItimeout\fR] [\fB--reject\fR \fIpkg_fmri_pattern\fR]... \fIpkg_fmri_pattern\fR ...\fR
 .ad
 .sp .6
 .RS 4n
@@ -571,6 +576,28 @@ Do not create a new boot environment. This operation is not performed if a new b
 .ne 2
 .mk
 .na
+\fB\fB--sync-actuators\fR\fR
+.ad
+.sp .6
+.RS 4n
+Run SMF actuators synchronously. pkg(1) command will not return until all SMF actuators have finished.
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB--sync-actuators\fR \fItimeout\fR\fR
+.ad
+.sp .6
+.RS 4n
+Run SMF actuators synchronously. If the actuators do not finish within the given \fItimeout\fR in seconds, pkg(1) will continue operation and exit with return code 8.
+.RE
+
+.sp
+.ne 2
+.mk
+.na
 \fB\fB--reject\fR \fIpkg_fmri_pattern\fR\fR
 .ad
 .sp .6
@@ -584,7 +611,7 @@ Prevent packages with names matching the given pattern from being installed. If 
 .ne 2
 .mk
 .na
-\fB\fBpkg uninstall\fR [\fB-nvq\fR] [\fB-C\fR \fIn\fR] [\fB--no-be-activate\fR] [\fB--no-index\fR] [\fB--no-backup-be\fR | \fB--require-backup-be\fR] [\fB--backup-be-name\fR \fIname\fR] [\fB--deny-new-be\fR | \fB--require-new-be\fR] [\fB--be-name\fR \fIname\fR] \fIpkg_fmri_pattern\fR ...\fR
+\fB\fBpkg uninstall\fR [\fB-nvq\fR] [\fB-C\fR \fIn\fR] [\fB--no-be-activate\fR] [\fB--no-index\fR] [\fB--no-backup-be\fR | \fB--require-backup-be\fR] [\fB--backup-be-name\fR \fIname\fR] [\fB--deny-new-be\fR | \fB--require-new-be\fR] [\fB--be-name\fR \fIname\fR] [--sync-actuators | --sync-actuators-timeout \fItimeout\fR] \fIpkg_fmri_pattern\fR ...\fR
 .ad
 .sp .6
 .RS 4n
@@ -601,7 +628,7 @@ In the command output, note any messages that say a new boot environment has bee
 .ne 2
 .mk
 .na
-\fB\fBpkg update\fR [\fB-fnvq\fR] [\fB-C\fR \fIn\fR] [\fB-g\fR \fIpath_or_uri\fR]... [\fB--accept\fR] [\fB--licenses\fR] [\fB--no-be-activate\fR] [\fB--no-index\fR] [\fB--no-refresh\fR] [\fB--no-backup-be\fR | \fB--require-backup-be\fR] [\fB--backup-be-name\fR \fIname\fR] [\fB--deny-new-be\fR | \fB--require-new-be\fR] [\fB--be-name\fR \fIname\fR] [\fB--reject\fR \fIpkg_fmri_pattern\fR]... [\fIpkg_fmri_pattern\fR ...]\fR
+\fB\fBpkg update\fR [\fB-fnvq\fR] [\fB-C\fR \fIn\fR] [\fB-g\fR \fIpath_or_uri\fR]... [\fB--accept\fR] [\fB--licenses\fR] [\fB--no-be-activate\fR] [\fB--no-index\fR] [\fB--no-refresh\fR] [\fB--no-backup-be\fR | \fB--require-backup-be\fR] [\fB--backup-be-name\fR \fIname\fR] [\fB--deny-new-be\fR | \fB--require-new-be\fR] [\fB--be-name\fR \fIname\fR] [--sync-actuators | --sync-actuators-timeout \fItimeout\fR] [\fB--reject\fR \fIpkg_fmri_pattern\fR]... [\fIpkg_fmri_pattern\fR ...]\fR
 .ad
 .sp .6
 .RS 4n
@@ -1651,7 +1678,7 @@ Display the possible variant values that can be set for installed packages. The 
 .ne 2
 .mk
 .na
-\fB\fBpkg change-variant\fR [\fB-nvq\fR] [\fB-C\fR \fIn\fR] [\fB-g\fR \fIpath_or_uri\fR]... [\fB--accept\fR] [\fB--licenses\fR] [\fB--no-be-activate\fR] [\fB--no-backup-be\fR |\fB--require-backup-be\fR] [\fB--backup-be-name\fR \fIname\fR] [\fB--deny-new-be\fR | \fB--require-new-be\fR] [\fB--be-name\fR \fIname\fR] \fIvariant_name\fR=\fIvalue\fR ...\fR
+\fB\fBpkg change-variant\fR [\fB-nvq\fR] [\fB-C\fR \fIn\fR] [\fB-g\fR \fIpath_or_uri\fR]... [\fB--accept\fR] [\fB--licenses\fR] [\fB--no-be-activate\fR] [\fB--no-backup-be\fR |\fB--require-backup-be\fR] [\fB--backup-be-name\fR \fIname\fR] [\fB--deny-new-be\fR | \fB--require-new-be\fR] [\fB--be-name\fR \fIname\fR] [--sync-actuators | --sync-actuators-timeout \fItimeout\fR] \fIvariant_name\fR=\fIvalue\fR ...\fR
 .ad
 .sp .6
 .RS 4n
@@ -1743,7 +1770,7 @@ Include masked facets in the output. Include a column that indicates which, if a
 .ne 2
 .mk
 .na
-\fB\fBpkg change-facet\fR [\fB-nvq\fR] [\fB-C\fR \fIn\fR] [\fB-g\fR \fIpath_or_uri\fR]... [\fB--accept\fR] [\fB--licenses\fR] [\fB--no-be-activate\fR] [\fB--no-backup-be\fR | \fB--require-backup-be\fR] [\fB--backup-be-name\fR \fIname\fR] [\fB--deny-new-be\fR | \fB--require-new-be\fR] [\fB--be-name\fR \fIname\fR] \fIfacet_name\fR=(\fBTrue\fR|\fBFalse\fR|\fBNone\fR) ...\fR
+\fB\fBpkg change-facet\fR [\fB-nvq\fR] [\fB-C\fR \fIn\fR] [\fB-g\fR \fIpath_or_uri\fR]... [\fB--accept\fR] [\fB--licenses\fR] [\fB--no-be-activate\fR] [\fB--no-backup-be\fR | \fB--require-backup-be\fR] [\fB--backup-be-name\fR \fIname\fR] [\fB--deny-new-be\fR | \fB--require-new-be\fR] [\fB--be-name\fR \fIname\fR] [--sync-actuators | --sync-actuators-timeout \fItimeout\fR] \fIfacet_name\fR=(\fBTrue\fR|\fBFalse\fR|\fBNone\fR) ...\fR
 .ad
 .sp .6
 .RS 4n
@@ -3743,6 +3770,17 @@ The requested operation cannot be completed because the licenses for the package
 .RS 6n
 .rt  
 The image is currently in use by another process and cannot be modified.
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB8\fR\fR
+.ad
+.RS 6n
+.rt  
+One or more SMF actuators timed out.
 .RE
 
 .sp

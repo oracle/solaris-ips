@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2007, 2013, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2007, 2014, Oracle and/or its affiliates. All rights reserved.
 #
 
 #
@@ -91,7 +91,7 @@ except KeyboardInterrupt:
         import sys
         sys.exit(1)
 
-CLIENT_API_VERSION = 75
+CLIENT_API_VERSION = 77
 PKG_CLIENT_NAME = "pkg"
 
 JUST_UNKNOWN = 0
@@ -158,17 +158,20 @@ def usage(usage_error=None, cmd=None, retcode=EXIT_BADOPT, full=False):
             "            [--licenses] [--no-be-activate] [--no-index] [--no-refresh]\n"
             "            [--no-backup-be | --require-backup-be] [--backup-be-name name]\n"
             "            [--deny-new-be | --require-new-be] [--be-name name]\n"
+            "            [--sync-actuators | --sync-actuators-timeout timeout]\n"
             "            [--reject pkg_fmri_pattern ... ] pkg_fmri_pattern ...")
         basic_usage["uninstall"] = _(
             "[-nvq] [-C n] [--no-be-activate] [--no-index]\n"
             "            [--no-backup-be | --require-backup-be] [--backup-be-name]\n"
             "            [--deny-new-be | --require-new-be] [--be-name name]\n"
+            "            [--sync-actuators | --sync-actuators-timeout timeout]\n"
             "            pkg_fmri_pattern ...")
         basic_usage["update"] = _(
             "[-fnvq] [-C n] [-g path_or_uri ...] [--accept]\n"
             "            [--licenses] [--no-be-activate] [--no-index] [--no-refresh]\n"
             "            [--no-backup-be | --require-backup-be] [--backup-be-name]\n"
             "            [--deny-new-be | --require-new-be] [--be-name name]\n"
+            "            [--sync-actuators | --sync-actuators-timeout timeout]\n"
             "            [--reject pkg_fmri_pattern ...] [pkg_fmri_pattern ...]")
         basic_usage["list"] = _(
             "[-Hafnqsuv] [-g path_or_uri ...] [--no-refresh]\n"
@@ -248,6 +251,7 @@ def usage(usage_error=None, cmd=None, retcode=EXIT_BADOPT, full=False):
             "            [--licenses] [--no-be-activate] [--no-index] [--no-refresh]\n"
             "            [--no-backup-be | --require-backup-be] [--backup-be-name name]\n"
             "            [--deny-new-be | --require-new-be] [--be-name name]\n"
+            "            [--sync-actuators | --sync-actuators-timeout timeout]\n"
             "            [--reject pkg_fmri_pattern ... ]\n"
             "            <variant_spec>=<instance> ...")
 
@@ -256,6 +260,7 @@ def usage(usage_error=None, cmd=None, retcode=EXIT_BADOPT, full=False):
             "            [--licenses] [--no-be-activate] [--no-index] [--no-refresh]\n"
             "            [--no-backup-be | --require-backup-be] [--backup-be-name name]\n"
             "            [--deny-new-be | --require-new-be] [--be-name name]\n"
+            "            [--sync-actuators | --sync-actuators-timeout timeout]\n"
             "            [--reject pkg_fmri_pattern ... ]\n"
             "            <facet_spec>=[True|False|None] ...")
 
@@ -1432,7 +1437,11 @@ def __api_execute_plan(operation, api_inst):
         rval = None
         try:
                 api_inst.execute_plan()
-                rval = EXIT_OK
+                pd = api_inst.describe()
+                if pd.actuator_timed_out:
+                        rval = EXIT_ACTUATOR
+                else:
+                        rval = EXIT_OK
         except RuntimeError, e:
                 error(_("%(operation)s failed: %(err)s") %
                     {"operation": operation, "err": e})
@@ -1951,7 +1960,8 @@ def remote(op, api_inst, pargs, ctlfd):
 def change_variant(op, api_inst, pargs,
     accept, backup_be, backup_be_name, be_activate, be_name, li_ignore,
     li_parent_sync, new_be, noexecute, origins, parsable_version, quiet,
-    refresh_catalogs, reject_pats, show_licenses, update_index, verbose):
+    refresh_catalogs, reject_pats, show_licenses, update_index, verbose,
+    act_timeout):
         """Attempt to change a variant associated with an image, updating
         the image contents as necessary."""
 
@@ -1988,12 +1998,14 @@ def change_variant(op, api_inst, pargs,
             be_activate=be_activate, be_name=be_name,
             li_parent_sync=li_parent_sync, new_be=new_be,
             refresh_catalogs=refresh_catalogs, reject_list=reject_pats,
-            update_index=update_index, variants=variants)
+            update_index=update_index, variants=variants,
+            act_timeout=act_timeout)
 
 def change_facet(op, api_inst, pargs,
     accept, backup_be, backup_be_name, be_activate, be_name, li_ignore,
     li_parent_sync, new_be, noexecute, origins, parsable_version, quiet,
-    refresh_catalogs, reject_pats, show_licenses, update_index, verbose):
+    refresh_catalogs, reject_pats, show_licenses, update_index, verbose,
+    act_timeout):
         """Attempt to change the facets as specified, updating
         image as necessary"""
 
@@ -2043,12 +2055,13 @@ def change_facet(op, api_inst, pargs,
             be_activate=be_activate, be_name=be_name,
             li_parent_sync=li_parent_sync, new_be=new_be, facets=facets,
             refresh_catalogs=refresh_catalogs, reject_list=reject_pats,
-            update_index=update_index)
+            update_index=update_index, act_timeout=act_timeout)
 
 def install(op, api_inst, pargs,
     accept, backup_be, backup_be_name, be_activate, be_name, li_ignore,
     li_parent_sync, new_be, noexecute, origins, parsable_version, quiet,
-    refresh_catalogs, reject_pats, show_licenses, update_index, verbose):
+    refresh_catalogs, reject_pats, show_licenses, update_index, verbose,
+    act_timeout):
 
         """Attempt to take package specified to INSTALLED state.  The operands
         are interpreted as glob patterns."""
@@ -2072,12 +2085,12 @@ def install(op, api_inst, pargs,
             li_parent_sync=li_parent_sync, new_be=new_be,
             _parsable_version=parsable_version, pkgs_inst=pargs,
             refresh_catalogs=refresh_catalogs, reject_list=reject_pats,
-            update_index=update_index)
+            update_index=update_index, act_timeout=act_timeout)
 
 def uninstall(op, api_inst, pargs,
     be_activate, backup_be, backup_be_name, be_name, new_be, li_ignore,
     li_parent_sync, update_index, noexecute, parsable_version, quiet,
-    verbose, stage):
+    verbose, stage, act_timeout):
         """Attempt to take package specified to DELETED state."""
 
         if not pargs:
@@ -2095,13 +2108,13 @@ def uninstall(op, api_inst, pargs,
             _verbose=verbose, backup_be=backup_be,
             backup_be_name=backup_be_name, be_activate=be_activate,
             be_name=be_name, li_parent_sync=li_parent_sync, new_be=new_be,
-            _parsable_version=parsable_version,
-            pkgs_to_uninstall=pargs, update_index=update_index)
+            _parsable_version=parsable_version, pkgs_to_uninstall=pargs,
+            update_index=update_index, act_timeout=act_timeout)
 
 def update(op, api_inst, pargs, accept, backup_be, backup_be_name, be_activate,
     be_name, force, li_ignore, li_parent_sync, new_be, noexecute, origins,
     parsable_version, quiet, refresh_catalogs, reject_pats, show_licenses,
-    stage, update_index, verbose):
+    stage, update_index, verbose, act_timeout):
         """Attempt to take all installed packages specified to latest
         version."""
 
@@ -2135,7 +2148,8 @@ def update(op, api_inst, pargs, accept, backup_be, backup_be_name, be_activate,
             be_activate=be_activate, be_name=be_name, force=force,
             li_parent_sync=li_parent_sync, new_be=new_be,
             pkgs_update=pkgs_update, refresh_catalogs=refresh_catalogs,
-            reject_list=reject_pats, update_index=update_index)
+            reject_list=reject_pats, update_index=update_index,
+            act_timeout=act_timeout)
 
 def revert(op, api_inst, pargs,
     backup_be, backup_be_name, be_activate, be_name, new_be, noexecute,
@@ -5934,6 +5948,9 @@ opts_mapping = {
     "progfd" :                ("",  "progfd"),
 
     "list_installed" :        ("i",  ""),
+
+    "sync_act" :              ("",  "sync-actuators"),
+    "act_timeout" :           ("",  "sync-actuators-timeout"),
 }
 
 #

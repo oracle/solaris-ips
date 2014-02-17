@@ -103,8 +103,8 @@ from pkg.smf import NonzeroExitException
 # things like help(pkg.client.api.PlanDescription)
 from pkg.client.plandesc import PlanDescription # pylint: disable=W0611
 
-CURRENT_API_VERSION = 76
-COMPATIBLE_API_VERSIONS = frozenset([72, 73, 74, 75, CURRENT_API_VERSION])
+CURRENT_API_VERSION = 77
+COMPATIBLE_API_VERSIONS = frozenset([72, 73, 74, 75, 76, CURRENT_API_VERSION])
 CURRENT_P5I_VERSION = 1
 
 # Image type constants.
@@ -1286,7 +1286,7 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
             _be_name=None, _ipkg_require_latest=False, _li_ignore=None,
             _li_md_only=False, _li_parent_sync=True, _new_be=False,
             _noexecute=False, _pubcheck=True, _refresh_catalogs=True,
-            _repos=None, _update_index=True, **kwargs):
+            _repos=None, _update_index=True, _act_timeout=0, **kwargs):
                 """Contructs a plan to change the package or linked image
                 state of an image.
 
@@ -1423,6 +1423,10 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                         self.__plan_desc = self._img.imageplan.describe()
                         if not _noexecute:
                                 self.__plan_type = self.__plan_desc.plan_type
+
+                        if _act_timeout != 0:
+                                self.__plan_desc.set_actuator_timeout(
+                                    _act_timeout)
 
                         # Yield to our caller so they can display our plan
                         # before we recurse into child images.  Drop the
@@ -1621,7 +1625,8 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
             backup_be_name=None, be_activate=True, be_name=None,
             force=False, li_ignore=None, li_parent_sync=True, new_be=True,
             noexecute=False, pubcheck=True, refresh_catalogs=True,
-            reject_list=misc.EmptyI, repos=None, update_index=True):
+            reject_list=misc.EmptyI, repos=None, update_index=True,
+            act_timeout=0):
 
                 """This is a generator function that yields a PlanDescription
                 object.  If parsable_version is set, it also yields dictionaries
@@ -1667,7 +1672,7 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                     _new_be=new_be, _noexecute=noexecute, _pubcheck=pubcheck,
                     _refresh_catalogs=refresh_catalogs, _repos=repos,
                     _update_index=update_index, pkgs_update=pkgs_update,
-                    reject_list=reject_list)
+                    reject_list=reject_list, _act_timeout=act_timeout)
 
         def plan_install(self, pkg_list, refresh_catalogs=True,
             noexecute=False, update_index=True, be_name=None,
@@ -1686,7 +1691,7 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
             backup_be_name=None, be_activate=True, be_name=None, li_ignore=None,
             li_parent_sync=True, new_be=False, noexecute=False,
             refresh_catalogs=True, reject_list=misc.EmptyI, repos=None,
-            update_index=True):
+            update_index=True, act_timeout=0):
                 """This is a generator function that yields a PlanDescription
                 object.  If parsable_version is set, it also yields dictionaries
                 containing plan information for child images.
@@ -1757,7 +1762,11 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
 
                 'update_index' determines whether client search indexes
                 will be updated after operation completion during plan
-                execution."""
+                execution.
+
+                'act_timeout' sets the timeout for synchronous actuators in
+                seconds, -1 is no timeout, 0 is for using asynchronous
+                actuators."""
 
                 # certain parameters must be specified
                 assert pkgs_inst and type(pkgs_inst) == list
@@ -1770,7 +1779,7 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                     _new_be=new_be, _noexecute=noexecute,
                     _refresh_catalogs=refresh_catalogs, _repos=repos,
                     _update_index=update_index, pkgs_inst=pkgs_inst,
-                    reject_list=reject_list)
+                    reject_list=reject_list, _act_timeout=act_timeout)
 
         def gen_plan_sync(self, backup_be=None, backup_be_name=None,
             be_activate=True, be_name=None, li_ignore=None, li_md_only=False,
@@ -1921,7 +1930,7 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
         def gen_plan_uninstall(self, pkgs_to_uninstall,
             backup_be=None, backup_be_name=None, be_activate=True,
             be_name=None, li_ignore=None, li_parent_sync=True, new_be=False,
-            noexecute=False, update_index=True):
+            noexecute=False, update_index=True, act_timeout=0):
                 """This is a generator function that yields a PlanDescription
                 object.  If parsable_version is set, it also yields dictionaries
                 containing plan information for child images.
@@ -1951,7 +1960,8 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                     _new_be=new_be, _noexecute=noexecute,
                     _refresh_catalogs=False,
                     _update_index=update_index,
-                    pkgs_to_uninstall=pkgs_to_uninstall)
+                    pkgs_to_uninstall=pkgs_to_uninstall,
+                    _act_timeout=act_timeout)
 
         def gen_plan_set_mediators(self, mediators, backup_be=None,
             backup_be_name=None, be_activate=True, be_name=None, li_ignore=None,
@@ -2017,7 +2027,7 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
             backup_be=None, backup_be_name=None, be_activate=True, be_name=None,
             li_ignore=None, li_parent_sync=True, new_be=None, noexecute=False,
             refresh_catalogs=True, reject_list=misc.EmptyI, repos=None,
-            update_index=True):
+            update_index=True, act_timeout=0):
                 """This is a generator function that yields a PlanDescription
                 object.  If parsable_version is set, it also yields dictionaries
                 containing plan information for child images.
@@ -2053,9 +2063,9 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                     _be_name=be_name, _li_ignore=li_ignore,
                     _li_parent_sync=li_parent_sync, _new_be=new_be,
                     _noexecute=noexecute, _refresh_catalogs=refresh_catalogs,
-                    _repos=repos,
-                    _update_index=update_index, variants=variants,
-                    facets=facets, reject_list=reject_list)
+                    _repos=repos, _update_index=update_index, variants=variants,
+                    facets=facets, reject_list=reject_list,
+                    _act_timeout=act_timeout)
 
         def plan_revert(self, args, tagged=False, noexecute=True, be_name=None,
             new_be=None, be_activate=True):

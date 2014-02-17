@@ -132,7 +132,7 @@ from pkg.client.debugvalues import DebugValues
 
 # Version test suite is known to work with.
 PKG_CLIENT_NAME = "pkg"
-CLIENT_API_VERSION = 75
+CLIENT_API_VERSION = 77
 
 ELIDABLE_ERRORS = [ TestSkippedException, depotcontroller.DepotStateException ]
 

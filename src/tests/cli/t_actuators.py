@@ -20,7 +20,7 @@
 # CDDL HEADER END
 #
 
-# Copyright (c) 2008, 2013, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2008, 2014, Oracle and/or its affiliates. All rights reserved.
 
 import testutils
 if __name__ == "__main__":
@@ -413,6 +413,43 @@ stop/type astring method
                 self.file_contains(svcadm_output,
                     "svcadm restart svc:/system/test_multi_svc1:default "
                     "svc:/system/test_multi_svc2:default")
+
+                # Test synchronous options
+                # synchronous restart
+                self.pkg("uninstall basics")
+                self.pkg("install --sync-actuators basics@1.1")
+                self.pkg("verify")
+                self.file_contains(svcadm_output,
+                    "svcadm restart -s svc:/system/test_restart_svc:default")
+                os.unlink(svcadm_output)
+
+                # synchronous restart with timeout
+                self.pkg("uninstall basics")
+                self.pkg("install --sync-actuators --sync-actuators-timeout 20 basics@1.1")
+                self.pkg("verify")
+                self.file_contains(svcadm_output,
+                    "svcadm restart -s -T 20 svc:/system/test_restart_svc:default")
+                os.unlink(svcadm_output)
+
+                # synchronous suspend 
+                self.pkg("install --sync-actuators basics@1.4")
+                self.pkg("verify")
+                self.file_contains(svcadm_output,
+                    "svcadm disable -s -t svc:/system/test_suspend_svc:default")
+                self.file_contains(svcadm_output,
+                    "svcadm enable -s svc:/system/test_suspend_svc:default")
+                os.unlink(svcadm_output)
+
+                # synchronous suspend with timeout
+                self.pkg("uninstall basics")
+                self.pkg("install basics@1.1")
+                self.pkg("install --sync-actuators --sync-actuators-timeout 10 basics@1.4")
+                self.pkg("verify")
+                self.file_contains(svcadm_output,
+                    "svcadm disable -s -t svc:/system/test_suspend_svc:default")
+                self.file_contains(svcadm_output,
+                    "svcadm enable -s -T 10 svc:/system/test_suspend_svc:default")
+                os.unlink(svcadm_output)
 
                 # make it look like our test service is enabled
                 os.environ["PKG_SVCPROP_OUTPUT"] = "svcprop_enabled"

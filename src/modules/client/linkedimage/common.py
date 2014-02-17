@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2011, 2013, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2011, 2014, Oracle and/or its affiliates. All rights reserved.
 #
 
 """
@@ -2944,7 +2944,8 @@ class LinkedImageChild(object):
                     show_licenses=show_licenses,
                     stage=stage,
                     update_index=update_index,
-                    verbose=global_settings.client_output_verbose)
+                    verbose=global_settings.client_output_verbose,
+                    act_timeout=0)
 
         def __child_setup_detach(self, _progtrack, li_md_only=False,
             li_pkg_updates=True, noexecute=False):

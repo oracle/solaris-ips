@@ -20,7 +20,7 @@
 # CDDL HEADER END
 #
 
-# Copyright (c) 2011, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2011, 2014, Oracle and/or its affiliates. All rights reserved.
 
 import testutils
 if __name__ == "__main__":
@@ -359,9 +359,45 @@ stop/type astring method""",
                     "svcadm restart svc:/system/test_restart_svc:default")
                 os.unlink(svcadm_output)
 
+                smf.restart("svc:/system/test_restart_svc:default",
+                    sync_timeout=0)
+                self.file_contains(svcadm_output,
+                    "svcadm restart svc:/system/test_restart_svc:default")
+                os.unlink(svcadm_output)
+
+                smf.restart("svc:/system/test_restart_svc:default",
+                    sync_timeout=-1)
+                self.file_contains(svcadm_output,
+                    "svcadm restart -s svc:/system/test_restart_svc:default")
+                os.unlink(svcadm_output)
+
+                smf.restart("svc:/system/test_restart_svc:default",
+                    sync_timeout=10)
+                self.file_contains(svcadm_output,
+                    "svcadm restart -s -T 10 svc:/system/test_restart_svc:default")
+                os.unlink(svcadm_output)
+
                 smf.refresh("svc:/system/test_refresh_svc:default")
                 self.file_contains(svcadm_output,
                     "svcadm refresh svc:/system/test_refresh_svc:default")
+                os.unlink(svcadm_output)
+
+                smf.refresh("svc:/system/test_refresh_svc:default",
+                    sync_timeout=0)
+                self.file_contains(svcadm_output,
+                    "svcadm refresh svc:/system/test_refresh_svc:default")
+                os.unlink(svcadm_output)
+
+                smf.refresh("svc:/system/test_refresh_svc:default",
+                    sync_timeout=-1)
+                self.file_contains(svcadm_output,
+                    "svcadm refresh -s svc:/system/test_refresh_svc:default")
+                os.unlink(svcadm_output)
+
+                smf.refresh("svc:/system/test_refresh_svc:default",
+                    sync_timeout=10)
+                self.file_contains(svcadm_output,
+                    "svcadm refresh -s -T 10 svc:/system/test_refresh_svc:default")
                 os.unlink(svcadm_output)
 
                 smf.mark("maintenance", "svc:/system/test_mark_svc:default")
@@ -394,6 +430,24 @@ stop/type astring method""",
                     temporary=True)
                 self.file_contains(svcadm_output,
                     "svcadm enable -t svc:/system/test_enable_svc:default")
+                os.unlink(svcadm_output)
+
+                smf.enable("svc:/system/test_enable_svc:default",
+                    sync_timeout=-1)
+                self.file_contains(svcadm_output,
+                    "svcadm enable -s svc:/system/test_enable_svc:default")
+                os.unlink(svcadm_output)
+
+                smf.enable("svc:/system/test_enable_svc:default",
+                    sync_timeout=0)
+                self.file_contains(svcadm_output,
+                    "svcadm enable svc:/system/test_enable_svc:default")
+                os.unlink(svcadm_output)
+
+                smf.enable("svc:/system/test_enable_svc:default",
+                    sync_timeout=10)
+                self.file_contains(svcadm_output,
+                    "svcadm enable -s -T 10 svc:/system/test_enable_svc:default")
                 os.unlink(svcadm_output)
 
                 os.environ["PKG_SVCPROP_OUTPUT"] = "svcprop_enabled"

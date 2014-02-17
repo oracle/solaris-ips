@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2011, 2012, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2011, 2014, Oracle and/or its affiliates. All rights reserved.
 #
 
 """
@@ -37,10 +37,13 @@ EXIT_NOP       =  4 # No changes were made - nothing to do.
 EXIT_NOTLIVE   =  5 # The requested op cannot be performed on a live image.
 EXIT_LICENSE   =  6 # License acceptance required for requested op.
 EXIT_LOCKED    =  7 # Image is currently locked by another process
-EXIT_EACCESS   =  8 # Can't access requested image
-EXIT_DIVERGED  =  9 # Image is not in sync with its constraints
-EXIT_NOPARENT  = 10 # Image is not linked to a parent image
-EXIT_PARENTOP  = 11 # Linked operation must be done from parent
+EXIT_ACTUATOR  =  8 # Actuator timed out
+
+# private pkg exit codes
+EXIT_EACCESS   = 51 # Can't access requested image
+EXIT_DIVERGED  = 52 # Image is not in sync with its constraints
+EXIT_NOPARENT  = 53 # Image is not linked to a parent image
+EXIT_PARENTOP  = 54 # Linked operation must be done from parent
 
 # package operations
 PKG_OP_ATTACH          = "attach-linked"
