@@ -19,6 +19,17 @@
     pkg:/library/python-2/pycurl-26
     pkg:/library/python-2/pyopenssl-26
     pkg:/library/python-2/simplejson-26
+    pkg:/library/python/cherrypy-26
+    pkg:/library/python/coverage-26
+    pkg:/library/python/jsonrpclib-26
+    pkg:/library/python/locale-services
+    pkg:/library/python/m2crypto-26
+    pkg:/library/python/mako-26
+    pkg:/library/python/ply-26
+    pkg:/library/python/pybonjour-26
+    pkg:/library/python/pycurl-26
+    pkg:/library/python/pyopenssl-26
+    pkg:/library/python/simplejson-26
     pkg:/package/svr4
     pkg:/runtime/python-26
     pkg:/runtime/python-27
