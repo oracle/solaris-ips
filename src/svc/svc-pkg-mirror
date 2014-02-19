@@ -19,7 +19,7 @@
 #
 # CDDL HEADER END
 #
-# Copyright (c) 2013 Oracle and/or its affiliates.  All rights reserved.
+# Copyright (c) 2013, 2014, Oracle and/or its affiliates.  All rights reserved.
 #
 
 #
@@ -149,6 +149,7 @@ function add_date_jitter {
 		# will not appear in the running instance until the
 		# refresh method has fired.
 		#
+		set -x
 		new_schedule=$(echo $new_schedule| $SED -e 's/ /\\ /g')
 		$SVCCFG -s $SMF_FMRI setprop \
 		    config/crontab_period = astring: \"$new_schedule\"
@@ -186,9 +187,18 @@ same 'config/repository' value, which is not supported." $SMF_FMRI exit
 			# /lib/svc/share/fs_include.sh
 			#
 			DS="$special/$repo_base"
-			$ZFS create $DS
+
+			#
+			# We set canmount=noauto so that multiple bootable
+			# rpools can coexist on the same system.
+			#
+			$ZFS create -o canmount=noauto "$DS"
 			check_failure $? \
 			    "unable to create zfs dataset $DS" \
+			    $SMF_FMRI degrade
+			$ZFS mount "$DS"
+			check_failure $? \
+			    "unable to mount zfs dataset $DS" \
 			    $SMF_FMRI degrade
 		fi
 		$PKGREPO create "$repo"

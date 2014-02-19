@@ -19,7 +19,7 @@
 
 	CDDL HEADER END
 
-	Copyright (c) 2013, Oracle and/or its affiliates.  All rights reserved.
+	Copyright (c) 2013, 2014, Oracle and/or its affiliates.  All rights reserved.
 
 	NOTE:  This service manifest is not editable; its contents will
 	be overwritten by package or patch operations, including
@@ -190,7 +190,13 @@
 	containing the 'config' property group, specifiying the
 	authorizations we need to allow clients to modify values in it.
 	User-created instances should create this pg with the same
-	'value_authorization' property. -->
+	'value_authorization' property.
+
+	Without setting these authorizations, user-created instances
+	that use the "random" keyword in the crontab_period will never
+	have that value persistently replaced, and so each time the
+	service starts, the cron job will fire on a different date.
+	-->
         <instance name="default" complete="true" enabled="false">
                 <property_group name='config' type='application'>
                 <stability value='Evolving' />

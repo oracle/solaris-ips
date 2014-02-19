@@ -19,7 +19,7 @@
 #
 # CDDL HEADER END
 #
-# Copyright (c) 2013 Oracle and/or its affiliates.  All rights reserved.
+# Copyright (c) 2013, 2014, Oracle and/or its affiliates.  All rights reserved.
 #
 
 # Load SMF constants and functions
@@ -52,11 +52,40 @@ case "$1" in
 			# we're on a LiveCD, so exit immediately.
 			exit $SMF_EXIT_OK
 		fi
+
 		DS="$rpool/VARSHARE/pkg/repositories"
+
+		# If the dataset exists, we mount it along with any child
+		# datasets, then exit.
+		$ZFS list "$DS" > /dev/null 2>&1
+		if [ $? -eq 0 ] ; then
+			child_fs_mount=0
+			for child in $($ZFS list -H -r -t filesystem \
+			    -o name "$DS"); do
+				$(ZFS) mount "$child"
+				child_fs_mount=$(( $child_fs_mount + $? ))
+			done
+			if [ $child_fs_mount -eq 0 ] ; then
+				exit $SMF_EXIT_OK
+			else
+				check_failure 1 \
+				    "Unable to mount child datasets of $DS" \
+				    $SMF_FMRI exit
+			fi
+		fi
+
+		# Otherwise, we need to create the dataset, taking care to set
+		# canmount=noauto, to allow multiple bootable rpools to coexist
+		# on the same system.
 		$ZFS create -p $DS
 		check_failure $? "Unable to create $DS" $SMF_FMRI exit
 
-		$ZFS allow pkg5srv create,mount,snapshot "$DS"
+		for fs in "$rpool/VARSHARE/pkg" \
+		    "$rpool/VARSHARE/pkg/repositories" ; do
+			$ZFS set canmount=noauto $fs
+		done
+
+		$ZFS allow pkg5srv create,mount,canmount,snapshot "$DS"
 		check_failure $? \
 		    "Unable to delegate ZFS permissions on $DS" \
 		    $SMF_FMRI exit
