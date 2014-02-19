@@ -149,10 +149,9 @@ function add_date_jitter {
 		# will not appear in the running instance until the
 		# refresh method has fired.
 		#
-		set -x
 		new_schedule=$(echo $new_schedule| $SED -e 's/ /\\ /g')
 		$SVCCFG -s $SMF_FMRI setprop \
-		    config/crontab_period = astring: \"$new_schedule\"
+		    config/crontab_period = astring: "$new_schedule"
 	fi
 	print $new_schedule
 }
