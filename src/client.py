@@ -540,10 +540,10 @@ def list_inventory(op, api_inst, pargs,
                         # Use class method instead of creating an object for
                         # performance reasons.
                         if verbose:
-                                release, build_release, branch, ts = \
-                                    version.Version.split(ver)[0]
-                                pfmri = "pkg://%s/%s@%s-%s:%s" % \
-                                    (pub, stem, release, branch, ts)
+                                (release, build_release, branch, ts), \
+                                    short_ver = version.Version.split(ver)
+                                pfmri = "pkg://%s/%s@%s:%s" % \
+                                    (pub, stem, short_ver, ts)
                                 msg(fmt_str % (pfmri, status))
                                 continue
 

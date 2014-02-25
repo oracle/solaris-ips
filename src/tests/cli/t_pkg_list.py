@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2008, 2013, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2008, 2014, Oracle and/or its affiliates. All rights reserved.
 #
 
 import testutils
@@ -646,6 +646,18 @@ class TestPkgList(pkg5unittest.ManyDepotTestCase):
                 # Should not print anything if using -q.
                 self.pkg("list -Hqu foo", exit=1)
                 self.__check_qoutput(errout=False)
+
+        def test_17_verbose(self):
+                """Verify that pkg list -v works as expected."""
+
+                # FMRI with no branch component should be displayed correctly.
+                plist = self.pkgsend_bulk(self.rurl1, self.newpkg10)
+                self.pkg("install newpkg@1.0")
+                self.pkg("list -Hv newpkg")
+                output = self.reduceSpaces(self.output)
+                expected = fmri.PkgFmri(plist[0]).get_fmri(
+                    include_build=False) + " i--\n"
+                self.assertEqualDiff(expected, output)
 
 
 class TestPkgListSingle(pkg5unittest.SingleDepotTestCase):
