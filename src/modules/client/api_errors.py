@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2008, 2013, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2008, 2014, Oracle and/or its affiliates. All rights reserved.
 #
 
 import errno
@@ -2683,13 +2683,13 @@ class LinkedImageException(ApiException):
             attach_child_notsup=None,
             attach_parent_notsup=None,
             attach_root_as_child=None,
+            attach_with_curpath=None,
             child_bad_img=None,
             child_diverged=None,
             child_dup=None,
-            child_nested=None,
             child_not_in_altroot=None,
             child_not_nested=None,
-            child_path_eaccess=None,
+            child_op_failed=None,
             child_path_notabs=None,
             child_unknown=None,
             cmd_failed=None,
@@ -2697,11 +2697,13 @@ class LinkedImageException(ApiException):
             detach_from_parent=None,
             detach_parent_notsup=None,
             img_linked=None,
+            intermediate_image=None,
             lin_malformed=None,
-            link_to_self=False,
+            link_to_self=None,
             parent_bad_img=None,
             parent_bad_notabs=None,
             parent_bad_path=None,
+            parent_nested=None,
             parent_not_in_altroot=None,
             pkg_op_failed=None,
             self_linked=None,
@@ -2713,13 +2715,13 @@ class LinkedImageException(ApiException):
                 self.attach_child_notsup = attach_child_notsup
                 self.attach_parent_notsup = attach_parent_notsup
                 self.attach_root_as_child = attach_root_as_child
+                self.attach_with_curpath = attach_with_curpath
                 self.child_bad_img = child_bad_img
                 self.child_diverged = child_diverged
                 self.child_dup = child_dup
-                self.child_nested = child_nested
                 self.child_not_in_altroot = child_not_in_altroot
                 self.child_not_nested = child_not_nested
-                self.child_path_eaccess = child_path_eaccess
+                self.child_op_failed = child_op_failed
                 self.child_path_notabs = child_path_notabs
                 self.child_unknown = child_unknown
                 self.cmd_failed = cmd_failed
@@ -2727,11 +2729,13 @@ class LinkedImageException(ApiException):
                 self.detach_from_parent = detach_from_parent
                 self.detach_parent_notsup = detach_parent_notsup
                 self.img_linked = img_linked
+                self.intermediate_image = intermediate_image
                 self.lin_malformed = lin_malformed
                 self.link_to_self = link_to_self
                 self.parent_bad_img = parent_bad_img
                 self.parent_bad_notabs = parent_bad_notabs
                 self.parent_bad_path = parent_bad_path
+                self.parent_nested = parent_nested
                 self.parent_not_in_altroot = parent_not_in_altroot
                 self.pkg_op_failed = pkg_op_failed
                 self.self_linked = self_linked
@@ -2774,7 +2778,18 @@ class LinkedImageException(ApiException):
                             "attach: %s") % attach_parent_notsup
 
                 if attach_root_as_child is not None:
-                        err = _("Cannot attach root image as child")
+                        err = _("Cannot attach root image as child: %s" %
+                            attach_root_as_child)
+
+                if attach_with_curpath is not None:
+                        path, curpath = attach_with_curpath
+                        err = _("Cannot link images when an image is not at "
+                            "its default location.  The image currently "
+                            "located at:\n  %(curpath)s\n"
+                            "is normally located at:\n  %(path)s\n") % {
+                                "path": path,
+                                "curpath": curpath,
+                            }
 
                 if child_bad_img is not None:
                         if exitrv == None:
@@ -2799,14 +2814,6 @@ class LinkedImageException(ApiException):
                         err = _("A linked child image with this name "
                             "already exists: %s") % child_dup
 
-                if child_nested is not None:
-                        cpath, ipath = child_nested
-                        err = _("Child image '%(cpath)s' is nested "
-                            "within another image: '%(ipath)s'") % {
-                                "cpath": cpath,
-                                "ipath": ipath,
-                            }
-
                 if child_not_in_altroot is not None:
                         path, altroot = child_not_in_altroot
                         err = _("Child image '%(path)s' is not located "
@@ -2823,18 +2830,26 @@ class LinkedImageException(ApiException):
                                 "ppath": ppath,
                             }
 
-                if child_path_eaccess is not None:
+                if child_op_failed is not None:
+                        op, cpath, e = child_op_failed
                         if exitrv == None:
                                 exitrv = pkgdefs.EXIT_EACCESS
                         if lin:
-                                err = _("Can't access child image "
-                                    "(%(lin)s) at path: %(path)s") % {
+                                err = _("Failed '%(op)s' for child image "
+                                    "(%(lin)s) at path: %(path)s: "
+                                    "%(strerror)s") % {
+                                        "op": op,
                                         "lin": lin,
-                                        "path": child_path_eaccess
+                                        "path": cpath,
+                                        "strerror": e,
                                     }
                         else:
-                                err = _("Can't access child image "
-                                    "at path: %s") % child_path_eaccess
+                                err = _("Failed '%(op)s' for child image "
+                                    "at path: %(path)s: %(strerror)s") % {
+                                        "op": op,
+                                        "path": cpath,
+                                        "strerror": e,
+                                    }
 
                 if child_path_notabs is not None:
                         err = _("Child path not absolute: %s") % \
@@ -2872,14 +2887,25 @@ class LinkedImageException(ApiException):
                         err = _("Image already a linked child: %s") % \
                             img_linked
 
+                if intermediate_image is not None:
+                        ppath, cpath, ipath = intermediate_image
+                        err = _(
+                            "Intermediate image '%(ipath)s' found between "
+                            "child '%(cpath)s' and "
+                            "parent '%(ppath)s'") % {
+                                "ppath": ppath,
+                                "cpath": cpath,
+                                "ipath": ipath,
+                            }
+
                 if lin_malformed is not None:
                         err = _("Invalid linked image name '%s'. "
                             "Linked image names have the following format "
                             "'<linked_image plugin>:<linked_image name>'") % \
                             lin_malformed
 
-                if link_to_self:
-                        err = _("Can't link image to itself.")
+                if link_to_self is not None:
+                        err = _("Can't link image to itself: %s")
 
                 if parent_bad_img is not None:
                         if exitrv == None:
@@ -2896,6 +2922,14 @@ class LinkedImageException(ApiException):
                                 exitrv = pkgdefs.EXIT_EACCESS
                         err = _("Can't access parent image at path: %s") % \
                             parent_bad_path
+
+                if parent_nested is not None:
+                        ppath, cpath = parent_nested
+                        err = _("A parent image '%(ppath)s' can not be nested "
+                            "within a child image '%(cpath)s'") % {
+                                "ppath": ppath,
+                                "cpath": cpath,
+                            }
 
                 if parent_not_in_altroot is not None:
                         path, altroot = parent_not_in_altroot

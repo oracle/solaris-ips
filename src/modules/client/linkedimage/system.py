@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2011, 2012, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2011, 2014, Oracle and/or its affiliates. All rights reserved.
 #
 
 """
@@ -58,15 +58,15 @@ class LinkedImageSystemPlugin(li.LinkedImagePlugin):
                 self.__pname = pname
                 self.__linked = linked
 
-        def init_root(self, old_altroot):
+        def init_root(self, root):
                 """See parent class for docstring."""
                 # nothing to do
                 return
 
-        def get_altroot(self, ignore_errors=False):
+        def guess_path_transform(self, ignore_errors=False):
                 """See parent class for docstring."""
                 # nothing to do
-                return None
+                return li.PATH_TRANSFORM_NONE
 
         def get_child_list(self, nocache=False, ignore_errors=False):
                 """See parent class for docstring."""
@@ -89,15 +89,8 @@ class LinkedImageSystemPlugin(li.LinkedImagePlugin):
         def get_child_props(self, lin):
                 """See parent class for docstring."""
 
-                # make a copy of the properties
-                props = self.__img.cfg.linked_children[lin].copy()
-
-                # update path to include any altroot
-                altroot = self.__linked.altroot()
-                props[li.PROP_PATH] = \
-                    li.add_altroot_path(props[li.PROP_PATH], altroot)
-
-                return props
+                # return a copy of the properties
+                return self.__img.cfg.linked_children[lin].copy()
 
         def attach_child_inmemory(self, props, allow_relink):
                 """See parent class for docstring."""
@@ -109,11 +102,6 @@ class LinkedImageSystemPlugin(li.LinkedImagePlugin):
 
                 # make a copy of the properties
                 props = props.copy()
-
-                # update path to remove any altroot
-                altroot = self.__linked.altroot()
-                props[li.PROP_PATH] = \
-                    li.rm_altroot_path(props[li.PROP_PATH], altroot)
 
                 # delete temporal properties
                 props = li.rm_dict_ent(props, li.temporal_props)
@@ -149,8 +137,4 @@ class LinkedImageSystemChildPlugin(li.LinkedImageChildPlugin):
 
         def munge_props(self, props):
                 """See parent class for docstring."""
-
-                # update path to remove any altroot
-                altroot = self.__linked.altroot()
-                props[li.PROP_PATH] = \
-                    li.rm_altroot_path(props[li.PROP_PATH], altroot)
+                pass

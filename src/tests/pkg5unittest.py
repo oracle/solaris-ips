@@ -2283,21 +2283,26 @@ class CliTestCase(Pkg5TestCase):
                         with open(os.path.join(self.img_path(), f), "wb") as fh:
                                 fh.close()
 
-        def image_create(self, repourl=None, destroy=True, fs=(), **kwargs):
+        def image_create(self, repourl=None, destroy=True, fs=(),
+            img_path=None, **kwargs):
                 """A convenience wrapper for callers that only need basic image
                 creation functionality.  This wrapper creates a full (as opposed
                 to user) image using the pkg.client.api and returns the related
                 API object."""
 
+                if img_path is None:
+                        img_path = self.img_path()
+
                 if destroy:
-                        self.image_destroy()
-                mkdir_eexist_ok(self.img_path())
+                        self.image_destroy(img_path=img_path)
+
+                mkdir_eexist_ok(img_path)
 
                 self.fs = set()
 
                 force = False
                 for path in fs:
-                        full_path = os.path.join(self.img_path(),
+                        full_path = os.path.join(img_path,
                             path.lstrip(os.path.sep))
                         os.makedirs(full_path)
                         self.cmdline_run("/usr/sbin/mount -F tmpfs swap " +
@@ -2306,10 +2311,10 @@ class CliTestCase(Pkg5TestCase):
                         if path.lstrip(os.path.sep) == "var":
                                 force = True
 
-                self.debug("image_create %s" % self.img_path())
+                self.debug("image_create %s" % img_path)
                 progtrack = pkg.client.progress.NullProgressTracker()
                 api_inst = pkg.client.api.image_create(PKG_CLIENT_NAME,
-                    CLIENT_API_VERSION, self.img_path(),
+                    CLIENT_API_VERSION, img_path,
                     pkg.client.api.IMG_TYPE_ENTIRE, False, repo_uri=repourl,
                     progtrack=progtrack, force=force,
                     **kwargs)
@@ -2357,16 +2362,20 @@ class CliTestCase(Pkg5TestCase):
                 cmdline = "cd %s; find . | cpio -pdm %s" % (src_path, dst_path)
                 retcode = self.cmdline_run(cmdline, coverage=False)
 
-        def image_destroy(self):
-                if os.path.exists(self.img_path()):
-                        self.debug("image_destroy %s" % self.img_path())
+        def image_destroy(self, img_path=None):
+
+                if img_path is None:
+                        img_path = self.img_path()
+
+                if os.path.exists(img_path):
+                        self.debug("image_destroy %s" % img_path)
                         # Make sure we're not in the image.
                         os.chdir(self.test_root)
                         for path in getattr(self, "fs", set()).copy():
                                 self.cmdline_run("/usr/sbin/umount " + path,
 				    coverage=False)
                                 self.fs.remove(path)
-                        shutil.rmtree(self.img_path())
+                        shutil.rmtree(img_path)
 
         def pkg(self, command, exit=0, comment="", prefix="", su_wrap=None,
             out=False, stderr=False, cmd_path=None, use_img_root=True,

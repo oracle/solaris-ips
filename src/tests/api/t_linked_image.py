@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2011, 2013, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2011, 2014, Oracle and/or its affiliates. All rights reserved.
 #
 
 import testutils
@@ -127,8 +127,15 @@ class TestLinkedImageName(pkg5unittest.Pkg5TestCase):
                 for name in good_name:
                        li.LinkedImageName(name)
 
-        def test_linked_zone_name(self):
-                DebugValues["zone_name"] = ["/bin/false"]
+        def test_linked_zone_binaries(self):
+                DebugValues["bin_zonename"] = "/bin/false"
+                assertRaises(
+                    (apx_verify, {
+                        "e_type": apx.LinkedImageException,
+                        "e_member": "cmd_failed"}),
+                        li.zone._zonename)
+
+                DebugValues["bin_zoneadm"] = "/bin/false"
                 assertRaises(
                     (apx_verify, {
                         "e_type": apx.LinkedImageException,
@@ -506,63 +513,6 @@ packages known:
     %s""" %
                     (i, self.i_path[i], "\n    ".join(pl_removed),
                     "\n    ".join(pl_added), "\n    ".join(pl)))
-
-        def test_attach_err_link_to_self(self):
-                api_objs = self._imgs_create(1)
-
-                lin = self.i_lin[0]
-                path = self.i_path[0]
-
-                # Attach p2c, link to ourselves
-                assertRaises(
-                    (apx_verify, {
-                        "e_type": apx.LinkedImageException,
-                        "e_member": "link_to_self"}),
-                    api_objs[0].attach_linked_child, lin=lin, li_path=path)
-
-                # Attach c2p, link to ourselves
-                assertRaises(
-                    (apx_verify, {
-                        "e_type": apx.LinkedImageException,
-                        "e_member": "link_to_self"}),
-                    lambda *args, **kwargs: list(
-                        api_objs[0].gen_plan_attach(*args, **kwargs)),
-                        lin=lin, li_path=path)
-
-        def test_attach_err_liveroot_as_child(self):
-                api_objs = self._imgs_create(2)
-
-                lin = self.i_lin[1]
-                path = self.i_path[1]
-
-                #
-                # The test harness will clear all DebugValues variables for
-                # us after each test run.
-                #
-
-                # Attach p2c, child is liveroot
-                DebugValues["simulate_live_root"] = self.i_path[1]
-                assertRaises(
-                    (apx_verify, {
-                        "e_type": apx.LinkedImageException,
-                        "e_member": "attach_root_as_child"}),
-                    api_objs[0].attach_linked_child,
-                        lin=lin, li_path=path)
-
-                # Attach c2p, child is liveroot
-                # We also need to temporarily disable PKG_NO_LIVE_ROOT.
-                del os.environ["PKG_NO_LIVE_ROOT"]
-                DebugValues["simulate_live_root"] = self.i_path[0]
-                assertRaises(
-                    (apx_verify, {
-                        "e_type": apx.LinkedImageException,
-                        "e_member": "attach_root_as_child"}),
-                    lambda *args, **kwargs: list(
-                        api_objs[0].gen_plan_attach(*args, **kwargs)),
-                        lin=lin, li_path=path)
-
-                os.environ["PKG_NO_LIVE_ROOT"] = "1"
-                del DebugValues["simulate_live_root"]
 
         def test_linked_p2c_recurse_flags_1_no_refresh_via_attach(self):
                 """test no-refresh option when no catalog is present"""
