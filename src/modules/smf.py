@@ -187,7 +187,8 @@ def enable(fmris, temporary=False, sync_timeout=0):
                         args.append("-T %d" % sync_timeout)
         if temporary:
                 args.append("-t")
-        __call(tuple(args) + fmris)
+        # fmris could be a list so explicit cast is necessary
+        __call(tuple(args) + tuple(fmris))
 
 def disable(fmris, temporary=False, sync_timeout=0):
         if not fmris:
@@ -199,7 +200,8 @@ def disable(fmris, temporary=False, sync_timeout=0):
                 args.append("-T %d" % sync_timeout)
         if temporary:
                 args.append("-t")
-        __call(tuple(args) + fmris)
+        # fmris could be a list so explicit cast is necessary
+        __call(tuple(args) + tuple(fmris))
 
 def mark(state, fmris):
         if not fmris:
@@ -207,7 +209,8 @@ def mark(state, fmris):
         if isinstance(fmris, basestring):
                 fmris = (fmris,)
         args = [svcadm_path, "mark", state]
-        __call(tuple(args) + fmris)
+        # fmris could be a list so explicit cast is necessary
+        __call(tuple(args) + tuple(fmris))
 
 def refresh(fmris, sync_timeout=0):
         if not fmris:
@@ -219,7 +222,8 @@ def refresh(fmris, sync_timeout=0):
                 args.append("-s")
                 if sync_timeout != -1:
                         args.append("-T %d" % sync_timeout)
-        __call(tuple(args) + fmris)
+        # fmris could be a list so explicit cast is necessary
+        __call(tuple(args) + tuple(fmris))
 
 def restart(fmris, sync_timeout=0):
         if not fmris:
@@ -231,4 +235,5 @@ def restart(fmris, sync_timeout=0):
                 args.append("-s")
                 if sync_timeout != -1:
                         args.append("-T %d" % sync_timeout)
-        __call(tuple(args) + fmris)
+        # fmris could be a list so explicit cast is necessary
+        __call(tuple(args) + tuple(fmris))

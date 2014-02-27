@@ -500,3 +500,49 @@ stop/type astring method""",
                 os.environ["PKG_SVCPROP_OUTPUT"] = "svcprop_maintenance"
                 self.assertEqual(smf.get_state("foo"), smf.SMF_SVC_MAINTENANCE)
                 self.assert_(smf.is_disabled("foo"))
+
+                # test if supplying tuples and lists as arguments works
+                smf.enable(["svc:/system/test_enable_svc:default", "foo"])
+                self.file_contains(svcadm_output,
+                    "svcadm enable svc:/system/test_enable_svc:default foo")
+                os.unlink(svcadm_output)
+                smf.enable(("svc:/system/test_enable_svc:default", "foo"))
+                self.file_contains(svcadm_output,
+                    "svcadm enable svc:/system/test_enable_svc:default foo")
+                os.unlink(svcadm_output)
+
+                smf.disable(["svc:/system/test_enable_svc:default", "foo"])
+                self.file_contains(svcadm_output,
+                    "svcadm disable -s svc:/system/test_enable_svc:default foo")
+                os.unlink(svcadm_output)
+                smf.disable(("svc:/system/test_enable_svc:default", "foo"))
+                self.file_contains(svcadm_output,
+                    "svcadm disable -s svc:/system/test_enable_svc:default foo")
+                os.unlink(svcadm_output)
+
+                smf.refresh(["svc:/system/test_enable_svc:default", "foo"])
+                self.file_contains(svcadm_output,
+                    "svcadm refresh svc:/system/test_enable_svc:default foo")
+                os.unlink(svcadm_output)
+                smf.refresh(("svc:/system/test_enable_svc:default", "foo"))
+                self.file_contains(svcadm_output,
+                    "svcadm refresh svc:/system/test_enable_svc:default foo")
+                os.unlink(svcadm_output)
+
+                smf.restart(["svc:/system/test_enable_svc:default", "foo"])
+                self.file_contains(svcadm_output,
+                    "svcadm restart svc:/system/test_enable_svc:default foo")
+                os.unlink(svcadm_output)
+                smf.restart(("svc:/system/test_enable_svc:default", "foo"))
+                self.file_contains(svcadm_output,
+                    "svcadm restart svc:/system/test_enable_svc:default foo")
+                os.unlink(svcadm_output)
+
+                smf.mark("degraded", ["svc:/system/test_enable_svc:default", "foo"])
+                self.file_contains(svcadm_output,
+                    "svcadm mark degraded svc:/system/test_enable_svc:default foo")
+                os.unlink(svcadm_output)
+                smf.mark("degraded", ("svc:/system/test_enable_svc:default", "foo"))
+                self.file_contains(svcadm_output,
+                    "svcadm mark degraded svc:/system/test_enable_svc:default foo")
+                os.unlink(svcadm_output)
