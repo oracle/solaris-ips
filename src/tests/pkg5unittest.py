@@ -411,13 +411,38 @@ if __name__ == "__main__":
         def cmdline_run(self, cmdline, comment="", coverage=True, exit=0,
             handle=False, out=False, prefix="", raise_error=True, su_wrap=None,
             stderr=False, env_arg=None, usepty=False):
+
+                # If caller provides arguments as a string, the shell must
+                # process them.
+                shell = not isinstance(cmdline, list)
+
                 wrapper = ""
                 if coverage:
                         wrapper = self.coverage_cmd
-                su_wrap, su_end = self.get_su_wrapper(su_wrap=su_wrap)
+                su_wrap, su_end = self.get_su_wrapper(su_wrap=su_wrap,
+                    shell=shell)
 
-                cmdline = "%s%s%s %s%s" % (prefix, su_wrap, wrapper,
-                    cmdline, su_end)
+                if isinstance(cmdline, list):
+                        if wrapper:
+                                # Coverage command must be split into arguments.
+                                wrapper = wrapper.split()
+                                while wrapper:
+                                        cmdline.insert(0, wrapper.pop())
+                        if su_wrap:
+                                # This ensures that all parts of the command
+                                # line to be passed to 'su -c' are passed as a
+                                # single argument.
+                                while su_wrap[-1] != "-c":
+                                        cmdline.insert(0, su_wrap.pop())
+                                cmdline = [" ".join(cmdline)]
+                                while su_wrap:
+                                        cmdline.insert(0, su_wrap.pop())
+                        if prefix:
+                                cmdline.insert(0, prefix)
+                else:
+                        cmdline = "%s%s%s %s%s" % (prefix, su_wrap, wrapper,
+                            cmdline, su_end)
+
                 self.debugcmd(cmdline)
 
                 newenv = os.environ.copy()
@@ -429,13 +454,14 @@ if __name__ == "__main__":
                 if not usepty:
                         p = subprocess.Popen(cmdline,
                             env=newenv,
-                            shell=True,
+                            shell=shell,
                             stdout=subprocess.PIPE,
                             stderr=subprocess.PIPE)
 
                         if handle:
                                 # Do nothing more.
                                 return p
+
                         self.output, self.errout = p.communicate()
                         retcode = p.returncode
                 else:
@@ -475,7 +501,10 @@ if __name__ == "__main__":
                     subsequent_indent="\t",
                     break_long_words=False,
                     break_on_hyphens=False)
-                res = wrapper.wrap(cmdline.strip())
+                if isinstance(cmdline, list):
+                        res = wrapper.wrap(" ".join(cmdline).strip())
+                else:
+                        res = wrapper.wrap(cmdline.strip())
                 self.debug(" \\\n".join(res))
 
         def debugfilecreate(self, content, path):
@@ -507,18 +536,49 @@ if __name__ == "__main__":
         def set_debugbuf(self, s):
                 self.__debug_buf = s
 
-        def get_su_wrapper(self, su_wrap=None):
-                if su_wrap:
-                        if su_wrap == True:
-                                su_wrap = get_su_wrap_user()
-                        cov_env = " ".join(
-                            ("%s=%s" % e for e in self.coverage_env.items()))
-                        su_wrap = "su %s -c 'LD_LIBRARY_PATH=%s %s " % \
-                            (su_wrap, os.getenv("LD_LIBRARY_PATH", ""), cov_env)
+        def get_su_wrapper(self, su_wrap=None, shell=True):
+                """If 'shell' is True, the wrapper will be returned as a tuple of
+                strings of the form (su_wrap, su_end).  If 'shell' is False, the
+                wrapper willbe returned as a tuple of (args, ignore) where
+                'args' is a list of the commands and their arguments that should
+                come before the command being executed."""
+
+                if not su_wrap:
+                        return "", ""
+
+                if su_wrap == True:
+                        su_user = get_su_wrap_user()
+                else:
+                        su_user = ""
+
+                cov_env = [
+                    "%s=%s" % e
+                    for e in self.coverage_env.items()
+                ]
+
+                su_wrap = ["su"]
+
+                if su_user:
+                        su_wrap.append(su_user)
+
+                if shell:
+                        su_wrap.append("-c 'env LD_LIBRARY_PATH=%s" %
+                            os.getenv("LD_LIBRARY_PATH", ""))
+                else:
+                        # If this ever changes, cmdline_run must be updated.
+                        su_wrap.append("-c")
+                        su_wrap.append("env")
+                        su_wrap.append("LD_LIBRARY_PATH=%s" %
+                            os.getenv("LD_LIBRARY_PATH", ""))
+
+                su_wrap.extend(cov_env)
+
+                if shell:
+                        su_wrap = " ".join(su_wrap)
                         su_end = "'"
                 else:
-                        su_wrap = ""
                         su_end = ""
+
                 return su_wrap, su_end
 
         def getTeardownFunc(self):
@@ -2393,21 +2453,39 @@ class CliTestCase(Pkg5TestCase):
 
         def pkg(self, command, exit=0, comment="", prefix="", su_wrap=None,
             out=False, stderr=False, cmd_path=None, use_img_root=True,
-            debug_smf=True, env_arg=None, coverage=True):
-                if debug_smf and "smf_cmds_dir" not in command:
-                        command = "--debug smf_cmds_dir=%s %s" % \
-                            (DebugValues["smf_cmds_dir"], command)
-                command = "-D plandesc_validate=1 %s" % command
-                command = "-D manifest_validate=Always %s" % command
-                if use_img_root and "-R" not in command and \
-                    "image-create" not in command and "version" not in command:
-                        command = "-R %s %s" % (self.get_img_path(), command)
+            debug_smf=True, env_arg=None, coverage=True, handle=False):
+
+                if isinstance(command, list):
+                        cmdstr = " ".join(command)
+                else:
+                        cmdstr = command
+
+                cmdline = []
+
                 if not cmd_path:
                         cmd_path = self.pkg_cmdpath
-                cmdline = "%s %s" % (cmd_path, command)
+
+                cmdline.append(cmd_path)
+
+                if use_img_root and "-R" not in cmdstr and \
+                    "image-create" not in cmdstr and "version" not in cmdstr:
+                        cmdline.extend(("-R", self.get_img_path()))
+
+                cmdline.extend(("-D", "plandesc_validate=1"))
+                cmdline.extend(("-D", "manifest_validate=Always"))
+
+                if debug_smf and "smf_cmds_dir" not in cmdstr:
+                        cmdline.extend(("-D", "smf_cmds_dir=%s" %
+                            DebugValues["smf_cmds_dir"]))
+
+                if not isinstance(command, list):
+                        cmdline = "%s %s" % (" ".join(cmdline), command)
+                else:
+                        cmdline.extend(command)
+
                 return self.cmdline_run(cmdline, exit=exit, comment=comment,
                     prefix=prefix, su_wrap=su_wrap, out=out, stderr=stderr,
-                    env_arg=env_arg, coverage=coverage)
+                    env_arg=env_arg, coverage=coverage, handle=handle)
 
         def pkg_verify(self, command, exit=0, comment="", prefix="",
             su_wrap=None, out=False, stderr=False, cmd_path=None,

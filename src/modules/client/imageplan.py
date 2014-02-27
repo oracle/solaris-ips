@@ -3850,6 +3850,12 @@ class ImagePlan(object):
                 # image before the current operation is performed is desired.
                 empty_image = self.__is_image_empty()
 
+                if not empty_image:
+                        # Before proceeding, remove fast lookups database so
+                        # that if _create_fast_lookups is interrupted later the
+                        # client isn't left with invalid state.
+                        self.image._remove_fast_lookups()
+
                 self.pd._actuators.exec_prep(self.image)
 
                 self.pd._actuators.exec_pre_actuators(self.image)

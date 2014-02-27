@@ -75,6 +75,7 @@ try:
         import pkg.fmri as fmri
         import pkg.misc as misc
         import pkg.pipeutils as pipeutils
+        import pkg.portable as portable
         import pkg.version as version
 
         from pkg.client import global_settings
@@ -106,6 +107,7 @@ pkg_timer = pkg.misc.Timer("pkg client")
 valid_special_attrs = ["action.hash", "action.key", "action.name", "action.raw"]
 
 valid_special_prefixes = ["action."]
+_api_inst = None
 
 def format_update_error(e):
         # This message is displayed to the user whenever an
@@ -6460,6 +6462,24 @@ to perform the requested operation.  Details follow:\n\n%s""") % __e)
                 __ret = 99
         return __ret
 
+
+def handle_sighupterm(signum, frame):
+        """Attempt to gracefully handle SIGHUP and SIGTERM by telling the api
+        to abort and record the cancellation before exiting."""
+
+        try:
+                if _api_inst:
+                        _api_inst.abort(result=RESULT_CANCELED)
+        except:
+                # If history operation fails for some reason, drive on.
+                pass
+
+        # Use os module to immediately exit (bypasses standard exit handling);
+        # this is preferred over raising a KeyboardInterupt as whatever module
+        # we interrupted may not expect that if they disabled SIGINT handling.
+        os._exit(EXIT_OOPS)
+
+
 if __name__ == "__main__":
         misc.setlocale(locale.LC_ALL, "", error)
         gettext.install("pkg", "/usr/share/locale",
@@ -6468,6 +6488,13 @@ if __name__ == "__main__":
         # Make all warnings be errors.
         import warnings
         warnings.simplefilter('error')
+
+        # Attempt to handle SIGHUP/SIGTERM gracefully.
+        import signal
+        if portable.osname != "windows":
+                # SIGHUP not supported on windows; will cause exception.
+                signal.signal(signal.SIGHUP, handle_sighupterm)
+        signal.signal(signal.SIGTERM, handle_sighupterm)
 
         __retval = handle_errors(main_func)
         if DebugValues["timings"]:

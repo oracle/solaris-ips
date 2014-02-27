@@ -3601,9 +3601,9 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                         last_name, last_key, last_offset = None, None, sf.tell()
                         cnt = 0
                         while heap:
-				# This is a tight loop, so try to avoid burning
-				# CPU calling into the progress tracker
-				# excessively.
+                                # This is a tight loop, so try to avoid burning
+                                # CPU calling into the progress tracker
+                                # excessively.
                                 if len(heap) % 100 == 0:
                                         progtrack.job_add_progress(
                                             progtrack.JOB_FAST_LOOKUP)
@@ -3696,6 +3696,22 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                 progtrack.job_done(progtrack.JOB_FAST_LOOKUP)
                 return actdict, timestamp
 
+        def _remove_fast_lookups(self):
+                """Remove on-disk database created by _create_fast_lookups.
+                Should be called before updating image state to prevent the
+                client from seeing stale state if _create_fast_lookups is
+                interrupted."""
+
+                for fname in ("actions.stripped", "actions.offsets",
+                    "keys.conflicting"):
+                        try:
+                                portable.remove(os.path.join(
+                                    self.__action_cache_dir, fname))
+                        except EnvironmentError, e:
+                                if e.errno == errno.ENOENT:
+                                        continue
+                                raise apx._convert_error(e)
+
         def _load_actdict(self, progtrack):
                 """Read the file of offsets created in _create_fast_lookups()
                 and return the dictionary mapping action name and key value to
@@ -3753,7 +3769,7 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                         # This is a tight loop, so try to avoid burning
                         # CPU calling into the progress tracker excessively.
                         # Since we are already using the offset, we use that
-			# to damp calls back into the progress tracker.
+                        # to damp calls back into the progress tracker.
                         if off % 500 == 0:
                                 progtrack.plan_add_progress(
                                     progtrack.PLAN_ACTION_CONFLICT)
@@ -4222,6 +4238,18 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                 """Private helper function to perform base plan creation and
                 cleanup.
                 """
+
+                if DebugValues.get_value("simulate-plan-hang"):
+                        # If pkg5.hang file is present in image dir, then
+                        # sleep after loading configuration until file is
+                        # gone.  This is used by the test suite for signal
+                        # handling testing, etc.
+                        hang_file = os.path.join(self.imgdir, "pkg5.hang")
+                        with open(hang_file, "w") as f:
+                                f.write(str(os.getpid()))
+
+                        while os.path.exists(hang_file):
+                                time.sleep(1)
 
                 # Allow garbage collection of previous plan.
                 self.imageplan = None

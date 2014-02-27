@@ -4151,7 +4151,7 @@ adm:NP:6445::::::
                 self.assert_("pci8086,5555" not in self.output)
 
         def test_uninstall_without_perms(self):
-                """Test for bug 4569"""
+                """Verify uninstall fails as expected for unprivileged users."""
 
                 pkg_list = [self.foo10, self.only_attr10, self.only_depend10,
                     self.only_directory10, self.only_file10,
@@ -4170,43 +4170,45 @@ adm:NP:6445::::::
                 name_pat = re.compile("^\s+open\s+(\S+)\@.*$")
 
                 def __manually_check_deps(name, install=True, exit=0):
-                        cmd = "install --no-refresh"
+                        cmd = ["install", "--no-refresh"]
                         if not install:
-                                cmd = "uninstall"
+                                cmd = ["uninstall"]
                         if name == "only_depend" and not install:
-                                self.pkg("uninstall foo", exit=exit)
+                                self.pkg(cmd + ["foo"], exit=exit)
                         elif name == "only_driver":
-                                self.pkg("%s devicebase" % cmd, exit=exit)
+                                self.pkg(cmd + ["devicebase"], exit=exit)
                         elif name == "only_group":
-                                self.pkg("%s basics" % cmd, exit=exit)
+                                self.pkg(cmd + ["basics"], exit=exit)
                         elif name == "only_hardlink":
-                                self.pkg("%s only_file" % cmd, exit=exit)
+                                self.pkg(cmd + ["only_file"], exit=exit)
                         elif name == "only_user":
                                 if install:
-                                        self.pkg("%s basics" % cmd, exit=exit)
-                                        self.pkg("%s only_group" % cmd, exit=exit)
+                                        self.pkg(cmd + ["basics"], exit=exit)
+                                        self.pkg(cmd + ["only_group"],
+                                            exit=exit)
                                 else:
-                                        self.pkg("%s only_group" % cmd, exit=exit)
-                                        self.pkg("%s basics" % cmd, exit=exit)
+                                        self.pkg(cmd + ["only_group"],
+                                            exit=exit)
+                                        self.pkg(cmd + ["basics"], exit=exit)
                 for p in pkg_list:
                         name_mat = name_pat.match(p.splitlines()[1])
                         pname = name_mat.group(1)
                         __manually_check_deps(pname, exit=[0, 4])
-                        self.pkg("install --no-refresh %s" % pname,
+                        self.pkg(["install", "--no-refresh", pname],
                             su_wrap=True, exit=1)
-                        self.pkg("install %s" % pname, su_wrap=True,
+                        self.pkg(["install", pname], su_wrap=True,
                             exit=1)
-                        self.pkg("install --no-refresh %s" % pname)
-                        self.pkg("uninstall %s" % pname, su_wrap=True,
+                        self.pkg(["install", "--no-refresh", pname])
+                        self.pkg(["uninstall", pname], su_wrap=True,
                             exit=1)
-                        self.pkg("uninstall %s" % pname)
+                        self.pkg(["uninstall", pname])
                         __manually_check_deps(pname, install=False)
 
                 for p in pkg_list:
                         name_mat = name_pat.match(p.splitlines()[1])
                         pname = name_mat.group(1)
                         __manually_check_deps(pname, exit=[0, 4])
-                        self.pkg("install --no-refresh %s" % pname)
+                        self.pkg(["install", "--no-refresh", pname])
 
                 for p in pkg_list:
                         self.pkgsend_bulk(self.rurl, p)
@@ -4215,17 +4217,17 @@ adm:NP:6445::::::
 
                 # Modifying operations require permissions needed to create and
                 # manage lock files.
-                self.pkg("update --no-refresh", su_wrap=True, exit=1)
+                self.pkg(["update", "--no-refresh"], su_wrap=True, exit=1)
 
-                self.pkg("refresh")
-                self.pkg("update", su_wrap=True, exit=1)
+                self.pkg(["refresh"])
+                self.pkg(["update"], su_wrap=True, exit=1)
                 # Should fail since user doesn't have permission to refresh
                 # publisher metadata.
-                self.pkg("refresh --full", su_wrap=True, exit=1)
-                self.pkg("refresh --full")
-                self.pkg("update --no-refresh", su_wrap=True,
+                self.pkg(["refresh", "--full"], su_wrap=True, exit=1)
+                self.pkg(["refresh", "--full"])
+                self.pkg(["update", "--no-refresh"], su_wrap=True,
                     exit=1)
-                self.pkg("update")
+                self.pkg(["update"])
 
         def test_bug_3222(self):
                 """ Verify that a timestamp of '0' for a passwd file will not
