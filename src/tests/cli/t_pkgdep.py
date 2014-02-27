@@ -20,7 +20,7 @@
 # CDDL HEADER END
 #
 
-# Copyright (c) 2009, 2012, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2009, 2014, Oracle and/or its affiliates. All rights reserved.
 
 import testutils
 if __name__ == "__main__":
@@ -1028,6 +1028,8 @@ file NOHASH group=bin mode=0555 owner=root path=c/bin/perl variant.foo=c
                 if bit64:
                         opts.append("-m64")
                 if shared_lib:
+                        # Always link to libc; the compiler may not.
+                        opts.append("-lc")
                         opts.append("-G")
                 if no_link:
                         opts.append("-c")
