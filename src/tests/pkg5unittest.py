@@ -85,6 +85,7 @@ EmptyDict = dict()
 # These are initialized by pkg5testenv.setup_environment.
 #
 g_proto_area = "TOXIC"
+g_proto_readable = False
 # Location of root of test suite.
 g_test_dir = "TOXIC"
 # User's value for TEMPDIR
@@ -246,7 +247,6 @@ if __name__ == "__main__":
         sys.exit(1)
 """}
 
-
         def __init__(self, methodName='runTest'):
                 super(Pkg5TestCase, self).__init__(methodName)
                 self.__test_root = None
@@ -254,11 +254,17 @@ if __name__ == "__main__":
                 self.__pwd = os.getcwd()
                 self.__didteardown = False
                 self.__base_port = None
+                self.coverage_cmd = ""
+                self.coverage_env = {}
                 self.next_free_port = None
                 self.ident = None
                 self.pkg_cmdpath = "TOXIC"
                 self.debug_output = g_debug_output
                 setup_logging(self)
+                global g_proto_readable
+                if not g_proto_readable:
+                        self.assertProtoReadable()
+                        g_proto_readable = True
 
         @property
         def methodName(self):
@@ -281,6 +287,16 @@ if __name__ == "__main__":
                 self.next_free_port = port
 
         base_port = property(lambda self: self.__base_port, __set_base_port)
+
+        def assertProtoReadable(self):
+                """Ensure proto area is readable by unprivileged user."""
+                try:
+                        self.cmdline_run("dir {0}".format(g_proto_area),
+                            su_wrap=True)
+                except:
+                        raise TestStopException("proto area '{0} is not "
+                            "readable by unprivileged user {1}".format(
+                                g_proto_area, get_su_wrap_user()))
 
         def assertRegexp(self, text, regexp):
                 """Test that a regexp search matches text."""
@@ -618,8 +634,6 @@ if __name__ == "__main__":
                 testMethod = getattr(self, self._testMethodName)
                 if getattr(result, "coverage", None) is not None:
                         self.coverage_cmd, self.coverage_env = result.coverage
-                else:
-                        self.coverage_cmd, self.coverage_env = "", {}
                 try:
                         needtodie = False
                         try:
