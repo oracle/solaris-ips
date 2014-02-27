@@ -2654,13 +2654,29 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                 # 'Updating package cache'
                 progtrack.job_start(progtrack.JOB_PKG_CACHE, goal=len(removed))
                 for pfmri in removed:
-                        manifest.FactoredManifest.clear_cache(
-                            self.get_manifest_dir(pfmri))
+                        mcdir = self.get_manifest_dir(pfmri)
+                        manifest.FactoredManifest.clear_cache(mcdir)
+
+                        # Remove package cache directory if possible; we don't
+                        # care if it fails.
                         try:
-                                portable.remove(self.get_manifest_path(pfmri))
+                                os.rmdir(os.path.dirname(mcdir))
+                        except:
+                                pass
+
+                        mpath = self.get_manifest_path(pfmri)
+                        try:
+                                portable.remove(mpath)
                         except EnvironmentError, e:
                                 if e.errno != errno.ENOENT:
                                         raise apx._convert_error(e)
+
+                        # Remove package manifest directory if possible; we
+                        # don't care if it fails.
+                        try:
+                                os.rmdir(os.path.dirname(mpath))
+                        except:
+                                pass
                         progtrack.job_add_progress(progtrack.JOB_PKG_CACHE)
                 progtrack.job_done(progtrack.JOB_PKG_CACHE)
 

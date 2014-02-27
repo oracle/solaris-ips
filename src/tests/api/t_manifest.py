@@ -21,7 +21,7 @@
 # CDDL HEADER END
 #
 
-# Copyright (c) 2008, 2013, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2008, 2014, Oracle and/or its affiliates. All rights reserved.
 
 import unittest
 import tempfile
@@ -31,12 +31,13 @@ import types
 import itertools
 
 import pkg as pkg
+import pkg.actions as actions
 import pkg.client.api_errors as api_errors
 import pkg.digest as digest
+import pkg.fmri as fmri
 import pkg.manifest as manifest
 import pkg.misc as misc
-import pkg.actions as actions
-import pkg.fmri as fmri
+import pkg.portable as portable
 import pkg.variant as variant
 
 # Set the path so that modules above can be found
@@ -391,7 +392,7 @@ dir owner=root path="opt/dir with whitespaces	in value" group=bin mode=0755 vari
 
         def setUp(self):
                 pkg5unittest.Pkg5TestCase.setUp(self)
-                self.cache_dir = tempfile.mkdtemp()
+                self.cache_dir = tempfile.mkdtemp(dir=self.test_root)
                 self.foo_content_p5m = self.make_misc_files(
                     { "foo_content.p5m": self.foo_content })[0]
 
@@ -498,6 +499,35 @@ dir owner=root path="opt/dir with whitespaces	in value" group=bin mode=0755 vari
                     pathname=self.foo_content_p5m)
                 do_get_dirs()
                 self.assert_(os.path.isfile(cfile_path))
+
+        def test_clear_cache(self):
+                """Verify that FactoredManifest.clear_cache() works as
+                expected."""
+
+                # Create FactoredManifest.
+                cache_dir = tempfile.mkdtemp(dir=self.test_root)
+                m1 = manifest.FactoredManifest("foo-content@1.0", cache_dir,
+                    pathname=self.foo_content_p5m)
+
+                # Verify cache was created.
+                cfile_path = os.path.join(cache_dir, "manifest.dircache")
+                self.assert_(os.path.isfile(cfile_path))
+
+                # Create random file in cache_dir.
+                rfile_path = os.path.join(cache_dir, "junk")
+                self.make_file(rfile_path, "junk")
+
+                # Verify that clear_cache() removes all known files from
+                # cache_dir and will not remove directory if unknown are
+                # present.
+                m1.clear_cache(cache_dir)
+                for name in os.listdir(cache_dir):
+                        self.assertEqualDiff(name, os.path.basename(rfile_path))
+
+                # Verify that clear_cache() removes cache_dir if empty.
+                portable.remove(rfile_path)
+                m1.clear_cache(cache_dir)
+                self.assert_(not os.path.exists(cache_dir))
 
 
 if __name__ == "__main__":

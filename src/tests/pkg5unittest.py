@@ -2980,13 +2980,17 @@ class CliTestCase(Pkg5TestCase):
                 responsible for all error handling."""
 
                 mpath = self.get_img_manifest_path(pfmri)
-                mdir = self.get_img_manifest_cache_dir(pfmri)
+                mdir = os.path.dirname(mpath)
+                mcdir = self.get_img_manifest_cache_dir(pfmri)
 
-                # Dump the manifest directory for the package to ensure any
+                # Dump the manifest directories for the package to ensure any
                 # cached information related to it is gone.
                 shutil.rmtree(mdir, True)
+                shutil.rmtree(mcdir, True)
                 self.assert_(not os.path.exists(mdir))
+                self.assert_(not os.path.exists(mcdir))
                 os.makedirs(mdir, mode=0755)
+                os.makedirs(mcdir, mode=0755)
 
                 # Finally, write the new manifest.
                 with open(mpath, "wb") as f:

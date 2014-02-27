@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2007, 2013, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2007, 2014, Oracle and/or its affiliates. All rights reserved.
 #
 
 from collections import namedtuple, defaultdict
@@ -1591,7 +1591,8 @@ class FactoredManifest(Manifest):
         @staticmethod
         def clear_cache(cache_root):
                 """Remove all manifest cache files found in the given directory
-                (excluding the manifest itself).
+                (excluding the manifest itself) and the cache_root if it is
+                empty afterwards.
                 """
 
                 try:
@@ -1604,6 +1605,13 @@ class FactoredManifest(Manifest):
                                 except EnvironmentError, e:
                                         if e.errno != errno.ENOENT:
                                                 raise
+
+                        # Ensure cache dir is removed if the last cache file is
+                        # removed; we don't care if it fails.
+                        try:
+                                os.rmdir(cache_root)
+                        except:
+                                pass
                 except EnvironmentError, e:
                         if e.errno != errno.ENOENT:
                                 # Only raise error if failure wasn't due to
