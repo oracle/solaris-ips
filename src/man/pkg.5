@@ -1,6 +1,6 @@
 '\" te
-.\" Copyright (c) 2009, 2013, Oracle and/or its affiliates. All rights reserved.
-.TH pkg 5 "07 Aug 2013" "SunOS 5.12" "Standards, Environments, and Macros"
+.\" Copyright (c) 2009, 2014, Oracle and/or its affiliates. All rights reserved.
+.TH pkg 5 "07 Feb 2014" "SunOS 5.12" "Standards, Environments, and Macros"
 .SH NAME
 pkg \- Image Packaging System
 .SH DESCRIPTION
@@ -347,6 +347,28 @@ This attribute is used to indicate that this file contains release note text. Th
 This attribute is used to tag editable files that should be reverted as a set. The value of the \fBrevert-tag\fR attribute is a \fItagname\fR. Multiple \fBrevert-tag\fR attributes can be specified for a single \fBfile\fR action. The file reverts to its manifest-defined state when \fBpkg revert\fR is invoked with any of those tags specified. See the \fBpkg\fR(1) man page for information about the \fBpkg revert\fR command.
 .sp
 The \fBrevert-tag\fR attribute can also be specified at the directory level. See "Directory Actions" below.
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fBsysattr\fR\fR
+.ad
+.sp .6
+.RS 4n
+This attribute is used to specify any system attributes which should be set for this file. The value of the \fBsysattr\fR attribute can be a comma-separated list of verbose system attributes or a string sequence of compact system attribute options. Supported system attributes are explained in chmod(1). System attributes specified in the manifest are set additionally to system attributes which might have been set by other subsystems of the operating system.
+.sp
+.in +2
+.nf
+file path=opt/secret_file sysattr=hidden,sensitive
+.sp
+or
+.sp
+file path=opt/secret_file sysattr=HT
+.fi
+.in -2
+
 .RE
 
 .sp

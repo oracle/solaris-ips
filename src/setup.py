@@ -19,7 +19,7 @@
 #
 # CDDL HEADER END
 #
-# Copyright (c) 2008, 2013, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2008, 2014, Oracle and/or its affiliates. All rights reserved.
 #
 
 import errno
@@ -383,6 +383,9 @@ userattrd_files = ['util/misc/user_attr.d/package:pkg']
 pkg_locales = \
     'ar ca cs de es fr he hu id it ja ko nl pl pt_BR ru sk sv zh_CN zh_HK zh_TW'.split()
 
+sysattr_srcs = [
+        'modules/sysattr.c'
+        ]
 syscallat_srcs = [
         'modules/syscallat.c'
         ]
@@ -564,6 +567,12 @@ class clint_func(Command):
                             ["%s%s" % ("-I", k) for k in include_dirs] + \
                             ['-I' + self.escape(get_python_inc())] + \
                             syscallat_srcs
+                        sysattrcmd = lint + lint_flags + \
+                            ['-D_FILE_OFFSET_BITS=64'] + \
+                            ["%s%s" % ("-I", k) for k in include_dirs] + \
+                            ['-I' + self.escape(get_python_inc())] + \
+                            ["%s%s" % ("-l", k) for k in sysattr_libraries] + \
+                            sysattr_srcs
 
                         print(" ".join(archcmd))
                         os.system(" ".join(archcmd))
@@ -579,6 +588,8 @@ class clint_func(Command):
                         os.system(" ".join(pspawncmd))
                         print(" ".join(syscallatcmd))
                         os.system(" ".join(syscallatcmd))
+                        print(" ".join(sysattrcmd))
+                        os.system(" ".join(sysattrcmd))
 
 
 # Runs both C and Python lint
@@ -1427,6 +1438,7 @@ ext_modules = [
                 ),
         ]
 elf_libraries = None
+sysattr_libraries = None
 data_files = web_files
 cmdclasses = {
         'install': install_func,
@@ -1512,6 +1524,7 @@ if osname == 'sunos' or osname == "linux":
         # All others use OpenSSL and cross-platform arch module
         if osname == 'sunos':
             elf_libraries += [ 'md' ]
+            sysattr_libraries = [ 'nvpair' ]
             ext_modules += [
                     Extension(
                             'arch',
@@ -1536,6 +1549,16 @@ if osname == 'sunos' or osname == "linux":
                             extra_compile_args = compile_args,
                             extra_link_args = link_args,
                             define_macros = [('_FILE_OFFSET_BITS', '64')]
+                            ),
+                    Extension(
+                            'sysattr',
+                            sysattr_srcs,
+                            include_dirs = include_dirs,
+                            libraries = sysattr_libraries,
+                            extra_compile_args = compile_args,
+                            extra_link_args = link_args,
+                            define_macros = [('_FILE_OFFSET_BITS', '64')],
+                            build_64 = True
                             ),
                     ]
         else:

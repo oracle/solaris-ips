@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2008, 2013, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2008, 2014, Oracle and/or its affiliates. All rights reserved.
 #
 
 import testutils
@@ -35,7 +35,9 @@ import platform
 import re
 import shutil
 import socket
+import subprocess
 import stat
+import tempfile
 import time
 import unittest
 import urllib2
@@ -190,6 +192,30 @@ class TestPkgInstallBasics(pkg5unittest.SingleDepotTestCase):
             add dir mode=0755 owner=root group=bin path="opt/dir with white\tspace"
             add file tmp/cat mode=0644 owner=root group=bin path="opt/dir with white\tspace/cat in a hat"
             add link path=etc/cat_link target="../opt/dir with white\tspace/cat in a hat"
+            close """
+
+        secret1 = """
+            open secret1@1.0-0
+            add dir mode=0755 owner=root group=bin path=/p1
+            add file tmp/cat mode=0555 owner=root group=bin sysattr=TH path=/p1/cat
+            close """
+
+        secret2 = """
+            open secret2@1.0-0
+            add dir mode=0755 owner=root group=bin path=/p2
+            add file tmp/cat mode=0555 owner=root group=bin sysattr=hidden,sensitive path=/p2/cat
+            close """
+
+        secret3 = """
+            open secret3@1.0-0
+            add dir mode=0755 owner=root group=bin path=/p3
+            add file tmp/cat mode=0555 owner=root group=bin sysattr=horst path=/p3/cat
+            close """
+
+        secret4 = """
+            open secret4@1.0-0
+            add dir mode=0755 owner=root group=bin path=/p3
+            add file tmp/cat mode=0555 owner=root group=bin sysattr=hidden,horst path=/p3/cat
             close """
 
         misc_files = [ "tmp/libc.so.1", "tmp/cat", "tmp/baz" ]
@@ -780,6 +806,50 @@ class TestPkgInstallBasics(pkg5unittest.SingleDepotTestCase):
                             name)))
 
                 self.pkg("uninstall -vvv fuzzy")
+
+        def test_sysattrs(self):
+                """Test install with setting system attributes."""
+
+                if portable.osname != "sunos":
+                        raise pkg5unittest.TestSkippedException(
+                            "System attributes unsupported on this platform.")
+
+                plist = self.pkgsend_bulk(self.rurl, [self.secret1,
+                    self.secret2, self.secret3, self.secret4])
+                
+                # Need to create an image in /var/tmp since sysattrs don't work
+                # in tmpfs.
+                self.debug(self.rurl)
+                old_img_path = self.img_path()
+                self.set_img_path(tempfile.mkdtemp(dir="/var/tmp"))
+
+                self.image_create(self.rurl)
+
+                # test without permission for setting sensitive system attribute
+                self.pkg("install secret1", su_wrap=True, exit=1)
+
+                # now some tests which should succeed
+                self.pkg("install secret1")
+                fpath = os.path.join(self.img_path(),"p1/cat")
+                p = subprocess.Popen(["/usr/bin/ls", "-/", "c", fpath],
+                    stdout=subprocess.PIPE)
+                out, err = p.communicate()
+                expected = "{AH-----m----T}"
+                self.assertTrue(expected in out, out)
+
+                self.pkg("install secret2")
+                fpath = os.path.join(self.img_path(),"p2/cat")
+                p = subprocess.Popen(["/usr/bin/ls", "-/", "c", fpath],
+                    stdout=subprocess.PIPE)
+                out, err = p.communicate()
+                expected = "{AH-----m----T}"
+                self.assertTrue(expected in out, out)
+
+                # test some packages with invalid sysattrs
+                self.pkg("install secret3", exit=1)
+                self.pkg("install secret4", exit=1)
+                shutil.rmtree(self.img_path())
+                self.set_img_path(old_img_path)
 
 
 class TestPkgInstallApache(pkg5unittest.ApacheDepotTestCase):

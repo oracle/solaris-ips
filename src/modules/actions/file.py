@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2007, 2013, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2007, 2014, Oracle and/or its affiliates. All rights reserved.
 #
 
 """module describing a file packaging object
@@ -59,7 +59,7 @@ class FileAction(generic.Action):
 
         name = "file"
         key_attr = "path"
-        unique_attrs = "path", "mode", "owner", "group", "preserve"
+        unique_attrs = "path", "mode", "owner", "group", "preserve", "sysattr"
         globally_identical = True
         namespace_group = "path"
         ordinality = generic._orderdict[name]
@@ -262,6 +262,33 @@ class FileAction(generic.Action):
                                 os.utime(final_path, (t, t))
                                 os.chmod(final_path, mode)
 
+                # Handle system attributes.
+                sattr = self.attrs.get("sysattr")
+                if sattr:
+                        sattrs = sattr.split(",")
+                        if len(sattrs) == 1 and \
+                            sattrs[0] not in portable.get_sysattr_dict():
+                                # not a verbose attr, try as a compact attr seq
+                                arg = sattrs[0]
+                        else:
+                                arg = sattrs
+
+                        try:
+                                portable.fsetattr(final_path, arg)
+                        except OSError, e:
+                                if e.errno != errno.EINVAL:
+                                        raise
+                                raise ActionExecutionError(self,
+                                    details=_("System attributes are not "
+                                    "supported on the target filesystem."))
+                        except ValueError, e:
+                                raise ActionExecutionError(self,
+                                    details=_("Could not set system attributes "
+                                    "'%(attrlist)s': %(err)s") % {
+                                        "attrlist": sattr,
+                                        "err": e
+                                    })
+
         def verify(self, img, **args):
                 """Returns a tuple of lists of the form (errors, warnings,
                 info).  The error list will be empty if the action has been
@@ -391,6 +418,31 @@ class FileAction(generic.Action):
                                                     "found": sha_hash,
                                                     "expected": hash_val })
                                         self.replace_required = True
+
+                        # Check system attributes.
+                        # Since some attributes like 'archive' or 'av_modified'
+                        # are set automatically by the FS, it makes no sense to
+                        # check for 1:1 matches. So we only check that the
+                        # system attributes specified in the action are still
+                        # set on the file.
+                        sattr = self.attrs.get("sysattr", None)
+                        if sattr:
+                                sattrs = sattr.split(",")
+                                if len(sattrs) == 1 and \
+                                    sattrs[0] not in portable.get_sysattr_dict():
+                                        # not a verbose attr, try as a compact
+                                        set_attrs = portable.fgetattr(path,
+                                            compact=True)
+                                        sattrs = sattrs[0]
+                                else:
+                                        set_attrs = portable.fgetattr(path)
+
+                                for a in sattrs:
+                                        if a not in set_attrs:
+                                                errors.append(
+                                                    _("System attribute '%s' "
+                                                    "not set") % a)
+
                 except EnvironmentError, e:
                         if e.errno == errno.EACCES:
                                 errors.append(_("Skipping: Permission Denied"))

@@ -18,7 +18,7 @@
 #
 # CDDL HEADER END
 #
-# Copyright (c) 2010, 2013, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2010, 2014, Oracle and/or its affiliates. All rights reserved.
 #
 
 set name=pkg.fmri value=pkg:/package/pkg@$(PKGVERS)
@@ -34,6 +34,7 @@ dir  path=$(PYDIRVP)/pkg
 file path=$(PYDIRVP)/pkg-0.1-py2.6.egg-info
 dir  path=$(PYDIRVP)/pkg/64
 file path=$(PYDIRVP)/pkg/64/_varcet.so
+file path=$(PYDIRVP)/pkg/64/sysattr.so
 file path=$(PYDIRVP)/pkg/__init__.py
 file path=$(PYDIRVP)/pkg/_varcet.so
 dir  path=$(PYDIRVP)/pkg/actions
@@ -194,6 +195,7 @@ file path=$(PYDIRVP)/pkg/server/repository.py
 file path=$(PYDIRVP)/pkg/server/transaction.py
 file path=$(PYDIRVP)/pkg/smf.py
 file path=$(PYDIRVP)/pkg/solver.so
+file path=$(PYDIRVP)/pkg/sysattr.so
 file path=$(PYDIRVP)/pkg/syscallat.so
 file path=$(PYDIRVP)/pkg/sysvpkg.py
 file path=$(PYDIRVP)/pkg/updatelog.py

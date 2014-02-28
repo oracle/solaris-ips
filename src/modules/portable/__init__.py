@@ -19,7 +19,7 @@
 #
 # CDDL HEADER END
 #
-# Copyright (c) 2008, 2011, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2008, 2014, Oracle and/or its affiliates. All rights reserved.
 #
 
 # The portable module provide access to methods that require operating system-
@@ -206,6 +206,22 @@ def assert_mode(path, mode):
         mode of the file."""
         raise NotImplementedError
 
+def fsetattr(path, attrs):
+        """ Set system attributes for file specified by 'path'. 'attrs' can be
+        a list of verbose system attributes or a string containing a sequence of
+        short options."""
+        raise NotImplementedError
+
+def fgetattr(path, compact=False):
+        """ Get system attributes for file specified by 'path'. If 'compact' is
+        True, it returns a string of short attribute options, otherwise a list
+        of verbose attributes."""
+        raise NotImplementedError
+
+def get_sysattr_dict():
+        """ Returns a dictionary containing all supported system attributes. The
+        keys of the dict are verbose attributes, the values short options."""
+        raise NotImplementedError
 
 # File type constants
 # -------------------

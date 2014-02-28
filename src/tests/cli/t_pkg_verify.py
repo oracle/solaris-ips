@@ -20,7 +20,7 @@
 # CDDL HEADER END
 #
 
-# Copyright (c) 2008, 2013, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2008, 2014, Oracle and/or its affiliates. All rights reserved.
 
 import testutils
 if __name__ == "__main__":
@@ -29,6 +29,9 @@ import pkg5unittest
 
 import os
 import pkg.portable as portable
+import shutil
+import subprocess
+import tempfile
 import time
 import unittest
 
@@ -55,6 +58,12 @@ class TestPkgVerify(pkg5unittest.SingleDepotTestCase):
             add driver name=zigit alias=pci8086,1234
             close
             """
+
+        sysattr = """
+            open sysattr@1.0-0
+            add dir mode=0755 owner=root group=bin path=/p1
+            add file bobcat mode=0555 owner=root group=bin sysattr=TH path=/p1/bobcat
+            close """
 
         misc_files = {
            "bobcat": "",
@@ -223,6 +232,44 @@ class TestPkgVerify(pkg5unittest.SingleDepotTestCase):
                 self.pkgsign_simple(self.dc.get_repodir(), "foo")
 
                 self.pkg_verify("", exit=1)
+
+        def test_sysattrs(self):
+                """Test that system attributes are verified correctly."""
+
+                if portable.osname != "sunos":
+                        raise pkg5unittest.TestSkippedException(
+                            "System attributes unsupported on this platform.")
+
+                self.pkgsend_bulk(self.rurl, [self.sysattr])
+
+                # Need to create an image in /var/tmp since sysattrs don't work
+                # in tmpfs.
+                old_img_path = self.img_path()
+                self.set_img_path(tempfile.mkdtemp(prefix="test-suite",
+                    dir="/var/tmp"))
+
+                self.image_create(self.rurl)
+                self.pkg("install sysattr")
+                self.pkg("verify")
+                fpath = os.path.join(self.img_path(),"p1/bobcat")
+
+                # Need to get creative here to remove the system attributes
+                # since you need the sys_linkdir privilege which we don't have:
+                # see run.py:393
+                # So we re-create the file with correct owner and mode and the
+                # only thing missing are the sysattrs.
+                portable.remove(fpath)
+                portable.copyfile(os.path.join(self.test_root, "bobcat"), fpath)
+                os.chmod(fpath, 0555)
+                os.chown(fpath, -1, 2)
+                self.pkg("verify", exit=1)
+                for sattr in ('H','T'):
+                        expected = "System attribute '%s' not set" % sattr
+                        self.assertTrue(expected in self.output,
+                            "Missing in verify output:  %s" % expected)
+
+                shutil.rmtree(self.img_path())
+                self.set_img_path(old_img_path)
 
 
 if __name__ == "__main__":
