@@ -2023,13 +2023,45 @@ class LinkedImage(object):
         def __children_op(self, _pkg_op, _lic_list, _rvdict, _progtrack,
             _failfast, _expect_plan=False, _ignore_syncmd_nop=True,
             _syncmd_tmp=False, _pd=None, **kwargs):
-                """An iterator function which performs a linked image
-                operation on multiple children in parallel.
+                """Wrapper for __children_op_vec() to stay compatible with old
+                callers which only support one operation for all linked images.
 
                 '_pkg_op' is the pkg.1 operation that we're going to perform
 
                 '_lic_list' is a list of linked image child objects to perform
                 the operation on.
+
+                '_ignore_syncmd_nop' a boolean that indicates if we should
+                always recurse into a child even if the linked image meta data
+                isn't changing.
+
+                See __children_op_vec() for an explanation of the remaining
+                options."""
+
+                for p_dict in self.__children_op_vec(
+                    _lic_op_vectors=[(_pkg_op, _lic_list, kwargs,
+                        _ignore_syncmd_nop)],
+                    _rvdict=_rvdict,
+                    _progtrack=_progtrack,
+                    _failfast=_failfast,
+                    _expect_plan=_expect_plan,
+                    _syncmd_tmp=_syncmd_tmp,
+                    _pd=_pd,
+                    stage=pkgdefs.API_STAGE_DEFAULT
+                    ):
+                        yield p_dict
+
+        def __children_op_vec(self, _lic_op_vectors, _rvdict, _progtrack,
+            _failfast, _expect_plan=False, _syncmd_tmp=False, _pd=None,
+            stage=pkgdefs.API_STAGE_DEFAULT):
+                """An iterator function which performs a linked image
+                operation on multiple children in parallel.
+
+                '_lic_op_vectors' is a list of tuples containing the operation
+                to perform, the list of linked images the operation is to be
+                performed on, the kwargs for this operation and if the metadata
+                sync nop should be ignored in the following form:
+                        [(pkg_op, lin_list, kwargs, ignore_syncmd_nop), ...]
 
                 '_rvdict' is a dictionary, indexed by linked image name, which
                 contains rvtuples of the result of the operation for each
@@ -2046,31 +2078,46 @@ class LinkedImage(object):
                 '_expect_plan' is a boolean that indicates if we expect this
                 operation to generate an image plan.
 
-                '_ignore_syncmd_nop' a boolean that indicates if we should
-                always recurse into a child even if the linked image meta data
-                isn't changing.
-
                 '_syncmd_tmp' a boolean that indicates if we should write
                 linked image metadata in a temporary location in child images,
                 or just overwrite any existing data.
 
                 '_pd' a PlanDescription pointer."""
 
-                if _lic_list:
-                        _progtrack.li_recurse_start(_pkg_op, len(_lic_list))
 
-                if _pkg_op in [ pkgdefs.PKG_OP_AUDIT_LINKED,
-                    pkgdefs.PKG_OP_PUBCHECK ]:
-                        # these operations are cheap so ideally we'd like to
-                        # use full parallelism.  but if the user specified a
-                        # concurrency limit we should respect that.
-                        if global_settings.client_concurrency_set:
-                                concurrency = global_settings.client_concurrency
-                        else:
-                                # no limit was specified, use full concurrency
-                                concurrency = -1
+                lic_all = reduce(operator.add,
+		    [i[1] for i in _lic_op_vectors], [])
+                lic_num = len(lic_all)
+
+                # make sure we don't have any duplicate LICs or duplicate LINs
+                assert lic_num == len(set(lic_all))
+                assert lic_num == len(set([i.child_name for i in lic_all]))
+
+                # At the moment the PT doesn't seem to really use the operation
+                # type for display reasons. It only uses it to treat pubcheck
+                # differently. Therefore it should be sufficient to skip the
+                # operation type in case we have different operations going on
+                # at the same time.
+                # Additionally, if the operation is the same for all children
+                # we can use some optimizations.
+                concurrency = global_settings.client_concurrency
+                if len(_lic_op_vectors) == 1:
+                        pkg_op = _lic_op_vectors[0][0]
+
+                        if pkg_op in [ pkgdefs.PKG_OP_AUDIT_LINKED,
+                            pkgdefs.PKG_OP_PUBCHECK ]:
+                                # These operations are cheap so ideally we'd
+                                # like to use full parallelism.  But if the user
+                                # specified a concurrency limit we should
+                                # respect that.
+                                if not global_settings.client_concurrency_set:
+                                        # No limit was specified, use full
+                                        # concurrency.
+                                        concurrency = -1
                 else:
-                        concurrency = global_settings.client_concurrency
+                        pkg_op = "<various>"
+
+                _progtrack.li_recurse_start(pkg_op, lic_num)
 
                 # If we have a plan for the current image that means linked
                 # image metadata is probably changing so we always save it to
@@ -2079,24 +2126,33 @@ class LinkedImage(object):
                 if _pd is not None:
                         _syncmd_tmp = True
 
-                # get parent metadata common to all child images
-                _pmd = None
-                if _pkg_op != pkgdefs.PKG_OP_DETACH:
-                        ppubs = get_pubs(self.__img)
-                        ppkgs = get_packages(self.__img, pd=_pd)
-                        pfacets = get_inheritable_facets(self.__img, pd=_pd)
-                        _pmd = (ppubs, ppkgs, pfacets)
-
-                # setup operation for each child
                 lic_setup = []
-                for lic in _lic_list:
-                        try:
-                                lic.child_op_setup(_pkg_op, _pmd, _progtrack,
-                                    _ignore_syncmd_nop, _syncmd_tmp, **kwargs)
-                                lic_setup.append(lic)
-                        except apx.LinkedImageException, e:
-                                _rvdict[lic.child_name] = \
-                                    LI_RVTuple(e.lix_exitrv, e, None)
+                for pkg_op, lic_list, kwargs, ignore_syncmd_nop in \
+                    _lic_op_vectors:
+
+                        if stage != pkgdefs.API_STAGE_DEFAULT:
+                                kwargs = kwargs.copy()
+                                kwargs["stage"] = stage
+
+                        # get parent metadata common to all child images
+                        _pmd = None
+                        if pkg_op != pkgdefs.PKG_OP_DETACH:
+                                ppubs = get_pubs(self.__img)
+                                ppkgs = get_packages(self.__img, pd=_pd)
+                                pfacets = get_inheritable_facets(self.__img,
+                                    pd=_pd)
+                                _pmd = (ppubs, ppkgs, pfacets)
+
+                        # setup operation for each child
+                        for lic in lic_list:
+                                try:
+                                        lic.child_op_setup(pkg_op, _pmd,
+                                            _progtrack, ignore_syncmd_nop,
+                                            _syncmd_tmp, **kwargs)
+                                        lic_setup.append(lic)
+                                except apx.LinkedImageException, e:
+                                        _rvdict[lic.child_name] = \
+                                            LI_RVTuple(e.lix_exitrv, e, None)
 
                 # if _failfast is true, then throw an exception if we failed
                 # to setup any of the children.  if _failfast is false we'll
@@ -2111,7 +2167,7 @@ class LinkedImage(object):
                         # raise an exception
                         _li_rvdict_raise_exceptions(_rvdict)
 
-                def __child_op_finish(lic, lic_list, _pkg_op, _rvdict,
+                def __child_op_finish(lic, lic_list, _rvdict,
                     _progtrack, _failfast, _expect_plan):
                         """An iterator function invoked when a child has
                         finished an operation.
@@ -2127,8 +2183,7 @@ class LinkedImage(object):
 
                         lic_list.remove(lic)
 
-                        rvtuple, stdout, stderr = lic.child_op_rv(_pkg_op,
-                            _expect_plan)
+                        rvtuple, stdout, stderr = lic.child_op_rv(_expect_plan)
                         _li_rvtuple_check(rvtuple)
                         _rvdict[lic.child_name] = rvtuple
 
@@ -2166,7 +2221,7 @@ class LinkedImage(object):
                         if not lic.child_op_is_done():
                                 continue
                         for p_dict in __child_op_finish(lic, lic_setup,
-                            _pkg_op, _rvdict, _progtrack, _failfast,
+                            _rvdict, _progtrack, _failfast,
                             _expect_plan):
                                 yield p_dict
 
@@ -2189,7 +2244,7 @@ class LinkedImage(object):
                         if progtrack_update:
                                 # display progress on children
                                 progtrack_update = False
-                                done = len(_lic_list) - len(lic_setup) - \
+                                done = lic_num - len(lic_setup) - \
                                     len(lic_running)
                                 lin_running = sorted([
                                     lic.child_name for lic in lic_running])
@@ -2215,12 +2270,12 @@ class LinkedImage(object):
                                 # a child finished processing
                                 progtrack_update = True
                                 for p_dict in __child_op_finish(lic,
-                                    lic_running, _pkg_op, _rvdict, _progtrack,
+                                    lic_running, _rvdict, _progtrack,
                                     _failfast, _expect_plan):
                                         yield p_dict
 
                 _li_rvdict_check(_rvdict)
-                if _lic_list:
+                if lic_num:
                         _progtrack.li_recurse_end()
 
         def __children_init(self, lin_list=None, li_ignore=None, failfast=True):
@@ -2357,34 +2412,34 @@ class LinkedImage(object):
                 if stage == pkgdefs.API_STAGE_PLAN:
                         expect_plan = True
 
-                # get target op and arguments
-                pkg_op = pd.child_op
-
-                # assume that for most operations we want to recurse into the
-                # child image even if the linked image metadata isn't
-                # changing.  (this would be required for recursive operations,
-                # update operations, etc.)
-                _ignore_syncmd_nop = True
-                if pd.child_op_implicit:
-                        # the exception is if we're doing an implicit sync.
-                        # to improve performance we assume the child is
-                        # already in sync, so if its linked image metadata
-                        # isn't changing then the child won't need any updates
-                        # so there will be no need to recurse into it.
-                        _ignore_syncmd_nop = False
+                # Assemble list of LICs from LINs in pd.child_op_vectors and
+                # create new lic_op_vectors to pass to __children_op_vec().
+                lic_op_vectors = []
+                for op, lin_list, kwargs, ignore_syncmd_nop in \
+                    pd.child_op_vectors:
+                        assert "stage" not in kwargs
+                        lic_list = []
+                        for l in lin_list:
+                                try:
+                                        lic_list.append(self.__lic_dict[l])
+                                except KeyError:
+                                        # For the prepare and execute phase we
+                                        # remove children for which there is
+                                        # nothing to do from self.__lic_dict.
+                                        # So ignore those we can't find.
+                                        pass
+                        lic_op_vectors.append((op, lic_list, kwargs,
+                            ignore_syncmd_nop))
 
                 rvdict = {}
-                for p_dict in self.__children_op(
-                    _pkg_op=pkg_op,
-                    _lic_list=lic_list,
+                for p_dict in self.__children_op_vec(
+                    _lic_op_vectors=lic_op_vectors,
                     _rvdict=rvdict,
                     _progtrack=progtrack,
                     _failfast=True,
                     _expect_plan=expect_plan,
-                    _ignore_syncmd_nop=_ignore_syncmd_nop,
-                    _pd=pd,
                     stage=stage,
-                    **pd.child_kwargs):
+                    _pd=pd):
                         yield p_dict
 
                 assert not _li_rvdict_exceptions(rvdict)
@@ -2403,7 +2458,7 @@ class LinkedImage(object):
                                 pd.children_planned.append(lin)
 
         @staticmethod
-        def __recursion_op(api_op, api_kwargs):
+        def __recursion_ops(api_op):
                 """Determine what pkg command to use when recursing into child
                 images."""
 
@@ -2420,19 +2475,43 @@ class LinkedImage(object):
                 # of specific packages, etc, then when we recurse we'll do a
                 # sync in the child.
                 #
-                implicit = False
-                if api_op == pkgdefs.API_OP_UPDATE and not \
-                    api_kwargs["pkgs_update"]:
-                        pkg_op = pkgdefs.PKG_OP_UPDATE
-                elif api_op == pkgdefs.API_OP_SYNC:
-                        pkg_op = pkgdefs.PKG_OP_SYNC
+
+
+                # To improve performance we assume the child is already in sync,
+                # so if its linked image metadata isn't changing then the child
+                # won't need any updates so there will be no need to recurse
+                # into it.
+                ignore_syncmd_nop = False
+                pkg_op_erecurse = None
+
+                if api_op == pkgdefs.API_OP_SYNC:
+                        pkg_op_irecurse = pkgdefs.PKG_OP_SYNC
+                        # If we are doing an explict sync, we do have to make
+                        # sure we actually recurse into the child and sync
+                        # metadata.
+                        ignore_syncmd_nop = True
+                elif api_op == pkgdefs.API_OP_INSTALL:
+                        pkg_op_irecurse = pkgdefs.PKG_OP_SYNC
+                        pkg_op_erecurse = pkgdefs.PKG_OP_INSTALL
+                elif api_op == pkgdefs.API_OP_CHANGE_FACET:
+                        pkg_op_irecurse = pkgdefs.PKG_OP_SYNC
+                        pkg_op_erecurse = pkgdefs.PKG_OP_CHANGE_FACET
+                elif api_op == pkgdefs.API_OP_CHANGE_VARIANT:
+                        pkg_op_irecurse = pkgdefs.PKG_OP_SYNC
+                        pkg_op_erecurse = pkgdefs.PKG_OP_CHANGE_VARIANT
+                if api_op == pkgdefs.API_OP_UPDATE:
+                        pkg_op_irecurse = pkgdefs.PKG_OP_SYNC
+                        pkg_op_erecurse = pkgdefs.PKG_OP_UPDATE
+                elif api_op == pkgdefs.API_OP_UNINSTALL:
+                        pkg_op_irecurse = pkgdefs.PKG_OP_SYNC
+                        pkg_op_erecurse = pkgdefs.PKG_OP_UNINSTALL
                 else:
-                        pkg_op = pkgdefs.PKG_OP_SYNC
-                        implicit = True
-                return pkg_op, implicit
+                        pkg_op_irecurse = pkgdefs.PKG_OP_SYNC
+
+                return pkg_op_irecurse, pkg_op_erecurse, ignore_syncmd_nop
 
         @staticmethod
-        def __recursion_args(pd, refresh_catalogs, update_index, api_kwargs):
+        def __recursion_args(op, refresh_catalogs, update_index, api_kwargs):
                 """Determine what pkg command arguments to use when recursing
                 into child images."""
 
@@ -2461,24 +2540,72 @@ class LinkedImage(object):
                         # option specific to: attach, set-property-linked, sync
                         kwargs["li_pkg_updates"] = api_kwargs["li_pkg_updates"]
 
-                if pd.child_op == pkgdefs.PKG_OP_UPDATE:
+                if op == pkgdefs.PKG_OP_INSTALL:
+                        assert "pkgs_inst" in api_kwargs
+                        # option specific to: install
+                        kwargs["pkgs_inst"] = api_kwargs["pkgs_inst"]
+                        kwargs["reject_list"] = api_kwargs["reject_list"]
+                elif op == pkgdefs.PKG_OP_CHANGE_VARIANT:
+                        assert "variants" in api_kwargs
+                        # option specific to: change-variant
+                        kwargs["variants"] = api_kwargs["variants"]
+                        kwargs["facets"] = None
+                        kwargs["reject_list"] = api_kwargs["reject_list"]
+                elif op == pkgdefs.PKG_OP_CHANGE_FACET:
+                        assert "facets" in api_kwargs
+                        # option specific to: change-facet
+                        kwargs["facets"] = api_kwargs["facets"]
+                        kwargs["variants"] = None
+                        kwargs["reject_list"] = api_kwargs["reject_list"]
+                elif op == pkgdefs.PKG_OP_UNINSTALL:
+                        assert "pkgs_to_uninstall" in api_kwargs
+                        # option specific to: uninstall
+                        kwargs["pkgs_to_uninstall"] = \
+                            api_kwargs["pkgs_to_uninstall"]
+                        del kwargs["show_licenses"]
+                        del kwargs["refresh_catalogs"]
+                        del kwargs["accept"]
+                elif op == pkgdefs.PKG_OP_UPDATE:
                         # skip ipkg up to date check for child images
                         kwargs["force"] = True
+                        kwargs["pkgs_update"] = api_kwargs["pkgs_update"]
+                        kwargs["reject_list"] = api_kwargs["reject_list"]
 
                 return kwargs
 
-        def api_recurse_plan(self, api_kwargs, refresh_catalogs,
+        def api_recurse_plan(self, api_kwargs, erecurse_list, refresh_catalogs,
             update_index, progtrack):
                 """Plan child image updates."""
 
                 pd = self.__img.imageplan.pd
                 api_op = pd.plan_type
 
-                # update the plan arguments
-                pd.child_op, pd.child_op_implicit = \
-                    self.__recursion_op(api_op, api_kwargs)
-                pd.child_kwargs = self.__recursion_args(pd,
+                pd.child_op_vectors = []
+
+                # Get LinkedImageNames of all children
+                lin_list = self.__lic_dict.keys()
+
+                pkg_op_irecurse, pkg_op_erecurse, ignore_syncmd_nop = \
+                    self.__recursion_ops(api_op)
+
+                # Prepare op vector for explicit recurse operations
+                if erecurse_list:
+                        assert pkg_op_erecurse
+                        # remove recurse children from sync list
+                        lin_list = list(set(lin_list) - set(erecurse_list))
+
+                        erecurse_kwargs = self.__recursion_args(pkg_op_erecurse,
+                            refresh_catalogs, update_index, api_kwargs)
+                        pd.child_op_vectors.append((pkg_op_erecurse,
+                            list(erecurse_list), erecurse_kwargs, True))
+
+                # Prepare op vector for implicit recurse operations
+                irecurse_kwargs = self.__recursion_args(pkg_op_irecurse,
                     refresh_catalogs, update_index, api_kwargs)
+
+                pd.child_op_vectors.append((pkg_op_irecurse, lin_list,
+                    irecurse_kwargs, ignore_syncmd_nop))
+
                 pd.children_ignored = self.__lic_ignore
 
                 # recurse into children
@@ -2593,10 +2720,11 @@ class LinkedImageChild(object):
 
                 self.__pkg_remote = pkg.client.pkgremote.PkgRemote()
                 self.__child_op_rvtuple = None
+                self.__child_op = None
 
         @property
         def child_name(self):
-                """Get the path associated with a child image."""
+                """Get the name associated with a child image."""
                 return self.__props[PROP_NAME]
 
         @property
@@ -2858,38 +2986,40 @@ class LinkedImageChild(object):
                     update_index=update_index,
                     verbose=global_settings.client_output_verbose)
 
-        def __child_setup_update(self, _pmd, _progtrack, _ignore_syncmd_nop,
-            _syncmd_tmp,
-            accept=False,
-            force=False,
-            noexecute=False,
-            refresh_catalogs=True,
-            reject_list=misc.EmptyI,
-            show_licenses=False,
-            stage=pkgdefs.API_STAGE_DEFAULT,
-            update_index=True):
+        def __child_setup_update(self, _pmd, _progtrack, _syncmd_tmp,
+            accept, force, noexecute, pkgs_update, refresh_catalogs,
+            reject_list, show_licenses, stage, update_index):
                 """Prepare to update a child image."""
 
                 # first sync the metadata
                 if not self.__child_op_setup_syncmd(_pmd,
-                    ignore_syncmd_nop=_ignore_syncmd_nop,
+                    ignore_syncmd_nop=True,
                     tmp=_syncmd_tmp, stage=stage):
                         # the update failed or the metadata didn't change
                         return
 
+                # We need to make sure we don't pass None as pargs in
+                # client.py`update()
+                if pkgs_update is None:
+                        pkgs_update = []
+
                 self.__pkg_remote.setup(self.child_path,
                     pkgdefs.PKG_OP_UPDATE,
+                    act_timeout=0,
                     accept=accept,
                     backup_be=None,
                     backup_be_name=None,
                     be_activate=True,
                     be_name=None,
                     force=force,
+                    ignore_missing=True,
+                    li_erecurse=None,
                     li_ignore=None,
                     li_parent_sync=True,
                     new_be=None,
                     noexecute=noexecute,
                     origins=[],
+                    pargs=pkgs_update,
                     parsable_version=\
                         global_settings.client_output_parsable_version,
                     quiet=global_settings.client_output_quiet,
@@ -2898,8 +3028,124 @@ class LinkedImageChild(object):
                     show_licenses=show_licenses,
                     stage=stage,
                     update_index=update_index,
-                    verbose=global_settings.client_output_verbose,
-                    act_timeout=0)
+                    verbose=global_settings.client_output_verbose)
+
+        def __child_setup_install(self, _pmd, _progtrack, _syncmd_tmp,
+            accept, noexecute, pkgs_inst, refresh_catalogs, reject_list,
+            show_licenses, stage, update_index):
+                """Prepare to install a pkg in a child image."""
+
+                # first sync the metadata
+                if not self.__child_op_setup_syncmd(_pmd,
+                    ignore_syncmd_nop=True,
+                    tmp=_syncmd_tmp, stage=stage):
+                        # the update failed or the metadata didn't change
+                        return
+
+                self.__pkg_remote.setup(self.child_path,
+                    pkgdefs.PKG_OP_INSTALL,
+                    accept=accept,
+                    act_timeout=0,
+                    backup_be=None,
+                    backup_be_name=None,
+                    be_activate=True,
+                    be_name=None,
+                    li_erecurse=None,
+                    li_ignore=None,
+                    li_parent_sync=True,
+                    new_be=None,
+                    noexecute=noexecute,
+                    origins=[],
+                    pargs=pkgs_inst,
+                    parsable_version=\
+                        global_settings.client_output_parsable_version,
+                    quiet=global_settings.client_output_quiet,
+                    refresh_catalogs=refresh_catalogs,
+                    reject_pats=reject_list,
+                    show_licenses=show_licenses,
+                    stage=stage,
+                    update_index=update_index,
+                    verbose=global_settings.client_output_verbose)
+
+        def __child_setup_uninstall(self, _pmd, _progtrack, _syncmd_tmp,
+            noexecute, pkgs_to_uninstall, stage, update_index):
+                """Prepare to install a pkg in a child image."""
+
+                # first sync the metadata
+                if not self.__child_op_setup_syncmd(_pmd,
+                    ignore_syncmd_nop=True,
+                    tmp=_syncmd_tmp, stage=stage):
+                        # the update failed or the metadata didn't change
+                        return
+
+                self.__pkg_remote.setup(self.child_path,
+                    pkgdefs.PKG_OP_UNINSTALL,
+                    act_timeout=0,
+                    backup_be=None,
+                    backup_be_name=None,
+                    be_activate=True,
+                    be_name=None,
+                    li_erecurse=None,
+                    li_ignore=None,
+                    li_parent_sync=True,
+                    new_be=None,
+                    noexecute=noexecute,
+                    pargs=pkgs_to_uninstall,
+                    parsable_version=\
+                        global_settings.client_output_parsable_version,
+                    quiet=global_settings.client_output_quiet,
+                    stage=stage,
+                    update_index=update_index,
+                    ignore_missing=True,
+                    verbose=global_settings.client_output_verbose)
+
+        def __child_setup_change_varcets(self, _pmd, _progtrack, _syncmd_tmp,
+            accept, facets, noexecute, refresh_catalogs, reject_list,
+            show_licenses, stage, update_index, variants):
+                """Prepare to install a pkg in a child image."""
+
+                # first sync the metadata
+                if not self.__child_op_setup_syncmd(_pmd,
+                    ignore_syncmd_nop=True,
+                    tmp=_syncmd_tmp, stage=stage):
+                        # the update failed or the metadata didn't change
+                        return
+
+                assert not (variants and facets)
+                if variants:
+                        op = pkgdefs.PKG_OP_CHANGE_VARIANT
+                        varcet_dict = variants
+                else:
+                        op = pkgdefs.PKG_OP_CHANGE_FACET
+                        varcet_dict = facets
+
+                # need to transform varcets back to string list
+                varcets = [ "%s=%s" % (a, b) for (a, b) in varcet_dict.items()]
+
+                self.__pkg_remote.setup(self.child_path,
+                    op,
+                    accept=accept,
+                    act_timeout=0,
+                    backup_be=None,
+                    backup_be_name=None,
+                    be_activate=True,
+                    be_name=None,
+                    li_erecurse=None,
+                    li_ignore=None,
+                    li_parent_sync=True,
+                    new_be=None,
+                    noexecute=noexecute,
+                    origins=[],
+                    pargs=varcets,
+                    parsable_version=\
+                        global_settings.client_output_parsable_version,
+                    quiet=global_settings.client_output_quiet,
+                    refresh_catalogs=refresh_catalogs,
+                    reject_pats=reject_list,
+                    show_licenses=show_licenses,
+                    stage=stage,
+                    update_index=update_index,
+                    verbose=global_settings.client_output_verbose)
 
         def __child_setup_detach(self, _progtrack, li_md_only=False,
             li_pkg_updates=True, noexecute=False):
@@ -2952,6 +3198,7 @@ class LinkedImageChild(object):
 
                 self.__pkg_remote.abort()
                 self.__child_op_rvtuple = None
+                self.__child_op = None
 
         def child_op_setup(self, _pkg_op, _pmd, _progtrack, _ignore_syncmd_nop,
             _syncmd_tmp, **kwargs):
@@ -2959,6 +3206,9 @@ class LinkedImageChild(object):
                 perform on a child image."""
 
                 assert self.__child_op_rvtuple is None
+                assert self.__child_op is None
+
+                self.__child_op = _pkg_op
 
                 if _pkg_op == pkgdefs.PKG_OP_AUDIT_LINKED:
                         self.__child_setup_audit(_pmd, **kwargs)
@@ -2971,7 +3221,17 @@ class LinkedImageChild(object):
                             _ignore_syncmd_nop, _syncmd_tmp, **kwargs)
                 elif _pkg_op == pkgdefs.PKG_OP_UPDATE:
                         self.__child_setup_update(_pmd, _progtrack,
-                            _ignore_syncmd_nop, _syncmd_tmp, **kwargs)
+                            _syncmd_tmp, **kwargs)
+                elif _pkg_op == pkgdefs.PKG_OP_INSTALL:
+                        self.__child_setup_install(_pmd, _progtrack,
+                            _syncmd_tmp, **kwargs)
+                elif _pkg_op == pkgdefs.PKG_OP_UNINSTALL:
+                        self.__child_setup_uninstall(_pmd, _progtrack,
+                            _syncmd_tmp, **kwargs)
+                elif _pkg_op == pkgdefs.PKG_OP_CHANGE_FACET or \
+                    _pkg_op == pkgdefs.PKG_OP_CHANGE_VARIANT:
+                        self.__child_setup_change_varcets(_pmd, _progtrack,
+                            _syncmd_tmp, **kwargs)
                 else:
                         raise RuntimeError(
                             "Unsupported package client op: %s" % _pkg_op)
@@ -2996,7 +3256,7 @@ class LinkedImageChild(object):
                 # make sure there is some data from the child
                 return self.__pkg_remote.is_done()
 
-        def child_op_rv(self, pkg_op, expect_plan):
+        def child_op_rv(self, expect_plan):
                 """Public interface to get the result of an operation on a
                 child image.
 
@@ -3006,6 +3266,13 @@ class LinkedImageChild(object):
                 json version of the plan on stdout, and we'll verify it by
                 running it through the json parser.
                 """
+
+                # The child op is now done, so we reset __child_op to make sure
+                # we don't accidentally reuse the LIC without properly setting
+                # it up again. However, we still need the op type in this
+                # function so we make a copy.
+                pkg_op = self.__child_op
+                self.__child_op = None
 
                 # if we have a return value this operation is done
                 if self.__child_op_rvtuple is not None:

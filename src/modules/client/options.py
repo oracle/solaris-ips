@@ -28,7 +28,7 @@ import pkg.client.pkgdefs as pkgdefs
 import pkg.client.linkedimage as li
 import pkg.misc as misc
 
-from pkg.client.api_errors import InvalidOptionError
+from pkg.client.api_errors import InvalidOptionError, LinkedImageException
 from pkg.client import global_settings
 
 _orig_cwd = None
@@ -45,6 +45,7 @@ BE_NAME               = "be_name"
 CONCURRENCY           = "concurrency"
 DENY_NEW_BE           = "deny_new_be"
 FORCE                 = "force"
+IGNORE_MISSING        = "ignore_missing"
 LI_IGNORE             = "li_ignore"
 LI_IGNORE_ALL         = "li_ignore_all"
 LI_IGNORE_LIST        = "li_ignore_list"
@@ -55,6 +56,11 @@ LI_PKG_UPDATES        = "li_pkg_updates"
 LI_PROPS              = "li_props"
 LI_TARGET_ALL         = "li_target_all"
 LI_TARGET_LIST        = "li_target_list"
+# options for explicit recursion; see description in client.py
+LI_ERECURSE_ALL       = "li_erecurse_all"
+LI_ERECURSE_INCL      = "li_erecurse_list"
+LI_ERECURSE_EXCL      = "li_erecurse_excl"
+LI_ERECURSE           = "li_erecurse"
 LIST_ALL              = "list_all"
 LIST_INSTALLED_NEWEST = "list_installed_newest"
 LIST_NEWEST           = "list_newest"
@@ -298,6 +304,69 @@ def opts_table_cb_li_target1(api_inst, opts, opts_new):
         if ORIGINS in opts and opts[ORIGINS]:
                 raise InvalidOptionError(InvalidOptionError.INCOMPAT,
                     [arg1, ORIGINS])
+
+def opts_table_cb_li_recurse(api_inst, opts, opts_new):
+
+        del opts_new[LI_ERECURSE_INCL]
+        del opts_new[LI_ERECURSE_EXCL]
+        del opts_new[LI_ERECURSE_ALL]
+
+        if opts[LI_ERECURSE_EXCL] and not opts[LI_ERECURSE_ALL]:
+                raise InvalidOptionError(InvalidOptionError.REQUIRED,
+                    [LI_ERECURSE_EXCL, LI_ERECURSE_ALL])
+
+        if opts[LI_ERECURSE_INCL] and not opts[LI_ERECURSE_ALL]:
+                raise InvalidOptionError(InvalidOptionError.REQUIRED,
+                    [LI_ERECURSE_INCL, LI_ERECURSE_ALL])
+
+        if opts[LI_ERECURSE_INCL] and opts[LI_ERECURSE_EXCL]:
+                raise InvalidOptionError(InvalidOptionError.INCOMPAT,
+                    [LI_ERECURSE_INCL, LI_ERECURSE_EXCL])
+
+        if not opts[LI_ERECURSE_ALL]:
+                opts_new[LI_ERECURSE] = None
+                return
+
+        # Go through all children and check if they are in the recurse list.
+        li_child_targets = []
+        li_child_list = set([
+                lin
+                for lin, rel, path in api_inst.list_linked()
+                if rel == "child"
+        ])
+
+        def parse_lin(ulin):
+                lin = None
+                try:
+                        lin = api_inst.parse_linked_name(ulin,
+                            allow_unknown=True)
+                except LinkedImageException, e:
+                        try:
+                                lin = api_inst.parse_linked_name("zone:%s" % ulin,
+                                    allow_unknown=True)
+                        except LinkedImageException, e:
+                                pass
+                if lin is None or lin not in li_child_list:
+                        raise InvalidOptionError(msg=
+                            _("invalid linked image or zone name '%s'.") % ulin)
+
+                return lin
+
+        if opts[LI_ERECURSE_INCL]:
+                # include list specified
+                for ulin in opts[LI_ERECURSE_INCL]:
+                        li_child_targets.append(parse_lin(ulin))
+                opts_new[LI_ERECURSE] = li_child_targets
+        else:
+                # exclude list specified
+                for ulin in opts[LI_ERECURSE_EXCL]:
+                        li_child_list.remove(parse_lin(ulin))
+                opts_new[LI_ERECURSE] = li_child_list
+
+        # If we use image recursion we need to make sure uninstall and update
+        # ignore non-existing packages in the parent image.
+        if opts_new[LI_ERECURSE] and IGNORE_MISSING in opts:
+                opts_new[IGNORE_MISSING] = True
 
 def opts_table_cb_no_headers_vs_quiet(api_inst, opts, opts_new):
         # check if we accept the -q option
@@ -572,6 +641,13 @@ opts_table_li_target1 = [
     (LI_NAME,              None),
 ]
 
+opts_table_li_recurse = [
+    opts_table_cb_li_recurse,
+    (LI_ERECURSE_ALL,       False),
+    (LI_ERECURSE_INCL,      []),
+    (LI_ERECURSE_EXCL,      []),
+]
+
 opts_table_licenses = [
     (ACCEPT,               False),
     (SHOW_LICENSES,        False),
@@ -627,6 +703,10 @@ opts_table_stage = [
     (STAGE,                None),
 ]
 
+opts_table_missing = [
+    (IGNORE_MISSING,       False),
+]
+
 opts_table_actuators = [
     opts_table_cb_actuators,
     (SYNC_ACT,             False),
@@ -637,6 +717,7 @@ opts_table_actuators = [
 # Options for pkg(1) subcommands.  Built by combining the option tables above,
 # with some optional subcommand unique options defined below.
 #
+
 opts_main = \
     opts_table_beopts + \
     opts_table_concurrency + \
@@ -653,16 +734,19 @@ opts_main = \
 
 opts_install = \
     opts_main + \
+    opts_table_stage + \
+    opts_table_li_recurse + \
     opts_table_actuators + \
     []
 
 # "update" cmd inherits all main cmd options
-# TODO fix back to opts_install
 opts_update = \
     opts_main + \
     opts_table_force + \
+    opts_table_li_recurse + \
     opts_table_stage + \
     opts_table_actuators + \
+    opts_table_missing + \
     []
 
 # "attach-linked" cmd inherits all main cmd options
@@ -723,7 +807,10 @@ opts_uninstall = \
     opts_table_nqv + \
     opts_table_parsable + \
     opts_table_stage + \
-    opts_table_actuators
+    opts_table_li_recurse + \
+    opts_table_missing + \
+    opts_table_actuators + \
+    []
 
 opts_audit_linked = \
     opts_table_li_no_psync + \

@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2007, 2013, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2007, 2014, Oracle and/or its affiliates. All rights reserved.
 #
 
 import M2Crypto as m2
@@ -1784,7 +1784,7 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                                                     uri=uri)
                                         except apx.ExpiredCertificate, e:
                                                 errors.append(e)
-                                                
+
                                 if uri.ssl_key:
                                         try:
                                                 if not os.path.exists(
@@ -2395,7 +2395,7 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                             mfstpath=mfstpath, pub=alt_pub)
                 except InvalidContentException:
                         return False
-        
+
         def has_manifest(self, pfmri, alt_pub=None):
                 """Check to see if the manifest for pfmri is present on disk and
                 has the correct hash."""
@@ -4330,6 +4330,14 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                         new = set(variants.iteritems())
                         cur = set(self.cfg.variants.iteritems())
                         variants = dict(new - cur)
+                elif facets:
+                        new_facets = self.get_facets()
+                        for f in facets:
+                                if facets[f] is None:
+                                        new_facets.pop(f, None)
+                                else:
+                                        new_facets[f] = facets[f]
+                        facets = new_facets
 
                 self.__make_plan_common(op, progtrack, check_cancel,
                     noexecute, new_variants=variants, new_facets=facets,
@@ -4412,18 +4420,20 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                 progtrack.plan_all_done()
 
         def make_uninstall_plan(self, op, progtrack, check_cancel,
-            noexecute, pkgs_to_uninstall):
+            ignore_missing, noexecute, pkgs_to_uninstall):
                 """Create uninstall plan to remove the specified packages."""
 
                 progtrack.plan_all_start()
 
                 self.__make_plan_common(op, progtrack, check_cancel,
-                    noexecute, pkgs_to_uninstall=pkgs_to_uninstall)
+                    noexecute, ignore_missing=ignore_missing,
+                    pkgs_to_uninstall=pkgs_to_uninstall)
 
                 progtrack.plan_all_done()
 
         def make_update_plan(self, op, progtrack, check_cancel,
-            noexecute, pkgs_update=None, reject_list=misc.EmptyI):
+            noexecute, ignore_missing=False, pkgs_update=None,
+            reject_list=misc.EmptyI):
                 """Create a plan to update all packages or the specific ones as
                 far as possible.  This is a helper routine for some common
                 operations in the client.
@@ -4431,8 +4441,8 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
 
                 progtrack.plan_all_start()
                 self.__make_plan_common(op, progtrack, check_cancel,
-                    noexecute, pkgs_update=pkgs_update,
-                    reject_list=reject_list)
+                    noexecute, ignore_missing=ignore_missing,
+                    pkgs_update=pkgs_update, reject_list=reject_list)
                 progtrack.plan_all_done()
 
         def make_revert_plan(self, op, progtrack, check_cancel,

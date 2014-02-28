@@ -40,7 +40,7 @@ import sys
 import urllib2
 
 PKG_CLIENT_NAME = "pkglint"
-CLIENT_API_VERSION = 77
+CLIENT_API_VERSION = 78
 pkg.client.global_settings.client_name = PKG_CLIENT_NAME
 
 class LintEngineException(Exception):

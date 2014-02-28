@@ -26,7 +26,7 @@
 
 import testutils
 if __name__ == "__main__":
-	testutils.setup_environment("../../../proto")
+        testutils.setup_environment("../../../proto")
 import pkg5unittest
 
 import difflib
@@ -487,6 +487,28 @@ class TestPkgLinked1(TestPkgLinked):
                         self._pkg([0], "change-variant", args= \
                             "-i %s -v variant.foo=baz" % lin, rv=rv)
                         # TODO: test change-facet
+
+                rv = EXIT_BADOPT
+
+                for op in ["update", "install", "uninstall"]:
+                        # -z and -Z can't be used together
+                        self._pkg([0], "%s -r "
+                            "-z system:img1 -Z system:img1 foo" % op, rv=rv)
+                        # check handling of valid but not existing child names
+                        self._pkg([0], "%s -r -z system:foo %s" % \
+                            (op, self.p_foo1_name[1]), rv=rv)
+                        self._pkg([0], "%s -r -Z system:foo %s" % \
+                            (op, self.p_foo1_name[1]), rv=rv)
+                        # check handling of valid but not existing zone names
+                        self._pkg([0], "%s -r -z foo %s" % \
+                            (op, self.p_foo1_name[1]), rv=rv)
+                        self._pkg([0], "%s -r -Z foo %s" % \
+                            (op, self.p_foo1_name[1]), rv=rv)
+                        # check handling of invalid child names
+                        self._pkg([0], "%s -r -z :foo:&& %s" % \
+                            (op, self.p_foo1_name[1]), rv=rv)
+                        self._pkg([0], "%s -r -Z :foo:&& %s" % \
+                            (op, self.p_foo1_name[1]), rv=rv)
 
         def test_opts_3_all(self):
                 self._imgs_create(1)
@@ -1384,6 +1406,22 @@ class TestPkgLinked2(TestPkgLinked):
                     child_images=[{
                         "image_name": "system:img1",
                         "change_packages": [
+                            [self.s1_list[2], self.s1_list[0]]],
+                        },{
+                        "image_name": "system:img2",
+                        "change_packages": [
+                            [self.s1_list[2], self.s1_list[0]]],
+                    }])
+
+                # explicit recursion into all children
+                self.__test_linked_sync_via_parent_op(
+                    "update -r", "",
+                    change_packages=[
+                        [self.foo1_list[1], self.foo1_list[0]],
+                        [self.s1_list[1], self.s1_list[0]]],
+                    child_images=[{
+                        "image_name": "system:img1",
+                        "change_packages": [
                             [self.foo1_list[2], self.foo1_list[0]],
                             [self.s1_list[2], self.s1_list[0]]],
                         },{
@@ -1418,6 +1456,23 @@ class TestPkgLinked2(TestPkgLinked):
                             [self.s1_list[2], self.s1_list[1]]],
                     }])
 
+                # explicit recursion into all children
+                self.__test_linked_sync_via_parent_op(
+                    "update -r", self.p_foo1_name[3],
+                    change_packages=[
+                        [self.foo1_list[1], self.foo1_list[3]]],
+                    child_images=[{
+                        "image_name": "system:img1",
+                        "change_packages": [
+                            [self.foo1_list[2], self.foo1_list[3]],
+                            [self.s1_list[2], self.s1_list[1]]],
+                        },{
+                        "image_name": "system:img2",
+                        "change_packages": [
+                            [self.foo1_list[2], self.foo1_list[3]],
+                            [self.s1_list[2], self.s1_list[1]]],
+                    }])
+
         def test_linked_sync_via_install(self):
                 """Verify that if we update child images to be in sync with
                 their constraints when we do an install."""
@@ -1440,6 +1495,24 @@ class TestPkgLinked2(TestPkgLinked):
                         },{
                         "image_name": "system:img2",
                         "change_packages": [
+                            [self.s1_list[2], self.s1_list[1]]],
+                    }])
+
+                # explicit recursion into all children
+                self.__test_linked_sync_via_parent_op(
+                    "install -r ", self.p_foo1_name[0],
+                    change_packages=[
+                        [self.foo1_list[1], self.foo1_list[0]],
+                    ],
+                    child_images=[{
+                        "image_name": "system:img1",
+                        "change_packages": [
+                            [self.foo1_list[2], self.foo1_list[0]],
+                            [self.s1_list[2], self.s1_list[1]]],
+                        },{
+                        "image_name": "system:img2",
+                        "change_packages": [
+                            [self.foo1_list[2], self.foo1_list[0]],
                             [self.s1_list[2], self.s1_list[1]]],
                     }])
 
@@ -1531,6 +1604,22 @@ class TestPkgLinked2(TestPkgLinked):
                         "image_name": "system:img1",
                         "change_packages": [
                             [self.s1_list[2], self.s1_list[1]]],
+                        },{
+                        "image_name": "system:img2",
+                        "change_packages": [
+                            [self.s1_list[2], self.s1_list[1]]],
+                    }])
+
+                # explicit recursion into all children
+                self.__test_linked_sync_via_parent_op(
+                    "uninstall -r", self.foo1_list[1],
+                    remove_packages=[
+                        self.foo1_list[1]],
+                    child_images=[{
+                        "image_name": "system:img1",
+                        "change_packages": [
+                            [self.s1_list[2], self.s1_list[1]]],
+                        "remove_packages": [],
                         },{
                         "image_name": "system:img2",
                         "change_packages": [
@@ -1777,6 +1866,633 @@ class TestPkgLinked3(TestPkgLinked):
 
                 Test when parent has publishers configured."""
                 self.__test_missing_parent_publisher_metadata()
+
+
+class TestPkgLinkedRecurse(TestPkgLinked):
+        """Test explicitly requested recursion"""
+
+        def _recursive_pkg(self, op, args, **kwargs):
+                """Run recursive pkg operation, compare results."""
+
+                def output_cb(output):
+                        self.assertEqualParsable(output, **kwargs)
+                self._pkg([0], "%s -r --parsable=0 %s" % (op, args),
+                    output_cb=output_cb)
+
+        def test_recursive_install(self):
+                """Test recursive pkg install"""
+
+                # create parent (0), push child (1, 2)
+                self._imgs_create(3)
+                self._attach_child(0, [1, 2])
+
+                self._recursive_pkg("install", self.foo1_list[0],
+                    add_packages=[self.foo1_list[0]],
+                    child_images=[{
+                        "image_name": "system:img1",
+                        "add_packages": [self.foo1_list[0]]
+                    },{
+                        "image_name": "system:img2",
+                        "add_packages": [self.foo1_list[0]]
+                    }
+                ])
+
+                # remove pkgs from children, leave parent alone, try again
+                self._pkg([1,2], "uninstall %s" % self.foo1_list[0])
+
+                self._recursive_pkg("install", self.foo1_list[0],
+                    add_packages=[],
+                    child_images=[{
+                        "image_name": "system:img1",
+                        "add_packages": [self.foo1_list[0]]
+                    },{
+                        "image_name": "system:img2",
+                        "add_packages": [self.foo1_list[0]]
+                    }
+                ])
+
+                # remove pkgs from parent, leave children alone, try again
+                self._pkg([0], "uninstall %s" % self.foo1_list[0])
+
+                self._recursive_pkg("install", self.foo1_list[0],
+                    add_packages=[self.foo1_list[0]],
+                    child_images=[{
+                        "image_name": "system:img1",
+                        "add_packages": []
+                    },{
+                        "image_name": "system:img2",
+                        "add_packages": []
+                    }
+                ])
+
+        def test_recursive_uninstall(self):
+                """Test recursive uninstall"""
+
+                # create parent (0), push child (1)
+                self._imgs_create(2)
+                self._attach_child(0, [1])
+
+                # install some packages to remove
+                self._pkg([0, 1], "install %s" % self.foo1_list[0])
+
+                # uninstall package which is present in parent and child
+                self._recursive_pkg("uninstall", self.foo1_list[0],
+                    remove_packages=[self.foo1_list[0]],
+                    child_images=[{
+                        "image_name": "system:img1",
+                        "remove_packages": [self.foo1_list[0]]
+                    }
+                ])
+
+                # install pkg back into child, leave parent alone, try again
+                self._pkg([1], "install %s" % self.foo1_list[0])
+                self._recursive_pkg("uninstall", self.foo1_list[0],
+                    remove_packages=[],
+                    child_images=[{
+                        "image_name": "system:img1",
+                        "remove_packages": [self.foo1_list[0]]
+                    }
+                ])
+
+                # install pkg back into parent, leave child alone, try again
+                self._pkg([0], "install %s" % self.foo1_list[0])
+                self._recursive_pkg("uninstall", self.foo1_list[0],
+                    remove_packages=[self.foo1_list[0]],
+                    child_images=[{
+                        "image_name": "system:img1",
+                        "remove_packages": []
+                    }
+                ])
+
+        def test_recursive_update(self):
+                """Test recursive update"""
+
+                # create parent (0), push child (1)
+                self._imgs_create(2)
+                self._attach_child(0, [1])
+
+                # install some packages to update
+                self._pkg([0, 1], "install %s" % self.foo1_list[0])
+
+                # update package which is present in parent and child
+                self._recursive_pkg("update", self.foo1_list[3],
+                    change_packages=[[self.foo1_list[0], self.foo1_list[3]]],
+                    child_images=[{
+                        "image_name": "system:img1",
+                        "change_packages": [[
+                            self.foo1_list[0],
+                            self.foo1_list[3]
+                        ]]
+                    }
+                ])
+
+                # downgrade child, leave parent alone, try again
+                self._pkg([1], "update %s" % self.foo1_list[0])
+                self._recursive_pkg("update", self.foo1_list[3],
+                    change_packages=[],
+                    child_images=[{
+                        "image_name": "system:img1",
+                        "change_packages": [[
+                            self.foo1_list[0],
+                            self.foo1_list[3]
+                        ]]
+                    }
+                ])
+
+                # downgrade parent, leave child alone, try again
+                self._pkg([0], "update %s" % self.foo1_list[0])
+                self._recursive_pkg("update", self.foo1_list[3],
+                    change_packages=[[self.foo1_list[0], self.foo1_list[3]]],
+                    child_images=[{
+                        "image_name": "system:img1",
+                        "change_packages": []
+                    }
+                ])
+
+        def test_recursive_variant(self):
+                """Test recursive change-variant"""
+
+                # create parent (0), push child (1)
+                self._imgs_create(2)
+                self._attach_child(0, [1])
+
+                # install some packages
+                self._pkg([0, 1], "install %s" % self.foo1_list[0])
+
+                # change variant in parent and child
+                self._recursive_pkg("change-variant", "variant.foo=baz",
+                    change_variants=[["variant.foo", "baz"]],
+                    affect_packages=[self.foo1_list[0]],
+                    child_images=[{
+                        "image_name": "system:img1",
+                        "change_variants": [["variant.foo", "baz"]],
+                        "affect_packages": [self.foo1_list[0]]
+                    }
+                ])
+
+                # revert variant in child, leave parent alone, try again
+                self._pkg([1], "change-variant -v variant.foo=bar")
+                self._recursive_pkg("change-variant", "variant.foo=baz",
+                    change_variants=[],
+                    affect_packages=[],
+                    child_images=[{
+                        "image_name": "system:img1",
+                        "change_variants": [["variant.foo", "baz"]],
+                        "affect_packages": [self.foo1_list[0]]
+                    }
+                ])
+
+                # revert variant in parent, leave child alone, try again
+                self._pkg([0], "change-variant -v variant.foo=bar")
+
+                self._pkg([0], "audit-linked -a")
+                self._recursive_pkg("change-variant", "variant.foo=baz",
+                    change_variants=[["variant.foo", "baz"]],
+                    affect_packages=[self.foo1_list[0]],
+                )
+
+        def test_recursive_facet(self):
+                """Test recursive change-facet"""
+
+                # create parent (0), push child (1)
+                self._imgs_create(2)
+                self._attach_child(0, [1])
+
+                # set facet in parent and child
+                self._recursive_pkg("change-facet", "facet.foo=True",
+                    change_facets=[["facet.foo", True, None, "local", False,
+                        False]],
+                    child_images=[{
+                        "image_name": "system:img1",
+                        "change_facets": [["facet.foo", True, None, "local",
+                            False, False]],
+                    }
+                ])
+
+                # change facet in child, leave parent alone, try again
+                self._pkg([1], "change-facet -v facet.foo=False")
+                self._recursive_pkg("change-facet", "facet.foo=True",
+                    change_facets=[],
+                    child_images=[{
+                        "image_name": "system:img1",
+                        "change_facets": [["facet.foo", True, False, "local",
+                            False, False]],
+                    }
+                ])
+
+                # remove facet in child, leave parent alone, try again
+                self._pkg([1], "change-facet -v facet.foo=None")
+                self._recursive_pkg("change-facet", "facet.foo=True",
+                    change_facets=[],
+                    child_images=[{
+                        "image_name": "system:img1",
+                        "change_facets": [["facet.foo", True, None, "local",
+                            False, False]],
+                    }
+                ])
+
+                # change facet in parent, leave child alone, try again
+                self._pkg([0], "change-facet -v facet.foo=False")
+                self._recursive_pkg("change-facet", "facet.foo=True",
+                    change_facets=[["facet.foo", True, False, "local",
+                        False, False]],
+                )
+
+                # remove facet in parent, leave child alone, try again
+                self._pkg([0], "change-facet -v facet.foo=None")
+                self._recursive_pkg("change-facet", "facet.foo=True",
+                    change_facets=[["facet.foo", True, None, "local",
+                        False, False]],
+                )
+
+                # change facet in parent and child
+                self._recursive_pkg("change-facet", "facet.foo=False",
+                    change_facets=[["facet.foo", False, True, "local",
+                        False, False]],
+                    child_images=[{
+                        "image_name": "system:img1",
+                        "change_facets": [["facet.foo", False, True, "local",
+                            False, False]],
+                    }
+                ])
+
+                # remove facet in parent and child
+                self._recursive_pkg("change-facet", "facet.foo=None",
+                    change_facets=[["facet.foo", None, False, "local",
+                            False, False]],
+                    child_images=[{
+                        "image_name": "system:img1",
+                        "change_facets": [["facet.foo", None, False, "local",
+                            False, False]],
+                    }
+                ])
+
+        def test_image_selection(self):
+                """Test that explicit recursion into only the requested child
+                   images works as expected."""
+
+                # We already tested that all the different operations which
+                # support explicit recursion work in general so we only test
+                # with install to see if the image selection works correctly.
+
+                # create parent (0), push child (1,2,3)
+                self._imgs_create(4)
+                self._attach_child(0, [1,2,3])
+
+                # We are only interested if the correct children are selected
+                # for a certain operation so we make sure that operations on
+                # the parent are always a nop.
+                self._pkg([0], "install %s" % self.foo1_list[0])
+
+                # install into all children
+                self._recursive_pkg("install", self.foo1_list[0],
+                    child_images=[{
+                        "image_name": "system:img1",
+                        "add_packages": [self.foo1_list[0]]
+                    },{
+                        "image_name": "system:img2",
+                        "add_packages": [self.foo1_list[0]]
+                    },{
+                        "image_name": "system:img3",
+                        "add_packages": [self.foo1_list[0]]
+                    }
+                ])
+
+                # install only into img1
+                self._pkg([1,2,3], "uninstall %s" % self.foo1_list[0])
+                self._recursive_pkg("install -z system:img1", self.foo1_list[0],
+                    child_images=[{
+                        "image_name": "system:img1",
+                        "add_packages": [self.foo1_list[0]]
+                    }
+                ])
+
+                # install only into img1 and img3
+                self._pkg([1], "uninstall %s" % self.foo1_list[0])
+                self._recursive_pkg("install -z system:img1 -z system:img3",
+                    self.foo1_list[0],
+                    child_images=[{
+                        "image_name": "system:img1",
+                        "add_packages": [self.foo1_list[0]]
+                    },{
+                        "image_name": "system:img3",
+                        "add_packages": [self.foo1_list[0]]
+                    }
+                ])
+
+                # install into all but img1
+                self._pkg([1,3], "uninstall %s" % self.foo1_list[0])
+                self._recursive_pkg("install -Z system:img1", self.foo1_list[0],
+                    child_images=[{
+                        "image_name": "system:img2",
+                        "add_packages": [self.foo1_list[0]]
+                    },{
+                        "image_name": "system:img3",
+                        "add_packages": [self.foo1_list[0]]
+                    }
+                ])
+
+                # install into all but img1 and img3
+                self._pkg([2,3], "uninstall %s" % self.foo1_list[0])
+                self._recursive_pkg("install -Z system:img1 -Z system:img3",
+                    self.foo1_list[0],
+                    child_images=[{
+                        "image_name": "system:img2",
+                        "add_packages": [self.foo1_list[0]]
+                    }
+                ])
+
+        def test_recursive_sync_install(self):
+                """Test that child images not specified for explicit recursion
+                   are still getting synced when installing."""
+
+                # create parent (0), push child (1,2)
+                self._imgs_create(3)
+                self._attach_child(0, [1, 2])
+
+                # install synced package into each image
+                self._pkg([0, 1, 2], "install -v %s" % self.p_sync1_name[2])
+
+                # install new version of synced pkg in parent and one child
+                # explicitly, second child should get synced too
+                self._recursive_pkg("install -z system:img1",
+                    self.p_sync1_name[1],
+                    change_packages=[[self.s1_list[2], self.s1_list[1]]],
+                    child_images=[{
+                        "image_name": "system:img1",
+                        "change_packages": [[self.s1_list[2], self.s1_list[1]]]
+                    },{
+                        "image_name": "system:img2",
+                        "change_packages": [[self.s1_list[2], self.s1_list[1]]]
+                    }
+                ])
+
+        def test_recursive_sync_update(self):
+                """Test that child images not specified for explicit recursion
+                   are still getting synced when updating."""
+
+                # create parent (0), push child (1,2)
+                self._imgs_create(3)
+                self._attach_child(0, [1, 2])
+
+                # install synced package into each image
+                self._pkg([0, 1, 2], "install -v %s" % self.p_sync1_name[2])
+
+                # install new version of synced pkg in parent and one child
+                # explicitly, second child should get synced too
+                self._recursive_pkg("update -z system:img1", "",
+                    change_packages=[[self.s1_list[2], self.s1_list[0]]],
+                    child_images=[{
+                        "image_name": "system:img1",
+                        "change_packages": [[self.s1_list[2], self.s1_list[0]]]
+                    },{
+                        "image_name": "system:img2",
+                        "change_packages": [[self.s1_list[2], self.s1_list[0]]]
+                    }
+                ])
+
+        def test_recursive_sync_update_pkg(self):
+                """Test that child images not specified for explicit recursion
+                   are still getting synced when updating a particular pkg."""
+
+                # create parent (0), push child (1,2)
+                self._imgs_create(3)
+                self._attach_child(0, [1, 2])
+
+                # install synced package into each image
+                self._pkg([0, 1, 2], "install -v %s" % self.p_sync1_name[2])
+
+                # install new version of synced pkg in parent and one child
+                # explicitly, second child should get synced too
+                self._recursive_pkg("update -z system:img1",
+                    self.p_sync1_name[1],
+                    change_packages=[[self.s1_list[2], self.s1_list[1]]],
+                    child_images=[{
+                        "image_name": "system:img1",
+                        "change_packages": [[self.s1_list[2], self.s1_list[1]]]
+                    },{
+                        "image_name": "system:img2",
+                        "change_packages": [[self.s1_list[2], self.s1_list[1]]]
+                    }
+                ])
+
+        def test_recursive_uninstall_synced_pkg(self):
+                """Test that we can uninstall a synced package from all images
+                   with -r."""
+
+                # create parent (0), push child (1,2)
+                self._imgs_create(3)
+                self._attach_child(0, [1, 2])
+
+                # install synced package into each image
+                self._pkg([0, 1, 2], "install -v %s" % self.p_sync1_name[2])
+
+                # uninstall synced pkg from all images
+                self._recursive_pkg("uninstall", self.p_sync1_name[2],
+                    remove_packages=[self.s1_list[2]],
+                    child_images=[{
+                        "image_name": "system:img1",
+                        "remove_packages": [self.s1_list[2]]
+                    },{
+                        "image_name": "system:img2",
+                        "remove_packages": [self.s1_list[2]]
+                    }
+                ])
+
+        def test_recursive_idr_removal(self):
+                """Test if IDR handling with linked images works as intended."""
+
+                pkgs = (
+                        """
+                            open kernel@1.0,5.11-0.1
+                            add depend type=require fmri=pkg:/incorp
+                            add depend type=parent fmri=%s
+                            close """ % pkg.actions.depend.DEPEND_SELF,
+
+                        """
+                            open kernel@1.0,5.11-0.2
+                            add depend type=require fmri=pkg:/incorp
+                            add depend type=parent fmri=%s
+                            close """ % pkg.actions.depend.DEPEND_SELF,
+
+                        """
+                            open network@1.0,5.11-0.1
+                            add depend type=require fmri=pkg:/incorp
+                            add depend type=parent fmri=%s
+                            close """ % pkg.actions.depend.DEPEND_SELF,
+
+                        """
+                            open network@1.0,5.11-0.2
+                            add depend type=require fmri=pkg:/incorp
+                            add depend type=parent fmri=%s
+                            close """ % pkg.actions.depend.DEPEND_SELF,
+
+                        """
+                            open incorp@1.0,5.11-0.1
+                            add depend type=incorporate fmri=kernel@1.0,5.11-0.1
+                            add depend type=incorporate fmri=network@1.0,5.11-0.1
+                            add depend type=parent fmri=%s
+                            close """ % pkg.actions.depend.DEPEND_SELF,
+
+                         """
+                            open incorp@1.0,5.11-0.2
+                            add depend type=incorporate fmri=kernel@1.0,5.11-0.2
+                            add depend type=incorporate fmri=network@1.0,5.11-0.2
+                            add depend type=parent fmri=%s
+                            close """ % pkg.actions.depend.DEPEND_SELF,
+
+                        """
+                            open kernel@1.0,5.11-0.1.1.0
+                            add depend type=require fmri=pkg:/incorp
+                            add depend type=require fmri=pkg:/idr1
+                            add depend type=parent fmri=%s
+                            close """ % pkg.actions.depend.DEPEND_SELF,
+
+                        """
+                            open kernel@1.0,5.11-0.1.1.1
+                            add depend type=require fmri=pkg:/incorp
+                            add depend type=require fmri=pkg:/idr1
+                            add depend type=parent fmri=%s
+                            close """ % pkg.actions.depend.DEPEND_SELF,
+
+                        """
+                            open kernel@1.0,5.11-0.1.2.0
+                            add depend type=require fmri=pkg:/incorp
+                            add depend type=require fmri=pkg:/idr2
+                            add depend type=parent fmri=%s
+                            close """ % pkg.actions.depend.DEPEND_SELF,
+
+                        """
+                            open network@1.0,5.11-0.1.1.0
+                            add depend type=require fmri=pkg:/incorp
+                            add depend type=require fmri=pkg:/idr1
+                            add depend type=parent fmri=%s
+                            close """ % pkg.actions.depend.DEPEND_SELF,
+
+                        """
+                            open network@1.0,5.11-0.1.1.1
+                            add depend type=require fmri=pkg:/incorp
+                            add depend type=require fmri=pkg:/idr1
+                            add depend type=parent fmri=%s
+                            close """ % pkg.actions.depend.DEPEND_SELF,
+
+                        """
+                            open network@1.0,5.11-0.1.2.0
+                            add depend type=require fmri=pkg:/incorp
+                            add depend type=require fmri=pkg:/idr2
+                            add depend type=parent fmri=%s
+                            close """ % pkg.actions.depend.DEPEND_SELF,
+
+                        """
+                            open idr1@1.0,5.11-0.1.1.0
+                            add depend type=incorporate fmri=kernel@1.0,5.11-0.1.1.0
+                            add depend type=incorporate fmri=network@1.0,5.11-0.1.1.0
+                            add depend type=require fmri=idr1_entitlement
+                            add depend type=parent fmri=%s
+                            close """ % pkg.actions.depend.DEPEND_SELF,
+
+                        """
+                            open idr1@1.0,5.11-0.1.1.1
+                            add depend type=incorporate fmri=kernel@1.0,5.11-0.1.1.1
+                            add depend type=incorporate fmri=network@1.0,5.11-0.1.1.1
+                            add depend type=require fmri=idr1_entitlement
+                            add depend type=parent fmri=%s
+                            close """ % pkg.actions.depend.DEPEND_SELF,
+
+                        """
+                            open idr2@1.0,5.11-0.1.2.0
+                            add depend type=incorporate fmri=kernel@1.0,5.11-0.1.2.0
+                            add depend type=incorporate fmri=network@1.0,5.11-0.1.2.0
+                            add depend type=require fmri=idr2_entitlement
+                            add depend type=parent fmri=%s
+                            close """ % pkg.actions.depend.DEPEND_SELF,
+
+                        """
+                            open idr1_entitlement@1.0,5.11-0
+                            add depend type=exclude fmri=no-idrs
+                            add depend type=parent fmri=%s
+                            close """ % pkg.actions.depend.DEPEND_SELF,
+
+                        """
+                            open idr2_entitlement@1.0,5.11-0
+                            add depend type=exclude fmri=no-idrs
+                            add depend type=parent fmri=%s
+                            close """ % pkg.actions.depend.DEPEND_SELF,
+
+                        # hack to prevent idrs from being installed from repo...
+
+                        """
+                            open no-idrs@1.0,5.11-0
+                            add depend type=parent fmri=%s
+                            close """ % pkg.actions.depend.DEPEND_SELF,
+                )
+
+                # publish additional idr packages
+                self.pkgsend_bulk(self.rurl1, pkgs)
+
+                # create parent (0), push child (1,2)
+                self._imgs_create(3)
+                self._attach_child(0, [1, 2])
+
+                # install kernel pkg; remember version so we can reinstall it
+                # later
+                self._pkg([0, 1, 2], "install -v no-idrs")
+                # install kernel package into all images
+                self._pkg([0, 1 ,2], "install -v kernel@1.0,5.11-0.1")
+                self._pkg([0], "list -Hv kernel@1.0,5.11-0.1 | "
+                    "/usr/bin/awk '{print $1}'")
+                kernel_fmri = self.output.strip()
+                # install network package only in parent and one child
+                self._pkg([0, 1], "install -v network@1.0,5.11-0.1")
+                self._pkg([0], "list -Hv network@1.0,5.11-0.1 | "
+                    "/usr/bin/awk '{print $1}'")
+                network_fmri = self.output.strip()
+                self._pkg([2], "list network", rv=EXIT_OOPS)
+
+                # upgrade to next version w/o encountering idrs, children should
+                # be updated automatically.
+                self._pkg([0], "update -v");
+                self._pkg([0, 1, 2], "list kernel@1.0,5.11-0.2")
+                self._pkg([0, 1], "list network@1.0,5.11-0.2")
+                self._pkg([2], "list network", rv=EXIT_OOPS)
+
+                # try installing idr1; testing wild card support and -z as well
+                self._pkg([0], "uninstall -r no-idrs")
+                self._pkg([0], "install -r "
+                    "--reject 'k*' --reject 'i*' --reject network no-idrs")
+                self._pkg([0], "install -r -v kernel@1.0,5.11-0.1")
+                self._pkg([0], "install -v -r -z system:img1 "
+                    "network@1.0,5.11-0.1")
+
+                self._pkg([0], "install -r -v --reject no-idrs "
+                    "idr1_entitlement")
+                self._pkg([0], "install -r -v idr1@1.0,5.11-0.1.1.0")
+                self._pkg([0], "update -r -v --reject idr2")
+                self._pkg([0, 1, 2], "list idr1@1.0,5.11-0.1.1.1")
+
+                # switch to idr2, which affects same package
+                self._pkg([0], "install -r -v --reject idr1 --reject 'idr1_*' "
+                    "idr2 idr2_entitlement")
+
+                # switch back to base version of kernel and network
+                self._pkg([0], "update -v -r "
+                    "--reject idr2 --reject 'idr2_*' %s %s" % (kernel_fmri,
+                    network_fmri))
+
+                # reinstall idr1, then update to version 2 of base kernel
+                self._pkg([0], "install -r -v "
+                    "idr1@1.0,5.11-0.1.1.0 idr1_entitlement")
+                self._pkg([0, 1, 2], "list kernel@1.0,5.11-0.1.1.0")
+                self._pkg([0, 1], "list network@1.0,5.11-0.1.1.0")
+                self._pkg([2], "list network", rv=EXIT_OOPS)
+        
+                # Wildcards are purposefully used here for both patterns to
+                # ensure pattern matching works as expected for update.
+                self._pkg([0], "update -r -v "
+                    "--reject 'idr1*' '*incorp@1.0-0.2'")
+                self._pkg([0, 1, 2], "list kernel@1.0,5.11-0.2")
+                self._pkg([0, 1], "list network@1.0,5.11-0.2")
+                self._pkg([2], "list network", rv=EXIT_OOPS)
 
 
 class TestFacetInheritance(TestPkgLinked):

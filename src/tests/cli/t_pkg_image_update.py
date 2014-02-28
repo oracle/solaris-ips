@@ -295,6 +295,13 @@ class TestImageUpdate(pkg5unittest.ManyDepotTestCase):
                         self.pkg("change-facet %s=False" % facet)
                         self.pkg("update -nv", exit=EXIT_NOP)
 
+        def test_ignore_missing(self):
+                """Test that update shows correct behavior w/ and w/o
+                   --ignore-missing."""
+                self.image_create(self.rurl1)
+                self.pkg("update missing", exit=1)
+                self.pkg("update --ignore-missing missing", exit=4)
+
 
 class TestPkgUpdateOverlappingPatterns(pkg5unittest.SingleDepotTestCase):
 

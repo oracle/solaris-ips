@@ -1,3 +1,23 @@
+Version 78:
+Compatible with clients using versions 72-77.
+
+    pkg.client.api.ImageInterface has changed as follows:
+
+        * Added 'li_recurse' parameter to
+            - gen_plan_update()
+            - gen_plan_uninstall()
+            - gen_plan_install()
+            - gen_plan_change_varcets()
+
+          These allow to run the above operations recursively in linked images.
+
+        * Added 'ignore_missing' parameter to
+             - gen_plan_uninstall()
+             - gen_plan_update()
+
+          This changes the behavior of uninstall and update to not fail if a
+          package for the requested operation is not found.
+
 Version 77:
 Compatible with clients using versions 72-76.
 

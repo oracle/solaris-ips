@@ -160,19 +160,22 @@ def usage(usage_error=None, cmd=None, retcode=EXIT_BADOPT, full=False):
             "            [--licenses] [--no-be-activate] [--no-index] [--no-refresh]\n"
             "            [--no-backup-be | --require-backup-be] [--backup-be-name name]\n"
             "            [--deny-new-be | --require-new-be] [--be-name name]\n"
+            "            [-r [-z image_name ... | -Z image_name ...]]\n"
             "            [--sync-actuators | --sync-actuators-timeout timeout]\n"
             "            [--reject pkg_fmri_pattern ... ] pkg_fmri_pattern ...")
         basic_usage["uninstall"] = _(
-            "[-nvq] [-C n] [--no-be-activate] [--no-index]\n"
+            "[-nvq] [-C n] [--ignore-missing] [--no-be-activate] [--no-index]\n"
             "            [--no-backup-be | --require-backup-be] [--backup-be-name]\n"
             "            [--deny-new-be | --require-new-be] [--be-name name]\n"
+            "            [-r [-z image_name ... | -Z image_name ...]]\n"
             "            [--sync-actuators | --sync-actuators-timeout timeout]\n"
             "            pkg_fmri_pattern ...")
         basic_usage["update"] = _(
-            "[-fnvq] [-C n] [-g path_or_uri ...] [--accept]\n"
+            "[-fnvq] [-C n] [-g path_or_uri ...] [--accept] [--ignore-missing]\n"
             "            [--licenses] [--no-be-activate] [--no-index] [--no-refresh]\n"
             "            [--no-backup-be | --require-backup-be] [--backup-be-name]\n"
             "            [--deny-new-be | --require-new-be] [--be-name name]\n"
+            "            [-r [-z image_name ... | -Z image_name ...]]\n"
             "            [--sync-actuators | --sync-actuators-timeout timeout]\n"
             "            [--reject pkg_fmri_pattern ...] [pkg_fmri_pattern ...]")
         basic_usage["list"] = _(
@@ -253,6 +256,7 @@ def usage(usage_error=None, cmd=None, retcode=EXIT_BADOPT, full=False):
             "            [--licenses] [--no-be-activate] [--no-index] [--no-refresh]\n"
             "            [--no-backup-be | --require-backup-be] [--backup-be-name name]\n"
             "            [--deny-new-be | --require-new-be] [--be-name name]\n"
+            "            [-r [-z image_name ... | -Z image_name ...]]\n"
             "            [--sync-actuators | --sync-actuators-timeout timeout]\n"
             "            [--reject pkg_fmri_pattern ... ]\n"
             "            <variant_spec>=<instance> ...")
@@ -262,6 +266,7 @@ def usage(usage_error=None, cmd=None, retcode=EXIT_BADOPT, full=False):
             "            [--licenses] [--no-be-activate] [--no-index] [--no-refresh]\n"
             "            [--no-backup-be | --require-backup-be] [--backup-be-name name]\n"
             "            [--deny-new-be | --require-new-be] [--be-name name]\n"
+            "            [-r [-z image_name ... | -Z image_name ...]]\n"
             "            [--sync-actuators | --sync-actuators-timeout timeout]\n"
             "            [--reject pkg_fmri_pattern ... ]\n"
             "            <facet_spec>=[True|False|None] ...")
@@ -631,8 +636,8 @@ def list_inventory(op, api_inst, pargs,
                             ", ".join(e.notfound), cmd=op)
                         logger.error("Use -af to allow all versions.")
                 elif pkg_list == api.ImageInterface.LIST_UPGRADABLE:
-			# Creating a list of packages that are uptodate
-			# and that are not installed on the system.
+                        # Creating a list of packages that are uptodate
+                        # and that are not installed on the system.
                         no_updates = []
                         not_installed = []
                         try:
@@ -666,7 +671,7 @@ def list_inventory(op, api_inst, pargs,
                                 error(err_str, cmd=op)
                 else:
                         error(_("No packages matching '%s' installed") % \
-                            ", ".join(e.notfound), cmd=op) 
+                            ", ".join(e.notfound), cmd=op)
 
                 if found and e.notfound:
                         # Only some patterns matched.
@@ -1368,7 +1373,8 @@ def display_plan(api_inst, child_image_plans, noexecute, op, parsable_version,
                 display_plan_licenses(api_inst, show_req=False)
                 return
 
-        if api_inst.planned_nothingtodo(li_ignore_all=True):
+        if parsable_version is None and \
+            api_inst.planned_nothingtodo(li_ignore_all=True):
                 # nothing todo
                 if op == PKG_OP_UPDATE:
                         s = _("No updates available for this image.")
@@ -1893,6 +1899,10 @@ class RemoteDispatch(object):
                     PKG_OP_PUBCHECK,
                     PKG_OP_SYNC,
                     PKG_OP_UPDATE,
+                    PKG_OP_INSTALL,
+                    PKG_OP_CHANGE_FACET,
+                    PKG_OP_CHANGE_VARIANT,
+                    PKG_OP_UNINSTALL
                 ]
                 if op not in op_supported:
                         raise Exception(
@@ -1908,8 +1918,12 @@ class RemoteDispatch(object):
                 if stage in [API_STAGE_DEFAULT, API_STAGE_PLAN]:
                         _api_inst.reset()
 
+                if "pargs" not in pwargs:
+                       pwargs["pargs"] = []
+
                 op_func = cmds[op][0]
-                rv = op_func(op, _api_inst, pargs, **pwargs)
+
+                rv = op_func(op, _api_inst, **pwargs)
 
                 if DebugValues["timings"]:
                         msg(str(pkg_timer))
@@ -1960,10 +1974,10 @@ def remote(op, api_inst, pargs, ctlfd):
         rpc_server.serve_forever()
 
 def change_variant(op, api_inst, pargs,
-    accept, backup_be, backup_be_name, be_activate, be_name, li_ignore,
-    li_parent_sync, new_be, noexecute, origins, parsable_version, quiet,
-    refresh_catalogs, reject_pats, show_licenses, update_index, verbose,
-    act_timeout):
+    accept, act_timeout, backup_be, backup_be_name, be_activate, be_name,
+    li_ignore, li_parent_sync, li_erecurse, new_be, noexecute, origins,
+    parsable_version, quiet, refresh_catalogs, reject_pats, show_licenses,
+    stage, update_index, verbose):
         """Attempt to change a variant associated with an image, updating
         the image contents as necessary."""
 
@@ -1995,19 +2009,19 @@ def change_variant(op, api_inst, pargs,
         return __api_op(op, api_inst, _accept=accept, _li_ignore=li_ignore,
             _noexecute=noexecute, _origins=origins,
             _parsable_version=parsable_version, _quiet=quiet,
-            _show_licenses=show_licenses, _verbose=verbose,
-            backup_be=backup_be, backup_be_name=backup_be_name,
-            be_activate=be_activate, be_name=be_name,
+            _show_licenses=show_licenses, _stage=stage, _verbose=verbose,
+            act_timeout=act_timeout, backup_be=backup_be,
+            backup_be_name=backup_be_name, be_activate=be_activate,
+            be_name=be_name, li_erecurse=li_erecurse,
             li_parent_sync=li_parent_sync, new_be=new_be,
             refresh_catalogs=refresh_catalogs, reject_list=reject_pats,
-            update_index=update_index, variants=variants,
-            act_timeout=act_timeout)
+            update_index=update_index, variants=variants)
 
 def change_facet(op, api_inst, pargs,
-    accept, backup_be, backup_be_name, be_activate, be_name, li_ignore,
-    li_parent_sync, new_be, noexecute, origins, parsable_version, quiet,
-    refresh_catalogs, reject_pats, show_licenses, update_index, verbose,
-    act_timeout):
+    accept, act_timeout, backup_be, backup_be_name, be_activate, be_name,
+    li_ignore, li_erecurse, li_parent_sync, new_be, noexecute, origins,
+    parsable_version, quiet, refresh_catalogs, reject_pats, show_licenses,
+    stage, update_index, verbose):
         """Attempt to change the facets as specified, updating
         image as necessary"""
 
@@ -2018,8 +2032,7 @@ def change_facet(op, api_inst, pargs,
         if not pargs:
                 usage(_("%s: no facets specified") % op)
 
-        # XXX facets should be accessible through pkg.client.api
-        facets = img.get_facets()
+        facets = {}
         allowed_values = {
             "TRUE" : True,
             "FALSE": False,
@@ -2042,29 +2055,24 @@ def change_facet(op, api_inst, pargs,
                         usage(_("%s: facets must to be of the form "
                             "'facet....=[True|False|None]'.") % op)
 
-                v = allowed_values[value.upper()]
-
-                if v is None:
-                        facets.pop(name, None)
-                else:
-                        facets[name] = v
+                facets[name] = allowed_values[value.upper()]
 
         return __api_op(op, api_inst, _accept=accept, _li_ignore=li_ignore,
             _noexecute=noexecute, _origins=origins,
             _parsable_version=parsable_version, _quiet=quiet,
-            _show_licenses=show_licenses, _verbose=verbose,
-            backup_be=backup_be, backup_be_name=backup_be_name,
-            be_activate=be_activate, be_name=be_name,
-            li_parent_sync=li_parent_sync, new_be=new_be, facets=facets,
+            _show_licenses=show_licenses, _stage=stage, _verbose=verbose,
+            act_timeout=act_timeout, backup_be=backup_be,
+            backup_be_name=backup_be_name, be_activate=be_activate,
+            be_name=be_name, facets=facets, li_erecurse=li_erecurse,
+            li_parent_sync=li_parent_sync, new_be=new_be,
             refresh_catalogs=refresh_catalogs, reject_list=reject_pats,
-            update_index=update_index, act_timeout=act_timeout)
+            update_index=update_index)
 
 def install(op, api_inst, pargs,
-    accept, backup_be, backup_be_name, be_activate, be_name, li_ignore,
-    li_parent_sync, new_be, noexecute, origins, parsable_version, quiet,
-    refresh_catalogs, reject_pats, show_licenses, update_index, verbose,
-    act_timeout):
-
+    accept, act_timeout, backup_be, backup_be_name, be_activate, be_name,
+    li_ignore, li_erecurse, li_parent_sync, new_be, noexecute, origins,
+    parsable_version, quiet, refresh_catalogs, reject_pats, show_licenses,
+    stage, update_index, verbose):
         """Attempt to take package specified to INSTALLED state.  The operands
         are interpreted as glob patterns."""
 
@@ -2080,19 +2088,20 @@ def install(op, api_inst, pargs,
                 return EXIT_OOPS
 
         return __api_op(op, api_inst, _accept=accept, _li_ignore=li_ignore,
-            _noexecute=noexecute, _origins=origins, _quiet=quiet,
-            _show_licenses=show_licenses, _verbose=verbose,
-            backup_be=backup_be, backup_be_name=backup_be_name,
-            be_activate=be_activate, be_name=be_name,
-            li_parent_sync=li_parent_sync, new_be=new_be,
-            _parsable_version=parsable_version, pkgs_inst=pargs,
+            _noexecute=noexecute, _origins=origins,
+            _parsable_version=parsable_version, _quiet=quiet,
+            _show_licenses=show_licenses, _stage=stage, _verbose=verbose,
+            act_timeout=act_timeout, backup_be=backup_be,
+            backup_be_name=backup_be_name, be_activate=be_activate,
+            be_name=be_name, li_erecurse=li_erecurse,
+            li_parent_sync=li_parent_sync, new_be=new_be, pkgs_inst=pargs,
             refresh_catalogs=refresh_catalogs, reject_list=reject_pats,
-            update_index=update_index, act_timeout=act_timeout)
+            update_index=update_index)
 
 def uninstall(op, api_inst, pargs,
-    be_activate, backup_be, backup_be_name, be_name, new_be, li_ignore,
-    li_parent_sync, update_index, noexecute, parsable_version, quiet,
-    verbose, stage, act_timeout):
+    act_timeout, backup_be, backup_be_name, be_activate, be_name,
+    ignore_missing, li_ignore, li_erecurse, li_parent_sync, new_be, noexecute,
+    parsable_version, quiet, stage, update_index, verbose):
         """Attempt to take package specified to DELETED state."""
 
         if not pargs:
@@ -2106,17 +2115,18 @@ def uninstall(op, api_inst, pargs,
                 return EXIT_OOPS
 
         return __api_op(op, api_inst, _li_ignore=li_ignore,
-            _noexecute=noexecute, _quiet=quiet, _stage=stage,
-            _verbose=verbose, backup_be=backup_be,
+            _noexecute=noexecute, _parsable_version=parsable_version,
+            _quiet=quiet, _stage=stage, _verbose=verbose,
+            act_timeout=act_timeout, backup_be=backup_be,
             backup_be_name=backup_be_name, be_activate=be_activate,
-            be_name=be_name, li_parent_sync=li_parent_sync, new_be=new_be,
-            _parsable_version=parsable_version, pkgs_to_uninstall=pargs,
-            update_index=update_index, act_timeout=act_timeout)
+            be_name=be_name, ignore_missing=ignore_missing,
+            li_erecurse=li_erecurse, li_parent_sync=li_parent_sync,
+            new_be=new_be, pkgs_to_uninstall=pargs, update_index=update_index)
 
-def update(op, api_inst, pargs, accept, backup_be, backup_be_name, be_activate,
-    be_name, force, li_ignore, li_parent_sync, new_be, noexecute, origins,
-    parsable_version, quiet, refresh_catalogs, reject_pats, show_licenses,
-    stage, update_index, verbose, act_timeout):
+def update(op, api_inst, pargs, accept, act_timeout, backup_be, backup_be_name,
+    be_activate, be_name, force, ignore_missing, li_ignore, li_erecurse,
+    li_parent_sync, new_be, noexecute, origins, parsable_version, quiet,
+    refresh_catalogs, reject_pats, show_licenses, stage, update_index, verbose):
         """Attempt to take all installed packages specified to latest
         version."""
 
@@ -2146,12 +2156,13 @@ def update(op, api_inst, pargs, accept, backup_be, backup_be_name, be_activate,
             _parsable_version=parsable_version, _quiet=quiet,
             _review_release_notes=review_release_notes,
             _show_licenses=show_licenses, _stage=stage, _verbose=verbose,
-            backup_be=backup_be, backup_be_name=backup_be_name,
-            be_activate=be_activate, be_name=be_name, force=force,
-            li_parent_sync=li_parent_sync, new_be=new_be,
-            pkgs_update=pkgs_update, refresh_catalogs=refresh_catalogs,
-            reject_list=reject_pats, update_index=update_index,
-            act_timeout=act_timeout)
+            act_timeout=act_timeout, backup_be=backup_be,
+            backup_be_name=backup_be_name, be_activate=be_activate,
+            be_name=be_name, force=force, ignore_missing=ignore_missing,
+            li_erecurse=li_erecurse, li_parent_sync=li_parent_sync,
+            new_be=new_be, pkgs_update=pkgs_update,
+            refresh_catalogs=refresh_catalogs, reject_list=reject_pats,
+            update_index=update_index)
 
 def revert(op, api_inst, pargs,
     backup_be, backup_be_name, be_activate, be_name, new_be, noexecute,
@@ -5884,6 +5895,8 @@ opts_mapping = {
 
     "force" :             ("f", ""),
 
+    "ignore_missing" :    ("", "ignore-missing"),
+
     "li_ignore_all" :     ("I", ""),
     "li_ignore_list" :    ("i", ""),
     "li_md_only" :        ("",  "linked-md-only"),
@@ -5897,7 +5910,20 @@ opts_mapping = {
     "li_target_all" :     ("a", ""),
     "li_target_list" :    ("l", ""),
 
-    "li_name" :           ("l",  ""),
+    "li_name" :           ("l", ""),
+
+    # These options are used for explicit recursion into linked children.
+    # li_erecurse_all enables explicit recursion into all children if neither
+    # li_erecurse_list nor li_erecurse_excl is set. If any children are
+    # specified in li_erecurse_list, only recurse into those. If any children
+    # are specified in li_erecurse_excl, recurse into all children except for
+    # those.
+    # Explicit recursion means we run the same operation in the child as we run
+    # in the parent. Children we do not explicitely recurse into are still
+    # getting synced.
+    "li_erecurse_all" :    ("r", "recurse"),
+    "li_erecurse_list" :   ("z", ""),
+    "li_erecurse_excl" :   ("Z", ""),
 
     "accept" :            ("",  "accept"),
     "show_licenses" :     ("",  "licenses"),

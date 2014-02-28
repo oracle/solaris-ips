@@ -155,6 +155,14 @@ class TestCommandLine(pkg5unittest.ManyDepotTestCase):
                 os.system("umount %s " % lofs_dir)
                 os.rmdir(lofs_dir)
                 os.rmdir(tmp_dir)
-               
+
+        def test_ignore_missing(self):
+                """Test that uninstall shows correct behavior w/ and w/o
+                   --ignore-missing."""
+                self.image_create(self.rurl1)
+                self.pkg("uninstall missing", exit=1)
+                self.pkg("uninstall --ignore-missing missing", exit=4)
+
+
 if __name__ == "__main__":
         unittest.main()

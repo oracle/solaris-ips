@@ -103,8 +103,9 @@ from pkg.smf import NonzeroExitException
 # things like help(pkg.client.api.PlanDescription)
 from pkg.client.plandesc import PlanDescription # pylint: disable=W0611
 
-CURRENT_API_VERSION = 77
-COMPATIBLE_API_VERSIONS = frozenset([72, 73, 74, 75, 76, CURRENT_API_VERSION])
+CURRENT_API_VERSION = 78
+COMPATIBLE_API_VERSIONS = frozenset([72, 73, 74, 75, 76, 77,
+    CURRENT_API_VERSION])
 CURRENT_P5I_VERSION = 1
 
 # Image type constants.
@@ -1170,27 +1171,30 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
 
                 arg_types = {
                     # arg name              type                   nullable
-                    "_noexecute":           (bool,                 False),
+                    "_act_timeout":         (int,                  False),
                     "_be_activate":         (bool,                 False),
-                    "_new_be":              (bool,                 True),
                     "_be_name":             (basestring,           True),
                     "_backup_be":           (bool,                 True),
                     "_backup_be_name":      (basestring,           True),
+                    "_ignore_missing":      (bool,                 False),
+                    "_ipkg_require_latest": (bool,                 False),
+                    "_li_erecurse":         (iter,                 True),
+                    "_li_ignore":           (iter,                 True),
+                    "_li_md_only":          (bool,                 False),
+                    "_li_parent_sync":      (bool,                 False),      
+                    "_new_be":              (bool,                 True),
+                    "_noexecute":           (bool,                 False),
                     "_pubcheck":            (bool,                 False),
                     "_refresh_catalogs":    (bool,                 False),
                     "_repos":               (iter,                 True),
                     "_update_index":        (bool,                 False),
-                    "_li_ignore":           (iter,                 True),
-                    "_li_parent_sync":      (bool,                 False),
-                    "_li_md_only":          (bool,                 False),
-                    "_ipkg_require_latest": (bool,                 False),
-                    "pkgs_inst":            (iter,                 True),
-                    "pkgs_update":          (iter,                 True),
-                    "pkgs_to_uninstall":    (iter,                 True),
-                    "reject_list":          (iter,                 True),
+                    "facets":               (dict,                 True),
                     "mediators":            (iter,                 True),
+                    "pkgs_inst":            (iter,                 True),
+                    "pkgs_to_uninstall":    (iter,                 True),
+                    "pkgs_update":          (iter,                 True),
+                    "reject_list":          (iter,                 True),
                     "variants":             (dict,                 True),
-                    "facets":               (pkg.facet.Facets,     True)
                 }
 
                 # merge kwargs into the main arg dict
@@ -1281,12 +1285,12 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                 if illegals:
                         raise apx.UnsupportedRepositoryURI(illegals)
 
-        def __plan_op(self, _op, _ad_kwargs=None,
+        def __plan_op(self, _op, _act_timeout=0, _ad_kwargs=None,
             _backup_be=None, _backup_be_name=None, _be_activate=True,
             _be_name=None, _ipkg_require_latest=False, _li_ignore=None,
-            _li_md_only=False, _li_parent_sync=True, _new_be=False,
-            _noexecute=False, _pubcheck=True, _refresh_catalogs=True,
-            _repos=None, _update_index=True, _act_timeout=0, **kwargs):
+            _li_erecurse=None, _li_md_only=False, _li_parent_sync=True,
+            _new_be=False, _noexecute=False, _pubcheck=True,
+            _refresh_catalogs=True, _repos=None, _update_index=True, **kwargs):
                 """Contructs a plan to change the package or linked image
                 state of an image.
 
@@ -1441,8 +1445,9 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                         # either a dictionary representing the parsable output
                         # from the child image operation, or None.  Eventually
                         # these will yield plan descriptions objects instead.
+
                         for p_dict in self._img.linked.api_recurse_plan(
-                            api_kwargs=kwargs,
+                            api_kwargs=kwargs, erecurse_list=_li_erecurse,
                             refresh_catalogs=_refresh_catalogs,
                             update_index=_update_index,
                             progtrack=self.__progresstracker):
@@ -1621,12 +1626,12 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                         continue
                 return (not self.planned_nothingtodo(), self.solaris_image())
 
-        def gen_plan_update(self, pkgs_update=None, backup_be=None,
-            backup_be_name=None, be_activate=True, be_name=None,
-            force=False, li_ignore=None, li_parent_sync=True, new_be=True,
-            noexecute=False, pubcheck=True, refresh_catalogs=True,
-            reject_list=misc.EmptyI, repos=None, update_index=True,
-            act_timeout=0):
+        def gen_plan_update(self, pkgs_update=None, act_timeout=0,
+            backup_be=None, backup_be_name=None, be_activate=True, be_name=None,
+            force=False, ignore_missing=False, li_ignore=None,
+            li_parent_sync=True, li_erecurse=None, new_be=True, noexecute=False,
+            pubcheck=True, refresh_catalogs=True, reject_list=misc.EmptyI,
+            repos=None, update_index=True):
 
                 """This is a generator function that yields a PlanDescription
                 object.  If parsable_version is set, it also yields dictionaries
@@ -1650,6 +1655,9 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                 'force' indicates whether update should skip the package
                 system up to date check.
 
+                'ignore_missing' indicates whether update should ignore packages
+                which are not installed.
+
                 'pubcheck' indicates that we should skip the child image
                 publisher check before creating a plan for this image.  only
                 pkg.1 should use this parameter, other callers should never
@@ -1665,14 +1673,16 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
 
                 op = API_OP_UPDATE
                 return self.__plan_op(op,
-                    _backup_be=backup_be, _backup_be_name=backup_be_name,
-                    _be_activate=be_activate, _be_name=be_name,
-                    _ipkg_require_latest=ipkg_require_latest,
+                    _act_timeout=act_timeout, _backup_be=backup_be,
+                    _backup_be_name=backup_be_name, _be_activate=be_activate,
+                    _be_name=be_name, _ipkg_require_latest=ipkg_require_latest,
                     _li_ignore=li_ignore, _li_parent_sync=li_parent_sync,
-                    _new_be=new_be, _noexecute=noexecute, _pubcheck=pubcheck,
+                    _li_erecurse=li_erecurse, _new_be=new_be,
+                    _noexecute=noexecute, _pubcheck=pubcheck,
                     _refresh_catalogs=refresh_catalogs, _repos=repos,
-                    _update_index=update_index, pkgs_update=pkgs_update,
-                    reject_list=reject_list, _act_timeout=act_timeout)
+                    _update_index=update_index, ignore_missing=ignore_missing,
+                    pkgs_update=pkgs_update, reject_list=reject_list,
+                    )
 
         def plan_install(self, pkg_list, refresh_catalogs=True,
             noexecute=False, update_index=True, be_name=None,
@@ -1687,11 +1697,11 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                         continue
                 return not self.planned_nothingtodo()
 
-        def gen_plan_install(self, pkgs_inst, backup_be=None,
-            backup_be_name=None, be_activate=True, be_name=None, li_ignore=None,
-            li_parent_sync=True, new_be=False, noexecute=False,
-            refresh_catalogs=True, reject_list=misc.EmptyI, repos=None,
-            update_index=True, act_timeout=0):
+        def gen_plan_install(self, pkgs_inst, act_timeout=0, backup_be=None,
+            backup_be_name=None, be_activate=True, be_name=None,
+            li_erecurse=None, li_ignore=None, li_parent_sync=True, new_be=False,
+            noexecute=False, pubcheck=True, refresh_catalogs=True,
+            reject_list=misc.EmptyI, repos=None, update_index=True):
                 """This is a generator function that yields a PlanDescription
                 object.  If parsable_version is set, it also yields dictionaries
                 containing plan information for child images.
@@ -1705,7 +1715,9 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                 Callers should pass all arguments by name assignment and
                 not by positional order.
 
-                'pkgs_inst' is a list of packages to install.
+                'act_timeout' sets the timeout for synchronous actuators in
+                seconds, -1 is no timeout, 0 is for using asynchronous
+                actuators.
 
                 'backup_be' indicates whether a backup boot environment should
                 be created before the operation is executed.  If True, a backup
@@ -1718,8 +1730,19 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                 'backup_be_name' is a string to use as the name of any backup
                 boot environment created during the operation.
 
+                'be_activate' is an optional boolean indicating whether any
+                new boot environment created for the operation should be set
+                as the active one on next boot if the operation is successful.
+
                 'be_name' is a string to use as the name of any new boot
                 environment created during the operation.
+
+                'li_erecurse' is either None or a list. If it's None (the
+                default), the planning operation will not explicitly recurse
+                into linked children to perform the requested operation. If this
+                is a list of linked image children names, the requested
+                operation will be performed in each of the specified
+                children.
 
                 'li_ignore' is either None or a list.  If it's None (the
                 default), the planning operation will attempt to keep all
@@ -1744,6 +1767,8 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                 executed and whether history will be recorded after
                 planning is finished.
 
+                'pkgs_inst' is a list of packages to install.
+
                 'refresh_catalogs' controls whether the catalogs will
                 automatically be refreshed.
 
@@ -1756,30 +1781,23 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                 use during the planned operation.  All API functions called
                 while a plan is still active will use this package data.
 
-                'be_activate' is an optional boolean indicating whether any
-                new boot environment created for the operation should be set
-                as the active one on next boot if the operation is successful.
-
                 'update_index' determines whether client search indexes
                 will be updated after operation completion during plan
-                execution.
-
-                'act_timeout' sets the timeout for synchronous actuators in
-                seconds, -1 is no timeout, 0 is for using asynchronous
-                actuators."""
+                execution."""
 
                 # certain parameters must be specified
                 assert pkgs_inst and type(pkgs_inst) == list
 
                 op = API_OP_INSTALL
-                return self.__plan_op(op,
+                return self.__plan_op(op, _act_timeout=act_timeout,
                     _backup_be=backup_be, _backup_be_name=backup_be_name,
                     _be_activate=be_activate, _be_name=be_name,
-                    _li_ignore=li_ignore, _li_parent_sync=li_parent_sync,
-                    _new_be=new_be, _noexecute=noexecute,
+                    _li_erecurse=li_erecurse, _li_ignore=li_ignore,
+                    _li_parent_sync=li_parent_sync, _new_be=new_be,
+                    _noexecute=noexecute, _pubcheck=pubcheck,
                     _refresh_catalogs=refresh_catalogs, _repos=repos,
                     _update_index=update_index, pkgs_inst=pkgs_inst,
-                    reject_list=reject_list, _act_timeout=act_timeout)
+                    reject_list=reject_list, )
 
         def gen_plan_sync(self, backup_be=None, backup_be_name=None,
             be_activate=True, be_name=None, li_ignore=None, li_md_only=False,
@@ -1927,10 +1945,11 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                         continue
                 return not self.planned_nothingtodo()
 
-        def gen_plan_uninstall(self, pkgs_to_uninstall,
+        def gen_plan_uninstall(self, pkgs_to_uninstall, act_timeout=0,
             backup_be=None, backup_be_name=None, be_activate=True,
-            be_name=None, li_ignore=None, li_parent_sync=True, new_be=False,
-            noexecute=False, update_index=True, act_timeout=0):
+            be_name=None, ignore_missing=False, li_ignore=None,
+            li_parent_sync=True, li_erecurse=None, new_be=False, noexecute=False,
+            pubcheck=True, update_index=True):
                 """This is a generator function that yields a PlanDescription
                 object.  If parsable_version is set, it also yields dictionaries
                 containing plan information for child images.
@@ -1944,6 +1963,9 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                 Callers should pass all arguments by name assignment and
                 not by positional order.
 
+                'ignore_missing' indicates whether uninstall should ignore
+                packages which are not installed.
+
                 'pkgs_to_uninstall' is a list of packages to uninstall.
 
                 For all other parameters, refer to the 'gen_plan_install'
@@ -1953,15 +1975,15 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                 assert pkgs_to_uninstall and type(pkgs_to_uninstall) == list
 
                 op = API_OP_UNINSTALL
-                return self.__plan_op(op,
+                return self.__plan_op(op, _act_timeout=act_timeout,
                     _backup_be=backup_be, _backup_be_name=backup_be_name,
                     _be_activate=be_activate, _be_name=be_name,
-                    _li_ignore=li_ignore, _li_parent_sync=li_parent_sync,
-                    _new_be=new_be, _noexecute=noexecute,
-                    _refresh_catalogs=False,
-                    _update_index=update_index,
-                    pkgs_to_uninstall=pkgs_to_uninstall,
-                    _act_timeout=act_timeout)
+                    _li_erecurse=li_erecurse, _li_ignore=li_ignore,
+                    _li_parent_sync=li_parent_sync, _new_be=new_be,
+                    _noexecute=noexecute, _pubcheck=pubcheck,
+                    _refresh_catalogs=False, _update_index=update_index,
+                    ignore_missing=ignore_missing,
+                    pkgs_to_uninstall=pkgs_to_uninstall)
 
         def gen_plan_set_mediators(self, mediators, backup_be=None,
             backup_be_name=None, be_activate=True, be_name=None, li_ignore=None,
@@ -2024,10 +2046,11 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                 return not self.planned_nothingtodo()
 
         def gen_plan_change_varcets(self, facets=None, variants=None,
-            backup_be=None, backup_be_name=None, be_activate=True, be_name=None,
-            li_ignore=None, li_parent_sync=True, new_be=None, noexecute=False,
+            act_timeout=0, backup_be=None, backup_be_name=None,
+            be_activate=True, be_name=None, li_erecurse=None, li_ignore=None,
+            li_parent_sync=True, new_be=None, noexecute=False, pubcheck=True,
             refresh_catalogs=True, reject_list=misc.EmptyI, repos=None,
-            update_index=True, act_timeout=0):
+            update_index=True):
                 """This is a generator function that yields a PlanDescription
                 object.  If parsable_version is set, it also yields dictionaries
                 containing plan information for child images.
@@ -2058,14 +2081,15 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                 else:
                         op = API_OP_CHANGE_FACET
 
-                return self.__plan_op(op, _backup_be=backup_be,
-                    _backup_be_name=backup_be_name, _be_activate=be_activate,
-                    _be_name=be_name, _li_ignore=li_ignore,
+                return self.__plan_op(op, _act_timeout=act_timeout,
+                    _backup_be=backup_be, _backup_be_name=backup_be_name,
+                    _be_activate=be_activate, _be_name=be_name,
+                    _li_erecurse=li_erecurse, _li_ignore=li_ignore,
                     _li_parent_sync=li_parent_sync, _new_be=new_be,
-                    _noexecute=noexecute, _refresh_catalogs=refresh_catalogs,
-                    _repos=repos, _update_index=update_index, variants=variants,
-                    facets=facets, reject_list=reject_list,
-                    _act_timeout=act_timeout)
+                    _noexecute=noexecute, _pubcheck=pubcheck,
+                    _refresh_catalogs=refresh_catalogs, _repos=repos,
+                    _update_index=update_index, facets=facets,
+                    variants=variants, reject_list=reject_list)
 
         def plan_revert(self, args, tagged=False, noexecute=True, be_name=None,
             new_be=None, be_activate=True):
@@ -5108,7 +5132,7 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                 # Successful; so save configuration.
                 self._img.save_config()
 
-        def log_operation_end(self, error=None, result=None, 
+        def log_operation_end(self, error=None, result=None,
             release_notes=None):
                 """Marks the end of an operation to be recorded in image
                 history.

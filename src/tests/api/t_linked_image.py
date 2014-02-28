@@ -1005,50 +1005,6 @@ packages known:
                 for c in [1, 2, 3, 4]:
                         self._api_detach(api_objs[c])
 
-        def test_update_recursion(self):
-                """Verify that update is recursive, but update with arguments
-                is not."""
-
-                api_objs = self._imgs_create(2)
-
-                # install packages that don't need to be synced.
-                self._api_install(api_objs[0], [self.p_foo1_name[2]])
-                self._api_install(api_objs[1], [self.p_foo1_name[2]])
-
-                # attach our images
-                self._children_attach(0, [1])
-
-                # update a specific package
-                self._api_update(api_objs[0], pkgs_update=[self.p_foo1_name[1]])
-
-                # the parent recursed into the child so make sure to reset the
-                # child api object
-                api_objs[1].reset()
-
-                # verify that the child image hasn't changed
-                pkg_list = list(api_objs[1].get_pkg_list(
-                    api.ImageInterface.LIST_INSTALLED))
-                self.assertEqual(len(pkg_list), 1)
-                pfmri, summ, cats, states, attrs = pkg_list[0]
-                pkg_installed = "%s@%s" % (pfmri[1], pfmri[2])
-                self.assertEqual(pkg_installed, self.p_foo1_name[2])
-
-                # update all packages
-                self._api_update(api_objs[0])
-
-                # the parent recursed into the child so make sure to reset the
-                # child api object
-                api_objs[1].reset()
-
-                # verify that the child image was updated as well
-                pkg_list = list(api_objs[1].get_pkg_list(
-                    api.ImageInterface.LIST_INSTALLED))
-                self.assertEqual(len(pkg_list), 1)
-                pfmri, summ, cats, states, attrs = pkg_list[0]
-                pkg_installed = "%s@%s" % (pfmri[1], pfmri[2])
-                self.assertEqual(pkg_installed, self.p_foo1_name[0])
-
-
         def test_solver_err_aggregation(self):
                 """Verify that when the solver reports errors on packages that
                 can't be installed, those errors include information about

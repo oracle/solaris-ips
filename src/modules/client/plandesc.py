@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2012, 2013, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2012, 2014, Oracle and/or its affiliates. All rights reserved.
 #
 
 """
@@ -125,6 +125,7 @@ class PlanDescription(object):
             "_rm_aliases": { str: set() },
             "added_groups": { str: pkg.fmri.PkgFmri },
             "added_users": { str: pkg.fmri.PkgFmri },
+            "child_op_vectors": [ ( str, [ li.LinkedImageName ], {}, bool ) ],
             "children_ignored": [ li.LinkedImageName ],
             "children_nop": [ li.LinkedImageName ],
             "children_planned": [ li.LinkedImageName ],
@@ -199,9 +200,7 @@ class PlanDescription(object):
                 self._bytes_added = 0  # size of files added
                 self._need_boot_archive = None
                 # child properties
-                self.child_op = None
-                self.child_op_implicit = False
-                self.child_kwargs = {}
+                self.child_op_vectors = []
                 self.children_ignored = None
                 self.children_planned = []
                 self.children_nop = []

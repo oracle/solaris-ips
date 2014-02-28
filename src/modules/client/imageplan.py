@@ -154,8 +154,8 @@ class ImagePlan(object):
                 self.pd = plan
                 self.__update_avail_space()
 
-		# make sure we init this even if we don't call solver
-		self.pd._new_avoid_obs = (self.image.avoid_set_get(),
+                # make sure we init this even if we don't call solver
+                self.pd._new_avoid_obs = (self.image.avoid_set_get(),
                     self.image.obsolete_set_get())
 
                 if self.pd.state == plandesc.UNEVALUATED:
@@ -881,10 +881,12 @@ class ImagePlan(object):
                 self.__plan_install(li_pkg_updates=li_pkg_updates,
                     li_sync_op=True, reject_list=reject_list)
 
-        def plan_uninstall(self, pkgs_to_uninstall):
+        def plan_uninstall(self, pkgs_to_uninstall, ignore_missing=False):
                 self.__plan_op()
                 proposed_dict, self.__match_rm = self.__match_user_fmris(
-                    self.image, pkgs_to_uninstall, self.MATCH_INST_VERSIONS)
+                    self.image, pkgs_to_uninstall, self.MATCH_INST_VERSIONS,
+                    raise_not_installed=not ignore_missing)
+
                 # merge patterns together
                 proposed_removals = set([
                     f
@@ -937,7 +939,7 @@ class ImagePlan(object):
                 self.pd.state = plandesc.EVALUATED_PKGS
 
         def __plan_update_solver(self, pkgs_update=None,
-            reject_list=misc.EmptyI):
+            ignore_missing=False, reject_list=misc.EmptyI):
                 """Use the solver to determine the fmri changes needed to
                 update the specified pkgs or all packages if none were
                 specified."""
@@ -964,6 +966,7 @@ class ImagePlan(object):
                         update_dict, references = self.__match_user_fmris(
                             self.image, pkgs_update, self.MATCH_INST_STEMS,
                             pub_ranks=pub_ranks, installed_pkgs=installed_dict,
+                            raise_not_installed=not ignore_missing,
                             reject_set=reject_set)
                         self.__match_update = references
 
@@ -1018,12 +1021,14 @@ class ImagePlan(object):
                 if DebugValues["plan"]:
                         self.pd._solver_errors = solver.get_trim_errors()
 
-        def plan_update(self, pkgs_update=None, reject_list=misc.EmptyI):
+        def plan_update(self, pkgs_update=None,
+            ignore_missing=False, reject_list=misc.EmptyI):
                 """Determine the fmri changes needed to update the specified
                 pkgs or all packages if none were specified."""
 
                 self.__plan_op()
                 self.__plan_update_solver(
+                    ignore_missing=ignore_missing,
                     pkgs_update=pkgs_update,
                     reject_list=reject_list)
                 self.pd.state = plandesc.EVALUATED_PKGS
@@ -2633,8 +2638,8 @@ class ImagePlan(object):
                                 if isinstance(note, unicode):
                                         note = note.encode("utf-8")
                                 print >> tmpfile, note
-			# make file world readable
-			os.chmod(path, 0644)
+                        # make file world readable
+                        os.chmod(path, 0644)
                         tmpfile.close()
                         self.pd.release_notes_name = os.path.basename(path)
 
