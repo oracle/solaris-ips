@@ -1766,13 +1766,17 @@ class LinkedImage(object):
                 d = os.path.dirname(cpath.rstrip(os.sep)) + os.sep
                 while len(d) > len(dir_common):
                         abort_if_imgdir(d)
-                        d = os.path.dirname(d.rstrip(os.sep)) + os.sep
+                        d = os.path.dirname(d.rstrip(os.sep))
+                        if d != os.sep:
+                                d += os.sep
 
                 # Then check the parent directories of the parent.
                 d = os.path.dirname(ppath.rstrip(os.sep)) + os.sep
                 while len(d) > len(dir_common):
                         abort_if_imgdir(d)
-                        d = os.path.dirname(d.rstrip(os.sep)) + os.sep
+                        d = os.path.dirname(d.rstrip(os.sep))
+                        if d != os.sep:
+                                d += os.sep
 
         def attach_child(self, lin, path, props,
             accept=False, allow_relink=False, force=False, li_md_only=False,
