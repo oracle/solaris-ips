@@ -816,7 +816,7 @@ class TestPkgInstallBasics(pkg5unittest.SingleDepotTestCase):
 
                 plist = self.pkgsend_bulk(self.rurl, [self.secret1,
                     self.secret2, self.secret3, self.secret4])
-                
+
                 # Need to create an image in /var/tmp since sysattrs don't work
                 # in tmpfs.
                 self.debug(self.rurl)
@@ -3762,7 +3762,7 @@ adm:NP:6445::::::
 		self.pkg("verify muppetsuser", 1)
 		self.pkg("fix muppetsgroup", 0)
 		self.pkg("verify muppetsgroup muppetsuser missing*")
-		self.pkg("uninstall missing*")		
+		self.pkg("uninstall missing*")
 		# try installing w/ broken group
                 file(gpath, "w").writelines(gdata[0:-1])
 		self.pkg("install missing_group@1", 1)
@@ -6726,6 +6726,67 @@ class TestPkgInstallObsolete(pkg5unittest.SingleDepotTestCase):
                 self.pkg("list -afv")
                 self.pkg("update -v")
                 self.pkg("list inc2p2", exit=1)
+
+class TestObsoletionNestedIncorporations(pkg5unittest.SingleDepotTestCase):
+        # Only start/stop the depot once (instead of for every test)
+
+        persistent_setup = True
+
+        bug_15713570 = """
+            open oldcompiler@1.0,5.11-0
+            add depend type=require fmri=oldperl@1.0
+            close
+            open oldperl@1.0,5.11-0
+            add depend type=require fmri=osnet-incorporation
+            close
+            open oldperl@2.0,5.11-0
+            add set name=pkg.obsolete value=true
+            close
+            open entire@1.0,5.11-0
+            add depend type=incorporate fmri=osnet-incorporation
+            add depend type=incorporate fmri=osnet-incorporation@1
+            add depend type=incorporate fmri=osnet-incorporation@1.0
+            close
+            open entire@2.1,5.11-0
+            add depend type=incorporate fmri=osnet-incorporation
+            add depend type=incorporate fmri=osnet-incorporation@1
+            add depend type=incorporate fmri=osnet-incorporation@1.1
+            close
+            open entire@2.2,5.11-0
+            add depend type=incorporate fmri=osnet-incorporation
+            add depend type=incorporate fmri=osnet-incorporation@1
+            add depend type=incorporate fmri=osnet-incorporation@1.2
+            close
+            open osnet-incorporation@1.0,5.11-0
+            add depend type=incorporate fmri=oldperl@1.0
+            close
+            open osnet-incorporation@1.1,5.11-0
+            add depend type=incorporate fmri=oldperl@2.0
+            close
+            open osnet-incorporation@1.2,5.11-0
+            add depend type=incorporate fmri=oldperl@2.0
+            close
+       """
+
+        def test_15713570(self):
+                """If an unincorporated package has its dependency obsoleted
+                by a doubly nested incorporation with multiple levels of
+                incorporation, there is no useful error message generated"""
+
+                self.pkgsend_bulk(self.rurl, self.bug_15713570)
+                self.image_create(self.rurl)
+
+                self.pkg("install -v entire@1.0 oldcompiler")
+                self.pkg("list")
+                self.pkg("verify")
+                self.pkg("update -v entire", exit=4)
+                self.pkg("list")
+                self.pkg("verify")
+                self.pkg("update -v entire@2", exit=1)
+
+                self.assert_("oldcompiler" in self.errout and
+                    "oldperl" in self.errout,
+                    "error message does not mention oldcompiler and oldperl packages")
 
 
 class TestPkgInstallMultiObsolete(pkg5unittest.ManyDepotTestCase):

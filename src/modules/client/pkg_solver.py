@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2007, 2013, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2007, 2014, Oracle and/or its affiliates. All rights reserved.
 #
 import os
 import time
@@ -128,7 +128,7 @@ class PkgSolver(object):
                 self.__iterations = 0
                 self.__clauses     = 0
                 self.__variables   = 0
-		self.__subphasename = None
+                self.__subphasename = None
                 self.__timings = []
                 self.__start_time = 0
                 self.__inc_list = []
@@ -155,8 +155,8 @@ class PkgSolver(object):
                             for f in self.__parent_pkgs
                         ])
 
-		# cache of firmware dependencies
-		self.__firmware = Firmware()
+                # cache of firmware dependencies
+                self.__firmware = Firmware()
 
         def __str__(self):
 
@@ -210,7 +210,7 @@ class PkgSolver(object):
                 self.__start_time = None
                 self.__dependents = None
                 self.__fmridict = {}
-		self.__firmware = None
+                self.__firmware = None
 
                 if DebugValues["plan"]:
                         # Remaining data must be kept.
@@ -225,11 +225,11 @@ class PkgSolver(object):
 
         def __start_subphase(self, subphase=None, reset=False):
                 """Add timing records and tickle progress tracker.  Ends
-		previous subphase if ongoing."""
+                previous subphase if ongoing."""
                 if reset:
                         self.__timings = []
-		if self.__subphasename is not None:
-			self.__end_subphase()
+                if self.__subphasename is not None:
+                        self.__end_subphase()
                 self.__start_time = time.time()
                 self.__subphasename = "phase %d" % subphase
                 self.__progress()
@@ -1439,20 +1439,32 @@ class PkgSolver(object):
         def __get_incorp_nonmatch_dict(self, fmri, excludes):
                 """Given a fmri with incorporation dependencies, produce a
                 dictionary containing (matching, non matching fmris),
-                indexed by pkg name"""
+                indexed by pkg name.  Note that some fmris may be
+                incorporated more than once at different levels of
+                specificity"""
                 ret = dict()
                 for da in self.__get_dependency_actions(fmri,
                     excludes=excludes):
                         if da.attrs["type"] != "incorporate":
                                 continue
-                        nm, m, c, d, r = self.__parse_dependency(da, fmri,
+                        nm, m, c, d, r, f = self.__parse_dependency(da, fmri,
                             dotrim=False)
-                        for n in nm:
-                                ret.setdefault(n.pkg_name,
-                                    (set(), set()))[1].add(n)
-                        for n in m:
-                                ret.setdefault(n.pkg_name,
-                                    (set(), set()))[0].add(n)
+                        # Collect all incorp. dependencies affecting
+                        # a package in a list.  Note that it is
+                        # possible for both matching and non-matching
+                        # sets to be NULL, and we'll need at least
+                        # one item in the list for reduce to work.
+                        ret.setdefault(f.pkg_name, (list(), list()))
+                        ret[f.pkg_name][0].append(set(m))
+                        ret[f.pkg_name][1].append(set(nm))
+
+                # For each of the packages constrained, combine multiple
+                # incorporation dependencies.  Matches are intersected,
+                # non-matches form a union.
+                for pkg_name in ret:
+                        ret[pkg_name] = (
+                            reduce(set.intersection, ret[pkg_name][0]),
+                            reduce(set.union, ret[pkg_name][1]))
                 return ret
 
         def __parse_dependency(self, dependency_action, fmri,
@@ -1573,7 +1585,7 @@ class PkgSolver(object):
                 # matches on a required package
 
                 if not check_req or matching or not required:
-                        return nonmatching, matching, conditional, dtype, required
+                        return nonmatching, matching, conditional, dtype, required, fmri
 
                 # we're going to toss an exception
                 if dtype == "exclude":
@@ -1794,7 +1806,7 @@ class PkgSolver(object):
 
         def __gen_dependency_clauses(self, fmri, da, dotrim=True):
                 """Return clauses to implement this dependency"""
-                nm, m, cond, dtype, req = self.__parse_dependency(da, fmri,
+                nm, m, cond, dtype, req, depf = self.__parse_dependency(da, fmri,
                     dotrim)
 
                 if dtype == "require" or dtype == "require-any":
