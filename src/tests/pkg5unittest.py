@@ -440,7 +440,8 @@ if __name__ == "__main__":
                         if prefix:
                                 cmdline.insert(0, prefix)
                 else:
-                        cmdline = "%s%s%s %s%s" % (prefix, su_wrap, wrapper,
+                        # Space needed between su_wrap and wrapper.
+                        cmdline = "%s%s %s %s%s" % (prefix, su_wrap, wrapper,
                             cmdline, su_end)
 
                 self.debugcmd(cmdline)

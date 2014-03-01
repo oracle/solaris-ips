@@ -41,7 +41,7 @@ class TestSysattr(pkg5unittest.Pkg5TestCase):
 
                 p_re = re.compile("{(?P<attrs>.*)}")
 
-                self.cmdline_run("/usr/bin/ls -/ v %s" % path)
+                self.cmdline_run("/usr/bin/ls -/ v %s" % path, coverage=False)
                 m = re.search(p_re, self.output)
 
                 self.assertTrue(m is not None)
