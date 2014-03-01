@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2008, 2013, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2008, 2014, Oracle and/or its affiliates. All rights reserved.
 #
 
 """module describing a user packaging object
@@ -99,8 +99,9 @@ class GroupAction(generic.Action):
                                     details=txt, fmri=pkgplan.destination_fmri)
                         img = pkgplan.image
                         img._groups.add(self)
-                        img._groupsbyname[self.attrs["groupname"]] = \
-                            int(self.attrs["gid"])
+                        if "gid" in self.attrs:
+                                img._groupsbyname[self.attrs["groupname"]] = \
+                                    int(self.attrs["gid"])
 
         def postinstall(self, pkgplan, orig):
                 groups = pkgplan.image._groups
@@ -166,7 +167,7 @@ class GroupAction(generic.Action):
                 gr = GroupFile(pkgplan.image)
                 cur_attrs = gr.getvalue(self.attrs)
                 # groups need to be first added, last removed
-                if not cur_attrs["user-list"]:
+                if "user-list" not in cur_attrs:
                         try:
                                 gr.removevalue(self.attrs)
                         except KeyError, e:

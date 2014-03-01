@@ -225,6 +225,7 @@ def usage(usage_error=None, cmd=None, retcode=EXIT_BADOPT, full=False):
             "rebuild-index",
             "update-format",
             "image-create",
+            "exact-install",
         ]
 
         adv_usage["info"] = \
@@ -321,6 +322,11 @@ def usage(usage_error=None, cmd=None, retcode=EXIT_BADOPT, full=False):
         adv_usage["purge-history"] = ""
         adv_usage["rebuild-index"] = ""
         adv_usage["update-format"] = ""
+        adv_usage["exact-install"] = _("[-nvq] [-C n] [-g path_or_uri ...] [--accept]\n"
+            "            [--licenses] [--no-be-activate] [--no-index] [--no-refresh]\n"
+            "            [--no-backup-be | --require-backup-be] [--backup-be-name name]\n"
+            "            [--deny-new-be | --require-new-be] [--be-name name]\n"
+            "            [--reject pkg_fmri_pattern ... ] pkg_fmri_pattern ...")
 
         priv_usage["remote"] = _(
             "--ctlfd=file_descriptor --progfd=file_descriptor")
@@ -1695,6 +1701,8 @@ def __api_plan(_op, _api_inst, _accept=False, _li_ignore=None, _noexecute=False,
                 api_plan_func = _api_inst.gen_plan_uninstall
         elif _op == PKG_OP_UPDATE:
                 api_plan_func = _api_inst.gen_plan_update
+        elif _op == PKG_OP_EXACT_INSTALL:
+                api_plan_func = _api_inst.gen_plan_exact_install
         else:
                 raise RuntimeError("__api_plan() invalid op: %s" % _op)
 
@@ -2095,6 +2103,34 @@ def install(op, api_inst, pargs,
             backup_be_name=backup_be_name, be_activate=be_activate,
             be_name=be_name, li_erecurse=li_erecurse,
             li_parent_sync=li_parent_sync, new_be=new_be, pkgs_inst=pargs,
+            refresh_catalogs=refresh_catalogs, reject_list=reject_pats,
+            update_index=update_index)
+
+def exact_install(op, api_inst, pargs,
+    accept, backup_be, backup_be_name, be_activate, be_name, li_ignore,
+    li_parent_sync, new_be, noexecute, origins, parsable_version, quiet,
+    refresh_catalogs, reject_pats, show_licenses, update_index, verbose):
+        """Attempt to take package specified to INSTALLED state.
+        The operands are interpreted as glob patterns."""
+
+        if not pargs:
+                usage(_("at least one package name required"), cmd=op)
+
+        rval, res = get_fmri_args(api_inst, pargs, cmd=op)
+        if not rval:
+                return EXIT_OOPS
+
+        xrval, xres = get_fmri_args(api_inst, reject_pats, cmd=op)
+        if not xrval:
+                return EXIT_OOPS
+
+        return __api_op(op, api_inst, _accept=accept, _li_ignore=li_ignore,
+            _noexecute=noexecute, _origins=origins, _quiet=quiet,
+            _show_licenses=show_licenses, _verbose=verbose,
+            backup_be=backup_be, backup_be_name=backup_be_name,
+            be_activate=be_activate, be_name=be_name,
+            li_parent_sync=li_parent_sync, new_be=new_be,
+            _parsable_version=parsable_version, pkgs_inst=pargs,
             refresh_catalogs=refresh_catalogs, reject_list=reject_pats,
             update_index=update_index)
 
@@ -6002,6 +6038,7 @@ cmds = {
     "change-variant"        : [change_variant],
     "contents"              : [list_contents],
     "detach-linked"         : [detach_linked, 0],
+    "exact-install"         : [exact_install],
     "facet"                 : [list_facet],
     "fix"                   : [fix_image],
     "freeze"                : [freeze],

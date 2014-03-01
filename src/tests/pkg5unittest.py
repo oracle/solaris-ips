@@ -3181,7 +3181,7 @@ class CliTestCase(Pkg5TestCase):
                                 continue
                         plan = api_obj.describe()
 
-                        # update licesnse status
+                        # update license status
                         for pfmri, src, dest, accepted, displayed in \
                             plan.get_licenses():
                                 api_obj.set_plan_license_status(pfmri,

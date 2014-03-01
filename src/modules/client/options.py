@@ -20,7 +20,7 @@
 # CDDL HEADER END
 #
 
-# Copyright (c) 2014, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2013, 2014, Oracle and/or its affiliates. All rights reserved.
 
 import os
 
@@ -860,6 +860,7 @@ pkg_op_opts = {
     pkgdefs.PKG_OP_CHANGE_FACET   : opts_install,
     pkgdefs.PKG_OP_CHANGE_VARIANT : opts_install,
     pkgdefs.PKG_OP_DETACH         : opts_detach_linked,
+    pkgdefs.PKG_OP_EXACT_INSTALL  : opts_main,
     pkgdefs.PKG_OP_INSTALL        : opts_install,
     pkgdefs.PKG_OP_LIST           : opts_list_inventory,
     pkgdefs.PKG_OP_LIST_LINKED    : opts_list_linked,

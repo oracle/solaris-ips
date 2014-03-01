@@ -194,6 +194,30 @@ class TestPkgInstallBasics(pkg5unittest.SingleDepotTestCase):
             add link path=etc/cat_link target="../opt/dir with white\tspace/cat in a hat"
             close """
 
+        ffoo10 = """
+            open ffoo@1.0,5.11-0
+            add file tmp/libc.so.1 mode=0555 owner=root group=bin path=/lib/libc.so.1
+            close """
+
+        ffoo11 = """
+            open ffoo@1.1,5.11-0
+            add file tmp/libc.so.1 mode=0555 owner=root group=bin path=/lib/libc.so.1
+            close """
+
+        fbar10 = """
+            open fbar@1.0,5.11-0
+            add depend type=require fmri=pkg:/ffoo@1.0
+            add dir mode=0755 owner=root group=bin path=/bin
+            add file tmp/cat mode=0555 owner=root group=bin path=/bin/cat
+            close """
+
+        fbar11 = """
+            open fbar@1.1,5.11-0
+            add depend type=require fmri=pkg:/ffoo@1.0
+            add dir mode=0755 owner=root group=bin path=/bin
+            add file tmp/cat mode=0555 owner=root group=bin path=/bin/cat
+            close """
+
         secret1 = """
             open secret1@1.0-0
             add dir mode=0755 owner=root group=bin path=/p1
@@ -227,19 +251,23 @@ class TestPkgInstallBasics(pkg5unittest.SingleDepotTestCase):
         def test_cli(self):
                 """Test bad cli options"""
 
+                self.cli_helper("install")
+                self.cli_helper("exact-install")
+
+        def cli_helper(self, install_cmd):
                 self.image_create(self.rurl)
 
                 self.pkg("-@", exit=2)
                 self.pkg("-s status", exit=2)
                 self.pkg("-R status", exit=2)
 
-                self.pkg("install -@ foo", exit=2)
-                self.pkg("install -vq foo", exit=2)
-                self.pkg("install", exit=2)
-                self.pkg("install foo@x.y", exit=1)
-                self.pkg("install pkg:/foo@bar.baz", exit=1)
+                self.pkg("%s -@ foo" % install_cmd, exit=2)
+                self.pkg("%s -vq foo" % install_cmd, exit=2)
+                self.pkg("%s" % install_cmd, exit=2)
+                self.pkg("%s foo@x.y" % install_cmd, exit=1)
+                self.pkg("%s pkg:/foo@bar.baz" % install_cmd, exit=1)
 
-        def test_basics_1(self):
+        def test_basics_1_install(self):
                 """ Send empty package foo@1.0, install and uninstall """
 
                 plist = self.pkgsend_bulk(self.rurl, self.foo10)
@@ -260,10 +288,37 @@ class TestPkgInstallBasics(pkg5unittest.SingleDepotTestCase):
                     remove_packages=plist)
                 self.pkg("verify")
 
+        def test_basics_1_exact_install(self):
+                """ Send empty package foo@1.0, exact-install and uninstall """
+
+                plist = self.pkgsend_bulk(self.rurl, self.foo10)
+                self.image_create(self.rurl)
+
+                self.pkg("list -a")
+                self.pkg("list", exit=1)
+
+                self.pkg("exact-install --parsable=0 foo")
+                self.assertEqualParsable(self.output,
+                    add_packages=plist)
+
+                # Exact-install the same version should do nothing.
+                self.pkg("exact-install foo", exit=4)
+                self.pkg("list")
+                self.pkg("verify")
+
+                self.pkg("uninstall --parsable=0 foo")
+                self.assertEqualParsable(self.output,
+                    remove_packages=plist)
+                self.pkg("verify")
+
         def test_basics_2(self):
                 """ Send package foo@1.1, containing a directory and a file,
-                    install, search, and uninstall. """
+                    install or exact-install, search, and uninstall. """
 
+                self.basics_2_helper("install")
+                self.basics_2_helper("exact-install")
+
+        def basics_2_helper(self, install_cmd):
                 # This test needs to use the depot to be able to test the
                 # download cache.
                 self.dc.start()
@@ -273,9 +328,10 @@ class TestPkgInstallBasics(pkg5unittest.SingleDepotTestCase):
                 self.image_create(self.durl)
 
                 self.pkg("list -a")
-                self.pkg("install foo")
+                self.pkg("%s foo" % install_cmd)
 
-                # Verify that content cache is empty after successful install.
+                # Verify that content cache is empty after successful install
+                # or exact-install.
                 api_inst = self.get_img_api_obj()
                 img_inst = api_inst.img
                 cache_dirs = []
@@ -310,8 +366,13 @@ class TestPkgInstallBasics(pkg5unittest.SingleDepotTestCase):
                 self.dc.stop()
 
         def test_basics_3(self):
-                """ Install foo@1.0, upgrade to foo@1.1, uninstall. """
+                """Exact-install or Install foo@1.0, upgrade to foo@1.1,
+                uninstall. """
 
+                self.basics_3_helper("install")
+                self.basics_3_helper("exact-install")
+
+        def basics_3_helper(self, installed_cmd):
                 # This test needs to use the depot to be able to test the
                 # download cache.
                 self.dc.start()
@@ -320,7 +381,8 @@ class TestPkgInstallBasics(pkg5unittest.SingleDepotTestCase):
                 self.image_create(self.durl)
                 self.pkg("set-property flush-content-cache-on-success False")
 
-                # Verify that content cache is empty before install.
+                # Verify that content cache is empty before install or
+                # exact-install.
                 api_inst = self.get_img_api_obj()
                 img_inst = api_inst.img
                 cache_dirs = []
@@ -329,15 +391,16 @@ class TestPkgInstallBasics(pkg5unittest.SingleDepotTestCase):
                                 cache_dirs.extend(os.listdir(path))
                 self.assertEqual(cache_dirs, [])
 
-                self.pkg("install foo@1.0")
+                self.pkg("%s foo@1.0" % installed_cmd)
                 self.pkg("list foo@1.0")
                 self.pkg("list foo@1.1", exit=1)
 
-                self.pkg("install foo@1.1")
+                self.pkg("%s foo@1.1" % installed_cmd)
 
                 # Verify that content cache is not empty after successful
-                # install (since flush-content-cache-on-success is True
-                # by default) for packages that have content.
+                # install or exact_install (since
+                # flush-content-cache-on-success is True by default) for
+                # packages that have content.
                 cache_dirs = []
                 for path, readonly, pub, layout in img_inst.get_cachedirs():
                         if os.path.exists(path):
@@ -355,8 +418,13 @@ class TestPkgInstallBasics(pkg5unittest.SingleDepotTestCase):
                 self.dc.stop()
 
         def test_basics_4(self):
-                """ Add bar@1.0, dependent on foo@1.0, install, uninstall. """
+                """ Add bar@1.0, dependent on foo@1.0, exact-install or
+                install, uninstall. """
 
+                self.basics_4_helper("install")
+                self.basics_4_helper("exact-install")
+
+        def basics_4_helper(self, installed_cmd):
                 # This test needs to use the depot to be able to test the
                 # download cache.
                 self.dc.start()
@@ -368,7 +436,8 @@ class TestPkgInstallBasics(pkg5unittest.SingleDepotTestCase):
                 # Set content cache to not be flushed on success.
                 self.pkg("set-property flush-content-cache-on-success False")
 
-                # Verify that content cache is empty before install.
+                # Verify that content cache is empty before install or
+                # exact-install.
                 api_inst = self.get_img_api_obj()
                 img_inst = api_inst.img
                 cache_dirs = []
@@ -378,10 +447,11 @@ class TestPkgInstallBasics(pkg5unittest.SingleDepotTestCase):
                 self.assertEqual(cache_dirs, [])
 
                 self.pkg("list -a")
-                self.pkg("install bar@1.0")
+                self.pkg("%s bar@1.0" % installed_cmd)
 
                 # Verify that content cache is not empty after successful
-                # install (since flush-content-cache-on-success is False)
+                # install or exact-install (since
+                # flush-content-cache-on-success is False)
                 # for packages that have content.
                 cache_dirs = []
                 for path, readonly, pub, layout in img_inst.get_cachedirs():
@@ -399,7 +469,7 @@ class TestPkgInstallBasics(pkg5unittest.SingleDepotTestCase):
                 self.pkg("verify")
                 self.dc.stop()
 
-        def test_basics_5(self):
+        def test_basics_5_install(self):
                 """ Install bar@1.0, upgrade to bar@1.1.
                 Boring should be left alone, while
                 foo gets upgraded as needed"""
@@ -416,7 +486,23 @@ class TestPkgInstallBasics(pkg5unittest.SingleDepotTestCase):
                 self.pkg("list")
                 self.pkg("list bar@1.1 foo@1.2 boring@1.0")
 
-        def test_basics_6(self):
+        def test_basics_5_exact_install(self):
+                """ exact-nstall bar@1.0, upgrade to bar@1.1.
+                Boring should be left alone, while
+                foo gets upgraded as needed"""
+
+                self.pkgsend_bulk(self.rurl, (self.bar10, self.bar11,
+                    self.foo10, self.foo11, self.foo12, self.boring10,
+                    self.boring11))
+                self.image_create(self.rurl)
+
+                self.pkg("exact-install foo@1.0 bar@1.0 boring@1.0")
+                self.pkg("list foo@1.0 boring@1.0 bar@1.0")
+                self.pkg("exact-install -v bar@1.1") # upgrade bar
+                self.pkg("list bar@1.1 foo@1.2")
+                self.pkg("list boring@1.0", exit=1)
+
+        def test_basics_6_install(self):
                 """Verify that '@latest' will install the latest version
                 of a package."""
 
@@ -462,12 +548,112 @@ class TestPkgInstallBasics(pkg5unittest.SingleDepotTestCase):
                 shutil.rmtree(t1dir)
                 shutil.rmtree(t2dir)
 
-        def test_basics_7(self):
+        def test_basics_6_exact_install(self):
+                """Verify that '@latest' will install the latest version
+                of a package."""
+
+                # Create a repository for the test publisher.
+                t1dir = os.path.join(self.test_root, "test-repo")
+                self.create_repo(t1dir, properties={ "publisher": {
+                    "prefix": "test" } })
+                self.pkgsend_bulk(t1dir, (self.bar10,
+                    self.foo10, self.foo11, self.foo12, self.boring10,
+                    self.boring11))
+                self.image_create("file:%s" % t1dir)
+
+                # Create a repository for a different publisher for at
+                # least one of the packages so that we can verify that
+                # publisher search order is accounted for by @latest.
+                # The second publisher is called 'pub2' here so that
+                # it comes lexically before 'test' (see bug 18180) to
+                # ensure that latest version ordering works correctly
+                # when the same stem is provided by different publishers.
+                t2dir = os.path.join(self.test_root, "pub2-repo")
+                self.create_repo(t2dir, properties={ "publisher": {
+                    "prefix": "pub2" } })
+                self.pkgsend_bulk(t2dir, self.bar11)
+
+                self.pkg("set-publisher -p %s" % t2dir)
+                self.pkg("exact-install '*@latest'")
+
+                # 1.0 of bar should be installed here since pub2 is a
+                # lower-ranked publisher.
+                self.pkg("list")
+                self.pkg("info bar@1.0 foo@1.2 boring@1.1")
+
+                self.pkg("set-publisher --non-sticky test")
+                self.pkg("set-publisher -P pub2 ")
+                self.pkg("exact-install bar@latest")
+
+                # 1.1 of bar should be installed here since pub2 is a
+                # higher-ranked publisher and test is non-sticky.
+                self.pkg("info bar@1.1")
+                self.pkg("list foo@1.2")
+                self.pkg("list boring@1.1", exit=1)
+
+                # Cleanup.
+                shutil.rmtree(t1dir)
+                shutil.rmtree(t2dir)
+
+        def test_basics_7_install(self):
                 """ Add bar@1.1, install bar@1.0. """
 
                 self.pkgsend_bulk(self.rurl, self.xbar11)
                 self.image_create(self.rurl)
                 self.pkg("install xbar@1.0", exit=1)
+
+        def test_basics_7_exact_install(self):
+                """Add bar@1.1, exact-install bar@1.0."""
+
+                self.pkgsend_bulk(self.rurl, self.xbar11)
+                self.image_create(self.rurl)
+                self.pkg("exact-install xbar@1.0", exit=1)
+
+        def test_basics_8_exact_install(self):
+                """Try to exact-install two versions of the same package."""
+
+                self.pkgsend_bulk(self.rurl, (self.foo11, self.foo12))
+                self.image_create(self.rurl)
+
+                self.pkg("exact-install foo@1.1 foo@1.2", exit=1)
+
+        def test_basics_9_exact_install(self):
+                """Verify downgrade will fail with exact-install."""
+
+                self.pkgsend_bulk(self.rurl, (self.bar10, self.bar11,
+                    self.foo10, self.foo12))
+                self.image_create(self.rurl)
+
+                self.pkg("install bar@1.1")
+                self.pkg("exact-install bar@1.0", exit=1)
+                self.pkg("list bar@1.1")
+                self.pkg("list foo@1.2")
+
+        def test_freeze_exact_install(self):
+                """Verify frozen packages can be relaxed with exact_install.
+                Which means we can ignore the frozen list with exact_install.
+                """
+
+                self.pkgsend_bulk(self.rurl, (self.fbar10, self.ffoo10,
+                    self.fbar11, self.ffoo11))
+                self.image_create(self.rurl)
+
+                # Freeze bar@1.0.
+                self.pkg("install fbar@1.0")
+                self.pkg("freeze fbar@1.0")
+                self.pkg("exact-install fbar@1.1")
+                self.pkg("list fbar@1.1")
+                self.pkg("list ffoo@1.1")
+                self.pkg("uninstall '*'")
+
+                # Freeze both bar@1.0 and foo@1.0.
+                self.image_create(self.rurl)
+                self.pkg("install fbar@1.0 ffoo@1.0")
+                self.pkg("freeze fbar@1.0")
+                self.pkg("freeze ffoo@1.0")
+                self.pkg("exact-install fbar@1.1")
+                self.pkg("list fbar@1.1")
+                self.pkg("list ffoo@1.1")
 
         def test_basics_mdns(self):
                 """ Send empty package foo@1.0, install and uninstall """
@@ -513,13 +699,18 @@ class TestPkgInstallBasics(pkg5unittest.SingleDepotTestCase):
 
         def test_image_upgrade(self):
                 """ Send package bar@1.1, dependent on foo@1.2.  Install
-                    bar@1.0.  List all packages.  Upgrade image. """
+                or exact-install bar@1.0.  List all packages.  Upgrade image.
+                """
 
+                self.image_upgrade_helper("install")
+                self.image_upgrade_helper("exact-install")
+
+        def image_upgrade_helper(self, install_cmd):
                 self.pkgsend_bulk(self.rurl, (self.foo10, self.foo11,
                     self.bar10))
                 self.image_create(self.rurl)
 
-                self.pkg("install bar@1.0")
+                self.pkg("%s bar@1.0" % install_cmd)
 
                 self.pkgsend_bulk(self.rurl, (self.foo12, self.bar11))
                 self.pkg("refresh")
@@ -625,8 +816,13 @@ class TestPkgInstallBasics(pkg5unittest.SingleDepotTestCase):
                 self.pkg("list b6018@1 a6018@2")
 
         def test_install_matching(self):
-                """ Try to [un]install packages matching a pattern """
+                """ Try to [un]install or exact-install packages matching a
+                pattern """
 
+                self.install_matching_helper("install")
+                self.install_matching_helper("exact-install")
+
+        def install_matching_helper(self, install_cmd):
                 self.pkgsend_bulk(self.rurl, (self.foo10, self.bar10,
                     self.baz10))
                 self.image_create(self.rurl)
@@ -636,8 +832,8 @@ class TestPkgInstallBasics(pkg5unittest.SingleDepotTestCase):
 
                 # first case should fail since multiple patterns
                 # match the same pacakge
-                self.pkg("install 'ba*' 'b*'", exit=1)
-                self.pkg("install 'ba*'", exit=0)
+                self.pkg("%s 'ba*' 'b*'" % install_cmd, exit=1)
+                self.pkg("%s 'ba*'" % install_cmd, exit=0)
                 self.pkg("list foo", exit=0)
                 self.pkg("list bar", exit=0)
                 self.pkg("list baz", exit=0)
@@ -645,7 +841,7 @@ class TestPkgInstallBasics(pkg5unittest.SingleDepotTestCase):
 
                 # However, multiple forms of the same pattern should simply be
                 # coalesced and allowed.
-                self.pkg("install pkg:/foo /foo ///foo pkg:///foo")
+                self.pkg("%s pkg:/foo /foo ///foo pkg:///foo" % install_cmd)
                 self.pkg("list")
                 self.pkg("verify pkg:/foo /foo ///foo pkg:///foo")
                 self.pkg("uninstall pkg:/foo /foo ///foo "
@@ -655,6 +851,10 @@ class TestPkgInstallBasics(pkg5unittest.SingleDepotTestCase):
                 """Test the install of packages that have actions that are
                 invalid."""
 
+                self.bad_package_actions("install")
+                self.bad_package_actions("exact-install")
+
+        def bad_package_actions(self, install_cmd):
                 # First, publish the package that will be corrupted and create
                 # an image for testing.
                 plist = self.pkgsend_bulk(self.rurl, (self.badfile10,
@@ -662,7 +862,7 @@ class TestPkgInstallBasics(pkg5unittest.SingleDepotTestCase):
                 self.image_create(self.rurl)
 
                 # This should succeed and cause the manifest to be cached.
-                self.pkg("install %s" % " ".join(plist))
+                self.pkg("%s %s" % (install_cmd, " ".join(plist)))
 
                 # While the manifest is cached, get a copy of its contents.
                 for p in plist:
@@ -686,7 +886,8 @@ class TestPkgInstallBasics(pkg5unittest.SingleDepotTestCase):
                                 bad_mdata = mdata.replace(src_mode, bad_mode)
                                 self.write_img_manifest(pfmri, bad_mdata)
                                 self.pkg("--debug manifest_validate=Never "
-                                    "install %s" % pfmri.pkg_name, exit=1)
+                                    "%s %s" % (install_cmd, pfmri.pkg_name),
+                                    exit=1)
 
                         # Now attempt to corrupt the client's copy of the
                         # manifest in various ways to check if the client
@@ -699,7 +900,8 @@ class TestPkgInstallBasics(pkg5unittest.SingleDepotTestCase):
                                     bad_owner)
                                 self.write_img_manifest(pfmri, bad_mdata)
                                 self.pkg("--debug manifest_validate=Never "
-                                    "install %s" % pfmri.pkg_name, exit=1)
+                                    "%s %s" % (install_cmd, pfmri.pkg_name),
+                                    exit=1)
 
                         for bad_group in ("", 'group=""', "group=invalidgroup"):
                                 self.debug("Testing with bad group "
@@ -709,7 +911,8 @@ class TestPkgInstallBasics(pkg5unittest.SingleDepotTestCase):
                                     bad_group)
                                 self.write_img_manifest(pfmri, bad_mdata)
                                 self.pkg("--debug manifest_validate=Never "
-                                    "install %s" % pfmri.pkg_name, exit=1)
+                                    "%s %s" % (install_cmd, pfmri.pkg_name),
+                                    exit=1)
 
                         # Now attempt to corrupt the client's copy of the
                         # manifest such that actions are malformed.
@@ -721,7 +924,8 @@ class TestPkgInstallBasics(pkg5unittest.SingleDepotTestCase):
                                 bad_mdata = mdata + "%s\n" % bad_act
                                 self.write_img_manifest(pfmri, bad_mdata)
                                 self.pkg("--debug manifest_validate=Never "
-                                    "install %s" % pfmri.pkg_name, exit=1)
+                                    "%s %s" % (install_cmd, pfmri.pkg_name),
+                                    exit=1)
 
         def test_bug_3770(self):
                 """ Try to install a package from a publisher with an
@@ -787,12 +991,17 @@ class TestPkgInstallBasics(pkg5unittest.SingleDepotTestCase):
 
         def test_install_fuzz(self):
                 """Verify that packages delivering files with whitespace in
-                their paths can be installed, updated, and uninstalled."""
+                their paths can be installed or exact-installed, updated, and
+                uninstalled."""
 
+                self.install_fuzz_helper("install")
+                self.install_fuzz_helper("exact-install")
+
+        def install_fuzz_helper(self, install_cmd):
                 self.pkgsend_bulk(self.rurl, self.fuzzy)
                 self.image_create(self.rurl)
 
-                self.pkg("install fuzzy@1")
+                self.pkg("%s fuzzy@1" % install_cmd)
                 self.pkg("verify -v")
                 self.pkg("update -vvv fuzzy@2")
                 self.pkg("verify -v")
@@ -1383,6 +1592,42 @@ class TestPkgInstallUpdateReject(pkg5unittest.SingleDepotTestCase):
                 self.pkg("list 'idr*' 'bogus*' B", exit=1)
                 self.pkg("list A C incorp kernel no-idrs")
 
+        def test_exact_install(self):
+                """Test that the --reject option performs as expected."""
+
+                self.image_create(self.rurl, prefix="")
+
+                # test basic usage of --reject
+                self.pkg("exact-install --reject B A")
+                self.pkg("list A C")
+                self.pkg("uninstall '*'")
+
+                # test swapping XOR'd pkgs B & C.
+                self.pkg("install B")
+                self.pkg("install A")
+                self.pkg("list A B")
+                self.pkg("exact-install --reject B A")
+                self.pkg("list A C")
+                self.pkg("list B", exit=1)
+                self.pkg("uninstall '*'")
+
+                # test that solver picks up on impossible cases fails
+                self.pkg("exact-install -v --reject B --reject C A", exit=1)
+
+                # test that publisher matching works.
+                self.pkg("install bogus")
+                self.pkg("list bogus")
+                self.pkg("exact-install --reject B --reject "
+                    "'pkg://contrib/*' A")
+                self.pkg("uninstall '*'")
+
+                # verify that matching accounts for reject with --exact option.
+                self.pkg("exact-install -v --reject A A", exit=1)
+                self.pkg("exact-install -v --reject 'idr*' --reject 'bogus*' "
+                    "--reject B '*'")
+                self.pkg("list 'idr*' 'bogus*' B", exit=1)
+                self.pkg("list A C incorp kernel no-idrs")
+
         def test_idr(self):
                 self.image_create(self.rurl)
                 # install kernel pkg; remember version so we can reinstall it later
@@ -1519,16 +1764,20 @@ class TestPkgInstallAmbiguousPatterns(pkg5unittest.SingleDepotTestCase):
                 """A dependency on a package should pull in an exact name
                 match."""
 
+                self.ambiguous_pattern_depend_helper("install")
+                self.ambiguous_pattern_depend_helper("exact-install")
+
+        def ambiguous_pattern_depend_helper(self, install_cmd):
                 self.pkgsend_bulk(self.rurl, (self.depender10, self.foo10))
 
                 self.image_create(self.rurl)
-                self.pkg("install depender")
+                self.pkg("%s depender" % install_cmd)
 
                 self.pkgsend_bulk(self.rurl, (self.foo11, self.anotherfoo11,
                     self.depender11))
                 self.pkg("refresh")
 
-                self.pkg("install depender")
+                self.pkg("%s depender" % install_cmd)
 
                 # Make sure that we didn't get other/foo from the dependency.
                 self.pkg("list another/foo", exit=1)
@@ -1537,21 +1786,26 @@ class TestPkgInstallAmbiguousPatterns(pkg5unittest.SingleDepotTestCase):
                 """We should be able to refer to a package by its "basename", if
                 that component is unique."""
 
+                self.non_ambiguous_fragment_helper("install")
+                self.non_ambiguous_fragment_helper("exact-install")
+
+        def non_ambiguous_fragment_helper(self, install_cmd):
                 self.pkgsend_bulk(self.rurl, self.anotherfoo11)
                 self.image_create(self.rurl)
 
                 # Right now, this is not exact, but still unambiguous
-                self.pkg("install foo")
+                self.pkg("%s foo" % install_cmd)
 
                 # Create ambiguity
                 self.pkgsend_bulk(self.rurl, self.foo11)
                 self.pkg("refresh")
 
                 # This is unambiguous, should succeed
-                self.pkg("install pkg:/foo")
+                self.pkg("%s pkg:/foo" % install_cmd)
 
                 # This is now ambiguous, should fail
-                self.pkg("install foo", exit=1)
+                self.pkg("%s foo" % install_cmd, exit=1)
+                self.pkgrepo("remove -s %s pkg:/foo@1.1" % self.rurl )
 
 
 class TestPkgInstallOverlappingPatterns(pkg5unittest.SingleDepotTestCase):
@@ -1766,30 +2020,38 @@ class TestPkgInstallCircularDependencies(pkg5unittest.SingleDepotTestCase):
         """
 
         def test_unanchored_circular_dependencies(self):
-                """ check to make sure we can install
+                """ check to make sure we can install or exact-install
                 circular dependencies w/o versions
                 """
 
+                self.unanchored_circular_dependencies_helper("install")
+                self.unanchored_circular_dependencies_helper("exact-install")
+
+        def unanchored_circular_dependencies_helper(self, install_cmd):
                 # Send 1.0 versions of packages.
                 self.pkgsend_bulk(self.rurl, (self.pkg10, self.pkg20,
                     self.pkg30))
 
                 self.image_create(self.rurl)
-                self.pkg("install pkg1")
+                self.pkg("%s pkg1" % install_cmd)
                 self.pkg("list")
                 self.pkg("verify -v")
 
         def test_anchored_circular_dependencies(self):
-                """ check to make sure we can install
+                """ check to make sure we can install or exact-install
                 circular dependencies w/ versions
                 """
 
+                self.anchored_circular_dependencies_helper("install")
+                self.unanchored_circular_dependencies_helper("exact-install")
+
+        def anchored_circular_dependencies_helper(self, install_cmd):
                 # Send 1.1 versions of packages.
                 self.pkgsend_bulk(self.rurl, (self.pkg11, self.pkg21,
                     self.pkg31))
 
                 self.image_create(self.rurl)
-                self.pkg("install pkg1")
+                self.pkg("%s pkg1" % install_cmd)
                 self.pkg("list")
                 self.pkg("verify -v")
 
@@ -2445,6 +2707,10 @@ adm
                 """Test for editable files moving between packages or locations
                 or both."""
 
+                self.upgrade3_helper("install")
+                self.upgrade3_helper("exact-install")
+
+        def upgrade3_helper(self, install_cmd):
                 self.pkgsend_bulk(self.rurl, (self.silver10, self.silver20,
                     self.silver30, self.gold10, self.gold20, self.gold30,
                     self.golduser10, self.golduser20, self.silveruser))
@@ -2452,7 +2718,7 @@ adm
                 self.image_create(self.rurl)
 
                 # test 1: move an editable file between packages
-                self.pkg("install gold@1.0 silver@1.0")
+                self.pkg("%s gold@1.0 silver@1.0" % install_cmd)
                 self.pkg("verify -v")
 
                 # modify config file
@@ -2464,7 +2730,7 @@ adm
                 self.file_contains(file_path, test_str)
 
                 # update packages
-                self.pkg("install gold@3.0 silver@2.0")
+                self.pkg("%s gold@3.0 silver@2.0" % install_cmd)
                 self.pkg("verify -v")
 
                 # make sure /etc/passwd contains still correct string
@@ -2474,7 +2740,7 @@ adm
 
 
                 # test 2: change an editable file's path within a package
-                self.pkg("install gold@1.0")
+                self.pkg("%s gold@1.0" % install_cmd)
                 self.pkg("verify -v")
 
                 # modify config file
@@ -2482,7 +2748,7 @@ adm
                 file_path = "etc/passwd"
                 self.file_append(file_path, test_str)
 
-                self.pkg("install gold@2.0")
+                self.pkg("%s gold@2.0" % install_cmd)
                 self.pkg("verify -v")
 
                 # make sure /etc/config2 contains correct string
@@ -2494,7 +2760,7 @@ adm
 
 
                 # test 3: move an editable file between packages and change its path
-                self.pkg("install gold@1.0 silver@1.0")
+                self.pkg("%s gold@1.0 silver@1.0" % install_cmd)
                 self.pkg("verify -v")
 
                 # modify config file
@@ -2504,7 +2770,7 @@ adm
 
                 self.file_contains(file_path, test_str)
 
-                self.pkg("install gold@3.0 silver@3.0")
+                self.pkg("%s gold@3.0 silver@3.0" % install_cmd)
                 self.pkg("verify -v")
 
                 # make sure /etc/config2 now contains correct string
@@ -2516,7 +2782,7 @@ adm
 
                 # test 4: move /etc/passwd between packages and ensure that we
                 # can still uninstall a user at the same time.
-                self.pkg("install gold@1.0 silver@1.0")
+                self.pkg("%s gold@1.0 silver@1.0" % install_cmd)
                 self.pkg("verify -v")
 
                 # add a user
@@ -2539,7 +2805,8 @@ adm
                 silly_inode = os.stat(silly_path).st_ino
 
                 # update packages
-                self.pkg("install gold@3.0 silver@2.0 golduser@2.0 silveruser")
+                self.pkg("%s gold@3.0 silver@2.0 golduser@2.0 silveruser"
+                    % install_cmd)
 
                 # make sure Kermie is still installed and still has our local
                 # changes
@@ -2554,28 +2821,37 @@ adm
                 """Test to make sure hardlinks are correctly restored when file
                 they point to is updated."""
 
+                self.upgrade4_helper("install")
+                self.upgrade4_helper("exact-install")
+
+        def upgrade4_helper(self, install_cmd):
                 self.pkgsend_bulk(self.rurl, (self.iron10, self.iron20))
 
                 self.image_create(self.rurl)
 
-                self.pkg("install iron@1.0")
+                self.pkg("%s iron@1.0" % install_cmd)
                 self.pkg("verify -v")
 
-                self.pkg("install iron@2.0")
+                self.pkg("%s iron@2.0" % install_cmd)
                 self.pkg("verify -v")
 
         def test_upgrade_liveroot(self):
                 """Test to make sure upgrade of package fails if on live root
                 and reboot is needed."""
 
+                self.upgrade_liveroot_helper("install")
+                self.upgrade_liveroot_helper("exact-install")
+
+        def upgrade_liveroot_helper(self, install_cmd):
                 self.pkgsend_bulk(self.rurl, (self.liveroot10, self.liveroot20))
                 self.image_create(self.rurl)
 
-                self.pkg("--debug simulate_live_root=%s install liveroot@1.0" %
-                    self.get_img_path())
+                self.pkg("--debug simulate_live_root=%s %s liveroot@1.0" %
+                    (self.get_img_path(), install_cmd))
                 self.pkg("verify -v")
-                self.pkg("--debug simulate_live_root=%s install --deny-new-be "
-                    "liveroot@2.0" % self.get_img_path(), exit=5)
+                self.pkg("--debug simulate_live_root=%s %s --deny-new-be "
+                    "liveroot@2.0" % (self.get_img_path(),  install_cmd),
+                    exit=5)
                 self.pkg("--debug simulate_live_root=%s uninstall "
                     "--deny-new-be liveroot" % self.get_img_path(), exit=5)
                 # "break" liveroot@1
@@ -2587,15 +2863,19 @@ adm
                 """Test to make sure driver_aliases conflicts don't cause
                 add_drv to fail."""
 
+                self.upgrade_driver_conflicts_helper("install")
+                self.upgrade_driver_conflicts_helper("exact-install")
+
+        def upgrade_driver_conflicts_helper(self, install_cmd):
                 self.pkgsend_bulk(self.rurl, (self.dricon1, self.dricon2,
                     self.dricon3))
 
                 self.image_create(self.rurl)
 
                 self.pkg("list -afv")
-                self.pkg("install dricon@1")
+                self.pkg("%s dricon@1" % install_cmd)
                 # This one should comment out the wigit entry in driver_aliases
-                self.pkg("install dricon@2")
+                self.pkg("%s dricon@2" % install_cmd)
                 da_contents = file(os.path.join(self.get_img_path(),
                     "etc/driver_aliases")).readlines()
                 self.assert_("# pkg(5): wigit \"pci8086,1234\"\n" in da_contents)
@@ -2603,7 +2883,7 @@ adm
                 self.assert_("wigit \"pci8086,4321\"\n" in da_contents)
                 self.assert_("zigit \"pci8086,1234\"\n" in da_contents)
                 # This one should fail
-                self.pkg("install dricon@3", exit=1)
+                self.pkg("%s dricon@3" % install_cmd, exit=1)
 
         def test_driver_policy_removal(self):
                 """Test for bug #9568 - that removing a policy for a
@@ -2611,6 +2891,10 @@ adm
                 works successfully.
                 """
 
+                self.driver_policy_removal_helper("install")
+                self.driver_policy_removal_helper("exact-install")
+
+        def driver_policy_removal_helper(self, install_cmd):
                 self.pkgsend_bulk(self.rurl, (self.dripol1, self.dripol2))
 
                 self.image_create(self.rurl)
@@ -2618,7 +2902,7 @@ adm
                 self.pkg("list -afv")
 
                 # Should install the frigit driver with a policy.
-                self.pkg("install dripol@1")
+                self.pkg("%s dripol@1" % install_cmd)
 
                 # Check that there is a policy entry for this
                 # device in /etc/security/device_policy
@@ -2627,7 +2911,7 @@ adm
                 self.assert_("frigit:*\tread_priv_set=net_rawaccess\twrite_priv_set=net_rawaccess\n" in dp_contents)
 
                 # Should reinstall the frigit driver without a policy.
-                self.pkg("install dripol@2")
+                self.pkg("%s dripol@2" % install_cmd)
 
                 # Check that there is no longer a policy entry for this
                 # device in /etc/security/device_policy
@@ -2639,14 +2923,18 @@ adm
                 """Verify that file preserve=true works as expected during
                 package install, update, upgrade, and removal."""
 
+                self.file_preserve("install")
+                self.file_preserve("exact-install")
+
+        def file_preserve(self, install_cmd):
                 self.pkgsend_bulk(self.rurl, (self.preserve1, self.preserve2,
                     self.preserve3, self.renpreserve))
                 self.image_create(self.rurl)
 
                 # If there are no local modifications, no preservation should be
                 # done.  First with no content change ...
-                self.pkg("install preserve@1")
-                self.pkg("install preserve@2")
+                self.pkg("%s preserve@1" % install_cmd)
+                self.pkg("%s preserve@2" % install_cmd)
                 self.file_contains("testme", "preserve1")
                 self.pkg("verify preserve")
 
@@ -2669,10 +2957,10 @@ adm
 
                 # Modify the file locally and update to a version where the
                 # content changes.
-                self.pkg("install preserve@1")
+                self.pkg("%s preserve@1" % install_cmd)
                 self.file_append("testme", "junk")
                 self.file_contains("testme", "preserve1")
-                self.pkg("install preserve@3")
+                self.pkg("%s preserve@3" % install_cmd)
                 self.file_contains("testme", "preserve1")
                 self.file_contains("testme", "junk")
                 self.file_doesnt_exist("testme.old")
@@ -2682,7 +2970,7 @@ adm
 
                 # Modify the file locally and downgrade to a version where
                 # the content changes.
-                self.pkg("install preserve@3")
+                self.pkg("%s preserve@3" % install_cmd)
                 self.file_append("testme", "junk")
                 self.file_contains("testme", "preserve3")
                 self.pkg("update preserve@1")
@@ -2697,10 +2985,10 @@ adm
 
                 # Modify the file locally and update to a version where just the
                 # mode changes.
-                self.pkg("install preserve@1")
+                self.pkg("%s preserve@1" % install_cmd)
                 self.file_append("testme", "junk")
 
-                self.pkg("install preserve@2")
+                self.pkg("%s preserve@2" % install_cmd)
                 self.file_contains("testme", "preserve1")
                 self.file_contains("testme", "junk")
                 self.file_doesnt_exist("testme.old")
@@ -2713,14 +3001,14 @@ adm
                 self.file_doesnt_exist("testme.new")
                 self.file_doesnt_exist("testme.update")
 
-                self.pkg("install preserve@2")
+                self.pkg("%s preserve@2" % install_cmd)
                 self.file_doesnt_exist("testme.old")
                 self.file_doesnt_exist("testme.new")
 
                 # Remove the file locally and update the package; this should
                 # simply replace the missing file.
                 self.file_remove("testme")
-                self.pkg("install preserve@3")
+                self.pkg("%s preserve@3" % install_cmd)
                 self.pkg("verify preserve")
                 self.file_exists("testme")
 
@@ -2734,8 +3022,8 @@ adm
 
                 # Preserved files don't get their mode changed, and verify will
                 # still balk, so fix up the mode.
-                self.pkg("install preserve@1")
-                self.pkg("install preserve@2")
+                self.pkg("%s preserve@1" % install_cmd)
+                self.pkg("%s preserve@2" % install_cmd)
                 self.file_chmod("testme", 0640)
                 self.pkg("verify preserve")
 
@@ -2747,7 +3035,7 @@ adm
 
                 # Verify preserve works across package rename with and without
                 # original_name use and even when the original file is missing.
-                self.pkg("install orig_pkg@1.0")
+                self.pkg("%s orig_pkg@1.0" % install_cmd)
                 foo1_path = os.path.join(self.get_img_path(), "foo1")
                 self.assert_(os.path.isfile(foo1_path))
                 bronze1_path = os.path.join(self.get_img_path(), "bronze1")
@@ -2767,7 +3055,7 @@ adm
                 # preserved files.  They should remain empty even though one is
                 # changing names and the other is simply being preserved across
                 # a package rename.
-                self.pkg("install orig_pkg@1.0")
+                self.pkg("%s orig_pkg@1.0" % install_cmd)
                 open(foo1_path, "wb").close()
                 open(bronze1_path, "wb").close()
                 self.pkg("update orig_pkg")
@@ -2781,7 +3069,7 @@ adm
                 # Update across the rename boundary, then verify that a change
                 # in file name will cause re-delivery of preserved files, but
                 # unchanged, preserved files will not be re-delivered.
-                self.pkg("install orig_pkg@1.0")
+                self.pkg("%s orig_pkg@1.0" % install_cmd)
                 os.unlink(foo1_path)
                 os.unlink(bronze1_path)
                 self.pkg("update orig_pkg")
@@ -2798,7 +3086,7 @@ adm
 
                 # Verify that unmodified, preserved files will not be salvaged
                 # on uninstall.
-                self.pkg("install preserve@1.0")
+                self.pkg("%s preserve@1.0" % install_cmd)
                 self.file_contains("testme", "preserve1")
                 self.pkg("uninstall preserve")
                 salvaged = [
@@ -2809,7 +3097,7 @@ adm
 
                 # Verify that modified, preserved files will be salvaged
                 # on uninstall.
-                self.pkg("install preserve@1.0")
+                self.pkg("%s preserve@1.0" % install_cmd)
                 self.file_contains("testme", "preserve1")
                 self.file_append("testme", "junk")
                 self.pkg("uninstall preserve")
@@ -2818,14 +3106,18 @@ adm
         def test_file_preserve_renameold(self):
                 """Make sure that file upgrade with preserve=renameold works."""
 
+                self.file_preserve_renameold_helper("install")
+                self.file_preserve_renameold_helper("exact-install")
+
+        def file_preserve_renameold_helper(self, install_cmd):
                 plist = self.pkgsend_bulk(self.rurl, (self.renameold1,
                     self.renameold2, self.renameold3))
                 self.image_create(self.rurl)
 
                 # If there are no local modifications, no preservation should be
                 # done.  First with no content change ...
-                self.pkg("install renold@1")
-                self.pkg("install renold@2")
+                self.pkg("%s renold@1" % install_cmd)
+                self.pkg("%s renold@2" % install_cmd)
                 self.file_contains("testme", "renold1")
                 self.file_doesnt_exist("testme.old")
                 self.file_doesnt_exist("testme.new")
@@ -2833,8 +3125,8 @@ adm
                 self.pkg("uninstall renold")
 
                 # ... and again with content change.
-                self.pkg("install renold@1")
-                self.pkg("install renold@3")
+                self.pkg("%s renold@1" % install_cmd)
+                self.pkg("%s renold@3" % install_cmd)
                 self.file_contains("testme", "renold3")
                 self.file_doesnt_exist("testme.old")
                 self.file_doesnt_exist("testme.new")
@@ -2843,9 +3135,9 @@ adm
 
                 # Modify the file locally and update to a version where the
                 # content changes.
-                self.pkg("install renold@1")
+                self.pkg("%s renold@1" % install_cmd)
                 self.file_append("testme", "junk")
-                self.pkg("install renold@3")
+                self.pkg("%s renold@3" % install_cmd)
                 self.file_contains("testme.old", "junk")
                 self.file_doesnt_contain("testme", "junk")
                 self.file_contains("testme", "renold3")
@@ -2856,9 +3148,9 @@ adm
 
                 # Modify the file locally and update to a version where just the
                 # mode changes.
-                self.pkg("install renold@1")
+                self.pkg("%s renold@1" % install_cmd)
                 self.file_append("testme", "junk")
-                self.pkg("install renold@2")
+                self.pkg("%s renold@2" % install_cmd)
                 self.file_contains("testme.old", "junk")
                 self.file_doesnt_contain("testme", "junk")
                 self.file_contains("testme", "renold1")
@@ -2868,23 +3160,27 @@ adm
 
                 # Remove the file locally and update the package; this should
                 # simply replace the missing file.
-                self.pkg("install renold@1")
+                self.pkg("%s renold@1" % install_cmd)
                 self.file_remove("testme")
-                self.pkg("install renold@2")
+                self.pkg("%s renold@2" % install_cmd)
                 self.pkg("verify renold")
                 self.pkg("uninstall renold")
 
         def test_file_preserve_renamenew(self):
                 """Make sure that file ugprade with preserve=renamenew works."""
 
+                self.file_preserve_renamenew_helper("install")
+                self.file_preserve_renamenew_helper("exact-install")
+
+        def file_preserve_renamenew_helper(self, install_cmd):
                 plist = self.pkgsend_bulk(self.rurl, (self.renamenew1,
                     self.renamenew2, self.renamenew3))
                 self.image_create(self.rurl)
 
                 # If there are no local modifications, no preservation should be
                 # done.  First with no content change ...
-                self.pkg("install rennew@1")
-                self.pkg("install rennew@2")
+                self.pkg("%s rennew@1" % install_cmd)
+                self.pkg("%s rennew@2" % install_cmd)
                 self.file_contains("testme", "rennew1")
                 self.file_doesnt_exist("testme.new")
                 self.file_doesnt_exist("testme.old")
@@ -2892,8 +3188,8 @@ adm
                 self.pkg("uninstall rennew")
 
                 # ... and again with content change
-                self.pkg("install rennew@1")
-                self.pkg("install rennew@3")
+                self.pkg("%s rennew@1" % install_cmd)
+                self.pkg("%s rennew@3" % install_cmd)
                 self.file_contains("testme", "rennew3")
                 self.file_doesnt_exist("testme.new")
                 self.file_doesnt_exist("testme.old")
@@ -2902,9 +3198,9 @@ adm
 
                 # Modify the file locally and update to a version where the
                 # content changes.
-                self.pkg("install rennew@1")
+                self.pkg("%s rennew@1" % install_cmd)
                 self.file_append("testme", "junk")
-                self.pkg("install rennew@3")
+                self.pkg("%s rennew@3" % install_cmd)
                 self.file_contains("testme", "junk")
                 self.file_doesnt_contain("testme.new", "junk")
                 self.file_contains("testme.new", "rennew3")
@@ -2916,9 +3212,9 @@ adm
 
                 # Modify the file locally and update to a version where just the
                 # mode changes.
-                self.pkg("install rennew@1")
+                self.pkg("%s rennew@1" % install_cmd)
                 self.file_append("testme", "junk")
-                self.pkg("install rennew@2")
+                self.pkg("%s rennew@2" % install_cmd)
                 self.file_contains("testme", "junk")
                 self.file_doesnt_contain("testme.new", "junk")
                 self.file_contains("testme.new", "rennew1")
@@ -2933,9 +3229,9 @@ adm
 
                 # Remove the file locally and update the package; this should
                 # simply replace the missing file.
-                self.pkg("install rennew@1")
+                self.pkg("%s rennew@1" % install_cmd)
                 self.file_remove("testme")
-                self.pkg("install rennew@2")
+                self.pkg("%s rennew@2" % install_cmd)
                 self.file_doesnt_exist("testme.new")
                 self.file_doesnt_exist("testme.old")
                 self.pkg("verify rennew")
@@ -2944,6 +3240,10 @@ adm
         def test_file_preserve_legacy(self):
                 """Verify that preserve=legacy works as expected."""
 
+                self.file_preserve_legacy_helper("install")
+                self.file_preserve_legacy_helper("exact-install")
+
+        def file_preserve_legacy_helper(self, install_cmd):
                 self.pkgsend_bulk(self.rurl, (self.preslegacy,
                     self.renpreslegacy))
                 self.image_create(self.rurl)
@@ -2958,7 +3258,7 @@ adm
                 # install if a package being installed delivers the same file
                 # and that the new file will be installed.
                 self.file_append("testme", "unpackaged")
-                self.pkg("install preslegacy@1.0")
+                self.pkg("%s preslegacy@1.0" % install_cmd)
                 self.file_contains("testme", "preserve1")
                 self.__salvage_file_contains(sroot, "testme", "unpackaged")
                 shutil.rmtree(sroot)
@@ -2991,14 +3291,14 @@ adm
                 # Verify that an initial install of an action with
                 # preserve=legacy will not install the payload of the action.
                 self.pkg("uninstall preslegacy")
-                self.pkg("install preslegacy@3.0")
+                self.pkg("%s preslegacy@3.0" % install_cmd)
                 self.file_doesnt_exist("testme")
 
                 # Verify that if the original preserved file is missing during
                 # a transition to preserve=legacy from some other state that
                 # the new action is still delivered and the operation succeeds.
                 self.pkg("uninstall preslegacy")
-                self.pkg("install preslegacy@1.0")
+                self.pkg("%s preslegacy@1.0" % install_cmd)
                 self.file_remove("testme")
                 self.pkg("update")
                 self.file_contains("testme", "preserve3")
@@ -3006,7 +3306,7 @@ adm
                 # Verify that a preserved file can be moved from one package to
                 # another and transition to preserve=legacy at the same time.
                 self.pkg("uninstall preslegacy")
-                self.pkg("install orig_preslegacy@1.0")
+                self.pkg("%s orig_preslegacy@1.0" % install_cmd)
                 self.file_exists("testme")
                 self.pkg("update")
                 self.file_contains("testme.legacy", "preserve1")
@@ -3014,9 +3314,14 @@ adm
 
         def test_directory_salvage(self):
                 """Make sure basic directory salvage works as expected"""
+
+                self.directory_salvage_helper("install")
+                self.directory_salvage_helper("exact-install")
+
+        def directory_salvage_helper(self, install_cmd):
                 self.pkgsend_bulk(self.rurl, self.salvage)
                 self.image_create(self.rurl)
-                self.pkg("install salvage@1.0")
+                self.pkg("%s salvage@1.0" % install_cmd)
                 self.file_append("var/mail/foo", "foo's mail")
                 self.file_append("var/mail/bar", "bar's mail")
                 self.file_append("var/mail/baz", "baz's mail")
@@ -3029,12 +3334,16 @@ adm
                 """Make sure directory salvage works as expected when salvaging
                 content to an existing packaged directory."""
 
+                self.directory_salvage_persistent_helper("install")
+                self.directory_salvage_persistent_helper("exact-install")
+
+        def directory_salvage_persistent_helper(self, install_cmd):
                 # we salvage content from two directories,
                 # var/noodles and var/spaghetti each of which disappear over
                 # subsequent updates.
                 self.pkgsend_bulk(self.rurl, self.salvage)
                 self.image_create(self.rurl)
-                self.pkg("install salvage@1.0")
+                self.pkg("%s salvage@1.0" % install_cmd)
                 self.file_append("var/mail/foo", "foo's mail")
                 self.file_append("var/noodles/noodles.txt", "yum")
                 self.pkg("update salvage@2.0")
@@ -3047,7 +3356,7 @@ adm
 
                 # ensure that we can jump from 1.0 to 3.0 directly.
                 self.image_create(self.rurl)
-                self.pkg("install salvage@1.0")
+                self.pkg("%s salvage@1.0" % install_cmd)
                 self.file_append("var/noodles/noodles.txt", "yum")
                 self.pkg("update  salvage@3.0")
                 self.file_exists("var/persistent/noodles.txt")
@@ -3055,10 +3364,15 @@ adm
         def test_special_salvage(self):
                 """Make sure salvaging directories with special files works as
                 expected."""
+
+                self.special_salvage_helper("install")
+                self.special_salvage_helper("exact-install")
+
+        def special_salvage_helper(self, install_cmd):
                 self.pkgsend_bulk(self.rurl, self.salvage_special)
                 self.image_create(self.rurl, destroy=True, fs=("var",))
 
-                self.pkg("install salvage-special")
+                self.pkg("%s salvage-special" % install_cmd)
 
                 os.mkfifo(os.path.join(self.img_path(), "salvage", "fifo"))
                 sock = socket.socket(socket.AF_UNIX)
@@ -3102,11 +3416,15 @@ adm
                 """Ensure that files transitioning to a link still follow
                 original_name preservation rules."""
 
+                self.link_preserve_helper("install")
+                self.link_preserve_helper("exact-install")
+
+        def link_preserve_helper(self, install_cmd):
                 self.pkgsend_bulk(self.rurl, (self.linkpreserve))
                 self.image_create(self.rurl, destroy=True, fs=("var",))
 
                 # Install package with original config file location.
-                self.pkg("install linkpreserve@1.0")
+                self.pkg("%s linkpreserve@1.0" % install_cmd)
                 cfg_path = os.path.join("etc", "ssh", "sshd_config")
                 abs_path = os.path.join(self.get_img_path(), cfg_path)
 
@@ -3126,7 +3444,7 @@ adm
 
                 # Uninstall, then install original version again.
                 self.pkg("uninstall linkpreserve")
-                self.pkg("install linkpreserve@1.0")
+                self.pkg("%s linkpreserve@1.0" % install_cmd)
                 self.file_contains(cfg_path, "preserve1")
 
                 # Install new package version and verify that unmodified file is
@@ -3139,9 +3457,13 @@ adm
                 contains more hash attributes than the old action, that the
                 upgrade works."""
 
+                self.many_hashalgs_helper("install")
+                self.many_hashalgs_helper("exact-install")
+
+        def many_hashalgs_helper(self, install_cmd):
                 self.pkgsend_bulk(self.rurl, (self.iron10))
                 self.image_create(self.rurl, destroy=True)
-                self.pkg("install iron@1.0")
+                self.pkg("%s iron@1.0" % install_cmd)
                 self.pkg("contents -m iron")
                 # We have not enabled SHA2 hash publication yet.
                 self.assert_("pkg.hash.sha256" not in self.output)
@@ -3157,7 +3479,7 @@ adm
                 # This also tests package retrieval: we always retrieve packages
                 # with the least-preferred hash, but verify with the
                 # most-preferred hash.
-                self.pkg("install iron@2.0")
+                self.pkg("%s iron@2.0" % install_cmd)
                 self.pkg("contents -m iron")
                 self.assert_("pkg.hash.sha256" in self.output)
 
@@ -3511,7 +3833,7 @@ adm:NP:6445::::::
 
                 self.make_misc_files(self.misc_files)
 
-        def test_basics_0(self):
+        def test_basics_0_install(self):
                 """Send basic infrastructure, install and uninstall."""
 
                 self.pkgsend_bulk(self.rurl, (self.basics0, self.basics1))
@@ -3529,7 +3851,24 @@ adm:NP:6445::::::
                 self.pkg("uninstall basics basics1")
                 self.pkg("verify")
 
-        def test_grouptest(self):
+        def test_basics_0_exact_install(self):
+                """Send basic infrastructure, exact-install and uninstall."""
+
+                self.pkgsend_bulk(self.rurl, (self.basics0, self.basics1))
+                self.image_create(self.rurl)
+
+                self.pkg("list -a")
+                self.pkg("list", exit=1)
+
+                self.pkg("exact-install basics basics1")
+
+                self.pkg("list")
+                self.pkg("verify")
+
+                self.pkg("uninstall basics basics1")
+                self.pkg("verify")
+
+        def test_grouptest_install(self):
 
                 self.pkgsend_bulk(self.rurl, (self.basics0, self.basics1,
                     self.grouptest))
@@ -3542,7 +3881,19 @@ adm:NP:6445::::::
                 self.pkg("uninstall grouptest")
                 self.pkg("verify")
 
-        def test_usertest(self):
+        def test_grouptest_exact_install(self):
+
+                self.pkgsend_bulk(self.rurl, (self.basics0, self.basics1,
+                    self.grouptest))
+                self.image_create(self.rurl)
+                self.pkg("exact-install basics basics1")
+                self.pkg("exact-install grouptest")
+                self.pkg("verify")
+                self.pkg("list basics1", exit=1)
+                self.pkg("uninstall grouptest")
+                self.pkg("verify")
+
+        def test_usertest_install(self):
 
                 self.pkgsend_bulk(self.rurl, (self.basics0, self.basics1,
                     self.grouptest, self.usertest10))
@@ -3563,7 +3914,27 @@ adm:NP:6445::::::
                 self.pkg("uninstall usertest")
                 self.pkg("verify")
 
-        def test_primordial_usergroup(self):
+        def test_usertest_exact_install(self):
+
+                self.pkgsend_bulk(self.rurl, (self.basics0, self.basics1,
+                    self.grouptest, self.usertest10))
+                self.image_create(self.rurl)
+                self.pkg("exact-install basics basics1")
+                self.pkg("exact-install usertest")
+                self.pkg("verify")
+                self.pkg("list basics1", exit=1)
+                self.pkg("contents -m usertest")
+
+                self.pkgsend_bulk(self.rurl, self.usertest11)
+                self.pkg("refresh")
+                self.pkg("exact-install usertest")
+                self.pkg("verify")
+                self.pkg("contents -m usertest")
+
+                self.pkg("uninstall usertest")
+                self.pkg("verify")
+
+        def test_primordial_usergroup_install(self):
                 """Ensure that we can install user and group actions in the same
                 transaction as /etc/passwd, /etc/group, etc."""
 
@@ -3577,7 +3948,21 @@ adm:NP:6445::::::
                 self.image_create(self.rurl)
                 self.pkg("install singleuser", exit=1)
 
-        def test_ftpuser(self):
+        def test_primordial_usergroup_exact_install(self):
+                """Ensure that we can exact-install user and group actions in
+                the same transaction as /etc/passwd, /etc/group, etc."""
+
+                self.pkgsend_bulk(self.rurl, [self.basics0, self.singleuser])
+
+                self.image_create(self.rurl)
+                self.pkg("exact-install basics")
+                self.pkg("verify")
+
+                self.image_destroy()
+                self.image_create(self.rurl)
+                self.pkg("exact-install  basics singleuser")
+
+        def test_ftpuser_install(self):
                 """Make sure we correctly handle /etc/ftpd/ftpusers."""
 
                 notftpuser = """
@@ -3647,7 +4032,80 @@ adm:NP:6445::::::
                 self.assert_("gonzo\n" not in file(fpath).readlines())
                 self.pkg("verify ftpuserimp")
 
-        def test_groupverify(self):
+        def test_ftpuser_exact_install(self):
+                """Make sure we correctly handle /etc/ftpd/ftpusers."""
+
+                notftpuser = """
+                open notftpuser@1
+                add user username=animal group=root ftpuser=false
+                add depend fmri=pkg:/basics@1.0 type=require
+                close"""
+
+                ftpuserexp = """
+                open ftpuserexp@1
+                add user username=fozzie group=root ftpuser=true
+                add depend fmri=pkg:/basics@1.0 type=require
+                close"""
+
+                ftpuserimp = """
+                open ftpuserimp@1
+                add user username=gonzo group=root
+                add depend fmri=pkg:/basics@1.0 type=require
+                close"""
+
+                self.pkgsend_bulk(self.rurl, (self.basics0, notftpuser,
+                    ftpuserexp, ftpuserimp))
+                self.image_create(self.rurl)
+
+                self.pkg("install basics")
+
+                # Add a user with ftpuser=false.  Make sure the user is added to
+                # the file, and that the user verifies.
+                self.pkg("exact-install notftpuser")
+                fpath = self.get_img_path() + "/etc/ftpd/ftpusers"
+                self.assert_("animal\n" in file(fpath).readlines())
+                self.pkg("verify notftpuser")
+
+                # Put a user into the ftpusers file as shipped, then add that
+                # user, with ftpuser=false.  Make sure the user remains in the
+                # file, and that the user verifies.
+                self.pkg("uninstall notftpuser")
+                file(fpath, "a").write("animal\n")
+                self.pkg("exact-install notftpuser")
+                self.assert_("animal\n" in file(fpath).readlines())
+                self.pkg("verify notftpuser")
+
+                # Add a user with an explicit ftpuser=true.  Make sure the user
+                # is not added to the file, and that the user verifies.
+                self.pkg("exact-install ftpuserexp")
+                self.assert_("fozzie\n" not in file(fpath).readlines())
+                self.pkg("verify ftpuserexp")
+
+                # Put a user into the ftpusers file as shipped, then add that
+                # user, with an explicit ftpuser=true.  Make sure the user is
+                # stripped from the file, and that the user verifies.
+                self.pkg("uninstall ftpuserexp")
+                file(fpath, "a").write("fozzie\n")
+                self.pkg("exact-install ftpuserexp")
+                self.assert_("fozzie\n" not in file(fpath).readlines())
+                self.pkg("verify ftpuserexp")
+
+                # Add a user with an implicit ftpuser=true.  Make sure the user
+                # is not added to the file, and that the user verifies.
+                self.pkg("exact-install ftpuserimp")
+                self.assert_("gonzo\n" not in file(fpath).readlines())
+                self.pkg("verify ftpuserimp")
+
+                # Put a user into the ftpusers file as shipped, then add that
+                # user, with an implicit ftpuser=true.  Make sure the user is
+                # stripped from the file, and that the user verifies.
+                self.pkg("uninstall ftpuserimp")
+                file(fpath, "a").write("gonzo\n")
+                self.pkg("exact-install ftpuserimp")
+                self.assert_("gonzo\n" not in file(fpath).readlines())
+                self.pkg("verify ftpuserimp")
+
+        def test_groupverify_install(self):
                 """Make sure we correctly verify group actions when users have
                 been added."""
 
@@ -3666,25 +4124,64 @@ adm:NP:6445::::::
                 self.pkg("install simplegroup")
                 self.pkg("verify simplegroup")
 
-		# add additional members to group & verify
+                # add additional members to group & verify
                 gpath = self.get_img_file_path("etc/group")
                 gdata = file(gpath).readlines()
                 gdata[-1] = gdata[-1].rstrip() + "kermit,misspiggy\n"
                 file(gpath, "w").writelines(gdata)
                 self.pkg("verify simplegroup")
-		self.pkg("uninstall simplegroup")
+                self.pkg("uninstall simplegroup")
 
-		# verify that groups appear in gid order.
-		self.pkg("install simplegroup simplegroup2")
-		self.pkg("verify")
-		gdata = file(gpath).readlines()
-		self.assert_(gdata[-1].find("muppets2") == 0)
-		self.pkg("uninstall simple*")
-		self.pkg("install simplegroup2 simplegroup")
-		gdata = file(gpath).readlines()
-		self.assert_(gdata[-1].find("muppets2") == 0)
+                # verify that groups appear in gid order.
+                self.pkg("install simplegroup simplegroup2")
+                self.pkg("verify")
+                gdata = file(gpath).readlines()
+                self.assert_(gdata[-1].find("muppets2") == 0)
+                self.pkg("uninstall simple*")
+                self.pkg("install simplegroup2 simplegroup")
+                gdata = file(gpath).readlines()
+                self.assert_(gdata[-1].find("muppets2") == 0)
 
-        def test_preexisting_group(self):
+        def test_groupverify_exact_install(self):
+                """Make sure we correctly verify group actions when users have
+                been added."""
+
+                simplegroups = """
+                open simplegroup@1
+                add group groupname=muppets gid=100
+                add depend fmri=pkg:/basics@1.0 type=require
+                close
+                open simplegroup2@1
+                add group groupname=muppets2 gid=101
+                add depend fmri=pkg:/basics@1.0 type=require
+                close"""
+
+                self.pkgsend_bulk(self.rurl, (self.basics0, simplegroups))
+                self.image_create(self.rurl)
+
+                self.pkg("install basics")
+                self.pkg("exact-install simplegroup")
+                self.pkg("verify simplegroup")
+
+                # add additional members to group & verify
+                gpath = self.get_img_file_path("etc/group")
+                gdata = file(gpath).readlines()
+                gdata[-1] = gdata[-1].rstrip() + "kermit,misspiggy\n"
+                file(gpath, "w").writelines(gdata)
+                self.pkg("verify simplegroup")
+                self.pkg("uninstall simplegroup")
+
+                # verify that groups appear in gid order.
+                self.pkg("exact-install simplegroup simplegroup2")
+                self.pkg("verify")
+                gdata = file(gpath).readlines()
+                self.assert_(gdata[-1].find("muppets2") == 0)
+                self.pkg("uninstall simple*")
+                self.pkg("exact-install simplegroup2 simplegroup")
+                gdata = file(gpath).readlines()
+                self.assert_(gdata[-1].find("muppets2") == 0)
+
+        def test_preexisting_group_install(self):
                 """Make sure we correct any errors in pre-existing group actions"""
                 simplegroup = """
                 open simplegroup@1
@@ -3692,7 +4189,7 @@ adm:NP:6445::::::
                 close
                 open simplegroup@2
                 add dir path=/etc/muppet owner=root group=muppets mode=755
-		add group groupname=muppets gid=70
+                add group groupname=muppets gid=70
                 close"""
 
                 self.pkgsend_bulk(self.rurl, (self.basics0, simplegroup))
@@ -3706,23 +4203,56 @@ adm:NP:6445::::::
                 self.pkg("verify")
                 self.pkg("install simplegroup@1")
                 self.pkg("verify simplegroup")
-		# check # lines beginning w/ 'muppets' in group file
+                # check # lines beginning w/ 'muppets' in group file
                 gdata = file(gpath).readlines()
-		self.assert_(
-		    len([a for a in gdata if a.find("muppets") == 0]) == 1)
+                self.assert_(
+                    len([a for a in gdata if a.find("muppets") == 0]) == 1)
 
-		# make sure we can add new version of same package
-		self.pkg("update simplegroup")
-		self.pkg("verify simplegroup")
+                # make sure we can add new version of same package
+                self.pkg("update simplegroup")
+                self.pkg("verify simplegroup")
 
-	def test_missing_ownergroup(self):
-		"""test what happens when a owner or group is missing"""
-		missing = """
+        def test_preexisting_group_exact_install(self):
+                """Make sure we correct any errors in pre-existing group actions"""
+                simplegroup = """
+                open simplegroup@1
+                add group groupname=muppets gid=70
+                add depend fmri=pkg:/basics@1.0 type=require
+                close
+                open simplegroup@2
+                add dir path=/etc/muppet owner=root group=muppets mode=755
+                add group groupname=muppets gid=70
+                add depend fmri=pkg:/basics@1.0 type=require
+                close"""
+
+                self.pkgsend_bulk(self.rurl, (self.basics0, simplegroup))
+                self.image_create(self.rurl)
+
+                self.pkg("install basics")
+                gpath = self.get_img_file_path("etc/group")
+                gdata = file(gpath).readlines()
+                gdata = ["muppets::1010:\n"] + gdata
+                file(gpath, "w").writelines(gdata)
+                self.pkg("verify")
+                self.pkg("exact-install simplegroup@1")
+                self.pkg("verify simplegroup")
+                # check # lines beginning w/ 'muppets' in group file
+                gdata = file(gpath).readlines()
+                self.assert_(
+                    len([a for a in gdata if a.find("muppets") == 0]) == 1)
+
+                # make sure we can add new version of same package
+                self.pkg("update simplegroup")
+                self.pkg("verify simplegroup")
+
+        def test_missing_ownergroup_install(self):
+                """test what happens when a owner or group is missing"""
+                missing = """
                 open missing_group@1
-		add dir path=etc/muppet1 owner=root group=muppets mode=755
+                add dir path=etc/muppet1 owner=root group=muppets mode=755
                 close
                 open missing_owner@1
-		add dir path=etc/muppet2 owner=muppets group=root mode=755
+                add dir path=etc/muppet2 owner=muppets group=root mode=755
                 close
                 open muppetsuser@1
                 add user username=muppets group=bozomuppets uid=777
@@ -3737,41 +4267,106 @@ adm:NP:6445::::::
 
                 self.pkgsend_bulk(self.rurl, (self.basics0, missing))
                 self.image_create(self.rurl)
-		self.pkg("install basics")
+                self.pkg("install basics")
 
-		# try installing directory w/ a non-existing group
-		self.pkg("install missing_group@1", exit=1)
-		# try installing directory w/ a non-existing owner
-		self.pkg("install missing_owner@1", exit=1)
-		# try installing user w/ unknown group
-		self.pkg("install muppetsuser@1", exit=1)
-		# install group
-		self.pkg("install muppetsgroup")
-		# install working user & see if it all works.
-		self.pkg("install muppetsuser@2")
-		self.pkg("install missing_group@1")
-		self.pkg("install missing_owner@1")
-	        self.pkg("verify")
-		# edit group file to remove muppets group
+                # try installing directory w/ a non-existing group
+                self.pkg("install missing_group@1", exit=1)
+                # try installing directory w/ a non-existing owner
+                self.pkg("install missing_owner@1", exit=1)
+                # try installing user w/ unknown group
+                self.pkg("install muppetsuser@1", exit=1)
+                # install group
+                self.pkg("install muppetsgroup")
+                # install working user & see if it all works.
+                self.pkg("install muppetsuser@2")
+                self.pkg("install missing_group@1")
+                self.pkg("install missing_owner@1")
+                self.pkg("verify")
+                # edit group file to remove muppets group
                 gpath = self.get_img_file_path("etc/group")
                 gdata = file(gpath).readlines()
                 file(gpath, "w").writelines(gdata[0:-1])
-		# verify that we catch missing group
-		# in both group and user actions
-		self.pkg("verify muppetsgroup", 1)
-		self.pkg("verify muppetsuser", 1)
-		self.pkg("fix muppetsgroup", 0)
-		self.pkg("verify muppetsgroup muppetsuser missing*")
-		self.pkg("uninstall missing*")
-		# try installing w/ broken group
-                file(gpath, "w").writelines(gdata[0:-1])
-		self.pkg("install missing_group@1", 1)
-		self.pkg("fix muppetsgroup")
-		self.pkg("install missing_group@1")
-		self.pkg("install missing_owner@1")
-		self.pkg("verify muppetsgroup muppetsuser missing*")
 
-        def test_userverify(self):
+                # verify that we catch missing group
+                # in both group and user actions
+                self.pkg("verify muppetsgroup", 1)
+                self.pkg("verify muppetsuser", 1)
+                self.pkg("fix muppetsgroup", 0)
+                self.pkg("verify muppetsgroup muppetsuser missing*")
+                self.pkg("uninstall missing*")
+                # try installing w/ broken group
+
+                file(gpath, "w").writelines(gdata[0:-1])
+                self.pkg("install missing_group@1", 1)
+                self.pkg("fix muppetsgroup")
+                self.pkg("install missing_group@1")
+                self.pkg("install missing_owner@1")
+                self.pkg("verify muppetsgroup muppetsuser missing*")
+
+        def test_missing_ownergroup_exact_install(self):
+                """Test what happens when a owner or group is missing."""
+
+                missing = """
+                open missing_group@1
+                add dir path=etc/muppet1 owner=root group=muppets mode=755
+                 add depend fmri=pkg:/basics@1.0 type=require
+                close
+                open missing_owner@1
+                add dir path=etc/muppet2 owner=muppets group=root mode=755
+                 add depend fmri=pkg:/basics@1.0 type=require
+                close
+                open muppetsuser@1
+                add user username=muppets group=bozomuppets uid=777
+                add depend fmri=pkg:/basics@1.0 type=require
+                close
+                open muppetsuser@2
+                add user username=muppets group=muppets uid=777
+                add depend fmri=pkg:/basics@1.0 type=require
+                add depend fmri=pkg:/muppetsgroup@1 type=require
+                close
+                open muppetsgroup@1
+                add group groupname=muppets gid=777
+                close
+                """
+
+                self.pkgsend_bulk(self.rurl, (self.basics0, missing))
+                self.image_create(self.rurl)
+                self.pkg("install basics")
+
+                # try exact-installing directory w/ a non-existing group
+                self.pkg("exact-install missing_group@1", exit=1)
+                # try exact-installing directory w/ a non-existing owner
+                self.pkg("exact-install missing_owner@1", exit=1)
+                # try exact-installing user w/ unknown group
+                self.pkg("exact-install muppetsuser@1", exit=1)
+
+                # install group
+                self.pkg("install muppetsgroup")
+                # install working user & see if it all works.
+                self.pkg("install muppetsuser@2")
+                self.pkg("exact-install muppetsgroup missing_group@1")
+                self.pkg("exact-install muppetsuser@2 missing_owner@1")
+                self.pkg("verify")
+                # edit group file to remove muppets group
+                gpath = self.get_img_file_path("etc/group")
+                gdata = file(gpath).readlines()
+                file(gpath, "w").writelines(gdata[0:-1])
+                # verify that we catch missing group
+                # in both group and user actions
+                self.pkg("verify muppetsgroup", 1)
+                self.pkg("verify muppetsuser", 1)
+                self.pkg("fix muppetsgroup", 0)
+                self.pkg("verify muppetsgroup muppetsuser missing*")
+                self.pkg("uninstall missing*")
+                # try installing w/ broken group
+                file(gpath, "w").writelines(gdata[0:-1])
+                self.pkg("exact-install missing_group@1", 1)
+                self.pkg("fix muppetsgroup")
+                self.pkg("exact-install muppetsgroup missing_group@1")
+                self.pkg("exact-install muppetsuser@2 missing_owner@1")
+                self.pkg("verify muppetsgroup muppetsuser missing*")
+
+        def test_userverify_install(self):
                 """Make sure we correctly verify user actions when the on-disk
                 databases have been modified."""
 
@@ -3897,7 +4492,7 @@ adm:NP:6445::::::
                 self.pkg("verify simpleuser")
 
                 # verify that passwords set to anything
-		# other than '*LK*" or 'NP' in manifest
+                # other than '*LK*" or 'NP' in manifest
                 # do not cause verify errors if changed.
                 self.pkg("install --reject simpleuser simpleuser2@1")
                 self.pkg("verify simpleuser2")
@@ -3915,31 +4510,198 @@ adm:NP:6445::::::
                 sdata = file(spath).readlines()
                 sdata[-1].index("*LK*")
 
-		# ascertain that users are added in uid order when
-		# installed at the same time.
-		self.pkg("uninstall simpleuser2")
-		self.pkg("install simpleuser simpleuser2")
+                # ascertain that users are added in uid order when
+                # installed at the same time.
+                self.pkg("uninstall simpleuser2")
+                self.pkg("install simpleuser simpleuser2")
 
-		pdata = file(ppath).readlines()
-		pdata[-1].index("kermit")
+                pdata = file(ppath).readlines()
+                pdata[-1].index("kermit")
 
-		self.pkg("uninstall simpleuser simpleuser2")
-		self.pkg("install simpleuser2 simpleuser")
+                self.pkg("uninstall simpleuser simpleuser2")
+                self.pkg("install simpleuser2 simpleuser")
 
-		pdata = file(ppath).readlines()
-		pdata[-1].index("kermit")
+                pdata = file(ppath).readlines()
+                pdata[-1].index("kermit")
+
+        def test_userverify_exact_install(self):
+                """Make sure we correctly verify user actions when the on-disk
+                databases have been modified."""
+
+                simpleusers = """
+                open simpleuser@1
+                add user username=misspiggy group=root gcos-field="& loves Kermie" login-shell=/bin/sh uid=5
+                add depend fmri=pkg:/basics@1.0 type=require
+                close
+                open simpleuser2@1
+                add user username=kermit group=root gcos-field="& loves mspiggy" login-shell=/bin/sh password=UP uid=6
+                add depend fmri=pkg:/basics@1.0 type=require
+                close
+                open simpleuser2@2
+                add user username=kermit group=root gcos-field="& loves mspiggy" login-shell=/bin/sh uid=6
+                add depend fmri=pkg:/basics@1.0 type=require
+                close"""
+
+
+                self.pkgsend_bulk(self.rurl, (self.basics0, simpleusers))
+                self.image_create(self.rurl)
+
+                self.pkg("install basics")
+                self.pkg("exact-install simpleuser")
+                self.pkg("verify simpleuser")
+
+                ppath = self.get_img_path() + "/etc/passwd"
+                pdata = file(ppath).readlines()
+                spath = self.get_img_path() + "/etc/shadow"
+                sdata = file(spath).readlines()
+
+                def finderr(err):
+                        self.assert_("\t\t" + err in self.output)
+
+                # change a provided, empty-default field to something else
+                pdata[-1] = "misspiggy:x:5:0:& loves Kermie:/:/bin/zsh"
+                file(ppath, "w").writelines(pdata)
+                self.pkg("verify simpleuser", exit=1)
+                finderr("login-shell: '/bin/zsh' should be '/bin/sh'")
+                self.pkg("fix simpleuser")
+                self.pkg("verify simpleuser")
+
+                # change a provided, non-empty-default field to the default
+                pdata[-1] = "misspiggy:x:5:0:& User:/:/bin/sh"
+                file(ppath, "w").writelines(pdata)
+                self.pkg("verify simpleuser", exit=1)
+                finderr("gcos-field: '& User' should be '& loves Kermie'")
+                self.pkg("fix simpleuser")
+                self.pkg("verify simpleuser")
+
+                # change a non-provided, non-empty-default field to something
+                # other than the default
+                pdata[-1] = "misspiggy:x:5:0:& loves Kermie:/misspiggy:/bin/sh"
+                file(ppath, "w").writelines(pdata)
+                self.pkg("verify simpleuser", exit=1)
+                finderr("home-dir: '/misspiggy' should be '/'")
+                self.pkg("fix simpleuser")
+                self.pkg("verify simpleuser")
+
+                # add a non-provided, empty-default field
+                pdata[-1] = "misspiggy:x:5:0:& loves Kermie:/:/bin/sh"
+                sdata[-1] = "misspiggy:*LK*:14579:7:::::"
+                file(ppath, "w").writelines(pdata)
+                os.chmod(spath,
+                    stat.S_IMODE(os.stat(spath).st_mode)|stat.S_IWUSR)
+                file(spath, "w").writelines(sdata)
+                self.pkg("verify simpleuser", exit=1)
+                finderr("min: '7' should be '<empty>'")
+                # fails fix since we don't repair shadow entries on purpose
+                self.pkg("fix simpleuser")
+                self.pkg("verify simpleuser", exit=1)
+                finderr("min: '7' should be '<empty>'")
+
+                # remove a non-provided, non-empty-default field
+                pdata[-1] = "misspiggy:x:5:0:& loves Kermie::/bin/sh"
+                sdata[-1] = "misspiggy:*LK*:14579::::::"
+                file(ppath, "w").writelines(pdata)
+                file(spath, "w").writelines(sdata)
+                self.pkg("verify simpleuser", exit=1)
+                finderr("home-dir: '' should be '/'")
+                self.pkg("fix simpleuser")
+                self.pkg("verify simpleuser")
+
+                # remove a provided, non-empty-default field
+                pdata[-1] = "misspiggy:x:5:0::/:/bin/sh"
+                file(ppath, "w").writelines(pdata)
+                self.pkg("verify simpleuser", exit=1)
+                finderr("gcos-field: '' should be '& loves Kermie'")
+                self.pkg("fix simpleuser")
+                self.pkg("verify simpleuser")
+
+                # remove a provided, empty-default field
+                pdata[-1] = "misspiggy:x:5:0:& loves Kermie:/:"
+                file(ppath, "w").writelines(pdata)
+                self.pkg("verify simpleuser", exit=1)
+                finderr("login-shell: '' should be '/bin/sh'")
+                self.pkg("fix simpleuser")
+                self.pkg("verify simpleuser")
+
+                # remove the user from /etc/passwd
+                pdata[-1] = "misswiggy:x:5:0:& loves Kermie:/:"
+                file(ppath, "w").writelines(pdata)
+                self.pkg("verify simpleuser", exit=1)
+                finderr("login-shell: '<missing>' should be '/bin/sh'")
+                finderr("gcos-field: '<missing>' should be '& loves Kermie'")
+                finderr("group: '<missing>' should be 'root'")
+                self.pkg("fix simpleuser")
+                self.pkg("verify simpleuser")
+
+                # remove the user completely
+                pdata[-1] = "misswiggy:x:5:0:& loves Kermie:/:"
+                sdata[-1] = "misswiggy:*LK*:14579::::::"
+                file(ppath, "w").writelines(pdata)
+                file(spath, "w").writelines(sdata)
+                self.pkg("verify simpleuser", exit=1)
+                finderr("username: '<missing>' should be 'misspiggy'")
+                self.pkg("fix simpleuser")
+                self.pkg("verify simpleuser")
+
+                # change the password and show an error
+                self.pkg("verify simpleuser")
+                sdata[-1] = "misspiggy:NP:14579::::::"
+                file(spath, "w").writelines(sdata)
+                self.pkg("verify simpleuser", exit=1)
+                finderr("password: 'NP' should be '*LK*'")
+                self.pkg("fix simpleuser")
+                self.pkg("verify simpleuser")
+
+                # verify that passwords set to anything
+        # other than '*LK*" or 'NP' in manifest
+                # do not cause verify errors if changed.
+                self.pkg("exact-install --reject simpleuser simpleuser2@1")
+                self.pkg("verify simpleuser2")
+                pdata = file(ppath).readlines()
+                sdata = file(spath).readlines()
+                sdata[-1] = "kermit:$5$pWPEsjm2$GXjBRTjGeeWmJ81ytw3q1ah7QTaI7yJeRYZeyvB.Rp1:14579::::::"
+                file(spath, "w").writelines(sdata)
+                self.pkg("verify simpleuser2")
+
+                # verify that upgrading package to version that implicitly
+                # uses *LK* default causes password to change and that it
+                # verifies correctly
+                self.pkg("update simpleuser2@2")
+                self.pkg("verify simpleuser2")
+                sdata = file(spath).readlines()
+                sdata[-1].index("*LK*")
+
+                # ascertain that users are added in uid order when
+                # installed at the same time.
+                self.pkg("uninstall simpleuser2")
+                self.pkg("exact-install simpleuser simpleuser2")
+
+                pdata = file(ppath).readlines()
+                pdata[-1].index("kermit")
+
+                self.pkg("uninstall simpleuser simpleuser2")
+                self.pkg("exact-install simpleuser2 simpleuser")
+
+                pdata = file(ppath).readlines()
+                pdata[-1].index("kermit")
 
         def test_minugid(self):
                 """Ensure that an unspecified uid/gid results in the first
                 unused."""
 
+                self.minugid_helper("install")
+                self.minugid_helper("exact-install")
+
+        def minugid_helper(self, install_cmd):
                 self.pkgsend_bulk(self.rurl, (self.basics0, self.ugidtest))
                 self.image_create(self.rurl)
 
                 # This will lay down the sample passwd file, group file, etc.
                 self.pkg("install basics")
-
-                self.pkg("install ugidtest")
+                if install_cmd == "install":
+                        self.pkg("install ugidtest")
+                else:
+                        self.pkg("exact-install basics ugidtest")
                 passwd_file = file(os.path.join(self.get_img_path(),
                     "/etc/passwd"))
                 for line in passwd_file:
@@ -3958,27 +4720,35 @@ adm:NP:6445::::::
                 that user in the same delta (mysql tripped over this early on
                 in IPS development)."""
 
+                self.upgrade_with_user_helper("install")
+                self.upgrade_with_user_helper("exact-install")
+
+        def upgrade_with_user_helper(self, install_cmd):
                 self.pkgsend_bulk(self.rurl, (self.basics0, self.basics1,
                     self.silver10, self.silver20, self.grouptest))
                 self.image_create(self.rurl)
                 self.pkg("install basics@1.0")
-                self.pkg("install basics1@1.0")
-                self.pkg("install silver@1.0")
+                self.pkg("%s basics1@1.0" % install_cmd)
+                self.pkg("%s silver@1.0" % install_cmd)
                 self.pkg("list silver@1.0")
                 self.pkg("verify -v")
-                self.pkg("install silver@2.0")
+                self.pkg("%s silver@2.0" % install_cmd)
                 self.pkg("verify -v")
 
         def test_upgrade_garbage_passwd(self):
+                self.upgrade_garbage_passwd_helper("install")
+                self.upgrade_garbage_passwd_helper("exact-install")
+
+        def upgrade_garbage_passwd_helper(self, install_cmd):
                 self.pkgsend_bulk(self.rurl, (self.basics0, self.singleuser))
                 self.image_create(self.rurl)
                 pwd_path = os.path.join(self.get_img_path(), "etc/passwd")
-
                 # Put a garbage line in /etc/passwd, and make sure we can
-                # install a user, uninstall the user, and preserve the garbage
-                # line.  Once with a blank line in the middle, once with a
-                # non-blank line with too few fields, once with a non-blank line
-                # with too many fields, and once with a blank line at the end.
+                # install or exact-install, uninstall a user, and preserve the
+                # garbage line.  Once with a blank line in the middle, once
+                # with a non-blank line with too few fields, once with a
+                # non-blank line with too many fields, and once with a blank
+                # line at the end.
                 for lineno, garbage in ((3, ""), (3, "garbage"),
                     (3, ":::::::::"), (100, "")):
                         garbage += "\n"
@@ -3989,7 +4759,10 @@ adm:NP:6445::::::
                                 pwd_file.truncate(0)
                                 pwd_file.seek(0)
                                 pwd_file.writelines(lines)
-                        self.pkg("install singleuser")
+                        if install_cmd == "install":
+                                self.pkg("%s singleuser" % install_cmd)
+                        else:
+                                self.pkg("%s basics singleuser" % install_cmd)
                         with file(pwd_path) as pwd_file:
                                 lines = pwd_file.readlines()
                                 self.assert_(garbage in lines)
@@ -4004,6 +4777,10 @@ adm:NP:6445::::::
                 """If a user is present in a secondary group list when the user
                 is installed, the client shouldn't crash."""
 
+                self.user_in_grouplist_helper("install")
+                self.user_in_grouplist_helper("exact-install")
+
+        def user_in_grouplist_helper(self, install_cmd):
                 self.pkgsend_bulk(self.rurl, (self.basics0, self.only_user10))
                 self.image_create(self.rurl)
                 self.pkg("install basics@1.0")
@@ -4014,7 +4791,10 @@ adm:NP:6445::::::
                         group_file.truncate(0)
                         group_file.seek(0)
                         group_file.writelines(lines)
-                self.pkg("install only_user@1.0")
+                if install_cmd == "install":
+                        self.pkg("install only_user@1.0")
+                else:
+                        self.pkg("exact-install basics@1.0 only_user@1.0")
 
         def test_invalid_open(self):
                 """Send invalid package definitions (invalid fmris); expect
@@ -4057,6 +4837,10 @@ adm:NP:6445::::::
                         self.pkgsend(self.rurl, "close -A")
 
         def test_devlink(self):
+                self.devlink_helper("install")
+                self.devlink_helper("exact-install")
+
+        def devlink_helper(self, install_cmd):
                 # driver actions are not valid except on OpenSolaris
                 if portable.util.get_canonical_os_name() != "sunos":
                         return
@@ -4096,7 +4880,7 @@ adm:NP:6445::::::
                 self.assert_(dllines[0].find("\t") > 0)
 
                 # Upgrade
-                self.pkg("install devlinktest@2.0")
+                self.pkg("%s devlinktest@2.0" % install_cmd)
                 self.pkg("verify -v")
 
                 dllines = readfile()
@@ -4122,7 +4906,7 @@ adm:NP:6445::::::
                 writefile(dllines)
 
                 # Upgrade
-                self.pkg("install devlinktest@2.0")
+                self.pkg("%s devlinktest@2.0" % install_cmd)
 
                 # Verify that we spewed a message on upgrade
                 self.assert_(self.output.find("not found") != -1)
@@ -4176,7 +4960,7 @@ adm:NP:6445::::::
                 dllines.append("type=ddi_pseudo;name=zorg\t\D\n")
                 writefile(dllines)
 
-                self.pkg("install devlinktest@2.0")
+                self.pkg("%s devlinktest@2.0" % install_cmd)
                 dllines = readfile()
                 self.failUnless(len(dllines) == 4, msg=dllines)
                 assertContents(dllines, ["zerg2", "zorg", "borg", "zork"])
@@ -4186,6 +4970,10 @@ adm:NP:6445::::::
                 upgrade.  This is the result of a bug in update_drv, but it's
                 not a bad idea to test some of this ourselves."""
 
+                self.driver_aliases_upgrade_helper("install")
+                self.driver_aliases_upgrade_helper("exact-install")
+
+        def driver_aliases_upgrade_helper(self, install_cmd):
                 # driver actions are not valid except on OpenSolaris
                 if portable.util.get_canonical_os_name() != "sunos":
                         return
@@ -4194,7 +4982,7 @@ adm:NP:6445::::::
                     self.devalias20])
 
                 self.image_create(self.rurl)
-                self.pkg("install devicebase devalias@1")
+                self.pkg("%s devicebase devalias@1" % install_cmd)
                 self.pkg("update devalias")
                 self.pkg("verify devalias")
 
@@ -4212,11 +5000,15 @@ adm:NP:6445::::::
                 """Make sure that an alias can be moved from one driver action
                 to another."""
 
+                self.driver_aliases_move_helper("install")
+                self.driver_aliases_move_helper("exact-install")
+
+        def driver_aliases_move_helper(self, install_cmd):
                 self.pkgsend_bulk(self.rurl, [self.devicebase,
                     self.devaliasmove10, self.devaliasmove20])
 
                 self.image_create(self.rurl)
-                self.pkg("install devicebase devaliasmove@1")
+                self.pkg("%s devicebase devaliasmove@1" % install_cmd)
                 self.pkg("update devaliasmove")
                 self.assert_("pci8086,5555" not in self.output)
 
@@ -4333,18 +5125,22 @@ adm:NP:6445::::::
         def test_bad_hardlinks(self):
                 """A couple of bogus hard link target tests."""
 
+                self.bad_hardlinks_helper("install")
+                self.bad_hardlinks_helper("exact-install")
+
+        def bad_hardlinks_helper(self, install_cmd):
                 self.pkgsend_bulk(self.rurl, (self.badhardlink1,
                     self.badhardlink2))
                 self.image_create(self.rurl)
 
                 # A package which tries to install a hard link to a target that
                 # doesn't exist shouldn't stack trace, but exit sanely.
-                self.pkg("install badhardlink1", exit=1)
+                self.pkg("%s badhardlink1" % install_cmd, exit=1)
 
                 # A package which tries to install a hard link to a target
                 # specified as an absolute path should install that link
                 # relative to the image root.
-                self.pkg("install badhardlink2")
+                self.pkg("%s badhardlink2" % install_cmd)
                 ino1 = os.stat(os.path.join(self.get_img_path(), "foo")).st_ino
                 ino2 = os.stat(os.path.join(self.get_img_path(), "etc/motd")).st_ino
                 self.assert_(ino1 == ino2)
@@ -4818,23 +5614,32 @@ class TestDependencies(pkg5unittest.SingleDepotTestCase):
                         self.incorp_pkgs.extend(self.pkgsend_bulk(self.rurl, i))
 
         def test_rename_matching(self):
-                """Verify install won't fail with a multiple match error for
-                a renamed package that shares a common basename."""
+                """Verify install or exact-install won't fail with a multiple
+                match error for a renamed package that shares a common
+                basename."""
 
+                self.rename_matching("install")
+                self.rename_matching("exact-install")
+
+        def rename_matching(self, install_cmd):
                 self.image_create(self.rurl)
-                self.pkg("install trusted")
+                self.pkg("%s trusted" % install_cmd)
                 self.pkg("info system/trusted")
 
         def test_require_dependencies(self):
                 """ exercise require dependencies """
 
+                self.require_dependencies_helper("install")
+                self.require_dependencies_helper("exact-install")
+
+        def require_dependencies_helper(self, install_cmd):
                 self.image_create(self.rurl)
                 self.pkg("install pkg1@1.0")
                 self.pkg("verify  pkg1@1.0")
-                self.pkg("install pkg3@1.0")
+                self.pkg("%s pkg3@1.0" % install_cmd)
                 self.pkg("verify  pkg3@1.0 pkg1@1.1")
 
-        def test_exclude_dependencies(self):
+        def test_exclude_dependencies_install(self):
                 """ exercise exclude dependencies """
 
                 self.image_create(self.rurl)
@@ -4874,7 +5679,37 @@ class TestDependencies(pkg5unittest.SingleDepotTestCase):
                 # try to install two incompatible pkgs
                 self.pkg("install pkg1@1.1 pkg4@1.0", exit=1)
 
-        def test_optional_dependencies(self):
+        def test_exclude_dependencies_exact_install(self):
+                """ exercise exclude dependencies """
+
+                self.image_create(self.rurl)
+                # Install pkg w/ exclude dep.
+                self.pkg("install pkg4@1.0")
+                self.pkg("verify  pkg4@1.0")
+
+                # Exact-install should ignore exclude dependencies,
+                # except user specifies both pkg name in command line.
+                self.pkg("exact-install pkg1@1.1")
+                self.pkg("uninstall '*'")
+
+                # Exact-install a package w/ both exclude
+                # and require dependencies.
+                self.pkg("exact-install pkg5")
+                self.pkg("verify pkg5@1.1 pkg1@1.0 ")
+                self.pkg("uninstall '*'")
+                # pick pkg to exact-install that fits constraint.
+                self.pkg("exact-install pkg2 pkg5")
+                self.pkg("verify pkg5@1.0.5 pkg1@1.0 pkg2")
+                self.pkg("uninstall '*'")
+                # Exact- install two packages with proper version selected for
+                # one package based on the version of the other package.
+                self.pkg("exact-install pkg6 pkg1@1.1")
+                self.pkg("verify pkg1@1.1 pkg6@1.1")
+                self.pkg("uninstall '*'")
+                # try to exact-install two incompatible pkgs
+                self.pkg("exact-install pkg1@1.1 pkg4@1.0", exit=1)
+
+        def test_optional_dependencies_install(self):
                 """ check to make sure that optional dependencies are enforced
                 """
 
@@ -4897,7 +5732,30 @@ class TestDependencies(pkg5unittest.SingleDepotTestCase):
                 self.pkg("list pkg1@1.1")
                 self.pkg("install pkg2@1.0", exit=1)
 
-        def test_incorporation_dependencies(self):
+        def test_optional_dependencies_exact_install(self):
+                """ check to make sure that optional dependencies are enforced
+                """
+
+                self.image_create(self.rurl)
+                self.pkg("exact-install pkg1@1.0")
+
+                # pkg2 is optional, it should not have been installed
+                self.pkg("list pkg2", exit=1)
+
+                self.pkg("install pkg2@1.1")
+
+                # Verify with exact-install, the optional dependency package
+                # should be removed.
+                self.pkg("exact-install pkg1")
+                self.pkg("list pkg2@1.1", exit=1)
+                self.pkg("list pkg1@1.1")
+
+                # Verify exact-install pkg2@1.0 should succeed and pkg1 should
+                # be removed.
+                self.pkg("exact-install pkg2@1.0")
+                self.pkg("list pkg1", exit=1)
+
+        def test_incorporation_dependencies_install(self):
                 """ shake out incorporation dependencies """
 
                 self.image_create(self.rurl)
@@ -4957,7 +5815,42 @@ class TestDependencies(pkg5unittest.SingleDepotTestCase):
                 self.pkg("list pkgA_1@1.3")
                 self.pkg("list A_incorp@1.3")
 
-        def test_conditional_dependencies(self):
+        def test_incorporation_dependencies_exact_install(self):
+                """ shake out incorporation dependencies """
+
+                self.image_create(self.rurl)
+                # Simple pkg requiring controlling incorp
+                # should control pkgA_1 as well.
+                self.pkg("exact-install -v pkgA_0@1.0 pkgA_1")
+                self.pkg("list")
+                self.pkg("verify pkgA_0@1.0 pkgA_1@1.0 A_incorp@1.0")
+
+                # Verify exact-install will upgrade pkgA_0 and A_incorp to 1.1
+                #, and uninstall pkgA_1.
+                self.pkg("exact-install pkgA_0@1.1")
+                self.pkg("list pkgA_0@1.1 A_incorp@1.1")
+                self.pkg("uninstall '*'")
+
+                # Try nested incorporations.
+                self.pkg("exact-install -v incorp@1.0 pkgA_0 pkgB_0")
+                self.pkg("list incorp@1.0 pkgA_0@1.0 pkgB_0@1.0 A_incorp@1.0 B_incorp@1.0")
+                # Try to break incorporation.
+                self.pkg("exact-install -v incorp@1.0 A_incorp@1.1", exit=1) # fixed by incorp@1.0
+
+                # Only specify A_incorp@1.1 should succeed. install holds
+                # should be ignored.
+                self.pkg("exact-install -v A_incorp@1.1")
+                self.pkg("list A_incorp@1.1")
+                self.pkg("uninstall '*'")
+                # what happens when incorporation specified
+                # a package that isn't in the catalog.
+                self.pkg("exact-install pkg1 bug_7394_incorp", exit=1)
+                # test pkg.depend.install-hold feature.
+                self.pkg("exact-install -v A_incorp@1.1  pkgA_1")
+                self.pkg("list pkgA_1@1.1")
+                self.pkg("list A_incorp@1.1")
+
+        def test_conditional_dependencies_install(self):
                 """Get conditional dependencies working"""
                 self.image_create(self.rurl)
                 self.pkg("install pkg7@1.0")
@@ -5003,7 +5896,29 @@ class TestDependencies(pkg5unittest.SingleDepotTestCase):
                 # removed.
                 self.pkg("uninstall -v entire")
 
-        def test_require_any_dependencies(self):
+        def test_conditional_dependencies_exact_install(self):
+                """Get conditional dependencies working."""
+
+                self.image_create(self.rurl)
+                # Presenting pkg7@1.0 and pkg2@1.1 in the command line should
+                # trigger conditional dependency.
+                self.pkg("exact-install -v pkg7@1.0 pkg2@1.1")
+                self.pkg("verify")
+                self.pkg("list pkg6@1.1 pkg2@1.1 pkg7@1.0")
+                self.pkg("uninstall '*'")
+
+                # If  only pkg7@1.0 present in the command line, pkg2@1.1
+                # should be removed and pkg6@1.1 should not be installed.
+                self.pkg("install pkg2@1.1")
+                self.pkg("verify")
+                self.pkg("exact-install pkg7@1.0")
+                self.pkg("list pkg7@1.0")
+                self.pkg("list pkg2@1.1", exit=1)
+                self.pkg("list pkg6@1.1", exit=1)
+                self.pkg("verify")
+                self.pkg("uninstall '*'")
+
+        def test_require_any_dependencies_install(self):
                 """Get require-any dependencies working"""
                 self.image_create(self.rurl)
 
@@ -5051,18 +5966,57 @@ class TestDependencies(pkg5unittest.SingleDepotTestCase):
                 self.pkg("list pkg2@1.1")
                 self.pkg("verify")
 
+        def test_require_any_dependencies_exact_install(self):
+                """Get require-any dependencies working"""
+                self.image_create(self.rurl)
+
+                # Test to see if solver will fail gracefully when no solution is
+                # possible and a require-any dependency is involved.
+                self.pkg("exact-install -v pkg-nosol-A pkg-nosol-E", exit=1)
+
+                # Test to see if solver will pick one.
+                self.pkg("exact-install pkg8@1.0")
+                self.pkg("verify")
+                self.pkg("list pkg8@1.0 pkg9@1.0 pkg2@1.1", exit=3)
+                self.pkg("uninstall '*'")
+
+                # Test to see if solver will be happy w/ renamed packages,
+                # already installed dependencies.
+                self.pkg("exact-install pkg:/pkg2@1.1 pkg_need_rename "
+                    "pkg8@1.0")
+                self.pkg("verify")
+                self.pkg("list pkg8@1.0 pkg2@1.1")
+                self.pkg("uninstall '*'")
+
+                # test to see if solver will install new verion of existing
+                # package rather than add new package
+                self.pkg("exact-install pkg8@1.0 pkg9@1.0")  # install pkg
+                self.pkg("verify")
+                self.pkg("list pkg8@1.0 pkg9@1.0")
+                self.pkg("list pkg2@1.1", exit=1)
+                self.pkg("exact-install pkg8 pkg9")
+                self.pkg("verify")
+                self.pkg("list pkg8@1.1 pkg9@1.1")
+                self.pkg("list pkg2@1.1", exit=1)
+                self.pkg("uninstall '*'")
+
         def test_origin_dependencies(self):
                 """Get origin dependencies working"""
+
+                self.origin_dependencies_helper("install")
+                self.origin_dependencies_helper("exact-install")
+
+        def origin_dependencies_helper(self, install_cmd):
                 self.set_image(0)
                 self.image_create(self.rurl)
                 self.set_image(1)
                 self.image_create(self.rurl)
                 self.set_image(0)
-                # check install behavior
-                self.pkg("install pkg10@1.0")
-                self.pkg("install pkg10")
+                # check install or exact-install behavior
+                self.pkg("%s pkg10@1.0" % install_cmd)
+                self.pkg("%s pkg10" % install_cmd)
                 self.pkg("list pkg10@1.1")
-                self.pkg("install pkg10")
+                self.pkg("%s pkg10" % install_cmd)
                 self.pkg("list pkg10@1.2")
                 self.pkg("uninstall '*'")
                 # check image-update behavior
@@ -5074,83 +6028,94 @@ class TestDependencies(pkg5unittest.SingleDepotTestCase):
                 self.pkg("uninstall '*'")
                 # check that dependencies are ignored if
                 # dependency not present
-                self.pkg("install pkg10@1.2")
+                self.pkg("%s pkg10@1.2" % install_cmd)
                 self.pkg("uninstall '*'")
                 # make sure attempts to force install don't work
-                self.pkg("install pkg10@1.0")
-                self.pkg("install pkg10@1.2", exit=1)
-                self.pkg("install pkg10@1.1")
-                self.pkg("install pkg10@1.2")
+                self.pkg("%s pkg10@1.0" % install_cmd)
+                self.pkg("%s pkg10@1.2" % install_cmd, exit=1)
+                self.pkg("%s pkg10@1.1" % install_cmd)
+                self.pkg("%s pkg10@1.2" % install_cmd)
                 self.pkg("uninstall '*'")
                 # check origin root-image=true dependencies
                 # relies on SUNWcs in root image; make image 1 the root image
                 self.set_image(1)
-                self.pkg("install SUNWcs@0.5.11-0.75")
+                self.pkg("%s SUNWcs@0.5.11-0.75" % install_cmd)
                 self.set_image(0)
                 live_root = self.img_path(1)
-                self.pkg("-D simulate_live_root=%s install pkg11@1.0" % \
-                    live_root)
-                self.pkg("-D simulate_live_root=%s install pkg11@1.1" %
-                    live_root, exit=1)
+                self.pkg("-D simulate_live_root=%s %s pkg11@1.0" % \
+                    (live_root, install_cmd))
+                self.pkg("-D simulate_live_root=%s %s pkg11@1.1" %
+                    (live_root, install_cmd), exit=1)
                 self.pkg("uninstall '*'")
 
         def test_parent_dependencies(self):
+                self.parent_dependencies_helper("install")
+                self.parent_dependencies_helper("exact-install")
+
+        def parent_dependencies_helper(self, install_cmd):
                 self.set_image(0)
                 self.image_create(self.rurl)
                 self.set_image(1)
                 self.image_create(self.rurl)
 
-                # attach c2p 1 -> 0
+                # attach c2p 1 -> 0.
                 self.pkg("attach-linked -p system:img1 %s" % self.img_path(0))
 
-                # try to install packages that have unmet parent dependencies
-                self.pkg("install pkg12@1.2", exit=EXIT_OOPS)
-                self.pkg("install pkg13@1.2", exit=EXIT_OOPS)
-                self.pkg("install pkg14@1.2", exit=EXIT_OOPS)
+                # try to install or exact-instal packages that have unmet
+                # parent dependencies.
+                self.pkg("%s pkg12@1.2" % install_cmd, exit=EXIT_OOPS)
+                self.pkg("%s pkg13@1.2" % install_cmd, exit=EXIT_OOPS)
+                self.pkg("%s pkg14@1.2" % install_cmd, exit=EXIT_OOPS)
 
-                # install packages in parent
+                # install or exact-install packages in parent.
                 self.set_image(0)
                 self.pkg("install pkg12@1.1")
                 self.set_image(1)
 
-                # try to install packages that have unmet parent dependencies
-                self.pkg("install pkg12@1.2", exit=EXIT_OOPS)
-                self.pkg("install pkg13@1.2", exit=EXIT_OOPS)
-                self.pkg("install pkg14@1.2", exit=EXIT_OOPS)
+                # try to install or exact-install packages that have unmet
+                # parent dependencies.
+                self.pkg("%s pkg12@1.2" % install_cmd, exit=EXIT_OOPS)
+                self.pkg("%s pkg13@1.2" % install_cmd, exit=EXIT_OOPS)
+                self.pkg("%s pkg14@1.2" % install_cmd, exit=EXIT_OOPS)
 
-                # install packages in parent
+                # install or exact-install packages in parent.
                 self.set_image(0)
-                self.pkg("install pkg12@1.3")
+                self.pkg("%s pkg12@1.3" % install_cmd)
                 self.set_image(1)
 
-                # try to install packages that have unmet parent dependencies
-                self.pkg("install pkg12@1.2", exit=EXIT_OOPS)
-                self.pkg("install pkg13@1.2", exit=EXIT_OOPS)
-                self.pkg("install pkg14@1.2", exit=EXIT_OOPS)
+                # try to install or exact-install packages that have unmet
+                # parent dependencies.
+                self.pkg("%s pkg12@1.2" % install_cmd, exit=EXIT_OOPS)
+                self.pkg("%s pkg13@1.2" % install_cmd, exit=EXIT_OOPS)
+                self.pkg("%s pkg14@1.2" % install_cmd, exit=EXIT_OOPS)
 
                 # install packages in parent
                 self.set_image(0)
                 self.pkg("update pkg12@1.2")
                 self.set_image(1)
 
-                # try to install packages that have unmet parent dependencies
-                self.pkg("install pkg14@1.2", exit=EXIT_OOPS)
+                # try to install or exact-install packages that have unmet parent dependencies.
+                self.pkg("%s pkg14@1.2" % install_cmd, exit=EXIT_OOPS)
 
-                # try to install packages that have satisfied parent deps
-                self.pkg("install pkg12@1.2")
+                # try to install or exact-install packages that have satisfied parent deps.
+                self.pkg("%s pkg12@1.2" % install_cmd)
                 self.pkg("verify")
                 self.pkg("uninstall pkg12@1.2")
-                self.pkg("install pkg13@1.2")
+                self.pkg("%s pkg13@1.2" % install_cmd)
                 self.pkg("verify")
                 self.pkg("uninstall pkg13@1.2")
 
-                # install packages in parent
+                # install or exact-install packages in parent.
                 self.set_image(0)
-                self.pkg("install pkg13@1.2")
+                if install_cmd == "install":
+                        self.pkg("install pkg13@1.2")
+                else:
+                        self.pkg("exact-install pkg12@1.2 pkg13@1.2")
                 self.set_image(1)
 
-                # try to install packages that have satisfied parent deps
-                self.pkg("install pkg14@1.2")
+                # try to install or exact-install packages that have satisfied.
+                # parent deps.
+                self.pkg("%s pkg14@1.2" % install_cmd)
                 self.pkg("verify")
                 self.pkg("uninstall pkg14@1.2")
 
@@ -5952,7 +6917,7 @@ class TestPkgInstallObsolete(pkg5unittest.SingleDepotTestCase):
         """Test cases for obsolete packages."""
 
         persistent_setup = True
-        def test_basic(self):
+        def test_basic_install(self):
                 foo1 = """
                     open foo@1
                     add dir path=usr mode=0755 owner=root group=root
@@ -6058,6 +7023,115 @@ class TestPkgInstallObsolete(pkg5unittest.SingleDepotTestCase):
                 self.pkg("list foo@1", exit=1) # should not be installed
                 self.pkg("install qux") #update
                 self.pkg("list foo@1")
+                self.pkgrepo("remove -s %s fred@2" % self.rurl)
+
+        def test_basic_exact_install(self):
+                foo1 = """
+                    open foo@1
+                    add dir path=usr mode=0755 owner=root group=root
+                    close
+                """
+                # Obsolete packages can have metadata
+                foo2 = """
+                    open foo@2
+                    add set name=pkg.obsolete value=true
+                    add set name=pkg.summary value="A test package"
+                    close
+                """
+
+                fbar = """
+                    open fbar@1
+                    add depend type=require fmri=foo@2
+                    close
+                """
+
+                qbar = """
+                    open qbar@1
+                    add depend type=require fmri=qux@2
+                    close
+                """
+
+                qux1 = """
+                    open qux@1
+                    add dir path=usr mode=0755 owner=root group=root
+                    close
+                """
+
+                qux2 = """
+                    open qux@2
+                    add set name=pkg.renamed value=true
+                    add depend type=require fmri=foo@1
+                    close
+                """
+
+                fred1 = """
+                    open fred@1
+                    add depend type=require fmri=foo
+                    close
+                """
+                fred2 = """
+                    open fred@2
+                    close
+                """
+
+                self.pkgsend_bulk(self.rurl, (foo1, foo2, fbar, qbar, qux1,
+                    qux2, fred1))
+
+                self.image_create(self.rurl)
+
+                # First exact-install the non-obsolete version of foo
+                self.pkg("exact-install foo@1")
+                self.pkg("list foo@1")
+
+                # Now exact-install the obsolete version, and ensure it disappears
+                # (5).
+                self.pkg("exact-install foo")
+                self.pkg("list foo", exit=1)
+
+                # Explicitly exact-installing an obsolete package succeeds, but
+                # results in nothing on the system. (1)
+                self.pkg("exact-install foo@2", exit=4)
+                self.pkg("list foo", exit=1)
+
+                # Exact-nstalling a package with a dependency on an obsolete package
+                # fails. (2)
+                self.pkg("exact-install fbar", exit=1)
+
+                # Exact-installing a package with a dependency on a renamed
+                # package succeeds, leaving the first package and the renamed
+                # package on the system, as well as the empty, pre-renamed
+                # package. (3)
+                self.pkg("exact-install qbar")
+                self.pkg("list qbar")
+                self.pkg("list foo@1")
+                self.pkg("list qux | grep -- i-r")
+                self.pkg("uninstall '*'") #clean up for next test
+                # A simple rename test: First exact-install the pre-renamed
+                # version of qux.  Then install the renamed version, and see
+                # that the new package is installed, and the renamed package
+                # is installed, but marked renamed.  (4)
+                self.pkg("exact-install qux@1")
+                self.pkg("exact-install qux") # upgrades qux
+                self.pkg("list foo@1")
+                self.pkg("list qux", exit=1)
+                self.pkg("uninstall '*'") #clean up for next test
+
+                # Exact-install a package that's going to be obsoleted and a
+                # package that depends on it.  Update the package to its
+                # obsolete version and see that it fails.  (6, sorta)
+                self.pkg("exact-install foo@1 fred@1")
+                self.pkg("exact-install foo@2 fred@1", exit=1)
+
+                # If fred is not in the command line, we should ignore its
+                # restriction and install foo@2.
+                self.pkg("exact-install foo@2")
+                # now add a version of fred that doesn't require foo, and
+                # show that update works
+                self.pkgsend_bulk(self.rurl, fred2)
+                self.pkg("refresh")
+                self.pkg("exact-install foo@2 fred")
+                self.pkg("uninstall '*'") #clean up for next test
+                self.pkgrepo("remove -s %s fred@2" % self.rurl)
 
         def test_basic_7a(self):
                 """Upgrade a package to a version with a dependency on a renamed
@@ -6334,9 +7408,13 @@ class TestPkgInstallObsolete(pkg5unittest.SingleDepotTestCase):
                 self.pkg("list", exit=1)
 
         def test_basic_11(self):
-                """Install a package with an ambiguous name, where only one
-                match is non-obsolete."""
+                """Install or exact-install a package with an ambiguous name,
+                where only one match is non-obsolete."""
 
+                self.basic_11_helper("install")
+                self.basic_11_helper("exact-install")
+
+        def basic_11_helper(self, install_cmd):
                 t11p1 = """
                     open netbeans@1
                     add set name=pkg.obsolete value=true
@@ -6351,15 +7429,19 @@ class TestPkgInstallObsolete(pkg5unittest.SingleDepotTestCase):
                 self.pkgsend_bulk(self.rurl, (t11p1, t11p2))
                 self.image_create(self.rurl)
 
-                self.pkg("install netbeans")
+                self.pkg("%s netbeans" % install_cmd)
                 self.pkg("list pkg:/developer/netbeans")
                 self.pkg("list pkg:/netbeans", exit=1)
 
         def test_basic_11a(self):
-                """Install a package using an ambiguous name where
-                pkg is renamed to another package, but not the
+                """Install or exact-install a package using an ambiguous name
+                where pkg is renamed to another package, but not the
                 conflicting one"""
 
+                self.basic_11a_helper("install")
+                self.basic_11a_helper("exact-install")
+
+        def basic_11a_helper(self, install_cmd):
                 t11p1 = """
                     open netbonze@1
                     add set name=pkg.renamed value=true
@@ -6380,13 +7462,17 @@ class TestPkgInstallObsolete(pkg5unittest.SingleDepotTestCase):
                 self.pkgsend_bulk(self.rurl, (t11p1, t11p2, t11p3))
                 self.image_create(self.rurl)
 
-                self.pkg("install netbonze", exit=1)
+                self.pkg("%s netbonze" % install_cmd, exit=1)
 
         def test_basic_11b(self):
-                """Install a package using an ambiguous name where only one
-                match is non-renamed, and the renamed match is renamed to the
-                other."""
+                """Install or exact-install a package using an ambiguous name
+                where only one match is non-renamed, and the renamed match
+                is renamed to the other."""
 
+                self.basic_11b_helper("install")
+                self.basic_11b_helper("exact-install")
+
+        def basic_11b_helper(self, install_cmd):
                 t11p1 = """
                     open netbooze@1
                     close
@@ -6413,7 +7499,7 @@ class TestPkgInstallObsolete(pkg5unittest.SingleDepotTestCase):
                 self.pkgsend_bulk(self.rurl, (t11p1, t11p2, t11p3, t11p4))
                 self.image_create(self.rurl)
 
-                self.pkg("install netbooze")
+                self.pkg("%s netbooze" % install_cmd)
                 self.pkg("list pkg:/developer/netbooze")
                 self.pkg("list pkg:/netbooze", exit=1)
 
@@ -6568,6 +7654,10 @@ class TestPkgInstallObsolete(pkg5unittest.SingleDepotTestCase):
                 does not prevent the system from upgrading to or installing
                 a resurrected version."""
 
+                self.unobsoleted_helper("install")
+                self.unobsoleted_helper("exact-install")
+
+        def unobsoleted_helper(self, install_cmd):
                 pA_1 = """
                     open reintroA@1
                     close
@@ -6615,21 +7705,24 @@ class TestPkgInstallObsolete(pkg5unittest.SingleDepotTestCase):
                 self.pkg("list reintroA@3")
                 self.pkg("uninstall reintroA")
 
-                # Testing reintroA@1 -> reintroA@3 with install
-                self.pkg("install reintroA@1")
-                self.pkg("install reintroA@3")
+                # Testing reintroA@1 -> reintroA@3 with install or
+                # exact-install.
+                self.pkg("%s reintroA@1" % install_cmd)
+                self.pkg("%s reintroA@3" % install_cmd)
                 self.pkg("list reintroA@3")
                 self.pkg("uninstall reintroA")
 
-                # Testing empty image -> reintroA@3 with install
-                self.pkg("install reintroA@3")
+                # Testing empty image -> reintroA@3 with install or
+                # exact-install.
+                self.pkg("%s reintroA@3" % install_cmd)
                 self.pkg("list reintroA@3")
                 self.pkg("uninstall reintroA")
 
                 # Testing reintroA@1 -> reintroA@2 -> reintroA@3 with install
-                self.pkg("install reintroA@1")
-                self.pkg("install reintroA@2")
-                self.pkg("install reintroA@3")
+                # or exact-install.
+                self.pkg("%s reintroA@1" % install_cmd)
+                self.pkg("%s reintroA@2" % install_cmd)
+                self.pkg("%s reintroA@3" % install_cmd)
                 self.pkg("list reintroA@3")
                 self.pkg("uninstall reintroA")
 
@@ -6644,23 +7737,26 @@ class TestPkgInstallObsolete(pkg5unittest.SingleDepotTestCase):
                 self.pkg("list reintroA@3")
                 self.pkg("uninstall reintroB reintroA")
 
-                # Testing reintroB@1 -> reintroB@3 with install
-                self.pkg("install reintroB@1")
-                self.pkg("install reintroB@3")
+                # Testing reintroB@1 -> reintroB@3 with install or
+                # exact-install
+                self.pkg("%s reintroB@1" % install_cmd)
+                self.pkg("%s reintroB@3" % install_cmd)
                 self.pkg("list reintroB@3")
                 self.pkg("list reintroA@3")
                 self.pkg("uninstall reintroB reintroA")
 
-                # Testing empty image -> reintroB@3 with install
-                self.pkg("install reintroB@3")
+                # Testing empty image -> reintroB@3 with install or
+                # exact-install
+                self.pkg("%s reintroB@3" % install_cmd)
                 self.pkg("list reintroB@3")
                 self.pkg("list reintroA@3")
                 self.pkg("uninstall reintroB reintroA")
 
                 # Testing reintroB@1 -> reintroB@2 -> reintroB@3 with install
-                self.pkg("install reintroB@1")
-                self.pkg("install reintroB@2")
-                self.pkg("install reintroB@3")
+                # or exact-install
+                self.pkg("%s reintroB@1" % install_cmd)
+                self.pkg("%s reintroB@2" % install_cmd)
+                self.pkg("%s reintroB@3" % install_cmd)
                 self.pkg("list reintroB@3")
                 self.pkg("list reintroA@3")
                 self.pkg("uninstall reintroB reintroA")
@@ -6668,6 +7764,10 @@ class TestPkgInstallObsolete(pkg5unittest.SingleDepotTestCase):
         def test_incorp_1(self):
                 """We should be able to incorporate an obsolete package."""
 
+                self.incorp_1_helper("install")
+                self.incorp_1_helper("exact-install")
+
+        def incorp_1_helper(self, install_cmd):
                 p1_1 = """
                     open inc1p1@1
                     add depend type=incorporate fmri=inc1p2@1
@@ -6683,10 +7783,13 @@ class TestPkgInstallObsolete(pkg5unittest.SingleDepotTestCase):
                 self.pkgsend_bulk(self.rurl, (p1_1, p2_1))
                 self.image_create(self.rurl)
 
-                self.pkg("install inc1p1")
-                self.pkg("install inc1p2", exit=4)
+                if install_cmd == "install":
+                        self.pkg("install inc1p1")
+                        self.pkg("install inc1p2", exit=4)
 
-                self.pkg("list inc1p2", exit=1)
+                        self.pkg("list inc1p2", exit=1)
+                else:
+                        self.pkg("exact-install inc1p1")
 
         def test_incorp_2(self):
                 """We should be able to continue incorporating a package when it
@@ -6815,6 +7918,10 @@ class TestPkgInstallMultiObsolete(pkg5unittest.ManyDepotTestCase):
                 a non-obsolete package of the same name is found in a
                 non-preferred publisher, pick the preferred pub as usual """
 
+                self.helper_01("install")
+                self.helper_01("exact-install")
+
+        def helper_01(self, install_cmd):
                 self.pkgsend_bulk(self.rurl1, self.obs)
                 self.pkgsend_bulk(self.rurl2, self.nonobs)
 
@@ -6822,7 +7929,7 @@ class TestPkgInstallMultiObsolete(pkg5unittest.ManyDepotTestCase):
                 self.pkg("set-publisher -O " + self.rurl2 + " test2")
                 self.pkg("list -a")
 
-                self.pkg("install stem", exit=4) # noting to do since it's obs
+                self.pkg("%s stem" % install_cmd, exit=4) # noting to do since it's obs
                 # We should choose the obsolete package, which means nothing
                 # gets installed.
                 self.pkg("list", exit=1)
@@ -6835,6 +7942,10 @@ class TestPkgInstallMultiObsolete(pkg5unittest.ManyDepotTestCase):
                 so the choice already isn't as straightforward, so we choose the
                 non-obsolete package."""
 
+                self.helper_02("install")
+                self.helper_02("exact-install")
+
+        def helper_02(self, install_cmd):
                 lobs = """
                     open some/stem@1
                     add set name=pkg.obsolete value=true
@@ -6847,7 +7958,7 @@ class TestPkgInstallMultiObsolete(pkg5unittest.ManyDepotTestCase):
                 self.image_create(self.rurl1, prefix="test1")
                 self.pkg("set-publisher -O " + self.rurl2 + " test2")
 
-                self.pkg("install stem", exit=1)
+                self.pkg("%s stem" % install_cmd, exit=1)
 
 
 class TestPkgInstallLicense(pkg5unittest.SingleDepotTestCase):
@@ -7946,7 +9057,7 @@ adm
 
                 self.pkgsend_bulk(self.rurl, pkgs)
 
-        def test_multiple_files(self):
+        def test_multiple_files_install(self):
                 """Test the behavior of pkg(1) when multiple file actions
                 deliver to the same pathname."""
 
@@ -8077,7 +9188,120 @@ adm
                 self.pkg("uninstall pkg2", exit=1)
                 self.pkg("verify pkg2")
 
-        def test_overlay_files(self):
+        def test_multiple_files_exact_install(self):
+                """Test the behavior of pkg(1) when multiple file actions
+                deliver to the same pathname."""
+
+                self.image_create(self.rurl)
+
+                # Duplicate files in the same package.
+                self.pkg("exact-install dupfiles", exit=1)
+
+                # Duplicate files in different packages, but in the same
+                # transaction.
+                self.pkg("exact-install dupfilesp1 dupfilesp2@0", exit=1)
+
+                # Duplicate files in different packages, in different
+                # transactions. This should succeed because exact-install will
+                # uninstall dupfilesp1 first.
+                self.pkg("exact-install dupfilesp1")
+                self.pkg("exact-install dupfilesp2@0")
+
+                # Test that being in a duplicate file situation doesn't break
+                # you completely and allows you to add and remove other
+                # packages.
+                self.pkg("-D broken-conflicting-action-handling=1 "
+                    "exact-install dupfilesp1 dupfilesp2@0")
+                self.pkg("exact-install implicitdirs2")
+                self.pkg("uninstall implicitdirs2")
+
+                # If the packages involved get upgraded by exact-install, that
+                # means the old actions has been removed. So we should be okay.
+                self.pkg("exact-install dupfilesp2 dupfilesp3")
+                self.pkg("verify")
+
+                # Test that removing one of two offending actions reverts the
+                # system to a clean state.
+                self.pkg("uninstall dupfilesp3")
+                self.pkg("verify")
+
+                # You should be able to upgrade to a fixed set of packages in
+                # order to move past the problem, too.
+                self.pkg("uninstall dupfilesp2")
+                self.pkg("-D broken-conflicting-action-handling=1 "
+                    "exact-install dupfilesp2@0")
+                self.pkg("update")
+                self.pkg("verify")
+
+                # If we upgrade to a version of a conflicting package that no
+                # longer has the conflict, amd at the same time introduce a new
+                # file action at the path with different contents, we should
+                # succeed with exact-install.
+                self.pkg("uninstall dupfilesp2")
+                self.pkg("-D broken-conflicting-action-handling=1 "
+                    "exact-install dupfilesp2@0")
+                self.pkg("exact-install dupfilesp2 dupfilesp4")
+
+                # Removing one of more than two offending actions can't do much
+                # of anything, but should leave the system alone.
+                self.pkg("uninstall '*'")
+                self.pkg("-D broken-conflicting-action-handling=1 "
+                    "exact-install dupfilesp1 dupfilesp2@0 dupfilesp3")
+                # XXX The checks here rely on verify failing due to hashes being
+                # wrong; they should probably report a duplicate action instead.
+                self.pkg("verify", exit=1)
+                out1, err1 = self.output, self.errout
+                self.pkg("uninstall dupfilesp3")
+                # Because we removed dupfilesp3, the error output in this verify
+                # won't exactly match that from the previous one, but the one
+                # remaining failing package should give the same output since we
+                # didn't modify the FS, so search for the current output in the
+                # old.
+                self.pkg("verify", exit=1)
+                out2 = self.output
+                # Strip the first (header) line; this error might not have been
+                # first in the previous output.
+                out2 = out2[out2.index("\n") + 1:]
+                self.assert_(out2 in out1)
+
+                # Removing all but one of the offending actions should get us
+                # back to sanity.
+                self.pkg("uninstall '*'")
+                self.pkg("-D broken-conflicting-action-handling=1 "
+                    "exact-install dupfilesp1 dupfilesp2@0 dupfilesp3")
+                self.pkg("uninstall dupfilesp3 dupfilesp2")
+                self.pkg("verify")
+
+                # Make sure we handle cleaning up multiple files properly.
+                self.pkg("uninstall '*'")
+                self.pkg("-D broken-conflicting-action-handling=1 "
+                    "exact-install dupfilesp1 dupfilesp2@0 dupotherfilesp1 "
+                    "dupotherfilesp2")
+                self.pkg("uninstall dupfilesp2 dupotherfilesp2")
+                self.pkg("verify")
+
+                # Make sure we get rid of all implicit directories.
+                self.pkg("uninstall '*'")
+                self.pkg("exact-install implicitdirs3 implicitdirs4")
+                self.pkg("uninstall implicitdirs3 implicitdirs4")
+
+                if os.path.isdir(os.path.join(self.get_img_path(), "usr/bin")):
+                        self.assert_(False, "Directory 'usr/bin' should not exist")
+
+                if os.path.isdir(os.path.join(self.get_img_path(), "usr")):
+                        self.assert_(False, "Directory 'usr' should not exist")
+
+                # Make sure identical actions don't cause problems.
+                self.pkg("exact-install -nv identicalfiles", exit=1)
+
+                # Trigger a bug similar to 17943 via duplicate files.
+                self.pkg("publisher")
+                self.pkg("-D broken-conflicting-action-handling=1 "
+                    "exact-install dupfilesp1@0 dupfilesp2@0 dupfilesp3@0 "
+                    "dupotherfilesp1@0 dupotherfilesp2@0 dupotherfilesp3@0")
+                self.pkg("update")
+
+        def test_overlay_files_install(self):
                 """Test the behaviour of pkg(1) when actions for editable files
                 overlay other actions."""
 
@@ -8389,7 +9613,318 @@ adm
                 self.file_contains("etc/pam.conf", "zagat")
                 self.file_contains("etc/pam.conf.new", "file4")
 
-        def test_different_types(self):
+        def test_overlay_files_exact_install(self):
+                """Test the behaviour of pkg(1) when actions for editable files
+                overlay other actions."""
+
+                # Ensure that overlay is allowed for file actions when one
+                # action has specified preserve attribute and overlay=allow,
+                # and *one* (only) other action has specified overlay=true
+                # (preserve does not have to be set).
+                self.image_create(self.rurl)
+
+                # With exact-install, this should succeed because exact-install
+                # will remove the previously installed package first.
+                # but not preserve (it isn't editable).
+                self.pkg("exact-install invalid-overlaid")
+                self.pkg("exact-install overlayer")
+                self.pkg("uninstall overlayer")
+
+                self.pkg("exact-install overlaid@0")
+                self.file_contains("etc/pam.conf", "file1")
+                # Should succeed with exact-install, because the previous
+                # package is actually removed.
+                self.pkg("contents -m overlaid")
+                self.pkg("contents -mr overlayer")
+                self.pkg("exact-install overlayer")
+                self.file_contains("etc/pam.conf", "file2")
+
+                # install back overlaid@0
+                self.pkg("exact-install overlaid@0")
+                self.pkg("verify overlaid")
+                self.file_contains("etc/pam.conf", "file1")
+                # This should also succeed with exact-install, because the
+                # previous package is removed.
+                self.pkg("exact-install invalid-overlayer")
+                self.file_contains("etc/pam.conf", "file2")
+                self.pkg("verify invalid-overlayer")
+                # This should also succeed with exact-install. Again.
+                self.pkg("exact-install overlaid@0")
+                self.pkg("exact-install mismatch-overlayer")
+                self.file_contains("etc/pam.conf", "file2")
+                self.pkg("verify mismatch-overlayer")
+                # This should alos succeed with exact-install, same reason.
+                self.pkg("exact-install overlaid@0")
+                self.pkg("exact-install multi-overlayer")
+                self.file_contains("etc/pam.conf", "file2")
+                self.pkg("verify multi-overlayer")
+                # Verify that removing the last package delivering an overlaid
+                # file removes the file.
+                self.pkg("uninstall multi-overlayer")
+                self.file_doesnt_exist("etc/pam.conf")
+
+                # Verify that exact-installing both packages at the same time
+                # results in only the overlaying file being delivered.
+                self.pkg("exact-install overlaid@0 overlayer")
+                self.file_contains("etc/pam.conf", "file2")
+
+                # Verify that the file isn't touched on uninstall of the
+                # overlaid package if overlaying package is still installed.
+                self.file_append("etc/pam.conf", "zigit")
+                self.pkg("uninstall overlaid")
+                self.file_contains("etc/pam.conf", "file2")
+                self.file_contains("etc/pam.conf", "zigit")
+
+                # Re-install overlaid package and verify that file content
+                # does not change.
+                self.pkg("exact-install overlaid@0")
+                self.file_contains("etc/pam.conf", "file2")
+                self.file_contains("etc/pam.conf", "zigit")
+                self.pkg("uninstall '*'")
+
+                # Should succeed because one action is overlayable and
+                # overlaying action declares its intent to overlay even
+                # though the overlaying action isn't marked with preserve.
+                self.pkg("exact-install overlaid@0 unpreserved-overlayer")
+                self.file_contains("etc/pam.conf", "unpreserved")
+
+                # Should succeed because overlaid action permits modification
+                # and contents matches overlaying action.
+                self.pkg("verify overlaid unpreserved-overlayer")
+
+                # Should succeed even though file has been modified since
+                # overlaid action permits modification.
+                self.file_append("etc/pam.conf", "zigit")
+                self.pkg("verify overlaid")
+
+                # Should fail because overlaying action does not permit
+                # modification.
+                self.pkg("verify unpreserved-overlayer", exit=1)
+
+                # Should revert to content delivered by overlaying action.
+                self.pkg("fix unpreserved-overlayer")
+                self.file_contains("etc/pam.conf", "unpreserved")
+                self.file_doesnt_contain("etc/pam.conf", "zigit")
+
+                # Should revert to content delivered by overlaying action.
+                self.file_append("etc/pam.conf", "zigit")
+                self.pkg("revert /etc/pam.conf")
+                self.file_contains("etc/pam.conf", "unpreserved")
+                self.file_doesnt_contain("etc/pam.conf", "zigit")
+                self.pkg("uninstall unpreserved-overlayer")
+
+                # Should revert to content delivered by overlaid action.
+                self.file_contains("etc/pam.conf", "unpreserved")
+                self.pkg("revert /etc/pam.conf")
+                self.file_contains("etc/pam.conf", "file1")
+
+                # Here if we use exact-install, we actually removed the
+                # unpreserved-overlayer and then unpreserved should disappear
+                # from etc/pam.conf.
+                self.pkg("exact-install -vvv unpreserved-overlayer")
+                self.file_contains("etc/pam.conf", "unpreserved")
+                self.pkg("exact-install overlaid@1")
+                self.file_contains("etc/pam.conf", "file1")
+                self.file_doesnt_contain("etc/pam.conf", "unpreserved")
+                self.pkg("uninstall -vvv overlaid")
+
+                # Now update overlaid package, and verify that it deliver the
+                # correct files
+                self.pkg("exact-install -vvv overlaid@2")
+                self.file_contains("etc/pam.conf", "file3")
+
+                self.pkg("exact-install -vvv overlaid@3")
+                self.file_contains("etc/pam.conf", "file3")
+
+                # Verify that unpreserved overlay is not salvaged when both
+                # overlaid and overlaying package are removed at the same time.
+                # (Preserved files are salvaged if they have been modified on
+                # uninstall.)
+
+                # Ensure directory is empty before testing.
+                api_inst = self.get_img_api_obj()
+                img_inst = api_inst.img
+                sroot = os.path.join(img_inst.imgdir, "lost+found")
+                shutil.rmtree(sroot)
+
+                # Verify etc directory not found after uninstall.
+                self.pkg("uninstall -vvv overlaid-renamed")
+                salvaged = [
+                    n for n in os.listdir(sroot)
+                    if n.startswith("etc")
+                ]
+                self.assertEqualDiff(salvaged, [])
+
+                # Next, update overlaid package again this time as part of a
+                # file move.  Verify that the old configuration file should
+                # be removed.
+                self.pkg("exact-install -vvv overlaid-renamed@3 "
+                    "unpreserved-overlayer")
+                self.pkg("exact-install -vvv overlaid-renamed@4.1")
+                self.assert_(not os.path.exists(os.path.join(
+                    self.get_img_path(), "etc/pam.conf")))
+                self.file_contains("etc/pam/pam.conf.new", "file4")
+
+                # Verify etc/pam/pam.conf is salvaged after uninstall as
+                # overlay file has been changed.
+                self.pkg("uninstall -vvv overlaid-renamed")
+                salvaged = [
+                    n for n in os.listdir(os.path.join(sroot, "etc/pam"))
+                    if n.startswith("pam.conf")
+                ]
+                self.assert_(salvaged[0].startswith("pam.conf-"),
+                    msg=str(salvaged))
+
+                # Next, repeat the same set of tests performed above for
+                # renames and moves with an overlaying, preserved file.
+                #
+                # Exact-install overlaying package, then update overlaid
+                # package and verify that file content does not change if only
+                # preserve attribute changes.
+                self.pkg("exact-install -vvv overlayer")
+                self.file_contains("etc/pam.conf", "file2")
+                self.file_append("etc/pam.conf", "zigit")
+                self.pkg("exact-install -vvv overlaid@1")
+                self.file_contains("etc/pam.conf", "file2")
+                self.file_contains("etc/pam.conf", "zigit")
+
+                # Now update overlaid package again, and verify that file
+                # content does not change even though overlaid content has.
+                self.pkg("exact-install -vvv overlaid@2")
+                self.file_contains("etc/pam.conf", "zigit")
+                self.file_contains("etc/pam.conf", "file2")
+
+                # Now update overlaid package again this time as part of a
+                # rename, and verify that file content does not change even
+                # though file has moved between packages.
+                self.pkg("exact-install -vvv overlaid@3")
+                self.file_contains("etc/pam.conf", "zigit")
+
+                # Verify that preserved overlay is salvaged.
+                # (Preserved files are salvaged if they have been modified on
+                # uninstall.)
+
+                # Ensure directory is empty before testing.
+                api_inst = self.get_img_api_obj()
+                img_inst = api_inst.img
+                sroot = os.path.join(img_inst.imgdir, "lost+found")
+                shutil.rmtree(sroot)
+
+                # Verify etc directory found after uninstall.
+                self.pkg("uninstall -vvv overlaid-renamed")
+                salvaged = [
+                    n for n in os.listdir(sroot)
+                    if n.startswith("etc")
+                ]
+                self.assert_(salvaged[0].startswith("etc"),
+                    msg=str(salvaged))
+                self.assert_(salvaged[1].startswith("etc-"),
+                    msg=str(salvaged))
+
+                # Next, update overlaid package again, this time as part of a
+                # file move where the overlay attribute was dropped. Verify
+                # that the content has not changed after move to new location
+                # and that the new configuration exists as expected as
+                # ".new".
+                self.pkg("exact-install -vvv overlaid-renamed@3 overlayer")
+                self.file_append("etc/pam.conf", "zigit")
+                self.pkg("exact-install -vvv overlaid-renamed@4.0")
+                self.file_contains("etc/pam/pam.conf", "zigit")
+                self.file_contains("etc/pam/pam.conf.new", "file4")
+                self.pkg("uninstall -vvv overlaid-renamed")
+
+                # Next, update overlaid package again, this time as part of a
+                # file move where the overlay attribute was dropped. Verify
+                # that the content has not changed after move to new location
+                # and that the new configuration exists as expected as
+                # ".new".
+                self.pkg("exact-install -vvv overlaid-renamed@3 overlayer")
+                self.file_append("etc/pam.conf", "zigit")
+                self.file_contains("etc/pam.conf", "file2")
+                self.pkg("exact-install -vvv overlaid-renamed@4.1")
+                self.file_contains("etc/pam/pam.conf", "zigit")
+                self.file_contains("etc/pam/pam.conf.new", "file4")
+
+                # Next, downgrade the package and verify that if an overlaid
+                # file moves back to its original location. Because the
+                # previous etc/pam.conf for overlayer was removed by
+                # exact-install, the content of the overlay file will be a new
+                # one.
+                self.pkg("update -vvv overlaid-renamed@3")
+                self.file_contains("etc/pam.conf", "file3")
+                self.file_doesnt_contain("etc/pam.conf", "zigit")
+                self.file_append("etc/pam.conf", "zigit")
+                # Now upgrade again for remaining tests.
+                self.pkg("exact-install -vvv overlaid-renamed@4.1")
+
+                # Verify etc/pam.conf and etc/pam/pam.conf salvaged after
+                # uninstall as overlay file and overlaid file is different from
+                # packaged.
+                shutil.rmtree(sroot)
+                self.pkg("uninstall -vvv overlaid-renamed")
+                salvaged = sorted(
+                    n for n in os.listdir(os.path.join(sroot, "etc"))
+                    if n.startswith("pam")
+                )
+                # Should have three entries; one should be 'pam' directory
+                # (presumably containing pam.conf-X...), a 'pam-XXX' directory,
+                # and a etc-XXX directory.
+                self.assertEqualDiff(salvaged[0], "pam")
+                self.assert_(salvaged[1].startswith("pam-"),
+                    msg=str(salvaged))
+
+                salvaged = sorted(
+                    n for n in os.listdir(os.path.join(sroot, "etc/pam"))
+                    if n.startswith("pam")
+                )
+                self.assert_(salvaged[0].startswith("pam.conf-"),
+                    msg=str(salvaged))
+                salvaged = sorted(
+                    n for n in os.listdir(sroot)
+                    if n.startswith("etc-")
+                )
+                self.assert_(salvaged[0].startswith("etc-"),
+                    msg=str(salvaged))
+
+                # Next, exact-install overlaid package and overlaying package,
+                # then upgrade each to a version where the file has changed
+                # locations and verify that the content remains intact.
+                self.pkg("exact-install -vvv overlaid@0 overlayer-move@0")
+                self.file_append("etc/pam.conf", "zigit")
+                self.pkg("exact-install -vvv overlaid@3 overlayer-move@0")
+                self.file_contains("etc/pam.conf", "zigit")
+                self.pkg("exact-install -vvv overlaid-renamed@4.1 "
+                    "overlayer-move@1")
+                self.file_contains("etc/pam/pam.conf", "zigit")
+
+                # Next, downgrade overlaid-renamed and overlaying package to
+                # versions where the file is restored to its original location
+                # and verify that the content is reverted to the original
+                # overlay version since this is a downgrade.
+                self.pkg("update -vvv overlaid-renamed@3 overlayer-move@0")
+                self.file_contains("etc/pam.conf", "file2")
+                self.pkg("uninstall overlaid-renamed overlayer-move")
+
+                # Next, exact-install overlaid package and overlaying package
+                # and verify preserve acts as expected for overlay package as
+                # it is updated.
+                self.pkg("exact-install -vvv overlaid@2 overlayer-update@0")
+                self.file_contains("etc/pam.conf", "file1")
+                # unpreserved -> preserved
+                self.pkg("exact-install -vvv overlayer-update@1")
+                self.file_contains("etc/pam.conf", "file2")
+                self.file_append("etc/pam.conf", "zigit")
+                # preserved -> renameold
+                self.pkg("exact-install -vvv overlayer-update@2")
+                self.file_doesnt_contain("etc/pam.conf", "zigit")
+                self.file_contains("etc/pam.conf.old", "zigit")
+                self.file_append("etc/pam.conf", "zagat")
+                # renameold -> renamenew
+                self.pkg("exact-install -vvv overlayer-update@3")
+                self.file_contains("etc/pam.conf", "zagat")
+                self.file_contains("etc/pam.conf.new", "file4")
+
+        def test_different_types_install(self):
                 """Test the behavior of pkg(1) when multiple actions of
                 different types deliver to the same pathname."""
 
@@ -8534,7 +10069,153 @@ adm
                 self.pkg("install dupmultitypes3@0")
                 self.pkg("update")
 
-        def test_conflicting_attrs_fs(self):
+        def test_different_types_exact_install(self):
+                """Test the behavior of pkg(1) when multiple actions of
+                different types deliver to the same pathname."""
+
+                self.image_create(self.rurl)
+
+                # In the same package.
+                self.pkg("exact-install duppath-filelink", exit=1)
+
+                # In different packages, in the same transaction.
+                self.pkg("exact-install dupfilesp1 duplink", exit=1)
+
+                # In different packages, in different transactions. This should
+                # succeed because exact-install will first uninstall
+                # dupfilesp1.
+                self.pkg("exact-install dupfilesp1")
+                self.pkg("exact-install duplink")
+
+                # Does removal of one of the busted packages get us out of the
+                # situation?
+                self.pkg("uninstall '*'")
+                self.pkg("-D broken-conflicting-action-handling=1 "
+                    "exact-install dupfilesp1 duplink")
+                self.pkg("verify", exit=1)
+                self.pkg("uninstall dupfilesp1")
+                self.pkg("verify")
+
+                # Implicit directory conflicts with a file
+                self.pkg("uninstall '*'")
+                self.pkg("exact-install implicitdirs", exit=1)
+
+                # Implicit directory coincides with a delivered directory.
+                self.pkg("exact-install implicitdirs2")
+
+                # Make sure that we don't die trying to fixup a directory using
+                # an implicit directory action.
+                self.pkg("uninstall '*'")
+                self.pkg("exact-install implicitdirs4")
+                self.pkg("-D broken-conflicting-action-handling=1 "
+                    "install implicitdirs7")
+                self.pkg("uninstall implicitdirs7")
+                # XXX We don't currently fix up anything beneath a directory
+                # that was restored, so we have to do it by hand.
+                os.mkdir("%s/usr/bin" % self.img_path())
+                shutil.copy("%s/tmp/file1" % self.test_root,
+                    "%s/usr/bin/something" % self.img_path())
+                owner = portable.get_user_by_name("root", self.img_path(), True)
+                group = portable.get_group_by_name("bin", self.img_path(), True)
+                os.chown("%s/usr/bin/something" % self.img_path(), owner, group)
+                os.chmod("%s/usr/bin/something" % self.img_path(), 0755)
+                self.pkg("verify")
+
+                # Removing one of more than two offending actions can't do much
+                # of anything, but should leave the system alone.
+                self.pkg("uninstall '*'")
+                self.pkg("-D broken-conflicting-action-handling=1 "
+                    "exact-install dupfilesp1 duplink dupdir@0")
+                tmap = {
+                    stat.S_IFIFO: "fifo",
+                    stat.S_IFCHR: "character device",
+                    stat.S_IFDIR: "directory",
+                    stat.S_IFBLK: "block device",
+                    stat.S_IFREG: "regular file",
+                    stat.S_IFLNK: "symbolic link",
+                    stat.S_IFSOCK: "socket",
+                }
+                thepath = "%s/dir/pathname" % self.img_path()
+                fmt = stat.S_IFMT(os.lstat(thepath).st_mode)
+                # XXX The checks here rely on verify failing due to action types
+                # not matching what's on the system; they should probably report
+                # duplicate actions instead.  Checking the output text is a bit
+                # ugly, too, but we do need to make sure that the two problems
+                # become one.
+                self.pkg("verify", exit=1)
+                verify_type_re = "File Type: '(.*?)' should be '(.*?)'"
+                matches = re.findall(verify_type_re, self.output)
+                # We make sure that what got reported is correct -- two actions
+                # of different types in conflict with whatever actually got laid
+                # down.
+                self.assert_(len(matches) == 2)
+                whatis = matches[0][0]
+                self.assert_(matches[1][0] == whatis)
+                self.assert_(whatis == tmap[fmt])
+                shouldbe = set(["symbolic link", "regular file", "directory"]) - \
+                    set([whatis])
+                self.assert_(set([matches[0][1], matches[1][1]]) == shouldbe)
+                # Now we uninstall one of the packages delivering a type which
+                # isn't what's on the filesystem.  The filesystem should remain
+                # unchanged, but one of the errors should go away.
+                if whatis == "directory":
+                        self.pkg("uninstall duplink")
+                else:
+                        self.pkg("uninstall dupdir")
+                self.pkg("verify", exit=1)
+                matches = re.findall(verify_type_re, self.output)
+                self.assert_(len(matches) == 1)
+                nfmt = stat.S_IFMT(os.lstat(thepath).st_mode)
+                self.assert_(nfmt == fmt)
+
+                # Now we do the same thing, but we uninstall the package
+                # delivering the type which *is* what's on the filesystem.  This
+                # should also leave the filesystem alone, even though what's
+                # there will match *neither* of the remaining installed
+                # packages.
+                self.pkg("uninstall '*'")
+                self.pkg("-D broken-conflicting-action-handling=1 "
+                    "exact-install dupfilesp1 duplink dupdir@0")
+                fmt = stat.S_IFMT(os.lstat(thepath).st_mode)
+                self.pkg("verify", exit=1)
+                matches = re.findall(verify_type_re, self.output)
+                self.assert_(len(matches) == 2)
+                whatis = matches[0][0]
+                self.assert_(matches[1][0] == whatis)
+                self.assert_(whatis == tmap[fmt])
+                shouldbe = set(["symbolic link", "regular file", "directory"]) - \
+                    set([whatis])
+                self.assert_(set([matches[0][1], matches[1][1]]) == shouldbe)
+                if whatis == "directory":
+                        self.pkg("uninstall dupdir")
+                elif whatis == "symbolic link":
+                        self.pkg("uninstall duplink")
+                elif whatis == "regular file":
+                        self.pkg("uninstall dupfilesp1")
+                self.pkg("verify", exit=1)
+                matches = re.findall(verify_type_re, self.output)
+                self.assert_(len(matches) == 2)
+                nfmt = stat.S_IFMT(os.lstat(thepath).st_mode)
+                self.assert_(nfmt == fmt)
+
+                # Go from multiple conflicting types down to just one type.
+                # This also tests the case where a package version being newly
+                # installed gets fixed at the same time.
+                self.pkg("uninstall '*'")
+                self.pkg("-D broken-conflicting-action-handling=1 "
+                    "exact-install dupmultitypes@1")
+                self.pkg("exact-install dupmultitypes")
+                self.pkg("verify")
+
+                # Upgrading from multiple instances of one refcounted type to
+                # multiple instances of another (here, link to directory)
+                # should succeed.
+                self.pkg("uninstall '*'")
+                self.pkg("exact-install dupmultitypes3@0")
+                self.pkg("update")
+
+
+        def test_conflicting_attrs_fs_install(self):
                 """Test the behavior of pkg(1) when multiple non-file actions of
                 the same type deliver to the same pathname, but whose other
                 attributes differ."""
@@ -8698,24 +10379,193 @@ adm
                     "dupdirp12")
                 self.pkg("uninstall dupdirp12")
 
+        def test_conflicting_attrs_fs_exact_install(self):
+                """Test the behavior of pkg(1) when multiple non-file actions of
+                the same type deliver to the same pathname, but whose other
+                attributes differ."""
+
+                self.image_create(self.rurl)
+
+                # One package, two links with different targets
+                self.pkg("exact-install duppath-nonidenticallinks", exit=1)
+
+                # One package, two directories with different perms
+                self.pkg("exact-install duppath-nonidenticaldirs", exit=1)
+
+                # One package, two dirs with same modes expressed two ways
+                self.pkg("exact-install duppath-almostidenticaldirs")
+
+                # One package delivers a directory explicitly, another
+                # implicitly.
+                self.pkg("exact-install implicitdirs2 implicitdirs3")
+                self.pkg("verify")
+
+                self.pkg("uninstall '*'")
+
+                # Make sure that we don't die trying to fixup a directory using
+                # an implicit directory action.
+                self.pkg("-D broken-conflicting-action-handling=1 "
+                    "exact-install implicitdirs4 implicitdirs5 implicitdirs6")
+                self.pkg("uninstall implicitdirs5")
+                self.pkg("verify")
+
+                self.pkg("uninstall '*'")
+
+                # Make sure that we don't die trying to fixup a directory using
+                # an implicit directory action when that's all that's left.
+                self.pkg("-D broken-conflicting-action-handling=1 "
+                    "exact-install implicitdirs4 implicitdirs5 implicitdirs6")
+                self.pkg("uninstall implicitdirs5 implicitdirs6")
+                self.pkg("verify")
+
+                self.pkg("uninstall '*'")
+
+                # If two packages deliver conflicting directories and another
+                # package delivers that directory implicitly, make sure the
+                # third package isn't blamed.
+                self.pkg("exact-install implicitdirs4 implicitdirs5 "
+                    "implicitdirs6", exit=1)
+                self.assert_("implicitdirs4" not in self.errout)
+
+                # Two packages, two links with different targets, installed at
+                # once
+                self.pkg("exact-install duppath-nonidenticallinksp1 "
+                    "duppath-nonidenticallinksp2@0", exit=1)
+
+                # Two packages, two links with different targets, installed
+                # separately. again with exact-install the operation will
+                # will succeed becauseit will remove the
+                # duppath-nonidenticallinksp1 pkg first.
+                self.pkg("exact-install duppath-nonidenticallinksp1")
+                self.pkg("exact-install duppath-nonidenticallinksp2@0")
+
+                self.pkg("uninstall '*'")
+
+                # If we get into a broken state, can we get out of it?
+                self.pkg("-D broken-conflicting-action-handling=1 "
+                    "exact-install duppath-nonidenticallinksp1 "
+                    "duppath-nonidenticallinksp2@0")
+                self.pkg("verify", exit=1)
+                self.pkg("exact-install duppath-nonidenticallinksp2")
+                self.pkg("verify")
+
+                # If we get into a broken state, can we make it a little bit
+                # better by uninstalling one of the packages?  Removing dupdir5
+                # here won't reduce the number of different groups under which
+                # dir is delivered, but does reduce the number of actions
+                # delivering it.
+                self.pkg("uninstall '*'")
+                self.pkg("-D broken-conflicting-action-handling=1 "
+                    "exact-install dupdirp1 dupdirp2@1 dupdirp5 dupdirp6")
+                self.pkg("uninstall dupdirp5")
+                self.pkg("verify", exit=1)
+
+                self.pkg("-D broken-conflicting-action-handling=1 install "
+                    "dupdirp5")
+                # Make sure we can exact-install a package delivering an
+                # implicit directory that's currently in conflict.
+                self.pkg("exact-install dupdirp7")
+                # And make sure we can uninstall it again.
+                self.pkg("uninstall dupdirp7")
+                self.pkg("list", exit=1)
+
+                # Add everything back in, remove everything but one variant of
+                # the directory and an implicit directory, and verify.
+                self.pkg("-D broken-conflicting-action-handling=1 "
+                    "exact-install dupdirp2@1 dupdirp5 dupdirp6 dupdirp7")
+                self.pkg("uninstall dupdirp2 dupdirp5 dupdirp6")
+                self.pkg("verify")
+
+                # Get us into a saner state by upgrading.
+                self.pkg("-D broken-conflicting-action-handling=1 "
+                    "exact-install dupdirp2@1 dupdirp5 dupdirp6 dupdirp7")
+                self.pkg("update dupdirp2@2")
+
+                # Get us into a sane state by upgrading.
+                self.pkg("uninstall dupdirp2 dupdirp5 dupdirp6")
+                self.pkg("-D broken-conflicting-action-handling=1 "
+                    "exact-install dupdirp2@1 dupdirp7")
+                self.pkg("update dupdirp2@2")
+                self.pkg("verify")
+
+                # We start in a sane state, but the update would result in
+                # conflict, though no more actions deliver the path in
+                # question.
+                self.pkg("uninstall '*'")
+                self.pkg("exact-install dupdirp1 dupdirp8@1")
+                self.pkg("update", exit=1)
+
+                # How about removing one of the conflicting packages?  We'll
+                # remove the package which doesn't match the state on disk.
+                self.pkg("uninstall '*'")
+                self.pkg("-D broken-conflicting-action-handling=1 "
+                    "exact-install duppath-nonidenticallinksp1 "
+                    "duppath-nonidenticallinksp2@0")
+                link = os.readlink("%s/dir/pathname" % self.img_path())
+                if link == "dir/something":
+                        self.pkg("uninstall duppath-nonidenticallinksp2")
+                else:
+                        self.pkg("uninstall duppath-nonidenticallinksp1")
+                self.pkg("verify")
+
+                # Now we'll try removing the package which *does* match the
+                # state on disk.  The code should clean up after us.
+                self.pkg("uninstall '*'")
+                self.pkg("-D broken-conflicting-action-handling=1 "
+                    "exact-install duppath-nonidenticallinksp1 "
+                    "duppath-nonidenticallinksp2@0")
+                link = os.readlink("%s/dir/pathname" % self.img_path())
+                if link == "dir/something":
+                        self.pkg("uninstall duppath-nonidenticallinksp1")
+                else:
+                        self.pkg("uninstall duppath-nonidenticallinksp2")
+                self.pkg("verify")
+
+                # Let's try a duplicate directory delivered with all sorts of
+                # crazy conflicts!
+                self.pkg("uninstall '*'")
+                self.pkg("exact-install dupdirp1 dupdirp2@1 dupdirp3 dupdirp4",
+                    exit=1)
+
+                pkgs = " ".join("massivedupdir%d" % x for x in xrange(20))
+                self.pkg("exact-install %s" % pkgs, exit=1)
+
+                # Trigger bug 17943: we install packages with conflicts in two
+                # directories (p9, p10).  We also install a package (p11) which
+                # delivers those directories implicitly.  Then remove the last,
+                # triggering the stack trace associated with the bug.
+                self.pkg("-D broken-conflicting-action-handling=1 "
+                    "exact-install dupdirp9 dupdirp10 dupdirp11")
+                self.pkg("uninstall dupdirp11")
+
+                # Do the same, but with a package that delivers var implicitly
+                # via a legacy action.
+                self.pkg("-D broken-conflicting-action-handling=1 "
+                    "exact-install dupdirp9 dupdirp10 dupdirp12")
+                self.pkg("uninstall dupdirp12")
+
         def test_conflicting_attrs_fs_varcets(self):
                 """Test the behavior of pkg(1) when multiple non-file actions of
                 the same type deliver to the same pathname, but differ in their
                 variants or facets."""
 
+                self.conflicting_attrs_fs_varcets_helper("install")
+                self.conflicting_attrs_fs_varcets_helper("exact-install")
+
+        def conflicting_attrs_fs_varcets_helper(self, install_cmd):
                 self.image_create(self.rurl)
 
                 # Two packages delivering the same directory, one under the
                 # current architecture, the other not tagged with an arch
                 # variant.
-                self.pkg("install dupfilesv1 dupfilesv2")
+                self.pkg("%s dupfilesv1 dupfilesv2" % install_cmd)
                 self.dir_exists("dir/pathname")
 
                 # Two packages delivering the same directory with different
                 # attributes -- one under the current architecture, the other
                 # tagged with another arch variant.
                 self.pkg("uninstall '*'")
-                self.pkg("install dupfilesv1 dupfilesv3")
+                self.pkg("%s dupfilesv1 dupfilesv3" % install_cmd)
                 if platform.processor() == "sparc":
                         self.dir_exists("dir/pathname", mode=0777)
                 else:
@@ -8725,7 +10575,7 @@ adm
                 # tagged only for non-global zones should install successfully
                 # together in a global zone.
                 self.pkg("uninstall '*'")
-                self.pkg("install dupfilesv5 dupfilesv6")
+                self.pkg("%s dupfilesv5 dupfilesv6" % install_cmd)
                 path = os.path.join(self.get_img_path(), "dir/pathname")
                 try:
                         f = open(path)
@@ -8740,19 +10590,19 @@ adm
                 # Two packages delivering the same directory, one with the
                 # devel facet false, the other true.
                 self.pkg("uninstall '*'")
-                self.pkg("install dupfilesf1 dupfilesf2")
+                self.pkg("%s dupfilesf1 dupfilesf2" % install_cmd)
                 self.dir_exists("dir/pathname")
 
                 # Two packages delivering the same directory, one with the
                 # devel facet true, the other without.
                 self.pkg("uninstall '*'")
-                self.pkg("install dupfilesf1 dupfilesf3")
+                self.pkg("%s dupfilesf1 dupfilesf3" % install_cmd)
                 self.dir_exists("dir/pathname")
 
                 # Two packages delivering the same directory, one with the
                 # devel facet false, the other without.
                 self.pkg("uninstall '*'")
-                self.pkg("install dupfilesf2 dupfilesf3")
+                self.pkg("%s dupfilesf2 dupfilesf3" % install_cmd)
                 self.dir_exists("dir/pathname")
 
         def test_conflicting_uninstall_publisher(self):
@@ -8760,6 +10610,10 @@ adm
                 conflicting packages from a publisher which has also been
                 removed."""
 
+                self.conflicting_uninstall_publisher_helper("install")
+                self.conflicting_uninstall_publisher_helper("exact-install")
+
+        def conflicting_uninstall_publisher_helper(self, install_cmd):
                 self.image_create(self.rurl)
                 # Dummy publisher so test publisher can be removed.
                 self.pkg("set-publisher -P ignored")
@@ -8767,8 +10621,8 @@ adm
                 # If packages with conflicting actions are found during
                 # uninstall, and the publisher of the package has been
                 # removed, uninstall should still succeed.
-                self.pkg("-D broken-conflicting-action-handling=1 install "
-                    "dupdirp1 dupdirp2@1")
+                self.pkg("-D broken-conflicting-action-handling=1 %s "
+                    "dupdirp1 dupdirp2@1" % install_cmd)
                 self.pkg("unset-publisher test")
                 self.pkg("uninstall dupdirp2")
                 self.pkg("verify")
@@ -8823,7 +10677,7 @@ adm
                 if group is not None:
                         self.assert_(st.st_gid == group)
 
-        def test_multiple_users(self):
+        def test_multiple_users_install(self):
                 """Test the behavior of pkg(1) when multiple user actions
                 deliver the same user."""
 
@@ -8913,43 +10767,110 @@ adm
                     "otheruser othergroup@0")
                 self.pkg("update othergroup")
 
+        def test_multiple_users_exact_install(self):
+                """Test the behavior of pkg(1) when multiple user
+                actions deliver the same user."""
+
+                # This is largely identical to test_multiple_files; we may want
+                # to commonize in the future.
+
+                self.image_create(self.rurl)
+
+                self.pkg("exact-install userdb")
+
+                # Duplicate users in the same package
+                self.pkg("exact-install dupuser", exit=1)
+                # Make sure userdb is not accedentally removed.
+                self.pkg("list userdb")
+
+                # Duplicate users in different packages, but in the same
+                # transaction
+                self.pkg("exact-install userdb dupuserp1 dupuserp2@0", exit=1)
+
+                # Duplicate users in different packages, in different
+                # transactions. This should succeed with exact-install.
+                self.pkg("exact-install userdb dupuserp1")
+                self.pkg("exact-install userdb dupuserp2@0")
+
+                # Removing one of more than two offending actions can't do much
+                # of anything, but should leave the system alone.
+                self.image_destroy()
+                self.image_create(self.rurl)
+                self.pkg("-D broken-conflicting-action-handling=1 "
+                    "exact-install userdb dupuserp1 dupuserp2@0 dupuserp3")
+                self.pkg("verify", exit=1)
+                out1 = self.output
+                self.pkg("uninstall dupuserp3")
+                self.pkg("verify", exit=1)
+                out2 = self.output
+                out2 = out2[out2.index("\n") + 1:]
+                self.assert_(out2 in out1)
+
+                # Removing all but one of the offending actions should get us
+                # back to sanity.
+                self.image_destroy()
+                self.image_create(self.rurl)
+                self.pkg("-D broken-conflicting-action-handling=1 "
+                    "exact-install userdb dupuserp1 dupuserp2@0 dupuserp3")
+                self.pkg("uninstall dupuserp3 dupuserp2")
+                self.pkg("verify")
+
+                # Make sure we don't get confused when two actions in different
+                # namespace groups but with the same key attribute value are
+                # adjacent in the action cache.
+                self.pkg("-D broken-conflicting-action-handling=1 "
+                    "exact-install userdb otheruser othergroup@0")
+                self.pkg("update othergroup")
+
         def test_multiple_drivers(self):
                 """Test the behavior of pkg(1) when multiple driver actions
                 deliver the same driver."""
 
+                self.multiple_drivers_helper("install")
+                self.multiple_drivers_helper("exact-install")
+
+        def multiple_drivers_helper(self, install_cmd):
                 self.image_create(self.rurl)
 
-                self.pkg("install driverdb")
+                self.pkg("%s driverdb" % install_cmd)
 
-                self.pkg("install dupdriver", exit=1)
+                self.pkg("%s dupdriver" % install_cmd, exit=1)
 
         def test_multiple_depend(self):
                 """Test to make sure we can have multiple depend actions on
                 (more or less) the same fmri"""
 
+                self.multiple_depend_helper("install")
+                self.multiple_depend_helper("exact-install")
+
+        def multiple_depend_helper(self, install_cmd):
                 self.image_create(self.rurl)
 
                 # Two identical unversioned require dependencies
-                self.pkg("install dupdepend1")
+                self.pkg("%s dupdepend1" % install_cmd)
 
                 # Two dependencies of different types on an identical
                 # unversioned fmri
-                self.pkg("install dupdepend2")
+                self.pkg("%s dupdepend2" % install_cmd)
 
                 # Two identical versioned require dependencies
-                self.pkg("install dupdepend3")
+                self.pkg("%s dupdepend3" % install_cmd)
 
                 # Two dependencies of different types on an identical versioned
                 # fmri
-                self.pkg("install dupdepend4")
+                self.pkg("%s dupdepend4" % install_cmd)
 
         def test_varianted_types(self):
                 """Test that actions which would otherwise conflict but are
                 delivered under different variants don't conflict."""
 
+                self.varianted_types_helper("install")
+                self.varianted_types_helper("exact-install")
+
+        def varianted_types_helper(self, install_cmd):
                 self.pkg_image_create(repourl=self.rurl,
                     additional_args="--variant foo=one")
-                self.pkg("install vpath")
+                self.pkg("%s vpath" % install_cmd)
 
 
 if __name__ == "__main__":

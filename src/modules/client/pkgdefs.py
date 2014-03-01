@@ -51,6 +51,7 @@ PKG_OP_AUDIT_LINKED    = "audit-linked"
 PKG_OP_CHANGE_FACET    = "change-facet"
 PKG_OP_CHANGE_VARIANT  = "change-variant"
 PKG_OP_DETACH          = "detach-linked"
+PKG_OP_EXACT_INSTALL   = "exact-install"
 PKG_OP_INSTALL         = "install"
 PKG_OP_LIST            = "list"
 PKG_OP_LIST_LINKED     = "list-linked"
@@ -68,6 +69,7 @@ pkg_op_values          = frozenset([
     PKG_OP_CHANGE_FACET,
     PKG_OP_CHANGE_VARIANT,
     PKG_OP_DETACH,
+    PKG_OP_EXACT_INSTALL,
     PKG_OP_INSTALL,
     PKG_OP_LIST,
     PKG_OP_LIST_LINKED,
@@ -85,6 +87,7 @@ API_OP_ATTACH         = "attach-linked"
 API_OP_CHANGE_FACET   = "change-facet"
 API_OP_CHANGE_VARIANT = "change-variant"
 API_OP_DETACH         = "detach-linked"
+API_OP_EXACT_INSTALL    = "exact-install"
 API_OP_INSTALL        = "install"
 API_OP_REPAIR         = "repair"
 API_OP_REVERT         = "revert"
@@ -97,6 +100,7 @@ api_op_values         = frozenset([
     API_OP_CHANGE_FACET,
     API_OP_CHANGE_VARIANT,
     API_OP_DETACH,
+    API_OP_EXACT_INSTALL,
     API_OP_INSTALL,
     API_OP_REPAIR,
     API_OP_REVERT,

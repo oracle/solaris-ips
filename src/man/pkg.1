@@ -1,6 +1,6 @@
 '\" te
 .\" Copyright (c) 2007, 2014, Oracle and/or its affiliates. All rights reserved.
-.TH pkg 1 "17 Feb 2014" "SunOS 5.12" "User Commands"
+.TH pkg 1 "28 Feb 2014" "SunOS 5.12" "User Commands"
 .SH NAME
 pkg \- Image Packaging System retrieval client
 .SH SYNOPSIS
@@ -23,6 +23,16 @@ pkg \- Image Packaging System retrieval client
     [--deny-new-be | --require-new-be] [--be-name \fIname\fR]
     [--sync-actuators | --sync-actuators-timeout \fItimeout\fR]
     [-r [-z \fIimage_name\fR ... | -Z \fIimage_name\fR ...]]
+    [--reject \fIpkg_fmri_pattern\fR]... \fIpkg_fmri_pattern\fR ...
+.fi
+
+.LP
+.nf
+/usr/bin/pkg exact-install [-nvq] [-C \fIn\fR] [-g \fIpath_or_uri\fR]...
+    [--accept] [--licenses] [--no-be-activate] [--no-index]
+    [--no-refresh] [--no-backup-be | --require-backup-be]
+    [--backup-be-name \fIname\fR]
+    [--deny-new-be | --require-new-be] [--be-name \fIname\fR]
     [--reject \fIpkg_fmri_pattern\fR]... \fIpkg_fmri_pattern\fR ...
 .fi
 
@@ -643,6 +653,28 @@ Only valid with -r. Run operation only in specified linked image. \fIimage_name\
 Only valid with -r. Run operation in all but the specified linked image. \fIimage_name\fR\fR can be a fully qualified linked image name in the form <plugin>:<name> or (when operating with zones) the name of a zone. Can be specified multiple times.
 .RE
 
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fBpkg exact-install\fR [\fB-nvq\fR] [\fB-C\fR \fIn\fR] [\fB-g\fR \fIpath_or_uri\fR]... [\fB--accept\fR] [\fB--licenses\fR] [\fB--no-be-activate\fR] [\fB--no-index\fR] [\fB--no-refresh\fR] [\fB--no-backup-be\fR | \fB--require-backup-be\fR] [\fB--backup-be-name\fR \fIname\fR] [\fB--deny-new-be\fR | \fB--require-new-be\fR] [\fB--be-name\fR \fIname\fR] [\fB--reject\fR \fIpkg_fmri_pattern\fR]... \fIpkg_fmri_pattern\fR ...\fR
+.ad
+.sp .6
+.RS 4n
+Install or update the specified packages as if installing onto a bare system. Any previously installed packages that are not either specified on the  command line or are a dependency of those packages will be removed. This command will also ignore restrictions of installing packages from the avoid list and frozen list. Otherwise, this subcommand behaves just as the install command does. To explicitly request the latest version of a package, use \fBlatest\fR for the version portion of \fIpkg_fmri_pattern\fR. For example, specify \fBvim@latest\fR.
+.sp
+Packages are selected based on publisher search order and stickiness. See the \fBpkg publisher\fR and \fBpkg set-publisher\fR commands for information about search order and stickiness. If the \fIpkg_fmri_pattern\fR does not specify the publisher, the first publisher that provides a matching package is used as the installation source. If that publisher does not provide a version of the package that can be installed in this image, then the installation operation fails. Use the \fBpkg list -a\fR command to see which publishers provide a version of the package that can be installed in this image.
+.sp
+If more than one \fIpkg_fmri_pattern\fR is specified, and if any of the specified packages cannot be installed in this image, then none of the specified packages will be installed.
+.sp
+Some configuration files might be renamed or replaced during the installation process. For more information on how the package system determines which files to preserve, and how they are preserved during package operations, see "File Actions" in the \fBpkg\fR(5) man page.
+.sp
+If a package is on the avoid list, installing it removes it from that list.
+.sp
+.sp
+For descriptions of options, see the \fBinstall\fR command above.
 .RE
 
 .sp

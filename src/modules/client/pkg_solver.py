@@ -85,7 +85,6 @@ class PkgSolver(object):
                 self.__trim_dict = defaultdict(set) # fmris trimmed from
                                                 # consideration
 
-
                 self.__installed_dict = installed_dict.copy() # indexed by stem
                 self.__installed_pkgs = frozenset(self.__installed_dict)
                 self.__installed_fmris = frozenset(
@@ -244,7 +243,8 @@ class PkgSolver(object):
         def solve_install(self, existing_freezes, proposed_dict,
             new_variants=None, excludes=EmptyI,
             reject_set=frozenset(), trim_proposed_installed=True,
-            relax_all=False, ignore_inst_parent_deps=False):
+            relax_all=False, ignore_inst_parent_deps=False,
+            exact_install=False, installed_dict_tmp=EmptyDict):
                 """Logic to install packages, change variants, and/or change
                 facets.
 
@@ -280,7 +280,17 @@ class PkgSolver(object):
                 dependencies (ie, out of sync images).  Any packaging
                 operation which needs to guarantee that we have an in sync
                 image (for example, sync-linked operations, or any recursive
-                packaging operations) should NOT enable this behavior."""
+                packaging operations) should NOT enable this behavior.
+
+                'exact_install' is a flag to indicate whether we treat the
+                current image as an empty one. Any previously installed
+                packages that are not either specified in proposed_dict or
+                are a dependency (require, origin and parent dependencies)
+                of those packages will be removed.
+
+                'installed_dict_tmp' a dictionary containing the current
+                installed FMRIs indexed by pkg_name. Used when exact_install
+                is on."""
 
                 # Once solution has been returned or failure has occurred, a new
                 # solver must be used.
@@ -373,7 +383,20 @@ class PkgSolver(object):
                 self.__start_subphase(2)
                 # If requested, trim any proposed fmris older than those of
                 # corresponding installed packages.
-                for f in self.__installed_fmris - self.__removal_fmris:
+                # Because we have introduced exact-install where
+                # self.__installed_fmris will be empty, in order to prevent
+                # downgrading, we need to look up the full installed dictionary
+                # stored in self.__installed_dict_tmp.
+                if exact_install:
+                        installed_fmris_tmp = frozenset(
+                            installed_dict_tmp.values())
+                        candidate_fmris = installed_fmris_tmp - \
+                            self.__removal_fmris
+                else:
+                        candidate_fmris = self.__installed_fmris - \
+                            self.__removal_fmris
+
+                for f in candidate_fmris:
                         self.__progress()
                         if not trim_proposed_installed and \
                             f.pkg_name in proposed_dict:
@@ -477,7 +500,8 @@ class PkgSolver(object):
                             ignore_inst_parent_deps):
                                 if self.__trim_nonmatching_variants(f):
                                         self.__trim_nonmatching_origins(f,
-                                            excludes)
+                                            excludes, exact_install=exact_install,
+                                            installed_dict_tmp=installed_dict_tmp)
 
                 self.__start_subphase(10)
                 # remove all trimmed fmris from consideration
@@ -2207,7 +2231,8 @@ class PkgSolver(object):
                                 allowed = False
                 return allowed
 
-        def __trim_nonmatching_origins(self, fmri, excludes):
+        def __trim_nonmatching_origins(self, fmri, excludes,
+            exact_install=False, installed_dict_tmp=EmptyDict):
                 """Trim any fmri that contains a origin dependency that is
                 not satisfied by the current image or root-image"""
 
@@ -2219,35 +2244,41 @@ class PkgSolver(object):
                         req_fmri = pkg.fmri.PkgFmri(da.attrs["fmri"])
 
                         if da.attrs.get("root-image", "").lower() == "true":
-				if req_fmri.pkg_name.startswith("feature/firmware/"):
-					# this is a firmware dependency
-					fw_ok, reason = \
-					    self.__firmware.check_firmware(da,
-					    req_fmri.pkg_name)
-					if not fw_ok:
-						self.__trim(fmri, reason)
-						return False
-					continue
-				else:
-					if self.__root_fmris is None:
-						img = pkg.client.image.Image(
-						    misc.liveroot(),
-						    allow_ondisk_upgrade=False,
-						    user_provided_dir=True,
-						    should_exist=True)
-						self.__root_fmris = dict([
-						    (f.pkg_name, f)
-						    for f in img.gen_installed_pkgs()
-						])
+                                if req_fmri.pkg_name.startswith("feature/firmware/"):
+                                        # this is a firmware dependency
+                                        fw_ok, reason = \
+                                            self.__firmware.check_firmware(da,
+                                            req_fmri.pkg_name)
+                                        if not fw_ok:
+                                                self.__trim(fmri, reason)
+                                                return False
+                                        continue
+                                else:
+                                        if self.__root_fmris is None:
+                                                img = pkg.client.image.Image(
+                                                    misc.liveroot(),
+                                                    allow_ondisk_upgrade=False,
+                                                    user_provided_dir=True,
+                                                    should_exist=True)
+                                                self.__root_fmris = dict([
+                                                    (f.pkg_name, f)
+                                                    for f in img.gen_installed_pkgs()
+                                                ])
 
-					installed = self.__root_fmris.get(
-					    req_fmri.pkg_name, None)
-					reason = (N_("Installed version in root image "
-					    "is too old for origin dependency {0}"),
-					    (req_fmri,))
+                                        installed = self.__root_fmris.get(
+                                            req_fmri.pkg_name, None)
+                                        reason = (N_("Installed version in root image "
+                                            "is too old for origin dependency {0}"),
+                                            (req_fmri,))
                         else:
-                                installed = self.__installed_dict.get(
-                                    req_fmri.pkg_name, None)
+                                # Always use the full installed dict for origin
+                                # dependency.
+                                if exact_install:
+                                        installed = installed_dict_tmp.get(
+                                            req_fmri.pkg_name, None)
+                                else:
+                                        installed = self.__installed_dict.get(
+                                            req_fmri.pkg_name, None)
                                 reason = (N_("Installed version in image "
                                     "being upgraded is too old for origin "
                                     "dependency {0}"), (req_fmri,))

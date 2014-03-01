@@ -1400,7 +1400,8 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                         elif _op in [API_OP_CHANGE_FACET,
                             API_OP_CHANGE_VARIANT]:
                                 self._img.make_change_varcets_plan(**kwargs)
-                        elif _op == API_OP_INSTALL:
+                        elif _op == API_OP_INSTALL or \
+                            _op == API_OP_EXACT_INSTALL:
                                 self._img.make_install_plan(**kwargs)
                         elif _op == API_OP_REVERT:
                                 self._img.make_revert_plan(**kwargs)
@@ -1798,6 +1799,42 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                     _refresh_catalogs=refresh_catalogs, _repos=repos,
                     _update_index=update_index, pkgs_inst=pkgs_inst,
                     reject_list=reject_list, )
+
+        def gen_plan_exact_install(self, pkgs_inst, backup_be=None,
+            backup_be_name=None, be_activate=True, be_name=None, li_ignore=None,
+            li_parent_sync=True, new_be=False, noexecute=False,
+            refresh_catalogs=True, reject_list=misc.EmptyI, repos=None,
+            update_index=True):
+                """This is a generator function that yields a PlanDescription
+                object.  If parsable_version is set, it also yields dictionaries
+                containing plan information for child images.
+
+                Constructs a plan to install exactly the packages provided in
+                pkgs_inst.  Once an operation has been planned, it may be
+                executed by first calling prepare(), and then execute_plan().
+                After execution of a plan, or to abandon a plan, reset()
+                should be called.
+
+                Callers should pass all arguments by name assignment and
+                not by positional order.
+
+                'pkgs_inst' is a list of packages to install exactly.
+
+                For all other parameters, refer to 'gen_plan_install'
+                for an explanation of their usage and effects."""
+
+                # certain parameters must be specified
+                assert pkgs_inst and type(pkgs_inst) == list
+
+                op = API_OP_EXACT_INSTALL
+                return self.__plan_op(op,
+                    _backup_be=backup_be, _backup_be_name=backup_be_name,
+                    _be_activate=be_activate, _be_name=be_name,
+                    _li_ignore=li_ignore, _li_parent_sync=li_parent_sync,
+                    _new_be=new_be, _noexecute=noexecute,
+                    _refresh_catalogs=refresh_catalogs, _repos=repos,
+                    _update_index=update_index, pkgs_inst=pkgs_inst,
+                    reject_list=reject_list)
 
         def gen_plan_sync(self, backup_be=None, backup_be_name=None,
             be_activate=True, be_name=None, li_ignore=None, li_md_only=False,

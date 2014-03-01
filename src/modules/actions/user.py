@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2008, 2013, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2008, 2014, Oracle and/or its affiliates. All rights reserved.
 #
 
 """module describing a user packaging object
@@ -185,8 +185,9 @@ class UserAction(generic.Action):
                                     details=txt, fmri=pkgplan.destination_fmri)
                         img = pkgplan.image
                         img._users.add(self)
-                        img._usersbyname[self.attrs["username"]] = \
-                            int(self.attrs["uid"])
+                        if "uid" in self.attrs:
+                                img._usersbyname[self.attrs["username"]] = \
+                                    int(self.attrs["uid"])
                 except KeyError, e:
                         # cannot find group
                         self.validate() # should raise error if no group in action

@@ -382,7 +382,7 @@ class ImagePlan(object):
 
         def __plan_install_solver(self, li_pkg_updates=True, li_sync_op=False,
             new_facets=None, new_variants=None, pkgs_inst=None,
-            reject_list=misc.EmptyI, fmri_changes=None):
+            reject_list=misc.EmptyI, fmri_changes=None, exact_install=False):
                 """Use the solver to determine the fmri changes needed to
                 install the specified pkgs, sync the specified image, and/or
                 change facets/variants within the current image."""
@@ -429,7 +429,21 @@ class ImagePlan(object):
                 else:
                         variants = self.image.get_variants()
 
+                installed_dict_tmp = {}
+                # If exact_install is on, clear the installed_dict.
+                if exact_install:
+                        installed_dict_tmp = installed_dict.copy()
+                        installed_dict = {}
+
                 def solver_cb(ignore_inst_parent_deps):
+                        avoid_set = self.image.avoid_set_get()
+                        frozen_list = self.image.get_frozen_list()
+                        # If exact_install is on, ignore avoid_set and
+                        # frozen_list.
+                        if exact_install:
+                                avoid_set = set()
+                                frozen_list = []
+
                         # instantiate solver
                         solver = pkg_solver.PkgSolver(
                             self.image.get_catalog(
@@ -437,21 +451,23 @@ class ImagePlan(object):
                             installed_dict,
                             pub_ranks,
                             variants,
-                            self.image.avoid_set_get(),
+                            avoid_set,
                             self.image.linked.parent_fmris(),
                             self.__progtrack)
 
                         # run solver
                         new_vector, new_avoid_obs = \
                             solver.solve_install(
-                                self.image.get_frozen_list(),
+                                frozen_list,
                                 inst_dict,
                                 new_variants=new_variants,
                                 excludes=self.__new_excludes,
                                 reject_set=reject_set,
                                 relax_all=li_sync_op,
                                 ignore_inst_parent_deps=\
-                                    ignore_inst_parent_deps)
+                                    ignore_inst_parent_deps,
+                                exact_install=exact_install,
+                                installed_dict_tmp=installed_dict_tmp)
 
                         return solver, new_vector, new_avoid_obs
 
@@ -463,6 +479,10 @@ class ImagePlan(object):
                 solver, new_vector, self.pd._new_avoid_obs = \
                     self.__run_solver(solver_cb, \
                         retry_wo_parent_deps=retry_wo_parent_deps)
+
+                # Restore the installed_dict for checking fmri changes.
+                if exact_install:
+                        installed_dict = installed_dict_tmp.copy()
 
                 self.pd._fmri_changes = self.__vector_2_fmri_changes(
                     installed_dict, new_vector,
@@ -491,6 +511,24 @@ class ImagePlan(object):
                     reject_list=reject_list)
                 self.pd.state = plandesc.EVALUATED_PKGS
 
+        def __plan_exact_install(self, li_pkg_updates=True, li_sync_op=False,
+            new_facets=None, new_variants=None, pkgs_inst=None,
+            reject_list=misc.EmptyI):
+                """Determine the fmri changes needed to install exactly the
+                specified pkgs, sync the image, and/or change facets/variants
+                within the current image."""
+
+                self.__plan_op()
+                self.__plan_install_solver(
+                    li_pkg_updates=li_pkg_updates,
+                    li_sync_op=li_sync_op,
+                    new_facets=new_facets,
+                    new_variants=new_variants,
+                    pkgs_inst=pkgs_inst,
+                    reject_list=reject_list,
+                    exact_install=True)
+                self.pd.state = plandesc.EVALUATED_PKGS
+
         def set_be_options(self, backup_be, backup_be_name, new_be,
             be_activate, be_name):
                 self.pd._backup_be = backup_be
@@ -512,6 +550,13 @@ class ImagePlan(object):
                 pkgs"""
 
                 self.__plan_install(pkgs_inst=pkgs_inst,
+                     reject_list=reject_list)
+
+        def plan_exact_install(self, pkgs_inst=None, reject_list=misc.EmptyI):
+                """Determine the fmri changes needed to install exactly the
+                specified pkgs"""
+
+                self.__plan_exact_install(pkgs_inst=pkgs_inst,
                      reject_list=reject_list)
 
         def __get_attr_fmri_changes(self, get_mattrs):

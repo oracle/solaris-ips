@@ -4275,6 +4275,8 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                                         ip.plan_change_varcets(**kwargs)
                                 elif _op == pkgdefs.API_OP_INSTALL:
                                         ip.plan_install(**kwargs)
+                                elif _op ==pkgdefs.API_OP_EXACT_INSTALL:
+                                        ip.plan_exact_install(**kwargs)
                                 elif _op == pkgdefs.API_OP_REVERT:
                                         ip.plan_revert(**kwargs)
                                 elif _op == pkgdefs.API_OP_SET_MEDIATOR:
