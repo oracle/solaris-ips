@@ -20,7 +20,7 @@
 # CDDL HEADER END
 #
 
-# Copyright (c) 2007, 2013, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2007, 2014, Oracle and/or its affiliates. All rights reserved.
 
 """
 Misc utility functions used by the packaging system.
@@ -1353,7 +1353,10 @@ def opts_parse(op, args, opts_table, opts_mapping, usage_cb=None):
                 # option table contains functions for verification, ignore here
                 if type(entry) != tuple:
                         continue
-                opt, default, = entry
+                if len(entry) == 2:
+                        opt, default = entry
+                elif len(entry) == 3:
+                        opt, default, valid_args = entry
                 assert opt in opts_mapping
                 sopt, lopt = opts_mapping[opt]
                 # make sure an option was specified
@@ -1382,7 +1385,10 @@ def opts_parse(op, args, opts_table, opts_mapping, usage_cb=None):
                 for x in opts_table:
                         if type(x) != tuple:
                                 continue
-                        opt, default = x
+                        if len(x) == 2:
+                                opt, default = x
+                        elif len(x) == 3:
+                                opt, default, valid_args = x
                         if option == opt:
                                 return default
 

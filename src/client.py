@@ -6081,6 +6081,12 @@ cmds = {
     "version"               : [None],
 }
 
+# Option value dictionary which pre-defines the valid values for
+# some options.
+valid_opt_values = {
+    "output_format":        ["default", "tsv", "json", "json-formatted"]
+}
+
 # These tables are an addendum to the the pkg_op_opts/opts_* lists in
 # modules/client/options.py. They contain all the options for functions which
 # are not represented in options.py but go through common option processing.
@@ -6113,7 +6119,7 @@ opts_list_varcet = \
     opts_cb_varcet,
     ("list_all_items",          False),
     ("list_installed",          False),
-    ("output_format",           None)
+    ("output_format",           None, valid_opt_values["output_format"])
 ]
 
 opts_list_facet = \
@@ -6132,7 +6138,7 @@ opts_list_mediator = \
     options.opts_table_no_headers + \
     [
     ("list_available",      False),
-    ("output_format",       None)
+    ("output_format",       None,  valid_opt_values["output_format"])
 ]
 opts_unset_mediator = \
     options.opts_table_beopts + \
@@ -6341,9 +6347,13 @@ def main_func():
                                         return "-%s/--%s" % (s, l)
                         except KeyError:
                                 # ignore if we can't find a match
-                                # (happens for repeated arguments)
+                                # (happens for repeated arguments or invalid
+                                # arguments)
                                 return option
-
+                        except TypeError:
+                                # ignore if we can't find a match
+                                # (happens for an invalid arguments list)
+                                return option
                 cli_opts = []
                 opt_def = []
 

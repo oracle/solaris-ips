@@ -578,10 +578,12 @@ def opts_table_cb_actuators(api_inst, opts, opts_new):
 # options is a list which can contain:
 #
 # - Tuples formatted as:
-#       (k, v)
+#       (k, v, [val])
 #   where the values are:
 #       k: the key value for the options dictionary
 #       v: the default value. valid values are: True/False, None, [], 0
+#       val: the valid argument list. It should be a list,
+#       and it is optional.
 #
 
 
@@ -898,7 +900,10 @@ def get_pkg_opts_defaults(op, opt, add_table=None):
         for o in popts:
                 if type(o) != tuple:
                         continue
-                opt_name, default = o
+                if len(o) == 2:
+                        opt_name, default = o
+                elif len(o) == 3:
+                        opt_name, default, valid_args = o
                 if opt_name == opt:
                         return default
 
@@ -936,8 +941,12 @@ def opts_assemble(op, api_inst, opts, add_table=None, cwd=None):
                 if type(o) != tuple:
                         callbacks.append(o)
                         continue
-
-                avail_opt, default = o
+                valid_args = []
+                # If no valid argument list specified.
+                if len(o) == 2:
+                        avail_opt, default = o
+                elif len(o) == 3:
+                        avail_opt, default, valid_args = o
                 # for options not given we substitue the default value
                 if avail_opt not in opts:
                         rv[avail_opt] = default
@@ -949,6 +958,22 @@ def opts_assemble(op, api_inst, opts, add_table=None, cwd=None):
                         assert type(opts[avail_opt]) == list, opts[avail_opt]
                 elif type(default) == bool:
                         assert type(opts[avail_opt]) == bool, opts[avail_opt]
+
+                if valid_args:
+                        assert type(default) == list or default is None, \
+                            default
+                        raise_error = False
+                        if type(opts[avail_opt]) == list:
+                                if not set(opts[avail_opt]).issubset(
+                                    set(valid_args)):
+                                        raise_error = True
+                        else:
+                                if opts[avail_opt] not in valid_args:
+                                        raise_error = True
+                        if raise_error:
+                                raise InvalidOptionError(
+                                    InvalidOptionError.ARG_INVALID,
+                                    [opts[avail_opt], avail_opt])
 
                 rv[avail_opt] = opts[avail_opt]
 

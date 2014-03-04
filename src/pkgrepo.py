@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2010, 2013, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2010, 2014, Oracle and/or its affiliates. All rights reserved.
 #
 
 PKG_CLIENT_NAME = "pkgrepo"
@@ -33,7 +33,7 @@ EXIT_BADOPT  = 2
 EXIT_PARTIAL = 3
 
 # listing constants
-LISTING_FORMATS = ("json", "json-formatted", "tsv")
+LISTING_FORMATS = ("default", "json", "json-formatted", "tsv")
 
 # globals
 tmpdirs = []
@@ -492,13 +492,11 @@ def subcmd_get(conf, args):
         opts, pargs = getopt.getopt(args, "F:Hp:s:", ["key=", "cert="])
         for opt, arg in opts:
                 if opt == "-F":
+                        if arg not in LISTING_FORMATS:
+                                raise apx.InvalidOptionError(
+                                    apx.InvalidOptionError.ARG_INVALID,
+                                    [arg, opt])
                         out_format = arg
-                        if out_format not in LISTING_FORMATS:
-                                usage(_("Unrecognized format %(format)s."
-                                    " Supported formats: %(valid)s") % \
-                                    { "format": out_format,
-                                    "valid": LISTING_FORMATS }, cmd=subcommand)
-                                return EXIT_OOPS
                 elif opt == "-H":
                         omit_headers = True
                 elif opt == "-p":
@@ -762,11 +760,9 @@ def subcmd_info(conf, args):
         for opt, arg in opts:
                 if opt == "-F":
                         if arg not in LISTING_FORMATS:
-                                usage(_("Unrecognized format %(format)s."
-                                    " Supported formats: %(valid)s") % \
-                                    { "format": arg,
-                                    "valid": LISTING_FORMATS }, cmd=subcommand)
-                                return EXIT_OOPS
+                                raise apx.InvalidOptionError(
+                                    apx.InvalidOptionError.ARG_INVALID,
+                                    [arg, opt])
                         out_format = arg
                 elif opt == "-H":
                         omit_headers = True
@@ -868,13 +864,11 @@ def subcmd_list(conf, args):
         opts, pargs = getopt.getopt(args, "F:Hp:s:", ["key=", "cert="])
         for opt, arg in opts:
                 if opt == "-F":
+                        if arg not in LISTING_FORMATS:
+                                raise apx.InvalidOptionError(
+                                    apx.InvalidOptionError.ARG_INVALID,
+                                    [arg, opt])
                         out_format = arg
-                        if out_format not in LISTING_FORMATS:
-                                usage(_("Unrecognized format %(format)s."
-                                    " Supported formats: %(valid)s") %
-                                    { "format": out_format,
-                                    "valid": LISTING_FORMATS }, cmd=subcommand)
-                                return EXIT_OOPS
                 elif opt == "-H":
                         omit_headers = True
                 elif opt == "-p":
@@ -1711,6 +1705,10 @@ def handle_errors(func, *args, **kwargs):
                 __ret = EXIT_OOPS
         except apx.BadRepositoryURI, __e:
                 error(str(__e))
+                __ret = EXIT_BADOPT
+        except apx.InvalidOptionError, __e:
+                error("%s Supported formats: %s" %
+                    (str(__e), LISTING_FORMATS))
                 __ret = EXIT_BADOPT
         except (apx.ApiException, sr.RepositoryError), __e:
                 error(str(__e))

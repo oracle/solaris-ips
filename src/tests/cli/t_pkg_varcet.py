@@ -20,7 +20,7 @@
 # CDDL HEADER END
 #
 
-# Copyright (c) 2013, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2013, 2014, Oracle and/or its affiliates. All rights reserved.
 
 import testutils
 if __name__ == "__main__":
@@ -478,6 +478,19 @@ opensolaris.zone global
                 self.__assert_variant_fails("-z", exit=2)
                 self.__assert_variant_fails("-ai", exit=2)
                 self.__assert_variant_fails("-aiv", exit=2)
+
+                # Verify valid output format values do not cause failure
+                self.__assert_variant_fails("-F default", exit=0, errout=False)
+                self.__assert_variant_fails("--output-format default", exit=0,
+                    errout=False)
+
+                self.__assert_variant_fails("-F  json", exit=0, errout=False)
+                self.__assert_variant_fails("--output-format  json", exit=0,
+                    errout=False)
+
+                # Verify invalid output format values handled gracefully
+                self.__assert_variant_fails("-F dummy", exit=2)
+                self.__assert_variant_fails("--output-format dummy", exit=2)
 
                 #
                 # First, verify output before setting any variants or installing

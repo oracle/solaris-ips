@@ -3109,12 +3109,13 @@ class InvalidOptionError(ApiException):
         """Used to indicate an issue with verifying options passed to a certain
         operation."""
 
-        GENERIC    = "generic"      # generic option violation
-        OPT_REPEAT = "opt_repeat"   # option repetition is not allowed
-        ARG_REPEAT = "arg_repeat"   # argument repetition is not allowed
-        INCOMPAT   = "incompat"     # option 'a' can not be specified with option 'b'
-        REQUIRED   = "required"     # option 'a' requires option 'b'
-        XOR        = "xor"          # either option 'a' or option 'b' must be specified
+        GENERIC     = "generic"      # generic option violation
+        OPT_REPEAT  = "opt_repeat"   # option repetition is not allowed
+        ARG_REPEAT  = "arg_repeat"   # argument repetition is not allowed
+        ARG_INVALID = "arg_invalid"  # argument is invalid
+        INCOMPAT    = "incompat"     # option 'a' can not be specified with option 'b'
+        REQUIRED    = "required"     # option 'a' requires option 'b'
+        XOR         = "xor"          # either option 'a' or option 'b' must be specified
 
         def __init__(self, err_type=GENERIC, options=[], msg=None):
 
@@ -3140,6 +3141,11 @@ class InvalidOptionError(ApiException):
                         assert len(self.options) == 2
                         return _("Argument '%(op1)s' for option '%(op2)s' may "
                             "not be repeated.") % {"op1" : self.options[0],
+                            "op2" : self.options[1]}
+                elif self.err_type == self.ARG_INVALID:
+                        assert len(self.options) == 2
+                        return _("Argument '%(op1)s' for option '%(op2)s' is "
+                            "invalid.") % {"op1" : self.options[0],
                             "op2" : self.options[1]}
                 elif self.err_type == self.INCOMPAT:
                         assert len(self.options) == 2
