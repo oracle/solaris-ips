@@ -1356,7 +1356,7 @@ def opts_parse(op, args, opts_table, opts_mapping, usage_cb=None):
                 if len(entry) == 2:
                         opt, default = entry
                 elif len(entry) == 3:
-                        opt, default, valid_args = entry
+                        opt, default, dummy_valid_args = entry
                 assert opt in opts_mapping
                 sopt, lopt = opts_mapping[opt]
                 # make sure an option was specified
@@ -1388,7 +1388,7 @@ def opts_parse(op, args, opts_table, opts_mapping, usage_cb=None):
                         if len(x) == 2:
                                 opt, default = x
                         elif len(x) == 3:
-                                opt, default, valid_args = x
+                                opt, default, dummy_valid_args = x
                         if option == opt:
                                 return default
 
