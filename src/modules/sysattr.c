@@ -87,9 +87,8 @@ Get a dictionary containing all supported system attributes.\n\
 
 /*ARGSUSED*/
 static PyObject *
-py_get_attr_dict(PyObject *self)
+py_get_attr_dict(PyObject *self, PyObject *args)
 {
-
 	PyObject *sys_attrs;
 
 	if ((sys_attrs = PyDict_New()) == NULL)
@@ -156,7 +155,7 @@ py_fsetattr(PyObject *self, PyObject *args)
 	PyObject *attrs_iter;
 	PyObject *attr = NULL;
 
-	if (PyArg_ParseTuple(args, "sO", &path, &attrs) == 0) {
+	if (PyArg_ParseTuple(args, "sO:fsetattr", &path, &attrs) == 0) {
 		return (NULL);
 	}
 
@@ -225,7 +224,7 @@ py_fsetattr(PyObject *self, PyObject *args)
 
 	if (fsetattr(f, XATTR_VIEW_READWRITE, request)) {
 		PyErr_SetFromErrno(PyExc_OSError);
-		close(f);
+		(void) close(f);
 		goto out;
 	}
 	(void) close(f);
@@ -270,14 +269,19 @@ py_fgetattr(PyObject *self, PyObject *args, PyObject *kwds)
 	nvlist_t *response;
 	nvpair_t *pair = NULL;
 	PyObject *attr_list = NULL;
+	PyObject *compact_attrs = NULL;
 
 	/* Python based arguments to this function */
 	static char *kwlist[] = {"path", "compact", NULL};
 
-	if (PyArg_ParseTupleAndKeywords(args, kwds, "s|i", kwlist,
-	    &path, &compact) == 0) {
+	if (PyArg_ParseTupleAndKeywords(args, kwds, "s|O:fgetattr", kwlist,
+	    &path, &compact_attrs) == 0) {
 		return (NULL);
 	}
+
+	/* compact keyword is NULL if not provided. */
+	compact = compact_attrs == Py_True ? true : false;
+	Py_XDECREF(compact_attrs);
 
 	if ((f = open(path, O_RDONLY)) == -1) {
 		PyErr_SetFromErrno(PyExc_OSError);
@@ -286,7 +290,7 @@ py_fgetattr(PyObject *self, PyObject *args, PyObject *kwds)
 
 	if (fgetattr(f, XATTR_VIEW_READWRITE, &response)) {
 		PyErr_SetFromErrno(PyExc_OSError);
-		close(f);
+		(void) close(f);
 		return (NULL);
 	}
 	(void) close(f);
@@ -347,11 +351,11 @@ py_fgetattr(PyObject *self, PyObject *args, PyObject *kwds)
 
 static PyMethodDef methods[] = {
 	{ "fsetattr", (PyCFunction)py_fsetattr, METH_VARARGS, py_fsetattr_doc },
-	{ "fgetattr", (PyCFunction)py_fgetattr, METH_KEYWORDS,
+	{ "fgetattr", (PyCFunction)py_fgetattr, METH_VARARGS | METH_KEYWORDS,
 	    py_fgetattr_doc },
 	{ "get_attr_dict", (PyCFunction)py_get_attr_dict, METH_NOARGS,
 	    py_get_attr_dict_doc },
-	{ NULL, NULL }
+	{ NULL, NULL, 0, NULL }
 };
 
 PyMODINIT_FUNC
