@@ -21,7 +21,7 @@
 #
     
 #
-# Copyright (c) 2010, 2012, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2010, 2014, Oracle and/or its affiliates. All rights reserved.
 #
 
 import codecs
@@ -41,6 +41,8 @@ import pkg.lint.log as log
 import pkg.fmri as fmri
 import pkg.manifest
 import pkg.misc as misc
+import pkg.client.api_errors as apx
+import pkg.client.transport.exception as tx
 
 logger = None
 
@@ -320,15 +322,17 @@ def _make_list(opt):
 
 if __name__ == "__main__":
         try:
-                value = main_func()
-                sys.exit(value)
+                __ret = main_func()
         except (PipeError, KeyboardInterrupt):
                 # We don't want to display any messages here to prevent
                 # possible further broken pipe (EPIPE) errors.
-                __ret = 1
-        except SystemExit, _e:
-                raise _e
+                __ret = 2
+        except (apx.InvalidDepotResponseException, tx.TransportFailures), __e:
+                error(__e)
+                __ret = 2
         except:
                 traceback.print_exc()
                 error(misc.get_traceback_message())
-                sys.exit(99)
+                __ret = 99
+
+        sys.exit(__ret)
