@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2009, 2013, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2009, 2014, Oracle and/or its affiliates. All rights reserved.
 #
 
 import cStringIO
@@ -177,10 +177,9 @@ class TransportCfg(object):
                         # found, return it alone.
                         return caches
 
-                # If this is a not a specific publisher case, a readonly case,
-                # or no writeable cache exists for the specified publisher,
-                # return any publisher-specific ones first and any additional
-                # ones after.
+                # If not filtering on publisher, this is a readonly case, or no
+                # writeable cache exists for the specified publisher, return any
+                # publisher-specific caches first and any additional ones after.
                 return caches + [
                     cache
                     for cache in self.__caches.get("__all", [])
@@ -270,7 +269,7 @@ class TransportCfg(object):
                 self.clear_caches(shared=shared)
 
                 # Automatically add any publisher repository origins
-                # or mirrors that are filesystem-based as read-only caches.
+                # or mirrors that are filesystem-based as readonly caches.
                 for pub in self.gen_publishers():
                         repo = pub.repository
                         if not repo:
@@ -813,7 +812,7 @@ class Transport(object):
                 try:
                         catalog.verify(filepath)
                 except apx.CatalogError, e:
-                        os.remove(filepath)
+                        portable.remove(filepath)
                         te = tx.InvalidContentException(filepath,
                             "CatalogPart failed validation: %s" % e)
                         te.request = filename
@@ -1588,16 +1587,16 @@ class Transport(object):
                                                 # If the manifest was physically
                                                 # valid, but can't be logically
                                                 # parsed, drive on.
-                                                os.remove(dl_path)
+                                                portable.remove(dl_path)
                                                 progtrack.manifest_commit()
                                                 mxfr.del_hash(s)
                                                 continue
                                         repostats.record_error(content=True)
                                         failedreqs.append(s)
-                                        os.remove(dl_path)
+                                        portable.remove(dl_path)
                                         continue
 
-                                os.remove(dl_path)
+                                portable.remove(dl_path)
                                 progtrack.manifest_commit()
                                 mxfr.del_hash(s)
 
@@ -1679,7 +1678,7 @@ class Transport(object):
                 if chash != newhash:
                         if mfstpath:
                                 sz = os.stat(mfstpath).st_size
-                                os.remove(mfstpath)
+                                portable.remove(mfstpath)
                         else:
                                 sz = None
                         raise tx.InvalidContentException(mfstpath,
@@ -2410,24 +2409,42 @@ class Transport(object):
 
                 return mfile
 
-        def _action_cached(self, action, pub, in_hash=None, verify=True):
-                """If a file with the name action.hash is cached,
-                and if it has the same content hash as action.chash,
-                then return the path to the file.  If the file can't
-                be found, return None.
+        def _action_cached(self, action, pub, in_hash=None, verify=None):
+                """If a file with the name action.hash is cached, and if it has
+                the same content hash as action.chash, then return the path to
+                the file.  If the file can't be found, return None.
 
                 The in_hash parameter allows an alternative hash to be used to
                 check if this action is cached.  This is used for actions which
-                have more than one effective payload."""
+                have more than one effective payload.
+
+                The verify parameter specifies whether the payload of the action
+                should be validated if needed.  The content of readonly caches
+                will not be validated now; package operations will validate the
+                content later at the time of installation or update and fail if
+                it is invalid."""
 
                 hash_attr, hash_val, hash_func = \
                     digest.get_least_preferred_hash(action)
+
                 if in_hash:
                         hash_val = in_hash
+
                 for cache in self.cfg.get_caches(pub=pub, readonly=True):
                         cache_path = cache.lookup(hash_val)
                         if not cache_path:
                                 continue
+                        if verify is None:
+                                # Assume readonly caches are valid (likely a
+                                # file:// repository).  The content will be
+                                # validated later at the time of install /
+                                # update, so if it isn't valid here, there's
+                                # nothing we can do anyway since it's likely the
+                                # repository we would retrieve it from.  This
+                                # can be a significant performance improvement
+                                # when using NFS repositories.
+                                verify = not cache.readonly
+
                         try:
                                 if verify:
                                         self._verify_content(action, cache_path)
@@ -2447,6 +2464,16 @@ class Transport(object):
                 return opener
 
         def action_cached(self, fmri, action):
+                """If a file with the name action.hash is cached, and if it has
+                the same content hash as action.chash, then return the path to
+                the file.  If the file can't be found, return None.
+
+                'fmri' is a FMRI object for the package that delivers the
+                action.
+
+                'action' is an action object to retrieve the cache file path
+                for."""
+
                 try:
                         pub = self.cfg.get_publisher(fmri.publisher)
                 except apx.UnknownPublisher:
@@ -2515,7 +2542,7 @@ class Transport(object):
                                     hash_func=hash_func)
                         except zlib.error, e:
                                 s = os.stat(filepath)
-                                os.remove(filepath)
+                                portable.remove(filepath)
                                 raise tx.InvalidContentException(path,
                                     "zlib.error:%s" %
                                     (" ".join([str(a) for a in e.args])),
@@ -2526,7 +2553,7 @@ class Transport(object):
 
                         if hash_val != fhash:
                                 s = os.stat(filepath)
-                                os.remove(filepath)
+                                portable.remove(filepath)
                                 raise tx.InvalidContentException(action.path,
                                     "hash failure:  expected: %s"
                                     "computed: %s" % (hash, fhash),
@@ -2549,7 +2576,7 @@ class Transport(object):
                                 if filepath.startswith(fm.root):
                                         remove_content = True
                         if remove_content:
-                                os.remove(filepath)
+                                portable.remove(filepath)
                         raise tx.InvalidContentException(path,
                             "chash failure: expected: %s computed: %s" % \
                             (chash, newhash), size=s.st_size)

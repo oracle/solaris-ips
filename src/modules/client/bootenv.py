@@ -20,7 +20,7 @@
 # CDDL HEADER END
 #
 
-# Copyright (c) 2008, 2013, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2008, 2014, Oracle and/or its affiliates. All rights reserved.
 
 import errno
 import os
@@ -526,6 +526,9 @@ beadm activate %(be_name_clone)s
                         self.img.history.operation_snapshot = None
 
                 self.__store_image_state()
+
+                # Ensure cache is flushed before activating and unmounting BE.
+                self.img.cleanup_cached_content(progtrack=self.progress_tracker)
 
                 relock = False
                 if self.img.locked:

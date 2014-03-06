@@ -3914,19 +3914,35 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
 
                 shutil.rmtree(self._incoming_cache_dir, True)
 
-        def cleanup_cached_content(self):
+        def cleanup_cached_content(self, progtrack=None):
                 """Delete the directory that stores all of our cached
                 downloaded content.  This may take a while for a large
                 directory hierarchy.  Don't clean up caches if the
                 user overrode the underlying setting using PKG_CACHEDIR or
                 PKG_CACHEROOT. """
 
-                if self.cfg.get_policy(imageconfig.FLUSH_CONTENT_CACHE):
-                        for path, readonly, pub, layout in self.get_cachedirs():
-                                if readonly or (self.__user_cache_dir and
-                                    path.startswith(self.__user_cache_dir)):
-                                        continue
-                                shutil.rmtree(path, True)
+                if not self.cfg.get_policy(imageconfig.FLUSH_CONTENT_CACHE):
+                        return
+
+                cdirs = []
+                for path, readonly, pub, layout in self.get_cachedirs():
+                        if readonly or (self.__user_cache_dir and
+                            path.startswith(self.__user_cache_dir)):
+                                continue
+                        cdirs.append(path)
+
+                if not cdirs:
+                        return
+
+                if not progtrack:
+                        progtrack = progress.NullProgressTracker()
+
+                # 'Updating package cache'
+                progtrack.job_start(progtrack.JOB_PKG_CACHE, goal=len(cdirs))
+                for path in cdirs:
+                        shutil.rmtree(path, True)
+                        progtrack.job_add_progress(progtrack.JOB_PKG_CACHE)
+                progtrack.job_done(progtrack.JOB_PKG_CACHE)
 
         def salvage(self, path, full_path=False):
                 """Called when unexpected file or directory is found during

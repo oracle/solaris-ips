@@ -2792,7 +2792,8 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                         be.activate_image(set_active=self.__be_activate)
                 else:
                         be.activate_install_uninstall()
-                self._img.cleanup_cached_content()
+                self._img.cleanup_cached_content(
+                    progtrack=self.__progresstracker)
                 # If the end of the operation wasn't already logged
                 # by one of the previous operations, then log it as
                 # ending now.
