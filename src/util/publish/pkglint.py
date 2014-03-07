@@ -327,6 +327,8 @@ if __name__ == "__main__":
                 # We don't want to display any messages here to prevent
                 # possible further broken pipe (EPIPE) errors.
                 __ret = 2
+        except SystemExit, __e:
+                __ret = __e.code
         except (apx.InvalidDepotResponseException, tx.TransportFailures), __e:
                 error(__e)
                 __ret = 2
