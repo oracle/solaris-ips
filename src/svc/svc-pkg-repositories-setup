@@ -62,7 +62,7 @@ case "$1" in
 			child_fs_mount=0
 			for child in $($ZFS list -H -r -t filesystem \
 			    -o name "$DS"); do
-				$(ZFS) mount "$child"
+				$ZFS mount "$child"
 				child_fs_mount=$(( $child_fs_mount + $? ))
 			done
 			if [ $child_fs_mount -eq 0 ] ; then
