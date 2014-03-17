@@ -1,6 +1,6 @@
 '\" te
-.\" Copyright (c) 2007, 2013, Oracle and/or its affiliates. All rights reserved.
-.TH pkgrepo 1 "29 Aug 2013" "SunOS 5.12" "User Commands"
+.\" Copyright (c) 2007, 2014, Oracle and/or its affiliates. All rights reserved.
+.TH pkgrepo 1 "15 Jan 2014" "SunOS 5.12" "User Commands"
 .SH NAME
 pkgrepo \- Image Packaging System repository management utility
 .SH SYNOPSIS
@@ -34,6 +34,13 @@ pkgrepo \- Image Packaging System repository management utility
 /usr/bin/pkgrepo list [-F \fIformat\fR] [-H] [-p \fIpublisher\fR]...
     -s \fIrepo_uri_or_path\fR [--key \fIssl_key\fR --cert \fIssl_cert\fR]...
     [\fIpkg_fmri_pattern\fR ...]
+.fi
+
+.LP
+.nf
+/usr/bin/pkgrepo contents [-m]
+    [-t \fIaction_name\fR[,\fIaction_name\fR]...]... -s \fIrepo_uri_or_path\fR
+    [--key \fIssl_key\fR --cert \fIssl_cert\fR]... [\fIpkg_fmri_pattern\fR...]
 .fi
 
 .LP
@@ -357,7 +364,7 @@ For descriptions of all other options, see the \fBpkgrepo get\fR command above.
 .ad
 .sp .6
 .RS 4n
-List the packages in the \fIrepo_uri_or_path\fR repository that match the specified \fIpkg_fmri_pattern\fR patterns. If no patterns are specified, all packages in the repository are listed.
+List the packages in the \fIrepo_uri_or_path\fR repository that match the specified \fIpkg_fmri_pattern\fR patterns. If no patterns are specified, all packages in the repository are listed. The \fIpkg_fmri_pattern\fR pattern can include the \fB?\fR and \fB*\fR characters as \fBglob\fR(3C)-style wildcards to match one or more packages.
 .sp
 In the default output, the first column contains the name of the publisher of the package. The second column contains the name of the package. The third column is a flag that shows the status of the package. A value of \fBo\fR in the status column indicates the package is obsolete. A value of \fBr\fR in the status column indicates the package has been renamed, which is a form of obsoletion. The fourth column contains the release and branch versions of the package. See \fBpkg\fR(5) for information about release and branch versions.
 .sp
@@ -368,7 +375,41 @@ In the default output, the first column contains the name of the publisher of th
 .ad
 .sp .6
 .RS 4n
-Only display the packages for the given publisher. If not provided, the packages for all publishers are displayed. This option can be specified multiple times.
+Only display the packages for the given publisher. If not provided, the packages for all publishers are listed. This option can be specified multiple times.
+.RE
+
+For descriptions of all other options, see the \fBpkgrepo get\fR command above.
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fBpkgrepo contents\fR [\fB-m\fR [\fB-t\fR \fIaction_name\fR[,\fIaction_name\fR]...]... \fB-s\fR \fIrepo_uri_or_path\fR [\fB--key\fR \fIssl_key\fR \fB--cert\fR \fIssl_cert\fR]... [\fIpkg_fmri_pattern\fR...]\fR
+.ad
+.sp .6
+.RS 4n
+List all packages in the \fIrepo_uri_or_path\fR repository. If \fIpkg_fmri_pattern\fR is specified, display the contents (action attributes) of all matching packages in the repository.
+.sp
+.ne 2
+.mk
+.na
+\fB\fB-m\fR\fR
+.ad
+.sp .6
+.RS 4n
+Display all attributes of actions in the specified packages.
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB-t\fR \fIaction_name\fR\fR
+.ad
+.sp .6
+.RS 4n
+Display only the specified actions in the specified packages. The \fB-t\fR option can be specified multiple times, or multiple actions can be specified as the argument to one \fB-t\fR option by separating the action names with commas. The value of \fIaction_name\fR is one of the actions listed in  "Actions" in the \fBpkg\fR(5) man page, such as \fBfile\fR, \fBdir\fR, \fBdriver\fR, \fBdepend\fR, or \fBset\fR.
 .RE
 
 For descriptions of all other options, see the \fBpkgrepo get\fR command above.
@@ -472,7 +513,7 @@ For descriptions of all other options, see the \fBpkgrepo get\fR command above.
 .ad
 .sp .6
 .RS 4n
-Remove the packages matching the specified patterns from the repository, including any files they reference that are not in use by any other package.
+Remove packages that match the specified \fIpkg_fmri_pattern\fR pattern from the repository, including any files they reference that are not in use by any other package. The \fIpkg_fmri_pattern\fR pattern can include the \fB?\fR and \fB*\fR characters as \fBglob\fR(3C)-style wildcards to match one or more packages.
 .LP
 Note - 
 .sp
@@ -604,7 +645,7 @@ For repository versions 3 and 4, the following properties can be set for the rep
 A string that represents the name of the default publisher. The first character must be a-z, A-Z, or 0-9. The remainder of the string can only contain the characters 0-9, -, ., a-z, and A-Z. This value indicates the publisher that should be used when more than one publisher's packages are present, or when packages are published to the repository and a publisher is not specified.
 .RE
 
-For repository versions 3 and 4, the following properties can be set for individual publishers in the repository:
+For repository versions 3 and 4, the following properties can be set for individual publishers in the repository. Use the \fB-p\fR option to specify at least one publisher when you set these properties:
 .sp
 .ne 2
 .mk

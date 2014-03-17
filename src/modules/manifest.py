@@ -26,8 +26,10 @@
 
 from collections import namedtuple, defaultdict
 import errno
+import fnmatch
 import hashlib
 import os
+import re
 import tempfile
 from itertools import groupby, chain, product, repeat, izip
 from operator import itemgetter
@@ -43,6 +45,37 @@ import pkg.version as version
 from pkg.misc import EmptyDict, EmptyI, expanddirs, PKG_FILE_MODE, PKG_DIR_MODE
 from pkg.actions.attribute import AttributeAction
 from pkg.actions.directory import DirectoryAction
+
+def _compile_fnpats(fn_pats):
+        """Private helper function that returns a compiled version of a
+        dictionary of fnmatch patterns."""
+
+        return dict(
+            (key, [
+                re.compile(fnmatch.translate(pat), re.IGNORECASE).match
+                for pat in pats
+            ])
+            for (key, pats) in fn_pats.iteritems()
+        )
+
+
+def _attr_matches(action, attr_match):
+        """Private helper function: given an action, return True if any of its
+        attributes' values matches the pattern for the same attribute in the
+        attr_match dictionary, and False otherwise. Note that the patterns must
+        be pre-comiled using re.compile() or _compile_fnpats."""
+
+        if not attr_match:
+                return True
+
+        for (attr, matches) in attr_match.iteritems():
+                if attr in action.attrs:
+                        for match in matches:
+                                for attrval in action.attrlist(attr):
+                                        if match(attrval):
+                                                return True
+        return False
+
 
 class ManifestDifference(
     namedtuple("ManifestDifference", "added changed removed")):
@@ -170,8 +203,8 @@ class Manifest(object):
                         # to be sorted since the caller likely already does
                         # (such as pkgplan/imageplan).
                         return ManifestDifference(
-                            [(None, a) for a in self.gen_actions(self_exclude)],
-                            [], [])
+                            [(None, a) for a in self.gen_actions(
+                            excludes=self_exclude)], [], [])
 
                 def hashify(v):
                         """handle key values that may be lists"""
@@ -183,7 +216,7 @@ class Manifest(object):
                         # Transform list of actions into a dictionary keyed by
                         # action key attribute, key attribute and mediator, or
                         # id if there is no key attribute.
-                        for a in mf.gen_actions(excludes):
+                        for a in mf.gen_actions(excludes=excludes):
                                 if (a.name == "link" or
                                     a.name == "hardlink") and \
                                     a.attrs.get("mediator"):
@@ -828,40 +861,56 @@ class Manifest(object):
                 for m in ret:
                         yield m, ret[m]
 
-        def gen_actions(self, excludes=EmptyI):
+        def gen_actions(self, attr_match=None, excludes=EmptyI):
                 """Generate actions in manifest through ordered callable list"""
 
                 if self.excludes == excludes:
                         excludes = EmptyI
                 assert excludes == EmptyI or self.excludes == EmptyI
+
+                if attr_match:
+                        attr_match = _compile_fnpats(attr_match)
+
                 for a in self.actions:
                         for c in excludes:
                                 if not c(a):
                                         break
                         else:
-                                yield a
+                                # These conditions are split by performance.
+                                if not attr_match:
+                                        yield a
+                                elif _attr_matches(a, attr_match):
+                                        yield a
 
-        def gen_actions_by_type(self, atype, excludes=EmptyI):
+        def gen_actions_by_type(self, atype, attr_match=None, excludes=EmptyI):
                 """Generate actions in the manifest of type "type"
                 through ordered callable list"""
 
                 if self.excludes == excludes:
                         excludes = EmptyI
                 assert excludes == EmptyI or self.excludes == EmptyI
+
+                if attr_match:
+                        attr_match = _compile_fnpats(attr_match)
+
                 for a in self.actions_bytype.get(atype, []):
                         for c in excludes:
                                 if not c(a):
                                         break
                         else:
-                                yield a
+                                # These conditions are split by performance.
+                                if not attr_match:
+                                        yield a
+                                elif _attr_matches(a, attr_match):
+                                        yield a
 
-        def gen_actions_by_types(self, atypes, excludes=EmptyI):
+        def gen_actions_by_types(self, atypes, attr_match=None, excludes=EmptyI):
                 """Generate actions in the manifest of types "atypes"
                 through ordered callable list."""
 
                 for atype in atypes:
                         for a in self.gen_actions_by_type(atype,
-                            excludes=excludes):
+                            attr_match=attr_match, excludes=excludes):
                                 yield a
 
         def gen_key_attribute_value_by_type(self, atype, excludes=EmptyI):
@@ -870,7 +919,7 @@ class Manifest(object):
 
                 return (
                     a.attrs.get(a.key_attr)
-                    for a in self.gen_actions_by_type(atype, excludes)
+                    for a in self.gen_actions_by_type(atype, excludes=excludes)
                 )
 
         def duplicates(self, excludes=EmptyI):
@@ -883,7 +932,7 @@ class Manifest(object):
                         return a.name, a.attrs.get(a.key_attr, id(a))
 
                 alldups = []
-                acts = [a for a in self.gen_actions(excludes)]
+                acts = [a for a in self.gen_actions(excludes=excludes)]
 
                 for k, g in groupby(sorted(acts, key=fun), fun):
                         glist = list(g)
@@ -1665,7 +1714,7 @@ class FactoredManifest(Manifest):
                 self.__load_cached_data("manifest.dircache")
                 return Manifest.get_directories(self, excludes)
 
-        def gen_actions_by_type(self, atype, excludes=EmptyI):
+        def gen_actions_by_type(self, atype, attr_match=None, excludes=EmptyI):
                 """ generate actions of the specified type;
                 use already in-memory stuff if already loaded,
                 otherwise use per-action types files"""
@@ -1673,7 +1722,7 @@ class FactoredManifest(Manifest):
                 if self.loaded: #if already loaded, use in-memory cached version
                         # invoke subclass method to generate action by action
                         for a in Manifest.gen_actions_by_type(self, atype,
-                            excludes):
+                            attr_match=attr_match, excludes=excludes):
                                 yield a
                         return
 
@@ -1689,7 +1738,7 @@ class FactoredManifest(Manifest):
                                 self.__load()
                         # invoke subclass method to generate action by action
                         for a in Manifest.gen_actions_by_type(self, atype,
-                            excludes):
+                            attr_match=attr_match, excludes=excludes):
                                 yield a
                         return
 
@@ -1707,13 +1756,23 @@ class FactoredManifest(Manifest):
                 # avoid pointless I/O later.
                 mpath = self.__cache_path("manifest.%s" % atype)
 
+                if attr_match:
+                        attr_match = _compile_fnpats(attr_match)
+
                 try:
                         with open(mpath, "rb") as f:
                                 for l in f:
                                         a = actions.fromstr(l.rstrip())
-                                        if not excludes or \
-                                            a.include_this(excludes):
+                                        if (excludes and
+                                            not a.include_this(excludes)):
+                                                continue
+                                        # These conditions are split by
+                                        # performance.
+                                        if not attr_match:
                                                 yield a
+                                        elif _attr_matches(a, attr_match):
+                                                yield a
+
                 except EnvironmentError, e:
                         if e.errno == errno.ENOENT:
                                 self._absent_cache.append(atype)
@@ -1815,10 +1874,11 @@ class FactoredManifest(Manifest):
                 return Manifest.search_dict(cache_path, excludes,
                     return_line=return_line)
 
-        def gen_actions(self, excludes=EmptyI):
+        def gen_actions(self, attr_match=None, excludes=EmptyI):
                 if not self.loaded:
                         self.__load()
-                return Manifest.gen_actions(self, excludes=excludes)
+                return Manifest.gen_actions(self, attr_match=attr_match,
+                    excludes=excludes)
 
         def __str__(self, excludes=EmptyI):
                 if not self.loaded:
@@ -1875,7 +1935,8 @@ class EmptyFactoredManifest(Manifest):
                 # origin has been removed.  This is an optimization for
                 # uninstall.
                 return ManifestDifference([], [],
-                    [(a, None) for a in origin.gen_actions(origin_exclude)])
+                    [(a, None) for a in origin.gen_actions(excludes=
+                    origin_exclude)])
 
         @staticmethod
         def get_directories(excludes):

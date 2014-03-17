@@ -2207,7 +2207,7 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                 progresstracker.verify_add_progress(fmri)
                 manf = self.get_manifest(fmri, ignore_excludes=True)
                 sigs = list(manf.gen_actions_by_type("signature",
-                    self.list_excludes()))
+                    excludes=self.list_excludes()))
                 if sig_pol and (sigs or sig_pol.name != "ignore"):
                         # Only perform signature verification logic if there are
                         # signatures or if signature-policy is not 'ignore'.
@@ -2253,7 +2253,7 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                             med.mediator_impl_matches(med_impl, cfg_med_impl)
 
                 try:
-                        for act in manf.gen_actions(self.list_excludes()):
+                        for act in manf.gen_actions(excludes=self.list_excludes()):
                                 progresstracker.verify_add_progress(fmri)
                                 if (act.name == "link" or
                                     act.name == "hardlink") and \
@@ -3576,7 +3576,7 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                 for pfmri in self.gen_installed_pkgs():
                         progtrack.job_add_progress(progtrack.JOB_FAST_LOOKUP)
                         m = self.get_manifest(pfmri, ignore_excludes=True)
-                        for act in m.gen_actions(excludes):
+                        for act in m.gen_actions(excludes=excludes):
                                 if not act.globally_identical:
                                         continue
                                 act.strip()
@@ -3839,7 +3839,8 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                 for pfmri in self.gen_installed_pkgs():
                         m = self.get_manifest(pfmri)
                         dirs = set()
-                        for act in m.gen_actions_by_type(atype, excludes):
+                        for act in m.gen_actions_by_type(atype,
+                            excludes=excludes):
                                 if implicit_dirs:
                                         dirs.add(act.attrs["path"])
                                 yield act, pfmri

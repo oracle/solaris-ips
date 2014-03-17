@@ -1119,14 +1119,14 @@ class ImagePlan(object):
                                 m = self.image.get_manifest(f,
                                     ignore_excludes=True)
                                 for act in m.gen_actions_by_type("file",
-                                    self.__new_excludes):
+                                    excludes=self.__new_excludes):
                                         if "revert-tag" in act.attrs and \
                                             (set(act.attrlist("revert-tag")) &
                                              tag_set):
                                                 revert_dict[(f, m)].append(act)
 
                                 for act in m.gen_actions_by_type("dir",
-                                    self.__new_excludes):
+                                    excludes=self.__new_excludes):
                                         if "revert-tag" not in act.attrs:
                                                 continue
                                         for a in act.attrlist("revert-tag"):
@@ -1150,7 +1150,7 @@ class ImagePlan(object):
                                 m = self.image.get_manifest(f,
                                     ignore_excludes=True)
                                 for act in m.gen_actions_by_type("file",
-                                    self.__new_excludes):
+                                    excludes=self.__new_excludes):
                                         path = act.attrs["path"]
                                         if path in revertpaths or \
                                             path in overlaypaths:
@@ -1429,7 +1429,7 @@ class ImagePlan(object):
                         if implicit_dirs:
                                 dirs = set() # Keep track of explicit dirs
                         for act in m.gen_actions_by_type(atype,
-                            self.__new_excludes):
+                            excludes=self.__new_excludes):
                                 if implicit_dirs:
                                         dirs.add(act.attrs["path"])
                                 yield act, pfmri
@@ -1461,7 +1461,7 @@ class ImagePlan(object):
                         if implicit_dirs:
                                 dirs = set() # Keep track of explicit dirs
                         for act in m.gen_actions_by_type(atype,
-                            excludes):
+                            excludes=excludes):
                                 if implicit_dirs:
                                         dirs.add(act.attrs["path"])
                                 yield act, pfmri

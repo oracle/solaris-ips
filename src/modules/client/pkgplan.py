@@ -280,7 +280,7 @@ class PkgPlan(object):
                                 sigman = self.__destination_mfst
 
                         sigs = list(sigman.gen_actions_by_type("signature",
-                            new_excludes))
+                            excludes=new_excludes))
                         if sig_pol and (sigs or sig_pol.name != "ignore"):
                                 # Only perform signature verification logic if
                                 # there are signatures or if signature-policy
