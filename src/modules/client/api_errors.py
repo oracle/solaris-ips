@@ -2397,7 +2397,7 @@ class ExpiredCertificates(CertificateError):
         """Used to collect ExpiredCertficate exceptions."""
 
         def __init__(self, errors):
-                
+
                 self.errors = []
 
                 assert (isinstance(errors, (list, tuple,
@@ -2693,6 +2693,7 @@ class LinkedImageException(ApiException):
             child_path_notabs=None,
             child_unknown=None,
             cmd_failed=None,
+            cmd_output_invalid=None,
             detach_child_notsup=None,
             detach_from_parent=None,
             detach_parent_notsup=None,
@@ -2725,6 +2726,7 @@ class LinkedImageException(ApiException):
                 self.child_path_notabs = child_path_notabs
                 self.child_unknown = child_unknown
                 self.cmd_failed = cmd_failed
+                self.cmd_output_invalid = cmd_output_invalid
                 self.detach_child_notsup = detach_child_notsup
                 self.detach_from_parent = detach_from_parent
                 self.detach_parent_notsup = detach_parent_notsup
@@ -2868,6 +2870,15 @@ class LinkedImageException(ApiException):
                                 return
                         err += _("\nAnd generated the following error "
                             "message:\n%(errout)s" % {"errout": errout})
+
+                if cmd_output_invalid is not None:
+                        (cmd, output) = cmd_output_invalid
+                        err = _(
+                            "The following subprocess:\n"
+                            "    %(cmd)s\n"
+                            "Generated the following unexpected output:\n"
+                            "%(output)s\n" %
+                            {"cmd": " ".join(cmd), "output": "\n".join(output)})
 
                 if detach_child_notsup is not None:
                         err = _("Linked image type does not support "

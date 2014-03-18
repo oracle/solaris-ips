@@ -407,6 +407,32 @@ def _zonename():
         l = fout.readlines()[0].rstrip()
         return l
 
+def _zoneadm_list_parse(line, cmd, output):
+        """Parse zoneadm list -p output.  It's possible for zonepath to
+        contain a ":".  If it does it will be escaped to be "\:".  (But note
+        that if the zonepath contains a "\" it will not be escaped, which
+        is argubaly a bug.)"""
+
+        # zoneadm list output should never contain a NUL char, so
+        # temporarily replace any escaped colons with a NUL, split the string
+        # on any remaining colons, and then switch any NULs back to colons.
+        tmp_char = "\0"
+        fields = [
+                field.replace(tmp_char, ":")
+                for field in line.replace("\:", tmp_char).split(":")
+        ]
+
+        try:
+                # Unused variable; pylint: disable=W0612
+                z_id, z_name, z_state, z_path, z_uuid, z_brand, z_iptype = \
+                    fields[:7]
+                # pylint: enable=W0612
+        except ValueError:
+                raise apx.LinkedImageException(
+                    cmd_output_invalid=(cmd, output))
+
+        return z_name, z_state, z_path, z_brand
+
 def _list_zones(root, path_transform):
         """Get the zones associated with the image located at 'root'.  We
         return a dictionary where the keys are zone names and the values are
@@ -444,13 +470,25 @@ def _list_zones(root, path_transform):
 
         # parse the command output
         fout.seek(0)
-        for l in fout.readlines():
+        output = fout.readlines()
+        for l in output:
                 l = l.rstrip()
 
-                # Unused variable; pylint: disable=W0612
-                z_id, z_name, z_state, z_path, z_uuid, z_brand, \
-                    z_iptype = l.strip().split(':', 6)
-                # pylint: enable=W0612
+                z_name, z_state, z_path, z_brand = \
+                    _zoneadm_list_parse(l, cmd, output)
+
+                # skip brands that we don't care about
+                # W0511 XXX / FIXME Comments; pylint: disable=W0511
+                # XXX: don't hard code brand names, use a brand attribute
+                # pylint: enable=W0511
+                if z_brand not in ["ipkg", "solaris", "sn1", "labeled"]:
+                        continue
+
+                # we don't care about the global zone.
+                if (z_name == "global"):
+                        continue
+
+                # append "/root" to zonepath
                 z_rootpath = os.path.join(z_path, "root")
                 assert z_rootpath.startswith(root), \
                     "zone path '%s' doesn't begin with '%s" % \
@@ -461,16 +499,6 @@ def _list_zones(root, path_transform):
                 if li.path_transform_applied(z_rootpath, path_transform):
                         z_rootpath = li.path_transform_revert(z_rootpath,
                             path_transform)
-
-                # we don't care about the global zone.
-                if (z_name == "global"):
-                        continue
-
-                # W0511 XXX / FIXME Comments; pylint: disable=W0511
-                # XXX: don't hard code brand names, use a brand attribute
-                # pylint: enable=W0511
-                if z_brand not in ["ipkg", "solaris", "sn1", "labeled"]:
-                        continue
 
                 # we only care about zones that have been installed
                 if z_state not in zone_installed_states:

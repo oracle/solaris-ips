@@ -2485,7 +2485,7 @@ class TestPkgLinkedRecurse(TestPkgLinked):
                 self._pkg([0, 1, 2], "list kernel@1.0,5.11-0.1.1.0")
                 self._pkg([0, 1], "list network@1.0,5.11-0.1.1.0")
                 self._pkg([2], "list network", rv=EXIT_OOPS)
-        
+
                 # Wildcards are purposefully used here for both patterns to
                 # ensure pattern matching works as expected for update.
                 self._pkg([0], "update -r -v "
@@ -4088,7 +4088,7 @@ cat <<-EOF
 -:z2:unavailable:$PKG_GZR/z21::solaris:excl:-::
 -:z3:configured:$PKG_GZR/z3::solaris:excl:-::
 -:z4:incomplete:$PKG_GZR/z4::solaris:excl:-::
--:kz:installed:$PKG_GZR/kz1::solaris-kz:excl:-:solaris-kz:
+-:kz:installed:$PKG_GZR/system/volatile/zones/kz1/zonepath::solaris-kz:excl:-:solaris-kz:
 -:s10:installed:$PKG_GZR/s10::solaris10:excl:-::
 EOF
 exit 0""".strip("\n")
@@ -4833,6 +4833,84 @@ exit 0""".strip("\n")
 
                 # Update the API object to point back to the old location.
                 api_inst._img.find_root(image1)
+
+        def test_linked_paths_bad_zoneadm_list_output(self):
+                """Test that we emit an error message if we fail to parse
+                zoneadm list -p output."""
+
+                base_path = self.img_path(0).rstrip(os.sep) + os.sep
+                gzpath = os.path.join(base_path, "gzpath/")
+                self.__ccmd("mkdir -p %s" % gzpath)
+
+                # fake zoneadm binary used for testing
+                zoneadm_sh = """
+#!/bin/sh
+cat <<-EOF
+this is invalid zoneadm list -p output.
+EOF
+exit 0""".strip("\n")
+
+                # create a zonename binary
+                bin_zonename = os.path.join(base_path, "zonename")
+                self.__mk_bin(bin_zonename, self.zonename_sh)
+
+                # create a zoneadm binary
+                bin_zoneadm = os.path.join(base_path, "zoneadm")
+                self.__mk_bin(bin_zoneadm, zoneadm_sh)
+
+                self.image_create(self.rurl1, destroy=False, img_path=gzpath)
+
+                self.pkg("--debug zones_supported=1 "
+                    "--debug bin_zonename='%s' "
+                    "--debug bin_zoneadm='%s' "
+                    "-R %s list-linked" %
+                    (bin_zonename, bin_zoneadm, gzpath), exit=EXIT_OOPS)
+
+                self.assert_(self.output == "")
+                self.assert_("this is invalid zoneadm list -p output." in
+                    self.errout)
+
+        def test_linked_paths_zone_paths_with_colon(self):
+                """Test that we can correctly parse zone paths that have a
+                colon in them."""
+
+                base_path = self.img_path(0).rstrip(os.sep) + os.sep
+                gzpath = os.path.join(base_path, "gzpath_with_a_:colon/")
+                self.__ccmd("mkdir -p %s" % gzpath)
+
+                os.environ["PKG_GZR"] = gzpath.rstrip(os.sep)
+
+
+                # fake zoneadm binary used for testing
+                zoneadm_sh = """
+#!/bin/sh
+while getopts "R:" OPT ; do
+case $OPT in
+        R )
+                [[ "$OPTARG" != "$PKG_GZR/" ]] && exit 0
+                ;;
+esac
+done
+PKG_GZR=$(echo "$PKG_GZR" | sed 's-:-\\\:-g')
+cat <<-EOF
+0:global:running:$PKG_GZR::solaris:shared:-:none:
+-:z1:installed:$PKG_GZR/ngzzone_path_with_a\:colon::solaris:excl:-::
+EOF
+exit 0""".strip("\n")
+
+                # create a zonename binary
+                bin_zonename = os.path.join(base_path, "zonename")
+                self.__mk_bin(bin_zonename, self.zonename_sh)
+
+                # create a zoneadm binary
+                bin_zoneadm = os.path.join(base_path, "zoneadm")
+                self.__mk_bin(bin_zoneadm, zoneadm_sh)
+
+                self.image_create(self.rurl1, destroy=False, img_path=gzpath)
+
+                ngzpath = gzpath + "ngzzone_path_with_a:colon/root/"
+                self.__list_linked_check(gzpath, [ngzpath],
+                    bin_zonename, bin_zoneadm)
 
 
 if __name__ == "__main__":
