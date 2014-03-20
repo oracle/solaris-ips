@@ -2090,7 +2090,7 @@ class LinkedImage(object):
 
 
                 lic_all = reduce(operator.add,
-		    [i[1] for i in _lic_op_vectors], [])
+                    [i[1] for i in _lic_op_vectors], [])
                 lic_num = len(lic_all)
 
                 # make sure we don't have any duplicate LICs or duplicate LINs
@@ -2121,7 +2121,8 @@ class LinkedImage(object):
                 else:
                         pkg_op = "<various>"
 
-                _progtrack.li_recurse_start(pkg_op, lic_num)
+                if lic_num:
+                        _progtrack.li_recurse_start(pkg_op, lic_num)
 
                 # If we have a plan for the current image that means linked
                 # image metadata is probably changing so we always save it to
