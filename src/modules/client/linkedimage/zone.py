@@ -259,7 +259,9 @@ class LinkedImageZonePlugin(li.LinkedImagePlugin):
 
                 # convert zone names into into LinkedImageName objects
                 zlist = []
-                for zone, path in zdict.iteritems():
+                # state is unused
+                # pylint: disable=W0612
+                for zone, (path, state) in zdict.iteritems():
                         lin = li.LinkedImageName("%s:%s" % (self.__pname, zone))
                         zlist.append([lin, path])
 
@@ -436,8 +438,9 @@ def _zoneadm_list_parse(line, cmd, output):
 def _list_zones(root, path_transform):
         """Get the zones associated with the image located at 'root'.  We
         return a dictionary where the keys are zone names and the values are
-        zone root pahts.  The global zone is excluded from the results.
-        Solaris10 branded zones are excluded from the results.  """
+        tuples containing zone root path and current state. The global zone is
+        excluded from the results. Solaris10 branded zones are excluded from the
+        results."""
 
         rv = dict()
         cmd = DebugValues.get_value("bin_zoneadm") # pylint: disable=E1120
@@ -504,6 +507,20 @@ def _list_zones(root, path_transform):
                 if z_state not in zone_installed_states:
                         continue
 
-                rv[z_name] = z_rootpath
+                rv[z_name] = (z_rootpath, z_state)
 
         return rv
+
+def list_running_zones():
+        """Return dictionary with currently running zones of the system in the
+        following form:
+                { zone_name : zone_path, ... }
+        """
+
+        zdict = _list_zones("/", li.PATH_TRANSFORM_NONE)
+        rzdict = {}
+        for z_name, (z_path, z_state) in zdict.iteritems():
+                if z_state == ZONE_STATE_STR_RUNNING:
+                        rzdict[z_name] = z_path
+
+        return rzdict

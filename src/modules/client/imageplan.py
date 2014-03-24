@@ -46,6 +46,7 @@ import pkg.actions.driver as driver
 import pkg.catalog
 import pkg.client.api_errors as api_errors
 import pkg.client.indexer as indexer
+import pkg.client.linkedimage.zone as zone
 import pkg.client.pkg_solver as pkg_solver
 import pkg.client.pkgdefs as pkgdefs
 import pkg.client.pkgplan as pkgplan
@@ -3905,6 +3906,22 @@ class ImagePlan(object):
                         # that if _create_fast_lookups is interrupted later the
                         # client isn't left with invalid state.
                         self.image._remove_fast_lookups()
+
+                if not self.image.is_liveroot():
+                        # Check if the child is a running zone. If so run the
+                        # actuator in the zone.
+
+                        # Linked Image code uses trailing slashes, Image code
+                        # does not. So we make sure that our path comparisons
+                        # are always on tha same page.
+                        root = os.path.normpath(self.image.root)
+
+                        rzones = zone.list_running_zones()
+                        for z, path in rzones.iteritems():
+                                if os.path.normpath(path) == root:
+                                        self.pd._actuators.set_zone(z)
+                                        # there should be only on zone per path
+                                        break
 
                 self.pd._actuators.exec_prep(self.image)
 

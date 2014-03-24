@@ -3270,7 +3270,7 @@ class CliTestCase(Pkg5TestCase):
                 file_path = os.path.join(self.get_img_path(), path)
                 portable.remove(file_path)
 
-        def file_contains(self, path, string):
+        def file_contains(self, path, string, appearances=1):
                 """Assert the existence of a string in a file in the image."""
 
                 file_path = os.path.join(self.get_img_path(), path)
@@ -3283,8 +3283,10 @@ class CliTestCase(Pkg5TestCase):
 
                 for line in f:
                         if string in line:
-                                f.close()
-                                break
+                                appearances -= 1
+                                if appearances == 0:
+                                        f.close()
+                                        break
                 else:
                         f.close()
                         self.assert_(False, "File %s does not contain %s" %

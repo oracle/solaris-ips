@@ -32,6 +32,8 @@ import unittest
 
 import pkg.smf as smf
 
+from pkg.client.debugvalues import DebugValues
+
 class TestSMF(pkg5unittest.SingleDepotTestCase):
         # Only start/stop the depot once (instead of for every test)
         persistent_setup = True
@@ -113,7 +115,13 @@ case $4 in
 esac
 echo $FMRI
 exit $RETURN
-"""
+""",
+                "bin_zlogin" : \
+"""#!/bin/ksh
+zone_name=$1
+shift
+echo "zlogin $zone_name" >> $PKG_TEST_DIR/zlogin_arguments
+($*)""",
 }
         misc_files = { \
                 "svcprop_enabled" :
@@ -337,9 +345,9 @@ stop/exec astring :true
 stop/timeout_seconds count 0
 stop/type astring method""",
 
-
                 "empty": "",
 }
+
         def setUp(self):
                 pkg5unittest.SingleDepotTestCase.setUp(self)
                 self.make_misc_files(self.misc_files, prefix="testdata")
@@ -546,3 +554,74 @@ stop/type astring method""",
                 self.file_contains(svcadm_output,
                     "svcadm mark degraded svc:/system/test_enable_svc:default foo")
                 os.unlink(svcadm_output)
+
+        def test_zone_actuators(self):
+                """Test that the smf interface for zones performs as
+                expected."""
+
+                testdata_dir = os.path.join(self.test_root, "testdata")
+                svcadm_output = os.path.join(testdata_dir,
+                    "svcadm_arguments")
+                zlogin_output = os.path.join(testdata_dir,
+                    "zlogin_arguments")
+                os.environ["PKG_TEST_DIR"] = testdata_dir
+                DebugValues["bin_zlogin"] = os.path.join(self.test_root,
+                    "smf_cmds", "bin_zlogin")
+
+                zone = "z1"
+
+                smf.restart("svc:/system/test_restart_svc:default", zone=zone)
+                self.file_contains(zlogin_output,
+                    "zlogin "+zone)
+                os.unlink(zlogin_output)
+                self.file_contains(svcadm_output,
+                    "svcadm restart svc:/system/test_restart_svc:default")
+                os.unlink(svcadm_output)
+
+                smf.refresh("svc:/system/test_refresh_svc:default", zone=zone)
+                self.file_contains(zlogin_output,
+                    "zlogin "+zone)
+                os.unlink(zlogin_output)
+                self.file_contains(svcadm_output,
+                    "svcadm refresh svc:/system/test_refresh_svc:default")
+                os.unlink(svcadm_output)
+
+                smf.mark("maintenance", "svc:/system/test_mark_svc:default", zone=zone)
+                self.file_contains(zlogin_output,
+                    "zlogin "+zone)
+                os.unlink(zlogin_output)
+                self.file_contains(svcadm_output,
+                    "svcadm mark maintenance svc:/system/test_mark_svc:default")
+                os.unlink(svcadm_output)
+
+                smf.enable("svc:/system/test_enable_svc:default", zone=zone)
+                self.file_contains(zlogin_output,
+                    "zlogin "+zone)
+                os.unlink(zlogin_output)
+                self.file_contains(svcadm_output,
+                    "svcadm enable svc:/system/test_enable_svc:default")
+                os.unlink(svcadm_output)
+
+                smf.disable("svc:/system/test_disable_svc:default", zone=zone)
+                self.file_contains(zlogin_output,
+                    "zlogin "+zone)
+                os.unlink(zlogin_output)
+                self.file_contains(svcadm_output,
+                    "svcadm disable -s svc:/system/test_disable_svc:default")
+                os.unlink(svcadm_output)
+
+                os.environ["PKG_SVCPROP_OUTPUT"] = "svcprop_enabled"
+                smf.get_prop("foo", "start/timeout_seconds", zone=zone)
+                self.file_contains(zlogin_output,
+                    "zlogin "+zone)
+                os.unlink(zlogin_output)
+
+                smf.is_disabled("foo", zone=zone)
+                self.file_contains(zlogin_output,
+                    "zlogin "+zone)
+                os.unlink(zlogin_output)
+
+                smf.get_state("foo", zone=zone)
+                self.file_contains(zlogin_output,
+                    "zlogin "+zone)
+                os.unlink(zlogin_output)

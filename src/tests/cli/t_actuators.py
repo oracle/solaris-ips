@@ -78,7 +78,23 @@ case $4 in
 esac
 echo $FMRI
 exit $RETURN
-"""
+""",
+                "bin_zlogin" : \
+"""#!/bin/sh
+# print full cmd line, then execute in gz what zlogin would execute in ngz
+echo $0 "$@" >> $PKG_TEST_DIR/zlogin_arguments
+shift
+($*)
+""",
+                "bin_zoneadm" : \
+"""#!/bin/sh
+cat <<-EOF
+0:global:running:/::solaris:shared:-:none:
+1:z1:running:$PKG_TZR1::solaris:excl:-::
+2:z2:installed:$PKG_TZR2::solaris:excl:-::
+EOF
+exit 0"""
+
 }
         misc_files = { \
                 "svcprop_enabled" :
@@ -461,6 +477,69 @@ stop/type astring method
                     "svcadm disable -s svc:/system/test_multi_svc1:default "
                     "svc:/system/test_multi_svc2:default")
                 os.unlink(svcadm_output)
+
+        def __create_zone(self, zname, rurl):
+                """Create a fake zone linked image and attach to parent."""
+
+                zone_path = os.path.join(self.img_path(0), zname)
+                os.mkdir(zone_path)
+                # zone images are rooted at <zonepath>/root
+                zimg_path = os.path.join(zone_path, "root")
+                self.image_create(repourl=rurl, img_path=zimg_path)
+                self.pkg("-R %s attach-linked -c system:%s %s" %
+                    (self.img_path(0), zname, zimg_path))
+
+                return zone_path
+                
+        def test_zone_actuators(self):
+                """test zone actuators"""
+
+                rurl = self.dc.get_repo_url()
+                plist = self.pkgsend_bulk(rurl, self.pkg_list)
+                self.image_create(rurl)
+
+                # Create fake zone images.
+                # We have one "running" zone (z1) and one "installed" zone (z2).
+                # The zone actuators should only be run in the running zone.
+
+                # set env variable for fake zoneadm to print correct zonepaths
+                os.environ["PKG_TZR1"] = self.__create_zone("z1", rurl)
+                os.environ["PKG_TZR2"] = self.__create_zone("z2", rurl)
+
+                os.environ["PKG_TEST_DIR"] = self.testdata_dir
+                os.environ["PKG_SVCADM_EXIT_CODE"] = "0"
+                os.environ["PKG_SVCPROP_EXIT_CODE"] = "0"
+
+                # Prepare fake zone and smf cmds.
+                svcadm_output = os.path.join(self.testdata_dir,
+                    "svcadm_arguments")
+                zlogin_output = os.path.join(self.testdata_dir,
+                    "zlogin_arguments")
+                bin_zlogin = os.path.join(self.test_root,
+                    "smf_cmds", "bin_zlogin")
+                bin_zoneadm = os.path.join(self.test_root,
+                    "smf_cmds", "bin_zoneadm")
+
+                # make it look like our test service is enabled
+                os.environ["PKG_SVCPROP_OUTPUT"] = "svcprop_enabled"
+
+                # test to see if our test service is restarted on install
+                self.pkg("--debug bin_zoneadm='%s' "
+                    "--debug bin_zlogin='%s' "
+                    "install -rv basics@1.0" % (bin_zoneadm, bin_zlogin))
+                # test that actuator in global zone and z2 is run
+                self.file_contains(svcadm_output,
+                    "svcadm restart svc:/system/test_restart_svc:default",
+                    appearances=2)
+                os.unlink(svcadm_output)
+                # test that actuator in non-global zone is run
+                self.file_contains(zlogin_output,
+                    "zlogin z1")
+                self.file_doesnt_contain(zlogin_output,
+                    "zlogin z2")
+                self.file_contains(zlogin_output,
+                    "svcadm restart svc:/system/test_restart_svc:default")
+                os.unlink(zlogin_output)
 
 class TestPkgReleaseNotes(pkg5unittest.SingleDepotTestCase):
         # Only start/stop the depot once (instead of for every test)

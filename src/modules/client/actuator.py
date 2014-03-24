@@ -89,6 +89,7 @@ class Actuator(object):
                 self.cmd_path = ""
                 self.sync_timeout = 0
                 self.act_timed_out = False
+                self.zone = None
 
         @staticmethod
         def getstate(obj, je_state=None):
@@ -128,6 +129,16 @@ class Actuator(object):
                                  -1: no timeout, wait until finished
                 """
                 self.sync_timeout = timeout
+
+        def set_zone(self, zname):
+                """Specify if actuators are supposed to be run within a zone.
+                If 'zname' is None, actuators are run in the global zone,
+                otherwise actuators are run in the zone 'zname'. The caller has
+                to make sure the zone exists and is running. If there are any
+                issues with calling an actuator in the zone, it will be
+                ignored."""
+
+                self.zone = zname
 
         @property
         def timed_out(self):
@@ -193,7 +204,7 @@ class Actuator(object):
                 """Returns a list of tuples of possible release notes"""
                 return self.update.get("release-note", []) + \
                     self.install.get("release-note", [])
-                
+
         def get_services_list(self):
                 """Returns a list of services that would be restarted"""
                 return [(fmri, smf) for fmri, smf in self.get_list()
@@ -218,11 +229,24 @@ class Actuator(object):
 
         def __invoke(self, func, *args, **kwargs):
                 """Execute SMF command. Remember if command timed out."""
+
+                if self.zone:
+                        kwargs["zone"] = self.zone
+
                 try:
                         func(*args, **kwargs)
                 except smf.NonzeroExitException, nze:
                         if nze.return_code == smf.EXIT_TIMEOUT:
                                 self.act_timed_out = True
+                        elif " ".join(nze.output).startswith("zlogin:"):
+                                # Ignore zlogin errors; the worst which
+                                # can happen is that an actuator is not run
+                                # (disable is always run with -t).
+                                # Since we only test once if the zone is
+                                # runnning, this could happen if someone shuts
+                                # down the zone while we are in the process of
+                                # executing.
+                                pass
                         else:
                                 raise
 
@@ -241,8 +265,10 @@ class Actuator(object):
                                             os.O_EXCL  |
                                             os.O_CREAT |
                                             os.O_WRONLY))
-                        if not DebugValues.get_value("smf_cmds_dir"):
+                        if not DebugValues.get_value("smf_cmds_dir") and \
+                            not self.zone:
                                 return
+
                 self.do_nothing = False
 
         def exec_pre_actuators(self, image):
@@ -256,20 +282,22 @@ class Actuator(object):
 
                 disable_fmris = self.removal.get("disable_fmri", set())
 
-                suspend_fmris = smf.check_fmris("suspend_fmri", suspend_fmris)
-                disable_fmris = smf.check_fmris("disable_fmri", disable_fmris)
+                suspend_fmris = smf.check_fmris("suspend_fmri", suspend_fmris,
+                    zone=self.zone)
+                disable_fmris = smf.check_fmris("disable_fmri", disable_fmris,
+                    zone=self.zone)
                 # eliminate services not loaded or not running
                 # remember those services enabled only temporarily
 
                 for fmri in suspend_fmris.copy():
-                        state = smf.get_state(fmri)
+                        state = smf.get_state(fmri, zone=self.zone)
                         if state <= smf.SMF_SVC_TMP_ENABLED:
                                 suspend_fmris.remove(fmri)
                         if state == smf.SMF_SVC_TMP_ENABLED:
                                 tmp_suspend_fmris.add(fmri)
 
                 for fmri in disable_fmris.copy():
-                        if smf.is_disabled(fmri):
+                        if smf.is_disabled(fmri, zone=self.zone):
                                 disable_fmris.remove(fmri)
 
                 self.suspend_fmris = suspend_fmris
@@ -326,14 +354,16 @@ class Actuator(object):
                     self.update.get("restart_fmri", set()) | \
                     self.install.get("restart_fmri", set())
 
-                refresh_fmris = smf.check_fmris("refresh_fmri", refresh_fmris)
-                restart_fmris = smf.check_fmris("restart_fmri", restart_fmris)
+                refresh_fmris = smf.check_fmris("refresh_fmri", refresh_fmris,
+                    zone=self.zone)
+                restart_fmris = smf.check_fmris("restart_fmri", restart_fmris,
+                    zone=self.zone)
 
                 # ignore services not present or not
                 # enabled
 
                 for fmri in refresh_fmris.copy():
-                        if smf.is_disabled(fmri):
+                        if smf.is_disabled(fmri, zone=self.zone):
                                 refresh_fmris.remove(fmri)
 
                 params = tuple(refresh_fmris)
@@ -342,7 +372,7 @@ class Actuator(object):
                         self.__invoke(smf.refresh, params, sync_timeout=self.sync_timeout)
 
                 for fmri in restart_fmris.copy():
-                        if smf.is_disabled(fmri):
+                        if smf.is_disabled(fmri, zone=self.zone):
                                 restart_fmris.remove(fmri)
 
                 params = tuple(restart_fmris)
