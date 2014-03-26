@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2007, 2013, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2007, 2014, Oracle and/or its affiliates. All rights reserved.
 #
 
 """module describing a directory packaging object
@@ -95,8 +95,7 @@ class DirectoryAction(generic.Action):
                         oowner, ogroup = orig.get_fsobj_uid_gid(pkgplan,
                             pkgplan.origin_fmri)
 
-                path = os.path.normpath(os.path.sep.join((
-                    pkgplan.image.get_root(), self.attrs["path"])))
+                path = self.get_installed_path(pkgplan.image.get_root())
 
                 # Don't allow installation through symlinks.
                 self.fsobj_checkpath(pkgplan, path)
@@ -200,8 +199,7 @@ class DirectoryAction(generic.Action):
                 return errors, warnings, info
 
         def remove(self, pkgplan):
-                path = os.path.normpath(os.path.sep.join(
-                    (pkgplan.image.get_root(), self.attrs["path"])))
+                path = self.get_installed_path(pkgplan.image.get_root())
                 try:
                         os.rmdir(path)
                 except OSError, e:

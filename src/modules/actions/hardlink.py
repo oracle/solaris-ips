@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2007, 2012, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2007, 2014, Oracle and/or its affiliates. All rights reserved.
 #
 
 """module describing a (hard) link packaging object
@@ -67,11 +67,8 @@ class HardLinkAction(link.LinkAction):
         def install(self, pkgplan, orig):
                 """Client-side method that installs a hard link."""
 
-                path = self.attrs["path"]
                 target = self.get_target_path()
-
-                path = os.path.normpath(os.path.sep.join(
-                    (pkgplan.image.get_root(), path)))
+                path = self.get_installed_path(pkgplan.image.get_root())
 
                 # Don't allow installation through symlinks.
                 self.fsobj_checkpath(pkgplan, path)
@@ -118,8 +115,7 @@ class HardLinkAction(link.LinkAction):
                         return errors, warnings, info
 
                 target = self.get_target_path()
-                path = os.path.normpath(os.path.sep.join(
-                    (img.get_root(), self.attrs["path"])))
+                path = self.get_installed_path(img.get_root())
                 target = os.path.normpath(os.path.sep.join(
                     (img.get_root(), target)))
 

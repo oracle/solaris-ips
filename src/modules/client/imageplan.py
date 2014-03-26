@@ -237,6 +237,16 @@ class ImagePlan(object):
                 """get the (approx) number of download space available"""
                 return self.pd._cbytes_avail
 
+        def __finish_plan(self, pdstate, fmri_changes=None):
+                """Private helper function that must be called at the end of
+                every planning operation to ensure final plan state is set and
+                any general post-plan work is performed."""
+
+                pd = self.pd
+                pd.state = pdstate
+                if not fmri_changes is None:
+                        pd._fmri_changes = fmri_changes
+
         def __vector_2_fmri_changes(self, installed_dict, vector,
             li_pkg_updates=True, new_variants=None, new_facets=None,
             fmri_changes=None):
@@ -510,7 +520,7 @@ class ImagePlan(object):
                     new_variants=new_variants,
                     pkgs_inst=pkgs_inst,
                     reject_list=reject_list)
-                self.pd.state = plandesc.EVALUATED_PKGS
+                self.__finish_plan(plandesc.EVALUATED_PKGS)
 
         def __plan_exact_install(self, li_pkg_updates=True, li_sync_op=False,
             new_facets=None, new_variants=None, pkgs_inst=None,
@@ -528,7 +538,7 @@ class ImagePlan(object):
                     pkgs_inst=pkgs_inst,
                     reject_list=reject_list,
                     exact_install=True)
-                self.pd.state = plandesc.EVALUATED_PKGS
+                self.__finish_plan(plandesc.EVALUATED_PKGS)
 
         def set_be_options(self, backup_be, backup_be_name, new_be,
             be_activate, be_name):
@@ -696,7 +706,7 @@ class ImagePlan(object):
                             new_variants=new_variants,
                             reject_list=reject_list,
                             fmri_changes=fmri_changes)
-                        self.pd.state = plandesc.EVALUATED_PKGS
+                        self.__finish_plan(plandesc.EVALUATED_PKGS)
 
                 # evaluate what varcet changes are required
                 new_variants, new_facets, \
@@ -749,8 +759,9 @@ class ImagePlan(object):
                 # If solver isn't involved, assume the list of packages
                 # has been determined.
                 assert fmri_changes is not None
-                self.pd._fmri_changes = fmri_changes
-                self.pd.state = plandesc.EVALUATED_PKGS
+                self.__finish_plan(plandesc.EVALUATED_PKGS,
+                    fmri_changes=fmri_changes)
+
 
         def plan_set_mediators(self, new_mediators):
                 """Determine the changes needed to set the specified mediators.
@@ -888,7 +899,7 @@ class ImagePlan(object):
                         self.pd._new_mediators = update_mediators
 
                 pt.plan_done(pt.PLAN_MEDIATION_CHG)
-                self.pd.state = plandesc.EVALUATED_PKGS
+                self.__finish_plan(plandesc.EVALUATED_PKGS)
 
         def __any_reject_matches(self, reject_list):
                 """Check if any reject patterns match installed packages (in
@@ -920,8 +931,8 @@ class ImagePlan(object):
                 # don't bother invoking the solver.
                 if not uninstall and not new_facets is not None and insync:
                         # we don't need to do anything
-                        self.pd._fmri_changes = []
-                        self.pd.state = plandesc.EVALUATED_PKGS
+                        self.__finish_plan(plandesc.EVALUATED_PKGS,
+                            fmri_changes=[])
                         return
 
                 self.__plan_install(li_pkg_updates=li_pkg_updates,
@@ -982,7 +993,7 @@ class ImagePlan(object):
                 if DebugValues["plan"]:
                         self.pd._solver_errors = solver.get_trim_errors()
 
-                self.pd.state = plandesc.EVALUATED_PKGS
+                self.__finish_plan(plandesc.EVALUATED_PKGS)
 
         def __plan_update_solver(self, pkgs_update=None,
             ignore_missing=False, reject_list=misc.EmptyI):
@@ -1077,7 +1088,7 @@ class ImagePlan(object):
                     ignore_missing=ignore_missing,
                     pkgs_update=pkgs_update,
                     reject_list=reject_list)
-                self.pd.state = plandesc.EVALUATED_PKGS
+                self.__finish_plan(plandesc.EVALUATED_PKGS)
 
         def plan_revert(self, args, tagged):
                 """Plan reverting the specified files or files tagged as
@@ -1219,10 +1230,9 @@ class ImagePlan(object):
                             can_exclude=True)
                         self.pd.pkg_plans.append(pp)
 
-                self.pd._fmri_changes = []
-
                 pt.plan_done(pt.PLAN_PKGPLAN)
                 pt.plan_all_done()
+                self.__finish_plan(plandesc.EVALUATED_PKGS, fmri_changes=[])
 
         def __gen_matching_acts(self, path, pattern):
                 # return two lists of actions that match pattern at path
@@ -2528,6 +2538,272 @@ class ImagePlan(object):
                 else:
                         d.setdefault(name, []).append(value)
 
+        def __evaluate_pkg_preserved_files(self):
+                """Private helper function that determines which preserved files
+                have changed in ImagePlan and how."""
+
+                assert self.state >= plandesc.MERGED_OK
+
+                pd = self.pd
+
+                # Track movement of preserved ("editable") files for plan
+                # summary and cache management.
+                moved = []
+                removed = []
+                installed = []
+                updated = []
+
+                # __merge_actions() adds the 'save_file' attribute to src
+                # actions that are being moved somewhere else and to dest
+                # actions that will be restored from a src action.  This only
+                # happens when at least one of the files involved has a
+                # 'preserve' attribute, so it's safe to treat either as a
+                # 'preserved' ("editable") file.
+
+                # The removal_actions are processed first since we'll determine
+                # how to transform them while processing the install and update
+                # actions based on the destination file state.
+                for ap in pd.removal_actions:
+                        src = ap.src
+                        if src.name != "file":
+                                continue
+                        if not ("preserve" in src.attrs or
+                            "save_file" in src.attrs or
+                            "overlay" in src.attrs):
+                                # Removed action has to be a preserved file or a
+                                # source of a restore.
+                                continue
+                        if "elfhash" in src.attrs:
+                                # Ignore erroneously tagged files.
+                                continue
+
+                        entry = [src.attrs["path"]]
+                        save_file = src.attrs.get("save_file")
+                        if save_file:
+                                entry.append(save_file[0])
+                                entry.append(src)
+                        removed.append(entry)
+
+                for ap in itertools.chain(pd.install_actions,
+                    pd.update_actions):
+                        orig = ap.src
+                        dest = ap.dst
+                        if dest.name != "file":
+                                continue
+                        if not ((orig and ("preserve" in orig.attrs or
+                            "save_file" in orig.attrs or
+                            "overlay" in orig.attrs)) or
+                            ("preserve" in dest.attrs or
+                            "save_file" in dest.attrs or
+                            "overlay" in dest.attrs)):
+                                # At least one of the actions has to be a
+                                # preserved file or a target of a restore.
+                                continue
+                        if "elfhash" in dest.attrs:
+                                # Ignore erroneously tagged files.
+                                continue
+
+                        tpath = dest.attrs["path"]
+                        entry = [tpath]
+                        save_file = dest.attrs.get("save_file")
+                        if save_file:
+                                tcache_name = save_file[0]
+                                for (ridx, rentry) in enumerate(removed):
+                                        if len(rentry) == 1:
+                                                continue
+
+                                        rpath, rcache_name, rorig = rentry
+                                        if rcache_name == tcache_name:
+                                                # If the cache name for this new
+                                                # file matches one of those for
+                                                # a removed file, the removed
+                                                # file will be renamed to this
+                                                # action's path before the
+                                                # action is processed.
+                                                del removed[ridx]
+                                                save_file = rpath
+                                                orig = rorig
+                                                break
+                                else:
+                                        save_file = None
+
+                        if not orig:
+                                # We can't rely on _check_preserve for this case
+                                # as there's no existing on-disk file at the
+                                # destination path yet.
+                                if dest.attrs.get("preserve") != "legacy":
+                                        # 'legacy' actions are only delivered if
+                                        # we're updating something already
+                                        # installed or moving an existing file.
+                                        installed.append(entry)
+                                continue
+                        elif orig.name != "file":
+                                # File is being replaced with another object
+                                # type.
+                                updated.append(entry)
+                                continue
+
+                        # The order of these checks is significant in
+                        # determining how a preserved file changed!
+                        #
+                        # First, check for on-disk content changes.
+                        opath = orig.get_installed_path(self.image.get_root())
+                        pres_type = dest._check_preserve(orig, ap.p,
+                            orig_path=opath)
+
+                        final_path = dest.get_installed_path(
+                            self.image.get_root())
+
+                        # If a removed action is going to be restored to
+                        # complete the operation, show the removed action path
+                        # as the source for the move omitting the steps
+                        # in-between.  For example:
+                        #  moved: testme -> newme
+                        #  moved: newme -> newme.legacy
+                        #  installed: newme
+                        # ...becomes:
+                        #  moved: testme -> newme.legacy
+                        #  installed: newme
+                        if save_file:
+                                mpath = save_file
+                        else:
+                                mpath = tpath
+
+                        if pres_type == "renameold":
+                                moved.append([mpath, tpath + ".old"])
+                                installed.append(entry)
+                                continue
+                        elif pres_type == "renameold.update":
+                                moved.append([mpath, tpath + ".update"])
+                                installed.append(entry)
+                                continue
+                        elif pres_type == "legacy":
+                                if orig.attrs.get("preserve") == "legacy":
+                                        updated.append(entry)
+                                        continue
+                                # Move only happens on preserve transition and
+                                # only if original already exists.
+                                if os.path.isfile(opath):
+                                        moved.append([mpath, tpath + ".legacy"])
+                                installed.append(entry)
+                                continue
+                        elif pres_type == True and save_file:
+                                # If the source and destination path are the
+                                # same, the content won't be updated.
+                                if mpath != tpath:
+                                        # New content ignored in favour of old.
+                                        moved.append([mpath, tpath])
+                                continue
+
+                        # Next, if on-disk file will be preserved and some other
+                        # unique_attr is changing (such as mode, etc.) mark the
+                        # file as "updated".
+                        if (pres_type == True and
+                            ImagePlan.__find_inconsistent_attrs(
+                                ((orig,), (dest,)), ignore=("path",))):
+                                updated.append(entry)
+                                continue
+
+                        # For remaining cases, what happens is based on the
+                        # result of _check_preserve().
+                        if pres_type == "renamenew":
+                                if save_file:
+                                        moved.append([mpath, tpath])
+                                # Delivered content changed.
+                                installed.append([tpath + ".new"])
+                        elif pres_type is None:
+                                # Delivered content or unique_attrs changed.
+                                updated.append(entry)
+                        elif pres_type == False:
+                                if save_file:
+                                        moved.append([mpath, tpath])
+                                        continue
+
+                                if not os.path.isfile(final_path):
+                                        # File is missing or of wrong type.
+                                        installed.append(entry)
+                                        continue
+
+                                # If a file is moving between packages, it will
+                                # appear as an update, but may not have not have
+                                # different content or unique_attrs.  Check to
+                                # see if it does.
+                                if ImagePlan.__find_inconsistent_attrs(
+                                    ((orig,), (dest,)), ignore=("path",)):
+                                        # Different unique_attrs.
+                                        updated.append(entry)
+                                        continue
+
+                                attr, shash, ohash, hfunc = \
+                                    digest.get_common_preferred_hash(dest, orig)
+                                if shash != ohash:
+                                        # Delivered content changed.
+                                        updated.append(entry)
+                                        continue
+
+                # Pre-sort results for consumers.
+                installed.sort()
+                moved.sort()
+                removed.sort()
+                updated.sort()
+
+                self.pd._preserved = {
+                    "installed": installed,
+                    "moved": moved,
+                    "removed": removed,
+                    "updated": updated,
+                }
+
+        def __evaluate_pkg_downloads(self):
+                """Private helper function that determines package data to be
+                downloaded and updates the plan accordingly."""
+
+                assert self.state >= plandesc.MERGED_OK
+
+                pd = self.pd
+
+                for p in pd.pkg_plans:
+                        cpbytes, pbytes = p.get_bytes_added()
+                        if p.destination_fmri:
+                                mpath = self.image.get_manifest_path(
+                                    p.destination_fmri)
+                                try:
+                                        # Manifest data is essentially stored
+                                        # three times (original, cache, catalog).
+                                        # For now, include this in cbytes_added
+                                        # since that's closest to where the
+                                        # download cache is stored.
+                                        pd._cbytes_added += \
+                                            os.stat(mpath).st_size * 3
+                                except EnvironmentError, e:
+                                        raise api_errors._convert_error(e)
+                        pd._cbytes_added += cpbytes
+                        pd._bytes_added += pbytes
+
+                # Include state directory in cbytes_added for now since it's
+                # closest to where the download cache is stored.  (Twice the
+                # amount is used because image state update involves using
+                # a complete copy of existing state.)
+                pd._cbytes_added += misc.get_dir_size(self.image._statedir) * 2
+
+                # Our slop factor is 25%; overestimating is safer than under-
+                # estimating.  This attempts to approximate how much overhead
+                # the filesystem will impose on the operation.  Empirical
+                # testing suggests that overhead can vary wildly depending on
+                # average file size, fragmentation, zfs metadata overhead, etc.
+                # For an install of a package such as solaris-small-server into
+                # an image, a 12% difference between actual size and installed
+                # size was found, so this seems safe enough.  (And helps account
+                # for any bootarchives, fs overhead, etc.)
+                pd._cbytes_added *= 1.25
+                pd._bytes_added *= 1.25
+
+                # XXX For now, include cbytes_added in bytes_added total; in the
+                # future, this should only happen if they share the same
+                # filesystem.
+                pd._bytes_added += pd._cbytes_added
+                self.__update_avail_space()
+
         def evaluate(self):
                 """Given already determined fmri changes,
                 build pkg plans and figure out exact impact of
@@ -2541,63 +2817,23 @@ class ImagePlan(object):
                         # plan is no longer valid.
                         raise api_errors.InvalidPlanError()
 
-                self.evaluate_pkg_plans()
-                self.merge_actions()
-                self.compile_release_notes()
+                self.__evaluate_pkg_plans()
+                self.__merge_actions()
+                self.__compile_release_notes()
 
-                fmri_updates = [
-                        (p.origin_fmri, p.destination_fmri)
-                        for p in self.pd.pkg_plans
-                ]
-                if not self.pd._li_pkg_updates and fmri_updates:
+                if not self.pd._li_pkg_updates and self.pd.pkg_plans:
                         # oops.  the caller requested no package updates and
                         # we couldn't satisfy that request.
+                        fmri_updates = [
+                                (p.origin_fmri, p.destination_fmri)
+                                for p in self.pd.pkg_plans
+                        ]
                         raise api_errors.PlanCreationException(
                             pkg_updates_required=fmri_updates)
 
-                for p in self.pd.pkg_plans:
-                        cpbytes, pbytes = p.get_bytes_added()
-                        if p.destination_fmri:
-                                mpath = self.image.get_manifest_path(
-                                    p.destination_fmri)
-                                try:
-                                        # Manifest data is essentially stored
-                                        # three times (original, cache, catalog).
-                                        # For now, include this in cbytes_added
-                                        # since that's closest to where the
-                                        # download cache is stored.
-                                        self.pd._cbytes_added += \
-                                            os.stat(mpath).st_size * 3
-                                except EnvironmentError, e:
-                                        raise api_errors._convert_error(e)
-                        self.pd._cbytes_added += cpbytes
-                        self.pd._bytes_added += pbytes
-
-                # Include state directory in cbytes_added for now since it's
-                # closest to where the download cache is stored.  (Twice the
-                # amount is used because image state update involves using
-                # a complete copy of existing state.)
-                self.pd._cbytes_added += \
-                    misc.get_dir_size(self.image._statedir) * 2
-
-                # Our slop factor is 25%; overestimating is safer than under-
-                # estimating.  This attempts to approximate how much overhead
-                # the filesystem will impose on the operation.  Empirical
-                # testing suggests that overhead can vary wildly depending on
-                # average file size, fragmentation, zfs metadata overhead, etc.
-                # For an install of a package such as solaris-small-server into
-                # an image, a 12% difference between actual size and installed
-                # size was found, so this seems safe enough.  (And helps account
-                # for any bootarchives, fs overhead, etc.)
-                self.pd._cbytes_added *= 1.25
-                self.pd._bytes_added *= 1.25
-
-                # XXX For now, include cbytes_added in bytes_added total; in the
-                # future, this should only happen if they share the same
-                # filesystem.
-                self.pd._bytes_added += self.pd._cbytes_added
-
-                self.__update_avail_space()
+                # These must be done after action merging.
+                self.__evaluate_pkg_preserved_files()
+                self.__evaluate_pkg_downloads()
 
         def __update_avail_space(self):
                 """Update amount of available space on FS"""
@@ -2650,7 +2886,7 @@ class ImagePlan(object):
                 finally:
                         self.image.cleanup_downloads()
 
-        def compile_release_notes(self):
+        def __compile_release_notes(self):
                 """Figure out what release notes need to be displayed"""
                 release_notes = self.pd._actuators.get_release_note_info()
                 must_display = False
@@ -2671,7 +2907,7 @@ class ImagePlan(object):
 
                         self.pd.release_notes = (must_display, notes)
 
-        def save_release_notes(self):
+        def __save_release_notes(self):
                 """Save a copy of the release notes and store the file name"""
                 if self.pd.release_notes[1]:
                         # create a file in imgdir/notes
@@ -2689,7 +2925,7 @@ class ImagePlan(object):
                         tmpfile.close()
                         self.pd.release_notes_name = os.path.basename(path)
 
-        def evaluate_pkg_plans(self):
+        def __evaluate_pkg_plans(self):
                 """Internal helper function that does the work of converting
                 fmri changes into pkg plans."""
 
@@ -3124,7 +3360,7 @@ class ImagePlan(object):
                 self.pd._new_mediators = prop_mediators
                 # Link mediation is complete.
 
-        def merge_actions(self):
+        def __merge_actions(self):
                 """Given a set of fmri changes and their associated pkg plan,
                 merge all the resultant actions for the packages being
                 updated."""
@@ -4055,7 +4291,7 @@ class ImagePlan(object):
                         self.pd._actuators.exec_post_actuators(self.image)
 
                 self.image._create_fast_lookups(progtrack=self.__progtrack)
-                self.save_release_notes()
+                self.__save_release_notes()
 
                 # success
                 self.pd.state = plandesc.EXECUTED_OK

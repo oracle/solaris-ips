@@ -103,8 +103,8 @@ from pkg.smf import NonzeroExitException
 # things like help(pkg.client.api.PlanDescription)
 from pkg.client.plandesc import PlanDescription # pylint: disable=W0611
 
-CURRENT_API_VERSION = 78
-COMPATIBLE_API_VERSIONS = frozenset([72, 73, 74, 75, 76, 77,
+CURRENT_API_VERSION = 79
+COMPATIBLE_API_VERSIONS = frozenset([72, 73, 74, 75, 76, 77, 78,
     CURRENT_API_VERSION])
 CURRENT_P5I_VERSION = 1
 

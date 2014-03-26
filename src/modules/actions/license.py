@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2007, 2013, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2007, 2014, Oracle and/or its affiliates. All rights reserved.
 #
 
 """module describing a license packaging object
@@ -79,12 +79,10 @@ class LicenseAction(generic.Action):
                 # ensure "path" is initialized.  it may not be if we've loaded
                 # a plan that was previously prepared.
                 self.preinstall(pkgplan, orig)
-                path = self.attrs["path"]
 
                 stream = self.data()
 
-                path = os.path.normpath(os.path.sep.join(
-                    (pkgplan.image.get_root(), path)))
+                path = self.get_installed_path(pkgplan.image.get_root())
 
                 # make sure the directory exists and the file is writable
                 if not os.path.exists(os.path.dirname(path)):

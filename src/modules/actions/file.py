@@ -75,16 +75,12 @@ class FileAction(generic.Action):
                         """If the file exists, check if it is in use."""
                         if not orig:
                                 return
-                        path = os.path.normpath(
-                            os.path.join(pkgplan.image.get_root(),
-                            orig.attrs["path"]))
+                        path = orig.get_installed_path(pkgplan.image.get_root())
                         if os.path.isfile(path) and self.in_use(path):
                                 raise api_errors.FileInUseException, path
 
                 def preremove(self, pkgplan):
-                        path = os.path.normpath(
-                            os.path.join(pkgplan.image.get_root(),
-                            self.attrs["path"]))
+                        path = self.get_installed_path(pkgplan.image.get_root())
                         if os.path.isfile(path) and self.in_use(path):
                                 raise api_errors.FileInUseException, path
 
@@ -113,8 +109,7 @@ class FileAction(generic.Action):
                 owner, group = self.get_fsobj_uid_gid(pkgplan,
                     pkgplan.destination_fmri)
 
-                final_path = os.path.normpath(os.path.sep.join(
-                    (pkgplan.image.get_root(), self.attrs["path"])))
+                final_path = self.get_installed_path(pkgplan.image.get_root())
 
                 # Don't allow installation through symlinks.
                 self.fsobj_checkpath(pkgplan, final_path)
@@ -147,7 +142,7 @@ class FileAction(generic.Action):
                 # XXX We should save the originally installed file.  It can be
                 # used as an ancestor for a three-way merge, for example.  Where
                 # should it be stored?
-                pres_type = self.__check_preserve(orig, pkgplan)
+                pres_type = self._check_preserve(orig, pkgplan)
                 do_content = True
                 old_path = None
                 if pres_type == True or (pres_type and
@@ -298,8 +293,7 @@ class FileAction(generic.Action):
                 the preserve attribute is not present, that the hashes
                 and other attributes of the file match."""
 
-                path = os.path.normpath(os.path.sep.join(
-                    (img.get_root(), self.attrs["path"])))
+                path = self.get_installed_path(img.get_root())
 
                 lstat, errors, warnings, info, abort = \
                     self.verify_fsobj_common(img, stat.S_IFREG)
@@ -453,7 +447,7 @@ class FileAction(generic.Action):
 
                 return errors, warnings, info
 
-        def __check_preserve(self, orig, pkgplan):
+        def _check_preserve(self, orig, pkgplan, orig_path=None):
                 """Return the type of preservation needed for this action.
 
                 Returns None if preservation is not defined by the action.
@@ -463,13 +457,22 @@ class FileAction(generic.Action):
                 or 'legacy' for each of the respective forms of preservation.
                 """
 
+                # If the logic in this function ever changes, all callers will
+                # need to be updated to reflect how they interpret return
+                # values.
+
                 try:
                         pres_type = self.attrs["preserve"]
                 except KeyError:
-                        return None
+                        return
 
-                final_path = os.path.normpath(os.path.sep.join(
-                    (pkgplan.image.get_root(), self.attrs["path"])))
+                if "elfhash" in self.attrs:
+                        # Don't allow preserve logic to be applied to elf files;
+                        # if we ever stop tagging elf binaries with this
+                        # attribute, this will need to be updated.
+                        return
+
+                final_path = self.get_installed_path(pkgplan.image.get_root())
 
                 # 'legacy' preservation is very different than other forms of
                 # preservation as it doesn't account for the on-disk state of
@@ -536,6 +539,10 @@ class FileAction(generic.Action):
                                                 return "renameold.update"
                                 return False
 
+                if (orig and orig_path):
+                        # Comparison will be based on a file being moved.
+                        is_file = os.path.isfile(orig_path)
+
                 # If the action has been marked with a preserve attribute, and
                 # the file exists and has a content hash different from what the
                 # system expected it to be, then we preserve the original file
@@ -544,7 +551,9 @@ class FileAction(generic.Action):
                         # if we had an action installed, then we know what hash
                         # function was used to compute it's hash attribute.
                         if orig:
-                                chash, cdata = misc.get_data_digest(final_path,
+                                if not orig_path:
+                                        orig_path = final_path
+                                chash, cdata = misc.get_data_digest(orig_path,
                                     hash_func=orig_hash_func)
                         if not orig or chash != orig_hash_val:
                                 if pres_type in ("renameold", "renamenew"):
@@ -596,12 +605,11 @@ class FileAction(generic.Action):
                         # ensures that for cases where the mode or some other
                         # attribute of the file has changed that the file will
                         # be installed.
-                        path = os.path.normpath(os.path.sep.join(
-                            (pkgplan.image.get_root(), self.attrs["path"])))
+                        path = self.get_installed_path(pkgplan.image.get_root())
                         if not os.path.isfile(path):
                                 return True
 
-                pres_type = self.__check_preserve(orig, pkgplan)
+                pres_type = self._check_preserve(orig, pkgplan)
                 if pres_type != None and pres_type != True:
                         # Preserved files only need data if they're being
                         # changed (e.g. "renameold", etc.).
@@ -610,8 +618,7 @@ class FileAction(generic.Action):
                 return False
 
         def remove(self, pkgplan):
-                path = os.path.normpath(os.path.sep.join(
-                    (pkgplan.image.get_root(), self.attrs["path"])))
+                path = self.get_installed_path(pkgplan.image.get_root())
 
                 # Are we supposed to save this file to restore it elsewhere
                 # or in another pkg? 'save_file' is set by the imageplan.
@@ -723,12 +730,8 @@ class FileAction(generic.Action):
                         # Nothing to restore; original file is missing.
                         return
 
-                path = self.attrs["path"]
-
-                full_path = os.path.normpath(os.path.sep.join(
-                    (image.get_root(), path)))
-
-                assert(not os.path.exists(full_path))
+                full_path = self.get_installed_path(image.get_root())
+                assert not os.path.exists(full_path)
 
                 misc.copyfile(saved_name, full_path)
                 os.unlink(saved_name)

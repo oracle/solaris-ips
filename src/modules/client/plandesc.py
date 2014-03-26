@@ -123,6 +123,12 @@ class PlanDescription(object):
             "_old_facets": pkg.facet.Facets,
             "_new_facets": pkg.facet.Facets,
             "_rm_aliases": { str: set() },
+            "_preserved": {
+                "moved": [[str, str]],
+                "removed": [[str]],
+                "installed": [[str]],
+                "updated": [[str]],
+            },
             "added_groups": { str: pkg.fmri.PkgFmri },
             "added_users": { str: pkg.fmri.PkgFmri },
             "child_op_vectors": [ ( str, [ li.LinkedImageName ], {}, bool ) ],
@@ -168,6 +174,12 @@ class PlanDescription(object):
                 self._fmri_changes = [] # install  (None, fmri)
                                         # remove   (oldfmri, None)
                                         # update   (oldfmri, newfmri|oldfmri)
+                self._preserved = {
+                    "moved": [],
+                    "removed": [],
+                    "installed": [],
+                    "updated": [],
+                }
                 self._solver_summary = []
                 self._solver_errors = None
                 self.li_attach = False
@@ -330,6 +342,7 @@ class PlanDescription(object):
 
                 # reduce memory consumption
                 self._fmri_changes = []
+                self._preserved = {}
                 # We have to save the timed_out state.
                 self._act_timed_out = self._actuators.timed_out
                 self._actuators = pkg.client.actuator.Actuator()
@@ -556,7 +569,7 @@ class PlanDescription(object):
                 return rv
 
         def get_changes(self):
-                """A generation function that yields tuples of PackageInfo
+                """A generator function that yields tuples of PackageInfo
                 objects of the form (src_pi, dest_pi).
 
                 If 'src_pi' is None, then 'dest_pi' is the package being
@@ -581,6 +594,21 @@ class PlanDescription(object):
                                 sinfo = PackageInfo.build_from_fmri(sfmri)
                                 dinfo = PackageInfo.build_from_fmri(dfmri)
                         yield (sinfo, dinfo)
+
+        def get_editable_changes(self):
+                """This function returns a tuple of generators that yield tuples
+                of the form (src, dest) of the preserved ("editable") files that
+                will be installed, moved, removed, or updated.  The returned
+                list of generators is (moved, removed, installed, updated)."""
+
+                return (
+                    (entry for entry in self._preserved["moved"]),
+                    ((entry[0], None) for entry in self._preserved["removed"]),
+                    ((None, entry[0])
+                        for entry in self._preserved["installed"]),
+                    ((entry[0], entry[0])
+                        for entry in self._preserved["updated"]),
+                )
 
         def get_actions(self):
                 """A generator function that yields action change descriptions

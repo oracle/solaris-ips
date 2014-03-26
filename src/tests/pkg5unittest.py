@@ -133,7 +133,7 @@ from pkg.client.debugvalues import DebugValues
 
 # Version test suite is known to work with.
 PKG_CLIENT_NAME = "pkg"
-CLIENT_API_VERSION = 78
+CLIENT_API_VERSION = 79
 
 ELIDABLE_ERRORS = [ TestSkippedException, depotcontroller.DepotStateException ]
 
@@ -960,10 +960,11 @@ if __name__ == "__main__":
         def assertEqualParsable(self, output, activate_be=True,
             add_packages=EmptyI, affect_packages=EmptyI, affect_services=EmptyI,
             backup_be_name=None, be_name=None, boot_archive_rebuild=False,
-            change_facets=EmptyI, change_packages=EmptyI,
-            change_mediators=EmptyI, change_variants=EmptyI,
-            child_images=EmptyI, create_backup_be=False, create_new_be=False,
-            image_name=None, licenses=EmptyI, remove_packages=EmptyI, release_notes=EmptyI,
+            change_editables=EmptyI, change_facets=EmptyI,
+            change_packages=EmptyI, change_mediators=EmptyI,
+            change_variants=EmptyI, child_images=EmptyI, create_backup_be=False,
+            create_new_be=False, image_name=None, licenses=EmptyI,
+            remove_packages=EmptyI, release_notes=EmptyI, include=EmptyI,
             version=0):
                 """Check that the parsable output in 'output' is what is
                 expected."""
@@ -989,8 +990,8 @@ if __name__ == "__main__":
                 # is correct.
                 self.assert_("space-required" in outd)
                 del outd["space-required"]
-                # Add 3 to outd to take account of self, output, and outd.
-                self.assertEqual(len(expected), len(outd) + 3, "Got a "
+                # Add 4 to account for self, output, include, and outd.
+                self.assertEqual(len(expected), len(outd) + 4, "Got a "
                     "different set of keys for expected and outd.  Those in "
                     "expected but not in outd:\n%s\nThose in outd but not in "
                     "expected:\n%s" % (
@@ -998,7 +999,13 @@ if __name__ == "__main__":
                         set(outd)),
                         sorted(set(outd) -
                         set([k.replace("_", "-") for k in expected]))))
+
+                seen = set()
                 for k in sorted(outd):
+                        seen.add(k)
+                        if include and k not in include:
+                                continue
+
                         ek = k.replace("-", "_")
                         ev = expected[ek]
                         if ev == EmptyI:
@@ -1009,6 +1016,11 @@ if __name__ == "__main__":
                         self.assertEqual(ev, outd[k], "In image %s, the value "
                             "of %s was expected to be\n%s but was\n%s" %
                             (image_name, k, ev, outd[k]))
+
+                if include:
+                        # Assert all sections expicitly requested were matched.
+                        self.assertEqualDiff(include, list(x for x in (seen &
+                            set(include))))
 
         def configure_rcfile(self, rcfile, config, test_root, section="DEFAULT",
             suffix=""):

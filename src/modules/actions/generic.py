@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2007, 2013, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2007, 2014, Oracle and/or its affiliates. All rights reserved.
 #
 
 """module describing a generic packaging object
@@ -493,6 +493,15 @@ class Action(object):
                         ]
                 return []
 
+        def get_installed_path(self, img_root):
+                """Given an image root, return the installed path of the action
+                if it has a installable payload (i.e. 'path' attribute)."""
+                try:
+                        return os.path.normpath(os.path.join(img_root,
+                            self.attrs["path"]))
+                except KeyError:
+                        return
+
         def distinguished_name(self):
                 """ Return the distinguishing name for this action,
                     preceded by the type of the distinguishing name.  For
@@ -741,8 +750,7 @@ class Action(object):
                 or invalid, an InvalidActionAttributesError exception will be
                 raised."""
 
-                path = os.path.normpath(os.path.sep.join(
-                    (pkgplan.image.get_root(), self.attrs["path"])))
+                path = self.get_installed_path(pkgplan.image.get_root())
 
                 # The attribute may be missing.
                 owner = self.attrs.get("owner", "").rstrip()
@@ -874,8 +882,7 @@ class Action(object):
                                     group)
                                 group = None
 
-                path = os.path.normpath(
-                    os.path.sep.join((img.get_root(), self.attrs["path"])))
+                path = self.get_installed_path(img.get_root())
 
                 lstat = None
                 try:

@@ -1,3 +1,12 @@
+Version 79:
+Compatible with clients using versions 72-78.
+
+    pkg.client.api.PlanDescription has changed as follows:
+
+        * Added get_editable_changes() function to return the list of
+	  "editable" files that will be moved, removed, installed, or
+	  updated during the planned operation.
+
 Version 78:
 Compatible with clients using versions 72-77.
 

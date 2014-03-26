@@ -91,7 +91,7 @@ except KeyboardInterrupt:
         import sys
         sys.exit(1)
 
-CLIENT_API_VERSION = 77
+CLIENT_API_VERSION = 79
 PKG_CLIENT_NAME = "pkg"
 
 JUST_UNKNOWN = 0
@@ -1011,7 +1011,7 @@ def __display_plan(api_inst, verbose, noexecute):
                 if verbose > 0:
                         disp.extend(["fmris", "mediators", "services",
                                      "variants/facets", "boot-archive",
-                                     "release-notes"])
+                                     "release-notes", "editable"])
                 if verbose > 1:
                         disp.append("actions")
                 if verbose > 2:
@@ -1116,16 +1116,23 @@ made will not be reflected on the next boot.
                 for s in status:
                         logger.info("%s %s" % (s[0].rjust(rjust_status),
                             s[1].rjust(rjust_value)))
-                # Ensure there is a blank line between status information and
-                # remainder.
-                logger.info("")
 
+        need_blank = True
         if "mediators" in disp and mediators:
+                if need_blank:
+                        logger.info("")
+
                 logger.info(_("Changed mediators:"))
                 for x in mediators:
                         logger.info("  %s" % x)
+                # output has trailing blank
+                need_blank = False
 
         if "variants/facets" in disp and varcets:
+                if need_blank:
+                        logger.info("")
+                need_blank = True
+
                 logger.info(_("Changed variants/facets:"))
                 for x in varcets:
                         logger.info("  %s" % x)
@@ -1134,6 +1141,9 @@ made will not be reflected on the next boot.
                 first = True
                 for l in plan.get_solver_errors():
                         if first:
+                                if need_blank:
+                                        logger.info("")
+                                need_blank = True
                                 logger.info(_("Solver dependency errors:"))
                                 first = False
                         logger.info(l)
@@ -1170,6 +1180,10 @@ made will not be reflected on the next boot.
                         changed[pparent].append((pname, pver))
 
                 if changed:
+                        if need_blank:
+                                logger.info("")
+                        need_blank = True
+
                         logger.info(_("Changed packages:"))
                         last_parent = None
                         for pparent, pname, pver in (
@@ -1188,21 +1202,68 @@ made will not be reflected on the next boot.
                 last_action = None
                 for action, smf_fmri in plan.services:
                         if last_action is None:
-                                logger.info("Services:")
+                                if need_blank:
+                                        logger.info("")
+                                need_blank = True
+                                logger.info(_("Services:"))
                         if action != last_action:
                                 logger.info("  %s:" % action)
                         logger.info("    %s" % smf_fmri)
                         last_action = action
 
+        if "editable" in disp:
+                moved, removed, installed, updated = plan.get_editable_changes()
+
+                cfg_change_fmt = "    {0}"
+                cfg_changes = []
+                first = True
+
+                def add_cfg_changes(changes, chg_hdr, chg_fmt=cfg_change_fmt):
+                        first = True
+                        for chg in changes:
+                                if first:
+                                        cfg_changes.append("  {0}".format(
+                                            chg_hdr))
+                                        first = False
+                                cfg_changes.append(chg_fmt.format(*chg))
+
+                add_cfg_changes((entry for entry in moved),
+                    _("Move:"), chg_fmt="    {0} -> {1}")
+
+                add_cfg_changes(((src,) for (src, dest) in removed),
+                    _("Remove:"))
+
+                add_cfg_changes(((dest,) for (src, dest) in installed),
+                    _("Install:"))
+
+                add_cfg_changes(((dest,) for (src, dest) in updated),
+                    _("Update:"))
+
+                if cfg_changes:
+                        if need_blank:
+                                logger.info("")
+                        need_blank = True
+                        logger.info(_("Editable files to change:"))
+                        for l in cfg_changes:
+                                logger.info(l)
+
         if "actions" in disp:
-                logger.info("Actions:")
+                if need_blank:
+                        logger.info("")
+                need_blank = True
+
+                logger.info(_("Actions:"))
                 for a in plan.get_actions():
                         logger.info("  %s" % a)
 
 
         if plan.has_release_notes():
+                if need_blank:
+                        logger.info("")
+                need_blank = True
+
                 if "release-notes" in disp:
-                        logger.info("Release Notes:")
+                        logger.info(_("Release Notes:"))
                         for a in plan.get_release_notes():
                                 logger.info("  %s", a)
                 else:
@@ -1255,6 +1316,7 @@ def __display_parsable_plan(api_inst, parsable_version, child_images=None):
         variants_changed = []
         services_affected = []
         mediators_changed = []
+        editables_changed = []
         licenses = []
         if child_images is None:
                 child_images = []
@@ -1288,6 +1350,27 @@ def __display_parsable_plan(api_inst, parsable_version, child_images=None):
                 services_affected = plan.services
                 mediators_changed = plan.mediators
 
+                emoved, eremoved, einstalled, eupdated = \
+                    plan.get_editable_changes()
+
+                # Lists of lists are used here to ensure a consistent ordering
+                # and because tuples will be convereted to lists anyway; a
+                # dictionary would be more logical for the top level entries,
+                # but would make testing more difficult and this is a small,
+                # known set anyway.
+                emoved = [[e for e in entry] for entry in emoved]
+                eremoved = [src for (src, dest) in eremoved]
+                einstalled = [dest for (src, dest) in einstalled]
+                eupdated = [dest for (src, dest) in eupdated]
+                if emoved:
+                        editables_changed.append(["moved", emoved])
+                if eremoved:
+                        editables_changed.append(["removed", eremoved])
+                if einstalled:
+                        editables_changed.append(["installed", einstalled])
+                if eupdated:
+                        editables_changed.append(["updated", eupdated])
+
                 for n in plan.get_release_notes():
                         release_notes.append(n)
 
@@ -1309,28 +1392,30 @@ def __display_parsable_plan(api_inst, parsable_version, child_images=None):
                             (str(dfmri), src_tup, dest_tup))
                         api_inst.set_plan_license_status(dfmri, dest_li.license,
                             displayed=True)
+
         ret = {
-            "create-backup-be": backup_be_created,
-            "create-new-be": new_be_created,
+            "activate-be": be_activated,
+            "add-packages": sorted(added_fmris),
+            "affect-packages": sorted(affected_fmris),
+            "affect-services": sorted(services_affected),
             "backup-be-name": backup_be_name,
             "be-name": be_name,
             "boot-archive-rebuild": boot_archive_rebuilt,
-            "activate-be": be_activated,
+            "change-facets": sorted(facets_changed),
+            "change-editables": editables_changed,
+            "change-mediators": sorted(mediators_changed),
+            "change-packages": sorted(changed_fmris),
+            "change-variants": sorted(variants_changed),
+            "child-images": child_images,
+            "create-backup-be": backup_be_created,
+            "create-new-be": new_be_created,
+            "image-name": None,
+            "licenses": sorted(licenses),
+            "release-notes": release_notes,
+            "remove-packages": sorted(removed_fmris),
             "space-available": space_available,
             "space-required": space_required,
-            "remove-packages": sorted(removed_fmris),
-            "add-packages": sorted(added_fmris),
-            "change-packages": sorted(changed_fmris),
-            "affect-packages": sorted(affected_fmris),
-            "change-facets": sorted(facets_changed),
-            "change-variants": sorted(variants_changed),
-            "affect-services": sorted(services_affected),
-            "change-mediators": sorted(mediators_changed),
-            "release-notes": release_notes,
-            "image-name": None,
-            "child-images": child_images,
             "version": parsable_version,
-            "licenses": sorted(licenses)
         }
         # The image name for the parent image is always None.  If this image is
         # a child image, then the image name will be set when the parent image

@@ -49,6 +49,31 @@ import pkg.portable as portable
 
 from pkg.client.pkgdefs import EXIT_OOPS
 
+class _TestHelper(object):
+        """Private helper class for shared functionality between test
+        classes."""
+
+        def _assertEditables(self, moved=[], removed=[], installed=[],
+            updated=[]):
+                """Private helper function that verifies that expected editables
+                are listed in parsable output.  If no editable of a given type
+                is specified, then no editable files are expected."""
+
+                changed = []
+                if moved:
+                        changed.append(['moved', moved])
+                if removed:
+                        changed.append(['removed', removed])
+                if installed:
+                        changed.append(['installed', installed])
+                if updated:
+                        changed.append(['updated', updated])
+
+                self.assertEqualParsable(self.output,
+                        include=["change-editables"],
+                        change_editables=changed)
+
+
 class TestPkgInstallBasics(pkg5unittest.SingleDepotTestCase):
         # Only start/stop the depot once (instead of for every test)
         persistent_setup = True
@@ -994,14 +1019,10 @@ class TestPkgInstallBasics(pkg5unittest.SingleDepotTestCase):
                 their paths can be installed or exact-installed, updated, and
                 uninstalled."""
 
-                self.install_fuzz_helper("install")
-                self.install_fuzz_helper("exact-install")
-
-        def install_fuzz_helper(self, install_cmd):
                 self.pkgsend_bulk(self.rurl, self.fuzzy)
                 self.image_create(self.rurl)
 
-                self.pkg("%s fuzzy@1" % install_cmd)
+                self.pkg("install fuzzy@1")
                 self.pkg("verify -v")
                 self.pkg("update -vvv fuzzy@2")
                 self.pkg("verify -v")
@@ -2056,7 +2077,7 @@ class TestPkgInstallCircularDependencies(pkg5unittest.SingleDepotTestCase):
                 self.pkg("verify -v")
 
 
-class TestPkgInstallUpgrade(pkg5unittest.SingleDepotTestCase):
+class TestPkgInstallUpgrade(_TestHelper, pkg5unittest.SingleDepotTestCase):
         # Only start/stop the depot once (instead of for every test)
         persistent_setup = True
 
@@ -2440,7 +2461,7 @@ class TestPkgInstallUpgrade(pkg5unittest.SingleDepotTestCase):
             add depend type=require fmri=new_pkg@1.0
             close
             open new_pkg@2.0
-            add file tmp/preserve3 path=foo2 mode=0644 owner=root group=root original_name=orig_pkg:foo1 preserve=true
+            add file tmp/foo2 path=foo2 mode=0644 owner=root group=root original_name=orig_pkg:foo1 preserve=true
             add file tmp/bronze1 path=bronze1 mode=0644 owner=root group=root preserve=true
             close
         """
@@ -2495,7 +2516,7 @@ class TestPkgInstallUpgrade(pkg5unittest.SingleDepotTestCase):
             "tmp/gold-shadow", "tmp/gold-ftpusers", "tmp/gold-silly",
             "tmp/silver-silly", "tmp/preserve1", "tmp/preserve2",
             "tmp/preserve3", "tmp/renold1", "tmp/renold3", "tmp/rennew1",
-            "tmp/rennew3", "tmp/liveroot1", "tmp/liveroot2",
+            "tmp/rennew3", "tmp/liveroot1", "tmp/liveroot2", "tmp/foo2",
         ]
 
         misc_files2 = {
@@ -2707,10 +2728,7 @@ adm
                 """Test for editable files moving between packages or locations
                 or both."""
 
-                self.upgrade3_helper("install")
-                self.upgrade3_helper("exact-install")
-
-        def upgrade3_helper(self, install_cmd):
+                install_cmd = "install"
                 self.pkgsend_bulk(self.rurl, (self.silver10, self.silver20,
                     self.silver30, self.gold10, self.gold20, self.gold30,
                     self.golduser10, self.golduser20, self.silveruser))
@@ -2718,7 +2736,15 @@ adm
                 self.image_create(self.rurl)
 
                 # test 1: move an editable file between packages
-                self.pkg("%s gold@1.0 silver@1.0" % install_cmd)
+                self.pkg("%s --parsable=0 gold@1.0 silver@1.0" % install_cmd)
+                self._assertEditables(
+                    installed=[
+                        'etc/ftpd/ftpusers',
+                        'etc/group',
+                        'etc/passwd',
+                        'etc/shadow',
+                    ]
+                )
                 self.pkg("verify -v")
 
                 # modify config file
@@ -2730,17 +2756,27 @@ adm
                 self.file_contains(file_path, test_str)
 
                 # update packages
-                self.pkg("%s gold@3.0 silver@2.0" % install_cmd)
+                self.pkg("%s -nvv gold@3.0 silver@2.0" % install_cmd)
+                self.pkg("%s --parsable=0 gold@3.0 silver@2.0" % install_cmd)
+                self._assertEditables()
                 self.pkg("verify -v")
 
                 # make sure /etc/passwd contains still correct string
                 self.file_contains(file_path, test_str)
 
-                self.pkg("uninstall silver gold")
+                self.pkg("uninstall --parsable=0 silver gold")
+                self._assertEditables(
+                    removed=[
+                        'etc/ftpd/ftpusers',
+                        'etc/group',
+                        'etc/passwd',
+                        'etc/shadow',
+                    ],
+                )
 
 
                 # test 2: change an editable file's path within a package
-                self.pkg("%s gold@1.0" % install_cmd)
+                self.pkg("%s --parsable=0 gold@1.0" % install_cmd)
                 self.pkg("verify -v")
 
                 # modify config file
@@ -2748,19 +2784,30 @@ adm
                 file_path = "etc/passwd"
                 self.file_append(file_path, test_str)
 
-                self.pkg("%s gold@2.0" % install_cmd)
+                self.pkg("%s --parsable=0 gold@2.0" % install_cmd)
+                self._assertEditables(
+                    moved=[['etc/passwd', 'etc/config2']],
+                    removed=[
+                        'etc/ftpd/ftpusers',
+                        'etc/group',
+                        'etc/shadow',
+                    ],
+                )
                 self.pkg("verify -v")
 
                 # make sure /etc/config2 contains correct string
                 file_path = "etc/config2"
                 self.file_contains(file_path, test_str)
 
-                self.pkg("uninstall gold")
+                self.pkg("uninstall --parsable=0 gold")
+                self._assertEditables(
+                    removed=['etc/config2'],
+                )
                 self.pkg("verify -v")
 
 
                 # test 3: move an editable file between packages and change its path
-                self.pkg("%s gold@1.0 silver@1.0" % install_cmd)
+                self.pkg("%s --parsable=0 gold@1.0 silver@1.0" % install_cmd)
                 self.pkg("verify -v")
 
                 # modify config file
@@ -2770,19 +2817,27 @@ adm
 
                 self.file_contains(file_path, test_str)
 
-                self.pkg("%s gold@3.0 silver@3.0" % install_cmd)
+                self.pkg("%s --parsable=0 gold@3.0 silver@3.0" % install_cmd)
+                self._assertEditables(
+                    moved=[['etc/passwd', 'etc/config2']],
+                    removed=[
+                        'etc/ftpd/ftpusers',
+                        'etc/group',
+                        'etc/shadow',
+                    ],
+                )
                 self.pkg("verify -v")
 
                 # make sure /etc/config2 now contains correct string
                 file_path = "etc/config2"
                 self.file_contains(file_path, test_str)
 
-                self.pkg("uninstall gold silver")
+                self.pkg("uninstall --parsable=0 gold silver")
 
 
                 # test 4: move /etc/passwd between packages and ensure that we
                 # can still uninstall a user at the same time.
-                self.pkg("%s gold@1.0 silver@1.0" % install_cmd)
+                self.pkg("%s --parsable=0 gold@1.0 silver@1.0" % install_cmd)
                 self.pkg("verify -v")
 
                 # add a user
@@ -2805,8 +2860,9 @@ adm
                 silly_inode = os.stat(silly_path).st_ino
 
                 # update packages
-                self.pkg("%s gold@3.0 silver@2.0 golduser@2.0 silveruser"
-                    % install_cmd)
+                self.pkg("%s --parsable=0 gold@3.0 silver@2.0 golduser@2.0 "
+                    "silveruser" % install_cmd)
+                self._assertEditables()
 
                 # make sure Kermie is still installed and still has our local
                 # changes
@@ -2821,18 +2877,13 @@ adm
                 """Test to make sure hardlinks are correctly restored when file
                 they point to is updated."""
 
-                self.upgrade4_helper("install")
-                self.upgrade4_helper("exact-install")
-
-        def upgrade4_helper(self, install_cmd):
                 self.pkgsend_bulk(self.rurl, (self.iron10, self.iron20))
-
                 self.image_create(self.rurl)
 
-                self.pkg("%s iron@1.0" % install_cmd)
+                self.pkg("install iron@1.0")
                 self.pkg("verify -v")
 
-                self.pkg("%s iron@2.0" % install_cmd)
+                self.pkg("install iron@2.0")
                 self.pkg("verify -v")
 
         def test_upgrade_liveroot(self):
@@ -2923,57 +2974,78 @@ adm
                 """Verify that file preserve=true works as expected during
                 package install, update, upgrade, and removal."""
 
-                self.file_preserve("install")
-                self.file_preserve("exact-install")
-
-        def file_preserve(self, install_cmd):
+                install_cmd = "install"
                 self.pkgsend_bulk(self.rurl, (self.preserve1, self.preserve2,
                     self.preserve3, self.renpreserve))
                 self.image_create(self.rurl)
 
                 # If there are no local modifications, no preservation should be
                 # done.  First with no content change ...
-                self.pkg("%s preserve@1" % install_cmd)
-                self.pkg("%s preserve@2" % install_cmd)
+                self.pkg("%s --parsable=0 preserve@1" % install_cmd)
+                self._assertEditables(
+                    installed=['testme'],
+                )
+                self.pkg("%s --parsable=0 preserve@2" % install_cmd)
+                self._assertEditables(
+                    updated=['testme'],
+                )
                 self.file_contains("testme", "preserve1")
                 self.pkg("verify preserve")
 
-                self.pkg("update preserve@1")
+                self.pkg("update --parsable=0 preserve@1")
+                self._assertEditables(
+                    updated=['testme'],
+                )
                 self.file_contains("testme", "preserve1")
                 self.pkg("verify preserve")
 
-                self.pkg("uninstall preserve")
+                self.pkg("uninstall --parsable=0 preserve")
 
                 # ... and again with content change.
-                self.pkg("install preserve@1")
-                self.pkg("install preserve@3")
+                self.pkg("install --parsable=0 preserve@1")
+                self._assertEditables(
+                    installed=['testme'],
+                )
+                self.pkg("install --parsable=0 preserve@3")
+                self._assertEditables(
+                    updated=['testme'],
+                )
                 self.file_contains("testme", "preserve3")
 
-                self.pkg("update preserve@1")
+                self.pkg("update --parsable=0 preserve@1")
+                self._assertEditables(
+                    updated=['testme'],
+                )
+
                 self.file_contains("testme", "preserve1")
 
                 self.pkg("verify preserve")
-                self.pkg("uninstall preserve")
+                self.pkg("uninstall --parsable=0 preserve")
 
                 # Modify the file locally and update to a version where the
                 # content changes.
-                self.pkg("%s preserve@1" % install_cmd)
+                self.pkg("%s --parsable=0 preserve@1" % install_cmd)
                 self.file_append("testme", "junk")
                 self.file_contains("testme", "preserve1")
-                self.pkg("%s preserve@3" % install_cmd)
+                self.pkg("%s --parsable=0 preserve@3" % install_cmd)
+                self._assertEditables()
                 self.file_contains("testme", "preserve1")
                 self.file_contains("testme", "junk")
                 self.file_doesnt_exist("testme.old")
                 self.file_doesnt_exist("testme.new")
                 self.pkg("verify preserve")
-                self.pkg("uninstall preserve")
+                self.pkg("uninstall --parsable=0 preserve")
 
                 # Modify the file locally and downgrade to a version where
                 # the content changes.
-                self.pkg("%s preserve@3" % install_cmd)
+                self.pkg("%s --parsable=0 preserve@3" % install_cmd)
                 self.file_append("testme", "junk")
                 self.file_contains("testme", "preserve3")
-                self.pkg("update preserve@1")
+                self.pkg("update --parsable=0 preserve@1")
+                self._assertEditables(
+                    moved=[['testme', 'testme.update']],
+                    installed=['testme'],
+                )
                 self.file_doesnt_contain("testme", "preserve3")
                 self.file_doesnt_contain("testme", "junk")
                 self.file_doesnt_exist("testme.old")
@@ -2981,61 +3053,74 @@ adm
                 self.file_exists("testme.update")
                 self.file_remove("testme.update")
                 self.pkg("verify preserve")
-                self.pkg("uninstall preserve")
+                self.pkg("uninstall --parsable=0 preserve")
 
                 # Modify the file locally and update to a version where just the
                 # mode changes.
-                self.pkg("%s preserve@1" % install_cmd)
+                self.pkg("%s --parsable=0 preserve@1" % install_cmd)
                 self.file_append("testme", "junk")
 
-                self.pkg("%s preserve@2" % install_cmd)
+                self.pkg("%s --parsable=0 preserve@2" % install_cmd)
+                self._assertEditables(
+                    updated=['testme'],
+                )
                 self.file_contains("testme", "preserve1")
                 self.file_contains("testme", "junk")
                 self.file_doesnt_exist("testme.old")
                 self.file_doesnt_exist("testme.new")
 
-                self.pkg("update preserve@1")
+                self.pkg("update --parsable=0 preserve@1")
+                self._assertEditables(
+                    updated=['testme'],
+                )
                 self.file_contains("testme", "preserve1")
                 self.file_contains("testme", "junk")
                 self.file_doesnt_exist("testme.old")
                 self.file_doesnt_exist("testme.new")
                 self.file_doesnt_exist("testme.update")
 
-                self.pkg("%s preserve@2" % install_cmd)
+                self.pkg("%s --parsable=0 preserve@2" % install_cmd)
+                self._assertEditables(
+                    updated=['testme'],
+                )
                 self.file_doesnt_exist("testme.old")
                 self.file_doesnt_exist("testme.new")
 
                 # Remove the file locally and update the package; this should
                 # simply replace the missing file.
                 self.file_remove("testme")
-                self.pkg("%s preserve@3" % install_cmd)
+                self.pkg("%s --parsable=0 preserve@3" % install_cmd)
+                self._assertEditables(
+                    installed=['testme'],
+                )
                 self.pkg("verify preserve")
                 self.file_exists("testme")
 
                 # Remove the file locally and downgrade the package; this should
                 # simply replace the missing file.
                 self.file_remove("testme")
-                self.pkg("update preserve@2")
+                self.pkg("update --parsable=0 preserve@2")
+                self._assertEditables(
+                    installed=['testme'],
+                )
                 self.pkg("verify preserve")
                 self.file_exists("testme")
                 self.pkg("uninstall preserve@2")
 
-                # Preserved files don't get their mode changed, and verify will
-                # still balk, so fix up the mode.
-                self.pkg("%s preserve@1" % install_cmd)
-                self.pkg("%s preserve@2" % install_cmd)
-                self.file_chmod("testme", 0640)
+                # Verify preserved files will have their mode changed on update.
+                self.pkg("%s --parsable=0 preserve@1" % install_cmd)
+                self.pkg("%s --parsable=0 preserve@2" % install_cmd)
                 self.pkg("verify preserve")
 
                 # Verify that a package with a missing file that is marked with
                 # the preserve=true won't cause uninstall failure.
                 self.file_remove("testme")
                 self.file_doesnt_exist("testme")
-                self.pkg("uninstall preserve")
+                self.pkg("uninstall --parsable=0 preserve")
 
                 # Verify preserve works across package rename with and without
                 # original_name use and even when the original file is missing.
-                self.pkg("%s orig_pkg@1.0" % install_cmd)
+                self.pkg("%s --parsable=0 orig_pkg@1.0" % install_cmd)
                 foo1_path = os.path.join(self.get_img_path(), "foo1")
                 self.assert_(os.path.isfile(foo1_path))
                 bronze1_path = os.path.join(self.get_img_path(), "bronze1")
@@ -3044,39 +3129,53 @@ adm
                 # Update across the rename boundary, then verify that the files
                 # were installed with their new name and the old ones were
                 # removed.
-                self.pkg("update orig_pkg")
+                self.pkg("update -nvv orig_pkg")
+                self.pkg("update --parsable=0 orig_pkg")
+                self._assertEditables(
+                    moved=[['foo1', 'foo2']],
+                )
+
                 foo2_path = os.path.join(self.get_img_path(), "foo2")
                 self.assert_(not os.path.exists(foo1_path))
                 self.assert_(os.path.isfile(foo2_path))
                 self.assert_(os.path.isfile(bronze1_path))
-                self.pkg("uninstall \*")
+                self.pkg("uninstall --parsable=0 \*")
 
                 # Update across the rename boundary, then truncate each of the
                 # preserved files.  They should remain empty even though one is
                 # changing names and the other is simply being preserved across
                 # a package rename.
-                self.pkg("%s orig_pkg@1.0" % install_cmd)
+                self.pkg("%s --parsable=0 orig_pkg@1.0" % install_cmd)
                 open(foo1_path, "wb").close()
                 open(bronze1_path, "wb").close()
-                self.pkg("update orig_pkg")
+                self.pkg("update --parsable=0 orig_pkg")
+                self._assertEditables(
+                    moved=[['foo1', 'foo2']],
+                )
                 self.assert_(not os.path.exists(foo1_path))
                 self.assert_(os.path.isfile(foo2_path))
                 self.assertEqual(os.stat(foo2_path).st_size, 0)
                 self.assert_(os.path.isfile(bronze1_path))
                 self.assertEqual(os.stat(bronze1_path).st_size, 0)
-                self.pkg("uninstall \*")
+                self.pkg("uninstall --parsable=0 \*")
+                self._assertEditables(
+                    removed=['bronze1', 'foo2'],
+                )
 
                 # Update across the rename boundary, then verify that a change
                 # in file name will cause re-delivery of preserved files, but
                 # unchanged, preserved files will not be re-delivered.
-                self.pkg("%s orig_pkg@1.0" % install_cmd)
+                self.pkg("%s --parsable=0 orig_pkg@1.0" % install_cmd)
                 os.unlink(foo1_path)
                 os.unlink(bronze1_path)
-                self.pkg("update orig_pkg")
+                self.pkg("update --parsable=0 orig_pkg")
+                self._assertEditables(
+                    moved=[['foo1', 'foo2']],
+                )
                 self.assert_(not os.path.exists(foo1_path))
                 self.assert_(os.path.isfile(foo2_path))
                 self.assert_(not os.path.exists(bronze1_path))
-                self.pkg("uninstall \*")
+                self.pkg("uninstall --parsable=0 \*")
 
                 # Ensure directory is empty before testing.
                 api_inst = self.get_img_api_obj()
@@ -3086,9 +3185,9 @@ adm
 
                 # Verify that unmodified, preserved files will not be salvaged
                 # on uninstall.
-                self.pkg("%s preserve@1.0" % install_cmd)
+                self.pkg("%s --parsable=0 preserve@1.0" % install_cmd)
                 self.file_contains("testme", "preserve1")
-                self.pkg("uninstall preserve")
+                self.pkg("uninstall --parsable=0 preserve")
                 salvaged = [
                     n for n in os.listdir(sroot)
                     if n.startswith("testme-")
@@ -3097,19 +3196,16 @@ adm
 
                 # Verify that modified, preserved files will be salvaged
                 # on uninstall.
-                self.pkg("%s preserve@1.0" % install_cmd)
+                self.pkg("%s --parsable=0 preserve@1.0" % install_cmd)
                 self.file_contains("testme", "preserve1")
                 self.file_append("testme", "junk")
-                self.pkg("uninstall preserve")
+                self.pkg("uninstall --parsable=0 preserve")
                 self.__salvage_file_contains(sroot, "testme", "junk")
 
         def test_file_preserve_renameold(self):
                 """Make sure that file upgrade with preserve=renameold works."""
 
-                self.file_preserve_renameold_helper("install")
-                self.file_preserve_renameold_helper("exact-install")
-
-        def file_preserve_renameold_helper(self, install_cmd):
+                install_cmd = "install"
                 plist = self.pkgsend_bulk(self.rurl, (self.renameold1,
                     self.renameold2, self.renameold3))
                 self.image_create(self.rurl)
@@ -3137,7 +3233,11 @@ adm
                 # content changes.
                 self.pkg("%s renold@1" % install_cmd)
                 self.file_append("testme", "junk")
-                self.pkg("%s renold@3" % install_cmd)
+                self.pkg("%s --parsable=0 renold@3" % install_cmd)
+                self._assertEditables(
+                    moved=[['testme', 'testme.old']],
+                    installed=['testme'],
+                )
                 self.file_contains("testme.old", "junk")
                 self.file_doesnt_contain("testme", "junk")
                 self.file_contains("testme", "renold3")
@@ -3150,7 +3250,11 @@ adm
                 # mode changes.
                 self.pkg("%s renold@1" % install_cmd)
                 self.file_append("testme", "junk")
-                self.pkg("%s renold@2" % install_cmd)
+                self.pkg("%s --parsable=0 renold@2" % install_cmd)
+                self._assertEditables(
+                    moved=[['testme', 'testme.old']],
+                    installed=['testme'],
+                )
                 self.file_contains("testme.old", "junk")
                 self.file_doesnt_contain("testme", "junk")
                 self.file_contains("testme", "renold1")
@@ -3162,17 +3266,17 @@ adm
                 # simply replace the missing file.
                 self.pkg("%s renold@1" % install_cmd)
                 self.file_remove("testme")
-                self.pkg("%s renold@2" % install_cmd)
+                self.pkg("%s --parsable=0 renold@2" % install_cmd)
+                self._assertEditables(
+                    installed=['testme'],
+                )
                 self.pkg("verify renold")
                 self.pkg("uninstall renold")
 
         def test_file_preserve_renamenew(self):
                 """Make sure that file ugprade with preserve=renamenew works."""
 
-                self.file_preserve_renamenew_helper("install")
-                self.file_preserve_renamenew_helper("exact-install")
-
-        def file_preserve_renamenew_helper(self, install_cmd):
+                install_cmd = "install"
                 plist = self.pkgsend_bulk(self.rurl, (self.renamenew1,
                     self.renamenew2, self.renamenew3))
                 self.image_create(self.rurl)
@@ -3180,7 +3284,10 @@ adm
                 # If there are no local modifications, no preservation should be
                 # done.  First with no content change ...
                 self.pkg("%s rennew@1" % install_cmd)
-                self.pkg("%s rennew@2" % install_cmd)
+                self.pkg("%s --parsable=0 rennew@2" % install_cmd)
+                self._assertEditables(
+                    updated=['testme'],
+                )
                 self.file_contains("testme", "rennew1")
                 self.file_doesnt_exist("testme.new")
                 self.file_doesnt_exist("testme.old")
@@ -3189,7 +3296,10 @@ adm
 
                 # ... and again with content change
                 self.pkg("%s rennew@1" % install_cmd)
-                self.pkg("%s rennew@3" % install_cmd)
+                self.pkg("%s --parsable=0 rennew@3" % install_cmd)
+                self._assertEditables(
+                    updated=['testme'],
+                )
                 self.file_contains("testme", "rennew3")
                 self.file_doesnt_exist("testme.new")
                 self.file_doesnt_exist("testme.old")
@@ -3200,7 +3310,10 @@ adm
                 # content changes.
                 self.pkg("%s rennew@1" % install_cmd)
                 self.file_append("testme", "junk")
-                self.pkg("%s rennew@3" % install_cmd)
+                self.pkg("%s --parsable=0 rennew@3" % install_cmd)
+                self._assertEditables(
+                    installed=['testme.new'],
+                )
                 self.file_contains("testme", "junk")
                 self.file_doesnt_contain("testme.new", "junk")
                 self.file_contains("testme.new", "rennew3")
@@ -3214,14 +3327,19 @@ adm
                 # mode changes.
                 self.pkg("%s rennew@1" % install_cmd)
                 self.file_append("testme", "junk")
-                self.pkg("%s rennew@2" % install_cmd)
+                self.pkg("%s --parsable=0 rennew@2" % install_cmd)
+                self._assertEditables(
+                    installed=['testme.new'],
+                )
                 self.file_contains("testme", "junk")
                 self.file_doesnt_contain("testme.new", "junk")
                 self.file_contains("testme.new", "rennew1")
                 self.file_doesnt_exist("testme.old")
 
-                # Preserved files don't get their mode changed, and verify will
-                # still balk, so fix up the mode.
+                # The original file won't be touched on update, so verify fails.
+                self.pkg("verify rennew", exit=1)
+
+                # Ensure that after fixing mode, verify passes.
                 self.file_chmod("testme", 0640)
                 self.pkg("verify rennew")
                 self.pkg("uninstall rennew")
@@ -3231,7 +3349,10 @@ adm
                 # simply replace the missing file.
                 self.pkg("%s rennew@1" % install_cmd)
                 self.file_remove("testme")
-                self.pkg("%s rennew@2" % install_cmd)
+                self.pkg("%s --parsable=0 rennew@2" % install_cmd)
+                self._assertEditables(
+                    installed=['testme'],
+                )
                 self.file_doesnt_exist("testme.new")
                 self.file_doesnt_exist("testme.old")
                 self.pkg("verify rennew")
@@ -3240,10 +3361,7 @@ adm
         def test_file_preserve_legacy(self):
                 """Verify that preserve=legacy works as expected."""
 
-                self.file_preserve_legacy_helper("install")
-                self.file_preserve_legacy_helper("exact-install")
-
-        def file_preserve_legacy_helper(self, install_cmd):
+                install_cmd = "install"
                 self.pkgsend_bulk(self.rurl, (self.preslegacy,
                     self.renpreslegacy))
                 self.image_create(self.rurl)
@@ -3258,7 +3376,10 @@ adm
                 # install if a package being installed delivers the same file
                 # and that the new file will be installed.
                 self.file_append("testme", "unpackaged")
-                self.pkg("%s preslegacy@1.0" % install_cmd)
+                self.pkg("%s --parsable=0 preslegacy@1.0" % install_cmd)
+                self._assertEditables(
+                    installed=['testme'],
+                )
                 self.file_contains("testme", "preserve1")
                 self.__salvage_file_contains(sroot, "testme", "unpackaged")
                 shutil.rmtree(sroot)
@@ -3266,14 +3387,21 @@ adm
                 # Verify that a package transitioning to preserve=legacy from
                 # some other state will have the existing file renamed using
                 # .legacy as an extension.
-                self.pkg("update preslegacy@2.0")
+                self.pkg("update --parsable=0 preslegacy@2.0")
+                self._assertEditables(
+                    moved=[['testme', 'testme.legacy']],
+                    installed=['testme'],
+                )
                 self.file_contains("testme.legacy", "preserve1")
                 self.file_contains("testme", "preserve2")
 
                 # Verify that if an action with preserve=legacy is upgraded
                 # and its payload changes that the new payload is delivered
                 # but the old .legacy file is not modified.
-                self.pkg("update preslegacy@3.0")
+                self.pkg("update --parsable=0 preslegacy@3.0")
+                self._assertEditables(
+                    updated=['testme'],
+                )
                 self.file_contains("testme.legacy", "preserve1")
                 self.file_contains("testme", "preserve3")
 
@@ -3291,37 +3419,47 @@ adm
                 # Verify that an initial install of an action with
                 # preserve=legacy will not install the payload of the action.
                 self.pkg("uninstall preslegacy")
-                self.pkg("%s preslegacy@3.0" % install_cmd)
+                self.pkg("%s --parsable=0 preslegacy@3.0" % install_cmd)
+                self._assertEditables()
                 self.file_doesnt_exist("testme")
 
                 # Verify that if the original preserved file is missing during
                 # a transition to preserve=legacy from some other state that
                 # the new action is still delivered and the operation succeeds.
                 self.pkg("uninstall preslegacy")
-                self.pkg("%s preslegacy@1.0" % install_cmd)
+                self.pkg("%s --parsable=0 preslegacy@1.0" % install_cmd)
+                self._assertEditables(
+                    installed=['testme'],
+                )
                 self.file_remove("testme")
-                self.pkg("update")
+                self.pkg("update --parsable=0")
+                self._assertEditables(
+                    installed=['testme'],
+                )
                 self.file_contains("testme", "preserve3")
 
                 # Verify that a preserved file can be moved from one package to
                 # another and transition to preserve=legacy at the same time.
                 self.pkg("uninstall preslegacy")
-                self.pkg("%s orig_preslegacy@1.0" % install_cmd)
+                self.pkg("%s --parsable=0 orig_preslegacy@1.0" % install_cmd)
+                self._assertEditables(
+                    installed=['testme'],
+                )
                 self.file_exists("testme")
-                self.pkg("update")
+                self.pkg("update --parsable=0")
+                self._assertEditables(
+                    moved=[['testme', 'newme.legacy']],
+                    installed=['newme'],
+                )
                 self.file_contains("testme.legacy", "preserve1")
                 self.file_contains("newme", "preserve2")
 
         def test_directory_salvage(self):
                 """Make sure basic directory salvage works as expected"""
 
-                self.directory_salvage_helper("install")
-                self.directory_salvage_helper("exact-install")
-
-        def directory_salvage_helper(self, install_cmd):
                 self.pkgsend_bulk(self.rurl, self.salvage)
                 self.image_create(self.rurl)
-                self.pkg("%s salvage@1.0" % install_cmd)
+                self.pkg("install salvage@1.0")
                 self.file_append("var/mail/foo", "foo's mail")
                 self.file_append("var/mail/bar", "bar's mail")
                 self.file_append("var/mail/baz", "baz's mail")
@@ -3334,16 +3472,12 @@ adm
                 """Make sure directory salvage works as expected when salvaging
                 content to an existing packaged directory."""
 
-                self.directory_salvage_persistent_helper("install")
-                self.directory_salvage_persistent_helper("exact-install")
-
-        def directory_salvage_persistent_helper(self, install_cmd):
                 # we salvage content from two directories,
                 # var/noodles and var/spaghetti each of which disappear over
                 # subsequent updates.
                 self.pkgsend_bulk(self.rurl, self.salvage)
                 self.image_create(self.rurl)
-                self.pkg("%s salvage@1.0" % install_cmd)
+                self.pkg("install salvage@1.0")
                 self.file_append("var/mail/foo", "foo's mail")
                 self.file_append("var/noodles/noodles.txt", "yum")
                 self.pkg("update salvage@2.0")
@@ -3356,7 +3490,7 @@ adm
 
                 # ensure that we can jump from 1.0 to 3.0 directly.
                 self.image_create(self.rurl)
-                self.pkg("%s salvage@1.0" % install_cmd)
+                self.pkg("install salvage@1.0")
                 self.file_append("var/noodles/noodles.txt", "yum")
                 self.pkg("update  salvage@3.0")
                 self.file_exists("var/persistent/noodles.txt")
@@ -3365,14 +3499,10 @@ adm
                 """Make sure salvaging directories with special files works as
                 expected."""
 
-                self.special_salvage_helper("install")
-                self.special_salvage_helper("exact-install")
-
-        def special_salvage_helper(self, install_cmd):
                 self.pkgsend_bulk(self.rurl, self.salvage_special)
                 self.image_create(self.rurl, destroy=True, fs=("var",))
 
-                self.pkg("%s salvage-special" % install_cmd)
+                self.pkg("install salvage-special")
 
                 os.mkfifo(os.path.join(self.img_path(), "salvage", "fifo"))
                 sock = socket.socket(socket.AF_UNIX)
@@ -3416,15 +3546,11 @@ adm
                 """Ensure that files transitioning to a link still follow
                 original_name preservation rules."""
 
-                self.link_preserve_helper("install")
-                self.link_preserve_helper("exact-install")
-
-        def link_preserve_helper(self, install_cmd):
                 self.pkgsend_bulk(self.rurl, (self.linkpreserve))
                 self.image_create(self.rurl, destroy=True, fs=("var",))
 
                 # Install package with original config file location.
-                self.pkg("%s linkpreserve@1.0" % install_cmd)
+                self.pkg("install --parsable=0 linkpreserve@1.0")
                 cfg_path = os.path.join("etc", "ssh", "sshd_config")
                 abs_path = os.path.join(self.get_img_path(), cfg_path)
 
@@ -3437,19 +3563,25 @@ adm
                 # Install new package version, verify file replaced with link
                 # and modified version was moved to new location.
                 new_cfg_path = os.path.join("etc", "sunssh", "sshd_config")
-                self.pkg("update linkpreserve@2.0")
+                self.pkg("update --parsable=0 linkpreserve@2.0")
+                self._assertEditables(
+                    moved=[['etc/ssh/sshd_config', 'etc/sunssh/sshd_config']]
+                )
                 self.assert_(os.path.islink(abs_path))
                 self.file_exists(new_cfg_path)
                 self.file_contains(new_cfg_path, "modified")
 
                 # Uninstall, then install original version again.
                 self.pkg("uninstall linkpreserve")
-                self.pkg("%s linkpreserve@1.0" % install_cmd)
+                self.pkg("install linkpreserve@1.0")
                 self.file_contains(cfg_path, "preserve1")
 
                 # Install new package version and verify that unmodified file is
                 # replaced with new configuration file.
-                self.pkg("update linkpreserve@2.0")
+                self.pkg("update --parsable=0 linkpreserve@2.0")
+                self._assertEditables(
+                    moved=[['etc/ssh/sshd_config', 'etc/sunssh/sshd_config']]
+                )
                 self.file_contains(new_cfg_path, "preserve2")
 
         def test_many_hashalgs(self):
@@ -3457,13 +3589,9 @@ adm
                 contains more hash attributes than the old action, that the
                 upgrade works."""
 
-                self.many_hashalgs_helper("install")
-                self.many_hashalgs_helper("exact-install")
-
-        def many_hashalgs_helper(self, install_cmd):
                 self.pkgsend_bulk(self.rurl, (self.iron10))
                 self.image_create(self.rurl, destroy=True)
-                self.pkg("%s iron@1.0" % install_cmd)
+                self.pkg("install iron@1.0")
                 self.pkg("contents -m iron")
                 # We have not enabled SHA2 hash publication yet.
                 self.assert_("pkg.hash.sha256" not in self.output)
@@ -3479,7 +3607,7 @@ adm
                 # This also tests package retrieval: we always retrieve packages
                 # with the least-preferred hash, but verify with the
                 # most-preferred hash.
-                self.pkg("%s iron@2.0" % install_cmd)
+                self.pkg("install iron@2.0")
                 self.pkg("contents -m iron")
                 self.assert_("pkg.hash.sha256" in self.output)
 
@@ -4032,79 +4160,6 @@ adm:NP:6445::::::
                 self.assert_("gonzo\n" not in file(fpath).readlines())
                 self.pkg("verify ftpuserimp")
 
-        def test_ftpuser_exact_install(self):
-                """Make sure we correctly handle /etc/ftpd/ftpusers."""
-
-                notftpuser = """
-                open notftpuser@1
-                add user username=animal group=root ftpuser=false
-                add depend fmri=pkg:/basics@1.0 type=require
-                close"""
-
-                ftpuserexp = """
-                open ftpuserexp@1
-                add user username=fozzie group=root ftpuser=true
-                add depend fmri=pkg:/basics@1.0 type=require
-                close"""
-
-                ftpuserimp = """
-                open ftpuserimp@1
-                add user username=gonzo group=root
-                add depend fmri=pkg:/basics@1.0 type=require
-                close"""
-
-                self.pkgsend_bulk(self.rurl, (self.basics0, notftpuser,
-                    ftpuserexp, ftpuserimp))
-                self.image_create(self.rurl)
-
-                self.pkg("install basics")
-
-                # Add a user with ftpuser=false.  Make sure the user is added to
-                # the file, and that the user verifies.
-                self.pkg("exact-install notftpuser")
-                fpath = self.get_img_path() + "/etc/ftpd/ftpusers"
-                self.assert_("animal\n" in file(fpath).readlines())
-                self.pkg("verify notftpuser")
-
-                # Put a user into the ftpusers file as shipped, then add that
-                # user, with ftpuser=false.  Make sure the user remains in the
-                # file, and that the user verifies.
-                self.pkg("uninstall notftpuser")
-                file(fpath, "a").write("animal\n")
-                self.pkg("exact-install notftpuser")
-                self.assert_("animal\n" in file(fpath).readlines())
-                self.pkg("verify notftpuser")
-
-                # Add a user with an explicit ftpuser=true.  Make sure the user
-                # is not added to the file, and that the user verifies.
-                self.pkg("exact-install ftpuserexp")
-                self.assert_("fozzie\n" not in file(fpath).readlines())
-                self.pkg("verify ftpuserexp")
-
-                # Put a user into the ftpusers file as shipped, then add that
-                # user, with an explicit ftpuser=true.  Make sure the user is
-                # stripped from the file, and that the user verifies.
-                self.pkg("uninstall ftpuserexp")
-                file(fpath, "a").write("fozzie\n")
-                self.pkg("exact-install ftpuserexp")
-                self.assert_("fozzie\n" not in file(fpath).readlines())
-                self.pkg("verify ftpuserexp")
-
-                # Add a user with an implicit ftpuser=true.  Make sure the user
-                # is not added to the file, and that the user verifies.
-                self.pkg("exact-install ftpuserimp")
-                self.assert_("gonzo\n" not in file(fpath).readlines())
-                self.pkg("verify ftpuserimp")
-
-                # Put a user into the ftpusers file as shipped, then add that
-                # user, with an implicit ftpuser=true.  Make sure the user is
-                # stripped from the file, and that the user verifies.
-                self.pkg("uninstall ftpuserimp")
-                file(fpath, "a").write("gonzo\n")
-                self.pkg("exact-install ftpuserimp")
-                self.assert_("gonzo\n" not in file(fpath).readlines())
-                self.pkg("verify ftpuserimp")
-
         def test_groupverify_install(self):
                 """Make sure we correctly verify group actions when users have
                 been added."""
@@ -4142,45 +4197,6 @@ adm:NP:6445::::::
                 gdata = file(gpath).readlines()
                 self.assert_(gdata[-1].find("muppets2") == 0)
 
-        def test_groupverify_exact_install(self):
-                """Make sure we correctly verify group actions when users have
-                been added."""
-
-                simplegroups = """
-                open simplegroup@1
-                add group groupname=muppets gid=100
-                add depend fmri=pkg:/basics@1.0 type=require
-                close
-                open simplegroup2@1
-                add group groupname=muppets2 gid=101
-                add depend fmri=pkg:/basics@1.0 type=require
-                close"""
-
-                self.pkgsend_bulk(self.rurl, (self.basics0, simplegroups))
-                self.image_create(self.rurl)
-
-                self.pkg("install basics")
-                self.pkg("exact-install simplegroup")
-                self.pkg("verify simplegroup")
-
-                # add additional members to group & verify
-                gpath = self.get_img_file_path("etc/group")
-                gdata = file(gpath).readlines()
-                gdata[-1] = gdata[-1].rstrip() + "kermit,misspiggy\n"
-                file(gpath, "w").writelines(gdata)
-                self.pkg("verify simplegroup")
-                self.pkg("uninstall simplegroup")
-
-                # verify that groups appear in gid order.
-                self.pkg("exact-install simplegroup simplegroup2")
-                self.pkg("verify")
-                gdata = file(gpath).readlines()
-                self.assert_(gdata[-1].find("muppets2") == 0)
-                self.pkg("uninstall simple*")
-                self.pkg("exact-install simplegroup2 simplegroup")
-                gdata = file(gpath).readlines()
-                self.assert_(gdata[-1].find("muppets2") == 0)
-
         def test_preexisting_group_install(self):
                 """Make sure we correct any errors in pre-existing group actions"""
                 simplegroup = """
@@ -4202,39 +4218,6 @@ adm:NP:6445::::::
                 file(gpath, "w").writelines(gdata)
                 self.pkg("verify")
                 self.pkg("install simplegroup@1")
-                self.pkg("verify simplegroup")
-                # check # lines beginning w/ 'muppets' in group file
-                gdata = file(gpath).readlines()
-                self.assert_(
-                    len([a for a in gdata if a.find("muppets") == 0]) == 1)
-
-                # make sure we can add new version of same package
-                self.pkg("update simplegroup")
-                self.pkg("verify simplegroup")
-
-        def test_preexisting_group_exact_install(self):
-                """Make sure we correct any errors in pre-existing group actions"""
-                simplegroup = """
-                open simplegroup@1
-                add group groupname=muppets gid=70
-                add depend fmri=pkg:/basics@1.0 type=require
-                close
-                open simplegroup@2
-                add dir path=/etc/muppet owner=root group=muppets mode=755
-                add group groupname=muppets gid=70
-                add depend fmri=pkg:/basics@1.0 type=require
-                close"""
-
-                self.pkgsend_bulk(self.rurl, (self.basics0, simplegroup))
-                self.image_create(self.rurl)
-
-                self.pkg("install basics")
-                gpath = self.get_img_file_path("etc/group")
-                gdata = file(gpath).readlines()
-                gdata = ["muppets::1010:\n"] + gdata
-                file(gpath, "w").writelines(gdata)
-                self.pkg("verify")
-                self.pkg("exact-install simplegroup@1")
                 self.pkg("verify simplegroup")
                 # check # lines beginning w/ 'muppets' in group file
                 gdata = file(gpath).readlines()
@@ -4301,69 +4284,6 @@ adm:NP:6445::::::
                 self.pkg("fix muppetsgroup")
                 self.pkg("install missing_group@1")
                 self.pkg("install missing_owner@1")
-                self.pkg("verify muppetsgroup muppetsuser missing*")
-
-        def test_missing_ownergroup_exact_install(self):
-                """Test what happens when a owner or group is missing."""
-
-                missing = """
-                open missing_group@1
-                add dir path=etc/muppet1 owner=root group=muppets mode=755
-                 add depend fmri=pkg:/basics@1.0 type=require
-                close
-                open missing_owner@1
-                add dir path=etc/muppet2 owner=muppets group=root mode=755
-                 add depend fmri=pkg:/basics@1.0 type=require
-                close
-                open muppetsuser@1
-                add user username=muppets group=bozomuppets uid=777
-                add depend fmri=pkg:/basics@1.0 type=require
-                close
-                open muppetsuser@2
-                add user username=muppets group=muppets uid=777
-                add depend fmri=pkg:/basics@1.0 type=require
-                add depend fmri=pkg:/muppetsgroup@1 type=require
-                close
-                open muppetsgroup@1
-                add group groupname=muppets gid=777
-                close
-                """
-
-                self.pkgsend_bulk(self.rurl, (self.basics0, missing))
-                self.image_create(self.rurl)
-                self.pkg("install basics")
-
-                # try exact-installing directory w/ a non-existing group
-                self.pkg("exact-install missing_group@1", exit=1)
-                # try exact-installing directory w/ a non-existing owner
-                self.pkg("exact-install missing_owner@1", exit=1)
-                # try exact-installing user w/ unknown group
-                self.pkg("exact-install muppetsuser@1", exit=1)
-
-                # install group
-                self.pkg("install muppetsgroup")
-                # install working user & see if it all works.
-                self.pkg("install muppetsuser@2")
-                self.pkg("exact-install muppetsgroup missing_group@1")
-                self.pkg("exact-install muppetsuser@2 missing_owner@1")
-                self.pkg("verify")
-                # edit group file to remove muppets group
-                gpath = self.get_img_file_path("etc/group")
-                gdata = file(gpath).readlines()
-                file(gpath, "w").writelines(gdata[0:-1])
-                # verify that we catch missing group
-                # in both group and user actions
-                self.pkg("verify muppetsgroup", 1)
-                self.pkg("verify muppetsuser", 1)
-                self.pkg("fix muppetsgroup", 0)
-                self.pkg("verify muppetsgroup muppetsuser missing*")
-                self.pkg("uninstall missing*")
-                # try installing w/ broken group
-                file(gpath, "w").writelines(gdata[0:-1])
-                self.pkg("exact-install missing_group@1", 1)
-                self.pkg("fix muppetsgroup")
-                self.pkg("exact-install muppetsgroup missing_group@1")
-                self.pkg("exact-install muppetsuser@2 missing_owner@1")
                 self.pkg("verify muppetsgroup muppetsuser missing*")
 
         def test_userverify_install(self):
@@ -4520,167 +4440,6 @@ adm:NP:6445::::::
 
                 self.pkg("uninstall simpleuser simpleuser2")
                 self.pkg("install simpleuser2 simpleuser")
-
-                pdata = file(ppath).readlines()
-                pdata[-1].index("kermit")
-
-        def test_userverify_exact_install(self):
-                """Make sure we correctly verify user actions when the on-disk
-                databases have been modified."""
-
-                simpleusers = """
-                open simpleuser@1
-                add user username=misspiggy group=root gcos-field="& loves Kermie" login-shell=/bin/sh uid=5
-                add depend fmri=pkg:/basics@1.0 type=require
-                close
-                open simpleuser2@1
-                add user username=kermit group=root gcos-field="& loves mspiggy" login-shell=/bin/sh password=UP uid=6
-                add depend fmri=pkg:/basics@1.0 type=require
-                close
-                open simpleuser2@2
-                add user username=kermit group=root gcos-field="& loves mspiggy" login-shell=/bin/sh uid=6
-                add depend fmri=pkg:/basics@1.0 type=require
-                close"""
-
-
-                self.pkgsend_bulk(self.rurl, (self.basics0, simpleusers))
-                self.image_create(self.rurl)
-
-                self.pkg("install basics")
-                self.pkg("exact-install simpleuser")
-                self.pkg("verify simpleuser")
-
-                ppath = self.get_img_path() + "/etc/passwd"
-                pdata = file(ppath).readlines()
-                spath = self.get_img_path() + "/etc/shadow"
-                sdata = file(spath).readlines()
-
-                def finderr(err):
-                        self.assert_("\t\t" + err in self.output)
-
-                # change a provided, empty-default field to something else
-                pdata[-1] = "misspiggy:x:5:0:& loves Kermie:/:/bin/zsh"
-                file(ppath, "w").writelines(pdata)
-                self.pkg("verify simpleuser", exit=1)
-                finderr("login-shell: '/bin/zsh' should be '/bin/sh'")
-                self.pkg("fix simpleuser")
-                self.pkg("verify simpleuser")
-
-                # change a provided, non-empty-default field to the default
-                pdata[-1] = "misspiggy:x:5:0:& User:/:/bin/sh"
-                file(ppath, "w").writelines(pdata)
-                self.pkg("verify simpleuser", exit=1)
-                finderr("gcos-field: '& User' should be '& loves Kermie'")
-                self.pkg("fix simpleuser")
-                self.pkg("verify simpleuser")
-
-                # change a non-provided, non-empty-default field to something
-                # other than the default
-                pdata[-1] = "misspiggy:x:5:0:& loves Kermie:/misspiggy:/bin/sh"
-                file(ppath, "w").writelines(pdata)
-                self.pkg("verify simpleuser", exit=1)
-                finderr("home-dir: '/misspiggy' should be '/'")
-                self.pkg("fix simpleuser")
-                self.pkg("verify simpleuser")
-
-                # add a non-provided, empty-default field
-                pdata[-1] = "misspiggy:x:5:0:& loves Kermie:/:/bin/sh"
-                sdata[-1] = "misspiggy:*LK*:14579:7:::::"
-                file(ppath, "w").writelines(pdata)
-                os.chmod(spath,
-                    stat.S_IMODE(os.stat(spath).st_mode)|stat.S_IWUSR)
-                file(spath, "w").writelines(sdata)
-                self.pkg("verify simpleuser", exit=1)
-                finderr("min: '7' should be '<empty>'")
-                # fails fix since we don't repair shadow entries on purpose
-                self.pkg("fix simpleuser")
-                self.pkg("verify simpleuser", exit=1)
-                finderr("min: '7' should be '<empty>'")
-
-                # remove a non-provided, non-empty-default field
-                pdata[-1] = "misspiggy:x:5:0:& loves Kermie::/bin/sh"
-                sdata[-1] = "misspiggy:*LK*:14579::::::"
-                file(ppath, "w").writelines(pdata)
-                file(spath, "w").writelines(sdata)
-                self.pkg("verify simpleuser", exit=1)
-                finderr("home-dir: '' should be '/'")
-                self.pkg("fix simpleuser")
-                self.pkg("verify simpleuser")
-
-                # remove a provided, non-empty-default field
-                pdata[-1] = "misspiggy:x:5:0::/:/bin/sh"
-                file(ppath, "w").writelines(pdata)
-                self.pkg("verify simpleuser", exit=1)
-                finderr("gcos-field: '' should be '& loves Kermie'")
-                self.pkg("fix simpleuser")
-                self.pkg("verify simpleuser")
-
-                # remove a provided, empty-default field
-                pdata[-1] = "misspiggy:x:5:0:& loves Kermie:/:"
-                file(ppath, "w").writelines(pdata)
-                self.pkg("verify simpleuser", exit=1)
-                finderr("login-shell: '' should be '/bin/sh'")
-                self.pkg("fix simpleuser")
-                self.pkg("verify simpleuser")
-
-                # remove the user from /etc/passwd
-                pdata[-1] = "misswiggy:x:5:0:& loves Kermie:/:"
-                file(ppath, "w").writelines(pdata)
-                self.pkg("verify simpleuser", exit=1)
-                finderr("login-shell: '<missing>' should be '/bin/sh'")
-                finderr("gcos-field: '<missing>' should be '& loves Kermie'")
-                finderr("group: '<missing>' should be 'root'")
-                self.pkg("fix simpleuser")
-                self.pkg("verify simpleuser")
-
-                # remove the user completely
-                pdata[-1] = "misswiggy:x:5:0:& loves Kermie:/:"
-                sdata[-1] = "misswiggy:*LK*:14579::::::"
-                file(ppath, "w").writelines(pdata)
-                file(spath, "w").writelines(sdata)
-                self.pkg("verify simpleuser", exit=1)
-                finderr("username: '<missing>' should be 'misspiggy'")
-                self.pkg("fix simpleuser")
-                self.pkg("verify simpleuser")
-
-                # change the password and show an error
-                self.pkg("verify simpleuser")
-                sdata[-1] = "misspiggy:NP:14579::::::"
-                file(spath, "w").writelines(sdata)
-                self.pkg("verify simpleuser", exit=1)
-                finderr("password: 'NP' should be '*LK*'")
-                self.pkg("fix simpleuser")
-                self.pkg("verify simpleuser")
-
-                # verify that passwords set to anything
-        # other than '*LK*" or 'NP' in manifest
-                # do not cause verify errors if changed.
-                self.pkg("exact-install --reject simpleuser simpleuser2@1")
-                self.pkg("verify simpleuser2")
-                pdata = file(ppath).readlines()
-                sdata = file(spath).readlines()
-                sdata[-1] = "kermit:$5$pWPEsjm2$GXjBRTjGeeWmJ81ytw3q1ah7QTaI7yJeRYZeyvB.Rp1:14579::::::"
-                file(spath, "w").writelines(sdata)
-                self.pkg("verify simpleuser2")
-
-                # verify that upgrading package to version that implicitly
-                # uses *LK* default causes password to change and that it
-                # verifies correctly
-                self.pkg("update simpleuser2@2")
-                self.pkg("verify simpleuser2")
-                sdata = file(spath).readlines()
-                sdata[-1].index("*LK*")
-
-                # ascertain that users are added in uid order when
-                # installed at the same time.
-                self.pkg("uninstall simpleuser2")
-                self.pkg("exact-install simpleuser simpleuser2")
-
-                pdata = file(ppath).readlines()
-                pdata[-1].index("kermit")
-
-                self.pkg("uninstall simpleuser simpleuser2")
-                self.pkg("exact-install simpleuser2 simpleuser")
 
                 pdata = file(ppath).readlines()
                 pdata[-1].index("kermit")
@@ -8356,7 +8115,7 @@ class TestActionErrors(pkg5unittest.SingleDepotTestCase):
                 self.pkg("update", exit=1)
 
 
-class TestConflictingActions(pkg5unittest.SingleDepotTestCase):
+class TestConflictingActions(_TestHelper, pkg5unittest.SingleDepotTestCase):
         """This set of tests verifies that packages which deliver conflicting
         actions into the same name in a namespace cannot be installed
         simultaneously."""
@@ -9188,119 +8947,6 @@ adm
                 self.pkg("uninstall pkg2", exit=1)
                 self.pkg("verify pkg2")
 
-        def test_multiple_files_exact_install(self):
-                """Test the behavior of pkg(1) when multiple file actions
-                deliver to the same pathname."""
-
-                self.image_create(self.rurl)
-
-                # Duplicate files in the same package.
-                self.pkg("exact-install dupfiles", exit=1)
-
-                # Duplicate files in different packages, but in the same
-                # transaction.
-                self.pkg("exact-install dupfilesp1 dupfilesp2@0", exit=1)
-
-                # Duplicate files in different packages, in different
-                # transactions. This should succeed because exact-install will
-                # uninstall dupfilesp1 first.
-                self.pkg("exact-install dupfilesp1")
-                self.pkg("exact-install dupfilesp2@0")
-
-                # Test that being in a duplicate file situation doesn't break
-                # you completely and allows you to add and remove other
-                # packages.
-                self.pkg("-D broken-conflicting-action-handling=1 "
-                    "exact-install dupfilesp1 dupfilesp2@0")
-                self.pkg("exact-install implicitdirs2")
-                self.pkg("uninstall implicitdirs2")
-
-                # If the packages involved get upgraded by exact-install, that
-                # means the old actions has been removed. So we should be okay.
-                self.pkg("exact-install dupfilesp2 dupfilesp3")
-                self.pkg("verify")
-
-                # Test that removing one of two offending actions reverts the
-                # system to a clean state.
-                self.pkg("uninstall dupfilesp3")
-                self.pkg("verify")
-
-                # You should be able to upgrade to a fixed set of packages in
-                # order to move past the problem, too.
-                self.pkg("uninstall dupfilesp2")
-                self.pkg("-D broken-conflicting-action-handling=1 "
-                    "exact-install dupfilesp2@0")
-                self.pkg("update")
-                self.pkg("verify")
-
-                # If we upgrade to a version of a conflicting package that no
-                # longer has the conflict, amd at the same time introduce a new
-                # file action at the path with different contents, we should
-                # succeed with exact-install.
-                self.pkg("uninstall dupfilesp2")
-                self.pkg("-D broken-conflicting-action-handling=1 "
-                    "exact-install dupfilesp2@0")
-                self.pkg("exact-install dupfilesp2 dupfilesp4")
-
-                # Removing one of more than two offending actions can't do much
-                # of anything, but should leave the system alone.
-                self.pkg("uninstall '*'")
-                self.pkg("-D broken-conflicting-action-handling=1 "
-                    "exact-install dupfilesp1 dupfilesp2@0 dupfilesp3")
-                # XXX The checks here rely on verify failing due to hashes being
-                # wrong; they should probably report a duplicate action instead.
-                self.pkg("verify", exit=1)
-                out1, err1 = self.output, self.errout
-                self.pkg("uninstall dupfilesp3")
-                # Because we removed dupfilesp3, the error output in this verify
-                # won't exactly match that from the previous one, but the one
-                # remaining failing package should give the same output since we
-                # didn't modify the FS, so search for the current output in the
-                # old.
-                self.pkg("verify", exit=1)
-                out2 = self.output
-                # Strip the first (header) line; this error might not have been
-                # first in the previous output.
-                out2 = out2[out2.index("\n") + 1:]
-                self.assert_(out2 in out1)
-
-                # Removing all but one of the offending actions should get us
-                # back to sanity.
-                self.pkg("uninstall '*'")
-                self.pkg("-D broken-conflicting-action-handling=1 "
-                    "exact-install dupfilesp1 dupfilesp2@0 dupfilesp3")
-                self.pkg("uninstall dupfilesp3 dupfilesp2")
-                self.pkg("verify")
-
-                # Make sure we handle cleaning up multiple files properly.
-                self.pkg("uninstall '*'")
-                self.pkg("-D broken-conflicting-action-handling=1 "
-                    "exact-install dupfilesp1 dupfilesp2@0 dupotherfilesp1 "
-                    "dupotherfilesp2")
-                self.pkg("uninstall dupfilesp2 dupotherfilesp2")
-                self.pkg("verify")
-
-                # Make sure we get rid of all implicit directories.
-                self.pkg("uninstall '*'")
-                self.pkg("exact-install implicitdirs3 implicitdirs4")
-                self.pkg("uninstall implicitdirs3 implicitdirs4")
-
-                if os.path.isdir(os.path.join(self.get_img_path(), "usr/bin")):
-                        self.assert_(False, "Directory 'usr/bin' should not exist")
-
-                if os.path.isdir(os.path.join(self.get_img_path(), "usr")):
-                        self.assert_(False, "Directory 'usr' should not exist")
-
-                # Make sure identical actions don't cause problems.
-                self.pkg("exact-install -nv identicalfiles", exit=1)
-
-                # Trigger a bug similar to 17943 via duplicate files.
-                self.pkg("publisher")
-                self.pkg("-D broken-conflicting-action-handling=1 "
-                    "exact-install dupfilesp1@0 dupfilesp2@0 dupfilesp3@0 "
-                    "dupotherfilesp1@0 dupotherfilesp2@0 dupotherfilesp3@0")
-                self.pkg("update")
-
         def test_overlay_files_install(self):
                 """Test the behaviour of pkg(1) when actions for editable files
                 overlay other actions."""
@@ -9336,7 +8982,10 @@ adm
                 # overlaying action declares its intent to overlay.
                 self.pkg("contents -m overlaid")
                 self.pkg("contents -mr overlayer")
-                self.pkg("install overlayer")
+                self.pkg("install --parsable=0 overlayer")
+                self._assertEditables(
+                    installed=["etc/pam.conf"],
+                )
                 self.file_contains("etc/pam.conf", "file2")
 
                 # Should fail because multiple actions are not allowed to
@@ -9356,38 +9005,54 @@ adm
                 # Verify that the file isn't touched on uninstall of the
                 # overlaying package if package being overlaid is still
                 # installed.
-                self.pkg("uninstall -vvv overlayer")
+                self.pkg("uninstall --parsable=0 overlayer")
+                self._assertEditables()
                 self.file_contains("etc/pam.conf", "zigit")
                 self.file_contains("etc/pam.conf", "file2")
 
                 # Verify that removing the last package delivering an overlaid
                 # file removes the file.
-                self.pkg("uninstall overlaid")
+                self.pkg("uninstall --parsable=0 overlaid")
+                self._assertEditables(
+                    removed=["etc/pam.conf"],
+                )
                 self.file_doesnt_exist("etc/pam.conf")
 
                 # Verify that installing both packages at the same time results
                 # in only the overlaying file being delivered.
-                self.pkg("install overlaid@0 overlayer")
+                self.pkg("install --parsable=0 overlaid@0 overlayer")
+                self._assertEditables(
+                    installed=["etc/pam.conf"],
+                )
                 self.file_contains("etc/pam.conf", "file2")
 
                 # Verify that the file isn't touched on uninstall of the
                 # overlaid package if overlaying package is still installed.
                 self.file_append("etc/pam.conf", "zigit")
-                self.pkg("uninstall overlaid")
+                self.pkg("uninstall --parsable=0 overlaid")
+                self._assertEditables()
                 self.file_contains("etc/pam.conf", "file2")
                 self.file_contains("etc/pam.conf", "zigit")
 
                 # Re-install overlaid package and verify that file content
                 # does not change.
-                self.pkg("install overlaid@0")
+                self.pkg("install --parsable=0 overlaid@0")
+                self._assertEditables()
                 self.file_contains("etc/pam.conf", "file2")
                 self.file_contains("etc/pam.conf", "zigit")
-                self.pkg("uninstall overlaid overlayer")
+                self.pkg("uninstall --parsable=0 overlaid overlayer")
+                self._assertEditables(
+                    removed=["etc/pam.conf"],
+                )
 
                 # Should succeed because one action is overlayable and
                 # overlaying action declares its intent to overlay even
                 # though the overlaying action isn't marked with preserve.
-                self.pkg("install overlaid@0 unpreserved-overlayer")
+                self.pkg("install -nvv overlaid@0 unpreserved-overlayer")
+                self.pkg("install --parsable=0 overlaid@0 unpreserved-overlayer")
+                self._assertEditables(
+                    installed=["etc/pam.conf"],
+                )
                 self.file_contains("etc/pam.conf", "unpreserved")
 
                 # Should succeed because overlaid action permits modification
@@ -9413,7 +9078,8 @@ adm
                 self.pkg("revert /etc/pam.conf")
                 self.file_contains("etc/pam.conf", "unpreserved")
                 self.file_doesnt_contain("etc/pam.conf", "zigit")
-                self.pkg("uninstall unpreserved-overlayer")
+                self.pkg("uninstall --parsable=0 unpreserved-overlayer")
+                self._assertEditables()
 
                 # Should revert to content delivered by overlaid action.
                 self.file_contains("etc/pam.conf", "unpreserved")
@@ -9423,21 +9089,28 @@ adm
                 # Install overlaying package, then update overlaid package and
                 # verify that file content does not change if only preserve
                 # attribute changes.
-                self.pkg("install -vvv unpreserved-overlayer")
+                self.pkg("install --parsable=0 unpreserved-overlayer")
+                self._assertEditables(
+                    installed=["etc/pam.conf"],
+                )
                 self.file_contains("etc/pam.conf", "unpreserved")
-                self.pkg("install overlaid@1")
+                self.pkg("install --parsable=0 overlaid@1")
+                self._assertEditables()
                 self.file_contains("etc/pam.conf", "unpreserved")
-                self.pkg("uninstall -vvv overlaid")
+                self.pkg("uninstall --parsable=0 overlaid")
+                self._assertEditables()
 
                 # Now update overlaid package again, and verify that file
                 # content does not change even though overlaid content has.
-                self.pkg("install -vvv overlaid@2")
+                self.pkg("install --parsable=0 overlaid@2")
+                self._assertEditables()
                 self.file_contains("etc/pam.conf", "unpreserved")
 
                 # Now update overlaid package again this time as part of a
                 # rename, and verify that file content does not change even
                 # though file has moved between packages.
-                self.pkg("install -vvv overlaid@3")
+                self.pkg("install --parsable=0 overlaid@3")
+                self._assertEditables()
                 self.file_contains("etc/pam.conf", "unpreserved")
 
                 # Verify that unpreserved overlay is not salvaged when both
@@ -9452,7 +9125,11 @@ adm
                 shutil.rmtree(sroot)
 
                 # Verify etc directory not found after uninstall.
-                self.pkg("uninstall -vvv overlaid-renamed unpreserved-overlayer")
+                self.pkg("uninstall --parsable=0 overlaid-renamed "
+                    "unpreserved-overlayer")
+                self._assertEditables(
+                    removed=['etc/pam.conf'],
+                )
                 salvaged = [
                     n for n in os.listdir(sroot)
                     if n.startswith("etc")
@@ -9464,15 +9141,28 @@ adm
                 # the new location and the old location, that the content has
                 # not changed in either, and that the new configuration exists
                 # as expected as ".new".
-                self.pkg("install -vvv overlaid-renamed@3 unpreserved-overlayer")
-                self.pkg("install -vvv overlaid-renamed@4.1")
+                self.pkg("install --parsable=0 overlaid-renamed@3 "
+                    "unpreserved-overlayer")
+                self._assertEditables(
+                    installed=['etc/pam.conf'],
+                )
+                self.pkg("install -nvv overlaid-renamed@4.1")
+                self.pkg("install --parsable=0 overlaid-renamed@4.1")
+                self._assertEditables(
+                    moved=[['etc/pam.conf', 'etc/pam/pam.conf']],
+                    installed=['etc/pam/pam.conf.new'],
+                )
                 self.file_contains("etc/pam.conf", "unpreserved")
                 self.file_contains("etc/pam/pam.conf", "unpreserved")
                 self.file_contains("etc/pam/pam.conf.new", "file4")
 
                 # Verify etc/pam.conf not salvaged after uninstall as overlay
                 # file has not been changed.
-                self.pkg("uninstall -vvv overlaid-renamed unpreserved-overlayer")
+                self.pkg("uninstall --parsable=0 overlaid-renamed "
+                    "unpreserved-overlayer")
+                self._assertEditables(
+                    removed=['etc/pam.conf', 'etc/pam/pam.conf'],
+                )
                 salvaged = [
                     n for n in os.listdir(os.path.join(sroot, "etc"))
                     if n.startswith("pam.conf")
@@ -9485,22 +9175,29 @@ adm
                 # Install overlaying package, then update overlaid package and
                 # verify that file content does not change if only preserve
                 # attribute changes.
-                self.pkg("install -vvv overlayer")
+                self.pkg("install --parsable=0 overlayer")
+                self._assertEditables(
+                    installed=['etc/pam.conf'],
+                )
                 self.file_contains("etc/pam.conf", "file2")
                 self.file_append("etc/pam.conf", "zigit")
-                self.pkg("install overlaid@1")
+                self.pkg("install --parsable=0 overlaid@1")
+                self._assertEditables()
                 self.file_contains("etc/pam.conf", "zigit")
-                self.pkg("uninstall -vvv overlaid")
+                self.pkg("uninstall --parsable=0 overlaid")
+                self._assertEditables()
 
                 # Now update overlaid package again, and verify that file
                 # content does not change even though overlaid content has.
-                self.pkg("install -vvv overlaid@2")
+                self.pkg("install --parsable=0 overlaid@2")
+                self._assertEditables()
                 self.file_contains("etc/pam.conf", "zigit")
 
                 # Now update overlaid package again this time as part of a
                 # rename, and verify that file content does not change even
                 # though file has moved between packages.
-                self.pkg("install -vvv overlaid@3")
+                self.pkg("install --parsable=0 overlaid@3")
+                self._assertEditables()
                 self.file_contains("etc/pam.conf", "zigit")
 
                 # Verify that preserved overlay is salvaged when both overlaid
@@ -9515,7 +9212,10 @@ adm
                 shutil.rmtree(sroot)
 
                 # Verify etc directory found after uninstall.
-                self.pkg("uninstall -vvv overlaid-renamed overlayer")
+                self.pkg("uninstall --parsable=0 overlaid-renamed overlayer")
+                self._assertEditables(
+                    removed=['etc/pam.conf'],
+                )
                 salvaged = [
                     n for n in os.listdir(sroot)
                     if n.startswith("etc")
@@ -9528,22 +9228,39 @@ adm
                 # and the old location, that the content has not changed in
                 # either, and that the new configuration exists as expected as
                 # ".new".
-                self.pkg("install -vvv overlaid-renamed@3 overlayer")
+                self.pkg("install --parsable=0 overlaid-renamed@3 overlayer")
+                self._assertEditables(
+                    installed=['etc/pam.conf'],
+                )
                 self.file_append("etc/pam.conf", "zigit")
-                self.pkg("install -vvv overlaid-renamed@4.0")
+                self.pkg("install --parsable=0 overlaid-renamed@4.0")
+                self._assertEditables(
+                    moved=[['etc/pam.conf', 'etc/pam/pam.conf']],
+                    installed=['etc/pam/pam.conf.new'],
+                )
                 self.file_contains("etc/pam.conf", "zigit")
                 self.file_contains("etc/pam/pam.conf", "zigit")
                 self.file_contains("etc/pam/pam.conf.new", "file4")
-                self.pkg("uninstall -vvv overlaid-renamed overlayer")
+                self.pkg("uninstall --parsable=0 overlaid-renamed overlayer")
+                self._assertEditables(
+                    removed=['etc/pam.conf', 'etc/pam/pam.conf'],
+                )
 
                 # Next, update overlaid package again, this time as part of a
                 # file move.  Verify that the configuration file exists at both
                 # the new location and the old location, that the content has
                 # not changed in either, and that the new configuration exists
                 # as expected as ".new".
-                self.pkg("install -vvv overlaid-renamed@3 overlayer")
+                self.pkg("install --parsable=0 overlaid-renamed@3 overlayer")
+                self._assertEditables(
+                    installed=['etc/pam.conf'],
+                )
                 self.file_append("etc/pam.conf", "zigit")
-                self.pkg("install -vvv overlaid-renamed@4.1")
+                self.pkg("install --parsable=0 overlaid-renamed@4.1")
+                self._assertEditables(
+                    moved=[['etc/pam.conf', 'etc/pam/pam.conf']],
+                    installed=['etc/pam/pam.conf.new'],
+                )
                 self.file_contains("etc/pam.conf", "zigit")
                 self.file_contains("etc/pam/pam.conf", "zigit")
                 self.file_contains("etc/pam/pam.conf.new", "file4")
@@ -9551,17 +9268,27 @@ adm
                 # Next, downgrade the package and verify that if an overlaid
                 # file moves back to its original location, the content of the
                 # overlay file will not change.
-                self.pkg("update -vvv overlaid-renamed@3")
+                self.pkg("update --parsable=0 overlaid-renamed@3")
+                self._assertEditables(
+                    removed=['etc/pam/pam.conf'],
+                )
                 self.file_contains("etc/pam.conf", "zigit")
 
                 # Now upgrade again for remaining tests.
-                self.pkg("install -vvv overlaid-renamed@4.1")
+                self.pkg("install --parsable=0 overlaid-renamed@4.1")
+                self._assertEditables(
+                    moved=[['etc/pam.conf', 'etc/pam/pam.conf']],
+                    installed=['etc/pam/pam.conf.new'],
+                )
 
                 # Verify etc/pam.conf and etc/pam/pam.conf salvaged after
                 # uninstall as overlay file and overlaid file is different from
                 # packaged.
                 shutil.rmtree(sroot)
-                self.pkg("uninstall -vvv overlaid-renamed overlayer")
+                self.pkg("uninstall --parsable=0 overlaid-renamed overlayer")
+                self._assertEditables(
+                    removed=['etc/pam.conf', 'etc/pam/pam.conf'],
+                )
                 salvaged = sorted(
                     n for n in os.listdir(os.path.join(sroot, "etc"))
                     if n.startswith("pam")
@@ -9579,348 +9306,66 @@ adm
                 # Next, install overlaid package and overlaying package, then
                 # upgrade each to a version where the file has changed
                 # locations and verify that the content remains intact.
-                self.pkg("install -vvv overlaid@0 overlayer-move@0")
+                self.pkg("install --parsable=0 overlaid@0 overlayer-move@0")
+                self._assertEditables(
+                    installed=['etc/pam.conf'],
+                )
                 self.file_append("etc/pam.conf", "zigit")
-                self.pkg("install -vvv overlaid@3")
+                self.pkg("install --parsable=0 overlaid@3")
+                self._assertEditables()
                 self.file_contains("etc/pam.conf", "zigit")
-                self.pkg("install -vvv overlaid-renamed@4.1 overlayer-move@1")
+                self.pkg("install --parsable=0 overlaid-renamed@4.1 "
+                    "overlayer-move@1")
+                self._assertEditables(
+                    moved=[['etc/pam.conf', 'etc/pam/pam.conf']],
+                )
                 self.file_contains("etc/pam/pam.conf", "zigit")
 
                 # Next, downgrade overlaid-renamed and overlaying package to
                 # versions where the file is restored to its original location
                 # and verify that the content is reverted to the original
                 # overlay version since this is a downgrade.
-                self.pkg("update -vvv overlaid-renamed@3 overlayer-move@0")
+                self.pkg("update --parsable=0 overlaid-renamed@3 "
+                    "overlayer-move@0")
+                self._assertEditables(
+                    removed=['etc/pam/pam.conf'],
+                    installed=['etc/pam.conf'],
+                )
                 self.file_contains("etc/pam.conf", "file2")
-                self.pkg("uninstall overlaid-renamed overlayer-move")
+                self.pkg("uninstall --parsable=0 overlaid-renamed overlayer-move")
+                self._assertEditables(
+                    removed=['etc/pam.conf'],
+                )
 
                 # Next, install overlaid package and overlaying package and
                 # verify preserve acts as expected for overlay package as it is
                 # updated.
-                self.pkg("install -vvv overlaid@2 overlayer-update@0")
+                self.pkg("install --parsable=0 overlaid@2 overlayer-update@0")
+                self._assertEditables(
+                    installed=['etc/pam.conf'],
+                )
                 self.file_contains("etc/pam.conf", "file1")
                 # unpreserved -> preserved
-                self.pkg("install -vvv overlayer-update@1")
+                self.pkg("install --parsable=0 overlayer-update@1")
+                self._assertEditables(
+                    updated=['etc/pam.conf'],
+                )
                 self.file_contains("etc/pam.conf", "file2")
                 self.file_append("etc/pam.conf", "zigit")
                 # preserved -> renameold
-                self.pkg("install -vvv overlayer-update@2")
+                self.pkg("install --parsable=0 overlayer-update@2")
+                self._assertEditables(
+                    moved=[['etc/pam.conf', 'etc/pam.conf.old']],
+                    installed=['etc/pam.conf'],
+                )
                 self.file_doesnt_contain("etc/pam.conf", "zigit")
                 self.file_contains("etc/pam.conf.old", "zigit")
                 self.file_append("etc/pam.conf", "zagat")
                 # renameold -> renamenew
-                self.pkg("install -vvv overlayer-update@3")
-                self.file_contains("etc/pam.conf", "zagat")
-                self.file_contains("etc/pam.conf.new", "file4")
-
-        def test_overlay_files_exact_install(self):
-                """Test the behaviour of pkg(1) when actions for editable files
-                overlay other actions."""
-
-                # Ensure that overlay is allowed for file actions when one
-                # action has specified preserve attribute and overlay=allow,
-                # and *one* (only) other action has specified overlay=true
-                # (preserve does not have to be set).
-                self.image_create(self.rurl)
-
-                # With exact-install, this should succeed because exact-install
-                # will remove the previously installed package first.
-                # but not preserve (it isn't editable).
-                self.pkg("exact-install invalid-overlaid")
-                self.pkg("exact-install overlayer")
-                self.pkg("uninstall overlayer")
-
-                self.pkg("exact-install overlaid@0")
-                self.file_contains("etc/pam.conf", "file1")
-                # Should succeed with exact-install, because the previous
-                # package is actually removed.
-                self.pkg("contents -m overlaid")
-                self.pkg("contents -mr overlayer")
-                self.pkg("exact-install overlayer")
-                self.file_contains("etc/pam.conf", "file2")
-
-                # install back overlaid@0
-                self.pkg("exact-install overlaid@0")
-                self.pkg("verify overlaid")
-                self.file_contains("etc/pam.conf", "file1")
-                # This should also succeed with exact-install, because the
-                # previous package is removed.
-                self.pkg("exact-install invalid-overlayer")
-                self.file_contains("etc/pam.conf", "file2")
-                self.pkg("verify invalid-overlayer")
-                # This should also succeed with exact-install. Again.
-                self.pkg("exact-install overlaid@0")
-                self.pkg("exact-install mismatch-overlayer")
-                self.file_contains("etc/pam.conf", "file2")
-                self.pkg("verify mismatch-overlayer")
-                # This should alos succeed with exact-install, same reason.
-                self.pkg("exact-install overlaid@0")
-                self.pkg("exact-install multi-overlayer")
-                self.file_contains("etc/pam.conf", "file2")
-                self.pkg("verify multi-overlayer")
-                # Verify that removing the last package delivering an overlaid
-                # file removes the file.
-                self.pkg("uninstall multi-overlayer")
-                self.file_doesnt_exist("etc/pam.conf")
-
-                # Verify that exact-installing both packages at the same time
-                # results in only the overlaying file being delivered.
-                self.pkg("exact-install overlaid@0 overlayer")
-                self.file_contains("etc/pam.conf", "file2")
-
-                # Verify that the file isn't touched on uninstall of the
-                # overlaid package if overlaying package is still installed.
-                self.file_append("etc/pam.conf", "zigit")
-                self.pkg("uninstall overlaid")
-                self.file_contains("etc/pam.conf", "file2")
-                self.file_contains("etc/pam.conf", "zigit")
-
-                # Re-install overlaid package and verify that file content
-                # does not change.
-                self.pkg("exact-install overlaid@0")
-                self.file_contains("etc/pam.conf", "file2")
-                self.file_contains("etc/pam.conf", "zigit")
-                self.pkg("uninstall '*'")
-
-                # Should succeed because one action is overlayable and
-                # overlaying action declares its intent to overlay even
-                # though the overlaying action isn't marked with preserve.
-                self.pkg("exact-install overlaid@0 unpreserved-overlayer")
-                self.file_contains("etc/pam.conf", "unpreserved")
-
-                # Should succeed because overlaid action permits modification
-                # and contents matches overlaying action.
-                self.pkg("verify overlaid unpreserved-overlayer")
-
-                # Should succeed even though file has been modified since
-                # overlaid action permits modification.
-                self.file_append("etc/pam.conf", "zigit")
-                self.pkg("verify overlaid")
-
-                # Should fail because overlaying action does not permit
-                # modification.
-                self.pkg("verify unpreserved-overlayer", exit=1)
-
-                # Should revert to content delivered by overlaying action.
-                self.pkg("fix unpreserved-overlayer")
-                self.file_contains("etc/pam.conf", "unpreserved")
-                self.file_doesnt_contain("etc/pam.conf", "zigit")
-
-                # Should revert to content delivered by overlaying action.
-                self.file_append("etc/pam.conf", "zigit")
-                self.pkg("revert /etc/pam.conf")
-                self.file_contains("etc/pam.conf", "unpreserved")
-                self.file_doesnt_contain("etc/pam.conf", "zigit")
-                self.pkg("uninstall unpreserved-overlayer")
-
-                # Should revert to content delivered by overlaid action.
-                self.file_contains("etc/pam.conf", "unpreserved")
-                self.pkg("revert /etc/pam.conf")
-                self.file_contains("etc/pam.conf", "file1")
-
-                # Here if we use exact-install, we actually removed the
-                # unpreserved-overlayer and then unpreserved should disappear
-                # from etc/pam.conf.
-                self.pkg("exact-install -vvv unpreserved-overlayer")
-                self.file_contains("etc/pam.conf", "unpreserved")
-                self.pkg("exact-install overlaid@1")
-                self.file_contains("etc/pam.conf", "file1")
-                self.file_doesnt_contain("etc/pam.conf", "unpreserved")
-                self.pkg("uninstall -vvv overlaid")
-
-                # Now update overlaid package, and verify that it deliver the
-                # correct files
-                self.pkg("exact-install -vvv overlaid@2")
-                self.file_contains("etc/pam.conf", "file3")
-
-                self.pkg("exact-install -vvv overlaid@3")
-                self.file_contains("etc/pam.conf", "file3")
-
-                # Verify that unpreserved overlay is not salvaged when both
-                # overlaid and overlaying package are removed at the same time.
-                # (Preserved files are salvaged if they have been modified on
-                # uninstall.)
-
-                # Ensure directory is empty before testing.
-                api_inst = self.get_img_api_obj()
-                img_inst = api_inst.img
-                sroot = os.path.join(img_inst.imgdir, "lost+found")
-                shutil.rmtree(sroot)
-
-                # Verify etc directory not found after uninstall.
-                self.pkg("uninstall -vvv overlaid-renamed")
-                salvaged = [
-                    n for n in os.listdir(sroot)
-                    if n.startswith("etc")
-                ]
-                self.assertEqualDiff(salvaged, [])
-
-                # Next, update overlaid package again this time as part of a
-                # file move.  Verify that the old configuration file should
-                # be removed.
-                self.pkg("exact-install -vvv overlaid-renamed@3 "
-                    "unpreserved-overlayer")
-                self.pkg("exact-install -vvv overlaid-renamed@4.1")
-                self.assert_(not os.path.exists(os.path.join(
-                    self.get_img_path(), "etc/pam.conf")))
-                self.file_contains("etc/pam/pam.conf.new", "file4")
-
-                # Verify etc/pam/pam.conf is salvaged after uninstall as
-                # overlay file has been changed.
-                self.pkg("uninstall -vvv overlaid-renamed")
-                salvaged = [
-                    n for n in os.listdir(os.path.join(sroot, "etc/pam"))
-                    if n.startswith("pam.conf")
-                ]
-                self.assert_(salvaged[0].startswith("pam.conf-"),
-                    msg=str(salvaged))
-
-                # Next, repeat the same set of tests performed above for
-                # renames and moves with an overlaying, preserved file.
-                #
-                # Exact-install overlaying package, then update overlaid
-                # package and verify that file content does not change if only
-                # preserve attribute changes.
-                self.pkg("exact-install -vvv overlayer")
-                self.file_contains("etc/pam.conf", "file2")
-                self.file_append("etc/pam.conf", "zigit")
-                self.pkg("exact-install -vvv overlaid@1")
-                self.file_contains("etc/pam.conf", "file2")
-                self.file_contains("etc/pam.conf", "zigit")
-
-                # Now update overlaid package again, and verify that file
-                # content does not change even though overlaid content has.
-                self.pkg("exact-install -vvv overlaid@2")
-                self.file_contains("etc/pam.conf", "zigit")
-                self.file_contains("etc/pam.conf", "file2")
-
-                # Now update overlaid package again this time as part of a
-                # rename, and verify that file content does not change even
-                # though file has moved between packages.
-                self.pkg("exact-install -vvv overlaid@3")
-                self.file_contains("etc/pam.conf", "zigit")
-
-                # Verify that preserved overlay is salvaged.
-                # (Preserved files are salvaged if they have been modified on
-                # uninstall.)
-
-                # Ensure directory is empty before testing.
-                api_inst = self.get_img_api_obj()
-                img_inst = api_inst.img
-                sroot = os.path.join(img_inst.imgdir, "lost+found")
-                shutil.rmtree(sroot)
-
-                # Verify etc directory found after uninstall.
-                self.pkg("uninstall -vvv overlaid-renamed")
-                salvaged = [
-                    n for n in os.listdir(sroot)
-                    if n.startswith("etc")
-                ]
-                self.assert_(salvaged[0].startswith("etc"),
-                    msg=str(salvaged))
-                self.assert_(salvaged[1].startswith("etc-"),
-                    msg=str(salvaged))
-
-                # Next, update overlaid package again, this time as part of a
-                # file move where the overlay attribute was dropped. Verify
-                # that the content has not changed after move to new location
-                # and that the new configuration exists as expected as
-                # ".new".
-                self.pkg("exact-install -vvv overlaid-renamed@3 overlayer")
-                self.file_append("etc/pam.conf", "zigit")
-                self.pkg("exact-install -vvv overlaid-renamed@4.0")
-                self.file_contains("etc/pam/pam.conf", "zigit")
-                self.file_contains("etc/pam/pam.conf.new", "file4")
-                self.pkg("uninstall -vvv overlaid-renamed")
-
-                # Next, update overlaid package again, this time as part of a
-                # file move where the overlay attribute was dropped. Verify
-                # that the content has not changed after move to new location
-                # and that the new configuration exists as expected as
-                # ".new".
-                self.pkg("exact-install -vvv overlaid-renamed@3 overlayer")
-                self.file_append("etc/pam.conf", "zigit")
-                self.file_contains("etc/pam.conf", "file2")
-                self.pkg("exact-install -vvv overlaid-renamed@4.1")
-                self.file_contains("etc/pam/pam.conf", "zigit")
-                self.file_contains("etc/pam/pam.conf.new", "file4")
-
-                # Next, downgrade the package and verify that if an overlaid
-                # file moves back to its original location. Because the
-                # previous etc/pam.conf for overlayer was removed by
-                # exact-install, the content of the overlay file will be a new
-                # one.
-                self.pkg("update -vvv overlaid-renamed@3")
-                self.file_contains("etc/pam.conf", "file3")
-                self.file_doesnt_contain("etc/pam.conf", "zigit")
-                self.file_append("etc/pam.conf", "zigit")
-                # Now upgrade again for remaining tests.
-                self.pkg("exact-install -vvv overlaid-renamed@4.1")
-
-                # Verify etc/pam.conf and etc/pam/pam.conf salvaged after
-                # uninstall as overlay file and overlaid file is different from
-                # packaged.
-                shutil.rmtree(sroot)
-                self.pkg("uninstall -vvv overlaid-renamed")
-                salvaged = sorted(
-                    n for n in os.listdir(os.path.join(sroot, "etc"))
-                    if n.startswith("pam")
+                self.pkg("install --parsable=0 overlayer-update@3")
+                self._assertEditables(
+                    installed=['etc/pam.conf.new'],
                 )
-                # Should have three entries; one should be 'pam' directory
-                # (presumably containing pam.conf-X...), a 'pam-XXX' directory,
-                # and a etc-XXX directory.
-                self.assertEqualDiff(salvaged[0], "pam")
-                self.assert_(salvaged[1].startswith("pam-"),
-                    msg=str(salvaged))
-
-                salvaged = sorted(
-                    n for n in os.listdir(os.path.join(sroot, "etc/pam"))
-                    if n.startswith("pam")
-                )
-                self.assert_(salvaged[0].startswith("pam.conf-"),
-                    msg=str(salvaged))
-                salvaged = sorted(
-                    n for n in os.listdir(sroot)
-                    if n.startswith("etc-")
-                )
-                self.assert_(salvaged[0].startswith("etc-"),
-                    msg=str(salvaged))
-
-                # Next, exact-install overlaid package and overlaying package,
-                # then upgrade each to a version where the file has changed
-                # locations and verify that the content remains intact.
-                self.pkg("exact-install -vvv overlaid@0 overlayer-move@0")
-                self.file_append("etc/pam.conf", "zigit")
-                self.pkg("exact-install -vvv overlaid@3 overlayer-move@0")
-                self.file_contains("etc/pam.conf", "zigit")
-                self.pkg("exact-install -vvv overlaid-renamed@4.1 "
-                    "overlayer-move@1")
-                self.file_contains("etc/pam/pam.conf", "zigit")
-
-                # Next, downgrade overlaid-renamed and overlaying package to
-                # versions where the file is restored to its original location
-                # and verify that the content is reverted to the original
-                # overlay version since this is a downgrade.
-                self.pkg("update -vvv overlaid-renamed@3 overlayer-move@0")
-                self.file_contains("etc/pam.conf", "file2")
-                self.pkg("uninstall overlaid-renamed overlayer-move")
-
-                # Next, exact-install overlaid package and overlaying package
-                # and verify preserve acts as expected for overlay package as
-                # it is updated.
-                self.pkg("exact-install -vvv overlaid@2 overlayer-update@0")
-                self.file_contains("etc/pam.conf", "file1")
-                # unpreserved -> preserved
-                self.pkg("exact-install -vvv overlayer-update@1")
-                self.file_contains("etc/pam.conf", "file2")
-                self.file_append("etc/pam.conf", "zigit")
-                # preserved -> renameold
-                self.pkg("exact-install -vvv overlayer-update@2")
-                self.file_doesnt_contain("etc/pam.conf", "zigit")
-                self.file_contains("etc/pam.conf.old", "zigit")
-                self.file_append("etc/pam.conf", "zagat")
-                # renameold -> renamenew
-                self.pkg("exact-install -vvv overlayer-update@3")
                 self.file_contains("etc/pam.conf", "zagat")
                 self.file_contains("etc/pam.conf.new", "file4")
 
@@ -10068,152 +9513,6 @@ adm
                 self.pkg("uninstall '*'")
                 self.pkg("install dupmultitypes3@0")
                 self.pkg("update")
-
-        def test_different_types_exact_install(self):
-                """Test the behavior of pkg(1) when multiple actions of
-                different types deliver to the same pathname."""
-
-                self.image_create(self.rurl)
-
-                # In the same package.
-                self.pkg("exact-install duppath-filelink", exit=1)
-
-                # In different packages, in the same transaction.
-                self.pkg("exact-install dupfilesp1 duplink", exit=1)
-
-                # In different packages, in different transactions. This should
-                # succeed because exact-install will first uninstall
-                # dupfilesp1.
-                self.pkg("exact-install dupfilesp1")
-                self.pkg("exact-install duplink")
-
-                # Does removal of one of the busted packages get us out of the
-                # situation?
-                self.pkg("uninstall '*'")
-                self.pkg("-D broken-conflicting-action-handling=1 "
-                    "exact-install dupfilesp1 duplink")
-                self.pkg("verify", exit=1)
-                self.pkg("uninstall dupfilesp1")
-                self.pkg("verify")
-
-                # Implicit directory conflicts with a file
-                self.pkg("uninstall '*'")
-                self.pkg("exact-install implicitdirs", exit=1)
-
-                # Implicit directory coincides with a delivered directory.
-                self.pkg("exact-install implicitdirs2")
-
-                # Make sure that we don't die trying to fixup a directory using
-                # an implicit directory action.
-                self.pkg("uninstall '*'")
-                self.pkg("exact-install implicitdirs4")
-                self.pkg("-D broken-conflicting-action-handling=1 "
-                    "install implicitdirs7")
-                self.pkg("uninstall implicitdirs7")
-                # XXX We don't currently fix up anything beneath a directory
-                # that was restored, so we have to do it by hand.
-                os.mkdir("%s/usr/bin" % self.img_path())
-                shutil.copy("%s/tmp/file1" % self.test_root,
-                    "%s/usr/bin/something" % self.img_path())
-                owner = portable.get_user_by_name("root", self.img_path(), True)
-                group = portable.get_group_by_name("bin", self.img_path(), True)
-                os.chown("%s/usr/bin/something" % self.img_path(), owner, group)
-                os.chmod("%s/usr/bin/something" % self.img_path(), 0755)
-                self.pkg("verify")
-
-                # Removing one of more than two offending actions can't do much
-                # of anything, but should leave the system alone.
-                self.pkg("uninstall '*'")
-                self.pkg("-D broken-conflicting-action-handling=1 "
-                    "exact-install dupfilesp1 duplink dupdir@0")
-                tmap = {
-                    stat.S_IFIFO: "fifo",
-                    stat.S_IFCHR: "character device",
-                    stat.S_IFDIR: "directory",
-                    stat.S_IFBLK: "block device",
-                    stat.S_IFREG: "regular file",
-                    stat.S_IFLNK: "symbolic link",
-                    stat.S_IFSOCK: "socket",
-                }
-                thepath = "%s/dir/pathname" % self.img_path()
-                fmt = stat.S_IFMT(os.lstat(thepath).st_mode)
-                # XXX The checks here rely on verify failing due to action types
-                # not matching what's on the system; they should probably report
-                # duplicate actions instead.  Checking the output text is a bit
-                # ugly, too, but we do need to make sure that the two problems
-                # become one.
-                self.pkg("verify", exit=1)
-                verify_type_re = "File Type: '(.*?)' should be '(.*?)'"
-                matches = re.findall(verify_type_re, self.output)
-                # We make sure that what got reported is correct -- two actions
-                # of different types in conflict with whatever actually got laid
-                # down.
-                self.assert_(len(matches) == 2)
-                whatis = matches[0][0]
-                self.assert_(matches[1][0] == whatis)
-                self.assert_(whatis == tmap[fmt])
-                shouldbe = set(["symbolic link", "regular file", "directory"]) - \
-                    set([whatis])
-                self.assert_(set([matches[0][1], matches[1][1]]) == shouldbe)
-                # Now we uninstall one of the packages delivering a type which
-                # isn't what's on the filesystem.  The filesystem should remain
-                # unchanged, but one of the errors should go away.
-                if whatis == "directory":
-                        self.pkg("uninstall duplink")
-                else:
-                        self.pkg("uninstall dupdir")
-                self.pkg("verify", exit=1)
-                matches = re.findall(verify_type_re, self.output)
-                self.assert_(len(matches) == 1)
-                nfmt = stat.S_IFMT(os.lstat(thepath).st_mode)
-                self.assert_(nfmt == fmt)
-
-                # Now we do the same thing, but we uninstall the package
-                # delivering the type which *is* what's on the filesystem.  This
-                # should also leave the filesystem alone, even though what's
-                # there will match *neither* of the remaining installed
-                # packages.
-                self.pkg("uninstall '*'")
-                self.pkg("-D broken-conflicting-action-handling=1 "
-                    "exact-install dupfilesp1 duplink dupdir@0")
-                fmt = stat.S_IFMT(os.lstat(thepath).st_mode)
-                self.pkg("verify", exit=1)
-                matches = re.findall(verify_type_re, self.output)
-                self.assert_(len(matches) == 2)
-                whatis = matches[0][0]
-                self.assert_(matches[1][0] == whatis)
-                self.assert_(whatis == tmap[fmt])
-                shouldbe = set(["symbolic link", "regular file", "directory"]) - \
-                    set([whatis])
-                self.assert_(set([matches[0][1], matches[1][1]]) == shouldbe)
-                if whatis == "directory":
-                        self.pkg("uninstall dupdir")
-                elif whatis == "symbolic link":
-                        self.pkg("uninstall duplink")
-                elif whatis == "regular file":
-                        self.pkg("uninstall dupfilesp1")
-                self.pkg("verify", exit=1)
-                matches = re.findall(verify_type_re, self.output)
-                self.assert_(len(matches) == 2)
-                nfmt = stat.S_IFMT(os.lstat(thepath).st_mode)
-                self.assert_(nfmt == fmt)
-
-                # Go from multiple conflicting types down to just one type.
-                # This also tests the case where a package version being newly
-                # installed gets fixed at the same time.
-                self.pkg("uninstall '*'")
-                self.pkg("-D broken-conflicting-action-handling=1 "
-                    "exact-install dupmultitypes@1")
-                self.pkg("exact-install dupmultitypes")
-                self.pkg("verify")
-
-                # Upgrading from multiple instances of one refcounted type to
-                # multiple instances of another (here, link to directory)
-                # should succeed.
-                self.pkg("uninstall '*'")
-                self.pkg("exact-install dupmultitypes3@0")
-                self.pkg("update")
-
 
         def test_conflicting_attrs_fs_install(self):
                 """Test the behavior of pkg(1) when multiple non-file actions of
@@ -10379,180 +9678,12 @@ adm
                     "dupdirp12")
                 self.pkg("uninstall dupdirp12")
 
-        def test_conflicting_attrs_fs_exact_install(self):
-                """Test the behavior of pkg(1) when multiple non-file actions of
-                the same type deliver to the same pathname, but whose other
-                attributes differ."""
-
-                self.image_create(self.rurl)
-
-                # One package, two links with different targets
-                self.pkg("exact-install duppath-nonidenticallinks", exit=1)
-
-                # One package, two directories with different perms
-                self.pkg("exact-install duppath-nonidenticaldirs", exit=1)
-
-                # One package, two dirs with same modes expressed two ways
-                self.pkg("exact-install duppath-almostidenticaldirs")
-
-                # One package delivers a directory explicitly, another
-                # implicitly.
-                self.pkg("exact-install implicitdirs2 implicitdirs3")
-                self.pkg("verify")
-
-                self.pkg("uninstall '*'")
-
-                # Make sure that we don't die trying to fixup a directory using
-                # an implicit directory action.
-                self.pkg("-D broken-conflicting-action-handling=1 "
-                    "exact-install implicitdirs4 implicitdirs5 implicitdirs6")
-                self.pkg("uninstall implicitdirs5")
-                self.pkg("verify")
-
-                self.pkg("uninstall '*'")
-
-                # Make sure that we don't die trying to fixup a directory using
-                # an implicit directory action when that's all that's left.
-                self.pkg("-D broken-conflicting-action-handling=1 "
-                    "exact-install implicitdirs4 implicitdirs5 implicitdirs6")
-                self.pkg("uninstall implicitdirs5 implicitdirs6")
-                self.pkg("verify")
-
-                self.pkg("uninstall '*'")
-
-                # If two packages deliver conflicting directories and another
-                # package delivers that directory implicitly, make sure the
-                # third package isn't blamed.
-                self.pkg("exact-install implicitdirs4 implicitdirs5 "
-                    "implicitdirs6", exit=1)
-                self.assert_("implicitdirs4" not in self.errout)
-
-                # Two packages, two links with different targets, installed at
-                # once
-                self.pkg("exact-install duppath-nonidenticallinksp1 "
-                    "duppath-nonidenticallinksp2@0", exit=1)
-
-                # Two packages, two links with different targets, installed
-                # separately. again with exact-install the operation will
-                # will succeed becauseit will remove the
-                # duppath-nonidenticallinksp1 pkg first.
-                self.pkg("exact-install duppath-nonidenticallinksp1")
-                self.pkg("exact-install duppath-nonidenticallinksp2@0")
-
-                self.pkg("uninstall '*'")
-
-                # If we get into a broken state, can we get out of it?
-                self.pkg("-D broken-conflicting-action-handling=1 "
-                    "exact-install duppath-nonidenticallinksp1 "
-                    "duppath-nonidenticallinksp2@0")
-                self.pkg("verify", exit=1)
-                self.pkg("exact-install duppath-nonidenticallinksp2")
-                self.pkg("verify")
-
-                # If we get into a broken state, can we make it a little bit
-                # better by uninstalling one of the packages?  Removing dupdir5
-                # here won't reduce the number of different groups under which
-                # dir is delivered, but does reduce the number of actions
-                # delivering it.
-                self.pkg("uninstall '*'")
-                self.pkg("-D broken-conflicting-action-handling=1 "
-                    "exact-install dupdirp1 dupdirp2@1 dupdirp5 dupdirp6")
-                self.pkg("uninstall dupdirp5")
-                self.pkg("verify", exit=1)
-
-                self.pkg("-D broken-conflicting-action-handling=1 install "
-                    "dupdirp5")
-                # Make sure we can exact-install a package delivering an
-                # implicit directory that's currently in conflict.
-                self.pkg("exact-install dupdirp7")
-                # And make sure we can uninstall it again.
-                self.pkg("uninstall dupdirp7")
-                self.pkg("list", exit=1)
-
-                # Add everything back in, remove everything but one variant of
-                # the directory and an implicit directory, and verify.
-                self.pkg("-D broken-conflicting-action-handling=1 "
-                    "exact-install dupdirp2@1 dupdirp5 dupdirp6 dupdirp7")
-                self.pkg("uninstall dupdirp2 dupdirp5 dupdirp6")
-                self.pkg("verify")
-
-                # Get us into a saner state by upgrading.
-                self.pkg("-D broken-conflicting-action-handling=1 "
-                    "exact-install dupdirp2@1 dupdirp5 dupdirp6 dupdirp7")
-                self.pkg("update dupdirp2@2")
-
-                # Get us into a sane state by upgrading.
-                self.pkg("uninstall dupdirp2 dupdirp5 dupdirp6")
-                self.pkg("-D broken-conflicting-action-handling=1 "
-                    "exact-install dupdirp2@1 dupdirp7")
-                self.pkg("update dupdirp2@2")
-                self.pkg("verify")
-
-                # We start in a sane state, but the update would result in
-                # conflict, though no more actions deliver the path in
-                # question.
-                self.pkg("uninstall '*'")
-                self.pkg("exact-install dupdirp1 dupdirp8@1")
-                self.pkg("update", exit=1)
-
-                # How about removing one of the conflicting packages?  We'll
-                # remove the package which doesn't match the state on disk.
-                self.pkg("uninstall '*'")
-                self.pkg("-D broken-conflicting-action-handling=1 "
-                    "exact-install duppath-nonidenticallinksp1 "
-                    "duppath-nonidenticallinksp2@0")
-                link = os.readlink("%s/dir/pathname" % self.img_path())
-                if link == "dir/something":
-                        self.pkg("uninstall duppath-nonidenticallinksp2")
-                else:
-                        self.pkg("uninstall duppath-nonidenticallinksp1")
-                self.pkg("verify")
-
-                # Now we'll try removing the package which *does* match the
-                # state on disk.  The code should clean up after us.
-                self.pkg("uninstall '*'")
-                self.pkg("-D broken-conflicting-action-handling=1 "
-                    "exact-install duppath-nonidenticallinksp1 "
-                    "duppath-nonidenticallinksp2@0")
-                link = os.readlink("%s/dir/pathname" % self.img_path())
-                if link == "dir/something":
-                        self.pkg("uninstall duppath-nonidenticallinksp1")
-                else:
-                        self.pkg("uninstall duppath-nonidenticallinksp2")
-                self.pkg("verify")
-
-                # Let's try a duplicate directory delivered with all sorts of
-                # crazy conflicts!
-                self.pkg("uninstall '*'")
-                self.pkg("exact-install dupdirp1 dupdirp2@1 dupdirp3 dupdirp4",
-                    exit=1)
-
-                pkgs = " ".join("massivedupdir%d" % x for x in xrange(20))
-                self.pkg("exact-install %s" % pkgs, exit=1)
-
-                # Trigger bug 17943: we install packages with conflicts in two
-                # directories (p9, p10).  We also install a package (p11) which
-                # delivers those directories implicitly.  Then remove the last,
-                # triggering the stack trace associated with the bug.
-                self.pkg("-D broken-conflicting-action-handling=1 "
-                    "exact-install dupdirp9 dupdirp10 dupdirp11")
-                self.pkg("uninstall dupdirp11")
-
-                # Do the same, but with a package that delivers var implicitly
-                # via a legacy action.
-                self.pkg("-D broken-conflicting-action-handling=1 "
-                    "exact-install dupdirp9 dupdirp10 dupdirp12")
-                self.pkg("uninstall dupdirp12")
-
         def test_conflicting_attrs_fs_varcets(self):
                 """Test the behavior of pkg(1) when multiple non-file actions of
                 the same type deliver to the same pathname, but differ in their
                 variants or facets."""
 
-                self.conflicting_attrs_fs_varcets_helper("install")
-                self.conflicting_attrs_fs_varcets_helper("exact-install")
-
-        def conflicting_attrs_fs_varcets_helper(self, install_cmd):
+                install_cmd = "install"
                 self.image_create(self.rurl)
 
                 # Two packages delivering the same directory, one under the
@@ -10765,61 +9896,6 @@ adm
                 # adjacent in the action cache.
                 self.pkg("-D broken-conflicting-action-handling=1 install "
                     "otheruser othergroup@0")
-                self.pkg("update othergroup")
-
-        def test_multiple_users_exact_install(self):
-                """Test the behavior of pkg(1) when multiple user
-                actions deliver the same user."""
-
-                # This is largely identical to test_multiple_files; we may want
-                # to commonize in the future.
-
-                self.image_create(self.rurl)
-
-                self.pkg("exact-install userdb")
-
-                # Duplicate users in the same package
-                self.pkg("exact-install dupuser", exit=1)
-                # Make sure userdb is not accedentally removed.
-                self.pkg("list userdb")
-
-                # Duplicate users in different packages, but in the same
-                # transaction
-                self.pkg("exact-install userdb dupuserp1 dupuserp2@0", exit=1)
-
-                # Duplicate users in different packages, in different
-                # transactions. This should succeed with exact-install.
-                self.pkg("exact-install userdb dupuserp1")
-                self.pkg("exact-install userdb dupuserp2@0")
-
-                # Removing one of more than two offending actions can't do much
-                # of anything, but should leave the system alone.
-                self.image_destroy()
-                self.image_create(self.rurl)
-                self.pkg("-D broken-conflicting-action-handling=1 "
-                    "exact-install userdb dupuserp1 dupuserp2@0 dupuserp3")
-                self.pkg("verify", exit=1)
-                out1 = self.output
-                self.pkg("uninstall dupuserp3")
-                self.pkg("verify", exit=1)
-                out2 = self.output
-                out2 = out2[out2.index("\n") + 1:]
-                self.assert_(out2 in out1)
-
-                # Removing all but one of the offending actions should get us
-                # back to sanity.
-                self.image_destroy()
-                self.image_create(self.rurl)
-                self.pkg("-D broken-conflicting-action-handling=1 "
-                    "exact-install userdb dupuserp1 dupuserp2@0 dupuserp3")
-                self.pkg("uninstall dupuserp3 dupuserp2")
-                self.pkg("verify")
-
-                # Make sure we don't get confused when two actions in different
-                # namespace groups but with the same key attribute value are
-                # adjacent in the action cache.
-                self.pkg("-D broken-conflicting-action-handling=1 "
-                    "exact-install userdb otheruser othergroup@0")
                 self.pkg("update othergroup")
 
         def test_multiple_drivers(self):
