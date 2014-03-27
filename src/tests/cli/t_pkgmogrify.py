@@ -20,7 +20,7 @@
 # CDDL HEADER END
 #
 #
-# Copyright (c) 2009, 2012, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2009, 2014, Oracle and/or its affiliates. All rights reserved.
 #
 
 import testutils
@@ -196,7 +196,7 @@ file NOHASH path=kernel/drv/common2 reboot-needed=true
                         args += " -O %s" % output
 
                 cmd = "%s/usr/bin/pkgmogrify %s %s %s" % (
-                    pkg5unittest.g_proto_area, defines, args, sources)
+                    pkg5unittest.g_pkg_path, defines, args, sources)
 
                 self.cmdline_run(cmd, exit=exit)
 

@@ -90,6 +90,8 @@ g_proto_readable = False
 g_test_dir = "TOXIC"
 # User's value for TEMPDIR
 g_tempdir = "/tmp"
+# Location of path of pkg bits.
+g_pkg_path = "TOXIC"
 
 g_debug_output = False
 if "DEBUG" in os.environ:
@@ -598,10 +600,8 @@ if __name__ == "__main__":
                 except OSError, e:
                         if e.errno != errno.EEXIST:
                                 raise e
-                test_relative = os.path.sep.join(["..", "..", "src", "tests"])
-                test_src = os.path.join(g_proto_area, test_relative)
                 if getattr(self, "need_ro_data", False):
-                        shutil.copytree(os.path.join(test_src, "ro_data"),
+                        shutil.copytree(os.path.join(g_test_dir, "ro_data"),
                             self.ro_data_root)
                         self.path_to_certs = os.path.join(self.ro_data_root,
                             "signing_certs", "produced")
@@ -626,15 +626,17 @@ if __name__ == "__main__":
 
                 # Create a pkglintrc file that points to our info.classification
                 # data, and doesn't exclude any shipped plugins.
-                self.configure_rcfile( "%s/usr/share/lib/pkg/pkglintrc" %
-                    g_proto_area,
+                self.configure_rcfile(os.path.join(g_pkg_path,
+                    "usr/share/lib/pkg/pkglintrc"),
                     {"info_classification_path":
-                    "%s/usr/share/lib/pkg/opensolaris.org.sections" %
-                    g_proto_area,
+                    os.path.join(g_pkg_path,
+                    "usr/share/lib/pkg/opensolaris.org.sections"),
                     "pkglint.exclude": ""}, self.test_root, section="pkglint")
 
-                self.sysrepo_template_dir = "%s/etc/pkg/sysrepo" % g_proto_area
-                self.depot_template_dir = "%s/etc/pkg/depot" % g_proto_area
+                self.sysrepo_template_dir = os.path.join(g_pkg_path,
+                    "etc/pkg/sysrepo")
+                self.depot_template_dir = os.path.join(g_pkg_path,
+                    "etc/pkg/depot")
                 self.make_misc_files(self.smf_cmds, prefix="smf_cmds",
                     mode=0755)
                 DebugValues["smf_cmds_dir"] = \
@@ -2522,26 +2524,27 @@ class CliTestCase(Pkg5TestCase):
                 ops = ""
                 if "-R" not in args:
                         ops = "-R %s" % self.get_img_path()
-                cmdline = "%s/usr/bin/pkgdepend %s resolve %s" % (
-                    g_proto_area, ops, args)
+                cmdline = os.path.join(g_pkg_path,
+                    "usr/bin/pkgdepend %s resolve %s" % (ops, args))
                 return self.cmdline_run(cmdline, comment=comment, exit=exit,
                     su_wrap=su_wrap, env_arg=env_arg)
 
         def pkgdepend_generate(self, args, exit=0, comment="", su_wrap=False,
             env_arg=None):
-                cmdline = "%s/usr/bin/pkgdepend generate %s" % (g_proto_area,
-                    args)
+                cmdline = os.path.join(g_pkg_path,
+                    "usr/bin/pkgdepend generate %s" % args)
                 return self.cmdline_run(cmdline, comment=comment, exit=exit,
                     su_wrap=su_wrap, env_arg=env_arg)
 
         def pkgdiff(self, command, comment="", exit=0, su_wrap=False,
             env_arg=None, stderr=False, out=False):
-                cmdline = "%s/usr/bin/pkgdiff %s" % (g_proto_area, command)
+                cmdline = os.path.join(g_pkg_path,
+                    "usr/bin/pkgdiff %s" % command)
                 return self.cmdline_run(cmdline, comment=comment, exit=exit,
                     su_wrap=su_wrap, env_arg=env_arg, out=out, stderr=stderr)
 
         def pkgfmt(self, args, exit=0, su_wrap=False, env_arg=None):
-                cmd="%s/usr/bin/pkgfmt %s" % (g_proto_area, args)
+                cmd= os.path.join(g_pkg_path, "usr/bin/pkgfmt %s" % args)
                 self.cmdline_run(cmd, exit=exit, su_wrap=su_wrap,
                     env_arg=env_arg)
 
@@ -2549,10 +2552,11 @@ class CliTestCase(Pkg5TestCase):
             env_arg=None):
                 if testrc:
                         rcpath = "%s/pkglintrc" % self.test_root
-                        cmdline = "%s/usr/bin/pkglint -f %s %s" % \
-                            (g_proto_area, rcpath, args)
+                        cmdline = os.path.join(g_pkg_path,
+                            "usr/bin/pkglint -f %s %s" % (rcpath, args))
                 else:
-                        cmdline = "%s/usr/bin/pkglint %s" % (g_proto_area, args)
+                        cmdline = os.path.join(g_pkg_path,
+                            "usr/bin/pkglint %s" % args)
                 return self.cmdline_run(cmdline, exit=exit, out=True,
                     comment=comment, stderr=True, env_arg=env_arg)
 
@@ -2565,15 +2569,16 @@ class CliTestCase(Pkg5TestCase):
                 if command:
                         args.append(command)
 
-                cmdline = "%s/usr/bin/pkgrecv %s" % (g_proto_area,
-                    " ".join(args))
+                cmdline = os.path.join(g_pkg_path,
+                    "usr/bin/pkgrecv %s" % " ".join(args))
 
                 return self.cmdline_run(cmdline, comment=comment, exit=exit,
                     out=out, su_wrap=su_wrap, env_arg=env_arg)
 
         def pkgmerge(self, args, comment="", exit=0, su_wrap=False,
             env_arg=None):
-                cmdline = "%s/usr/bin/pkgmerge %s" % (g_proto_area, args)
+                cmdline = os.path.join(g_pkg_path,
+                    "usr/bin/pkgmerge %s" % args)
                 return self.cmdline_run(cmdline, comment=comment, exit=exit,
                     su_wrap=su_wrap, env_arg=env_arg)
 
@@ -2584,14 +2589,15 @@ class CliTestCase(Pkg5TestCase):
                 else:
                         debug_arg = ""
 
-                cmdline = "%s/usr/bin/pkgrepo %s%s" % (g_proto_area, debug_arg,
-                    command)
+                cmdline = os.path.join(g_pkg_path,
+                    "usr/bin/pkgrepo %s%s" % (debug_arg, command))
                 return self.cmdline_run(cmdline, comment=comment, exit=exit,
                     su_wrap=su_wrap, env_arg=env_arg, out=out, stderr=stderr)
 
         def pkgsurf(self, command, comment="", exit=0, su_wrap=False,
             env_arg=None, stderr=False, out=False):
-                cmdline = "%s/usr/bin/pkgsurf %s" % (g_proto_area, command)
+                cmdline = os.path.join(g_pkg_path,
+                    "usr/bin/pkgsurf %s" % command)
                 return self.cmdline_run(cmdline, comment=comment, exit=exit,
                     su_wrap=su_wrap, env_arg=env_arg, out=out, stderr=stderr)
 
@@ -2607,8 +2613,8 @@ class CliTestCase(Pkg5TestCase):
                 if command:
                         args.append(command)
 
-                cmdline = "%s/usr/bin/pkgsign %s" % (g_proto_area,
-                    " ".join(args))
+                cmdline = os.path.join(g_pkg_path,
+                    "usr/bin/pkgsign %s" % " ".join(args))
                 return self.cmdline_run(cmdline, comment=comment, exit=exit,
                     env_arg=env_arg)
 
@@ -2644,8 +2650,8 @@ class CliTestCase(Pkg5TestCase):
                         args.append(command)
 
                 prefix = "cd %s;" % self.test_root
-                cmdline = "%s/usr/bin/pkgsend %s" % (g_proto_area,
-                    " ".join(args))
+                cmdline = os.path.join(g_pkg_path,
+                    "usr/bin/pkgsend %s" % " ".join(args))
 
                 retcode, out = self.cmdline_run(cmdline, comment=comment,
                     exit=exit, out=True, prefix=prefix, raise_error=False,
@@ -2785,7 +2791,8 @@ class CliTestCase(Pkg5TestCase):
                 return plist
 
         def merge(self, args=EmptyI, exit=0):
-                cmd = "%s/usr/bin/pkgmerge %s" % (g_proto_area, " ".join(args))
+                cmd = os.path.join(g_pkg_path,
+                    "usr/bin/pkgmerge %s" % " ".join(args))
                 self.cmdline_run(cmd, exit=exit)
 
         def sysrepo(self, args, exit=0, out=False, stderr=False, comment="",
@@ -2807,7 +2814,8 @@ class CliTestCase(Pkg5TestCase):
                 if "-t" not in args:
                         args += " -t %s" % self.sysrepo_template_dir
 
-                cmdline = "%s/usr/lib/pkg.sysrepo %s" % (g_proto_area, args)
+                cmdline = os.path.join(g_pkg_path,
+                    "usr/lib/pkg.sysrepo %s" % args)
                 if env_arg is None:
                         env_arg = {}
                 env_arg["PKG5_TEST_ENV"] = "1"
@@ -2851,11 +2859,11 @@ class CliTestCase(Pkg5TestCase):
                         args += " --debug smf_cmds_dir=%s" % \
                             DebugValues["smf_cmds_dir"]
 
-                cmdline = "%s/usr/lib/pkg.depot-config %s" % (g_proto_area,
-                    args)
+                cmdline = os.path.join(g_pkg_path,
+                    "usr/lib/pkg.depot-config %s" % args)
                 if env_arg is None:
                         env_arg = {}
-                env_arg["PKG5_TEST_PROTO"] = g_proto_area
+                env_arg["PKG5_TEST_PROTO"] = g_pkg_path
                 return self.cmdline_run(cmdline, comment=comment, exit=exit,
                     out=out, stderr=stderr, env_arg=env_arg)
 
@@ -3102,8 +3110,10 @@ class CliTestCase(Pkg5TestCase):
                 dc = depotcontroller.DepotController(
                     wrapper_start=self.coverage_cmd.split(),
                     env=self.coverage_env)
-                dc.set_depotd_path(g_proto_area + "/usr/lib/pkg.depotd")
-                dc.set_depotd_content_root(g_proto_area + "/usr/share/lib/pkg")
+                dc.set_depotd_path(os.path.join(g_pkg_path,
+                    "usr/lib/pkg.depotd"))
+                dc.set_depotd_content_root(os.path.join(g_pkg_path,
+                    "usr/share/lib/pkg"))
                 for f in debug_features:
                         dc.set_debug_feature(f)
                 dc.set_repodir(repodir)
@@ -4200,7 +4210,7 @@ def fakeroot_create():
         # pkg from the fake root.
         #
         fakeroot_cmdpath = os.path.join(fakeroot, "pkg")
-        shutil.copy(os.path.join(g_proto_area, "usr", "bin", "pkg"),
+        shutil.copy(os.path.join(g_pkg_path, "usr", "bin", "pkg"),
             fakeroot_cmdpath)
 
         return fakeroot, fakeroot_cmdpath

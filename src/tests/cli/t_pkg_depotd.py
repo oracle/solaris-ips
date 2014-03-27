@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2008, 2013, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2008, 2014, Oracle and/or its affiliates. All rights reserved.
 #
 
 import testutils
@@ -402,9 +402,9 @@ class TestDepotController(pkg5unittest.CliTestCase):
                 self.__dc = dc.DepotController()
                 self.__pid = os.getpid()
                 self.__dc.set_property("publisher", "prefix", "test")
-                self.__dc.set_depotd_path(pkg5unittest.g_proto_area + \
+                self.__dc.set_depotd_path(pkg5unittest.g_pkg_path + \
                     "/usr/lib/pkg.depotd")
-                self.__dc.set_depotd_content_root(pkg5unittest.g_proto_area + \
+                self.__dc.set_depotd_content_root(pkg5unittest.g_pkg_path + \
                     "/usr/share/lib/pkg")
 
                 repopath = os.path.join(self.test_root, "repo")
@@ -715,8 +715,8 @@ class TestDepotOutput(pkg5unittest.SingleDepotTestCase):
                 cmdargs = "/usr/bin/ctrun -o noorphan %s/usr/lib/pkg.depotd " \
                     "-p %s -d %s --content-root %s/usr/share/lib/pkg " \
                     "--readonly </dev/null > %s 2> %s" % \
-                    (pkg5unittest.g_proto_area, self.next_free_port, repopath,
-                    pkg5unittest.g_proto_area, out_path, err_path)
+                    (pkg5unittest.g_pkg_path, self.next_free_port, repopath,
+                    pkg5unittest.g_pkg_path, out_path, err_path)
 
                 curport = self.next_free_port
                 self.next_free_port += 1

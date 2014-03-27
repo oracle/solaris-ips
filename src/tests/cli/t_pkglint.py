@@ -20,7 +20,7 @@
 # CDDL HEADER END
 #
 
-# Copyright (c) 2010, 2012, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2010, 2014, Oracle and/or its affiliates. All rights reserved.
 
 import testutils
 if __name__ == "__main__":
@@ -282,9 +282,9 @@ pkglint.exclude = pkg.lint.pkglint_action.PkgActionChecker.linted \
                 """
                 mpath1 = self.make_manifest(self.broken_manifest)
                 self.make_misc_files({"rcfile": self.module_exclusion_rc %
-                    pkg5unittest.g_proto_area})
+                    pkg5unittest.g_pkg_path})
                 self.make_misc_files({"rcfile1": self.method_exclusion_rc %
-                    pkg5unittest.g_proto_area})
+                    pkg5unittest.g_pkg_path})
 
                 # verify we fail first
                 self.pkglint("%s" % mpath1, exit=1)
@@ -353,7 +353,7 @@ pkglint.exclude = pkg.lint.pkglint_action.PkgActionChecker.linted \
                 # override log setting in config file
                 self.make_misc_files(
                     {"low_noise_rc": self.low_noise_rc %
-                    pkg5unittest.g_proto_area})
+                    pkg5unittest.g_pkg_path})
                 ret, output, err = self.pkglint("-f %s/low_noise_rc %s" %
                     (self.test_root, mpath), exit=0)
                 self.assert_("Total number of checks found" not in output,
@@ -383,9 +383,9 @@ pkglint.exclude = pkg.lint.pkglint_action.PkgActionChecker.linted \
 
                 mpath = self.make_manifest(self.missing_dep_manifest)
                 self.make_misc_files({"rcfile": self.missing_dep_rc %
-                    pkg5unittest.g_proto_area,
+                    pkg5unittest.g_pkg_path,
                     "versioned": self.missing_dep_rc_versioned %
-                    pkg5unittest.g_proto_area})
+                    pkg5unittest.g_pkg_path})
 
                 # verify we fail first
                 ret, output, err = self.pkglint("%s" % mpath)
@@ -592,7 +592,7 @@ dir group=sys mode=0755 owner=root path=etc
 
                 for args in [[mpath1], ["-c", cache, "-l", self.lint_uri]]:
                         cmdline = ["%s/usr/bin/pkglint" %
-                            pkg5unittest.g_proto_area]
+                            pkg5unittest.g_pkg_path]
                         cmdline.extend(args)
 
                         # ensure the command works first

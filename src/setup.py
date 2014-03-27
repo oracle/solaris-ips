@@ -1343,6 +1343,7 @@ class test_func(Command):
             ("startattest=", 's', "start at indicated test"),
             ("jobs=", 'j', "number of parallel processes to use"),
             ("quiet", "q", "use the dots as the output format"),
+            ("livesystem", 'l', "run tests on live system"),
         ]
         description = "Runs unit and functional tests"
 
@@ -1362,6 +1363,7 @@ class test_func(Command):
                 self.port = 12001
                 self.jobs = 1
                 self.quiet = False
+                self.livesystem = False
 
         def finalize_options(self):
                 pass

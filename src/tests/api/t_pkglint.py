@@ -20,7 +20,7 @@
 # CDDL HEADER END
 #
 
-# Copyright (c) 2010, 2013, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2010, 2014, Oracle and/or its affiliates. All rights reserved.
 
 import testutils
 if __name__ == "__main__":
@@ -54,7 +54,7 @@ if not logger.handlers:
         ch.setLevel(logging.WARNING)
         logger.addHandler(ch)
 
-pkglintrcfile = "%s/usr/share/lib/pkg/pkglintrc" % pkg5unittest.g_proto_area
+pkglintrcfile = "%s/usr/share/lib/pkg/pkglintrc" % pkg5unittest.g_pkg_path
 broken_manifests = {}
 expected_failures = {}
 
