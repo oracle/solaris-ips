@@ -3220,6 +3220,15 @@ class CliTestCase(Pkg5TestCase):
 
                 self._api_finish(api_obj, catch_wsie=catch_wsie)
 
+        def _api_revert(self, api_obj, args, catch_wsie=True, noexecute=False,
+            **kwargs):
+                self.debug("revert %s" % " ".join(args))
+                for pd in api_obj.gen_plan_revert(args, **kwargs):
+                        continue
+                if noexecute:
+                        return
+                self._api_finish(api_obj, catch_wsie=catch_wsie)
+
         def _api_uninstall(self, api_obj, pkg_list, catch_wsie=True, **kwargs):
                 self.debug("uninstall %s" % " ".join(pkg_list))
                 for pd in api_obj.gen_plan_uninstall(pkg_list, **kwargs):

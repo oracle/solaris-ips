@@ -3832,11 +3832,14 @@ class ImagePlan(object):
                 self.pd.install_actions.sort(key=addsort)
 
                 # cleanup pkg_plan objects which don't actually contain any
-                # changes
+                # changes and add any new ones to list of changes
                 for p in list(self.pd.pkg_plans):
                         if p.origin_fmri != p.destination_fmri or \
                             p.actions.removed or p.actions.changed or \
                             p.actions.added:
+                                pair = (p.origin_fmri, p.destination_fmri)
+                                if pair not in self.pd._fmri_changes:
+                                        self.pd._fmri_changes.append(pair)
                                 continue
                         self.pd.pkg_plans.remove(p)
                         fmri = p.origin_fmri
