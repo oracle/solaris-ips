@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2008, 2013, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2008, 2014, Oracle and/or its affiliates. All rights reserved.
 #
 
 import cherrypy
@@ -2373,7 +2373,8 @@ class DepotConfig(object):
                     cfg.PropDefined("cfg_file", allowed=["", "<pathname>"]),
                     cfg.Property("content_root"),
                     cfg.PropList("debug", allowed=["", "headers",
-                        "hash=sha256", "hash=sha1+sha256"]),
+                        "hash=sha256", "hash=sha1+sha256", "hash=sha512_256",
+                        "hash=sha1+sha512_256"]),
                     cfg.PropList("disable_ops"),
                     cfg.PropDefined("image_root", allowed=["",
                         "<abspathname>"]),

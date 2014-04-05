@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2010, 2013, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2010, 2014, Oracle and/or its affiliates. All rights reserved.
 #
 
 import testutils
@@ -527,6 +527,10 @@ class TestPkgSign(pkg5unittest.SingleDepotTestCase):
                 """Test that having a package signed with more than one
                 signature doesn't cause anything to break."""
 
+                self.base_multiple_signatures("sha256")
+                self.base_multiple_signatures("sha512_256")
+
+        def base_multiple_signatures(self, hash_alg):
                 plist = self.pkgsend_bulk(self.rurl1, self.example_pkg10)
 
                 sign_args = "-k %(key)s -c %(cert)s -i %(i1)s -i %(i2)s " \
@@ -552,7 +556,8 @@ class TestPkgSign(pkg5unittest.SingleDepotTestCase):
                             "ch5_ta1_cert.pem"),
                         "pkg": plist[0]
                     }
-                self.pkgsign(self.rurl1, sign_args, debug_hash="sha1+sha256")
+                self.pkgsign(self.rurl1, sign_args,
+                    debug_hash="sha1+%s" % hash_alg)
 
                 sign_args = "-k %(key)s -c %(cert)s %(name)s" % {
                     "name": plist[0],
@@ -569,7 +574,7 @@ class TestPkgSign(pkg5unittest.SingleDepotTestCase):
 
                 # Make sure we've got exactly 1 signature with SHA2 hashes
                 self.pkg("contents -m")
-                self.assert_(self.output.count("pkg.chain.sha256") == 1)
+                self.assert_(self.output.count("pkg.chain.%s" % hash_alg) == 1)
                 self.assert_(self.output.count("pkg.chain.chashes") == 1)
                 # and SHA1 hashes on both signatures
                 self.assert_(self.output.count("chain=") == 2)
@@ -2375,26 +2380,29 @@ class TestPkgSign(pkg5unittest.SingleDepotTestCase):
                 with open(mp, "wb") as fh:
                         for l in s:
                                 fh.write(l)
-                # Rebuild the catalog so that hash verification for the manifest
-                # won't cause problems.
-                r.rebuild()
-                # This should fail because the manifest already has identical
-                # signature actions in it.
-                self.pkgsign_simple(self.rurl1, plist[0], exit=1)
 
-                # The addition of SHA-256 hashes should still result in us
-                # believing the signatures are identical
-                self.pkgsign_simple(self.rurl1, plist[0], exit=1,
-                    debug_hash="sha1+sha256")
+                for hash_alg in ["sha256", "sha512_256"]:
+                        # Rebuild the catalog so that hash verification for the
+                        # manifest won't cause problems.
+                        r.rebuild()
+                        # This should fail because the manifest already has
+                        # identical signature actions in it.
+                        self.pkgsign_simple(self.rurl1, plist[0], exit=1)
 
-                self.pkg_image_create(self.rurl1)
-                self.seed_ta_dir("ta3")
-                self.pkg("set-property signature-policy verify")
+                        # The addition of SHA-256 hashes should still result in
+                        # us believing the signatures are identical.
+                        self.pkgsign_simple(self.rurl1, plist[0], exit=1,
+                            debug_hash="sha1+%s" % hash_alg)
 
-                # This fails because the manifest contains duplicate signatures.
-                api_obj = self.get_img_api_obj()
-                self.assertRaises(apx.UnverifiedSignature, self._api_install,
-                    api_obj, ["example_pkg"])
+                        self.pkg_image_create(self.rurl1)
+                        self.seed_ta_dir("ta3")
+                        self.pkg("set-property signature-policy verify")
+
+                        # This fails because the manifest contains duplicate
+                        # signatures.
+                        api_obj = self.get_img_api_obj()
+                        self.assertRaises(apx.UnverifiedSignature,
+                                self._api_install, api_obj, ["example_pkg"])
 
         def test_bug_16867_hashes_1(self):
                 """Test whether signing a package a second time with hashes

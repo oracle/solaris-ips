@@ -560,8 +560,7 @@ def get_data_digest(data, length=None, return_content=False,
         for this data. The keys must be present in 'hash_algs', a dictionary
         mapping keys to the factory methods that are used to create objects
         to compute them. The factory method must take no parameters, and must
-        return an object that has 'update()' and 'hexdigest()' methods. In the
-        current implementation, these are all hashlib factory methods.
+        return an object that has 'update()' and 'hexdigest()' methods.
 
         'hash_func' is provided as a convenience to simply hash the data with
         a single hash algorithm. The value of 'hash_func' should be the factory
@@ -581,7 +580,7 @@ def get_data_digest(data, length=None, return_content=False,
                 length = os.stat(data).st_size
 
         # Setup our results dictionary so that each attribute maps to a
-        # new hashlib object.
+        # new hash object.
         if hash_func:
                 hsh = hash_func()
         else:
@@ -618,7 +617,7 @@ def get_data_digest(data, length=None, return_content=False,
                 return hsh.hexdigest(), content.read()
 
         # The returned dictionary can now be populated with the hexdigests
-        # instead of the hashlib objects themselves.
+        # instead of the hash objects themselves.
         for attr in hash_results:
                 hash_results[attr] = hash_results[attr].hexdigest()
         return hash_results, content.read()

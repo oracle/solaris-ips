@@ -3589,16 +3589,22 @@ adm
                 contains more hash attributes than the old action, that the
                 upgrade works."""
 
+                self.many_hashalgs_helper("install", "sha256")
+                self.many_hashalgs_helper("install", "sha512_256")
+                self.many_hashalgs_helper("exact-install", "sha256")
+                self.many_hashalgs_helper("exact-install", "sha512_256")
+
+        def many_hashalgs_helper(self, install_cmd, hash_alg):
                 self.pkgsend_bulk(self.rurl, (self.iron10))
                 self.image_create(self.rurl, destroy=True)
                 self.pkg("install iron@1.0")
                 self.pkg("contents -m iron")
                 # We have not enabled SHA2 hash publication yet.
-                self.assert_("pkg.hash.sha256" not in self.output)
+                self.assert_(("pkg.hash.%s" % hash_alg) not in self.output)
 
                 # publish with SHA1 and SHA2 hashes
                 self.pkgsend_bulk(self.rurl, self.iron20,
-                    debug_hash="sha1+sha256")
+                    debug_hash="sha1+%s" % hash_alg)
 
                 # verify that a non-SHA2 aware client can install these bits
                 self.pkg("-D hash=sha1 update")
@@ -3609,10 +3615,11 @@ adm
                 # most-preferred hash.
                 self.pkg("install iron@2.0")
                 self.pkg("contents -m iron")
-                self.assert_("pkg.hash.sha256" in self.output)
+                self.assert_("pkg.hash.%s" % hash_alg in self.output)
 
                 # publish with only SHA-2 hashes
-                self.pkgsend_bulk(self.rurl, self.iron20, debug_hash="sha256")
+                self.pkgsend_bulk(self.rurl, self.iron20,
+                    debug_hash="%s" % hash_alg)
 
                 # verify that a non-SHA2 aware client cannot install these bits
                 # since there are no SHA1 hashes present
@@ -3621,12 +3628,13 @@ adm
                     "No file could be found for the specified hash name: "
                     "'NOHASH'" in self.errout)
 
-                # Make sure we've been publishing only with sha256 by removing
+                # Make sure we've been publishing only with SHA2 by removing
                 # those known attributes, then checking for the presence of
                 # the SHA-1 attributes.
-                self.pkg("-D hash=sha256 update")
+                self.pkg("-D hash=%s update" % hash_alg)
                 self.pkg("contents -m iron")
-                for attr in ["pkg.hash.sha256", "pkg.chash.sha256"]:
+                for attr in ["pkg.hash.%s" % hash_alg,
+                    "pkg.chash.%s" % hash_alg]:
                         self.output = self.output.replace(attr, "")
                 self.assert_("hash" not in self.output)
                 self.assert_("chash" not in self.output)

@@ -20,7 +20,7 @@
 # CDDL HEADER END
 #
 
-# Copyright (c) 2008, 2013, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2008, 2014, Oracle and/or its affiliates. All rights reserved.
 
 import testutils
 if __name__ == "__main__":
@@ -1295,6 +1295,10 @@ dir path=/usr/bin/foo target=bar hash=payload-pathname""")
                 and only if they match the hash attributes we know how to
                 compute, other attributes are left alone."""
 
+                self.base_26_pkgsend_multihash("sha256")
+                self.base_26_pkgsend_multihash("sha512_256")
+
+        def base_26_pkgsend_multihash(self, hash_alg):
                 # we use a file:// URI rather than the repo URI so we don't have
                 # to worry about starting the depot in SHA-2 mode. Other tests
                 # in the test suite ensure SHA-2 publication is working over
@@ -1306,20 +1310,21 @@ dir path=/usr/bin/foo target=bar hash=payload-pathname""")
                 with open(mfpath, "wb") as mf:
                         mf.write("""
 set name=pkg.fmri value=pkg:/multihash@1.0
-file %s path=/foo owner=root group=sys mode=0644 pkg.hash.sha256=spaghetti \
+file %s path=/foo owner=root group=sys mode=0644 pkg.hash.%s=spaghetti \
     pkg.hash.rot13=caesar
-""" % payload)
+""" % (payload, hash_alg))
                 self.pkgsend("", "-s %s publish %s" % (furi, mfpath))
                 self.image_create(furi)
                 self.pkg("contents -rm multihash")
-                self.assert_("pkg.hash.sha256=spaghetti" in self.output)
+                self.assert_("pkg.hash.%s=spaghetti" % hash_alg in self.output)
 
                 self.pkgsend("", "-s %s publish %s" % (furi, mfpath),
-                    debug_hash="sha1+sha256")
+                    debug_hash="sha1+%s" % hash_alg)
                 self.pkg("refresh")
 
                 self.pkg("contents -rm multihash")
-                self.assert_("pkg.hash.sha256=spaghetti" not in self.output)
+                self.assert_("pkg.hash.%s=spaghetti" % hash_alg
+                    not in self.output)
                 self.assert_("pkg.hash.rot13=caesar" in self.output)
 
 

@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2011, 2013 Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2011, 2014 Oracle and/or its affiliates. All rights reserved.
 #
 
 import testutils
@@ -44,10 +44,7 @@ class TestPkgRevert(pkg5unittest.SingleDepotTestCase):
             add file etc/file1 mode=0555 owner=root group=bin path=etc/file1
             close
             # B@1.0 is published as part of pkgs2
-            open C@1.0,5.11-0
-            add dir mode=0755 owner=root group=bin path=etc
-            add file etc/file3 mode=0555 owner=root group=bin path=etc/file3 revert-tag=bob revert-tag=ted
-            close
+            # C@1.0 is published as part of pkgs3
             open D@1.0,5.11-0
             add dir mode=0755 owner=root group=bin path=etc
             add file etc/file4 mode=0555 owner=root group=bin path=etc/file4 revert-tag=bob revert-tag=ted revert-tag=carol
@@ -97,6 +94,14 @@ class TestPkgRevert(pkg5unittest.SingleDepotTestCase):
             add dir mode=0755 owner=root group=bin path=dev/cfg revert-tag=init-dev=*
             add file dev/cfg/bar1 path=dev/cfg/bar1 mode=0555 owner=root group=bin
             add file dev/cfg/bar2 path=dev/cfg/bar2 mode=0555 owner=root group=bin preserve=true revert-tag=init-dev
+            close
+            """
+
+        # A set of packages that we publish with additional hash attributes
+        pkgs3 = """
+            open C@1.0,5.11-0
+            add dir mode=0755 owner=root group=bin path=etc
+            add file etc/file3 mode=0555 owner=root group=bin path=etc/file3 revert-tag=bob revert-tag=ted
             close
             """
 
@@ -181,6 +186,8 @@ class TestPkgRevert(pkg5unittest.SingleDepotTestCase):
                 self.plist = self.pkgsend_bulk(self.rurl, self.pkgs)
                 self.plist.extend(self.pkgsend_bulk(self.rurl, self.pkgs2,
                     debug_hash="sha1+sha256"))
+                self.plist.extend(self.pkgsend_bulk(self.rurl, self.pkgs3,
+                    debug_hash="sha1+sha512_256"))
 
         def test_revert(self):
                 self.image_create(self.rurl)
@@ -202,6 +209,9 @@ class TestPkgRevert(pkg5unittest.SingleDepotTestCase):
                 self.pkg("verify B", exit=1)
                 self.assert_(sha2 in self.output)
 
+                self.pkg("-D hash=sha1+sha512_256 verify C", exit=1)
+                sha2 = "13729cb7183961b48ce300c2588c86ad123e7c636f38a0f3c8408a75fd079d09"
+                self.assert_(sha2 in self.output, self.output)
                 self.pkg("verify C", exit=1)
                 self.pkg("verify D", exit=1)
 
@@ -233,19 +243,26 @@ class TestPkgRevert(pkg5unittest.SingleDepotTestCase):
                 self.pkg("revert -n --parsable=0 --tagged bob")
                 self.debug("\n".join(self.plist))
                 self.assertEqualParsable(self.output,
-                    affect_packages=[self.plist[10], self.plist[1],
-                    self.plist[2]])
+                    affect_packages=[self.plist[9], self.plist[12],
+                    self.plist[1]])
                 # When reverting damage, we always verify using the
                 # most-preferred hash, but retrieve content with the
-                # least-preferred hash: -D hash=sha1+sha256 should have no
-                # effect here whatsoever, but -D hash=sha256 should fail because
+                # least-preferred hash: -D hash=sha1+sha256 and
+                # -D hash=sha1+sha512_256 should have no effect here whatsoever,
+                # but -D hash=sha256 and -D hash=sha512_256 should fail because
                 # our repository stores its files by the SHA1 hash.
                 self.pkg("-D hash=sha256 revert --parsable=0 --tagged bob",
                     exit=1)
+                self.pkg("-D hash=sha512_256 revert --parsable=0 --tagged ted",
+                    exit=1)
+                self.pkg("-D hash=sha1+512_256 revert -n --parsable=0 \
+                    --tagged ted")
+                self.assertEqualParsable(self.output,
+                    affect_packages=[self.plist[12], self.plist[1]])
                 self.pkg("-D hash=sha1+sha256 revert --parsable=0 --tagged bob")
                 self.assertEqualParsable(self.output,
-                    affect_packages=[self.plist[10], self.plist[1],
-                    self.plist[2]])
+                    affect_packages=[self.plist[9], self.plist[12],
+                    self.plist[1]])
                 self.pkg("verify A", exit=1)
                 self.pkg("verify B")
                 self.pkg("verify C")

@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2011, 2013, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2011, 2014, Oracle and/or its affiliates. All rights reserved.
 #
 
 import testutils
@@ -93,11 +93,16 @@ class TestSysrepo(pkg5unittest.ApacheDepotTestCase):
 
         baz10 = """
             open baz@1.0,5.11-0
-            add file tmp/example_three mode=0555 owner=root group=bin path=/usr/bin/another
+            add file tmp/example_three mode=0555 owner=root group=bin path=/usr/bin/another_1
+            close"""
+
+        caz10 = """
+            open caz@1.0,5.11-0
+            add file tmp/example_four mode=0555 owner=root group=bin path=/usr/bin/another_2
             close"""
 
         misc_files = ["tmp/example_file", "tmp/example_two",
-            "tmp/example_three"]
+            "tmp/example_three", "tmp/example_four"]
 
         expected_all_access =  """\
 PUBLISHER\tSTICKY\tSYSPUB\tENABLED\tTYPE\tSTATUS\tURI\tPROXY
@@ -160,6 +165,8 @@ test4\ttrue\ttrue\ttrue\t\t\t\t
                     debug_hash="sha1+sha256")
                 self.pkgsend_bulk(self.rurl3, self.baz10,
                     debug_hash="sha1+sha256")
+                self.pkgsend_bulk(self.rurl3, self.caz10,
+                    debug_hash="sha1+sha512_256")
                 self.pkgsend_bulk(self.rurl4, self.bar10)
                 self.pkgsend_bulk(self.rurl5, self.foo11)
 
@@ -614,6 +621,9 @@ test4\ttrue\ttrue\ttrue\t\t\t\t
                 self.pkg("install baz")
                 self.pkg("contents -m baz")
                 self.assert_("pkg.hash.sha256" in self.output)
+                self.pkg("install caz")
+                self.pkg("contents -m caz")
+                self.assert_("pkg.hash.sha512_256" in self.output)
 
         def test_02_communication(self):
                 """Test that the transport for communicating with the depots is
@@ -949,6 +959,7 @@ test3\ttrue\ttrue\ttrue\torigin\tonline\t%(durl3)s/\thttp://localhost:%(port)s
                 expected = """\
 bar (test3) 1.0-0 ---
 baz (test3) 1.0-0 ---
+caz (test3) 1.0-0 ---
 example_pkg 1.0-0 ---
 """
                 self.__check_package_lists(expected)
@@ -977,6 +988,7 @@ test3\ttrue\ttrue\ttrue\torigin\tonline\t%(durl3)s/\thttp://localhost:%(port)s
                 expected = """\
 bar (test3) 1.0-0 ---
 baz (test3) 1.0-0 ---
+caz (test3) 1.0-0 ---
 example_pkg 1.0-0 ---
 """
                 self.__check_package_lists(expected)

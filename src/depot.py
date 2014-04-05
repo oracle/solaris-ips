@@ -19,7 +19,7 @@
 #
 # CDDL HEADER END
 #
-# Copyright (c) 2007, 2013, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2007, 2014, Oracle and/or its affiliates. All rights reserved.
 #
 
 # pkg.depotd - package repository daemon
@@ -168,7 +168,7 @@ Usage: /usr/lib/pkg.depotd [-a address] [-d inst_root] [-p port] [-s threads]
         --debug         The name of a debug feature to enable; or a whitespace
                         or comma separated list of features to enable.
                         Possible values are: headers, hash=sha1+sha256,
-                        hash=sha256
+                        hash=sha256, hash=sha1+sha512_256, hash=sha512_256
         --image-root    The path to the image whose file information will be
                         used as a cache for file data.
         --log-access    The destination for any access related information

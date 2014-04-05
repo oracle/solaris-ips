@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2008, 2013, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2008, 2014, Oracle and/or its affiliates. All rights reserved.
 #
 
 import testutils
@@ -916,9 +916,11 @@ class TestPkgrecvMulti(pkg5unittest.ManyDepotTestCase):
                 """Tests that we can recv to and from repositories with
                 multi-hash support, interoperating with repositories without
                 multi-hash support."""
+                self.base_12_multihash("sha256")
+                self.base_12_multihash("sha512_256")
 
+        def base_12_multihash(self, hash_alg):
                 f = fmri.PkgFmri(self.published[3], None)
-
                 # We create an image simply so we can use "contents -g" to
                 # inspect the repository.
                 self.image_create()
@@ -926,39 +928,40 @@ class TestPkgrecvMulti(pkg5unittest.ManyDepotTestCase):
                 # First, recv the package and verify it has no extended hashes
                 self.pkgrecv(self.durl1, "-d %s %s" % (self.durl3, f))
                 self.pkg("contents -g %s -m %s" % (self.durl3, f))
-                self.assert_("pkg.hash.sha256" not in self.output)
+                self.assert_("pkg.hash.%s" % hash_alg not in self.output)
 
                 # Now stop and start the repository as multi-hash aware, and
                 # recv it again, making sure that we do not get multiple hashes
                 # added (because modifying the manifest would break signatures)
                 self.dcs[3].stop()
-                self.dcs[3].set_debug_feature("hash=sha1+sha256")
+                self.dcs[3].set_debug_feature("hash=sha1+%s" % hash_alg)
                 self.dcs[3].start()
                 self.pkgrecv(self.durl1, "-d %s %s" % (self.durl3, f))
                 self.pkg("contents -g %s -m %s" % (self.durl3, f))
-                self.assert_("pkg.hash.sha256" not in self.output)
+                self.assert_("pkg.hash.%s" % hash_alg not in self.output)
 
                 # Now check the reverse - that a package with multiple hashes
                 # can be received into a repository that is not multi-hash aware
                 b = "bronze@1.0,5.11-0"
                 self.pkgsend_bulk(self.durl3, self.bronze10)
                 self.pkg("contents -g %s -m %s" % (self.durl3, b))
-                self.assert_("pkg.hash.sha256" in self.output)
+                self.assert_("pkg.hash.%s" % hash_alg in self.output)
                 self.pkgrecv(self.durl3, "-d %s %s" % (self.durl4, b))
                 self.pkg("contents -g %s -m %s" % (self.durl4, b))
-                self.assert_("pkg.hash.sha256" in self.output)
+                self.assert_("pkg.hash.%s" % hash_alg in self.output)
 
                 # Ensure that we can recv multi-hash packages into p5p files
-                p5p_path = os.path.join(self.test_root, "multi-hash.p5p")
+                p5p_path = os.path.join(self.test_root,
+                    "multi-hash-%s.p5p" % hash_alg)
                 self.pkgrecv(self.durl3, "-ad %s %s" % (p5p_path, b))
                 self.pkg("contents -g %s -m %s" % (p5p_path, b))
-                self.assert_("pkg.hash.sha256" in self.output)
+                self.assert_("pkg.hash.%s" % hash_alg in self.output)
 
                 # Finally, stop and start our scratch repository to clear the
                 # debug feature. If this doesn't happen because we've failed
                 # before now, it's not the end of the world.
                 self.dcs[3].stop()
-                self.dcs[3].unset_debug_feature("hash=sha1+sha256")
+                self.dcs[3].unset_debug_feature("hash=sha1+%s" % hash_alg)
                 self.dcs[3].start()
 
         def test_13_output(self):

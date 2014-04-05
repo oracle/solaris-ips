@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2008, 2013, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2008, 2014, Oracle and/or its affiliates. All rights reserved.
 #
 
 import testutils
@@ -42,6 +42,7 @@ import pkg.client.pkgdefs as pkgdefs
 import pkg.fmri as fmri
 import pkg.indexer as indexer
 import pkg.portable as portable
+import pkg.sha512_t as sha512_t
 
 
 class TestPkgSearchBasics(pkg5unittest.SingleDepotTestCase):
@@ -1058,13 +1059,6 @@ class TestSearchMultiPublisher(pkg5unittest.ManyDepotTestCase):
                 self.pkgsend_bulk(self.durl1, self.same_pub1, refresh_index=True)
                 self.durl2 = self.dcs[2].get_depot_url()
                 self.rurl2 = self.dcs[2].get_repo_url()
-                # our 2nd depot gets the package published with multiple hash
-                # attributes, but served from a single-hash-aware depot
-                # (the fact that it's single-hash-aware should make no
-                # difference to the content it serves so long as the index was
-                # generated while we were aware of multiple hashes.
-                self.pkgsend_bulk(self.rurl2, self.same_pub2,
-                    refresh_index=True, debug_hash="sha1+sha256")
 
         def test_7140657(self):
                 """ Check that pkg search with -s works as intended when there are
@@ -1122,7 +1116,7 @@ class TestSearchMultiPublisher(pkg5unittest.ManyDepotTestCase):
                 expected = self.reduceSpaces(expected_out2)
                 self.assertEqualDiff(expected, actual)
 
-        def test_search_multi_hash(self):
+        def test_search_multi_hash_1(self):
                 """Check that when searching a repository with multiple
                 hashes, all hash attributes are indexed and we can search
                 against all hash attributes.
@@ -1130,13 +1124,32 @@ class TestSearchMultiPublisher(pkg5unittest.ManyDepotTestCase):
                 This test depends on pkg.digest having DebugValue settings
                 that add sha256 hashes to the set of hashes we append to
                 actions at publication time."""
+                self.base_search_multi_hash("sha256", hashlib.sha256)
 
+        def test_search_multi_hash_2(self):
+                """Check that when searching a repository with multiple
+                hashes, all hash attributes are indexed and we can search
+                against all hash attributes.
+
+                This test depends on pkg.digest having DebugValue settings
+                that add sha512/256 hashes to the set of hashes we append to
+                actions at publication time."""
+                self.base_search_multi_hash("sha512_256", sha512_t.SHA512_t)
+
+        def base_search_multi_hash(self, hash_alg, hash_fun):
+                # our 2nd depot gets the package published with multiple hash
+                # attributes, but served from a single-hash-aware depot
+                # (the fact that it's single-hash-aware should make no
+                # difference to the content it serves so long as the index was
+                # generated while we were aware of multiple hashes.
+                self.pkgsend_bulk(self.rurl2, self.same_pub2,
+                    refresh_index=True, debug_hash="sha1+%s" % hash_alg)
                 self.image_create(self.durl2, prefix="samepub")
 
                 # manually calculate the hashes, in case of bugs in
                 # pkg.misc.get_data_digest
                 sha1_hash = hashlib.sha1("magic").hexdigest()
-                sha2_hash = hashlib.sha256("magic").hexdigest()
+                sha2_hash = hash_fun("magic").hexdigest()
 
                 self.pkg("search %s" % sha1_hash)
                 self.pkg("search %s" % sha2_hash)
@@ -1153,7 +1166,7 @@ class TestSearchMultiPublisher(pkg5unittest.ManyDepotTestCase):
 
                 self.pkg("search -H -o search.match_type %s" % sha2_hash)
                 self.assertEqualDiff(
-                    self.reduceSpaces(self.output), "pkg.hash.sha256\n")
+                    self.reduceSpaces(self.output), "pkg.hash.%s\n" % hash_alg)
 
                 # check that both searches match the same action
                 self.pkg("search -o action.raw %s" % sha1_hash)
@@ -1166,7 +1179,8 @@ class TestSearchMultiPublisher(pkg5unittest.ManyDepotTestCase):
                 # check that the same searches in the non-multihash-aware
                 # repository only return a result for the sha-1 hash
                 # (which checks that we're only setting multiple hashes
-                # on actions when hash=sha1+sha256 is set)
+                # on actions when hash=sha1+sha256 or hash=sha1+sha512_256
+                # is set)
                 self.pkg("search -s %s %s" % (self.durl1, sha1_hash))
                 self.pkg("search -s %s %s" % (self.durl1, sha2_hash), exit=1)
 
