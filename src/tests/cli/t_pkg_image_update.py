@@ -29,14 +29,17 @@ import pkg5unittest
 
 from pkg.client.pkgdefs import *
 
+import hashlib
 import os
 import random
 import unittest
 
+import pkg.misc as misc
 
 class TestImageUpdate(pkg5unittest.ManyDepotTestCase):
         # Only start/stop the depot once (instead of for every test)
         persistent_setup = True
+        need_ro_data = True
 
         foo10 = """
             open foo@1.0,5.11-0
@@ -114,6 +117,16 @@ class TestImageUpdate(pkg5unittest.ManyDepotTestCase):
             add depend type=incorporate fmri=foo@1.1
             add depend type=incorporate fmri=bar@1.1
             add set name=pkg.depend.install-hold value=test
+            close """
+
+        elftest1 = """
+            open elftest@1.0
+            add file %s mode=0755 owner=root group=bin path=/bin/true
+            close """
+
+        elftest2 = """
+            open elftest@2.0
+            add file %s mode=0755 owner=root group=bin path=/bin/true
             close """
 
         def setUp(self):
@@ -301,6 +314,82 @@ class TestImageUpdate(pkg5unittest.ManyDepotTestCase):
                 self.image_create(self.rurl1)
                 self.pkg("update missing", exit=1)
                 self.pkg("update --ignore-missing missing", exit=4)
+
+        def test_content_policy(self):
+                """ Test the content-update-policy property. When set to
+                'when-required' content should only be updated if the content
+                hash has changed, if set to 'always' content should be updated
+                if there is any file change at all."""
+
+                def get_test_sum(fname=None):
+                        """ Helper to get sha256 sum of installed test file."""
+                        if fname is None:
+                                fname = os.path.join(self.get_img_path(),
+                                    "bin/true")
+                        fsum , data = misc.get_data_digest(fname,
+                            hash_func=hashlib.sha256)
+                        return fsum
+
+                # Elftest1 and elftest2 have the same content and the same size,
+                # just different entries in the comment section. The content
+                # hash for both is the same, however the file hash is different.
+                elftest1 = self.elftest1 % os.path.join("ro_data",
+                    "elftest.so.1")
+                elftest2 = self.elftest2 % os.path.join("ro_data",
+                    "elftest.so.2")
+
+                # get the sha256 sums from the original files to distinguish
+                # what actually got installed
+                elf1sum = get_test_sum(fname=os.path.join(self.ro_data_root,
+                    "elftest.so.1"))
+                elf2sum = get_test_sum(fname=os.path.join(self.ro_data_root,
+                    "elftest.so.2"))
+
+                elf1, elf2 = self.pkgsend_bulk(self.rurl1, (elftest1, elftest2))
+
+                # prepare image, install elftest@1.0 and verify
+                self.image_create(self.rurl1)
+                self.pkg("install -v %s" % elf1)
+                self.pkg("contents -m %s" % elf1)
+                self.assertEqual(elf1sum, get_test_sum())
+
+                # test default behavior (always update)
+                self.pkg("update -v elftest")
+                self.pkg("contents -m %s" % elf2)
+                self.assertEqual(elf2sum, get_test_sum())
+                # reset and start over
+                self.pkg("uninstall elftest")
+                self.pkg("install -v %s" % elf1)
+
+                # set policy to when-required, file shouldn't be updated
+                self.pkg("set-property content-update-policy when-required")
+                self.pkg("update -v elftest")
+                self.pkg("list %s" % elf2)
+                self.assertEqual(elf1sum, get_test_sum())
+                # reset and start over
+                self.pkg("uninstall elftest")
+                self.pkg("install -v %s" % elf1)
+
+                # set policy to always, file should be updated now
+                self.pkg("set-property content-update-policy always")
+                self.pkg("update -v elftest")
+                self.pkg("list %s" % elf2)
+                self.assertEqual(elf2sum, get_test_sum())
+
+                # do tests again for downgrading, test file shouldn't change
+                self.pkg("set-property content-update-policy when-required")
+                self.pkg("update -v %s" % elf1)
+                self.pkg("list %s" % elf1)
+                self.assertEqual(elf2sum, get_test_sum())
+                # reset and start over
+                self.pkg("uninstall elftest")
+                self.pkg("install -v %s" % elf2)
+
+                # set policy to always, file should be updated now
+                self.pkg("set-property content-update-policy always")
+                self.pkg("update -v %s" % elf1)
+                self.pkg("list %s" % elf1)
+                self.assertEqual(elf1sum, get_test_sum())
 
 
 class TestPkgUpdateOverlappingPatterns(pkg5unittest.SingleDepotTestCase):

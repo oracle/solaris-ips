@@ -53,6 +53,7 @@ from pkg.client.transport.exception import TransportFailures
 # should use the constants defined here.
 
 BE_POLICY = "be-policy"
+CONTENT_UPDATE_POLICY = "content-update-policy"
 FLUSH_CONTENT_CACHE = "flush-content-cache-on-success"
 MIRROR_DISCOVERY = "mirror-discovery"
 SEND_UUID = "send-uuid"
@@ -62,11 +63,17 @@ CHECK_CERTIFICATE_REVOCATION = "check-certificate-revocation"
 default_policies = {
     BE_POLICY: "default",
     CHECK_CERTIFICATE_REVOCATION: False,
+    CONTENT_UPDATE_POLICY: "default",
     FLUSH_CONTENT_CACHE: True,
     MIRROR_DISCOVERY: False,
     SEND_UUID: True,
     SIGNATURE_POLICY: sigpolicy.DEFAULT_POLICY,
     USE_SYSTEM_REPO: False
+}
+
+default_policy_map = {
+    BE_POLICY: { "default": "create-backup" },
+    CONTENT_UPDATE_POLICY: { "default": "always" },
 }
 
 CA_PATH = "ca-path"
@@ -160,6 +167,9 @@ class ImageConfig(cfg.FileConfig):
                     cfg.PropDefined(BE_POLICY, allowed=["default",
                         "always-new", "create-backup", "when-required"],
                         default=default_policies[BE_POLICY]),
+                    cfg.PropDefined(CONTENT_UPDATE_POLICY, allowed=["default",
+                        "always", "when-required"],
+                        default=default_policies[CONTENT_UPDATE_POLICY]),
                     cfg.PropBool(FLUSH_CONTENT_CACHE,
                         default=default_policies[FLUSH_CONTENT_CACHE]),
                     cfg.PropBool(MIRROR_DISCOVERY,
@@ -359,7 +369,18 @@ class ImageConfig(cfg.FileConfig):
                 not defined in the image configuration.
                 """
                 assert policy in default_policies
-                return self.get_property("property", policy)
+
+                prop = self.get_property("property", policy)
+
+                # If requested policy has a default mapping in
+                # default_policy_map, we substitute the correct value if it's
+                # still set to 'default'.
+                if policy in default_policy_map and \
+                    prop == default_policies[policy]:
+                        return default_policy_map[policy] \
+                            [default_policies[policy]]
+
+                return prop
 
         def get_property(self, section, name):
                 """Returns the value of the property object matching the given

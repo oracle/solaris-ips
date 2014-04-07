@@ -163,7 +163,9 @@ CONTENT_HASH_ALGS = {}
 for key in HASH_ALGS:
         if key == "hash":
                 CONTENT_HASH_ALGS["elfhash"] = HASH_ALGS[key]
-        else:
+        # For now, we don't want content-hash in attributes by default since
+        # the algorithm for it is changing soon.
+        elif DebugValues["hash"]:
                 CONTENT_HASH_ALGS[key.replace("hash", "content-hash")] = \
                     HASH_ALGS[key]
 
@@ -210,7 +212,9 @@ _content_hash_attrs = []
 for key in RANKED_HASH_ATTRS:
         if key == "hash":
                 _content_hash_attrs.append("elfhash")
-        else:
+        # For now, we don't want content-hash in attributes by default since
+        # the algorithm for it is changing soon.
+        elif DebugValues["hash"]:
                 _content_hash_attrs.append(key.replace("hash", "content-hash"))
 
 RANKED_CONTENT_HASH_ATTRS = tuple(_content_hash_attrs)

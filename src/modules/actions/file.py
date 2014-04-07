@@ -179,7 +179,6 @@ class FileAction(generic.Action):
                                         raise
 
                 # XXX This needs to be modularized.
-                # XXX This needs to be controlled by policy.
                 if do_content and self.needsdata(orig, pkgplan):
                         tfilefd, temp = tempfile.mkstemp(dir=os.path.dirname(
                             final_path))
@@ -569,13 +568,21 @@ class FileAction(generic.Action):
         def needsdata(self, orig, pkgplan):
                 if self.replace_required:
                         return True
-                # check for the presence of a simple elfhash attribute,
-                # and if that's present, look for the common preferred elfhash.
-                # For now, this is sufficient, but when additional content
-                # types are supported (and we stop publishing SHA-1 hashes) more
-                # work will be needed to compute 'bothelf'.
-                bothelf = orig and "elfhash" in orig.attrs and \
-                    "elfhash" in self.attrs
+
+                # import goes here to prevent circular import
+                from pkg.client.imageconfig import CONTENT_UPDATE_POLICY
+
+                use_content_hash = pkgplan.image.cfg.get_policy_str(
+                    CONTENT_UPDATE_POLICY) == "when-required"
+
+                # If content update policy allows it, check for the presence of
+                # a simple elfhash attribute, and if that's present, look for
+                # the common preferred elfhash.  For now, this is sufficient,
+                # but when additional content types are supported (and we stop
+                # publishing SHA-1 hashes) more work will be needed to compute
+                # 'bothelf'.
+                bothelf = use_content_hash and orig and \
+                    "elfhash" in orig.attrs and "elfhash" in self.attrs
                 if bothelf:
                         common_elf_attr, common_elfhash, common_orig_elfhash, \
                             common_elf_func = \

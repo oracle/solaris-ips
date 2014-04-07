@@ -43,6 +43,7 @@ import unittest
 import urllib2
 
 import pkg.actions
+import pkg.digest as digest
 import pkg.fmri as fmri
 import pkg.manifest as manifest
 import pkg.portable as portable
@@ -2080,6 +2081,7 @@ class TestPkgInstallCircularDependencies(pkg5unittest.SingleDepotTestCase):
 class TestPkgInstallUpgrade(_TestHelper, pkg5unittest.SingleDepotTestCase):
         # Only start/stop the depot once (instead of for every test)
         persistent_setup = True
+        need_ro_data = True
 
         incorp10 = """
             open incorp@1.0,5.11-0
@@ -3638,6 +3640,46 @@ adm
                         self.output = self.output.replace(attr, "")
                 self.assert_("hash" not in self.output)
                 self.assert_("chash" not in self.output)
+
+        def test_content_hash_ignore(self):
+                """Test that pkgs with content-hash attributes are ignored for
+                install and verify by default."""
+
+                elfpkg_1 = """
+                    open elftest@1.0
+                    add file %s mode=0755 owner=root group=bin path=/bin/true
+                    close """
+                elfpkg = elfpkg_1 % os.path.join("ro_data", "elftest.so.1")
+                elf1 = self.pkgsend_bulk(self.rurl, (elfpkg,))[0]
+
+                repo_dir = self.dcs[1].get_repodir()
+                f = fmri.PkgFmri(elf1, None)
+                repo = self.get_repo(repo_dir)
+                mpath = repo.manifest(f)
+                # load manifest, add content-hash attr and store back to disk
+                mani = manifest.Manifest()
+                mani.set_content(pathname=mpath)
+                for a in mani.gen_actions():
+                        if "bin/true" in str(a):
+                                a.attrs["pkg.content-hash.sha256"] = "foo"
+                mani.store(mpath)
+                # rebuild repo catalog since manifest digest changed
+                repo.rebuild()
+
+                # assert that the current pkg gate has the correct hash ranking
+                self.assertTrue(len(digest.RANKED_CONTENT_HASH_ATTRS) > 0)
+                self.assertEqual(digest.RANKED_CONTENT_HASH_ATTRS[0], "elfhash")
+                
+                # test that pkgrecv, pkgrepo verify, pkg install and pkg verify
+                # do not complain about unknown hash
+                self.pkgrecv("%s -a -d %s '*'" % (repo_dir,
+                    os.path.join(self.test_root, "x.p5p")))
+                self.pkgrepo("verify -s %s" % repo_dir)
+                self.image_create(self.rurl, destroy=True)
+                self.pkg("install -v %s" % elf1)
+                # Note that we pass verification if any of the hashes match, but
+                # we require by default that the content hash matches. 
+                self.pkg("verify")
 
 
 class TestPkgInstallActions(pkg5unittest.SingleDepotTestCase):
