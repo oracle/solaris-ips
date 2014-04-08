@@ -1,1 +1,1 @@
-pkg5srv::RO::auths=solaris.smf.manage.pkg-mirror,solaris.smf.value.pkg-mirror
+pkg5srv::RO::auths=solaris.smf.manage.pkg-mirror,solaris.smf.value.pkg-mirror,solaris.smf.value.pkg-depot-config,solaris.smf.manage.pkg-depot

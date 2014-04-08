@@ -20,7 +20,7 @@
 # CDDL HEADER END
 #
 #
-# Copyright (c) 2013, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2013, 2014, Oracle and/or its affiliates. All rights reserved.
 #
 
 . /lib/svc/share/smf_include.sh
@@ -111,20 +111,48 @@ function abspath {
 }
 
 function run_depot {
-
+        if [ "${depot_https}" == "true" ]; then
+                https_cmd="--https"
+                smf_fmri_cmd="--smf-fmri ${SMF_FMRI}"
+                if ! [ -z "${depot_ssl_cert_file}" ]; then
+                        ssl_cert_file_cmd="--cert ${depot_ssl_cert_file}"
+                fi
+                if ! [ -z "${depot_ssl_key_file}" ]; then
+                        ssl_key_file_cmd="--key ${depot_ssl_key_file}"
+                fi
+                if ! [ -z "${depot_ssl_ca_cert_file}" ]; then
+                        ssl_ca_cert_file_cmd="--ca-cert ${depot_ssl_ca_cert_file}"
+                fi
+                if ! [ -z "${depot_ssl_ca_key_file}" ]; then
+                        ssl_ca_key_file_cmd="--ca-key ${depot_ssl_ca_key_file}"
+                fi
+                if ! [ -z "${depot_ssl_cert_key_dir}" ]; then
+                        ssl_cert_key_dir_cmd="--cert-key-dir ${depot_ssl_cert_key_dir}"
+                fi
+                if ! [ -z "${depot_ssl_cert_chain_file}" ]; then
+                        ssl_cert_chain_file_cmd="--cert-chain ${depot_ssl_cert_chain_file}"
+                fi
+        fi
         /usr/lib/pkg.depot-config \
-               -S \
-               -c ${depot_cache_dir} \
-               -h ${depot_host} \
-               -l ${depot_log_dir} \
-               -p ${depot_port} \
-               -r ${depot_runtime_dir} \
-               -s ${depot_cache_max} \
-               -T ${depot_template_dir} \
-               -t apache2 \
-               ${depot_allow_refresh}
+            -S \
+            -c ${depot_cache_dir} \
+            -h ${depot_host} \
+            -l ${depot_log_dir} \
+            -p ${depot_port} \
+            -r ${depot_runtime_dir} \
+            -s ${depot_cache_max} \
+            -T ${depot_template_dir} \
+            -t apache2 ${https_cmd} \
+            ${smf_fmri_cmd} \
+            ${ssl_cert_file_cmd} \
+            ${ssl_key_file_cmd} \
+            ${ssl_ca_cert_file_cmd} \
+            ${ssl_ca_key_file_cmd} \
+            ${ssl_cert_key_dir_cmd} \
+            ${ssl_cert_chain_file_cmd} \
+            ${depot_allow_refresh}
 	failure=$?
-	if [ $? -ne 0 ] ; then
+	if [ ${failure} -ne 0 ] ; then
 		# make sure we leave nothing behind
 		kill_apache
 		kill_htcacheclean
@@ -207,10 +235,11 @@ get_smf_props $SMF_FMRI
 check_prop ${depot_host} config/host
 check_prop ${depot_port} config/port
 check_prop ${depot_log_dir} config/log_dir
-check_prop ${deport_template_dir} config/template_dir
+check_prop ${depot_template_dir} config/template_dir
 check_prop ${depot_runtime_dir} config/runtime_dir
 check_prop ${depot_cache_dir} config/cache_dir
 check_prop ${depot_cache_max} config/cache_max
+check_prop ${depot_https} config/https
 check_prop ${depot_allow_refresh} config/allow_refresh
 if [ "${depot_allow_refresh}" == "true" ] ; then
 	depot_allow_refresh="-A"
@@ -220,6 +249,7 @@ fi
 
 FAILED_TO_RUN="Server failed to %s. Check the SMF service log or the\
  error log at ${depot_log_dir}/error_log for more information, if any."
+
 
 case "$1" in
 "start")
@@ -251,8 +281,18 @@ case "$1" in
 	cmd="stop"
 	kill_htcacheclean
         emsg=$(/usr/bin/printf ${FAILED_TO_RUN} stop)
-	${HTTPD} -f ${depot_runtime_dir}/depot_httpd.conf \
-            ${STARTUP_OPTIONS} -k ${cmd} 2>&1
+        # If https service is on and user blindly deleted the certificate dir,
+        # then the stop method will cause error due to not find certificate
+        # and key files. Instead of causing this error, we kill the apache
+        # instance manually.
+        if [[ "${depot_https}" == "true" && \
+            ! ( -f "${depot_ssl_cert_file}" && \
+            -f "${depot_ssl_key_file}" ) ]]; then
+                kill_apache
+        else
+	        ${HTTPD} -f ${depot_runtime_dir}/depot_httpd.conf \
+                    ${STARTUP_OPTIONS} -k ${cmd} 2>&1
+        fi
 	check_apache_failure $? $emsg
 	;;
 *)

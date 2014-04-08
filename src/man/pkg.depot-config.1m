@@ -1,6 +1,6 @@
 '\" te
-.\" Copyright (c) 2007, 2013, Oracle and/or its affiliates. All rights reserved.
-.TH pkg.depot-config 1M "02 Oct 2013" "SunOS 5.12" "System Administration Commands"
+.\" Copyright (c) 2007, 2014, Oracle and/or its affiliates. All rights reserved.
+.TH pkg.depot-config 1M "31 Mar 2014" "SunOS 5.12" "System Administration Commands"
 .SH NAME
 pkg.depot-config \- Image Packaging System HTTP depot configuration generator
 .SH SYNOPSIS
@@ -9,7 +9,12 @@ pkg.depot-config \- Image Packaging System HTTP depot configuration generator
 /usr/lib/pkg.depot-config ( -d \fIrepository_dir\fR | -S )
     -r \fIruntime_dir\fR [-c \fIcache_dir\fR] [-s \fIcache_size\fR] [-p \fIport\fR]
     [-h \fIhostname\fR] [-l \fIlogs_dir\fR] [-T \fItemplate_dir\fR]
-    [-A] [-t \fIserver_type\fR] ( [-F] [-P \fIserver_prefix\fR] )
+    [-A] [-t \fIserver_type\fR] ( ([-F] [-P \fIserver_prefix\fR] ) | [--https
+    ( ( --cert \fIserver_cert_file\fR --key \fIserver_key_file\fR
+    [--cert-chain \fIssl_cert_chain_file\fR] ) |
+    --cert-key-dir \fIcert_key_directory\fR )
+    [ (--ca-cert \fIca_cert_file\fR --ca-key \fIca_key_file\fR ) ]
+    [--smf-fmri \fIsmf_pkg_depot_fmri\fR] ] )
 .fi
 
 .SH DESCRIPTION
@@ -212,6 +217,94 @@ Produce a partial configuration that enables a web server to serve basic \fBpkg\
 .sp .6
 .RS 4n
 Specify the prefix used to map the depot into the web server namespace. The \fB-P\fR option is intended to be used with the \fB-F\fR option.
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB--https\fR
+.ad
+.sp .6
+.RS 4n
+Enable the HTTPS service. This option cannot be used with the \fB-F\fR or \fB-P\fR options.
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB--cert\fR \fIserver_cert_file\fR\fR
+.ad
+.sp .6
+.RS 4n
+Specify the location of the server certificate file. This option can only be used with the \fB--https\fR option. Either both the \fB--cert\fR and \fB--key\fR options or the \fB--cert-key-dir\fR option must be used with the \fB--https\fR option.
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB--key\fR \fIserver_key_file\fR\fR
+.ad
+.sp .6
+.RS 4n
+Specify the location of the server key file. This option can only be used with the \fB--https\fR option. Either both the \fB--cert\fR and \fB--key\fR options or the \fB--cert-key-dir\fR option must be used with the \fB--https\fR option.
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB--cert-key-dir\fR \fIcert_key_directory\fR\fR
+.ad
+.sp .6
+.RS 4n
+Specify the directory where the automatically generated certificates and keys should be stored if options \fB--cert\fR and \fB--key\fR are omitted. This option can only be used with the \fB--https\fR option. Either both the \fB--cert\fR and \fB--key\fR options or the \fB--cert-key-dir\fR option must be used with the \fB--https\fR option.
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB--ca-cert\fR \fIssl_ca_cert_file\fR\fR
+.ad
+.sp .6
+.RS 4n
+Specify the location of the top CA certificate file. This option can only be used with the \fB--https\fR option and must be used with \fB--ca-key\fR option together. The option is only used for automatically generating the server certificate based on this CA certificate and the key specified by \fB--ca-key\fR option.
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB--ca-key\fR \fIssl_ca_key_file\fR\fR
+.ad
+.sp .6
+.RS 4n
+Specify the location of the top CA key file. This option can only be used with the \fB--https\fR option and must be used with \fB--ca-cert\fR option together. The option is only used for automatically generating the server certificate based on this key and the CA certificate specified by \fB--ca-cert\fR option.
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB--cert-chain\fR \fIssl_cert_chain_file\fR\fR
+.ad
+.sp .6
+.RS 4n
+This option can only be used with the \fB--https\fR option. This option is required if the server certificate is not signed by the top level CA directly but is signed by an intermediate authority.
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB--smf-fmri\fR \fIsmf_pkg_depot_fmri\fR\fR
+.ad
+.sp .6
+.RS 4n
+Specify the FMRI of the pkg/depot service instance. This option is used to update the corresponding SMF properties of that instance if any certificates or keys are automatically generated for that instance. This option can only be used with the \fB--https\fR option.
 .RE
 
 .SH PROVIDING ADDITIONAL SERVER CONFIGURATION

@@ -19,7 +19,7 @@
 
 	CDDL HEADER END
 
-	Copyright (c) 2013, Oracle and/or its affiliates.  All rights reserved.
+	Copyright (c) 2013, 2014, Oracle and/or its affiliates.  All rights reserved.
 
 	NOTE:  This service manifest is not editable; its contents will
 	be overwritten by package or patch operations, including
@@ -152,8 +152,22 @@
                         <propval name='allow_refresh' type='boolean' value='false' />
 
                         <propval name='value_authorization' type='astring'
-                                value='solaris.smf.value.pkg-depot' />
+                                value='solaris.smf.value.pkg-depot-config' />
 
+                        <propval name='https' type='boolean'
+                                value='false' />
+                        <propval name='ssl_cert_file' type='astring'
+                                value='' />
+                        <propval name='ssl_key_file' type='astring'
+                                value='' />
+                        <propval name='ssl_ca_cert_file' type='astring'
+                                value='' />
+                        <propval name='ssl_ca_key_file' type='astring'
+                                value='' />
+                        <propval name='ssl_cert_key_dir' type='astring'
+                                value='/var/cache/pkg/depot/cert_key_dir' />
+                        <propval name='ssl_cert_chain_file' type='astring'
+                                value='' />
 
                 </property_group>
 

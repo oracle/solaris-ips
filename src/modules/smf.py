@@ -52,6 +52,7 @@ EXIT_TIMEOUT         = 5
 
 svcprop_path = "/usr/bin/svcprop"
 svcadm_path  = "/usr/sbin/svcadm"
+svccfg_path = "/usr/sbin/svccfg"
 svcs_path = "/usr/bin/svcs"
 zlogin_path = "/usr/sbin/zlogin"
 
@@ -174,6 +175,10 @@ def get_props(svcfmri, zone=None):
             l.strip().split(None, 1)
             for l in buf
         ])
+
+def set_prop(fmri, prop, value, zone=None):
+        args = (svccfg_path, "-s", fmri, "setprop", "%s=%s" % (prop, value))
+        __call(args, zone=zone)
 
 def get_prop(fmri, prop, zone=None):
         args = (svcprop_path, "-c", "-p", prop, fmri)

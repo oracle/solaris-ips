@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2013, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2013, 2014, Oracle and/or its affiliates. All rights reserved.
 #
 
 import errno
@@ -40,6 +40,7 @@ import warnings
 
 from mako.template import Template
 from mako.lookup import TemplateLookup
+from OpenSSL.crypto import *
 
 import pkg
 import pkg.client.api_errors as apx
@@ -142,7 +143,12 @@ Usage:
         pkg.depot-config ( -d repository_dir | -S ) -r runtime_dir
                 [-c cache_dir] [-s cache_size] [-p port] [-h hostname]
                 [-l logs_dir] [-T template_dir] [-A]
-                [-t server_type] ( [-F] [-P server_prefix] )
+                [-t server_type] ( ( [-F] [-P server_prefix] ) | [--https
+                ( ( --cert server_cert_file --key server_key_file
+                [--cert-chain ssl_cert_chain_file] ) |
+                --cert-key-dir cert_key_directory ) [ (--ca-cert ca_cert_file
+                --ca-key ca_key_file ) ]
+                [--smf-fmri smf_pkg_depot_fmri] ] )
 """))
         sys.exit(retcode)
 
@@ -184,7 +190,8 @@ def _get_publishers(root):
 
 def _write_httpd_conf(pubs, default_pubs, runtime_dir, log_dir, template_dir,
         cache_dir, cache_size, host, port, sroot,
-        fragment=False, allow_refresh=False):
+        fragment=False, allow_refresh=False, ssl_cert_file="",
+        ssl_key_file="", ssl_cert_chain_file=""):
         """Writes the webserver configuration for the depot.
 
         pubs            repository and publisher information, a list in the form
@@ -219,6 +226,13 @@ def _write_httpd_conf(pubs, default_pubs, runtime_dir, log_dir, template_dir,
 
         'repo_prefix' exists so that we can disambiguate between multiple
         repositories that provide the same publisher.
+
+        'ssl_cert_file' the location of the server certificate file.
+
+        'ssl_key_file' the location of the server key file.
+
+        'ssl_cert_chain_file' the location of the certificate chain file if the
+            the server certificate is not signed by the top level CA.
         """
 
         try:
@@ -298,7 +312,10 @@ def _write_httpd_conf(pubs, default_pubs, runtime_dir, log_dir, template_dir,
                     host=host,
                     port=port,
                     sroot=sroot,
-                    allow_refresh=allow_refresh
+                    allow_refresh=allow_refresh,
+                    ssl_cert_file=ssl_cert_file,
+                    ssl_key_file=ssl_key_file,
+                    ssl_cert_chain_file=ssl_cert_chain_file
                 )
 
                 with file(conf_path, "wb") as conf_file:
@@ -373,6 +390,127 @@ def _write_status_response(status, htdocs_path, repo_prefix):
                 raise DepotException(
                     _("Unable to write status response: %s") % err)
 
+def _createCertificateKey(serial, CN, starttime, endtime,
+    dump_cert_path, dump_key_path, issuerCert=None, issuerKey=None,
+    key_type=TYPE_RSA, key_bits=1024, digest="sha256"):
+        """Generate a certificate given a certificate request.
+
+        'serial' is the serial number for the certificate
+
+        'CN' is the subject common name of the certificate.
+
+        'starttime' is the timestamp when the certificate starts
+                          being valid. 0 means now.
+
+        'endtime' is the timestamp when the certificate stops being
+                        valid
+
+        'dump_cert_path' is the file the generated certificate gets dumped.
+
+        'dump_key_path' is the file the generated key gets dumped.
+
+        'issuerCert' is the certificate object of the issuer.
+
+        'issuerKey' is the key object of the issuer.
+
+        'key_type' is the key type. allowed value: TYPE_RSA and TYPE_DSA.
+
+        'key_bits' is number of bits to use in the key.
+
+        'digest' is the digestion method to use for signing.
+        """
+
+        key = PKey()
+        key.generate_key(key_type, key_bits)
+
+        cert = X509()
+        cert.set_serial_number(serial)
+        cert.gmtime_adj_notBefore(starttime)
+        cert.gmtime_adj_notAfter(endtime)
+
+        cert.get_subject().C = "US"
+        cert.get_subject().ST = "California"
+        cert.get_subject().L = "Santa Clara"
+        cert.get_subject().O = "pkg5"
+
+        cert.set_pubkey(key)
+        # If a issuer is specified, set the issuer. otherwise set cert
+        # itself as a issuer.
+        if issuerCert:
+                cert.get_subject().CN = CN
+                cert.set_issuer(issuerCert.get_subject())
+        else:
+                cert.get_subject().CN = "Depot Test CA"
+                cert.set_issuer(cert.get_subject())
+
+        # If there is a issuer key, sign with that key. Otherwise,
+        # create a self-signed cert.
+        if issuerKey:
+                cert.add_extensions([X509Extension("basicConstraints", True,
+                    "CA:FALSE")])
+                cert.sign(issuerKey, digest)
+        else:
+                cert.add_extensions([X509Extension("basicConstraints", True,
+                    "CA:TRUE")])
+                cert.sign(key, digest)
+        with open(dump_cert_path, "w") as f:
+                f.write(dump_certificate(FILETYPE_PEM, cert))
+        with open(dump_key_path, "w") as f:
+                f.write(dump_privatekey(FILETYPE_PEM, key))
+        return (cert, key)
+
+def _generate_server_cert_key(host, port, ca_cert_file="", ca_key_file="",
+    output_dir="/tmp"):
+        """ Generate certificate and key files for https service."""
+        if os.path.exists(output_dir):
+                if not os.path.isdir(output_dir):
+                        raise DepotException(
+                            _("%s is not a directory") % output_dir)
+        else:
+                misc.makedirs(output_dir)
+        server_id = "%s_%s" % (host, port)
+
+        cs_prefix = "server_%s" % server_id
+        server_cert_file = os.path.join(output_dir, "%s_cert.pem" % cs_prefix)
+        server_key_file = os.path.join(output_dir, "%s_key.pem" % cs_prefix)
+
+        # If the cert and key files do not exist, then generate one.
+        if not os.path.exists(server_cert_file) or not os.path.exists(
+            server_key_file):
+                # Used as a factor to easily specify a year.
+                year_factor = 60 * 60 * 24 * 365
+
+                # If user specifies ca_cert_file and ca_key_file, just load
+                # the files. Otherwise, generate new ca_cert and ca_key.
+                if not ca_cert_file or not ca_key_file:
+                        ca_cert_file = os.path.join(output_dir,
+                            "ca_%s_cert.pem" % server_id)
+                        ca_key_file = os.path.join(output_dir,
+                            "ca_%s_key.pem" % server_id)
+                        ca_cert, ca_key = _createCertificateKey(1, host,
+                            0, year_factor * 10, ca_cert_file, ca_key_file)
+                else:
+                        if not os.path.exists(ca_cert_file):
+                                raise DepotException(_("Cannot find user "
+                                    "provided CA certificate file: %s")
+                                    % ca_cert_file)
+                        if not os.path.exists(ca_key_file):
+                                raise DepotException(_("Cannot find user "
+                                    "provided CA key file: %s")
+                                    % ca_key_file)
+                        with open(ca_cert_file, "r") as fr:
+                                ca_cert = load_certificate(FILETYPE_PEM,
+                                    fr.read())
+                        with open(ca_key_file, "r") as fr:
+                                ca_key = load_privatekey(FILETYPE_PEM,
+                                    fr.read())
+
+                _createCertificateKey(2, host, 0, year_factor * 10,
+                    server_cert_file, server_key_file, issuerCert=ca_cert,
+                    issuerKey=ca_key)
+
+        return (ca_cert_file, ca_key_file, server_cert_file, server_key_file)
+
 def cleanup_htdocs(htdocs_dir):
         """Destroy any existing "htdocs" directory."""
         try:
@@ -384,7 +522,8 @@ def cleanup_htdocs(htdocs_dir):
 
 def refresh_conf(repo_info, log_dir, host, port, runtime_dir,
             template_dir, cache_dir, cache_size, sroot, fragment=False,
-            allow_refresh=False):
+            allow_refresh=False, ssl_cert_file="", ssl_key_file="",
+            ssl_cert_chain_file=""):
         """Creates a new configuration for the depot."""
         try:
                 ret = EXIT_OK
@@ -439,7 +578,9 @@ def refresh_conf(repo_info, log_dir, host, port, runtime_dir,
 
                 _write_httpd_conf(pubs, default_pubs, runtime_dir, log_dir,
                     template_dir, cache_dir, cache_size, host, port, sroot,
-                    fragment=fragment, allow_refresh=allow_refresh)
+                    fragment=fragment, allow_refresh=allow_refresh,
+                    ssl_cert_file=ssl_cert_file, ssl_key_file=ssl_key_file,
+                    ssl_cert_chain_file=ssl_cert_chain_file)
                 _write_versions_response(htdocs_path, fragment=fragment)
                 # If we're writing a configuration fragment, then the web server
                 # is probably not running as DEPOT_USER:DEPOT_GROUP
@@ -518,6 +659,19 @@ def _affix_slash(str):
                 raise DepotException(_("%s is not a valid prefix"))
         return "%s/" % val
 
+def _update_smf_props(smf_fmri, prop_list, orig, dest):
+        """Update the smf props after the new prop values are generated."""
+
+        smf_instances = smf.check_fmris(None, smf_fmri)
+        for fmri in smf_instances:
+                refresh = False
+                for i in range(len(prop_list)):
+                        if orig[i] != dest[i]:
+                                smf.set_prop(fmri, prop_list[i], dest[i])
+                                refresh = True
+                if refresh:
+                        smf.refresh(fmri)
+
 def main_func():
 
         # some sensible defaults
@@ -532,6 +686,23 @@ def main_func():
         cache_size = 0
         # whether we're writing a full httpd.conf, or just a fragment
         fragment = False
+        # Whether we support https service.
+        https = False
+        # The location of server certificate file.
+        ssl_cert_file = ""
+        # The location of server key file.
+        ssl_key_file = ""
+        # The location of the server ca certificate file.
+        ssl_ca_cert_file = ""
+        # The location of the server ca key file.
+        ssl_ca_key_file = ""
+        # Directory for storing generated certificates and keys
+        cert_key_dir = ""
+        # SSL certificate chain file path if the server certificate is not
+        # signed by the top level CA.
+        ssl_cert_chain_file = ""
+        # The pkg/depot smf instance fmri.
+        smf_fmri = ""
         # an optional url-prefix, used to separate pkg5 services from the rest
         # of the webserver url namespace, only used when running in fragment
         # mode, otherwise we assume we're the only service running on this
@@ -552,10 +723,11 @@ def main_func():
         server_type = "apache2"
 
         writable_root_set = False
-
         try:
                 opts, pargs = getopt.getopt(sys.argv[1:],
-                    "Ac:d:Fh:l:P:p:r:Ss:t:T:?", ["help", "debug="])
+                    "Ac:d:Fh:l:P:p:r:Ss:t:T:?", ["help", "debug=", "https",
+                    "cert=", "key=", "ca-cert=", "ca-key=", "cert-chain=",
+                    "cert-key-dir=", "smf-fmri="])
                 for opt, arg in opts:
                         if opt == "--help":
                                 usage()
@@ -597,6 +769,22 @@ def main_func():
                                 use_smf_instances = True
                         elif opt == "-A":
                                 allow_refresh = True
+                        elif opt == "--https":
+                                https = True
+                        elif opt == "--cert":
+                                ssl_cert_file = arg
+                        elif opt == "--key":
+                                ssl_key_file = arg
+                        elif opt == "--ca-cert":
+                                ssl_ca_cert_file = arg
+                        elif opt == "--ca-key":
+                                ssl_ca_key_file = arg
+                        elif opt == "--cert-chain":
+                                ssl_cert_chain_file = arg
+                        elif opt == "--cert-key-dir":
+                                cert_key_dir = arg
+                        elif opt == "--smf-fmri":
+                                smf_fmri = arg
                         elif opt == "--debug":
                                 try:
                                         key, value = arg.split("=", 1)
@@ -628,6 +816,86 @@ def main_func():
 
         if repo_info and use_smf_instances:
                 usage(_("cannot use -d and -S together."))
+
+        if https:
+                if fragment:
+                        usage(_("https configuration is not supported in "
+                            "fragment mode."))
+                if bool(ssl_cert_file) != bool(ssl_key_file):
+                        usage(_("certificate and key files must be presented "
+                            "at the same time."))
+                elif not ssl_cert_file and not ssl_key_file:
+                        if not cert_key_dir:
+                                usage(_("cert-key-dir option is require to "
+                                    "store the generated certificates and keys"))
+                        if ssl_cert_chain_file:
+                                usage(_("Cannot use --cert-chain without "
+                                    "--cert and --key"))
+                        if bool(ssl_ca_cert_file) != bool(ssl_ca_key_file):
+                                usage(_("server CA certificate and key files "
+                                    "must be presented at the same time."))
+                        # If fmri is specifed for pkg/depot instance, we need
+                        # record the proporty values for updating.
+                        if smf_fmri:
+                                orig = (ssl_ca_cert_file, ssl_ca_key_file,
+                                    ssl_cert_file, ssl_key_file)
+                        try:
+                                ssl_ca_cert_file, ssl_ca_key_file, ssl_cert_file, \
+                                    ssl_key_file = \
+                                    _generate_server_cert_key(host, port,
+                                    ca_cert_file=ssl_ca_cert_file,
+                                    ca_key_file=ssl_ca_key_file,
+                                    output_dir=cert_key_dir)
+                                if ssl_ca_cert_file:
+                                        msg(_("Server CA certificate is "
+                                            "located at %s. Please deploy it "
+                                            "into /etc/certs/CA directory of "
+                                            "each client.")
+                                            % ssl_ca_cert_file)
+                        except (DepotException, EnvironmentError), e:
+                                    error(e)
+                                    return EXIT_OOPS
+
+                        # Update the pkg/depot instance smf properties if
+                        # anything changes.
+                        if smf_fmri:
+                                dest = (ssl_ca_cert_file, ssl_ca_key_file,
+                                    ssl_cert_file, ssl_key_file)
+                                if orig != dest:
+                                        prop_list = ["config/ssl_ca_cert_file",
+                                            "config/ssl_ca_key_file",
+                                            "config/ssl_cert_file",
+                                            "config/ssl_key_file"]
+                                        try:
+                                                _update_smf_props(smf_fmri, prop_list,
+                                                    orig, dest)
+                                        except (smf.NonzeroExitException,
+                                            RuntimeError), e:
+                                                error(e)
+                                                return EXIT_OOPS
+                else:
+                        if not os.path.exists(ssl_cert_file):
+                                error(_("User provided server certificate "
+                                    "file %s does not exist.") % ssl_cert_file)
+                                return EXIT_OOPS
+                        if not os.path.exists(ssl_key_file):
+                                error(_("User provided server key file %s "
+                                    "does not exist.") % ssl_key_file)
+                                return EXIT_OOPS
+                        if ssl_cert_chain_file and not os.path.exists(
+                            ssl_cert_chain_file):
+                                error(_("User provided certificate chain file "
+                                    "%s does not exist.") %
+                                    ssl_cert_chain_file)
+                                return EXIT_OOPS
+        else:
+                if ssl_cert_file or ssl_key_file or ssl_ca_cert_file \
+                    or ssl_ca_key_file or ssl_cert_chain_file:
+                        usage(_("certificate or key files are given before "
+                            "https service is turned on. Use --https to turn "
+                            "on the service."))
+                if smf_fmri:
+                        usage(_("cannot use --smf-fmri without --https."))
 
         # We can't support httpd.conf fragments with writable root, because
         # we don't have the mod_wsgi app that can build the index or serve
@@ -666,7 +934,8 @@ def main_func():
 
         ret = refresh_conf(repo_info, log_dir, host, port, runtime_dir,
             template_dir, cache_dir, cache_size, sroot, fragment=fragment,
-            allow_refresh=allow_refresh)
+            allow_refresh=allow_refresh, ssl_cert_file=ssl_cert_file,
+            ssl_key_file=ssl_key_file, ssl_cert_chain_file=ssl_cert_chain_file)
         return ret
 
 #

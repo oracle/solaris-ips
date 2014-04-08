@@ -19,7 +19,7 @@
 #
 # CDDL HEADER END
 #
-# Copyright (c) 2013, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2013, 2014, Oracle and/or its affiliates. All rights reserved.
 #
 
 #
@@ -334,6 +334,34 @@ CacheDirLength 2
 # file we will choose to cache.
 CacheMaxFileSize 45690876
 % endif
+
+<%
+        ssl_cert_file_path = context.get("ssl_cert_file", "")
+        ssl_key_file_path = context.get("ssl_key_file", "")
+        if ssl_cert_file_path and ssl_key_file_path:
+                context.write("""
+# DNS domain name of the server
+ServerName %s
+# enable SSL
+SSLEngine On
+# Location of the server certificate and key.
+""" % context.get("host", "localhost"))
+                context.write("SSLCertificateFile %s\n" % ssl_cert_file_path)
+                context.write("SSLCertificateKeyFile %s\n" % ssl_key_file_path)
+                context.write("""
+# Intermediate CA certificate file. Required if your server certificate
+# is not signed by a top-level CA directly but an intermediate authority.
+# Comment out this section if you don't need one or if you are using a
+# test certificate
+""")
+                ssl_cert_chain_file_path = context.get("ssl_cert_chain_file",
+                    "")
+                if ssl_cert_chain_file_path:
+                        context.write("SSLCertificateChainFile %s\n" %
+                            ssl_cert_chain_file_path)
+                else:
+                        context.write("# SSLCertificateChainFile /cert_path\n")
+%>
 
 # Rules to serve static content directly from the file-repositories.
 <%include file="/depot.conf.mako"/>
