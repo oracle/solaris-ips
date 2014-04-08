@@ -1158,24 +1158,39 @@ made will not be reflected on the next boot.
                                 else:
                                         pparent = dest.publisher
                                 pname = dest.pkg_stem
-                                pver = src.fmri.version.get_version(
-                                    include_build=False)
+
+                                # Only display timestamp if version is same and
+                                # timestamp is not between the two fmris.
+                                sver = src.fmri.version
+                                dver = dest.fmri.version
+                                ssver = sver.get_short_version()
+                                dsver = dver.get_short_version()
+                                include_ts = (ssver == dsver and
+                                    sver.timestr != dver.timestr)
+                                if include_ts:
+                                        pver = sver.get_version(
+                                            include_build=False)
+                                else:
+                                        pver = ssver
+
                                 if src != dest:
-                                        pver += " -> %s" % \
-                                            dest.fmri.version.get_version(
-                                                include_build=False)
+                                        if include_ts:
+                                                pver += " -> %s" % \
+                                                    dver.get_version(
+                                                        include_build=False)
+                                        else:
+                                                pver += " -> %s" % dsver
+
                         elif dest:
                                 pparent = dest.publisher
                                 pname = dest.pkg_stem
                                 pver = "None -> %s" % \
-                                    dest.fmri.version.get_version(
-                                        include_build=False)
+                                    dest.fmri.version.get_short_version()
                         else:
                                 pparent = src.publisher
                                 pname = src.pkg_stem
                                 pver = "%s -> None" % \
-                                    src.fmri.version.get_version(
-                                        include_build=False)
+                                    src.fmri.version.get_short_version()
 
                         changed[pparent].append((pname, pver))
 
