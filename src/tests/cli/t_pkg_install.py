@@ -7648,6 +7648,7 @@ class TestPkgInstallObsolete(pkg5unittest.SingleDepotTestCase):
                 self.pkg("update -v")
                 self.pkg("list inc2p2", exit=1)
 
+
 class TestObsoletionNestedIncorporations(pkg5unittest.SingleDepotTestCase):
         # Only start/stop the depot once (instead of for every test)
 
@@ -7777,6 +7778,76 @@ class TestPkgInstallMultiObsolete(pkg5unittest.ManyDepotTestCase):
                 self.pkg("set-publisher -O " + self.rurl2 + " test2")
 
                 self.pkg("%s stem" % install_cmd, exit=1)
+
+
+class TestPkgInstallMultiIncorp(pkg5unittest.ManyDepotTestCase):
+        """Tests involving incorporations and multiple publishers."""
+
+        incorporated_latest = """
+            open vim@7.4.233-5.12.0.0.0.44.1
+            close
+            open vim@7.4.232-5.12.0.0.0.44.1
+            close"""
+
+        incorporated = """
+            open vim@7.4.1-5.12.0.0.0.45.0
+            close
+            open vim@7.4.1-5.12.0.0.0.44.1
+            close """
+
+        incorporates = """
+            open userland-incorporation@0.5.12-5.12.0.0.0.44.1
+            add depend type=incorporate fmri=vim@7.4-5.12.0.0.0.44.1
+            close
+            open vim-incorporation@0.5.12-5.12.0.0.0.44.1
+            add depend type=incorporate fmri=vim@7.4.1-5.12.0.0.0.44.1
+            close"""
+
+        persistent_setup = True
+
+        def setUp(self):
+                pkg5unittest.ManyDepotTestCase.setUp(self, ["test1", "test2"])
+                self.rurl1 = self.dcs[1].get_repo_url()
+                self.rurl2 = self.dcs[2].get_repo_url()
+
+        def test_1_incorp_latest_older(self):
+                """Ensure that if the newest release version of a package is
+                available for an older branch that incorporate dependencies work
+                as expected."""
+
+                self.image_create(self.rurl1)
+                self.pkgsend_bulk(self.rurl1, (self.incorporates,
+                    self.incorporated, self.incorporated_latest))
+
+                # First, install two incorporations that intersect such that
+                # only the version before the latest branch can be installed.
+                self.pkg("install userland-incorporation vim-incorporation")
+
+                # Then, attempt to install vim; this should succeed even though
+                # the newest version available is for an older branch.
+                self.pkg("install vim@7.4")
+
+        def test_2_incorp_multi_pub(self):
+                """Ensure that if another publisher offers newer packages that
+                satisfy an incorporate dependency, but are rejected because of
+                publisher selection, that the preferred publisher's package can
+                still satisfy the incorporate."""
+
+                self.image_create(self.rurl1)
+                self.pkgsend_bulk(self.rurl1, (self.incorporates,
+                    self.incorporated))
+                self.pkgsend_bulk(self.rurl2, self.incorporated_latest)
+
+                # First, install the incorporation.
+                self.pkg("install userland-incorporation")
+
+                # Next, add the second publisher.
+                self.pkg("set-publisher -p %s" % self.rurl2)
+
+                # Next, verify that first publisher's incorporated package can
+                # be installed since it satisfies incorporate dependencies even
+                # though second publisher's versions will be rejected.
+                self.pkg("install //test1/vim")
 
 
 class TestPkgInstallLicense(pkg5unittest.SingleDepotTestCase):
