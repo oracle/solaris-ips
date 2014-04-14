@@ -64,7 +64,7 @@ s_handler(void)
 	(void) sigfillset(&wait_sigs);
 
 	while (do_exit == 0) {
-		if ((sig = sigwait(&wait_sigs)) < 0)
+		if (sigwait(&wait_sigs, &sig) != 0)
 			continue;
 
 		if (sig == SIGINT || sig == SIGTERM || sig == SIGHUP)

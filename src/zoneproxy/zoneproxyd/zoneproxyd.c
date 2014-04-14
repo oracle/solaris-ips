@@ -1894,7 +1894,8 @@ s_handler(void)
 
 	(void) sigfillset(&get_sigs);
 	while (g_quit == B_FALSE) {
-		rc = sigwait(&get_sigs);
+		if (sigwait(&get_sigs, &rc) != 0)
+			continue;
 
 		if (rc == SIGINT || rc == SIGTERM || rc == SIGHUP) {
 			(void) mutex_lock(&g_quit_lock);
