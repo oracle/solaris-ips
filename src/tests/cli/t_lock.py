@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2010, 2011, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2010, 2014, Oracle and/or its affiliates. All rights reserved.
 #
 
 import testutils
@@ -166,3 +166,32 @@ class TestPkgApi(pkg5unittest.SingleDepotTestCase):
                 self.pkg("uninstall foo")
                 self.assertRaises(api_errors.InvalidPlanError,
                     api_obj.execute_plan)
+
+        def test_symlink_lock(self):
+                """Verify that if a install/refresh operation is performed
+                on lock file, the lock file is not a symlink."""
+
+                # Get an image object and tests its manual lock mechanism.
+                api_obj = self.get_img_api_obj()
+                img = api_obj.img
+
+                # Verify a lock file is created.
+                img.lock()
+                lfpath = os.path.join(img.imgdir, "lock")
+                self.assertTrue(os.path.exists(lfpath))
+                img.unlock()
+                os.remove(lfpath)
+
+                # Make lock file a symlink by pointing it to a random file .
+                tmp_file = os.path.join(img.imgdir, "test_symlink")
+                fo = open(tmp_file, 'wb+')
+                fo.close()
+                os.symlink(tmp_file, lfpath)
+
+                # Verify that both pkg install and refresh generate an error
+                # if the lock file is a symlink.
+                self.pkg("install foo", su_wrap=True, exit=1)
+                self.assertTrue("contains a symlink" in self.errout)
+
+                self.pkg("refresh --full", su_wrap=True, exit=1)
+                self.assertTrue("contains a symlink" in self.errout)

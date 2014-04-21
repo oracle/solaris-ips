@@ -6527,6 +6527,9 @@ to perform the requested operation.  Details follow:\n\n%s""") % __e)
                 error(s)
         except api_errors.ReadOnlyFileSystemException, __e:
                 __ret = EXIT_OOPS
+        except api_errors.UnexpectedLinkError, __e:
+                error("\n" + str(__e))
+                __ret = EXIT_OOPS
         except:
                 if _api_inst:
                         _api_inst.abort(result=RESULT_FAILED_UNKNOWN)

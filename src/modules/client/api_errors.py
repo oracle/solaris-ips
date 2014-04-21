@@ -3197,3 +3197,22 @@ class InvalidOptionErrors(ApiException):
                         msgs.append(str(e))
                 return "\n".join(msgs)
 
+class UnexpectedLinkError(ApiException):
+        """Used to indicate that an image state file has been replaced
+        with a symlink."""
+
+        def __init__(self, path, filename, errno):
+                self.path = path
+                self.filename = filename
+                self.errno = errno
+
+        def __str__(self):
+                        return _("Cannot update file: '%(file)s' at path "
+                            "'%(path)s', contains a symlink. "
+                            "[Error '%(errno)d': '%(error)s']") % {
+                            "error": os.strerror(self.errno),
+                            "errno": self.errno,
+                            "path": self.path,
+                            "file": self.filename,
+                        }
+

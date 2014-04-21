@@ -399,6 +399,36 @@ class TestPkgList(pkg5unittest.ManyDepotTestCase):
                 self.pkg("list -aq newpkg")
                 self.__check_qoutput(errout=False)
 
+        def test_symlink_last_refreshed(self):
+                """Verify that we generate an error if the path to the
+                last_refreshed file contains a symlink."""
+
+                # Remove the last_refreshed file for one of the publishers so
+                # that it will be seen as needing refresh.
+                api_inst = self.get_img_api_obj()
+                pub = api_inst.get_publisher("test1")
+                
+                file_path = os.path.join(pub.meta_root, "last_refreshed")
+                tmp_file = os.path.join(pub.meta_root, "test_symlink")
+                os.remove(file_path)
+                # We will create last_refreshed as symlink to verify with
+                # pkg operations.
+                fo = open(tmp_file, 'wb+')
+                fo.close()
+                os.symlink(tmp_file, file_path)
+                
+                # Verify that both pkg install and refresh generate an error
+                # if the last_refreshed file is a symlink.
+                self.pkg("install newpkg@1.0", su_wrap=False, exit=1)
+                self.assertTrue("contains a symlink" in self.errout)
+
+                self.pkg("refresh test1", su_wrap=False, exit=1)
+                self.assertTrue("contains a symlink" in self.errout)
+
+                # Remove the temporary file and the lock file
+                os.remove(tmp_file)
+                os.remove(file_path)
+
         def test_10_all_known_failed_refresh(self):
                 """Verify that a failed implicit refresh will not prevent pkg
                 list from working properly when appropriate."""

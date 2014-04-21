@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2009, 2013, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2009, 2014, Oracle and/or its affiliates. All rights reserved.
 #
 
 #
@@ -1322,17 +1322,24 @@ class Publisher(object):
 
                 def create_tracker():
                         try:
-                                f = open(lcfile, "wb")
-                                f.write("%s\n" % misc.time_to_timestamp(
+                                # If the file is a symlink we catch an
+                                # exception and do not update the file.
+                                fd = os.open(lcfile,
+                                    os.O_WRONLY|os.O_NOFOLLOW|os.O_CREAT)
+                                os.write(fd, "%s\n" % misc.time_to_timestamp(
                                     calendar.timegm(value.utctimetuple())))
-                                f.close()
+                                os.close(fd)
                         except EnvironmentError, e:
+                                if e.errno == errno.ELOOP:
+                                        raise api_errors.UnexpectedLinkError(
+                                            os.path.dirname(lcfile),
+                                            os.path.basename(lcfile),
+                                            e.errno)
                                 # If the file can't be written due to
                                 # permissions or because the filesystem is
                                 # read-only, continue on.
                                 if e.errno not in (errno.EACCES, errno.EROFS):
                                         raise
-
                 try:
                         # If a time was provided, write out a special file that
                         # can be used to track the information with the actual
