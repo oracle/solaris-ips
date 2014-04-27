@@ -20,7 +20,7 @@
  */
 
 /*
- * Copyright (c) 2012, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2012, 2014, Oracle and/or its affiliates. All rights reserved.
  */
 
 #include <Python.h>
@@ -112,10 +112,16 @@ _allow_facet(PyObject *self, PyObject *args)
 
 			/*
 			 * If facet is unknown to the system and no facet
-			 * patterns matched it, be inclusive and assume
-			 * True.
+			 * patterns matched it, then allow the action if it is
+			 * not a debug or optional facet.  The trailing '.' is
+			 * to encourage namespace usage.
 			 */
-			facet_ret = Py_True;
+			if (strncmp(as, "facet.debug.", 12) == 0 ||
+			    strncmp(as, "facet.optional.", 15) == 0) {
+				facet_ret = Py_False;
+			} else {
+				facet_ret = Py_True;
+			}
 		}
 
 prep_ret:

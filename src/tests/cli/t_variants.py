@@ -20,7 +20,7 @@
 # CDDL HEADER END
 #
 
-# Copyright (c) 2009, 2011, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2009, 2014, Oracle and/or its affiliates. All rights reserved.
 
 import testutils
 if __name__ == "__main__":
@@ -171,6 +171,12 @@ class TestPkgVariants(pkg5unittest.SingleDepotTestCase):
                 self.pkg_image_create(self.rurl,
                     additional_args="--variant variant.arch=%s" % "sparc")
                 self.pkg("install silver", exit=1)
+
+                # Verify that debug variants are implicitly false and shown in
+                # output of 'pkg variant' before any variants are set.
+                self.pkg("variant -H -F tsv debug", exit=1) # only 'debug.'
+                self.pkg("variant -H -F tsv debug.kernel")
+                self.assertEqual("variant.debug.kernel\tfalse\n", self.output)
 
         def __vtest(self, depot, arch, zone, isdebug=""):
                 """ test if install works for spec'd arch"""

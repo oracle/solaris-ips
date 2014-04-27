@@ -48,6 +48,7 @@ class TestPkgChangeFacet(pkg5unittest.SingleDepotTestCase):
         add file tmp/facets_6 mode=0555 owner=root group=bin path=6 facet.locale.nl_NA=True
         add file tmp/facets_7 mode=0555 owner=root group=bin path=7 facet.locale.nl_ZA=True
         add file tmp/facets_8 mode=0555 owner=root group=bin path=8 facet.has/some/slashes=true
+        add file tmp/facets_9 mode=0555 owner=root group=bin path=debug facet.debug.foo=True
         add link path=test target=1
         close"""
 
@@ -67,12 +68,15 @@ class TestPkgChangeFacet(pkg5unittest.SingleDepotTestCase):
         add file tmp/facets_3 mode=0555 owner=root group=bin path=top3 facet.doc=all facet.locale.fr_CA=true
         add file tmp/facets_4 mode=0555 owner=root group=bin path=top4 facet.doc=all facet.locale.fr_CA=true facet.locale.nl_ZA=true
         add file tmp/facets_5 mode=0555 owner=root group=bin path=top5 facet.devel=all facet.doc=all facet.locale.fr_CA=true facet.locale.nl_ZA=true
+        add file tmp/facets_6 mode=0555 owner=root group=bin path=top0.debug facet.devel=all facet.debug.top=all
+        add file tmp/facets_7 mode=0555 owner=root group=bin path=optional.doc facet.optional.doc=all facet.doc=true
+        add file tmp/facets_8 mode=0555 owner=root group=bin path=optional_fr.doc facet.optional.doc=all facet.doc=all facet.locale.fr_CA=true
         close"""
 
         misc_files = [
             "tmp/facets_0", "tmp/facets_1", "tmp/facets_2", "tmp/facets_3",
             "tmp/facets_4", "tmp/facets_5", "tmp/facets_6", "tmp/facets_7",
-            "tmp/facets_8"
+            "tmp/facets_8", "tmp/facets_9"
         ]
 
         def setUp(self):
@@ -140,6 +144,17 @@ class TestPkgChangeFacet(pkg5unittest.SingleDepotTestCase):
                 self.assert_file_is_there("5", negate=True)
                 self.assert_file_is_there("6", negate=True)
                 self.assert_file_is_there("7", negate=True)
+                self.assert_file_is_there("8")
+                self.assert_file_is_there("debug", negate=True)
+
+                # Verify that effective value is shown for facets that are
+                # always implicity false such as debug / optional.
+                self.pkg("facet -H -F tsv debug.top optional.doc")
+                self.assertEqual(
+                    "facet.debug.top\tFalse\tsystem\n"
+                    "facet.optional.doc\tFalse\tsystem\n",
+                    self.output
+                )
 
                 # verify that a non-existent facet can be set when other facets
                 # are in effect
@@ -192,6 +207,8 @@ class TestPkgChangeFacet(pkg5unittest.SingleDepotTestCase):
                 self.assert_file_is_there("5", negate=True)
                 self.assert_file_is_there("6", negate=True)
                 self.assert_file_is_there("7")
+                self.assert_file_is_there("8")
+                self.assert_file_is_there("debug", negate=True)
 
                 # remove all the facets
                 self.pkg("change-facet --parsable=0 facet.locale*=None "
@@ -217,6 +234,16 @@ class TestPkgChangeFacet(pkg5unittest.SingleDepotTestCase):
 
                 for i in range(8):
                         self.assert_file_is_there("%d" % i, negate=(i != 0))
+
+                # Verify that effective value is shown for facets that are
+                # implicity false due to wildcards whether they're known to the
+                # system through packages or not.
+                self.pkg("facet -H -F tsv facet.locale.fr facet.locale.nl_ZA")
+                self.assertEqual(
+                    "facet.locale.fr\tFalse\tlocal\n"
+                    "facet.locale.nl_ZA\tFalse\tlocal\n",
+                    self.output
+                )
 
                 # Verify that an action with multiple facets will be installed
                 # if at least one is implicitly true even when the first facet
@@ -352,7 +379,7 @@ class TestPkgChangeFacet(pkg5unittest.SingleDepotTestCase):
 
         def test_05_reset_facet(self):
                 """Verify that resetting a Facet explicitly set to false
-                restores delivered content."""
+                restores/removes delivered content."""
 
                 # create an image with pkg_A and no facets
                 self.pkg_image_create(self.rurl)
@@ -361,6 +388,7 @@ class TestPkgChangeFacet(pkg5unittest.SingleDepotTestCase):
                 self.assertEqualDiff("", self.output)
                 for i in range(8):
                         self.assert_file_is_there(str(i))
+                self.assert_file_is_there("debug", negate=True)
                 self.pkg("verify")
 
                 # set a facet on an image with no facets
@@ -426,123 +454,188 @@ class TestPkgChangeFacet(pkg5unittest.SingleDepotTestCase):
                         self.assert_file_is_there(str(i))
                 self.pkg("verify")
 
+                # verify debug content removed when debug facet reset
+                self.pkg("change-facet -v debug.foo=True")
+                self.pkg("facet -H -F tsv")
+                output = self.reduceSpaces(self.output)
+                expected = (
+                    "facet.debug.foo\tTrue\tlocal\n")
+                self.assertEqualDiff(expected, output)
+                self.assert_file_is_there("debug")
+
+                self.pkg("change-facet -v debug.foo=None")
+                self.pkg("facet -H -F tsv")
+                output = self.reduceSpaces(self.output)
+                self.assertEqualDiff("", self.output)
+                self.assert_file_is_there("debug", negate=True)
+
         def test_06_facet_all(self):
                 """Verify that the 'all' value for facets is handled as
                 expected."""
 
                 self.pkg_image_create(self.rurl)
 
-                # All faceted files should be installed.
+                # All faceted files except debug/optional should be installed.
                 self.pkg("install pkg_top_level")
                 self.assert_files_exist((
                     ("top0", True),
+                    ("top0.debug", False),
                     ("top1", True),
                     ("top2", True),
                     ("top3", True),
                     ("top4", True),
                     ("top5", True),
-                ))
-
-                # Only top0 should be installed.
-                self.pkg('change-facet -v doc=false')
-                self.assert_files_exist((
-                    ("top0", True),
-                    ("top1", False),
-                    ("top2", False),
-                    ("top3", False),
-                    ("top4", False),
-                    ("top5", False),
-                ))
-
-                # No faceted files should be installed.
-                self.pkg('change-facet -v devel=false')
-                self.assert_files_exist((
-                    ("top0", False),
-                    ("top1", False),
-                    ("top2", False),
-                    ("top3", False),
-                    ("top4", False),
-                    ("top5", False),
-                ))
-
-                # Only top1, top3 and top4 should be installed.
-                self.pkg('change-facet -v doc=true')
-                self.assert_files_exist((
-                    ("top0", False),
-                    ("top1", True),
-                    ("top2", False),
-                    ("top3", True),
-                    ("top4", True),
-                    ("top5", False),
+                    ("optional.doc", False),
+                    ("optional_fr.doc", False),
                 ))
 
                 # All faceted files should be installed.
-                self.pkg("change-facet -v devel=true")
+                self.pkg("change-facet -v debug.top=true optional.doc=true")
                 self.assert_files_exist((
                     ("top0", True),
+                    ("top0.debug", True),
                     ("top1", True),
                     ("top2", True),
                     ("top3", True),
                     ("top4", True),
                     ("top5", True),
+                    ("optional.doc", True),
+                    ("optional_fr.doc", True),
                 ))
 
-                # Only top0, top1, top2, top4, and top5 should be installed.
+                # Only top0[.debug] should be installed.
+                self.pkg('change-facet -v doc=false')
+                self.assert_files_exist((
+                    ("top0", True),
+                    ("top0.debug", True),
+                    ("top1", False),
+                    ("top2", False),
+                    ("top3", False),
+                    ("top4", False),
+                    ("top5", False),
+                    ("optional.doc", False),
+                    ("optional_fr.doc", False),
+                ))
+
+                # No faceted files should be installed.
+                self.pkg('change-facet -v devel=false optional.doc=false')
+                self.assert_files_exist((
+                    ("top0", False),
+                    ("top0.debug", False),
+                    ("top1", False),
+                    ("top2", False),
+                    ("top3", False),
+                    ("top4", False),
+                    ("top5", False),
+                    ("optional.doc", False),
+                    ("optional_fr.doc", False),
+                ))
+
+                # Only top1, top3, top4, optional.doc, and optional_fr.doc
+                # should be installed.
+                self.pkg('change-facet -v doc=true optional.doc=true')
+                self.assert_files_exist((
+                    ("top0", False),
+                    ("top0.debug", False),
+                    ("top1", True),
+                    ("top2", False),
+                    ("top3", True),
+                    ("top4", True),
+                    ("top5", False),
+                    ("optional.doc", True),
+                    ("optional_fr.doc", True),
+                ))
+
+                # All faceted files should be installed.
+                self.pkg("change-facet -v devel=true optional.doc=true")
+                self.assert_files_exist((
+                    ("top0", True),
+                    ("top0.debug", True),
+                    ("top1", True),
+                    ("top2", True),
+                    ("top3", True),
+                    ("top4", True),
+                    ("top5", True),
+                    ("optional.doc", True),
+                    ("optional_fr.doc", True),
+                ))
+
+                # Only top0[.debug], top1, top2, top4, top5, and optional.doc
+                # should be installed.
                 self.pkg("change-facet -v locale.fr_CA=false")
                 self.assert_files_exist((
                     ("top0", True),
+                    ("top0.debug", True),
                     ("top1", True),
                     ("top2", True),
                     ("top3", False),
                     ("top4", True),
                     ("top5", True),
+                    ("optional.doc", True),
+                    ("optional_fr.doc", False),
                 ))
 
-                # Only top0, top1, and top2 should be installed.
+                # Only top0[.debug], top1, top2, and optional.doc should be
+                # installed.
                 self.pkg("change-facet -v locale.nl_ZA=false")
                 self.assert_files_exist((
                     ("top0", True),
+                    ("top0.debug", True),
                     ("top1", True),
                     ("top2", True),
                     ("top3", False),
                     ("top4", False),
                     ("top5", False),
+                    ("optional.doc", True),
+                    ("optional_fr.doc", False),
                 ))
 
-                # Reset all facets and verify all files are installed.
+                # Reset all facets and verify all files except optional/debug
+                # are installed.
                 self.pkg("change-facet -vvv devel=None doc=None locale.fr_CA=None "
-                    "locale.nl_ZA=None")
+                    "locale.nl_ZA=None optional.doc=None debug.top=None")
                 self.assert_files_exist((
                     ("top0", True),
+                    ("top0.debug", False),
                     ("top1", True),
                     ("top2", True),
                     ("top3", True),
                     ("top4", True),
                     ("top5", True),
+                    ("optional.doc", False),
+                    ("optional_fr.doc", False),
                 ))
 
-                # Set a false wildcard for the 'all' facets.  No files should be
-                # installed.
-                self.pkg("change-facet -v 'facet.d*=False'")
+                # Set a false wildcard for the 'devel' and 'doc' facets.  No
+                # files should be installed.
+                self.pkg("change-facet -v 'facet.d*=False' optional.*=true "
+                    "debug.*=true")
                 self.assert_files_exist((
                     ("top0", False),
+                    ("top0.debug", False),
                     ("top1", False),
                     ("top2", False),
                     ("top3", False),
                     ("top4", False),
                     ("top5", False),
+                    ("optional.doc", False),
+                    ("optional_fr.doc", False),
                 ))
 
-                # Set one of the 'all' facets True and verify that explicit sets
-                # trump wildcard matching.  Only top0 should be installed.
-                self.pkg("change-facet -v facet.devel=True")
+                # Set the devel facet True and the debug.top facet true and
+                # verify that explicit sets trump wildcard matching.  Only
+                # top0[.debug] should be installed.
+                self.pkg("change-facet -v devel=True debug.top=True")
                 self.assert_files_exist((
                     ("top0", True),
+                    ("top0.debug", True),
                     ("top1", False),
                     ("top2", False),
                     ("top3", False),
                     ("top4", False),
                     ("top5", False),
+                    ("optional.doc", False),
+                    ("optional_fr.doc", False),
                 ))
 
 

@@ -185,8 +185,13 @@ doc.txt True local
 """
                 self.__assert_facet_matches(exp_def)
 
+                # Matched because facet is implicitly set.
+                exp_def = """\
+doc.pdf False local
+"""
+                self.__assert_facet_matches(exp_def, names=["doc.pdf"])
+
                 # Unmatched because facet is not explicitly set.
-                self.__assert_facet_fails("doc.pdf")
                 self.__assert_facet_fails("'*pdf'")
 
                 # Matched case for explicitly set.
@@ -292,14 +297,12 @@ doc.txt True local
                         # Unprivileged user case.
                         self.__assert_facet_matches("", opts=opts, su_wrap=True)
 
-                        # Unmatched case.
-                        self.__assert_facet_matches_default("", opts=opts,
-                            names=("bogus",), exit=1)
+                # Fails because not used by any installed package.
+                self.__assert_facet_fails("-i bogus")
 
-                        # Unmatched case tsv; subtly different as no error
-                        # output is expected.
-                        self.__assert_facet_matches_tsv("", opts=opts,
-                            names=("bogus",), exit=1, errout=False)
+                # Succeeds because implicitly set in image.
+                self.__assert_facet_matches_tsv("bogus\tTrue\tsystem\n",
+                    opts=("-a",), names=("bogus",))
 
                 #
                 # Next, verify output after setting facets.
@@ -367,8 +370,13 @@ opensolaris.zone global
 """ % variants
                 self.__assert_variant_matches(exp_def)
 
+                # Matched because variant is implicitly false.
+                exp_def = """\
+debug.foo false
+""" % variants
+                self.__assert_variant_matches(exp_def, names=["debug.foo"])
+
                 # Unmatched because variant is not explicitly set.
-                self.__assert_variant_fails("debug.foo")
                 self.__assert_variant_fails("'*foo'")
 
                 # Matched case for explicitly set.

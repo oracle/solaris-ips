@@ -1353,7 +1353,7 @@ An example of a variant tag is \fBvariant.arch=sparc\fR. An example of a facet t
 Facets and variants are special properties of the image and cannot be set on individual packages. To view the current values of the facets and variants set on the image, use the \fBpkg facet\fR and \fBpkg variant\fR commands as shown in the \fBpkg\fR(1) man page. To modify the values of the facets and variants set on the image, use the \fBpkg change-facet\fR and \fBpkg change-variant\fR commands.
 .sp
 .LP
-Facets are treated as boolean values by package clients: Facets can be set only to \fBtrue\fR (enabled) or \fBfalse\fR (disabled) in the image. By default, all facets are considered to be set to \fBtrue\fR in the image.
+Facets are treated as boolean values by package clients: Facets can be set only to \fBtrue\fR (enabled) or \fBfalse\fR (disabled) in the image. By default, all facets starting with 'facet.debug.' or 'facet.optional.' are considered to be set to \fBfalse\fR in the image; all others are considered to be set to \fBtrue\fR in the image.
 .sp
 .LP
 Facets can be either set locally within an image or inherited from a parent image. For example, a non-global zone can inherit a facet from the global zone. Inherited facets are evaluated before, and take priority over, any locally set facets. If the same facet is both inherited and locally set, the inherited facet value masks the locally set value. Facet changes made by using the \fBpkg change-facet\fR command only affect locally set facets.
@@ -1422,7 +1422,7 @@ Actions with facet tags are installed if the following conditions exist in the i
 .TP
 .ie t \(bu
 .el o
-All facet tags on the action that have a value of \fBall\fR are \fBtrue\fR in the image (\fBtrue\fR is the default).
+All facet tags on the action that have a value of \fBall\fR are \fBtrue\fR in the image (\fBfalse\fR is the default for all facets starting with 'facet.debug.' or 'facet.optional.'; \fBtrue\fR is the default for all others).
 .RE
 .RS +4
 .TP

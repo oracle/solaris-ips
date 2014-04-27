@@ -103,8 +103,8 @@ from pkg.smf import NonzeroExitException
 # things like help(pkg.client.api.PlanDescription)
 from pkg.client.plandesc import PlanDescription # pylint: disable=W0611
 
-CURRENT_API_VERSION = 79
-COMPATIBLE_API_VERSIONS = frozenset([72, 73, 74, 75, 76, 77, 78,
+CURRENT_API_VERSION = 80
+COMPATIBLE_API_VERSIONS = frozenset([72, 73, 74, 75, 76, 77, 78, 79,
     CURRENT_API_VERSION])
 CURRENT_P5I_VERSION = 1
 
@@ -833,7 +833,7 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                 dependencies on this) """
                 return [a for a in self._img.get_avoid_dict().iteritems()]
 
-        def gen_facets(self, facet_list, patterns=misc.EmptyI):
+        def gen_facets(self, facet_list, implicit=False, patterns=misc.EmptyI):
                 """A generator function that produces tuples of the form:
 
                     (
@@ -858,6 +858,11 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                         FACET_INSTALLED
                                 Return only the facets listed in installed
                                 packages.
+
+                'implicit' is a boolean indicating whether facets specified in
+                the 'patterns' parameter that are not explicitly set in the
+                image or found in a package should be included.  Ignored for
+                FACET_INSTALLED case.
 
                 'patterns' is an optional list of facet wildcard strings to
                 filter results by."""
@@ -885,9 +890,20 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                                         # effective facet state.
                                         fpkg.add(facet)
 
+                # If caller wants implicit values, include non-glob patterns
+                # (even if not found) in results unless only installed facets
+                # were requested.
+                iset = set()
+                if implicit and facet_list != self.FACET_INSTALLED:
+                        iset = set(
+                            p.startswith("facet.") and p or ("facet." + p)
+                            for p in patterns
+                            if "*" not in p and "?" not in p
+                        )
+                flist = sorted(fimg | fpkg | iset)
+
                 # Generate the results.
-                for name in misc.yield_matching("facet.", sorted(fimg | fpkg),
-                    patterns):
+                for name in misc.yield_matching("facet.", flist, patterns):
                         # check if the facet is explicitly set.
                         if name not in facets:
                                 # The image's Facets dictionary will return
@@ -905,7 +921,8 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                         for value, src, masked in facets._src_values(name):
                                 yield (name, value, src, masked)
 
-        def gen_variants(self, variant_list, patterns=misc.EmptyI):
+        def gen_variants(self, variant_list, implicit=False,
+            patterns=misc.EmptyI):
                 """A generator function that produces tuples of the form:
 
                     (
@@ -948,6 +965,11 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                                 any installed package) for only the variants
                                 listed in installed packages.
 
+                'implicit' is a boolean indicating whether variants specified in
+                the 'patterns' parameter that are not explicitly set in the
+                image or found in a package should be included.  Ignored for
+                VARIANT_INSTALLED* cases.
+
                 'patterns' is an optional list of variant wildcard strings to
                 filter results by."""
 
@@ -976,24 +998,22 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                                     ignore_excludes=True)
                                 for variant, vals in mfst.gen_variants(
                                     excludes=excludes):
-                                        # Unlike facets, Variants class doesn't
-                                        # handle implicitly set values.
-                                        if variant[:14] == "variant.debug.":
-                                                # Debug variants are implicitly
-                                                # false and are not required
-                                                # to be set explicitly in the
-                                                # image.
-                                                vpkg[variant] = variants.get(
-                                                    variant, "false")
-                                        elif variant not in vimg:
+                                        if variant not in vimg:
                                                 # Although rare, packages with
                                                 # unknown variants (those not
                                                 # set in the image) can be
                                                 # installed as long as content
                                                 # does not conflict.  For those
-                                                # variants, return None.
-                                                vpkg[variant] = \
-                                                    variants.get(variant)
+                                                # variants, return None.  This
+                                                # is done without using get() as
+                                                # that would cause None to be
+                                                # returned for implicitly set
+                                                # variants (e.g. debug).
+                                                try:
+                                                        vpkg[variant] = \
+                                                            variants[variant]
+                                                except KeyError:
+                                                        vpkg[variant] = None
 
                                         if (variant_list == \
                                             self.VARIANT_ALL_POSSIBLE or
@@ -1005,9 +1025,28 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                                                 # values.
                                                 vposs[variant].update(set(vals))
 
+                # If caller wants implicit values, include non-glob debug
+                # patterns (even if not found) in results unless only installed
+                # variants were requested.
+                iset = set()
+                if implicit and variant_list != self.VARIANT_INSTALLED and \
+                    variant_list != self.VARIANT_INSTALLED_POSSIBLE:
+                        # Normalize patterns.
+                        iset = set(
+                            p.startswith("variant.") and p or ("variant." + p)
+                            for p in patterns
+                            if "*" not in p and "?" not in p
+                        )
+                        # Only debug variants can have an implicit value.
+                        iset = set(
+                            p
+                            for p in iset
+                            if p.startswith("variant.debug.")
+                        )
+                vlist = sorted(vimg | set(vpkg.keys()) | iset)
+
                 # Generate the results.
-                for name in misc.yield_matching("variant.",
-                    sorted(vimg | set(vpkg.keys())), patterns):
+                for name in misc.yield_matching("variant.", vlist, patterns):
                         try:
                                 yield (name, vpkg[name], sorted(vposs[name]))
                         except KeyError:

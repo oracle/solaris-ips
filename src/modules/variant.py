@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2009, 2012, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2009, 2014, Oracle and/or its affiliates. All rights reserved.
 #
 
 # basic variant support
@@ -34,7 +34,7 @@ from collections import namedtuple
 from pkg._varcet import _allow_variant
 from pkg.misc import EmptyI
 
-class Variants(dict):
+class _Variants(dict):
         # store information on variants; subclass dict
         # and maintain set of keys for performance reasons
 
@@ -80,7 +80,38 @@ class Variants(dict):
                 self.__keyset = set()
                 dict.clear(self)
 
-Variants.allow_action = types.MethodType(_allow_variant, None, Variants)
+_Variants.allow_action = types.MethodType(_allow_variant, None, _Variants)
+
+
+class Variants(_Variants):
+        """This is a wrapper-class used by other consumers that handles implicit
+        variant values.  This class cannot be used by the VariantCombination*
+        classes since they rely on explicit values only to be found."""
+
+        def __getitem_internal(self, item):
+                """Implement variant lookup algorithm here
+
+                Note that _allow_variant bypasses __getitem__ for performance
+                reasons; if __getitem__ changes, _allow_variant in _varcet.c
+                must also be updated.
+
+                We return a tuple of the form (<key>, <value>) where key is the
+                explicitly set variant name that matched the caller specific
+                variant name."""
+
+                if not item.startswith("variant."):
+                        raise KeyError, "key must start w/ variant."
+
+                if item in self:
+                        return item, dict.__getitem__(self, item)
+
+                # The trailing '.' is to encourage namespace usage.
+                if item.startswith("variant.debug."):
+                        return None, "false" # 'false' by default
+                raise KeyError, "unknown variant %s" % item
+
+        def __getitem__(self, item):
+                return self.__getitem_internal(item)[1]
 
 
 # The two classes which follow are used during dependency calculation when
@@ -103,7 +134,7 @@ Variants.allow_action = types.MethodType(_allow_variant, None, Variants)
 # instances while maintaining consistency between the satisfied set and the
 # unsatisfied set.
 
-class VariantCombinationTemplate(Variants):
+class VariantCombinationTemplate(_Variants):
         """Class for holding a template of variant types and their potential
         values."""
 
@@ -111,14 +142,14 @@ class VariantCombinationTemplate(Variants):
                 return VariantCombinationTemplate(self)
 
         def __setitem__(self, item, value):
-                """Overrides Variants.__setitem__ to ensure that all values are
+                """Overrides _Variants.__setitem__ to ensure that all values are
                 sets."""
 
                 if isinstance(value, list):
                         value = set(value)
                 elif not isinstance(value, set):
                         value = set([value])
-                Variants.__setitem__(self, item, value)
+                _Variants.__setitem__(self, item, value)
 
         def issubset(self, var):
                 """Returns whether self is a subset of variant var."""

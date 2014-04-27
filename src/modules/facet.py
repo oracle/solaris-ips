@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2007, 2013, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2007, 2014, Oracle and/or its affiliates. All rights reserved.
 #
 
 # basic facet support
@@ -301,6 +301,10 @@ class Facets(dict):
                         if self.__res[k].match(item):
                                 return k, dict.__getitem__(self, k)
 
+                # The trailing '.' is to encourage namespace usage.
+                if item.startswith("facet.debug.") or \
+                    item.startswith("facet.optional."):
+                        return None, False # exclude by default
                 return None, True # be inclusive
 
         def __getitem__(self, item):

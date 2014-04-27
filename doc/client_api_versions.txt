@@ -1,3 +1,12 @@
+Version 80:
+Compatible with clients using versions 72-79.
+
+    pkg.client.api.ImageInterface has changed as follows:
+
+	* Added optional 'implicit' parameter to gen_facets() and
+	  gen_variants() methods to get effective value of facets and
+	  boolean variants.
+
 Version 79:
 Compatible with clients using versions 72-78.
 

@@ -27,7 +27,9 @@ Name                  values
 facet.locale.*        true, false
 facet.doc.man	      true, false
 facet.doc	      true, false
+facet.debug.*         true, false
 facet.devel.*         true, false
+facet.optional.*      true, false
 variant.arch	      sparc, i386, zos
 variant.debug.*	      true, false
 
@@ -55,11 +57,11 @@ In order to simplify grouping of facets, wildcarding is supported
 when setting facets, but not variants.  For example,
 facet.doc.* matches facet.doc.man, facet.doc.info and facet.doc.html.
 For ease of installation and backwards compatibility, facets that
-are unspecified in the image are automatically included; for the
-same reasons, any variant matching the name variant.debug.* is
-automatically set to false.  When multiple image facet patterns
-match, the longest match is selected. For example, the image
-may have:
+are unspecified in the image are automatically included except for those
+starting with 'facet.debug.' or 'facet.optional.'; for the same reasons,
+any variant matching the name variant.debug.* is automatically set to
+false.  When multiple image facet patterns match, the longest match is
+selected. For example, the image may have:
 
 
 facet.locale.*  false
@@ -113,6 +115,8 @@ facet.doc.info		 true
 facet.doc.man		 true
 facet.doc.html		 true
 facet.devel		 true
+facet.debug.<all>	 false
+facet.optional.<all>	 false
 facet.platform.sun4u	 true 
 facet.platform.sun4v	 true
 variant.arch		 one of sparc, i386 as set by platform code

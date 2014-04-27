@@ -91,7 +91,7 @@ except KeyboardInterrupt:
         import sys
         sys.exit(1)
 
-CLIENT_API_VERSION = 79
+CLIENT_API_VERSION = 80
 PKG_CLIENT_NAME = "pkg"
 
 JUST_UNKNOWN = 0
@@ -4877,9 +4877,13 @@ def list_variant(op, api_inst, pargs, omit_headers, output_format,
         found = [False]
         req_variants = set(pargs)
 
+        # If user explicitly provides variants, display implicit value even if
+        # not explicitly set in the image or found in a package.
+        implicit = req_variants and True or False
+
         def gen_current():
                 for (name, val, pvals) in api_inst.gen_variants(variant_list,
-                    patterns=req_variants):
+                    implicit=implicit, patterns=req_variants):
                         if output_format == "default":
                                 name_list = name.split(".")[1:]
                                 name = ".".join(name_list)
@@ -4891,7 +4895,7 @@ def list_variant(op, api_inst, pargs, omit_headers, output_format,
 
         def gen_possible():
                 for (name, val, pvals) in api_inst.gen_variants(variant_list,
-                    patterns=req_variants):
+                    implicit=implicit, patterns=req_variants):
                         if output_format == "default":
                                 name_list = name.split(".")[1:]
                                 name = ".".join(name_list)
@@ -4969,9 +4973,14 @@ def list_facet(op, api_inst, pargs, omit_headers, output_format, list_all_items,
         elif list_installed:
                 facet_list = api_inst.FACET_INSTALLED
 
+        # If user explicitly provides facets, display implicit value even if
+        # not explicitly set in the image or found in a package.
+        implicit = req_facets and True or False
+
         def gen_listing():
                 for (name, val, src, masked) in \
-                    api_inst.gen_facets(facet_list, patterns=req_facets):
+                    api_inst.gen_facets(facet_list, implicit=implicit,
+                        patterns=req_facets):
                         if output_format == "default":
                                 name_list = name.split(".")[1:]
                                 name = ".".join(name_list)
