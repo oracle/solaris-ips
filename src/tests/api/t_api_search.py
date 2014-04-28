@@ -20,7 +20,7 @@
 # CDDL HEADER END
 #
 
-# Copyright (c) 2009, 2013, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2009, 2014, Oracle and/or its affiliates. All rights reserved.
 
 import testutils
 if __name__ == "__main__":
@@ -1457,6 +1457,7 @@ class TestApiSearchBasicsP(TestApiSearchBasics):
 
                 index_dir = os.path.join(self.img_path(), "var", "pkg",
                     "cache", "index")
+                self._search_op(api_obj, False, "fooo", set(), True)
 
                 first = True
 
@@ -1488,6 +1489,7 @@ class TestApiSearchBasicsP(TestApiSearchBasics):
 
                 index_dir = os.path.join(self.img_path(), "var", "pkg",
                     "cache", "index")
+                self._search_op(api_obj, False, "fooo", set(), True)
 
                 first = True
 
@@ -1962,6 +1964,8 @@ class TestApiSearchBasicsP(TestApiSearchBasics):
 
                 index_dir = os.path.join(self.img_path(), "var", "pkg",
                     "cache", "index")
+                api_obj.rebuild_search_index()
+                self._search_op(api_obj, False, 'example', set())
 
                 orig_fn = os.path.join(index_dir,
                     query_parser.TermQuery._get_gdd(index_dir).values()[0].\
