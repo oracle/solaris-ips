@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2013, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2013, 2014, Oracle and/or its affiliates. All rights reserved.
 #
 
 import testutils
@@ -74,6 +74,16 @@ class TestPkgRepo(pkg5unittest.SingleDepotTestCase):
             file tmp/empty mode=0555 owner=root group=bin path=/etc/empty
             file tmp/truck1 mode=0444 owner=root group=bin path=/etc/trailer"""
 
+        hashed10 = """
+            set name=pkg.fmri value=hashed@1.0:20130804T203459Z
+            license 6aba708bd383553aa84bba4fefe8495239927767 chash=60c3aa47dce2ba0132efdace8d3b88b6589767f4 license=lic_OTN
+            file 4ab5de3107a63f5cf454485f720cac025f1b7002 chash=dc03afd488e3b3e4c4993d2403d7e15603b0a391 path=etc/motd"""
+
+        hashed20 = """
+            set name=pkg.fmri value=hashed@2.0:20130904T203001Z
+            license 7ab6de3107a63f5cf454485f720cac025f1b7001 chash=cc05afd488e3b3e4c4993d2403d7e15603b0a398 license=lic_OTN
+            file 3aba408bd383553aa84bba4fefe8495239927763 chash=f0c2aa47dce2ba0132efdace8d3b88b6589767f3 path=etc/motd"""
+
         def setUp(self):
                 pkg5unittest.SingleDepotTestCase.setUp(self)
                 tfiles = self.make_misc_files(["tmp/empty", "tmp/truck1",
@@ -83,6 +93,8 @@ class TestPkgRepo(pkg5unittest.SingleDepotTestCase):
                 self.tree10_p5m = self.make_manifest(self.tree10)
                 self.tree20_p5m = self.make_manifest(self.tree20)
                 self.tree30_p5m = self.make_manifest(self.tree30)
+                self.hashed10_p5m = self.make_manifest(self.hashed10)
+                self.hashed20_p5m = self.make_manifest(self.hashed20)
                 self.bogus_p5m = os.path.join(self.test_root, "nosuch.p5m")
                 self.noaccess_p5m = self.make_misc_files(
                     ["tmp/noaccess.p5m"])[0]
@@ -185,6 +197,73 @@ class TestPkgRepo(pkg5unittest.SingleDepotTestCase):
                 # the same.
                 self.pkgdiff(" ".join(("-t file", self.stub1_p5m,
                     self.stub2_p5m)), exit=1)
+
+        def test_03_hash(self):
+                """Verify that hash attributes are compared as expected."""
+
+                # Verify no differences for same manifest.
+                self.pkgdiff(" ".join(("-t file", self.hashed10_p5m,
+                    self.hashed10_p5m)))
+
+                # Verify differences found for file actions between 1.0 and 2.0;
+                # in particular, that the 'old' hash values match 1.0 and the
+                # 'new' hash values match 2.0.
+                self.pkgdiff(" ".join(("-t file", self.hashed10_p5m,
+                    self.hashed20_p5m)), exit=1)
+                expected = """\
+file path=etc/motd 
+ - 4ab5de3107a63f5cf454485f720cac025f1b7002
+ + 3aba408bd383553aa84bba4fefe8495239927763
+ - chash=dc03afd488e3b3e4c4993d2403d7e15603b0a391
+ + chash=f0c2aa47dce2ba0132efdace8d3b88b6589767f3
+"""
+                actual = self.reduceSpaces(self.output)
+                self.assertEqualDiff(expected, actual)
+
+                # Again, but only comparing hash attribute.
+                self.pkgdiff(" ".join(("-t file -o hash", self.hashed10_p5m,
+                    self.hashed20_p5m)), exit=1)
+                expected = """\
+file path=etc/motd 
+ - 4ab5de3107a63f5cf454485f720cac025f1b7002
+ + 3aba408bd383553aa84bba4fefe8495239927763
+"""
+                actual = self.reduceSpaces(self.output)
+                self.assertEqualDiff(expected, actual)
+
+                # Again, ignoring hash attributes (should find no differences).
+                self.pkgdiff(" ".join(("-t file -i hash -i chash",
+                    self.hashed10_p5m, self.hashed20_p5m)), exit=0)
+
+                # Verify differences found for license actions between 2.0 and 1.0;
+                # in particular, that the 'old' hash values match 2.0 and the
+                # 'new' hash values match 1.0.
+                self.pkgdiff(" ".join(("-t license", self.hashed20_p5m,
+                    self.hashed10_p5m)), exit=1)
+                expected = """\
+license license=lic_OTN 
+ - 7ab6de3107a63f5cf454485f720cac025f1b7001
+ + 6aba708bd383553aa84bba4fefe8495239927767
+ - chash=cc05afd488e3b3e4c4993d2403d7e15603b0a398
+ + chash=60c3aa47dce2ba0132efdace8d3b88b6589767f4
+"""
+                actual = self.reduceSpaces(self.output)
+                self.assertEqualDiff(expected, actual)
+
+                # Again, but only comparing hash attribute.
+                self.pkgdiff(" ".join(("-t license -o hash", self.hashed20_p5m,
+                    self.hashed10_p5m)), exit=1)
+                expected = """\
+license license=lic_OTN 
+ - 7ab6de3107a63f5cf454485f720cac025f1b7001
+ + 6aba708bd383553aa84bba4fefe8495239927767
+"""
+                actual = self.reduceSpaces(self.output)
+                self.assertEqualDiff(expected, actual)
+
+                # Again, ignoring hash attributes (should find no differences).
+                self.pkgdiff(" ".join(("-t license -i hash -i chash",
+                    self.hashed20_p5m, self.hashed10_p5m)), exit=0)
 
 
 if __name__ == "__main__":

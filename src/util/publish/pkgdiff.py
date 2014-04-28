@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2009, 2013, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2009, 2014, Oracle and/or its affiliates. All rights reserved.
 #
 
 import getopt
@@ -81,7 +81,8 @@ def main_func():
                         elif opt == "-v":
                                 args = arg.split("=")
                                 if len(args) != 2:
-                                        usage(_("variant option incorrect %s") % arg)
+                                        usage(_("variant option incorrect %s") %
+                                            arg)
                                 if not args[0].startswith("variant."):
                                         args[0] = "variant." + args[0]
                                 varattrs[args[0]].add(args[1])
@@ -102,7 +103,8 @@ def main_func():
 
         for v in varattrs:
                 if len(varattrs[v]) > 1:
-                        usage(_("For any variant, only one value may be specified."))
+                        usage(_("For any variant, only one value may be "
+                            "specified."))
                 varattrs[v] = varattrs[v].pop()
 
         ignoreattrs = set(ignoreattrs)
@@ -149,13 +151,13 @@ def main_func():
         v1 = manifest1.get_all_variants()
         v2 = manifest2.get_all_variants()
         for vname in varattrs:
-                for path, v, m in zip(pargs, (v1, v2), (manifest1, manifest2)):
+                for _path, v, m in zip(pargs, (v1, v2), (manifest1, manifest2)):
                         if vname not in v:
                                 continue
                         filt = varattrs[vname]
                         if filt not in v[vname]:
-                                usage(_("Manifest %(path)s doesn't support variant %(vname)s=%(filt)s" %
-                                    locals()))
+                                usage(_("Manifest %(path)s doesn't support "
+                                    "variant %(vname)s=%(filt)s" % locals()))
                         # remove the variant tag
                         def rip(a):
                                 a.attrs.pop(vname, None)
@@ -219,7 +221,7 @@ def main_func():
 
         # License action still causes spurious diffs... check again for now.
         real_diffs = [
-            (a,b)
+            (a, b)
             for a, b in diffs
             if a is None or b is None or a.different(b)
         ]
@@ -237,7 +239,8 @@ def main_func():
                         if res:
                                 return res
                         # sort by variant
-                        res = cmp(sorted(list(a.get_variant_template())), sorted(list(b.get_variant_template())))
+                        res = cmp(sorted(list(a.get_variant_template())),
+                            sorted(list(b.get_variant_template())))
                         if res:
                                 return res
                 else:
@@ -266,8 +269,11 @@ def main_func():
 
                 v = attrs[k]
                 if isinstance(v, list) or isinstance(v, set):
-                        out = " ".join(["%s=%s" %
-                            (k, q(lmt)) for lmt in sorted(v) if lmt not in elide_iter])
+                        out = " ".join([
+                            "%s=%s" % (k, q(lmt))
+                            for lmt in sorted(v)
+                            if lmt not in elide_iter
+                        ])
                 elif " " in v or v == "":
                         out = k + "=\"" + v + "\""
                 else:
@@ -296,35 +302,43 @@ def main_func():
                         s = []
 
                         if not onlyattrs:
-                                if hasattr(old, "hash") and "hash" not in ignoreattrs:
+                                if (hasattr(old, "hash") and
+                                    "hash" not in ignoreattrs):
                                         if old.hash != new.hash:
-                                                s.append("  - %s" % new.hash)
-                                                s.append("  + %s" % old.hash)
-                                attrdiffs = set(new.differences(old)) - ignoreattrs
-                                attrsames = sorted(list(set(old.attrs.keys() + new.attrs.keys()) -
+                                                s.append("  - %s" % old.hash)
+                                                s.append("  + %s" % new.hash)
+                                attrdiffs = (set(new.differences(old)) -
+                                    ignoreattrs)
+                                attrsames = sorted( list(set(old.attrs.keys() +
+                                    new.attrs.keys()) -
                                     set(new.differences(old))))
                         else:
-                                if hasattr(old, "hash") and "hash"  in onlyattrs:
+                                if hasattr(old, "hash") and "hash" in onlyattrs:
                                         if old.hash != new.hash:
-                                                s.append("  - %s" % new.hash)
-                                                s.append("  + %s" % old.hash)
-                                attrdiffs = set(new.differences(old)) & onlyattrs
-                                attrsames = sorted(list(set(old.attrs.keys() + new.attrs.keys()) -
+                                                s.append("  - %s" % old.hash)
+                                                s.append("  + %s" % new.hash)
+                                attrdiffs = (set(new.differences(old)) &
+                                    onlyattrs)
+                                attrsames = sorted(list(set(old.attrs.keys() +
+                                    new.attrs.keys()) -
                                     set(new.differences(old))))
 
                         for a in sorted(attrdiffs):
                                 if a in old.attrs and a in new.attrs and \
                                     isinstance(old.attrs[a], list) and \
                                     isinstance(new.attrs[a], list):
-                                        elide_set = set(old.attrs[a]) & set(new.attrs[a])
+                                        elide_set = (set(old.attrs[a]) &
+                                            set(new.attrs[a]))
                                 else:
                                         elide_set = set()
                                 if a in old.attrs:
-                                        diff_str = attrval(old.attrs, a, elide_iter=elide_set)
+                                        diff_str = attrval(old.attrs, a,
+                                            elide_iter=elide_set)
                                         if diff_str:
                                                 s.append("  - %s" % diff_str)
                                 if a in new.attrs:
-                                        diff_str = attrval(new.attrs, a, elide_iter=elide_set)
+                                        diff_str = attrval(new.attrs, a,
+                                            elide_iter=elide_set)
                                         if diff_str:
                                                 s.append("  + %s" % diff_str)
                         # print out part of action that is the same
