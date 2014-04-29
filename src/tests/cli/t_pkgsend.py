@@ -42,6 +42,12 @@ from pkg.actions import fromstr
 from pkg.digest import DEFAULT_HASH_FUNC
 import pkg.portable as portable
 
+try:
+        import pkg.sha512_t
+        sha512_supported = True
+except ImportError:
+        sha512_supported = False
+
 
 class TestPkgsendBasics(pkg5unittest.SingleDepotTestCase):
         persistent_setup = False
@@ -1296,7 +1302,8 @@ dir path=/usr/bin/foo target=bar hash=payload-pathname""")
                 compute, other attributes are left alone."""
 
                 self.base_26_pkgsend_multihash("sha256")
-                self.base_26_pkgsend_multihash("sha512_256")
+                if sha512_supported:
+                        self.base_26_pkgsend_multihash("sha512_256")
 
         def base_26_pkgsend_multihash(self, hash_alg):
                 # we use a file:// URI rather than the repo URI so we don't have

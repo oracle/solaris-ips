@@ -50,6 +50,12 @@ import zlib
 
 from pkg.digest import DEFAULT_HASH_FUNC
 
+try:
+        import pkg.sha512_t
+        sha512_supported = True
+except ImportError:
+        sha512_supported = False
+
 class TestPkgrecvMulti(pkg5unittest.ManyDepotTestCase):
         # Cleanup after every test.
         persistent_setup = False
@@ -917,7 +923,8 @@ class TestPkgrecvMulti(pkg5unittest.ManyDepotTestCase):
                 multi-hash support, interoperating with repositories without
                 multi-hash support."""
                 self.base_12_multihash("sha256")
-                self.base_12_multihash("sha512_256")
+                if sha512_supported:
+                        self.base_12_multihash("sha512_256")
 
         def base_12_multihash(self, hash_alg):
                 f = fmri.PkgFmri(self.published[3], None)

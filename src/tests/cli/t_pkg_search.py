@@ -42,8 +42,12 @@ import pkg.client.pkgdefs as pkgdefs
 import pkg.fmri as fmri
 import pkg.indexer as indexer
 import pkg.portable as portable
-import pkg.sha512_t as sha512_t
 
+try:
+        import pkg.sha512_t as sha512_t
+        sha512_supported = True
+except ImportError:
+        sha512_supported = False
 
 class TestPkgSearchBasics(pkg5unittest.SingleDepotTestCase):
 
@@ -1134,7 +1138,9 @@ class TestSearchMultiPublisher(pkg5unittest.ManyDepotTestCase):
                 This test depends on pkg.digest having DebugValue settings
                 that add sha512/256 hashes to the set of hashes we append to
                 actions at publication time."""
-                self.base_search_multi_hash("sha512_256", sha512_t.SHA512_t)
+                if sha512_supported:
+                        self.base_search_multi_hash("sha512_256",
+                            sha512_t.SHA512_t)
 
         def base_search_multi_hash(self, hash_alg, hash_fun):
                 # our 2nd depot gets the package published with multiple hash

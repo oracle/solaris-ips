@@ -50,6 +50,12 @@ import pkg.portable as portable
 
 from pkg.client.pkgdefs import EXIT_OOPS
 
+try:
+        import pkg.sha512
+        sha512_supported = True
+except ImportError:
+        sha512_supported = False
+
 class _TestHelper(object):
         """Private helper class for shared functionality between test
         classes."""
@@ -3592,9 +3598,10 @@ adm
                 upgrade works."""
 
                 self.many_hashalgs_helper("install", "sha256")
-                self.many_hashalgs_helper("install", "sha512_256")
                 self.many_hashalgs_helper("exact-install", "sha256")
-                self.many_hashalgs_helper("exact-install", "sha512_256")
+                if sha512_supported:
+                        self.many_hashalgs_helper("install", "sha512_256")
+                        self.many_hashalgs_helper("exact-install", "sha512_256")
 
         def many_hashalgs_helper(self, install_cmd, hash_alg):
                 self.pkgsend_bulk(self.rurl, (self.iron10))

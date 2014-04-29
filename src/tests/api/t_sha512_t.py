@@ -30,12 +30,20 @@ if __name__ == "__main__":
 import pkg5unittest
 
 import unittest
-import pkg.sha512_t as sha512_t
+
+try:
+        import pkg.sha512_t as sha512_t
+        sha512_supported = True
+except ImportError:
+        sha512_supported = False
 
 class TestPkgSha(pkg5unittest.Pkg5TestCase):
         """A class tests the sha512_t module."""
 
         def test_basic(self):
+                if not sha512_supported:
+                        return
+
                 # The expected values are from the examples:
                 # http://csrc.nist.gov/groups/ST/toolkit/documents/Examples/SHA512_224.pdf
                 # http://csrc.nist.gov/groups/ST/toolkit/documents/Examples/SHA512_256.pdf

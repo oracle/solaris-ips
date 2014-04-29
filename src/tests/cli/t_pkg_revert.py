@@ -34,6 +34,12 @@ import pkg.portable as portable
 import pkg.misc as misc
 import sys
 
+try:
+        import pkg.sha512
+        sha512_supported = True
+except ImportError:
+        sha512_supported = False
+
 class TestPkgRevert(pkg5unittest.SingleDepotTestCase):
         # Only start/stop the depot once (instead of for every test)
         persistent_setup = True
@@ -186,8 +192,12 @@ class TestPkgRevert(pkg5unittest.SingleDepotTestCase):
                 self.plist = self.pkgsend_bulk(self.rurl, self.pkgs)
                 self.plist.extend(self.pkgsend_bulk(self.rurl, self.pkgs2,
                     debug_hash="sha1+sha256"))
-                self.plist.extend(self.pkgsend_bulk(self.rurl, self.pkgs3,
-                    debug_hash="sha1+sha512_256"))
+                if sha512_supported:
+                        self.plist.extend(self.pkgsend_bulk(self.rurl,
+                            self.pkgs3, debug_hash="sha1+sha512_256"))
+                else:
+                        self.plist.extend(self.pkgsend_bulk(self.rurl,
+                            self.pkgs3))
 
         def test_revert(self):
                 self.image_create(self.rurl)
@@ -209,9 +219,10 @@ class TestPkgRevert(pkg5unittest.SingleDepotTestCase):
                 self.pkg("verify B", exit=1)
                 self.assert_(sha2 in self.output)
 
-                self.pkg("-D hash=sha1+sha512_256 verify C", exit=1)
-                sha2 = "13729cb7183961b48ce300c2588c86ad123e7c636f38a0f3c8408a75fd079d09"
-                self.assert_(sha2 in self.output, self.output)
+                if sha512_supported:
+                        self.pkg("-D hash=sha1+sha512_256 verify C", exit=1)
+                        sha2 = "13729cb7183961b48ce300c2588c86ad123e7c636f38a0f3c8408a75fd079d09"
+                        self.assert_(sha2 in self.output, self.output)
                 self.pkg("verify C", exit=1)
                 self.pkg("verify D", exit=1)
 
@@ -253,12 +264,13 @@ class TestPkgRevert(pkg5unittest.SingleDepotTestCase):
                 # our repository stores its files by the SHA1 hash.
                 self.pkg("-D hash=sha256 revert --parsable=0 --tagged bob",
                     exit=1)
-                self.pkg("-D hash=sha512_256 revert --parsable=0 --tagged ted",
-                    exit=1)
-                self.pkg("-D hash=sha1+512_256 revert -n --parsable=0 \
-                    --tagged ted")
-                self.assertEqualParsable(self.output,
-                    affect_packages=[self.plist[12], self.plist[1]])
+                if sha512_supported:
+                        self.pkg("-D hash=sha512_256 revert --parsable=0 \
+                            --tagged ted", exit=1)
+                        self.pkg("-D hash=sha1+512_256 revert -n --parsable=0 \
+                            --tagged ted")
+                        self.assertEqualParsable(self.output,
+                            affect_packages=[self.plist[12], self.plist[1]])
                 self.pkg("-D hash=sha1+sha256 revert --parsable=0 --tagged bob")
                 self.assertEqualParsable(self.output,
                     affect_packages=[self.plist[9], self.plist[12],
