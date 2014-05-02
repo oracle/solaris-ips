@@ -62,7 +62,7 @@ class TestPkgVerify(pkg5unittest.SingleDepotTestCase):
         sysattr = """
             open sysattr@1.0-0
             add dir mode=0755 owner=root group=bin path=/p1
-            add file bobcat mode=0555 owner=root group=bin sysattr=TH path=/p1/bobcat
+            add file bobcat mode=0555 owner=root group=bin sysattr=SH path=/p1/bobcat
             close """
 
         misc_files = {
@@ -263,7 +263,7 @@ class TestPkgVerify(pkg5unittest.SingleDepotTestCase):
                 os.chmod(fpath, 0555)
                 os.chown(fpath, -1, 2)
                 self.pkg("verify", exit=1)
-                for sattr in ('H','T'):
+                for sattr in ('H','S'):
                         expected = "System attribute '%s' not set" % sattr
                         self.assertTrue(expected in self.output,
                             "Missing in verify output:  %s" % expected)

@@ -253,13 +253,13 @@ class TestPkgInstallBasics(pkg5unittest.SingleDepotTestCase):
         secret1 = """
             open secret1@1.0-0
             add dir mode=0755 owner=root group=bin path=/p1
-            add file tmp/cat mode=0555 owner=root group=bin sysattr=TH path=/p1/cat
+            add file tmp/cat mode=0555 owner=root group=bin sysattr=SH path=/p1/cat
             close """
 
         secret2 = """
             open secret2@1.0-0
             add dir mode=0755 owner=root group=bin path=/p2
-            add file tmp/cat mode=0555 owner=root group=bin sysattr=hidden,sensitive path=/p2/cat
+            add file tmp/cat mode=0555 owner=root group=bin sysattr=hidden,system path=/p2/cat
             close """
 
         secret3 = """
@@ -1071,7 +1071,8 @@ class TestPkgInstallBasics(pkg5unittest.SingleDepotTestCase):
                 p = subprocess.Popen(["/usr/bin/ls", "-/", "c", fpath],
                     stdout=subprocess.PIPE)
                 out, err = p.communicate()
-                expected = "{AH-----m----T}"
+                # sensitive attr is not in 11 FCS, so no closing } 
+                expected = "{AH-S---m----"
                 self.assertTrue(expected in out, out)
 
                 self.pkg("install secret2")
@@ -1079,7 +1080,8 @@ class TestPkgInstallBasics(pkg5unittest.SingleDepotTestCase):
                 p = subprocess.Popen(["/usr/bin/ls", "-/", "c", fpath],
                     stdout=subprocess.PIPE)
                 out, err = p.communicate()
-                expected = "{AH-----m----T}"
+                # sensitive attr is not in 11 FCS, so no closing }
+                expected = "{AH-S---m----"
                 self.assertTrue(expected in out, out)
 
                 # test some packages with invalid sysattrs
