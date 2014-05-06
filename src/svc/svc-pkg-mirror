@@ -329,7 +329,7 @@ configured for publisher $pub"
 				proxy=''
 			fi
 			https_proxies[$index]=$proxy
-			http_proxy[$index]=$proxy
+			http_proxies[$index]=$proxy
 			index=$(( $index + 1 ))
 		done < /tmp/pkg.mirror.$$
 		$RM /tmp/pkg.mirror.$$
