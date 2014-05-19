@@ -2620,10 +2620,12 @@ class LinkedImage(object):
 
         def api_recurse_prepare(self, progtrack):
                 """Prepare child image updates."""
+                progtrack.set_major_phase(progtrack.PHASE_DOWNLOAD)
                 list(self.__api_recurse(pkgdefs.API_STAGE_PREPARE, progtrack))
 
         def api_recurse_execute(self, progtrack):
                 """Execute child image updates."""
+                progtrack.set_major_phase(progtrack.PHASE_FINALIZE)
                 list(self.__api_recurse(pkgdefs.API_STAGE_EXECUTE, progtrack))
 
         def init_plan(self, pd):
