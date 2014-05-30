@@ -440,9 +440,14 @@ group groupname=pkg5srv gid=97
 user username=pkg5srv gcos-field="pkg(5) server UID" group=pkg5srv password=NP \
     uid=97
 legacy pkg=SUNWipkg version=0.0.0
+license lic_gustaebel license="MIT (Lars Gustaebel)" \
+    com.oracle.info.description="portions of the tarfile module from Python 2.4" \
+    com.oracle.info.name=tarfile com.oracle.info.tpno=17819 \
+    com.oracle.info.version=2.4
+license lic_minisat license="MIT (MiniSAT)" \
+    com.oracle.info.description="MiniSAT 1.14.1" com.oracle.info.name=MiniSAT \
+    com.oracle.info.tpno=17867 com.oracle.info.version=1.14.1
 license cr_Oracle license=cr_Oracle
-license lic_gustaebel license=lic_gustaebel
-license lic_minisat license=lic_minisat
 depend type=group fmri=package/pkg/zones-proxy \
     variant.opensolaris.zone=nonglobal
 # cross zone dependency on linked image metadata
