@@ -1,22 +1,25 @@
 '\" te
-.\" Copyright (c) 2007, 2012, Oracle and/or its affiliates.All rights reserved.
-.TH pkgsend 1 "2012 年 6 月 22 日" "SunOS 5.11" "用户命令"
+.\" Copyright (c) 2007, 2013, Oracle and/or its affiliates.All rights reserved.
+.TH pkgsend 1 "2013 年 7 月 30 日" "SunOS 5.12" "用户命令"
 .SH 名称
 pkgsend \- 映像包管理系统发布客户机
 .SH 用法概要
 .LP
 .nf
-/usr/bin/pkgsend [\fIoptions\fR] \fIcommand \fR [\fIcmd_options\fR] [\fIoperands\fR] 
+/usr/bin/pkgsend [\fIoptions\fR] \fIcommand\fR [\fIcmd_options\fR] [\fIoperands\fR]
 .fi
 
 .LP
 .nf
-/usr/bin/pkgsend generate [-T \fIpattern\fR] [--target \fI file\fR] \fIsource\fR ...
+/usr/bin/pkgsend generate [-T \fIpattern\fR] [--target \fIfile\fR]
+    \fIsource\fR ...
 .fi
 
 .LP
 .nf
-/usr/bin/pkgsend publish [-b \fIbundle\fR ...] [-d \fI source\fR ...] [-s \fIrepo_uri_or_path\fR] [-T \fIpattern\fR] [--no-catalog] [\fImanifest\fR ...]
+/usr/bin/pkgsend publish [-b \fIbundle\fR]... [-d \fIsource\fR]...
+    [-s \fIrepo_uri_or_path\fR] [--key \fIssl_key\fR --cert \fIssl_cert\fR]...
+    [-T \fIpattern\fR] [--no-catalog] [\fImanifest\fR ...]
 .fi
 
 .SH 描述
@@ -25,7 +28,7 @@ pkgsend \- 映像包管理系统发布客户机
 通过 \fBpkgsend\fR，可使用软件包清单将新软件包和新软件包版本发布到映像包管理系统信息库。要创建或管理系统信息库，请参见 \fBpkgrepo\fR(1)。要从现有系统信息库的软件包中创建软件包归档文件，请参见 \fBpkgrecv\fR(1)。有关软件包清单的更多信息，请参见 \fBpkg\fR(5)。
 .sp
 .LP
-完成 \fBpkgsend\fR 操作后，在系统信息库上运行 \fBpkgrepo refresh\fR 或 \fBpkgrepo rebuild\fR 以构建搜索索引。
+完成 \fBpkgsend publish\fR 操作后，如果您的 \fI repo_uri_or_path\fR 系统信息库必须支持 \fBpkg search\fR 操作，请在系统信息库上运行 \fBpkgrepo refresh\fR 以更新搜索索引。
 .SH 选项
 .sp
 .LP
@@ -53,7 +56,7 @@ pkgsend \- 映像包管理系统发布客户机
 .ne 2
 .mk
 .na
-\fB\fBpkgsend generate\fR [\fB-T\fR \fI pattern\fR] [\fB--target\fR \fIfile\fR] \fI source\fR ...\fR
+\fB\fBpkgsend generate\fR [\fB-T\fR \fIpattern\fR] [\fB--target\fR \fIfile\fR] \fIsource\fR ...\fR
 .ad
 .sp .6
 .RS 4n
@@ -143,13 +146,15 @@ SVR4 \fBDESC\fR 参数将转换为 \fBpkg.description \fR 值。SVR4 \fBNAME\fR 
 .ne 2
 .mk
 .na
-\fB\fBpkgsend publish\fR [\fB-b\fR \fI bundle\fR ...] [\fB-d\fR \fIsource\fR ...] [\fB-s\fR \fIrepo_uri_or_path\fR] [\fB-T\fR \fI pattern\fR] [\fB--no-catalog\fR] [\fImanifest\fR ...] \fR
+\fB\fBpkgsend publish\fR [\fB-b\fR \fIbundle\fR]... [\fB-d\fR \fIsource\fR]... [\fB-s\fR \fIrepo_uri_or_path\fR] [\fB--key\fR \fIssl_key\fR \fB--cert\fR \fIssl_cert\fR]... [\fB-T\fR \fIpattern\fR] [\fB--no-catalog\fR] [\fImanifest\fR ...]\fR
 .ad
 .sp .6
 .RS 4n
-将使用指定软件包清单的软件包发布到目标软件包系统信息库，并从提供的源中检索该软件包的文件。如果指定了多个清单，它们将以提供的顺序联接。如果未指定清单，则从 \fBstdin\fR 中读取清单。
+将使用指定软件包清单的软件包发布到目标软件包系统信息库，并从提供的源中检索该软件包的文件。如果指定了多个清单，它们将以提供的顺序联接。如果未指定清单，则将从 \fBstdin\fR 中读取清单。
 .sp
-如果未指定，则 \fBpkgsend publish\fR 向软件包 FMRI 添加内部版本。\fBpublish\fR 工具还向软件包 FMRI 添加时间戳（UTC 中的当前时间）。有关软件包 FMRI 的版本字符串的信息，请参见 \fBpkg \fR(5) 手册页。
+如果未指定，则 \fBpkgsend publish\fR 向软件包 FMRI 添加内部版本。\fBpublish\fR 工具还向软件包 FMRI 添加时间戳（UTC 中的当前时间）。有关软件包 FMRI 的版本字符串的信息，请参见 \fBpkg\fR(5) 手册页。
+.sp
+如果可能会有多个 \fBpkgsend publish\fR 进程同时发布到同一 \fB-s\fR 系统信息库，建议指定 \fB--no-catalog\fR 选项。请参见下文对 \fB--no-catalog\fR 选项的说明。
 .sp
 .ne 2
 .mk
@@ -187,11 +192,22 @@ SVR4 \fBDESC\fR 参数将转换为 \fBpkg.description \fR 值。SVR4 \fBNAME\fR 
 .ne 2
 .mk
 .na
+\fB\fB--key\fR \fIssl_key\fR \fB--cert\fR \fIssl_cert\fR\fR
+.ad
+.sp .6
+.RS 4n
+使用 \fB--key\fR 选项指定用于从 HTTPS 系统信息库进行软件包检索的客户机 SSL 密钥文件。使用 \fB--cert\fR 选项指定用于从 HTTPS 系统信息库进行软件包检索的客户机 SSL 证书文件。可以多次指定此选项对。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
 \fB\fB--no-catalog\fR\fR
 .ad
 .sp .6
 .RS 4n
-不将软件包添加到发布者的目录。当一次发布多个软件包，并且必须连续执行发布者目录更新时，建议使用该选项。完成发布后，可使用 \fBpkgrepo\fR 的 \fBrefresh\fR 子命令将新软件包添加到相应的发布者目录。
+不将软件包添加到发布者的目录。当由于必须连续执行对发布者目录的更新而一次发布多个软件包时，建议使用此选项。当多个进程同时发布软件包时，如果不使用此选项，发布性能会显著降低。完成发布后，可使用 \fBpkgrepo refresh\fR 命令将新软件包添加到相应的发布者目录。
 .RE
 
 有关 \fB-T\fR 选项的说明，请参见以上的 \fBgenerate\fR 子命令。
@@ -372,7 +388,10 @@ _
 \fBpkgdepend\fR(1)、\fBpkgrepo\fR(1)、\fBpkg.depotd\fR(1M)、\fBpkg\fR(5)
 .sp
 .LP
-\fBhttp://hub.opensolaris.org/bin/view/Project+pkg/\fR
+\fI《Packaging and Delivering Software With the Image Packaging System in Oracle Solaris 11.2》\fR
+.sp
+.LP
+\fBhttps://java.net/projects/ips/pages/Home\fR
 .SH 附注
 .sp
 .LP

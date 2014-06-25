@@ -1,6 +1,6 @@
 '\" te
-.\" Copyright (c) 2007, 2012, Oracle and/or its affiliates. All rights reserved.
-.TH pkgdepend 1 "2012 年 6 月 22 日" "SunOS 5.11" "ユーザーコマンド"
+.\" Copyright (c) 2007, 2013, Oracle and/or its affiliates. All rights reserved.
+.TH pkgdepend 1 "2013 年 7 月 12 日" "SunOS 5.12" "ユーザーコマンド"
 .SH 名前
 pkgdepend \- Image Packaging System 依存関係アナライザ
 .SH 形式
@@ -17,8 +17,9 @@ pkgdepend \- Image Packaging System 依存関係アナライザ
 
 .LP
 .nf
-/usr/bin/pkgdepend resolve [-moSv] [-d \fIoutput_dir\fR]
-    [-s \fIsuffix\fR] \fImanifest_file\fR ...
+/usr/bin/pkgdepend resolve [-EmoSv] [-d \fIoutput_dir\fR]
+    [-e \fIexternal_package_file\fR]... [-s \fIsuffix\fR]
+    \fImanifest_file\fR ...
 .fi
 
 .SH 機能説明
@@ -42,7 +43,7 @@ pkgdepend \- Image Packaging System 依存関係アナライザ
 .ad
 .RS 22n
 .rt  
-提供されたファイル内の ELF ヘッダーが依存関係情報のために分析され、\fB-k\fR および \fB-D\fR オプションが指定されていると取得された情報が変更されます。ELF 依存関係についての詳細は、\fBldd\fR および\fI『Linker and Libraries Guide』\fRを参照してください。
+提供されたファイル内の ELF ヘッダーが依存関係情報のために分析され、\fB-k\fR および \fB-D\fR オプションが指定されていると取得された情報が変更されます。ELF 依存関係についての詳細は、\fBldd\fR および\fI『Oracle Solaris 11.2 Linkers and Libraries Guide 』\fRを参照してください。 
 .RE
 
 .sp
@@ -113,10 +114,6 @@ Python スクリプトはまず、スクリプトとして分析されます。�
 .mk
 .na
 \fB\fB-R\fR \fIdir\fR\fR
-.ad
-.br
-.na
-\fB\fB--image-dir\fR \fIdir\fR\fR
 .ad
 .sp .6
 .RS 4n
@@ -225,11 +222,35 @@ Python 正規表現の構文については、コマンド \fBpydoc re\fR を使
 .ne 2
 .mk
 .na
-\fB\fBpkgdepend resolve\fR [\fB-moSv\fR] [\fB-d\fR \fIoutput_dir\fR] [\fB-s\fR \fI suffix\fR] \fImanifest_file\fR ...\fR
+\fB\fBpkgdepend resolve\fR [\fB-EmoSv\fR] [\fB-d\fR \fIoutput_dir\fR] [\fB-e\fR \fI external_package_file\fR]... [\fB-s\fR \fIsuffix\fR] \fI manifest_file\fR ...\fR
 .ad
 .sp .6
 .RS 4n
 ファイルへの依存関係を、これらのファイルを提供するパッケージへの依存関係に変換します。依存関係は、まずコマンド行に指定されたマニフェストに基づいて解決され、次にシステムにインストールされているパッケージに基づいて解決されます。デフォルトでは、各マニフェストの依存関係は \fB\fImanifest_file\fR.res\fR という名前のファイルに格納されます。
+.sp
+.ne 2
+.mk
+.na
+\fB\fB-e\fR \fIexternal_package_file\fR\fR
+.ad
+.sp .6
+.RS 4n
+\fIexternal_package_file\fR 内のパターンに名前が一致したシステムからのパッケージに対してのみ解決します。このオプションは複数回指定できます。\fB-e\fR オプションは \fB-S\fR オプションと一緒に使用できません。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB-E\fR\fR
+.ad
+.sp .6
+.RS 4n
+\fB-e\fR が指定された場合、外部の依存関係であると予想されたが、外部の依存関係ではなかったパッケージが表示されます。外部の依存関係であると予想されるパッケージは、\fIexternal_package_file\fR 内のパターンに名前が一致するシステムからのパッケージです。
+.sp
+\fB-e\fR が指定されない場合、解決済みパッケージの外部の依存関係を表示します。解決済みパッケージの外部の依存関係とは、解決済みパッケージの依存関係のターゲットで、コマンド行で指定されないパッケージです。
+.RE
+
 .sp
 .ne 2
 .mk
@@ -356,7 +377,8 @@ foo    bar
 .sp
 .in +2
 .nf
-$ \fBpkgdepend generate -d / -D 'PLATFORM=sun4v' -D 'PLATFORM=sun4u' foo\fR
+$ \fBpkgdepend generate -d / -D 'PLATFORM=sun4v' \e\fR
+\fB-D 'PLATFORM=sun4u' foo\fR
 .fi
 .in -2
 .sp
@@ -394,12 +416,12 @@ set name=pkg.summary value="My test package"
 dir path=opt mode=0755 group=sys owner=root
 dir path=opt/python mode=0755 group=sys owner=root
 dir path=opt/python/foo mode=0755 group=sys owner=root
-file NOHASH path=opt/python/__init__.py mode=0644 group=sys owner=root
-file NOHASH path=opt/python/foo/__init__.py mode=0644 group=sys owner=root
+file path=opt/python/__init__.py mode=0644 group=sys owner=root
+file path=opt/python/foo/__init__.py mode=0644 group=sys owner=root
 #
 # Add runpath and bypass-generate attributes:
 #
-file NOHASH path=opt/python/foo/file.py mode=0644 group=sys owner=root \e
+file path=opt/python/foo/file.py mode=0644 group=sys owner=root \e
     pkg.depend.bypass-generate=.*/test.py.* \e
     pkg.depend.bypass-generate=.*/testmodule.so \e
     pkg.depend.bypass-generate=.*/test.so \e
@@ -496,4 +518,4 @@ _
 \fBpkg\fR(5)
 .sp
 .LP
-\fBhttp://hub.opensolaris.org/bin/view/Project+pkg/\fR
+\fBhttps://java.net/projects/ips/pages/Home\fR

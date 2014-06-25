@@ -1,9 +1,14 @@
 '\" te
 .\" Copyright (c) 2007, 2014, Oracle and/or its affiliates. All rights reserved.
-.TH pkgrepo 1 "15 Jan 2014" "SunOS 5.12" "User Commands"
+.TH pkgrepo 1 "27 Mar 2014" "SunOS 5.12" "User Commands"
 .SH NAME
 pkgrepo \- Image Packaging System repository management utility
 .SH SYNOPSIS
+.LP
+.nf
+/usr/bin/pkgrepo create [--version \fIver\fR] \fIuri_or_path\fR
+.fi
+
 .LP
 .nf
 /usr/bin/pkgrepo add-publisher -s \fIrepo_uri_or_path\fR
@@ -566,11 +571,11 @@ Operate on the repository located at the given URI or file system path.
 .ne 2
 .mk
 .na
-\fB\fBpkgrepo set\fR [\fB-p\fR \fIpublisher\fR] \fB-s\fR \fIrepo_uri_or_path\fR \fIsection/property\fR=[\fIvalue\fR] ...\fR
+\fB\fBpkgrepo set\fR [\fB-p\fR \fIpublisher\fR]... \fB-s\fR \fIrepo_uri_or_path\fR \fIsection/property\fR=[\fIvalue\fR] ...\fR
 .ad
 .br
 .na
-\fB\fBpkgrepo set\fR [\fB-p\fR \fIpublisher\fR] \fB-s\fR \fIrepo_uri_or_path\fR \fIsection/property\fR=([\fIvalue\fR]) ...\fR
+\fB\fBpkgrepo set\fR [\fB-p\fR \fIpublisher\fR]... \fB-s\fR \fIrepo_uri_or_path\fR \fIsection/property\fR=([\fIvalue\fR]) ...\fR
 .ad
 .sp .6
 .RS 4n
@@ -1180,3 +1185,7 @@ Interface StabilityUncommitted
 .sp
 .LP
 \fBhttps://java.net/projects/ips/pages/Home\fR
+.SH NOTES
+.sp
+.LP
+Most \fBpkgrepo\fR operations are not available for package archives. A package archive is a file, typically with a \fB\&.p5p\fR extension, as described in the \fB-a\fR option in the \fBpkgrecv\fR(1) man page. A package archive contains packages but does not contain repository configuration. However, the \fBpkgrepo list\fR, \fBpkgrepo info\fR, and \fBpkgrepo contents\fR commands work with package archives.

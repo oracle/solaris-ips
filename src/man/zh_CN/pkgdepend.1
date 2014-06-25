@@ -1,6 +1,6 @@
 '\" te
-.\" Copyright (c) 2007, 2012, Oracle and/or its affiliates.All rights reserved.
-.TH pkgdepend 1 "2012 年 6 月 22 日" "SunOS 5.11" "用户命令"
+.\" Copyright (c) 2007, 2013, Oracle and/or its affiliates.All rights reserved.
+.TH pkgdepend 1 "2013 年 7 月 12 日" "SunOS 5.12" "用户命令"
 .SH 名称
 pkgdepend \- 映像包管理系统依赖项分析器
 .SH 用法概要
@@ -17,8 +17,9 @@ pkgdepend \- 映像包管理系统依赖项分析器
 
 .LP
 .nf
-/usr/bin/pkgdepend resolve [-moSv] [-d \fIoutput_dir\fR]
-    [-s \fIsuffix\fR] \fImanifest_file\fR ...
+/usr/bin/pkgdepend resolve [-EmoSv] [-d \fIoutput_dir\fR]
+    [-e \fIexternal_package_file\fR]... [-s \fIsuffix\fR]
+    \fImanifest_file\fR ...
 .fi
 
 .SH 描述
@@ -42,7 +43,7 @@ pkgdepend \- 映像包管理系统依赖项分析器
 .ad
 .RS 13n
 .rt  
-分析提供的文件中的 ELF 头以获取依赖项信息，\fB-k\fR 和 \fB-D\fR 选项可用于修改获取的信息。有关 ELF 依赖项的更多详细信息，请参见 \fBldd\fR 和\fI《Linker and Libraries Guide》\fR。
+分析提供的文件中的 ELF 头以获取依赖项信息，\fB-k\fR 和 \fB-D\fR 选项可用于修改获取的信息。有关 ELF 依赖项的更多详细信息，请参见 \fBldd\fR 和\fI《Oracle Solaris 11.2 Linkers and Libraries Guide》\fR。 
 .RE
 
 .sp
@@ -113,10 +114,6 @@ Python 脚本首先作为脚本进行分析。此外，脚本声明的任何导�
 .mk
 .na
 \fB\fB-R\fR \fIdir\fR\fR
-.ad
-.br
-.na
-\fB\fB--image-dir\fR \fIdir\fR\fR
 .ad
 .sp .6
 .RS 4n
@@ -225,11 +222,35 @@ pkg.depend.bypass-generate=this/that
 .ne 2
 .mk
 .na
-\fB\fBpkgdepend resolve\fR [\fB-moSv\fR] [\fB-d\fR \fIoutput_dir\fR] [\fB-s\fR \fI suffix\fR] \fImanifest_file\fR ...\fR
+\fB\fBpkgdepend resolve\fR [\fB-EmoSv\fR] [\fB-d\fR \fIoutput_dir\fR] [\fB-e\fR \fI external_package_file\fR]... [\fB-s\fR \fIsuffix\fR] \fI manifest_file\fR ...\fR
 .ad
 .sp .6
 .RS 4n
 将文件中的依赖项转换为提供这些文件的软件包中的依赖项。先根据命令行中给定的清单解析依赖项，然后再根据系统上安装的软件包进行解析。缺省情况下，每个清单的依赖项放置在名为 \fB\fImanifest_file\fR.res\fR 的文件中。
+.sp
+.ne 2
+.mk
+.na
+\fB\fB-e\fR \fIexternal_package_file\fR\fR
+.ad
+.sp .6
+.RS 4n
+仅从其名称与 \fIexternal_package_file\fR 中的模式相匹配的系统针对软件包进行解析。可以多次指定此选项。\fB-e\fR 选项不能与 \fB-S\fR 选项一起使用。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB-E\fR\fR
+.ad
+.sp .6
+.RS 4n
+如果指定 \fB-e\fR，则显示应当是外部依赖项但却不是外部依赖项的软件包。应当是外部依赖项的软件包是来自其名称与 \fIexternal_package_file\fR 中的模式相匹配的系统的那些软件包。
+.sp
+如果未指定 \fB-e\fR，则显示已解析软件包的外部依赖项。已解析软件包的外部依赖项是未在命令行上命名的那些软件包，是已解析软件包中依赖项的目标。
+.RE
+
 .sp
 .ne 2
 .mk
@@ -356,7 +377,8 @@ foo    bar
 .sp
 .in +2
 .nf
-$ \fBpkgdepend generate -d / -D 'PLATFORM=sun4v' -D 'PLATFORM=sun4u' foo\fR
+$ \fBpkgdepend generate -d / -D 'PLATFORM=sun4v' \e\fR
+\fB-D 'PLATFORM=sun4u' foo\fR
 .fi
 .in -2
 .sp
@@ -394,12 +416,12 @@ set name=pkg.summary value="My test package"
 dir path=opt mode=0755 group=sys owner=root
 dir path=opt/python mode=0755 group=sys owner=root
 dir path=opt/python/foo mode=0755 group=sys owner=root
-file NOHASH path=opt/python/__init__.py mode=0644 group=sys owner=root
-file NOHASH path=opt/python/foo/__init__.py mode=0644 group=sys owner=root
+file path=opt/python/__init__.py mode=0644 group=sys owner=root
+file path=opt/python/foo/__init__.py mode=0644 group=sys owner=root
 #
 # Add runpath and bypass-generate attributes:
 #
-file NOHASH path=opt/python/foo/file.py mode=0644 group=sys owner=root \e
+file path=opt/python/foo/file.py mode=0644 group=sys owner=root \e
     pkg.depend.bypass-generate=.*/test.py.* \e
     pkg.depend.bypass-generate=.*/testmodule.so \e
     pkg.depend.bypass-generate=.*/test.so \e
@@ -496,4 +518,4 @@ _
 \fBpkg\fR(5)
 .sp
 .LP
-\fBhttp://hub.opensolaris.org/bin/view/Project+pkg/\fR
+\fBhttps://java.net/projects/ips/pages/Home\fR

@@ -1,28 +1,53 @@
 '\" te
-.\" Copyright (c) 2007, 2012, Oracle and/or its affiliates. All rights reserved.
-.TH pkgrecv 1 "2012 年 6 月 11 日" "SunOS 5.11" "用户命令"
+.\" Copyright (c) 2007, 2013, Oracle and/or its affiliates.All rights reserved.
+.TH pkgrecv 1 "2013 年 11 月 21 日" "SunOS 5.12" "用户命令"
 .SH 名称
 pkgrecv \- 映像包管理系统内容检索实用程序
 .SH 用法概要
 .LP
 .nf
-/usr/bin/pkgrecv [-s \fIsrc_uri\fR] [-a] [-d (\fIpath\fR|\fIdest_uri\fR)]
-    [-c \fIcache_dir\fR] [-kr] [-m \fImatch\fR] [-n] [--raw]
-    [--key \fIkeyfile\fR --cert \fIcertfile\fR] (\fIfmri\fR|\fIpattern\fR) ...
+/usr/bin/pkgrecv [-aknrv] [-s (\fIsrc_path\fR|\fIsrc_uri\fR)]
+    [-d (\fIdest_path\fR|\fIdest_uri\fR)] [-c \fIcache_dir\fR]
+    [-m \fImatch\fR] [--raw]
+    [--key \fIsrc_key\fR --cert \fIsrc_cert\fR]
+    [--dkey \fIdest_key\fR --dcert \fIdest_cert\fR]
+    (\fIfmri\fR|\fIpattern\fR) ...
 .fi
 
 .LP
 .nf
-/usr/bin/pkgrecv [-s \fIsrc_uri\fR] --newest
+/usr/bin/pkgrecv [-s (\fIsrc_path\fR|\fIsrc_uri\fR)] --newest
+.fi
+
+.LP
+.nf
+/usr/bin/pkgrecv [-nv] [-s (\fIsrc_path\fR|\fIsrc_uri\fR)]
+    [-d (\fIdest_path\fR|\fIdest_uri\fR)] [-p \fIpublisher\fR]...
+    [--key \fIsrc_key\fR --cert \fIsrc_cert\fR] --clone
 .fi
 
 .SH 描述
 .sp
 .LP
-\fBpkgrecv\fR 允许用户检索 \fBpkg\fR(5) 系统信息库或软件包归档文件中的软件包。\fBpkgrecv\fR 还可以选择性地将检索到的软件包重新发布到另一个软件包系统信息库中或者对其进行归档。缺省情况下，会以 \fBpkg\fR、\fBpkg.depotd\fR 以及软件包发布工具可使用的软件包系统信息库格式检索软件包。
+\fBpkgrecv\fR 从 \fB-s\fR 选项指定的 \fBpkg\fR(5) 系统信息库或软件包归档文件检索每个匹配 \fIfmri\fR 或 \fIpattern\fR 的软件包的所有版本，并且可以将检索到的软件包重新发布到 \fB-d\fR 选项指定的软件包系统信息库或软件包归档文件。缺省情况下，会以 \fBpkg\fR、\fBpkg.depotd\fR 以及软件包发布工具可使用的软件包系统信息库格式检索软件包。
 .sp
 .LP
-完成 \fBpkgrecv\fR 操作后，在系统信息库上运行 \fBpkgrepo refresh\fR 或 \fBpkgrepo rebuild\fR 以构建搜索索引。
+不重新发布未更改的软件包。因此，更新现有系统信息库的时间取决于新的和已更改软件包的数量。
+.sp
+.LP
+使用 \fB-m\fR 选项可指定是检索每个匹配软件包的所有版本还是每个匹配软件包的最新版本。
+.sp
+.LP
+如果未指定要检索的 \fB\&'*'\fR，则可以指定 \fB-r\fR 选项来确保检索指定软件包的所有依赖项。
+.LP
+注 - 
+.sp
+.RS 2
+不要同时使用 \fBpkgrecv\fR 的多个实例来将软件包重新发布到同一目标系统信息库或归档文件。在这种情况下，新检索的软件包可以包含重复操作。
+.RE
+.sp
+.LP
+在将软件包检索到 \fIdest_uri\fR 中的 \fBpkgrecv\fR 操作后，如果 \fIdest_uri\fR 系统信息库必须支持 \fBpkg search\fR 操作，则在该系统信息库上运行 \fBpkgrepo refresh\fR 以更新搜索索引。
 .SH 选项
 .sp
 .LP
@@ -46,7 +71,7 @@ pkgrecv \- 映像包管理系统内容检索实用程序
 .ad
 .sp .6
 .RS 4n
-将检索的软件包数据存储在 \fB-d\fR 指定的位置中的 \fBpkg\fR(5) 归档文件中。该文件不能已存在。此选项仅可以与基于文件系统的目标一起使用。尽管不要求，但还是强烈建议使用文件扩展名 \fB\&.p5p\fR（例如：\fB archive.p5p\fR）。该选项不能与 \fB--raw\fR 结合使用。
+将检索的软件包数据存储在 \fB-d\fR 选项指定的位置中的 \fBpkg\fR(5) 归档文件中。\fB-d\fR 指定的文件不能已经存在。\fB-a\fR 选项仅可以与基于文件系统的目标一起使用。尽管不要求，但还是强烈建议使用文件扩展名 \fB\&.p5p\fR（例如：\fB archive.p5p\fR）。\fB-a\fR 选项不能与 \fB--raw\fR 选项一起使用。
 .RE
 
 .sp
@@ -64,11 +89,11 @@ pkgrecv \- 映像包管理系统内容检索实用程序
 .ne 2
 .mk
 .na
-\fB\fB-d\fR (\fIpath\fR|\fI dest_uri\fR)\fR
+\fB\fB-d\fR (\fIdest_path\fR|\fIdest_uri\fR)\fR
 .ad
 .sp .6
 .RS 4n
-指定要将软件包重新发布到的目标的文件系统路径或 URI。如果指定了 \fB-a\fR，则目标为尚不存在的新软件包归档文件。否则，目标必须是已存在的软件包系统信息库。可以使用 \fBpkgrepo\fR 创建新的系统信息库。
+指定应重新发布检索的软件包的文件系统路径或 URI。如果指定 \fB-a\fR，此目标必须是尚未存在的软件包归档文件。如果未指定 \fB-a\fR，此目标必须是已经存在的软件包系统信息库。使用 \fBpkgrepo\fR 命令创建新软件包系统信息库。如果未指定 \fB-d\fR，则使用值 \fBPKG_DEST\fR。请参见下面的“环境变量”。
 .RE
 
 .sp
@@ -90,7 +115,17 @@ pkgrecv \- 映像包管理系统内容检索实用程序
 .ad
 .sp .6
 .RS 4n
-使用以下值控制匹配行为：
+在指定 \fIpattern\fR 或未充分指定 \fIfmri\fR 时控制要检索哪些软件包版本。在下面的说明中，\fB-s\fR 选项所指定的源中存在下面的四个示例软件包。在这些 FMRI 中，\fB@\fR 与 \fB:\fR 之间的字符表示已编号的软件包版本，\fB:\fR 至结尾的字符表示版本字符串的时间戳部分。
+.sp
+.in +2
+.nf
+pkg://solaris/package/pkg@0.5.11,5.11-0.175.1.0.0.24.0:20120904T180335Z
+pkg://solaris/package/pkg@0.5.11,5.11-0.175.1.0.0.24.0:20120903T170234Z
+pkg://solaris/package/pkg@0.5.11,5.11-0.175.1.0.0.23.0:20120820T165108Z
+pkg://solaris/package/pkg@0.5.11,5.11-0.175.1.0.0.23.0:20120819T155007Z
+.fi
+.in -2
+
 .sp
 .ne 2
 .mk
@@ -99,7 +134,7 @@ pkgrecv \- 映像包管理系统内容检索实用程序
 .ad
 .sp .6
 .RS 4n
-包括所有匹配的时间戳，而不仅仅是最新的时间戳（意味着 \fB all-versions\fR）。
+检索匹配 \fIfmri\fR 或\fI pattern\fR 的每个软件包的所有版本（隐式的 \fBall-versions\fR）。如果未指定 \fB-m\fR 选项，这将是缺省行为。在上面的例子中，将检索到全部四个软件包。
 .RE
 
 .sp
@@ -110,7 +145,33 @@ pkgrecv \- 映像包管理系统内容检索实用程序
 .ad
 .sp .6
 .RS 4n
-包括所有匹配的版本，而不仅仅是最新的版本。
+检索匹配 \fIfmri\fR 或 \fIpattern\fR 的每个软件包的每个版本的最新时间戳。在上面的例子中，将检索到下面两个软件包：
+.sp
+.in +2
+.nf
+pkg://solaris/package/pkg@0.5.11,5.11-0.175.1.0.0.24.0:20120904T180335Z
+pkg://solaris/package/pkg@0.5.11,5.11-0.175.1.0.0.23.0:20120820T165108Z
+.fi
+.in -2
+
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fBlatest\fR\fR
+.ad
+.sp .6
+.RS 4n
+只检索匹配 \fIfmri\fR 或 \fIpattern\fR 的每个软件包的最新版本。在上面的例子中，将检索到下面的软件包：
+.sp
+.in +2
+.nf
+pkg://solaris/package/pkg@0.5.11,5.11-0.175.1.0.0.24.0:20120904T180335Z
+.fi
+.in -2
+
 .RE
 
 .RE
@@ -130,44 +191,99 @@ pkgrecv \- 映像包管理系统内容检索实用程序
 .ne 2
 .mk
 .na
+\fB\fB-p\fR \fIpublisher\fR\fR
+.ad
+.sp .6
+.RS 4n
+只克隆指定的发布者。可以多次指定此选项。\fB-p\fR 选项只有在与 \fB--clone\fR 选项一起使用时才有效。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
 \fB\fB-r\fR\fR
 .ad
 .sp .6
 .RS 4n
-递归检索提供的软件包列表的所有依赖项。
+递归检索每个匹配的 \fIfmri\fR 或 \fIpattern\fR 的所有依赖项。
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fB\fB-s\fR \fIsrc_uri\fR\fR
+\fB\fB-s\fR (\fIsrc_path\fR|\fIsrc_uri\fR)\fR
 .ad
 .sp .6
 .RS 4n
-指定一个 URI，代表要从中接收软件包数据的 \fBpkg\fR(5) 系统信息库或软件包归档文件的位置。
+指定要从中接收软件包数据的 \fBpkg\fR(5) 系统信息库或软件包归档文件的文件系统路径或 URI。如果未指定 \fB-s\fR，则使用值 \fBPKG_SRC\fR。请参见下面的“环境变量”。
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fB\fB--cert\fR \fIcertfile\fR\fR
+\fB\fB-v\fR\fR
 .ad
 .sp .6
 .RS 4n
-指定用于从 HTTPS 系统信息库进行软件包检索的客户机 SSL 证书文件。
+显示详细输出，包括检索到的软件包个数及其完整 FMRI、检索到的文件个数以及估计的传输大小。
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fB\fB--key\fR \fIkeyfile\fR\fR
+\fB\fB--key\fR \fIsrc_key\fR\fR
 .ad
 .sp .6
 .RS 4n
-指定用于从 HTTPS 系统信息库进行软件包检索的客户机 SSL 密钥文件。
+指定用于从源 HTTPS 系统信息库进行软件包检索的客户机 SSL 密钥文件。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB--cert\fR \fIsrc_cert\fR\fR
+.ad
+.sp .6
+.RS 4n
+指定用于从源 HTTPS 系统信息库进行软件包检索的客户机 SSL 证书文件。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB--dkey\fR \fIdest_key\fR\fR
+.ad
+.sp .6
+.RS 4n
+指定用于向目标 HTTPS 系统信息库发布软件包的客户机 SSL 密钥文件。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB--dcert\fR \fIdest_cert\fR\fR
+.ad
+.sp .6
+.RS 4n
+指定用于向目标 HTTPS 系统信息库发布软件包的客户机 SSL 证书文件。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB--clone\fR\fR
+.ad
+.sp .6
+.RS 4n
+为源系统信息库创建完全一致的副本。缺省情况下，仅当源系统信息库中的发布者也存在于目标中时，克隆操作才会成功。要限制仅对指定的发布者使用克隆操作，请使用 \fB-p\fR 选项。使用 \fB-p\fR 选项指定的发布者如果不在目标系统信息库中，则会将其添加到其中。存在于目标系统信息库中但不在源系统信息库中的软件包将被删除。如果发生错误，克隆操作会导致目标系统信息库更改。因此，目标系统信息库应位于自己的 ZFS 数据集中，并且在执行克隆操作之前应创建一个快照。
 .RE
 
 .sp
@@ -178,7 +294,7 @@ pkgrecv \- 映像包管理系统内容检索实用程序
 .ad
 .sp .6
 .RS 4n
-列出指定系统信息库中提供的最新版本的软件包，然后退出。（忽略 \fB-s\fR 以外的所有其他选项。）
+列出 \fB-s\fR 选项指定的系统信息库中提供的最新版本的软件包。将忽略所有其他选项。
 .RE
 
 .sp
@@ -189,7 +305,7 @@ pkgrecv \- 映像包管理系统内容检索实用程序
 .ad
 .sp .6
 .RS 4n
-按主干和版本，检索一组目录结构中的原始软件包数据并将其存储在 \fB-d\fR 指定的位置中。此选项仅可以与基于文件系统的目标一起使用。此软件包数据可用于方便地修改和重新发布软件包，也许通过更正文件内容，也许通过提供附加的软件包元数据。该选项不能与 \fB-a\fR 结合使用。
+按主干和版本，检索一组目录结构中的原始软件包数据并将其存储在 \fB-d\fR 指定的位置中。\fB--raw\fR 选项仅可以与基于文件系统的目标一起使用。此软件包数据可用于方便地修改和重新发布软件包，也许通过更正文件内容，也许通过提供附加的软件包元数据。\fB--raw\fR 选项不能与 \fB-a\fR 一起使用。
 .RE
 
 .SH 示例
@@ -247,20 +363,29 @@ $ \fBpkgrecv -s http://test -d /local/repo -r editor/vim\fR
 .sp
 
 .LP
-\fB示例 4 \fR检索所有版本
+\fB示例 4 \fR仅检索最新版本
 .sp
 .LP
-从名为 \fBtest\fR 的系统中接收软件包 \fBeditor/vim\fR 的所有版本。
+仅从名为 \fBtest\fR 的系统中接收软件包 \fBeditor/vim\fR 的最新版本。
 
 .sp
 .in +2
 .nf
-$ \fBpkgrecv -s http://test -d /local/repo -m all-versions \e\fR
+$ \fBpkgrecv -s http://test -d /local/repo -m latest -v \e\fR
 \fBeditor/vim\fR
 Processing packages for publisher solaris ...
-Retrieving and evaluating 2 package(s)...
-PROCESS       ITEMS     GET (MB)    SEND(MB)
-Completed       2/2    16.7/16.7    44.9/44.9
+Retrieving and evaluating 1 package(s)...
+
+Retrieving packages ...
+        Packages to add:       1
+      Files to retrieve:    1557
+Estimated transfer size: 9.21 MB
+
+Packages to transfer:
+editor/vim@7.3.600,5.11-0.175.1.0.0.24.0:20120904T172128Z
+
+PROCESS                                     ITEMS    GET (MB) SEND (MB)
+Completed                                     1/1     9.2/9.2 25.4/25.4
 .fi
 .in -2
 .sp
@@ -311,12 +436,12 @@ $ \fBpkgrecv -s http://pkg.oracle.com/solaris/release/ \e\fR
 
 .sp
 .LP
-将位于 \fBhttp://pkg.oracle.com/solaris/support/ \fR的安全系统信息库中的所有尚不存在的软件包和所有更改内容接收到位于 \fB/export/repoSolaris11\fR 的系统信息库。
+将位于 \fBhttps://pkg.oracle.com/solaris/support/\fR的安全系统信息库中的所有尚不存在的软件包和所有更改内容接收到位于 \fB/export/repoSolaris11\fR 的系统信息库。 
 
 .sp
 .in +2
 .nf
-$ \fBpkgrecv -s http://pkg.oracle.com/solaris/support/ \e\fR
+$ \fBpkgrecv -s https://pkg.oracle.com/solaris/support/ \e\fR
 \fB-d /export/repoSolaris11 -m all-timestamps \e\fR
 \fB--key /var/pkg/ssl/Oracle_Solaris_11_Support.key.pem \e\fR
 \fB--cert /var/pkg/ssl/Oracle_Solaris_11_Support.certificate.pem '*'\fR
@@ -474,4 +599,11 @@ _
 \fBpkgrepo\fR(1)、\fBpkgsend\fR(1)、\fBpkg\fR(5)
 .sp
 .LP
-\fBhttp://hub.opensolaris.org/bin/view/Project+pkg/\fR
+\fI《Copying and Creating Package Repositories in Oracle Solaris 11.2》\fR
+.sp
+.LP
+\fBhttps://java.net/projects/ips/pages/Home\fR
+.SH 附注
+.sp
+.LP
+当使用基于文件系统的目标系统信息库时，在完成软件包传输后必须重新启动提供该系统信息库服务的任何 \fBpkg.depotd\fR 进程，以便在其 Web 界面或搜索响应中反映更改。有关更多信息，请参见 \fBpkg.depotd\fR(1M)。

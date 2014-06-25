@@ -1,6 +1,6 @@
 '\" te
 .\" Copyright (c) 2007, 2013, Oracle and/or its affiliates. All rights reserved.
-.TH pkgrecv 1 "30 Aug 2013" "SunOS 5.12" "User Commands"
+.TH pkgrecv 1 "21 Nov 2013" "SunOS 5.12" "User Commands"
 .SH NAME
 pkgrecv \- Image Packaging System content retrieval utility
 .SH SYNOPSIS
@@ -38,7 +38,7 @@ Packages that have not changed are not republished. Therefore, the time to updat
 Use the \fB-m\fR option to specify whether to retrieve all versions of each matching package, or only the newest version of each matching package.
 .sp
 .LP
-If you do not specify \fB'*'\fR to be retrieved, you might want to specify the \fB-r\fR option to be sure to retrieve all the dependencies of the specified packages.
+If you do not specify \fB\&'*'\fR to be retrieved, you might want to specify the \fB-r\fR option to be sure to retrieve all the dependencies of the specified packages.
 .LP
 Note - 
 .sp
@@ -603,3 +603,7 @@ Interface StabilityUncommitted
 .sp
 .LP
 \fBhttps://java.net/projects/ips/pages/Home\fR
+.SH NOTES
+.sp
+.LP
+When using a file system based destination repository, any \fBpkg.depotd\fR processes that are serving that repository must be restarted after package transfer is completed for the changes to be reflected in its web interface or search responses. See \fBpkg.depotd\fR(1M) for more information.

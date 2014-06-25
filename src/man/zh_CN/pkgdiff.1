@@ -1,19 +1,20 @@
 '\" te
-.\" Copyright (c) 2007, 2012, Oracle and/or its affiliates. All rights reserved.
-.TH pkgdiff 1 "2012 年 5 月 27 日" "SunOS 5.11" "用户命令"
+.\" Copyright (c) 2007, 2013, Oracle and/or its affiliates.All rights reserved.
+.TH pkgdiff 1 "2013 年 2 月 26 日" "SunOS 5.12" "用户命令"
 .SH 名称
 pkgdiff \- 比较软件包清单
 .SH 用法概要
 .LP
 .nf
-/usr/bin/pkgdiff [-i \fIattribute\fR ...] [-o \fIattribute\fR]
-    [-v \fIname\fR=\fIvalue\fR ...] \fIfile1\fR \fIfile2\fR
+/usr/bin/pkgdiff [-i \fIattribute\fR]... [-o \fIattribute\fR]
+    [-t \fIaction_name\fR[,\fIaction_name\fR]...]...
+    [-v \fIname\fR=\fIvalue\fR]... (\fIfile1\fR | -) (\fIfile2\fR | -)
 .fi
 
 .SH 描述
 .sp
 .LP
-\fBpkgdiff\fR 可比较两个软件包清单并报告差异。在进行比较之前，\fBpkgdiff\fR 会将每个清单和操作按一致的顺序排序。
+\fBpkgdiff\fR 比较两个软件包清单并报告差异。其中一个清单可从 \fBstdin\fR（在文件名位置指定 \fB-\fR）读取。\fBpkgdiff\fR 在比较之前会将每个清单和操作按一致的顺序排序。
 .sp
 .LP
 输出采用以下格式：
@@ -94,7 +95,7 @@ pkgdiff \- 比较软件包清单
 .ad
 .sp .6
 .RS 4n
-比较期间将忽略 \fIattribute\fR（如果存在）。可以使用 \fB-i\fR\fI hash\fR 忽略文件散列值。该选项不能与 \fB-o\fR 选项一起使用。可以重复该选项。
+比较期间将忽略 \fIattribute\fR（如果存在）。可以使用 \fB-i\fR\fI hash\fR 忽略文件散列值。该选项不能与 \fB-o\fR 选项一起使用。可以多次指定此选项。
 .RE
 
 .sp
@@ -112,11 +113,22 @@ pkgdiff \- 比较软件包清单
 .ne 2
 .mk
 .na
-\fB\fB-v\fR \fIname\fR=\fI value\fR\fR
+\fB\fB-t\fR \fIaction_name\fR[,\fIaction_name\fR]...\fR
 .ad
 .sp .6
 .RS 4n
-仅计算该变体值的差异。例如，只计算 \fBarch=sparc\fR 的差异。在进行比较之前，将删除所有操作的该变体标记。只能为每个变体指定一个值。可对不同的变体重复该选项。
+仅比较指定的操作。可以在一个逗号分隔的列表中指定多个操作。\fIaction_name\fR 的值是 \fBpkg\fR(5) 手册页的“操作”中列出的操作之一。例如，可以为 \fIaction_name\fR 指定以下值：\fBfile\fR、\fBdir\fR、\fBdriver\fR、\fBdepend\fR、\fBset\fR。可以多次指定此选项。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB-v\fR \fIname\fR=\fIvalue\fR\fR
+.ad
+.sp .6
+.RS 4n
+仅计算该变体值的差异。例如，只计算 \fBarch=sparc\fR 的差异。在进行比较之前，将删除所有操作的该变体标记。只能为每个变体指定一个值。可以为不同变体多次指定此选项。
 .RE
 
 .SH 退出状态
@@ -149,7 +161,18 @@ pkgdiff \- 比较软件包清单
 .ne 2
 .mk
 .na
-\fB\fB>1\fR\fR
+\fB\fB2\fR\fR
+.ad
+.RS 6n
+.rt  
+指定的命令行选项无效。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB3\fR\fR
 .ad
 .RS 6n
 .rt  
@@ -192,4 +215,4 @@ _
 \fBpkg\fR(5)
 .sp
 .LP
-\fBhttp://hub.opensolaris.org/bin/view/Project+pkg/\fR
+\fBhttps://java.net/projects/ips/pages/Home\fR

@@ -1,6 +1,6 @@
 '\" te
-.\" Copyright (c) 2007, 2012, Oracle and/or its affiliates. All rights reserved.
-.TH pkgrepo 1 "2012 年 6 月 22 日" "SunOS 5.11" "ユーザーコマンド"
+.\" Copyright (c) 2007, 2014, Oracle and/or its affiliates.All rights reserved.
+.TH pkgrepo 1 "2014 年 3 月 27 日" "SunOS 5.12" "ユーザーコマンド"
 .SH 名前
 pkgrepo \- Image Packaging System リポジトリ管理ユーティリティー
 .SH 形式
@@ -11,55 +11,85 @@ pkgrepo \- Image Packaging System リポジトリ管理ユーティリティー
 
 .LP
 .nf
-/usr/bin/pkgrepo add-publisher -s \fIrepo_uri_or_path\fR \fIpublisher\fR ...
+/usr/bin/pkgrepo add-publisher -s \fIrepo_uri_or_path\fR
+    \fIpublisher\fR ...
 .fi
 
 .LP
 .nf
-/usr/bin/pkgrepo get [-F \fIformat\fR] [-H] [-p \fIpublisher\fR ...]
-    -s \fIrepo_uri_or_path\fR [\fIsection/property\fR ...]
+/usr/bin/pkgrepo remove-publisher [-n] [--synchronous]
+    -s \fIrepo_uri_or_path\fR \fIpublisher\fR ...
 .fi
 
 .LP
 .nf
-/usr/bin/pkgrepo info [-F \fIformat\fR] [-H] [-p \fIpublisher\fR ...]
-    -s \fIrepo_uri_or_path\fR
+/usr/bin/pkgrepo get [-F \fIformat\fR] [-H] [-p \fIpublisher\fR]...
+    -s \fIrepo_uri_or_path\fR [--key \fIssl_key\fR --cert \fIssl_cert\fR]...
+    [\fIsection/property\fR ...]
 .fi
 
 .LP
 .nf
-/usr/bin/pkgrepo list [-F \fIformat\fR] [-H] [-p \fIpublisher\fR ...]
-    -s \fIrepo_uri_or_path\fR [\fIpkg_fmri_pattern\fR ...]
+/usr/bin/pkgrepo info [-F \fIformat\fR] [-H] [-p \fIpublisher\fR]...
+    -s \fIrepo_uri_or_path\fR [--key \fIssl_key\fR --cert \fIssl_cert\fR]...
 .fi
 
 .LP
 .nf
-/usr/bin/pkgrepo rebuild [-p \fIpublisher\fR ...]
-    -s \fIrepo_uri_or_path\fR [--no-catalog] [--no-index]
+/usr/bin/pkgrepo list [-F \fIformat\fR] [-H] [-p \fIpublisher\fR]...
+    -s \fIrepo_uri_or_path\fR [--key \fIssl_key\fR --cert \fIssl_cert\fR]...
+    [\fIpkg_fmri_pattern\fR ...]
 .fi
 
 .LP
 .nf
-/usr/bin/pkgrepo refresh [-p \fIpublisher\fR ...]
-    -s \fIrepo_uri_or_path\fR [--no-catalog] [--no-index]
+/usr/bin/pkgrepo contents [-m]
+    [-t \fIaction_name\fR[,\fIaction_name\fR]...]... -s \fIrepo_uri_or_path\fR
+    [--key \fIssl_key\fR --cert \fIssl_cert\fR]... [\fIpkg_fmri_pattern\fR...]
 .fi
 
 .LP
 .nf
-/usr/bin/pkgrepo remove [-n] [-p \fIpublisher\fR ...]
+/usr/bin/pkgrepo rebuild [-p \fIpublisher\fR]...
+    -s \fIrepo_uri_or_path\fR [--key \fIssl_key\fR --cert \fIssl_cert\fR]...
+    [--no-catalog] [--no-index]
+.fi
+
+.LP
+.nf
+/usr/bin/pkgrepo refresh [-p \fIpublisher\fR]...
+    -s \fIrepo_uri_or_path\fR [--key \fIssl_key\fR --cert \fIssl_cert\fR]...
+    [--no-catalog] [--no-index]
+.fi
+
+.LP
+.nf
+/usr/bin/pkgrepo remove [-n] [-p \fIpublisher\fR]...
     -s \fIrepo_uri_or_path\fR \fIpkg_fmri_pattern\fR ...
 .fi
 
 .LP
 .nf
-/usr/bin/pkgrepo set [-p \fIpublisher\fR] -s \fIrepo_uri_or_path\fR
-    \fIsection/property\fR=[\fIvalue\fR]
+/usr/bin/pkgrepo set [-p \fIpublisher\fR]... -s \fIrepo_uri_or_path\fR
+    \fIsection/property\fR=[\fIvalue\fR] ...
 .fi
 
 .LP
 .nf
-/usr/bin/pkgrepo set [-p \fIpublisher\fR] -s \fIrepo_uri_or_path\fR
+/usr/bin/pkgrepo set [-p \fIpublisher\fR]... -s \fIrepo_uri_or_path\fR
     \fIsection/property\fR=([\fIvalue\fR]) ...
+.fi
+
+.LP
+.nf
+/usr/bin/pkgrepo verify [-p \fIpublisher\fR]...
+    -s \fIrepo_uri_or_path\fR
+.fi
+
+.LP
+.nf
+/usr/bin/pkgrepo fix [-v] [-p \fIpublisher\fR]...
+    -s \fIrepo_uri_or_path\fR
 .fi
 
 .LP
@@ -103,7 +133,7 @@ pkgrepo \- Image Packaging System リポジトリ管理ユーティリティー
 .ne 2
 .mk
 .na
-\fB\fBpkgrepo create\fR [\fB--version\fR \fI ver\fR] \fIuri_or_path\fR\fR
+\fB\fBpkgrepo create\fR [\fB--version\fR \fIver\fR] \fIuri_or_path\fR\fR
 .ad
 .sp .6
 .RS 4n
@@ -149,26 +179,87 @@ pkgrepo \- Image Packaging System リポジトリ管理ユーティリティー
 .ne 2
 .mk
 .na
-\fB\fBpkgrepo add-publisher\fR \fB-s\fR \fI repo_uri_or_path\fR \fIpublisher\fR ...\fR
+\fB\fBpkgrepo add-publisher\fR \fB-s\fR \fIrepo_uri_or_path\fR \fIpublisher\fR ...\fR
 .ad
 .sp .6
 .RS 4n
 指定された発行元をリポジトリに追加します。新しいパブリッシャーにパッケージや内容は含まれていません。
 .sp
 このサブコマンドは、バージョン 4 のファイルシステムベースのリポジトリでのみ使用できます。
+.sp
+.ne 2
+.mk
+.na
+\fB\fB-s\fR \fIrepo_uri_or_path\fR\fR
+.ad
+.sp .6
+.RS 4n
+指定された URI またはファイルシステムのパスにあるリポジトリを操作します。
+.RE
+
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fB\fBpkgrepo get\fR [\fB-F\fR \fI format\fR] [\fB-H\fR] [\fB-p\fR \fIpublisher \fR ...] \fB-s\fR \fIrepo_uri_or_path\fR [\fI section/property\fR ...]\fR
+\fB\fBpkgrepo remove-publisher\fR [\fB-n\fR] [\fB--synchronous\fR] \fB-s\fR \fIrepo_uri_or_path\fR \fIpublisher\fR ...\fR
+.ad
+.sp .6
+.RS 4n
+指定されたパブリッシャーをリポジトリから削除します。指定されたパブリッシャーのすべてのパッケージとすべてのほかのデータを削除します。
+.sp
+デフォルトパブリッシャーが削除され、リポジトリ内にパブリッシャーが 1 つだけ残った場合は、その残りのパブリッシャーがデフォルトになります。リポジトリの \fBpublisher/prefix\fR プロパティーは、その残りのパブリッシャーに設定されます。
+.sp
+デフォルトパブリッシャーが削除され、リポジトリ内に複数のパブリッシャーが残った場合、またはリポジトリ内の最後のパブリッシャーが削除された場合、\fBpublisher/prefix\fR プロパティーは未設定になります。
+.sp
+このサブコマンドは、バージョン 4 のファイルシステムベースのリポジトリでのみ使用できます。
+.sp
+.ne 2
+.mk
+.na
+\fB\fB-n\fR\fR
+.ad
+.sp .6
+.RS 4n
+パブリッシャーの変更は行わずに試しに操作を実行します。終了する前に、パブリッシャーごとに削除されるパッケージの数が表示されます。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB-s\fR \fIrepo_uri_or_path\fR\fR
+.ad
+.sp .6
+.RS 4n
+指定された URI またはファイルシステムのパスにあるリポジトリを操作します。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB--synchronous\fR\fR
+.ad
+.sp .6
+.RS 4n
+操作が完了するのを待ってから戻ります。このオプションが指定されなかった場合、このコマンドはただちに戻りますが、パブリッシャーはバックグラウンドで非同期的に削除されます。
+.RE
+
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fBpkgrepo get\fR [\fB-F\fR \fIformat\fR] [\fB-H\fR] [\fB-p\fR \fIpublisher\fR]... \fB-s\fR \fIrepo_uri_or_path\fR [\fB--key\fR \fIssl_key\fR \fB--cert\fR \fIssl_cert\fR]... [\fIsection/property\fR ...]\fR
 .ad
 .sp .6
 .RS 4n
 リポジトリまたはその発行元のプロパティー情報を表示します。
 .sp
-デフォルトでは、各プロパティーとその値が個別の行に出力されます。空の ASCII 文字列値は、二重引用符 (\fB""\fR) のペアで表されます。ASCII 文字列値内の次の Bourne シェルのメタキャラクタと、改行、スペース、およびタブは、バックスラッシュ文字 (\fB\e\fR) でエスケープする必要があります。
+デフォルトでは、各プロパティーとその値が個別の行に出力されます。空の ASCII 文字列値は、二重引用符 (\fB""\fR) のペアで表されます。ASCII 文字列値内の次の Bourne シェルのメタキャラクタと、改行、スペース、およびタブは、バックスラッシュ文字 (\fB\\fR) でエスケープする必要があります。
 .sp
 .in +2
 .nf
@@ -227,6 +318,17 @@ pkgrepo \- Image Packaging System リポジトリ管理ユーティリティー
 .ne 2
 .mk
 .na
+\fB\fB--key\fR \fIssl_key\fR \fB--cert\fR \fIssl_cert\fR\fR
+.ad
+.sp .6
+.RS 4n
+\fB--key\fR オプションは、HTTPS リポジトリからのパッケージ取得に使用するクライアント SSL キーファイルを指定するために使用します。\fB--cert\fR オプションは、HTTPS リポジトリからのパッケージ取得に使用するクライアント SSL 証明書ファイルを指定するために使用します。このオプションのペアは複数回指定できます。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
 \fB\fIsection/property\fR\fR
 .ad
 .sp .6
@@ -240,33 +342,11 @@ pkgrepo \- Image Packaging System リポジトリ管理ユーティリティー
 .ne 2
 .mk
 .na
-\fB\fBpkgrepo info\fR [\fB-F\fR \fI format\fR] [\fB-H\fR] [\fB-p\fR \fIpublisher \fR ...] \fB-s\fR \fIrepo_uri_or_path\fR\fR
+\fB\fBpkgrepo info\fR [\fB-F\fR \fIformat\fR] [\fB-H\fR] [\fB-p\fR \fIpublisher\fR]... \fB-s\fR \fIrepo_uri_or_path\fR [\fB--key\fR \fIssl_key\fR \fB--cert\fR \fIssl_cert\fR]...\fR
 .ad
 .sp .6
 .RS 4n
 リポジトリで認識されているパッケージ発行元のリストを表示します。このリストには、パブリッシャーごとのパッケージの数、パブリッシャーのパッケージデータが最後に更新された日時、およびパブリッシャーのパッケージデータのステータス (現在処理されているかどうかなど) が含まれます。
-.sp
-.ne 2
-.mk
-.na
-\fB\fB-F\fR \fIformat\fR\fR
-.ad
-.sp .6
-.RS 4n
-代替出力形式を指定します。\fIformat\fR の値は、\fBtsv\fR (Tab Separated Values)、\fBjson\fR (単一行としての JavaScript Object Notation)、または \fBjson-formatted\fR (読みやすい形式にされた JavaScript Object Notation) にできます。
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fB\fB-H\fR \fR
-.ad
-.sp .6
-.RS 4n
-一覧からヘッダーを省略します。
-.RE
-
 .sp
 .ne 2
 .mk
@@ -278,52 +358,20 @@ pkgrepo \- Image Packaging System リポジトリ管理ユーティリティー
 指定された発行元のデータのみを表示します。指定されていない場合は、すべてのパブリッシャーのデータが表示されます。このオプションは複数回指定できます。
 .RE
 
-.sp
-.ne 2
-.mk
-.na
-\fB\fB-s\fR \fIrepo_uri_or_path\fR\fR
-.ad
-.sp .6
-.RS 4n
-指定された URI またはファイルシステムのパスにあるリポジトリを操作します。
-.RE
-
+ほかのすべてのオプションの説明については、前述の \fBpkgrepo get\fR コマンドを参照してください。
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fB\fBpkgrepo list\fR [\fB-F\fR \fI format\fR] [\fB-H\fR] [\fB-p\fR \fIpublisher \fR ...] \fB-s\fR \fIrepo_uri_or_path\fR [\fI pkg_fmri_pattern\fR ...]\fR
+\fB\fBpkgrepo list\fR [\fB-F\fR \fIformat\fR] [\fB-H\fR] [\fB-p\fR \fIpublisher\fR]... \fB-s\fR \fIrepo_uri_or_path\fR [\fB--key\fR \fIssl_key\fR \fB--cert\fR \fIssl_cert\fR]... [\fIpkg_fmri_pattern\fR ...]\fR
 .ad
 .sp .6
 .RS 4n
-指定された \fIpkg_fmri_pattern\fR にマッチする \fIrepo_uri_or_path\fR リポジトリのパッケージを一覧表示します。パターンが指定されない場合、リポジトリのすべてのパッケージが一覧表示されます。
+指定された \fIpkg_fmri_pattern\fR にマッチする \fIrepo_uri_or_path\fR リポジトリのパッケージを一覧表示します。パターンが指定されない場合、リポジトリのすべてのパッケージが一覧表示されます。\fIpkg_fmri_pattern\fR パターンには、\fBglob\fR(3C) 形式のワイルドカードとして 1 つ以上のパッケージと一致する \fB?\fR および \fB*\fR 文字を含めることができます。
 .sp
 デフォルトの出力では、最初の列にパッケージのパブリッシャーの名前が含まれます。2 番目の列にはパッケージの名前が含まれます。3 番目の列には、パッケージのステータスを示すフラグが含まれます。ステータス列の \fBo\fR の値は、パッケージが廃止されていることを示します。ステータス列の \fBr\fR の値は、パッケージの名前が変更されたことを示します (廃止の形態の 1 つです)。4 番目の列には、パッケージのリリースおよびブランチのバージョンが含まれます。リリースバージョンとブランチバージョンについては、\fBpkg\fR(5) を参照してください。
-.sp
-.ne 2
-.mk
-.na
-\fB\fB-F\fR \fIformat\fR\fR
-.ad
-.sp .6
-.RS 4n
-代替出力形式を指定します。\fIformat\fR の値は、\fBtsv\fR (Tab Separated Values)、\fBjson\fR (単一行としての JavaScript Object Notation)、または \fBjson-formatted\fR (読みやすい形式にされた JavaScript Object Notation) にできます。
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fB\fB-H\fR \fR
-.ad
-.sp .6
-.RS 4n
-一覧からヘッダーを省略します。
-.RE
-
 .sp
 .ne 2
 .mk
@@ -332,27 +380,51 @@ pkgrepo \- Image Packaging System リポジトリ管理ユーティリティー
 .ad
 .sp .6
 .RS 4n
-指定された発行元のパッケージのみを表示します。指定されていない場合は、すべてのパブリッシャーのパッケージが表示されます。このオプションは複数回指定できます。
+指定された発行元のパッケージのみを表示します。指定されていない場合は、すべてのパブリッシャーのパッケージが一覧表示されます。このオプションは複数回指定できます。
+.RE
+
+ほかのすべてのオプションの説明については、前述の \fBpkgrepo get\fR コマンドを参照してください。
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fB\fB-s\fR \fIrepo_uri_or_path\fR\fR
+\fB\fBpkgrepo contents\fR [\fB-m\fR [\fB-t\fR \fIaction_name\fR[,\fIaction_name\fR]...]... \fB-s\fR \fIrepo_uri_or_path\fR [\fB--key\fR \fIssl_key\fR \fB--cert\fR \fIssl_cert\fR]... [\fIpkg_fmri_pattern\fR...]\fR
 .ad
 .sp .6
 .RS 4n
-指定された URI またはファイルシステムのパスにあるリポジトリを操作します。
-.RE
-
+\fIrepo_uri_or_path\fR リポジトリ内のすべてのパッケージを一覧表示します。\fIpkg_fmri_pattern\fR が指定された場合は、リポジトリ内の一致するすべてのパッケージの内容 (アクション属性) を表示します。
+.sp
+.ne 2
+.mk
+.na
+\fB\fB-m\fR\fR
+.ad
+.sp .6
+.RS 4n
+指定されたパッケージ内のアクションのすべての属性を表示します。
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fB\fBpkgrepo rebuild\fR [\fB-p\fR \fI publisher\fR ...] \fB-s\fR \fIrepo_uri_or_path\fR [\fB- -no-catalog\fR] [\fB--no-index\fR]\fR
+\fB\fB-t\fR \fIaction_name\fR\fR
+.ad
+.sp .6
+.RS 4n
+指定されたパッケージ内の指定されたアクションのみを表示します。\fB-t\fR オプションは複数回指定できます。または、アクション名をコンマで区切ることにより、1 つの \fB-t\fR オプションの引数として複数のアクションを指定できます。\fIaction_name\fR の値は、\fBpkg\fR(5) のマニュアルページの「アクション」に一覧表示されているアクションのいずれか (\fBfile\fR、\fBdir\fR、\fBdriver\fR、\fBdepend\fR、\fBset\fR など) です。
+.RE
+
+ほかのすべてのオプションの説明については、前述の \fBpkgrepo get\fR コマンドを参照してください。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fBpkgrepo rebuild\fR [\fB-p\fR \fIpublisher\fR]... \fB-s\fR \fIrepo_uri_or_path\fR [\fB--key\fR \fIssl_key\fR \fB--cert\fR \fIssl_cert\fR]... [\fB--no-catalog\fR] [\fB--no-index\fR]\fR
 .ad
 .sp .6
 .RS 4n
@@ -366,17 +438,6 @@ pkgrepo \- Image Packaging System リポジトリ管理ユーティリティー
 .sp .6
 .RS 4n
 指定された発行元についてのみ操作を実行します。指定されていない場合や、特殊な値 \fBall\fR が指定されている場合は、すべてのパブリッシャーについて操作が実行されます。このオプションは複数回指定できます。
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fB\fB-s\fR \fIrepo_uri_or_path\fR\fR
-.ad
-.sp .6
-.RS 4n
-指定された URI またはファイルシステムのパスにあるリポジトリを操作します。
 .RE
 
 .sp
@@ -401,13 +462,14 @@ pkgrepo \- Image Packaging System リポジトリ管理ユーティリティー
 検索インデックスを再構築しません。
 .RE
 
+ほかのすべてのオプションの説明については、前述の \fBpkgrepo get\fR コマンドを参照してください。
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fB\fBpkgrepo refresh\fR [\fB-p\fR \fI publisher\fR ...] \fB-s\fR \fIrepo_uri_or_path\fR [\fB- -no-catalog\fR] [\fB--no-index\fR]\fR
+\fB\fBpkgrepo refresh\fR [\fB-p\fR \fIpublisher\fR]... \fB-s\fR \fIrepo_uri_or_path\fR [\fB--key\fR \fIssl_key\fR \fB--cert\fR \fIssl_cert\fR]... [\fB--no-catalog\fR] [\fB--no-index\fR] \fR
 .ad
 .sp .6
 .RS 4n
@@ -421,17 +483,6 @@ pkgrepo \- Image Packaging System リポジトリ管理ユーティリティー
 .sp .6
 .RS 4n
 指定された発行元についてのみ操作を実行します。指定されていない場合や、特殊な値 \fBall\fR が指定されている場合は、すべてのパブリッシャーについて操作が実行されます。このオプションは複数回指定できます。
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fB\fB-s\fR \fIrepo_uri_or_path\fR\fR
-.ad
-.sp .6
-.RS 4n
-指定された URI またはファイルシステムのパスにあるリポジトリを操作します。
 .RE
 
 .sp
@@ -456,17 +507,18 @@ pkgrepo \- Image Packaging System リポジトリ管理ユーティリティー
 検索インデックスを更新しません。
 .RE
 
+ほかのすべてのオプションの説明については、前述の \fBpkgrepo get\fR コマンドを参照してください。
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fB\fBpkgrepo remove\fR [\fB-n\fR] [\fB-p\fR \fIpublisher\fR ...] \fB-s\fR \fI repo_uri_or_path\fR \fIpkg_fmri_pattern\fR ...\fR
+\fB\fBpkgrepo remove\fR [\fB-n\fR] [\fB-p\fR \fIpublisher\fR]... \fB-s\fR \fIrepo_uri_or_path\fR \fIpkg_fmri_pattern\fR ...\fR
 .ad
 .sp .6
 .RS 4n
-リポジトリから、指定されたパターンに一致するパッケージ (これらのパッケージが参照している、ほかのどのパッケージでも使用されていないすべてのファイルを含む) を削除します。
+リポジトリから、指定された \fIpkg_fmri_pattern\fR パターンに一致するパッケージ (これらのパッケージが参照している、ほかのどのパッケージでも使用されていないすべてのファイルを含む) を削除します。\fIpkg_fmri_pattern\fR パターンには、\fBglob\fR(3C) 形式のワイルドカードとして 1 つ以上のパッケージと一致する \fB?\fR および \fB*\fR 文字を含めることができます。
 .LP
 注 - 
 .sp
@@ -519,11 +571,11 @@ pkgrepo \- Image Packaging System リポジトリ管理ユーティリティー
 .ne 2
 .mk
 .na
-\fB\fBpkgrepo set\fR [\fB-p\fR \fI publisher\fR] \fB-s\fR \fIrepo_uri_or_path\fR \fI section/property\fR=[\fIvalue\fR] ...\fR
+\fB\fBpkgrepo set\fR [\fB-p\fR \fIpublisher\fR]... \fB-s\fR \fIrepo_uri_or_path\fR \fIsection/property\fR=[\fIvalue\fR] ...\fR
 .ad
 .br
 .na
-\fB\fBset\fR [\fB-p\fR \fIpublisher\fR] \fB- s\fR \fIrepo_uri_or_path\fR \fIsection/property \fR=([\fIvalue\fR]) ...\fR
+\fB\fBpkgrepo set\fR [\fB-p\fR \fIpublisher\fR]... \fB-s\fR \fIrepo_uri_or_path\fR \fIsection/property\fR=([\fIvalue\fR]) ...\fR
 .ad
 .sp .6
 .RS 4n
@@ -557,7 +609,7 @@ pkgrepo \- Image Packaging System リポジトリ管理ユーティリティー
 .ne 2
 .mk
 .na
-\fB\fIsection\fR/\fIproperty\fR= \fR
+\fB\fIsection\fR/\fIproperty\fR=\fR
 .ad
 .sp .6
 .RS 4n
@@ -568,7 +620,7 @@ pkgrepo \- Image Packaging System リポジトリ管理ユーティリティー
 .ne 2
 .mk
 .na
-\fB\fIsection\fR/\fIproperty\fR=\fI value\fR\fR
+\fB\fIsection\fR/\fIproperty\fR=\fIvalue\fR\fR
 .ad
 .sp .6
 .RS 4n
@@ -579,7 +631,7 @@ pkgrepo \- Image Packaging System リポジトリ管理ユーティリティー
 .ne 2
 .mk
 .na
-\fB\fIsection\fR/\fIproperty\fR=(\fI value1\fR \fIvalue2\fR \fIvalueN\fR) \fR
+\fB\fIsection\fR/\fIproperty\fR=(\fIvalue1\fR \fIvalue2\fR \fIvalueN\fR)\fR
 .ad
 .sp .6
 .RS 4n
@@ -593,12 +645,12 @@ pkgrepo \- Image Packaging System リポジトリ管理ユーティリティー
 .na
 \fB\fBpublisher/prefix\fR\fR
 .ad
-.RS 20n
-.rt  
+.sp .6
+.RS 4n
 デフォルトのパブリッシャーの名前を表す文字列。最初の文字は a-z、A-Z、または 0-9 である必要があります。文字列の残りの部分には、文字 0-9、-、.、a-z、および A-Z のみを含めることができます。この値は、複数のパブリッシャーのパッケージが存在するとき、またはパッケージがリポジトリに公開されているが、パブリッシャーが指定されていないときに使用されるべきパブリッシャーを示します。
 .RE
 
-リポジトリバージョン 3 および 4 の場合は、リポジトリ内の個々のパブリッシャーの次のプロパティーを設定できます。
+リポジトリバージョン 3 および 4 の場合は、リポジトリ内の個々のパブリッシャーの次のプロパティーを設定できます。これらのプロパティーを設定するときは、\fB-p\fR オプションを使用して 1 つ以上のパブリッシャーを指定します。
 .sp
 .ne 2
 .mk
@@ -608,6 +660,17 @@ pkgrepo \- Image Packaging System リポジトリ管理ユーティリティー
 .sp .6
 .RS 4n
 リポジトリの構成データを使用してパブリッシャーを追加するときにクライアントが使用すべきデフォルトの別名を表す文字列。最初の文字は a-z、A-Z、または 0-9 である必要があります。文字列の残りの部分には、文字 0-9、-、.、a-z、および A-Z のみを含めることができます。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fBrepository/check-certificate-revocation\fR\fR
+.ad
+.sp .6
+.RS 4n
+証明書が失効したかどうかを検査する boolean。このプロパティーを \fBTrue\fR に設定すると、\fBpkgrepo verify\fR および \fBpkgrepo fix\fR コマンドは、署名検証のために使用される証明書の CRL 配布ポイントへのアクセスを試み、発行時よりもあとに証明書が失効していないかどうかを調べます。デフォルト値は \fBFalse\fR です。このプロパティーは、リポジトリの内容を検証するために、\fBverify\fR および \fBfix\fR サブコマンドによってのみ使用されます。このプロパティーはクライアント設定には影響しません。この値は、対応する \fBpkg\fR(1) プロパティー値と同じである必要があります。
 .RE
 
 .sp
@@ -724,7 +787,147 @@ pkgrepo \- Image Packaging System リポジトリ管理ユーティリティー
 ユーザーが関心を持っている可能性があるパッケージを含むリポジトリの場所 (URI) のリスト。
 .RE
 
-ここでは文書化されていないが、\fBget\fR サブコマンドの出力に一覧表示されるプロパティーは内部使用のために予約されているため、設定しないようにしてください。
+.sp
+.ne 2
+.mk
+.na
+\fB\fBrepository/signature-required-names\fR\fR
+.ad
+.sp .6
+.RS 4n
+パッケージの署名の検証中に、証明書の共通名として表示される必要のある名前の一覧です。このプロパティーは、リポジトリの内容を検証するために、\fBverify\fR および \fBfix\fR サブコマンドによってのみ使用されます。このプロパティーはクライアント設定には影響しません。これらの値は、対応する \fBpkg\fR(1) プロパティー値と同じである必要があります。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fBrepository/trust-anchor-directory\fR\fR
+.ad
+.sp .6
+.RS 4n
+このリポジトリ内のパッケージのトラストアンカーを含むディレクトリの絶対パス名。指定しない場合、\fB/etc/certs/CA/\fR が使用されます。このプロパティーは、リポジトリの内容を検証するために、\fBverify\fR および \fBfix\fR サブコマンドによってのみ使用されます。このプロパティーはクライアント設定には影響しません。この値は、対応する \fBpkg\fR(1) プロパティー値と同じである必要があります。
+.RE
+
+ここには記載されていないが \fBget\fR サブコマンドの出力に一覧表示されるプロパティーは、内部使用のために予約されているため、設定しないようにしてください。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fBpkgrepo verify\fR [\fB-p\fR \fIpublisher\fR]... \fB-s\fR \fIrepo_uri_or_path\fR\fR
+.ad
+.sp .6
+.RS 4n
+パッケージリポジトリの内容の次の属性が正しいことを検証します。
+.RS +4
+.TP
+.ie t \(bu
+.el o
+ファイルのチェックサム
+.RE
+.RS +4
+.TP
+.ie t \(bu
+.el o
+ファイルのアクセス権
+.sp
+\fBpkg5srv\fR ユーザーがリポジトリの内容を読み取ることができることを確認するために、リポジトリへのパスも検査されます。この検査は、\fBsvc:/application/pkg/server\fR サービスを使用するか、システムに非大域ゾーンがある場合に \fBsvc:/application/pkg/system-repository\fR サービスを使用することによって使用できるようになるリポジトリに対して必要になることがあります。
+.RE
+.RS +4
+.TP
+.ie t \(bu
+.el o
+パッケージマニフェストのアクセス権
+.RE
+.RS +4
+.TP
+.ie t \(bu
+.el o
+パッケージマニフェストの内容
+.RE
+.RS +4
+.TP
+.ie t \(bu
+.el o
+パッケージ署名
+.sp
+パッケージマニフェスト署名は、\fBrepository/signature-required-names\fR、\fBrepository/trust-anchor-directory\fR、および \fBrepository/check-certificate-revocation \fR プロパティーの値に基づいて計算されます。
+.RE
+エラーは \fBstdout\fR に出力されます。何らかのエラーが出力された場合、\fBpkgrepo\fR コマンドはゼロ以外の戻りコードで終了します。
+.sp
+このサブコマンドは、バージョン 4 のファイルシステムベースのリポジトリでのみ使用できます。
+.sp
+.ne 2
+.mk
+.na
+\fB\fB-p\fR \fIpublisher\fR\fR
+.ad
+.sp .6
+.RS 4n
+指定されたパブリッシャーについてのみ操作を実行します。パブリッシャーが指定されていない場合や、特殊な値 \fBall\fR が指定されている場合は、すべてのパブリッシャーについて操作が実行されます。このオプションは複数回指定できます。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB-s\fR \fIrepo_uri_or_path\fR\fR
+.ad
+.sp .6
+.RS 4n
+指定された URI またはファイルシステムのパスにあるリポジトリを操作します。
+.RE
+
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fBpkgrepo fix\fR [\fB-v\fR] [\fB-p\fR \fIpublisher\fR]... \fB-s\fR \fIrepo_uri_or_path\fR\fR
+.ad
+.sp .6
+.RS 4n
+最初にリポジトリを検証し、無効なリポジトリの内容をリポジトリ内の検疫ディレクトリに移動することによって、リポジトリの内容を修正します。
+.sp
+リポジトリエラーが見つかった場合は、リポジトリの再構築が自動的に実行されます。エラーが見つかった場合は、メッセージが \fBstdout\fR に出力され、リポジトリ内容を復元するために \fBpkgsend\fR(1) または \fBpkgrecv\fR(1) を使用して再インポートする必要があるパッケージが示されます。
+.sp
+このサブコマンドは、バージョン 4 のファイルシステムベースのリポジトリでのみ使用できます。
+.sp
+.ne 2
+.mk
+.na
+\fB\fB-v\fR\fR
+.ad
+.sp .6
+.RS 4n
+リポジトリの検証時に見つかったエラーを詳述する出力が含まれます。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB-p\fR \fIpublisher\fR\fR
+.ad
+.sp .6
+.RS 4n
+指定されたパブリッシャーについてのみ操作を実行します。パブリッシャーが指定されていない場合や、特殊な値 \fBall\fR が指定されている場合は、すべてのパブリッシャーについて操作が実行されます。このオプションは複数回指定できます。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB-s\fR \fIrepo_uri_or_path\fR\fR
+.ad
+.sp .6
+.RS 4n
+指定された URI またはファイルシステムのパスにあるリポジトリを操作します。
+.RE
+
 .RE
 
 .sp
@@ -975,7 +1178,14 @@ _
 .SH 関連項目
 .sp
 .LP
-\fBpkg\fR(1)、\fBpkgrecv\fR(1)、\fBpkgsend\fR(1)、\fBpkg.depotd\fR(1M)、\fBpkg\fR(5)
+\fBpkg\fR(1), \fBpkgrecv\fR(1), \fBpkgsend\fR(1), \fBpkg.depotd\fR(1M), \fBpkg\fR(5)
 .sp
 .LP
-\fBhttp://hub.opensolaris.org/bin/view/Project+pkg/\fR
+\fI『Copying and Creating Package Repositories in Oracle Solaris 11.2 』\fR
+.sp
+.LP
+\fBhttps://java.net/projects/ips/pages/Home\fR
+.SH 注意事項
+.sp
+.LP
+\fBpkgrepo\fR のほとんどの操作は、パッケージアーカイブでは使用できません。パッケージアーカイブは、\fBpkgrecv\fR(1) のマニュアルページの \fB-a\fR オプションで説明されているように、通常は \fB\&.p5p\fR 拡張子を持つファイルです。パッケージアーカイブには、パッケージが含まれていますが、リポジトリ構成は含まれていません。ただし、\fBpkgrepo list\fR、\fBpkgrepo info\fR、および \fBpkgrepo contents\fR コマンドは、パッケージアーカイブに対して動作します。

@@ -1,12 +1,13 @@
 '\" te
-.\" Copyright (c) 2007, 2012, Oracle and/or its affiliates. All rights reserved.
-.TH pkgmerge 1 "2012 年 5 月 27 日" "SunOS 5.11" "ユーザーコマンド"
+.\" Copyright (c) 2007, 2013, Oracle and/or its affiliates.All rights reserved.
+.TH pkgmerge 1 "2013 年 11 月 14 日" "SunOS 5.12" "ユーザーコマンド"
 .SH 名前
 pkgmerge \- Image Packaging System パッケージマージユーティリティー
 .SH 形式
 .LP
 .nf
 /usr/bin/pkgmerge [-n] -d \fIdest_repo\fR
+    [-p \fIpublisher_prefix\fR]...
     -s \fIvariant\fR=\fIvalue\fR[,...],\fIsrc_repo\fR ...
     [\fIpkg_fmri_pattern\fR ...]
 .fi
@@ -21,6 +22,9 @@ pkgmerge \- Image Packaging System パッケージマージユーティリティ
 .sp
 .LP
 入力マニフェスト内の同じパスに入る同一でないアクションがあると、\fBpkgmerge\fR はエラーで終了します。
+.sp
+.LP
+\fBpkgmerge\fR 操作後に、公開先のリポジトリが \fBpkg search\fR 操作をサポートする必要がある場合は、リポジトリ上で \fBpkgrepo refresh\fR を実行して、検索インデックスを更新してください。
 .SH オプション
 .sp
 .LP
@@ -66,11 +70,39 @@ pkgmerge \- Image Packaging System パッケージマージユーティリティ
 .ne 2
 .mk
 .na
-\fB\fB-s\fR \fIvariant\fR=\fI value\fR[,...],\fIsrc_repo\fR\fR
+\fB\fB-p\fR \fIpublisher_prefix\fR\fR
+.ad
+.sp .6
+.RS 4n
+パッケージのマージ元になるパブリッシャーの名前を指定します。このオプションは複数回指定できます。
+.sp
+デフォルトでは、すべてのソースリポジトリ内のすべてのパブリッシャーからパッケージがマージされます。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB-s\fR \fIvariant\fR=\fIvalue\fR[,...],\fIsrc_repo\fR\fR
 .ad
 .sp .6
 .RS 4n
 このソースのパッケージに使用するバリアント名および値、そのあとに、パッケージを取得する元のソースリポジトリまたはパッケージアーカイブのファイルシステムのパスまたは URI を指定します。複数のバリアントをコンマで区切って指定できます。すべてのソースに対して同じバリアントを指定する必要があります。このオプションは複数回指定できます。
+.RE
+
+.SH オペランド
+.sp
+.LP
+次のオペランドを指定できます。
+.sp
+.ne 2
+.mk
+.na
+\fB\fIpkg_fmri_pattern\fR\fR
+.ad
+.sp .6
+.RS 4n
+マージするパッケージを指定します。\fIpkg_fmri_pattern\fR オペランドには、\fBglob\fR(3C) 形式のワイルドカードとして 1 つ以上のパッケージと一致する \fB?\fR および \fB*\fR 文字を含めることができます。
 .RE
 
 .SH 環境
@@ -341,6 +373,22 @@ dir group=sys mode=0755 owner=root path=usr
 .fi
 .in -2
 
+.LP
+\fB例 5 \fR異なるパブリッシャー接頭辞が付いたパッケージのマージ
+.sp
+.LP
+これらのリポジトリ内のほかのパッケージに \fBexample.com\fR 接頭辞が付いている場合でも、\fBdev\fR 接頭辞が付いたパッケージのみをマージします。
+
+.sp
+.in +2
+.nf
+$ \fBpkgmerge -p dev -s arch=sparc,http://src1.example.com \e
+-s arch=i386,http://src2.example.com \e
+-d /path/to/target/repository\fR
+.fi
+.in -2
+.sp
+
 .SH 終了ステータス
 .sp
 .LP
@@ -414,4 +462,7 @@ _
 \fBpkgrepo\fR(1), \fBpkg\fR(5)
 .sp
 .LP
-\fBhttp://hub.opensolaris.org/bin/view/Project+pkg/\fR
+\fI『Packaging and Delivering Software With the Image Packaging System in Oracle Solaris 11.2 』\fR
+.sp
+.LP
+\fBhttps://java.net/projects/ips/pages/Home\fR

@@ -1,12 +1,12 @@
 '\" te
-.\" Copyright (c) 2007, 2011, Oracle and/or its affiliates. All rights reserved.
-.TH pkg.sysrepo 1m "2011 年 7 月 28 日" "SunOS 5.11" "システム管理コマンド"
+.\" Copyright (c) 2007, 2013, Oracle and/or its affiliates. All rights reserved.
+.TH pkg.sysrepo 1M "2013 年 5 月 21 日" "SunOS 5.12" "システム管理コマンド"
 .SH 名前
 pkg.sysrepo \- Image Packaging System システムリポジトリ構成
 .SH 形式
 .LP
 .nf
-pkg.sysrepo -p \fIport\fR [-c \fIcache_dir\fR] [-s \fIcache_size\fR]
+/usr/lib/pkg.sysrepo -p \fIport\fR [-c \fIcache_dir\fR] [-s \fIcache_size\fR]
     [-w \fIhttp_proxy\fR] [-W \fIhttps_proxy\fR]
 .fi
 
@@ -22,20 +22,20 @@ pkg.sysrepo -p \fIport\fR [-c \fIcache_dir\fR] [-s \fIcache_size\fR]
 システムリポジトリは、大域ゾーン内に構成されたリポジトリに非大域ゾーンからアクセスできるようにするために、主に大域ゾーンで使用されます。SMF サービス \fBsvc:/application/pkg/zones-proxyd\fR および \fBsvc:/application/pkg/zones-proxy-client\fR は、非大域ゾーンと大域ゾーンの間のトランスポートを提供する役割を果たします。このトランスポートは、\fBpkg\fR(5) でのみ使用されます。
 .sp
 .LP
-HTTP、HTTPS、および v4 ファイルリポジトリのみがサポートされています。p5p ベースのファイルリポジトリや、それより前のファイルリポジトリ形式はサポートされません。リポジトリバージョンについての詳細は、\fBpkgrepo\fR(1) を参照してください。
+\fBhttp\fR、\fBhttps\fR、および \fB v4\fR ファイルリポジトリと \fBp5p\fR アーカイブのみがサポートされます。古いファイルリポジトリ形式はサポートされません。リポジトリバージョンについての詳細は、\fBpkgrepo\fR(1) を参照してください。
 .SH オプション
 .sp
 .LP
-次のオプションがサポートされています。
+サポートしているオプションは、次のとおりです。
 .sp
 .ne 2
 .mk
 .na
 \fB\fB-c\fR \fIcache_dir\fR\fR
 .ad
-.RS 18n
-.rt  
-構成されたパブリッシャーからの応答をキャッシュするためにシステムリポジトリで使用すべきディレクトリの絶対パス。
+.sp .6
+.RS 4n
+構成された発行元からの応答をキャッシュするためにシステムリポジトリで使用すべきディレクトリの絶対パスを指定します。
 .sp
 デフォルトでは、ファイルキャッシュが使用されます。ただし、インメモリーキャッシュを使用すべきであることを示すために、特殊な値 \fBmemory\fR を使用できます。システムリポジトリがキャッシュを実行すべきではないことを示すために、特殊な値 \fBNone\fR を使用できます。この設定は、\fBconfig/cache_dir\fR SMF プロパティーを使用して構成するようにしてください。
 .RE
@@ -46,9 +46,9 @@ HTTP、HTTPS、および v4 ファイルリポジトリのみがサポートさ�
 .na
 \fB\fB-p\fR \fIport\fR\fR
 .ad
-.RS 18n
-.rt  
-システムリポジトリが要求を待機するために使用すべきポート。この設定は、\fBconfig/port\fR SMF プロパティーを使用して構成するようにしてください。
+.sp .6
+.RS 4n
+システムリポジトリがリクエストを待機するために使用すべきポートを指定します。この設定は、\fBconfig/port\fR SMF プロパティーを使用して構成するようにしてください。
 .RE
 
 .sp
@@ -57,8 +57,8 @@ HTTP、HTTPS、および v4 ファイルリポジトリのみがサポートさ�
 .na
 \fB\fB-s\fR \fIcache_size\fR\fR
 .ad
-.RS 18n
-.rt  
+.sp .6
+.RS 4n
 システムリポジトリの最大キャッシュサイズを定義する整数値 (M バイト単位)。この設定は、\fBconfig/cache_max\fR SMF プロパティーを使用して構成するようにしてください。
 .RE
 
@@ -68,8 +68,8 @@ HTTP、HTTPS、および v4 ファイルリポジトリのみがサポートさ�
 .na
 \fB\fB-w\fR \fIhttp_proxy\fR\fR
 .ad
-.RS 18n
-.rt  
+.sp .6
+.RS 4n
 システムリポジトリが http ベースのパッケージリポジトリにアクセスするために使用できる Web プロキシを定義する、\fB\fIscheme\fR://\fI hostname\fR[:\fIport\fR]\fR 形式の文字列。この設定は、\fBconfig/http_proxy \fR SMF プロパティーを使用して構成できます。
 .RE
 
@@ -79,8 +79,8 @@ HTTP、HTTPS、および v4 ファイルリポジトリのみがサポートさ�
 .na
 \fB\fB-W\fR \fIhttps_proxy\fR\fR
 .ad
-.RS 18n
-.rt  
+.sp .6
+.RS 4n
 システムリポジトリが https ベースのパッケージリポジトリにアクセスするために使用できる Web プロキシを定義する、\fB\fIscheme\fR://\fI hostname\fR[:\fIport\fR]\fR 形式の文字列。この設定は、\fBconfig/https_proxy \fR SMF プロパティーを使用して構成できます。
 .RE
 
@@ -98,7 +98,7 @@ $ \fBsvcadm enable svc:/application/pkg/system-repository\fR
 .SH 終了ステータス
 .sp
 .LP
-次の終了値が返されます。
+次の終了ステータスが返されます。
 .sp
 .ne 2
 .mk
@@ -129,7 +129,7 @@ $ \fBsvcadm enable svc:/application/pkg/system-repository\fR
 .ad
 .RS 6n
 .rt  
-無効なコマンド行オプションが指定されました。
+無効なコマンド行オプションが指定された。
 .RE
 
 .sp
@@ -165,7 +165,7 @@ _
 .SH 関連項目
 .sp
 .LP
-\fBpkg\fR(1), \fBpkgdepotd\fR(1M), \fBpkg\fR(5)
+\fBpkg\fR(1), \fBpkg.depotd\fR(1M), \fBpkg\fR(5)
 .sp
 .LP
-\fBhttp://hub.opensolaris.org/bin/view/Project+pkg/\fR
+\fBhttps://java.net/projects/ips/pages/Home\fR

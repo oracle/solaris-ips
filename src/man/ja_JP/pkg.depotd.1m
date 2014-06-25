@@ -1,19 +1,20 @@
 '\" te
-.\" Copyright (c) 2007, 2011, Oracle and/or its affiliates. All rights reserved.
-.TH pkg.depotd 1m "2011 年 8 月 30 日" "SunOS 5.11" "システム管理コマンド"
+.\" Copyright (c) 2007, 2013, Oracle and/or its affiliates.All rights reserved.
+.TH pkg.depotd 1M "2013 年 10 月 2 日" "SunOS 5.12" "システム管理コマンド"
 .SH 名前
 pkg.depotd \- Image Packaging System の集積サーバー
 .SH 形式
 .LP
 .nf
-/usr/lib/pkg.depotd [-a \fIaddress\fR] [-d \fIinst_root\fR] [-p \fIport\fR]
-    [-s \fIthreads\fR] [-t \fIsocket_timeout\fR] [--add-content]
-    [--cfg] [--content-root] [--debug feature_list]
-    [--disable-ops=\fIop\fR[/1][,...]]
-    [--log-access] [--log-errors] [--mirror]
-    [--proxy-base \fIurl\fR] [--readonly] [--rebuild]
-    [--ssl-cert-file] [--ssl-dialog] [--ssl-key-file]
-    [--writable-root]
+/usr/lib/pkg.depotd [--cfg \fIsource\fR] [-a \fIaddress\fR]
+    [--content-root \fIroot_dir\fR] [-d \fIinst_root\fR]
+    [--debug \fIfeature_list\fR] [--disable-ops=\fIop\fR[/1][,...]]
+    [--image-root \fIpath\fR] [--log-access \fIdest\fR]
+    [--log-errors \fIdest\fR] [--mirror \fImode\fR] [-p \fIport\fR]
+    [--proxy-base \fIurl\fR] [--readonly \fImode\fR] [-s \fIthreads\fR]
+    [--sort-file-max-size \fIbytes\fR] [--ssl-cert-file \fIsource\fR]
+    [--ssl-dialog \fItype\fR] [--ssl-key-file \fIsource\fR]
+    [-t \fIsocket_timeout\fR] [--writable-root \fIpath\fR]
 .fi
 
 .SH 機能説明
@@ -22,17 +23,20 @@ pkg.depotd \- Image Packaging System の集積サーバー
 \fBpkg.depotd\fR は、Image Packaging System の集積サーバーです。パッケージリポジトリの内部に格納されたデータへのネットワークアクセスを提供します。ファイルシステム経由でのリポジトリへの直接アクセスをサポートしないクライアントや、ネットワークアクセスが唯一利用可能な、または推奨されるトランスポート手段であるクライアントでは通常、パッケージ集積庫を使用します。
 .sp
 .LP
-取得クライアントである \fBpkg\fR(1) などのクライアントは、パッケージのリストおよびパッケージメタデータをリポジトリから直接、または集積サーバーを経由して取得できます。公開クライアントである \fBpkgsend\fR(1) は、パッケージの新しいバージョンをリポジトリに直接、または集積サーバーを経由して送信できます。\fBpkgrepo\fR(1) を使用すると、集積サーバーとともに使用するためのリポジトリを作成したり、直接、または集積サーバー経由でリポジトリを管理したりできます。
+取得クライアントである\fBpkg\fR などのクライアントは、直接リポジトリから、または集積サーバーを通じてパッケージおよびパッケージメタデータのリストを取得できます。公開クライアントである \fBpkgsend\fR は、直接リポジトリに、または集積サーバーを通じて新しいバージョンのパッケージを送信できます。\fBpkgrepo\fR を使用して、集積サーバーで使用するリポジトリを作成したり、集積サーバーで直接、および集積サーバーを通じてこれらのリポジトリを管理したりすることができます。
 .sp
 .LP
 \fBpkg.depotd\fR は通常、システム上のサービスとして実行されます。パッケージおよびソフトウェアの開発者が、テスト目的で非公開のコピーを実行することが必要になる場合があります。
 .sp
 .LP
-集積庫は、単体では一切のアクセス制御手段を提供しません。デフォルトでは、接続できるすべてのクライアントは、すべてのパッケージデータを読み取ることができ、新しいパッケージバージョンを公開できます。サービス管理機構 (SMF) のもとで実行される場合は例外であり、この場合はデフォルトで読み取り専用モードで実行されます。後述の注意事項に関する節で、内容が増大していく公開集積サーバーを保守するためのベストプラクティスをいくつか説明します。
+集積庫は、単体では一切のアクセス制御手段を提供しません。デフォルトでは、接続できるすべてのクライアントは、すべてのパッケージデータを読み取ることができ、新しいパッケージバージョンを公開できます。サービス管理機構 (SMF) のもとで実行される場合は例外であり、この場合はデフォルトで読み取り専用モードで実行されます。後述の注意事項に関するセクションで、内容が増大していく公開集積サーバーを保守するためのベストプラクティスをいくつか説明します。
 .SH SMF プロパティー
 .sp
 .LP
-\fBpkg.depot\fR サーバーは通常、そのサービスと関連付けられた \fBsmf\fR(5) プロパティーを通して設定されます。次のようなプロパティーがあります。
+\fBpkg.depotd\fR サーバーは通常、そのサービスと関連付けられた SMF プロパティーを通して構成されます。\fBsvc:/application/pkg/server\fR サービスは、\fBpkg.depot\fR サーバープロセスを実行するか、\fBsvc:/application/pkg/depot\fR サービスの構成に貢献します。\fBpkg.depot-config\fR(1M) マニュアルページおよび後述の \fBpkg/standalone\fR プロパティーを参照してください。
+.sp
+.LP
+SMF プロパティーについては、\fBsmf\fR(5) マニュアルページを参照してください。次のようなプロパティーがあります。
 .sp
 .ne 2
 .mk
@@ -96,7 +100,7 @@ pkg.depotd \- Image Packaging System の集積サーバー
 .ad
 .sp .6
 .RS 4n
-(\fBastring\fR) ファイルデータのキャッシュとして使用されるファイル情報を持つイメージへのパス。
+(\fBastring\fR) ファイル情報がファイルデータのキャッシュとして使用されるイメージのパス。
 .RE
 
 .sp
@@ -107,7 +111,7 @@ pkg.depotd \- Image Packaging System の集積サーバー
 .ad
 .sp .6
 .RS 4n
-(\fBastring\fR) インスタンスがそのリポジトリデータを検索するファイルシステムパス。\fBfile_root\fR または \fBPKG_REPO\fR が指定された場合を除き、必須です。デフォルト値は \fB/var/pkgrepo\fR です。
+(\fBastring\fR) インスタンスがそのリポジトリデータを検索するファイルシステムパス。\fBPKG_REPO\fR が指定されていないかぎり、必須です。デフォルト値は \fB/var/pkgrepo\fR です。
 .RE
 
 .sp
@@ -118,7 +122,7 @@ pkg.depotd \- Image Packaging System の集積サーバー
 .ad
 .sp .6
 .RS 4n
-(\fBastring\fR) 集積プロセスによってログに記録される、アクセスに関連した任意の情報の出力先。指定可能な値は \fBstderr\fR、\fBstdout\fR、\fBnone\fR、または絶対パス名です。\fBstdout\fR が \fBtty\fR の場合、デフォルト値は \fBstdout\fR です。\fBstdout\fR が \fBtty\fR でない場合、デフォルト値は \fBnone\fR です。
+(\fBastring\fR) 集積プロセスによってログに記録される、アクセスに関連した任意の情報の出力先。指定可能な値は \fBstderr\fR、\fBstdout\fR、\fBnone\fR、または絶対パス名です。\fBstdout\fR が \fBtty\fR の場合、デフォルト値は \fBstdout\fR です。\fBstdout\fR が \fBtty\fR でない場合、デフォルト値は \fBnone\fR です。\fBpkg\fR をサービスとして実行する場合、\fBlog_access\fR のデフォルト値は \fBnone\fR で、出力は \fB/var/svc/log/application-pkg-server:*\fR に書き込まれます。大きいログファイルの管理例については、\fBlogadm\fR(1M) マニュアルページを参照してください。
 .RE
 
 .sp
@@ -129,7 +133,7 @@ pkg.depotd \- Image Packaging System の集積サーバー
 .ad
 .sp .6
 .RS 4n
-(\fBastring\fR) 集積プロセスによってログに記録される、任意のエラーやその他の情報の出力先。指定可能な値は \fBstderr\fR、\fBstdout\fR、\fBnone\fR、または絶対パス名です。デフォルト値は \fBstderr\fR です。
+(\fBastring\fR) 集積プロセスによってログに記録される、任意のエラーやその他の情報の出力先。指定可能な値は \fBstderr\fR、\fBstdout\fR、\fBnone\fR、または絶対パス名です。デフォルト値は \fBstderr\fR です。大きいログファイルの管理例については、\fBlogadm\fR(1M) マニュアルページを参照してください。
 .RE
 
 .sp
@@ -173,7 +177,7 @@ pkg.depotd \- Image Packaging System の集積サーバー
 .ad
 .sp .6
 .RS 4n
-(\fBブール型\fR) \fBpkgsend\fR(1) によって開始される操作などの変更操作を無効にするかどうかを設定します。取得操作は引き続き使用可能です。\fBpkg/mirror\fR プロパティーが true のときは、このプロパティーを true に設定できません。デフォルト値は \fBtrue\fR です。
+(\fBboolean\fR) \fBpkgsend\fR によって開始される操作などの変更操作を無効にするかどうかを設定します。取得操作は引き続き使用可能です。\fBpkg/mirror\fR プロパティーが true のときは、このプロパティーを true に設定できません。デフォルト値は \fBtrue\fR です。
 .RE
 
 .sp
@@ -224,8 +228,8 @@ pkg.depotd \- Image Packaging System の集積サーバー
 .na
 \fB\fBbuiltin\fR\fR
 .ad
-.RS 25n
-.rt  
+.sp .6
+.RS 4n
 パスフレーズの入力を求めます。これがデフォルト値です。
 .RE
 
@@ -235,8 +239,8 @@ pkg.depotd \- Image Packaging System の集積サーバー
 .na
 \fB\fBexec:\fI/path/to/program\fR\fR\fR
 .ad
-.RS 25n
-.rt  
+.sp .6
+.RS 4n
 指定された外部プログラムを実行してパスフレーズを取得します。プログラムへの最初の引数は \fB\&''\fR であり、予約されています。プログラムへの 2 番目の引数はサーバーのポート番号です。パスフレーズは \fBstdout\fR に出力されます。
 .RE
 
@@ -246,8 +250,8 @@ pkg.depotd \- Image Packaging System の集積サーバー
 .na
 \fB\fBsmf:fmri\fR\fR
 .ad
-.RS 25n
-.rt  
+.sp .6
+.RS 4n
 FMRI に関連したサービスインスタンスから、プロパティー \fBpkg_secure/ssl_key_passphrase\fR の値を取得しようとします。
 .RE
 
@@ -262,6 +266,17 @@ FMRI に関連したサービスインスタンスから、プロパティー \f
 .sp .6
 .RS 4n
 (\fBastring\fR) PEM エンコードされた非公開鍵ファイルの絶対パス名。このプロパティーは、\fBssl_cert_file\fR プロパティーとともに使用してください。\fB/ssl_key_file\fR および \fBssl_cert_file\fR の両方が指定された場合、集積庫のみが SSL 要求に応答します。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fBpkg/standalone\fR\fR
+.ad
+.sp .6
+.RS 4n
+(\fBboolean\fR) 最小の Apache 構成で、単一の Apache インスタンスから複数のリポジトリを簡単に提供するには、このプロパティーを \fBfalse\fR に設定し、この \fBpkg/server\fR インスタンスの \fBpkg/readonly\fR プロパティーを \fBtrue\fR に設定します。\fBpkg/standalone\fR のデフォルト値は \fBfalse\fR で、\fBpkg/readonly\fR のデフォルト値は \fBtrue\fR です。詳細は、\fBpkg.depot-config\fR(1M) のマニュアルページを参照してください。
 .RE
 
 .sp
@@ -283,7 +298,7 @@ FMRI に関連したサービスインスタンスから、プロパティー \f
 .ad
 .sp .6
 .RS 4n
-(\fBastring\fR) プログラムが書き込みアクセスを行えるディレクトリへのファイルシステムパス。このプロパティーを \fB-readonly\fR オプションとともに使用すると、集積サーバーはパッケージ情報への書き込みアクセスがなくても、検索インデックスなどのファイルを作成できます。
+(\fBastring\fR) プログラムが書き込みアクセスを行えるディレクトリへのファイルシステムパス。これは \fB-readonly\fR オプションとともに使用して、集積サーバーがパッケージ情報への書き込みアクセスを必要とせずに、検索インデックスなどのファイルを作成できるようにします。
 .RE
 
 .sp
@@ -306,8 +321,8 @@ FMRI に関連したサービスインスタンスから、プロパティー \f
 .na
 \fB\fBpkg_bui/feed_description\fR\fR
 .ad
-.RS 28n
-.rt  
+.sp .6
+.RS 4n
 (\fBastring\fR) RSS/Atom フィードの説明段落。
 .RE
 
@@ -317,8 +332,8 @@ FMRI に関連したサービスインスタンスから、プロパティー \f
 .na
 \fB\fBpkg_bui/feed_icon\fR\fR
 .ad
-.RS 28n
-.rt  
+.sp .6
+.RS 4n
 (\fBastring\fR) RSS/Atom フィードを視覚的に表現するために使われる小さい画像のパス名。パス名は \fBcontent_root\fR からの相対パスで指定します。デフォルト値は \fBweb/_themes/pkg-block-icon.png\fR です。
 .RE
 
@@ -328,8 +343,8 @@ FMRI に関連したサービスインスタンスから、プロパティー \f
 .na
 \fB\fBpkg_bui/feed_logo\fR\fR
 .ad
-.RS 28n
-.rt  
+.sp .6
+.RS 4n
 (\fBastring\fR) RSS/Atom フィードを視覚的にブランディングまたは識別するために使われる大きな画像のパス名。この値は \fBcontent_root\fR からの相対パスで指定します。デフォルト値は \fBweb/_themes/pkg-block-icon.png\fR です。
 .RE
 
@@ -339,8 +354,8 @@ FMRI に関連したサービスインスタンスから、プロパティー \f
 .na
 \fB\fBpkg_bui/feed_name\fR\fR
 .ad
-.RS 28n
-.rt  
+.sp .6
+.RS 4n
 (\fBastring\fR) リポジトリにサービスを提供する集積庫によって生成される、RSS/Atom フィードの短い説明的な名前。デフォルト値は「package repository feed」です。
 .RE
 
@@ -350,26 +365,26 @@ FMRI に関連したサービスインスタンスから、プロパティー \f
 .na
 \fB\fBpkg_bui/feed_window\fR\fR
 .ad
-.RS 28n
-.rt  
+.sp .6
+.RS 4n
 (\fBcount\fR) フィードの生成時に含める、リポジトリに関するフィードが最後に生成された時点までの時間数。
 .RE
 
 .sp
 .LP
-パッケージ集積庫は、\fBpkg\fR(5) からのローカルクライアントイメージのミラーサーバーとして機能することもできます。これにより、LAN 上で 1 つのサブネットを共有する複数のクライアントが、そのファイルキャッシュをミラー化できます。クライアント間で互いにファイルをダウンロードできるため、パッケージ集積サーバーの負荷が軽減されます。この機能は、\fBsmf\fR(5) によって設定される代替集積サービスとして利用可能です。この機能はサービス検出のために mDNS および \fBdns-sd\fR を使用します。
+パッケージ集積庫は、\fBpkg\fR(5) からのローカルクライアントイメージのミラーサーバーとして機能することもできます。これにより、LAN 上で 1 つのサブネットを共有する複数のクライアントが、そのファイルキャッシュをミラー化できます。クライアント間で互いにファイルをダウンロードできるため、パッケージ集積サーバーの負荷が軽減されます。この機能は、SMF によって構成される代替集積サービスとして利用可能です。この機能はサービス検出のために mDNS および \fBdns-sd\fR を使用します。
 .sp
 .LP
-mDNS ミラーは通常、そのサービスと関連付けられた \fBsmf\fR(5) プロパティーを通して設定されます。次のようなプロパティーがあります。
+mDNS ミラーは通常、そのサービスと関連付けられた SMF プロパティーを通して構成されます。次のようなプロパティーがあります。
 .sp
 .ne 2
 .mk
 .na
 \fB\fBpkg/image_root\fR\fR
 .ad
-.RS 18n
-.rt  
-(\fBastring\fR) ファイルデータのキャッシュとして使用されるファイル情報を持つイメージへのパス。デフォルト値は \fB/\fR です。
+.sp .6
+.RS 4n
+(\fBastring\fR) ファイル情報がファイルデータのキャッシュとして使用されるイメージのパス。デフォルト値は \fB/\fR です。
 .RE
 
 .sp
@@ -378,37 +393,37 @@ mDNS ミラーは通常、そのサービスと関連付けられた \fBsmf\fR(5
 .na
 \fB\fBpkg/port\fR\fR
 .ad
-.RS 18n
-.rt  
-(\fBcount\fR) 着信するパッケージ要求をインスタンスが待機するポート番号。デフォルト値は 80 です。
+.sp .6
+.RS 4n
+(\fBcount\fR) 着信するパッケージ要求をインスタンスが待機するポート番号。デフォルトの値は 80 です。
 .RE
 
 .SH オプション
 .sp
 .LP
-\fBpkg.depotd\fR はその基本設定情報をファイルから、または既存の \fBsmf\fR(5) サービスインスタンスのプロパティーデータから読み取ることができます。
+\fBpkg.depotd\fR はその基本構成情報をファイルから、または既存の SMF サービスインスタンスのプロパティーデータから読み取ることができます。
 .sp
 .ne 2
 .mk
 .na
 \fB\fB--cfg\fR \fIsource\fR\fR
 .ad
-.RS 16n
-.rt  
-設定データを読み書きするときに使用するファイルのパス名、または \fBsmf:\fIfmri\fR\fR 形式の文字列。\fIfmri\fR は、設定データの読み取り元インスタンスのサービス障害管理リソース識別子 (FMRI) です。指定されるファイルの形式については、後述する「集積庫の設定」を参照してください。
+.sp .6
+.RS 4n
+構成データを読み書きするときに使用するファイルのパス名、または \fBsmf:\fIfmri\fR\fR 形式の文字列。\fIfmri\fR は、構成データの読み取り元インスタンスのサービス障害管理リソース識別子 (FMRI) です。指定されるファイルの形式については、後述する「集積庫の構成」を参照してください。
 .RE
 
 .sp
 .LP
-利用可能な既存の設定ソースがない場合や、\fB--cfg\fR を使用して指定された設定ファイルから読み取られた値をオーバーライドする場合は、次のオプションを使用して、集積サーバーのデフォルト動作を変更できます。
+利用可能な既存の設定ソースがない場合や、\fB--cfg\fR を使用して指定された構成ファイルから読み取られた値をオーバーライドする場合は、次のオプションを使用して、集積サーバーのデフォルト動作を変更できます:
 .sp
 .ne 2
 .mk
 .na
-\fB\fB-a address\fR\fR
+\fB\fB-a\fR \fIaddress\fR\fR
 .ad
-.RS 30n
-.rt  
+.sp .6
+.RS 4n
 前出の \fBpkg/address\fR を参照してください。
 .RE
 
@@ -418,8 +433,8 @@ mDNS ミラーは通常、そのサービスと関連付けられた \fBsmf\fR(5
 .na
 \fB\fB--content-root\fR \fIroot_dir\fR\fR
 .ad
-.RS 30n
-.rt  
+.sp .6
+.RS 4n
 前出の \fBpkg/content_root\fR を参照してください。
 .RE
 
@@ -429,8 +444,8 @@ mDNS ミラーは通常、そのサービスと関連付けられた \fBsmf\fR(5
 .na
 \fB\fB-d\fR \fIinst_root\fR\fR
 .ad
-.RS 30n
-.rt  
+.sp .6
+.RS 4n
 前出の \fBpkg/inst_root\fR を参照してください。
 .RE
 
@@ -438,10 +453,10 @@ mDNS ミラーは通常、そのサービスと関連付けられた \fBsmf\fR(5
 .ne 2
 .mk
 .na
-\fB\fB--debug\fR \fIfeatures\fR\fR
+\fB\fB--debug\fR \fIfeature_list\fR\fR
 .ad
-.RS 30n
-.rt  
+.sp .6
+.RS 4n
 前出の \fBpkg/debug\fR を参照してください。
 .RE
 
@@ -449,10 +464,10 @@ mDNS ミラーは通常、そのサービスと関連付けられた \fBsmf\fR(5
 .ne 2
 .mk
 .na
-\fB\fB--disable-ops\fR \fIop_list\fR\fR
+\fB\fB--disable-ops\fR=\fIop\fR[\fB /1\fR][,...]\fR
 .ad
-.RS 30n
-.rt  
+.sp .6
+.RS 4n
 前出の \fBpkg/disable_ops\fR を参照してください。
 .RE
 
@@ -462,8 +477,8 @@ mDNS ミラーは通常、そのサービスと関連付けられた \fBsmf\fR(5
 .na
 \fB\fB--image-root\fR \fIpath\fR\fR
 .ad
-.RS 30n
-.rt  
+.sp .6
+.RS 4n
 上記の \fBpkg/image_root\fR を参照してください。
 .RE
 
@@ -473,8 +488,8 @@ mDNS ミラーは通常、そのサービスと関連付けられた \fBsmf\fR(5
 .na
 \fB\fB--log-access\fR \fIdest\fR\fR
 .ad
-.RS 30n
-.rt  
+.sp .6
+.RS 4n
 前出の \fBpkg/log_access\fR を参照してください。
 .RE
 
@@ -484,8 +499,8 @@ mDNS ミラーは通常、そのサービスと関連付けられた \fBsmf\fR(5
 .na
 \fB\fB--log-errors\fR \fIdest\fR\fR
 .ad
-.RS 30n
-.rt  
+.sp .6
+.RS 4n
 前出の \fBpkg/log_errors\fR を参照してください。
 .RE
 
@@ -493,10 +508,10 @@ mDNS ミラーは通常、そのサービスと関連付けられた \fBsmf\fR(5
 .ne 2
 .mk
 .na
-\fB\fB--mirror\fR\fR
+\fB\fB--mirror\fR \fImode\fR\fR
 .ad
-.RS 30n
-.rt  
+.sp .6
+.RS 4n
 前出の \fBpkg/mirror\fR を参照してください。
 .RE
 
@@ -506,8 +521,8 @@ mDNS ミラーは通常、そのサービスと関連付けられた \fBsmf\fR(5
 .na
 \fB\fB-p\fR \fIport\fR\fR
 .ad
-.RS 30n
-.rt  
+.sp .6
+.RS 4n
 前出の \fBpkg/port\fR を参照してください。
 .RE
 
@@ -517,8 +532,8 @@ mDNS ミラーは通常、そのサービスと関連付けられた \fBsmf\fR(5
 .na
 \fB\fB--proxy-base\fR \fIurl\fR\fR
 .ad
-.RS 30n
-.rt  
+.sp .6
+.RS 4n
 前出の \fBpkg/proxy_base\fR を参照してください。空の値を指定した場合、このオプションは無視されます。
 .RE
 
@@ -526,10 +541,10 @@ mDNS ミラーは通常、そのサービスと関連付けられた \fBsmf\fR(5
 .ne 2
 .mk
 .na
-\fB\fB--readonly\fR\fR
+\fB\fB--readonly\fR \fImode\fR\fR
 .ad
-.RS 30n
-.rt  
+.sp .6
+.RS 4n
 前出の \fBpkg/readonly\fR を参照してください。
 .RE
 
@@ -539,8 +554,8 @@ mDNS ミラーは通常、そのサービスと関連付けられた \fBsmf\fR(5
 .na
 \fB\fB-s\fR\fIthreads\fR\fR
 .ad
-.RS 30n
-.rt  
+.sp .6
+.RS 4n
 前出の \fBpkg/threads\fR を参照してください。
 .RE
 
@@ -548,10 +563,10 @@ mDNS ミラーは通常、そのサービスと関連付けられた \fBsmf\fR(5
 .ne 2
 .mk
 .na
-\fB\fB-s-ort-file-max-size\fR \fIbytes\fR\fR
+\fB\fB--sort-file-max-size\fR \fIbytes\fR\fR
 .ad
-.RS 30n
-.rt  
+.sp .6
+.RS 4n
 前出の \fBpkg/sort_file_max_size\fR を参照してください。
 .RE
 
@@ -561,8 +576,8 @@ mDNS ミラーは通常、そのサービスと関連付けられた \fBsmf\fR(5
 .na
 \fB\fB--ssl-cert-file\fR \fIsource\fR\fR
 .ad
-.RS 30n
-.rt  
+.sp .6
+.RS 4n
 前出の \fBpkg/ssl_cert_file\fR を参照してください。
 .RE
 
@@ -572,8 +587,8 @@ mDNS ミラーは通常、そのサービスと関連付けられた \fBsmf\fR(5
 .na
 \fB\fB--ssl-dialog\fR \fItype\fR\fR
 .ad
-.RS 30n
-.rt  
+.sp .6
+.RS 4n
 前出の \fBpkg/ssl_dialog\fR を参照してください。
 .RE
 
@@ -583,8 +598,8 @@ mDNS ミラーは通常、そのサービスと関連付けられた \fBsmf\fR(5
 .na
 \fB\fB--ssl-key-file\fR \fIsource\fR\fR
 .ad
-.RS 30n
-.rt  
+.sp .6
+.RS 4n
 前出の \fBpkg/ssl_key_file\fR を参照してください。
 .RE
 
@@ -594,8 +609,8 @@ mDNS ミラーは通常、そのサービスと関連付けられた \fBsmf\fR(5
 .na
 \fB\fB-t\fR \fIsocket_timeout\fR\fR
 .ad
-.RS 30n
-.rt  
+.sp .6
+.RS 4n
 前出の \fBpkg/socket_timeout\fR を参照してください。
 .RE
 
@@ -605,21 +620,36 @@ mDNS ミラーは通常、そのサービスと関連付けられた \fBsmf\fR(5
 .na
 \fB\fB--writable-root\fR \fIpath\fR\fR
 .ad
-.RS 30n
-.rt  
+.sp .6
+.RS 4n
 前出の \fBpkg/writable_root\fR を参照してください。
 .RE
 
 .sp
-.LP
-パッケージリポジトリの追加の管理機能は \fBpkgrepo\fR(1) によって提供されます。
-.SH 集積庫の設定
+.ne 2
+.mk
+.na
+\fB\fB-?\fR\fR
+.ad
+.br
+.na
+\fB\fB--help\fR\fR
+.ad
+.sp .6
+.RS 4n
+使用方法に関するメッセージを表示します。
+.RE
+
 .sp
 .LP
-\fB--cfg\fR オプションを使用して (\fBsmf\fR(5) の FMRI の代わりに) 設定ファイルが指定された場合、集積サーバーはすべての設定データを単純テキスト形式で読み書きします。設定データについては「SMF プロパティー」ですでに説明しました。設定データは、\fB[\fIsection\fR]\fR ヘッダーで始まるセクション群と、それに続く \fBname = \fIvalue\fR\fR エントリ群で構成されます。記述の継続は RFC 822 形式です。継続行を空白で始めることにより、複数の行に値を分割できます。
+パッケージリポジトリの追加の管理機能は \fBpkgrepo\fR によって提供されます。
+.SH 集積庫の構成
 .sp
 .LP
-設定ファイルで指定されていない必要な値はすべて、前出の「オプション」で一覧表示したオプションを使用して指定する必要があります。サンプルの設定ファイルは次のようになります。
+\fB--cfg\fR オプションを使用して (SMF の FMRI の代わりに) 構成ファイルが指定されたときは、集積サーバーはすべての構成データを単純テキスト形式で読み書きします。構成データについては「SMF プロパティー」ですでに説明しました。設定データは、\fB[\fIsection\fR]\fR ヘッダーで始まるセクション群と、それに続く \fBname = \fIvalue\fR\fR エントリ群で構成されます。記述の継続は RFC 822 形式です。継続行を空白で始めることにより、複数の行に値を分割できます。
+.sp
+.LP
+構成ファイルで指定されていない必要な値はすべて、前出の「オプション」で一覧表示したオプションを使用して指定する必要があります。サンプルの構成ファイルは次のようになります。
 .sp
 .in +2
 .nf
@@ -692,14 +722,14 @@ feed_description = example.com's software
 .SH 終了ステータス
 .sp
 .LP
-次の終了値が返されます。
+次の終了ステータスが返されます。
 .sp
 .ne 2
 .mk
 .na
 \fB\fB0\fR\fR
 .ad
-.RS 6n
+.RS 13n
 .rt  
 正常終了。
 .RE
@@ -710,20 +740,20 @@ feed_description = example.com's software
 .na
 \fB\fB1\fR\fR
 .ad
-.RS 6n
+.RS 13n
 .rt  
-エラーが発生しました。
+エラーが発生した。
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fB\fB2\fR \fR
+\fB\fB2\fR\fR
 .ad
-.RS 6n
+.RS 13n
 .rt  
-無効なコマンド行オプションが指定されました。
+無効なコマンド行オプションが指定された。
 .RE
 
 .sp
@@ -732,7 +762,7 @@ feed_description = example.com's software
 .na
 \fB\fB99\fR\fR
 .ad
-.RS 6n
+.RS 13n
 .rt  
 予期しない例外が発生しました。
 .RE
@@ -744,8 +774,8 @@ feed_description = example.com's software
 .na
 \fB\fB/usr/share/lib/pkg\fR\fR
 .ad
-.RS 22n
-.rt  
+.sp .6
+.RS 4n
 デフォルトの表示コンテンツの場所。別の場所を選択するには、\fBpkg/content_root\fR を変更します。
 .RE
 
@@ -771,34 +801,40 @@ _
 .SH 関連項目
 .sp
 .LP
-\fBdns-sd\fR(1), \fBmdnsd\fR(1), \fBpkg\fR(1), \fB pkgrepo\fR(1), \fBpkgsend\fR(1), \fBsyslogd\fR(1M), \fB smf\fR(5)
+\fBpkg.depot-config\fR(1M), \fBdns-sd\fR(1M), \fBmdnsd\fR(1M), \fBpkg\fR(1), \fBpkgrepo\fR(1), \fBpkgsend\fR(1), \fBsyslogd\fR(1M), \fBsmf\fR(5)
 .sp
 .LP
-\fBhttp://hub.opensolaris.org/bin/view/Project+pkg/\fR
+\fI『Oracle Solaris 11.2 パッケージリポジトリのコピーおよび作成に関するドキュメント』\fR
+.sp
+.LP
+\fBhttps://java.net/projects/ips/pages/Home\fR
 .SH 注意事項
 .sp
 .LP
 \fBpkd.depotd\fR サービスは、サービス識別子 \fBsvc:/application/pkg/server\fR のもとで SMF によって管理されます。
 .sp
 .LP
-mDNS ミラーサービスは、サービス識別子 \fB svc:/application/pkg/dynamic-mirror\fR のもとで SMF によって管理されます。
+mDNS ミラーサービスは、サービス識別子 \fBsvc:/application/pkg/dynamic-mirror\fR のもとで SMF によって管理されます。
 .sp
 .LP
-集積庫への読み取りアクセスを制御するために、\fBpkg\fR(1) がネイティブでサポートするクライアントベースの SSL 証明書アクセスなどの認証方式と組み合わせて HTTP 逆プロキシを使用できます。
+集積庫への読み取りアクセスを制御するために、\fBpkg\fR がネイティブでサポートするクライアントベースの SSL 証明書アクセスなどの認証方式と組み合わせて HTTP 逆プロキシを使用できます。
 .sp
 .LP
-ファイルシステムベースの操作を使用して設定またはパッケージデータを変更した場合、操作および出力に変更内容を反映できるように、集積サーバープロセスを再起動する必要があります。集積サーバープロセスを再起動するには、次のいずれかの方法を使用します。
+最小の Apache 構成で、単一の Apache インスタンスから複数のリポジトリを簡単に提供するには、特定の \fBpkg/server\fR インスタンスの \fBpkg/standalone\fR プロパティーを \fBfalse\fR に設定し、そのインスタンスの \fBpkg/readonly\fR プロパティーを \fBtrue\fR に設定します。詳細は、\fBpkg.depot-config\fR(1M) のマニュアルページを参照してください。
+.sp
+.LP
+ファイルシステムベースの操作を使用して構成またはパッケージデータを変更した場合、操作および出力に変更内容を反映できるように、集積サーバープロセスを再起動する必要があります。集積サーバープロセスを再起動するには、次のいずれかの方法を使用します。
 .RS +4
 .TP
 .ie t \(bu
 .el o
-\fBsvcadm\fR(1M) を使用して、\fBapplication/pkg/server\fR インスタンスを再起動します。
+\fBsvcadm\fR を使用して、\fBapplication/pkg/server\fR インスタンスを再起動します。
 .RE
 .RS +4
 .TP
 .ie t \(bu
 .el o
-\fBkill\fR(1) を使用して、\fBSIGUSR1\fR シグナルを集積サーバープロセスに送信します。これにより、プロセスはそのままの状態で、すべての設定、パッケージ、および検索データを再読み込みする「正常な再起動」が実行されます。
+\fBkill\fR を使用して、\fBSIGUSR1\fR シグナルを集積サーバープロセスに送信します。これにより、プロセスはそのままの状態で、すべての構成、パッケージ、および検索データを再読み込みする「正常な再起動」が実行されます。
 .sp
 .in +2
 .nf

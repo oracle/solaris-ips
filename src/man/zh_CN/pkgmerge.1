@@ -1,12 +1,13 @@
 '\" te
-.\" Copyright (c) 2007, 2012, Oracle and/or its affiliates. All rights reserved.
-.TH pkgmerge 1 "2012 年 5 月 27 日" "SunOS 5.11" "用户命令"
+.\" Copyright (c) 2007, 2013, Oracle and/or its affiliates.All rights reserved.
+.TH pkgmerge 1 "2013 年 11 月 14 日" "SunOS 5.12" "用户命令"
 .SH 名称
 pkgmerge \- 映像包管理系统软件包合并实用程序
 .SH 用法概要
 .LP
 .nf
 /usr/bin/pkgmerge [-n] -d \fIdest_repo\fR
+    [-p \fIpublisher_prefix\fR]...
     -s \fIvariant\fR=\fIvalue\fR[,...],\fIsrc_repo\fR ...
     [\fIpkg_fmri_pattern\fR ...]
 .fi
@@ -21,6 +22,9 @@ pkgmerge \- 映像包管理系统软件包合并实用程序
 .sp
 .LP
 在输入清单中交付到同一路径的不同操作将导致 \fBpkgmerge\fR 因错误而退出。
+.sp
+.LP
+完成 \fBpkgmerge\fR 操作后，如果您的目标系统信息库必须支持 \fBpkg search\fR 操作，则在系统信息库上运行 \fBpkgrepo refresh\fR 以更新搜索索引。
 .SH 选项
 .sp
 .LP
@@ -66,11 +70,39 @@ pkgmerge \- 映像包管理系统软件包合并实用程序
 .ne 2
 .mk
 .na
-\fB\fB-s\fR \fIvariant\fR=\fI value\fR[,...],\fIsrc_repo\fR\fR
+\fB\fB-p\fR \fIpublisher_prefix\fR\fR
+.ad
+.sp .6
+.RS 4n
+指定要合并其软件包的发布者的名称。可以多次指定此选项。
+.sp
+缺省情况下，将合并所有源系统信息库中所有发布者的软件包。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB-s\fR \fIvariant\fR=\fIvalue\fR[,...],\fIsrc_repo\fR\fR
 .ad
 .sp .6
 .RS 4n
 指定用于该源的软件包的变量名称和值，后跟要从中检索软件包的源系统信息库或软件包归档文件的文件系统路径或 URI。可指定多个变量，以逗号分隔。必须为所有源命名相同的变量。可以多次指定此选项。
+.RE
+
+.SH 操作数
+.sp
+.LP
+支持下列操作数：
+.sp
+.ne 2
+.mk
+.na
+\fB\fIpkg_fmri_pattern\fR\fR
+.ad
+.sp .6
+.RS 4n
+指定要合并的软件包。\fIpkg_fmri_pattern\fR 操作数可以包含 \fB?\fR 和 \fB*\fR 字符作为 \fBglob\fR(3C) 式通配符，以匹配一个或多个软件包。
 .RE
 
 .SH 环境变量
@@ -341,6 +373,22 @@ dir group=sys mode=0755 owner=root path=usr
 .fi
 .in -2
 
+.LP
+\fB示例 5 \fR合并带有不同发布者前缀的软件包
+.sp
+.LP
+仅合并带有 \fBdev\fR 前缀的软件包，即使这些系统信息库中的其他软件包带有 \fBexample.com\fR 前缀也是如此。
+
+.sp
+.in +2
+.nf
+$ \fBpkgmerge -p dev -s arch=sparc,http://src1.example.com \e
+-s arch=i386,http://src2.example.com \e
+-d /path/to/target/repository\fR
+.fi
+.in -2
+.sp
+
 .SH 退出状态
 .sp
 .LP
@@ -414,4 +462,7 @@ _
 \fBpkgrepo\fR(1)、\fBpkg\fR(5)
 .sp
 .LP
-\fBhttp://hub.opensolaris.org/bin/view/Project+pkg/\fR
+\fI《Packaging and Delivering Software With the Image Packaging System in Oracle Solaris 11.2》\fR
+.sp
+.LP
+\fBhttps://java.net/projects/ips/pages/Home\fR

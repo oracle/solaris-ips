@@ -1,22 +1,25 @@
 '\" te
-.\" Copyright (c) 2007, 2012, Oracle and/or its affiliates. All rights reserved.
-.TH pkgsend 1 "2012 年 6 月 22 日" "SunOS 5.11" "ユーザーコマンド"
+.\" Copyright (c) 2007, 2013, Oracle and/or its affiliates.All rights reserved.
+.TH pkgsend 1 "2013 年 7 月 30 日" "SunOS 5.12" "ユーザーコマンド"
 .SH 名前
 pkgsend \- Image Packaging System の公開クライアント
 .SH 形式
 .LP
 .nf
-/usr/bin/pkgsend [\fIoptions\fR] \fIcommand \fR [\fIcmd_options\fR] [\fIoperands\fR] 
+/usr/bin/pkgsend [\fIoptions\fR] \fIcommand\fR [\fIcmd_options\fR] [\fIoperands\fR]
 .fi
 
 .LP
 .nf
-/usr/bin/pkgsend generate [-T \fIpattern\fR] [--target \fI file\fR] \fIsource\fR ...
+/usr/bin/pkgsend generate [-T \fIpattern\fR] [--target \fIfile\fR]
+    \fIsource\fR ...
 .fi
 
 .LP
 .nf
-/usr/bin/pkgsend publish [-b \fIbundle\fR ...] [-d \fI source\fR ...] [-s \fIrepo_uri_or_path\fR] [-T \fIpattern\fR] [--no-catalog] [\fImanifest\fR ...]
+/usr/bin/pkgsend publish [-b \fIbundle\fR]... [-d \fIsource\fR]...
+    [-s \fIrepo_uri_or_path\fR] [--key \fIssl_key\fR --cert \fIssl_cert\fR]...
+    [-T \fIpattern\fR] [--no-catalog] [\fImanifest\fR ...]
 .fi
 
 .SH 機能説明
@@ -25,7 +28,7 @@ pkgsend \- Image Packaging System の公開クライアント
 \fBpkgsend\fR では、パッケージのマニフェストを使用して、新しいパッケージと新しいパッケージのバージョンをイメージパッケージングリポジトリに公開できます。リポジトリを作成または管理するには、\fBpkgrepo\fR(1) を参照してください。既存のリポジトリ内でパッケージからパッケージアーカイブを作成するには、\fBpkgrecv\fR(1) を参照してください。パッケージのマニフェストの詳細は、\fBpkg\fR(5) を参照してください。
 .sp
 .LP
-\fBpkgsend\fR 操作後に、リポジトリに対して \fBpkgrepo refresh\fR または \fBpkgrepo rebuild\fR を実行し、検索インデックスを構築します。
+\fBpkgsend publish\fR 操作のあとで、\fIrepo_uri_or_path\fR リポジトリが \fBpkg search\fR 操作をサポートする必要がある場合は、リポジトリ上で \fBpkgrepo refresh\fR を実行して、検索インデックスを更新してください。
 .SH オプション
 .sp
 .LP
@@ -53,7 +56,7 @@ pkgsend \- Image Packaging System の公開クライアント
 .ne 2
 .mk
 .na
-\fB\fBpkgsend generate\fR [\fB-T\fR \fI pattern\fR] [\fB--target\fR \fIfile\fR] \fI source\fR ...\fR
+\fB\fBpkgsend generate\fR [\fB-T\fR \fIpattern\fR] [\fB--target\fR \fIfile\fR] \fIsource\fR ...\fR
 .ad
 .sp .6
 .RS 4n
@@ -143,13 +146,15 @@ SVR4 \fBDESC\fR パラメータは、\fBpkg.description\fR 値に変換されま
 .ne 2
 .mk
 .na
-\fB\fBpkgsend publish\fR [\fB-b\fR \fI bundle\fR ...] [\fB-d\fR \fIsource\fR ...] [\fB-s\fR \fIrepo_uri_or_path\fR] [\fB-T\fR \fI pattern\fR] [\fB--no-catalog\fR] [\fImanifest\fR ...] \fR
+\fB\fBpkgsend publish\fR [\fB-b\fR \fIbundle\fR]... [\fB-d\fR \fIsource\fR]... [\fB-s\fR \fIrepo_uri_or_path\fR] [\fB--key\fR \fIssl_key\fR \fB--cert\fR \fIssl_cert\fR]... [\fB-T\fR \fIpattern\fR] [\fB--no-catalog\fR] [\fImanifest\fR ...]\fR
 .ad
 .sp .6
 .RS 4n
-指定されたパッケージマニフェストを使用するパッケージをターゲットパッケージリポジトリに公開します。これにより、指定されたソースからそのパッケージ用のファイルが取得されます。複数のマニフェストが指定されている場合、それらのマニフェストは指定された順序で追加されます。マニフェストが指定されていない場合、\fBstdin\fR からマニフェストが読み取られます。
+指定されたパッケージマニフェストを使用するパッケージをターゲットパッケージリポジトリに公開します。これにより、指定されたソースからそのパッケージ用のファイルが取得されます。複数のマニフェストが指定されている場合、それらのマニフェストは指定された順序で追加されます。マニフェストが指定されていない場合は、\fBstdin\fR からマニフェストが読み取られます。
 .sp
 指定しない場合、\fBpkgsend publish\fR はビルドバージョンをパッケージ FMRI に追加します。\fBpublish\fR ツールは、タイムスタンプも (UTC の現在時間) をパッケージ FMRI に追加します。パッケージ FMRI のバージョン文字列については、\fBpkg \fR(5) のマニュアルページを参照してください。
+.sp
+複数の \fBpkgsend publish\fR プロセスが同じ \fB-s\fR リポジトリに同時に公開する場合は、\fB--no-catalog\fR オプションを指定することをお勧めします。下記の \fB--no-catalog\fR オプションの説明を参照してください。
 .sp
 .ne 2
 .mk
@@ -187,14 +192,25 @@ SVR4 \fBDESC\fR パラメータは、\fBpkg.description\fR 値に変換されま
 .ne 2
 .mk
 .na
+\fB\fB--key\fR \fIssl_key\fR \fB--cert\fR \fIssl_cert\fR\fR
+.ad
+.sp .6
+.RS 4n
+\fB--key\fR オプションは、HTTPS リポジトリからのパッケージ取得に使用するクライアント SSL キーファイルを指定するために使用します。\fB--cert\fR オプションは、HTTPS リポジトリからのパッケージ取得に使用するクライアント SSL 証明書ファイルを指定するために使用します。このオプションのペアは複数回指定できます。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
 \fB\fB--no-catalog\fR\fR
 .ad
 .sp .6
 .RS 4n
-パッケージを発行元のカタログに追加しません。パブリッシャーのカタログの更新は連続で実行されるため、複数のパッケージを一度に公開する場合には常にこのオプションを使用することを推奨します。公開が完了すると、\fBpkgrepo\fR の \fBrefresh\fR サブコマンドを使用して、新しいパッケージを各発行元のカタログに追加できます。
+パッケージを発行元のカタログに追加しません。パブリッシャーのカタログの更新は連続で実行されるため、複数のパッケージを一度に公開する場合には常にこのオプションを使用することを推奨します。複数のプロセスが同時にパッケージを公開するときは、このオプションを使用しないと、公開のパフォーマンスが大幅に低下する可能性があります。公開の完了後、\fBpkgrepo refresh\fR コマンドを使用してそれぞれのパブリッシャーカタログに新しいパッケージを追加できます。
 .RE
 
-\fB-T\fR オプションの説明については、前述の \fBgenerate \fR サブコマンドを参照してください。
+\fB-T\fR オプションの説明については、前述の \fBgenerate\fR サブコマンドを参照してください。
 .RE
 
 .SH 環境
@@ -369,10 +385,13 @@ _
 .SH 関連項目
 .sp
 .LP
-\fBpkgdepend\fR(1)、\fBpkgrepo\fR(1)、\fBpkg.depotd\fR(1M)、\fBpkg\fR(5)
+\fBpkgdepend\fR(1), \fBpkgrepo\fR(1), \fBpkg.depotd\fR(1M), \fBpkg\fR(5)
 .sp
 .LP
-\fBhttp://hub.opensolaris.org/bin/view/Project+pkg/\fR
+\fI『Packaging and Delivering Software With the Image Packaging System in Oracle Solaris 11.2 』\fR
+.sp
+.LP
+\fBhttps://java.net/projects/ips/pages/Home\fR
 .SH 注意事項
 .sp
 .LP

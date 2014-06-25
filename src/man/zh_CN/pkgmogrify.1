@@ -1,13 +1,13 @@
 '\" te
-.\" Copyright (c) 2007, 2012, Oracle and/or its affiliates. All rights reserved.
-.TH pkgmogrify 1 "2012 年 6 月 4 日" "SunOS 5.11" "用户命令"
+.\" Copyright (c) 2007, 2013, Oracle and/or its affiliates.All rights reserved.
+.TH pkgmogrify 1 "2013 年 7 月 12 日" "SunOS 5.12" "用户命令"
 .SH 名称
 pkgmogrify \- 映像包管理系统清单变换程序
 .SH 用法概要
 .LP
 .nf
-/usr/bin/pkgmogrify [-vi] [-I \fIincludedir\fR ...]
-    [-D \fImacro\fR=\fIvalue\fR ...] [-O \fIoutputfile\fR]
+/usr/bin/pkgmogrify [-vi] [-I \fIincludedir\fR]...
+    [-D \fImacro\fR=\fIvalue\fR]... [-O \fIoutputfile\fR]
     [-P \fIprintfile\fR] [\fIinputfile\fR ...]
 .fi
 
@@ -63,7 +63,7 @@ pkgmogrify \- 映像包管理系统清单变换程序
 .ad
 .sp .6
 .RS 4n
-将 \fImacro\fR 定义为一个宏，其值为 \fIvalue\fR。宏在输入文件中显示为 \fB $(macro)\fR。将重复执行替换操作，直到再也找不到变换。常见用语包括：
+将 \fImacro\fR 定义为一个宏，其值为 \fIvalue\fR。可以多次指定此选项。宏在输入文件中显示为 \fB $(macro)\fR。将重复执行替换操作，直到再也找不到变换。常见用语包括：
 .RS +4
 .TP
 .ie t \(bu
@@ -86,7 +86,7 @@ $(sparc_ONLY)file ...
 .sp
 .in +2
 .nf
-file NOHASH path=usr/bin/$(ARCH64)/cputrack ...
+file path=usr/bin/$(ARCH64)/cputrack ...
 .fi
 .in -2
 
@@ -102,7 +102,7 @@ file NOHASH path=usr/bin/$(ARCH64)/cputrack ...
 .ad
 .sp .6
 .RS 4n
-将指定目录添加到在命令行和在嵌入式 include 指令中指定的文件的搜索路径中。
+将指定目录添加到在命令行上和为嵌入式 include 指令指定的文件的搜索路径中。可以多次指定此选项。
 .RE
 
 .sp
@@ -621,4 +621,4 @@ _
 \fBpkg\fR(1)、\fBpkg\fR(5)
 .sp
 .LP
-\fBhttp://hub.opensolaris.org/bin/view/Project+pkg/\fR
+\fBhttps://java.net/projects/ips/pages/Home\fR

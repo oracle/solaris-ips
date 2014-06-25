@@ -1,6 +1,6 @@
 '\" te
 .\" Copyright (c) 2007, 2014, Oracle and/or its affiliates. All rights reserved.
-.TH pkg 1 "28 Feb 2014" "SunOS 5.12" "User Commands"
+.TH pkg 1 "07 Apr 2014" "SunOS 5.12" "User Commands"
 .SH NAME
 pkg \- Image Packaging System retrieval client
 .SH SYNOPSIS
@@ -17,46 +17,52 @@ pkg \- Image Packaging System retrieval client
 .LP
 .nf
 /usr/bin/pkg install [-nvq] [-C \fIn\fR] [-g \fIpath_or_uri\fR]...
-    [--accept] [--licenses] [--no-be-activate] [--no-index]
-    [--no-refresh] [--no-backup-be | --require-backup-be]
+    [-r [[-z \fIzonename\fR]... | [-Z \fIzonename\fR]... ]]
+    [--accept] [--licenses] [--no-index] [--no-refresh]
+    [--no-be-activate]
+    [--no-backup-be | --require-backup-be]
     [--backup-be-name \fIname\fR]
     [--deny-new-be | --require-new-be] [--be-name \fIname\fR]
+    [--reject \fIpkg_fmri_pattern\fR]...
     [--sync-actuators | --sync-actuators-timeout \fItimeout\fR]
-    [-r [-z \fIimage_name\fR ... | -Z \fIimage_name\fR ...]]
-    [--reject \fIpkg_fmri_pattern\fR]... \fIpkg_fmri_pattern\fR ...
+    \fIpkg_fmri_pattern\fR ...
 .fi
 
 .LP
 .nf
 /usr/bin/pkg exact-install [-nvq] [-C \fIn\fR] [-g \fIpath_or_uri\fR]...
-    [--accept] [--licenses] [--no-be-activate] [--no-index]
-    [--no-refresh] [--no-backup-be | --require-backup-be]
+    [--accept] [--licenses] [--no-index] [--no-refresh]
+    [--no-be-activate]
+    [--no-backup-be | --require-backup-be]
     [--backup-be-name \fIname\fR]
     [--deny-new-be | --require-new-be] [--be-name \fIname\fR]
-    [--reject \fIpkg_fmri_pattern\fR]... \fIpkg_fmri_pattern\fR ...
+    [--reject \fIpkg_fmri_pattern\fR]...  \fIpkg_fmri_pattern\fR ...
 .fi
 
 .LP
 .nf
-/usr/bin/pkg uninstall [-nvq] [-C \fIn\fR] [--ignore-missing] [--no-be-activate]
-    [--no-index] [--no-backup-be | --require-backup-be]
+/usr/bin/pkg uninstall [-nvq] [-C \fIn\fR]
+    [-r [[-z \fIzonename\fR]... | [-Z \fIzonename\fR]... ]]
+    [--ignore-missing] [--no-index] [--no-be-activate]
+    [--no-backup-be | --require-backup-be]
     [--backup-be-name \fIname\fR]
     [--deny-new-be | --require-new-be] [--be-name \fIname\fR]
     [--sync-actuators | --sync-actuators-timeout \fItimeout\fR]
-    [-r [-z \fIimage_name\fR ... | -Z \fIimage_name\fR ...]]
     \fIpkg_fmri_pattern\fR ...
 .fi
 
 .LP
 .nf
 /usr/bin/pkg update [-fnvq] [-C \fIn\fR] [-g \fIpath_or_uri\fR]...
-    [--accept] [--ignore-missing] [--licenses] [--no-be-activate] [--no-index]
-    [--no-refresh] [--no-backup-be | --require-backup-be]
+    [-r [[-z \fIzonename\fR]... | [-Z \fIzonename\fR]... ]]
+    [--accept] [--ignore-missing] [--licenses]
+    [--no-index] [--no-refresh] [--no-be-activate]
+    [--no-backup-be | --require-backup-be]
     [--backup-be-name \fIname\fR]
     [--deny-new-be | --require-new-be] [--be-name \fIname\fR]
+    [--reject \fIpkg_fmri_pattern\fR]...
     [--sync-actuators | --sync-actuators-timeout \fItimeout\fR]
-    [-r [-z \fIimage_name\fR ... | -Z \fIimage_name\fR ...]]
-    [--reject \fIpkg_fmri_pattern\fR]... [\fIpkg_fmri_pattern\fR ...]
+    [\fIpkg_fmri_pattern\fR ...]
 .fi
 
 .LP
@@ -137,12 +143,12 @@ usr/bin/pkg set-mediator [-nv] [-I \fIimplementation\fR]
 .LP
 .nf
 /usr/bin/pkg change-variant [-nvq] [-C \fIn\fR] [-g \fIpath_or_uri\fR]...
+    [-r [[-z \fIzonename\fR]... | [-Z \fIzonename\fR]... ]]
     [--accept] [--licenses] [--no-be-activate]
     [--no-backup-be | --require-backup-be]
     [--backup-be-name \fIname\fR]
     [--deny-new-be | --require-new-be] [--be-name \fIname\fR]
     [--sync-actuators | --sync-actuators-timeout \fItimeout\fR]
-    [-r [-z \fIimage_name\fR ... | -Z \fIimage_name\fR ...]]
     \fIvariant_name\fR=\fIvalue\fR ...
 .fi
 
@@ -154,12 +160,12 @@ usr/bin/pkg set-mediator [-nv] [-I \fIimplementation\fR]
 .LP
 .nf
 /usr/bin/pkg change-facet [-nvq] [-C \fIn\fR] [-g \fIpath_or_uri\fR]...
+    [-r [[-z \fIzonename\fR]... | [-Z \fIzonename\fR]... ]]
     [--accept] [--licenses] [--no-be-activate]
     [--no-backup-be | --require-backup-be]
     [--backup-be-name \fIname\fR]
     [--deny-new-be | --require-new-be] [--be-name \fIname\fR]
     [--sync-actuators | --sync-actuators-timeout \fItimeout\fR]
-    [-r [-z \fIimage_name\fR ... | -Z \fIimage_name\fR ...]]
     \fIfacet_name\fR=(True|False|None) ...
 .fi
 
@@ -215,12 +221,12 @@ usr/bin/pkg set-mediator [-nv] [-I \fIimplementation\fR]
 
 .LP
 .nf
-/usr/bin/pkg set-publisher [-Ped] [-k \fIssl_key\fR] [-c \fIssl_cert\fR]
+/usr/bin/pkg set-publisher [-Ped] [-c \fIssl_cert\fR] [-k \fIssl_key\fR]
     [-g \fIorigin_to_add\fR | --add-origin \fIorigin_to_add\fR]...
     [-G \fIorigin_to_remove\fR | --remove-origin \fIorigin_to_remove\fR]...
     [-m \fImirror_to_add\fR | --add-mirror \fImirror_to_add\fR]...
     [-M \fImirror_to_remove\fR | --remove-mirror \fImirror_to_remove\fR]...
-    [--enable] [--disable] [--no-refresh] [--reset-uuid]
+    [--disable] [--enable] [--no-refresh] [--reset-uuid]
     [--non-sticky] [--sticky] [--search-after \fIpublisher\fR]
     [--search-before \fIpublisher\fR] [--search-first]
     [--approve-ca-cert \fIpath_to_CA\fR]
@@ -236,8 +242,8 @@ usr/bin/pkg set-mediator [-nv] [-I \fIimplementation\fR]
 .LP
 .nf
 /usr/bin/pkg set-publisher -p \fIrepo_uri\fR [-Ped]
-    [-k \fIssl_key\fR] [-c \fIssl_cert\fR] [--non-sticky] [--sticky]
-    [--search-after \fIpublisher\fR] [--search-before \fIpublisher\fR
+    [-c \fIssl_cert\fR] [-k \fIssl_key\fR] [--non-sticky] [--sticky]
+    [--search-after \fIpublisher\fR] [--search-before \fIpublisher\fR]
     [--search-first] [--approve-ca-cert \fIpath_to_CA\fR]
     [--revoke-ca-cert \fIhash_of_CA_to_remove\fR]
     [--unset-ca-cert \fIhash_of_CA_to_remove\fR]
@@ -256,8 +262,8 @@ usr/bin/pkg set-mediator [-nv] [-I \fIimplementation\fR]
 .LP
 .nf
 /usr/bin/pkg history [-HNl]
+    [-n \fInumber\fR] [-o \fIcolumn\fR[,\fIcolumn\fR]...]...
     [-t \fItime\fR | \fItime\fR-\fItime\fR[,\fItime\fR | \fItime\fR-\fItime\fR]...]...
-    [-o \fIcolumn\fR[,\fIcolumn\fR]...]... [-n \fInumber\fR]
 .fi
 
 .LP
@@ -289,19 +295,22 @@ usr/bin/pkg set-mediator [-nv] [-I \fIimplementation\fR]
 .nf
 /usr/bin/pkg image-create [-FPUfz] [--force]
     [--full | --partial | --user] [--zone]
-    [-k \fIssl_key\fR] [-c \fIssl_cert\fR] [--no-refresh]
-    [--variant \fIvariant_name\fR=\fIvalue\fR]...
+    [-c \fIssl_cert\fR] [-k \fIssl_key\fR]
     [-g \fIpath_or_uri\fR | --origin \fIpath_or_uri\fR]...
     [-m \fIuri\fR | --mirror \fIuri\fR]...
+    [--facet \fIfacet_name\fR=(True|False)]... [--no-refresh]
     [--set-property \fIname_of_property\fR=\fIvalue\fR]
-    [--facet \fIfacet_name\fR=(True|False)]...
+    [--variant \fIvariant_name\fR=\fIvalue\fR]...
     [(-p | --publisher) [\fIname\fR=]\fIrepo_uri\fR] \fIdir\fR
 .fi
 
 .SH DESCRIPTION
 .sp
 .LP
-\fBpkg\fR is the retrieval client for the Image Packaging System. With a valid configuration, \fBpkg\fR can be invoked to create locations for packages to be installed, called images, and install packages into those images. Packages are published by publishers, who can make their packages available at one or more repositories, or in package archives. \fBpkg\fR retrieves packages from a publisher's repository or package archives and installs the packages into an image.
+\fBpkg\fR is the retrieval client for the Image Packaging System. With a valid configuration, \fBpkg\fR can be invoked to create locations for packages to be installed, called images, and install packages into those images. Packages are published by publishers, who can make their packages available at one or more repositories, or in package archives. \fBpkg\fR retrieves packages from a publisher\&'s repository or package archives and installs the packages into an image.
+.sp
+.LP
+Packages can only be installed into file systems that are part of a BE. For example, on a default Oracle Solaris 11 installation, only datasets under \fBrpool/ROOT/\fIBEname\fR/\fR are supported for package operations.
 .sp
 .LP
 A publisher name identifies a person, group of persons, or an organization as the source of one or more packages. To avoid publisher name collisions and help identify the publisher, a best practice is to use a domain name that represents the entity publishing the packages as a publisher name.
@@ -356,7 +365,7 @@ The following subcommands are supported:
 .ad
 .sp .6
 .RS 4n
-Update the client's list of available packages and publisher metadata for all publishers.
+Update the client\&'s list of available packages and publisher metadata for all publishers.
 .sp
 .ne 2
 .mk
@@ -365,7 +374,7 @@ Update the client's list of available packages and publisher metadata for all pu
 .ad
 .sp .6
 .RS 4n
-Update the client's list of available packages and publisher metadata only for the specified publishers.
+Update the client\&'s list of available packages and publisher metadata only for the specified publishers.
 .RE
 
 .sp
@@ -396,19 +405,30 @@ Force a full retrieval of all publisher metadata, instead of attempting an incre
 .ne 2
 .mk
 .na
-\fB\fBpkg install\fR [\fB-nvq\fR] [\fB-C\fR \fIn\fR] [\fB-g\fR \fIpath_or_uri\fR]... [\fB--accept\fR] [\fB--licenses\fR] [\fB--no-be-activate\fR] [\fB--no-index\fR] [\fB--no-refresh\fR] [\fB--no-backup-be\fR | \fB--require-backup-be\fR] [\fB--backup-be-name\fR \fIname\fR] [\fB--deny-new-be\fR | \fB--require-new-be\fR] [\fB--be-name\fR \fIname\fR] [--sync-actuators | --sync-actuators-timeout \fItimeout\fR] [-r [-z \fIimage_name\fR ... | -Z \fIimage_name\fR ...]] [\fB--reject\fR \fIpkg_fmri_pattern\fR]... \fIpkg_fmri_pattern\fR ...\fR
+\fB\fBpkg install\fR [\fB-nvq\fR] [\fB-C\fR \fIn\fR] [\fB-g\fR \fIpath_or_uri\fR]... [\fB-r\fR [[\fB-z\fR \fIzonename\fR]... | [\fB-Z\fR \fIzonename\fR]... ]] [\fB--accept\fR] [\fB--licenses\fR] [\fB--no-index\fR] [\fB--no-refresh\fR] [\fB--no-be-activate\fR] [\fB--no-backup-be\fR | \fB--require-backup-be\fR] [\fB--backup-be-name\fR \fIname\fR] [\fB--deny-new-be\fR | \fB--require-new-be\fR] [\fB--be-name\fR \fIname\fR] [\fB--reject\fR \fIpkg_fmri_pattern\fR]... [\fB--sync-actuators\fR | \fB--sync-actuators-timeout\fR \fItimeout\fR] \fIpkg_fmri_pattern\fR ...\fR
 .ad
 .sp .6
 .RS 4n
-Install and update the specified packages to the newest version that match \fIpkg_fmri_pattern\fR allowed by the packages installed in the image. To explicitly request the latest version of a package, use \fBlatest\fR for the version portion of \fIpkg_fmri_pattern\fR. For example, specify \fBvim@latest\fR.
+Install and update the specified packages to the newest version that match \fIpkg_fmri_pattern\fR allowed by the packages installed in the image. To explicitly request the latest version of a package, use \fBlatest\fR for the version portion of \fIpkg_fmri_pattern\fR. For example, specify \fBvim@latest\fR. The \fIpkg_fmri_pattern\fR pattern can include the \fB?\fR and \fB*\fR characters as \fBglob\fR(3C)-style wildcards to match one or more packages.
 .sp
 Packages are selected based on publisher search order and stickiness. See the \fBpkg publisher\fR and \fBpkg set-publisher\fR commands for information about search order and stickiness. If the \fIpkg_fmri_pattern\fR does not specify the publisher, the first publisher that provides a matching package is used as the installation source. If that publisher does not provide a version of the package that can be installed in this image, then the installation operation fails. Use the \fBpkg list -a\fR command to see which publishers provide a version of the package that can be installed in this image.
 .sp
 If more than one \fIpkg_fmri_pattern\fR is specified, and if any of the specified packages cannot be installed in this image, then none of the specified packages will be installed.
 .sp
-Some configuration files might be renamed or replaced during the installation process. For more information on how the package system determines which files to preserve, and how they are preserved during package operations, see "File Actions" in the \fBpkg\fR(5) man page.
+Some configuration files might be renamed or replaced during the installation process. For more information about how the package system determines which files to preserve, and how they are preserved during package operations, see "File Actions" in the \fBpkg\fR(5) man page.
 .sp
 If a package is on the avoid list, installing it removes it from that list.
+.sp
+.ne 2
+.mk
+.na
+\fB\fB-C\fR \fIn\fR\fR
+.ad
+.sp .6
+.RS 4n
+Specify the number of child images to update in parallel. When recursing into child images (usually installed \fBsolaris\fR branded non-global zones), update at most \fIn\fR child images in parallel. The default number of child images to update in parallel is 1. If \fIn\fR is 0 or a negative number, all child images are updated in parallel. See also \fBPKG_CONCURRENCY\fR in the "Environment Variables" section.
+.RE
+
 .sp
 .ne 2
 .mk
@@ -437,17 +457,6 @@ Perform a trial run of the operation with no package changes made.
 .ne 2
 .mk
 .na
-\fB\fB-v\fR\fR
-.ad
-.sp .6
-.RS 4n
-Issue verbose progress messages during the requested operation, and display detailed planning information (such as changing facets, mediators, and variants). This option can be specified multiple times to increase the amount of planning information displayed.
-.RE
-
-.sp
-.ne 2
-.mk
-.na
 \fB\fB-q\fR\fR
 .ad
 .sp .6
@@ -459,11 +468,44 @@ Hide progress messages during the requested operation.
 .ne 2
 .mk
 .na
-\fB\fB-C\fR \fIn\fR\fR
+\fB\fB-r\fR\fR
 .ad
 .sp .6
 .RS 4n
-Specify the number of child images to update in parallel. When recursing into child images (usually zones), update at most \fIn\fR child images in parallel. The default number of child images to update in parallel is 1. If \fIn\fR is 0 or a negative number, all child images are updated in parallel. See also \fBPKG_CONCURRENCY\fR in the "Environment Variables" section.
+Run this operation in the global zone and also in all installed \fBsolaris\fR branded non-global zones. The effect on the non-global zone is similar to logging into each non-global zone and running the command directly. Without this option, when you run \fBpkg\fR commands in the global zone, non-global zones are modified only to the extent required to keep them compatible with the global zone. With this option, the \fBpkg\fR operation is applied to all installed non-global zones except as limited by the \fB-z\fR and \fB-Z\fR options. Zones that are excluded by the \fB-z\fR and \fB-Z\fR options might still be modified if updates are required to keep them in sync with the global zone.
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB-z\fR \fIzonename\fR\fR
+.ad
+.sp .6
+.RS 4n
+Run this operation only in the specified non-global zone. The \fB-z\fR option can be specified multiple times. The \fB-z\fR option can only be used with the \fB-r\fR option. The \fB-z\fR option cannot be used with the \fB-Z\fR option.
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB-Z\fR \fIzonename\fR\fR
+.ad
+.sp .6
+.RS 4n
+Run this operation in all non-global zones except for the specified zone. The \fB-Z\fR option can be specified multiple times. The \fB-Z\fR option can only be used with the \fB-r\fR option. The \fB-Z\fR option cannot be used with the \fB-z\fR option.
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB-v\fR\fR
+.ad
+.sp .6
+.RS 4n
+Issue verbose progress messages during the requested operation, and display detailed planning information (such as changing facets, mediators, and variants). This option can be specified multiple times to increase the amount of planning information displayed.
 .RE
 
 .sp
@@ -492,11 +534,22 @@ Display all of the licenses for the packages that are installed or updated as pa
 .ne 2
 .mk
 .na
-\fB\fB--no-backup-be\fR\fR
+\fB\fB--no-index\fR\fR
 .ad
 .sp .6
 .RS 4n
-Do not create a backup boot environment.
+Do not update the search indexes after the operation has completed successfully.
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB--no-refresh\fR\fR
+.ad
+.sp .6
+.RS 4n
+Do not attempt to contact the repositories for the image\&'s publishers to retrieve the newest list of available packages and other metadata.
 .RE
 
 .sp
@@ -514,44 +567,11 @@ If a boot environment is created, do not set it as the active boot environment o
 .ne 2
 .mk
 .na
-\fB\fB--no-index\fR\fR
+\fB\fB--no-backup-be\fR\fR
 .ad
 .sp .6
 .RS 4n
-Do not update the search indexes after the operation has completed successfully.
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fB\fB--no-refresh\fR\fR
-.ad
-.sp .6
-.RS 4n
-Do not attempt to contact the repositories for the image's publishers to retrieve the newest list of available packages and other metadata.
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fB\fB--backup-be-name\fR \fIname\fR\fR
-.ad
-.sp .6
-.RS 4n
-Name the created backup boot environment using the given argument. Use of \fB--backup-be-name\fR implies \fB--require-backup-be\fR. See also the \fBbeadm\fR(1M) man page.
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fB\fB--be-name\fR \fIname\fR\fR
-.ad
-.sp .6
-.RS 4n
-Rename the newly created boot environment to be the argument given. Use of \fB--be-name\fR implies \fB--require-new-be\fR. See also the \fBbeadm\fR(1M) man page.
+Do not create a backup boot environment.
 .RE
 
 .sp
@@ -569,11 +589,11 @@ Always create a backup boot environment if a new boot environment will not be cr
 .ne 2
 .mk
 .na
-\fB\fB--require-new-be\fR\fR
+\fB\fB--backup-be-name\fR \fIname\fR\fR
 .ad
 .sp .6
 .RS 4n
-Always create a new boot environment. Without this option, a boot environment is created based on image policy. See \fBbe-policy\fR in "Image Properties" below for an explanation of when boot environments are created automatically. This option cannot be combined with \fB--require-backup-be\fR.
+Name the created backup boot environment using the given argument. Use of \fB--backup-be-name\fR implies \fB--require-backup-be\fR. See also the \fBbeadm\fR(1M) man page.
 .RE
 
 .sp
@@ -591,33 +611,22 @@ Do not create a new boot environment. This operation is not performed if a new b
 .ne 2
 .mk
 .na
-\fB\fB-r\fR
+\fB\fB--require-new-be\fR\fR
 .ad
 .sp .6
 .RS 4n
-Run operation recursively in all attached linked images.
+Always create a new boot environment. Without this option, a boot environment is created based on image policy. See \fBbe-policy\fR in "Image Properties" below for an explanation of when boot environments are created automatically. This option cannot be combined with \fB--require-backup-be\fR.
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fB\fB--sync-actuators\fR\fR
+\fB\fB--be-name\fR \fIname\fR\fR
 .ad
 .sp .6
 .RS 4n
-Run SMF actuators synchronously. pkg(1) command will not return until all SMF actuators have finished.
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fB\fB--sync-actuators\fR \fItimeout\fR\fR
-.ad
-.sp .6
-.RS 4n
-Run SMF actuators synchronously. If the actuators do not finish within the given \fItimeout\fR in seconds, pkg(1) will continue operation and exit with return code 8.
+Rename the newly created boot environment to be the argument given. Use of \fB--be-name\fR implies \fB--require-new-be\fR. See also the \fBbeadm\fR(1M) man page.
 .RE
 
 .sp
@@ -635,22 +644,22 @@ Prevent packages with names matching the given pattern from being installed. If 
 .ne 2
 .mk
 .na
-\fB\fB-z\fR \fIimage_name\fR\fR
+\fB\fB--sync-actuators\fR\fR
 .ad
 .sp .6
 .RS 4n
-Only valid with -r. Run operation only in specified linked image. \fIimage_name\fR\fR can be a fully qualified linked image name in the form <plugin>:<name> or (when operating with zones) the name of a zone. Can be specified multiple times.
+Run SMF actuators synchronously. The \fBpkg\fR(1) command will not return until all SMF actuators have finished in the zone in which \fBpkg\fR was invoked (the global zone or a non-global zone).
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fB\fB-Z\fR \fIimage_name\fR\fR
+\fB\fB--sync-actuators-timeout\fR \fItimeout\fR\fR
 .ad
 .sp .6
 .RS 4n
-Only valid with -r. Run operation in all but the specified linked image. \fIimage_name\fR\fR can be a fully qualified linked image name in the form <plugin>:<name> or (when operating with zones) the name of a zone. Can be specified multiple times.
+Run SMF actuators synchronously. If the actuators do not finish within the given \fItimeout\fR in seconds, \fBpkg\fR(1) will continue operation and exit with return code 8.
 .RE
 
 .RE
@@ -659,7 +668,7 @@ Only valid with -r. Run operation in all but the specified linked image. \fIimag
 .ne 2
 .mk
 .na
-\fB\fBpkg exact-install\fR [\fB-nvq\fR] [\fB-C\fR \fIn\fR] [\fB-g\fR \fIpath_or_uri\fR]... [\fB--accept\fR] [\fB--licenses\fR] [\fB--no-be-activate\fR] [\fB--no-index\fR] [\fB--no-refresh\fR] [\fB--no-backup-be\fR | \fB--require-backup-be\fR] [\fB--backup-be-name\fR \fIname\fR] [\fB--deny-new-be\fR | \fB--require-new-be\fR] [\fB--be-name\fR \fIname\fR] [\fB--reject\fR \fIpkg_fmri_pattern\fR]... \fIpkg_fmri_pattern\fR ...\fR
+\fB\fBpkg exact-install\fR [\fB-nvq\fR] [\fB-C\fR \fIn\fR] [\fB-g\fR \fIpath_or_uri\fR]... [\fB--accept\fR] [\fB--licenses\fR] [\fB--no-index\fR] [\fB--no-refresh\fR] [\fB--no-be-activate\fR] [\fB--no-backup-be\fR | \fB--require-backup-be\fR] [\fB--backup-be-name\fR \fIname\fR] [\fB--deny-new-be\fR | \fB--require-new-be\fR] [\fB--be-name\fR \fIname\fR] [\fB--reject\fR \fIpkg_fmri_pattern\fR]... \fIpkg_fmri_pattern\fR ...\fR
 .ad
 .sp .6
 .RS 4n
@@ -669,10 +678,9 @@ Packages are selected based on publisher search order and stickiness. See the \f
 .sp
 If more than one \fIpkg_fmri_pattern\fR is specified, and if any of the specified packages cannot be installed in this image, then none of the specified packages will be installed.
 .sp
-Some configuration files might be renamed or replaced during the installation process. For more information on how the package system determines which files to preserve, and how they are preserved during package operations, see "File Actions" in the \fBpkg\fR(5) man page.
+Some configuration files might be renamed or replaced during the installation process. For more information about how the package system determines which files to preserve, and how they are preserved during package operations, see "File Actions" in the \fBpkg\fR(5) man page.
 .sp
 If a package is on the avoid list, installing it removes it from that list.
-.sp
 .sp
 For descriptions of options, see the \fBinstall\fR command above.
 .RE
@@ -681,14 +689,15 @@ For descriptions of options, see the \fBinstall\fR command above.
 .ne 2
 .mk
 .na
-\fB\fBpkg uninstall\fR [\fB-nvq\fR] [\fB-C\fR \fIn\fR] [\fB--ignore-missing\fR] [\fB--no-be-activate\fR] [\fB--no-index\fR] [\fB--no-backup-be\fR | \fB--require-backup-be\fR] [\fB--backup-be-name\fR \fIname\fR] [\fB--deny-new-be\fR | \fB--require-new-be\fR] [\fB--be-name\fR \fIname\fR] [-r [-z \fIimage_name\fR ... | -Z \fIimage_name\fR ...]] [--sync-actuators | --sync-actuators-timeout \fItimeout\fR] \fIpkg_fmri_pattern\fR ...\fR
+\fB\fBpkg uninstall\fR [\fB-nvq\fR] [\fB-C\fR \fIn\fR] [\fB-r\fR [[\fB-z\fR \fIzonename\fR]... | [\fB-Z\fR \fIzonename\fR]... ]] [\fB--ignore-missing\fR] [\fB--no-index\fR] [\fB--no-be-activate\fR] [\fB--no-backup-be\fR | \fB--require-backup-be\fR] [\fB--backup-be-name\fR \fIname\fR] [\fB--deny-new-be\fR | \fB--require-new-be\fR] [\fB--be-name\fR \fIname\fR] [\fB--sync-actuators\fR | \fB--sync-actuators-timeout\fR \fItimeout\fR] \fIpkg_fmri_pattern\fR ...\fR
 .ad
 .sp .6
 .RS 4n
 Remove installed packages that match \fIpkg_fmri_pattern\fR.
 .sp
 If a package is the subject of a group dependency, uninstalling it places it on the avoid list. See the \fBavoid\fR subcommand below.
-
+.sp
+In the command output, note any messages that say a new boot environment has been created. If a new boot environment has been created and activated, that is the environment that is booted by default on next reboot. See the \fBbeadm\fR(1M) man page for information about managing boot environments.
 .sp
 .ne 2
 .mk
@@ -697,23 +706,23 @@ If a package is the subject of a group dependency, uninstalling it places it on 
 .ad
 .sp .6
 .RS 4n
-Ignore packages which are not installed. This prevents pkg(1) from failing when trying to uninstall a package which is not currently installed. 
+Ignore packages that are not installed. Using this option prevents \fBpkg uninstall\fR from failing when attempting to uninstall a package that is not currently installed.
 .RE
 
 For all other options, see the \fBinstall\fR command above.
-.sp
-In the command output, note any messages that say a new boot environment has been created. If a new boot environment has been created and activated, that is the environment that is booted by default on next reboot. See the \fBbeadm\fR(1M) man page for information about managing boot environments.
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fB\fBpkg update\fR [\fB-fnvq\fR] [\fB-C\fR \fIn\fR] [\fB-g\fR \fIpath_or_uri\fR]... [\fB--accept\fR] [\fB--ignore-missing\fR] [\fB--licenses\fR] [\fB--no-be-activate\fR] [\fB--no-index\fR] [\fB--no-refresh\fR] [\fB--no-backup-be\fR | \fB--require-backup-be\fR] [\fB--backup-be-name\fR \fIname\fR] [\fB--deny-new-be\fR | \fB--require-new-be\fR] [\fB--be-name\fR \fIname\fR] [--sync-actuators | --sync-actuators-timeout \fItimeout\fR] [-r [-z \fIimage_name\fR ... | -Z \fIimage_name\fR ...]] [\fB--reject\fR \fIpkg_fmri_pattern\fR]... [\fIpkg_fmri_pattern\fR ...]\fR
+\fB\fBpkg update\fR [\fB-fnvq\fR] [\fB-C\fR \fIn\fR] [\fB-g\fR \fIpath_or_uri\fR]... [\fB-r\fR [[\fB-z\fR \fIzonename\fR]... | [\fB-Z\fR \fIzonename\fR]... ]] [\fB--accept\fR] [\fB--ignore-missing\fR] [\fB--licenses\fR] [\fB--no-index\fR] [\fB--no-refresh\fR] [\fB--no-be-activate\fR] [\fB--no-backup-be\fR | \fB--require-backup-be\fR] [\fB--backup-be-name\fR \fIname\fR] [\fB--deny-new-be\fR | \fB--require-new-be\fR] [\fB--be-name\fR \fIname\fR] [\fB--reject\fR \fIpkg_fmri_pattern\fR]... [\fB--sync-actuators\fR | \fB--sync-actuators-timeout\fR \fItimeout\fR] [\fIpkg_fmri_pattern\fR ...]\fR
 .ad
 .sp .6
 .RS 4n
 Update all packages installed in the current image to the newest version allowed by the constraints imposed on the system by installed packages and publisher configuration.
+.sp
+In the command output, note any messages that say a new boot environment has been created. If a new boot environment has been created and activated, that is the environment that is booted by default on next reboot if you do not specify the \fB--no-be-activate\fR option. See the \fBbeadm\fR(1M) man page for information about managing boot environments.
 .sp
 .ne 2
 .mk
@@ -722,7 +731,7 @@ Update all packages installed in the current image to the newest version allowed
 .ad
 .sp .6
 .RS 4n
-Update only the specified packages installed in the current image. If asterisk (*) is one of the \fIpkg_fmri_pattern\fR patterns provided, update all packages installed in the current image as described above.
+Update only the specified packages installed in the current image. If asterisk (*) is one of the \fIpkg_fmri_pattern\fR patterns provided, update all packages installed in the current image in the same way as when no \fIpkg_fmri_pattern\fR is provided.
 .sp
 To explicitly request the latest version of a package, use \fBlatest\fR for the version portion of \fIpkg_fmri_pattern\fR. For example, specify \fBvim@latest\fR.
 .sp
@@ -752,12 +761,10 @@ Do not execute the client up-to-date check when updating all installed packages.
 .ad
 .sp .6
 .RS 4n
-Do not fail update if specified packages are not currently installed.
+Ignore packages that are not installed. Using this option prevents \fBpkg update\fR from failing when attempting to update a package that is not currently installed.
 .RE
 
 For all other options, see the \fBinstall\fR command above.
-.sp
-In the command output, note any messages that say a new boot environment has been created. If a new boot environment has been created and activated, that is the environment that is booted by default on next reboot if you do not specify the \fB--no-be-activate\fR option. See the \fBbeadm\fR(1M) man page for information about managing boot environments.
 .RE
 
 .sp
@@ -830,7 +837,7 @@ Omit the headers from the listing.
 .ad
 .sp .6
 .RS 4n
-List installed packages and list the newest version of packages that are not installed but could be installed in this image. Packages can be installed if they are allowed by the installed incorporations and by the image's variants. If one or more patterns are specified, then the newest version matching the specified pattern and allowed by any installed incorporations and the image's variants is listed. Without \fB-a\fR, list only installed packages.
+List installed packages and list the newest version of packages that are not installed but could be installed in this image. Packages can be installed if they are allowed by the installed incorporations and by the image\&'s variants. If one or more patterns are specified, then the newest version matching the specified pattern and allowed by any installed incorporations and the image\&'s variants is listed. Without \fB-a\fR, list only installed packages.
 .RE
 
 .sp
@@ -918,7 +925,7 @@ Show full package FMRIs, including publisher and complete version, all in the fi
 .ad
 .sp .6
 .RS 4n
-Do not attempt to contact the repositories for the image's publishers to retrieve the newest list of available packages.
+Do not attempt to contact the repositories for the image\&'s publishers to retrieve the newest list of available packages.
 .RE
 
 .RE
@@ -984,7 +991,7 @@ Do not display any package information, but return failure if a fatal error occu
 .ad
 .sp .6
 .RS 4n
-Match packages based on the newest available versions, retrieving information for packages not currently installed (if necessary) from the repositories of the image's configured publishers. At least one package must be specified when using this option. Without \fB-r\fR, only installed packages are displayed by default.
+Match packages based on the newest available versions, retrieving information for packages not currently installed (if necessary) from the repositories of the image\&'s configured publishers. At least one package must be specified when using this option. Without \fB-r\fR, only installed packages are displayed by default.
 .RE
 
 .sp
@@ -1117,7 +1124,7 @@ Several special pseudo attribute names are available for convenience:
 .ad
 .sp .6
 .RS 4n
-The value of the action's hash, if the action carries a payload.
+The value of the action\&'s hash, if the action carries a payload.
 .RE
 
 .sp
@@ -1128,7 +1135,7 @@ The value of the action's hash, if the action carries a payload.
 .ad
 .sp .6
 .RS 4n
-The value of the action's key attribute. For example, for a \fBfile\fR action, the key attribute is the path to the file. Some actions do not have a key attribute.
+The value of the action\&'s key attribute. For example, for a \fBfile\fR action, the key attribute is the path to the file. Some actions do not have a key attribute.
 .RE
 
 .sp
@@ -1263,31 +1270,7 @@ Show all results, regardless of package version. By default, \fBsearch\fR prunes
 .ad
 .sp .6
 .RS 4n
-Search the image's installed packages.
-.sp
-Both \fB-l\fR and \fB-r\fR (or \fB-s\fR) can be specified together, in which case both local and remote searches are performed.
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fB\fB-p\fR\fR
-.ad
-.sp .6
-.RS 4n
-Display packages that have some actions that match each query term. Using this option is equivalent to putting angle brackets (\fB<>\fR) around each term in the query. See \fIquery\fR below for more description of the \fB<>\fR operator.
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fB\fB-r\fR\fR
-.ad
-.sp .6
-.RS 4n
-Search the repositories corresponding to the image's publishers. This is the default.
+Search the image\&'s installed packages.
 .sp
 Both \fB-l\fR and \fB-r\fR (or \fB-s\fR) can be specified together, in which case both local and remote searches are performed.
 .RE
@@ -1300,7 +1283,7 @@ Both \fB-l\fR and \fB-r\fR (or \fB-s\fR) can be specified together, in which cas
 .ad
 .sp .6
 .RS 4n
-Control the columns of the results. The \fB-o\fR option can be specified multiple times, or multiple attributes can be specified as the argument to one \fB-o\fR option by separating the attribute names with commas. In addition to the pseudo attributes outlined above, the following attributes are defined for search results. These attributes help show why a particular result was a match:
+Specify the columns to include in the output. The \fB-o\fR option can be specified multiple times, or multiple attributes can be specified as the argument to one \fB-o\fR option by separating the attribute names with commas. In addition to the pseudo attributes outlined above, the following attributes are defined for search results. These attributes help show why a particular result was a match:
 .sp
 .ne 2
 .mk
@@ -1329,6 +1312,30 @@ The attribute that contained the string that matched the search query.
 .ne 2
 .mk
 .na
+\fB\fB-p\fR\fR
+.ad
+.sp .6
+.RS 4n
+Display packages that have some actions that match each query term. Using this option is equivalent to putting angle brackets (\fB<>\fR) around each term in the query. See \fIquery\fR below for more description of the \fB<>\fR operator.
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB-r\fR\fR
+.ad
+.sp .6
+.RS 4n
+Search the repositories corresponding to the image\&'s publishers. This is the default.
+.sp
+Both \fB-l\fR and \fB-r\fR (or \fB-s\fR) can be specified together, in which case both local and remote searches are performed.
+.RE
+
+.sp
+.ne 2
+.mk
+.na
 \fB\fB-s\fR \fIrepo_uri\fR\fR
 .ad
 .sp .6
@@ -1348,9 +1355,9 @@ By default, \fIquery\fR is interpreted as a series of terms to be matched exactl
 .sp
 AND and OR are supported.
 .sp
-The \fB?\fR and \fB *\fR characters can be used as \fBglob\fR(3C)\(hystyle wildcards, allowing more flexible query matches.
+The \fB?\fR and \fB*\fR characters can be used as \fBglob\fR(3C)\(hystyle wildcards, allowing more flexible query matches.
 .sp
-In addition to simple token matching and wildcard search, a more complicated query language is supported. Phrases can be searched for by using single or double quotation marks (\fB'\fR or \fB"\fR). Be sure to take your shell into account so that \fBpkg\fR actually sees the \fB'\fR or \fB"\fR.
+In addition to simple token matching and wildcard search, a more complicated query language is supported. Phrases can be searched for by using single or double quotation marks (\fB\&'\fR or \fB"\fR). Be sure to take your shell into account so that \fBpkg\fR actually sees the \fB\&'\fR or \fB"\fR.
 .sp
 Which tokens are indexed is action-dependent, but can include content hashes and path names. For information about actions and their attributes, see "Actions" in the \fBpkg\fR(5) man page. See also the list of pseudo attribute names in \fBpkg contents\fR and \fB-o\fR above.
 .sp
@@ -1588,22 +1595,11 @@ Display the current selected version and/or implementation of only the specified
 .ne 2
 .mk
 .na
-\fB\fB-a\fR\fR
-.ad
-.sp .6
-.RS 4n
-List the mediations that can be set for currently installed packages.
-.RE
-
-.sp
-.ne 2
-.mk
-.na
 \fB\fB-F\fR \fIformat\fR\fR
 .ad
 .sp .6
 .RS 4n
-Specify an alternative output format. Currently, only \fBtsv\fR (Tab Separated Values) is valid.
+Specify an alternative output format. The value of \fIformat\fR can be \fBtsv\fR (Tab Separated Values), \fBjson\fR (JavaScript Object Notation as a single line), or json-formatted (JavaScript Object Notation, formatted for readability).
 .RE
 
 .sp
@@ -1615,6 +1611,17 @@ Specify an alternative output format. Currently, only \fBtsv\fR (Tab Separated V
 .sp .6
 .RS 4n
 Omit the headers from the listing.
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB-a\fR\fR
+.ad
+.sp .6
+.RS 4n
+List the mediations that can be set for currently installed packages.
 .RE
 
 .RE
@@ -1717,7 +1724,7 @@ Display the current values of only the specified variants set in this image.
 .ad
 .sp .6
 .RS 4n
-Specify an alternative output format. Currently, only \fBtsv\fR (Tab Separated Values) is valid.
+Specify an alternative output format. For a description, see the \fBpkg mediator\fR command.
 .RE
 
 .sp
@@ -1770,7 +1777,7 @@ Display the possible variant values that can be set for installed packages. The 
 .ne 2
 .mk
 .na
-\fB\fBpkg change-variant\fR [\fB-nvq\fR] [\fB-C\fR \fIn\fR] [\fB-g\fR \fIpath_or_uri\fR]... [\fB--accept\fR] [\fB--licenses\fR] [\fB--no-be-activate\fR] [\fB--no-backup-be\fR |\fB--require-backup-be\fR] [\fB--backup-be-name\fR \fIname\fR] [\fB--deny-new-be\fR | \fB--require-new-be\fR] [\fB--be-name\fR \fIname\fR] [-r [-z \fIimage_name\fR ... | -Z \fIimage_name\fR ...]] [--sync-actuators | --sync-actuators-timeout \fItimeout\fR] \fIvariant_name\fR=\fIvalue\fR ...\fR
+\fB\fBpkg change-variant\fR [\fB-nvq\fR] [\fB-C\fR \fIn\fR] [\fB-g\fR \fIpath_or_uri\fR]... [\fB-r\fR [[\fB-z\fR \fIzonename\fR]... | [\fB-Z\fR \fIzonename\fR]... ]] [\fB--accept\fR] [\fB--licenses\fR] [\fB--no-be-activate\fR] [\fB--no-backup-be\fR | \fB--require-backup-be\fR] [\fB--backup-be-name\fR \fIname\fR] [\fB--deny-new-be\fR | \fB--require-new-be\fR] [\fB--be-name\fR \fIname\fR] [\fB--sync-actuators\fR | \fB--sync-actuators-timeout\fR \fItimeout\fR] \fIvariant_name\fR=\fIvalue\fR ...\fR
 .ad
 .sp .6
 .RS 4n
@@ -1789,7 +1796,7 @@ For descriptions of options, see the \fBinstall\fR command above.
 .ad
 .sp .6
 .RS 4n
-Display the current values and source of all facets that have been explicitly set in this image by using the \fBpkg change-facet\fR command or that have been inherited from a parent image . See "Facets and Variants" in the \fBpkg\fR(5) man page for more information about facets.
+Display the current values and source of all facets that either have been set locally in this image by using the \fBpkg change-facet\fR command or have been inherited from a parent image (such as a non-global zone inheriting the facet setting from the global zone). See "Facets and Variants" in the \fBpkg\fR(5) man page for more information about facets.
 .sp
 .ne 2
 .mk
@@ -1809,7 +1816,7 @@ Display the current values of only the specified facets set in this image.
 .ad
 .sp .6
 .RS 4n
-Specify an alternative output format. Currently, only \fBtsv\fR (Tab Separated Values) is valid.
+Specify an alternative output format. For a description, see the \fBpkg mediator\fR command.
 .RE
 
 .sp
@@ -1853,7 +1860,7 @@ Display all facets that are listed in installed packages. The \fB-i\fR option ca
 .ad
 .sp .6
 .RS 4n
-Include masked facets in the output. Include a column that indicates which, if any, facets are masked.
+Include masked facets in the output. Display a column that indicates which, if any, facets are masked. Masked facets are facets set locally in an image (by using the \fBpkg change-facet\fR command) that are hidden by an inherited facet with the same name.
 .RE
 
 .RE
@@ -1862,11 +1869,11 @@ Include masked facets in the output. Include a column that indicates which, if a
 .ne 2
 .mk
 .na
-\fB\fBpkg change-facet\fR [\fB-nvq\fR] [\fB-C\fR \fIn\fR] [\fB-g\fR \fIpath_or_uri\fR]... [\fB--accept\fR] [\fB--licenses\fR] [\fB--no-be-activate\fR] [\fB--no-backup-be\fR | \fB--require-backup-be\fR] [\fB--backup-be-name\fR \fIname\fR] [\fB--deny-new-be\fR | \fB--require-new-be\fR] [\fB--be-name\fR \fIname\fR] [-r [-z \fIimage_name\fR ... | -Z \fIimage_name\fR ...]] [--sync-actuators | --sync-actuators-timeout \fItimeout\fR] \fIfacet_name\fR=(\fBTrue\fR|\fBFalse\fR|\fBNone\fR) ...\fR
+\fB\fBpkg change-facet\fR [\fB-nvq\fR] [\fB-C\fR \fIn\fR] [\fB-g\fR \fIpath_or_uri\fR]... [\fB-r\fR [[\fB-z\fR \fIzonename\fR]... | [\fB-Z\fR \fIzonename\fR]... ]] [\fB--accept\fR] [\fB--licenses\fR] [\fB--no-be-activate\fR] [\fB--no-backup-be\fR | \fB--require-backup-be\fR] [\fB--backup-be-name\fR \fIname\fR] [\fB--deny-new-be\fR | \fB--require-new-be\fR] [\fB--be-name\fR \fIname\fR] [\fB--sync-actuators\fR | \fB--sync-actuators-timeout\fR \fItimeout\fR] \fIfacet_name\fR=(\fBTrue\fR|\fBFalse\fR|\fBNone\fR) ...\fR
 .ad
 .sp .6
 .RS 4n
-Change the values of the specified facets set in the current image.
+Change the values of the specified facets set in the current image. The changes also appear in any images that inherit these facets, such as non-global zones.
 .sp
 Facets can be set to \fBTrue\fR or \fBFalse\fR. Setting a facet to \fBNone\fR applies the default value of \fBTrue\fR to that facet; thus, any actions subject to the facet will be installed. See "Actions" in the \fBpkg\fR(5) man page for information about actions.
 .sp
@@ -1916,7 +1923,7 @@ Display the list of avoided packages.
 .ad
 .sp .6
 .RS 4n
-Remove the specified packages from the avoid list. Packages on the avoid list that match an installed package's group dependency cannot be removed using this subcommand. To remove a package from the avoid list that matches a group dependency, install the package.
+Remove the specified packages from the avoid list. Packages on the avoid list that match an installed package\&'s group dependency cannot be removed using this subcommand. To remove a package from the avoid list that matches a group dependency, install the package.
 .RE
 
 .RE
@@ -2107,7 +2114,7 @@ Display detailed configuration for only the specified publishers. Additional inf
 .ad
 .sp .6
 .RS 4n
-Specify an alternative output format. Currently, only \fBtsv\fR (Tab Separated Values) is valid.
+Specify an alternative output format. For a description, see the \fBpkg mediator\fR command.
 .RE
 
 .sp
@@ -2149,184 +2156,11 @@ Display only enabled publishers.
 .ne 2
 .mk
 .na
-\fB\fBpkg set-publisher\fR [\fB-Ped\fR] [\fB-k\fR \fIssl_key\fR] [\fB-c\fR \fIssl_cert\fR] [\fB-g\fR \fIorigin_to_add\fR | \fB--add-origin\fR \fIorigin_to_add\fR]... [\fB-G\fR \fIorigin_to_remove\fR | \fB--remove-origin\fR \fIorigin_to_remove\fR]... [\fB-m\fR \fImirror_to_add\fR | \fB--add-mirror\fR \fImirror_to_add\fR]... [\fB-M\fR \fImirror_to_remove\fR | \fB--remove-mirror\fR \fImirror_to_remove\fR]... [\fB--enable\fR] [\fB--disable\fR] [\fB--no-refresh\fR] [\fB--reset-uuid\fR] [\fB--non-sticky\fR] [\fB--sticky\fR] [\fB--search-after\fR \fIpublisher\fR] [\fB--search-before\fR \fIpublisher\fR] [\fB--search-first\fR] [\fB--approve-ca-cert\fR \fIpath_to_CA\fR] [\fB--revoke-ca-cert\fR \fIhash_of_CA_to_remove\fR] [\fB--unset-ca-cert\fR \fIhash_of_CA_to_remove\fR] [\fB--set-property\fR \fIname_of_property\fR=\fIvalue\fR] [\fB--add-property-value\fR \fIname_of_property\fR=\fIvalue_to_add\fR] [\fB--remove-property-value\fR \fIname_of_property\fR=\fIvalue_to_remove\fR] [\fB--unset-property\fR \fIname_of_property_to_delete\fR] [\fB--proxy\fR \fIproxy_to_use\fR] \fIpublisher\fR\fR
+\fB\fBpkg set-publisher\fR [-Ped] [\fB-c\fR \fIssl_cert\fR] [\fB-k\fR \fIssl_key\fR] [\fB-g\fR \fIorigin_to_add\fR | \fB--add-origin\fR \fIorigin_to_add\fR]... [\fB-G\fR \fIorigin_to_remove\fR | \fB--remove-origin\fR \fIorigin_to_remove\fR]... [\fB-m\fR \fImirror_to_add\fR | \fB--add-mirror\fR \fImirror_to_add\fR]... [\fB-M\fR \fImirror_to_remove\fR | \fB--remove-mirror\fR \fImirror_to_remove\fR]... [\fB--disable\fR] [\fB--enable\fR] [\fB--no-refresh\fR] [\fB--reset-uuid\fR] [\fB--non-sticky\fR] [\fB--sticky\fR] [\fB--search-after\fR \fIpublisher\fR] [\fB--search-before\fR \fIpublisher\fR] [\fB--search-first\fR] [\fB--approve-ca-cert\fR \fIpath_to_CA\fR] [\fB--revoke-ca-cert\fR \fIhash_of_CA_to_remove\fR] [\fB--unset-ca-cert\fR \fIhash_of_CA_to_remove\fR] [\fB--set-property\fR \fIname_of_property\fR=\fIvalue\fR] [\fB--add-property-value\fR \fIname_of_property\fR=\fIvalue_to_add\fR] [\fB--remove-property-value\fR \fIname_of_property\fR=\fIvalue_to_remove\fR] [\fB--unset-property\fR \fIname_of_property_to_delete\fR] [\fB--proxy\fR \fIproxy_to_use\fR] \fIpublisher\fR\fR
 .ad
 .sp .6
 .RS 4n
 Update an existing publisher or add a publisher. If no options affecting search order are specified, new publishers are appended to the search order and are thus searched last.
-.sp
-.ne 2
-.mk
-.na
-\fB\fB-P\fR\fR
-.ad
-.br
-.na
-\fB\fB--search-first\fR\fR
-.ad
-.sp .6
-.RS 4n
-Set the specified publisher first in the search order. When installing new packages, this publisher is searched first. Updates to already installed packages come from the same publisher that originally provided the package as long as that publisher remains sticky.
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fB\fB--non-sticky\fR\fR
-.ad
-.sp .6
-.RS 4n
-Higher ranked publishers than this one can provide updates to packages originally installed from this publisher.
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fB\fB--sticky\fR\fR
-.ad
-.sp .6
-.RS 4n
-Updates to packages that were installed from this publisher must also come from this publisher. This is the default behavior.
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fB\fB--search-before\fR \fIpublisher\fR\fR
-.ad
-.sp .6
-.RS 4n
-Alter the publisher search order so that the publisher being added or modified is searched before the publisher specified in this option.
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fB\fB--search-after\fR \fIpublisher\fR\fR
-.ad
-.sp .6
-.RS 4n
-Alter the publisher search order so that the publisher being added or modified is searched after the publisher specified in this option.
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fB\fB--approve-ca-cert\fR \fIpath_to_CA\fR\fR
-.ad
-.sp .6
-.RS 4n
-For verifying signed packages, add the specified certificate as a CA certificate that is trusted. The hashes of the PEM representation of the user-approved CA certificates are listed in the detailed output of the \fBpkg publisher\fR command.
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fB\fB--revoke-ca-cert\fR \fIhash_of_CA_to_remove\fR\fR
-.ad
-.sp .6
-.RS 4n
-For verifying signed packages, treat the certificate with the given hash of its PEM representation as revoked. The hashes of the user-revoked CA certificates are listed in the detailed output of the \fBpkg publisher\fR command.
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fB\fB--unset-ca-cert\fR \fIhash_of_CA_to_remove\fR\fR
-.ad
-.sp .6
-.RS 4n
-For verifying signed packages, remove the certificate with the given hash from the list of approved certificates and the list of revoked certificates.
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fB\fB--set-property\fR \fIname_of_property\fR=\fIvalue\fR\fR
-.ad
-.sp .6
-.RS 4n
-Update an existing publisher property or add a new publisher property.
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fB\fB--add-property-value\fR \fIname_of_property\fR=\fIvalue_to_add\fR\fR
-.ad
-.sp .6
-.RS 4n
-Add a value to an existing publisher property or add a new publisher property.
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fB\fB--remove-property-value\fR \fIname_of_property\fR=\fIvalue_to_remove\fR\fR
-.ad
-.sp .6
-.RS 4n
-Remove a value from an existing publisher property.
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fB\fB--unset-property\fR \fIname_of_property_to_delete\fR\fR
-.ad
-.sp .6
-.RS 4n
-Remove an existing publisher property.
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fB\fB-k\fR \fIssl_key\fR\fR
-.ad
-.sp .6
-.RS 4n
-Specify the client SSL key.
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fB\fB-c\fR \fIssl_cert\fR\fR
-.ad
-.sp .6
-.RS 4n
-Specify the client SSL certificate.
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fB\fB-g\fR \fIorigin_to_add\fR\fR
-.ad
-.br
-.na
-\fB\fB--add-origin\fR \fIorigin_to_add\fR\fR
-.ad
-.sp .6
-.RS 4n
-Add the specified URI or path as an origin for the given publisher. This should be the location of a package repository or archive.
-.RE
-
 .sp
 .ne 2
 .mk
@@ -2340,43 +2174,6 @@ Add the specified URI or path as an origin for the given publisher. This should 
 .sp .6
 .RS 4n
 Remove the URI or path from the list of origins for the given publisher. The special value \fB*\fR can be used to remove all origins.
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fB\fB--no-refresh\fR\fR
-.ad
-.sp .6
-.RS 4n
-Do not attempt to contact the repositories for the image's publishers to retrieve the newest list of available packages and other metadata.
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fB\fB--reset-uuid\fR\fR
-.ad
-.sp .6
-.RS 4n
-Choose a new unique identifier that identifies this image to its publisher.
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fB\fB-m\fR \fImirror_to_add\fR\fR
-.ad
-.br
-.na
-\fB\fB--add-mirror\fR \fImirror_to_add\fR\fR
-.ad
-.sp .6
-.RS 4n
-Add the URI as a mirror for the given publisher.
 .RE
 
 .sp
@@ -2398,15 +2195,26 @@ Remove the URI from the list of mirrors for the given publisher. The special val
 .ne 2
 .mk
 .na
-\fB\fB-e\fR\fR
+\fB\fB-P\fR\fR
 .ad
 .br
 .na
-\fB\fB--enable\fR\fR
+\fB\fB--search-first\fR\fR
 .ad
 .sp .6
 .RS 4n
-Enable the publisher.
+Set the specified publisher first in the search order. When installing new packages, this publisher is searched first. Updates to already installed packages come from the same publisher that originally provided the package as long as that publisher remains sticky.
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB-c\fR \fIssl_cert\fR\fR
+.ad
+.sp .6
+.RS 4n
+Specify the client SSL certificate.
 .RE
 
 .sp
@@ -2428,6 +2236,106 @@ Disable the publisher. A disabled publisher is not used when populating the pack
 .ne 2
 .mk
 .na
+\fB\fB-e\fR\fR
+.ad
+.br
+.na
+\fB\fB--enable\fR\fR
+.ad
+.sp .6
+.RS 4n
+Enable the publisher.
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB-g\fR \fIorigin_to_add\fR\fR
+.ad
+.br
+.na
+\fB\fB--add-origin\fR \fIorigin_to_add\fR\fR
+.ad
+.sp .6
+.RS 4n
+Add the specified URI or path as an origin for the given publisher. This should be the location of a package repository or archive.
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB-k\fR \fIssl_key\fR\fR
+.ad
+.sp .6
+.RS 4n
+Specify the client SSL key.
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB-m\fR \fImirror_to_add\fR\fR
+.ad
+.br
+.na
+\fB\fB--add-mirror\fR \fImirror_to_add\fR\fR
+.ad
+.sp .6
+.RS 4n
+Add the URI as a mirror for the given publisher.
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB--add-property-value\fR \fIname_of_property\fR=\fIvalue_to_add\fR\fR
+.ad
+.sp .6
+.RS 4n
+Add a value to an existing publisher property or add a new publisher property.
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB--approve-ca-cert\fR \fIpath_to_CA\fR\fR
+.ad
+.sp .6
+.RS 4n
+For verifying signed packages, add the specified certificate as a CA certificate that is trusted. The hashes of the PEM representation of the user-approved CA certificates are listed in the detailed output of the \fBpkg publisher\fR command.
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB--no-refresh\fR\fR
+.ad
+.sp .6
+.RS 4n
+Do not attempt to contact the repositories for the image\&'s publishers to retrieve the newest list of available packages and other metadata.
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB--non-sticky\fR\fR
+.ad
+.sp .6
+.RS 4n
+Higher ranked publishers than this one can provide updates to packages originally installed from this publisher.
+.RE
+
+.sp
+.ne 2
+.mk
+.na
 \fB\fB--proxy\fR \fIproxy_to_use\fR\fR
 .ad
 .sp .6
@@ -2437,13 +2345,112 @@ Use the specified proxy URI to retrieve content for the specified origin (\fB-g\
 At run time, \fBhttp_proxy\fR or related environment variables override this proxy setting. See the "Environment" section of the \fBcurl\fR(1) man page for the list of accepted environment variable names. If you use an environment variable to set the proxy URI, you must also set the appropriate proxy property of the \fBsvc:/application/pkg/system-repository\fR SMF service to the same value. See "Specifying a Proxy" in \fIAdding and Updating Software in Oracle Solaris 11.2\fR.
 .RE
 
+.sp
+.ne 2
+.mk
+.na
+\fB\fB--remove-property-value\fR \fIname_of_property\fR=\fIvalue_to_remove\fR\fR
+.ad
+.sp .6
+.RS 4n
+Remove a value from an existing publisher property.
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fB\fBpkg set-publisher\fR \fB-p\fR \fIrepo_uri\fR [\fB-Ped\fR] [\fB-k\fR \fIssl_key\fR] [\fB-c\fR \fIssl_cert\fR] [\fB--non-sticky\fR] [\fB--sticky\fR] [\fB--search-after\fR \fIpublisher\fR] [\fB--search-before\fR \fIpublisher\fR] [\fB--search-first\fR] [\fB--approve-ca-cert\fR \fIpath_to_CA\fR] [\fB--revoke-ca-cert\fR \fIhash_of_CA_to_remove\fR] [\fB--unset-ca-cert\fR \fIhash_of_CA_to_remove\fR] [\fB--set-property\fR \fIname_of_property\fR=\fIvalue\fR] [\fB--add-property-value\fR \fIname_of_property\fR=\fIvalue_to_add\fR] [\fB--remove-property-value\fR \fIname_of_property\fR=\fIvalue_to_remove\fR] [\fB--unset-property\fR \fIname_of_property_to_delete\fR] [\fB--proxy\fR \fIproxy_to_use\fR] [\fIpublisher\fR]\fR
+\fB\fB--reset-uuid\fR\fR
+.ad
+.sp .6
+.RS 4n
+Choose a new unique identifier that identifies this image to its publisher.
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB--revoke-ca-cert\fR \fIhash_of_CA_to_remove\fR\fR
+.ad
+.sp .6
+.RS 4n
+For verifying signed packages, treat the certificate with the given hash of its PEM representation as revoked. The hashes of the user-revoked CA certificates are listed in the detailed output of the \fBpkg publisher\fR command.
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB--search-after\fR \fIpublisher\fR\fR
+.ad
+.sp .6
+.RS 4n
+Alter the publisher search order so that the publisher being added or modified is searched after the publisher specified in this option.
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB--search-before\fR \fIpublisher\fR\fR
+.ad
+.sp .6
+.RS 4n
+Alter the publisher search order so that the publisher being added or modified is searched before the publisher specified in this option.
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB--set-property\fR \fIname_of_property\fR=\fIvalue\fR\fR
+.ad
+.sp .6
+.RS 4n
+Update an existing publisher property or add a new publisher property.
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB--sticky\fR\fR
+.ad
+.sp .6
+.RS 4n
+Updates to packages that were installed from this publisher must also come from this publisher. This is the default behavior.
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB--unset-ca-cert\fR \fIhash_of_CA_to_remove\fR\fR
+.ad
+.sp .6
+.RS 4n
+For verifying signed packages, remove the certificate with the given hash from the list of approved certificates and the list of revoked certificates.
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB--unset-property\fR \fIname_of_property_to_delete\fR\fR
+.ad
+.sp .6
+.RS 4n
+Remove an existing publisher property.
+.RE
+
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fBpkg set-publisher\fR \fB-p\fR \fIrepo_uri\fR [-Ped] [\fB-c\fR \fIssl_cert\fR] [\fB-k\fR \fIssl_key\fR] [\fB--non-sticky\fR] [\fB--sticky\fR] [\fB--search-after\fR \fIpublisher\fR] [\fB--search-before\fR \fIpublisher\fR] [\fB--search-first\fR] [\fB--approve-ca-cert\fR \fIpath_to_CA\fR] [\fB--revoke-ca-cert\fR \fIhash_of_CA_to_remove\fR] [\fB--unset-ca-cert\fR \fIhash_of_CA_to_remove\fR] [\fB--set-property\fR \fIname_of_property\fR=\fIvalue\fR] [\fB--add-property-value\fR \fIname_of_property\fR=\fIvalue_to_add\fR] [\fB--remove-property-value\fR \fIname_of_property\fR=\fIvalue_to_remove\fR] [\fB--unset-property\fR \fIname_of_property_to_delete\fR] [\fB--proxy\fR \fIproxy_to_use\fR] [\fIpublisher\fR]\fR
 .ad
 .sp .6
 .RS 4n
@@ -2471,7 +2478,7 @@ Remove the configuration associated with the specified publisher or publishers.
 .ne 2
 .mk
 .na
-\fB\fBpkg history\fR [\fB-HNl\fR] [\fB-t\fR \fItime\fR | \fItime\fR-\fItime\fR[,\fItime\fR | \fItime\fR-\fItime\fR]...]... [\fB-o\fR \fIcolumn\fR[,\fIcolumn\fR]...]... [\fB-n\fR \fInumber\fR]\fR
+\fB\fBpkg history\fR [\fB-HNl\fR] [\fB-n\fR \fInumber\fR] [\fB-o\fR \fIcolumn\fR[,\fIcolumn\fR]...]... [\fB-t\fR \fItime\fR | \fItime\fR-\fItime\fR[,\fItime\fR | \fItime\fR-\fItime\fR]...]...\fR
 .ad
 .sp .6
 .RS 4n
@@ -2485,21 +2492,6 @@ Display the command history of the applicable image. Display the start time of t
 .sp .6
 .RS 4n
 Omit the headers from the listing.
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fB\fB-t\fR \fItime\fR\fR
-.ad
-.br
-.na
-\fB\fB-t\fR \fItime\fR-\fItime\fR\fR
-.ad
-.sp .6
-.RS 4n
-Display log records for a comma-separated list of timestamps, formatted with \fB%Y-%m-%dT%H:%M:%S\fR (see the \fBstrftime\fR(3C) man page). To specify a range of times, use a hyphen (\fB-\fR) between a start and finish timestamp. The keyword \fBnow\fR can be used as an alias for the current time. This option can be specified multiple times. If the timestamps specified contain duplicate timestamps or overlapping ranges, duplicate history events are not displayed. Only a single instance of each history event is displayed.
 .RE
 
 .sp
@@ -2738,6 +2730,21 @@ An asterisk (*) is shown after the values for \fBbe\fR or \fBnew_be\fR if the bo
 The values for \fBbe\fR and \fBnew_be\fR are obtained by looking up the current boot environment name, using the \fBbe_uuid\fR or \fBnew_be_uuid\fR fields. If a boot environment was subsequently renamed, and later deleted, the values displayed for \fBbe\fR and \fBnew_be\fR are the values recorded at the time of the \fBpkg\fR operation.
 .RE
 
+.sp
+.ne 2
+.mk
+.na
+\fB\fB-t\fR \fItime\fR\fR
+.ad
+.br
+.na
+\fB\fB-t\fR \fItime\fR-\fItime\fR\fR
+.ad
+.sp .6
+.RS 4n
+Display log records for a comma-separated list of timestamps, formatted with \fB%Y-%m-%dT%H:%M:%S\fR (see the \fBstrftime\fR(3C) man page). To specify a range of times, use a hyphen (\fB-\fR) between a start and finish timestamp. The keyword \fBnow\fR can be used as an alias for the current time. This option can be specified multiple times. If the timestamps specified contain duplicate timestamps or overlapping ranges, duplicate history events are not displayed. Only a single instance of each history event is displayed.
+.RE
+
 .RE
 
 .sp
@@ -2799,7 +2806,7 @@ Display a usage message.
 .ne 2
 .mk
 .na
-\fB\fBpkg image-create\fR [\fB-FPUz\fR] [\fB-f\fR |\fB--force\fR] [\fB--full\fR | \fB--partial\fR | \fB--user\fR] [\fB--zone\fR] [\fB-k\fR \fIssl_key\fR] [\fB-c\fR \fIssl_cert\fR] [\fB--no-refresh\fR] [\fB--variant\fR \fIvariant_name\fR=\fIvalue\fR]... [\fB-g\fR \fIpath_or_uri\fR | \fB--origin\fR \fIpath_or_uri\fR]... [\fB-m\fR \fIuri\fR | \fB--mirror\fR \fIuri\fR]... [\fB--set-property\fR \fIname_of_property\fR=\fIvalue\fR] [\fB--facet\fR \fIfacet_name\fR=(\fBTrue\fR|\fBFalse\fR)]... [(\fB-p\fR | \fB--publisher\fR) [\fIname\fR=]\fIrepo_uri\fR] \fIdir\fR\fR
+\fB\fBpkg image-create\fR [\fB-FPUfz\fR] [\fB--force\fR] [\fB--full\fR | \fB--partial\fR | \fB--user\fR] [\fB--zone\fR] [\fB-c\fR \fIssl_cert\fR] [\fB-k\fR \fI ssl_key\fR] [\fB-g\fR \fIpath_or_uri\fR | \fB--origin\fR \fIpath_or_uri\fR]... [\fB-m\fR \fIuri\fR | \fB--mirror\fR \fIuri\fR]... [\fB--facet\fR \fIfacet_name\fR=(\fBTrue\fR|\fBFalse\fR)]... [\fB--no-refresh\fR] [\fB--set-property\fR \fIname_of_property\fR=\fIvalue\fR] [\fB--variant\fR \fIvariant_name\fR=\fIvalue\fR]... [(\fB-p\fR | \fB--publisher\fR) [\fIname\fR=]\fIrepo_uri\fR] \fIdir\fR\fR
 .ad
 .sp .6
 .RS 4n
@@ -2833,28 +2840,6 @@ Force the creation of an image over an existing image. This option should be use
 .ne 2
 .mk
 .na
-\fB\fB--no-refresh\fR\fR
-.ad
-.sp .6
-.RS 4n
-Do not attempt to contact the repositories for the image's publishers to retrieve the newest list of available packages and other metadata.
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fB\fB--variant\fR \fIvariant_name\fR=\fIvalue\fR\fR
-.ad
-.sp .6
-.RS 4n
-Set the specified variant to the indicated value. See "Facets and Variants" in the \fBpkg\fR(5) man page for more information about variants.
-.RE
-
-.sp
-.ne 2
-.mk
-.na
 \fB\fB--facet\fR \fIfacet_name\fR=(\fBTrue\fR|\fBFalse\fR)\fR
 .ad
 .sp .6
@@ -2866,11 +2851,33 @@ Set the specified facet to the indicated value. See "Facets and Variants" in the
 .ne 2
 .mk
 .na
+\fB\fB--no-refresh\fR\fR
+.ad
+.sp .6
+.RS 4n
+Do not attempt to contact the repositories for the image\&'s publishers to retrieve the newest list of available packages and other metadata.
+.RE
+
+.sp
+.ne 2
+.mk
+.na
 \fB\fB--set-property\fR \fIname_of_property\fR=\fIvalue\fR\fR
 .ad
 .sp .6
 .RS 4n
 Set the specified image property to the indicated value. See "Image Properties" below for descriptions of image properties.
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB--variant\fR \fIvariant_name\fR=\fIvalue\fR\fR
+.ad
+.sp .6
+.RS 4n
+Set the specified variant to the indicated value. See "Facets and Variants" in the \fBpkg\fR(5) man page for more information about variants.
 .RE
 
 .RE
@@ -2970,11 +2977,56 @@ Default value: \fBFalse\fR
 .ne 2
 .mk
 .na
+\fB\fBcontent-update-policy\fR\fR
+.ad
+.sp .6
+.RS 4n
+(string) Specify when the package system will update non-editable files during packaging operations. The following values are allowed:
+.sp
+.ne 2
+.mk
+.na
+\fB\fBdefault\fR\fR
+.ad
+.sp .6
+.RS 4n
+Always apply the default content update policy.
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fBalways\fR\fR
+.ad
+.sp .6
+.RS 4n
+Always download and update non-editable files that have changed.
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fBwhen-required\fR\fR
+.ad
+.sp .6
+.RS 4n
+Download and update non-editable files that have changed only if the package system has determined that an update is required.
+.RE
+
+Default value: \fBalways\fR
+.RE
+
+.sp
+.ne 2
+.mk
+.na
 \fB\fBflush-content-cache-on-success\fR\fR
 .ad
 .sp .6
 .RS 4n
-(boolean) If this is set to \fBTrue\fR, the package client removes the files in its content-cache when install or update operations complete. For update operations, the content is removed only from the source boot environment. When a packaging operation next occurs in the destination boot environment, the package client flushes its content cache if this option has not been changed.
+(boolean) If this is set to \fBTrue\fR, the package client removes the files in its content-cache when image-modifying operations complete successfully. For operations that create a boot environment, the content will be removed from both the source and destination boot environment.
 .sp
 This property can be used to keep the content-cache small on systems with limited disk space. This property can cause operations to take longer to complete.
 .sp
@@ -3002,7 +3054,7 @@ Default value: \fBFalse\fR
 .ad
 .sp .6
 .RS 4n
-(boolean) Send the image's Universally Unique Identifier (UUID) when performing network operations. Although users can disable this option, some network repositories might refuse to talk to clients that do not supply a UUID.
+(boolean) Send the image\&'s Universally Unique Identifier (UUID) when performing network operations. Although users can disable this option, some network repositories might refuse to talk to clients that do not supply a UUID.
 .sp
 Default value: \fBTrue\fR
 .RE
@@ -3354,7 +3406,9 @@ Search for installed packages that depend on \fBpackage/pkg\fR.
 $ \fBpkg search -l depend::package/pkg\fR
 INDEX       ACTION VALUE                                    PACKAGE
 incorporate depend package/pkg@0.5.11-0.175.0.0.0.2.1      pkg:/consolidation/ips/ips-incorporation@0.5.11-0.175.0.0.0.2.1
+require     depend pkg:/package/pkg@0.5.11-0.175.0.0.0.2.1 pkg:/package/pkg/package-manager@0.5.11-0.175.0.0.0.2.1
 require     depend pkg:/package/pkg@0.5.11-0.175.0.0.0.2.1 pkg:/system/library/install@0.5.11-0.175.0.0.0.2.1
+require     depend pkg:/package/pkg@0.5.11-0.175.0.0.0.2.1 pkg:/package/pkg/update-manager@0.5.11-0.175.0.0.0.2.1
 require     depend pkg:/package/pkg@0.5.11-0.175.0.0.0.2.1 pkg:/system/library/boot-management@0.5.11-0.175.0.0.0.2.1
 require     depend package/pkg                             pkg:/system/zones/brand/brand-solaris@0.5.11-0.175.0.0.0.2.1
 require     depend pkg:/package/pkg@0.5.11-0.175.0.0.0.2.1 pkg:/install/distribution-constructor@0.5.11-0.175.0.0.0.2.1
@@ -3502,7 +3556,7 @@ $ \fBpkg set-publisher --set-property signature-policy=require-signatures \e\fR
 \fBExample 21 \fRRequire a Specified String in the Chain of Trust
 .sp
 .LP
-Add the string \fBfoo\fR to the image's list of common names that must be seen in a signature's chain of trust to be considered valid.
+Add the string \fBfoo\fR to the image\&'s list of common names that must be seen in a signature\&'s chain of trust to be considered valid.
 
 .sp
 .in +2
@@ -3743,7 +3797,7 @@ Default value: 5
 .RS 4n
 The number of child images to update in parallel. Ignored if the \fB-C\fR option is specified.
 .sp
-When recursing into child images (usually zones), update at most \fB$PKG_CONCURRENCY\fR child images in parallel. If \fB$PKG_CONCURRENCY\fR is 0 or a negative number, all 	child images are updated in parallel.
+When recursing into child images (usually installed \fBsolaris\fR branded non-global zones), update at most \fB$PKG_CONCURRENCY\fR child images in parallel. If \fB$PKG_CONCURRENCY\fR is 0 or a negative number, all child images are updated in parallel.
 .sp
 Default value: 1
 .RE
@@ -3914,7 +3968,7 @@ Metadata directory for a user image.
 
 .sp
 .LP
-Within a particular image's metadata, certain files and directories can contain information useful during repair and recovery. The token \fB$IMAGE_META\fR refers to the top-level directory containing the metadata. \fB$IMAGE_META\fR is typically one of the two paths given above.
+Within a particular image\&'s metadata, certain files and directories can contain information useful during repair and recovery. The token \fB$IMAGE_META\fR refers to the top-level directory containing the metadata. \fB$IMAGE_META\fR is typically one of the two paths given above.
 .sp
 .ne 2
 .mk

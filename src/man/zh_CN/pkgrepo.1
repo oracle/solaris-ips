@@ -1,6 +1,6 @@
 '\" te
-.\" Copyright (c) 2007, 2012, Oracle and/or its affiliates.All rights reserved.
-.TH pkgrepo 1 "2012 年 6 月 22 日" "SunOS 5.11" "用户命令"
+.\" Copyright (c) 2007, 2014, Oracle and/or its affiliates.All rights reserved.
+.TH pkgrepo 1 "2014 年 3 月 27 日" "SunOS 5.12" "用户命令"
 .SH 名称
 pkgrepo \- 映像包管理系统的系统信息库管理实用程序
 .SH 用法概要
@@ -11,55 +11,85 @@ pkgrepo \- 映像包管理系统的系统信息库管理实用程序
 
 .LP
 .nf
-/usr/bin/pkgrepo add-publisher -s \fIrepo_uri_or_path\fR \fIpublisher\fR ...
+/usr/bin/pkgrepo add-publisher -s \fIrepo_uri_or_path\fR
+    \fIpublisher\fR ...
 .fi
 
 .LP
 .nf
-/usr/bin/pkgrepo get [-F \fIformat\fR] [-H] [-p \fIpublisher\fR ...]
-    -s \fIrepo_uri_or_path\fR [\fIsection/property\fR ...]
+/usr/bin/pkgrepo remove-publisher [-n] [--synchronous]
+    -s \fIrepo_uri_or_path\fR \fIpublisher\fR ...
 .fi
 
 .LP
 .nf
-/usr/bin/pkgrepo info [-F \fIformat\fR] [-H] [-p \fIpublisher\fR ...]
-    -s \fIrepo_uri_or_path\fR
+/usr/bin/pkgrepo get [-F \fIformat\fR] [-H] [-p \fIpublisher\fR]...
+    -s \fIrepo_uri_or_path\fR [--key \fIssl_key\fR --cert \fIssl_cert\fR]...
+    [\fIsection/property\fR ...]
 .fi
 
 .LP
 .nf
-/usr/bin/pkgrepo list [-F \fIformat\fR] [-H] [-p \fIpublisher\fR ...]
-    -s \fIrepo_uri_or_path\fR [\fIpkg_fmri_pattern\fR ...]
+/usr/bin/pkgrepo info [-F \fIformat\fR] [-H] [-p \fIpublisher\fR]...
+    -s \fIrepo_uri_or_path\fR [--key \fIssl_key\fR --cert \fIssl_cert\fR]...
 .fi
 
 .LP
 .nf
-/usr/bin/pkgrepo rebuild [-p \fIpublisher\fR ...]
-    -s \fIrepo_uri_or_path\fR [--no-catalog] [--no-index]
+/usr/bin/pkgrepo list [-F \fIformat\fR] [-H] [-p \fIpublisher\fR]...
+    -s \fIrepo_uri_or_path\fR [--key \fIssl_key\fR --cert \fIssl_cert\fR]...
+    [\fIpkg_fmri_pattern\fR ...]
 .fi
 
 .LP
 .nf
-/usr/bin/pkgrepo refresh [-p \fIpublisher\fR ...]
-    -s \fIrepo_uri_or_path\fR [--no-catalog] [--no-index]
+/usr/bin/pkgrepo contents [-m]
+    [-t \fIaction_name\fR[,\fIaction_name\fR]...]... -s \fIrepo_uri_or_path\fR
+    [--key \fIssl_key\fR --cert \fIssl_cert\fR]... [\fIpkg_fmri_pattern\fR...]
 .fi
 
 .LP
 .nf
-/usr/bin/pkgrepo remove [-n] [-p \fIpublisher\fR ...]
+/usr/bin/pkgrepo rebuild [-p \fIpublisher\fR]...
+    -s \fIrepo_uri_or_path\fR [--key \fIssl_key\fR --cert \fIssl_cert\fR]...
+    [--no-catalog] [--no-index]
+.fi
+
+.LP
+.nf
+/usr/bin/pkgrepo refresh [-p \fIpublisher\fR]...
+    -s \fIrepo_uri_or_path\fR [--key \fIssl_key\fR --cert \fIssl_cert\fR]...
+    [--no-catalog] [--no-index]
+.fi
+
+.LP
+.nf
+/usr/bin/pkgrepo remove [-n] [-p \fIpublisher\fR]...
     -s \fIrepo_uri_or_path\fR \fIpkg_fmri_pattern\fR ...
 .fi
 
 .LP
 .nf
-/usr/bin/pkgrepo set [-p \fIpublisher\fR] -s \fIrepo_uri_or_path\fR
-    \fIsection/property\fR=[\fIvalue\fR]
+/usr/bin/pkgrepo set [-p \fIpublisher\fR]... -s \fIrepo_uri_or_path\fR
+    \fIsection/property\fR=[\fIvalue\fR] ...
 .fi
 
 .LP
 .nf
-/usr/bin/pkgrepo set [-p \fIpublisher\fR] -s \fIrepo_uri_or_path\fR
+/usr/bin/pkgrepo set [-p \fIpublisher\fR]... -s \fIrepo_uri_or_path\fR
     \fIsection/property\fR=([\fIvalue\fR]) ...
+.fi
+
+.LP
+.nf
+/usr/bin/pkgrepo verify [-p \fIpublisher\fR]...
+    -s \fIrepo_uri_or_path\fR
+.fi
+
+.LP
+.nf
+/usr/bin/pkgrepo fix [-v] [-p \fIpublisher\fR]...
+    -s \fIrepo_uri_or_path\fR
 .fi
 
 .LP
@@ -103,7 +133,7 @@ pkgrepo \- 映像包管理系统的系统信息库管理实用程序
 .ne 2
 .mk
 .na
-\fB\fBpkgrepo create\fR [\fB--version\fR \fI ver\fR] \fIuri_or_path\fR\fR
+\fB\fBpkgrepo create\fR [\fB--version\fR \fIver\fR] \fIuri_or_path\fR\fR
 .ad
 .sp .6
 .RS 4n
@@ -149,26 +179,87 @@ pkgrepo \- 映像包管理系统的系统信息库管理实用程序
 .ne 2
 .mk
 .na
-\fB\fBpkgrepo add-publisher\fR \fB-s\fR \fI repo_uri_or_path\fR \fIpublisher\fR ...\fR
+\fB\fBpkgrepo add-publisher\fR \fB-s\fR \fIrepo_uri_or_path\fR \fIpublisher\fR ...\fR
 .ad
 .sp .6
 .RS 4n
 将指定的发布者添加到系统信息库中。新的发布者没有软件包或内容。
 .sp
 该子命令仅可以与基于第 4 版文件系统的系统信息库一起使用。
+.sp
+.ne 2
+.mk
+.na
+\fB\fB-s\fR \fIrepo_uri_or_path\fR\fR
+.ad
+.sp .6
+.RS 4n
+对位于给定 URI 或文件系统路径的系统信息库进行操作。
+.RE
+
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fB\fBpkgrepo get\fR [\fB-F\fR \fI format\fR] [\fB-H\fR] [\fB-p\fR \fIpublisher \fR ...] \fB-s\fR \fIrepo_uri_or_path\fR [\fI section/property\fR ...]\fR
+\fB\fBpkgrepo remove-publisher\fR [\fB-n\fR] [\fB--synchronous\fR] \fB-s\fR \fIrepo_uri_or_path\fR \fIpublisher\fR ...\fR
+.ad
+.sp .6
+.RS 4n
+从系统信息库中删除指定的发布者。删除指定发布者的所有软件包和其他所有数据。
+.sp
+如果删除了缺省发布者，并且系统信息库中只剩余了一个发布者，则剩余的发布者将成为缺省发布者。系统信息库的 \fBpublisher/prefix\fR 属性将设置为该剩余发布者。
+.sp
+如果删除了缺省发布者，但系统信息库中剩余多个发布者，或者从系统信息库中删除了最后一个发布者，则将取消设置 \fBpublisher/prefix\fR 属性。
+.sp
+该子命令仅可以与基于第 4 版文件系统的系统信息库一起使用。
+.sp
+.ne 2
+.mk
+.na
+\fB\fB-n\fR\fR
+.ad
+.sp .6
+.RS 4n
+试运行操作而不更改发布者。在退出之前，会显示要删除的每个发布者的软件包个数。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB-s\fR \fIrepo_uri_or_path\fR\fR
+.ad
+.sp .6
+.RS 4n
+对位于给定 URI 或文件系统路径的系统信息库进行操作。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB--synchronous\fR\fR
+.ad
+.sp .6
+.RS 4n
+等待操作完成，然后返回。如果未指定此选项，命令将立即返回并在后台异步删除发布者。
+.RE
+
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fBpkgrepo get\fR [\fB-F\fR \fIformat\fR] [\fB-H\fR] [\fB-p\fR \fIpublisher\fR]... \fB-s\fR \fIrepo_uri_or_path\fR [\fB--key\fR \fIssl_key\fR \fB--cert\fR \fIssl_cert\fR]... [\fIsection/property\fR ...]\fR
 .ad
 .sp .6
 .RS 4n
 显示系统信息库或其发布者的属性信息。
 .sp
-缺省情况下，会在单独的行中显示每个属性及其值。空的 ASCII 字符串值用一对双引号 (\fB""\fR) 表示。ASCII 字符串值中的以下 Bourne shell 元字符以及换行符、空格符和制表符都必须使用反斜杠 (\fB\e\fR) 进行转义：
+缺省情况下，会在单独的行中显示每个属性及其值。空的 ASCII 字符串值用一对双引号 (\fB""\fR) 表示。ASCII 字符串值中的以下 Bourne shell 元字符以及换行符、空格符和制表符都必须使用反斜杠 (\fB\\fR) 进行转义：
 .sp
 .in +2
 .nf
@@ -227,6 +318,17 @@ pkgrepo \- 映像包管理系统的系统信息库管理实用程序
 .ne 2
 .mk
 .na
+\fB\fB--key\fR \fIssl_key\fR \fB--cert\fR \fIssl_cert\fR\fR
+.ad
+.sp .6
+.RS 4n
+使用 \fB--key\fR 选项指定用于从 HTTPS 系统信息库进行软件包检索的客户机 SSL 密钥文件。使用 \fB--cert\fR 选项指定用于从 HTTPS 系统信息库进行软件包检索的客户机 SSL 证书文件。可以多次指定此选项对。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
 \fB\fIsection/property\fR\fR
 .ad
 .sp .6
@@ -240,33 +342,11 @@ pkgrepo \- 映像包管理系统的系统信息库管理实用程序
 .ne 2
 .mk
 .na
-\fB\fBpkgrepo info\fR [\fB-F\fR \fI format\fR] [\fB-H\fR] [\fB-p\fR \fIpublisher \fR ...] \fB-s\fR \fIrepo_uri_or_path\fR\fR
+\fB\fBpkgrepo info\fR [\fB-F\fR \fIformat\fR] [\fB-H\fR] [\fB-p\fR \fIpublisher\fR]... \fB-s\fR \fIrepo_uri_or_path\fR [\fB--key\fR \fIssl_key\fR \fB--cert\fR \fIssl_cert\fR]...\fR
 .ad
 .sp .6
 .RS 4n
 显示系统信息库已知的软件包发布者的列表。该列表包括每个发布者的软件包数量、最后一次更新发布者的软件包数据的时间以及发布者的软件包数据的状态（例如当前是否处于正在处理状态）。
-.sp
-.ne 2
-.mk
-.na
-\fB\fB-F\fR \fIformat\fR\fR
-.ad
-.sp .6
-.RS 4n
-指定备用输出格式。\fIformat\fR 的值可以是 \fBtsv\fR（以制表符分隔的值）、\fBjson\fR（单行 JavaScript 对象表示法）或 \fBjson-formatted\fR（格式易于阅读的 JavaScript 对象表示法）。
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fB\fB-H\fR\fR
-.ad
-.sp .6
-.RS 4n
-在列出时省略标题。
-.RE
-
 .sp
 .ne 2
 .mk
@@ -278,52 +358,20 @@ pkgrepo \- 映像包管理系统的系统信息库管理实用程序
 仅显示给定发布者的数据。如果没有提供该选项，将显示所有发布者的数据。可以多次指定此选项。
 .RE
 
-.sp
-.ne 2
-.mk
-.na
-\fB\fB-s\fR \fIrepo_uri_or_path\fR\fR
-.ad
-.sp .6
-.RS 4n
-对位于给定 URI 或文件系统路径的系统信息库进行操作。
-.RE
-
+有关其他所有选项的描述，请参见上面的 \fBpkgrepo get\fR 命令。
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fB\fBpkgrepo list\fR [\fB-F\fR \fI format\fR] [\fB-H\fR] [\fB-p\fR \fIpublisher \fR ...] \fB-s\fR \fIrepo_uri_or_path\fR [\fI pkg_fmri_pattern\fR ...]\fR
+\fB\fBpkgrepo list\fR [\fB-F\fR \fIformat\fR] [\fB-H\fR] [\fB-p\fR \fIpublisher\fR]... \fB-s\fR \fIrepo_uri_or_path\fR [\fB--key\fR \fIssl_key\fR \fB--cert\fR \fIssl_cert\fR]... [\fIpkg_fmri_pattern\fR ...]\fR
 .ad
 .sp .6
 .RS 4n
-列出 \fIrepo_uri_or_path\fR 系统信息库中与指定 \fIpkg_fmri_pattern\fR 模式匹配的软件包。如果未指定任何模式，将列出系统信息库中的所有软件包。
+列出 \fIrepo_uri_or_path\fR 系统信息库中与指定 \fIpkg_fmri_pattern\fR 模式匹配的软件包。如果未指定任何模式，将列出系统信息库中的所有软件包。\fIpkg_fmri_pattern\fR 模式可以包含 \fB?\fR 和 \fB*\fR 字符作为 \fBglob\fR(3C) 式通配符，以匹配一个或多个软件包。
 .sp
 在缺省输出中，第一列包含软件包发布者的名称。第二列包含软件包的名称。第三列是显示软件包状态的标志。状态列中的 \fBo\fR 值表示软件包已过时。状态列中的 \fBr\fR 值表示已重命名软件包，但格式已过时。第四列包含软件包的发行版本和分支版本。有关发行版本和分支版本的信息，请参见 \fBpkg\fR(5)。
-.sp
-.ne 2
-.mk
-.na
-\fB\fB-F\fR \fIformat\fR\fR
-.ad
-.sp .6
-.RS 4n
-指定备用输出格式。\fIformat\fR 的值可以是 \fBtsv\fR（以制表符分隔的值）、\fBjson\fR（单行 JavaScript 对象表示法）或 \fBjson-formatted\fR（格式易于阅读的 JavaScript 对象表示法）。
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fB\fB-H\fR\fR
-.ad
-.sp .6
-.RS 4n
-在列出时省略标题。
-.RE
-
 .sp
 .ne 2
 .mk
@@ -332,27 +380,51 @@ pkgrepo \- 映像包管理系统的系统信息库管理实用程序
 .ad
 .sp .6
 .RS 4n
-仅显示给定发布者的软件包。如果没有提供该选项，将显示所有发布者的软件包。可以多次指定此选项。
+仅显示给定发布者的软件包。如果没有提供该选项，将列出所有发布者的软件包。可以多次指定此选项。
+.RE
+
+有关其他所有选项的描述，请参见上面的 \fBpkgrepo get\fR 命令。
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fB\fB-s\fR \fIrepo_uri_or_path\fR\fR
+\fB\fBpkgrepo contents\fR [\fB-m\fR [\fB-t\fR \fIaction_name\fR[,\fIaction_name\fR]...]... \fB-s\fR \fIrepo_uri_or_path\fR [\fB--key\fR \fIssl_key\fR \fB--cert\fR \fIssl_cert\fR]... [\fIpkg_fmri_pattern\fR...]\fR
 .ad
 .sp .6
 .RS 4n
-对位于给定 URI 或文件系统路径的系统信息库进行操作。
-.RE
-
+列出 \fIrepo_uri_or_path\fR 系统信息库中的所有软件包。如果指定了 \fIpkg_fmri_pattern\fR，将显示系统信息库中所有匹配软件包的内容（操作属性）。
+.sp
+.ne 2
+.mk
+.na
+\fB\fB-m\fR\fR
+.ad
+.sp .6
+.RS 4n
+显示指定软件包中操作的所有属性。
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fB\fBpkgrepo rebuild\fR [\fB-p\fR \fI publisher\fR ...] \fB-s\fR \fIrepo_uri_or_path\fR [\fB- -no-catalog\fR] [\fB--no-index\fR]\fR
+\fB\fB-t\fR \fIaction_name\fR\fR
+.ad
+.sp .6
+.RS 4n
+仅显示指定软件包中的指定操作。可以多次指定 \fB-t\fR 选项；也可以通过使用逗号分隔操作名称，将多个操作指定为一个 \fB-t\fR 选项的参数。\fIaction_name\fR 的值是 \fBpkg\fR(5) 手册页的“操作”中列出的操作之一，例如 \fBfile\fR、\fBdir\fR、\fBdriver\fR、\fBdepend\fR 或 \fBset\fR。
+.RE
+
+有关其他所有选项的描述，请参见上面的 \fBpkgrepo get\fR 命令。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fBpkgrepo rebuild\fR [\fB-p\fR \fIpublisher\fR]... \fB-s\fR \fIrepo_uri_or_path\fR [\fB--key\fR \fIssl_key\fR \fB--cert\fR \fIssl_cert\fR]... [\fB--no-catalog\fR] [\fB--no-index\fR]\fR
 .ad
 .sp .6
 .RS 4n
@@ -366,17 +438,6 @@ pkgrepo \- 映像包管理系统的系统信息库管理实用程序
 .sp .6
 .RS 4n
 仅针对给定发布者执行操作。如果没有提供该选项或者指定了特定值 \fBall\fR，则对所有发布者执行操作。可以多次指定此选项。
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fB\fB-s\fR \fIrepo_uri_or_path\fR\fR
-.ad
-.sp .6
-.RS 4n
-对位于给定 URI 或文件系统路径的系统信息库进行操作。
 .RE
 
 .sp
@@ -401,13 +462,14 @@ pkgrepo \- 映像包管理系统的系统信息库管理实用程序
 不重新生成搜索索引。
 .RE
 
+有关其他所有选项的描述，请参见上面的 \fBpkgrepo get\fR 命令。
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fB\fBpkgrepo refresh\fR [\fB-p\fR \fI publisher\fR ...] \fB-s\fR \fIrepo_uri_or_path\fR [\fB- -no-catalog\fR] [\fB--no-index\fR]\fR
+\fB\fBpkgrepo refresh\fR [\fB-p\fR \fIpublisher\fR]... \fB-s\fR \fIrepo_uri_or_path\fR [\fB--key\fR \fIssl_key\fR \fB--cert\fR \fIssl_cert\fR]... [\fB--no-catalog\fR] [\fB--no-index\fR] \fR
 .ad
 .sp .6
 .RS 4n
@@ -421,17 +483,6 @@ pkgrepo \- 映像包管理系统的系统信息库管理实用程序
 .sp .6
 .RS 4n
 仅针对给定发布者执行操作。如果没有提供该选项或者指定了特定值 \fBall\fR，则对所有发布者执行操作。可以多次指定此选项。
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fB\fB-s\fR \fIrepo_uri_or_path\fR\fR
-.ad
-.sp .6
-.RS 4n
-对位于给定 URI 或文件系统路径的系统信息库进行操作。
 .RE
 
 .sp
@@ -456,17 +507,18 @@ pkgrepo \- 映像包管理系统的系统信息库管理实用程序
 不更新搜索索引。
 .RE
 
+有关其他所有选项的描述，请参见上面的 \fBpkgrepo get\fR 命令。
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fB\fBpkgrepo remove\fR [\fB-n\fR] [\fB-p\fR \fIpublisher\fR ...] \fB-s\fR \fI repo_uri_or_path\fR \fIpkg_fmri_pattern\fR ...\fR
+\fB\fBpkgrepo remove\fR [\fB-n\fR] [\fB-p\fR \fIpublisher\fR]... \fB-s\fR \fIrepo_uri_or_path\fR \fIpkg_fmri_pattern\fR ...\fR
 .ad
 .sp .6
 .RS 4n
-从系统信息库中删除与指定模式匹配的软件包，其中包括这些软件包引用的且其他任何软件包没有使用的所有文件。
+从系统信息库中删除与指定的 \fIpkg_fmri_pattern\fR 模式匹配的软件包，其中包括这些软件包所引用的且未被其他任何软件包使用的所有文件。\fIpkg_fmri_pattern\fR 模式可以包含 \fB?\fR 和 \fB*\fR 字符作为 \fBglob\fR(3C) 式通配符，以匹配一个或多个软件包。
 .LP
 注 - 
 .sp
@@ -519,11 +571,11 @@ pkgrepo \- 映像包管理系统的系统信息库管理实用程序
 .ne 2
 .mk
 .na
-\fB\fBpkgrepo set\fR [\fB-p\fR \fI publisher\fR] \fB-s\fR \fIrepo_uri_or_path\fR \fI section/property\fR=[\fIvalue\fR] ...\fR
+\fB\fBpkgrepo set\fR [\fB-p\fR \fIpublisher\fR]... \fB-s\fR \fIrepo_uri_or_path\fR \fIsection/property\fR=[\fIvalue\fR] ...\fR
 .ad
 .br
 .na
-\fB\fBset\fR [\fB-p\fR \fIpublisher\fR] \fB- s\fR \fIrepo_uri_or_path\fR \fIsection/property \fR=([\fIvalue\fR]) ...\fR
+\fB\fBpkgrepo set\fR [\fB-p\fR \fIpublisher\fR]... \fB-s\fR \fIrepo_uri_or_path\fR \fIsection/property\fR=([\fIvalue\fR]) ...\fR
 .ad
 .sp .6
 .RS 4n
@@ -557,7 +609,7 @@ pkgrepo \- 映像包管理系统的系统信息库管理实用程序
 .ne 2
 .mk
 .na
-\fB\fIsection\fR/\fIproperty\fR= \fR
+\fB\fIsection\fR/\fIproperty\fR=\fR
 .ad
 .sp .6
 .RS 4n
@@ -568,7 +620,7 @@ pkgrepo \- 映像包管理系统的系统信息库管理实用程序
 .ne 2
 .mk
 .na
-\fB\fIsection\fR/\fIproperty\fR=\fI value\fR\fR
+\fB\fIsection\fR/\fIproperty\fR=\fIvalue\fR\fR
 .ad
 .sp .6
 .RS 4n
@@ -579,7 +631,7 @@ pkgrepo \- 映像包管理系统的系统信息库管理实用程序
 .ne 2
 .mk
 .na
-\fB\fIsection\fR/\fIproperty\fR=(\fI value1\fR \fIvalue2\fR \fIvalueN\fR) \fR
+\fB\fIsection\fR/\fIproperty\fR=(\fIvalue1\fR \fIvalue2\fR \fIvalueN\fR)\fR
 .ad
 .sp .6
 .RS 4n
@@ -593,12 +645,12 @@ pkgrepo \- 映像包管理系统的系统信息库管理实用程序
 .na
 \fB\fBpublisher/prefix\fR\fR
 .ad
-.RS 20n
-.rt  
+.sp .6
+.RS 4n
 代表缺省发布者名称的字符串。第一个字符必须是 a-z、A-Z 或 0-9。该字符串的剩余部分只能包含字符 0-9、-、.、a-z 以及 A-Z。该值指示存在多个发布者的软件包时或者将软件包发布到系统信息库但没有指定发布者时，应当使用的发布者。
 .RE
 
-对于系统信息库第 3 和 4 版，可以为系统信息库中的各发布者设置以下属性：
+对于系统信息库第 3 版和第 4 版，可以为系统信息库中的各发布者设置以下属性。设置这些属性时应使用 \fB-p\fR 选项至少指定一个发布者。
 .sp
 .ne 2
 .mk
@@ -614,13 +666,24 @@ pkgrepo \- 映像包管理系统的系统信息库管理实用程序
 .ne 2
 .mk
 .na
+\fB\fBrepository/check-certificate-revocation\fR\fR
+.ad
+.sp .6
+.RS 4n
+用于检查证书是否已撤销的布尔值。如果此属性设置为 \fBTrue\fR，则 \fBpkgrepo verify\fR 和 \fBpkgrepo fix\fR 命令将尝试访问用于签名验证的证书中的任何 CRL 分发点，以确定证书自颁发以来是否已被撤销。缺省值为 \fBFalse\fR。此属性仅由 \fBverify\fR 和 \fBfix\fR 子命令用来验证系统信息库的内容。此属性不影响客户机设置。此值应该与相应的 \fBpkg\fR(1) 属性值相同。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
 \fB\fBrepository/collection_type\fR\fR
 .ad
 .sp .6
 .RS 4n
-可以使用值 \fBcore\fR 或 \fBsupplemental \fR，以表明此系统信息库中提供的软件包类型。
+可以使用值 \fBcore\fR 或 \fBsupplemental\fR，表明此系统信息库中提供的软件包类型。
 .sp
-\fBcore\fR 类型表明系统信息库包含该库中的软件包所声明的所有依赖项。\fBcore \fR 类型主要用于操作系统的系统信息库。
+\fBcore\fR 类型表明系统信息库包含该库中的软件包所声明的所有依赖项。\fBcore\fR 类型主要用于操作系统的系统信息库。
 .sp
 \fBsupplemental\fR 类型表明系统信息库包含依赖于另一个系统信息库中的软件包或要与另一个系统信息库中软件包一起使用的软件包。
 .RE
@@ -724,7 +787,147 @@ URI，代表提供更多有关系统信息库信息的文档的位置（例如�
 系统信息库的位置列表 (URI)，这些系统信息库包含用户可能感兴趣的软件包。
 .RE
 
-此处没有记录但列在 \fBget \fR 子命令输出中的属性保留供内部使用，不得对其进行设置。
+.sp
+.ne 2
+.mk
+.na
+\fB\fBrepository/signature-required-names\fR\fR
+.ad
+.sp .6
+.RS 4n
+在验证软件包签名时必须视为证书通用名称的名称列表。此属性仅由 \fBverify\fR 和 \fBfix\fR 子命令用来验证系统信息库的内容。此属性不影响客户机设置。这些值应该与相应的 \fBpkg\fR(1) 属性值相同。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fBrepository/trust-anchor-directory\fR\fR
+.ad
+.sp .6
+.RS 4n
+目录的绝对路径名称，包含此系统信息库中的软件包的信任锚。如果未指定，将使用 \fB/etc/certs/CA/\fR。此属性仅由 \fBverify\fR 和 \fBfix\fR 子命令用来验证系统信息库的内容。此属性不影响客户机设置。此值应该与相应的 \fBpkg\fR(1) 属性值相同。
+.RE
+
+此处没有记录但列在 \fBget\fR 子命令输出中的属性均保留供内部使用，不应对其进行设置。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fBpkgrepo verify\fR [\fB-p\fR \fIpublisher\fR]... \fB-s\fR \fIrepo_uri_or_path\fR\fR
+.ad
+.sp .6
+.RS 4n
+验证软件包系统信息库内容的以下属性是否正确：
+.RS +4
+.TP
+.ie t \(bu
+.el o
+文件校验和
+.RE
+.RS +4
+.TP
+.ie t \(bu
+.el o
+文件权限
+.sp
+还将检查指向系统信息库的路径，确保 \fBpkg5srv\fR 用户可以读取系统信息库内容。对于在系统具有非全局区域时使用 \fBsvc:/application/pkg/server\fR 服务或使用 \fBsvc:/application/pkg/system-repository\fR 服务变为可用的系统信息库，需要进行此检查。
+.RE
+.RS +4
+.TP
+.ie t \(bu
+.el o
+软件包清单权限
+.RE
+.RS +4
+.TP
+.ie t \(bu
+.el o
+软件包清单内容
+.RE
+.RS +4
+.TP
+.ie t \(bu
+.el o
+软件包签名
+.sp
+基于 \fBrepository/signature-required-names\fR、\fBrepository/trust-anchor-directory\fR 和 \fBrepository/check-certificate-revocation\fR 属性的值计算软件包清单签名。
+.RE
+相应错误将发送到 \fBstdout\fR。如果发送任何错误，则 \fBpkgrepo\fR 命令将退出并显示非零返回代码。
+.sp
+该子命令仅可以与基于第 4 版文件系统的系统信息库一起使用。
+.sp
+.ne 2
+.mk
+.na
+\fB\fB-p\fR \fIpublisher\fR\fR
+.ad
+.sp .6
+.RS 4n
+仅针对指定发布者执行操作。如果没有指定发布者或者指定了特定值 \fBall\fR，则对所有发布者执行操作。可以多次指定此选项。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB-s\fR \fIrepo_uri_or_path\fR\fR
+.ad
+.sp .6
+.RS 4n
+对位于给定 URI 或文件系统路径的系统信息库进行操作。
+.RE
+
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fBpkgrepo fix\fR [\fB-v\fR] [\fB-p\fR \fIpublisher\fR]... \fB-s\fR \fIrepo_uri_or_path\fR\fR
+.ad
+.sp .6
+.RS 4n
+通过以下方法修复系统信息库的内容：首先验证系统信息库，然后将所有无效系统信息库内容移至系统信息库内的隔离目录。
+.sp
+如果发现系统信息库错误，将自动执行系统信息库重新生成操作。如果发现任何错误，将向 \fBstdout\fR 发送消息，说明必须使用 \fBpkgsend\fR(1) 或 \fBpkgrecv\fR(1) 重新导入哪些软件包以便恢复系统信息库内容。
+.sp
+该子命令仅可以与基于第 4 版文件系统的系统信息库一起使用。
+.sp
+.ne 2
+.mk
+.na
+\fB\fB-v\fR\fR
+.ad
+.sp .6
+.RS 4n
+包括详细说明系统信息库验证过程中发现的错误的输出。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB-p\fR \fIpublisher\fR\fR
+.ad
+.sp .6
+.RS 4n
+仅针对指定发布者执行操作。如果没有指定发布者或者指定了特定值 \fBall\fR，则对所有发布者执行操作。可以多次指定此选项。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB-s\fR \fIrepo_uri_or_path\fR\fR
+.ad
+.sp .6
+.RS 4n
+对位于给定 URI 或文件系统路径的系统信息库进行操作。
+.RE
+
 .RE
 
 .sp
@@ -746,7 +949,7 @@ URI，代表提供更多有关系统信息库信息的文档的位置（例如�
 .ad
 .sp .6
 .RS 4n
-显示一个用于唯一标识 \fB pkg\fR(5) 系统版本的字符串。由 \fBversion\fR 操作生成的值不能进行排序，并且对于在不平等情况下的比较而言是不安全的。
+显示一个用于唯一标识 \fBpkg\fR(5) 系统版本的字符串。由 \fBversion\fR 操作生成的值不能进行排序，并且对于在不平等情况下的比较而言是不安全的。
 .RE
 
 .SH 示例
@@ -978,4 +1181,11 @@ _
 \fBpkg\fR(1)、\fBpkgrecv\fR(1)、\fBpkgsend\fR(1)、\fBpkg.depotd\fR(1M)、\fBpkg\fR(5)
 .sp
 .LP
-\fBhttp://hub.opensolaris.org/bin/view/Project+pkg/\fR
+\fI《Copying and Creating Package Repositories in Oracle Solaris 11.2》\fR
+.sp
+.LP
+\fBhttps://java.net/projects/ips/pages/Home\fR
+.SH 附注
+.sp
+.LP
+大多数 \fBpkgrepo\fR 操作不可用于软件包归档文件。软件包归档文件是一个文件，通常带有 \fB\&.p5p\fR 扩展名，如 \fBpkgrecv\fR(1) 手册页中的 \fB-a\fR 选项所述。软件包归档文件包含软件包但不包含系统信息库配置。但是，\fBpkgrepo list\fR、\fBpkgrepo info\fR 和 \fBpkgrepo contents\fR 命令适用于软件包归档文件。

@@ -1,28 +1,53 @@
 '\" te
-.\" Copyright (c) 2007, 2012, Oracle and/or its affiliates. All rights reserved.
-.TH pkgrecv 1 "2012 年 6 月 11 日" "SunOS 5.11" "ユーザーコマンド"
+.\" Copyright (c) 2007, 2013, Oracle and/or its affiliates.All rights reserved.
+.TH pkgrecv 1 "2013 年 11 月 21 日" "SunOS 5.12" "ユーザーコマンド"
 .SH 名前
 pkgrecv \- Image Packaging System 内容取得ユーティリティー
 .SH 形式
 .LP
 .nf
-/usr/bin/pkgrecv [-s \fIsrc_uri\fR] [-a] [-d (\fIpath\fR|\fIdest_uri\fR)]
-    [-c \fIcache_dir\fR] [-kr] [-m \fImatch\fR] [-n] [--raw]
-    [--key \fIkeyfile\fR --cert \fIcertfile\fR] (\fIfmri\fR|\fIpattern\fR) ...
+/usr/bin/pkgrecv [-aknrv] [-s (\fIsrc_path\fR|\fIsrc_uri\fR)]
+    [-d (\fIdest_path\fR|\fIdest_uri\fR)] [-c \fIcache_dir\fR]
+    [-m \fImatch\fR] [--raw]
+    [--key \fIsrc_key\fR --cert \fIsrc_cert\fR]
+    [--dkey \fIdest_key\fR --dcert \fIdest_cert\fR]
+    (\fIfmri\fR|\fIpattern\fR) ...
 .fi
 
 .LP
 .nf
-/usr/bin/pkgrecv [-s \fIsrc_uri\fR] --newest
+/usr/bin/pkgrecv [-s (\fIsrc_path\fR|\fIsrc_uri\fR)] --newest
+.fi
+
+.LP
+.nf
+/usr/bin/pkgrecv [-nv] [-s (\fIsrc_path\fR|\fIsrc_uri\fR)]
+    [-d (\fIdest_path\fR|\fIdest_uri\fR)] [-p \fIpublisher\fR]...
+    [--key \fIsrc_key\fR --cert \fIsrc_cert\fR] --clone
 .fi
 
 .SH 機能説明
 .sp
 .LP
-\fBpkgrecv\fR を使用すると、ユーザーは \fBpkg\fR(5) リポジトリまたはパッケージアーカイブからパッケージを取得できます。また、\fBpkgrecv\fR はオプションで、取得されたパッケージを別のパッケージリポジトリに再公開したり、アーカイブしたりすることもできます。デフォルトでは、パッケージは \fBpkg\fR、\fBpkg.depotd\fR、およびパッケージ公開ツールでの使用に適したパッケージリポジトリ形式で取得されます。
+\fBpkgrecv\fR は、\fBpkg\fR(5) リポジトリまたは \fB-s\fR オプションで指定されたパッケージアーカイブから一致する各 \fIfmri\fR または \fIpattern\fR のすべてのバージョンを取得し、取得したパッケージを、\fB-d\fR オプションで指定されたパッケージリポジトリまたはパッケージアーカイブにオプションで再発行します。デフォルトでは、パッケージは \fBpkg\fR、\fBpkg.depotd\fR、およびパッケージ公開ツールでの使用に適したパッケージリポジトリ形式で取得されます。
 .sp
 .LP
-\fBpkgrecv\fR 操作後に、リポジトリに対して \fBpkgrepo refresh\fR または \fBpkgrepo rebuild\fR を実行し、検索インデックスを構築します。
+変更のないパッケージは再発行されません。したがって、既存のリポジトリを更新する時間は、新規および変更されたパッケージの数によって異なります。
+.sp
+.LP
+\fB-m\fR オプションを使用して、一致する各パッケージのすべてのバージョンを取得するか、一致する各パッケージの最新バージョンのみを取得するかを指定します。
+.sp
+.LP
+取得対象に \fB\&'*'\fR を指定しない場合、指定されたパッケージのすべての依存関係を取得するようにするために、\fB-r\fR オプションを指定したい場合があります。
+.LP
+注 - 
+.sp
+.RS 2
+同じ公開先リポジトリまたはアーカイブにパッケージを再発行するために、\fBpkgrecv\fR の複数インスタンスを同時に使用しないでください。この場合、新しく受け取ったパッケージに、重複するアクションが含まれる可能性があります。
+.RE
+.sp
+.LP
+\fIdest_uri\fR に対してパッケージを取得する \fBpkgrecv\fR 操作後に、\fIdest_uri\fR リポジトリが \fBpkg search\fR 操作をサポートする必要がある場合は、そのリポジトリ上で \fBpkgrepo refresh\fR を実行して、検索インデックスを更新してください。
 .SH オプション
 .sp
 .LP
@@ -46,7 +71,7 @@ pkgrecv \- Image Packaging System 内容取得ユーティリティー
 .ad
 .sp .6
 .RS 4n
-取得されたパッケージデータを、\fB-d\fR で指定された場所にある \fBpkg\fR(5) アーカイブ内に格納します。このファイルがすでに存在していてはいけません。このオプションは、ファイルシステムベースの出力先の場合にのみ使用できます。必須ではありませんが、\fB\&.p5p\fR のファイル拡張子 (たとえば、\fBarchive.p5p\fR) を使用することを強くお勧めします。このオプションを \fB--raw\fR と組み合わせることはできません。
+取得されたパッケージデータを、\fB-d\fR オプションで指定された場所にある \fBpkg\fR(5) アーカイブ内に格納します。\fB-d\fR で指定されたファイルが存在していてはいけません。\fB-a\fR オプションは、ファイルシステムベースの出力先の場合にのみ使用できます。必須ではありませんが、\fB\&.p5p\fR のファイル拡張子 (たとえば、\fBarchive.p5p\fR) を使用することを強くお勧めします。\fB-a\fR オプションを \fB--raw\fR オプションと一緒に組み合わせることはできません。
 .RE
 
 .sp
@@ -64,11 +89,11 @@ pkgrecv \- Image Packaging System 内容取得ユーティリティー
 .ne 2
 .mk
 .na
-\fB\fB-d\fR (\fIpath\fR|\fI dest_uri\fR)\fR
+\fB\fB-d\fR (\fIdest_path\fR|\fIdest_uri\fR)\fR
 .ad
 .sp .6
 .RS 4n
-パッケージを再公開する先のターゲットのファイルシステムのパスまたは URI を指定します。\fB-a\fR が指定されている場合、ターゲットはまだ存在しない新しいパッケージアーカイブです。指定されていない場合、ターゲットはすでに存在するパッケージリポジトリである必要があります。新しいリポジトリは、\fBpkgrepo\fR を使用して作成できます。
+取得したパッケージを再発行する必要があるファイルシステムのパスまたは URI を指定します。\fB-a\fR を指定する場合、この宛先は、まだ存在しないパッケージアーカイブである必要があります。\fB-a\fR を指定しない場合、この宛先は、すでに存在するパッケージリポジトリである必要があります。\fBpkgrepo\fR コマンドを使用して、新規パッケージリポジトリを作成します。\fB-d\fR が指定されていない場合は、\fBPKG_DEST\fR の値が使用されます。以下の「環境変数」を参照してください。
 .RE
 
 .sp
@@ -90,7 +115,17 @@ pkgrecv \- Image Packaging System 内容取得ユーティリティー
 .ad
 .sp .6
 .RS 4n
-次の値を使用して、マッチング動作を制御します:
+\fIpattern\fR が指定された場合、または \fIfmri\fR が完全に指定されていない場合に、取得するパッケージのバージョンを制御します。これを説明するため、\fB-s\fR オプションで指定されたソース内に例として次の 4 つのパッケージが存在するとします。これらの FMRI で、\fB@\fR と \fB:\fR の間にある文字は番号付きのパッケージバージョンを表し、\fB:\fR から末尾までの文字はバージョン文字列のタイムスタンプ部分を表します。
+.sp
+.in +2
+.nf
+pkg://solaris/package/pkg@0.5.11,5.11-0.175.1.0.0.24.0:20120904T180335Z
+pkg://solaris/package/pkg@0.5.11,5.11-0.175.1.0.0.24.0:20120903T170234Z
+pkg://solaris/package/pkg@0.5.11,5.11-0.175.1.0.0.23.0:20120820T165108Z
+pkg://solaris/package/pkg@0.5.11,5.11-0.175.1.0.0.23.0:20120819T155007Z
+.fi
+.in -2
+
 .sp
 .ne 2
 .mk
@@ -99,7 +134,7 @@ pkgrecv \- Image Packaging System 内容取得ユーティリティー
 .ad
 .sp .6
 .RS 4n
-最新のタイムスタンプだけでなく、一致するすべてのタイムスタンプを含めます (\fBall-versions\fR が暗黙的に指定されます)。
+一致する各 \fIfmri\fR または \fIpattern\fR のすべてのバージョンを取得します (\fBall-versions\fR を暗黙的に意味します)。これは、\fB-m\fR オプションが指定されなかった場合のデフォルト動作です。前述の例では、4 つのパッケージがすべて取得されます。
 .RE
 
 .sp
@@ -110,7 +145,33 @@ pkgrecv \- Image Packaging System 内容取得ユーティリティー
 .ad
 .sp .6
 .RS 4n
-最新のバージョンだけでなく、一致するすべてのバージョンを含めます。
+一致する各 \fIfmri\fR または \fIpattern\fR の各バージョンの最新のタイムスタンプを取得します。前述の例では、次の 2 つのパッケージが取得されます。
+.sp
+.in +2
+.nf
+pkg://solaris/package/pkg@0.5.11,5.11-0.175.1.0.0.24.0:20120904T180335Z
+pkg://solaris/package/pkg@0.5.11,5.11-0.175.1.0.0.23.0:20120820T165108Z
+.fi
+.in -2
+
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fBlatest\fR\fR
+.ad
+.sp .6
+.RS 4n
+一致する各 \fIfmri\fR または \fIpattern\fR の最新バージョンのみを取得します。前述の例では、次のパッケージのみが取得されます。
+.sp
+.in +2
+.nf
+pkg://solaris/package/pkg@0.5.11,5.11-0.175.1.0.0.24.0:20120904T180335Z
+.fi
+.in -2
+
 .RE
 
 .RE
@@ -130,44 +191,99 @@ pkgrecv \- Image Packaging System 内容取得ユーティリティー
 .ne 2
 .mk
 .na
+\fB\fB-p\fR \fIpublisher\fR\fR
+.ad
+.sp .6
+.RS 4n
+指定されたパブリッシャーのみをクローニングします。このオプションは複数回指定できます。\fB-p\fR オプションは、\fB--clone\fR オプションと組み合わせた場合にのみ有効です。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
 \fB\fB-r\fR\fR
 .ad
 .sp .6
 .RS 4n
-提供されたパッケージリストのすべての依存関係を再帰的に取得します。
+一致する \fIfmri\fR または \fIpattern\fR ごとのすべての依存関係を再帰的に取得します。
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fB\fB-s\fR \fIsrc_uri\fR\fR
+\fB\fB-s\fR (\fIsrc_path\fR|\fIsrc_uri\fR)\fR
 .ad
 .sp .6
 .RS 4n
-パッケージデータ受信先の \fBpkg\fR(5) リポジトリまたはパッケージアーカイブの場所を表す URI を指定します。
+パッケージデータ受信先の \fBpkg\fR(5) リポジトリまたはパッケージアーカイブのファイルシステムのパスまたは URI を指定します。\fB-s\fR が指定されていない場合は、\fBPKG_SRC\fR の値が使用されます。以下の「環境変数」を参照してください。
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fB\fB--cert\fR \fIcertfile\fR\fR
+\fB\fB-v\fR\fR
 .ad
 .sp .6
 .RS 4n
-HTTPS リポジトリからのパッケージ取得に使用するクライアント SSL 証明書ファイルを指定します。
+詳細出力を表示します。これには、取得したパッケージ数とそれらの完全な FMRI、取得したファイル数、および推定転送サイズが含まれます。
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fB\fB--key\fR \fIkeyfile\fR\fR
+\fB\fB--key\fR \fIsrc_key\fR\fR
 .ad
 .sp .6
 .RS 4n
-HTTPS リポジトリからのパッケージ取得に使用するクライアント SSL キーファイルを指定します。
+ソース HTTPS リポジトリからパッケージを取得するために使用するクライアント SSL キーファイルを指定します。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB--cert\fR \fIsrc_cert\fR\fR
+.ad
+.sp .6
+.RS 4n
+ソース HTTPS リポジトリからパッケージを取得するために使用するクライアント SSL 証明書ファイルを指定します。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB--dkey\fR \fIdest_key\fR\fR
+.ad
+.sp .6
+.RS 4n
+公開先の HTTPS リポジトリにパッケージを公開するために使用するクライアント SSL キーファイルを指定します。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB--dcert\fR \fIdest_cert\fR\fR
+.ad
+.sp .6
+.RS 4n
+公開先の HTTPS リポジトリにパッケージを公開するために使用するクライアント SSL 証明書ファイルを指定します。
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB--clone\fR\fR
+.ad
+.sp .6
+.RS 4n
+ソースリポジトリの正確なコピーを作成します。デフォルトでは、ソースリポジトリ内のパブリッシャーが公開先にも存在する場合にのみ、クローン操作が成功します。クローン操作を指定されたパブリッシャーに制限するには、\fB-p\fR オプションを使用します。\fB-p\fR オプションを使用して指定されたパブリッシャーが公開先リポジトリにまだ存在しない場合は、公開先リポジトリに追加されます。公開先リポジトリに存在するがソースリポジトリに存在しないパッケージは、削除されます。クローン操作でエラーが発生した場合、公開先リポジトリは変更されたままになります。このため、公開先リポジトリを専用の ZFS データセットに配置し、クローン操作を実行する前にスナップショットを作成するようにしてください。
 .RE
 
 .sp
@@ -178,7 +294,7 @@ HTTPS リポジトリからのパッケージ取得に使用するクライア�
 .ad
 .sp .6
 .RS 4n
-指定されたリポジトリから使用可能な最新バージョンのパッケージを一覧表示し、終了します (\fB-s\fR を除くその他のオプションはすべて無視されます)。
+\fB-s\fR オプションで指定されたリポジトリから使用可能な最新バージョンのパッケージを一覧表示します。その他のすべてのオプションは無視されます。
 .RE
 
 .sp
@@ -189,7 +305,7 @@ HTTPS リポジトリからのパッケージ取得に使用するクライア�
 .ad
 .sp .6
 .RS 4n
-raw パッケージデータを取得し、\fB-d\fR で指定された場所に、幹およびバージョンごとの一連のディレクトリ構造内に格納します。このオプションは、ファイルシステムベースの出力先の場合にのみ使用できます。このパッケージデータを使用すると、一般にはファイルの内容を修正するか、または追加のパッケージメタデータを提供することによって、パッケージを便利に変更して再公開することができます。このオプションを \fB-a\fR と組み合わせることはできません。
+raw パッケージデータを取得し、\fB-d\fR で指定された場所に、幹およびバージョンごとの一連のディレクトリ構造内に格納します。\fB--raw\fR オプションは、ファイルシステムベースの出力先の場合にのみ使用できます。このパッケージデータを使用すると、一般にはファイルの内容を修正するか、または追加のパッケージメタデータを提供することによって、パッケージを便利に変更して再公開することができます。\fB--raw\fR オプションを \fB-a\fR と組み合わせることはできません。
 .RE
 
 .SH 使用例
@@ -247,20 +363,29 @@ $ \fBpkgrecv -s http://test -d /local/repo -r editor/vim\fR
 .sp
 
 .LP
-\fB例 4 \fRすべてのバージョンを取得する
+\fB例 4 \fR最新バージョンのみを取得する
 .sp
 .LP
-\fBtest\fR という名前のシステムから、パッケージ \fBeditor/vim\fR のすべてのバージョンを受け取ります。
+\fBtest\fR という名前のシステムから、パッケージ \fBeditor/vim\fR の最新バージョンのみを受け取ります。
 
 .sp
 .in +2
 .nf
-$ \fBpkgrecv -s http://test -d /local/repo -m all-versions \e\fR
+$ \fBpkgrecv -s http://test -d /local/repo -m latest -v \e\fR
 \fBeditor/vim\fR
 Processing packages for publisher solaris ...
-Retrieving and evaluating 2 package(s)...
-PROCESS       ITEMS     GET (MB)    SEND(MB)
-Completed       2/2    16.7/16.7    44.9/44.9
+Retrieving and evaluating 1 package(s)...
+
+Retrieving packages ...
+        Packages to add:       1
+      Files to retrieve:    1557
+Estimated transfer size: 9.21 MB
+
+Packages to transfer:
+editor/vim@7.3.600,5.11-0.175.1.0.0.24.0:20120904T172128Z
+
+PROCESS                                     ITEMS    GET (MB) SEND (MB)
+Completed                                     1/1     9.2/9.2 25.4/25.4
 .fi
 .in -2
 .sp
@@ -311,12 +436,12 @@ $ \fBpkgrecv -s http://pkg.oracle.com/solaris/release/ \e\fR
 
 .sp
 .LP
-まだ存在しないすべてのパッケージおよびすべての変更済みの内容を、\fBhttp://pkg.oracle.com/solaris/support/\fR にあるセキュアなリポジトリから \fB/export/repoSolaris11\fR にあるリポジトリに受信します。
+まだ存在しないすべてのパッケージおよびすべての変更済みの内容を、\fBhttps://pkg.oracle.com/solaris/support/\fR にあるセキュアなリポジトリから \fB/export/repoSolaris11\fR にあるリポジトリに受信します。 
 
 .sp
 .in +2
 .nf
-$ \fBpkgrecv -s http://pkg.oracle.com/solaris/support/ \e\fR
+$ \fBpkgrecv -s https://pkg.oracle.com/solaris/support/ \e\fR
 \fB-d /export/repoSolaris11 -m all-timestamps \e\fR
 \fB--key /var/pkg/ssl/Oracle_Solaris_11_Support.key.pem \e\fR
 \fB--cert /var/pkg/ssl/Oracle_Solaris_11_Support.certificate.pem '*'\fR
@@ -474,4 +599,11 @@ _
 \fBpkgrepo\fR(1), \fBpkgsend\fR(1), \fBpkg\fR(5)
 .sp
 .LP
-\fBhttp://hub.opensolaris.org/bin/view/Project+pkg/\fR
+\fI『Copying and Creating Package Repositories in Oracle Solaris 11.2 』\fR
+.sp
+.LP
+\fBhttps://java.net/projects/ips/pages/Home\fR
+.SH 注意事項
+.sp
+.LP
+ファイルシステムベースの公開先リポジトリを使用する場合、パッケージの転送が完了して Web インタフェースまたは検索応答で変更が反映されたあとに、そのリポジトリを提供している \fBpkg.depotd\fR プロセスを再開する必要があります。詳細は、\fBpkg.depotd\fR(1M) を参照してください。

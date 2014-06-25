@@ -1,6 +1,6 @@
 '\" te
 .\" Copyright (c) 2007, 2013, Oracle and/or its affiliates. All rights reserved.
-.TH pkgmerge 1 "20 May 2013" "SunOS 5.12" "User Commands"
+.TH pkgmerge 1 "14 Nov 2013" "SunOS 5.12" "User Commands"
 .SH NAME
 pkgmerge \- Image Packaging System package merging utility
 .SH SYNOPSIS
@@ -88,6 +88,21 @@ By default, packages from all publishers in all source repositories are merged.
 .sp .6
 .RS 4n
 Specify the variant name and value to use for packages from this source, followed by the file system path or URI of the source repository or package archive to retrieve packages from. Multiple variants can be specified separated by commas. The same variants must be named for all sources. This option can be specified multiple times.
+.RE
+
+.SH OPERANDS
+.sp
+.LP
+The following operand is supported:
+.sp
+.ne 2
+.mk
+.na
+\fB\fIpkg_fmri_pattern\fR\fR
+.ad
+.sp .6
+.RS 4n
+Specifies packages to merge. The \fIpkg_fmri_pattern\fR operand can include the \fB?\fR and \fB*\fR characters as \fBglob\fR(3C)-style wildcards to match one or more packages.
 .RE
 
 .SH ENVIRONMENT VARIABLES
