@@ -2577,6 +2577,10 @@ class ImagePlan(object):
                                 # Ignore erroneously tagged files.
                                 continue
 
+                        if src.attrs.get("preserve") == "abandon":
+                                # preserve=abandon files are never removed.
+                                continue
+
                         entry = [src.attrs["path"]]
                         save_file = src.attrs.get("save_file")
                         if save_file:
@@ -2631,7 +2635,10 @@ class ImagePlan(object):
                                 # We can't rely on _check_preserve for this case
                                 # as there's no existing on-disk file at the
                                 # destination path yet.
-                                if dest.attrs.get("preserve") != "legacy":
+                                dpres_type = dest.attrs.get("preserve")
+                                if (dpres_type != "legacy" and
+                                    dpres_type != "abandon"):
+                                        # 'abandon' actions are never delivered;
                                         # 'legacy' actions are only delivered if
                                         # we're updating something already
                                         # installed or moving an existing file.
@@ -2669,6 +2676,10 @@ class ImagePlan(object):
                         else:
                                 mpath = tpath
 
+                        if pres_type == "abandon":
+                                # newly-tagged preserve=abandon files never
+                                # delivered.
+                                continue
                         if pres_type == "renameold":
                                 moved.append([mpath, tpath + ".old"])
                                 installed.append(entry)

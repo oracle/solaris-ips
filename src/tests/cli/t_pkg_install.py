@@ -2461,6 +2461,21 @@ class TestPkgInstallUpgrade(_TestHelper, pkg5unittest.SingleDepotTestCase):
             close
         """
 
+        presabandon = """
+            open presabandon@1.0
+            add file tmp/preserve1 path=testme mode=0444 owner=root group=root preserve=true
+            close
+            open presabandon@2.0
+            add file tmp/preserve1 path=testme mode=0644  owner=root group=root preserve=abandon
+            close
+            open presabandon@3.0
+            add file tmp/preserve3 path=testme mode=0444  owner=root group=root preserve=abandon
+            close
+            open presabandon@4.0
+            add file tmp/preserve3 path=testme mode=0644  owner=root group=root preserve=true
+            close
+        """
+
         renpreserve = """
             open orig_pkg@1.0
             add file tmp/preserve1 path=foo1 mode=0644 owner=root group=root preserve=true
@@ -3463,6 +3478,184 @@ adm
                 )
                 self.file_contains("testme.legacy", "preserve1")
                 self.file_contains("newme", "preserve2")
+
+        def test_file_preserve_abandon(self):
+                """Verify that preserve=abandon works as expected."""
+
+                install_cmd = "install"
+                self.pkgsend_bulk(self.rurl, self.presabandon)
+                self.image_create(self.rurl)
+
+                # Ensure directory is empty before testing.
+                api_inst = self.get_img_api_obj()
+                img_inst = api_inst.img
+                sroot = os.path.join(img_inst.imgdir, "lost+found")
+                shutil.rmtree(sroot)
+
+                # Verify that unpackaged files will not be salvaged on initial
+                # install if a package being installed delivers the same file
+                # and that the new file will not be installed.
+                self.file_append("testme", "unpackaged")
+                self.pkg("%s --parsable=0 presabandon@2" % install_cmd)
+                self._assertEditables()
+                self.file_contains("testme", "unpackaged")
+                self.assert_(not os.path.exists(os.path.join(sroot, "testme")))
+                self.file_remove("testme")
+                self.pkg("uninstall presabandon")
+
+                # Verify that an initial install of an action with
+                # preserve=abandon will not install the payload of the action.
+                self.pkg("%s --parsable=0 presabandon@2" % install_cmd)
+                self._assertEditables()
+                self.file_doesnt_exist("testme")
+                self.pkg("uninstall presabandon")
+
+                # If an action delivered by the upgraded version of the package
+                # has a preserve=abandon, the new file will not be installed and
+                # the existing file will not be modified.
+
+                # First with no content change ...
+                self.pkg("%s --parsable=0 presabandon@1" % install_cmd)
+                self._assertEditables(
+                    installed=['testme'],
+                )
+                self.pkg("update --parsable=0 presabandon@2")
+                self._assertEditables()
+                self.file_contains("testme", "preserve1")
+                # The currently installed version of the package has a preserve
+                # value of abandon, so the file will not be removed.
+                self.pkg("uninstall --parsable=0 presabandon")
+                self._assertEditables()
+                self.file_exists("testme")
+
+                # If an action delivered by the downgraded version of the package
+                # has a preserve=abandon, the new file will not be installed and
+                # the existing file will not be modified.
+                self.pkg("%s --parsable=0 presabandon@4" % install_cmd)
+                self._assertEditables(
+                    installed=['testme'],
+                )
+                self.file_contains("testme", "preserve3")
+                self.pkg("verify presabandon")
+                self.pkg("update --parsable=0 presabandon@3")
+                self._assertEditables()
+                self.file_contains("testme", "preserve3")
+                self.pkg("verify presabandon")
+                self.pkg("uninstall --parsable=0 presabandon")
+                self.file_remove("testme")
+
+                # ... and again with content change.
+                self.pkg("%s --parsable=0 presabandon@1" % install_cmd)
+                self.pkg("%s --parsable=0 presabandon@3" % install_cmd)
+                self._assertEditables()
+                self.file_contains("testme", "preserve1")
+                self.pkg("uninstall --parsable=0 presabandon")
+
+                self.pkg("install --parsable=0 presabandon@4")
+                self._assertEditables(
+                    installed=['testme'],
+                )
+                self.file_contains("testme", "preserve3")
+                self.pkg("update --parsable=0 presabandon@2")
+                self._assertEditables()
+                self.file_contains("testme", "preserve3")
+                self.pkg("verify presabandon")
+                self.pkg("uninstall --parsable=0 presabandon")
+                self.file_remove("testme")
+
+                # Modify the file locally and upgrade to a version where the
+                # file has a preserve=abandon attribute and the content changes.
+                self.pkg("%s --parsable=0 presabandon@1" % install_cmd)
+                self.file_append("testme", "junk")
+                self.pkg("%s --parsable=0 presabandon@3" % install_cmd)
+                self._assertEditables()
+                self.file_contains("testme", "preserve1")
+                self.file_contains("testme", "junk")
+                self.file_doesnt_exist("testme.old")
+                self.file_doesnt_exist("testme.new")
+                self.pkg("uninstall --parsable=0 presabandon")
+                self.file_remove("testme")
+
+                # Modify the file locally and downgrade to a version where the
+                # file has a preserve=abandon attribute and the content changes.
+                self.pkg("%s --parsable=0 presabandon@4" % install_cmd)
+                self.file_append("testme", "junk")
+                self.file_contains("testme", "preserve3")
+                self.pkg("update --parsable=0 presabandon@2")
+                self._assertEditables()
+                self.file_contains("testme", "preserve3")
+                self.file_contains("testme", "junk")
+                self.file_doesnt_exist("testme.old")
+                self.file_doesnt_exist("testme.new")
+                self.file_doesnt_exist("testme.update")
+                self.pkg("verify presabandon")
+                self.pkg("uninstall --parsable=0 presabandon")
+                self.file_remove("testme")
+
+                # Modify the file locally and upgrade to a version where the
+                # file has a preserve=abandon attribute and just the mode changes.
+                self.pkg("%s --parsable=0 presabandon@1" % install_cmd)
+                self.file_append("testme", "junk")
+                self.pkg("%s --parsable=0 presabandon@2" % install_cmd)
+                self._assertEditables()
+                self.file_contains("testme", "preserve1")
+                self.file_contains("testme", "junk")
+                self.file_doesnt_exist("testme.old")
+                self.file_doesnt_exist("testme.new")
+                self.pkg("verify presabandon")
+                self.pkg("uninstall --parsable=0 presabandon")
+                self.file_remove("testme")
+
+                # Modify the file locally and downgrade to a version where the
+                # file has a preserve=abandon attribute and just the mode changes.
+                self.pkg("%s --parsable=0 presabandon@4" % install_cmd)
+                self.file_append("testme", "junk")
+                self.pkg("update --parsable=0 presabandon@3")
+                self._assertEditables()
+                self.file_contains("testme", "preserve3")
+                self.file_contains("testme", "junk")
+                self.file_doesnt_exist("testme.old")
+                self.file_doesnt_exist("testme.new")
+                self.file_doesnt_exist("testme.update")
+                self.pkg("verify presabandon")
+                self.pkg("uninstall --parsable=0 presabandon")
+                self.file_remove("testme")
+
+                # Remove the file locally and update the package where the
+                # file has a preserve=abandon attribute; this will not replace
+                # the missing file.
+                self.pkg("%s --parsable=0 presabandon@1" % install_cmd)
+                self.file_remove("testme")
+                self.pkg("%s --parsable=0 presabandon@2" % install_cmd)
+                self._assertEditables()
+                self.file_doesnt_exist("testme")
+                self.pkg("uninstall --parsable=0 presabandon")
+
+                # Remove the file locally and downgrade the package where the
+                # file has a preserve=abandon attribute; this will not replace
+                # the missing file.
+                self.pkg("%s --parsable=0 presabandon@4" % install_cmd)
+                self.file_remove("testme")
+                self.pkg("update --parsable=0 presabandon@3")
+                self._assertEditables()
+
+                # Verify that a package with a missing file that is marked with
+                # the preserve=abandon won't cause uninstall failure.
+                self.file_doesnt_exist("testme")
+                self.pkg("uninstall --parsable=0 presabandon")
+
+                # Verify that if the file for an action marked with
+                # preserve=abandon is removed that the package still
+                # verifies.
+                self.pkg("%s --parsable=0 presabandon@1" % install_cmd)
+                self.pkg("%s --parsable=0 presabandon@2" % install_cmd)
+                self.file_remove("testme")
+                self.pkg("verify -v presabandon")
+
+                # Verify that a file removed for an action marked with
+                # preserve=abandon can be reverted.
+                self.pkg("revert testme")
+                self.file_contains("testme", "preserve1")
 
         def test_directory_salvage(self):
                 """Make sure basic directory salvage works as expected"""

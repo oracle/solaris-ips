@@ -1,6 +1,6 @@
 '\" te
 .\" Copyright (c) 2009, 2014, Oracle and/or its affiliates. All rights reserved.
-.TH pkg 5 "10 Apr 2014" "SunOS 5.12" "Standards, Environments, and Macros"
+.TH pkg 5 "28 May 2014" "SunOS 5.12" "Standards, Environments, and Macros"
 .SH NAME
 pkg \- Image Packaging System
 .SH DESCRIPTION
@@ -145,22 +145,22 @@ The \fBpreserve\fR and \fBoverlay\fR attributes affect whether and how a \fBfile
 .RS 4n
 Specifies when and how files are preserved during package operations.
 .sp
-When a package is initially installed, if a file delivered by the package has a \fBpreserve\fR attribute defined with any value and the file already exists in the image, the existing file is stored in \fB/var/pkg/lost+found\fR and the packaged file is installed.
+When a package is initially installed, if a file delivered by the package has a \fBpreserve\fR attribute defined with any value except \fBabandon\fR and the file already exists in the image, the existing file is stored in \fB/var/pkg/lost+found\fR and the packaged file is installed.
 .sp
 When a package is initially installed, if a file delivered by the package has a \fBpreserve\fR attribute defined and the file does not already exist in the image, whether that file is installed depends on the value of the \fBpreserve\fR attribute:
 .RS +4
 .TP
 .ie t \(bu
 .el o
-If the value of \fBpreserve\fR is \fBlegacy\fR, the packaged file is not installed.
+If the value of \fBpreserve\fR is \fBlegacy\fR or \fBabandon\fR, the packaged file is not installed.
 .RE
 .RS +4
 .TP
 .ie t \(bu
 .el o
-If the value of \fBpreserve\fR is not \fBlegacy\fR, the packaged file is installed.
+If the value of \fBpreserve\fR is not \fBlegacy\fR or \fBabandon\fR, the packaged file is installed.
 .RE
-When a package is downgraded, if a file delivered by the downgraded version of the package has a \fBpreserve\fR attribute defined with any value and all of the following conditions are true, the file that currently exists in the image is renamed with the extension \fB\&.update\fR, and the file from the downgraded package is installed:
+When a package is downgraded, if a file delivered by the downgraded version of the package has a \fBpreserve\fR attribute defined with any value except \fBabandon\fR and all of the following conditions are true, the file that currently exists in the image is renamed with the extension \fB\&.update\fR, and the file from the downgraded package is installed.
 .RS +4
 .TP
 .ie t \(bu
@@ -184,6 +184,12 @@ If any of the above conditions is not true, the file is treated the same as if t
 When a package is upgraded, if a \fBfile\fR action delivered by the upgraded version of the package has a \fBpreserve\fR attribute defined with any value and the \fBfile\fR action is the same as the \fBfile\fR action delivered by the currently installed version of the package, the file is not installed, and the file that exists in the image is not modified. Any modifications made since the previous version was installed are preserved.
 .sp
 When a package is upgraded, if a \fBfile\fR action delivered by the upgraded version of the package has a \fBpreserve\fR attribute defined and the \fBfile\fR action is new or is different from the \fBfile\fR action delivered by the currently installed version of the package, the upgrade is done in the following way:
+.RS +4
+.TP
+.ie t \(bu
+.el o
+If the file delivered by the upgraded version of the package has a \fBpreserve\fR value of \fBabandon\fR in the upgraded package, the new file will not be installed and the existing file will not be modified.
+.RE
 .RS +4
 .TP
 .ie t \(bu
@@ -238,6 +244,8 @@ If the file delivered by the upgraded version of the package exists in the image
 .el o
 If the file delivered by the upgraded version of the package exists in the image and has a \fBpreserve\fR value of \fBlegacy\fR in both the upgraded package and the currently installed version of the package, the permissions and timestamp (if present) are reset on the existing file.
 .RE
+.sp
+When a package is uninstalled, if a \fBfile\fR action delivered by the currently installed version of the package has a \fBpreserve\fR value of \fBabandon\fR and the file exists in the image, the file will not be removed.
 .RE
 
 .sp

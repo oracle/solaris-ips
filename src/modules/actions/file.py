@@ -118,8 +118,10 @@ class FileAction(generic.Action):
                         self.makedirs(os.path.dirname(final_path),
                             mode=misc.PKG_DIR_MODE,
                             fmri=pkgplan.destination_fmri)
-                elif not orig and not pkgplan.origin_fmri and \
-                     "preserve" in self.attrs and os.path.isfile(final_path):
+                elif (not orig and not pkgplan.origin_fmri and
+                     "preserve" in self.attrs and
+                     self.attrs["preserve"] != "abandon" and
+                     os.path.isfile(final_path)):
                         # Unpackaged editable file is already present during
                         # initial install; salvage it before continuing.
                         pkgplan.salvage(final_path)
@@ -161,6 +163,8 @@ class FileAction(generic.Action):
                         old_path = final_path + ".old"
                 elif pres_type == "renamenew":
                         final_path = final_path + ".new"
+                elif pres_type == "abandon":
+                        return
 
                 # If it is a directory (and not empty) then we should
                 # salvage the contents.
@@ -291,6 +295,9 @@ class FileAction(generic.Action):
                 In detail, this verifies that the file is present, and if
                 the preserve attribute is not present, that the hashes
                 and other attributes of the file match."""
+
+                if self.attrs.get("preserve") == "abandon":
+                        return [], [], []
 
                 path = self.get_installed_path(img.get_root())
 
@@ -453,7 +460,8 @@ class FileAction(generic.Action):
                 Returns False if it is, but no preservation is necessary.
                 Returns True for the normal preservation form.  Returns one of
                 the strings 'renameold', 'renameold.update', 'renamenew',
-                or 'legacy' for each of the respective forms of preservation.
+                'legacy', or 'abandon' for each of the respective forms of
+                preservation.
                 """
 
                 # If the logic in this function ever changes, all callers will
@@ -470,6 +478,9 @@ class FileAction(generic.Action):
                         # if we ever stop tagging elf binaries with this
                         # attribute, this will need to be updated.
                         return
+
+                if pres_type == "abandon":
+                        return pres_type
 
                 final_path = self.get_installed_path(pkgplan.image.get_root())
 
@@ -617,7 +628,7 @@ class FileAction(generic.Action):
                                 return True
 
                 pres_type = self._check_preserve(orig, pkgplan)
-                if pres_type != None and pres_type != True:
+                if pres_type not in (None, True, "abandon"):
                         # Preserved files only need data if they're being
                         # changed (e.g. "renameold", etc.).
                         return True
@@ -639,6 +650,9 @@ class FileAction(generic.Action):
                                 # File must be left in place (this file is
                                 # likely overlaid and is moving).
                                 return
+
+                if self.attrs.get("preserve") == "abandon":
+                        return
 
                 try:
                         # Make file writable so it can be deleted.
