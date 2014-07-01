@@ -2468,7 +2468,8 @@ class CliTestCase(Pkg5TestCase):
 
         def pkg(self, command, exit=0, comment="", prefix="", su_wrap=None,
             out=False, stderr=False, cmd_path=None, use_img_root=True,
-            debug_smf=True, env_arg=None, coverage=True, handle=False):
+            debug_smf=True, env_arg=None, coverage=True, handle=False,
+            assert_solution=True):
 
                 if isinstance(command, list):
                         cmdstr = " ".join(command)
@@ -2482,8 +2483,8 @@ class CliTestCase(Pkg5TestCase):
 
                 cmdline.append(cmd_path)
 
-                if use_img_root and "-R" not in cmdstr and \
-                    "image-create" not in cmdstr and "version" not in cmdstr:
+                if (use_img_root and "-R" not in cmdstr and
+                    "image-create" not in cmdstr):
                         cmdline.extend(("-R", self.get_img_path()))
 
                 cmdline.extend(("-D", "plandesc_validate=1"))
@@ -2498,9 +2499,21 @@ class CliTestCase(Pkg5TestCase):
                 else:
                         cmdline.extend(command)
 
-                return self.cmdline_run(cmdline, exit=exit, comment=comment,
+                rval = self.cmdline_run(cmdline, exit=exit, comment=comment,
                     prefix=prefix, su_wrap=su_wrap, out=out, stderr=stderr,
                     env_arg=env_arg, coverage=coverage, handle=handle)
+
+                if assert_solution:
+                        # Ensure solver never fails with 'No solution' by
+                        # default to prevent silent failures for the wrong
+                        # reason.
+                        for buf in (self.errout, self.output):
+                                self.assert_("No solution" not in buf,
+                                    msg="Solver could not find solution for "
+                                    "operation; set assert_solution=False if "
+                                    "this is expected when calling pkg().")
+
+                return rval
 
         def pkg_verify(self, command, exit=0, comment="", prefix="",
             su_wrap=None, out=False, stderr=False, cmd_path=None,

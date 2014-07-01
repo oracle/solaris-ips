@@ -20,7 +20,7 @@
 # CDDL HEADER END
 #
 
-# Copyright (c) 2008, 2010, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2008, 2014, Oracle and/or its affiliates. All rights reserved.
 
 import testutils
 if __name__ == "__main__":
@@ -38,9 +38,9 @@ class TestPkgVersion(pkg5unittest.SingleDepotTestCase):
 
                 self.image_create(self.rurl)
 
-                self.pkg("version -vq", exit=2)
-                self.pkg("version foo", exit=2)
-                self.pkg("version --", exit=2)
+                self.pkg("version -vq", use_img_root=False, exit=2)
+                self.pkg("version foo", use_img_root=False, exit=2)
+                self.pkg("version --", use_img_root=False, exit=2)
 
 
 if __name__ == "__main__":

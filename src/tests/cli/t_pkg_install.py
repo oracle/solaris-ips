@@ -5602,18 +5602,28 @@ class TestDependencies(pkg5unittest.SingleDepotTestCase):
             close
         """
 
+        exclude_group = """
+            open network/rsync@1.0
+            close
+            open gold-server@1.0
+            add depend type=group fmri=network/rsync
+            close
+            open utility/my-rsync@1.0
+            add depend type=exclude fmri=network/rsync
+            close
+        """
+
         def setUp(self):
                 pkg5unittest.SingleDepotTestCase.setUp(self, image_count=2)
                 self.pkgsend_bulk(self.rurl, (self.pkg10, self.pkg20,
                     self.pkg11, self.pkg21, self.pkg30, self.pkg40, self.pkg50,
                     self.pkg505, self.pkg51, self.pkg60, self.pkg61,
                     self.bug_18653, self.pkg70, self.pkg80, self.pkg81,
-                    self.pkg90, self.pkg91, self.bug_7394_incorp,
-                    self.pkg100, self.pkg101, self.pkg102,
-                    self.pkg110, self.pkg111,
+                    self.pkg90, self.pkg91, self.bug_7394_incorp, self.pkg100,
+                    self.pkg101, self.pkg102, self.pkg110, self.pkg111,
                     self.pkg121, self.pkg122, self.pkg123, self.pkg132,
                     self.pkg142, self.pkg_nosol, self.pkg_renames,
-                    self.pkgSUNWcs075))
+                    self.pkgSUNWcs075, self.exclude_group))
 
                 self.leaf_pkgs = []
                 for t in self.leaf_expansion:
@@ -5649,6 +5659,41 @@ class TestDependencies(pkg5unittest.SingleDepotTestCase):
                 self.pkg("verify  pkg1@1.0")
                 self.pkg("%s pkg3@1.0" % install_cmd)
                 self.pkg("verify  pkg3@1.0 pkg1@1.1")
+
+        def test_exclude_group_install(self):
+                """Verify that a simultaneous exclude and group dependency on
+                the same package is handled gracefully."""
+
+                self.image_create(self.rurl)
+
+                # These should fail (gracefully) because my-rsync packages
+                # excludes network/rsync which is a group dependency of
+                # gold-server package.
+                self.pkg("install network/rsync gold-server my-rsync", exit=1)
+
+                self.pkg("install network/rsync")
+                self.pkg("install gold-server my-rsync", exit=1)
+                self.pkg("uninstall '*'")
+
+                # This should succeed because network/rsync dependency is not
+                # installed.
+                self.pkg("avoid network/rsync")
+                self.pkg("install -nv gold-server my-rsync")
+
+                # This will install network/rsync and remove it from the avoid
+                # list.
+                self.pkg("install network/rsync")
+
+                # This should succeed because network/rsync will be removed and
+                # placed on avoid list as part of operation.
+                self.pkg("install --reject network/rsync gold-server my-rsync")
+
+                # Now remove gold-server and then verify install will fail.
+                self.pkg("uninstall gold-server")
+                self.pkg("unavoid network/rsync")
+                # No solution as there's no installed constraining package and
+                # user didn't provide sufficient input.
+                self.pkg("install gold-server", assert_solution=False, exit=1)
 
         def test_exclude_dependencies_install(self):
                 """ exercise exclude dependencies """
@@ -5935,7 +5980,8 @@ class TestDependencies(pkg5unittest.SingleDepotTestCase):
 
                 # test to see if solver will fail gracefully when no solution is
                 # possible and a require-any dependency is involved
-                self.pkg("install -vvv pkg-nosol-A pkg-nosol-E", exit=1)
+                self.pkg("install -vvv pkg-nosol-A pkg-nosol-E",
+                    assert_solution=False, exit=1)
 
                 # test to see if solver will pick one
                 self.pkg("install pkg8@1.0")  # install pkg
@@ -5983,7 +6029,8 @@ class TestDependencies(pkg5unittest.SingleDepotTestCase):
 
                 # Test to see if solver will fail gracefully when no solution is
                 # possible and a require-any dependency is involved.
-                self.pkg("exact-install -v pkg-nosol-A pkg-nosol-E", exit=1)
+                self.pkg("exact-install -v pkg-nosol-A pkg-nosol-E",
+                    assert_solution=False, exit=1)
 
                 # Test to see if solver will pick one.
                 self.pkg("exact-install pkg8@1.0")

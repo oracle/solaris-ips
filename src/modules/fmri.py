@@ -317,9 +317,11 @@ class PkgFmri(object):
                         pkg_str = "pkg://"
                 return "%s%s/%s" % (pkg_str, self.publisher, self.pkg_name)
 
-        def get_short_fmri(self, default_publisher=None, anarchy=False):
+        def get_short_fmri(self, default_publisher=None, anarchy=False,
+            include_scheme=True):
                 """Return a string representation of the FMRI without a specific
                 version."""
+                pkg_str = ""
                 publisher = self.publisher
                 if not publisher:
                         publisher = default_publisher
@@ -329,11 +331,16 @@ class PkgFmri(object):
                 else:
                         version = "@" + self.version.get_short_version()
 
-                if not publisher or publisher.startswith(PREF_PUB_PFX) \
-                    or anarchy:
-                        return "pkg:/%s%s" % (self.pkg_name, version)
+                if (not publisher or publisher.startswith(PREF_PUB_PFX) or
+                    anarchy):
+                        if include_scheme:
+                                pkg_str = "pkg:/"
+                        return "%s%s%s" % (pkg_str, self.pkg_name, version)
 
-                return "pkg://%s/%s%s" % (publisher, self.pkg_name, version)
+                if include_scheme:
+                        pkg_str = "pkg://"
+                return "%s%s/%s%s" % (pkg_str, publisher, self.pkg_name,
+                    version)
 
         def get_fmri(self, default_publisher=None, anarchy=False,
             include_scheme=True, include_build=True):

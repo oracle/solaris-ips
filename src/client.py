@@ -1690,11 +1690,7 @@ pkg:/package/pkg' as a privileged user and then retry the %(op)s."""
                     ) % locals())
                 return EXIT_OOPS
         if e_type == api_errors.NonLeafPackageException:
-                error(_("""\
-Cannot remove '%s' due to the following packages that depend on it:"""
-                    ) % e.fmri, cmd=op)
-                for d in e.dependents:
-                        logger.error("  %s" % d)
+                error("\n" + str(e), cmd=op)
                 return EXIT_OOPS
         if e_type == api_errors.CatalogRefreshException:
                 display_catalog_failures(e)

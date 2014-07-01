@@ -20,7 +20,7 @@
 # CDDL HEADER END
 #
 
-# Copyright (c) 2008, 2012, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2008, 2014, Oracle and/or its affiliates. All rights reserved.
 
 import testutils
 if __name__ == "__main__":
@@ -129,15 +129,57 @@ class TestImageUpdate(pkg5unittest.ManyDepotTestCase):
             add file %s mode=0755 owner=root group=bin path=/bin/true
             close """
 
+        # An example of dueling incorporations for an upgrade case.
+        dueling_inst = """
+            open entire@5.12-5.12.0.0.0.45.0
+            add set name=pkg.depend.install-hold value=core-os
+            add depend fmri=consolidation/java-7/java-7-incorporation type=require
+            add depend facet.version-lock.consolidation/java-7/java-7-incorporation=true fmri=consolidation/java-7/java-7-incorporation@1.7.0.51.34-0 type=incorporate
+            add depend fmri=consolidation/java-7/java-7-incorporation@1.7.0 type=incorporate
+            add depend fmri=consolidation/osnet/osnet-incorporation type=require
+            add depend facet.version-lock.consolidation/osnet/osnet-incorporation=true fmri=consolidation/osnet/osnet-incorporation@5.12-5.12.0.0.0.45.2 type=incorporate
+            add depend fmri=consolidation/osnet/osnet-incorporation@5.12-5.12.0 type=incorporate
+            close
+            open consolidation/java-7/java-7-incorporation@1.7.0.51.34-0
+            add depend fmri=runtime/java/jre-7@1.7.0.51.34,5.11 type=incorporate
+            close
+            open consolidation/osnet/osnet-incorporation@5.12-5.12.0.0.0.45.25345
+            add set name=pkg.depend.install-hold value=core-os.osnet
+            add depend fmri=pkg:/system/resource-mgmt/dynamic-resource-pools@5.12,5.12-5.12.0.0.0.45.25345 type=incorporate
+            close
+            open runtime/java/jre-7@1.7.0.51.34
+            add depend fmri=consolidation/java-7/java-7-incorporation type=require
+            close
+            open system/resource-mgmt/dynamic-resource-pools@5.12-5.12.0.0.0.45.25345
+            add depend fmri=consolidation/osnet/osnet-incorporation type=require
+            add depend fmri=pkg:/runtime/java/jre-7@1.7.0.51.34 type=require
+            close
+        """
+
+        dueling_latest = """
+            open consolidation/osnet/osnet-incorporation@5.12-5.12.0.0.0.46.25205
+            add set name=pkg.depend.install-hold value=core-os.osnet
+            add depend fmri=pkg:/system/resource-mgmt/dynamic-resource-pools@5.12,5.12-5.12.0.0.0.46.25205 type=incorporate
+            close
+            open runtime/java/jre-7@1.7.0.55.13
+            add depend fmri=consolidation/java-7/java-7-incorporation type=require
+            close
+            open system/resource-mgmt/dynamic-resource-pools@5.12,5.12-5.12.0.0.0.46.25205
+            add depend fmri=consolidation/osnet/osnet-incorporation type=require
+            add depend fmri=pkg:/runtime/java/jre-7@1.7.0.55.13 type=require
+            close
+        """
+
         def setUp(self):
                 # Two repositories are created for test2.
                 pkg5unittest.ManyDepotTestCase.setUp(self, ["test1", "test2",
-                    "test2", "test4", "test5"])
+                    "test2", "test4", "test5", "nightly"])
                 self.rurl1 = self.dcs[1].get_repo_url()
                 self.rurl2 = self.dcs[2].get_repo_url()
                 self.rurl3 = self.dcs[3].get_repo_url()
                 self.rurl4 = self.dcs[4].get_repo_url()
                 self.rurl5 = self.dcs[5].get_repo_url()
+                self.rurl6 = self.dcs[6].get_repo_url()
                 self.pkgsend_bulk(self.rurl1, (self.foo10, self.foo11,
                     self.baz11, self.qux10, self.qux11, self.quux10,
                     self.quux11, self.corge11, self.incorp10, self.incorp11))
@@ -152,6 +194,9 @@ class TestImageUpdate(pkg5unittest.ManyDepotTestCase):
                                 self.dcs[i].get_repodir(),
                                 { "test1": "test%d" % i })
                         self.dcs[i].get_repo(auto_create=True).rebuild()
+
+                self.pkgsend_bulk(self.rurl6, (self.dueling_inst,
+                    self.dueling_latest))
 
         def test_image_update_bad_opts(self):
                 """Test update with bad options."""
@@ -277,7 +322,7 @@ class TestImageUpdate(pkg5unittest.ManyDepotTestCase):
                 self.pkg("update '*@latest'")
                 self.pkg("info bar@1.1 foo@1.1 incorp@1.1")
 
-        def test_bug_18536(self):
+        def test_upgrade_sticky(self):
                 """Test that when a package specified on the command line can't
                 be upgraded because of a sticky publisher, the exception raised
                 is correct."""
@@ -390,6 +435,36 @@ class TestImageUpdate(pkg5unittest.ManyDepotTestCase):
                 self.pkg("update -v %s" % elf1)
                 self.pkg("list %s" % elf1)
                 self.assertEqual(elf1sum, get_test_sum())
+
+        def test_dueling_incs(self):
+                """Verify that dueling incorporations don't result in a 'no
+                solution' error in a case sometimes found with 'nightly'
+                upgrades."""
+
+                self.image_create(self.rurl6)
+                self.pkg("change-facet "
+                    "version-lock.consolidation/osnet/osnet-incorporation=false")
+                self.pkg("install entire@5.12-5.12.0.0.0.45.0 "
+                    "osnet-incorporation@5.12-5.12.0.0.0.45.25345 "
+                    "system/resource-mgmt/dynamic-resource-pools@5.12-5.12.0.0.0.45.25345")
+
+                # Failure is expected for these cases because an installed
+                # incorporation prevents the upgrade of an installed dependency
+                # required by the new packages.
+
+                # Should fail and result in 'no solution' because user failed to
+                # specify any input.
+                self.pkg("update -nv", exit=1, assert_solution=False)
+                self.assert_("No solution" in self.errout)
+
+                # Should fail, but not result in 'no solution' because user
+                # specified a particular package.
+                self.pkg("update -nv osnet-incorporation@latest", exit=1)
+                self.assert_("No matching version" in self.errout)
+
+                # Should exit with 'nothing to do' since update to new version
+                # of osnet-incorporation is not possible.
+                self.pkg("update -nv osnet-incorporation", exit=4)
 
 
 class TestPkgUpdateOverlappingPatterns(pkg5unittest.SingleDepotTestCase):
@@ -518,6 +593,7 @@ class TestPkgUpdateOverlappingPatterns(pkg5unittest.SingleDepotTestCase):
                 self.pkg("update '*' 'pkg://pub2/a@1' 'pkg://test/a@2'", exit=1)
                 self.pkg("update '*' 'pkg://pub2/*@1' 'pkg://test/*@2'", exit=1)
                 self._api_uninstall(api_inst, ["*"])
+
 
 if __name__ == "__main__":
         unittest.main()

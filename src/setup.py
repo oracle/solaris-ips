@@ -303,6 +303,7 @@ pylint_targets = [
         'pkg.client.__init__',
         'pkg.client.api',
         'pkg.client.linkedimage',
+        'pkg.client.pkg_solver',
         'pkg.client.pkgdefs',
         'pkg.client.pkgremote',
         'pkg.client.plandesc',

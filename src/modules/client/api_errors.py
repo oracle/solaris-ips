@@ -25,6 +25,7 @@
 #
 
 import errno
+import operator
 import os
 import xml.parsers.expat as expat
 import urlparse
@@ -1353,9 +1354,15 @@ class NonLeafPackageException(ApiException):
                 self.dependents = args[1]
 
         def __str__(self):
-                s = _("Unable to remove '%s' due to the following packages "
-                    "that depend on it:\n") % self.fmri
-                s += "\n".join(str(f) for f in self.dependents)
+                s = _("Unable to remove '{0}' due to the following packages "
+                    "that depend on it:\n").format(self.fmri.get_short_fmri(
+                        anarchy=True, include_scheme=False))
+                skey = operator.attrgetter('pkg_name')
+                s += "\n".join(
+                    "  {0}".format(f.get_short_fmri(anarchy=True,
+                        include_scheme=False))
+                    for f in sorted(self.dependents, key=skey)
+                )
                 return s
 
 def _str_autofix(self):

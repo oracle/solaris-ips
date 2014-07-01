@@ -48,7 +48,9 @@ from pkg.client.pkgdefs import *
 
 p_update_index = 0
 
-def substring_verify(string, substring):
+def pkg_err_verify(string, fmri):
+        # Ignore package version as how it's displayed can change.
+        substring = fmri.split("@", 1)[0]
         if string.find(substring) == -1:
                 raise RuntimeError("""
 Expected "%s" to be contained in:
@@ -1038,8 +1040,8 @@ packages known:
                         [self.p_foo1_name[0], self.p_foo2_name[0]])
 
                 # make sure the error message mentions both packages.
-                substring_verify(str(e), self.p_foo1_name[0])
-                substring_verify(str(e), self.p_foo2_name[0])
+                pkg_err_verify(str(e), self.p_foo1_name[0])
+                pkg_err_verify(str(e), self.p_foo2_name[0])
 
                 # try to install packages with missing parent dependencies
                 e = assertRaises(
@@ -1051,8 +1053,8 @@ packages known:
                         [self.p_sync1_name[0], self.p_sync2_name[0]])
 
                 # make sure the error message mentions both packages.
-                substring_verify(str(e), self.p_sync1_name[0])
-                substring_verify(str(e), self.p_sync2_name[0])
+                pkg_err_verify(str(e), self.p_sync1_name[0])
+                pkg_err_verify(str(e), self.p_sync2_name[0])
 
                 # uninstall synced packages in the parent
                 self._api_uninstall(api_objs[0], [
@@ -1067,8 +1069,8 @@ packages known:
                         api_objs[1].gen_plan_update(*args, **kwargs)))
 
                 # make sure the error message mentions both synced packages.
-                substring_verify(str(e), self.p_sync3_name[1])
-                substring_verify(str(e), self.p_sync4_name[1])
+                pkg_err_verify(str(e), self.p_sync3_name[1])
+                pkg_err_verify(str(e), self.p_sync4_name[1])
 
 
         def test_sync_nosolver(self):
