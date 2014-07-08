@@ -156,6 +156,11 @@ class TestPkgChangeFacet(pkg5unittest.SingleDepotTestCase):
                     self.output
                 )
 
+                # notice that a file should not exist according to its facet
+                file(os.path.join(self.get_img_path(), "3"), "w")
+                self.pkg("verify", exit=1)
+                os.remove(os.path.join(self.get_img_path(), "3"))
+
                 # verify that a non-existent facet can be set when other facets
                 # are in effect
                 self.pkg("change-facet -n --parsable=0 wombat=false")

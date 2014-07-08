@@ -2253,7 +2253,9 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                             med.mediator_impl_matches(med_impl, cfg_med_impl)
 
                 try:
-                        for act in manf.gen_actions(excludes=self.list_excludes()):
+                        excludes = self.list_excludes()
+                        variant_excludes = [self.cfg.variants.allow_action]
+                        for act in manf.gen_actions():
                                 progresstracker.verify_add_progress(fmri)
                                 if (act.name == "link" or
                                     act.name == "hardlink") and \
@@ -2262,8 +2264,22 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                                         # mediation, so shouldn't be verified.
                                         continue
 
-                                errors, warnings, info = act.verify(self,
-                                    pfmri=fmri, **kwargs)
+                                if act.include_this(excludes):
+                                        errors, warnings, info = act.verify(
+                                            self, pfmri=fmri, **kwargs)
+                                elif act.include_this(variant_excludes):
+                                        # Verify that file that is faceted out
+                                        # does not exist.
+                                        errors = []
+                                        path = act.attrs.get("path", None)
+                                        if path is not None and os.path.exists(
+                                            os.path.join(self.root, path)):
+                                                errors.append(
+                                                    _("File should not exist"))
+                                else:
+                                        # Action not applicable to image variant.
+                                        continue
+
                                 actname = act.distinguished_name()
                                 if errors:
                                         progresstracker.verify_yield_error(
