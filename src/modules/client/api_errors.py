@@ -175,7 +175,7 @@ class ImageInsufficentSpace(ApiException):
 
         def __str__(self):
                 from pkg.misc import bytes_to_str
-                return _("Insufficent disk space available (%(avail)s)"
+                return _("Insufficient disk space available (%(avail)s) "
                     "for estimated need (%(needed)s) for %(use)s") % {
                     "avail":  bytes_to_str(self.avail),
                     "needed": bytes_to_str(self.needed),
