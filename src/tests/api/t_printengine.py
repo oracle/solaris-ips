@@ -43,8 +43,10 @@ class TestPrintEngine(pkg5unittest.Pkg5TestCase):
                 def __drain(masterf):
                         """Drain data from masterf and discard until eof."""
                         while True:
-                                termdata = masterf.read(1024)
-                                if len(termdata) == 0:
+                                chunksz = 1024
+                                termdata = masterf.read(chunksz)
+                                if len(termdata) < chunksz:
+                                        # assume we hit EOF
                                         break
                                 print >> sio, termdata
 

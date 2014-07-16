@@ -368,11 +368,12 @@ if __name__ == "__main__":
                 def __drain(masterf, outlist):
                         # Use a list as a way to pass by reference
                         while True:
-                                termdata = masterf.read(1024)
-                                if len(termdata) == 0:
+                                chunksz = 1024
+                                termdata = masterf.read(chunksz)
+                                outlist.append(termdata)
+                                if len(termdata) < chunksz:
+                                        # assume we hit EOF
                                         break
-                                else:
-                                        outlist.append(termdata)
 
                 # This is the arg handling protocol from Popen
                 if isinstance(args, types.StringTypes):

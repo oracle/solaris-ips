@@ -336,8 +336,10 @@ class TestProgressTrackers(pkg5unittest.Pkg5TestCase):
         def __t_pty_tracker(self, trackerclass, **kwargs):
                 def __drain(masterf):
                         while True:
-                                termdata = masterf.read(1024)
-                                if len(termdata) == 0:
+                                chunksz = 1024
+                                termdata = masterf.read(chunksz)
+                                if len(termdata) < chunksz:
+                                        # assume we hit EOF
                                         break
 
                 #
