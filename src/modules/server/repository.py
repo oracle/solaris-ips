@@ -2957,7 +2957,7 @@ class Repository(object):
                 rstore = self.get_trans_rstore(trans_id)
                 return rstore.add(trans_id, action)
 
-        def add_publisher(self, pub):
+        def add_publisher(self, pub, skip_config=False):
                 """Creates a repository storage area for the publisher defined
                 by the provided Publisher object and then stores the publisher's
                 configuration information.  Only supported for version 4 and
@@ -2973,6 +2973,9 @@ class Repository(object):
 
                 # Create the new repository storage area.
                 rstore = self.__new_rstore(pub.prefix)
+
+                if skip_config:
+                        return
 
                 # Update the publisher's configuration.
                 try:

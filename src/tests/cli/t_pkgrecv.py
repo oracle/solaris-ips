@@ -886,14 +886,11 @@ class TestPkgrecvMulti(pkg5unittest.ManyDepotTestCase):
                 self.pkgrecv(self.durl1, "--clone -d %s" % self.dpath2, exit=1)
 
                 # Test that clone adds new publishers if requested.
-                # Note: adding a publisher will automatically create a pub.p5i
-                # in the repo store. Since that is repo configuration and not
-                # part of the cloning it is ignored.
                 amber = self.amber10.replace("open ", "open pkg://test2/")
                 self.pkgsend_bulk(self.durl1, amber)
                 self.pkgrecv(self.durl1, "--clone -d %s -p test2" % self.dpath2)
                 ret = subprocess.call(["/usr/bin/gdiff", "-Naur", "-x", 
-                    "index", "-x", "trans", "-x", "pub.p5i", self.dpath1,
+                    "index", "-x", "trans", self.dpath1,
                     self.dpath2])
                 self.assertTrue(ret==0)
 

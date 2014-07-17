@@ -134,7 +134,7 @@ Options:
                                 includes only the latest version of each package
 
         -n              Perform a trial run with no changes made.
-        
+
         -v              Display verbose output.
 
         -p publisher    Only clone the given publisher. Can be specified
@@ -147,7 +147,7 @@ Options:
                         repository to retrieve package data from.
 
         --clone         Make an exact copy of the source repository. By default,
-                        the clone operation will only succeed if publishers in 
+                        the clone operation will only succeed if publishers in
                         the  source  repository  are  also  present  in  the
                         destination.  By using -p, the operation can be limited
                         to  specific  publishers  which  will  be  added  to the
@@ -342,8 +342,8 @@ def fetch_catalog(src_pub, tracker, txport, target_catalog,
     include_updates=False):
         """Fetch the catalog from src_uri.
 
-	target_catalog is a hint about whether this is a destination catalog,
-	which helps the progress tracker render the refresh output properly."""
+        target_catalog is a hint about whether this is a destination catalog,
+        which helps the progress tracker render the refresh output properly."""
 
         src_uri = src_pub.repository.origins[0].uri
         tracker.refresh_start(1, full_refresh=True,
@@ -857,7 +857,11 @@ def clone_repo(pargs, target, list_newest, all_versions, all_timestamps,
         for p in pubs_to_add:
                 if not dry_run:
                         msg(_("Adding publisher %s ...") % p.prefix)
-                        repo.add_publisher(p)
+                        # add_publisher() will create a p5i file in the repo
+                        # store, containing origin and possible mirrors from
+                        # the src repo. These may not be valid for the new repo
+                        # so skip creation of this file.
+                        repo.add_publisher(p, skip_config=True)
                 else:
                         msg(_("Adding publisher %s (dry-run) ...") % p.prefix)
 
@@ -1015,7 +1019,7 @@ def clone_repo(pargs, target, list_newest, all_versions, all_timestamps,
                         for s in status:
                                 msg("%s %s" % (s[0].rjust(rjust_status),
                                     s[1].rjust(rjust_value)))
- 
+
                         msg(_("\nPackages to transfer:"))
                         for f, i in sorted(to_add):
                                 fmri = f.get_fmri(anarchy=True,
@@ -1126,8 +1130,8 @@ def transfer_pkgs(pargs, target, list_newest, all_versions, all_timestamps,
         for src_pub in xport_cfg.gen_publishers():
                 tracker = get_tracker()
                 if list_newest:
-			# Make sure the prog tracker knows we're doing a listing
-			# operation so that it suppresses irrelevant output.
+                        # Make sure the prog tracker knows we're doing a listing
+                        # operation so that it suppresses irrelevant output.
                         tracker.set_purpose(tracker.PURPOSE_LISTING)
 
                         if pargs or len(pargs) > 0:
@@ -1275,7 +1279,7 @@ def transfer_pkgs(pargs, target, list_newest, all_versions, all_timestamps,
                         for s in status:
                                 msg("%s %s" % (s[0].rjust(rjust_status),
                                     s[1].rjust(rjust_value)))
- 
+
                         msg(_("\nPackages to transfer:"))
                         for f in sorted(pkgs_to_get):
                                 fmri = f.get_fmri(anarchy=True,
