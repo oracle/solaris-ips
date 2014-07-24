@@ -66,7 +66,7 @@ def main_func():
         usage = \
             _("\n"
             "        %prog [-b build_no] [-c cache_dir] [-f file]\n"
-            "            [-l uri] [-p regexp] [-r uri] [-v]\n"
+            "            [-l uri ...] [-p regexp] [-r uri ...] [-v]\n"
             "            [manifest ...]\n"
             "        %prog -L")
         parser = OptionParser(usage=usage)
@@ -102,14 +102,6 @@ def main_func():
         pattern = opts.pattern
         opts.ref_uris = _make_list(opts.ref_uris)
         opts.lint_uris = _make_list(opts.lint_uris)
-
-        if len(opts.ref_uris) > 1:
-                parser.error(
-                    _("Only one -r option is supported."))
-
-        if len(opts.lint_uris) > 1:
-                parser.error(
-                   _("Only one -l option is supported."))
 
         logger = logging.getLogger("pkglint")
         ch = logging.StreamHandler(sys.stdout)

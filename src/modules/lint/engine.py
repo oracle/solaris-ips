@@ -25,7 +25,9 @@
 #
 
 import pkg.client.api
+import pkg.client.api_errors as apx
 import pkg.client.progress as progress
+import pkg.client.publisher as publisher
 import pkg.lint.base as base
 import pkg.lint.config
 import pkg.fmri
@@ -851,14 +853,9 @@ class LintEngine(object):
                 os.chdir(cdir)
                 return api_inst
 
-        def _create_image(self,  image_dir, repo_uris):
+        def _create_image(self, image_dir, repo_uris):
                 """Create image in the given image directory. For now, only
                 a single publisher is supported per image."""
-
-                if len(repo_uris) != 1:
-                        raise LintEngineSetupException(
-                            _("pkglint only supports a single publisher "
-                            "per image."))
 
                 tracker = self.get_tracker()
 
@@ -871,9 +868,10 @@ class LintEngine(object):
                 # Check to see if a scheme was used, if not, treat it as a
                 # file:// URI, and get the absolute path.  Missing or invalid
                 # repositories will be caught by pkg.client.api.image_create.
-                if not urllib2.urlparse.urlparse(repo_uris[0]).scheme:
-                        repo_uris[0] = "file://%s" % \
-                            urllib2.quote(os.path.abspath(repo_uris[0]))
+                for i, uri in enumerate(repo_uris):
+                        if not urllib2.urlparse.urlparse(uri).scheme:
+                                repo_uris[i] = "file://%s" % \
+                                    urllib2.quote(os.path.abspath(uri))
 
                 try:
                         api_inst = pkg.client.api.image_create(
@@ -884,7 +882,77 @@ class LintEngine(object):
                             repo_uri=repo_uris[0])
                 except (ApiException, OSError, IOError), err:
                         raise LintEngineSetupException(err)
+
+                # Check to see if multiple repositories are specified.
+                repo_uris.pop(0)
+                if repo_uris:
+                        try:
+                                self._set_publisher(api_inst, repo_uris)
+                        except ApiException, e:
+                                api_inst._img.destroy()
+                                if os.path.abspath(image_dir) != "/" and \
+                                    os.path.exists(image_dir):
+                                        shutil.rmtree(image_dir, True)
+                                raise LintEngineSetupException(e)
+
                 return api_inst
+
+        def _set_publisher(self, api_inst, repo_uris):
+                """Helper function to set publishers on a ref or lint image."""
+
+                for repo_uri in repo_uris:
+                        repo = publisher.RepositoryURI(repo_uri)
+                        pubs = []
+                        try:
+                                pubs = api_inst.get_publisherdata(repo=repo)
+                        except apx.UnsupportedRepositoryOperation:
+                                raise
+
+                        for pub in sorted(pubs):
+                                prefix = pub.prefix
+                                src_repo = pub.repository
+                                if api_inst.has_publisher(prefix=prefix):
+                                        add_origins = []
+                                        dest_pub = api_inst.get_publisher(
+                                            prefix=prefix, duplicate=True)
+                                        dest_repo = dest_pub.repository
+                                        # dest_repo.origins is not None here
+                                        # after invoking api.image_create()
+                                        # in _create_image().
+                                        if not dest_repo.has_origin(repo_uri):
+                                                add_origins = [repo_uri]
+
+                                        if src_repo:
+                                                # Add unknown origins but avoid
+                                                # duplicates.
+                                                add_origins = [
+                                                    u.uri
+                                                    for u in src_repo.origins
+                                                    if u.uri not in \
+                                                        dest_repo.origins
+                                                ]
+
+                                        for u in add_origins:
+                                                dest_repo.add_origin(u)
+
+                                        api_inst.update_publisher(dest_pub,
+                                            refresh_allowed=False)
+                                else:
+                                        if not src_repo:
+                                                # Repository configuration info
+                                                # was not provided, assume
+                                                # origin is repo_uri.
+                                                pub.repository = \
+                                                    publisher.Repository(
+                                                    origins=[repo_uri])
+                                        elif not src_repo.origins:
+                                                # No origin was provided in
+                                                # repository configuration,
+                                                # assume origin is repo_uri.
+                                                src_repo.add_origin(repo_uri)
+
+                                        api_inst.add_publisher(pub,
+                                            refresh_allowed=False)
 
         def _check_manifest(self, manifest, manifest_checks, action_checks):
                 """Check a given manifest."""

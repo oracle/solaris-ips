@@ -1,6 +1,6 @@
 '\" te
 .\" Copyright (c) 2007, 2014, Oracle and/or its affiliates. All rights reserved.
-.TH pkglint 1 "14 Jan 2014" "SunOS 5.12" "User Commands"
+.TH pkglint 1 "29 Apr 2014" "SunOS 5.12" "User Commands"
 .SH NAME
 pkglint \- Image Packaging System package lint
 .SH SYNOPSIS
@@ -8,7 +8,7 @@ pkglint \- Image Packaging System package lint
 .nf
 /usr/bin/pkglint [-c \fIcache_dir\fR] [-r \fIrepo_uri\fR]... [-p \fIregexp\fR]
     [-f \fIconfig_file\fR] [-b \fIbuild_no\fR] [-v]
-    [-l \fIlint_uri\fR] | \fImanifest\fR ...
+    [-l \fIlint_uri\fR]... | \fImanifest\fR ...
 .fi
 
 .LP
@@ -96,7 +96,7 @@ Specify a local directory used for caching package metadata from the lint and re
 .ad
 .sp .6
 .RS 4n
-Specify a URI representing the location of the lint repository. Both HTTP and file system based publication are supported. If you specify \fB-l\fR, then you must also specify \fB-c\fR.
+Specify a URI representing the location of the lint repository. Both HTTP and file system based publication are supported. If you specify \fB-l\fR, then you must also specify \fB-c\fR. The \fB-l\fR option can be specified multiple times.
 .RE
 
 .sp

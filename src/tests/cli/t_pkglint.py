@@ -512,7 +512,8 @@ dir group=sys mode=0755 owner=root path=etc
 
         def setUp(self):
                 pkg5unittest.ManyDepotTestCase.setUp(self, ["opensolaris.org",
-                    "opensolaris.org"], start_depots=True)
+                    "opensolaris.org", "test", "nopubconfig", "test"],
+                    start_depots=True)
 
                 self.ref_uri = self.dcs[1].get_depot_url()
                 self.lint_uri = self.dcs[2].get_depot_url()
@@ -542,16 +543,22 @@ dir group=sys mode=0755 owner=root path=etc
                             exit=2)
                         self.pkglint("-r %s -l %s" % (uri, self.ref_uri),
                             exit=2)
-                        self.pkglint
 
                         if os.path.exists(cache):
                                 shutil.rmtree(cache)
-
                         self.pkglint("-c %s -l %s" % (cache, uri), exit=2)
                         self.pkglint("-c %s -r %s -l %s" %
                             (cache, self.lint_uri, uri), exit=2)
                         self.pkglint("-c %s -r %s -l %s" %
                             (cache, uri, self.ref_uri), exit=2)
+
+                        # If one of the specified repositories is bad, pkglint
+                        # should fail.
+                        self.pkglint("-c %s -r %s -r %s -l %s" %
+                            (cache, self.ref_uri, uri, self.lint_uri), exit=2)
+                        shutil.rmtree(cache)
+                        self.pkglint("-c %s -l %s -l %s" %
+                            (cache, self.ref_uri, uri), exit=2)
 
         def test_2_badcache(self):
                 """Checks we can deal with bad -c options """
@@ -620,6 +627,122 @@ dir group=sys mode=0755 owner=root path=etc
                 for cmd in cmdlines:
                         self.pkglint(cmd)
                         shutil.rmtree(self.cache_dir)
+
+        def test_6_multiple_repos(self):
+                """Checks that pkglint can accept multiple ref and lint
+                repositories. Actually it is to test multiple publishers can be
+                set on the same ref or lint image after it was created."""
+
+                mpath1 = self.make_manifest(self.ref_mf["ref-sample1.mf"])
+                durl3 = self.dcs[3].get_depot_url()
+                durl4 = self.dcs[4].get_depot_url()
+                durl5 = self.dcs[5].get_depot_url()
+
+                # First test the case of adding new publishers.
+                # Verify that adding new publishers from following ref/lint
+                # repositories will work. When repository configuration info was
+                # not provided, pkglint will assume the repo uri is the origin...
+                self.pkglint("-c %s -r %s -r %s -r %s %s" %
+                    (self.cache_dir, self.ref_uri, durl3, durl5, mpath1))
+                self.pkg("-R %s/ref_image publisher" % self.cache_dir)
+                self.assert_("opensolaris.org" in self.output and
+                    "test" in self.output and durl3 in self.output and
+                    durl5 in self.output)
+                self.pkglint("-c %s -l %s -l %s -l %s" %
+                    (self.cache_dir, self.ref_uri, durl3, durl5))
+                self.pkg("-R %s/lint_image publisher" % self.cache_dir)
+                self.assert_("opensolaris.org" in self.output and
+                    "test" in self.output and durl3 in self.output and
+                    durl5 in self.output)
+                shutil.rmtree(self.cache_dir)
+
+                # ... and when no origin was provided in repository
+                # configuration, pkglint will assume that the provided
+                # repo uri is the origin to add.
+                self.pkgrepo("set -s %s -p test repository/origins=''" %
+                    self.dcs[3].get_repodir())
+                self.dcs[3].refresh()
+                self.pkglint("-c %s -r %s -r %s %s" %
+                    (self.cache_dir, self.ref_uri, durl3, mpath1))
+                self.pkg("-R %s/ref_image publisher | grep %s" %
+                    (self.cache_dir, durl3))
+                self.pkglint("-c %s -l %s -l %s" %
+                    (self.cache_dir, self.ref_uri, durl3))
+                self.pkg("-R %s/lint_image publisher | grep %s" %
+                    (self.cache_dir, durl3))
+                shutil.rmtree(self.cache_dir)
+
+                # Verify that adding new publishers from multipublisher
+                # repository will work.
+                self.pkgrepo("set -s %s -p second-pub -p third-pub "
+                    "publisher/alias=''" % self.dcs[3].get_repodir())
+                self.dcs[3].refresh()
+                self.pkglint("-c %s -r %s -r %s %s" %
+                    (self.cache_dir, self.ref_uri, durl3, mpath1))
+                self.pkg("-R %s/ref_image publisher" % self.cache_dir)
+                self.assert_("opensolaris.org" in self.output and
+                    "test" in self.output and "second-pub" in self.output and
+                    "third-pub" in self.output)
+                self.pkglint("-c %s -l %s -l %s" %
+                    (self.cache_dir, self.ref_uri, durl3))
+                self.pkg("-R %s/lint_image publisher" % self.cache_dir)
+                self.assert_("opensolaris.org" in self.output and
+                    "test" in self.output and "second-pub" in self.output and
+                    "third-pub" in self.output)
+                shutil.rmtree(self.cache_dir)
+ 
+                # The fourth depot is purposefully one with the publisher
+                # operation disabled.
+                self.dcs[4].stop()
+                self.dcs[4].set_disable_ops(["publisher/0"])
+                self.dcs[4].start()
+ 
+                # Verify that a repository that doesn't support publisher
+                # operation will fail.
+                cmdlines = ["-c %s -r %s -r %s %s" %
+                    (self.cache_dir, self.ref_uri, durl4, mpath1),
+                    "-c %s -l %s -l %s" %
+                    (self.cache_dir, self.ref_uri, durl4)
+                ]
+                for cmd in cmdlines:
+                        self.pkglint(cmd, exit=2)
+                shutil.rmtree(self.cache_dir)
+ 
+                # Now test the case of updating publishers.
+                # Verify that updating the exising publishers by following
+                # ref/lint repositories will work.
+                self.pkglint("-c %s -r %s -r %s %s" %
+                    (self.cache_dir, self.ref_uri, self.lint_uri, mpath1))
+                self.pkg("-R %s/ref_image publisher" % self.cache_dir)
+                self.assert_(self.ref_uri in self.output,
+                    self.lint_uri in self.output)
+                self.pkglint("-c %s -l %s -l %s" %
+                    (self.cache_dir, self.ref_uri, self.lint_uri))
+                self.pkg("-R %s/lint_image publisher" % self.cache_dir)
+                self.assert_(self.ref_uri in self.output,
+                    self.lint_uri in self.output)
+                shutil.rmtree(self.cache_dir)
+ 
+                # Verify that when origins were provided in a repository, pkglint
+                # will only add those unknown origins of the repository to the
+                # existing and configured origins of the image.
+                self.pkgrepo("set -s %s -p test repository/origins=%s "
+                    "repository/origins=%s" %
+                    (self.dcs[3].get_repodir(), durl3, durl5))
+                self.pkgrepo("set -s %s -p test repository/origins=%s "
+                    "repository/origins=%s" %
+                    (self.dcs[5].get_repodir(), durl3, durl5))
+                self.dcs[5].refresh()
+                self.pkglint("-c %s -r %s -r %s %s" % \
+                    (self.cache_dir, durl3, durl5, mpath1))
+                self.pkg("-R %s/ref_image publisher" % self.cache_dir)
+                self.assert_(self.output.count(durl5) == 1)
+                self.pkglint("-c %s -l %s -l %s" % \
+                    (self.cache_dir, durl3, durl5))
+                self.pkg("-R %s/lint_image publisher" % self.cache_dir)
+                self.assert_(self.output.count(durl5) == 1)
+                shutil.rmtree(self.cache_dir)
+
 
 if __name__ == "__main__":
         unittest.main()
