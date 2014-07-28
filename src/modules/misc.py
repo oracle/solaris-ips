@@ -1715,7 +1715,7 @@ def flush_output():
                 raise api_errors._convert_error(e)
 
 # valid json types
-json_types_immediates = (bool, float, int, long, str, type(None), unicode)
+json_types_immediates = (bool, float, int, long, basestring, type(None))
 json_types_collections = (dict, list)
 json_types = tuple(json_types_immediates + json_types_collections)
 json_debug = False
@@ -1845,13 +1845,21 @@ def json_encode(name, data, desc, commonize=None, je_state=None):
         data_type = getattr(data, "__metaclass__", type(data))
 
         # sanity check that the data type matches the description
-        assert desc_type == data_type, \
+        assert issubclass(data_type, desc_type), \
             "unexpected %s for %s, expected: %s, value: %s" % \
                 (data_type, name, desc_type, data)
 
+        # We should not see unicode strings getting passed in. The assert is
+        # necessary since we force unicode objects back into escaped str
+        # objects during json_decode which would convert unicode to str objects
+        # unintentionally.
+        assert not isinstance(data_type, unicode), \
+            "unexpected unicode string: %s" % data
+
         # we don't need to do anything for basic types
-        if desc_type in json_types_immediates:
-                return je_return(name, data, finish, je_state)
+        for t in json_types_immediates:
+                if issubclass(desc_type, t):
+                        return je_return(name, data, finish, je_state)
 
         # encode elements nested in a dictionary like object
         # return elements in a dictionary
@@ -2045,9 +2053,14 @@ def json_decode(name, data, desc, commonize=None, jd_state=None):
                 data_type = getattr(data, "__metaclass__", type(data))
 
                 # sanity check that the data type matches the description
-                assert desc_type == data_type, \
+                assert issubclass(data_type, desc_type), \
                     "unexpected %s for %s, expected: %s, value: %s" % \
                         (data_type, name, desc_type, rv)
+
+                # Pkg handles unicode strings as escaped ascii strings but JSON
+                # will return them as unicode objects. Convert back to ascii.
+                if isinstance(data, unicode):
+                        data = data.encode("utf8")
 
                 if not finish:
                         return data
@@ -2066,9 +2079,10 @@ def json_decode(name, data, desc, commonize=None, jd_state=None):
                 desc_type = type(desc)
 
         # we don't need to do anything for basic types
-        if desc_type in json_types_immediates:
-                rv = None
-                return jd_return(name, data, desc, finish, jd_state)
+        for t in json_types_immediates:
+                if issubclass(desc_type, t):
+                        rv = None
+                        return jd_return(name, data, desc, finish, jd_state)
 
         # decode elements nested in a dictionary
         # return elements in the specified dictionary like object

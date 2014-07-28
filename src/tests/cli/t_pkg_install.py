@@ -1,4 +1,5 @@
 #!/usr/bin/python
+# -*- coding: utf-8 -*-
 #
 # CDDL HEADER START
 #
@@ -247,7 +248,7 @@ class TestPkgInstallBasics(pkg5unittest.SingleDepotTestCase):
             open fbar@1.1,5.11-0
             add depend type=require fmri=pkg:/ffoo@1.0
             add dir mode=0755 owner=root group=bin path=/bin
-            add file tmp/cat mode=0555 owner=root group=bin path=/bin/cat
+            add file tmp/cat mode=0555 owner=root group=bin path=/bin/cät
             close """
 
         secret1 = """
@@ -2139,7 +2140,7 @@ class TestPkgInstallUpgrade(_TestHelper, pkg5unittest.SingleDepotTestCase):
             add hardlink path=/lib/libc.hardlink target=/lib/libc.so.1
             add file tmp/amber1 mode=0444 owner=root group=bin path=/etc/amber1
             add file tmp/amber2 mode=0444 owner=root group=bin path=/etc/amber2
-            add license tmp/copyright1 license=copyright
+            add license tmp/copyright1 license=copyright_ä
             close
         """
 

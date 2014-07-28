@@ -97,7 +97,7 @@ class PkgPlan(object):
         __state__desc = {
             "_autofix_pkgs": [ pkg.fmri.PkgFmri ],
             "_license_status": {
-                str: {
+                basestring: {
                     "src": pkg.actions.generic.NSG,
                     "dest": pkg.actions.generic.NSG,
                 },

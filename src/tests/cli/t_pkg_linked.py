@@ -1,4 +1,5 @@
 #!/usr/bin/python
+# -*- coding: utf-8 -*-
 #
 # CDDL HEADER START
 #
@@ -63,6 +64,7 @@ class TestPkgLinked(pkg5unittest.ManyDepotTestCase):
         p_files = [
             "tmp/bar",
             "tmp/baz",
+            "tmp/copyright",
         ]
 
         # generate packages that don't need to be synced
@@ -73,8 +75,8 @@ class TestPkgLinked(pkg5unittest.ManyDepotTestCase):
                 p_data = "open %s\n" % p_foo1_name[i]
                 p_data += """
                     add set name=variant.foo value=bar value=baz
-                    add file tmp/bar mode=0555 owner=root group=bin path=foo_bar variant.foo=bar
-                    add file tmp/baz mode=0555 owner=root group=bin path=foo_baz variant.foo=baz
+                    add file tmp/bar mode=0555 owner=root group=bin path=foo_bär variant.foo=bar
+                    add file tmp/baz mode=0555 owner=root group=bin path=foo_bäz variant.foo=baz
                     close\n"""
                 p_foo1.append(p_data)
 
@@ -102,6 +104,7 @@ class TestPkgLinked(pkg5unittest.ManyDepotTestCase):
                     add set name=variant.foo value=bar value=baz
                     add file tmp/bar mode=0555 owner=root group=bin path=sync1_bar variant.foo=bar
                     add file tmp/baz mode=0555 owner=root group=bin path=sync1_baz variant.foo=baz
+                    add license tmp/copyright license=copyright_⌘⛷༂
                     close\n"""
                 p_sync1.append(p_data)
 
