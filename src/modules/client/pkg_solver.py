@@ -354,7 +354,7 @@ class PkgSolver(object):
                 list of packages to reject, the list of packages to avoid
                 during the operation, and the list of packages that must not be
                 removed from the image.
-                
+
                 'rejected' is a set of package stems to reject.
 
                 'proposed' is an optional set of FMRI objects representing
@@ -1435,7 +1435,7 @@ class PkgSolver(object):
                 last_ver = None
                 for i, f in enumerate(comb_fmris):
                         fver = f.version
-                        if ((fver.is_successor(mver, constraint=constraint) or 
+                        if ((fver.is_successor(mver, constraint=constraint) or
                             fver == mver)):
                                 if first_ver is None:
                                         first_ver = i
@@ -1538,7 +1538,7 @@ class PkgSolver(object):
                         # Trim package entries that have unparseable action data
                         # so that they can be filtered out later.
                         self.__fmri_state[fmri] = ("false", "false")
-                        self.__trim_unsupported(fmri) 
+                        self.__trim_unsupported(fmri)
                         return
 
                 self.__fmri_state[fmri] = (
@@ -2712,8 +2712,10 @@ class PkgSolver(object):
                                         reason = N_("Package doesn't support "
                                             "image architecture")
                                 else:
-                                        reason = (N_("Package doesn't support "
-                                            "image variant {0}"), (v,))
+                                        reason = (N_("Package supports image "
+                                            "variant {0}=[{1}] but doesn't "
+                                            "support this image's {0} ({2})"),
+                                            (v, vd[v], self.__variants[v]))
 
                                 self.__trim(fmri, _TRIM_VARIANT, reason)
                 return reason == ""
