@@ -40,6 +40,7 @@ import pkg.pkggzip
 import pkg.misc as misc
 import pkg.server.repository as sr
 import pkg.client.api_errors as apx
+import pkg.p5p
 import shutil
 import tempfile
 import time
@@ -670,6 +671,68 @@ test\t3\tonline\t%sZ
                 shutil.rmtree(repo_path)
                 self.create_repo(repo_path)
                 self.__test_info(repo_path, repo_uri)
+                shutil.rmtree(repo_path)
+
+                # Create a repository.
+                repo_path = self.dc.get_repodir()
+                self.create_repo(repo_path)
+                # Set a default publisher.
+                self.pkgrepo("set -s %s publisher/prefix=test" % repo_path)
+                plist = self.pkgsend_bulk(self.rurl, (self. tree10,
+                    self.amber10, self.amber20))
+                tree10 = fmri.PkgFmri(plist[0])
+                amber10 = fmri.PkgFmri(plist[1])
+                amber20 = fmri.PkgFmri(plist[2])
+
+                # Add a new publisher and set it as default.
+                self.pkgrepo("add-publisher -s %s test1" % repo_path)
+                self.pkgrepo("set -s %s publisher/prefix=test1" %
+                    repo_uri)
+                repo = self.get_repo(self.dc.get_repodir())
+                plist = self.pkgsend_bulk(self.rurl, self.zoo10)
+                zoo10 = fmri.PkgFmri(plist[0])
+
+                # Prep the archive.
+                arc_path = os.path.join(self.test_root,
+                    "test_info_empty_archive.p5p")
+                arc = pkg.p5p.Archive(arc_path, mode="w")
+                arc.close()
+
+                # pkg info on empty archive will not print anything.
+                self.pkgrepo("info -s %s -HF tsv" % arc_path)
+                self.assertEqualDiff("", self.output)
+
+                # Archive with one publisher and 2 packages. One of the
+                # package has two versions
+                arc_path = os.path.join(self.test_root,
+                    "test_info_1pub_archive.p5p")
+                arc = pkg.p5p.Archive(arc_path, mode="w")
+                # Create an archive with packages.
+                arc.add_repo_package(tree10, repo)
+                arc.add_repo_package(amber10, repo)
+                arc.add_repo_package(amber20, repo)
+                arc.close()
+                self.pkgrepo("info -s %s -HF tsv" % arc_path)
+                expected="""\
+test\t2\tonline\t2011-08-04T20:34:58Z
+"""
+                self.assertEqualDiff(expected, self.output)
+
+                # Archive with two publishers.
+                arc_path = os.path.join(self.test_root,
+                    "test_info_2pub_archive.p5p")
+                arc = pkg.p5p.Archive(arc_path, mode="w")
+                arc.add_repo_package(tree10, repo)
+                arc.add_repo_package(amber10, repo)
+                arc.add_repo_package(amber20, repo)
+                arc.add_repo_package(zoo10, repo)
+                arc.close()
+                self.pkgrepo("info -s %s -HF tsv" % arc_path)
+                expected="""\
+test\t2\tonline\t2011-08-04T20:34:58Z
+test1\t1\tonline\t2011-08-04T20:34:58Z
+"""
+                self.assertEqualDiff(expected, self.output)
                 shutil.rmtree(repo_path)
 
                 # Create a repository and verify http-based repository access.

@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2009, 2013, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2009, 2014, Oracle and/or its affiliates. All rights reserved.
 #
 
 import cStringIO
@@ -46,6 +46,8 @@ import pkg.server.query_parser as sqp
 
 from email.utils import formatdate
 from pkg.misc import N_
+import tempfile
+import shutil
 
 class TransportRepo(object):
         """The TransportRepo class handles transport requests.
@@ -1863,6 +1865,57 @@ class _ArchiveRepo(TransportRepo):
 
                 self._verdata = verdict
 
+        def get_status(self, header=None, ccancel=None):
+                """Get the archive status."""
+
+                pubsinfo = {}
+                arcdata = {
+                    "repository": {
+                        "publishers": pubsinfo,
+                        "version": self._arc.version, # Version of archive.
+                    }
+                }
+
+                for pub in self._arc.get_publishers():
+                        try:
+                                # Create temporary directory.
+                                tmpdir = tempfile.mkdtemp(prefix="tmp.repo.")
+                                # Get catalog.
+                                self.get_catalog1(["catalog.attrs"], tmpdir,
+                                    pub=pub, header=header)
+
+                                cat = pkg.catalog.Catalog(meta_root=tmpdir)
+                                pubinfo = {}
+                                pubinfo["last-catalog-update"] = \
+                                        pkg.catalog.datetime_to_basic_ts(
+                                            cat.last_modified)
+                                pubinfo["package-count"] = cat.package_count
+                                pubinfo["status"] = "online"
+                                pubsinfo[pub.prefix] = {
+                                    "package-count": cat.package_count,
+                                    "last-catalog-update":
+                                    pkg.catalog.datetime_to_basic_ts(
+                                    cat.last_modified),
+                                    "status": "online",
+                                }
+                        finally:
+                                # Remove temporary directory if possible.
+                                shutil.rmtree(tmpdir, ignore_errors=True)
+
+                buf = cStringIO.StringIO()
+                try:
+                        json.dump(arcdata, buf, ensure_ascii=False, indent=2,
+                            sort_keys=True)
+                        buf.write("\n")
+                except Exception, e:
+                        reason = "Unable to retrieve status data:\n%s" % e
+                        ex = tx.TransportProtoError("file", errno.EPROTO,
+                            reason=reason, repourl=self._url)
+                        self.__record_proto_error(ex)
+                        raise ex
+                buf.seek(0)
+                return buf
+
         def get_catalog1(self, filelist, destloc, header=None, ts=None,
             progtrack=None, pub=None, revalidate=False, redownload=False):
                 """Get the files that make up the catalog components
@@ -2042,6 +2095,7 @@ class _ArchiveRepo(TransportRepo):
                     "manifest": ["0"],
                     "publisher": ["0", "1"],
                     "versions": ["0"],
+                    "status": ["0"]
                 }
 
                 buf.write("pkg-server %s\n" % pkg.VERSION)

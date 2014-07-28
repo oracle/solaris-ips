@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2011, 2013, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2011, 2014, Oracle and/or its affiliates. All rights reserved.
 #
 
 import atexit
@@ -821,6 +821,7 @@ class Archive(object):
                 # in memory based on packages found for publisher.
                 cat = pkg.catalog.Catalog(batch_mode=True)
                 manpath = os.path.join(pubpath, "pkg") + os.path.sep
+                lm = None
                 for name in self.__extract_offsets:
                         if name.startswith(manpath) and name.count("/") == 4:
                                 ignored, stem, ver = name.rsplit("/", 2)
@@ -828,6 +829,10 @@ class Archive(object):
                                 ver = urllib.unquote(ver)
                                 pfmri = pkg.fmri.PkgFmri(name=stem,
                                     publisher=pub, version=ver)
+
+                                pfmri_tmp_ts = pfmri.get_timestamp()
+                                if not lm or lm < pfmri_tmp_ts:
+                                        lm = pfmri_tmp_ts
 
                                 fobj = self.get_file(name)
                                 m = pkg.manifest.Manifest(pfmri=pfmri)
@@ -841,6 +846,8 @@ class Archive(object):
                 cat.meta_root = croot
                 cat.batch_mode = False
                 cat.finalize()
+                if lm:
+                        cat.last_modified = lm
                 cat.save()
                 self.__catalogs[pub] = croot
 
