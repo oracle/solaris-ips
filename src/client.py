@@ -632,13 +632,13 @@ def list_inventory(op, api_inst, pargs,
                         pass
                 elif pkg_list == api.ImageInterface.LIST_ALL or \
                     pkg_list == api.ImageInterface.LIST_NEWEST:
-                        error(_("no packages matching '%s' known") % \
-                            ", ".join(e.notfound), cmd=op)
+                        error(_("no known packages matching:\n  %s") %
+                            "\n  ".join(e.notfound), cmd=op)
                 elif pkg_list == api.ImageInterface.LIST_INSTALLED_NEWEST:
-                        error(_("no packages matching '%s' allowed by "
-                            "installed incorporations, or image variants that "
-                            "are known or installed") % \
-                            ", ".join(e.notfound), cmd=op)
+                        error(_("no packages matching the following patterns "
+                            "are allowed by installed incorporations, or image "
+                            "variants that are known or installed\n  %s") %
+                            "\n  ".join(e.notfound), cmd=op)
                         logger.error("Use -af to allow all versions.")
                 elif pkg_list == api.ImageInterface.LIST_UPGRADABLE:
                         # Creating a list of packages that are uptodate
@@ -655,28 +655,21 @@ def list_inventory(op, api_inst, pargs,
                                 not_installed = exc.notfound
 
                         err_str = ""
-                        if len(not_installed) == 1:
-                                err_str = _("No package matching '%s'"
-                                    " is installed. ") % \
-                                    not_installed[0]
-                        elif not_installed:
-                                err_str = _("No packages matching '%s'"
-                                    " are installed. ") % \
-                                    ", ".join(not_installed)
+                        if not_installed:
+                                err_str = _("no packages matching the following"
+                                    " patterns are installed:\n  %s") % \
+                                    "\n  ".join(not_installed)
 
-                        if len(no_updates) == 1:
-                                err_str = err_str + _("No updates are available"
-                                          " for package '%s'.") % \
-                                            no_updates[0]
-                        elif no_updates:
-                                err_str = err_str + _("No updates are available"
-                                          " for packages '%s'.") % \
-                                            ", ".join(no_updates)
+                        if no_updates:
+                                err_str = err_str + _("no updates are available"
+                                    " for the following packages:\n  %s") % \
+                                    "\n  ".join(no_updates)
                         if err_str:
                                 error(err_str, cmd=op)
                 else:
-                        error(_("No packages matching '%s' installed") % \
-                            ", ".join(e.notfound), cmd=op)
+                        error(_("no packages matching the following patterns "
+                            "are installed:\n  %s") %
+                            "\n  ".join(e.notfound), cmd=op)
 
                 if found and e.notfound:
                         # Only some patterns matched.
@@ -786,8 +779,9 @@ def fix_image(api_inst, args):
                         # partial failure case.
                         logger.error(" ")
 
-                error(_("no packages matching '%s' installed") % \
-                    ", ".join(e.notfound), cmd="fix")
+                error(_("no packages matching the following patterns are "
+                    "installed:\n  %s") %
+                    "\n  ".join(e.notfound), cmd="fix")
 
                 if found and e.notfound:
                         # Only some patterns matched.
@@ -968,8 +962,9 @@ def verify_image(api_inst, args):
                         # Ensure a blank line is inserted after verify output.
                         logger.error(" ")
 
-                error(_("no packages matching '%s' installed") % \
-                    ", ".join(notfound), cmd="verify")
+                error(_("no packages matching the following patterns are "
+                    "installed:\n  %s") %
+                    "\n  ".join(notfound), cmd="verify")
 
                 if processed:
                         if any_errors:

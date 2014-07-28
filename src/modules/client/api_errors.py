@@ -1124,7 +1124,7 @@ class InventoryException(ApiException):
                 self.notfound.update(matcher)
                 self.notfound.update(publisher)
                 self.notfound.update(version)
-                self.notfound = list(self.notfound)
+                self.notfound = sorted(list(self.notfound))
 
                 assert self.illegal or self.notfound
 
