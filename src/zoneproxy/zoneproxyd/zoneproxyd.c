@@ -19,7 +19,7 @@
  * CDDL HEADER END
  */
 /*
- * Copyright (c) 2010, 2012, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2010, 2014, Oracle and/or its affiliates. All rights reserved.
  */
 
 /*
@@ -179,10 +179,11 @@ int		g_max_door_thread = DOOR_THREAD_MAX;
 int		g_door_thread_count = 0;
 uint_t		g_proxy_pair_count = 0;
 thread_key_t	g_thr_info_key;
-mutex_t		*g_door_thr_lock;
+static mutex_t	g_attach_zone_lock = DEFAULTMUTEX;
+static mutex_t	g_door_thr_lock = DEFAULTMUTEX;
 cond_t		*g_door_thr_cv;
-mutex_t		*g_listener_lock;
-mutex_t		*g_thr_pool_lock;
+static mutex_t	g_listener_lock = DEFAULTMUTEX;
+static mutex_t	g_thr_pool_lock = DEFAULTMUTEX;
 
 /* global variables protected by g_thr_pool_lock */
 int		g_tp_running_threads;
@@ -423,9 +424,9 @@ clone_and_register(struct proxy_pair *pair)
 	 * he's already running, just return.  In the worst case the manager
 	 * will double-check the number of threads after the timeout.
 	 */
-	if (mutex_trylock(g_thr_pool_lock) == 0) {
+	if (mutex_trylock(&g_thr_pool_lock) == 0) {
 		(void) cond_signal(&g_thr_pool_cv);
-		(void) mutex_unlock(g_thr_pool_lock);
+		(void) mutex_unlock(&g_thr_pool_lock);
 	}
 
 	return (0);
@@ -535,11 +536,11 @@ proxy_thread_loop(void *arg)
 				 * Unexpected error.  Adjust thread
 				 * bean counters and exit.
 				 */
-				(void) mutex_lock(g_thr_pool_lock);
+				(void) mutex_lock(&g_thr_pool_lock);
 				g_tp_exited_threads++;
 				g_tp_running_threads--;
 				(void) cond_signal(&g_thr_pool_cv);
-				(void) mutex_unlock(g_thr_pool_lock);
+				(void) mutex_unlock(&g_thr_pool_lock);
 				perror("port_get");
 				thr_exit(NULL);
 			}
@@ -552,7 +553,7 @@ proxy_thread_loop(void *arg)
 		 * should exit.
 		 */
 		if (timed_out && timeouts > TIMEOUT_COUNT) {
-			(void) mutex_lock(g_thr_pool_lock);
+			(void) mutex_lock(&g_thr_pool_lock);
 			if ((g_proxy_pair_count < g_tp_running_threads) &&
 			    (g_tp_running_threads > g_tp_min_threads)) {
 				g_tp_exited_threads++;
@@ -560,7 +561,7 @@ proxy_thread_loop(void *arg)
 				should_exit = B_TRUE;
 				(void) cond_signal(&g_thr_pool_cv);
 			}
-			(void) mutex_unlock(g_thr_pool_lock);
+			(void) mutex_unlock(&g_thr_pool_lock);
 
 			if (should_exit) {
 				thr_exit(NULL);
@@ -837,11 +838,11 @@ zpd_door_loop(void *arg)
 	 * If g_door hasn't been set yet, wait for the main thread
 	 * to create the door.
 	 */
-	(void) mutex_lock(g_door_thr_lock);
+	(void) mutex_lock(&g_door_thr_lock);
 	while (g_door == -1) {
-		(void) cond_wait(g_door_thr_cv, g_door_thr_lock);
+		(void) cond_wait(g_door_thr_cv, &g_door_thr_lock);
 	}
-	(void) mutex_unlock(g_door_thr_lock);
+	(void) mutex_unlock(&g_door_thr_lock);
 
 	/* Bind to door's private pool */
 	if (door_bind(g_door) < 0) {
@@ -881,9 +882,9 @@ static void
 thread_exiting(void *arg)
 {
 	free(arg);
-	(void) mutex_lock(g_door_thr_lock);
+	(void) mutex_lock(&g_door_thr_lock);
 	g_door_thread_count--;
-	(void) mutex_unlock(g_door_thr_lock);
+	(void) mutex_unlock(&g_door_thr_lock);
 }
 
 /* ARGSUSED */
@@ -898,7 +899,7 @@ zpd_door_create_thread(door_info_t *dip)
 	if (dip == NULL)
 		return;
 
-	(void) mutex_lock(g_door_thr_lock);
+	(void) mutex_lock(&g_door_thr_lock);
 	if (g_door_thread_count < g_max_door_thread && !g_quit) {
 		rc = thr_create(NULL, 0, zpd_door_loop, NULL, THR_DAEMON,
 		    NULL);
@@ -908,7 +909,7 @@ zpd_door_create_thread(door_info_t *dip)
 			g_door_thread_count++;
 		}
 	}
-	(void) mutex_unlock(g_door_thr_lock);
+	(void) mutex_unlock(&g_door_thr_lock);
 }
 
 /*
@@ -923,7 +924,7 @@ thread_manager(void *arg)
 	int nthr = 0;
 	timestruc_t tmo;
 
-	(void) mutex_lock(g_thr_pool_lock);
+	(void) mutex_lock(&g_thr_pool_lock);
 	g_tp_exited_threads = 0;
 	g_tp_running_threads = 0;
 
@@ -976,9 +977,10 @@ thread_manager(void *arg)
 		/* sleep, waiting for timeout or cond_signal */
 		tmo.tv_sec = DEFAULT_TIMEOUT;
 		tmo.tv_nsec = 0;
-		(void) cond_reltimedwait(&g_thr_pool_cv, g_thr_pool_lock, &tmo);
+		(void) cond_reltimedwait(&g_thr_pool_cv,
+		    &g_thr_pool_lock, &tmo);
 	}
-	(void) mutex_unlock(g_thr_pool_lock);
+	(void) mutex_unlock(&g_thr_pool_lock);
 
 	return (arg);
 }
@@ -1129,7 +1131,7 @@ do_fattach(int door, char *path, boolean_t detach_only)
 }
 
 static void
-zpd_fattach_zone(zoneid_t zid, int door, boolean_t detach_only)
+__zpd_fattach_zone(zoneid_t zid, int door, boolean_t detach_only)
 {
 	char *path = ZP_DOOR_PATH;
 	int pid, stat, tmpl_fd;
@@ -1208,6 +1210,14 @@ zpd_fattach_zone(zoneid_t zid, int door, boolean_t detach_only)
 
 	(void) fprintf(stderr, "Internal error entering zone: %ld\n", zid);
 	drop_privs();
+}
+
+static void
+zpd_fattach_zone(zoneid_t zid, int door, boolean_t detach_only)
+{
+	(void) mutex_lock(&g_attach_zone_lock);
+	__zpd_fattach_zone(zid, door, detach_only);
+	(void) mutex_unlock(&g_attach_zone_lock);
 }
 
 static void
@@ -1315,7 +1325,7 @@ zpd_add_listener(zoneid_t zid, int fd, int pipefd, int closefd)
 	struct proxy_listener *old_listener;
 	struct proxy_listener *listener;
 
-	(void) mutex_lock(g_listener_lock);
+	(void) mutex_lock(&g_listener_lock);
 	old_listener = zpd_find_listener(zid);
 	if (old_listener) {
 		zpd_listener_cleanup(old_listener);
@@ -1341,7 +1351,7 @@ zpd_add_listener(zoneid_t zid, int fd, int pipefd, int closefd)
 		perror("port_associate");
 		goto fail;
 	}
-	(void) mutex_unlock(g_listener_lock);
+	(void) mutex_unlock(&g_listener_lock);
 	return (0);
 
 fail:
@@ -1350,7 +1360,7 @@ fail:
 		TAILQ_REMOVE(&zone_listener_list, listener, pl_list_link);
 		free_proxy_listener(listener);
 	}
-	(void) mutex_unlock(g_listener_lock);
+	(void) mutex_unlock(&g_listener_lock);
 	return (-1);
 }
 
@@ -1414,7 +1424,7 @@ zpd_remove_listener(struct proxy_listener *listener)
 	 * removes the listener, it should no longer be reachable by any other
 	 * thread.
 	 */
-	(void) mutex_lock(g_listener_lock);
+	(void) mutex_lock(&g_listener_lock);
 	for (wl = TAILQ_FIRST(&zone_listener_list); wl != NULL;
 	    wl = TAILQ_NEXT(wl, pl_list_link)) {
 		if (wl == listener) {
@@ -1424,7 +1434,7 @@ zpd_remove_listener(struct proxy_listener *listener)
 		}
 	}
 
-	(void) mutex_unlock(g_listener_lock);
+	(void) mutex_unlock(&g_listener_lock);
 
 	free_proxy_listener(listener);
 }
@@ -1440,12 +1450,12 @@ zpd_remove_zone(zoneid_t zid)
 {
 	struct proxy_listener *listener;
 
-	(void) mutex_lock(g_listener_lock);
+	(void) mutex_lock(&g_listener_lock);
 	listener = zpd_find_listener(zid);
 	if (listener) {
 		zpd_listener_cleanup(listener);
 	}
-	(void) mutex_unlock(g_listener_lock);
+	(void) mutex_unlock(&g_listener_lock);
 
 	return (0);
 }
@@ -2020,17 +2030,6 @@ main(int argc, char **argv)
 	/* Setup listener list. */
 	TAILQ_INIT(&zone_listener_list);
 
-	/* Initialize locks */
-	g_door_thr_lock = memalign(DEFAULT_LOCK_ALIGN, sizeof (mutex_t));
-	if (g_door_thr_lock == NULL) {
-		(void) fprintf(stderr, "Unable to allocate g_door_thr_lock\n");
-		exit(EXIT_FAILURE);
-	}
-	if (mutex_init(g_door_thr_lock, USYNC_THREAD, NULL) < 0) {
-		perror("mutex_init");
-		exit(EXIT_FAILURE);
-	}
-
 	g_door_thr_cv = memalign(DEFAULT_LOCK_ALIGN, sizeof (cond_t));
 	if (g_door_thr_cv == NULL) {
 		(void) fprintf(stderr, "Unable to allocate g_door_thr_cv\n");
@@ -2038,26 +2037,6 @@ main(int argc, char **argv)
 	}
 	if (cond_init(g_door_thr_cv, USYNC_THREAD, NULL) < 0) {
 		perror("cond_init");
-		exit(EXIT_FAILURE);
-	}
-
-	g_listener_lock = memalign(DEFAULT_LOCK_ALIGN, sizeof (mutex_t));
-	if (g_listener_lock == NULL) {
-		(void) fprintf(stderr, "Unable to allocate g_listener_lock\n");
-		exit(EXIT_FAILURE);
-	}
-	if (mutex_init(g_listener_lock, USYNC_THREAD, NULL) < 0) {
-		perror("mutex_init");
-		exit(EXIT_FAILURE);
-	}
-
-	g_thr_pool_lock = memalign(DEFAULT_LOCK_ALIGN, sizeof (mutex_t));
-	if (g_thr_pool_lock == NULL) {
-		(void) fprintf(stderr, "Unable to alloc g_thr_pool_lock\n");
-		exit(EXIT_FAILURE);
-	}
-	if (mutex_init(g_thr_pool_lock, USYNC_THREAD, NULL) < 0) {
-		perror("mutex_init");
 		exit(EXIT_FAILURE);
 	}
 
@@ -2085,16 +2064,16 @@ main(int argc, char **argv)
 	/* Setup door */
 	(void) door_server_create(zpd_door_create_thread);
 
-	(void) mutex_lock(g_door_thr_lock);
+	(void) mutex_lock(&g_door_thr_lock);
 	g_door = door_create(zpd_door_server, NULL,
 	    DOOR_PRIVATE | DOOR_NO_CANCEL);
 	if (g_door < 0) {
-		(void) mutex_unlock(g_door_thr_lock);
+		(void) mutex_unlock(&g_door_thr_lock);
 		perror("door_create");
 		exit(EXIT_FAILURE);
 	}
 	(void) cond_broadcast(g_door_thr_cv);
-	(void) mutex_unlock(g_door_thr_lock);
+	(void) mutex_unlock(&g_door_thr_lock);
 
 	/*
 	 * Set a limit on the size of the data that may be passed
@@ -2137,9 +2116,9 @@ main(int argc, char **argv)
 	}
 
 	/* Wake up manager thread, so it will exit */
-	(void) mutex_lock(g_thr_pool_lock);
+	(void) mutex_lock(&g_thr_pool_lock);
 	(void) cond_signal(&g_thr_pool_cv);
-	(void) mutex_unlock(g_thr_pool_lock);
+	(void) mutex_unlock(&g_thr_pool_lock);
 
 	/* set port alert to wake any sleeping threads */
 	if (port_alert(g_port, PORT_ALERT_SET, 1, NULL) < 0) {
@@ -2165,7 +2144,7 @@ main(int argc, char **argv)
 	 * listener list, writing a byte to each pipe.  Then teardown
 	 * any remaining listener structures.
 	 */
-	(void) mutex_lock(g_listener_lock);
+	(void) mutex_lock(&g_listener_lock);
 	while (!TAILQ_EMPTY(&zone_listener_list)) {
 		char pipeval = '0';
 
@@ -2174,18 +2153,12 @@ main(int argc, char **argv)
 		(void) write(wl->pl_pipefd, &pipeval, 1);
 		free_proxy_listener(wl);
 	}
-	(void) mutex_unlock(g_listener_lock);
+	(void) mutex_unlock(&g_listener_lock);
 
 	config_free(g_proxy_config);
 
-	(void) mutex_destroy(g_door_thr_lock);
-	(void) mutex_destroy(g_listener_lock);
-	(void) mutex_destroy(g_thr_pool_lock);
 	(void) cond_destroy(g_door_thr_cv);
 	free(g_door_thr_cv);
-	free(g_door_thr_lock);
-	free(g_listener_lock);
-	free(g_thr_pool_lock);
 
 	return (0);
 }
