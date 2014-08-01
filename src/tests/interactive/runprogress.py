@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2012, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2014, Oracle and/or its affiliates. All rights reserved.
 #
 
 import sys
@@ -86,7 +86,7 @@ def parse_argv():
                 argv = argv[2:]
 
         if len(pts) > 1:
-                t = MultiProgressTracker(pts)
+                t = progress.MultiProgressTracker(pts)
         else:
                 t = pts[0]
         return (t, gofast)
@@ -98,7 +98,7 @@ def parse_argv():
 # multi-progress tracker will be used if multiple trackers are specified.  '-'
 # can be used to set an argument to its default value.
 #
-# Example: python progress.py - - cli /tmp/outfile
+# Example: python runprogress.py - - cli /tmp/outfile
 #
 # This will create the default tracker on the default device (/dev/stdout)
 # and also a CommandLineProgressTracker outputting to /tmp/outfile.

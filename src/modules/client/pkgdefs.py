@@ -50,13 +50,16 @@ PKG_OP_ATTACH          = "attach-linked"
 PKG_OP_AUDIT_LINKED    = "audit-linked"
 PKG_OP_CHANGE_FACET    = "change-facet"
 PKG_OP_CHANGE_VARIANT  = "change-variant"
+PKG_OP_DEHYDRATE       = "dehydrate"
 PKG_OP_DETACH          = "detach-linked"
 PKG_OP_EXACT_INSTALL   = "exact-install"
+PKG_OP_FIX             = "fix"
 PKG_OP_INSTALL         = "install"
 PKG_OP_LIST            = "list"
 PKG_OP_LIST_LINKED     = "list-linked"
 PKG_OP_PROP_LINKED     = "property-linked"
 PKG_OP_PUBCHECK        = "pubcheck-linked"
+PKG_OP_REHYDRATE       = "rehydrate"
 PKG_OP_REVERT          = "revert"
 PKG_OP_SET_MEDIATOR    = "set-mediator"
 PKG_OP_SET_PROP_LINKED = "set-property-linked"
@@ -68,14 +71,17 @@ pkg_op_values          = frozenset([
     PKG_OP_AUDIT_LINKED,
     PKG_OP_CHANGE_FACET,
     PKG_OP_CHANGE_VARIANT,
+    PKG_OP_DEHYDRATE,
     PKG_OP_DETACH,
     PKG_OP_EXACT_INSTALL,
+    PKG_OP_FIX,
     PKG_OP_INSTALL,
     PKG_OP_LIST,
     PKG_OP_LIST_LINKED,
     PKG_OP_PROP_LINKED,
     PKG_OP_PUBCHECK,
     PKG_OP_REVERT,
+    PKG_OP_REHYDRATE,
     PKG_OP_SET_MEDIATOR,
     PKG_OP_SET_PROP_LINKED,
     PKG_OP_SYNC,
@@ -86,9 +92,12 @@ pkg_op_values          = frozenset([
 API_OP_ATTACH         = "attach-linked"
 API_OP_CHANGE_FACET   = "change-facet"
 API_OP_CHANGE_VARIANT = "change-variant"
+API_OP_DEHYDRATE      = "dehydrate"
 API_OP_DETACH         = "detach-linked"
-API_OP_EXACT_INSTALL    = "exact-install"
+API_OP_EXACT_INSTALL  = "exact-install"
+API_OP_FIX            = "fix"
 API_OP_INSTALL        = "install"
+API_OP_REHYDRATE      = "rehydrate"
 API_OP_REPAIR         = "repair"
 API_OP_REVERT         = "revert"
 API_OP_SET_MEDIATOR   = "set-mediator"
@@ -100,8 +109,11 @@ api_op_values         = frozenset([
     API_OP_CHANGE_FACET,
     API_OP_CHANGE_VARIANT,
     API_OP_DETACH,
+    API_OP_DEHYDRATE,
     API_OP_EXACT_INSTALL,
+    API_OP_FIX,
     API_OP_INSTALL,
+    API_OP_REHYDRATE,
     API_OP_REPAIR,
     API_OP_REVERT,
     API_OP_SET_MEDIATOR,
@@ -167,3 +179,8 @@ PKG_STATE_FROZEN = 11
 # also have PKG_STATE_INSTALLED.  This state must not be written
 # to disk.
 PKG_STATE_ALT_SOURCE = 99
+
+# Message types
+MSG_ERROR = 0
+MSG_WARNING = 1
+MSG_INFO = 2

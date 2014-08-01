@@ -135,7 +135,7 @@ from pkg.client.debugvalues import DebugValues
 
 # Version test suite is known to work with.
 PKG_CLIENT_NAME = "pkg"
-CLIENT_API_VERSION = 80
+CLIENT_API_VERSION = 81
 
 ELIDABLE_ERRORS = [ TestSkippedException, depotcontroller.DepotStateException ]
 
@@ -3243,6 +3243,33 @@ class CliTestCase(Pkg5TestCase):
                         return
                 self._api_finish(api_obj, catch_wsie=catch_wsie)
 
+        def _api_dehydrate(self, api_obj, publishers=[], catch_wsie=True,
+            noexecute=False, **kwargs):
+                self.debug("dehydrate %s" % " ".join(publishers))
+                for pd in api_obj.gen_plan_dehydrate(publishers, **kwargs):
+                        continue
+                if noexecute:
+                        return
+                self._api_finish(api_obj, catch_wsie=catch_wsie)
+
+        def _api_rehydrate(self, api_obj, publishers=[], catch_wsie=True,
+            noexecute=False, **kwargs):
+                self.debug("rehydrate %s" % " ".join(publishers))
+                for pd in api_obj.gen_plan_rehydrate(publishers, **kwargs):
+                        continue
+                if noexecute:
+                        return
+                self._api_finish(api_obj, catch_wsie=catch_wsie)
+
+        def _api_fix(self, api_obj, args="", catch_wsie=True, noexecute=False,
+            **kwargs):
+                self.debug("planning fix")
+                for pd in api_obj.gen_plan_fix(args, **kwargs):
+                        continue
+                if noexecute:
+                        return
+                self._api_finish(api_obj, catch_wsie=catch_wsie)
+
         def _api_uninstall(self, api_obj, pkg_list, catch_wsie=True, **kwargs):
                 self.debug("uninstall %s" % " ".join(pkg_list))
                 for pd in api_obj.gen_plan_uninstall(pkg_list, **kwargs):
@@ -3309,6 +3336,26 @@ class CliTestCase(Pkg5TestCase):
                 if os.path.exists(file_path):
                         self.assert_(False, "File %s exists" % path)
 
+        def files_are_all_there(self, paths):
+                """"Assert that files are there in the image."""
+                for p in paths:
+                        if p.endswith(os.path.sep):
+                                file_path = os.path.join(self.get_img_path(), p)
+                                if not os.path.isdir(file_path):
+                                        if not os.path.exists(file_path):
+                                                self.assert_(False,
+                                                    "missing dir %s" % file_path)
+                                        else:
+                                                self.assert_(False,
+                                                    "not dir: %s" % file_path)
+                        else:
+                                self.file_exists(p)
+
+        def files_are_all_missing(self, paths):
+                """Assert that files are all missing in the image."""
+                for p in paths:
+                        self.file_doesnt_exist(p)
+
         def file_remove(self, path):
                 """Remove a file in the image."""
 
@@ -3370,6 +3417,23 @@ class CliTestCase(Pkg5TestCase):
                         portable.copyfile(
                             os.path.join(self.raw_trust_anchor_dir, name),
                             os.path.join(dest_dir, name))
+
+        def create_some_files(self, paths):
+                ubin = portable.get_user_by_name("bin", None, False)
+                groot = portable.get_group_by_name("root", None, False)
+                for p in paths:
+                        if p.startswith(os.path.sep):
+                                p = p[1:]
+                        file_path = os.path.join(self.get_img_path(), p)
+                        dirpath = os.path.dirname(file_path)
+                        if not os.path.exists(dirpath):
+                                os.mkdir(dirpath)
+                        if p.endswith(os.path.sep):
+                                continue
+                        with open(file_path, "a+") as f:
+                                f.write("\ncontents\n")
+                        os.chown(file_path, ubin, groot)
+                        os.chmod(file_path, misc.PKG_RO_FILE_MODE)
 
 
 class ManyDepotTestCase(CliTestCase):

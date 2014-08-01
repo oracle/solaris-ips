@@ -205,7 +205,7 @@ def main_func():
                 # avoid confusing manifest difference code w/ multiple
                 # actions w/ same key attribute values or getting dups
                 # in output
-                def allow(a):
+                def allow(a, publisher=None):
                         for k, v in tup:
                                 if v is not None:
                                         if k not in a.attrs or a.attrs[k] != v:

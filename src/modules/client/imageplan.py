@@ -35,6 +35,7 @@ import os
 import stat
 import sys
 import tempfile
+import time
 import traceback
 import weakref
 
@@ -62,6 +63,7 @@ import pkg.version
 from pkg.client.debugvalues import DebugValues
 from pkg.client.plandesc import _ActionPlan
 from pkg.mediator import mediator_impl_matches
+from pkg.client.pkgdefs import PKG_OP_DEHYDRATE, PKG_OP_REHYDRATE
 
 class ImagePlan(object):
         """ImagePlan object contains the plan for changing the image...
@@ -103,6 +105,7 @@ class ImagePlan(object):
                 self.__legacy = None
                 self.__cached_actions = {}
                 self.__fixups = {}
+                self.operations_pubs = None # pubs being operated in hydrate
 
                 self.__old_excludes = image.list_excludes()
                 self.__new_excludes = self.__old_excludes
@@ -334,7 +337,8 @@ class ImagePlan(object):
 
                 return (new_facets, facet_change, masked_facet_change)
 
-        def __evaluate_varcets(self, new_variants=None, new_facets=None):
+        def __evaluate_excludes(self, new_variants=None, new_facets=None,
+            dehydrate=None, rehydrate=None):
                 """Private helper function used to determine new facet and
                 variant state for image."""
 
@@ -353,6 +357,35 @@ class ImagePlan(object):
 
                 self.__new_excludes = self.image.list_excludes(new_variants,
                     new_facets)
+
+                # Previously dehydrated publishers.
+                old_dehydrated = set(self.image.cfg.get_property("property",
+                    "dehydrated"))
+
+                # We only want to exclude all actions in the old image that
+                # belong to an already dehydrated publisher.
+                if old_dehydrated:
+                        self.__old_excludes.append(
+                            self.image.get_dehydrated_exclude_func(
+                            old_dehydrated))
+
+                # Publishers to rehydrate
+                if rehydrate is None:
+                        rehydrate = set()
+                rehydrate = set(rehydrate)
+
+                # Publishers to dehydrate
+                if dehydrate is None:
+                        dehydrate = set()
+                dehydrate = set(dehydrate) | (old_dehydrated - rehydrate)
+
+                self.operations_pubs = dehydrate
+                # Only allows actions in new image that cannot be dehydrated
+                # or that are in the dehydrate list and not in the rehydrate
+                # list.
+                if dehydrate:
+                        self.__new_excludes.append(
+                            self.image.get_dehydrated_exclude_func(dehydrate))
 
                 return (new_variants, new_facets, facet_change,
                     masked_facet_change)
@@ -401,7 +434,7 @@ class ImagePlan(object):
                 # evaluate what varcet changes are required
                 new_variants, new_facets, \
                     facet_change, masked_facet_change = \
-                    self.__evaluate_varcets(new_variants, new_facets)
+                    self.__evaluate_excludes(new_variants, new_facets)
 
                 # check if we need to uninstall any packages.
                 uninstall = self.__any_reject_matches(reject_list)
@@ -689,6 +722,81 @@ class ImagePlan(object):
 
                 return self.__get_attr_fmri_changes(get_vattrs)
 
+        def __get_publishers_with_repos(self, publishers=misc.EmptyI):
+                """Return publishers that have repositories configured.
+
+                'publishers' is an optional list of publisher prefixes to
+                limit the returned results to.
+
+                A PlanCreationException will be raised if any of the publishers
+                specified do not exist, if any of the specified publishers have
+                no configured repositories, or if all known publishers have
+                no configured repositories."""
+
+                all_pubs = [ p.prefix for p in self.image.gen_publishers() ]
+                if not publishers:
+                        if all_pubs:
+                                publishers = all_pubs
+                        else:
+                                return misc.EmptyI
+
+                configured_pubs = [
+                    pub.prefix
+                    for pub in self.image.gen_publishers()
+                    if pub.prefix in publishers and \
+                        (pub.repository and pub.repository.origins)
+                ]
+
+                unconfigured_pubs = set(publishers) - set(configured_pubs)
+                if unconfigured_pubs:
+                        raise api_errors.PlanCreationException(
+                            no_repo_pubs=unconfigured_pubs)
+
+                return configured_pubs
+
+        def __plan_common_hydration(self, publishers, dehydrate=False):
+                self.__plan_op()
+
+                # get publishers to dehydrate or rehydrate
+                pubs = self.__get_publishers_with_repos(publishers=publishers)
+
+                if not pubs:
+                        # Nothing to do.
+                        self.__finish_plan(plandesc.EVALUATED_PKGS)
+                        return
+
+                # List of packages that will be modified.
+                fmri_changes = [
+                    (f, f)
+                    for f in self.image.gen_installed_pkgs(pubs=pubs)
+                ]
+
+                # Evaluate current facets / variants.
+                if dehydrate:
+                        self.__evaluate_excludes(dehydrate=pubs)
+                else:
+                        self.__evaluate_excludes(rehydrate=pubs)
+
+                # If solver isn't involved, assume the list of packages
+                # has been determined.
+                assert fmri_changes is not None
+                self.__finish_plan(plandesc.EVALUATED_PKGS,
+                    fmri_changes=fmri_changes)
+
+        def plan_dehydrate(self, publishers=None):
+                """Dehydrate packages for given publishers.  If no publishers
+                are specified, packages for all publishers with configured
+                repositories will be dehydrated."""
+
+                self.__plan_common_hydration(publishers, dehydrate=True)
+
+        def plan_rehydrate(self, publishers=None):
+                """Rehydrate packages for given publishers.  If no publishers
+                are specified, packages for all dehydrated publishers with
+                configured repositories will be rehydrated."""
+
+                self.__plan_common_hydration(publishers)
+
         def plan_change_varcets(self, new_facets=None, new_variants=None,
             reject_list=misc.EmptyI):
                 """Determine the fmri changes needed to change the specified
@@ -711,7 +819,7 @@ class ImagePlan(object):
                 # evaluate what varcet changes are required
                 new_variants, new_facets, \
                     facet_change, masked_facet_change = \
-                    self.__evaluate_varcets(new_variants, new_facets)
+                    self.__evaluate_excludes(new_variants, new_facets)
 
                 # uninstalling packages requires the solver.
                 uninstall = self.__any_reject_matches(reject_list)
@@ -790,6 +898,7 @@ class ImagePlan(object):
                 """
 
                 self.__plan_op()
+                self.__evaluate_excludes()
 
                 self.pd._mediators_change = True
                 self.pd._new_mediators = new_mediators
@@ -921,7 +1030,7 @@ class ImagePlan(object):
                 uninstall = self.__any_reject_matches(reject_list)
 
                 # check if inherited facets are changing
-                new_facets = self.__evaluate_varcets()[1]
+                new_facets = self.__evaluate_excludes()[1]
 
                 # audits are fast, so do an audit to check if we're in sync.
                 insync = self.image.linked.insync()
@@ -952,7 +1061,7 @@ class ImagePlan(object):
                 ])
 
                 # check if inherited facets are changing
-                new_facets = self.__evaluate_varcets()[1]
+                new_facets = self.__evaluate_excludes()[1]
 
                 # build installed dict
                 installed_dict = ImagePlan.__fmris2dict(
@@ -1002,7 +1111,7 @@ class ImagePlan(object):
                 specified."""
 
                 # check if inherited facets are changing
-                new_facets = self.__evaluate_varcets()[1]
+                new_facets = self.__evaluate_excludes()[1]
 
                 # get ranking of publishers
                 pub_ranks = self.image.get_publisher_ranks()
@@ -1098,6 +1207,7 @@ class ImagePlan(object):
                 We also process revert tags on directories here"""
 
                 self.__plan_op()
+                self.__evaluate_excludes()
 
                 revert_dict = defaultdict(list)
                 revert_dirs = defaultdict(list)
@@ -1310,6 +1420,103 @@ class ImagePlan(object):
                         return pkg.actions.file.FileAction(
                             mode=mode, owner="root",
                             group="bin", path=pubpath)
+
+        def plan_fix(self, args):
+                """Determine the changes needed to fix the image."""
+
+                self.__plan_op()
+                self.__evaluate_excludes()
+
+                pt = self.__progtrack
+                pt.plan_all_start()
+                pt.plan_start(pt.PLAN_PKGPLAN)
+
+                if args:
+                        proposed_dict, self.__match_rm = self.__match_user_fmris(
+                            self.image, args, self.MATCH_INST_VERSIONS)
+
+                        # merge patterns together
+                        result = set([
+                            f
+                            for each in proposed_dict.values()
+                            for f in each
+                        ])
+                else:
+                        result = [ f for f in self.image.gen_installed_pkgs() ]
+
+                if result:
+                        pt.plan_start(pt.PLAN_PKG_VERIFY, goal=len(result))
+                repairs = []
+
+                for pfmri in result:
+                        entries = []
+
+                        # Since every entry returned by verify might not be
+                        # something needing repair, the relevant information
+                        # for each package must be accumulated first to find
+                        # an overall success/failure result and then the
+                        # related messages output for it.
+                        for act, errors, warnings, pinfo in self.image.verify(
+                            pfmri, pt, verbose=True, forever=True):
+                                    if not errors:
+                                            # Fix will silently skip packages that
+                                            # don't have errors, but will display
+                                            # the additional messages if there
+                                            # is at least one error.
+                                            continue
+
+                                    entries.append((act, errors, warnings,
+                                        pinfo))
+
+                        if not entries:
+                                # Nothing to fix for this package.
+                                continue
+
+                        failed = []
+                        ffmri = str(pfmri)
+                        timestamp = time.time()
+                        for act, errors, warnings, info in entries:
+                                if act:
+                                        failed.append(act)
+                                        self.pd.add_item_message(ffmri,
+                                            timestamp, pkgdefs.MSG_ERROR,
+                                            "\t%s" % act.distinguished_name())
+                                for x in errors:
+                                        self.pd.add_item_message(ffmri,
+                                            timestamp, pkgdefs.MSG_ERROR,
+                                            "\t\t%s" % x)
+                                for x in warnings:
+                                        self.pd.add_item_message(ffmri,
+                                            timestamp, pkgdefs.MSG_WARNING,
+                                            "\t\t%s" % x)
+                                for x in info:
+                                        self.pd.add_item_message(ffmri,
+                                            timestamp, pkgdefs.MSG_INFO,
+                                            "\t\t%s" % x)
+                        repairs.append((pfmri, failed))
+                if result:
+                        pt.plan_done(pt.PLAN_PKG_VERIFY)
+
+                # Repair anything we failed to verify
+                if not repairs:
+                        # No repairs for this image.
+                        self.__finish_plan(plandesc.EVALUATED_PKGS)
+                        return
+
+                pt.plan_start(pt.PLAN_PKG_FIX, goal=len(repairs))
+                for fmri, actions in repairs:
+                        pt.plan_add_progress(pt.PLAN_PKG_FIX)
+                        # Need to get all variants otherwise evaluating the
+                        # pkgplan will fail in signature verification.
+                        m = self.image.get_manifest(fmri, ignore_excludes=True)
+                        pp = pkgplan.PkgPlan(self.image)
+                        pp.propose_repair(fmri, m, actions, [])
+                        pp.evaluate(self.__old_excludes, self.__new_excludes)
+                        self.pd.pkg_plans.append(pp)
+
+                pt.plan_done(pt.PLAN_PKG_FIX)
+                pt.plan_all_done()
+                self.__finish_plan(plandesc.EVALUATED_PKGS)
 
         def plan_noop(self):
                 """Create a plan that doesn't change the package contents of
@@ -4261,7 +4468,13 @@ class ImagePlan(object):
                                 # write out any changes
                                 self.image._avoid_set_save(
                                     *self.pd._new_avoid_obs)
-
+                                # An essential step to set the property
+                                # "dehydrated" if dehydrate/rehydrate succeeds.
+                                if self.pd._op in (PKG_OP_DEHYDRATE,
+                                    PKG_OP_REHYDRATE):
+                                        self.image.cfg.set_property("property",
+                                            "dehydrated", self.operations_pubs)
+                                        self.image.save_config()
                         except EnvironmentError, e:
                                 if e.errno == errno.EACCES or \
                                     e.errno == errno.EPERM:

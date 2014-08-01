@@ -20,7 +20,7 @@
 # CDDL HEADER END
 #
 
-# Copyright (c) 2008, 2012, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2008, 2014, Oracle and/or its affiliates. All rights reserved.
 
 import testutils
 if __name__ == "__main__":
@@ -343,6 +343,18 @@ class TestFix(pkg5unittest.SingleDepotTestCase):
                 # Run it one more time to ensure that the manifest on disk
                 # wasn't changed.
                 self.pkg("fix", exit=1)
+
+        def test_fix_info_output(self):
+                """Test that pkg fix will show informational messages if the
+                package has errors to be fixed."""
+
+                self.image_create(self.rurl)
+                pfmri = self.plist["preserve@1.0-0"]
+                self.pkg("install %s" % pfmri)
+                self.file_append("amber1", "junk")
+                self.__do_alter_verify(pfmri)
+                self.output.index("editable file has been changed")
+                self.pkg("verify preserve")
 
 
 if __name__ == "__main__":

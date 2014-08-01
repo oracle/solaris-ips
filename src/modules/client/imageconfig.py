@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2007, 2013, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2007, 2014, Oracle and/or its affiliates. All rights reserved.
 #
 
 import errno
@@ -188,7 +188,8 @@ class ImageConfig(cfg.FileConfig):
                     cfg.PropList("signature-required-names"),
                     cfg.Property(CHECK_CERTIFICATE_REVOCATION,
                         default=default_policies[
-                            CHECK_CERTIFICATE_REVOCATION])
+                            CHECK_CERTIFICATE_REVOCATION]),
+                    cfg.PropList("dehydrated")
                 ]),
                 cfg.PropertySection("facet", properties=[
                     cfg.PropertyTemplate("^facet\..*", prop_type=cfg.PropBool),

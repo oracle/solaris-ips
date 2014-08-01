@@ -1,6 +1,6 @@
 '\" te
 .\" Copyright (c) 2007, 2014, Oracle and/or its affiliates. All rights reserved.
-.TH pkg 1 "07 Apr 2014" "SunOS 5.12" "User Commands"
+.TH pkg 1 "28 May 2014" "SunOS 5.12" "User Commands"
 .SH NAME
 pkg \- Image Packaging System retrieval client
 .SH SYNOPSIS
@@ -98,8 +98,11 @@ pkg \- Image Packaging System retrieval client
 
 .LP
 .nf
-/usr/bin/pkg fix [--accept] [--licenses]
-    [\fIpkg_fmri_pattern\fR ...]
+/usr/bin/pkg fix [-nvq] [--no-be-activate]
+    [--no-backup-be | --require-backup-be]
+    [--backup-be-name \fIname\fR]
+    [--deny-new-be | --require-new-be] [--be-name \fIname\fR]
+    [--accept] [--licenses] [\fIpkg_fmri_pattern\fR ...]
 .fi
 
 .LP
@@ -118,7 +121,7 @@ pkg \- Image Packaging System retrieval client
 
 .LP
 .nf
-usr/bin/pkg set-mediator [-nv] [-I \fIimplementation\fR]
+/usr/bin/pkg set-mediator [-nv] [-I \fIimplementation\fR]
     [-V \fIversion\fR] [--no-be-activate]
     [--no-backup-be | --require-backup-be]
     [--backup-be-name \fIname\fR]
@@ -302,6 +305,16 @@ usr/bin/pkg set-mediator [-nv] [-I \fIimplementation\fR]
     [--set-property \fIname_of_property\fR=\fIvalue\fR]
     [--variant \fIvariant_name\fR=\fIvalue\fR]...
     [(-p | --publisher) [\fIname\fR=]\fIrepo_uri\fR] \fIdir\fR
+.fi
+
+.LP
+.nf
+/usr/bin/pkg -R \fIdir\fR dehydrate [-nvq] [-p \fIpublisher\fR]...
+.fi
+
+.LP
+.nf
+/usr/bin/pkg -R \fIdir\fR rehydrate [-nvq] [-p \fIpublisher\fR]...
 .fi
 
 .SH DESCRIPTION
@@ -1491,7 +1504,7 @@ Include informational messages regarding packages.
 .ne 2
 .mk
 .na
-\fB\fBpkg fix\fR [\fB--accept\fR] [\fB--licenses\fR] [\fIpkg_fmri_pattern\fR ...]\fR
+\fB\fBpkg fix\fR [\fB-nvq\fR] [\fB--no-be-activate\fR] [\fB--no-backup-be\fR | \fB--require-backup-be\fR] [\fB--backup-be-name\fR \fIname\fR] [\fB--deny-new-be\fR | \fB--require-new-be\fR] [\fB--be-name\fR \fIname\fR] [\fB--accept\fR] [\fB--licenses\fR] [\fIpkg_fmri_pattern\fR ...]\fR
 .ad
 .sp .6
 .RS 4n
@@ -1529,6 +1542,7 @@ Indicate that you agree to and accept the terms of the licenses of the packages 
 Display all of the licenses for the packages that are installed or updated as part of this operation. For updated packages, display the license only if the license has changed.
 .RE
 
+For all other options, see the \fBinstall\fR command above.
 .RE
 
 .sp
@@ -2882,6 +2896,76 @@ Set the specified variant to the indicated value. See "Facets and Variants" in t
 
 .RE
 
+.sp
+.ne 2
+.mk
+.na
+\fB\fBpkg \fB-R\fR \fIdir\fR dehydrate\fR [\fB-nvq\fR] [\fB-p\fR \fIpublisher\fR]...\fR
+.ad
+.sp .6
+.RS 4n
+Remove all non-editable packaged files and packaged hardlinks from the image specified by the \fB-R\fR option to create a fully dehydrated image. A non-editable packaged file is a file delivered by the currently installed version of a package that has no \fBpreserve\fR or \fBoverlay\fR attribute, or has a \fBdehydrated\fR value of \fBFalse\fR. A packaged hardlink is a hardlink delivered by the currently installed version of a package. 
+.sp
+The \fBpkg dehydrate\fR command only operates on an alternate root. Use the \fB-R\fR option to specify the alternate root.
+.LP
+Caution - 
+.sp
+.RS 2
+Using the \fBpkg dehydrate\fR command on the image rooted at \fB/\fR can make the system unbootable, or cause other malfunctions.
+.sp
+.RE
+If the \fBpkg dehydrate\fR command succeeds, a property named \fBdehydrated\fR with the value of all publishers with a configured package repository is set on the image specified by the \fB-R\fR option.
+.sp
+All other packaging operations for a dehydrated publisher will be automatically dehydrated.
+.sp
+.ne 2
+.mk
+.na
+\fB\fB-p\fR \fIpublisher\fR\fR
+.ad
+.sp .6
+.RS 4n
+Remove only non-editable files and hardlinks delivered by the specified publishers to create a partially dehydrated image. If all configured publishers of the image are specified, a fully dehydrated image is created as described above.
+.sp
+If one or more publishers is specified, and if any of the publishers is not configured in the image, then nothing is removed from the image.
+.sp
+If the \fBpkg dehydrate\fR command succeeds, a property named \fBdehydrated\fR with the names of the publishers as the value is set on the image.
+.RE
+
+For all other options, see the \fBinstall\fR command above.
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fBpkg \fB-R\fR \fIdir\fR rehydrate\fR [\fB-nvq\fR] [\fB-p\fR \fIpublisher\fR]...\fR
+.ad
+.sp .6
+.RS 4n
+Reinstall all files and hardlinks removed by the \fBpkg dehydrate\fR command.
+.sp
+The \fBpkg rehydrate\fR command only operates on an alternate root. Use the \fB-R\fR option to specify the alternate root.
+.sp
+If the \fBpkg rehydrate\fR command succeeds, the value of the \fBdehydrated\fR property of the image is removed.
+.sp
+.ne 2
+.mk
+.na
+\fB\fB-p\fR \fIpublisher\fR\fR
+.ad
+.sp .6
+.RS 4n
+Reinstall all files and hardlinks removed by the \fBpkg dehydrate\fR command for the specified publishers.
+.sp
+If one or more publishers is specified, and if any of the the publishers is not configured in the image, then nothing is installed.
+.sp
+If the \fBpkg rehydrate\fR command succeeds, the specified publisher names are removed from the value of the \fBdehydrated\fR property set on the image.
+.RE
+
+For all other options, see the \fBinstall\fR command above.
+.RE
+
 .SH IMAGE PROPERTIES
 .sp
 .LP
@@ -3719,6 +3803,66 @@ Remove all of the origins and mirrors for a publisher and add a new origin.
 .nf
 $ \fBpkg set-publisher -G '*' -M '*' -g http://example.com:10000 \e\fR
 \fBexample.com\fR
+.fi
+.in -2
+.sp
+
+.LP
+\fBExample 33 \fRDehydrating and Rehydrating an Image
+.sp
+.LP
+In these examples, \fB/tmp/test_image\fR is the image that you want to dehydrate and rehydrate.
+
+.sp
+.LP
+Because no publisher is specified, the following command operates on all publishers with a configured package repository in the \fB/tmp/test_image\fR image to fully dehydrate the \fB/tmp/test_image\fR image.
+
+.sp
+.in +2
+.nf
+$ \fBpkg -R /tmp/test_image dehydrate\fR
+.fi
+.in -2
+.sp
+
+.sp
+.LP
+Because no publisher is specified, the following command operates on all publishers configured in the \fB/tmp/test_image\fR image to fully restore the \fB/tmp/test_image\fR image.
+
+.sp
+.in +2
+.nf
+$ \fBpkg -R /tmp/test_image rehydrate\fR
+.fi
+.in -2
+.sp
+
+.LP
+\fBExample 34 \fRDehydrating and Rehydrating an Image Specifying Publishers
+.sp
+.LP
+In these examples, \fB/tmp/test_image\fR is the image that you want to dehydrate and rehydrate, and the \fBtest1\fR and \fBtest2\fR publishers are configured with a package repository in the \fB/tmp/test_image\fR image.
+
+.sp
+.LP
+The following command operates only on files and hardlinks delivered by the \fBtest1\fR publisher.
+
+.sp
+.in +2
+.nf
+$ \fBpkg -R /tmp/test_image dehydrate -p test1\fR
+.fi
+.in -2
+.sp
+
+.sp
+.LP
+The following command rehydrates only files and hardlinks delivered by the \fBtest1\fR publisher.
+
+.sp
+.in +2
+.nf
+$ \fBpkg -R /tmp/test_image rehydrate -p test1\fR
 .fi
 .in -2
 .sp

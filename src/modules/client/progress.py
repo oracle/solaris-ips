@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2008, 2013, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2008, 2014, Oracle and/or its affiliates. All rights reserved.
 #
 
 #
@@ -564,21 +564,6 @@ class ProgressTrackerBackend(object):
         def _mfst_commit(self, outspec): pass
 
         @pt_abstract
-        def _ver_output(self, outspec): pass
-
-        @pt_abstract
-        def _ver_output_error(self, actname, errors): pass
-
-        @pt_abstract
-        def _ver_output_warning(self, actname, warnings): pass
-
-        @pt_abstract
-        def _ver_output_info(self, actname, info): pass
-
-        @pt_abstract
-        def _ver_output_done(self): pass
-
-        @pt_abstract
         def _repo_ver_output(self, outspec, repository_scan=False): pass
 
         @pt_abstract
@@ -666,6 +651,8 @@ class ProgressTrackerFrontend(object):
         PLAN_ACTION_MEDIATION = 107
         PLAN_ACTION_FINALIZE = 108
         PLAN_MEDIATION_CHG = 109 # for set-mediator
+        PLAN_PKG_VERIFY = 110
+        PLAN_PKG_FIX = 111
 
         # Action phases
         ACTION_REMOVE = 200
@@ -821,31 +808,6 @@ class ProgressTrackerFrontend(object):
 
         @pt_abstract
         def manifest_fetch_done(self): pass
-
-        # verifying the content of an image against its manifests
-        @pt_abstract
-        def verify_start(self, npkgs): pass
-
-        @pt_abstract
-        def verify_start_pkg(self, pkgfmri): pass
-
-        @pt_abstract
-        def verify_add_progress(self, pkgfmri): pass
-
-        @pt_abstract
-        def verify_yield_error(self, pkgfmri, actname, errors): pass
-
-        @pt_abstract
-        def verify_yield_warning(self, pkgfmri, actname, warnings): pass
-
-        @pt_abstract
-        def verify_yield_info(self, pkgfmri, actname, info): pass
-
-        @pt_abstract
-        def verify_end_pkg(self, pkgfmri): pass
-
-        @pt_abstract
-        def verify_done(self): pass
 
         # verifying the content of a repository
         @pt_abstract
@@ -1077,7 +1039,6 @@ class ProgressTracker(ProgressTrackerFrontend, ProgressTrackerBackend):
                 self.mfst_fetch = GoalTrackerItem(_("Download Manifests"))
                 self.mfst_commit = GoalTrackerItem(_("Committed Manifests"))
 
-                self.ver_pkgs = GoalTrackerItem(_("Verify Packages"))
                 self.repo_ver_pkgs = GoalTrackerItem(
                     _("Verify Repository Content"))
                 self.repo_fix = GoalTrackerItem(_("Fix Repository Content"))
@@ -1116,6 +1077,10 @@ class ProgressTracker(ProgressTrackerFrontend, ProgressTrackerBackend):
                             TrackerItem(_("Finalizing action plan")),
                         self.PLAN_MEDIATION_CHG:
                             TrackerItem(_("Evaluating mediator changes")),
+                        self.PLAN_PKG_VERIFY:
+                            GoalTrackerItem(_("Verifying Packages")),
+                        self.PLAN_PKG_FIX:
+                            GoalTrackerItem(_("Fixing Packages")),
                 }
 
                 self._actionitems = {
@@ -1322,35 +1287,6 @@ class ProgressTracker(ProgressTrackerFrontend, ProgressTrackerBackend):
                 self.mfst_commit.done(goalcheck=False)
                 if self.mfst_fetch.printed:
                         self._mfst_fetch(OutSpec(last=True))
-
-        def verify_start(self, npkgs):
-                self.ver_pkgs.reset()
-                self.ver_pkgs.goalitems = npkgs
-
-        def verify_start_pkg(self, pkgfmri):
-                if pkgfmri != self.ver_pkgs.curinfo:
-                        self.ver_pkgs.items += 1
-                        self.ver_pkgs.curinfo = pkgfmri
-                self._ver_output(OutSpec(changed=["startpkg"]))
-
-        def verify_add_progress(self, pkgfmri):
-                self._ver_output(OutSpec())
-
-        def verify_yield_error(self, pkgfmri, actname, errors):
-                self._ver_output_error(actname, errors)
-
-        def verify_yield_warning(self, pkgfmri, actname, warnings):
-                self._ver_output_warning(actname, warnings)
-
-        def verify_yield_info(self, pkgfmri, actname, info):
-                self._ver_output_info(actname, info)
-
-        def verify_end_pkg(self, pkgfmri):
-                self._ver_output(OutSpec(changed=["endpkg"]))
-                self.ver_pkgs.curinfo = None
-
-        def verify_done(self):
-                self.ver_pkgs.done()
 
         def repo_verify_start(self, npkgs):
                 self.repo_ver_pkgs.reset()
@@ -2049,21 +1985,6 @@ class CommandLineProgressTracker(ProgressTracker):
                 # spam the user with this too much.
                 pass
 
-        def _ver_output(self, outspec):
-                pass
-
-        def _ver_output_error(self, actname, errors):
-                pass
-
-        def _ver_output_warning(self, actname, warnings):
-                pass
-
-        def _ver_output_info(self, actname, info):
-                pass
-
-        def _ver_output_done(self):
-                pass
-
         def _repo_ver_output(self, outspec, repository_scan=False):
                 pass
 
@@ -2526,30 +2447,6 @@ class FancyUNIXProgressTracker(ProgressTracker):
                         msg = _("Committing Manifests %c") % self._spinner()
                 self._pe.cprint(msg, sep='', end='', erase=True)
                 return
-
-        def _ver_output(self, outspec):
-                assert self.ver_pkgs.curinfo != None
-                if not self._ptimer.time_to_print() and not outspec:
-                        return
-                if "endpkg" in outspec.changed:
-                        self._pe.cprint("", end='', erase=True)
-                        return
-                s = "%-64s %s %c" % \
-                    (self.ver_pkgs.curinfo.get_pkg_stem(),
-                     self.ver_pkgs.pair(), self._spinner())
-                self._pe.cprint(s, end='', erase=True)
-
-        def _ver_output_error(self, actname, errors):
-                # We just erase the "Verifying" progress line.
-                self._pe.cprint("", end='', erase=True)
-
-        def _ver_output_warning(self, actname, warnings):
-                # We just erase the "Verifying" progress line.
-                self._pe.cprint("", end='', erase=True)
-
-        def _ver_output_info(self, actname, info):
-                # We just erase the "Verifying" progress line.
-                self._pe.cprint("", end='', erase=True)
 
         def _repo_ver_output(self, outspec, repository_scan=False):
                 """If 'repository_scan' is set and we have no FRMRI set, we emit
@@ -3035,16 +2932,6 @@ def test_progress_tracker(t, gofast=False):
                                 t.lint_add_progress()
                                 time.sleep(0.02 * fast)
                 t.lint_done()
-
-                t.verify_start(1)
-                fmri = pkg.fmri.PkgFmri("test1")
-                t.verify_start_pkg(fmri)
-                t.verify_add_progress(fmri)
-                t.verify_yield_error(fmri, "test", ["error"])
-                t.verify_yield_warning(fmri, "test", ["warning"])
-                t.verify_yield_info(fmri, "test", ["info"])
-                t.verify_end_pkg(fmri)
-                t.verify_done()
 
         except KeyboardInterrupt:
                 t.flush()

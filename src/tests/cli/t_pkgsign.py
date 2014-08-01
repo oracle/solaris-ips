@@ -448,7 +448,7 @@ class TestPkgSign(pkg5unittest.SingleDepotTestCase):
                 self.pkg("fix", exit=1)
                 self.pkg("set-property signature-policy ignore")
                 self.pkg("verify")
-                self.pkg("fix")
+                self.pkg("fix", exit=4)
                 self.pkg("set-publisher --set-property signature-policy=verify "
                     "test")
                 # These should fail because the publisher, though not the image
@@ -458,7 +458,7 @@ class TestPkgSign(pkg5unittest.SingleDepotTestCase):
                 self.pkg("set-publisher --approve-ca-cert=%s test" %
                     chain_cert_path)
                 self.pkg("verify")
-                self.pkg("fix")
+                self.pkg("fix", exit=4)
                 api_obj = self.get_img_api_obj()
                 self._api_uninstall(api_obj, ["example_pkg"])
 
@@ -2583,7 +2583,7 @@ class TestPkgSign(pkg5unittest.SingleDepotTestCase):
                 api_obj = self.get_img_api_obj()
                 self._api_install(api_obj, ["b18880"])
                 self.pkg("verify")
-                self.pkg("fix")
+                self.pkg("fix", exit=4)
                 portable.remove(os.path.join(self.img_path(),
                     "bin/example_path"))
                 self.pkg("verify", exit=1)
@@ -2604,7 +2604,7 @@ class TestPkgSign(pkg5unittest.SingleDepotTestCase):
                 self.seed_ta_dir("ta2")
                 self._api_install(api_obj, ["b18880"])
                 self.pkg("verify")
-                self.pkg("fix")
+                self.pkg("fix", exit=4)
                 portable.remove(os.path.join(self.img_path(),
                     "bin/example_path"))
                 self.pkg("verify", exit=1)
@@ -2820,19 +2820,6 @@ class TestPkgSignMultiDepot(pkg5unittest.ManyDepotTestCase):
 
         image_files = ['simple_file']
         misc_files = ['tmp/example_file']
-
-        def seed_ta_dir(self, certs, dest_dir=None):
-                if isinstance(certs, basestring):
-                        certs = [certs]
-                if not dest_dir:
-                        dest_dir = self.ta_dir
-                self.assert_(dest_dir)
-                self.assert_(self.raw_trust_anchor_dir)
-                for c in certs:
-                        name = "%s_cert.pem" % c
-                        portable.copyfile(
-                            os.path.join(self.raw_trust_anchor_dir, name),
-                            os.path.join(dest_dir, name))
 
         def pkg(self, command, *args, **kwargs):
                 # The value for crl_host is pulled from DebugValues because

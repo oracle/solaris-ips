@@ -344,7 +344,7 @@ def gunzip_from_stream(gz, outfile, hash_func=None, hash_funcs=None,
         hexadecimal digests computed using those functions is returned. The
         returned list is in the same order as 'hash_funcs'.
 
-        If 'ignore_hash' is False, we do not compute a hash when decompressing
+        If 'ignore_hash' is True, we do not compute a hash when decompressing
         the content and do not return any value.
         """
 

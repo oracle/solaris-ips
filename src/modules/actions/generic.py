@@ -1049,12 +1049,12 @@ class Action(object):
                 """Client-side method that performs post-remove actions."""
                 pass
 
-        def include_this(self, excludes):
+        def include_this(self, excludes, publisher=None):
                 """Callables in excludes list returns True
                 if action is to be included, False if
                 not"""
                 for c in excludes:
-                        if not c(self):
+                        if not c(self, publisher=publisher):
                                 return False
                 return True
 

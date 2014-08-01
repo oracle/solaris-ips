@@ -37,6 +37,7 @@ from operator import itemgetter
 import pkg.actions as actions
 import pkg.client.api_errors as apx
 import pkg.facet as facet
+import pkg.fmri as fmri
 import pkg.misc as misc
 import pkg.portable as portable
 import pkg.variant as variant
@@ -163,6 +164,12 @@ class Manifest(object):
                 self.attributes = {} # package-wide attributes
                 self.signatures = EmptyDict
                 self.excludes = EmptyI
+                if pfmri is not None:
+                        if not isinstance(pfmri, fmri.PkgFmri):
+                                pfmri = fmri.PkgFmri(pfmri)
+                        self.publisher = pfmri.publisher
+                else:
+                        self.publisher = None
 
         def __str__(self):
                 r = ""
@@ -701,7 +708,8 @@ class Manifest(object):
                 s = set([
                     a.attrs["path"]
                     for a in alist
-                    if not excludes or a.include_this(excludes)
+                    if not excludes or a.include_this(excludes,
+                        publisher=self.publisher)
                 ])
 
                 return list(s)
@@ -871,9 +879,10 @@ class Manifest(object):
                 if attr_match:
                         attr_match = _compile_fnpats(attr_match)
 
+                pub = self.publisher
                 for a in self.actions:
                         for c in excludes:
-                                if not c(a):
+                                if not c(a, publisher=pub):
                                         break
                         else:
                                 # These conditions are split by performance.
@@ -893,9 +902,10 @@ class Manifest(object):
                 if attr_match:
                         attr_match = _compile_fnpats(attr_match)
 
+                pub = self.publisher
                 for a in self.actions_bytype.get(atype, []):
                         for c in excludes:
-                                if not c(a):
+                                if not c(a, publisher=pub):
                                         break
                         else:
                                 # These conditions are split by performance.
@@ -1037,8 +1047,9 @@ class Manifest(object):
                         self.add_action(action, excludes)
                 self.excludes = excludes
                 # Make sure that either no excludes were provided or that both
-                # variants and facet excludes were.
-                assert len(self.excludes) in (0, 2)
+                # variants and facet excludes were or that variant, facet and
+                # hydrate excludes were.
+                assert len(self.excludes) != 1
 
         def exclude_content(self, excludes):
                 """Remove any actions from the manifest which should be
@@ -1071,7 +1082,8 @@ class Manifest(object):
                         # Translate old action to new.
                         attrs["name"] = "publisher"
 
-                if excludes and not action.include_this(excludes):
+                if excludes and not action.include_this(excludes,
+                    publisher=self.publisher):
                         return
 
                 self.actions.append(action)
@@ -1410,10 +1422,10 @@ class Manifest(object):
                             x for x in excludes
                             if x.__func__ != facet._allow_facet
                         ]
-                        # Excludes list must always have zero or two items; so
+                        # Excludes list must always have zero or 2+ items; so
                         # fake second entry.
-                        nexcludes.append(lambda x: True)
-                        assert len(nexcludes) == 2
+                        nexcludes.append(lambda x, publisher: True)
+                        assert len(nexcludes) > 1
 
                 for action in self.gen_actions():
                         # append any variants and facets to manifest dict
@@ -1428,7 +1440,7 @@ class Manifest(object):
                                         d[v].add(attrs[v])
 
                                 if not excludes or action.include_this(
-                                    nexcludes):
+                                    nexcludes, publisher=self.publisher):
                                         # While variants are package level (you
                                         # can't install a package without
                                         # setting the variant first), facets
@@ -1504,9 +1516,9 @@ class FactoredManifest(Manifest):
                 Manifest.__init__(self, fmri)
                 self.__cache_root = cache_root
                 self.__pathname = pathname
-                # Make sure that either no excludes were provided or that both
-                # variants and facet excludes were.
-                assert len(excludes) in (0, 2)
+                # Make sure that either no excludes were provided or 2+ excludes
+                # were.
+                assert len(self.excludes) != 1
                 self.loaded = False
 
                 # Do we have a cached copy?
@@ -1684,7 +1696,8 @@ class FactoredManifest(Manifest):
                                                 for s in f
                                             )
                                             if not self.excludes or
-                                                a.include_this(self.excludes)
+                                                a.include_this(self.excludes,
+                                                    publisher=self.publisher)
                                         ]
                                 return
                         except EnvironmentError, e:
@@ -1764,7 +1777,8 @@ class FactoredManifest(Manifest):
                                 for l in f:
                                         a = actions.fromstr(l.rstrip())
                                         if (excludes and
-                                            not a.include_this(excludes)):
+                                            not a.include_this(excludes,
+                                                publisher=self.publisher)):
                                                 continue
                                         # These conditions are split by
                                         # performance.
@@ -1822,7 +1836,8 @@ class FactoredManifest(Manifest):
                         for l in f:
                                 a = actions.fromstr(l.rstrip())
                                 if not self.excludes or \
-                                    a.include_this(self.excludes):
+                                    a.include_this(self.excludes,
+                                        publisher=self.publisher):
                                         self.fill_attributes(a)
 
                 return True

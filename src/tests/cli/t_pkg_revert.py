@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2011, 2014 Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2011, 2014, Oracle and/or its affiliates. All rights reserved.
 #
 
 import testutils
@@ -129,55 +129,6 @@ class TestPkgRevert(pkg5unittest.SingleDepotTestCase):
                                 f.write("\nbogus\n")
                         os.chown(file_path, ubin, groot)
                         os.chmod(file_path, misc.PKG_RO_FILE_MODE)
-
-        def create_some_files(self, paths):
-                ubin = portable.get_user_by_name("bin", None, False)
-                groot = portable.get_group_by_name("root", None, False)
-                for p in paths:
-                        if p.startswith(os.path.sep):
-                                p = p[1:]
-                        file_path = os.path.join(self.get_img_path(), p)
-                        dirpath = os.path.dirname(file_path)
-                        if not os.path.exists(dirpath):
-                                os.mkdir(dirpath)
-                        if p.endswith(os.path.sep):
-                                continue
-                        with open(file_path, "a+") as f:
-                                f.write("\ncontents\n")
-                        os.chown(file_path, ubin, groot)
-                        os.chmod(file_path, misc.PKG_RO_FILE_MODE)
-
-        def files_are_all_there(self, paths):
-                # check that files are there
-                for p in paths:
-                        if p.startswith(os.path.sep):
-                                p = p[1:]
-                        file_path = os.path.join(self.get_img_path(), p)
-                        isthere = os.path.exists(file_path)
-                        if p.endswith(os.path.sep):
-                                if not os.path.isdir(file_path):
-                                        if not isthere:
-                                                print >> sys.stderr, "missing dir %s" % file_path
-                                        else:
-                                                print >> sys.stderr, "not dir: %s" % file_path
-                                        return False
-                        else:
-                                if not os.path.isfile(file_path):
-                                        if not isthere:
-                                                print >> sys.stderr, "missing file %s" % file_path
-                                        else:
-                                                print >> sys.stderr, "not file: %s" % file_path
-                                        return False
-                return True
-
-        def files_are_all_missing(self, paths):
-                # make sure all files are gone
-                for p in paths:
-                        file_path = os.path.join(self.get_img_path(), p)
-                        if os.path.isfile(file_path):
-                                print file_path
-                                return False
-                return True
 
         def remove_file(self, path):
                 os.unlink(os.path.join(self.get_img_path(), path))
@@ -329,36 +280,36 @@ class TestPkgRevert(pkg5unittest.SingleDepotTestCase):
 
                 # now create some unpackaged files
                 self.create_some_files(some_files)
-                self.assert_(self.files_are_all_there(some_files))
+                self.files_are_all_there(some_files)
                 # revert them
                 self.pkg("revert --tagged bob", 0)
                 self.pkg("verify")
-                self.assert_(self.files_are_all_missing(some_files))
+                self.files_are_all_missing(some_files)
 
                 # now create some unpackaged directories and files
                 some_dirs = ["etc/X/", "etc/Y/", "etc/Z/C", "etc/X/XX/"]
                 self.create_some_files(some_dirs + some_files)
-                self.assert_(self.files_are_all_there(some_dirs + some_files))
+                self.files_are_all_there(some_dirs + some_files)
                 # revert them
                 self.pkg("revert --tagged bob", 0)
                 self.pkg("verify")
-                self.assert_(self.files_are_all_missing(some_dirs + some_files))
+                self.files_are_all_missing(some_dirs + some_files)
 
                 # install a package w/ implicit directories
                 self.pkg("install X@1.0")
                 self.create_some_files(some_dirs + some_files + ["etc/wombat/XXX"])
-                self.assert_(self.files_are_all_there(some_dirs + some_files + ["etc/wombat/XXX"]))
+                self.files_are_all_there(some_dirs + some_files + ["etc/wombat/XXX"])
                 # revert them
                 self.pkg("revert --tagged bob", 0)
                 self.pkg("verify")
-                self.assert_(self.files_are_all_missing(some_dirs + some_files))
-                self.assert_(self.files_are_all_there(["etc/wombat/XXX"]))
+                self.files_are_all_missing(some_dirs + some_files)
+                self.files_are_all_there(["etc/wombat/XXX"])
                 # mix and match w/ regular tests
                 self.pkg("install B@1.1 C@1.1 D@1.1")
                 self.pkg("verify")
                 self.damage_all_files()
                 self.create_some_files(some_dirs + some_files + ["etc/wombat/XXX"])
-                self.assert_(self.files_are_all_there(some_dirs + some_files + ["etc/wombat/XXX"]))
+                self.files_are_all_there(some_dirs + some_files + ["etc/wombat/XXX"])
                 self.pkg("verify A", exit=1)
                 self.pkg("verify B", exit=1)
                 self.pkg("verify C", exit=1)
@@ -366,8 +317,8 @@ class TestPkgRevert(pkg5unittest.SingleDepotTestCase):
                 self.pkg("revert --tagged bob")
                 self.pkg("revert /etc/file1")
                 self.pkg("verify")
-                self.assert_(self.files_are_all_missing(some_dirs + some_files))
-                self.assert_(self.files_are_all_there(["etc/wombat/XXX"]))
+                self.files_are_all_missing(some_dirs + some_files)
+                self.files_are_all_there(["etc/wombat/XXX"])
                 # generate some problems
                 self.pkg("install Y")
                 self.pkg("verify")
@@ -388,14 +339,14 @@ class TestPkgRevert(pkg5unittest.SingleDepotTestCase):
                 some_dirs = ["dev/dir1/", "dev/dir1/", "dev/dir2/", "dev/cfg/dir3/"]
                 self.pkg("install dev dev2")
                 self.pkg("verify")
-                self.assert_(self.files_are_all_missing(some_dirs + some_files))
+                self.files_are_all_missing(some_dirs + some_files)
                 self.create_some_files(some_dirs + some_files)
-                self.assert_(self.files_are_all_there(some_dirs + some_files))
+                self.files_are_all_there(some_dirs + some_files)
                 self.pkg("verify -v")
-		self.damage_files(["dev/cfg/bar2"])
-		self.pkg("revert -vvv --tagged init-dev")
-		self.pkg("verify -v")
-		self.assert_(self.files_are_all_missing(some_dirs + some_files))
+                self.damage_files(["dev/cfg/bar2"])
+                self.pkg("revert -vvv --tagged init-dev")
+                self.pkg("verify -v")
+                self.files_are_all_missing(some_dirs + some_files)
 
 if __name__ == "__main__":
         unittest.main()

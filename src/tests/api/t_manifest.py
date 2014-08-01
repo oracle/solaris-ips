@@ -411,7 +411,7 @@ dir owner=root path="opt/dir with whitespaces	in value" group=bin mode=0755 vari
                     contents=contents)
                 self.assertEqual(len(list(m1.gen_actions_by_type("dir"))), 2)
                 v = variant.Variants({"variant.foo":"one"})
-                m1.exclude_content([v.allow_action, lambda x: True])
+                m1.exclude_content([v.allow_action, lambda x, publisher: True])
                 self.assertEqual(len(list(m1.gen_actions_by_type("dir"))), 1)
 
         def test_store_to_disk(self):
@@ -433,7 +433,7 @@ dir owner=root path="opt/dir with whitespaces	in value" group=bin mode=0755 vari
                 """Verifies that get_directories() works as expected."""
 
                 v = variant.Variants({ "variant.arch": "sparc" })
-                excludes = [v.allow_action, lambda x: True]
+                excludes = [v.allow_action, lambda x, publisher: True]
 
                 m1 = manifest.FactoredManifest("foo-content@1.0", self.cache_dir,
                     pathname=self.foo_content_p5m)

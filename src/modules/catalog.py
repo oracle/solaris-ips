@@ -19,7 +19,7 @@
 #
 # CDDL HEADER END
 #
-# Copyright (c) 2007, 2013, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2007, 2014, Oracle and/or its affiliates. All rights reserved.
 
 """Interfaces and implementation for the Catalog object, as well as functions
 that operate on lists of package FMRIs."""
@@ -672,7 +672,7 @@ class CatalogPart(CatalogPartBase):
                                     len(self.__data[pub][stem])
                 return (package_count, package_version_count)
 
-        def get_package_counts_by_pub(self):
+        def get_package_counts_by_pub(self, pubs=EmptyI):
                 """Returns a generator of tuples of the form (pub,
                 package_count, package_version_count).  'pub' is the publisher
                 prefix, 'package_count' is the number of unique packages for the
@@ -681,7 +681,7 @@ class CatalogPart(CatalogPartBase):
                 """
 
                 self.load()
-                for pub in self.publishers():
+                for pub in self.publishers(pubs=pubs):
                         package_count = 0
                         package_version_count = 0
                         for stem in self.__data[pub]:
@@ -1630,6 +1630,11 @@ class Catalog(object):
         @staticmethod
         def __gen_actions(pfmri, actions, excludes=EmptyI):
                 errors = None
+                if not isinstance(pfmri, fmri.PkgFmri):
+                        # pfmri is assumed to be a FMRI tuple.
+                        pub, stem, ver = pfmri
+                else:
+                        pub = pfmri.publisher
                 for astr in actions:
                         try:
                                 a = pkg.actions.fromstr(astr)
@@ -1642,8 +1647,6 @@ class Catalog(object):
                                         # of list allocation/deallocation.
                                         errors = []
                                 if not isinstance(pfmri, fmri.PkgFmri):
-                                        # pfmri is assumed to be a FMRI tuple.
-                                        pub, stem, ver = pfmri
                                         pfmri = fmri.PkgFmri(name=stem,
                                             publisher=pub, version=ver)
                                 e.fmri = pfmri
@@ -1656,7 +1659,8 @@ class Catalog(object):
                                 # Don't filter actual facet or variant
                                 # set actions.
                                 yield a
-                        elif a.include_this(excludes):
+                        elif a.include_this(excludes,
+                            publisher=pub):
                                 yield a
 
                 if errors is not None:
@@ -1705,9 +1709,11 @@ class Catalog(object):
         def __gen_manifest_actions(m, atypes, excludes):
                 """Private helper function to iterate over a Manifest's actions
                 by action type, returning tuples of (action, attr_name)."""
+                pub = m.publisher
                 for atype in atypes:
                         for a in m.gen_actions_by_type(atype):
-                                if not a.include_this(excludes):
+                                if not a.include_this(excludes,
+                                    publisher=pub):
                                         continue
 
                                 if atype == "set":
@@ -3347,7 +3353,7 @@ class Catalog(object):
 
                 return proposed_dict, references, unmatched
 
-        def get_package_counts_by_pub(self):
+        def get_package_counts_by_pub(self, pubs=EmptyI):
                 """Returns a generator of tuples of the form (pub,
                 package_count, package_version_count).  'pub' is the publisher
                 prefix, 'package_count' is the number of unique packages for the
@@ -3363,7 +3369,7 @@ class Catalog(object):
                         # return no results properly to callers expecting
                         # a generator function.
                         return iter(())
-                return base.get_package_counts_by_pub()
+                return base.get_package_counts_by_pub(pubs=pubs)
 
         def get_part(self, name, must_exist=False):
                 """Returns the CatalogPart object for the named catalog part.

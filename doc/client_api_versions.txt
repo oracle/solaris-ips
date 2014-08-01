@@ -1,3 +1,37 @@
+Version 81:
+Incompatible with clients using versions 72-80.
+
+    pkg.client.api.ImageInterface has changed as follows:
+        * Introduced new non-linked image interfaces:
+                gen_plan_dehydrate()
+                gen_plan_rehydrate()
+                gen_plan_fix()
+
+        * Added a new function to get the list of dehydrated publishers:
+                get_dehydrated_publishers()
+
+    pkg.client.api_errors has changed as follows:
+        * Added a no_repo_pubs property to PlanCreationException
+          that contains a list of publishers that have no package
+          repository configured.
+
+    pkg.client.api.PlanDescription has changed as follows:
+        * Added methods:
+                add_item_message()
+                extend_item_messages()
+                get_item_mssages()
+
+    pkg.client.progress has changed as follows:
+        * Removed methods from ProgressTracker:
+                verify_start()
+                verify_start_pkg()
+                verify_add_progress()
+                verify_yield_error()
+                verify_yield_warning()
+                verify_yield_info()
+                verify_end_pkg()
+                verify_done()
+
 Version 80:
 Compatible with clients using versions 72-79.
 

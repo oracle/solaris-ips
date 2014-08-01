@@ -27,7 +27,7 @@
 
 /*ARGSUSED*/
 static PyObject *
-_allow_facet(PyObject *self, PyObject *args)
+_allow_facet(PyObject *self, PyObject *args, PyObject *kwargs)
 {
 	PyObject *action = NULL;
 	PyObject *facets = NULL;
@@ -44,8 +44,12 @@ _allow_facet(PyObject *self, PyObject *args)
 	PyObject *ret = Py_True;
 	Py_ssize_t fpos = 0;
 	Py_ssize_t klen = 0;
+	/* This parameter is ignored. */
+	PyObject *publisher = NULL;
+	static char *kwlist[] = {"facets", "action", "publisher", NULL};
 
-	if (!PyArg_UnpackTuple(args, "_allow_facet", 2, 2, &facets, &action))
+	if (!PyArg_ParseTupleAndKeywords(args, kwargs, "OO|O:_allow_facet",
+		kwlist, &facets, &action, &publisher))
 		return (NULL);
 
 	if ((act_attrs = PyObject_GetAttrString(action, "attrs")) == NULL)
@@ -171,7 +175,7 @@ prep_ret:
 
 /*ARGSUSED*/
 static PyObject *
-_allow_variant(PyObject *self, PyObject *args)
+_allow_variant(PyObject *self, PyObject *args, PyObject *kwargs)
 {
 	PyObject *action = NULL;
 	PyObject *vars = NULL;
@@ -179,8 +183,12 @@ _allow_variant(PyObject *self, PyObject *args)
 	PyObject *attr = NULL;
 	PyObject *value = NULL;
 	Py_ssize_t pos = 0;
+	/* This parameter is ignored. */
+	PyObject *publisher = NULL;
+	static char *kwlist[] = {"vars", "action", "publisher", NULL};
 
-	if (!PyArg_UnpackTuple(args, "_allow_variant", 2, 2, &vars, &action))
+	if (!PyArg_ParseTupleAndKeywords(args, kwargs, "OO|O:_allow_variant",
+		kwlist, &vars, &action, &publisher))
 		return (NULL);
 
 	if ((act_attrs = PyObject_GetAttrString(action, "attrs")) == NULL)
@@ -224,8 +232,10 @@ _allow_variant(PyObject *self, PyObject *args)
 }
 
 static PyMethodDef methods[] = {
-	{ "_allow_facet", (PyCFunction)_allow_facet, METH_VARARGS },
-	{ "_allow_variant", (PyCFunction)_allow_variant, METH_VARARGS },
+	{ "_allow_facet", (PyCFunction)_allow_facet,
+	    METH_VARARGS | METH_KEYWORDS },
+	{ "_allow_variant", (PyCFunction)_allow_variant,
+	    METH_VARARGS | METH_KEYWORDS },
 	{ NULL, NULL, 0, NULL }
 };
 

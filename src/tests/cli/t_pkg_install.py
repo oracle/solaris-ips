@@ -2962,8 +2962,8 @@ adm
                     "--deny-new-be liveroot" % self.get_img_path(), exit=5)
                 # "break" liveroot@1
                 self.file_append("etc/liveroot", "this file has been changed")
-                self.pkg("--debug simulate_live_root=%s fix liveroot" %
-                    self.get_img_path(), exit=5)
+                self.pkg("--debug simulate_live_root=%s fix --deny-new-be "
+                    "liveroot" % self.get_img_path(), exit=5)
 
         def test_upgrade_driver_conflicts(self):
                 """Test to make sure driver_aliases conflicts don't cause

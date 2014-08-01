@@ -2192,7 +2192,6 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                 'kwargs' is a dict of additional keyword arguments to be passed
                 to each action verification routine."""
 
-                progresstracker.verify_start_pkg(fmri)
                 try:
                         pub = self.get_publisher(prefix=fmri.publisher)
                 except apx.UnknownPublisher:
@@ -2204,7 +2203,8 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                         sig_pol = self.signature_policy.combine(
                             pub.signature_policy)
 
-                progresstracker.verify_add_progress(fmri)
+                progresstracker.plan_add_progress(
+                    progresstracker.PLAN_PKG_VERIFY)
                 manf = self.get_manifest(fmri, ignore_excludes=True)
                 sigs = list(manf.gen_actions_by_type("signature",
                     excludes=self.list_excludes()))
@@ -2225,7 +2225,8 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                         except apx.InvalidResourceLocation, e:
                                 yield [], [e], [], []
 
-                progresstracker.verify_add_progress(fmri)
+                progresstracker.plan_add_progress(
+                    progresstracker.PLAN_PKG_VERIFY, nitems=0)
                 def mediation_allowed(act):
                         """Helper function to determine if the mediation
                         delivered by a link is allowed.  If it is, then
@@ -2252,48 +2253,47 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                         return med_version == cfg_med_version and \
                             med.mediator_impl_matches(med_impl, cfg_med_impl)
 
-                try:
-                        excludes = self.list_excludes()
-                        variant_excludes = [self.cfg.variants.allow_action]
-                        for act in manf.gen_actions():
-                                progresstracker.verify_add_progress(fmri)
-                                if (act.name == "link" or
-                                    act.name == "hardlink") and \
-                                    not mediation_allowed(act):
-                                        # Link doesn't match configured
-                                        # mediation, so shouldn't be verified.
-                                        continue
+                # pkg verify only looks at actions that have not been dehydrated.
+                excludes = self.list_excludes()
+                vardrate_excludes = [self.cfg.variants.allow_action]
+                dehydrate = self.cfg.get_property("property", "dehydrated")
+                if dehydrate:
+                        func = self.get_dehydrated_exclude_func(dehydrate)
+                        excludes.append(func)
+                        vardrate_excludes.append(func)
 
-                                if act.include_this(excludes):
-                                        errors, warnings, info = act.verify(
-                                            self, pfmri=fmri, **kwargs)
-                                elif act.include_this(variant_excludes):
-                                        # Verify that file that is faceted out
-                                        # does not exist.
-                                        errors = []
-                                        path = act.attrs.get("path", None)
-                                        if path is not None and os.path.exists(
-                                            os.path.join(self.root, path)):
-                                                errors.append(
-                                                    _("File should not exist"))
-                                else:
-                                        # Action not applicable to image variant.
-                                        continue
+                for act in manf.gen_actions():
+                        progresstracker.plan_add_progress(
+                            progresstracker.PLAN_PKG_VERIFY, nitems=0)
+                        if (act.name == "link" or
+                            act.name == "hardlink") and \
+                            not mediation_allowed(act):
+                                # Link doesn't match configured
+                                # mediation, so shouldn't be verified.
+                                continue
 
-                                actname = act.distinguished_name()
-                                if errors:
-                                        progresstracker.verify_yield_error(
-                                            fmri, actname, errors)
-                                if warnings:
-                                        progresstracker.verify_yield_warning(
-                                            fmri, actname, warnings)
-                                if info:
-                                        progresstracker.verify_yield_info(
-                                            fmri, actname, info)
-                                if errors or warnings or info:
-                                        yield act, errors, warnings, info
-                finally:
-                        progresstracker.verify_end_pkg(fmri)
+                        errors = []
+                        warnings = []
+                        info = []
+                        if act.include_this(excludes, publisher=fmri.publisher):
+                                errors, warnings, info = act.verify(
+                                    self, pfmri=fmri, **kwargs)
+                        elif act.include_this(vardrate_excludes,
+                            publisher=fmri.publisher):
+                                # Verify that file that is faceted out
+                                # does not exist.
+                                path = act.attrs.get("path", None)
+                                if path is not None and os.path.exists(
+                                    os.path.join(self.root, path)):
+                                        errors.append(
+                                            _("File should not exist"))
+                        else:
+                                # Action that is not applicable to image variant
+                                # or has been dehydrated.
+                                continue
+
+                        if errors or warnings or info:
+                                yield act, errors, warnings, info
 
         def image_config_update(self, new_variants, new_facets, new_mediators):
                 """update variants in image config"""
@@ -2305,101 +2305,6 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                 if new_mediators is not None:
                         self.cfg.mediators = new_mediators
                 self.save_config()
-
-        def repair(self, repair, progtrack, **kwargs):
-                """Repair any actions in the fmri that failed a verify."""
-
-                # prune off any new_history_op keyword argument, used for
-                # locked_op(), but not for __repair()
-                need_history_op = kwargs.pop("new_history_op", True)
-
-                try:
-                        with self.locked_op("fix",
-                            new_history_op=need_history_op):
-                                try:
-                                        return self.__repair(repair, progtrack,
-                                            **kwargs)
-                                except apx.ActionExecutionError, e:
-                                        raise
-                                except pkg.actions.ActionError, e:
-                                        raise apx.InvalidPackageErrors([e])
-                finally:
-                        progtrack.verify_done()
-
-        def __repair(self, repairs, progtrack, accept=False,
-            show_licenses=False):
-                """Private repair method; caller is responsible for locking."""
-
-                if self.version < self.CURRENT_VERSION:
-                        raise apx.ImageFormatUpdateNeeded(self.root)
-
-                # Allow garbage collection of previous plan.
-                self.imageplan = None
-
-                reason = "The following packages needed to be repaired:\n    %s"
-                self.history.operation_start_state = \
-                    reason % "\n    ".join(str(fmri)
-                    for fmri, failed in repairs)
-
-                # XXX: This (lambda x: False) is temporary until we move pkg fix
-                # into the api and can actually use the
-                # api::__check_cancel() function.
-                pps = []
-                for fmri, actions in repairs:
-                        logger.info("Repairing: %-50s" % fmri.get_pkg_stem())
-                        # Need to get all variants otherwise evaluating the
-                        # pkgplan will fail in signature verification.
-                        m = self.get_manifest(fmri, ignore_excludes=True)
-                        pp = pkgplan.PkgPlan(self)
-                        pp.propose_repair(fmri, m, actions, [])
-                        pp.evaluate(self.list_excludes(), self.list_excludes())
-                        pps.append(pp)
-
-                # Always start with most current (on-disk) state information.
-                self.__init_catalogs()
-
-                ip = imageplan.ImagePlan(self, pkgdefs.API_OP_REPAIR,
-                    progtrack, lambda: False)
-
-                ip.pd._image_lm = self.get_last_modified(string=True)
-                self.imageplan = ip
-
-                ip.update_index = False
-                ip.pd.state = plandesc.EVALUATED_PKGS
-                ip.pd.pkg_plans = pps
-
-                ip.evaluate()
-                if ip.reboot_needed() and self.is_liveroot():
-                        raise apx.RebootNeededOnLiveImageException()
-
-                logger.info("\n")
-                for pp in ip.pd.pkg_plans:
-                        for lic, entry in pp.get_licenses():
-                                dest = entry["dest"]
-                                lic = dest.attrs["license"]
-                                if show_licenses or dest.must_display:
-                                        # Display license if required.
-                                        logger.info("-" * 60)
-                                        logger.info(_("Package: %s") % \
-                                            pp.destination_fmri)
-                                        logger.info(_("License: %s\n") % lic)
-                                        logger.info(dest.get_text(self,
-                                            pp.destination_fmri))
-                                        logger.info("\n")
-
-                                # Mark license as having been displayed.
-                                pp.set_license_status(lic, displayed=True)
-
-                                if dest.must_accept and accept:
-                                        # Mark license as accepted if
-                                        # required and requested.
-                                        pp.set_license_status(lic,
-                                            accepted=accept)
-
-                ip.preexecute()
-                ip.execute()
-
-                return True
 
         def __verify_manifest(self, fmri, mfstpath, alt_pub=None):
                 """Verify a manifest.  The caller must supply the FMRI
@@ -3221,7 +3126,7 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                                                             pkgdefs.PKG_STATE_OBSOLETE)
                                                 elif act.attrs["name"] == "pkg.renamed":
                                                         if not act.include_this(
-                                                            excludes):
+                                                            excludes, publisher=pub):
                                                                 continue
                                                         states.append(
                                                             pkgdefs.PKG_STATE_RENAMED)
@@ -3526,18 +3431,22 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                                 continue
                         yield f
 
-        def gen_installed_pkgs(self):
+        def gen_installed_pkgs(self, pubs=EmptyI):
                 """Return an iteration through the installed packages."""
 
                 cat = self.get_catalog(self.IMG_CATALOG_INSTALLED)
-                for f in cat.fmris():
+                for f in cat.fmris(pubs=pubs):
                         yield f
 
-        def count_installed_pkgs(self):
+        def count_installed_pkgs(self, pubs=EmptyI):
                 """Return the number of installed packages."""
                 cat = self.get_catalog(self.IMG_CATALOG_INSTALLED)
                 assert cat.package_count == cat.package_version_count
-                return cat.package_count
+                return sum(
+                    pkg_count
+                    for (pub, pkg_count, _ignored) in
+                        cat.get_package_counts_by_pub(pubs=pubs)
+                )
 
         def gen_tracked_stems(self):
                 """Return an iteration through all the tracked pkg stems
@@ -4322,10 +4231,16 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                                     pkgdefs.API_OP_CHANGE_FACET,
                                     pkgdefs.API_OP_CHANGE_VARIANT]:
                                         ip.plan_change_varcets(**kwargs)
+                                elif _op == pkgdefs.API_OP_DEHYDRATE:
+                                        ip.plan_dehydrate(**kwargs)
                                 elif _op == pkgdefs.API_OP_INSTALL:
                                         ip.plan_install(**kwargs)
                                 elif _op ==pkgdefs.API_OP_EXACT_INSTALL:
                                         ip.plan_exact_install(**kwargs)
+                                elif _op == pkgdefs.API_OP_FIX:
+                                        ip.plan_fix(**kwargs)
+                                elif _op == pkgdefs.API_OP_REHYDRATE:
+                                        ip.plan_rehydrate(**kwargs)
                                 elif _op == pkgdefs.API_OP_REVERT:
                                         ip.plan_revert(**kwargs)
                                 elif _op == pkgdefs.API_OP_SET_MEDIATOR:
@@ -4505,6 +4420,33 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                 progtrack.plan_all_start()
                 self.__make_plan_common(op, progtrack, check_cancel,
                     noexecute, args=args, tagged=tagged)
+                progtrack.plan_all_done()
+
+        def make_dehydrate_plan(self, op, progtrack, check_cancel, noexecute,
+                publishers):
+                """Remove non-editable files and hardlinks from an image."""
+
+                progtrack.plan_all_start()
+                self.__make_plan_common(op, progtrack, check_cancel,
+                    noexecute, publishers=publishers)
+                progtrack.plan_all_done()
+
+        def make_rehydrate_plan(self, op, progtrack, check_cancel, noexecute,
+                publishers):
+                """Reinstall non-editable files and hardlinks to an dehydrated
+                image."""
+
+                progtrack.plan_all_start()
+                self.__make_plan_common(op, progtrack, check_cancel,
+                    noexecute, publishers=publishers)
+                progtrack.plan_all_done()
+
+        def make_fix_plan(self, op, progtrack, check_cancel, noexecute, args):
+                """Create an image plan to fix the image."""
+
+                progtrack.plan_all_start()
+                self.__make_plan_common(op, progtrack, check_cancel, noexecute,
+                    args=args)
                 progtrack.plan_all_done()
 
         def make_noop_plan(self, op, progtrack, check_cancel,
@@ -4751,3 +4693,33 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                 except EnvironmentError, e:
                         raise apx._convert_error(e)
                 self.__rebuild_image_catalogs()
+
+        @staticmethod
+        def get_dehydrated_exclude_func(dehydrated_pubs):
+                """A boolean function that will be added to the pkg(5) exclude
+                mechanism to determine if an action is allowed to be installed
+                based on whether its publisher is going to be dehydrated or has
+                been currently dehydrated."""
+
+                # A closure is used so that the list of dehydrated publishers
+                # can be accessed.
+                def __allow_action_dehydrate(act, publisher):
+                        if publisher not in dehydrated_pubs:
+                                # Allow actions from publishers that are not
+                                # dehydrated.
+                                return True
+
+                        aname = act.name
+                        if aname == "file":
+                                attrs = act.attrs
+                                if attrs.get("dehydrate") == "false":
+                                        return True
+                                if "preserve" in attrs or "overlay" in attrs:
+                                        return True
+                                return False
+                        elif aname == "hardlink":
+                                return False
+
+                        return True
+
+                return __allow_action_dehydrate

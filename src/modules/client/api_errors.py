@@ -495,6 +495,7 @@ class PlanCreationException(ApiException):
             pkg_updates_required=EmptyI,
             rejected_pats=EmptyI,
             solver_errors=EmptyI,
+            no_repo_pubs=EmptyI,
             unmatched_fmris=EmptyI,
             would_install=EmptyI,
             wrong_publishers=EmptyI,
@@ -521,6 +522,7 @@ class PlanCreationException(ApiException):
                 self.rejected_pats         = rejected_pats
                 self.solver_errors         = solver_errors
                 self.unmatched_fmris       = unmatched_fmris
+                self.no_repo_pubs          = no_repo_pubs
                 self.would_install         = would_install
                 self.wrong_publishers      = wrong_publishers
                 self.wrong_variants        = wrong_variants
@@ -692,6 +694,14 @@ The parent image has the following enabled publishers:"""))
                         res.append(_("""
 The child image has the following enabled publishers:"""))
                         __format_li_pubs(pubs, res)
+
+                if self.no_repo_pubs:
+                        res += [_("The following publishers do not have any "
+                            "configured package repositories and cannot be "
+                            "used in package dehydration or rehydration "
+                            "operations:\n")]
+                        res += ["\t%s" % s for s in sorted(
+                            self.no_repo_pubs)]
 
                 return "\n".join(res)
 

@@ -103,8 +103,8 @@ from pkg.smf import NonzeroExitException
 # things like help(pkg.client.api.PlanDescription)
 from pkg.client.plandesc import PlanDescription # pylint: disable=W0611
 
-CURRENT_API_VERSION = 80
-COMPATIBLE_API_VERSIONS = frozenset([72, 73, 74, 75, 76, 77, 78, 79,
+CURRENT_API_VERSION = 81
+COMPATIBLE_API_VERSIONS = frozenset([72, 73, 74, 75, 76, 77, 78, 79, 80,
     CURRENT_API_VERSION])
 CURRENT_P5I_VERSION = 1
 
@@ -1375,7 +1375,8 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                 # make some perf optimizations
                 if _li_md_only:
                         _refresh_catalogs = _update_index = False
-                if _op in [API_OP_DETACH, API_OP_SET_MEDIATOR]:
+                if _op in [API_OP_DETACH, API_OP_SET_MEDIATOR, API_OP_FIX,
+                    API_OP_DEHYDRATE, API_OP_REHYDRATE]:
                         # these operations don't change fmris and don't need
                         # to recurse, so disable a bunch of linked image
                         # operations.
@@ -1439,9 +1440,15 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                         elif _op in [API_OP_CHANGE_FACET,
                             API_OP_CHANGE_VARIANT]:
                                 self._img.make_change_varcets_plan(**kwargs)
+                        elif _op == API_OP_DEHYDRATE:
+                                self._img.make_dehydrate_plan(**kwargs)
                         elif _op == API_OP_INSTALL or \
                             _op == API_OP_EXACT_INSTALL:
                                 self._img.make_install_plan(**kwargs)
+                        elif _op == API_OP_FIX:
+                                self._img.make_fix_plan(**kwargs)
+                        elif _op == API_OP_REHYDRATE:
+                                self._img.make_rehydrate_plan(**kwargs)
                         elif _op == API_OP_REVERT:
                                 self._img.make_revert_plan(**kwargs)
                         elif _op == API_OP_SET_MEDIATOR:
@@ -2200,6 +2207,70 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                     _be_name=be_name, _li_ignore=[], _new_be=new_be,
                     _noexecute=noexecute, _refresh_catalogs=False,
                     _update_index=False, args=args, tagged=tagged)
+
+        def gen_plan_dehydrate(self, publishers, noexecute=True):
+                """This is a generator function that yields a PlanDescription
+                object.
+
+                Plan to remove non-editable files and hardlinks from an image.
+                Once an operation has been planned, it may be executed by
+                first calling prepare(), and then execute_plan().  After
+                execution of a plan, or to abandon a plan, reset() should be
+                called.
+
+                'publishers' is a list of publishers to dehydrate.
+
+                For all other parameters, refer to the 'gen_plan_install'
+                function for an explanation of their usage and effects."""
+
+                op = API_OP_DEHYDRATE
+                return self.__plan_op(op, _noexecute=noexecute,
+                    _refresh_catalogs=False, _update_index=False,
+                    publishers=publishers)
+
+        def gen_plan_rehydrate(self, publishers, noexecute=True):
+                """This is a generator function that yields a PlanDescription
+                object.
+
+                Plan to reinstall non-editable files and hardlinks to a dehydrated
+                image. Once an operation has been planned, it may be executed by
+                first calling prepare(), and then execute_plan().  After
+                execution of a plan, or to abandon a plan, reset() should be
+                called.
+
+                'publishers' is a list of publishers to dehydrate on.
+
+                For all other parameters, refer to the 'gen_plan_install'
+                function for an explanation of their usage and effects."""
+
+                op = API_OP_REHYDRATE
+                return self.__plan_op(op, _noexecute=noexecute,
+                    _refresh_catalogs=False, _update_index=False,
+                    publishers=publishers)
+
+        def gen_plan_fix(self, args, backup_be=None, backup_be_name=None,
+            be_activate=True, be_name=None, new_be=None, noexecute=True):
+                """This is a generator function that yields a PlanDescription
+                object.
+
+                Plan to repair anything that fails to verify. Once an operation
+                has been planned, it may be executed by first calling prepare(),
+                and then execute_plan().  After execution of a plan, or to
+                abandon a plan, reset() should be called.
+
+                'show_licenses' indicates whether we should display all licenses.
+
+                'accept' indicates whether we agree to and accept the terms
+                of the licenses.
+
+                For all other parameters, refer to the 'gen_plan_install'
+                function for an explanation of their usage and effects."""
+
+                op = API_OP_FIX
+                return self.__plan_op(op, args=args, _be_activate=be_activate,
+                    _backup_be=backup_be, _backup_be_name=backup_be_name,
+                    _be_name=be_name, _new_be=new_be, _noexecute=noexecute,
+                    _update_index=False)
 
         def attach_linked_child(self, lin, li_path, li_props=None,
             accept=False, allow_relink=False, force=False, li_md_only=False,
@@ -3444,7 +3515,7 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                                                                     pkgdefs.PKG_STATE_OBSOLETE)
                                                         elif act.attrs["name"] == "pkg.renamed":
                                                                 if not act.include_this(
-                                                                    excludes):
+                                                                    excludes, publisher=pub):
                                                                         continue
                                                                 states.append(
                                                                     pkgdefs.PKG_STATE_RENAMED)
@@ -5426,6 +5497,11 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                         if os.path.exists(fp):
                                 portable.remove(fp)
                         raise
+
+        def get_dehydrated_publishers(self):
+                """Return the list of dehydrated publishers' prefixes."""
+
+                return self._img.cfg.get_property("property", "dehydrated")
 
 
 class Query(query_p.Query):

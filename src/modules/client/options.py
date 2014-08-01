@@ -86,6 +86,7 @@ UPDATE_INDEX          = "update_index"
 VERBOSE               = "verbose"
 SYNC_ACT              = "sync_act"
 ACT_TIMEOUT           = "act_timeout"
+PUBLISHERS            = "publishers"
 
 
 
@@ -391,6 +392,12 @@ def opts_table_cb_nqv(api_inst, opts, opts_new):
         if opts[VERBOSE] and opts[QUIET]:
                 raise InvalidOptionError(InvalidOptionError.INCOMPAT,
                     [VERBOSE, QUIET])
+
+def opts_table_cb_publishers(api_inst, opts, opts_new):
+        publishers = set()
+        for p in opts[PUBLISHERS]:
+                publishers.add(p)
+        opts_new[PUBLISHERS] = publishers
 
 def opts_table_cb_parsable(api_inst, opts, opts_new):
         if opts[PARSABLE_VERSION] and opts.get(VERBOSE, False):
@@ -715,6 +722,11 @@ opts_table_actuators = [
     (ACT_TIMEOUT,          None)
 ]
 
+opts_table_publishers = [
+    opts_table_cb_publishers,
+    (PUBLISHERS, []),
+]
+
 #
 # Options for pkg(1) subcommands.  Built by combining the option tables above,
 # with some optional subcommand unique options defined below.
@@ -855,19 +867,33 @@ opts_list_inventory = \
     (LIST_UPGRADABLE,       False),
 ]
 
+opts_dehydrate = \
+    opts_table_nqv + \
+    opts_table_publishers + \
+    []
+
+opts_fix = \
+    opts_table_beopts + \
+    opts_table_nqv + \
+    opts_table_licenses + \
+    []
+
 pkg_op_opts = {
 
     pkgdefs.PKG_OP_ATTACH         : opts_attach_linked,
     pkgdefs.PKG_OP_AUDIT_LINKED   : opts_audit_linked,
     pkgdefs.PKG_OP_CHANGE_FACET   : opts_install,
     pkgdefs.PKG_OP_CHANGE_VARIANT : opts_install,
+    pkgdefs.PKG_OP_DEHYDRATE      : opts_dehydrate,
     pkgdefs.PKG_OP_DETACH         : opts_detach_linked,
     pkgdefs.PKG_OP_EXACT_INSTALL  : opts_main,
+    pkgdefs.PKG_OP_FIX            : opts_fix,
     pkgdefs.PKG_OP_INSTALL        : opts_install,
     pkgdefs.PKG_OP_LIST           : opts_list_inventory,
     pkgdefs.PKG_OP_LIST_LINKED    : opts_list_linked,
     pkgdefs.PKG_OP_PROP_LINKED    : opts_list_property_linked,
     pkgdefs.PKG_OP_PUBCHECK       : [],
+    pkgdefs.PKG_OP_REHYDRATE      : opts_dehydrate,
     pkgdefs.PKG_OP_REVERT         : opts_revert,
     pkgdefs.PKG_OP_SET_MEDIATOR   : opts_set_mediator,
     pkgdefs.PKG_OP_SET_PROP_LINKED: opts_set_property_linked,

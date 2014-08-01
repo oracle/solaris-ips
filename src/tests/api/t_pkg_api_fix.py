@@ -1,0 +1,72 @@
+#!/usr/bin/python
+#
+# CDDL HEADER START
+#
+# The contents of this file are subject to the terms of the
+# Common Development and Distribution License (the "License").
+# You may not use this file except in compliance with the License.
+#
+# You can obtain a copy of the license at usr/src/OPENSOLARIS.LICENSE
+# or http://www.opensolaris.org/os/licensing.
+# See the License for the specific language governing permissions
+# and limitations under the License.
+#
+# When distributing Covered Code, include this CDDL HEADER in each
+# file and include the License file at usr/src/OPENSOLARIS.LICENSE.
+# If applicable, add the following below this CDDL HEADER, with the
+# fields enclosed by brackets "[]" replaced with your own identifying
+# information: Portions Copyright [yyyy] [name of copyright owner]
+#
+# CDDL HEADER END
+#
+
+#
+# Copyright (c) 2014, Oracle and/or its affiliates. All rights reserved.
+#
+
+import testutils
+if __name__ == "__main__":
+        testutils.setup_environment("../../../proto")
+import pkg5unittest
+
+import pkg.client.api_errors as api_errors
+
+class TestPkgApiFix(pkg5unittest.SingleDepotTestCase):
+
+        amber10 = """
+            open amber@1.0,5.11-0
+            add dir mode=0755 owner=root group=bin path=etc
+            add file amber1 mode=0644 owner=root group=bin path=etc/amber1
+            close """
+
+        misc_files = ["amber1"]
+
+        def setUp(self):
+                pkg5unittest.SingleDepotTestCase.setUp(self)
+                self.make_misc_files(self.misc_files)
+                self.pkgsend_bulk(self.rurl, self.amber10)
+
+        def test_01_basic(self):
+
+                api_inst = self.image_create(self.rurl)
+
+                self._api_install(api_inst, ["amber"])
+                victim = "etc/amber1"
+                # Corrupt the file
+                self.file_append(victim, "foobar")
+
+                self._api_fix(api_inst)
+                self.pkg("verify")
+
+                self.assertRaises(api_errors.PlanCreationException,
+                    lambda *args, **kwargs: list(
+                        api_inst.gen_plan_fix(*args, **kwargs)),
+                    ["foo", "bar"])
+
+                self.assertRaises(api_errors.PlanCreationException,
+                    lambda *args, **kwargs: list(
+                        api_inst.gen_plan_fix(*args, **kwargs)),
+                    ["amber@-1.0"])
+
+if __name__ == "__main__":
+        unittest.main()

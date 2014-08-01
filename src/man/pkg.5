@@ -287,6 +287,24 @@ Changes to the installed file are preserved based on the value of the \fBpreserv
 .RE
 
 .sp
+.ne 2
+.mk
+.na
+\fB\fBdehydrate\fR\fR
+.ad
+.sp .6
+.RS 4n
+Specifies whether this action should be removed when a package publisher's packages are dehydrated or when a dehydrated publisher's packages are modified. The value of the \fBdehydrate\fR attribute can be \fBtrue\fR or \fBfalse\fR. If the value of the \fBdehydrate\fR attribute is \fBfalse\fR, the action will not be removed during dehydrate operations. Otherwise, the action will be removed. File actions tagged with the \fBpreserve\fR or \fBoverlay\fR attributes are implicitly excluded from dehydration operations and do not need this attribute.
+.sp
+.in +2
+.nf
+file path=etc/zones/SYSdefault.xml dehydrate=false ...
+.fi
+.in -2
+
+.RE
+
+.sp
 .LP
 The following attributes are recognized for ELF files:
 .sp

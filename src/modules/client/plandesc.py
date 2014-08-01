@@ -129,6 +129,7 @@ class PlanDescription(object):
                 "installed": [[str]],
                 "updated": [[str]],
             },
+            "_item_msgs": collections.defaultdict(list),
             "added_groups": { str: pkg.fmri.PkgFmri },
             "added_users": { str: pkg.fmri.PkgFmri },
             "child_op_vectors": [ ( str, [ li.LinkedImageName ], {}, bool ) ],
@@ -187,6 +188,7 @@ class PlanDescription(object):
                 self.li_ppubs = None
                 self.li_props = {}
                 self._li_pkg_updates = True
+                self._item_msgs = collections.defaultdict(list)
 
                 #
                 # Properties set when state >= EVALUATED_OK
@@ -697,6 +699,21 @@ class PlanDescription(object):
                         return []
 
                 return self._solver_errors
+
+        def add_item_message(self, item_id, msg_time, msg_type, msg_text):
+                """Add a new message with its time, type and text for an
+                item."""
+                self._item_msgs[item_id].append([msg_time, msg_type, msg_text])
+
+        def extend_item_messages(self, item_id, messages):
+                """Add new messages to an item."""
+                self._item_msgs[item_id].extend(messages)
+
+        def get_item_messages(self):
+                """Return all item messages."""
+                for item_id, msgs in self._item_msgs.iteritems():
+                        for msg_time, msg_type, msg_text in msgs:
+                                yield item_id, msg_time, msg_type, msg_text
 
         def set_actuator_timeout(self, timeout):
                 """Set timeout for synchronous actuators."""
