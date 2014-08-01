@@ -2532,6 +2532,20 @@ class TestPkgInstallUpgrade(_TestHelper, pkg5unittest.SingleDepotTestCase):
             close
         """
 
+        dumdir10 = """
+            open dumdir@1.0
+            add dir path=etc mode=0755 owner=root group=bin
+            add file tmp/amber1 mode=0755 owner=root group=bin path=etc/amber1
+            close
+        """
+
+        dumdir20 = """
+            open dumdir@2.0
+            add dir path=etc mode=0700 owner=root group=bin
+            add file tmp/amber1 mode=0444 owner=root group=bin path=etc/amber1
+            close
+        """
+
         misc_files1 = [
             "tmp/amber1", "tmp/amber2", "tmp/bronzeA1",  "tmp/bronzeA2",
             "tmp/bronze1", "tmp/bronze2",
@@ -2910,6 +2924,21 @@ adm
                 self.pkg("verify -v")
 
                 self.pkg("install iron@2.0")
+                self.pkg("verify -v")
+
+        def test_upgrade5(self):
+                """Test manually removed directory and files will be restored
+                 during update, if mode are different."""
+
+                self.pkgsend_bulk(self.rurl, (self.dumdir10, self.dumdir20))
+                self.image_create(self.rurl)
+
+                self.pkg("install -vvv dumdir@1.0")
+                self.pkg("verify -v")
+                dirpath = os.path.join(self.test_root, "image0", "etc")
+                shutil.rmtree(dirpath)
+
+                self.pkg("update -vvv dumdir@2.0")
                 self.pkg("verify -v")
 
         def test_upgrade_liveroot(self):

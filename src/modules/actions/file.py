@@ -243,7 +243,10 @@ class FileAction(generic.Action):
                                         raise
 
                 # This is safe even if temp == final_path.
-                portable.rename(temp, final_path)
+                try:
+                        portable.rename(temp, final_path)
+                except OSError, e:
+                        raise api_errors.FileInUseException(final_path)
 
                 # Handle timestamp if specified (and content was installed).
                 if do_content and "timestamp" in self.attrs:
