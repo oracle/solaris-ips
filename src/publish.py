@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2007, 2013, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2007, 2014, Oracle and/or its affiliates. All rights reserved.
 #
 
 import fnmatch
@@ -827,10 +827,16 @@ if __name__ == "__main__":
         except (pkg.actions.ActionError, trans.TransactionError,
             EnvironmentError, RuntimeError, pkg.fmri.FmriError,
             apx.ApiException), _e:
+                if isinstance(_e, EnvironmentError) and \
+                    _e.errno == errno.ENOMEM:
+                        error("\n" + misc.out_of_memory())
                 if not (isinstance(_e, IOError) and _e.errno == errno.EPIPE):
                         # Only print message if failure wasn't due to
                         # broken pipe (EPIPE) error.
                         print >> sys.stderr, "pkgsend: %s" % _e
+                __ret = 1
+        except MemoryError:
+                error("\n" + misc.out_of_memory())
                 __ret = 1
         except SystemExit, _e:
                 raise _e
