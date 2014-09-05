@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2012, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2012, 2014, Oracle and/or its affiliates. All rights reserved.
 #
 
 """
@@ -449,7 +449,7 @@ class _PipedTransport(rpc.Transport):
 
                 c = self.make_connection(host)
                 c.send(request_body)
-                return self._parse_response(c.makefile(), c)
+                return self.parse_response(c.makefile())
 
 
 class _PipedServer(SocketServer.BaseServer):

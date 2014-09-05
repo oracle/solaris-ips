@@ -18,7 +18,7 @@
 #
 # CDDL HEADER END
 #
-# Copyright (c) 2010, 2013, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2010, 2014, Oracle and/or its affiliates. All rights reserved.
 #
 
 # Set some specific permissions
@@ -105,5 +105,13 @@
 <transform pkg info.repository-url=(.*) -> emit set name=info.repository-url value=%<1>>
 set name=org.opensolaris.consolidation value=ips
 set name=variant.opensolaris.zone value=global value=nonglobal
+
+# Generate a python 2.7 dir/file action for each python 2.6 dir/file action
+# it ran across.
+<transform file dir link hardlink path=(.*)python2.6(.*) -> emit %(action.name) path=%<1>python2.7%<2>>
+# Do the version substitution on the .egg-info file.
+<transform file path=.*python2.7.*py2.6.egg-info -> edit path py2.6 py2.7>
+# Avoid generating dependencies against any 2.7 file.
+<transform file path=.*python2.7 -> default pkg.depend.bypass-generate .*>
 
 # vim: ft=pkg5manifest

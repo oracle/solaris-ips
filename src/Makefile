@@ -20,10 +20,11 @@
 #
 
 #
-# Copyright (c) 2007, 2013, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2007, 2014, Oracle and/or its affiliates. All rights reserved.
 #
 
-PYTHON = /usr/bin/python2.6
+PYTHON26 = /usr/bin/python2.6
+PYTHON27 = /usr/bin/python2.7
 
 all := TARGET = all
 install := TARGET = install
@@ -49,14 +50,15 @@ PYLINT_VER_CMD = PYTHONPATH= /usr/bin/pkg info pkg:/developer/python/pylint | \
 SUBDIRS=zoneproxy tsol
 
 all: $(SUBDIRS)
-	$(PYTHON) setup.py build
+	$(PYTHON26) setup.py build
+	$(PYTHON27) setup.py build
 
 clean: $(SUBDIRS)
-	$(PYTHON) setup.py clean
+	$(PYTHON26) setup.py clean
 	@cd pkg; pwd; make clean
 
 clobber: $(SUBDIRS)
-	$(PYTHON) setup.py clobber
+	$(PYTHON26) setup.py clobber
 	@cd pkg; pwd; make clobber
 
 #
@@ -64,18 +66,20 @@ clobber: $(SUBDIRS)
 # it's the best way to ensure things stay pylint clean.
 #
 install: $(SUBDIRS)
-	$(PYTHON) setup.py install
+	$(PYTHON26) setup.py install
+	$(PYTHON27) setup.py install
 
 lint:
-	$(PYTHON) setup.py lint
+	$(PYTHON26) setup.py lint
 	@cd zoneproxy; pwd; make lint
 
 clint:
-	$(PYTHON) setup.py clint
+	$(PYTHON26) setup.py clint
 	@cd zoneproxy; pwd; make lint
 
 pylint: install
-	PYLINT_VER=$(PYLINT_VER_CMD:sh) $(PYTHON) setup.py pylint
+	PYLINT_VER=$(PYLINT_VER_CMD:sh) $(PYTHON26) setup.py pylint
+	PYLINT_VER=$(PYLINT_VER_CMD:sh) $(PYTHON27) setup.py pylint
 
 #
 # This rule propagates the current make target through all of the
@@ -91,12 +95,12 @@ packages: install pylint
 		PYTHONPATH=$$(hg root)/proto/root_$$(uname -p)/usr/lib/python2.6/vendor-packages
 
 test:
-	$(PYTHON) setup.py test
+	$(PYTHON26) setup.py test
 
 test-verbose:
-	$(PYTHON) setup.py test -v
+	$(PYTHON26) setup.py test -v
 
 test-generate:
-	$(PYTHON) setup.py test -g
+	$(PYTHON26) setup.py test -g
 
 FRC:
