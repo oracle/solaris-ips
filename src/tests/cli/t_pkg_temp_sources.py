@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2011, 2013, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2011, 2014, Oracle and/or its affiliates. All rights reserved.
 #
 
 import testutils
@@ -511,7 +511,6 @@ Packaging Date: %(quux10_pkg_date)s
           FMRI: %(quux10_pkg_fmri)s
 
           Name: signed
-       Summary: 
          State: Not installed
      Publisher: test
        Version: 1.0

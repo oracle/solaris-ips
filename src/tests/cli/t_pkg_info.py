@@ -20,7 +20,7 @@
 # CDDL HEADER END
 #
 
-# Copyright (c) 2008, 2013, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2008, 2014, Oracle and/or its affiliates. All rights reserved.
 
 import testutils
 if __name__ == "__main__":
@@ -220,18 +220,18 @@ class TestPkgInfoBasics(pkg5unittest.SingleDepotTestCase):
 
                 # Verify output.
                 lines = self.output.split("\n")
-                self.assertEqual(lines[2], "   Description: Short desc")
-                self.assertEqual(lines[3],
+                self.assertEqual(lines[1], "   Description: Short desc")
+                self.assertEqual(lines[2],
                     "      Category: System/Security/Foo/bar/Baz")
                 self.pkg("info -r copper")
                 lines = self.output.split("\n")
-                self.assertEqual(lines[2],
+                self.assertEqual(lines[1],
                    "   Description: This package constrains package versions to those for build 123.")
 
-                self.assertEqual(lines[3], "                WARNING: Proper system update and correct package selection")
-                self.assertEqual(lines[4], "                depend on the presence of this incorporation.  Removing this")
-                self.assertEqual(lines[5], "                package will result in an unsupported system.")
-                self.assertEqual(lines[6], "         State: Not installed")
+                self.assertEqual(lines[2], "                WARNING: Proper system update and correct package selection")
+                self.assertEqual(lines[3], "                depend on the presence of this incorporation.  Removing this")
+                self.assertEqual(lines[4], "                package will result in an unsupported system.")
+                self.assertEqual(lines[5], "         State: Not installed")
                 # Should only print fatal errors when using -q.
                 self.pkg("info -qr turquoise")
                 self.__check_qoutput(errout=False)
@@ -284,6 +284,68 @@ class TestPkgInfoBasics(pkg5unittest.SingleDepotTestCase):
                 self.__check_qoutput(errout=False)
 
                 self.pkg("info --license silver 2>&1 | grep 'no license information'")
+
+        def test_info_attribute(self):
+                """Verify that 'pkg info' handles optional attributes as expected."""
+
+                pkg1 = """
+                    open jade@1.0,5.11-0
+                    add dir mode=0755 owner=root group=bin path=/bin
+                    add set name=info.classification value="org.opensolaris.category.2008:Applications/Sound and Video"
+                    add set name=info.maintainer value="Bob Smith <bob.smith@example.com>" value="allen knight <allen.knight@example.com>" value="Anna Kour <Anna.Kour@example.com"
+                    add set name=info.upstream value="Gisle Aas"
+                    add set name=info.source-url value=http://search.cpan.org/CPAN/authors/id/G/GA/GAAS/URI-1.37.tar.gz
+                    add set name=info.maintainer-url value=""
+                    close
+                """
+
+                pkg2 = """
+                    open turquoise@1.0,5.11-0
+                    add dir mode=0755 owner=root group=bin path=/bin
+                    add set name=info.classification value=org.opensolaris.category.2008:System/Security/Foo/bar/Baz
+                    add set pkg.description="Short desc"
+                    close
+                """
+                pkg3 = """
+                    open copper@1.0,5.11-0
+                    add dir mode=0755 owner=root group=bin path=/bin
+                    add set pkg.description="This package constrains package versions to those for build 123.  WARNING: Proper system update and correct packagsudo ../run.py -dvo test_info_local_remote selection depend on the presence of this incorporation.  Removing this package will result in an unsupported system."
+                    add set name=opensolaris.gui.classification value=freedesktop.org:System
+                    add set name=info.maintainer-url value="abc"
+                    close
+                """
+
+                plist = self.pkgsend_bulk(self.rurl, (pkg1,pkg2,pkg3))
+                self.image_create(self.rurl)
+
+                # Install packages and verify
+                self.pkg("install jade")
+                self.pkg("install turquoise")
+                self.pkg("install copper")
+                self.pkg("verify -v")
+ 
+                # grep for some attributes that are defined and they have
+                # single values
+                self.pkg("info jade")
+                self.assert_("Category" in self.output) 
+                
+                # grep for some attributes that are defined and they have
+                # multiple values
+                self.pkg("info jade")
+                self.assert_("Project Maintainer" in self.output) 
+
+                # grep for some attributes that are defined , with no value
+                self.pkg("info jade")
+                self.assert_("Project Maintainer URL" not in self.output) 
+                   
+                # grep for same attributes that are defined above in different
+                # packages, with some value 
+                self.pkg("info copper")
+                self.assert_("Project Maintainer URL" in self.output) 
+
+                # grep for attributes that are not defined
+                self.pkg("info jade")
+                self.assert_("info.foo" not in self.output) 
 
         def test_info_bad_packages(self):
                 """Verify that pkg info handles packages with invalid
@@ -365,7 +427,6 @@ class TestPkgInfoBasics(pkg5unittest.SingleDepotTestCase):
                 self.pkg("info -r bronze human")
                 expected = """\
  Name: bronze
- Summary: 
  State: Not installed
  Publisher: test
  Version: 1.0
@@ -375,7 +436,6 @@ Packaging Date: Thu Sep 08 00:45:46 2011
  FMRI: pkg://test/bronze@1.0-0:20110908T004546Z
 
  Name: human
- Summary: 
  State: Not installed
  Publisher: test
  Version: 0.9.8.18 (0.9.8r)
@@ -391,7 +451,6 @@ Packaging Date: Thu Sep 08 00:45:46 2011
                 self.pkg("info -r //test2/bronze")
                 expected = """\
  Name: bronze
- Summary: 
  State: Not installed
  Publisher: test2
  Version: 1.0
@@ -408,7 +467,6 @@ Packaging Date: Thu Sep 08 00:45:46 2011
                 self.pkg("info -r //test/bronze bronze")
                 expected = """\
  Name: bronze
- Summary: 
  State: Not installed
  Publisher: test
  Version: 1.0
@@ -422,7 +480,6 @@ Packaging Date: Thu Sep 08 00:45:46 2011
                 self.pkg("info -r //test2/bronze bronze")
                 expected = """\
  Name: bronze
- Summary: 
  State: Not installed
  Publisher: test
  Version: 1.0
@@ -432,7 +489,6 @@ Packaging Date: Thu Sep 08 00:45:46 2011
  FMRI: pkg://test/bronze@1.0-0:20110908T004546Z
 
  Name: bronze
- Summary: 
  State: Not installed
  Publisher: test2
  Version: 1.0
@@ -446,7 +502,6 @@ Packaging Date: Thu Sep 08 00:45:46 2011
                 self.pkg("info -r //test3/bronze //test2/bronze bronze")
                 expected = """\
  Name: bronze
- Summary: 
  State: Not installed
  Publisher: test
  Version: 1.0
@@ -456,7 +511,6 @@ Packaging Date: Thu Sep 08 00:45:46 2011
  FMRI: pkg://test/bronze@1.0-0:20110908T004546Z
 
  Name: bronze
- Summary: 
  State: Not installed
  Publisher: test2
  Version: 1.0
@@ -466,7 +520,6 @@ Packaging Date: Thu Sep 08 00:45:46 2011
  FMRI: pkg://test2/bronze@1.0-0:20110908T004546Z
 
  Name: bronze
- Summary: 
  State: Not installed
  Publisher: test3
  Version: 1.0
@@ -543,7 +596,6 @@ Packaging Date: Thu Sep 08 00:45:46 2011
                 pkg_date = pfmri.version.get_timestamp().strftime("%c")
                 expected = """\
           Name: ren_correct
-       Summary: 
          State: Not installed (Renamed)
     Renamed to: target@1.0
      Publisher: test
@@ -566,7 +618,6 @@ Packaging Date: %(pkg_date)s
                 pkg_date = pfmri.version.get_timestamp().strftime("%c")
                 expected = """\
           Name: ren_op_variant
-       Summary: 
          State: Not installed
      Publisher: test
        Version: 1.0
@@ -586,9 +637,7 @@ Packaging Date: %(pkg_date)s
                 pkg_date = pfmri.version.get_timestamp().strftime("%c")
                 expected = """\
           Name: ren_variant_missing
-       Summary: 
          State: Not installed (Renamed)
-    Renamed to: 
      Publisher: test
        Version: 1.0
         Branch: None
@@ -608,9 +657,7 @@ Packaging Date: %(pkg_date)s
                 pkg_date = pfmri.version.get_timestamp().strftime("%c")
                 expected = """\
           Name: ren_partial_variant
-       Summary: 
          State: Not installed (Renamed)
-    Renamed to: 
      Publisher: test
        Version: 1.0
         Branch: None

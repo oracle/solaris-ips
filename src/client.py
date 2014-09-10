@@ -3051,53 +3051,100 @@ def info(api_inst, args):
                 elif lparen:
                         state += ")"
 
-                name_str = _("          Name:")
-                msg(name_str, pi.pkg_stem)
-                msg(_("       Summary:"), pi.summary)
+                # XXX-Consider using Python's 2.7 collections.OrderedDict
+                attr_list = []
+                seen = {}
+
+                def __append_attr_tuples(label, values):
+                        """Given arguments label and values, either extend
+                        the existing tuple value or add new one to
+                        attr_list"""
+
+                        if not isinstance(values, list):
+                                values = [values]
+                        if label in seen:
+                                seen[label].extend(values)
+                        else:
+                                attr_list.append((label, values))
+                                seen[label] = values
+
+                __append_attr_tuples(_("Name"), pi.pkg_stem)
+                __append_attr_tuples(_("Summary"), pi.summary)
                 if pi.description:
-                        desc_label = _("   Description:")
-                        start_loc = len(desc_label) + 1
-                        end_loc = 80
-                        res = textwrap.wrap(pi.description,
-                            width=end_loc - start_loc)
-                        pad = "\n" + " " * start_loc
-                        res = pad.join(res)
-                        msg(desc_label, res)
+                        __append_attr_tuples(_("Description"), pi.description)
                 if pi.category_info_list:
+                        category_info = []
                         verbose = len(pi.category_info_list) > 1
-                        msg(_("      Category:"),
-                            pi.category_info_list[0].__str__(verbose))
+                        category_info.append \
+                            (pi.category_info_list[0].__str__(verbose))
                         if len(pi.category_info_list) > 1:
                                 for ci in pi.category_info_list[1:]:
-                                        msg(" " * len(name_str),
-                                            ci.__str__(verbose))
+                                        category_info.append \
+                                            (ci.__str__(verbose))
+                        __append_attr_tuples(_("Category"), category_info)
 
-                msg(_("         State:"), state)
+                __append_attr_tuples(_("State"), state)
 
                 # Renamed packages have dependencies, but the dependencies
                 # may not apply to this image's variants so won't be
                 # returned.
                 if api.PackageInfo.RENAMED in pi.states:
-                        renamed_to = ""
-                        if pi.dependencies:
-                                renamed_to = pi.dependencies[0]
-                        msg(_("    Renamed to:"), renamed_to)
-                        for dep in pi.dependencies[1:]:
-                                msg(" " * len(name_str), dep)
+                        __append_attr_tuples(_("Renamed to"), pi.dependencies)
 
                 # XXX even more info on the publisher would be nice?
-                msg(_("     Publisher:"), pi.publisher)
+                __append_attr_tuples(_("Publisher"), pi.publisher)
                 hum_ver = pi.get_attr_values("pkg.human-version")
                 if hum_ver and hum_ver[0] != str(pi.version):
-                        msg(_("       Version:"), "%s (%s)" %
+                        __append_attr_tuples(_("Version"), "%s (%s)" %
                             (pi.version, hum_ver[0]))
                 else:
-                        msg(_("       Version:"), pi.version)
-                msg(_("        Branch:"), pi.branch)
-                msg(_("Packaging Date:"), pi.packaging_date)
-                msg(_("          Size:"), misc.bytes_to_str(pi.size))
-                msg(_("          FMRI:"), pi.fmri.get_fmri(include_build=False))
+                        __append_attr_tuples(_("Version"), str(pi.version))
+
+                __append_attr_tuples(_("Branch"), str(pi.branch))
+                __append_attr_tuples(_("Packaging Date"), pi.packaging_date)
+                __append_attr_tuples(_("Size"), misc.bytes_to_str(pi.size))
+                __append_attr_tuples(_("FMRI"), 
+                    pi.fmri.get_fmri(include_build=False))
                 # XXX add license/copyright info here?
+
+                addl_attr_list = {
+                    "info.keyword": _("Additional Keywords"),
+                    "info.upstream": _("Project Contact"),
+                    "info.maintainer": _("Project Maintainer"),
+                    "info.maintainer-url": _("Project Maintainer URL"),
+                    "pkg.detailed-url": _("Project URL"),
+                    "info.upstream-url": _("Project URL"),
+                    "info.repository-changeset": _("Repository Changeset"),
+                    "info.repository-url": _("Source URL"),
+                    "info.source-url": _("Source URL")
+                }
+
+                for item in sorted(pi.attrs, key=addl_attr_list.get):
+                        if item in addl_attr_list:
+                                __append_attr_tuples(addl_attr_list[item],
+                                    pi.get_attr_values(item))
+
+                try:
+                        max_width = max(
+                            len(attr[0])
+                            for attr in attr_list
+                        )
+                except ValueError:
+                        # Only display header if there are other attributes to
+                        # show
+                        continue
+
+                for attr, kval in attr_list:
+                        label = "{0}: ".format(attr.rjust(max_width))
+                        res = "\n".join(item for item in kval)
+                        if res:
+                                wrapper = textwrap.TextWrapper(
+                                    initial_indent=label,
+                                    break_on_hyphens=False,
+                                    break_long_words=False,
+                                    subsequent_indent=(max_width + 2) * " ",
+                                    width=80)
+                                msg(wrapper.fill(res))
 
         if notfound:
                 if pis:
