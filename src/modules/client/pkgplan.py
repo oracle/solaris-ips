@@ -578,8 +578,11 @@ class PkgPlan(object):
 
                 assert self._executed
                 spath = self.image.salvage(path)
-                # get just the file path that was salvaged 
-                fpath = path[len(self.image.get_root()) + 1:]
+                # get just the file path that was salvaged
+                fpath = path.replace(
+                    os.path.normpath(self.image.get_root()), "", 1)
+                if fpath.startswith(os.path.sep):
+                        fpath = fpath[1:]
                 self.image.imageplan.pd._salvaged.append((fpath, spath))
 
         def salvage_from(self, local_path, full_destination):
