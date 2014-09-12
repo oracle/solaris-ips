@@ -3823,7 +3823,8 @@ class ImagePlan(object):
 
                         self.pd._actuators.scan_removal(ap)
                         if self.pd._need_boot_archive is None:
-                                if ap.src.attrs.get("path", "").startswith(
+                                if self.pd._op != PKG_OP_DEHYDRATE and \
+                                    ap.src.attrs.get("path", "").startswith(
                                     ramdisk_prefixes):
                                         self.pd._need_boot_archive = True
 
