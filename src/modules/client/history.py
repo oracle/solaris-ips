@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2008, 2013, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2008, 2014, Oracle and/or its affiliates. All rights reserved.
 #
 
 import copy
@@ -768,7 +768,7 @@ class History(object):
                         # ended properly.
                         while self.operation_name:
                                 self.operation_result = result
-                except HistoryStoreException:
+                except apx.HistoryStoreException:
                         # Ignore storage errors as it's likely that whatever
                         # caused the client to abort() also caused the storage
                         # of the history information to fail.
