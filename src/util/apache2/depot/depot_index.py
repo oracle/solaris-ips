@@ -19,7 +19,7 @@
 #
 # CDDL HEADER END
 #
-# Copyright (c) 2013, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2013, 2014 Oracle and/or its affiliates. All rights reserved.
 
 import atexit
 import cherrypy
@@ -379,9 +379,7 @@ class WsgiDepot(object):
                 accept_lang = self.get_accept_lang(cherrypy.request, depot)
                 cherrypy.request.path_info = "/%s" % accept_lang
                 tlookup = mako.lookup.TemplateLookup(
-                    directories=[depot.web_root,
-                    "%(web_root)s/%(lang)s/" % {"web_root": depot.web_root,
-                    "lang": accept_lang}])
+                    directories=[depot.web_root])
                 pub = None
                 base = pkg.server.api.BaseInterface(cherrypy.request, depot,
                     pub)
@@ -399,14 +397,14 @@ class WsgiDepot(object):
                             (repo_prefix, accept_lang)
                         repo_list.append((repo_url, bui_link))
                         repo_pubs[repo_url] = \
-			                [(pub, "%s/%s/%s" %
+                            [(pub, "%s/%s/%s" %
                             (cherrypy.request.base, repo_prefix,
                             pub)) for pub in repo.publishers]
                 repo_list.sort()
                 template = tlookup.get_template("repos.shtml")
                 return template.render_unicode(g_vars={"base": base,
-                    "pub": None, "http_depot": "true",
-		            "repo_list": repo_list, "repo_pubs": repo_pubs
+                    "pub": None, "http_depot": "true", "lang": accept_lang,
+                    "repo_list": repo_list, "repo_pubs": repo_pubs
                     })
 
         def default(self, *tokens, **params):

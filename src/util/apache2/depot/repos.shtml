@@ -19,7 +19,7 @@
 ##
 ## CDDL HEADER END
 ##
-## Copyright 2013 Oracle and/or its affiliates. All rights reserved.
+## Copyright 2013, 2014 Oracle and/or its affiliates. All rights reserved.
 ##
 <%page args="g_vars, gmenu_items=None"/>\
 <%def name="page_crumbs(g_vars)"><%
@@ -30,7 +30,7 @@
         # Just this list of repositories.
         return [("/", "Repositories")]
 %></%def>\
-<%inherit file="layout.shtml"/>\
+<%inherit file="${context.get('g_vars')['lang']}/layout.shtml"/>\
 <%
         repo_list = g_vars["repo_list"]
         repo_pubs = g_vars["repo_pubs"]
