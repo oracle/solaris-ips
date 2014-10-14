@@ -400,7 +400,7 @@ class PkgSolver(object):
                 )
 
         def __update_possible_closure(self, possible, excludes,
-            full_trim=True):
+            full_trim=False):
                 """Update the provided possible set of fmris with the transitive
                 closure of dependencies that can be satisfied, trimming those
                 packages that cannot be installed.
@@ -435,7 +435,7 @@ class PkgSolver(object):
                 while True:
                         tsize = len(self.__trim_dict)
                         res = self.__generate_dependency_closure(
-                            possible, excludes=excludes)
+                            possible, excludes=excludes, full_trim=full_trim)
                         if first:
                                 # The first pass will return the transitive
                                 # closure of all dependencies; subsequent passes
@@ -869,7 +869,12 @@ class PkgSolver(object):
 
                 self.__start_subphase(6)
                 # remove any versions from proposed_dict that are in trim_dict
-                self.__trim_proposed(proposed_dict)
+                try:
+                        self.__trim_proposed(proposed_dict)
+                except api_errors.PlanCreationException, exp:
+                        # One or more proposed packages have been rejected.
+                        self.__raise_install_error(exp, inc_list, proposed_dict,
+                            set(), excludes)
 
                 self.__start_subphase(7)
                 # generate set of possible fmris
@@ -908,7 +913,12 @@ class PkgSolver(object):
                 possible_set.difference_update(self.__trim_dict.iterkeys())
                 # remove any versions from proposed_dict that are in trim_dict
                 # as trim dict has been updated w/ missing dependencies
-                self.__trim_proposed(proposed_dict)
+                try:
+                        self.__trim_proposed(proposed_dict)
+                except api_errors.PlanCreationException, exp:
+                        # One or more proposed packages have been rejected.
+                        self.__raise_install_error(exp, inc_list, proposed_dict,
+                            possible_set, excludes)
 
                 self.__start_subphase(11)
                 #
@@ -925,7 +935,13 @@ class PkgSolver(object):
                 # Add proposed and installed packages to solver.
                 self.__generate_operation_clauses(proposed=proposed_pkgs,
                     proposed_dict=proposed_dict)
-                self.__assert_installed_allowed(proposed=proposed_pkgs)
+                try:
+                        self.__assert_installed_allowed(proposed=proposed_pkgs)
+                except api_errors.PlanCreationException, exp:
+                        # One or more installed packages can't be retained or
+                        # upgraded.
+                        self.__raise_install_error(exp, inc_list, proposed_dict,
+                            possible_set, excludes)
 
                 pt.plan_done(pt.PLAN_SOLVE_SETUP)
 
@@ -1056,7 +1072,13 @@ class PkgSolver(object):
                 self.__start_subphase(5)
                 # Add installed packages to solver.
                 self.__generate_operation_clauses()
-                self.__assert_installed_allowed()
+                try:
+                        self.__assert_installed_allowed()
+                except api_errors.PlanCreationException:
+                        # Attempt a full trim to see if we can raise a sensible
+                        # error.  If not, re-raise.
+                        self.__assert_trim_errors(possible_set, excludes)
+                        raise
 
                 pt.plan_done(pt.PLAN_SOLVE_SETUP)
 
@@ -1598,7 +1620,7 @@ class PkgSolver(object):
                 return self.__variant_dict[fmri]
 
         def __generate_dependency_closure(self, fmri_set, excludes=EmptyI,
-            dotrim=True):
+            dotrim=True, full_trim=False):
                 """return set of all fmris the set of specified fmris could
                 depend on; while trimming those packages that cannot be
                 installed"""
@@ -1613,10 +1635,11 @@ class PkgSolver(object):
                         fmri = needs_processing.pop()
                         already_processed.add(fmri)
                         needs_processing |= (self.__generate_dependencies(fmri,
-                            excludes, dotrim) - already_processed)
+                            excludes, dotrim, full_trim) - already_processed)
                 return already_processed
 
-        def __generate_dependencies(self, fmri, excludes=EmptyI, dotrim=True):
+        def __generate_dependencies(self, fmri, excludes=EmptyI, dotrim=True,
+            full_trim=False):
                 """return set of direct (possible) dependencies of this pkg;
                 trim those packages whose dependencies cannot be satisfied"""
                 try:
@@ -1631,9 +1654,10 @@ class PkgSolver(object):
                                  da.attrs["type"] == "group" or
                                  da.attrs["type"] == "conditional" or
                                  da.attrs["type"] == "require-any" or
-                                 da.attrs["type"] == "incorporate" or
-                                 da.attrs["type"] == "optional" or
-                                 da.attrs["type"] == "exclude"
+                                 (full_trim and (
+                                     da.attrs["type"] == "incorporate" or
+                                     da.attrs["type"] == "optional" or
+                                     da.attrs["type"] == "exclude"))
                              for f in self.__parse_dependency(da, fmri,
                                  dotrim, check_req=True)[1]
                         ])
