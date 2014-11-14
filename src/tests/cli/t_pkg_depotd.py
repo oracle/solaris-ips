@@ -29,6 +29,7 @@ if __name__ == "__main__":
         testutils.setup_environment("../../../proto")
 import pkg5unittest
 
+import datetime
 import httplib
 import os
 import shutil
@@ -42,6 +43,7 @@ import urlparse
 import pkg.client.publisher as publisher
 import pkg.depotcontroller as dc
 import pkg.fmri as fmri
+import pkg.manifest as man
 import pkg.misc as misc
 import pkg.server.repository as sr
 import pkg.p5i as p5i
@@ -92,6 +94,15 @@ class TestPkgDepot(pkg5unittest.SingleDepotTestCase):
             open entire@1.0,5.11-0
             add depend type=incorporate fmri=pkg:/foo
             close """
+
+        info20 = """
+            open info@2.0,5.11-0
+            add set name="description" value="Test for checking info_0 consistency"
+            add set name="pkg.human-version" value="test of human version"
+            add dir mode=0755 owner=root group=bin path=/bin
+            add file tmp/cat mode=0555 owner=root group=bin path=/bin/cat
+            add file tmp/libc.so.1 mode=0555 owner=root group=bin path=/lib/libc.so.1
+            close"""
 
         misc_files = [ "tmp/libc.so.1", "tmp/cat" ]
 
@@ -227,6 +238,79 @@ class TestPkgDepot(pkg5unittest.SingleDepotTestCase):
                 repourl = urlparse.urljoin(depot_url, "manifest/0/%s" %
                     urllib.quote(plist[0]))
                 urllib2.urlopen(repourl)
+
+        def test_info(self):
+                """Testing information showed in /info/0."""
+
+                depot_url = self.dc.get_depot_url();
+                plist = self.pkgsend_bulk(depot_url, self.info20)
+
+                openurl = urlparse.urljoin(depot_url, "info/0/%s" % plist[0])
+                content = urllib2.urlopen(openurl).read()
+                # Get text from content.
+                lines = content.splitlines()
+                info_dic = {}
+                attr_list = [
+                    'Name',
+                    'Summary',
+                    'Publisher',
+                    'Version',
+                    'Build Release',
+                    'Branch',
+                    'Packaging Date',
+                    'Size',
+                    'Compressed Size',
+                    'FMRI'
+                ]
+
+                for line in lines:
+                        fields = line.split(":", 1)
+                        attr = fields[0].strip()
+                        if attr == "License":
+                                break
+                        if attr in attr_list:
+                                if len(fields) == 2:
+                                        info_dic[attr] = fields[1].strip()
+                                else:
+                                        info_dic[attr] = ""
+
+                # Read manifest.
+                openurl = urlparse.urljoin(depot_url, "manifest/0/%s" % plist[0])
+                content = urllib2.urlopen(openurl).read()
+                manifest = man.Manifest()
+                manifest.set_content(content=content)
+                fmri_content = manifest.get("pkg.fmri", "")
+
+                # Check if FMRI is empty.
+                self.assert_(fmri_content)
+                pfmri = fmri.PkgFmri(fmri_content, None)
+                pub, name, ver = pfmri.tuple()
+                size, csize = manifest.get_size()
+
+                # Human version.
+                version = info_dic['Version']
+                hum_ver = ""
+                if '(' in version:
+                        start = version.find('(')
+                        end = version.rfind(')')
+                        hum_ver = version[start + 1 : end - len(version)]
+                        version = version[:start - len(version)]
+                        info_dic['Version'] = version.strip()
+
+                # Compare each attribute.
+                self.assertEqual(info_dic["Summary"], manifest.get("pkg.summary",
+                    manifest.get("description", "")))
+                self.assertEqual(info_dic["Version"], str(ver.release))
+                self.assertEqual(hum_ver, manifest.get("pkg.human-version",""))
+                self.assertEqual(info_dic["Name"], name)
+                self.assertEqual(info_dic["Publisher"], pub)
+                self.assertEqual(info_dic["Build Release"], str(ver.build_release))
+                timestamp = datetime.datetime.strptime(
+                    info_dic["Packaging Date"], "%B %d, %Y %I:%M:%S %p")
+                self.assertEqual(timestamp, ver.get_timestamp())
+                self.assertEqual(info_dic["Size"], misc.bytes_to_str(size))
+                self.assertEqual(info_dic["Compressed Size"], misc.bytes_to_str(csize))
+                self.assertEqual(info_dic["FMRI"], fmri_content)
 
         def test_bug_5707(self):
                 """Testing depotcontroller.refresh()."""
@@ -842,12 +926,12 @@ class TestDepotOutput(pkg5unittest.SingleDepotTestCase):
                                         fp.close()
 
                                         # Because the 'role' attribute used for
-                                        # screen readers and other accessibility 
+                                        # screen readers and other accessibility
                                         # tools isn't part of the official XHTML
                                         # 1.x standards, it has to be dropped
                                         # for the document to be validated.
                                         # Setting 'drop_prop_attrs' to True here
-                                        # does that while ensuring that the 
+                                        # does that while ensuring that the
                                         # output of the depot is otherwise
                                         # standards-compliant.
                                         self.validate_html_file(fpath,
@@ -1039,7 +1123,7 @@ class TestDepotOutput(pkg5unittest.SingleDepotTestCase):
                         prg = hdrs.get("pragma", None)
                         self.assertEqual(cc, None)
                         self.assertEqual(prg, None)
- 
+
         def test_bug_15482(self):
                 """Test to make sure BUI search doesn't trigger a traceback."""
 

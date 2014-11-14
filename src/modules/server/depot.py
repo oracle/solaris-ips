@@ -1326,6 +1326,12 @@ class DepotHTTP(_Depot):
 
                 self.__set_response_expires("info", 86400*365, 86400*365)
                 size, csize = m.get_size()
+
+                # Add human version if exist.
+                hum_ver = m.get("pkg.human-version", "")
+                version = ver.release
+                if hum_ver and hum_ver != str(ver.release):
+                        version = "%s (%s)" % (ver.release, hum_ver)
                 return """\
            Name: %s
         Summary: %s
@@ -1340,7 +1346,7 @@ Compressed Size: %s
 
 License:
 %s
-""" % (name, summary, pub, ver.release, ver.build_release,
+""" % (name, summary, pub, version, ver.build_release,
     ver.branch, ver.get_timestamp().strftime("%c"), misc.bytes_to_str(size),
     misc.bytes_to_str(csize), pfmri, lsummary.read())
 
@@ -1425,7 +1431,7 @@ License:
                         matches = [fmri for fmri, states, attrs in \
                             cat.gen_packages(patterns=[pfmri],
                             return_fmris=True)]
-                             
+
                 except Exception, e:
                         # If this fails, it's ok to raise an exception since bad
                         # input was likely provided.
