@@ -107,6 +107,10 @@ class TestPkgDepot(pkg5unittest.SingleDepotTestCase):
         misc_files = [ "tmp/libc.so.1", "tmp/cat" ]
 
         def setUp(self):
+                # test_info() parses dates,
+                # so set expected locale before starting depots
+                os.environ['LC_ALL'] = 'C'
+
                 # This suite, for obvious reasons, actually needs a depot.
                 pkg5unittest.SingleDepotTestCase.setUp(self, start_depot=True)
                 self.make_misc_files(self.misc_files)
@@ -306,7 +310,7 @@ class TestPkgDepot(pkg5unittest.SingleDepotTestCase):
                 self.assertEqual(info_dic["Publisher"], pub)
                 self.assertEqual(info_dic["Build Release"], str(ver.build_release))
                 timestamp = datetime.datetime.strptime(
-                    info_dic["Packaging Date"], "%B %d, %Y %I:%M:%S %p")
+                    info_dic["Packaging Date"], "%a %b %d %H:%M:%S %Y")
                 self.assertEqual(timestamp, ver.get_timestamp())
                 self.assertEqual(info_dic["Size"], misc.bytes_to_str(size))
                 self.assertEqual(info_dic["Compressed Size"], misc.bytes_to_str(csize))
