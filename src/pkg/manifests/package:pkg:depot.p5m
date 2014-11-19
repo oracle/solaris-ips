@@ -34,6 +34,7 @@ dir  path=etc/pkg/depot
 dir  path=etc/pkg/depot/conf.d
 file path=etc/pkg/depot/depot.conf.mako
 file path=etc/pkg/depot/depot_httpd.conf.mako
+file path=etc/pkg/depot/depot_httpd_ssl_protocol.conf
 file path=etc/pkg/depot/depot_index.py pkg.tmp.autopyc=false
 dir  path=lib
 dir  path=lib/svc

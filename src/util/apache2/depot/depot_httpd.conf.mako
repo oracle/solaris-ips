@@ -315,6 +315,7 @@ DefaultType text/plain
 SSLRandomSeed startup builtin
 SSLRandomSeed connect builtin
 SSLSessionCache shmcb:${cache_dir}/ssl_scache(512000)
+Include ${template_dir}/depot_httpd_ssl_protocol.conf
 </IfModule>
 
 

@@ -325,7 +325,7 @@ for entry in os.walk("web"):
             os.path.join(web_dir, f) for f in files
             if f != "Makefile"
             ]))
-        # install same set of files in "en/" in "__LOCALE__/ as well" 
+        # install same set of files in "en/" in "__LOCALE__/ as well"
         # for localizable file package (regarding themes, install
         # theme "oracle.com" only)
         if os.path.basename(web_dir) == "en" and \
@@ -370,6 +370,7 @@ depot_files = [
         'util/apache2/depot/depot.conf.mako',
         'util/apache2/depot/depot_httpd.conf.mako',
         'util/apache2/depot/depot_index.py',
+        'util/apache2/depot/depot_httpd_ssl_protocol.conf',
         ]
 depot_log_stubs = [
         'util/apache2/depot/logs/access_log',
@@ -840,15 +841,15 @@ def intltool_update_maintain():
             print >> sys.stderr, "--------"
             missing.close()
             print >> sys.stderr, \
-"""Please evaluate whether any of the above file(s) needs localization. 
-If so, please add its name to po/POTFILES.in.  If not (e.g., it's not 
-delivered), please add its name to po/POTFILES.skip. 
+"""Please evaluate whether any of the above file(s) needs localization.
+If so, please add its name to po/POTFILES.in.  If not (e.g., it's not
+delivered), please add its name to po/POTFILES.skip.
 Please be sure to maintain alphabetical ordering in both files."""
             sys.exit(1)
 
         if os.path.exists("po/notexist"):
             print >> sys.stderr, \
-"""The following files are listed in po/POTFILES.in, but no longer exist 
+"""The following files are listed in po/POTFILES.in, but no longer exist
 in the workspace:"""
             notexist = open("po/notexist", "r")
             print >> sys.stderr, "--------"
@@ -967,7 +968,7 @@ def localizablexml(src, dst):
             else:
                 # not in French part
                 print >> fdst, l,
-        
+
         fsrc.close()
         fdst.close()
 
