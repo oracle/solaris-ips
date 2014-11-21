@@ -1,218 +1,136 @@
-'\" te
-.\" Copyright (c) 2007, 2013, Oracle and/or its affiliates.All rights reserved.
-.TH pkgdiff 1 "2013 年 2 月 26 日" "SunOS 5.12" "用户命令"
-.SH 名称
-pkgdiff \- 比较软件包清单
-.SH 用法概要
-.LP
-.nf
-/usr/bin/pkgdiff [-i \fIattribute\fR]... [-o \fIattribute\fR]
-    [-t \fIaction_name\fR[,\fIaction_name\fR]...]...
-    [-v \fIname\fR=\fIvalue\fR]... (\fIfile1\fR | -) (\fIfile2\fR | -)
-.fi
+<?xml version="1.0" encoding="utf-8"?>
+<!--Arbortext, Inc., 1988-2008, v.4002-->
+<!DOCTYPE refentry PUBLIC "-//Sun Microsystems//DTD SolBook-XML 3.7//EN" "xsolbook.dtd" [
+<!ENTITY % ent SYSTEM "entities.ent">
+%ent;
+]>
 
-.SH 描述
-.sp
-.LP
-\fBpkgdiff\fR 比较两个软件包清单并报告差异。其中一个清单可从 \fBstdin\fR（在文件名位置指定 \fB-\fR）读取。\fBpkgdiff\fR 在比较之前会将每个清单和操作按一致的顺序排序。
-.sp
-.LP
-输出采用以下格式：
-.sp
-.ne 2
-.mk
-.na
-\fB+ \fIcomplete_action\fR\fR
-.ad
-.sp .6
-.RS 4n
-此操作在 \fIfile2\fR 中而不在 \fIfile1\fR 中。
-.RE
+<refentry lang="zh" id="pkgdiff-1">
+<refmeta><refentrytitle>pkgdiff</refentrytitle><manvolnum>1</manvolnum> <refmiscinfo class="date">2013 年 2 月 26 日</refmiscinfo> <refmiscinfo class="sectdesc">&man1;</refmiscinfo> <refmiscinfo class="software">&release;</refmiscinfo> <refmiscinfo class="arch">generic</refmiscinfo> <refmiscinfo class="copyright">Copyright (c) 2007, 2013, Oracle and/or its affiliates.All rights reserved.</refmiscinfo> 
+</refmeta>
+<refnamediv>
+<refname>pkgdiff</refname><refpurpose>比较软件包清单</refpurpose>
+</refnamediv>
+<refsynopsisdiv><title></title>
+<synopsis>/usr/bin/pkgdiff [-i <replaceable>attribute</replaceable>]... [-o <replaceable>attribute</replaceable>]
+    [-t <replaceable>action_name</replaceable>[,<replaceable>action_name</replaceable>]...]...
+    [-v <replaceable>name</replaceable>=<replaceable>value</replaceable>]... (<replaceable>file1</replaceable> | -) (<replaceable>file2</replaceable> | -)
+</synopsis>
+</refsynopsisdiv>
+<refsect1 id="pkgdiff-1-desc" role="description"><title></title>
+<para><command>pkgdiff</command> 比较两个软件包清单并报告差异。其中一个清单可从 <literal>stdin</literal>（在文件名位置指定 <literal>-</literal>）读取。<command>pkgdiff</command> 在比较之前会将每个清单和操作按一致的顺序排序。</para>
+<para>输出采用以下格式：</para>
+<variablelist termlength="wholeline">
+<varlistentry><term>+ <replaceable>complete_action</replaceable></term>
+<listitem><para>此操作在 <replaceable>file2</replaceable> 中而不在 <replaceable>file1</replaceable> 中。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term>- <replaceable>complete_action</replaceable></term>
+<listitem><para>此操作在 <replaceable>file1</replaceable> 中而不在 <replaceable>file2</replaceable> 中。</para>
+</listitem>
+</varlistentry>
+</variablelist>
+<programlisting><replaceable>actionname</replaceable> <replaceable>keyvalue</replaceable> [<replaceable>variant values, if any</replaceable>]</programlisting>
+<variablelist termlength="wholeline">
+<varlistentry><term>- <replaceable>attribute1</replaceable>=<replaceable>value1</replaceable></term>
+<listitem><para>此 <replaceable>attribute</replaceable>,<replaceable>value</replaceable> 在 <replaceable>file1</replaceable> 中而不在 <replaceable>file2</replaceable> 中。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term>+ <replaceable>attribute2</replaceable>=<replaceable>value2</replaceable></term>
+<listitem><para>此 <replaceable>attribute</replaceable>,<replaceable>value</replaceable> 在 <replaceable>file2</replaceable> 中而不在 <replaceable>file1</replaceable> 中。</para>
+</listitem>
+</varlistentry>
+</variablelist>
+<para>为了完成比较，带有不同变体、但带有相同类型和关键属性值的操作将被视为不同的操作。因此，可更改属性的操作将以其完整格式显示，而不是作为属性更改显示。</para>
+</refsect1>
+<refsect1 role="options"><title></title>
+<para>支持以下选项：</para>
+<variablelist termlength="wholeline">
+<varlistentry><term><option>-help</option></term>
+<listitem><para>显示用法消息。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>i</option> <replaceable>attribute</replaceable></term>
+<listitem><para>比较期间将忽略 <replaceable>attribute</replaceable>（如果存在）。可以使用 <option>i</option><replaceable> hash</replaceable> 忽略文件散列值。该选项不能与 <option>o</option> 选项一起使用。可以多次指定此选项。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>o</option> <replaceable>attribute</replaceable></term>
+<listitem><para>仅报告 <replaceable>attribute</replaceable> 的差异。该选项不能与 <option>i</option> 选项一起使用。该选项会省略不影响操作 <replaceable>attribute</replaceable> 的任何操作更改。</para>
+</listitem>
+</varlistentry>
+<varlistentry>
+<term><option>t</option> <replaceable>action_name</replaceable>[,<replaceable>action_name</replaceable>]...</term>
+<listitem>
+<para>仅比较指定的操作。可以在一个逗号分隔的列表中指定多个操作。<replaceable>action_name</replaceable> 的值是 <literal>pkg</literal>(5) 手册页的“操作”中列出的操作之一。例如，可以为 <replaceable>action_name</replaceable> 指定以下值：<literal>file</literal>、<literal>dir</literal>、<literal>driver</literal>、<literal>depend</literal>、<literal>set</literal>。可以多次指定此选项。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>v</option> <replaceable>name</replaceable>=<replaceable>value</replaceable></term>
+<listitem><para>仅计算该变体值的差异。例如，只计算 <literal>arch=sparc</literal> 的差异。在进行比较之前，将删除所有操作的该变体标记。只能为每个变体指定一个值。可以为不同变体多次指定此选项。</para>
+</listitem>
+</varlistentry>
+</variablelist>
+</refsect1>
+<refsect1 role="exit-status"><title></title>
+<para>将返回以下退出值：</para>
+<variablelist>
+<varlistentry><term><returnvalue>0</returnvalue></term>
+<listitem><para>未找到差异。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><returnvalue>1</returnvalue></term>
+<listitem><para>找到了差异。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><returnvalue>2</returnvalue></term>
+<listitem><para>指定的命令行选项无效。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><returnvalue>3</returnvalue></term>
+<listitem><para>出现错误。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><returnvalue>99</returnvalue></term>
+<listitem><para>发生了意外的异常。</para>
+</listitem>
+</varlistentry>
+</variablelist>
+</refsect1>
+<refsect1 role="attributes"><title></title>
+<para>有关下列属性的说明，请参见 <literal>attributes</literal>(5)：</para>
+<informaltable frame="all" orient="port">
+<tgroup cols="2" colsep="1" rowsep="1"><colspec colname="col1" colwidth="198*" align="left" /><colspec colname="col2" colwidth="198*" align="left" /><thead>
+<row>
+<entry align="center">
+<para>属性类型</para>
+</entry>
+<entry align="center">
+<para>属性值</para>
+</entry>
+</row>
+</thead>
+<tbody>
+<row>
+<entry align="left">
+<para>可用性</para>
+</entry>
+<entry align="left">
+<para><literal>package/pkg</literal></para>
+</entry>
+</row>
+<row>
+<entry align="left">
+<para>接口稳定性</para>
+</entry>
+<entry align="left">
+<para>Uncommitted（未确定）</para>
+</entry>
+</row>
+</tbody>
+</tgroup>
+</informaltable></refsect1>
+<refsect1 role="see-also"><title></title>
+<para><olink targetdoc="refman" targetptr="pkg-5"><citerefentry><refentrytitle>pkg</refentrytitle><manvolnum>5</manvolnum></citerefentry></olink></para>
+<para><literal>https://java.net/projects/ips/pages/Home</literal></para>
+</refsect1>
+</refentry>
 
-.sp
-.ne 2
-.mk
-.na
-\fB- \fIcomplete_action\fR\fR
-.ad
-.sp .6
-.RS 4n
-此操作在 \fIfile1\fR 中而不在 \fIfile2\fR 中。
-.RE
-
-.sp
-.in +2
-.nf
-\fIactionname\fR \fIkeyvalue\fR [\fIvariant values, if any\fR]
-.fi
-.in -2
-
-.sp
-.ne 2
-.mk
-.na
-\fB- \fIattribute1\fR=\fIvalue1\fR\fR
-.ad
-.sp .6
-.RS 4n
-此 \fIattribute\fR,\fIvalue\fR 在 \fIfile1\fR 中而不在 \fIfile2\fR 中。
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fB+ \fIattribute2\fR=\fIvalue2\fR\fR
-.ad
-.sp .6
-.RS 4n
-此 \fIattribute\fR,\fIvalue\fR 在 \fIfile2\fR 中而不在 \fIfile1\fR 中。
-.RE
-
-.sp
-.LP
-为了完成比较，带有不同变体、但带有相同类型和关键属性值的操作将被视为不同的操作。因此，可更改属性的操作将以其完整格式显示，而不是作为属性更改显示。
-.SH 选项
-.sp
-.LP
-支持以下选项：
-.sp
-.ne 2
-.mk
-.na
-\fB\fB--help\fR\fR
-.ad
-.sp .6
-.RS 4n
-显示用法消息。
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fB\fB-i\fR \fIattribute\fR\fR
-.ad
-.sp .6
-.RS 4n
-比较期间将忽略 \fIattribute\fR（如果存在）。可以使用 \fB-i\fR\fI hash\fR 忽略文件散列值。该选项不能与 \fB-o\fR 选项一起使用。可以多次指定此选项。
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fB\fB-o\fR \fIattribute\fR\fR
-.ad
-.sp .6
-.RS 4n
-仅报告 \fIattribute\fR 的差异。该选项不能与 \fB-i\fR 选项一起使用。该选项会省略不影响操作 \fIattribute\fR 的任何操作更改。
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fB\fB-t\fR \fIaction_name\fR[,\fIaction_name\fR]...\fR
-.ad
-.sp .6
-.RS 4n
-仅比较指定的操作。可以在一个逗号分隔的列表中指定多个操作。\fIaction_name\fR 的值是 \fBpkg\fR(5) 手册页的“操作”中列出的操作之一。例如，可以为 \fIaction_name\fR 指定以下值：\fBfile\fR、\fBdir\fR、\fBdriver\fR、\fBdepend\fR、\fBset\fR。可以多次指定此选项。
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fB\fB-v\fR \fIname\fR=\fIvalue\fR\fR
-.ad
-.sp .6
-.RS 4n
-仅计算该变体值的差异。例如，只计算 \fBarch=sparc\fR 的差异。在进行比较之前，将删除所有操作的该变体标记。只能为每个变体指定一个值。可以为不同变体多次指定此选项。
-.RE
-
-.SH 退出状态
-.sp
-.LP
-将返回以下退出值：
-.sp
-.ne 2
-.mk
-.na
-\fB\fB0\fR\fR
-.ad
-.RS 6n
-.rt  
-未找到差异。
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fB\fB1\fR\fR
-.ad
-.RS 6n
-.rt  
-找到了差异。
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fB\fB2\fR\fR
-.ad
-.RS 6n
-.rt  
-指定的命令行选项无效。
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fB\fB3\fR\fR
-.ad
-.RS 6n
-.rt  
-出现错误。
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fB\fB99\fR\fR
-.ad
-.RS 6n
-.rt  
-发生了意外的异常。
-.RE
-
-.SH 属性
-.sp
-.LP
-有关下列属性的说明，请参见 \fBattributes\fR(5)：
-.sp
-
-.sp
-.TS
-tab() box;
-cw(2.75i) |cw(2.75i) 
-lw(2.75i) |lw(2.75i) 
-.
-属性类型属性值
-_
-可用性\fBpackage/pkg\fR
-_
-接口稳定性Uncommitted（未确定）
-.TE
-
-.SH 另请参见
-.sp
-.LP
-\fBpkg\fR(5)
-.sp
-.LP
-\fBhttps://java.net/projects/ips/pages/Home\fR

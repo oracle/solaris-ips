@@ -1,401 +1,205 @@
-'\" te
-.\" Copyright (c) 2007, 2013, Oracle and/or its affiliates.All rights reserved.
-.TH pkgsend 1 "2013 年 7 月 30 日" "SunOS 5.12" "用户命令"
-.SH 名称
-pkgsend \- 映像包管理系统发布客户机
-.SH 用法概要
-.LP
-.nf
-/usr/bin/pkgsend [\fIoptions\fR] \fIcommand\fR [\fIcmd_options\fR] [\fIoperands\fR]
-.fi
+<?xml version="1.0" encoding="utf-8"?>
+<!--Arbortext, Inc., 1988-2008, v.4002-->
+<!DOCTYPE refentry PUBLIC "-//Sun Microsystems//DTD SolBook-XML 3.7//EN" "xsolbook.dtd" [
+<!ENTITY % ent SYSTEM "entities.ent">
+%ent;
+]>
 
-.LP
-.nf
-/usr/bin/pkgsend generate [-T \fIpattern\fR] [--target \fIfile\fR]
-    \fIsource\fR ...
-.fi
-
-.LP
-.nf
-/usr/bin/pkgsend publish [-b \fIbundle\fR]... [-d \fIsource\fR]...
-    [-s \fIrepo_uri_or_path\fR] [--key \fIssl_key\fR --cert \fIssl_cert\fR]...
-    [-T \fIpattern\fR] [--no-catalog] [\fImanifest\fR ...]
-.fi
-
-.SH 描述
-.sp
-.LP
-通过 \fBpkgsend\fR，可使用软件包清单将新软件包和新软件包版本发布到映像包管理系统信息库。要创建或管理系统信息库，请参见 \fBpkgrepo\fR(1)。要从现有系统信息库的软件包中创建软件包归档文件，请参见 \fBpkgrecv\fR(1)。有关软件包清单的更多信息，请参见 \fBpkg\fR(5)。
-.sp
-.LP
-完成 \fBpkgsend publish\fR 操作后，如果您的 \fI repo_uri_or_path\fR 系统信息库必须支持 \fBpkg search\fR 操作，请在系统信息库上运行 \fBpkgrepo refresh\fR 以更新搜索索引。
-.SH 选项
-.sp
-.LP
-支持以下选项：
-.sp
-.ne 2
-.mk
-.na
-\fB\fB-?\fR\fR
-.ad
-.br
-.na
-\fB\fB--help\fR\fR
-.ad
-.sp .6
-.RS 4n
-显示用法消息。
-.RE
-
-.SH 子命令
-.sp
-.LP
-支持以下子命令：
-.sp
-.ne 2
-.mk
-.na
-\fB\fBpkgsend generate\fR [\fB-T\fR \fIpattern\fR] [\fB--target\fR \fIfile\fR] \fIsource\fR ...\fR
-.ad
-.sp .6
-.RS 4n
-读取每个 \fIsource\fR（例如，SVR4 软件包、目录或 \fBtar\fR 文件）并将介绍 \fIsource\fR 的清单发送到 \fBstdout\fR。在输出清单中，\fBfile\fR 和 \fBdir\fR 操作将所有者设置为 \fBroot\fR，并将组设置为 \fBbin\fR。
-.sp
-然后可以注释输出清单，使用 \fBpkgdepend\fR 添加或分析依赖项，并在将其传递到 \fBpublish\fR 子命令之前使用 \fB pkglint\fR 验证它的正确性。
-.sp
-.LP
-以下是支持的源：
-.RS +4
-.TP
-.ie t \(bu
-.el o
-文件系统格式 SVR4 软件包
-.RE
-.RS +4
-.TP
-.ie t \(bu
-.el o
-数据流格式 SVR4 软件包
-.RE
-.RS +4
-.TP
-.ie t \(bu
-.el o
-\fBtar\fR 文件
-.RE
-.RS +4
-.TP
-.ie t \(bu
-.el o
-目录
-.RE
-如果源中文件的基本名称与使用 \fB-T\fR 指定的模式匹配，则将文件的时间戳添加到该文件的操作中。\fIpattern\fR 使用 shell 匹配规则：
-.sp
-.ne 2
-.mk
-.na
-\fB*\fR
-.ad
-.RS 10n
-.rt  
-匹配所有内容。
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fB?\fR
-.ad
-.RS 10n
-.rt  
-匹配任何单个字符。
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fB[\fIseq\fR]\fR
-.ad
-.RS 10n
-.rt  
-匹配 \fIseq\fR 中的任何字符。
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fB![\fIseq\fR]\fR
-.ad
-.RS 10n
-.rt  
-匹配不在 \fIseq\fR 中的任何字符。
-.RE
-
-如果指定源是一个目录，当单个 inode 具有多个路径名称时，则没有明确的方式区分 \fBfile\fR 操作与 \fBhardlink\fR 操作。通常，在文件系统遍历中发现的第一个视为文件，其余的视为硬链接。这可以是任意的，具体取决于文件系统的实现方式。要指定哪些路径名称应视为文件，请将每个路径名称作为参数传递到 \fB--target\fR 选项。该选项不会影响其他类型的源，因为它们可以表明哪些路径名称是文件，哪些是硬链接。
-.sp
-当提供 SVR4 软件包作为源时，\fBpkgsend\fR 会确认不存在具有类操作脚本的文件，以及不存在安装前、安装后、删除前或删除后脚本。但与 \fBmanifest\fR 类一起安装的任何 SMF 清单除外。将从所有可重定位路径中删除 \fBBASEDIR \fR。
-.sp
-SVR4 \fBDESC\fR 参数将转换为 \fBpkg.description \fR 值。SVR4 \fBNAME\fR 参数将转换为 \fBpkg.summary\fR 值。
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fB\fBpkgsend publish\fR [\fB-b\fR \fIbundle\fR]... [\fB-d\fR \fIsource\fR]... [\fB-s\fR \fIrepo_uri_or_path\fR] [\fB--key\fR \fIssl_key\fR \fB--cert\fR \fIssl_cert\fR]... [\fB-T\fR \fIpattern\fR] [\fB--no-catalog\fR] [\fImanifest\fR ...]\fR
-.ad
-.sp .6
-.RS 4n
-将使用指定软件包清单的软件包发布到目标软件包系统信息库，并从提供的源中检索该软件包的文件。如果指定了多个清单，它们将以提供的顺序联接。如果未指定清单，则将从 \fBstdin\fR 中读取清单。
-.sp
-如果未指定，则 \fBpkgsend publish\fR 向软件包 FMRI 添加内部版本。\fBpublish\fR 工具还向软件包 FMRI 添加时间戳（UTC 中的当前时间）。有关软件包 FMRI 的版本字符串的信息，请参见 \fBpkg\fR(5) 手册页。
-.sp
-如果可能会有多个 \fBpkgsend publish\fR 进程同时发布到同一 \fB-s\fR 系统信息库，建议指定 \fB--no-catalog\fR 选项。请参见下文对 \fB--no-catalog\fR 选项的说明。
-.sp
-.ne 2
-.mk
-.na
-\fB\fB-b\fR \fIbundle\fR\fR
-.ad
-.sp .6
-.RS 4n
-将指定的包添加到源列表，以便在查找清单中的文件时搜索该包。包是 tar 文件和 SVR4 软件包等源。如果多次指定该选项，则以在命令行显示的顺序对源进行搜索。如果同时指定 \fB- b\fR 和 \fB-d\fR，则首先搜索 \fB-d\fR 源。有关支持的包及其使用方法的说明，请参见以上的 \fBgenerate\fR 子命令。
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fB\fB-d\fR \fIsource\fR\fR
-.ad
-.sp .6
-.RS 4n
-将指定的目录添加到源列表，以便在查找清单中的文件时搜索该目录。如果多次指定该选项，则以在命令行显示的顺序对源进行搜索。有关支持的源及其使用方法的说明，请参见以上的 \fBgenerate\fR 子命令。
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fB\fB-s\fR \fIrepo_uri_or_path\fR\fR
-.ad
-.sp .6
-.RS 4n
-将软件包发布到位于给定 URI 或文件系统路径的系统信息库。有关发布限制和建议的更多信息，请参见下文的“附注”部分。另请参见“环境变量”部分。
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fB\fB--key\fR \fIssl_key\fR \fB--cert\fR \fIssl_cert\fR\fR
-.ad
-.sp .6
-.RS 4n
-使用 \fB--key\fR 选项指定用于从 HTTPS 系统信息库进行软件包检索的客户机 SSL 密钥文件。使用 \fB--cert\fR 选项指定用于从 HTTPS 系统信息库进行软件包检索的客户机 SSL 证书文件。可以多次指定此选项对。
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fB\fB--no-catalog\fR\fR
-.ad
-.sp .6
-.RS 4n
-不将软件包添加到发布者的目录。当由于必须连续执行对发布者目录的更新而一次发布多个软件包时，建议使用此选项。当多个进程同时发布软件包时，如果不使用此选项，发布性能会显著降低。完成发布后，可使用 \fBpkgrepo refresh\fR 命令将新软件包添加到相应的发布者目录。
-.RE
-
-有关 \fB-T\fR 选项的说明，请参见以上的 \fBgenerate\fR 子命令。
-.RE
-
-.SH 环境变量
-.sp
-.ne 2
-.mk
-.na
-\fB\fBPKG_REPO\fR\fR
-.ad
-.RS 12n
-.rt  
-目标系统信息库的路径或 URI。
-.RE
-
-.SH 示例
-.LP
-\fB示例 1 \fR生成并发布软件包
-.sp
-.LP
-使用 \fBpkgsend generate\fR 创建软件包并将其发布。
-
-.sp
-.in +2
-.nf
-$ \fBpkgsend generate /path/to/proto > /path/to/manifests/foo.p5m\fR
-.fi
-.in -2
-.sp
-
-.sp
-.LP
-将 \fBexample.com\fR 发布者的软件包 FMRI 添加到 \fBfoo.p5m\fR 的开头。
-
-.sp
-.in +2
-.nf
-set name=pkg.fmri value=pkg://example.com/foo@1.0
-.fi
-.in -2
-
-.sp
-.LP
-结果清单应类似于以下内容：
-
-.sp
-.in +2
-.nf
-set name=pkg.fmri value=pkg://example.com/foo@1.0
+<refentry lang="zh" id="pkgsend-1">
+<refmeta><refentrytitle>pkgsend</refentrytitle><manvolnum>1</manvolnum> <refmiscinfo class="date">2013 年 7 月 30 日</refmiscinfo> <refmiscinfo class="sectdesc">&man1;</refmiscinfo> <refmiscinfo class="software">&release;</refmiscinfo> <refmiscinfo class="arch">generic</refmiscinfo> <refmiscinfo class="copyright">Copyright (c) 2007, 2013, Oracle and/or its affiliates.All rights reserved.</refmiscinfo> 
+</refmeta>
+<refnamediv>
+<refname>pkgsend</refname><refpurpose>映像包管理系统发布客户机</refpurpose>
+</refnamediv>
+<refsynopsisdiv><title></title>
+<synopsis>/usr/bin/pkgsend [<replaceable>options</replaceable>] <replaceable>command</replaceable> [<replaceable>cmd_options</replaceable>] [<replaceable>operands</replaceable>]
+</synopsis>
+<synopsis>/usr/bin/pkgsend generate [-T <replaceable>pattern</replaceable>] [--target <replaceable>file</replaceable>]
+    <replaceable>source</replaceable> ...</synopsis>
+<synopsis>/usr/bin/pkgsend publish [-b <replaceable>bundle</replaceable>]... [-d <replaceable>source</replaceable>]...
+    [-s <replaceable>repo_uri_or_path</replaceable>] [--key <replaceable>ssl_key</replaceable> --cert <replaceable>ssl_cert</replaceable>]...
+    [-T <replaceable>pattern</replaceable>] [--no-catalog] [<replaceable>manifest</replaceable> ...]</synopsis>
+</refsynopsisdiv>
+<refsect1 id="pkgsend-1-desc" role="description"><title></title>
+<para>通过 <command>pkgsend</command>，可使用软件包清单将新软件包和新软件包版本发布到映像包管理系统信息库。要创建或管理系统信息库，请参见 <command>pkgrepo</command>(1)。要从现有系统信息库的软件包中创建软件包归档文件，请参见 <command>pkgrecv</command>(1)。有关软件包清单的更多信息，请参见 <literal>pkg</literal>(5)。</para>
+<para>完成 <command>pkgsend publish</command> 操作后，如果您的 <replaceable> repo_uri_or_path</replaceable> 系统信息库必须支持 <command>pkg search</command> 操作，请在系统信息库上运行 <command>pkgrepo refresh</command> 以更新搜索索引。</para>
+</refsect1>
+<refsect1 role="options"><title></title>
+<para>支持以下选项：</para>
+<variablelist termlength="wholeline">
+<varlistentry><term><option>?</option></term><term><option>-help</option></term>
+<listitem><para>显示用法消息。</para>
+</listitem>
+</varlistentry>
+</variablelist>
+</refsect1>
+<refsect1 role="subcommands"><title></title>
+<para>支持以下子命令：</para>
+<variablelist termlength="wholeline">
+<varlistentry><term><command>pkgsend generate</command> [<option>T</option> <replaceable>pattern</replaceable>] [<option>-target</option> <replaceable>file</replaceable>] <replaceable>source</replaceable> ...</term>
+<listitem><para>读取每个 <replaceable>source</replaceable>（例如，SVR4 软件包、目录或 <command>tar</command> 文件）并将介绍 <replaceable>source</replaceable> 的清单发送到 <filename>stdout</filename>。在输出清单中，<literal>file</literal> 和 <literal>dir</literal> 操作将所有者设置为 <literal>root</literal>，并将组设置为 <literal>bin</literal>。
+</para>
+<para>然后可以注释输出清单，使用 <command>pkgdepend</command> 添加或分析依赖项，并在将其传递到 <command>publish</command> 子命令之前使用 <command> pkglint</command> 验证它的正确性。
+</para>
+<itemizedlist>
+<para>以下是支持的源：</para>
+<listitem><para>文件系统格式 SVR4 软件包</para></listitem>
+<listitem><para>数据流格式 SVR4 软件包</para></listitem>
+<listitem><para><command>tar</command> 文件</para></listitem>
+<listitem><para>目录</para></listitem>
+</itemizedlist>
+<para>如果源中文件的基本名称与使用 <option>T</option> 指定的模式匹配，则将文件的时间戳添加到该文件的操作中。<replaceable>pattern</replaceable> 使用 shell 匹配规则：</para>
+<variablelist>
+<varlistentry><term>*</term>
+<listitem><para>匹配所有内容。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term>?</term>
+<listitem><para>匹配任何单个字符。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term>[<replaceable>seq</replaceable>]</term>
+<listitem><para>匹配 <replaceable>seq</replaceable> 中的任何字符。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term>![<replaceable>seq</replaceable>]</term>
+<listitem><para>匹配不在 <replaceable>seq</replaceable> 中的任何字符。</para>
+</listitem>
+</varlistentry>
+</variablelist>
+<para>如果指定源是一个目录，当单个 inode 具有多个路径名称时，则没有明确的方式区分 <literal>file</literal> 操作与 <literal>hardlink</literal> 操作。通常，在文件系统遍历中发现的第一个视为文件，其余的视为硬链接。这可以是任意的，具体取决于文件系统的实现方式。要指定哪些路径名称应视为文件，请将每个路径名称作为参数传递到 <option>-target</option> 选项。该选项不会影响其他类型的源，因为它们可以表明哪些路径名称是文件，哪些是硬链接。</para>
+<para>当提供 SVR4 软件包作为源时，<command>pkgsend</command> 会确认不存在具有类操作脚本的文件，以及不存在安装前、安装后、删除前或删除后脚本。但与 <literal>manifest</literal> 类一起安装的任何 SMF 清单除外。将从所有可重定位路径中删除 <literal>BASEDIR </literal>。</para>
+<para>SVR4 <literal>DESC</literal> 参数将转换为 <literal>pkg.description </literal> 值。SVR4 <literal>NAME</literal> 参数将转换为 <literal>pkg.summary</literal> 值。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><command>pkgsend publish</command> [<option>b</option> <replaceable>bundle</replaceable>]... [<option>d</option> <replaceable>source</replaceable>]... [<option>s</option> <replaceable>repo_uri_or_path</replaceable>] [<option>-key</option> <replaceable>ssl_key</replaceable> <option>-cert</option> <replaceable>ssl_cert</replaceable>]... [<option>T</option> <replaceable>pattern</replaceable>] [<option>-no-catalog</option>] [<replaceable>manifest</replaceable> ...]</term>
+<listitem><para>将使用指定软件包清单的软件包发布到目标软件包系统信息库，并从提供的源中检索该软件包的文件。如果指定了多个清单，它们将以提供的顺序联接。如果未指定清单，则将从 <literal>stdin</literal> 中读取清单。</para>
+<para>如果未指定，则 <command>pkgsend publish</command> 向软件包 FMRI 添加内部版本。<command>publish</command> 工具还向软件包 FMRI 添加时间戳（UTC 中的当前时间）。有关软件包 FMRI 的版本字符串的信息，请参见 <literal>pkg</literal>(5) 手册页。</para>
+<para>如果可能会有多个 <command>pkgsend publish</command> 进程同时发布到同一 <option>s</option> 系统信息库，建议指定 <option>-no-catalog</option> 选项。请参见下文对 <option>-no-catalog</option> 选项的说明。</para>
+<variablelist termlength="wholeline">
+<varlistentry><term><option>b</option> <replaceable>bundle</replaceable></term>
+<listitem><para>将指定的包添加到源列表，以便在查找清单中的文件时搜索该包。包是 tar 文件和 SVR4 软件包等源。如果多次指定该选项，则以在命令行显示的顺序对源进行搜索。如果同时指定 <option> b</option> 和 <option>d</option>，则首先搜索 <option>d</option> 源。有关支持的包及其使用方法的说明，请参见以上的 <command>generate</command> 子命令。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>d</option> <replaceable>source</replaceable></term>
+<listitem><para>将指定的目录添加到源列表，以便在查找清单中的文件时搜索该目录。如果多次指定该选项，则以在命令行显示的顺序对源进行搜索。有关支持的源及其使用方法的说明，请参见以上的 <command>generate</command> 子命令。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>s</option> <replaceable>repo_uri_or_path</replaceable></term>
+<listitem><para>将软件包发布到位于给定 URI 或文件系统路径的系统信息库。有关发布限制和建议的更多信息，请参见下文的“附注”部分。另请参见“环境变量”部分。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>-key</option> <replaceable>ssl_key</replaceable> <option>-cert</option> <replaceable>ssl_cert</replaceable></term>
+<listitem><para>使用 <option>-key</option> 选项指定用于从 HTTPS 系统信息库进行软件包检索的客户机 SSL 密钥文件。使用 <option>-cert</option> 选项指定用于从 HTTPS 系统信息库进行软件包检索的客户机 SSL 证书文件。可以多次指定此选项对。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>-no-catalog</option></term>
+<listitem><para>不将软件包添加到发布者的目录。当由于必须连续执行对发布者目录的更新而一次发布多个软件包时，建议使用此选项。当多个进程同时发布软件包时，如果不使用此选项，发布性能会显著降低。完成发布后，可使用 <command>pkgrepo refresh</command> 命令将新软件包添加到相应的发布者目录。</para>
+</listitem>
+</varlistentry>
+</variablelist>
+<para>有关 <option>T</option> 选项的说明，请参见以上的 <command>generate</command> 子命令。</para>
+</listitem>
+</varlistentry>
+</variablelist>
+</refsect1>
+<refsect1 role="environment-variables"><title></title>
+<variablelist>
+<varlistentry><term><envar>PKG_REPO</envar></term>
+<listitem><para>目标系统信息库的路径或 URI。</para>
+</listitem>
+</varlistentry>
+</variablelist>
+</refsect1>
+<refsect1 role="examples"><title></title>
+<example><title>生成并发布软件包</title>
+<para>使用 <command>pkgsend generate</command> 创建软件包并将其发布。</para>
+<screen>$ <userinput>pkgsend generate /path/to/proto > /path/to/manifests/foo.p5m</userinput></screen>
+<para>将 <literal>example.com</literal> 发布者的软件包 FMRI 添加到 <filename>foo.p5m</filename> 的开头。</para>
+<programlisting>set name=pkg.fmri value=pkg://example.com/foo@1.0</programlisting>
+<para>结果清单应类似于以下内容：</para>
+<programlisting>set name=pkg.fmri value=pkg://example.com/foo@1.0
 dir group=sys mode=0755 owner=root path=usr
 dir group=bin mode=0755 owner=root path=usr/bin
-file usr/bin/foo group=bin mode=0555 owner=root path=usr/bin/foo
-.fi
-.in -2
+file usr/bin/foo group=bin mode=0555 owner=root path=usr/bin/foo</programlisting>
+<screen>$ <userinput>pkgsend publish -s http://example.com:10000 -d /path/to/proto &bsol;</userinput>
+<userinput>/path/to/manifests/foo.p5m</userinput></screen>
+</example>
+<example><title>创建和发布普通软件包</title>
+<para>为包含以下行的发布者 <literal>example.com</literal> 创建清单：</para>
+<programlisting>set name=pkg.fmri value=pkg://example.com/foo@1.0-1
+file /exdir/foo mode=0555 owner=root group=bin path=/usr/bin/foo</programlisting>
+<para>发布软件包：</para>
+<screen>$ <userinput>pkgsend publish -s http://example.com:10000 -d /exdir</userinput></screen>
+</example>
+<example><title>使用已经存在的清单</title>
+<para>使用基于文件系统的发布和已经存在的清单发布软件包。</para>
+<screen>$ <userinput>pkgsend publish -s /tmp/example_repo -d /tmp/pkg_files &bsol;</userinput>
+<userinput>/tmp/pkg_manifest</userinput></screen>
+</example>
+</refsect1>
+<refsect1 role="exit-status"><title></title>
+<para>将返回以下退出值：</para>
+<variablelist>
+<varlistentry><term><returnvalue>0</returnvalue></term>
+<listitem><para>命令成功。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><returnvalue>1</returnvalue></term>
+<listitem><para>出现错误。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><returnvalue>2</returnvalue></term>
+<listitem><para>指定的命令行选项无效。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><returnvalue>99</returnvalue></term>
+<listitem><para>发生了意外的异常。</para>
+</listitem>
+</varlistentry>
+</variablelist>
+</refsect1>
+<refsect1 role="attributes"><title></title>
+<para>有关下列属性的说明，请参见 <literal>attributes</literal>(5)：</para>
+<informaltable frame="all" orient="port">
+<tgroup cols="2" colsep="1" rowsep="1"><colspec colname="col1" colwidth="198*" align="left" /><colspec colname="col2" colwidth="198*" align="left" /><thead>
+<row>
+<entry align="center">
+<para>属性类型</para>
+</entry>
+<entry align="center">
+<para>属性值</para>
+</entry>
+</row>
+</thead>
+<tbody>
+<row>
+<entry align="left">
+<para>可用性</para>
+</entry>
+<entry align="left">
+<para><literal>package/pkg</literal></para>
+</entry>
+</row>
+<row>
+<entry align="left">
+<para>接口稳定性</para>
+</entry>
+<entry align="left">
+<para>Uncommitted（未确定）</para>
+</entry>
+</row>
+</tbody>
+</tgroup>
+</informaltable></refsect1>
+<refsect1 role="see-also"><title></title>
+<para><olink targetdoc="refman" targetptr="pkgdepend-1"><citerefentry><refentrytitle>pkgdepend</refentrytitle><manvolnum>1</manvolnum></citerefentry></olink>、<olink targetdoc="refman" targetptr="pkgrepo-1"><citerefentry><refentrytitle>pkgrepo</refentrytitle><manvolnum>1</manvolnum></citerefentry></olink>、<olink targetdoc="refman" targetptr="pkg.depotd-1m"><citerefentry><refentrytitle>pkg.depotd</refentrytitle><manvolnum>1M</manvolnum></citerefentry></olink>、<olink targetdoc="refman" targetptr="pkg-5"><citerefentry><refentrytitle>pkg</refentrytitle><manvolnum>5</manvolnum></citerefentry></olink></para>
+<para><olink targetdoc="PKDEV">《<citetitle remap="book">Packaging and Delivering Software With the Image Packaging System in Oracle Solaris 11.2</citetitle>》</olink></para>
+<para><literal>https://java.net/projects/ips/pages/Home</literal></para>
+</refsect1>
+<refsect1 role="notes"><title></title>
+<para>由于发布协议限制，当发布大小超过 128 MB 的单个软件包文件时，必须使用基于文件系统的发布。当需要系统信息库的访问控制时，也建议使用基于文件系统的发布。</para>
+<para>当使用基于文件系统的发布时，在完成发布后必须重新启动提供目标系统信息库服务的任何 <command>pkg.depotd</command> 进程，以便在其 Web 界面或搜索响应中反映更改。有关更多信息，请参见 <command>pkg.depotd</command>(1M)。</para>
+</refsect1>
+</refentry>
 
-.sp
-.in +2
-.nf
-$ \fBpkgsend publish -s http://example.com:10000 -d /path/to/proto \e\fR
-\fB/path/to/manifests/foo.p5m\fR
-.fi
-.in -2
-.sp
-
-.LP
-\fB示例 2 \fR创建和发布普通软件包
-.sp
-.LP
-为包含以下行的发布者 \fBexample.com\fR 创建清单：
-
-.sp
-.in +2
-.nf
-set name=pkg.fmri value=pkg://example.com/foo@1.0-1
-file /exdir/foo mode=0555 owner=root group=bin path=/usr/bin/foo
-.fi
-.in -2
-
-.sp
-.LP
-发布软件包：
-
-.sp
-.in +2
-.nf
-$ \fBpkgsend publish -s http://example.com:10000 -d /exdir\fR
-.fi
-.in -2
-.sp
-
-.LP
-\fB示例 3 \fR使用已经存在的清单
-.sp
-.LP
-使用基于文件系统的发布和已经存在的清单发布软件包。
-
-.sp
-.in +2
-.nf
-$ \fBpkgsend publish -s /tmp/example_repo -d /tmp/pkg_files \e\fR
-\fB/tmp/pkg_manifest\fR
-.fi
-.in -2
-.sp
-
-.SH 退出状态
-.sp
-.LP
-将返回以下退出值：
-.sp
-.ne 2
-.mk
-.na
-\fB\fB0\fR\fR
-.ad
-.RS 6n
-.rt  
-命令成功。
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fB\fB1\fR\fR
-.ad
-.RS 6n
-.rt  
-出现错误。
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fB\fB2\fR\fR
-.ad
-.RS 6n
-.rt  
-指定的命令行选项无效。
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fB\fB99\fR\fR
-.ad
-.RS 6n
-.rt  
-发生了意外的异常。
-.RE
-
-.SH 属性
-.sp
-.LP
-有关下列属性的说明，请参见 \fBattributes\fR(5)：
-.sp
-
-.sp
-.TS
-tab() box;
-cw(2.75i) |cw(2.75i) 
-lw(2.75i) |lw(2.75i) 
-.
-属性类型属性值
-_
-可用性\fBpackage/pkg\fR
-_
-接口稳定性Uncommitted（未确定）
-.TE
-
-.SH 另请参见
-.sp
-.LP
-\fBpkgdepend\fR(1)、\fBpkgrepo\fR(1)、\fBpkg.depotd\fR(1M)、\fBpkg\fR(5)
-.sp
-.LP
-\fI《Packaging and Delivering Software With the Image Packaging System in Oracle Solaris 11.2》\fR
-.sp
-.LP
-\fBhttps://java.net/projects/ips/pages/Home\fR
-.SH 附注
-.sp
-.LP
-由于发布协议限制，当发布大小超过 128 MB 的单个软件包文件时，必须使用基于文件系统的发布。当需要系统信息库的访问控制时，也建议使用基于文件系统的发布。
-.sp
-.LP
-当使用基于文件系统的发布时，在完成发布后必须重新启动提供目标系统信息库服务的任何 \fBpkg.depotd\fR 进程，以便在其 Web 界面或搜索响应中反映更改。有关更多信息，请参见 \fBpkg.depotd\fR(1M)。

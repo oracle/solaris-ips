@@ -1,310 +1,135 @@
-'\" te
-.\" Copyright (c) 2007, 2014, Oracle and/or its affiliates.All rights reserved.
-.TH pkglint 1 "2014 年 1 月 14 日" "SunOS 5.12" "ユーザーコマンド"
-.SH 名前
-pkglint \- Image Packaging System パッケージ lint
-.SH 形式
-.LP
-.nf
-/usr/bin/pkglint [-c \fIcache_dir\fR] [-r \fIrepo_uri\fR]... [-p \fIregexp\fR]
-    [-f \fIconfig_file\fR] [-b \fIbuild_no\fR] [-v]
-    [-l \fIlint_uri\fR] | \fImanifest\fR ...
-.fi
+<?xml version="1.0" encoding="utf-8"?>
+<!--Arbortext, Inc., 1988-2008, v.4002-->
+<!DOCTYPE refentry PUBLIC "-//Sun Microsystems//DTD SolBook-XML 3.7//EN" "xsolbook.dtd" [
+<!ENTITY % ent SYSTEM "entities.ent">
+%ent;
+]>
 
-.LP
-.nf
-/usr/bin/pkglint -L [-v]
-.fi
-
-.SH 機能説明
-.sp
-.LP
-\fBpkglint\fR は、必要に応じて別のリポジトリを参照しながら、1 つ以上のパッケージマニフェストに対して一連のチェックを実行します。
-.sp
-.LP
-\fBpkglint\fR は、パッケージ公開前の、パッケージ作成処理中に使用するべきです。\fBpkglint\fR は、マニフェストに対して、\fBpkgsend\fR または \fBpkg.depotd\fR の通常動作中に実行するには負荷が大きすぎる可能性のある徹底的なテストを実行します。\fBpkglint\fR のチェックには、重複したアクション、欠落した属性、および異常なファイルアクセス権に対するテストが含まれます。
-.sp
-.LP
-lint のためのマニフェストは、コマンド行で、スペースで区切られたローカルファイルのリストとして渡すことができます。または、リポジトリからマニフェストを取得できます。
-.sp
-.LP
-リポジトリからマニフェストを取得する場合、\fBpkglint\fR は最初の実行で、指定されたキャッシュディレクトリ内に \fBpkg\fR(5) ユーザーイメージを作成して設定します。\fB-r\fR オプションが指定されている場合は、参照リポジトリのために \fIcache_dir\fR\fB/ref_image\fR という名前のユーザーイメージが作成されます。\fB-l\fR オプションが指定されている場合は、lint リポジトリのために \fIcache_dir\fR\fB/lint_image\fR という名前のユーザーイメージが作成されます。これらのイメージに内容はインストールされません。これらのイメージは、リポジトリからマニフェストを取得するために \fBpkglint\fR でのみ使用されます。
-.sp
-.LP
-\fBpkglint\fR の以降の呼び出しではキャッシュディレクトリを再利用できるため、\fB-r\fR または \fB-l\fR 引数はすべて省略できます。
-.sp
-.LP
-\fBpkglint\fR では、キャッシュディレクトリ内のパブリッシャーを構成するためのサポートが制限されています。これらのイメージに対して、より複雑な発行元の構成を実行するには、\fBpkg\fR を使用します。
-.sp
-.LP
-\fBpkglint\fR では、パッケージ作成者は、特定のマニフェストまたはアクションに対するチェックをバイパスできます。\fBTrue\fR に設定された属性 \fBpkg.linted\fR を含むマニフェストまたはアクションでは、そのマニフェストまたはアクションに対する lint 出力は生成されません。
-.sp
-.LP
-\fBpkglint\fR チェックの名前の部分文字列を使用して、よりきめ細かな \fBpkg.linted\fR 設定を行うことができます。たとえば、\fBpkg.linted.\fI check\fR.\fIid\fR\fR が \fBTrue\fR に設定されていると、特定のマニフェストまたはアクションに対する \fB\fIcheck\fR.\fIid \fR\fR という名前を持つすべてのチェックがバイパスされます。
-.sp
-.LP
-\fBpkglint\fR の動作は、\fBpkglintrc\fR ファイルを指定することによって構成できます。デフォルトでは、\fBpkglint\fR は、\fB/usr/share/lib/pkg/pkglintrc\fR および \fB$HOME/.pkglintrc \fR 内の構成オプションを検索します。別の構成ファイルを指定するには、\fB-f\fR オプションを使用します。
-.sp
-.LP
-lint の実行中に検出されたエラーまたは警告はすべて \fBstderr\fR に出力されます。
-.SH オプション
-.sp
-.LP
-サポートしているオプションは、次のとおりです。
-.sp
-.ne 2
-.mk
-.na
-\fB\fB-h\fR\fR
-.ad
-.br
-.na
-\fB\fB--help\fR\fR
-.ad
-.sp .6
-.RS 4n
-使用方法に関するメッセージを表示します。
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fB\fB-b\fR \fIbuild_no\fR\fR
-.ad
-.sp .6
-.RS 4n
-lint および参照リポジトリからの lint 中に使用されるパッケージのリストを絞り込むために使用されるビルド番号を指定します。\fB-b\fR オプションが指定されていない場合は、最新バージョンのパッケージが使用されます。\fBversion.pattern \fR 構成プロパティーも参照してください。
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fB\fB-c\fR \fIcache_dir\fR\fR
-.ad
-.sp .6
-.RS 4n
-lint および参照リポジトリからのパッケージのメタデータをキャッシュするために使用されるローカルディレクトリを指定します。
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fB\fB-l\fR \fIlint_uri\fR\fR
-.ad
-.sp .6
-.RS 4n
-lint リポジトリの場所を表す URI を指定します。HTTP ベースとファイルシステムベースの両方の公開がサポートされています。\fB-l\fR を指定する場合は、\fB-c\fR も指定する必要があります。
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fB\fB-L\fR\fR
-.ad
-.sp .6
-.RS 4n
-既知の lint チェックと除外された lint チェックを一覧表示してから終了します。各チェックの短縮名と説明を表示します。\fB-v\fR フラグと組み合わせる場合は、説明の代わりに、このチェックを実装するメソッドを表示します。
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fB\fB-f\fR \fIconfig_file\fR\fR
-.ad
-.sp .6
-.RS 4n
-\fIconfig_file\fR 構成ファイルを使用して \fBpkglint\fR セッションを構成します。
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fB\fB-p\fR \fIregexp\fR\fR
-.ad
-.sp .6
-.RS 4n
-lint リポジトリからチェックされるパッケージのリストを絞り込むために使用される正規表現を指定します。参照リポジトリからはすべてのマニフェストがロードされ (\fB-b\fR が指定されている場合は、その値に一致すると仮定)、このパターンは無視されます。
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fB\fB-r\fR \fIrepo_uri\fR\fR
-.ad
-.sp .6
-.RS 4n
-参照リポジトリの場所を表す URI を指定します。\fB-r\fR を指定する場合は、\fB-c\fR も指定する必要があります。\fB-r\fR オプションは複数回指定できます。
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fB\fB-v\fR\fR
-.ad
-.sp .6
-.RS 4n
-\fBpkglint\fR を冗長モードで実行し、構成ファイル内の \fBlog_level\fR 設定をすべて上書きします。
-.RE
-
-.SH ファイル
-.sp
-.LP
-\fBpkglintrc\fR 構成ファイルは、次のキーと値の引数を取ります。
-.sp
-.ne 2
-.mk
-.na
-\fB\fBlog_level\fR\fR
-.ad
-.sp .6
-.RS 4n
-lint メッセージを発行する最小のレベル。このレベルより低い lint メッセージは破棄されます。デフォルト値は \fBINFO\fR です。
-.sp
-ログレベルを最小のレベルからもっとも重大なレベルの順に示すと、\fBDEBUG\fR、\fBINFO\fR、\fBWARNING\fR、\fBERROR\fR、\fBCRITICAL\fR になります。
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fB\fBdo_pub_checks\fR\fR
-.ad
-.sp .6
-.RS 4n
-\fBTrue\fR の場合は、公開されたパッケージにとってのみ意味がある可能性のあるチェックを実行します。デフォルト値は \fBTrue\fR です。
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fB\fBpkglint.ext.\fR*\fR
-.ad
-.sp .6
-.RS 4n
-\fBpkglint\fR のプラグインメカニズムを使用すると、実行時に lint モジュールを追加できます。\fBpkglint.ext.\fR で始まるキーはすべて、完全に指定された Python モジュールである必要のある値を取ります。詳細は、「開発者」のセクションを参照してください。
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fB\fBpkglint.exclude\fR\fR
-.ad
-.sp .6
-.RS 4n
-実行されるチェックのセットから省略する、完全に指定された Python モジュール、クラス、または関数名のスペースで区切られたリスト。
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fB\fBuse_progress_tracker\fR\fR
-.ad
-.sp .6
-.RS 4n
-\fBTrue\fR の場合は、lint の実行中にマニフェストに対する処理を繰り返すときに進捗トラッカーを使用します。デフォルト値は \fBTrue\fR です。
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fB\fBversion.pattern\fR\fR
-.ad
-.sp .6
-.RS 4n
-lint の対象となるビルド番号を指定するときに使用されるバージョンのパターン (\fB-b\fR)。構成ファイルで指定されていない場合、\fB-b\fR オプションはパターン \fB*,5.11-0.\fR を使用します。これは、ブランチ接頭辞が 0 である 5.11 ビルドのすべてのコンポーネントに一致します。
-.RE
-
-.SH 開発者
-.sp
-.LP
-\fBpkglint\fR によって実行されるチェックのセットを拡張するには、\fBpkg.lint.base.Checker\fR とそのサブクラス \fBManifestChecker \fR、\fBActionChecker\fR、および \fBContentChecker\fR をサブクラス化します。これらのクラスを含む Python モジュール名を、構成ファイル内の新しい \fBpkglint.ext.\fR キーに追加します。
-.sp
-.LP
-これらの新しいサブクラスのインスタンスは、起動時に \fBpkglint\fR によって作成されます。lint セッション中に、特殊なキーワード引数 \fBpkglint_id\fR を持つ、各サブクラスの内部のメソッドが呼び出されます。これらのメソッドには、スーパークラス内の対応する \fBcheck()\fR メソッドと同じ署名が含まれているべきです。また、これらのメソッドには、\fBpkglint -L\fR によって出力される説明として使用される \fBpkglint_desc\fR 属性も割り当てられていなくてはいけません。
-.sp
-.LP
-パラメータは \fBChecker\fR サブクラスから使用できます。これにより、これらのサブクラスは自身の動作を調整できます。推奨されるパラメータの命名規則は、\fB\fIpkglint_id\fR.\fIname\fR\fR です。パラメータ値は構成ファイル内に格納するか、または \fBLintEngine.get_param()\fR メソッドを使用して取得されるマニフェストまたはアクションでアクセスすることができます。マニフェストからパラメータにアクセスする場合は、\fBpkglint\fR パラメータが既存のどのアクションまたはマニフェスト値とも重複しないようにするために、キー名に接頭辞 \fBpkg.lint\fR が付加されます。
-.SH 使用例
-.LP
-\fB例 1 \fR特定のリポジトリに対する最初の実行
-.sp
-.LP
-特定のリポジトリに対する \fBpkglint\fR セッションのはじめての実行。
-
-.sp
-.in +2
-.nf
-$ \fBpkglint -c /space/cache -r http://localhost:10000 mymanifest.mf\fR
-.fi
-.in -2
-.sp
-
-.LP
-\fB例 2 \fR同じリポジトリに対するそれ以降の実行
-.sp
-.LP
-例 1 で使用されている同じリポジトリに対するそれ以降の実行。
-
-.sp
-.in +2
-.nf
-$ \fBpkglint -c /space/cache mymanifest-fixed.mf\fR
-.fi
-.in -2
-.sp
-
-.LP
-\fB例 3 \fR絞り込まれたマニフェストセットでの lint リポジトリの使用
-.sp
-.LP
-lint リポジトリでの \fBpkglint\fR セッションの実行と、チェックするマニフェストのサブセットの指定。
-
-.sp
-.in +2
-.nf
-$ \fBpkglint -c /space/othercache -l http://localhost:10000 \e\fR
-\fB-p '.*firefox.*'\fR
-.fi
-.in -2
-.sp
-
-.LP
-\fB例 4 \fRビルドの指定
-.sp
-.LP
-冗長モードでの特定のビルドに対する \fBpkglint\fR セッションの実行。
-
-.sp
-.in +2
-.nf
-$ \fBpkglint -c /space/cache -r http://localhost:10000 \e\fR
-\fB-l http://localhost:12000 -b 147 -v\fR
-.fi
-.in -2
-.sp
-
-.LP
-\fB例 5 \fR構成ファイルの変更
-.sp
-.LP
-新しい lint モジュールを含む構成ファイル (一部のチェックを除外)。
-
-.sp
-.in +2
-.nf
-$ \fBcat ~/.pkglintrc\fR
+<refentry lang="ja" id="pkglint-1">
+<refmeta><refentrytitle>pkglint</refentrytitle><manvolnum>1</manvolnum> <refmiscinfo class="date">2014 年 1 月 14 日</refmiscinfo> <refmiscinfo class="sectdesc">&man1;</refmiscinfo> <refmiscinfo class="software">&release;</refmiscinfo> <refmiscinfo class="arch">generic</refmiscinfo> <refmiscinfo class="copyright">Copyright (c) 2007, 2014, Oracle and/or its affiliates.All rights reserved.</refmiscinfo> 
+</refmeta>
+<refnamediv>
+<refname>pkglint</refname><refpurpose>Image Packaging System パッケージ lint</refpurpose>
+</refnamediv>
+<refsynopsisdiv><title></title>
+<synopsis>/usr/bin/pkglint [-c <replaceable>cache_dir</replaceable>] [-r <replaceable>
+repo_uri</replaceable>]... [-p <replaceable>regexp</replaceable>]
+    [-f <replaceable>config_file</replaceable>] [-b <replaceable>build_no</replaceable>] [-v]
+    [-l <replaceable>lint_uri</replaceable>] | <replaceable>manifest</replaceable> ...
+</synopsis>
+<synopsis>/usr/bin/pkglint -L [-v]</synopsis>
+</refsynopsisdiv>
+<refsect1 role="description"><title></title>
+<para><command>pkglint</command> は、必要に応じて別のリポジトリを参照しながら、1 つ以上のパッケージマニフェストに対して一連のチェックを実行します。</para>
+<para><command>pkglint</command> は、パッケージ公開前の、パッケージ作成処理中に使用するべきです。<command>pkglint</command> は、マニフェストに対して、<command>pkgsend</command> または <command>pkg.depotd</command> の通常動作中に実行するには負荷が大きすぎる可能性のある徹底的なテストを実行します。<command>pkglint</command> のチェックには、重複したアクション、欠落した属性、および異常なファイルアクセス権に対するテストが含まれます。</para>
+<para>lint のためのマニフェストは、コマンド行で、スペースで区切られたローカルファイルのリストとして渡すことができます。または、リポジトリからマニフェストを取得できます。</para>
+<para>リポジトリからマニフェストを取得する場合、<command>pkglint</command> は最初の実行で、指定されたキャッシュディレクトリ内に <literal>pkg</literal>(5) ユーザーイメージを作成して設定します。<option>r</option> オプションが指定されている場合は、参照リポジトリのために <replaceable>cache_dir</replaceable><literal>/ref_image</literal> という名前のユーザーイメージが作成されます。<option>l</option> オプションが指定されている場合は、lint リポジトリのために <replaceable>cache_dir</replaceable><literal>/lint_image</literal> という名前のユーザーイメージが作成されます。これらのイメージに内容はインストールされません。これらのイメージは、リポジトリからマニフェストを取得するために <command>pkglint</command> でのみ使用されます。</para>
+<para><command>pkglint</command> の以降の呼び出しではキャッシュディレクトリを再利用できるため、<option>r</option> または <option>l</option> 引数はすべて省略できます。</para>
+<para><command>pkglint</command> では、キャッシュディレクトリ内のパブリッシャーを構成するためのサポートが制限されています。これらのイメージに対して、より複雑な発行元の構成を実行するには、<command>pkg</command> を使用します。</para>
+<para><command>pkglint</command> では、パッケージ作成者は、特定のマニフェストまたはアクションに対するチェックをバイパスできます。<literal>True</literal> に設定された属性 <literal>pkg.linted</literal> を含むマニフェストまたはアクションでは、そのマニフェストまたはアクションに対する lint 出力は生成されません。</para>
+<para><command>pkglint</command> チェックの名前の部分文字列を使用して、よりきめ細かな <literal>pkg.linted</literal> 設定を行うことができます。たとえば、<literal>pkg.linted.<replaceable> check</replaceable>.<replaceable>id</replaceable></literal> が <literal>True</literal> に設定されていると、特定のマニフェストまたはアクションに対する <literal><replaceable>check</replaceable>.<replaceable>id </replaceable></literal> という名前を持つすべてのチェックがバイパスされます。</para>
+<para><command>pkglint</command> の動作は、<filename>pkglintrc</filename> ファイルを指定することによって構成できます。デフォルトでは、<command>pkglint</command> は、<filename>/usr/share/lib/pkg/pkglintrc</filename> および <filename>$HOME/.pkglintrc </filename> 内の構成オプションを検索します。別の構成ファイルを指定するには、<option>f</option> オプションを使用します。</para>
+<para>lint の実行中に検出されたエラーまたは警告はすべて <filename>stderr</filename> に出力されます。</para>
+</refsect1>
+<refsect1 role="options"><title></title>
+<para>サポートしているオプションは、次のとおりです。</para>
+<variablelist termlength="wholeline">
+<varlistentry><term><option>h</option></term><term><option>-help</option></term>
+<listitem><para>使用方法に関するメッセージを表示します。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>b</option> <replaceable>build_no</replaceable></term>
+<listitem><para>lint および参照リポジトリからの lint 中に使用されるパッケージのリストを絞り込むために使用されるビルド番号を指定します。<option>b</option> オプションが指定されていない場合は、最新バージョンのパッケージが使用されます。<literal>version.pattern </literal> 構成プロパティーも参照してください。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>c</option> <replaceable>cache_dir</replaceable></term>
+<listitem><para>lint および参照リポジトリからのパッケージのメタデータをキャッシュするために使用されるローカルディレクトリを指定します。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>l</option> <replaceable>lint_uri</replaceable></term>
+<listitem><para>lint リポジトリの場所を表す URI を指定します。HTTP ベースとファイルシステムベースの両方の公開がサポートされています。<option>l</option> を指定する場合は、<option>c</option> も指定する必要があります。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>L</option></term>
+<listitem><para>既知の lint チェックと除外された lint チェックを一覧表示してから終了します。各チェックの短縮名と説明を表示します。<option>v</option> フラグと組み合わせる場合は、説明の代わりに、このチェックを実装するメソッドを表示します。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>f</option> <replaceable>config_file</replaceable></term>
+<listitem><para><replaceable>config_file</replaceable> 構成ファイルを使用して <command>pkglint</command> セッションを構成します。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>p</option> <replaceable>regexp</replaceable></term>
+<listitem><para>lint リポジトリからチェックされるパッケージのリストを絞り込むために使用される正規表現を指定します。参照リポジトリからはすべてのマニフェストがロードされ (<option>b</option> が指定されている場合は、その値に一致すると仮定)、このパターンは無視されます。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>r</option> <replaceable>repo_uri</replaceable></term>
+<listitem><para>参照リポジトリの場所を表す URI を指定します。<option>r</option> を指定する場合は、<option>c</option> も指定する必要があります。<option>r</option> オプションは複数回指定できます。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>v</option></term>
+<listitem><para><command>pkglint</command> を冗長モードで実行し、構成ファイル内の <literal>log_level</literal> 設定をすべて上書きします。</para>
+</listitem>
+</varlistentry>
+</variablelist>
+</refsect1>
+<refsect1 role="files"><title></title>
+<para><filename>pkglintrc</filename> 構成ファイルは、次のキーと値の引数を取ります。</para>
+<variablelist termlength="wholeline">
+<varlistentry><term><literal>log_level</literal></term>
+<listitem><para>lint メッセージを発行する最小のレベル。このレベルより低い lint メッセージは破棄されます。デフォルト値は <literal>INFO</literal> です。
+</para>
+<para>ログレベルを最小のレベルからもっとも重大なレベルの順に示すと、<literal>DEBUG</literal>、<literal>INFO</literal>、<literal>WARNING</literal>、<literal>ERROR</literal>、<literal>CRITICAL</literal> になります。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>do_pub_checks</literal></term>
+<listitem><para><literal>True</literal> の場合は、公開されたパッケージにとってのみ意味がある可能性のあるチェックを実行します。デフォルト値は <literal>True</literal> です。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>pkglint.ext.</literal>*</term>
+<listitem><para><command>pkglint</command> のプラグインメカニズムを使用すると、実行時に lint モジュールを追加できます。<literal>pkglint.ext.</literal> で始まるキーはすべて、完全に指定された Python モジュールである必要のある値を取ります。詳細は、「開発者」のセクションを参照してください。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>pkglint.exclude</literal></term>
+<listitem><para>実行されるチェックのセットから省略する、完全に指定された Python モジュール、クラス、または関数名のスペースで区切られたリスト。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>use_progress_tracker</literal></term>
+<listitem><para><literal>True</literal> の場合は、lint の実行中にマニフェストに対する処理を繰り返すときに進捗トラッカーを使用します。デフォルト値は <literal>True</literal> です。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>version.pattern</literal></term>
+<listitem><para>lint の対象となるビルド番号を指定するときに使用されるバージョンのパターン (<option>b</option>)。構成ファイルで指定されていない場合、<option>b</option> オプションはパターン <literal>*,5.11-0.</literal> を使用します。これは、ブランチ接頭辞が 0 である 5.11 ビルドのすべてのコンポーネントに一致します。</para>
+</listitem>
+</varlistentry>
+</variablelist>
+</refsect1>
+<refsect1 role="other"><title>開発者</title>
+<para><command>pkglint</command> によって実行されるチェックのセットを拡張するには、<literal>pkg.lint.base.Checker</literal> とそのサブクラス <literal>ManifestChecker </literal>、<literal>ActionChecker</literal>、および <literal>ContentChecker</literal> をサブクラス化します。これらのクラスを含む Python モジュール名を、構成ファイル内の新しい <literal>pkglint.ext.</literal> キーに追加します。</para>
+<para>これらの新しいサブクラスのインスタンスは、起動時に <command>pkglint</command> によって作成されます。lint セッション中に、特殊なキーワード引数 <literal>pkglint_id</literal> を持つ、各サブクラスの内部のメソッドが呼び出されます。これらのメソッドには、スーパークラス内の対応する <function>check</function> メソッドと同じ署名が含まれているべきです。また、これらのメソッドには、<command>pkglint -L</command> によって出力される説明として使用される <literal>pkglint_desc</literal> 属性も割り当てられていなくてはいけません。</para>
+<para>パラメータは <literal>Checker</literal> サブクラスから使用できます。これにより、これらのサブクラスは自身の動作を調整できます。推奨されるパラメータの命名規則は、<literal><replaceable>pkglint_id</replaceable>.<replaceable>name</replaceable></literal> です。パラメータ値は構成ファイル内に格納するか、または <function>LintEngine.get_param</function> メソッドを使用して取得されるマニフェストまたはアクションでアクセスすることができます。マニフェストからパラメータにアクセスする場合は、<command>pkglint</command> パラメータが既存のどのアクションまたはマニフェスト値とも重複しないようにするために、キー名に接頭辞 <literal>pkg.lint</literal> が付加されます。</para>
+</refsect1>
+<refsect1 role="examples"><title></title>
+<example><title>特定のリポジトリに対する最初の実行</title>
+<para>特定のリポジトリに対する <command>pkglint</command> セッションのはじめての実行。</para>
+<screen>$ <userinput>pkglint -c /space/cache -r http://localhost:10000 mymanifest.mf</userinput></screen>
+</example>
+<example><title>同じリポジトリに対するそれ以降の実行</title>
+<para>例 1 で使用されている同じリポジトリに対するそれ以降の実行。</para>
+<screen>$ <userinput>pkglint -c /space/cache mymanifest-fixed.mf</userinput></screen>
+</example>
+<example><title>絞り込まれたマニフェストセットでの lint リポジトリの使用</title>
+<para>lint リポジトリでの <command>pkglint</command> セッションの実行と、チェックするマニフェストのサブセットの指定。</para>
+<screen>$ <userinput>pkglint -c /space/othercache -l http://localhost:10000 &bsol;</userinput>
+<userinput>-p '.*firefox.*'</userinput></screen>
+</example>
+<example><title>ビルドの指定</title>
+<para>冗長モードでの特定のビルドに対する <command>pkglint</command> セッションの実行。</para>
+<screen>$ <userinput>pkglint -c /space/cache -r http://localhost:10000 &bsol;</userinput>
+<userinput>-l http://localhost:12000 -b 147 -v</userinput></screen>
+</example>
+<example><title>構成ファイルの変更</title>
+<para>新しい lint モジュールを含む構成ファイル (一部のチェックを除外)。</para>
+<screen>$ <userinput>cat ~/.pkglintrc</userinput>
 [pkglint]
 
 log_level = DEBUG
@@ -314,82 +139,66 @@ pkglint.ext.mycheck = org.timf.mychecks
 pkglint.ext.opensolaris = pkg.lint.opensolaris
 pkglint.exclude: pkg.lint.opensolaris.OpenSolarisActionChecker
 pkg.lint.pkglint.PkgActionChecker.unusual_perms pkg.lint.pkglint.PkgManifestChecker
-pkg.lint.opensolaris.OpenSolarisManifestChecker
-.fi
-.in -2
-.sp
+pkg.lint.opensolaris.OpenSolarisManifestChecker</screen>
+</example>
+</refsect1>
+<refsect1 role="exit-status"><title></title>
+<para>次の終了ステータスが返されます。</para>
+<variablelist>
+<varlistentry><term><returnvalue>0</returnvalue></term>
+<listitem><para>コマンドが成功しました。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><returnvalue>1</returnvalue></term>
+<listitem><para>1 つ以上のパッケージマニフェストに lint エラーが含まれています。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><returnvalue>2</returnvalue></term>
+<listitem><para>マニフェストで lint エラーではないエラーが発生しました。たとえば、無効なコマンド行オプションが指定されました。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><returnvalue>99</returnvalue></term>
+<listitem><para>予期しない例外が発生しました。</para>
+</listitem>
+</varlistentry>
+</variablelist>
+</refsect1>
+<refsect1 role="attributes"><title></title>
+<para>次の属性については、<literal>attributes</literal>(5) を参照してください。</para>
+<informaltable frame="all" orient="port">
+<tgroup cols="2" colsep="1" rowsep="1"><colspec colname="col1" colwidth="198*" align="left" /><colspec colname="col2" colwidth="198*" align="left" /><thead>
+<row>
+<entry align="center">
+<para>属性タイプ</para>
+</entry>
+<entry align="center">
+<para>属性値</para>
+</entry>
+</row>
+</thead>
+<tbody>
+<row>
+<entry align="left">
+<para>使用条件</para>
+</entry>
+<entry align="left">
+<para><literal>package/pkg</literal></para>
+</entry>
+</row>
+<row>
+<entry align="left">
+<para>インタフェースの安定性</para>
+</entry>
+<entry align="left">
+<para>不確実</para>
+</entry>
+</row>
+</tbody>
+</tgroup>
+</informaltable></refsect1>
+<refsect1 role="see-also"><title></title>
+<para><olink targetdoc="refman" targetptr="pkg-1"><citerefentry><refentrytitle>pkg</refentrytitle><manvolnum>1</manvolnum></citerefentry></olink>, <olink targetdoc="refman" targetptr="pkg.depotd-1m"><citerefentry><refentrytitle>pkg.depotd</refentrytitle><manvolnum>1M</manvolnum></citerefentry></olink>, <olink targetdoc="refman" targetptr="pkgsend-1"><citerefentry><refentrytitle>pkgsend</refentrytitle> <manvolnum>1</manvolnum></citerefentry></olink>, <olink targetdoc="refman" targetptr="pkg-5"><citerefentry><refentrytitle>pkg</refentrytitle><manvolnum>5</manvolnum> </citerefentry></olink></para>
+<para><literal>https://java.net/projects/ips/pages/Home</literal></para>
+</refsect1>
+</refentry>
 
-.SH 終了ステータス
-.sp
-.LP
-次の終了ステータスが返されます。
-.sp
-.ne 2
-.mk
-.na
-\fB\fB0\fR\fR
-.ad
-.RS 6n
-.rt  
-コマンドが成功しました。
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fB\fB1\fR\fR
-.ad
-.RS 6n
-.rt  
-1 つ以上のパッケージマニフェストに lint エラーが含まれています。
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fB\fB2\fR\fR
-.ad
-.RS 6n
-.rt  
-マニフェストで lint エラーではないエラーが発生しました。たとえば、無効なコマンド行オプションが指定されました。
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fB\fB99\fR\fR
-.ad
-.RS 6n
-.rt  
-予期しない例外が発生しました。
-.RE
-
-.SH 属性
-.sp
-.LP
-次の属性については、\fBattributes\fR(5) を参照してください。
-.sp
-
-.sp
-.TS
-tab() box;
-cw(2.75i) |cw(2.75i) 
-lw(2.75i) |lw(2.75i) 
-.
-属性タイプ属性値
-_
-使用条件\fBpackage/pkg\fR
-_
-インタフェースの安定性不確実
-.TE
-
-.SH 関連項目
-.sp
-.LP
-\fBpkg\fR(1), \fBpkg.depotd\fR(1M), \fBpkgsend\fR(1), \fBpkg\fR(5)
-.sp
-.LP
-\fBhttps://java.net/projects/ips/pages/Home\fR

@@ -1,147 +1,104 @@
-'\" te
-.\" Copyright (c) 2007, 2013, Oracle and/or its affiliates.All rights reserved.
-.TH pkgfmt 1 "2013 年 5 月 21 日" "SunOS 5.12" "用户命令"
-.SH 名称
-pkgfmt \- 格式化软件包清单
-.SH 用法概要
-.LP
-.nf
-/usr/bin/pkgfmt [-c|-d|-u] [\fIpackage-manifest-file\fR]
-.fi
+<?xml version="1.0" encoding="utf-8"?>
+<!--Arbortext, Inc., 1988-2008, v.4002-->
+<!DOCTYPE refentry PUBLIC "-//Sun Microsystems//DTD SolBook-XML 3.7//EN" "xsolbook.dtd" [
+<!ENTITY % ent SYSTEM "entities.ent">
+%ent;
+]>
 
-.SH 描述
-.sp
-.LP
-不带 \fB-c\fR 或 \fB-d\fR 选项的 \fBpkgfmt\fR 将以一致的方式对软件包清单进行格式化，包括每 80 个字符自动换行，按类型对操作排序，以及对属性排序。未解析成操作（如宏、注释或转换）的行不会按排序顺序显示。
-.sp
-.LP
-如果未提供参数，\fBpkgfmt\fR 将会读取 \fBstdin\fR，直到遇到 EOF，然后将格式化的清单写入 \fBstdout\fR。在命令行上指定的任何清单将在原位格式化。
-.sp
-.LP
-带 \fB-c\fR 选项的 \fBpkgfmt\fR 将会检查清单是否格式化为 \fBpkgfmt\fR 样式。如果文件未正确格式化，\fB- d\fR 选项将显示差异。
-.SH 选项
-.sp
-.LP
-支持以下选项：
-.sp
-.ne 2
-.mk
-.na
-\fB\fB-?\fR\fR
-.ad
-.br
-.na
-\fB\fB--help\fR\fR
-.ad
-.RS 10n
-.rt  
-显示用法消息。
-.RE
+<refentry lang="zh" id="pkgfmt-1">
+<refmeta><refentrytitle>pkgfmt</refentrytitle><manvolnum>1</manvolnum> <refmiscinfo class="date">2013 年 5 月 21 日</refmiscinfo> <refmiscinfo class="sectdesc">&man1;</refmiscinfo> <refmiscinfo class="software">&release;</refmiscinfo> <refmiscinfo class="arch">generic</refmiscinfo> <refmiscinfo class="copyright">Copyright (c) 2007, 2013, Oracle and/or its affiliates.All rights reserved.</refmiscinfo> 
+</refmeta>
+<refnamediv>
+<refname>pkgfmt</refname><refpurpose>格式化软件包清单</refpurpose>
+</refnamediv>
+<refsynopsisdiv><title></title>
+<synopsis>/usr/bin/pkgfmt [-c|-d|-u] [<replaceable>package-manifest-file</replaceable>]
+</synopsis></refsynopsisdiv>
+<refsect1 id="pkgfmt-1-desc" role="description"><title></title>
+<para>不带 <option>c</option> 或 <option>d</option> 选项的 <command>pkgfmt</command> 将以一致的方式对软件包清单进行格式化，包括每 80 个字符自动换行，按类型对操作排序，以及对属性排序。未解析成操作（如宏、注释或转换）的行不会按排序顺序显示。</para>
+<para>如果未提供参数，<command>pkgfmt</command> 将会读取 <literal>stdin</literal>，直到遇到 EOF，然后将格式化的清单写入 <literal>stdout</literal>。在命令行上指定的任何清单将在原位格式化。</para>
+<para>带 <option>c</option> 选项的 <command>pkgfmt</command> 将会检查清单是否格式化为 <command>pkgfmt</command> 样式。如果文件未正确格式化，<option> d</option> 选项将显示差异。
+</para>
+</refsect1>
+<refsect1 role="options"><title></title>
+<para>支持以下选项：</para>
+<variablelist>
+<varlistentry><term><option>?</option></term><term><option>-help</option></term>
+<listitem><para>显示用法消息。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>c</option></term>
+<listitem><para>检查清单是否格式化为 <command>pkgfmt</command> 样式。
+</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>d</option></term>
+<listitem><para>以统一格式显示与格式化版本的清单差异。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>u</option></term>
+<listitem><para>达到 80 个字符时不自动换行。将传统的文本处理工具应用到软件包清单时，该选项十分有用。</para>
+</listitem>
+</varlistentry>
+</variablelist>
+</refsect1>
+<refsect1 role="exit-status"><title></title>
+<para>将返回以下退出值：</para>
+<variablelist>
+<varlistentry><term><returnvalue>0</returnvalue></term>
+<listitem><para>命令成功。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><returnvalue>1</returnvalue></term>
+<listitem><para>指定了 <option>c</option> 或 <option>d</option> 选项，并且一个或多个清单不处于 <command>pkgfmt</command> 正常格式，或出现了错误。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><returnvalue>2</returnvalue></term>
+<listitem><para>指定的命令行选项无效。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><returnvalue>99</returnvalue></term>
+<listitem><para>发生了意外的异常。</para>
+</listitem>
+</varlistentry>
+</variablelist>
+</refsect1>
+<refsect1 role="attributes"><title></title>
+<para>有关下列属性的说明，请参见 <literal>attributes</literal>(5)：</para>
+<informaltable frame="all" orient="port">
+<tgroup cols="2" colsep="1" rowsep="1"><colspec colname="col1" colwidth="198*" align="left" /><colspec colname="col2" colwidth="198*" align="left" /><thead>
+<row>
+<entry align="center">
+<para>属性类型</para>
+</entry>
+<entry align="center">
+<para>属性值</para>
+</entry>
+</row>
+</thead>
+<tbody>
+<row>
+<entry align="left">
+<para>可用性</para>
+</entry>
+<entry align="left">
+<para><literal>package/pkg</literal></para>
+</entry>
+</row>
+<row>
+<entry align="left">
+<para>接口稳定性</para>
+</entry>
+<entry align="left">
+<para>Uncommitted（未确定）</para>
+</entry>
+</row>
+</tbody>
+</tgroup>
+</informaltable></refsect1>
+<refsect1 role="see-also"><title></title>
+<para><olink targetdoc="refman" targetptr="pkg-5"><citerefentry><refentrytitle>pkg</refentrytitle><manvolnum>5</manvolnum></citerefentry></olink></para>
+<para><literal>https://java.net/projects/ips/pages/Home</literal></para>
+</refsect1>
+</refentry>
 
-.sp
-.ne 2
-.mk
-.na
-\fB\fB-c\fR\fR
-.ad
-.RS 10n
-.rt  
-检查清单是否格式化为 \fBpkgfmt\fR 样式。
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fB\fB-d\fR\fR
-.ad
-.RS 10n
-.rt  
-以统一格式显示与格式化版本的清单差异。
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fB\fB-u\fR\fR
-.ad
-.RS 10n
-.rt  
-达到 80 个字符时不自动换行。将传统的文本处理工具应用到软件包清单时，该选项十分有用。
-.RE
-
-.SH 退出状态
-.sp
-.LP
-将返回以下退出值：
-.sp
-.ne 2
-.mk
-.na
-\fB\fB0\fR\fR
-.ad
-.RS 6n
-.rt  
-命令成功。
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fB\fB1\fR\fR
-.ad
-.RS 6n
-.rt  
-指定了 \fB-c\fR 或 \fB-d\fR 选项，并且一个或多个清单不处于 \fBpkgfmt\fR 正常格式，或出现了错误。
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fB\fB2\fR\fR
-.ad
-.RS 6n
-.rt  
-指定的命令行选项无效。
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fB\fB99\fR\fR
-.ad
-.RS 6n
-.rt  
-发生了意外的异常。
-.RE
-
-.SH 属性
-.sp
-.LP
-有关下列属性的说明，请参见 \fBattributes\fR(5)：
-.sp
-
-.sp
-.TS
-tab() box;
-cw(2.75i) |cw(2.75i) 
-lw(2.75i) |lw(2.75i) 
-.
-属性类型属性值
-_
-可用性\fBpackage/pkg\fR
-_
-接口稳定性Uncommitted（未确定）
-.TE
-
-.SH 另请参见
-.sp
-.LP
-\fBpkg\fR(5)
-.sp
-.LP
-\fBhttps://java.net/projects/ips/pages/Home\fR

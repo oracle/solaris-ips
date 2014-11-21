@@ -1,378 +1,250 @@
-'\" te
-.\" Copyright (c) 2007, 2013, Oracle and/or its affiliates. All rights reserved.
-.TH pkgrecv 1 "21 Nov 2013" "SunOS 5.12" "User Commands"
-.SH NAME
-pkgrecv \- Image Packaging System content retrieval utility
-.SH SYNOPSIS
-.LP
-.nf
-/usr/bin/pkgrecv [-aknrv] [-s (\fIsrc_path\fR|\fIsrc_uri\fR)]
-    [-d (\fIdest_path\fR|\fIdest_uri\fR)] [-c \fIcache_dir\fR]
-    [-m \fImatch\fR] [--raw]
-    [--key \fIsrc_key\fR --cert \fIsrc_cert\fR]
-    [--dkey \fIdest_key\fR --dcert \fIdest_cert\fR]
-    (\fIfmri\fR|\fIpattern\fR) ...
-.fi
+<?xml version="1.0" encoding="iso-8859-1"?>
+<!--Arbortext, Inc., 1988-2008, v.4002-->
+<!DOCTYPE refentry PUBLIC "-//Sun Microsystems//DTD SolBook-XML 3.7//EN" "xsolbook.dtd" [
+<!ENTITY % ent SYSTEM "entities.ent">
+%ent;
+]>
 
-.LP
-.nf
-/usr/bin/pkgrecv [-s (\fIsrc_path\fR|\fIsrc_uri\fR)] --newest
-.fi
-
-.LP
-.nf
-/usr/bin/pkgrecv [-nv] [-s (\fIsrc_path\fR|\fIsrc_uri\fR)]
-    [-d (\fIdest_path\fR|\fIdest_uri\fR)] [-p \fIpublisher\fR]...
-    [--key \fIsrc_key\fR --cert \fIsrc_cert\fR] --clone
-.fi
-
-.SH DESCRIPTION
-.sp
-.LP
-\fBpkgrecv\fR retrieves all versions of each matching \fIfmri\fR or \fIpattern\fR from the \fBpkg\fR(5) repository or package archive specified by the \fB-s\fR option and optionally republishes the retrieved packages to the package repository or package archive specified by the \fB-d\fR option. By default, packages are retrieved in package repository format suitable for use with \fBpkg\fR, \fBpkg.depotd\fR, and package publication tools.
-.sp
-.LP
-Packages that have not changed are not republished. Therefore, the time to update an existing repository depends on the number of new and changed packages.
-.sp
-.LP
-Use the \fB-m\fR option to specify whether to retrieve all versions of each matching package, or only the newest version of each matching package.
-.sp
-.LP
-If you do not specify \fB\&'*'\fR to be retrieved, you might want to specify the \fB-r\fR option to be sure to retrieve all the dependencies of the specified packages.
-.LP
-Note - 
-.sp
-.RS 2
-Do not use multiple instances of \fBpkgrecv\fR simultaneously to republish packages to the same destination repository or archive. In this case, newly received packages could contain duplicate actions.
-.RE
-.sp
-.LP
-After a \fBpkgrecv\fR operation that retrieves packages into a \fIdest_uri\fR, if the \fIdest_uri\fR repository must support \fBpkg search\fR operations, run \fBpkgrepo refresh\fR on that repository to update search indexes.
-.SH OPTIONS
-.sp
-.LP
-The following options are supported:
-.sp
-.ne 2
-.mk
-.na
-\fB\fB-h\fR\fR
-.ad
-.sp .6
-.RS 4n
-Display a usage message.
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fB\fB-a\fR\fR
-.ad
-.sp .6
-.RS 4n
-Store the retrieved package data in a \fBpkg\fR(5) archive at the location specified by the \fB-d\fR option. The file specified by \fB-d\fR cannot already exist. The \fB-a\fR option can be used only with file system based destinations. Although not required, using a file extension of \fB\&.p5p\fR (for example, \fBarchive.p5p\fR) is strongly suggested. The \fB-a\fR option cannot be combined with the \fB--raw\fR option.
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fB\fB-c\fR \fIcache_dir\fR\fR
-.ad
-.sp .6
-.RS 4n
-Specify the path to a directory that will be used to cache downloaded content. If this directory is not supplied, the client automatically selects a cache directory. In the case where a download is interrupted, and a cache directory was automatically chosen, use this option to resume the download. See the "Environment Variables" section below for details about how to set the location used for temporary data storage.
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fB\fB-d\fR (\fIdest_path\fR|\fIdest_uri\fR)\fR
-.ad
-.sp .6
-.RS 4n
-Specify the file system path or URI where the retrieved packages should be republished. If \fB-a\fR  is specified, this destination must be a package archive that does not already exist. If \fB-a\fR  is not specified, this destination must be a package repository that already exists. Use the \fBpkgrepo\fR command to create a new package repository. If \fB-d\fR is not specified, the value of \fBPKG_DEST\fR is used. See "Environment Variables" below.
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fB\fB-k\fR\fR
-.ad
-.sp .6
-.RS 4n
-Keep the retrieved package content compressed. This option is ignored when republishing. Compressed package content should not be used with \fBpkgsend\fR.
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fB\fB-m\fR \fImatch\fR\fR
-.ad
-.sp .6
-.RS 4n
-Control which versions of packages are retrieved if \fIpattern\fR is specified or if \fIfmri\fR is not fully specified. For this description, the following four example packages exist in the source specified by the \fB-s\fR option. In these FMRI, the characters between the \fB@\fR and the \fB:\fR denote the numbered package version, and the characters from the \fB:\fR to the end denote the timestamp portion of the version string.
-.sp
-.in +2
-.nf
-pkg://solaris/package/pkg@0.5.11,5.11-0.175.1.0.0.24.0:20120904T180335Z
+<refentry id="pkgrecv-1">
+<refmeta><refentrytitle>pkgrecv</refentrytitle><manvolnum>1</manvolnum>
+<refmiscinfo class="date">21 Nov 2013</refmiscinfo>
+<refmiscinfo class="sectdesc">&man1;</refmiscinfo>
+<refmiscinfo class="software">&release;</refmiscinfo>
+<refmiscinfo class="arch">generic</refmiscinfo>
+<refmiscinfo class="copyright">Copyright (c) 2007, 2013, Oracle and/or its affiliates. All rights reserved.</refmiscinfo>
+</refmeta>
+<refnamediv>
+<refname>pkgrecv</refname>
+<refpurpose>Image Packaging System content retrieval utility</refpurpose>
+</refnamediv>
+<refsynopsisdiv><title></title>
+<synopsis>/usr/bin/pkgrecv [-aknrv] [-s (<replaceable>src_path</replaceable>|<replaceable>src_uri</replaceable>)]
+    [-d (<replaceable>dest_path</replaceable>|<replaceable>dest_uri</replaceable>)] [-c <replaceable>cache_dir</replaceable>]
+    [-m <replaceable>match</replaceable>] [--raw]
+    [--key <replaceable>src_key</replaceable> --cert <replaceable>src_cert</replaceable>]
+    [--dkey <replaceable>dest_key</replaceable> --dcert <replaceable>dest_cert</replaceable>]
+    (<replaceable>fmri</replaceable>|<replaceable>pattern</replaceable>) ...</synopsis>
+<synopsis>/usr/bin/pkgrecv [-s (<replaceable>src_path</replaceable>|<replaceable>src_uri</replaceable>)] --newest</synopsis>
+<synopsis>/usr/bin/pkgrecv [-nv] [-s (<replaceable>src_path</replaceable>|<replaceable>src_uri</replaceable>)]
+    [-d (<replaceable>dest_path</replaceable>|<replaceable>dest_uri</replaceable>)] [-p <replaceable>publisher</replaceable>]...
+    [--key <replaceable>src_key</replaceable> --cert <replaceable>src_cert</replaceable>] --clone
+</synopsis>
+</refsynopsisdiv>
+<refsect1 id="pkgrecv-1-desc" role="description"><title></title>
+<para><command>pkgrecv</command> retrieves all versions of each matching
+<replaceable>fmri</replaceable> or <replaceable>pattern</replaceable> from the
+<literal>pkg</literal>(5) repository or package archive specified by the
+<option>s</option> option and optionally republishes the retrieved packages to
+the package repository or package archive specified by the <option>d</option>
+option. By default, packages are retrieved in package repository format suitable
+for use with <command>pkg</command>, <command>pkg.depotd</command>, and package
+publication tools.</para>
+<para>Packages that have not changed are not republished. Therefore, the time
+to update an existing repository depends on the number of new and changed
+packages.</para>
+<para>Use the <option>m</option> option to specify whether to retrieve all
+versions of each matching package, or only the newest version of each matching
+package.</para>
+<para>If you do not specify <literal>'*'</literal> to be retrieved, you might
+want to specify the <option>r</option> option to be sure to retrieve all the
+dependencies of the specified packages.</para>
+<note><para>Do not use multiple instances of <command>pkgrecv</command> simultaneously
+to republish packages to the same destination repository or archive. In this
+case, newly received packages could contain duplicate actions.</para></note>
+<para>After a <command>pkgrecv</command> operation that retrieves packages
+into a <replaceable>dest_uri</replaceable>, if the <replaceable>dest_uri</replaceable> repository
+must support <command>pkg search</command> operations, run <command>pkgrepo refresh</command>
+on that repository to update search indexes.</para>
+</refsect1>
+<refsect1 role="options"><title></title>
+<para>The following options are supported:</para>
+<variablelist termlength="wholeline">
+<varlistentry><term><option>h</option></term>
+<listitem><para>Display a usage message.</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>a</option></term>
+<listitem><para>Store the retrieved package data in a <literal>pkg</literal>(5)
+archive at the location specified by the <option>d</option> option. The file
+specified by <option>d</option> cannot already exist. The <option>a</option> option
+can be used only with file system based destinations. Although not required,
+using a file extension of <literal>.p5p</literal> (for example, <literal>archive.p5p
+</literal>) is strongly suggested. The <option>a</option> option cannot be
+combined with the <option>-raw</option> option.</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>c</option> <replaceable>cache_dir</replaceable></term>
+<listitem><para>Specify the path to a directory that will be used to cache
+downloaded content. If this directory is not supplied, the client automatically
+selects a cache directory. In the case where a download is interrupted, and
+a cache directory was automatically chosen, use this option to resume the
+download. See the &ldquo;Environment Variables&rdquo; section below for details
+about how to set the location used for temporary data storage.</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>d</option> (<replaceable>dest_path</replaceable>|<replaceable>dest_uri</replaceable>)</term>
+<listitem><para>Specify the file system path or URI where the retrieved packages
+should be republished. If <option>a</option>  is specified, this destination
+must be a package archive that does not already exist. If <option>a</option> 
+is not specified, this destination must be a package repository that already
+exists. Use the <command>pkgrepo</command> command to create a new package
+repository. If <option>d</option> is not specified, the value of <envar>PKG_DEST</envar> is
+used. See &ldquo;Environment Variables&rdquo; below.</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>k</option></term>
+<listitem><para>Keep the retrieved package content compressed. This option
+is ignored when republishing. Compressed package content should not be used
+with <command>pkgsend</command>.</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>m</option> <replaceable>match</replaceable></term>
+<listitem><para>Control which versions of packages are retrieved if
+<replaceable>pattern</replaceable> is specified or if
+<replaceable>fmri</replaceable> is not fully specified. For this description,
+the following four example packages exist in the source specified by the
+<option>s</option> option. In these FMRI, the characters between the
+<literal>@</literal> and the <literal>:</literal> denote the numbered package
+version, and the characters from the <literal>:</literal> to the end denote the
+timestamp portion of the version string.</para>
+<programlisting>pkg://solaris/package/pkg@0.5.11,5.11-0.175.1.0.0.24.0:20120904T180335Z
 pkg://solaris/package/pkg@0.5.11,5.11-0.175.1.0.0.24.0:20120903T170234Z
 pkg://solaris/package/pkg@0.5.11,5.11-0.175.1.0.0.23.0:20120820T165108Z
-pkg://solaris/package/pkg@0.5.11,5.11-0.175.1.0.0.23.0:20120819T155007Z
-.fi
-.in -2
-
-.sp
-.ne 2
-.mk
-.na
-\fB\fBall-timestamps\fR\fR
-.ad
-.sp .6
-.RS 4n
-Retrieve all versions of each matching \fIfmri\fR or \fIpattern\fR (implies \fBall-versions\fR). This is the default behavior if the \fB-m\fR option is not specified. In the example above, all four packages are retrieved.
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fB\fBall-versions\fR\fR
-.ad
-.sp .6
-.RS 4n
-Retrieve the latest timestamp for each version of each matching \fIfmri\fR or \fIpattern\fR. In the example above, the following two packages are retrieved:
-.sp
-.in +2
-.nf
-pkg://solaris/package/pkg@0.5.11,5.11-0.175.1.0.0.24.0:20120904T180335Z
-pkg://solaris/package/pkg@0.5.11,5.11-0.175.1.0.0.23.0:20120820T165108Z
-.fi
-.in -2
-
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fB\fBlatest\fR\fR
-.ad
-.sp .6
-.RS 4n
-Retrieve only the newest version of each matching \fIfmri\fR or \fIpattern\fR. In the example above, only the following package is retrieved:
-.sp
-.in +2
-.nf
-pkg://solaris/package/pkg@0.5.11,5.11-0.175.1.0.0.24.0:20120904T180335Z
-.fi
-.in -2
-
-.RE
-
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fB\fB-n\fR\fR
-.ad
-.sp .6
-.RS 4n
-Perform a trial run with no changes made.
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fB\fB-p\fR \fIpublisher\fR\fR
-.ad
-.sp .6
-.RS 4n
-Only clone the specified publisher. This option can be specified multiple times. The \fB-p\fR option is valid only with the \fB--clone\fR option.
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fB\fB-r\fR\fR
-.ad
-.sp .6
-.RS 4n
-Recursively retrieve all dependencies for each matching \fIfmri\fR or \fIpattern\fR.
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fB\fB-s\fR (\fIsrc_path\fR|\fIsrc_uri\fR)\fR
-.ad
-.sp .6
-.RS 4n
-Specify the file system path or URI of a \fBpkg\fR(5) repository or package archive from which to receive package data. If \fB-s\fR is not specified, the value of \fBPKG_SRC\fR is used. See "Environment Variables" below.
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fB\fB-v\fR\fR
-.ad
-.sp .6
-.RS 4n
-Display verbose output, including the number of packages retrieved and their full FMRIs, the number of files retrieved, and the estimated size of the transfer.
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fB\fB--key\fR \fIsrc_key\fR\fR
-.ad
-.sp .6
-.RS 4n
-Specify a client SSL key file to use for package retrieval from the source HTTPS repository.
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fB\fB--cert\fR \fIsrc_cert\fR\fR
-.ad
-.sp .6
-.RS 4n
-Specify a client SSL certificate file to use for package retrieval from the source HTTPS repository.
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fB\fB--dkey\fR \fIdest_key\fR\fR
-.ad
-.sp .6
-.RS 4n
-Specify a client SSL key file to use for package publication to the destination HTTPS repository.
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fB\fB--dcert\fR \fIdest_cert\fR\fR
-.ad
-.sp .6
-.RS 4n
-Specify a client SSL certificate file to use for package publication to the destination HTTPS repository.
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fB\fB--clone\fR\fR
-.ad
-.sp .6
-.RS 4n
-Make an exact copy of the source repository. By default, the clone operation succeeds only if publishers in the source repository are also present in the destination. To limit the clone operation to specified publishers, use the \fB-p\fR option. Publishers specified by using the \fB-p\fR option are added to the destination repository if they are not already present. Packages that are in the destination repository but not in the source repository are removed. The clone operation leaves the destination repository altered if an error occurs. Therefore, the destination repository should be in its own ZFS dataset, and a snapshot should be created prior to performing the clone operation.
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fB\fB--newest\fR\fR
-.ad
-.sp .6
-.RS 4n
-List the most recent versions of the packages available from the repository specified by the \fB-s\fR option. All other options are ignored.
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fB\fB--raw\fR\fR
-.ad
-.sp .6
-.RS 4n
-Retrieve and store the raw package data in a set of directory structures by stem and version at the location specified by \fB-d\fR. The \fB--raw\fR option can be used only with file system based destinations. This package data can be used to conveniently modify and republish packages, perhaps by correcting file contents or providing additional package metadata. The \fB--raw\fR option cannot be combined with \fB-a\fR.
-.RE
-
-.SH EXAMPLES
-.LP
-\fBExample 1 \fRList Newest Packages
-.sp
-.LP
-List the newest packages available from the repository on the system named \fBtest\fR.
-
-.sp
-.in +2
-.nf
-$ \fBpkgrecv -s http://test --newest\fR
+pkg://solaris/package/pkg@0.5.11,5.11-0.175.1.0.0.23.0:20120819T155007Z</programlisting>
+<variablelist termlength="wholeline">
+<varlistentry><term><literal>all-timestamps</literal></term>
+<listitem><para>Retrieve all versions of each matching <replaceable>fmri</replaceable> or <replaceable>
+pattern</replaceable> (implies <literal>all-versions</literal>). This is the
+default behavior if the <option>m</option> option is not specified. In the
+example above, all four packages are retrieved.</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>all-versions</literal></term>
+<listitem><para>Retrieve the latest timestamp for each version of each matching
+<replaceable>fmri</replaceable> or <replaceable>pattern</replaceable>. In the
+example above, the following two packages are retrieved:</para>
+<programlisting>pkg://solaris/package/pkg@0.5.11,5.11-0.175.1.0.0.24.0:20120904T180335Z
+pkg://solaris/package/pkg@0.5.11,5.11-0.175.1.0.0.23.0:20120820T165108Z</programlisting>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>latest</literal></term>
+<listitem><para>Retrieve only the newest version of each matching <replaceable>fmri
+</replaceable> or <replaceable>pattern</replaceable>. In the example above,
+only the following package is retrieved:</para>
+<programlisting>pkg://solaris/package/pkg@0.5.11,5.11-0.175.1.0.0.24.0:20120904T180335Z
+</programlisting>
+</listitem>
+</varlistentry>
+</variablelist>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>n</option></term>
+<listitem><para>Perform a trial run with no changes made.</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>p</option> <replaceable>publisher</replaceable></term>
+<listitem><para>Only clone the specified publisher. This option can be specified multiple
+times. The <option>p</option> option is valid only with the
+<option>-clone</option> option.</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>r</option></term>
+<listitem><para>Recursively retrieve all dependencies for each matching
+<replaceable>fmri</replaceable> or <replaceable>pattern</replaceable>.</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>s</option> (<replaceable>src_path</replaceable>|<replaceable>src_uri</replaceable>)</term>
+<listitem><para>Specify the file system path or URI of a <literal>pkg</literal>(5)
+repository or package archive from which to receive package data. If <option>s</option> is
+not specified, the value of <envar>PKG_SRC</envar> is used. See &ldquo;Environment
+Variables&rdquo; below.</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>v</option></term>
+<listitem><para>Display verbose output, including the number of packages retrieved and their full FMRIs, the number of files retrieved, and the estimated size of the transfer.</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>-key</option> <replaceable>src_key</replaceable></term>
+<listitem><para>Specify a client SSL key file to use for package retrieval
+from the source HTTPS repository.</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>-cert</option> <replaceable>src_cert</replaceable></term>
+<listitem><para>Specify a client SSL certificate file to use for package retrieval
+from the source HTTPS repository.</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>-dkey</option> <replaceable>dest_key</replaceable></term>
+<listitem><para>Specify a client SSL key file to use for package publication
+to the destination HTTPS repository.</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>-dcert</option> <replaceable>dest_cert</replaceable></term>
+<listitem><para>Specify a client SSL certificate file to use for package publication
+to the destination HTTPS repository.</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>-clone</option></term>
+<listitem><para>Make an exact copy of the source repository. By default, the
+clone operation succeeds only if publishers in the source repository are also
+present in the destination. To limit the clone operation to specified publishers,
+use the <option>p</option> option. Publishers specified by using the <option>p</option> option
+are added to the destination repository if they are not already present. Packages
+that are in the destination repository but not in the source repository are
+removed. The clone operation leaves the destination repository altered if
+an error occurs. Therefore, the destination repository should be in its own
+ZFS dataset, and a snapshot should be created prior to performing the clone
+operation.</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>-newest</option></term>
+<listitem><para>List the most recent versions of the packages available from
+the repository specified by the <option>s</option> option. All other options
+are ignored.</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>-raw</option></term>
+<listitem><para>Retrieve and store the raw package data in a set of directory
+structures by stem and version at the location specified by <option>d</option>.
+The <option>-raw</option> option can be used only with file system based destinations.
+This package data can be used to conveniently modify and republish packages,
+perhaps by correcting file contents or providing additional package metadata.
+The <option>-raw</option> option cannot be combined with <option>a</option>.</para>
+</listitem>
+</varlistentry>
+</variablelist>
+</refsect1>
+<refsect1 role="examples"><title></title>
+<example><title>List Newest Packages</title>
+<para>List the newest packages available from the repository on the system
+named <literal>test</literal>.</para>
+<screen>$ <userinput>pkgrecv -s http://test --newest</userinput>
 pkg://solaris/system/library/c++-runtime@0.5.11,5.11-0.175.0.0.0.2.1:20120921T190358Z
 pkg://solaris/system/library/freetype-2@2.4.8,5.11-0.175.1.0.0.7.1234:20120109T215840Z
-pkg://solaris/system/library/math@0.5.11,5.11-0.175.0.0.0.2.1:20120921T190432Z
-.fi
-.in -2
-.sp
-
-.LP
-\fBExample 2 \fRRetrieve Raw Package Data
-.sp
-.LP
-Receive the \fBc++-runtime\fR package from Example 1 in a format suitable for use with \fBpkgsend publish\fR.
-
-.sp
-.in +2
-.nf
-$ \fBpkgrecv -s http://test \e\fR
-\fB-d /local/repo --raw \e\fR
-\fBc++-runtime@0.5.11,5.11-0.175.0.0.0.2.1:20120921T190358Z\fR
+pkg://solaris/system/library/math@0.5.11,5.11-0.175.0.0.0.2.1:20120921T190432Z</screen>
+</example>
+<example><title>Retrieve Raw Package Data</title>
+<para>Receive the <literal>c++-runtime</literal> package from Example 1 in
+a format suitable for use with <command>pkgsend publish</command>.</para>
+<screen>$ <userinput>pkgrecv -s http://test &bsol;</userinput>
+<userinput>-d /local/repo --raw &bsol;</userinput>
+<userinput>c++-runtime@0.5.11,5.11-0.175.0.0.0.2.1:20120921T190358Z</userinput>
 Processing packages for publisher solaris ...
 Retrieving and evaluating 1 package(s)...
 PROCESS       ITEMS     GET (MB)    SEND (MB)
 Completed       1/1      3.5/3.5      0.0/0.0
-$ \fBls /local/repo\fR
-pkg5.repository  publisher  system%2Flibrary%2Fc%2B%2B-runtime
-.fi
-.in -2
-.sp
-
-.LP
-\fBExample 3 \fRRetrieve Dependencies From a System
-.sp
-.LP
-Receive the package \fBeditor/vim\fR and all of its dependencies from the system named \fBtest\fR.
-
-.sp
-.in +2
-.nf
-$ \fBpkgrecv -s http://test -d /local/repo -r editor/vim\fR
-.fi
-.in -2
-.sp
-
-.LP
-\fBExample 4 \fRRetrieve Only the Latest Version
-.sp
-.LP
-Receive only the latest version of the package \fBeditor/vim\fR from the system named \fBtest\fR.
-
-.sp
-.in +2
-.nf
-$ \fBpkgrecv -s http://test -d /local/repo -m latest -v \e\fR
-\fBeditor/vim\fR
+$ <userinput>ls /local/repo</userinput>
+pkg5.repository  publisher  system%2Flibrary%2Fc%2B%2B-runtime</screen>
+</example>
+<example><title>Retrieve Dependencies From a System</title>
+<para>Receive the package <literal>editor/vim</literal> and all of its dependencies
+from the system named <literal>test</literal>.</para>
+<screen>$ <userinput>pkgrecv -s http://test -d /local/repo -r editor/vim</userinput></screen>
+</example>
+<example><title>Retrieve Only the Latest Version</title>
+<para>Receive only the latest version of the package <literal>editor/vim</literal> from the system named <literal>test</literal>.</para>
+<screen>$ <userinput>pkgrecv -s http://test -d /local/repo -m latest -v &bsol;</userinput>
+<userinput>editor/vim</userinput>
 Processing packages for publisher solaris ...
 Retrieving and evaluating 1 package(s)...
 
@@ -385,225 +257,137 @@ Packages to transfer:
 editor/vim@7.3.600,5.11-0.175.1.0.0.24.0:20120904T172128Z
 
 PROCESS                                     ITEMS    GET (MB) SEND (MB)
-Completed                                     1/1     9.2/9.2 25.4/25.4
-.fi
-.in -2
-.sp
-
-.LP
-\fBExample 5 \fRRetrieve All Versions and Republish Remotely
-.sp
-.LP
-Receive all versions of the package \fBlibrary/zlib\fR from the system named \fBtest\fR and republish it to a remote repository on the system named \fBremote\fR.
-
-.sp
-.in +2
-.nf
-$ \fBpkgrecv -s http://test -d http://remote:10000 \e\fR
-\fB-m all-versions library/zlib\fR
-.fi
-.in -2
-.sp
-
-.LP
-\fBExample 6 \fRRetrieve Dependencies From a Repository
-.sp
-.LP
-Receive the package \fBeditor/gnu-emacs\fR and all of its dependencies from the repository located at \fB/export/repo\fR.
-
-.sp
-.in +2
-.nf
-$ \fBpkgrecv -s /export/repo -d /local/repo -r editor/gnu-emacs\fR
-.fi
-.in -2
-.sp
-
-.LP
-\fBExample 7 \fRRetrieve Additional Packages and Changed Content
-.sp
-.LP
-Receive all packages that do not already exist and all changed content from the repository located at \fBhttp://pkg.oracle.com/solaris/release/\fR to the repository located at \fB/export/repoSolaris11\fR.
-
-.sp
-.in +2
-.nf
-$ \fBpkgrecv -s http://pkg.oracle.com/solaris/release/ \e\fR
-\fB-d /export/repoSolaris11 -m all-timestamps '*'\fR
-.fi
-.in -2
-.sp
-
-.sp
-.LP
-Receive all packages that do not already exist and all changed content from the secure repository located at \fBhttps://pkg.oracle.com/solaris/support/\fR to the repository located at \fB/export/repoSolaris11\fR. 
-
-.sp
-.in +2
-.nf
-$ \fBpkgrecv -s https://pkg.oracle.com/solaris/support/ \e\fR
-\fB-d /export/repoSolaris11 -m all-timestamps \e\fR
-\fB--key /var/pkg/ssl/Oracle_Solaris_11_Support.key.pem \e\fR
-\fB--cert /var/pkg/ssl/Oracle_Solaris_11_Support.certificate.pem '*'\fR
-.fi
-.in -2
-.sp
-
-.LP
-\fBExample 8 \fRCreate a Package Archive
-.sp
-.LP
-Create a package archive containing the package \fBeditor/gnu-emacs\fR and all of its dependencies from the repository located at \fBhttp://example.com:10000\fR.
-
-.sp
-.in +2
-.nf
-$ \fBpkgrecv -s http://example.com:10000 -d /my/emacs.p5p -a \e\fR
-\fB-r editor/gnu-emacs\fR
-.fi
-.in -2
-.sp
-
-.LP
-\fBExample 9 \fRCopy Packages From an Archive to a Repository
-.sp
-.LP
-Copy all of the packages in a package archive to an existing repository located at \fB/export/repo\fR.
-
-.sp
-.in +2
-.nf
-$ \fBpkgrecv -s /my/archive.p5p -d /export/repo '*'\fR
-.fi
-.in -2
-.sp
-
-.SH ENVIRONMENT VARIABLES
-.sp
-.LP
-The following environment variables are supported:
-.sp
-.ne 2
-.mk
-.na
-\fB\fBPKG_DEST\fR\fR
-.ad
-.RS 12n
-.rt  
-The path of a directory to save the retrieved package to, or the file system path or URI of a repository or package archive where the packages will be copied.
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fB\fBPKG_SRC\fR\fR
-.ad
-.RS 12n
-.rt  
-A URI or file system path representing the location of a \fBpkg\fR(5) repository or package archive from which to retrieve packages.
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fB\fBTMPDIR\fR\fR
-.ad
-.RS 12n
-.rt  
-The absolute path of the directory where temporary data should be stored during program execution. If not set, the default is to store temporary data in \fB/var/tmp\fR.
-.RE
-
-.SH EXIT STATUS
-.sp
-.LP
-The following exit values are returned:
-.sp
-.ne 2
-.mk
-.na
-\fB\fB0\fR\fR
-.ad
-.RS 6n
-.rt  
-Command succeeded.
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fB\fB1\fR\fR
-.ad
-.RS 6n
-.rt  
-An error occurred.
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fB\fB2\fR\fR
-.ad
-.RS 6n
-.rt  
-Invalid command line options were specified.
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fB\fB3\fR\fR
-.ad
-.RS 6n
-.rt  
-Multiple operations were requested, but only some of them succeeded.
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fB\fB99\fR\fR
-.ad
-.RS 6n
-.rt  
-An unanticipated exception occurred.
-.RE
-
-.SH ATTRIBUTES
-.sp
-.LP
-See \fBattributes\fR(5) for descriptions of the following attributes:
-.sp
-
-.sp
-.TS
-tab() box;
-cw(2.75i) |cw(2.75i) 
-lw(2.75i) |lw(2.75i) 
-.
-ATTRIBUTE TYPEATTRIBUTE VALUE
-_
-Availability\fBpackage/pkg\fR
-_
-Interface StabilityUncommitted
-.TE
-
-.SH SEE ALSO
-.sp
-.LP
-\fBpkgrepo\fR(1), \fBpkgsend\fR(1), \fBpkg\fR(5)
-.sp
-.LP
-\fICopying and Creating Package Repositories in Oracle Solaris 11.2\fR
-.sp
-.LP
-\fBhttps://java.net/projects/ips/pages/Home\fR
-.SH NOTES
-.sp
-.LP
-When using a file system based destination repository, any \fBpkg.depotd\fR processes that are serving that repository must be restarted after package transfer is completed for the changes to be reflected in its web interface or search responses. See \fBpkg.depotd\fR(1M) for more information.
+Completed                                     1/1     9.2/9.2 25.4/25.4</screen>
+</example>
+<example><title>Retrieve All Versions and Republish Remotely</title>
+<para>Receive all versions of the package <literal>library/zlib</literal> from
+the system named <literal>test</literal> and republish it to a remote repository
+on the system named <literal>remote</literal>.</para>
+<screen>$ <userinput>pkgrecv -s http://test -d http://remote:10000 &bsol;</userinput>
+<userinput>-m all-versions library/zlib</userinput></screen>
+</example>
+<example><title>Retrieve Dependencies From a Repository</title>
+<para>Receive the package <literal>editor/gnu-emacs</literal> and all of its
+dependencies from the repository located at <filename>/export/repo</filename>.</para>
+<screen>$ <userinput>pkgrecv -s /export/repo -d /local/repo -r editor/gnu-emacs</userinput></screen>
+</example>
+<example><title>Retrieve Additional Packages and Changed Content</title>
+<para>Receive all packages that do not already exist and all changed content
+from the repository located at <literal>http://pkg.oracle.com/solaris/release/</literal> to
+the repository located at <literal>/export/repoSolaris11</literal>.</para>
+<screen>$ <userinput>pkgrecv -s http://pkg.oracle.com/solaris/release/ &bsol;</userinput>
+<userinput>-d /export/repoSolaris11 -m all-timestamps '*'</userinput></screen>
+<para>Receive all packages that do not already exist and all changed content
+from the secure repository located at
+<literal>https://pkg.oracle.com/solaris/support/</literal> to the repository
+located at <literal>/export/repoSolaris11</literal>. </para>
+<screen>$ <userinput>pkgrecv -s https://pkg.oracle.com/solaris/support/ &bsol;</userinput>
+<userinput>-d /export/repoSolaris11 -m all-timestamps &bsol;</userinput>
+<userinput>--key /var/pkg/ssl/Oracle_Solaris_11_Support.key.pem &bsol;</userinput>
+<userinput>--cert /var/pkg/ssl/Oracle_Solaris_11_Support.certificate.pem '*'</userinput></screen>
+</example>
+<example><title>Create a Package Archive</title>
+<para>Create a package archive containing the package <literal>editor/gnu-emacs</literal> and
+all of its dependencies from the repository located at <literal>http://example.com:10000
+</literal>.</para>
+<screen>$ <userinput>pkgrecv -s http://example.com:10000 -d /my/emacs.p5p -a &bsol;</userinput>
+<userinput>-r editor/gnu-emacs</userinput></screen>
+</example>
+<example><title>Copy Packages From an Archive to a Repository</title>
+<para>Copy all of the packages in a package archive to an existing repository
+located at <filename>/export/repo</filename>.</para>
+<screen>$ <userinput>pkgrecv -s /my/archive.p5p -d /export/repo '*'</userinput></screen>
+</example>
+</refsect1>
+<refsect1 role="environment-variables"><title></title>
+<para>The following environment variables are supported:</para>
+<variablelist>
+<varlistentry><term><envar>PKG_DEST</envar></term>
+<listitem><para>The path of a directory to save the retrieved package to,
+or the file system path or URI of a repository or package archive where the
+packages will be copied.</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><envar>PKG_SRC</envar></term>
+<listitem><para>A URI or file system path representing the location of a <literal>
+pkg</literal>(5) repository or package archive from which to retrieve packages.</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><envar>TMPDIR</envar></term>
+<listitem><para>The absolute path of the directory where temporary data should
+be stored during program execution. If not set, the default is to store temporary
+data in <filename>/var/tmp</filename>.</para>
+</listitem>
+</varlistentry>
+</variablelist>
+</refsect1>
+<refsect1 role="exit-status"><title></title>
+<para>The following exit values are returned:</para>
+<variablelist>
+<varlistentry><term><returnvalue>0</returnvalue></term>
+<listitem><para>Command succeeded.</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><returnvalue>1</returnvalue></term>
+<listitem><para>An error occurred.</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><returnvalue>2</returnvalue></term>
+<listitem><para>Invalid command line options were specified.</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><returnvalue>3</returnvalue></term>
+<listitem><para>Multiple operations were requested, but only some of them
+succeeded.</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><returnvalue>99</returnvalue></term>
+<listitem><para>An unanticipated exception occurred.</para>
+</listitem>
+</varlistentry>
+</variablelist>
+</refsect1>
+<refsect1 role="attributes"><title></title>
+<para>See <literal>attributes</literal>(5) for descriptions of the following
+attributes:</para>
+<informaltable frame="all" orient="port">
+<tgroup cols="2" colsep="1" rowsep="1"><colspec colname="col1" colwidth="198*"
+align="left"/><colspec colname="col2" colwidth="198*" align="left"/><thead>
+<row>
+<entry align="center">
+<para>ATTRIBUTE TYPE</para>
+</entry>
+<entry align="center">
+<para>ATTRIBUTE VALUE</para>
+</entry>
+</row>
+</thead>
+<tbody>
+<row>
+<entry align="left">
+<para>Availability</para>
+</entry>
+<entry align="left">
+<para><literal>package/pkg</literal></para>
+</entry>
+</row>
+<row>
+<entry align="left">
+<para>Interface Stability</para>
+</entry>
+<entry align="left">
+<para>Uncommitted</para>
+</entry>
+</row>
+</tbody>
+</tgroup>
+</informaltable></refsect1>
+<refsect1 role="see-also"><title></title>
+<para><olink targetdoc="refman" targetptr="pkgrepo-1"><citerefentry><refentrytitle>pkgrepo</refentrytitle><manvolnum>1</manvolnum></citerefentry></olink>, <olink targetdoc="refman" targetptr="pkgsend-1"><citerefentry><refentrytitle>pkgsend</refentrytitle><manvolnum>1</manvolnum></citerefentry></olink>, <olink targetdoc="refman" targetptr="pkg-5"><citerefentry><refentrytitle>pkg</refentrytitle><manvolnum>5</manvolnum></citerefentry></olink></para>
+<para><olink targetdoc="CCOSP"><citetitle remap="book">Copying and Creating Package Repositories in Oracle Solaris 11.2</citetitle></olink></para>
+<para><literal>https://java.net/projects/ips/pages/Home</literal></para>
+</refsect1>
+<refsect1 role="notes"><title></title>
+<para>When using a file system based destination repository, any <command>pkg.depotd</command> processes that are serving that repository must be restarted after package transfer is completed for the changes to be reflected in its web interface or search responses. See <command>pkg.depotd</command>(1M) for more information.</para>
+</refsect1>
+</refentry>

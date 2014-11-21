@@ -1,624 +1,286 @@
-'\" te
-.\" Copyright (c) 2007, 2013, Oracle and/or its affiliates. All rights reserved.
-.TH pkgmogrify 1 "2013 年 7 月 12 日" "SunOS 5.12" "ユーザーコマンド"
-.SH 名前
-pkgmogrify \- Image Packaging System マニフェスト変換ツール
-.SH 形式
-.LP
-.nf
-/usr/bin/pkgmogrify [-vi] [-I \fIincludedir\fR]...
-    [-D \fImacro\fR=\fIvalue\fR]... [-O \fIoutputfile\fR]
-    [-P \fIprintfile\fR] [\fIinputfile\fR ...]
-.fi
+<?xml version="1.0" encoding="utf-8"?>
+<!--Arbortext, Inc., 1988-2008, v.4002-->
+<!DOCTYPE refentry PUBLIC "-//Sun Microsystems//DTD SolBook-XML 3.7//EN" "xsolbook.dtd" [
+<!ENTITY % ent SYSTEM "entities.ent">
+%ent;
+]>
 
-.SH 機能説明
-.sp
-.LP
-\fBpkgmogrify\fR は、パッケージマニフェストのプログラムによる編集を可能にして、ソフトウェアの構築やパッケージの公開を自動化するときに必要な標準的な変換を簡略化します。
-.sp
-.LP
-\fBpkgmogrify\fR は、次の機能を提供します。
-.RS +4
-.TP
-.ie t \(bu
-.el o
-マクロ置換。単一のマニフェストを各種アーキテクチャーやプラットフォーム間で簡単に共有できます。
-.RE
-.RS +4
-.TP
-.ie t \(bu
-.el o
-ほかのマニフェスト、または標準のコンポーネントや変換などのマニフェストフラグメントの取り込み。
-.RE
-.RS +4
-.TP
-.ie t \(bu
-.el o
-パッケージアクションの変換。アクション属性の変更、削除、または追加が含まれます。
-.RE
-.SH オプション
-.sp
-.LP
-サポートしているオプションは、次のとおりです。
-.sp
-.ne 2
-.mk
-.na
-\fB\fB-?\fR\fR
-.ad
-.br
-.na
-\fB\fB--help\fR\fR
-.ad
-.sp .6
-.RS 4n
-使用方法に関するメッセージを表示します。
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fB\fB-D\fR \fImacro\fR=\fI value\fR\fR
-.ad
-.sp .6
-.RS 4n
-\fImacro\fR を値 \fIvalue\fR とともにマクロとして定義します。このオプションは複数回指定できます。マクロは、入力ファイル内で \fB$(macro)\fR として指定されます。置換は、それ以上の変換が見つからなくなるまで繰り返されます。一般的な語法には次のものがあります。
-.RS +4
-.TP
-.ie t \(bu
-.el o
-行の先頭にあるアーキテクチャー固有のタグを使用した、ほかのアーキテクチャー上のマニフェスト内の行の除外。
-.sp
-.in +2
-.nf
-$(sparc_ONLY)file ...
-.fi
-.in -2
-
-SPARC アーキテクチャーを処理する場合、このマクロは空の文字列に設定されます。ほかのアーキテクチャーを処理する場合、このマクロはコマンド行で \fB#\fR に設定されるため、このアクションが現在のアーキテクチャー上のマニフェストから除外されます。
-.RE
-.RS +4
-.TP
-.ie t \(bu
-.el o
-パス名のプラットフォーム固有の部分の指定。実行可能ファイルおよびライブラリのための 64 ビットアーキテクチャーディレクトリの名前などがあります。
-.sp
-.in +2
-.nf
-file path=usr/bin/$(ARCH64)/cputrack ...
-.fi
-.in -2
-
-これらのマクロは、コマンド行で目的の値に設定するようにしてください。定義済みのマクロ値は存在しません。
-.RE
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fB\fB-I\fR \fIincludedir\fR\fR
-.ad
-.sp .6
-.RS 4n
-指定されたディレクトリを、コマンド行で指定されたファイルと、埋め込みのインクルード指令の両方の検索パスに追加します。このオプションは複数回指定できます。
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fB\fB-O\fR \fIoutputfile\fR\fR
-.ad
-.sp .6
-.RS 4n
-マニフェスト出力を指定されたファイルに書き込みます。このファイルは、エラーが発生した場合や、変換指令によって強制的な中止操作が実行された場合は書き込まれません。デフォルトでは、マニフェスト出力は\fB標準出力\fRに書き込まれます。
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fB\fB-P\fR \fIprintfile\fR\fR
-.ad
-.sp .6
-.RS 4n
-変換指令の出力操作から得られた出力を指定されたファイルに書き込みます。このファイルは、エラーが発生した場合や、変換指令によって強制的な中止操作が実行された場合は書き込まれません。デフォルトでは、この出力は\fB標準出力\fRに書き込まれます。
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fB\fB-i\fR\fR
-.ad
-.sp .6
-.RS 4n
-ファイル内のインクルード指令を無視します。コマンド行 (または\fB標準入力\fR) で指定されたファイルのみが処理されます。
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fB\fB-v\fR\fR
-.ad
-.sp .6
-.RS 4n
-出力マニフェストに変換の効果を示すコメントを書き込みます。この情報がデバッグに役立つことがあります。
-.RE
-
-.SH 埋め込みの指令
-.sp
-.LP
-マニフェストファイルでは、インクルード指令と変換指令という 2 つのタイプの指令がサポートされています。
-.sp
-.LP
-インクルード指令の形式は次のとおりです。
-.sp
-.in +2
-.nf
-<include \fIfile\fR>
-.fi
-.in -2
-
-.sp
-.LP
-この指令により、\fBpkgmogrify\fR は \fBfile\fR という名前のファイルを、最初に現在のディレクトリで、次に \fB-I\fR オプションで指定されたディレクトリで検索します。見つかった場合は、ファイルの内容がマニフェストの、この指令が置かれている場所に挿入されます。見つからなかった場合、\fBpkgmogrify\fR はエラーで終了します。
-.sp
-.LP
-変換指令の形式は次のとおりです。
-.sp
-.in +2
-.nf
-<transform \fImatching-criteria\fR -> \fIoperation\fR>
-.fi
-.in -2
-
-.sp
-.LP
-これらの指令は、すべての入力がメモリー内に読み取られるまで累積されたあと、各指令が検出された順序でアクションに適用されます。
-.sp
-.LP
-一致条件の形式は次のとおりです。
-.sp
-.in +2
-.nf
-[\fIaction-name\fR ... ] [\fIattribute\fR=<\fIvalue-regexp\fR> ...]
-.fi
-.in -2
-
-.sp
-.LP
-指定された \fIaction-name\fR の少なくとも 1 つが一致する必要があります。指定されたすべての \fIattribute\fR が一致する必要があります。アクションの名前と属性が、\fBpkg\fR(5) マニュアルページの「アクション」に一覧表示されます。使用されている正規表現の構文は Python の構文です。Python 正規表現の構文については、コマンド \fBpydoc re\fR を使用するか、または \fBhttp://docs.python.org/dev/howto/regex.html\fR にあるより完全なドキュメントを参照してください。正規表現は先頭に固定され、末尾には固定されません。そのため、ファイルを拡張子で照合する正規表現には先頭に \fB\&.*\fR を含める必要があり、さらに末尾には \fB$\fR を含めるようにしてください。
-.sp
-.LP
-複数の条件をスペースで区切って指定できます。
-.sp
-.LP
-次の操作が使用できます。
-.sp
-.ne 2
-.mk
-.na
-\fB\fBadd\fR\fR
-.ad
-.RS 11n
-.rt  
-属性に値を追加します。この操作は 2 つの引数を取ります。最初の引数は属性の名前であり、2 番目の引数は値です。
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fB\fBdefault\fR\fR
-.ad
-.RS 11n
-.rt  
-属性の値がまだ存在しない場合は、その値を設定します。この操作は \fBadd\fR 操作と同じく 2 つの引数を取ります。
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fB\fBdelete\fR\fR
-.ad
-.RS 11n
-.rt  
-属性値を削除します。この操作は 2 つの引数を取ります。最初の引数は属性の名前です。2 番目の引数は、削除される属性値を照合するための正規表現です。アクションを照合するために使用される正規表現とは異なり、この表現は固定されません。
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fB\fBdrop\fR\fR
-.ad
-.RS 11n
-.rt  
-このアクションを破棄します。
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fB\fBedit\fR\fR
-.ad
-.RS 11n
-.rt  
-アクションの属性を変更します。この操作には 3 つの引数を指定します。最初の引数は属性の名前であり、2 番目の引数は属性値を照合するための正規表現です。3 番目の引数は、正規表現で一致した値の部分に置き換えられる置換文字列です。アクションを照合するために使用される正規表現とは異なり、この表現は固定されません。正規表現でグループが定義されている場合は、置換文字列内で通常の正規表現の後方参照 (形式は \fB\e1\fR、\fB\e2\fR など) を使用できます。
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fB\fBemit\fR\fR
-.ad
-.RS 11n
-.rt  
-マニフェスト出力ストリームに行を出力します。これは、有効なアクション文字列、空 (空行が生成されます)、またはコメント (\fB#\fR のあとに任意のテキストが続きます) である必要があります。
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fB\fBexit\fR\fR
-.ad
-.RS 11n
-.rt  
-マニフェスト処理を終了します。マニフェストは出力されず、\fBprint\fR 操作は適用されません。引数が 1 つ指定されている場合、その引数は整数である必要があり、終了コードとして使用されます。デフォルト値は 0 です。引数が 2 つ指定されている場合、最初の引数は終了コードであり、2 番目の引数は\fB標準エラー出力\fRに出力されるメッセージです。
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fB\fBprint\fR\fR
-.ad
-.RS 11n
-.rt  
-\fB-P\fR で指定された出力ファイルにメッセージを出力します。
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fB\fBset\fR\fR
-.ad
-.RS 11n
-.rt  
-属性の値を設定します。この操作は \fBadd\fR 操作と同じく 2 つの引数を取ります。
-.RE
-
-.sp
-.LP
-\fBdelete\fR と \fBdrop\fR を除くすべての操作は、出力ストリームにその内容が出力される (オプションである可能性がある) 引数を取ります。これらの文字列には、3 種類の特殊なトークンを含めることができます。これらのトークンにより、各アクションの固定された変換に基づかない情報を出力に含めることが可能になります。
-.sp
-.LP
-最初の種類の置換を使用すると、パーセント記号に続けて属性の名前を丸括弧に入れて指定することによって、操作で現在のアクションの属性の値を参照できます。たとえば、\fB%(alias)\fR は、アクションの \fBalias\fR 属性の値を参照します。
-.sp
-.LP
-いくつかの合成属性が存在します。次の 2 つは \fBpkgmogrify\fR に固有です
-.RS +4
-.TP
-.ie t \(bu
-.el o
-\fBpkg.manifest.filename\fR は、アクションが見つかったファイルの名前を参照します。
-.RE
-.RS +4
-.TP
-.ie t \(bu
-.el o
-\fBpkg.manifest.lineno\fR は、アクションが見つかった行を参照します。
-.RE
-.sp
-.LP
-次の 3 つの合成属性は、\fBpkg\fR で使用されるものに似ています:
-.RS +4
-.TP
-.ie t \(bu
-.el o
-\fBaction.hash\fR は、アクションにペイロードが含まれている場合、そのアクションのハッシュ値を参照します。ペイロードを含むアクションの場合、\fBset\fR 操作は、\fBaction.hash\fR 属性を操作することによってアクションのハッシュを変更できます。
-.RE
-.RS +4
-.TP
-.ie t \(bu
-.el o
-\fBaction.key\fR は、キー属性の値を参照します。
-.RE
-.RS +4
-.TP
-.ie t \(bu
-.el o
-\fBaction.name\fR は、アクションの名前を参照します。
-.RE
-.sp
-.LP
-値を要求された属性が存在しない場合、\fBpkgmogrify\fR はエラーで終了します。エラーで終了することを回避するには、属性名のあとに \fB;notfound=\fR と、属性値の代わりに置換する値を指定します。たとえば、\fB%(alias;notfound='no alias')\fR は、属性 \fBalias\fR の値が存在する場合はその値を出力し、それ以外の場合は \fBno alias\fR を出力します。
-.sp
-.LP
-値を要求された属性が複数値の場合は、各値がスペースで区切られて出力されます。\fBnotfound\fR トークンと同様に、トークン \fBprefix\fR、\fBsuffix\fR、および \fBsep\fR を使用してこの動作を変更できます。\fBprefix\fR で指定された文字列は各値の先頭に追加され、\fBsuffix\fR で指定された文字列は各値の末尾に追加され、\fBsep\fR はある値の接尾辞とその次の値の接頭辞の間に配置されます。
-.sp
-.LP
-アクション属性と同様に、\fBpkgmogrify\fR 指令では \fB%{pkg.fmri}\fR のように、丸括弧の代わりに中括弧を使用してパッケージ属性を参照できます。変換指令が適用される時点で、この属性は \fBset\fR アクションで定義されている必要があります。そうしないと、この属性は上で説明した \fBnotfound\fR として扱われます。処理が、パッケージを記述しているマニフェストファイルの最後に達すると、属性は次のパッケージのためにクリアーされます。
-.sp
-.LP
-これは、パッケージ属性をアクション属性であるかのように参照するためだけでなく、これらの属性を照合したり、一時的に変更したりするためにも有効です。したがって、これらの状況では、合成アクション名 \fBpkg\fR を (\fBpkgmogrify\fR のコンテキストでのみ) 使用できます。
-.sp
-.LP
-\fBpkgmogrify\fR がコマンド行で指定されたマニフェストの読み取りを完了し、そのマニフェストで \fBpkg.fmri\fR パッケージ属性が定義されている場合、\fBpkgmogrify\fR はこの合成アクション \fBpkg\fR を作成します。属性はパッケージの属性になります。その後、\fB<transform>\fR 指令は、ほかのアクションに照合できるのと同様に、このアクションに照合できます。
-.sp
-.LP
-\fBpkg\fR アクションに対する操作は、メモリー内でのみ実行されるために、出力されたマニフェストに直接影響を与えないという点で特殊です。たとえば、\fBadd\fR、\fBdefault\fR、または \fBset\fR 操作を使用して \fBpkg\fR アクションに属性を設定しようとしても、照合するほかの \fB<transform>\fR 指令では使用可能であるにもかかわらず、\fBset\fR アクションがマニフェストに追加されません。\fBpkg\fR アクションに対して \fBemit\fR を実行しようとすると、エラーが発生します。パッケージ属性を追加するには、代わりに \fBset\fR アクションに対して \fBemit\fR を実行します。
-.sp
-.LP
-3 番目の種類の置換は後方参照です。この置換は \fBedit\fR 操作で使用可能なものとは異なり、\fB->\fR の左側にある変換一致に列挙されているグループへの参照です。これらは、一致条件にある順序で、\fB%<1>\fR、\fB%<2>\fR などによって指定されます。
-.sp
-.LP
-処理の順序は次のとおりです。
-.RS +4
-.TP
-1.
-入力ファイルから行が読み取られます。
-.RE
-.RS +4
-.TP
-2.
-マクロが適用されます。
-.RE
-.RS +4
-.TP
-3.
-\fB<include ...>\fR および \fB<transform>\fR 指令が処理されることにより、追加のファイルが検出され、読み取られます。
-.RE
-.RS +4
-.TP
-4.
-すべての入力が累積されたあと、入力内の各行がアクションに変換され、すべての変換が適用されます。
-.RE
-.RS +4
-.TP
-5.
-処理が正常に完了すると、出力が書き込まれます。
-.RE
-.SH 使用例
-.LP
-\fB例 1 \fRSMF マニフェストにタグを追加する
-.sp
-.LP
-サービス管理機能 (SMF) マニフェストにタグを追加して、パッケージがライブシステムにインストールされたときにこれらのマニフェストがインポートされるようにします。
-
-.sp
-.in +2
-.nf
-<transform file path=(var|lib)/svc/manifest/.*\e.xml -> \e
-    add restart_fmri svc:/system/manifest-import:default>
-.fi
-.in -2
-
-.LP
-\fB例 2 \fRファイルを移動する
-.sp
-.LP
-ファイルを \fBusr/sfw/bin\fR から \fBusr/bin\fR に移動します。
-
-.sp
-.in +2
-.nf
-<transform file -> edit path usr/sfw/bin usr/bin>
-.fi
-.in -2
-
-.LP
-\fB例 3 \fRリブートの必要性を指定する
-.sp
-.LP
-\fBreboot-needed\fR タグを、\fB/kernel\fR の下にある、\fB\&.conf\fR ファイル以外のファイルに追加します。この例では、入力ファイルに存在する順序で各アクションに変換が適用されることを利用しています。
-
-.sp
-.in +2
-.nf
-<transform file path=kernel/.* -> set reboot-needed true>
-<transform file path=kernel/.*\e.conf -> delete reboot-needed .*>
-.fi
-.in -2
-
-.sp
-.LP
-これはまた、正規表現を使用した 1 つの変換規則でも実行できます。
-
-.LP
-\fB例 4 \fRFMRI 属性を依存アクションに変換する
-.sp
-.LP
-パッケージ属性 \fBpkg.fmri\fR を incorporation の一部になるように \fBdepend\fR アクションに変換します。
-
-.sp
-.in +2
-.nf
-<transform set name=pkg.fmri -> \e
+<refentry lang="ja" id="pkgmogrify-1">
+<refmeta><refentrytitle>pkgmogrify</refentrytitle><manvolnum>1</manvolnum> <refmiscinfo class="date">2013 年 7 月 12 日</refmiscinfo> <refmiscinfo class="sectdesc">&man1;</refmiscinfo> <refmiscinfo class="software">&release;</refmiscinfo> <refmiscinfo class="arch">generic</refmiscinfo> <refmiscinfo class="copyright">Copyright (c) 2007, 2013, Oracle and/or its affiliates. All rights reserved.</refmiscinfo> 
+</refmeta>
+<refnamediv>
+<refname>pkgmogrify</refname><refpurpose>Image Packaging System マニフェスト変換ツール</refpurpose></refnamediv>
+<refsynopsisdiv><title></title>
+<synopsis>/usr/bin/pkgmogrify [-vi] [-I <replaceable>includedir</replaceable>]...
+    [-D <replaceable>macro</replaceable>=<replaceable>value</replaceable>]... [-O <replaceable>
+outputfile</replaceable>]
+    [-P <replaceable>printfile</replaceable>] [<replaceable>inputfile</replaceable> ...]
+</synopsis>
+</refsynopsisdiv>
+<refsect1 id="GKVND" role="description"><title></title>
+<para><command>pkgmogrify</command> は、パッケージマニフェストのプログラムによる編集を可能にして、ソフトウェアの構築やパッケージの公開を自動化するときに必要な標準的な変換を簡略化します。</para>
+<itemizedlist>
+<para><command>pkgmogrify</command> は、次の機能を提供します。</para>
+<listitem><para>マクロ置換。単一のマニフェストを各種アーキテクチャーやプラットフォーム間で簡単に共有できます。</para></listitem>
+<listitem><para>ほかのマニフェスト、または標準のコンポーネントや変換などのマニフェストフラグメントの取り込み。</para></listitem>
+<listitem><para>パッケージアクションの変換。アクション属性の変更、削除、または追加が含まれます。</para></listitem>
+</itemizedlist>
+</refsect1>
+<refsect1 role="options"><title></title>
+<para>サポートしているオプションは、次のとおりです。</para>
+<variablelist termlength="wholeline">
+<varlistentry><term><option>?</option></term><term><option>-help</option></term>
+<listitem><para>使用方法に関するメッセージを表示します。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>D</option> <replaceable>macro</replaceable>=<replaceable> value</replaceable></term>
+<listitem><para><replaceable>macro</replaceable> を値 <replaceable>value</replaceable> とともにマクロとして定義します。このオプションは複数回指定できます。マクロは、入力ファイル内で <literal>$(macro)</literal> として指定されます。置換は、それ以上の変換が見つからなくなるまで繰り返されます。一般的な語法には次のものがあります。</para>
+<itemizedlist>
+<listitem><para>行の先頭にあるアーキテクチャー固有のタグを使用した、ほかのアーキテクチャー上のマニフェスト内の行の除外。</para>
+<programlisting>$(sparc_ONLY)file ...</programlisting>
+<para>SPARC アーキテクチャーを処理する場合、このマクロは空の文字列に設定されます。ほかのアーキテクチャーを処理する場合、このマクロはコマンド行で <literal>#</literal> に設定されるため、このアクションが現在のアーキテクチャー上のマニフェストから除外されます。</para>
+</listitem>
+<listitem><para>パス名のプラットフォーム固有の部分の指定。実行可能ファイルおよびライブラリのための 64 ビットアーキテクチャーディレクトリの名前などがあります。</para>
+<programlisting>file path=usr/bin/$(ARCH64)/cputrack ...</programlisting>
+<para>これらのマクロは、コマンド行で目的の値に設定するようにしてください。定義済みのマクロ値は存在しません。</para>
+</listitem>
+</itemizedlist>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>I</option> <replaceable>includedir</replaceable></term>
+<listitem><para>指定されたディレクトリを、コマンド行で指定されたファイルと、埋め込みのインクルード指令の両方の検索パスに追加します。このオプションは複数回指定できます。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>O</option> <replaceable>outputfile</replaceable></term>
+<listitem><para>マニフェスト出力を指定されたファイルに書き込みます。このファイルは、エラーが発生した場合や、変換指令によって強制的な中止操作が実行された場合は書き込まれません。デフォルトでは、マニフェスト出力は<filename>標準出力</filename>に書き込まれます。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>P</option> <replaceable>printfile</replaceable></term>
+<listitem><para>変換指令の出力操作から得られた出力を指定されたファイルに書き込みます。このファイルは、エラーが発生した場合や、変換指令によって強制的な中止操作が実行された場合は書き込まれません。デフォルトでは、この出力は<filename>標準出力</filename>に書き込まれます。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>i</option></term>
+<listitem><para>ファイル内のインクルード指令を無視します。コマンド行 (または<filename>標準入力</filename>) で指定されたファイルのみが処理されます。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>v</option></term>
+<listitem><para>出力マニフェストに変換の効果を示すコメントを書き込みます。この情報がデバッグに役立つことがあります。</para>
+</listitem>
+</varlistentry>
+</variablelist>
+</refsect1>
+<refsect1 role="other"><title>埋め込みの指令</title>
+<para>マニフェストファイルでは、インクルード指令と変換指令という 2 つのタイプの指令がサポートされています。</para>
+<para>インクルード指令の形式は次のとおりです。</para>
+<programlisting>&lt;include <replaceable>file</replaceable>></programlisting>
+<para>この指令により、<command>pkgmogrify</command> は <literal>file</literal> という名前のファイルを、最初に現在のディレクトリで、次に <option>I</option> オプションで指定されたディレクトリで検索します。見つかった場合は、ファイルの内容がマニフェストの、この指令が置かれている場所に挿入されます。見つからなかった場合、<command>pkgmogrify</command> はエラーで終了します。</para>
+<para>変換指令の形式は次のとおりです。</para>
+<programlisting>&lt;transform <replaceable>matching-criteria</replaceable> -> <replaceable>
+operation</replaceable>></programlisting>
+<para>これらの指令は、すべての入力がメモリー内に読み取られるまで累積されたあと、各指令が検出された順序でアクションに適用されます。
+</para>
+<para>一致条件の形式は次のとおりです。</para>
+<programlisting>[<replaceable>action-name</replaceable> ... ] [<replaceable>attribute
+</replaceable>=&lt;<replaceable>value-regexp</replaceable>> ...]</programlisting>
+<para>指定された <replaceable>action-name</replaceable> の少なくとも 1 つが一致する必要があります。指定されたすべての <replaceable>attribute</replaceable> が一致する必要があります。アクションの名前と属性が、<literal>pkg</literal>(5) マニュアルページの「アクション」に一覧表示されます。使用されている正規表現の構文は Python の構文です。Python 正規表現の構文については、コマンド <command>pydoc re</command> を使用するか、または <literal>http://docs.python.org/dev/howto/regex.html</literal> にあるより完全なドキュメントを参照してください。正規表現は先頭に固定され、末尾には固定されません。そのため、ファイルを拡張子で照合する正規表現には先頭に <literal>.*</literal> を含める必要があり、さらに末尾には <literal>$</literal> を含めるようにしてください。</para>
+<para>複数の条件をスペースで区切って指定できます。</para>
+<para>次の操作が使用できます。</para>
+<variablelist>
+<varlistentry><term><literal>add</literal></term>
+<listitem><para>属性に値を追加します。この操作は 2 つの引数を取ります。最初の引数は属性の名前であり、2 番目の引数は値です。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>default</literal></term>
+<listitem><para>属性の値がまだ存在しない場合は、その値を設定します。この操作は <command>add</command> 操作と同じく 2 つの引数を取ります。
+</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>delete</literal></term>
+<listitem><para>属性値を削除します。この操作は 2 つの引数を取ります。最初の引数は属性の名前です。2 番目の引数は、削除される属性値を照合するための正規表現です。アクションを照合するために使用される正規表現とは異なり、この表現は固定されません。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>drop</literal></term>
+<listitem><para>このアクションを破棄します。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>edit</literal></term>
+<listitem><para>アクションの属性を変更します。この操作には 3 つの引数を指定します。最初の引数は属性の名前であり、2 番目の引数は属性値を照合するための正規表現です。3 番目の引数は、正規表現で一致した値の部分に置き換えられる置換文字列です。アクションを照合するために使用される正規表現とは異なり、この表現は固定されません。正規表現でグループが定義されている場合は、置換文字列内で通常の正規表現の後方参照 (形式は <literal>&bsol;1</literal>、<literal>&bsol;2</literal> など) を使用できます。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>emit</literal></term>
+<listitem><para>マニフェスト出力ストリームに行を出力します。これは、有効なアクション文字列、空 (空行が生成されます)、またはコメント (<literal>#</literal> のあとに任意のテキストが続きます) である必要があります。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>exit</literal></term>
+<listitem><para>マニフェスト処理を終了します。マニフェストは出力されず、<literal>print</literal> 操作は適用されません。引数が 1 つ指定されている場合、その引数は整数である必要があり、終了コードとして使用されます。デフォルト値は 0 です。引数が 2 つ指定されている場合、最初の引数は終了コードであり、2 番目の引数は<filename>標準エラー出力</filename>に出力されるメッセージです。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>print</literal></term>
+<listitem><para><option>P</option> で指定された出力ファイルにメッセージを出力します。
+</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>set</literal></term>
+<listitem><para>属性の値を設定します。この操作は <command>add</command> 操作と同じく 2 つの引数を取ります。</para>
+</listitem>
+</varlistentry>
+</variablelist>
+<para><literal>delete</literal> と <literal>drop</literal> を除くすべての操作は、出力ストリームにその内容が出力される (オプションである可能性がある) 引数を取ります。これらの文字列には、3 種類の特殊なトークンを含めることができます。これらのトークンにより、各アクションの固定された変換に基づかない情報を出力に含めることが可能になります。</para>
+<para>最初の種類の置換を使用すると、パーセント記号に続けて属性の名前を丸括弧に入れて指定することによって、操作で現在のアクションの属性の値を参照できます。たとえば、<literal>%(alias)</literal> は、アクションの <literal>alias</literal> 属性の値を参照します。</para>
+<itemizedlist>
+<para>いくつかの合成属性が存在します。次の 2 つは <command>pkgmogrify</command> に固有です
+</para>
+<listitem><para><literal>pkg.manifest.filename</literal> は、アクションが見つかったファイルの名前を参照します。</para></listitem>
+<listitem><para><literal>pkg.manifest.lineno</literal> は、アクションが見つかった行を参照します。</para></listitem>
+</itemizedlist>
+<itemizedlist>
+<para>次の 3 つの合成属性は、<command>pkg</command> で使用されるものに似ています:
+</para>
+<listitem><para><literal>action.hash</literal> は、アクションにペイロードが含まれている場合、そのアクションのハッシュ値を参照します。ペイロードを含むアクションの場合、<literal>set</literal> 操作は、<literal>action.hash</literal> 属性を操作することによってアクションのハッシュを変更できます。</para></listitem>
+<listitem><para><literal>action.key</literal> は、キー属性の値を参照します。</para></listitem>
+<listitem><para><literal>action.name</literal> は、アクションの名前を参照します。</para>
+</listitem>
+</itemizedlist>
+<para>値を要求された属性が存在しない場合、<command>pkgmogrify</command> はエラーで終了します。エラーで終了することを回避するには、属性名のあとに <literal>;notfound=</literal> と、属性値の代わりに置換する値を指定します。たとえば、<literal>%(alias;notfound='no alias')</literal> は、属性 <literal>alias</literal> の値が存在する場合はその値を出力し、それ以外の場合は <literal>no alias</literal> を出力します。</para>
+<para>値を要求された属性が複数値の場合は、各値がスペースで区切られて出力されます。<literal>notfound</literal> トークンと同様に、トークン <literal>prefix</literal>、<literal>suffix</literal>、および <literal>sep</literal> を使用してこの動作を変更できます。<literal>prefix</literal> で指定された文字列は各値の先頭に追加され、<literal>suffix</literal> で指定された文字列は各値の末尾に追加され、<literal>sep</literal> はある値の接尾辞とその次の値の接頭辞の間に配置されます。</para>
+<para>アクション属性と同様に、<command>pkgmogrify</command> 指令では <literal>%{pkg.fmri}</literal> のように、丸括弧の代わりに中括弧を使用してパッケージ属性を参照できます。変換指令が適用される時点で、この属性は <literal>set</literal> アクションで定義されている必要があります。そうしないと、この属性は上で説明した <literal>notfound</literal> として扱われます。処理が、パッケージを記述しているマニフェストファイルの最後に達すると、属性は次のパッケージのためにクリアーされます。</para>
+<para>これは、パッケージ属性をアクション属性であるかのように参照するためだけでなく、これらの属性を照合したり、一時的に変更したりするためにも有効です。したがって、これらの状況では、合成アクション名 <literal>pkg</literal> を (<command>pkgmogrify</command> のコンテキストでのみ) 使用できます。
+</para>
+<para><command>pkgmogrify</command> がコマンド行で指定されたマニフェストの読み取りを完了し、そのマニフェストで <literal>pkg.fmri</literal> パッケージ属性が定義されている場合、<command>pkgmogrify</command> はこの合成アクション <literal>pkg</literal> を作成します。属性はパッケージの属性になります。その後、<literal>&lt;transform></literal> 指令は、ほかのアクションに照合できるのと同様に、このアクションに照合できます。</para>
+<para><literal>pkg</literal> アクションに対する操作は、メモリー内でのみ実行されるために、出力されたマニフェストに直接影響を与えないという点で特殊です。たとえば、<literal>add</literal>、<literal>default</literal>、または <literal>set</literal> 操作を使用して <literal>pkg</literal> アクションに属性を設定しようとしても、照合するほかの <literal>&lt;transform&gt;</literal> 指令では使用可能であるにもかかわらず、<literal>set</literal> アクションがマニフェストに追加されません。<literal>pkg</literal> アクションに対して <literal>emit</literal> を実行しようとすると、エラーが発生します。パッケージ属性を追加するには、代わりに <literal>set</literal> アクションに対して <literal>emit</literal> を実行します。</para>
+<para>3 番目の種類の置換は後方参照です。この置換は <literal>edit</literal> 操作で使用可能なものとは異なり、<literal>-&gt;</literal> の左側にある変換一致に列挙されているグループへの参照です。これらは、一致条件にある順序で、<literal>%&lt;1&gt;</literal>、<literal>%&lt;2&gt;</literal> などによって指定されます。</para>
+<orderedlist>
+<para>処理の順序は次のとおりです。</para>
+<listitem><para>入力ファイルから行が読み取られます。</para></listitem>
+<listitem><para>マクロが適用されます。</para></listitem>
+<listitem><para><literal>&lt;include ...&gt;</literal> および <literal>&lt;transform&gt;</literal> 指令が処理されることにより、追加のファイルが検出され、読み取られます。</para></listitem>
+<listitem><para>すべての入力が累積されたあと、入力内の各行がアクションに変換され、すべての変換が適用されます。</para></listitem>
+<listitem><para>処理が正常に完了すると、出力が書き込まれます。</para></listitem>
+</orderedlist></refsect1>
+<refsect1 role="examples"><title></title>
+<example><title>SMF マニフェストにタグを追加する</title>
+<para>サービス管理機能 (SMF) マニフェストにタグを追加して、パッケージがライブシステムにインストールされたときにこれらのマニフェストがインポートされるようにします。</para>
+<programlisting>&lt;transform file path=(var|lib)/svc/manifest/.*&bsol;.xml -> &bsol;
+    add restart_fmri svc:/system/manifest-import:default></programlisting>
+</example>
+<example><title>ファイルを移動する</title>
+<para>ファイルを <filename>usr/sfw/bin</filename> から <filename>usr/bin</filename> に移動します。
+</para>
+<programlisting>&lt;transform file -> edit path usr/sfw/bin usr/bin></programlisting>
+</example>
+<example><title>リブートの必要性を指定する</title>
+<para><literal>reboot-needed</literal> タグを、<filename>/kernel</filename> の下にある、<filename>.conf</filename> ファイル以外のファイルに追加します。この例では、入力ファイルに存在する順序で各アクションに変換が適用されることを利用しています。</para>
+<programlisting>&lt;transform file path=kernel/.* -> set reboot-needed true>
+&lt;transform file path=kernel/.*&bsol;.conf -> delete reboot-needed .*></programlisting>
+<para>これはまた、正規表現を使用した 1 つの変換規則でも実行できます。</para>
+</example>
+<example><title>FMRI 属性を依存アクションに変換する</title>
+<para>パッケージ属性 <literal>pkg.fmri</literal> を incorporation の一部になるように <literal>depend</literal> アクションに変換します。</para>
+<programlisting>&lt;transform set name=pkg.fmri -> &bsol;
     emit depend type=incorporate fmri=%(value)>
-<transform set name=pkg.fmri -> drop>
-.fi
-.in -2
+&lt;transform set name=pkg.fmri -> drop></programlisting>
+</example>
+<example><title>バグ番号のリストを出力する</title>
+<para>引用符で囲まれた、接頭辞付きのバグ番号のコンマ区切りリストを出力します。</para>
+<programlisting>set name=bugs value=12345 value=54321 value=13579 value=97531
+&lt;transform set name=bugs -> &bsol;
+    print %(value;sep=",";prefix="bug='";suffix="'")></programlisting>
+</example>
+<example><title>欠落した属性を許可する</title>
+<para>属性がない場合でも、安全にメッセージを出力します。</para>
+<programlisting>&lt;transform driver -> print Found aliases: %(alias;notfound=&lt;none>)>
+</programlisting>
+</example>
+<example><title>デフォルト値を設定する</title>
+<para>所有者、グループ、およびアクセス権のデフォルト値を設定します。</para>
+<programlisting>&lt;transform file dir -> default owner root>
+&lt;transform file dir -> default group bin>
+&lt;transform file -> default mode 0444>
+&lt;transform dir -> default mode 0755></programlisting>
+</example>
+<example><title>廃止としてマークされていないパッケージに依存関係を追加する</title>
+<para>廃止としてマークされていないすべてのパッケージについて、そのパッケージを提供する統合のための incorporation への依存関係を追加します。この一連の変換は、マニフェストが読み取られたあとに実行される必要があります。そうしないと、依存関係が常に出力されます。<literal>pkg</literal> アクションの変更には永続的な効果がないため、<literal>pkg.obsolete=false</literal> に一致する属性をクリーンアップする必要はありません。</para>
+<programlisting>&lt;transform pkg -> default pkg.obsolete false>
+&lt;transform pkg pkg.obsolete=false -> emit depend &bsol;
+    fmri=consolidation/$(CONS)/$(CONS)-incorporation type=require></programlisting>
+</example>
+<example><title>エラーが検出された場合は終了してメッセージを出力する</title>
+<para>廃止された属性がマニフェスト内に検出された場合は、エラーメッセージを出力します。
+</para>
+<programlisting>&lt;transform file dir link hardlink opensolaris.zone=.* -> &bsol;
+    exit 1 The opensolaris.zone attribute is obsolete.></programlisting>
+</example>
+<example><title>適切なロケールファセットを設定する</title>
+<para>対象のパス名に適したロケールファセットを設定します。</para>
+<programlisting>&lt;transform dir file link hardlink path=.*/locale/([^/]+).* -> &bsol;
+    default facet.locale.%&lt;1> true></programlisting>
+</example>
+</refsect1>
+<refsect1 role="exit-status"><title></title>
+<para>次の終了ステータスが返されます。</para>
+<variablelist>
+<varlistentry><term><returnvalue>0</returnvalue></term>
+<listitem><para>すべてが動作しました。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><returnvalue>1</returnvalue></term>
+<listitem><para>予期しない不具合が発生しました。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><returnvalue>2</returnvalue></term>
+<listitem><para>無効なコマンド行オプションが指定された。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><returnvalue>99</returnvalue></term>
+<listitem><para>予期しない処理エラー。</para>
+</listitem>
+</varlistentry>
+</variablelist>
+</refsect1>
+<refsect1 role="files"><title></title>
+<variablelist termlength="wholeline">
+<varlistentry><term><filename>/usr/share/pkg/transforms</filename></term>
+<listitem><para>このディレクトリには、ファセット、アクチュエータ、およびその他の属性を設定するために役立つ変換を含むファイルが入っています。</para>
+</listitem>
+</varlistentry>
+</variablelist>
+</refsect1>
+<refsect1 role="attributes"><title></title>
+<para>次の属性については、<literal>attributes</literal>(5) を参照してください。</para>
+<informaltable frame="all" orient="port">
+<tgroup cols="2" colsep="1" rowsep="1"><colspec colname="col1" colwidth="198*" align="left" /><colspec colname="col2" colwidth="198*" align="left" /><thead>
+<row>
+<entry align="center">
+<para>属性タイプ</para>
+</entry>
+<entry align="center">
+<para>属性値</para>
+</entry>
+</row>
+</thead>
+<tbody>
+<row>
+<entry align="left">
+<para>使用条件</para>
+</entry>
+<entry align="left">
+<para><literal>package/pkg</literal></para>
+</entry>
+</row>
+<row>
+<entry align="left">
+<para>インタフェースの安定性</para>
+</entry>
+<entry align="left">
+<para>不確実</para>
+</entry>
+</row>
+</tbody>
+</tgroup>
+</informaltable></refsect1>
+<refsect1 role="see-also"><title></title>
+<para><olink targetdoc="refman" targetptr="pkg-1"><citerefentry><refentrytitle>pkg</refentrytitle><manvolnum>1</manvolnum></citerefentry></olink>, <olink targetdoc="refman" targetptr="pkg-5"><citerefentry><refentrytitle>pkg</refentrytitle> <manvolnum>5</manvolnum></citerefentry></olink></para>
+<para><literal>https://java.net/projects/ips/pages/Home</literal></para>
+</refsect1>
+</refentry>
 
-.LP
-\fB例 5 \fRバグ番号のリストを出力する
-.sp
-.LP
-引用符で囲まれた、接頭辞付きのバグ番号のコンマ区切りリストを出力します。
-
-.sp
-.in +2
-.nf
-set name=bugs value=12345 value=54321 value=13579 value=97531
-<transform set name=bugs -> \e
-    print %(value;sep=",";prefix="bug='";suffix="'")>
-.fi
-.in -2
-
-.LP
-\fB例 6 \fR欠落した属性を許可する
-.sp
-.LP
-属性がない場合でも、安全にメッセージを出力します。
-
-.sp
-.in +2
-.nf
-<transform driver -> print Found aliases: %(alias;notfound=<none>)>
-.fi
-.in -2
-
-.LP
-\fB例 7 \fRデフォルト値を設定する
-.sp
-.LP
-所有者、グループ、およびアクセス権のデフォルト値を設定します。
-
-.sp
-.in +2
-.nf
-<transform file dir -> default owner root>
-<transform file dir -> default group bin>
-<transform file -> default mode 0444>
-<transform dir -> default mode 0755>
-.fi
-.in -2
-
-.LP
-\fB例 8 \fR廃止としてマークされていないパッケージに依存関係を追加する
-.sp
-.LP
-廃止としてマークされていないすべてのパッケージについて、そのパッケージを提供する統合のための incorporation への依存関係を追加します。この一連の変換は、マニフェストが読み取られたあとに実行される必要があります。そうしないと、依存関係が常に出力されます。\fBpkg\fR アクションの変更には永続的な効果がないため、\fBpkg.obsolete=false\fR に一致する属性をクリーンアップする必要はありません。
-
-.sp
-.in +2
-.nf
-<transform pkg -> default pkg.obsolete false>
-<transform pkg pkg.obsolete=false -> emit depend \e
-    fmri=consolidation/$(CONS)/$(CONS)-incorporation type=require>
-.fi
-.in -2
-
-.LP
-\fB例 9 \fRエラーが検出された場合は終了してメッセージを出力する
-.sp
-.LP
-廃止された属性がマニフェスト内に検出された場合は、エラーメッセージを出力します。
-
-.sp
-.in +2
-.nf
-<transform file dir link hardlink opensolaris.zone=.* -> \e
-    exit 1 The opensolaris.zone attribute is obsolete.>
-.fi
-.in -2
-
-.LP
-\fB例 10 \fR適切なロケールファセットを設定する
-.sp
-.LP
-対象のパス名に適したロケールファセットを設定します。
-
-.sp
-.in +2
-.nf
-<transform dir file link hardlink path=.*/locale/([^/]+).* -> \e
-    default facet.locale.%<1> true>
-.fi
-.in -2
-
-.SH 終了ステータス
-.sp
-.LP
-次の終了ステータスが返されます。
-.sp
-.ne 2
-.mk
-.na
-\fB\fB0\fR\fR
-.ad
-.RS 6n
-.rt  
-すべてが動作しました。
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fB\fB1\fR\fR
-.ad
-.RS 6n
-.rt  
-予期しない不具合が発生しました。
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fB\fB2\fR\fR
-.ad
-.RS 6n
-.rt  
-無効なコマンド行オプションが指定された。
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fB\fB99\fR\fR
-.ad
-.RS 6n
-.rt  
-予期しない処理エラー。
-.RE
-
-.SH ファイル
-.sp
-.ne 2
-.mk
-.na
-\fB\fB/usr/share/pkg/transforms\fR\fR
-.ad
-.sp .6
-.RS 4n
-このディレクトリには、ファセット、アクチュエータ、およびその他の属性を設定するために役立つ変換を含むファイルが入っています。
-.RE
-
-.SH 属性
-.sp
-.LP
-次の属性については、\fBattributes\fR(5) を参照してください。
-.sp
-
-.sp
-.TS
-tab() box;
-cw(2.75i) |cw(2.75i) 
-lw(2.75i) |lw(2.75i) 
-.
-属性タイプ属性値
-_
-使用条件\fBpackage/pkg\fR
-_
-インタフェースの安定性不確実
-.TE
-
-.SH 関連項目
-.sp
-.LP
-\fBpkg\fR(1), \fBpkg\fR(5)
-.sp
-.LP
-\fBhttps://java.net/projects/ips/pages/Home\fR

@@ -1,846 +1,386 @@
-'\" te
-.\" Copyright (c) 2007, 2013, Oracle and/or its affiliates.All rights reserved.
-.TH pkg.depotd 1M "2013 年 10 月 2 日" "SunOS 5.12" "システム管理コマンド"
-.SH 名前
-pkg.depotd \- Image Packaging System の集積サーバー
-.SH 形式
-.LP
-.nf
-/usr/lib/pkg.depotd [--cfg \fIsource\fR] [-a \fIaddress\fR]
-    [--content-root \fIroot_dir\fR] [-d \fIinst_root\fR]
-    [--debug \fIfeature_list\fR] [--disable-ops=\fIop\fR[/1][,...]]
-    [--image-root \fIpath\fR] [--log-access \fIdest\fR]
-    [--log-errors \fIdest\fR] [--mirror \fImode\fR] [-p \fIport\fR]
-    [--proxy-base \fIurl\fR] [--readonly \fImode\fR] [-s \fIthreads\fR]
-    [--sort-file-max-size \fIbytes\fR] [--ssl-cert-file \fIsource\fR]
-    [--ssl-dialog \fItype\fR] [--ssl-key-file \fIsource\fR]
-    [-t \fIsocket_timeout\fR] [--writable-root \fIpath\fR]
-.fi
+<?xml version="1.0" encoding="utf-8"?>
+<!--Arbortext, Inc., 1988-2008, v.4002-->
+<!DOCTYPE refentry PUBLIC "-//Sun Microsystems//DTD SolBook-XML 3.7//EN" "xsolbook.dtd" [
+<!ENTITY % ent SYSTEM "entities.ent">
+%ent;
+]>
 
-.SH 機能説明
-.sp
-.LP
-\fBpkg.depotd\fR は、Image Packaging System の集積サーバーです。パッケージリポジトリの内部に格納されたデータへのネットワークアクセスを提供します。ファイルシステム経由でのリポジトリへの直接アクセスをサポートしないクライアントや、ネットワークアクセスが唯一利用可能な、または推奨されるトランスポート手段であるクライアントでは通常、パッケージ集積庫を使用します。
-.sp
-.LP
-取得クライアントである\fBpkg\fR などのクライアントは、直接リポジトリから、または集積サーバーを通じてパッケージおよびパッケージメタデータのリストを取得できます。公開クライアントである \fBpkgsend\fR は、直接リポジトリに、または集積サーバーを通じて新しいバージョンのパッケージを送信できます。\fBpkgrepo\fR を使用して、集積サーバーで使用するリポジトリを作成したり、集積サーバーで直接、および集積サーバーを通じてこれらのリポジトリを管理したりすることができます。
-.sp
-.LP
-\fBpkg.depotd\fR は通常、システム上のサービスとして実行されます。パッケージおよびソフトウェアの開発者が、テスト目的で非公開のコピーを実行することが必要になる場合があります。
-.sp
-.LP
-集積庫は、単体では一切のアクセス制御手段を提供しません。デフォルトでは、接続できるすべてのクライアントは、すべてのパッケージデータを読み取ることができ、新しいパッケージバージョンを公開できます。サービス管理機構 (SMF) のもとで実行される場合は例外であり、この場合はデフォルトで読み取り専用モードで実行されます。後述の注意事項に関するセクションで、内容が増大していく公開集積サーバーを保守するためのベストプラクティスをいくつか説明します。
-.SH SMF プロパティー
-.sp
-.LP
-\fBpkg.depotd\fR サーバーは通常、そのサービスと関連付けられた SMF プロパティーを通して構成されます。\fBsvc:/application/pkg/server\fR サービスは、\fBpkg.depot\fR サーバープロセスを実行するか、\fBsvc:/application/pkg/depot\fR サービスの構成に貢献します。\fBpkg.depot-config\fR(1M) マニュアルページおよび後述の \fBpkg/standalone\fR プロパティーを参照してください。
-.sp
-.LP
-SMF プロパティーについては、\fBsmf\fR(5) マニュアルページを参照してください。次のようなプロパティーがあります。
-.sp
-.ne 2
-.mk
-.na
-\fB\fBpkg/address\fR\fR
-.ad
-.sp .6
-.RS 4n
-(\fBnet_address\fR) 接続を待機する IP アドレス。デフォルト値は 0.0.0.0 (\fBINADDR_ANY\fR) で、これはすべてのアクティブなインタフェースで待機することを示します。すべてのアクティブな IPv6 インタフェースで待機するには、\fB::\fR を使用します。最初の値のみが使用されます。
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fB\fBpkg/content_root\fR\fR
-.ad
-.sp .6
-.RS 4n
-(\fBastring\fR) インスタンスがその静的な Web コンテンツやほかの Web コンテンツを検索するファイルシステムパス。デフォルト値は \fB/usr/share/lib/pkg\fR です。
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fB\fBpkg/debug\fR\fR
-.ad
-.sp .6
-.RS 4n
-(\fBastring\fR) 有効にするデバッグ機能のコンマ区切りリスト。指定可能な値は、次のとおりです。
-.sp
-.ne 2
-.mk
-.na
-\fB\fBheaders\fR\fR
-.ad
-.RS 11n
-.rt  
-すべての要求のヘッダーをエラーログに記録します。
-.RE
-
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fB\fBpkg/disable_ops\fR\fR
-.ad
-.sp .6
-.RS 4n
-(\fBastring\fR) 集積サーバーに対して無効にする操作のコンマ区切りリスト。操作は \fIoperation\fR[/\fIversion\fR] のように指定します (たとえば、\fBcatalog\fR または \fBsearch_1\fR)。
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fB\fBpkg/image_root\fR\fR
-.ad
-.sp .6
-.RS 4n
-(\fBastring\fR) ファイル情報がファイルデータのキャッシュとして使用されるイメージのパス。
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fB\fBpkg/inst_root\fR\fR
-.ad
-.sp .6
-.RS 4n
-(\fBastring\fR) インスタンスがそのリポジトリデータを検索するファイルシステムパス。\fBPKG_REPO\fR が指定されていないかぎり、必須です。デフォルト値は \fB/var/pkgrepo\fR です。
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fB\fBpkg/log_access\fR\fR
-.ad
-.sp .6
-.RS 4n
-(\fBastring\fR) 集積プロセスによってログに記録される、アクセスに関連した任意の情報の出力先。指定可能な値は \fBstderr\fR、\fBstdout\fR、\fBnone\fR、または絶対パス名です。\fBstdout\fR が \fBtty\fR の場合、デフォルト値は \fBstdout\fR です。\fBstdout\fR が \fBtty\fR でない場合、デフォルト値は \fBnone\fR です。\fBpkg\fR をサービスとして実行する場合、\fBlog_access\fR のデフォルト値は \fBnone\fR で、出力は \fB/var/svc/log/application-pkg-server:*\fR に書き込まれます。大きいログファイルの管理例については、\fBlogadm\fR(1M) マニュアルページを参照してください。
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fB\fBpkg/log_errors\fR\fR
-.ad
-.sp .6
-.RS 4n
-(\fBastring\fR) 集積プロセスによってログに記録される、任意のエラーやその他の情報の出力先。指定可能な値は \fBstderr\fR、\fBstdout\fR、\fBnone\fR、または絶対パス名です。デフォルト値は \fBstderr\fR です。大きいログファイルの管理例については、\fBlogadm\fR(1M) マニュアルページを参照してください。
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fB\fBpkg/mirror\fR\fR
-.ad
-.sp .6
-.RS 4n
-(\fBブール型\fR) パッケージミラーモードを使用するかどうかを設定します。true の場合、公開操作およびメタデータ操作は無効になり、制限付きのブラウザユーザーインタフェースのみが提供されます。\fBpkg/readonly\fR プロパティーが true のときは、このプロパティーを true に設定できません。デフォルト値は \fBfalse\fR です。
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fB\fBpkg/port\fR\fR
-.ad
-.sp .6
-.RS 4n
-(\fBcount\fR) 着信するパッケージ要求をインスタンスが待機するポート番号。SSL 証明書および鍵の情報が提供されなかった場合のデフォルト値は 80、提供された場合のデフォルト値は 443 です。
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fB\fBpkg/proxy_base\fR\fR
-.ad
-.sp .6
-.RS 4n
-(\fBuri\fR) 集積サーバーのベース URL を変更します。これは、逆プロキシ構成において、Apache またはその他の Web サーバーの内側で動作するときに最も有用です。
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fB\fBpkg/readonly\fR\fR
-.ad
-.sp .6
-.RS 4n
-(\fBboolean\fR) \fBpkgsend\fR によって開始される操作などの変更操作を無効にするかどうかを設定します。取得操作は引き続き使用可能です。\fBpkg/mirror\fR プロパティーが true のときは、このプロパティーを true に設定できません。デフォルト値は \fBtrue\fR です。
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fB\fBpkg/socket_timeout\fR\fR
-.ad
-.sp .6
-.RS 4n
-(\fBcount\fR) サーバーが接続を閉じる前にクライアントからの応答を待機する最大秒数。デフォルト値は 60 です。
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fB\fBpkg/sort_file_max_size\fR\fR
-.ad
-.sp .6
-.RS 4n
-(\fBcount\fR) インデクサソートファイルの最大サイズ。集積庫がインデックス作成に使用する RAM 容量を制限したり、速度向上のために RAM 容量を増やしたりするために使用します。
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fB\fBpkg/ssl_cert_file\fR\fR
-.ad
-.sp .6
-.RS 4n
-(\fBastring\fR) PEM エンコードされた証明書ファイルの絶対パス名。デフォルト値は \fBnone\fR です。このプロパティーは \fBssl_key_file\fR とともに使用してください。\fBssl_cert_file\fR および \fB/ssl_key_file\fR の両方が指定された場合、集積庫のみが SSL 要求に応答します。
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fB\fBpkg/ssl_dialog\fR\fR
-.ad
-.sp .6
-.RS 4n
-(\fBastring\fR) \fBssl_key_file\fR の復号化に使用するパスフレーズの取得方法を指定します。指定可能な値は、次のとおりです。
-.sp
-.ne 2
-.mk
-.na
-\fB\fBbuiltin\fR\fR
-.ad
-.sp .6
-.RS 4n
-パスフレーズの入力を求めます。これがデフォルト値です。
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fB\fBexec:\fI/path/to/program\fR\fR\fR
-.ad
-.sp .6
-.RS 4n
-指定された外部プログラムを実行してパスフレーズを取得します。プログラムへの最初の引数は \fB\&''\fR であり、予約されています。プログラムへの 2 番目の引数はサーバーのポート番号です。パスフレーズは \fBstdout\fR に出力されます。
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fB\fBsmf:fmri\fR\fR
-.ad
-.sp .6
-.RS 4n
-FMRI に関連したサービスインスタンスから、プロパティー \fBpkg_secure/ssl_key_passphrase\fR の値を取得しようとします。
-.RE
-
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fB\fBpkg/ssl_key_file\fR\fR
-.ad
-.sp .6
-.RS 4n
-(\fBastring\fR) PEM エンコードされた非公開鍵ファイルの絶対パス名。このプロパティーは、\fBssl_cert_file\fR プロパティーとともに使用してください。\fB/ssl_key_file\fR および \fBssl_cert_file\fR の両方が指定された場合、集積庫のみが SSL 要求に応答します。
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fB\fBpkg/standalone\fR\fR
-.ad
-.sp .6
-.RS 4n
-(\fBboolean\fR) 最小の Apache 構成で、単一の Apache インスタンスから複数のリポジトリを簡単に提供するには、このプロパティーを \fBfalse\fR に設定し、この \fBpkg/server\fR インスタンスの \fBpkg/readonly\fR プロパティーを \fBtrue\fR に設定します。\fBpkg/standalone\fR のデフォルト値は \fBfalse\fR で、\fBpkg/readonly\fR のデフォルト値は \fBtrue\fR です。詳細は、\fBpkg.depot-config\fR(1M) のマニュアルページを参照してください。
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fB\fBpkg/threads\fR\fR
-.ad
-.sp .6
-.RS 4n
-(\fBcount\fR) 要求を処理するために起動されるスレッドの数。デフォルト値は 60 です。小規模の配備にのみ適しています。この値は、同時実行されるクライアントの数の約 20 倍に設定してください。\fBthreads\fR の最大値は 5000 です。
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fB\fBpkg/writable_root\fR\fR
-.ad
-.sp .6
-.RS 4n
-(\fBastring\fR) プログラムが書き込みアクセスを行えるディレクトリへのファイルシステムパス。これは \fB-readonly\fR オプションとともに使用して、集積サーバーがパッケージ情報への書き込みアクセスを必要とせずに、検索インデックスなどのファイルを作成できるようにします。
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fB\fBpkg_secure/ssl_key_passphrase\fR\fR
-.ad
-.sp .6
-.RS 4n
-(\fBastring\fR) \fBpkg/ssl_key_file\fR の復号化に使用するパスワード。この値は属性 \fBsolaris.smf.read.pkg-server\fR を使用して読み取り承認保護されます。
-.RE
-
-.sp
-.LP
-集積サーバーのブラウザユーザーインタフェース (BUI) の表示および動作は次のプロパティーを使用して制御されます。
-.sp
-.ne 2
-.mk
-.na
-\fB\fBpkg_bui/feed_description\fR\fR
-.ad
-.sp .6
-.RS 4n
-(\fBastring\fR) RSS/Atom フィードの説明段落。
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fB\fBpkg_bui/feed_icon\fR\fR
-.ad
-.sp .6
-.RS 4n
-(\fBastring\fR) RSS/Atom フィードを視覚的に表現するために使われる小さい画像のパス名。パス名は \fBcontent_root\fR からの相対パスで指定します。デフォルト値は \fBweb/_themes/pkg-block-icon.png\fR です。
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fB\fBpkg_bui/feed_logo\fR\fR
-.ad
-.sp .6
-.RS 4n
-(\fBastring\fR) RSS/Atom フィードを視覚的にブランディングまたは識別するために使われる大きな画像のパス名。この値は \fBcontent_root\fR からの相対パスで指定します。デフォルト値は \fBweb/_themes/pkg-block-icon.png\fR です。
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fB\fBpkg_bui/feed_name\fR\fR
-.ad
-.sp .6
-.RS 4n
-(\fBastring\fR) リポジトリにサービスを提供する集積庫によって生成される、RSS/Atom フィードの短い説明的な名前。デフォルト値は「package repository feed」です。
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fB\fBpkg_bui/feed_window\fR\fR
-.ad
-.sp .6
-.RS 4n
-(\fBcount\fR) フィードの生成時に含める、リポジトリに関するフィードが最後に生成された時点までの時間数。
-.RE
-
-.sp
-.LP
-パッケージ集積庫は、\fBpkg\fR(5) からのローカルクライアントイメージのミラーサーバーとして機能することもできます。これにより、LAN 上で 1 つのサブネットを共有する複数のクライアントが、そのファイルキャッシュをミラー化できます。クライアント間で互いにファイルをダウンロードできるため、パッケージ集積サーバーの負荷が軽減されます。この機能は、SMF によって構成される代替集積サービスとして利用可能です。この機能はサービス検出のために mDNS および \fBdns-sd\fR を使用します。
-.sp
-.LP
-mDNS ミラーは通常、そのサービスと関連付けられた SMF プロパティーを通して構成されます。次のようなプロパティーがあります。
-.sp
-.ne 2
-.mk
-.na
-\fB\fBpkg/image_root\fR\fR
-.ad
-.sp .6
-.RS 4n
-(\fBastring\fR) ファイル情報がファイルデータのキャッシュとして使用されるイメージのパス。デフォルト値は \fB/\fR です。
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fB\fBpkg/port\fR\fR
-.ad
-.sp .6
-.RS 4n
-(\fBcount\fR) 着信するパッケージ要求をインスタンスが待機するポート番号。デフォルトの値は 80 です。
-.RE
-
-.SH オプション
-.sp
-.LP
-\fBpkg.depotd\fR はその基本構成情報をファイルから、または既存の SMF サービスインスタンスのプロパティーデータから読み取ることができます。
-.sp
-.ne 2
-.mk
-.na
-\fB\fB--cfg\fR \fIsource\fR\fR
-.ad
-.sp .6
-.RS 4n
-構成データを読み書きするときに使用するファイルのパス名、または \fBsmf:\fIfmri\fR\fR 形式の文字列。\fIfmri\fR は、構成データの読み取り元インスタンスのサービス障害管理リソース識別子 (FMRI) です。指定されるファイルの形式については、後述する「集積庫の構成」を参照してください。
-.RE
-
-.sp
-.LP
-利用可能な既存の設定ソースがない場合や、\fB--cfg\fR を使用して指定された構成ファイルから読み取られた値をオーバーライドする場合は、次のオプションを使用して、集積サーバーのデフォルト動作を変更できます:
-.sp
-.ne 2
-.mk
-.na
-\fB\fB-a\fR \fIaddress\fR\fR
-.ad
-.sp .6
-.RS 4n
-前出の \fBpkg/address\fR を参照してください。
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fB\fB--content-root\fR \fIroot_dir\fR\fR
-.ad
-.sp .6
-.RS 4n
-前出の \fBpkg/content_root\fR を参照してください。
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fB\fB-d\fR \fIinst_root\fR\fR
-.ad
-.sp .6
-.RS 4n
-前出の \fBpkg/inst_root\fR を参照してください。
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fB\fB--debug\fR \fIfeature_list\fR\fR
-.ad
-.sp .6
-.RS 4n
-前出の \fBpkg/debug\fR を参照してください。
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fB\fB--disable-ops\fR=\fIop\fR[\fB /1\fR][,...]\fR
-.ad
-.sp .6
-.RS 4n
-前出の \fBpkg/disable_ops\fR を参照してください。
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fB\fB--image-root\fR \fIpath\fR\fR
-.ad
-.sp .6
-.RS 4n
-上記の \fBpkg/image_root\fR を参照してください。
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fB\fB--log-access\fR \fIdest\fR\fR
-.ad
-.sp .6
-.RS 4n
-前出の \fBpkg/log_access\fR を参照してください。
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fB\fB--log-errors\fR \fIdest\fR\fR
-.ad
-.sp .6
-.RS 4n
-前出の \fBpkg/log_errors\fR を参照してください。
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fB\fB--mirror\fR \fImode\fR\fR
-.ad
-.sp .6
-.RS 4n
-前出の \fBpkg/mirror\fR を参照してください。
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fB\fB-p\fR \fIport\fR\fR
-.ad
-.sp .6
-.RS 4n
-前出の \fBpkg/port\fR を参照してください。
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fB\fB--proxy-base\fR \fIurl\fR\fR
-.ad
-.sp .6
-.RS 4n
-前出の \fBpkg/proxy_base\fR を参照してください。空の値を指定した場合、このオプションは無視されます。
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fB\fB--readonly\fR \fImode\fR\fR
-.ad
-.sp .6
-.RS 4n
-前出の \fBpkg/readonly\fR を参照してください。
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fB\fB-s\fR\fIthreads\fR\fR
-.ad
-.sp .6
-.RS 4n
-前出の \fBpkg/threads\fR を参照してください。
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fB\fB--sort-file-max-size\fR \fIbytes\fR\fR
-.ad
-.sp .6
-.RS 4n
-前出の \fBpkg/sort_file_max_size\fR を参照してください。
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fB\fB--ssl-cert-file\fR \fIsource\fR\fR
-.ad
-.sp .6
-.RS 4n
-前出の \fBpkg/ssl_cert_file\fR を参照してください。
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fB\fB--ssl-dialog\fR \fItype\fR\fR
-.ad
-.sp .6
-.RS 4n
-前出の \fBpkg/ssl_dialog\fR を参照してください。
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fB\fB--ssl-key-file\fR \fIsource\fR\fR
-.ad
-.sp .6
-.RS 4n
-前出の \fBpkg/ssl_key_file\fR を参照してください。
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fB\fB-t\fR \fIsocket_timeout\fR\fR
-.ad
-.sp .6
-.RS 4n
-前出の \fBpkg/socket_timeout\fR を参照してください。
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fB\fB--writable-root\fR \fIpath\fR\fR
-.ad
-.sp .6
-.RS 4n
-前出の \fBpkg/writable_root\fR を参照してください。
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fB\fB-?\fR\fR
-.ad
-.br
-.na
-\fB\fB--help\fR\fR
-.ad
-.sp .6
-.RS 4n
-使用方法に関するメッセージを表示します。
-.RE
-
-.sp
-.LP
-パッケージリポジトリの追加の管理機能は \fBpkgrepo\fR によって提供されます。
-.SH 集積庫の構成
-.sp
-.LP
-\fB--cfg\fR オプションを使用して (SMF の FMRI の代わりに) 構成ファイルが指定されたときは、集積サーバーはすべての構成データを単純テキスト形式で読み書きします。構成データについては「SMF プロパティー」ですでに説明しました。設定データは、\fB[\fIsection\fR]\fR ヘッダーで始まるセクション群と、それに続く \fBname = \fIvalue\fR\fR エントリ群で構成されます。記述の継続は RFC 822 形式です。継続行を空白で始めることにより、複数の行に値を分割できます。
-.sp
-.LP
-構成ファイルで指定されていない必要な値はすべて、前出の「オプション」で一覧表示したオプションを使用して指定する必要があります。サンプルの構成ファイルは次のようになります。
-.sp
-.in +2
-.nf
-[pkg]
+<refentry lang="ja" id="pkg.depotd-1m">
+<refmeta><refentrytitle>pkg.depotd</refentrytitle><manvolnum>1M</manvolnum> <refmiscinfo class="date">2013 年 10 月 2 日</refmiscinfo> <refmiscinfo class="sectdesc">&man1m;</refmiscinfo> <refmiscinfo class="software">&release;</refmiscinfo> <refmiscinfo class="arch">generic</refmiscinfo> <refmiscinfo class="copyright">Copyright (c) 2007, 2013, Oracle and/or its affiliates.All rights reserved.</refmiscinfo> 
+</refmeta>
+<refnamediv>
+<refname>pkg.depotd</refname><refpurpose>Image Packaging System の集積サーバー</refpurpose>
+</refnamediv>
+<refsynopsisdiv><title></title>
+<synopsis>/usr/lib/pkg.depotd [--cfg <replaceable>source</replaceable>] [-a <replaceable>address</replaceable>]
+    [--content-root <replaceable>root_dir</replaceable>] [-d <replaceable>inst_root</replaceable>]
+    [--debug <replaceable>feature_list</replaceable>] [--disable-ops=<replaceable>op</replaceable>[/1][,...]]
+    [--image-root <replaceable>path</replaceable>] [--log-access <replaceable>dest</replaceable>]
+    [--log-errors <replaceable>dest</replaceable>] [--mirror <replaceable>mode</replaceable>] [-p <replaceable>port</replaceable>]
+    [--proxy-base <replaceable>url</replaceable>] [--readonly <replaceable>mode</replaceable>] [-s <replaceable>threads</replaceable>]
+    [--sort-file-max-size <replaceable>bytes</replaceable>] [--ssl-cert-file <replaceable>source</replaceable>]
+    [--ssl-dialog <replaceable>type</replaceable>] [--ssl-key-file <replaceable>source</replaceable>]
+    [-t <replaceable>socket_timeout</replaceable>] [--writable-root <replaceable>path</replaceable>]</synopsis>
+</refsynopsisdiv>
+<refsect1 id="GLHAR" role="description"><title></title>
+<para><command>pkg.depotd</command> は、Image Packaging System の集積サーバーです。パッケージリポジトリの内部に格納されたデータへのネットワークアクセスを提供します。ファイルシステム経由でのリポジトリへの直接アクセスをサポートしないクライアントや、ネットワークアクセスが唯一利用可能な、または推奨されるトランスポート手段であるクライアントでは通常、パッケージ集積庫を使用します。</para>
+<para>取得クライアントである<command>pkg</command> などのクライアントは、直接リポジトリから、または集積サーバーを通じてパッケージおよびパッケージメタデータのリストを取得できます。公開クライアントである <command>pkgsend</command> は、直接リポジトリに、または集積サーバーを通じて新しいバージョンのパッケージを送信できます。<command>pkgrepo</command> を使用して、集積サーバーで使用するリポジトリを作成したり、集積サーバーで直接、および集積サーバーを通じてこれらのリポジトリを管理したりすることができます。</para>
+<para><command>pkg.depotd</command> は通常、システム上のサービスとして実行されます。パッケージおよびソフトウェアの開発者が、テスト目的で非公開のコピーを実行することが必要になる場合があります。</para>
+<para>集積庫は、単体では一切のアクセス制御手段を提供しません。デフォルトでは、接続できるすべてのクライアントは、すべてのパッケージデータを読み取ることができ、新しいパッケージバージョンを公開できます。サービス管理機構 (SMF) のもとで実行される場合は例外であり、この場合はデフォルトで読み取り専用モードで実行されます。後述の注意事項に関するセクションで、内容が増大していく公開集積サーバーを保守するためのベストプラクティスをいくつか説明します。</para>
+</refsect1>
+<refsect1 role="other"><title>SMF プロパティー</title>
+<para><literal>pkg.depotd</literal> サーバーは通常、そのサービスと関連付けられた SMF プロパティーを通して構成されます。<literal>svc:/application/pkg/server</literal> サービスは、<literal>pkg.depot</literal> サーバープロセスを実行するか、<literal>svc:/application/pkg/depot</literal> サービスの構成に貢献します。<literal>pkg.depot-config</literal>(1M) マニュアルページおよび後述の <literal>pkg/standalone</literal> プロパティーを参照してください。</para>
+<para>SMF プロパティーについては、<literal>smf</literal>(5) マニュアルページを参照してください。次のようなプロパティーがあります。</para>
+<variablelist termlength="wholeline">
+<varlistentry><term><literal>pkg/address</literal></term>
+<listitem><para>(<literal>net_address</literal>) 接続を待機する IP アドレス。デフォルト値は 0.0.0.0 (<literal>INADDR_ANY</literal>) で、これはすべてのアクティブなインタフェースで待機することを示します。すべてのアクティブな IPv6 インタフェースで待機するには、<literal>::</literal> を使用します。最初の値のみが使用されます。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>pkg/content_root</literal></term>
+<listitem><para>(<literal>astring</literal>) インスタンスがその静的な Web コンテンツやほかの Web コンテンツを検索するファイルシステムパス。デフォルト値は <filename>/usr/share/lib/pkg</filename> です。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>pkg/debug</literal></term>
+<listitem><para>(<literal>astring</literal>) 有効にするデバッグ機能のコンマ区切りリスト。指定可能な値は、次のとおりです。</para>
+<variablelist>
+<varlistentry><term><literal>headers</literal></term>
+<listitem><para>すべての要求のヘッダーをエラーログに記録します。</para>
+</listitem>
+</varlistentry>
+</variablelist>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>pkg/disable_ops</literal></term>
+<listitem><para>(<literal>astring</literal>) 集積サーバーに対して無効にする操作のコンマ区切りリスト。操作は <replaceable>operation</replaceable>[/<replaceable>version</replaceable>] のように指定します (たとえば、<literal>catalog</literal> または <literal>search_1</literal>)。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>pkg/image_root</literal></term>
+<listitem><para>(<literal>astring</literal>) ファイル情報がファイルデータのキャッシュとして使用されるイメージのパス。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>pkg/inst_root</literal></term>
+<listitem><para>(<literal>astring</literal>) インスタンスがそのリポジトリデータを検索するファイルシステムパス。<literal>PKG_REPO</literal> が指定されていないかぎり、必須です。デフォルト値は <filename>/var/pkgrepo</filename> です。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>pkg/log_access</literal></term>
+<listitem><para>(<literal>astring</literal>) 集積プロセスによってログに記録される、アクセスに関連した任意の情報の出力先。指定可能な値は <filename>stderr</filename>、<filename>stdout</filename>、<literal>none</literal>、または絶対パス名です。<filename>stdout</filename> が <literal>tty</literal> の場合、デフォルト値は <filename>stdout</filename> です。<filename>stdout</filename> が <literal>tty</literal> でない場合、デフォルト値は <literal>none</literal> です。<literal>pkg</literal> をサービスとして実行する場合、<literal>log_access</literal> のデフォルト値は <literal>none</literal> で、出力は <filename>/var/svc/log/application-pkg-server:*</filename> に書き込まれます。大きいログファイルの管理例については、<literal>logadm</literal>(1M) マニュアルページを参照してください。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>pkg/log_errors</literal></term>
+<listitem><para>(<literal>astring</literal>) 集積プロセスによってログに記録される、任意のエラーやその他の情報の出力先。指定可能な値は <filename>stderr</filename>、<filename>stdout</filename>、<literal>none</literal>、または絶対パス名です。デフォルト値は <filename>stderr</filename> です。大きいログファイルの管理例については、<literal>logadm</literal>(1M) マニュアルページを参照してください。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>pkg/mirror</literal></term>
+<listitem><para>(<literal>ブール型</literal>) パッケージミラーモードを使用するかどうかを設定します。true の場合、公開操作およびメタデータ操作は無効になり、制限付きのブラウザユーザーインタフェースのみが提供されます。<literal>pkg/readonly</literal> プロパティーが true のときは、このプロパティーを true に設定できません。デフォルト値は <literal>false</literal> です。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>pkg/port</literal></term>
+<listitem><para>(<literal>count</literal>) 着信するパッケージ要求をインスタンスが待機するポート番号。SSL 証明書および鍵の情報が提供されなかった場合のデフォルト値は 80、提供された場合のデフォルト値は 443 です。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>pkg/proxy_base</literal></term>
+<listitem><para>(<literal>uri</literal>) 集積サーバーのベース URL を変更します。これは、逆プロキシ構成において、Apache またはその他の Web サーバーの内側で動作するときに最も有用です。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>pkg/readonly</literal></term>
+<listitem><para>(<literal>boolean</literal>) <command>pkgsend</command> によって開始される操作などの変更操作を無効にするかどうかを設定します。取得操作は引き続き使用可能です。<literal>pkg/mirror</literal> プロパティーが true のときは、このプロパティーを true に設定できません。デフォルト値は <literal>true</literal> です。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>pkg/socket_timeout</literal></term>
+<listitem><para>(<literal>count</literal>) サーバーが接続を閉じる前にクライアントからの応答を待機する最大秒数。デフォルト値は 60 です。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>pkg/sort_file_max_size</literal></term>
+<listitem><para>(<literal>count</literal>) インデクサソートファイルの最大サイズ。集積庫がインデックス作成に使用する RAM 容量を制限したり、速度向上のために RAM 容量を増やしたりするために使用します。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>pkg/ssl_cert_file</literal></term>
+<listitem><para>(<literal>astring</literal>) PEM エンコードされた証明書ファイルの絶対パス名。デフォルト値は <literal>none</literal> です。このプロパティーは <literal>ssl_key_file</literal> とともに使用してください。<literal>ssl_cert_file</literal> および <literal>/ssl_key_file</literal> の両方が指定された場合、集積庫のみが SSL 要求に応答します。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>pkg/ssl_dialog</literal></term>
+<listitem><para>(<literal>astring</literal>) <literal>ssl_key_file</literal> の復号化に使用するパスフレーズの取得方法を指定します。指定可能な値は、次のとおりです。</para>
+<variablelist termlength="wholeline">
+<varlistentry><term><literal>builtin</literal></term>
+<listitem><para>パスフレーズの入力を求めます。これがデフォルト値です。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>exec:<replaceable>/path/to/program</replaceable></literal></term>
+<listitem><para>指定された外部プログラムを実行してパスフレーズを取得します。プログラムへの最初の引数は <literal>''</literal> であり、予約されています。プログラムへの 2 番目の引数はサーバーのポート番号です。パスフレーズは <filename>stdout</filename> に出力されます。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>smf:fmri</literal></term>
+<listitem><para>FMRI に関連したサービスインスタンスから、プロパティー <literal>pkg_secure/ssl_key_passphrase</literal> の値を取得しようとします。</para>
+</listitem>
+</varlistentry>
+</variablelist>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>pkg/ssl_key_file</literal></term>
+<listitem><para>(<literal>astring</literal>) PEM エンコードされた非公開鍵ファイルの絶対パス名。このプロパティーは、<literal>ssl_cert_file</literal> プロパティーとともに使用してください。<literal>/ssl_key_file</literal> および <literal>ssl_cert_file</literal> の両方が指定された場合、集積庫のみが SSL 要求に応答します。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>pkg/standalone</literal></term>
+<listitem><para>(<literal>boolean</literal>) 最小の Apache 構成で、単一の Apache インスタンスから複数のリポジトリを簡単に提供するには、このプロパティーを <literal>false</literal> に設定し、この <literal>pkg/server</literal> インスタンスの <literal>pkg/readonly</literal> プロパティーを <literal>true</literal> に設定します。<literal>pkg/standalone</literal> のデフォルト値は <literal>false</literal> で、<literal>pkg/readonly</literal> のデフォルト値は <literal>true</literal> です。詳細は、<literal>pkg.depot-config</literal>(1M) のマニュアルページを参照してください。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>pkg/threads</literal></term>
+<listitem><para>(<literal>count</literal>) 要求を処理するために起動されるスレッドの数。デフォルト値は 60 です。小規模の配備にのみ適しています。この値は、同時実行されるクライアントの数の約 20 倍に設定してください。<literal>threads</literal> の最大値は 5000 です。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>pkg/writable_root</literal></term>
+<listitem><para>(<literal>astring</literal>) プログラムが書き込みアクセスを行えるディレクトリへのファイルシステムパス。これは <option>readonly</option> オプションとともに使用して、集積サーバーがパッケージ情報への書き込みアクセスを必要とせずに、検索インデックスなどのファイルを作成できるようにします。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>pkg_secure/ssl_key_passphrase</literal></term>
+<listitem><para>(<literal>astring</literal>) <literal>pkg/ssl_key_file</literal> の復号化に使用するパスワード。この値は属性 <literal>solaris.smf.read.pkg-server</literal> を使用して読み取り承認保護されます。</para>
+</listitem>
+</varlistentry>
+</variablelist>
+<para>集積サーバーのブラウザユーザーインタフェース (BUI) の表示および動作は次のプロパティーを使用して制御されます。</para>
+<variablelist termlength="wholeline">
+<varlistentry><term><literal>pkg_bui/feed_description</literal></term>
+<listitem><para>(<literal>astring</literal>) RSS/Atom フィードの説明段落。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>pkg_bui/feed_icon</literal></term>
+<listitem><para>(<literal>astring</literal>) RSS/Atom フィードを視覚的に表現するために使われる小さい画像のパス名。パス名は <literal>content_root</literal> からの相対パスで指定します。デフォルト値は <filename>web/_themes/pkg-block-icon.png</filename> です。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>pkg_bui/feed_logo</literal></term>
+<listitem><para>(<literal>astring</literal>) RSS/Atom フィードを視覚的にブランディングまたは識別するために使われる大きな画像のパス名。この値は <literal>content_root</literal> からの相対パスで指定します。デフォルト値は <filename>web/_themes/pkg-block-icon.png</filename> です。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>pkg_bui/feed_name</literal></term>
+<listitem><para>(<literal>astring</literal>) リポジトリにサービスを提供する集積庫によって生成される、RSS/Atom フィードの短い説明的な名前。デフォルト値は「package repository feed」です。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>pkg_bui/feed_window</literal></term>
+<listitem><para>(<literal>count</literal>) フィードの生成時に含める、リポジトリに関するフィードが最後に生成された時点までの時間数。</para>
+</listitem>
+</varlistentry>
+</variablelist>
+<para>パッケージ集積庫は、<literal>pkg</literal>(5) からのローカルクライアントイメージのミラーサーバーとして機能することもできます。これにより、LAN 上で 1 つのサブネットを共有する複数のクライアントが、そのファイルキャッシュをミラー化できます。クライアント間で互いにファイルをダウンロードできるため、パッケージ集積サーバーの負荷が軽減されます。この機能は、SMF によって構成される代替集積サービスとして利用可能です。この機能はサービス検出のために mDNS および <literal>dns-sd</literal> を使用します。</para>
+<para>mDNS ミラーは通常、そのサービスと関連付けられた SMF プロパティーを通して構成されます。次のようなプロパティーがあります。</para>
+<variablelist termlength="wholeline">
+<varlistentry><term><literal>pkg/image_root</literal></term>
+<listitem><para>(<literal>astring</literal>) ファイル情報がファイルデータのキャッシュとして使用されるイメージのパス。デフォルト値は <filename>/</filename> です。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>pkg/port</literal></term>
+<listitem><para>(<literal>count</literal>) 着信するパッケージ要求をインスタンスが待機するポート番号。デフォルトの値は 80 です。</para>
+</listitem>
+</varlistentry>
+</variablelist>
+</refsect1>
+<refsect1 role="options"><title></title>
+<para><command>pkg.depotd</command> はその基本構成情報をファイルから、または既存の SMF サービスインスタンスのプロパティーデータから読み取ることができます。</para>
+<variablelist termlength="wholeline">
+<varlistentry><term><option>-cfg</option> <replaceable>source</replaceable></term>
+<listitem><para>構成データを読み書きするときに使用するファイルのパス名、または <literal>smf:<replaceable>fmri</replaceable></literal> 形式の文字列。<replaceable>fmri</replaceable> は、構成データの読み取り元インスタンスのサービス障害管理リソース識別子 (FMRI) です。指定されるファイルの形式については、後述する「集積庫の構成」を参照してください。</para>
+</listitem>
+</varlistentry>
+</variablelist>
+<para>利用可能な既存の設定ソースがない場合や、<option>-cfg</option> を使用して指定された構成ファイルから読み取られた値をオーバーライドする場合は、次のオプションを使用して、集積サーバーのデフォルト動作を変更できます:</para>
+<variablelist termlength="wholeline">
+<varlistentry><term><option>a</option> <replaceable>address</replaceable></term>
+<listitem><para>前出の <literal>pkg/address</literal> を参照してください。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>-content-root</option> <replaceable>root_dir</replaceable></term>
+<listitem><para>前出の <literal>pkg/content_root</literal> を参照してください。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>d</option> <replaceable>inst_root</replaceable></term>
+<listitem><para>前出の <literal>pkg/inst_root</literal> を参照してください。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>-debug</option> <replaceable>feature_list</replaceable></term>
+<listitem><para>前出の <literal>pkg/debug</literal> を参照してください。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>-disable-ops</option>=<replaceable>op</replaceable>[<literal> /1</literal>][,...]</term>
+<listitem><para>前出の <literal>pkg/disable_ops</literal> を参照してください。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>-image-root</option> <replaceable>path</replaceable></term>
+<listitem><para>上記の <literal>pkg/image_root</literal> を参照してください。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>-log-access</option> <replaceable>dest</replaceable></term>
+<listitem><para>前出の <literal>pkg/log_access</literal> を参照してください。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>-log-errors</option> <replaceable>dest</replaceable></term>
+<listitem><para>前出の <literal>pkg/log_errors</literal> を参照してください。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>-mirror</option> <replaceable>mode</replaceable></term>
+<listitem><para>前出の <literal>pkg/mirror</literal> を参照してください。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>p</option> <replaceable>port</replaceable></term>
+<listitem><para>前出の <literal>pkg/port</literal> を参照してください。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>-proxy-base</option> <replaceable>url</replaceable></term>
+<listitem><para>前出の <literal>pkg/proxy_base</literal> を参照してください。空の値を指定した場合、このオプションは無視されます。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>-readonly</option> <replaceable>mode</replaceable></term>
+<listitem><para>前出の <literal>pkg/readonly</literal> を参照してください。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>s</option><replaceable>threads</replaceable></term>
+<listitem><para>前出の <literal>pkg/threads</literal> を参照してください。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>-sort-file-max-size</option> <replaceable>bytes</replaceable></term>
+<listitem><para>前出の <literal>pkg/sort_file_max_size</literal> を参照してください。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>-ssl-cert-file</option> <replaceable>source</replaceable></term>
+<listitem><para>前出の <literal>pkg/ssl_cert_file</literal> を参照してください。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>-ssl-dialog</option> <replaceable>type</replaceable></term>
+<listitem><para>前出の <literal>pkg/ssl_dialog</literal> を参照してください。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>-ssl-key-file</option> <replaceable>source</replaceable></term>
+<listitem><para>前出の <literal>pkg/ssl_key_file</literal> を参照してください。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>t</option> <replaceable>socket_timeout</replaceable></term>
+<listitem><para>前出の <literal>pkg/socket_timeout</literal> を参照してください。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>-writable-root</option> <replaceable>path</replaceable></term>
+<listitem><para>前出の <literal>pkg/writable_root</literal> を参照してください。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>?</option></term><term><option>-help</option></term>
+<listitem><para>使用方法に関するメッセージを表示します。</para>
+</listitem>
+</varlistentry>
+</variablelist>
+<para>パッケージリポジトリの追加の管理機能は <command>pkgrepo</command> によって提供されます。</para>
+</refsect1>
+<refsect1 role="other"><title>集積庫の構成</title>
+<para><option>-cfg</option> オプションを使用して (SMF の FMRI の代わりに) 構成ファイルが指定されたときは、集積サーバーはすべての構成データを単純テキスト形式で読み書きします。構成データについては「SMF プロパティー」ですでに説明しました。設定データは、<literal>[<replaceable>section</replaceable>]</literal> ヘッダーで始まるセクション群と、それに続く <literal>name = <replaceable>value</replaceable></literal> エントリ群で構成されます。記述の継続は RFC 822 形式です。継続行を空白で始めることにより、複数の行に値を分割できます。</para>
+<para>構成ファイルで指定されていない必要な値はすべて、前出の「オプション」で一覧表示したオプションを使用して指定する必要があります。サンプルの構成ファイルは次のようになります。</para>
+<programlisting>[pkg]
 port = 80
 inst_root = /export/repo
 
 [pub_example_com]
 feed_description = example.com's software
-  update log
-.fi
-.in -2
+  update log</programlisting>
+</refsect1>
+<refsect1 role="examples"><title></title>
+<example><title>集積サーバーの有効化</title>
+<screen># <userinput>svcadm enable application/pkg/server</userinput></screen>
+</example>
+<example id="GLHBM"><title>サーバーの待機ポートを変更します。</title>
+<screen># <userinput>svccfg -s application/pkg/server setprop pkg/port = 10000</userinput>
+# <userinput>svcadm refresh application/pkg/server</userinput>
+# <userinput>svcadm restart application/pkg/server</userinput></screen>
+</example>
+<example id="GLHAW"><title>ミラーの有効化</title>
+<screen># <userinput>svcadm enable application/pkg/dynamic-mirror</userinput></screen>
+</example>
+</refsect1>
+<refsect1 role="environment-variables"><title></title>
+<variablelist>
+<varlistentry><term><envar>PKG_REPO</envar></term>
+<listitem><para>サービスを提供するリポジトリを格納したディレクトリを指定します。<option>d</option> を指定する場合、この値は無視されます。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><envar>PKG_DEPOT_CONTENT</envar></term>
+<listitem><para>集積庫によって提供される静的コンテンツを格納したディレクトリを指定します。後述する「ファイル」で一覧表示されたファイルはこのディレクトリに存在する必要がありますが、ファイルの内容は、提供されるデフォルトの内容と異なっていてもかまいません。</para>
+</listitem>
+</varlistentry>
+</variablelist>
+</refsect1>
+<refsect1 role="exit-status"><title></title>
+<para>次の終了ステータスが返されます。</para>
+<variablelist termlength="xtranarrow">
+<varlistentry><term><returnvalue>0</returnvalue></term>
+<listitem><para>正常終了。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><returnvalue>1</returnvalue></term>
+<listitem><para>エラーが発生した。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><returnvalue>2</returnvalue></term>
+<listitem><para>無効なコマンド行オプションが指定された。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><returnvalue>99</returnvalue></term>
+<listitem><para>予期しない例外が発生しました。</para>
+</listitem>
+</varlistentry>
+</variablelist>
+</refsect1>
+<refsect1 role="files"><title></title>
+<variablelist termlength="wholeline">
+<varlistentry><term><filename>/usr/share/lib/pkg</filename></term>
+<listitem><para>デフォルトの表示コンテンツの場所。別の場所を選択するには、<literal>pkg/content_root</literal> を変更します。</para>
+</listitem>
+</varlistentry>
+</variablelist>
+</refsect1>
+<refsect1 role="attributes"><title></title>
+<para>次の属性については、<literal>attributes</literal>(5) を参照してください。</para>
+<informaltable frame="all" orient="port">
+<tgroup cols="2" colsep="1" rowsep="1"><colspec colname="col1" colwidth="198*" align="left" /><colspec colname="col2" colwidth="198*" align="left" /><thead>
+<row>
+<entry align="center">
+<para>属性タイプ</para>
+</entry>
+<entry align="center">
+<para>属性値</para>
+</entry>
+</row>
+</thead>
+<tbody>
+<row>
+<entry align="left">
+<para>使用条件</para>
+</entry>
+<entry align="left">
+<para><literal>package/pkg</literal></para>
+</entry>
+</row>
+<row>
+<entry align="left">
+<para>インタフェースの安定性</para>
+</entry>
+<entry align="left">
+<para>不確実</para>
+</entry>
+</row>
+</tbody>
+</tgroup>
+</informaltable></refsect1>
+<refsect1 role="see-also"><title></title>
+<para><olink targetdoc="refman" targetptr="pkg.depot-config-1m"><citerefentry><refentrytitle>pkg.depot-config</refentrytitle><manvolnum>1M</manvolnum></citerefentry></olink>, <olink targetdoc="refman" targetptr="dns-sd-1m"><citerefentry><refentrytitle>dns-sd</refentrytitle><manvolnum>1M</manvolnum></citerefentry></olink>, <olink targetdoc="refman" targetptr="MDNSD-1M"><citerefentry><refentrytitle>mdnsd</refentrytitle><manvolnum>1M</manvolnum></citerefentry></olink>, <olink targetdoc="refman" targetptr="pkg-1"><citerefentry><refentrytitle>pkg</refentrytitle><manvolnum>1</manvolnum></citerefentry></olink>, <olink targetdoc="refman" targetptr="pkgrepo-1"><citerefentry><refentrytitle>pkgrepo</refentrytitle><manvolnum>1</manvolnum></citerefentry></olink>, <olink targetdoc="refman" targetptr="pkgsend-1"><citerefentry><refentrytitle>pkgsend</refentrytitle><manvolnum>1</manvolnum></citerefentry></olink>, <literal>syslogd</literal>(1M), <olink targetdoc="refman" targetptr="SMF-5"><citerefentry><refentrytitle>smf</refentrytitle><manvolnum>5</manvolnum></citerefentry></olink></para>
+<para><olink targetdoc="CCOSP"><citetitle remap="book">Oracle Solaris 11.2 パッケージリポジトリのコピーおよび作成に関するドキュメント</citetitle></olink></para>
+<para><literal>https://java.net/projects/ips/pages/Home</literal></para>
+</refsect1>
+<refsect1 role="notes"><title></title>
+<para><literal>pkd.depotd</literal> サービスは、サービス識別子 <literal>svc:/application/pkg/server</literal> のもとで SMF によって管理されます。</para>
+<para>mDNS ミラーサービスは、サービス識別子 <literal>svc:/application/pkg/dynamic-mirror</literal> のもとで SMF によって管理されます。</para>
+<para>集積庫への読み取りアクセスを制御するために、<command>pkg</command> がネイティブでサポートするクライアントベースの SSL 証明書アクセスなどの認証方式と組み合わせて HTTP 逆プロキシを使用できます。</para>
+<para>最小の Apache 構成で、単一の Apache インスタンスから複数のリポジトリを簡単に提供するには、特定の <literal>pkg/server</literal> インスタンスの <literal>pkg/standalone</literal> プロパティーを <literal>false</literal> に設定し、そのインスタンスの <literal>pkg/readonly</literal> プロパティーを <literal>true</literal> に設定します。詳細は、<literal>pkg.depot-config</literal>(1M) のマニュアルページを参照してください。</para>
+<para>ファイルシステムベースの操作を使用して構成またはパッケージデータを変更した場合、操作および出力に変更内容を反映できるように、集積サーバープロセスを再起動する必要があります。集積サーバープロセスを再起動するには、次のいずれかの方法を使用します。</para>
+<itemizedlist>
+<listitem><para><command>svcadm</command> を使用して、<literal>application/pkg/server</literal> インスタンスを再起動します。</para></listitem>
+<listitem><para><command>kill</command> を使用して、<literal>SIGUSR1</literal> シグナルを集積サーバープロセスに送信します。これにより、プロセスはそのままの状態で、すべての構成、パッケージ、および検索データを再読み込みする「正常な再起動」が実行されます。</para>
+<screen># <userinput>kill -USR1 <replaceable>pid</replaceable></userinput></screen>
+</listitem>
+</itemizedlist>
+</refsect1>
+</refentry>
 
-.SH 使用例
-.LP
-\fB例 1 \fR集積サーバーの有効化
-.sp
-.in +2
-.nf
-# \fBsvcadm enable application/pkg/server\fR
-.fi
-.in -2
-.sp
-
-.LP
-\fB例 2 \fRサーバーの待機ポートを変更します。
-.sp
-.in +2
-.nf
-# \fBsvccfg -s application/pkg/server setprop pkg/port = 10000\fR
-# \fBsvcadm refresh application/pkg/server\fR
-# \fBsvcadm restart application/pkg/server\fR
-.fi
-.in -2
-.sp
-
-.LP
-\fB例 3 \fRミラーの有効化
-.sp
-.in +2
-.nf
-# \fBsvcadm enable application/pkg/dynamic-mirror\fR
-.fi
-.in -2
-.sp
-
-.SH 環境
-.sp
-.ne 2
-.mk
-.na
-\fB\fBPKG_REPO\fR\fR
-.ad
-.RS 21n
-.rt  
-サービスを提供するリポジトリを格納したディレクトリを指定します。\fB-d\fR を指定する場合、この値は無視されます。
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fB\fBPKG_DEPOT_CONTENT\fR\fR
-.ad
-.RS 21n
-.rt  
-集積庫によって提供される静的コンテンツを格納したディレクトリを指定します。後述する「ファイル」で一覧表示されたファイルはこのディレクトリに存在する必要がありますが、ファイルの内容は、提供されるデフォルトの内容と異なっていてもかまいません。
-.RE
-
-.SH 終了ステータス
-.sp
-.LP
-次の終了ステータスが返されます。
-.sp
-.ne 2
-.mk
-.na
-\fB\fB0\fR\fR
-.ad
-.RS 13n
-.rt  
-正常終了。
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fB\fB1\fR\fR
-.ad
-.RS 13n
-.rt  
-エラーが発生した。
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fB\fB2\fR\fR
-.ad
-.RS 13n
-.rt  
-無効なコマンド行オプションが指定された。
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fB\fB99\fR\fR
-.ad
-.RS 13n
-.rt  
-予期しない例外が発生しました。
-.RE
-
-.SH ファイル
-.sp
-.ne 2
-.mk
-.na
-\fB\fB/usr/share/lib/pkg\fR\fR
-.ad
-.sp .6
-.RS 4n
-デフォルトの表示コンテンツの場所。別の場所を選択するには、\fBpkg/content_root\fR を変更します。
-.RE
-
-.SH 属性
-.sp
-.LP
-次の属性については、\fBattributes\fR(5) を参照してください。
-.sp
-
-.sp
-.TS
-tab() box;
-cw(2.75i) |cw(2.75i) 
-lw(2.75i) |lw(2.75i) 
-.
-属性タイプ属性値
-_
-使用条件\fBpackage/pkg\fR
-_
-インタフェースの安定性不確実
-.TE
-
-.SH 関連項目
-.sp
-.LP
-\fBpkg.depot-config\fR(1M), \fBdns-sd\fR(1M), \fBmdnsd\fR(1M), \fBpkg\fR(1), \fBpkgrepo\fR(1), \fBpkgsend\fR(1), \fBsyslogd\fR(1M), \fBsmf\fR(5)
-.sp
-.LP
-\fI『Oracle Solaris 11.2 パッケージリポジトリのコピーおよび作成に関するドキュメント』\fR
-.sp
-.LP
-\fBhttps://java.net/projects/ips/pages/Home\fR
-.SH 注意事項
-.sp
-.LP
-\fBpkd.depotd\fR サービスは、サービス識別子 \fBsvc:/application/pkg/server\fR のもとで SMF によって管理されます。
-.sp
-.LP
-mDNS ミラーサービスは、サービス識別子 \fBsvc:/application/pkg/dynamic-mirror\fR のもとで SMF によって管理されます。
-.sp
-.LP
-集積庫への読み取りアクセスを制御するために、\fBpkg\fR がネイティブでサポートするクライアントベースの SSL 証明書アクセスなどの認証方式と組み合わせて HTTP 逆プロキシを使用できます。
-.sp
-.LP
-最小の Apache 構成で、単一の Apache インスタンスから複数のリポジトリを簡単に提供するには、特定の \fBpkg/server\fR インスタンスの \fBpkg/standalone\fR プロパティーを \fBfalse\fR に設定し、そのインスタンスの \fBpkg/readonly\fR プロパティーを \fBtrue\fR に設定します。詳細は、\fBpkg.depot-config\fR(1M) のマニュアルページを参照してください。
-.sp
-.LP
-ファイルシステムベースの操作を使用して構成またはパッケージデータを変更した場合、操作および出力に変更内容を反映できるように、集積サーバープロセスを再起動する必要があります。集積サーバープロセスを再起動するには、次のいずれかの方法を使用します。
-.RS +4
-.TP
-.ie t \(bu
-.el o
-\fBsvcadm\fR を使用して、\fBapplication/pkg/server\fR インスタンスを再起動します。
-.RE
-.RS +4
-.TP
-.ie t \(bu
-.el o
-\fBkill\fR を使用して、\fBSIGUSR1\fR シグナルを集積サーバープロセスに送信します。これにより、プロセスはそのままの状態で、すべての構成、パッケージ、および検索データを再読み込みする「正常な再起動」が実行されます。
-.sp
-.in +2
-.nf
-# \fBkill -USR1 \fIpid\fR\fR
-.fi
-.in -2
-.sp
-
-.RE

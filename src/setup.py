@@ -222,70 +222,99 @@ scripts = {
         "unknown": scripts_sunos,
         }
 
+MANPAGE_OUTPUT_ROOT = "man/nroff"
+
 man1_files = [
-        'man/pkg.1',
-        'man/pkgdepend.1',
-        'man/pkgdiff.1',
-        'man/pkgfmt.1',
-        'man/pkglint.1',
-        'man/pkgmerge.1',
-        'man/pkgmogrify.1',
-        'man/pkgsend.1',
-        'man/pkgsign.1',
-        'man/pkgsurf.1',
-        'man/pkgrecv.1',
-        'man/pkgrepo.1',
-        ]
+    MANPAGE_OUTPUT_ROOT + '/man1/' + f
+    for f in [
+        'pkg.1',
+        'pkgdepend.1',
+        'pkgdiff.1',
+        'pkgfmt.1',
+        'pkglint.1',
+        'pkgmerge.1',
+        'pkgmogrify.1',
+        'pkgrecv.1',
+        'pkgrepo.1',
+        'pkgsend.1',
+        'pkgsign.1',
+        'pkgsurf.1',
+    ]
+]
 man1m_files = [
-        'man/pkg.depotd.1m',
-        'man/pkg.depot-config.1m',
-        'man/pkg.sysrepo.1m'
-        ]
+    MANPAGE_OUTPUT_ROOT + '/man1m/' + f
+    for f in [
+        'pkg.depotd.1m',
+        'pkg.depot-config.1m',
+        'pkg.sysrepo.1m',
+    ]
+]
 man5_files = [
-        'man/pkg.5'
-        ]
+    MANPAGE_OUTPUT_ROOT + '/man5/' + f
+    for f in [
+        'pkg.5'
+    ]
+]
 
 man1_ja_files = [
-        'man/ja_JP/pkg.1',
-        'man/ja_JP/pkgdepend.1',
-        'man/ja_JP/pkgdiff.1',
-        'man/ja_JP/pkgfmt.1',
-        'man/ja_JP/pkglint.1',
-        'man/ja_JP/pkgmerge.1',
-        'man/ja_JP/pkgmogrify.1',
-        'man/ja_JP/pkgsend.1',
-        'man/ja_JP/pkgsign.1',
-        'man/ja_JP/pkgrecv.1',
-        'man/ja_JP/pkgrepo.1',
-        ]
+    MANPAGE_OUTPUT_ROOT + '/ja_JP.UTF-8/man1/' + f
+    for f in [
+        'pkg.1',
+        'pkgdepend.1',
+        'pkgdiff.1',
+        'pkgfmt.1',
+        'pkglint.1',
+        'pkgmerge.1',
+        'pkgmogrify.1',
+        'pkgrecv.1',
+        'pkgrepo.1',
+        'pkgsend.1',
+        'pkgsign.1',
+    ]
+]
 man1m_ja_files = [
-        'man/ja_JP/pkg.depotd.1m',
-        'man/ja_JP/pkg.sysrepo.1m'
-        ]
+    MANPAGE_OUTPUT_ROOT + '/ja_JP.UTF-8/man1m/' + f
+    for f in [
+        'pkg.depotd.1m',
+        'pkg.sysrepo.1m',
+    ]
+]
 man5_ja_files = [
-        'man/ja_JP/pkg.5'
-        ]
+    MANPAGE_OUTPUT_ROOT + '/ja_JP.UTF-8/man5/' + f
+    for f in [
+        'pkg.5'
+    ]
+]
 
 man1_zh_CN_files = [
-        'man/zh_CN/pkg.1',
-        'man/zh_CN/pkgdepend.1',
-        'man/zh_CN/pkgdiff.1',
-        'man/zh_CN/pkgfmt.1',
-        'man/zh_CN/pkglint.1',
-        'man/zh_CN/pkgmerge.1',
-        'man/zh_CN/pkgmogrify.1',
-        'man/zh_CN/pkgsend.1',
-        'man/zh_CN/pkgsign.1',
-        'man/zh_CN/pkgrecv.1',
-        'man/zh_CN/pkgrepo.1',
-        ]
+    MANPAGE_OUTPUT_ROOT + '/zh_CN.UTF-8/man1/' + f
+    for f in [
+        'pkg.1',
+        'pkgdepend.1',
+        'pkgdiff.1',
+        'pkgfmt.1',
+        'pkglint.1',
+        'pkgmerge.1',
+        'pkgmogrify.1',
+        'pkgrecv.1',
+        'pkgrepo.1',
+        'pkgsend.1',
+        'pkgsign.1',
+    ]
+]
 man1m_zh_CN_files = [
-        'man/zh_CN/pkg.depotd.1m',
-        'man/zh_CN/pkg.sysrepo.1m'
-        ]
+    MANPAGE_OUTPUT_ROOT + '/zh_CN.UTF-8/man1m/' + f
+    for f in [
+        'pkg.depotd.1m',
+        'pkg.sysrepo.1m',
+    ]
+]
 man5_zh_CN_files = [
-        'man/zh_CN/pkg.5'
-        ]
+    MANPAGE_OUTPUT_ROOT + '/zh_CN.UTF-8/man5/' + f
+    for f in [
+        'pkg.5'
+    ]
+]
 
 packages = [
         'pkg',
@@ -1273,6 +1302,45 @@ class build_py_func(_build_py):
 
                 return dst, copied
 
+def manpage_input_dir(path):
+        """Convert a manpage output path to the directory where its source lives."""
+
+        patharr = path.split("/")
+        if len(patharr) == 4:
+                loc = ""
+        elif len(patharr) == 5:
+                loc = patharr[-3].split(".")[0]
+        else:
+                raise RuntimeError("bad manpage path")
+        return os.path.join(patharr[0], loc).rstrip("/")
+
+def xml2roff(files):
+        """Convert XML manpages to ROFF for delivery.
+
+        The input should be a list of the output file paths.  The corresponding
+        inputs will be generated from this.  We do it in this way so that we can
+        share the paths with the install code.
+
+        All paths should have a common manpath root.  In particular, pages
+        belonging to different localizations should be run through this function
+        separately.
+        """
+
+        input_dir = manpage_input_dir(files[0])
+        do_files = [
+            os.path.join(input_dir, os.path.basename(f))
+            for f in files
+            if dep_util.newer(os.path.join(input_dir, os.path.basename(f)), f)
+        ]
+        if do_files:
+                # Get the output dir by removing the filename and the manX
+                # directory
+                output_dir = os.path.join(*files[0].split("/")[:-2])
+                args = ["/usr/share/xml/xsolbook/python/xml2roff.py", "-o", output_dir]
+                args += do_files
+                print " ".join(args)
+                run_cmd(args, os.getcwd())
+
 class build_data_func(Command):
         description = "build data files whose source isn't in deliverable form"
         user_options = []
@@ -1296,6 +1364,10 @@ class build_data_func(Command):
                 # generate pkg.pot for next translation
                 intltool_update_maintain()
                 intltool_update_pot()
+
+                xml2roff(man1_files + man1m_files + man5_files)
+                xml2roff(man1_ja_files + man1m_ja_files + man5_ja_files)
+                xml2roff(man1_zh_CN_files + man1m_zh_CN_files + man5_zh_CN_files)
 
 def rm_f(filepath):
         """Remove a file without caring whether it exists."""
@@ -1322,6 +1394,8 @@ class clean_func(_clean):
                 rm_f("po/pkg.pot")
 
                 rm_f("po/i18n_errs.txt")
+
+                shutil.rmtree(MANPAGE_OUTPUT_ROOT, True)
 
 class clobber_func(Command):
         user_options = []

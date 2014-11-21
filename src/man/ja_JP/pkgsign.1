@@ -1,240 +1,145 @@
-'\" te
-.\" Copyright (c) 2007, 2013, Oracle and/or its affiliates. All rights reserved.
-.TH pkgsign 1 "2013 年 5 月 21 日" "SunOS 5.12" "ユーザーコマンド"
-.SH 名前
-pkgsign \- Image Packaging System の署名ユーティリティー
-.SH 形式
-.LP
-.nf
-/usr/bin/pkgsign [-a \fIhash_algorithm\fR]
-    [-c \fIpath_to_signing_certificate\fR]
-    [-i \fIpath_to_intermediate_cert\fR] ...
-    [-k \fIpath_to_private_key\fR] [-n] -s \fIpath_or_uri\fR
+<?xml version="1.0" encoding="utf-8"?>
+<!--Arbortext, Inc., 1988-2008, v.4002-->
+<!DOCTYPE refentry PUBLIC "-//Sun Microsystems//DTD SolBook-XML 3.7//EN" "xsolbook.dtd" [
+<!ENTITY % ent SYSTEM "entities.ent">
+%ent;
+]>
+
+<refentry lang="ja" id="pkgsign-1">
+<refmeta><refentrytitle>pkgsign</refentrytitle><manvolnum>1</manvolnum> <refmiscinfo class="date">2013 年 5 月 21 日</refmiscinfo> <refmiscinfo class="sectdesc">&man1;</refmiscinfo> <refmiscinfo class="software">&release;</refmiscinfo> <refmiscinfo class="arch">generic</refmiscinfo> <refmiscinfo class="copyright">Copyright (c) 2007, 2013, Oracle and/or its affiliates. All rights reserved.</refmiscinfo> 
+</refmeta>
+<refnamediv>
+<refname>pkgsign</refname><refpurpose>Image Packaging System の署名ユーティリティー</refpurpose>
+</refnamediv>
+<refsynopsisdiv><title></title>
+<synopsis>/usr/bin/pkgsign [-a <replaceable>hash_algorithm</replaceable>]
+    [-c <replaceable>path_to_signing_certificate</replaceable>]
+    [-i <replaceable>path_to_intermediate_cert</replaceable>] ...
+    [-k <replaceable>path_to_private_key</replaceable>] [-n] -s <replaceable>path_or_uri
+</replaceable>
     [--help] [--no-index] [--no-catalog]
-    (\fIfmri\fR|\fIpattern\fR) ...
-.fi
+    (<replaceable>fmri</replaceable>|<replaceable>pattern</replaceable>) ...</synopsis></refsynopsisdiv>
+<refsect1 id="pkgsign-1-desc" role="description"><title></title>
+<para><command>pkgsign</command> は、指定されたキーと証明書を使用して署名アクションを追加することにより、リポジトリ内で所定の FMRI のマニフェストを直接更新します。変更されたパッケージは、元のタイムスタンプを保持します。</para>
+</refsect1>
+<refsect1 role="options"><title></title>
+<para>サポートしているオプションは、次のとおりです。</para>
+<variablelist termlength="wholeline">
+<varlistentry><term><option>-help</option></term>
+<listitem><para>使用方法に関するメッセージを表示します。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>a</option> <replaceable>hash_algorithm</replaceable></term>
+<listitem><para>デフォルトの署名アルゴリズムではなく、<replaceable>hash_algorithm</replaceable> 署名アルゴリズムが使用されます。デフォルトの署名アルゴリズムは <literal>rsa-sha256</literal> です。サポートされている署名アルゴリズムは、<literal>rsa-sha256</literal>、<literal>rsa-sha384</literal>、<literal>rsa-sha512</literal>、<literal>sha256</literal>、<literal>sha384</literal>、<literal>sha512</literal> です。ハッシュアルゴリズムを指定するだけの署名アルゴリズムを使用すると、署名の値は、パッケージのマニフェストのハッシュになります。<literal>rsa</literal> とハッシュアルゴリズムを指定する署名アルゴリズムを使用すると、署名の値は、提供された非公開鍵で署名が追加されたマニフェストのハッシュになります (<option>c</option> オプションと <option>k</option> オプションを参照)。
+</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>c</option> <replaceable>path_to_signing_certificate</replaceable></term>
+<listitem><para>証明書 <replaceable>path_to_signing_certificate</replaceable> を、このアクションで署名の値を検証するときに使用する証明書として追加します。<option>c</option> オプションは、<option>k</option> オプションでのみ使用されます。
+</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>i</option> <replaceable>path_to_intermediate_cert</replaceable></term>
+<listitem><para>証明書 <replaceable>path_to_intermediate_cert</replaceable> を、<option>c</option> への引数として指定された証明書 <replaceable>path_to_signing_certificate</replaceable> を検証するときに使用する証明書として追加します。複数の証明書を追加するには、<option>i</option> を複数回指定します。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>k</option> <replaceable>path_to_private_key</replaceable></term>
+<listitem><para><replaceable>path_to_private_key</replaceable> に格納された非公開鍵を使用してマニフェストに署名を追加します。<option>k</option> オプションは、<option>c</option> オプションでのみ使用されます。<option>k</option> が設定されていない場合、署名の値はマニフェストのハッシュになります。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>n</option></term>
+<listitem><para>評価実行を行い、リポジトリは一切変更しません。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>s</option> <replaceable>path_or_uri</replaceable></term>
+<listitem><para><replaceable>path_or_uri</replaceable> にあるリポジトリ内のパッケージに署名を追加します。
+</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>-no-index</option></term>
+<listitem><para>署名付きマニフェストが再公開されたあとに、リポジトリの検索インデックスを更新しません。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>-no-catalog</option></term>
+<listitem><para>署名付きマニフェストが再公開されたあとに、リポジトリのカタログを更新しません。</para>
+</listitem>
+</varlistentry>
+</variablelist>
+</refsect1>
+<refsect1 role="examples"><title></title>
+<example><title>マニフェストのハッシュ値を使用した署名の追加</title>
+<para>マニフェストのハッシュ値を使用して、<literal>http://localhost:10000</literal> に公開されたパッケージに署名を追加します。多くの場合、これはテストに役立ちます。</para>
+<screen>$ <userinput>pkgsign -s http://localhost:10000 -a sha256 &bsol;</userinput>
+<userinput>example_pkg@1.0,5.11-0:20100626T030108Z</userinput></screen>
+</example>
+<example><title>キーと証明書を使用した署名の追加</title>
+<para><literal>rsa-sha384</literal> を使用して、<literal>/foo/bar</literal> 内のファイルリポジトリに公開されたパッケージに署名を追加し、マニフェストをハッシュ化して署名を追加します。署名キーは <literal>/key/usr2.key</literal> に、関連の証明書は <literal>/key/usr2.cert</literal> に、その証明書の検証に必要な証明書は <literal>/icerts/usr1.cert</literal> にあります。</para>
+<screen>$ <userinput>pkgsign -s file:///foo/bar/ -a rsa-sha384 &bsol;</userinput>
+<userinput>-k /key/usr2.key -c /key/usr2.cert -i /icerts/usr1.cert &bsol;</userinput>
+<userinput>example_pkg@1.0,5.11-0:20100626T031341Z</userinput></screen>
+</example>
+</refsect1>
+<refsect1 role="exit-status"><title></title>
+<para>次の終了ステータスが返されます。</para>
+<variablelist>
+<varlistentry><term><returnvalue>0</returnvalue></term>
+<listitem><para>コマンドが成功しました。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><returnvalue>1</returnvalue></term>
+<listitem><para>エラーが発生した。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><returnvalue>2</returnvalue></term>
+<listitem><para>無効なコマンド行オプションが指定された。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><returnvalue>3</returnvalue></term>
+<listitem><para>複数の操作が要求されましたが、それらの一部のみが成功しました。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><returnvalue>99</returnvalue></term>
+<listitem><para>予期しない例外が発生しました。</para>
+</listitem>
+</varlistentry>
+</variablelist>
+</refsect1>
+<refsect1 role="attributes"><title></title>
+<para>次の属性については、<literal>attributes</literal>(5) を参照してください。</para>
+<informaltable frame="all" orient="port">
+<tgroup cols="2" colsep="1" rowsep="1"><colspec colname="col1" colwidth="198*" align="left" /><colspec colname="col2" colwidth="198*" align="left" /><thead>
+<row>
+<entry align="center">
+<para>属性タイプ</para>
+</entry>
+<entry align="center">
+<para>属性値</para>
+</entry>
+</row>
+</thead>
+<tbody>
+<row>
+<entry align="left">
+<para>使用条件</para>
+</entry>
+<entry align="left">
+<para><literal>package/pkg</literal></para>
+</entry>
+</row>
+<row>
+<entry align="left">
+<para>インタフェースの安定性</para>
+</entry>
+<entry align="left">
+<para>不確実</para>
+</entry>
+</row>
+</tbody>
+</tgroup>
+</informaltable></refsect1>
+<refsect1 role="see-also"><title></title>
+<para><olink targetdoc="refman" targetptr="pkg-1"><citerefentry><refentrytitle>pkg</refentrytitle><manvolnum>1</manvolnum></citerefentry></olink>, <olink targetdoc="refman" targetptr="pkgrecv-1"><citerefentry><refentrytitle>pkgrecv</refentrytitle><manvolnum>1</manvolnum></citerefentry></olink>, <olink targetdoc="refman" targetptr="pkgsend-1"><citerefentry><refentrytitle>pkgsend</refentrytitle><manvolnum>1</manvolnum></citerefentry></olink>, <olink targetdoc="refman" targetptr="pkgrepo-1"><citerefentry><refentrytitle>pkgrepo</refentrytitle><manvolnum>1</manvolnum></citerefentry></olink>, <olink targetdoc="refman" targetptr="pkg-5"><citerefentry><refentrytitle>pkg</refentrytitle><manvolnum>5</manvolnum></citerefentry></olink></para>
+<para><literal>https://java.net/projects/ips/pages/Home</literal></para>
+</refsect1>
+</refentry>
 
-.SH 機能説明
-.sp
-.LP
-\fBpkgsign\fR は、指定されたキーと証明書を使用して署名アクションを追加することにより、リポジトリ内で所定の FMRI のマニフェストを直接更新します。変更されたパッケージは、元のタイムスタンプを保持します。
-.SH オプション
-.sp
-.LP
-サポートしているオプションは、次のとおりです。
-.sp
-.ne 2
-.mk
-.na
-\fB\fB--help\fR\fR
-.ad
-.sp .6
-.RS 4n
-使用方法に関するメッセージを表示します。
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fB\fB-a\fR \fIhash_algorithm\fR\fR
-.ad
-.sp .6
-.RS 4n
-デフォルトの署名アルゴリズムではなく、\fIhash_algorithm\fR 署名アルゴリズムが使用されます。デフォルトの署名アルゴリズムは \fBrsa-sha256\fR です。サポートされている署名アルゴリズムは、\fBrsa-sha256\fR、\fBrsa-sha384\fR、\fBrsa-sha512\fR、\fBsha256\fR、\fBsha384\fR、\fBsha512\fR です。ハッシュアルゴリズムを指定するだけの署名アルゴリズムを使用すると、署名の値は、パッケージのマニフェストのハッシュになります。\fBrsa\fR とハッシュアルゴリズムを指定する署名アルゴリズムを使用すると、署名の値は、提供された非公開鍵で署名が追加されたマニフェストのハッシュになります (\fB-c\fR オプションと \fB-k\fR オプションを参照)。
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fB\fB-c\fR \fIpath_to_signing_certificate\fR\fR
-.ad
-.sp .6
-.RS 4n
-証明書 \fIpath_to_signing_certificate\fR を、このアクションで署名の値を検証するときに使用する証明書として追加します。\fB-c\fR オプションは、\fB-k\fR オプションでのみ使用されます。
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fB\fB-i\fR \fIpath_to_intermediate_cert\fR\fR
-.ad
-.sp .6
-.RS 4n
-証明書 \fIpath_to_intermediate_cert\fR を、\fB-c\fR への引数として指定された証明書 \fIpath_to_signing_certificate\fR を検証するときに使用する証明書として追加します。複数の証明書を追加するには、\fB-i\fR を複数回指定します。
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fB\fB-k\fR \fIpath_to_private_key\fR\fR
-.ad
-.sp .6
-.RS 4n
-\fIpath_to_private_key\fR に格納された非公開鍵を使用してマニフェストに署名を追加します。\fB-k\fR オプションは、\fB-c\fR オプションでのみ使用されます。\fB-k\fR が設定されていない場合、署名の値はマニフェストのハッシュになります。
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fB\fB-n\fR\fR
-.ad
-.sp .6
-.RS 4n
-評価実行を行い、リポジトリは一切変更しません。
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fB\fB-s\fR \fIpath_or_uri\fR\fR
-.ad
-.sp .6
-.RS 4n
-\fIpath_or_uri\fR にあるリポジトリ内のパッケージに署名を追加します。
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fB\fB--no-index\fR\fR
-.ad
-.sp .6
-.RS 4n
-署名付きマニフェストが再公開されたあとに、リポジトリの検索インデックスを更新しません。
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fB\fB--no-catalog\fR\fR
-.ad
-.sp .6
-.RS 4n
-署名付きマニフェストが再公開されたあとに、リポジトリのカタログを更新しません。
-.RE
-
-.SH 使用例
-.LP
-\fB例 1 \fRマニフェストのハッシュ値を使用した署名の追加
-.sp
-.LP
-マニフェストのハッシュ値を使用して、\fBhttp://localhost:10000\fR に公開されたパッケージに署名を追加します。多くの場合、これはテストに役立ちます。
-
-.sp
-.in +2
-.nf
-$ \fBpkgsign -s http://localhost:10000 -a sha256 \e\fR
-\fBexample_pkg@1.0,5.11-0:20100626T030108Z\fR
-.fi
-.in -2
-.sp
-
-.LP
-\fB例 2 \fRキーと証明書を使用した署名の追加
-.sp
-.LP
-\fBrsa-sha384\fR を使用して、\fB/foo/bar\fR 内のファイルリポジトリに公開されたパッケージに署名を追加し、マニフェストをハッシュ化して署名を追加します。署名キーは \fB/key/usr2.key\fR に、関連の証明書は \fB/key/usr2.cert\fR に、その証明書の検証に必要な証明書は \fB/icerts/usr1.cert\fR にあります。
-
-.sp
-.in +2
-.nf
-$ \fBpkgsign -s file:///foo/bar/ -a rsa-sha384 \e\fR
-\fB-k /key/usr2.key -c /key/usr2.cert -i /icerts/usr1.cert \e\fR
-\fBexample_pkg@1.0,5.11-0:20100626T031341Z\fR
-.fi
-.in -2
-.sp
-
-.SH 終了ステータス
-.sp
-.LP
-次の終了ステータスが返されます。
-.sp
-.ne 2
-.mk
-.na
-\fB\fB0\fR\fR
-.ad
-.RS 6n
-.rt  
-コマンドが成功しました。
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fB\fB1\fR\fR
-.ad
-.RS 6n
-.rt  
-エラーが発生した。
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fB\fB2\fR\fR
-.ad
-.RS 6n
-.rt  
-無効なコマンド行オプションが指定された。
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fB\fB3\fR\fR
-.ad
-.RS 6n
-.rt  
-複数の操作が要求されましたが、それらの一部のみが成功しました。
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fB\fB99\fR\fR
-.ad
-.RS 6n
-.rt  
-予期しない例外が発生しました。
-.RE
-
-.SH 属性
-.sp
-.LP
-次の属性については、\fBattributes\fR(5) を参照してください。
-.sp
-
-.sp
-.TS
-tab() box;
-cw(2.75i) |cw(2.75i) 
-lw(2.75i) |lw(2.75i) 
-.
-属性タイプ属性値
-_
-使用条件\fBpackage/pkg\fR
-_
-インタフェースの安定性不確実
-.TE
-
-.SH 関連項目
-.sp
-.LP
-\fBpkg\fR(1), \fBpkgrecv\fR(1), \fBpkgsend\fR(1), \fBpkgrepo\fR(1), \fBpkg\fR(5)
-.sp
-.LP
-\fBhttps://java.net/projects/ips/pages/Home\fR

@@ -1,416 +1,186 @@
-'\" te
-.\" Copyright (c) 2007, 2013, Oracle and/or its affiliates.All rights reserved.
-.TH pkgdepend 1 "2013 年 7 月 12 日" "SunOS 5.12" "用户命令"
-.SH 名称
-pkgdepend \- 映像包管理系统依赖项分析器
-.SH 用法概要
-.LP
-.nf
-/usr/bin/pkgdepend [\fIoptions\fR] \fIcommand\fR [\fIcmd_options\fR] [\fIoperands\fR]
-.fi
+<?xml version="1.0" encoding="utf-8"?>
+<!--Arbortext, Inc., 1988-2008, v.4002-->
+<!DOCTYPE refentry PUBLIC "-//Sun Microsystems//DTD SolBook-XML 3.7//EN" "xsolbook.dtd" [
+<!ENTITY % ent SYSTEM "entities.ent">
+%ent;
+]>
 
-.LP
-.nf
-/usr/bin/pkgdepend generate [-IMm] -d \fIdir\fR [-d \fIdir\fR]
-    [-D \fIname\fR=\fIvalue\fR] [-k \fIpath\fR] \fImanifest_file\fR
-.fi
-
-.LP
-.nf
-/usr/bin/pkgdepend resolve [-EmoSv] [-d \fIoutput_dir\fR]
-    [-e \fIexternal_package_file\fR]... [-s \fIsuffix\fR]
-    \fImanifest_file\fR ...
-.fi
-
-.SH 描述
-.sp
-.LP
-\fBpkgdepend\fR 命令生成并解析软件包的依赖项。某个软件包可能会依赖于其他软件包中的文件。\fBpkgdepend\fR 命令通常使用两次：一次用于文件依赖项生成和一次用于文件到软件包的解析。
-.sp
-.LP
-\fBgenerate\fR 子命令将检查软件包的内容，并确定该软件包所需的外部文件。
-.sp
-.LP
-\fBresolve\fR 子命令使用执行 \fBgenerate\fR 步骤后输出的文件列表，然后搜索软件包的引用集来确定包含这些依赖文件的软件包的名称。为依赖文件搜索的软件包的引用集为当前在发布者的系统上安装的软件包。
-.sp
-.LP
-提供的文件的多个组件用作依赖项信息的源：
-.sp
-.ne 2
-.mk
-.na
-\fBELF\fR
-.ad
-.RS 13n
-.rt  
-分析提供的文件中的 ELF 头以获取依赖项信息，\fB-k\fR 和 \fB-D\fR 选项可用于修改获取的信息。有关 ELF 依赖项的更多详细信息，请参见 \fBldd\fR 和\fI《Oracle Solaris 11.2 Linkers and Libraries Guide》\fR。 
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fB脚本\fR
-.ad
-.RS 13n
-.rt  
-包含引用某个解释程序的 \fB#!\fR 行的 Shell 脚本会导致对提供该解释程序的程序包出现依赖项。
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fBPython\fR
-.ad
-.RS 13n
-.rt  
-Python 脚本首先作为脚本进行分析。此外，脚本声明的任何导入可能还会充当依赖项信息的源。
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fB硬链接\fR
-.ad
-.RS 13n
-.rt  
-清单中的硬链接会导致对提供链接目标的软件包出现依赖项。
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fBSMF\fR
-.ad
-.RS 13n
-.rt  
-提供的包含 \fBrequire_all \fR 依赖项的 SMF 服务清单会导致对提供 SMF 清单（这些清单提供这些 FMRI）的软件包出现依赖项。
-.RE
-
-.SH 选项
-.sp
-.LP
-支持以下选项：
-.sp
-.ne 2
-.mk
-.na
-\fB\fB-?\fR\fR
-.ad
-.br
-.na
-\fB\fB--help\fR\fR
-.ad
-.sp .6
-.RS 4n
-显示用法消息。
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fB\fB-R\fR \fIdir\fR\fR
-.ad
-.sp .6
-.RS 4n
-对根目录为 \fIdir\fR 的映像进行操作。如果未根据环境指定或确定目录，则缺省值为 /。有关更多信息，请参见“环境变量”部分。
-.RE
-
-.SH 子命令
-.sp
-.LP
-支持以下子命令：
-.sp
-.ne 2
-.mk
-.na
-\fB\fBpkgdepend generate\fR [\fB-IMm\fR] \fB- d\fR \fIdir\fR [\fB-d\fR \fIdir\fR] [\fB-D\fR \fIname\fR=\fIvalue\fR] [\fB-k\fR \fIpath\fR] \fImanifest_file\fR\fR
-.ad
-.sp .6
-.RS 4n
-生成由 \fImanifest_file\fR 指定的清单文件的依赖项。
-.sp
-.ne 2
-.mk
-.na
-\fB\fB-I\fR\fR
-.ad
-.sp .6
-.RS 4n
-显示 \fImanifest_file\fR 中满足条件的依赖项。请勿使用带 \fB-I\fR 选项的 \fBpkgdepend resolve\fR 命令产生的结果。
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fB\fB-M\fR\fR
-.ad
-.sp .6
-.RS 4n
-显示无法分析的文件类型的列表。
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fB\fB-m\fR\fR
-.ad
-.sp .6
-.RS 4n
-重复显示原始清单，并在其后添加发现的任何依赖项。
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fB\fB-d\fR \fIdir\fR\fR
-.ad
-.sp .6
-.RS 4n
-将 \fIdir\fR 添加到搜索清单文件的目录列表。
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fB\fB-D\fR \fIname\fR=\fI value\fR\fR
-.ad
-.sp .6
-.RS 4n
-添加 \fIvalue\fR，将其作为在 ELF 文件依赖项的运行路径中扩展标记 \fIname\fR 的一种方法。
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fB\fB-k\fR \fIpath\fR\fR
-.ad
-.sp .6
-.RS 4n
-将 \fIpath\fR 添加到搜索内核模块的运行路径列表。使用 \fB-k\fR 选项会删除缺省路径 \fB/kernel\fR 和 \fB/usr/kernel\fR。
-.sp
-运行路径（例如 \fB-k\fR 选项指定的那些运行路径）也可以通过使用操作或清单属性 \fBpkg.depend.runpath\fR 来按操作或清单指定。\fBpkg.depend.runpath \fR 属性的值是要使用的路径的冒号分隔字符串。在清单或操作中设置任何 \fBpkg.depend.runpath\fR 属性时均会覆盖使用 \fB-k\fR 选项指定的路径。
-.sp
-特殊标记 \fB$PKGDEPEND_RUNPATH\fR 可用作 \fBpkg.depend.runpath\fR 属性值的一个组件，以包括所分析文件的标准系统运行路径。
-.RE
-
-在某些情况下，您可能需要防止自动生成依赖项。例如，如果软件包提供了一个用于导入一组模块的样例 Python 脚本，则该样例脚本导入的那些模块不是提供该样例脚本的软件包的依赖项。使用操作或清单属性 \fBpkg.depend.bypass-generate\fR 可以防止针对指定的文件生成依赖项。
-.sp
-\fBpkg.depend.bypass-generate\fR 值是与文件名匹配的 Python 正则表达式。正则表达式隐式固定在文件路径的开头和结尾。以下示例中提供的值与 \fBthis/that\fR 匹配，但与 \fBsomething/this/that/the/other\fR 不匹配。
-.sp
-.in +2
-.nf
-pkg.depend.bypass-generate=this/that
-.fi
-.in -2
-
-有关 Python 正则表达式语法的更多信息，请使用命令 \fBpydoc re\fR 或参见 \fBhttp://docs.python.org/dev/howto/regex.html\fR 中更为完整的文档。
-.sp
-当 \fBpkgdepend generate\fR 输入清单包含 SMF 清单文件时，由这些 SMF 清单文件声明的任何 SMF 服务或实例都将包括在 \fBpkgdepend\fR 输出中。这些 SMF 服务或实例以名称为 \fBorg.opensolaris.smf.fmri\fR 的 \fBset\fR 操作的形式包括在输出中。
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fB\fBpkgdepend resolve\fR [\fB-EmoSv\fR] [\fB-d\fR \fIoutput_dir\fR] [\fB-e\fR \fI external_package_file\fR]... [\fB-s\fR \fIsuffix\fR] \fI manifest_file\fR ...\fR
-.ad
-.sp .6
-.RS 4n
-将文件中的依赖项转换为提供这些文件的软件包中的依赖项。先根据命令行中给定的清单解析依赖项，然后再根据系统上安装的软件包进行解析。缺省情况下，每个清单的依赖项放置在名为 \fB\fImanifest_file\fR.res\fR 的文件中。
-.sp
-.ne 2
-.mk
-.na
-\fB\fB-e\fR \fIexternal_package_file\fR\fR
-.ad
-.sp .6
-.RS 4n
-仅从其名称与 \fIexternal_package_file\fR 中的模式相匹配的系统针对软件包进行解析。可以多次指定此选项。\fB-e\fR 选项不能与 \fB-S\fR 选项一起使用。
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fB\fB-E\fR\fR
-.ad
-.sp .6
-.RS 4n
-如果指定 \fB-e\fR，则显示应当是外部依赖项但却不是外部依赖项的软件包。应当是外部依赖项的软件包是来自其名称与 \fIexternal_package_file\fR 中的模式相匹配的系统的那些软件包。
-.sp
-如果未指定 \fB-e\fR，则显示已解析软件包的外部依赖项。已解析软件包的外部依赖项是未在命令行上命名的那些软件包，是已解析软件包中依赖项的目标。
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fB\fB-m\fR\fR
-.ad
-.sp .6
-.RS 4n
-将重复清单，删除 \fBgenerate\fR 步骤生成的任何依赖项，然后添加已解析的依赖项。
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fB\fB-o\fR\fR
-.ad
-.sp .6
-.RS 4n
-将结果写入到标准输出。该选项旨在供用户使用。将此输出附加到某个文件可能会导致产生无效的清单。在用于清单处理的管道中使用时，强烈建议使用 \fB-d\fR 或 \fB-s\fR 选项，而不要使用 \fB-o\fR。
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fB\fB-d\fR \fIoutput_dir\fR\fR
-.ad
-.sp .6
-.RS 4n
-将单独文件中提供的每个清单的已解析依赖项写入 \fIoutput_dir\fR 中。缺省情况下，每个文件与清单（该清单是写入该文件的依赖项的源）具有相同的基名。
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fB\fB-s\fR \fIsuffix\fR\fR
-.ad
-.sp .6
-.RS 4n
-对于每个输出文件，将 \fIsuffix\fR 附加到文件（该文件是解析的依赖项的源）的基名。如果 \fIsuffix\fR 不是 \fI\&.suffix\fR 格式，则会将句点 (.) 附加到 \fIsuffix\fR 的前面。
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fB\fB-S\fR\fR
-.ad
-.sp .6
-.RS 4n
-只根据命令行上指定的清单进行解析，而不根据系统上安装的清单进行解析。
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fB\fB-v\fR\fR
-.ad
-.sp .6
-.RS 4n
-将包括其他软件包依赖项调试元数据。
-.RE
-
-.RE
-
-.SH 示例
-.LP
-\fB示例 1 \fR生成依赖项
-.sp
-.LP
-为 \fBfoo\fR 中写入的清单（其内容目录在 \fB\&./bar/baz\fR 中）生成依赖项，并将结果存储在 \fBfoo fdeps\fR 中。
-
-.sp
-.in +2
-.nf
-$ \fBpkgdepend generate -d ./bar/baz foo > foo.fdeps\fR
-.fi
-.in -2
-.sp
-
-.LP
-\fB示例 2 \fR解析依赖项
-.sp
-.LP
-根据彼此的情况和当前系统上安装的软件包来解析 \fBfoo.fdeps\fR 和 \fB bar.fdeps\fR 中的文件依赖项。
-
-.sp
-.in +2
-.nf
-$ \fBpkgdepend resolve foo.fdeps bar.fdeps\fR
-$ \fBls *.res\fR
-foo.fdeps.res    bar.fdeps.res
-.fi
-.in -2
-.sp
-
-.LP
-\fB示例 3 \fR生成并解析两个清单的依赖项
-.sp
-.LP
-生成两个清单（\fBfoo\fR 和 \fB bar\fR）的文件依赖项，并保留原始清单中的所有信息。然后解析文件依赖项，并将生成的清单放置在 \fB\&./res \fR中。这些生成的清单可以和 \fBpkgsend publish\fR 一起使用。
-
-.sp
-.in +2
-.nf
-$ \fBpkgdepend generate -d /proto/foo -m foo > ./deps/foo\fR
-$ \fBpkgdepend generate -d /proto/bar -m bar > ./deps/bar\fR
-$ \fBpkgdepend resolve -m -d ./res ./deps/foo ./deps/bar\fR
-$ \fBls ./res\fR
-foo    bar
-.fi
-.in -2
-.sp
-
-.LP
-\fB示例 4 \fR将值添加到 ELF 文件依赖项的标记
-.sp
-.LP
-在为 \fBfoo\fR 中写入的清单（其内容目录在 / 中）生成依赖项时，将 ELF 文件中运行路径内的所有 \fBPLATFORM\fR 标记替换为 \fBsun4v\fR 和 \fBsun4u\fR。
-
-.sp
-.in +2
-.nf
-$ \fBpkgdepend generate -d / -D 'PLATFORM=sun4v' \e\fR
-\fB-D 'PLATFORM=sun4u' foo\fR
-.fi
-.in -2
-.sp
-
-.LP
-\fB示例 5 \fR指定内核模块目录
-.sp
-.LP
-在为 \fB foo\fR 中写入的清单（其内容目录在 / 中）生成依赖项时，将 \fB/kmod\fR 指定为要在其中查找内核模块的目录。
-
-.sp
-.in +2
-.nf
-$ \fBpkgdepend generate -d / -k /kmod foo\fR
-.fi
-.in -2
-.sp
-
-.LP
-\fB示例 6 \fR绕过依赖项生成
-.sp
-.LP
-将 \fBopt/python\fR 附加到给定 Python 脚本的标准 Python 运行路径，然后根据名称为 \fBtest\fR 的所有 Python 模块绕过作为 \fBopt/python/foo/file.py \fR 提供的文件的依赖项生成。
-
-.sp
-.LP
-避免针对 \fBusr/lib/python2.6/vendor-packages/xdg \fR 中提供的任何文件生成依赖项。
-
-.sp
-.in +2
-.nf
-$ \fBcat manifest.py\fR
+<refentry lang="zh" id="pkgdepend-1">
+<refmeta><refentrytitle>pkgdepend</refentrytitle><manvolnum>1</manvolnum> <refmiscinfo class="date">2013 年 7 月 12 日</refmiscinfo> <refmiscinfo class="sectdesc">&man1;</refmiscinfo> <refmiscinfo class="software">&release;</refmiscinfo> <refmiscinfo class="arch">generic</refmiscinfo> <refmiscinfo class="copyright">Copyright (c) 2007, 2013, Oracle and/or its affiliates.All rights reserved.</refmiscinfo> 
+</refmeta>
+<refnamediv>
+<refname>pkgdepend</refname><refpurpose>映像包管理系统依赖项分析器</refpurpose></refnamediv>
+<refsynopsisdiv><title></title>
+<synopsis>/usr/bin/pkgdepend [<replaceable>options</replaceable>] <replaceable>command
+</replaceable> [<replaceable>cmd_options</replaceable>] [<replaceable>operands</replaceable>]
+</synopsis>
+<synopsis>/usr/bin/pkgdepend generate [-IMm] -d <replaceable>dir</replaceable> [-d <replaceable>
+dir</replaceable>]
+    [-D <replaceable>name</replaceable>=<replaceable>value</replaceable>] [-k <replaceable>
+path</replaceable>] <replaceable>manifest_file</replaceable></synopsis>
+<synopsis>/usr/bin/pkgdepend resolve [-EmoSv] [-d <replaceable>output_dir</replaceable>]
+    [-e <replaceable>external_package_file</replaceable>]... [-s <replaceable>suffix
+</replaceable>]
+    <replaceable>manifest_file</replaceable> ...</synopsis>
+</refsynopsisdiv>
+<refsect1 id="pkgdepend-1-desc" role="description"><title></title>
+<para><command>pkgdepend</command> 命令生成并解析软件包的依赖项。某个软件包可能会依赖于其他软件包中的文件。<command>pkgdepend</command> 命令通常使用两次：一次用于文件依赖项生成和一次用于文件到软件包的解析。</para>
+<para><command>generate</command> 子命令将检查软件包的内容，并确定该软件包所需的外部文件。</para>
+<para><command>resolve</command> 子命令使用执行 <command>generate</command> 步骤后输出的文件列表，然后搜索软件包的引用集来确定包含这些依赖文件的软件包的名称。为依赖文件搜索的软件包的引用集为当前在发布者的系统上安装的软件包。</para>
+<para>提供的文件的多个组件用作依赖项信息的源：</para>
+<variablelist>
+<varlistentry><term>ELF</term>
+<listitem><para>分析提供的文件中的 ELF 头以获取依赖项信息，<option>k</option> 和 <option>D</option> 选项可用于修改获取的信息。有关 ELF 依赖项的更多详细信息，请参见 <command>ldd</command> 和<olink targetdoc="OSLLG">《<citetitle remap="book">Oracle Solaris 11.2 Linkers and Libraries Guide</citetitle>》</olink>。 </para>
+</listitem>
+</varlistentry>
+<varlistentry><term>脚本</term>
+<listitem><para>包含引用某个解释程序的 <literal>#!</literal> 行的 Shell 脚本会导致对提供该解释程序的程序包出现依赖项。
+</para>
+</listitem>
+</varlistentry>
+<varlistentry><term>Python</term>
+<listitem><para>Python 脚本首先作为脚本进行分析。此外，脚本声明的任何导入可能还会充当依赖项信息的源。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term>硬链接</term>
+<listitem><para>清单中的硬链接会导致对提供链接目标的软件包出现依赖项。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term>SMF</term>
+<listitem><para>提供的包含 <literal>require_all </literal> 依赖项的 SMF 服务清单会导致对提供 SMF 清单（这些清单提供这些 FMRI）的软件包出现依赖项。</para>
+</listitem>
+</varlistentry>
+</variablelist>
+</refsect1>
+<refsect1 role="options"><title></title>
+<para>支持以下选项：</para>
+<variablelist termlength="wholeline">
+<varlistentry><term><option>?</option></term><term><option>-help</option></term>
+<listitem><para>显示用法消息。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>R</option> <replaceable>dir</replaceable></term>
+<listitem><para>对根目录为 <replaceable>dir</replaceable> 的映像进行操作。如果未根据环境指定或确定目录，则缺省值为 /。有关更多信息，请参见“环境变量”部分。</para>
+</listitem>
+</varlistentry>
+</variablelist>
+</refsect1>
+<refsect1 role="subcommands"><title></title>
+<para>支持以下子命令：</para>
+<variablelist termlength="wholeline">
+<varlistentry><term><command>pkgdepend generate</command> [<option>IMm</option>] <option> d</option> <replaceable>dir</replaceable> [<option>d</option> <replaceable>dir</replaceable>] [<option>D</option> <replaceable>name</replaceable>=<replaceable>value</replaceable>] [<option>k</option> <replaceable>path</replaceable>] <replaceable>manifest_file</replaceable></term>
+<listitem><para>生成由 <replaceable>manifest_file</replaceable> 指定的清单文件的依赖项。</para>
+<variablelist termlength="wholeline">
+<varlistentry><term><option>I</option></term>
+<listitem><para>显示 <replaceable>manifest_file</replaceable> 中满足条件的依赖项。请勿使用带 <option>I</option> 选项的 <command>pkgdepend resolve</command> 命令产生的结果。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>M</option></term>
+<listitem><para>显示无法分析的文件类型的列表。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>m</option></term>
+<listitem><para>重复显示原始清单，并在其后添加发现的任何依赖项。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>d</option> <replaceable>dir</replaceable></term>
+<listitem><para>将 <replaceable>dir</replaceable> 添加到搜索清单文件的目录列表。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>D</option> <replaceable>name</replaceable>=<replaceable> value</replaceable></term>
+<listitem><para>添加 <replaceable>value</replaceable>，将其作为在 ELF 文件依赖项的运行路径中扩展标记 <replaceable>name</replaceable> 的一种方法。
+</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>k</option> <replaceable>path</replaceable></term>
+<listitem><para>将 <replaceable>path</replaceable> 添加到搜索内核模块的运行路径列表。使用 <option>k</option> 选项会删除缺省路径 <filename>/kernel</filename> 和 <filename>/usr/kernel</filename>。</para>
+<para>运行路径（例如 <option>k</option> 选项指定的那些运行路径）也可以通过使用操作或清单属性 <literal>pkg.depend.runpath</literal> 来按操作或清单指定。<literal>pkg.depend.runpath </literal> 属性的值是要使用的路径的冒号分隔字符串。在清单或操作中设置任何 <literal>pkg.depend.runpath</literal> 属性时均会覆盖使用 <option>k</option> 选项指定的路径。</para>
+<para>特殊标记 <envar>$PKGDEPEND_RUNPATH</envar> 可用作 <literal>pkg.depend.runpath</literal> 属性值的一个组件，以包括所分析文件的标准系统运行路径。</para>
+</listitem>
+</varlistentry>
+</variablelist>
+<para>在某些情况下，您可能需要防止自动生成依赖项。例如，如果软件包提供了一个用于导入一组模块的样例 Python 脚本，则该样例脚本导入的那些模块不是提供该样例脚本的软件包的依赖项。使用操作或清单属性 <literal>pkg.depend.bypass-generate</literal> 可以防止针对指定的文件生成依赖项。</para>
+<para><literal>pkg.depend.bypass-generate</literal> 值是与文件名匹配的 Python 正则表达式。正则表达式隐式固定在文件路径的开头和结尾。以下示例中提供的值与 <literal>this/that</literal> 匹配，但与 <literal>something/this/that/the/other</literal> 不匹配。</para>
+<programlisting>pkg.depend.bypass-generate=this/that</programlisting>
+<para>有关 Python 正则表达式语法的更多信息，请使用命令 <command>pydoc re</command> 或参见 <literal>http://docs.python.org/dev/howto/regex.html</literal> 中更为完整的文档。</para>
+<para>当 <command>pkgdepend generate</command> 输入清单包含 SMF 清单文件时，由这些 SMF 清单文件声明的任何 SMF 服务或实例都将包括在 <command>pkgdepend</command> 输出中。这些 SMF 服务或实例以名称为 <literal>org.opensolaris.smf.fmri</literal> 的 <literal>set</literal> 操作的形式包括在输出中。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><command>pkgdepend resolve</command> [<option>EmoSv</option>] [<option>d</option> <replaceable>output_dir</replaceable>] [<option>e</option> <replaceable> external_package_file</replaceable>]... [<option>s</option> <replaceable>suffix</replaceable>] <replaceable> manifest_file</replaceable> ...</term>
+<listitem><para>将文件中的依赖项转换为提供这些文件的软件包中的依赖项。先根据命令行中给定的清单解析依赖项，然后再根据系统上安装的软件包进行解析。缺省情况下，每个清单的依赖项放置在名为 <filename><replaceable>manifest_file</replaceable>.res</filename> 的文件中。</para>
+<variablelist termlength="wholeline">
+<varlistentry><term><option>e</option> <replaceable>external_package_file</replaceable></term>
+<listitem><para>仅从其名称与 <replaceable>external_package_file</replaceable> 中的模式相匹配的系统针对软件包进行解析。可以多次指定此选项。<option>e</option> 选项不能与 <option>S</option> 选项一起使用。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>E</option></term>
+<listitem><para>如果指定 <option>e</option>，则显示应当是外部依赖项但却不是外部依赖项的软件包。应当是外部依赖项的软件包是来自其名称与 <replaceable>external_package_file</replaceable> 中的模式相匹配的系统的那些软件包。
+</para>
+<para>如果未指定 <option>e</option>，则显示已解析软件包的外部依赖项。已解析软件包的外部依赖项是未在命令行上命名的那些软件包，是已解析软件包中依赖项的目标。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>m</option></term>
+<listitem><para>将重复清单，删除 <command>generate</command> 步骤生成的任何依赖项，然后添加已解析的依赖项。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>o</option></term>
+<listitem><para>将结果写入到标准输出。该选项旨在供用户使用。将此输出附加到某个文件可能会导致产生无效的清单。在用于清单处理的管道中使用时，强烈建议使用 <option>d</option> 或 <option>s</option> 选项，而不要使用 <option>o</option>。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>d</option> <replaceable>output_dir</replaceable></term>
+<listitem><para>将单独文件中提供的每个清单的已解析依赖项写入 <replaceable>output_dir</replaceable> 中。缺省情况下，每个文件与清单（该清单是写入该文件的依赖项的源）具有相同的基名。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>s</option> <replaceable>suffix</replaceable></term>
+<listitem><para>对于每个输出文件，将 <replaceable>suffix</replaceable> 附加到文件（该文件是解析的依赖项的源）的基名。如果 <replaceable>suffix</replaceable> 不是 <replaceable>.suffix</replaceable> 格式，则会将句点 (.) 附加到 <replaceable>suffix</replaceable> 的前面。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>S</option></term>
+<listitem><para>只根据命令行上指定的清单进行解析，而不根据系统上安装的清单进行解析。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>v</option></term>
+<listitem><para>将包括其他软件包依赖项调试元数据。</para>
+</listitem>
+</varlistentry>
+</variablelist>
+</listitem>
+</varlistentry>
+</variablelist>
+</refsect1>
+<refsect1 role="examples"><title></title>
+<example><title>生成依赖项</title>
+<para>为 <filename>foo</filename> 中写入的清单（其内容目录在 <filename>./bar/baz</filename> 中）生成依赖项，并将结果存储在 <filename>foo fdeps</filename> 中。</para>
+<screen>$ <userinput>pkgdepend generate -d ./bar/baz foo > foo.fdeps</userinput></screen>
+</example>
+<example><title>解析依赖项</title>
+<para>根据彼此的情况和当前系统上安装的软件包来解析 <filename>foo.fdeps</filename> 和 <filename> bar.fdeps</filename> 中的文件依赖项。</para>
+<screen>$ <userinput>pkgdepend resolve foo.fdeps bar.fdeps</userinput>
+$ <userinput>ls *.res</userinput>
+foo.fdeps.res    bar.fdeps.res</screen>
+</example>
+<example><title>生成并解析两个清单的依赖项</title>
+<para>生成两个清单（<literal>foo</literal> 和 <literal> bar</literal>）的文件依赖项，并保留原始清单中的所有信息。然后解析文件依赖项，并将生成的清单放置在 <filename>./res </filename>中。这些生成的清单可以和 <command>pkgsend publish</command> 一起使用。
+</para>
+<screen>$ <userinput>pkgdepend generate -d /proto/foo -m foo > ./deps/foo</userinput>
+$ <userinput>pkgdepend generate -d /proto/bar -m bar > ./deps/bar</userinput>
+$ <userinput>pkgdepend resolve -m -d ./res ./deps/foo ./deps/bar</userinput>
+$ <userinput>ls ./res</userinput>
+foo    bar</screen>
+</example>
+<example><title>将值添加到 ELF 文件依赖项的标记</title>
+<para>在为 <literal>foo</literal> 中写入的清单（其内容目录在 / 中）生成依赖项时，将 ELF 文件中运行路径内的所有 <envar>PLATFORM</envar> 标记替换为 <literal>sun4v</literal> 和 <literal>sun4u</literal>。</para>
+<screen>$ <userinput>pkgdepend generate -d / -D 'PLATFORM=sun4v' &bsol;</userinput>
+<userinput>-D 'PLATFORM=sun4u' foo</userinput></screen>
+</example>
+<example><title>指定内核模块目录</title>
+<para>在为 <filename> foo</filename> 中写入的清单（其内容目录在 / 中）生成依赖项时，将 <filename>/kmod</filename> 指定为要在其中查找内核模块的目录。</para>
+<screen>$ <userinput>pkgdepend generate -d / -k /kmod foo</userinput></screen>
+</example>
+<example><title>绕过依赖项生成</title>
+<para>将 <filename>opt/python</filename> 附加到给定 Python 脚本的标准 Python 运行路径，然后根据名称为 <literal>test</literal> 的所有 Python 模块绕过作为 <filename>opt/python/foo/file.py </filename> 提供的文件的依赖项生成。</para>
+<para>避免针对 <filename>usr/lib/python2.6/vendor-packages/xdg </filename> 中提供的任何文件生成依赖项。</para>
+<screen>$ <userinput>cat manifest.py</userinput>
 set name=pkg.fmri value=pkg:/mypackage@1.0,1.0
 set name=pkg.summary value="My test package"
 dir path=opt mode=0755 group=sys owner=root
@@ -421,101 +191,81 @@ file path=opt/python/foo/__init__.py mode=0644 group=sys owner=root
 #
 # Add runpath and bypass-generate attributes:
 #
-file path=opt/python/foo/file.py mode=0644 group=sys owner=root \e
-    pkg.depend.bypass-generate=.*/test.py.* \e
-    pkg.depend.bypass-generate=.*/testmodule.so \e
-    pkg.depend.bypass-generate=.*/test.so \e
-    pkg.depend.bypass-generate=usr/lib/python2.6/vendor-packages/xdg/.* \e
+file path=opt/python/foo/file.py mode=0644 group=sys owner=root &bsol;
+    pkg.depend.bypass-generate=.*/test.py.* &bsol;
+    pkg.depend.bypass-generate=.*/testmodule.so &bsol;
+    pkg.depend.bypass-generate=.*/test.so &bsol;
+    pkg.depend.bypass-generate=usr/lib/python2.6/vendor-packages/xdg/.* &bsol;
     pkg.depend.runpath=$PKGDEPEND_RUNPATH:/opt/python
 
-$ \fBpkgdepend generate -d proto manifest.py\fR
-.fi
-.in -2
-.sp
+$ <userinput>pkgdepend generate -d proto manifest.py</userinput></screen>
+</example>
+</refsect1>
+<refsect1 role="environment-variables"><title></title>
+<variablelist>
+<varlistentry><term><envar>PKG_IMAGE</envar></term>
+<listitem><para>指定包含要用于软件包操作的映像的目录。如果指定 <option>R</option>，则忽略该值。</para>
+</listitem>
+</varlistentry>
+</variablelist>
+</refsect1>
+<refsect1 role="exit-status"><title></title>
+<para>将返回以下退出值：</para>
+<variablelist>
+<varlistentry><term><returnvalue>0</returnvalue></term>
+<listitem><para>一切正常工作。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><returnvalue>1</returnvalue></term>
+<listitem><para>出现错误。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><returnvalue>2</returnvalue></term>
+<listitem><para>指定的命令行选项无效。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><returnvalue>99</returnvalue></term>
+<listitem><para>发生了意外的异常。</para>
+</listitem>
+</varlistentry>
+</variablelist>
+</refsect1>
+<refsect1 role="attributes"><title></title>
+<para>有关下列属性的说明，请参见 <literal>attributes</literal>(5)：</para>
+<informaltable frame="all" orient="port">
+<tgroup cols="2" colsep="1" rowsep="1"><colspec colname="col1" colwidth="198*" align="left" /><colspec colname="col2" colwidth="198*" align="left" /><thead>
+<row>
+<entry align="center">
+<para>属性类型</para>
+</entry>
+<entry align="center">
+<para>属性值</para>
+</entry>
+</row>
+</thead>
+<tbody>
+<row>
+<entry align="left">
+<para>可用性</para>
+</entry>
+<entry align="left">
+<para><literal>package/pkg</literal></para>
+</entry>
+</row>
+<row>
+<entry align="left">
+<para>接口稳定性</para>
+</entry>
+<entry align="left">
+<para>Uncommitted（未确定）</para>
+</entry>
+</row>
+</tbody>
+</tgroup>
+</informaltable></refsect1>
+<refsect1 role="see-also"><title></title>
+<para><olink targetdoc="refman" targetptr="pkg-5"><citerefentry><refentrytitle>pkg</refentrytitle><manvolnum>5</manvolnum></citerefentry></olink></para>
+<para><literal>https://java.net/projects/ips/pages/Home</literal></para>
+</refsect1>
+</refentry>
 
-.SH 环境变量
-.sp
-.ne 2
-.mk
-.na
-\fB\fBPKG_IMAGE\fR\fR
-.ad
-.RS 13n
-.rt  
-指定包含要用于软件包操作的映像的目录。如果指定 \fB-R\fR，则忽略该值。
-.RE
-
-.SH 退出状态
-.sp
-.LP
-将返回以下退出值：
-.sp
-.ne 2
-.mk
-.na
-\fB\fB0\fR\fR
-.ad
-.RS 6n
-.rt  
-一切正常工作。
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fB\fB1\fR\fR
-.ad
-.RS 6n
-.rt  
-出现错误。
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fB\fB2\fR\fR
-.ad
-.RS 6n
-.rt  
-指定的命令行选项无效。
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fB\fB99\fR\fR
-.ad
-.RS 6n
-.rt  
-发生了意外的异常。
-.RE
-
-.SH 属性
-.sp
-.LP
-有关下列属性的说明，请参见 \fBattributes\fR(5)：
-.sp
-
-.sp
-.TS
-tab() box;
-cw(2.75i) |cw(2.75i) 
-lw(2.75i) |lw(2.75i) 
-.
-属性类型属性值
-_
-可用性\fBpackage/pkg\fR
-_
-接口稳定性Uncommitted（未确定）
-.TE
-
-.SH 另请参见
-.sp
-.LP
-\fBpkg\fR(5)
-.sp
-.LP
-\fBhttps://java.net/projects/ips/pages/Home\fR

@@ -1,363 +1,305 @@
-'\" te
-.\" Copyright (c) 2007, 2014, Oracle and/or its affiliates. All rights reserved.
-.TH pkg.depot-config 1M "31 Mar 2014" "SunOS 5.12" "System Administration Commands"
-.SH NAME
-pkg.depot-config \- Image Packaging System HTTP depot configuration generator
-.SH SYNOPSIS
-.LP
-.nf
-/usr/lib/pkg.depot-config ( -d \fIrepository_dir\fR | -S )
-    -r \fIruntime_dir\fR [-c \fIcache_dir\fR] [-s \fIcache_size\fR] [-p \fIport\fR]
-    [-h \fIhostname\fR] [-l \fIlogs_dir\fR] [-T \fItemplate_dir\fR]
-    [-A] [-t \fIserver_type\fR] ( ([-F] [-P \fIserver_prefix\fR] ) | [--https
-    ( ( --cert \fIserver_cert_file\fR --key \fIserver_key_file\fR
-    [--cert-chain \fIssl_cert_chain_file\fR] ) |
-    --cert-key-dir \fIcert_key_directory\fR )
-    [ (--ca-cert \fIca_cert_file\fR --ca-key \fIca_key_file\fR ) ]
-    [--smf-fmri \fIsmf_pkg_depot_fmri\fR] ] )
-.fi
+<?xml version="1.0" encoding="iso-8859-1"?>
+<!--Arbortext, Inc., 1988-2008, v.4002-->
+<!DOCTYPE refentry PUBLIC "-//Sun Microsystems//DTD SolBook-XML 3.7//EN" "xsolbook.dtd" [
+<!ENTITY % ent SYSTEM "entities.ent">
+%ent;
+]>
 
-.SH DESCRIPTION
-.sp
-.LP
-\fBpkg.depot-config\fR generates the configuration files for the Image Packaging System (IPS) depot. The IPS depot provides scalable read-only access to IPS package repositories over HTTP.
-.sp
-.LP
-The IPS depot is configured using the \fBsvc:/application/pkg/depot\fR Service Management Facility (SMF) service in conjunction with one or more instances of the \fBsvc:/application/pkg/server\fR service.
-.sp
-.LP
-\fBpkg.depot-config\fR generates a configuration for use by the \fBpkg/depot\fR service, or the \fBpkg.depot-config\fR command can be invoked on the command line to generate a standalone configuration.
-.sp
-.LP
-To change depot configuration, modify the properties of the \fBpkg/depot\fR service or the appropriate \fBpkg/server\fR service instance and refresh the instance. Modifying \fBpkg/server\fR service instance states can cause the \fBpkg/depot\fR service to be refreshed and the depot configuration files to be regenerated.
-.sp
-.LP
-To serve multiple repositories, you need a separate \fBpkg/server\fR service instance for each repository but only one \fBpkg/depot\fR service instance. Each instance of the \fBpkg/server\fR service maps to an IPS repository specified by the \fBpkg/inst_root\fR service property. The  \fBpkg/server\fR service does one of the following:
-.RS +4
-.TP
-.ie t \(bu
-.el o
-Runs an associated \fBpkg.depotd\fR process to serve the content of the repository.
-.RE
-.RS +4
-.TP
-.ie t \(bu
-.el o
-Runs no processes and instead helps to configure the \fBpkg.depot\fR service.
-.RE
-.sp
-.LP
-Each repository is supported by a \fBpkg/server\fR service instance. A repository might also be supported by the \fBpkg/depot:default\fR service. If the \fBpkg/standalone\fR property of a particular \fBpkg/server\fR instance is set to \fBtrue\fR, then the repository is served by the \fBpkg.depotd\fR process. If the \fBpkg/standalone\fR property of a particular \fBpkg/server\fR instance is set to \fBfalse\fR, then the repository is served by the \fBpkg/depot:default\fR service. Each \fBpkg/server\fR instance either runs \fBpkg.depotd\fR or contributes configuration information to \fBpkg/depot:default\fR.
-.sp
-.LP
-When you enable a \fBpkg/server\fR instance for which the \fBpkg/standalone\fR property set to \fBfalse\fR and the \fBpkg/readonly\fR property set to \fBtrue\fR, the \fBpkg/depot:default\fR configuration is refreshed, and that repository is served by the \fBpkg/depot:default\fR service. When you disable that same \fBpkg/server\fR instance, the \fBpkg/depot:default\fR service is refreshed, and that repository is no longer served by the \fBpkg/depot:default\fR service.
-.sp
-.LP
-You can configure the depot manually by using the \fBpkg.depot-config\fR command with the \fB-F\fR option. The \fB-F\fR option produces a web server configuration file that can be added to an existing web server. In this case, the depot runs with reduced functionality: \fBpkg\fR(1) search support and the depot browser user interface are not available. All other \fBpkg\fR(1) functionality required to install and update Oracle Solaris 11 systems is available.
-.sp
-.LP
-Use one of the following methods to pass repository paths and configuration to the depot server:
-.RS +4
-.TP
-.ie t \(bu
-.el o
-Use the \fBpkg.depot-config\fR command with the \fB-S\fR option. The \fB-S\fR option causes \fBpkg.depotd\fR to query the system for all instances of the \fBpkg/server\fR service that are marked as \fBonline\fR and have the \fBpkg/standalone\fR property set to \fBfalse\fR and the \fBpkg/readonly\fR property set to \fBtrue\fR.
-.RE
-.RS +4
-.TP
-.ie t \(bu
-.el o
-Use the \fBpkg.depot-config\fR command with the \fB-d\fR option. The \fB-d\fR option provides a path to the \fBpkg\fR(5) repository to use. Multiple \fB-d\fR options are accepted.
-.RE
-.sp
-.LP
-Repositories must have file permissions that permit the files and directories in the repositories to be read by the \fBpkg5srv\fR user.
-.SH OPTIONS
-.sp
-.LP
-The following options are supported:
-.sp
-.ne 2
-.mk
-.na
-\fB\fB-d\fR \fIprefix\fR=\fIrepository_dir\fR\fR
-.ad
-.sp .6
-.RS 4n
-Specify the path to a \fBpkg\fR(5) file repository to use. The \fIprefix\fR is used as a prefix into the \fBdepot-config\fR web server namespace where this repository can be accessed. The \fIrepository_dir\fR is a directory that contains a version 4 \fBpkg\fR(5) file repository, which is included in the depot server configuration. The \fB-d\fR option cannot be used with the \fB-S\fR option. At least one \fB-d\fR option is required if the \fB-S\fR option is not used. Multiple \fB-d\fR options are allowed.
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fB\fB-S\fR\fR
-.ad
-.sp .6
-.RS 4n
-Query the system for repositories to use. The \fB-S\fR option causes \fBpkg.depotd\fR to query the system for all instances of the \fBpkg/server\fR service that are marked as \fBonline\fR and have the \fBpkg/standalone\fR property set to \fBfalse\fR and the \fBpkg/readonly\fR property set to \fBtrue\fR. These property values allow the depot to run concurrently with \fBpkg/server\fR instances that do not have these properties set. See the \fBpkg.depotd\fR(1M) man page for information about \fBpkg.depotd\fR. The \fB-S\fR option cannot be used with the \fB-d\fR option.
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fB\fB-r\fR \fIruntime_dir\fR\fR
-.ad
-.sp .6
-.RS 4n
-Specify the default output directory for configuration files. This directory can also be specified by setting the \fBconfig/runtime_dir\fR property in the \fBpkg/server\fR service. When the \fBconfig/runtime_dir\fR property is used, the contents of this directory are recreated during service startup.
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fB\fB-c\fR \fIcache_dir\fR\fR
-.ad
-.sp .6
-.RS 4n
-Specify the directory where the depot stores its cache. If the \fB-A\fR option is also used, the cache directory is also used to store server-side \fBpkg\fR(5) search indexes. This directory can also be specified by setting the \fBconfig/cache_dir\fR property in the \fBpkg/server\fR service.
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fB\fB-s\fR \fIcache_size\fR\fR
-.ad
-.sp .6
-.RS 4n
-Specify the maximum cache size for the depot. The \fIcache_size\fR value is an integer number of megabytes. If \fIcache_size\fR is 0, no caching is performed by the web server. The default value of \fIcache_size\fR is 0. If all file repositories served by the depot server are local to the depot server (not accessed over NFS), the default value of 0 is sufficient. This cache size can also be specified by setting the \fBconfig/cache_max\fR property in the \fBpkg/server\fR service.
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fB\fB-p\fR \fIport\fR\fR
-.ad
-.sp .6
-.RS 4n
-Specify the port number that the depot will listen to. The default value of \fIport\fR is 80. This port can also be specified by setting the \fBconfig/port\fR property in the \fBpkg/server\fR service.
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fB\fB-h\fR \fIhostname\fR\fR
-.ad
-.sp .6
-.RS 4n
-Specify the host name to use as the argument to the Apache \fBServerName\fR directive. The default value of \fIhostname\fR is \fB0.0.0.0\fR. This host name can also be specified by setting the \fBconfig/host\fR property in the \fBpkg/server\fR service.
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fB\fB-l\fR \fIlogs_dir\fR\fR
-.ad
-.sp .6
-.RS 4n
-Specify the directory where the depot stores log files. The default value of \fIlogs_dir\fR is \fB/var/log/pkg/depot\fR. This directory can also be specified by setting the \fBconfig/log_dir\fR property in the \fBpkg/server\fR service.
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fB\fB-T\fR \fItemplate_dir\fR\fR
-.ad
-.sp .6
-.RS 4n
-Specify the directory where the depot builds the depot configuration and stores additional files needed to the run the depot. The default value of \fItemplate_dir\fR is \fB/etc/pkg/depot\fR. This directory can also be specified by setting the \fBconfig/template_dir\fR property in the \fBpkg/server\fR service. This directory should not need to be changed.
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fB\fB-A\fR \fR
-.ad
-.sp .6
-.RS 4n
-Refresh any search indices maintained by the depot when \fBpkgrepo refresh\fR is invoked. By default, search indices maintained by the depot are not refreshed when \fBpkgrepo refresh\fR is invoked. This option can also be specified by setting the \fBconfig/allow_refresh\fR property in the \fBpkg/server\fR service. Best practice is to not use the \fB-A\fR option or the \fBconfig/allow_refresh\fR property to refresh the index on production servers because the search index is refreshed automatically when the depot starts.
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fB\fB-t\fR \fIserver_type\fR\fR
-.ad
-.sp .6
-.RS 4n
-Specify the type of web server that \fBpkg.depot-config\fR should output configuration information for. In this release, the value \fBapache2\fR is both the default value and the only accepted value for \fIserver_type\fR.
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fB\fB-F\fR \fR
-.ad
-.sp .6
-.RS 4n
-Produce a partial configuration that enables a web server to serve basic \fBpkg\fR(5) installation operations for clients using an existing web service. For an Apache web server running on the Oracle Solaris OS, the partial configuration file could be placed in \fB/etc/apache2/2.2/conf.d\fR. For other operating systems, consult your OS documentation to determine how to use this partial configuration file. See also the \fB-P\fR option.
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fB\fB-P\fR \fIserver_prefix\fR\fR
-.ad
-.sp .6
-.RS 4n
-Specify the prefix used to map the depot into the web server namespace. The \fB-P\fR option is intended to be used with the \fB-F\fR option.
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fB\fB--https\fR
-.ad
-.sp .6
-.RS 4n
-Enable the HTTPS service. This option cannot be used with the \fB-F\fR or \fB-P\fR options.
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fB\fB--cert\fR \fIserver_cert_file\fR\fR
-.ad
-.sp .6
-.RS 4n
-Specify the location of the server certificate file. This option can only be used with the \fB--https\fR option. Either both the \fB--cert\fR and \fB--key\fR options or the \fB--cert-key-dir\fR option must be used with the \fB--https\fR option.
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fB\fB--key\fR \fIserver_key_file\fR\fR
-.ad
-.sp .6
-.RS 4n
-Specify the location of the server key file. This option can only be used with the \fB--https\fR option. Either both the \fB--cert\fR and \fB--key\fR options or the \fB--cert-key-dir\fR option must be used with the \fB--https\fR option.
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fB\fB--cert-key-dir\fR \fIcert_key_directory\fR\fR
-.ad
-.sp .6
-.RS 4n
-Specify the directory where the automatically generated certificates and keys should be stored if options \fB--cert\fR and \fB--key\fR are omitted. This option can only be used with the \fB--https\fR option. Either both the \fB--cert\fR and \fB--key\fR options or the \fB--cert-key-dir\fR option must be used with the \fB--https\fR option.
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fB\fB--ca-cert\fR \fIssl_ca_cert_file\fR\fR
-.ad
-.sp .6
-.RS 4n
-Specify the location of the top CA certificate file. This option can only be used with the \fB--https\fR option and must be used with \fB--ca-key\fR option together. The option is only used for automatically generating the server certificate based on this CA certificate and the key specified by \fB--ca-key\fR option.
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fB\fB--ca-key\fR \fIssl_ca_key_file\fR\fR
-.ad
-.sp .6
-.RS 4n
-Specify the location of the top CA key file. This option can only be used with the \fB--https\fR option and must be used with \fB--ca-cert\fR option together. The option is only used for automatically generating the server certificate based on this key and the CA certificate specified by \fB--ca-cert\fR option.
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fB\fB--cert-chain\fR \fIssl_cert_chain_file\fR\fR
-.ad
-.sp .6
-.RS 4n
-This option can only be used with the \fB--https\fR option. This option is required if the server certificate is not signed by the top level CA directly but is signed by an intermediate authority.
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fB\fB--smf-fmri\fR \fIsmf_pkg_depot_fmri\fR\fR
-.ad
-.sp .6
-.RS 4n
-Specify the FMRI of the pkg/depot service instance. This option is used to update the corresponding SMF properties of that instance if any certificates or keys are automatically generated for that instance. This option can only be used with the \fB--https\fR option.
-.RE
-
-.SH PROVIDING ADDITIONAL SERVER CONFIGURATION
-.sp
-.LP
-When the \fB-F\fR option is not used, and the default \fB-t apache2\fR is set, the \fBsvc:/application/pkg/depot\fR service looks in \fB/etc/pkg/depot/conf.d\fR at startup for additional Apache configuration files that can be used to extend the server configuration. Consult the Apache web server documentation for details on the directives that are used to configure the web server.
-.SH EXAMPLES
-.LP
-\fBExample 1 \fRShowing How a Repository Is Served
-.sp
-.LP
-The system in this example is running multiple instances of \fBsvc:/application/pkg/server\fR and a single instance of \fBsvc:/application/pkg/depot\fR. The \fBpkg/server:standalone\fR instance has an associated \fBpkg.depotd\fR process. The \fBpkg.depotd\fR process serves the repository configured in the \fBpkg/server:standalone\fR service. The \fBpkg/server:userland\fR instance has no associated processes. The \fBpkg/depot:default\fR service serves the repository configured in the \fBpkg/server:userland\fR service.
-
-.sp
-.in +2
-.nf
-$ \fBsvcs pkg/server\fR
+<refentry id="pkg.depot-config-1m">
+<refmeta><refentrytitle>pkg.depot-config</refentrytitle><manvolnum>1M</manvolnum>
+<refmiscinfo class="date">31 Mar 2014</refmiscinfo>
+<refmiscinfo class="sectdesc">&man1m;</refmiscinfo>
+<refmiscinfo class="software">&release;</refmiscinfo>
+<refmiscinfo class="arch">generic</refmiscinfo>
+<refmiscinfo class="copyright">Copyright (c) 2007, 2014, Oracle and/or its affiliates. All rights reserved.</refmiscinfo>
+</refmeta>
+<refnamediv>
+<refname>pkg.depot-config</refname><refpurpose>Image Packaging System HTTP depot configuration generator</refpurpose></refnamediv>
+<refsynopsisdiv><title></title>
+<synopsis>/usr/lib/pkg.depot-config ( -d <replaceable>repository_dir</replaceable> | -S )
+    -r <replaceable>runtime_dir</replaceable> [-c <replaceable>cache_dir</replaceable>] [-s <replaceable>cache_size</replaceable>] [-p <replaceable>port</replaceable>]
+    [-h <replaceable>hostname</replaceable>] [-l <replaceable>logs_dir</replaceable>] [-T <replaceable>template_dir</replaceable>]
+    [-A] [-t <replaceable>server_type</replaceable>] ( ([-F] [-P <replaceable>server_prefix</replaceable>] ) |
+    [--https ( (--cert <replaceable>server_cert_file</replaceable> --key <replaceable>server_key_file</replaceable>
+    [--cert-chain <replaceable>ssl_cert_chain_file</replaceable>] ) |
+    --cert-key-dir <replaceable>cert_key_directory</replaceable> )
+    [ (--ca-cert <replaceable>ca_cert_file</replaceable> --ca-key <replaceable>ca_key_file</replaceable> ) ]
+    [--smf-fmri <replaceable>smf_pkg_depot_fmri</replaceable>] ] )</synopsis>
+</refsynopsisdiv>
+<refsect1 id="GLHAR" role="description"><title></title>
+<para><command>pkg.depot-config</command> generates the configuration files
+for the Image Packaging System (IPS) depot. The IPS depot provides scalable
+read-only access to IPS package repositories over HTTP.</para>
+<para>The IPS depot is configured using the <literal>svc:/application/pkg/depot</literal> Service
+Management Facility (SMF) service in conjunction with one or more instances
+of the <literal>svc:/application/pkg/server</literal> service.</para>
+<para><command>pkg.depot-config</command> generates a configuration for use
+by the <literal>pkg/depot</literal> service, or the <command>pkg.depot-config</command> command
+can be invoked on the command line to generate a standalone configuration.</para>
+<para>To change depot configuration, modify the properties of the <literal>pkg/depot
+</literal> service or the appropriate <literal>pkg/server</literal> service
+instance and refresh the instance. Modifying <literal>pkg/server</literal> service
+instance states can cause the <literal>pkg/depot</literal> service to be refreshed
+and the depot configuration files to be regenerated.</para>
+<para>To serve multiple repositories, you need a separate
+<literal>pkg/server</literal> service instance for each repository but only one
+<literal>pkg/depot</literal> service instance. Each instance of the
+<literal>pkg/server</literal> service maps to an IPS repository specified by
+the <literal>pkg/inst_root</literal> service property. The 
+<literal>pkg/server</literal> service does one of the following:</para>
+<itemizedlist>
+<listitem><para>Runs an associated <literal>pkg.depotd</literal> process to
+serve the content of the repository.</para></listitem>
+<listitem><para>Runs no processes and instead helps to configure the
+<literal>pkg.depot</literal> service.</para>
+</listitem>
+</itemizedlist>
+<para>Each repository is supported by a <literal>pkg/server</literal> service
+instance. A repository might also be supported by the
+<literal>pkg/depot:default</literal> service. If the
+<literal>pkg/standalone</literal> property of a particular
+<literal>pkg/server</literal> instance is set to <literal>true</literal>, then
+the repository is served by the <literal>pkg.depotd</literal> process. If the
+<literal>pkg/standalone</literal> property of a particular
+<literal>pkg/server</literal> instance is set to <literal>false</literal>, then
+the repository is served by the <literal>pkg/depot:default</literal> service.
+Each <literal>pkg/server</literal> instance either runs
+<literal>pkg.depotd</literal> or contributes configuration information to
+<literal>pkg/depot:default</literal>.</para>
+<para>When you enable a <literal>pkg/server</literal> instance for which the
+<literal>pkg/standalone</literal> property set to <literal>false</literal> and
+the <literal>pkg/readonly</literal> property set to <literal>true</literal>,
+the <literal>pkg/depot:default</literal> configuration is refreshed, and that
+repository is served by the <literal>pkg/depot:default</literal> service. When
+you disable that same <literal>pkg/server</literal> instance, the
+<literal>pkg/depot:default</literal> service is refreshed, and that repository
+is no longer served by the <literal>pkg/depot:default</literal> service.</para>
+<para>You can configure the depot manually by using the
+<command>pkg.depot-config</command> command with the <option>F</option> option.
+The <option>F</option> option
+produces a web server configuration file that can be added to an existing
+web server. In this case, the depot runs with reduced functionality: <literal>pkg
+</literal>(1) search support and the depot browser user interface are not
+available. All other <literal>pkg</literal>(1) functionality required to install
+and update Oracle Solaris 11 systems is available.</para>
+<itemizedlist>
+<para>Use one of the following methods to pass repository paths and configuration
+to the depot server:</para>
+<listitem><para>Use the <command>pkg.depot-config</command> command with the <option>
+S</option> option. The <option>S</option> option causes <literal>pkg.depotd</literal> to
+query the system for all instances of the <literal>pkg/server</literal> service
+that are marked as <literal>online</literal> and have the <literal>pkg/standalone
+</literal> property set to <literal>false</literal> and the <literal>pkg/readonly
+</literal> property set to <literal>true</literal>.</para></listitem>
+<listitem><para>Use the <command>pkg.depot-config</command> command with the <option>
+d</option> option. The <option>d</option> option provides a path to the <literal>
+pkg</literal>(5) repository to use. Multiple <option>d</option> options are
+accepted.</para></listitem>
+</itemizedlist>
+<para>Repositories must have file permissions that permit the files and directories
+in the repositories to be read by the <literal>pkg5srv</literal> user.</para>
+</refsect1>
+<refsect1 role="options"><title></title>
+<para>The following options are supported:</para>
+<variablelist termlength="wholeline">
+<varlistentry><term><option>d</option> <replaceable>prefix</replaceable>=<replaceable>
+repository_dir</replaceable></term>
+<listitem><para>Specify the path to a <literal>pkg</literal>(5) file repository
+to use. The <replaceable>prefix</replaceable> is used as a prefix into the <literal>
+depot-config</literal> web server namespace where this repository can be accessed.
+The <replaceable>repository_dir</replaceable> is a directory that contains
+a version 4 <literal>pkg</literal>(5) file repository, which is included in
+the depot server configuration. The <option>d</option> option cannot be used
+with the <option>S</option> option. At least one <option>d</option> option
+is required if the <option>S</option> option is not used. Multiple <option>d</option> options
+are allowed.</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>S</option></term>
+<listitem><para>Query the system for repositories to use. The <option>S</option>
+option causes <literal>pkg.depotd</literal> to query the system for all
+instances of the <literal>pkg/server</literal> service that are marked as
+<literal>online</literal> and have the <literal>pkg/standalone</literal>
+property set to <literal>false</literal> and the <literal>pkg/readonly</literal>
+property set to <literal>true</literal>. These property values allow the depot
+to run concurrently with <literal>pkg/server</literal> instances that do not
+have these properties set. See the <literal>pkg.depotd</literal>(1M) man page
+for information about <literal>pkg.depotd</literal>. The <option>S</option>
+option cannot be used with the <option>d</option> option.</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>r</option> <replaceable>runtime_dir</replaceable></term>
+<listitem><para>Specify the default output directory for configuration files.
+This directory can also be specified by setting the <literal>config/runtime_dir</literal> property
+in the <literal>pkg/server</literal> service. When the <literal>config/runtime_dir
+</literal> property is used, the contents of this directory are recreated
+during service startup.</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>c</option> <replaceable>cache_dir</replaceable></term>
+<listitem><para>Specify the directory where the depot stores its cache. If
+the <option>A</option> option is also used, the cache directory is also used
+to store server-side <literal>pkg</literal>(5) search indexes. This directory
+can also be specified by setting the <literal>config/cache_dir</literal> property
+in the <literal>pkg/server</literal> service.</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>s</option> <replaceable>cache_size</replaceable></term>
+<listitem><para>Specify the maximum cache size for the depot. The <replaceable>cache_size
+</replaceable> value is an integer number of megabytes. If <replaceable>cache_size
+</replaceable> is 0, no caching is performed by the web server. The default
+value of <replaceable>cache_size</replaceable> is 0. If all file repositories
+served by the depot server are local to the depot server (not accessed over
+NFS), the default value of 0 is sufficient. This cache size can also be specified
+by setting the <literal>config/cache_max</literal> property in the <literal>pkg/server
+</literal> service.</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>p</option> <replaceable>port</replaceable></term>
+<listitem><para>Specify the port number that the depot will listen to. The
+default value of <replaceable>port</replaceable> is 80. This port can also
+be specified by setting the <literal>config/port</literal> property in the <literal>
+pkg/server</literal> service.</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>h</option> <replaceable>hostname</replaceable></term>
+<listitem><para>Specify the host name to use as the argument to the Apache <literal>
+ServerName</literal> directive. The default value of <replaceable>hostname</replaceable> is <literal>
+0.0.0.0</literal>. This host name can also be specified by setting the <literal>config/host
+</literal> property in the <literal>pkg/server</literal> service.</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>l</option> <replaceable>logs_dir</replaceable></term>
+<listitem><para>Specify the directory where the depot stores log files. The
+default value of <replaceable>logs_dir</replaceable> is <filename>/var/log/pkg/depot
+</filename>. This directory can also be specified by setting the <literal>config/log_dir
+</literal> property in the <literal>pkg/server</literal> service.</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>T</option> <replaceable>template_dir</replaceable></term>
+<listitem><para>Specify the directory where the depot builds the depot configuration
+and stores additional files needed to the run the depot. The default value
+of <replaceable>template_dir</replaceable> is <filename>/etc/pkg/depot</filename>.
+This directory can also be specified by setting the <literal>config/template_dir</literal> property
+in the <literal>pkg/server</literal> service. This directory should not need
+to be changed.</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>A</option> </term>
+<listitem><para>Refresh any search indices maintained by the depot when <command>
+pkgrepo refresh</command> is invoked. By default, search indices maintained
+by the depot are not refreshed when <command>pkgrepo refresh</command> is
+invoked. This option can also be specified by setting the <literal>config/allow_refresh
+</literal> property in the <literal>pkg/server</literal> service. Best practice
+is to not use the <option>A</option> option or the <literal>config/allow_refresh</literal> property
+to refresh the index on production servers because the search index is refreshed
+automatically when the depot starts.</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>t</option> <replaceable>server_type</replaceable></term>
+<listitem><para>Specify the type of web server that <command>pkg.depot-config</command> should
+output configuration information for. In this release, the value <literal>apache2
+</literal> is both the default value and the only accepted value for <replaceable>
+server_type</replaceable>.</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>F</option></term>
+<listitem><para>Produce a partial configuration that enables a web server
+to serve basic <literal>pkg</literal>(5) installation operations for clients
+using an existing web service. For an Apache web server running on the Oracle
+Solaris OS, the partial configuration file could be placed in <filename>/etc/apache2/2.2/conf.d
+</filename>. For other operating systems, consult your OS documentation to
+determine how to use this partial configuration file. See also the <option>P</option> option.
+</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>P</option> <replaceable>server_prefix</replaceable></term>
+<listitem><para>Specify the prefix used to map the depot into the web server namespace. The <option>P</option> option is intended to be used with the <option>F</option> option.</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>-https</option></term>
+<listitem><para>Enable the HTTPS service. This option cannot be used with the
+<option>F</option> or <option>P</option> options.</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>-cert</option> <replaceable>server_cert_file</replaceable></term>
+<listitem><para>Specify the location of the server certificate file. This option can only be used with the <option>-https</option> option. Either both the <option>-cert</option> and <option>-key</option> options or the <option>-cert-key-dir</option> option must be used with the <option>-https</option> option.</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>-key</option> <replaceable>server_key_file</replaceable></term>
+<listitem><para>Specify the location of the server key file. This option can only be used with the <option>-https</option> option. Either both the <option>-cert</option> and <option>-key</option> options or the <option>-cert-key-dir</option> option must be used with the <option>-https</option> option.</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>-cert-key-dir</option> <replaceable>cert_key_directory</replaceable></term>
+<listitem><para>Specify the directory where the automatically generated certificates and keys should be stored if the <option>-cert</option> and <option>-key</option> options are omitted. This option can only be used with the <option>-https</option> option. Either both the <option>-cert</option> and <option>-key</option> options or the <option>-cert-key-dir</option> option must be used with the <option>-https</option> option.</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>-ca-cert</option> <replaceable>ssl_ca_cert_file</replaceable></term>
+<listitem><para>Specify the location of the top CA certificate file. This option can only be used with the <option>-https</option> option and must be used together with the <option>-ca-key</option> option. This option is only used for automatically generating the server certificate based on this CA certificate and the CA key specified by the <option>-ca-key</option> option.</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>-ca-key</option> <replaceable>ssl_ca_key_file</replaceable></term>
+<listitem><para>Specify the location of the top CA key file. This option can only be used with the <option>-https</option> option and must be used together with the <option>-ca-cert</option> option. This option is only used for automatically generating the server certificate based on this CA key and the CA certificate specified by the <option>-ca-cert</option> option.</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>-cert-chain</option> <replaceable>ssl_cert_chain_file</replaceable></term>
+<listitem><para>This option can only be used with the <option>-https</option> option. This option is required if the server certificate is not signed by the top level CA directly but is signed by an intermediate authority.</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>-smf-fmri</option> <replaceable>smf_pkg_depot_fmri</replaceable></term>
+<listitem><para>Specify the FMRI of the <literal>pkg/depot</literal> service instance. This option is used to update the corresponding SMF properties of that instance if any certificates or keys are automatically generated for that instance. This option can only be used with the <option>-https</option> option.</para>
+</listitem>
+</varlistentry>
+</variablelist>
+</refsect1>
+<refsect1 role="other"><title>Providing Additional Server Configuration</title>
+<para>When the <option>F</option> option is not used, and the default <command>-t apache2</command>
+is set, the <literal>svc:/application/pkg/depot</literal> service
+looks in <filename>/etc/pkg/depot/conf.d</filename> at startup for additional
+Apache configuration files that can be used to extend the server configuration.
+Consult the Apache web server documentation for details on the directives
+that are used to configure the web server.</para>
+</refsect1>
+<refsect1 role="examples"><title></title>
+<example><title>Showing How a Repository Is Served</title>
+<para>The system in this example is running multiple instances of
+<literal>svc:/application/pkg/server</literal> and a single instance of
+<literal>svc:/application/pkg/depot</literal>. The
+<literal>pkg/server:standalone</literal> instance has an associated
+<command>pkg.depotd</command> process. The <command>pkg.depotd</command>
+process serves the repository configured in the
+<literal>pkg/server:standalone</literal> service. The
+<literal>pkg/server:userland</literal> instance has no associated processes. The
+<literal>pkg/depot:default</literal> service serves the repository configured in
+the <literal>pkg/server:userland</literal> service.</para>
+<screen>$ <userinput>svcs pkg/server</userinput>
 STATE    STIME    FMRI
 disabled Feb_06   svc:/application/pkg/server:default
 online   Feb_03   svc:/application/pkg/server:userland
 online   Feb_03   svc:/application/pkg/server:standalone
-$ \fBsvcs pkg/depot\fR
+$ <userinput>svcs pkg/depot</userinput>
 STATE    STIME    FMRI
 online   Feb_07   svc:/application/pkg/depot:default
-$ \fBsvcprop -p pkg/standalone -p pkg/readonly \e\fR
-\fBpkg/server:standalone\fR
+$ <userinput>svcprop -p pkg/standalone -p pkg/readonly &bsol;</userinput>
+<userinput>pkg/server:standalone</userinput>
 true
 true
-$ \fBsvcprop -p pkg/standalone -p pkg/readonly \e\fR
-\fBpkg/server:userland\fR
+$ <userinput>svcprop -p pkg/standalone -p pkg/readonly &bsol;</userinput>
+<userinput>pkg/server:userland</userinput>
 false
 true
-$ \fBsvcs -p svc:/application/pkg/server:standalone\fR
+$ <userinput>svcs -p svc:/application/pkg/server:standalone</userinput>
 STATE    STIME    FMRI
 online   Feb_03   svc:/application/pkg/server:standalone
          Jan_31       1206 pkg.depotd
-$ \fBsvcs -p svc:/application/pkg/server:userland\fR
+$ <userinput>svcs -p svc:/application/pkg/server:userland</userinput>
 STATE    STIME    FMRI
-online   Feb_03   svc:/application/pkg/server:userland
-.fi
-.in -2
-.sp
-
-.LP
-\fBExample 2 \fRShowing Processes Associated With the Depot
-.sp
-.LP
-The following command shows \fBhttpd.worker\fR processes associated with the \fBpkg/depot\fR service.
-
-.sp
-.in +2
-.nf
-$ \fBsvcs -p pkg/depot\fR
+online   Feb_03   svc:/application/pkg/server:userland</screen>
+</example>
+<example id="GMWHD"><title>Showing Processes Associated With the Depot</title>
+<para>The following command shows <literal>httpd.worker</literal> processes
+associated with the <literal>pkg/depot</literal> service.</para>
+<screen>$ <userinput>svcs -p pkg/depot</userinput>
 STATE    STIME    FMRI
 online   16:59:49 svc:/application/pkg/depot:default
          16:59:48     6731 httpd.worker
@@ -365,74 +307,65 @@ online   16:59:49 svc:/application/pkg/depot:default
          16:59:48     6737 httpd.worker
          16:59:48     6738 httpd.worker
          17:00:05     6744 httpd.worker
-         17:05:59     6915 httpd.worker
-.fi
-.in -2
-.sp
+         17:05:59     6915 httpd.worker</screen>
+</example>
+</refsect1>
+<refsect1 role="exit-status"><title></title>
+<para>The following exit values are returned:</para>
+<variablelist termlength="xtranarrow">
+<varlistentry><term><returnvalue>0</returnvalue></term>
+<listitem><para>Command succeeded.</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><returnvalue>1</returnvalue></term>
+<listitem><para>Command failed.</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><returnvalue>2</returnvalue></term>
+<listitem><para>Invalid command line options were specified.</para>
+</listitem>
+</varlistentry>
+</variablelist>
+</refsect1>
+<refsect1 role="attributes"><title></title>
+<para>See <literal>attributes</literal>(5) for descriptions of the following
+attributes:</para>
+<informaltable frame="all" orient="port">
+<tgroup cols="2" colsep="1" rowsep="1"><colspec colname="col1" colwidth="198*"
+align="left"/><colspec colname="col2" colwidth="198*" align="left"/><thead>
+<row>
+<entry align="center">
+<para>ATTRIBUTE TYPE</para>
+</entry>
+<entry align="center">
+<para>ATTRIBUTE VALUE</para>
+</entry>
+</row>
+</thead>
+<tbody>
+<row>
+<entry align="left">
+<para>Availability</para>
+</entry>
+<entry align="left">
+<para><literal>package/pkg/depot</literal></para>
+</entry>
+</row>
+<row>
+<entry align="left">
+<para>Interface Stability</para>
+</entry>
+<entry align="left">
+<para>Uncommitted</para>
+</entry>
+</row>
+</tbody>
+</tgroup>
+</informaltable></refsect1>
+<refsect1 role="see-also"><title></title>
+<para><olink targetdoc="refman" targetptr="svcprop-1"><citerefentry><refentrytitle>svcprop</refentrytitle><manvolnum>1</manvolnum></citerefentry></olink>, <olink targetdoc="refman" targetptr="svcs-1"><citerefentry><refentrytitle>svcs</refentrytitle><manvolnum>1</manvolnum></citerefentry></olink>, <olink targetdoc="refman" targetptr="svcadm-1m"><citerefentry><refentrytitle>svcadm</refentrytitle><manvolnum>1M</manvolnum></citerefentry></olink>, <olink targetdoc="refman" targetptr="svccfg-1m"><citerefentry><refentrytitle>svccfg</refentrytitle><manvolnum>1M</manvolnum></citerefentry></olink>, <olink targetdoc="refman" targetptr="pkg.depotd-1m"><citerefentry><refentrytitle>pkg.depotd</refentrytitle><manvolnum>1M</manvolnum></citerefentry></olink>, <olink targetdoc="refman" targetptr="pkg-5"><citerefentry><refentrytitle>pkg</refentrytitle><manvolnum>5</manvolnum></citerefentry></olink></para>
+<para><olink targetdoc="CCOSP"><citetitle remap="book">Copying and Creating Package Repositories in Oracle Solaris 11.2</citetitle></olink></para>
+<para><literal>https://java.net/projects/ips/pages/Home</literal></para>
+</refsect1>
+</refentry>
 
-.SH EXIT STATUS
-.sp
-.LP
-The following exit values are returned:
-.sp
-.ne 2
-.mk
-.na
-\fB\fB0\fR\fR
-.ad
-.RS 13n
-.rt  
-Command succeeded.
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fB\fB1\fR\fR
-.ad
-.RS 13n
-.rt  
-Command failed.
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fB\fB2\fR\fR
-.ad
-.RS 13n
-.rt  
-Invalid command line options were specified.
-.RE
-
-.SH ATTRIBUTES
-.sp
-.LP
-See \fBattributes\fR(5) for descriptions of the following attributes:
-.sp
-
-.sp
-.TS
-tab() box;
-cw(2.75i) |cw(2.75i) 
-lw(2.75i) |lw(2.75i) 
-.
-ATTRIBUTE TYPEATTRIBUTE VALUE
-_
-Availability\fBpackage/pkg/depot\fR
-_
-Interface StabilityUncommitted
-.TE
-
-.SH SEE ALSO
-.sp
-.LP
-\fBsvcprop\fR(1), \fBsvcs\fR(1), \fBsvcadm\fR(1M), \fBsvccfg\fR(1M), \fBpkg.depotd\fR(1M), \fBpkg\fR(5)
-.sp
-.LP
-\fICopying and Creating Package Repositories in Oracle Solaris 11.2\fR
-.sp
-.LP
-\fBhttps://java.net/projects/ips/pages/Home\fR

@@ -1,310 +1,217 @@
-'\" te
-.\" Copyright (c) 2007, 2014, Oracle and/or its affiliates. All rights reserved.
-.TH pkglint 1 "29 Apr 2014" "SunOS 5.12" "User Commands"
-.SH NAME
-pkglint \- Image Packaging System package lint
-.SH SYNOPSIS
-.LP
-.nf
-/usr/bin/pkglint [-c \fIcache_dir\fR] [-r \fIrepo_uri\fR]... [-p \fIregexp\fR]
-    [-f \fIconfig_file\fR] [-b \fIbuild_no\fR] [-v]
-    [-l \fIlint_uri\fR]... | \fImanifest\fR ...
-.fi
+<?xml version="1.0" encoding="iso-8859-1"?>
+<!--Arbortext, Inc., 1988-2008, v.4002-->
+<!DOCTYPE refentry PUBLIC "-//Sun Microsystems//DTD SolBook-XML 3.7//EN" "xsolbook.dtd" [
+<!ENTITY % ent SYSTEM "entities.ent">
+%ent;
+]>
 
-.LP
-.nf
-/usr/bin/pkglint -L [-v]
-.fi
-
-.SH DESCRIPTION
-.sp
-.LP
-\fBpkglint\fR runs a series of checks on one or more package manifests, optionally referencing another repository.
-.sp
-.LP
-\fBpkglint\fR should be used during the package authoring process, prior to package publication. \fBpkglint\fR performs exhaustive testing on the manifests that might be too expensive to perform during normal operation of \fBpkgsend\fR or \fBpkg.depotd\fR. \fBpkglint\fR checks include tests for duplicate actions, missing attributes, and unusual file permissions.
-.sp
-.LP
-Manifests for linting can be passed as a space-separated list of local files on the command line, or manifests can be retrieved from a repository.
-.sp
-.LP
-When retrieving manifests from repositories, on first run \fBpkglint\fR creates and populates \fBpkg\fR(5) user images in the specified cache directory. If the \fB-r\fR option is supplied, a user image named \fIcache_dir\fR\fB/ref_image\fR is created for the reference repository. If the \fB-l\fR option is supplied, a user image named \fIcache_dir\fR\fB/lint_image\fR is created for the lint repository. No content is installed in these images. These images are only used by \fBpkglint\fR to retrieve manifests from the repositories.
-.sp
-.LP
-Subsequent invocations of \fBpkglint\fR can reuse the cache directory and can omit any \fB-r\fR or \fB-l\fR arguments.
-.sp
-.LP
-\fBpkglint\fR provides limited support for configuring publishers in the cache directory. Use \fBpkg\fR to perform more complex publisher configuration on these images.
-.sp
-.LP
-\fBpkglint\fR allows package authors to bypass checks for a given manifest or action. A manifest or action that contains the attribute \fBpkg.linted\fR set to \fBTrue\fR does not produce any lint output for that manifest or action.
-.sp
-.LP
-More granular \fBpkg.linted\fR settings can be made using substrings of \fBpkglint\fR check names. For example, \fBpkg.linted.\fIcheck\fR.\fIid\fR\fR set to \fBTrue\fR bypasses all checks with the name \fB\fIcheck\fR.\fIid\fR\fR for the given manifest or action.
-.sp
-.LP
-The behavior of \fBpkglint\fR can be configured by specifying a\fBpkglintrc\fR file. By default, \fBpkglint\fR searches in \fB/usr/share/lib/pkg/pkglintrc\fR and \fB$HOME/.pkglintrc\fR for configuration options. Use the \fB-f\fR option to specify a different configuration file.
-.sp
-.LP
-During the lint run, any errors or warnings encountered are printed to \fBstderr\fR.
-.SH OPTIONS
-.sp
-.LP
-The following options are supported:
-.sp
-.ne 2
-.mk
-.na
-\fB\fB-h\fR\fR
-.ad
-.br
-.na
-\fB\fB--help\fR\fR
-.ad
-.sp .6
-.RS 4n
-Display a usage message.
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fB\fB-b\fR \fIbuild_no\fR\fR
-.ad
-.sp .6
-.RS 4n
-Specify a build number used to narrow the list of packages used during linting from lint and reference repositories. If no \fB-b\fR option is specified, the latest versions of packages are used. See also the \fBversion.pattern\fR configuration property.
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fB\fB-c\fR \fIcache_dir\fR\fR
-.ad
-.sp .6
-.RS 4n
-Specify a local directory used for caching package metadata from the lint and reference repositories.
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fB\fB-l\fR \fIlint_uri\fR\fR
-.ad
-.sp .6
-.RS 4n
-Specify a URI representing the location of the lint repository. Both HTTP and file system based publication are supported. If you specify \fB-l\fR, then you must also specify \fB-c\fR. The \fB-l\fR option can be specified multiple times.
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fB\fB-L\fR\fR
-.ad
-.sp .6
-.RS 4n
-List the known and excluded lint checks and then exit. Display the short name and description of each check. When combined with the \fB-v\fR flag, display the method that implements the check instead of the description.
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fB\fB-f\fR \fIconfig_file\fR\fR
-.ad
-.sp .6
-.RS 4n
-Configure the \fBpkglint\fR session using the \fIconfig_file\fR configuration file.
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fB\fB-p\fR \fIregexp\fR\fR
-.ad
-.sp .6
-.RS 4n
-Specify a regular expression used to narrow the list of packages to be checked from the lint repository. All manifests from the reference repository are loaded (assuming they match the value for \fB-b\fR, if supplied), ignoring this pattern.
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fB\fB-r\fR \fIrepo_uri\fR\fR
-.ad
-.sp .6
-.RS 4n
-Specify a URI representing the location of the reference repository. If you specify \fB-r\fR, then you must also specify \fB-c\fR. The \fB-r\fR option can be specified multiple times.
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fB\fB-v\fR\fR
-.ad
-.sp .6
-.RS 4n
-Run \fBpkglint\fR in a verbose mode, overriding any \fBlog_level\fR settings in the configuration file.
-.RE
-
-.SH FILES
-.sp
-.LP
-The \fBpkglintrc\fR configuration file takes the following key/value arguments:
-.sp
-.ne 2
-.mk
-.na
-\fB\fBlog_level\fR\fR
-.ad
-.sp .6
-.RS 4n
-The minimum level at which to emit lint messages. Lint messages lower than this level are discarded. The default value is \fBINFO\fR.
-.sp
-Log levels in order of least to most severe are \fBDEBUG\fR, \fBINFO\fR, \fBWARNING\fR, \fBERROR\fR, and \fBCRITICAL\fR.
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fB\fBdo_pub_checks\fR\fR
-.ad
-.sp .6
-.RS 4n
-If \fBTrue\fR, perform checks that might only make sense for published packages. The default value is \fBTrue\fR.
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fB\fBpkglint.ext.\fR*\fR
-.ad
-.sp .6
-.RS 4n
-The plugin mechanism of \fBpkglint\fR allows for additional lint modules to be added at runtime. Any key that starts with \fBpkglint.ext.\fR takes a value that must be a fully-specified Python module. See the "Developers" section for more information.
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fB\fBpkglint.exclude\fR\fR
-.ad
-.sp .6
-.RS 4n
-A space-separated list of fully specified Python modules, classes, or function names to omit from the set of checks performed.
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fB\fBuse_progress_tracker\fR\fR
-.ad
-.sp .6
-.RS 4n
-If \fBTrue\fR, use a progress tracker when iterating over manifests during lint runs. The default value is \fBTrue\fR.
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fB\fBversion.pattern\fR\fR
-.ad
-.sp .6
-.RS 4n
-A version pattern, used when specifying a build number to lint against (\fB-b\fR). If not specified in the configuration file, the \fB-b\fR option uses the pattern \fB*,5.11-0.\fR, matching all components of the 5.11 build, with a branch prefix of 0.
-.RE
-
-.SH DEVELOPERS
-.sp
-.LP
-To extend the set of checks performed by \fBpkglint\fR, subclass \fBpkg.lint.base.Checker\fR and its subclasses, \fBManifestChecker\fR, \fBActionChecker\fR, and \fBContentChecker\fR. Add the Python module name that contains those classes to a new \fBpkglint.ext.\fR key in the configuration file.
-.sp
-.LP
-Instances of those new subclasses are created by \fBpkglint\fR on startup. Methods inside each subclass with the special keyword argument \fBpkglint_id\fR are invoked during the course of the lint session. Those methods should have the same signature as the corresponding \fBcheck()\fR method in the super class. Methods should also be assigned a \fBpkglint_desc\fR attribute, which is used as the description printed by \fBpkglint -L\fR.
-.sp
-.LP
-Parameters are available to \fBChecker\fR subclasses, allowing them to tune their behavior. The recommended parameter naming convention is \fB\fIpkglint_id\fR.\fIname\fR\fR. Parameter values can be stored in the configuration file, or accessed in manifests or actions retrieved using the \fBLintEngine.get_param()\fR method. When accessing parameters from the manifest, the prefix \fBpkg.lint\fR is prepended to the key name to ensure that \fBpkglint\fR parameters do not overlap with any existing action or manifest values.
-.SH EXAMPLES
-.LP
-\fBExample 1 \fRFirst Run on a Particular Repository
-.sp
-.LP
-Running a \fBpkglint\fR session for the first time on a given repository.
-
-.sp
-.in +2
-.nf
-$ \fBpkglint -c /space/cache -r http://localhost:10000 mymanifest.mf\fR
-.fi
-.in -2
-.sp
-
-.LP
-\fBExample 2 \fRSubsequent Run on the Same Repository
-.sp
-.LP
-A subsequent run against the same repository used in Example 1.
-
-.sp
-.in +2
-.nf
-$ \fBpkglint -c /space/cache mymanifest-fixed.mf\fR
-.fi
-.in -2
-.sp
-
-.LP
-\fBExample 3 \fRUsing a Lint Repository With a Narrowed Manifest Set
-.sp
-.LP
-Running a \fBpkglint\fR session with a lint repository and specifying a subset of manifests to check.
-
-.sp
-.in +2
-.nf
-$ \fBpkglint -c /space/othercache -l http://localhost:10000 \e\fR
-\fB-p '.*firefox.*'\fR
-.fi
-.in -2
-.sp
-
-.LP
-\fBExample 4 \fRSpecifying a Build
-.sp
-.LP
-Running a \fBpkglint\fR session against a given build in verbose mode.
-
-.sp
-.in +2
-.nf
-$ \fBpkglint -c /space/cache -r http://localhost:10000 \e\fR
-\fB-l http://localhost:12000 -b 147 -v\fR
-.fi
-.in -2
-.sp
-
-.LP
-\fBExample 5 \fRModifying a Configuration File
-.sp
-.LP
-A configuration file with a new lint module, excluding some checks.
-
-.sp
-.in +2
-.nf
-$ \fBcat ~/.pkglintrc\fR
+<refentry id="pkglint-1">
+<refmeta><refentrytitle>pkglint</refentrytitle><manvolnum>1</manvolnum>
+<refmiscinfo class="date">29 Apr 2014</refmiscinfo>
+<refmiscinfo class="sectdesc">&man1;</refmiscinfo>
+<refmiscinfo class="software">&release;</refmiscinfo>
+<refmiscinfo class="arch">generic</refmiscinfo>
+<refmiscinfo class="copyright">Copyright (c) 2007, 2014, Oracle and/or its affiliates. All rights reserved.</refmiscinfo>
+</refmeta>
+<refnamediv>
+<refname>pkglint</refname><refpurpose>Image Packaging System package lint</refpurpose>
+</refnamediv>
+<refsynopsisdiv><title></title>
+<synopsis>/usr/bin/pkglint [-c <replaceable>cache_dir</replaceable>] [-r <replaceable>
+repo_uri</replaceable>]... [-p <replaceable>regexp</replaceable>]
+    [-f <replaceable>config_file</replaceable>] [-b <replaceable>build_no</replaceable>] [-v]
+    [-l <replaceable>lint_uri</replaceable>]... | <replaceable>manifest</replaceable> ...
+</synopsis>
+<synopsis>/usr/bin/pkglint -L [-v]</synopsis>
+</refsynopsisdiv>
+<refsect1 role="description"><title></title>
+<para><command>pkglint</command> runs a series of checks on one or more package
+manifests, optionally referencing another repository.</para>
+<para><command>pkglint</command> should be used during the package authoring
+process, prior to package publication. <command>pkglint</command> performs
+exhaustive testing on the manifests that might be too expensive to perform
+during normal operation of <command>pkgsend</command> or <command>pkg.depotd</command>. <command>
+pkglint</command> checks include tests for duplicate actions, missing attributes,
+and unusual file permissions.</para>
+<para>Manifests for linting can be passed as a space-separated list of local
+files on the command line, or manifests can be retrieved from a repository.</para>
+<para>When retrieving manifests from repositories, on first run <command>pkglint</command> creates
+and populates <literal>pkg</literal>(5) user images in the specified cache
+directory. If the <option>r</option> option is supplied, a user image named <replaceable>
+cache_dir</replaceable><literal>/ref_image</literal> is created for the reference
+repository. If the <option>l</option> option is supplied, a user image named <replaceable>
+cache_dir</replaceable><literal>/lint_image</literal> is created for the lint
+repository. No content is installed in these images. These images are only
+used by <command>pkglint</command> to retrieve manifests from the repositories.</para>
+<para>Subsequent invocations of <command>pkglint</command> can reuse the cache
+directory and can omit any <option>r</option> or <option>l</option> arguments.</para>
+<para><command>pkglint</command> provides limited support for configuring
+publishers in the cache directory. Use <command>pkg</command> to perform more
+complex publisher configuration on these images.</para>
+<para><command>pkglint</command> allows package authors to bypass checks for
+a given manifest or action. A manifest or action that contains the attribute <literal>
+pkg.linted</literal> set to <literal>True</literal> does not produce any lint
+output for that manifest or action.</para>
+<para>More granular <literal>pkg.linted</literal> settings can be made using
+substrings of <command>pkglint</command> check names. For example, <literal>pkg.linted.<replaceable>
+check</replaceable>.<replaceable>id</replaceable></literal> set to <literal>True</literal> bypasses
+all checks with the name <literal><replaceable>check</replaceable>.<replaceable>id
+</replaceable></literal> for the given manifest or action.</para>
+<para>The behavior of <command>pkglint</command> can be configured by specifying
+a<filename>pkglintrc</filename> file. By default, <command>pkglint</command> searches
+in <filename>/usr/share/lib/pkg/pkglintrc</filename> and <filename>$HOME/.pkglintrc
+</filename> for configuration options. Use the <option>f</option> option to
+specify a different configuration file.</para>
+<para>During the lint run, any errors or warnings encountered are printed
+to <filename>stderr</filename>.</para>
+</refsect1>
+<refsect1 role="options"><title></title>
+<para>The following options are supported:</para>
+<variablelist termlength="wholeline">
+<varlistentry><term><option>h</option></term><term><option>-help</option></term>
+<listitem><para>Display a usage message.</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>b</option> <replaceable>build_no</replaceable></term>
+<listitem><para>Specify a build number used to narrow the list of packages
+used during linting from lint and reference repositories. If no <option>b</option> option
+is specified, the latest versions of packages are used. See also the <literal>version.pattern
+</literal> configuration property.</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>c</option> <replaceable>cache_dir</replaceable></term>
+<listitem><para>Specify a local directory used for caching package metadata
+from the lint and reference repositories.</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>l</option> <replaceable>lint_uri</replaceable></term>
+<listitem><para>Specify a URI representing the location of the lint repository.
+Both HTTP and file system based publication are supported. If you specify
+<option>l</option>, then you must also specify <option>c</option>. The
+<option>l</option> option can be specified multiple times.</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>L</option></term>
+<listitem><para>List the known and excluded lint checks and then exit. Display
+the short name and description of each check. When combined with the <option>v</option> flag,
+display the method that implements the check instead of the description.</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>f</option> <replaceable>config_file</replaceable></term>
+<listitem><para>Configure the <command>pkglint</command> session using the <replaceable>
+config_file</replaceable> configuration file.</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>p</option> <replaceable>regexp</replaceable></term>
+<listitem><para>Specify a regular expression used to narrow the list of packages
+to be checked from the lint repository. All manifests from the reference repository
+are loaded (assuming they match the value for <option>b</option>, if supplied),
+ignoring this pattern.</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>r</option> <replaceable>repo_uri</replaceable></term>
+<listitem><para>Specify a URI representing the location of the reference repository.
+If you specify <option>r</option>, then you must also specify <option>c</option>.
+The <option>r</option> option can be specified multiple times.</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>v</option></term>
+<listitem><para>Run <command>pkglint</command> in a verbose mode, overriding
+any <literal>log_level</literal> settings in the configuration file.</para>
+</listitem>
+</varlistentry>
+</variablelist>
+</refsect1>
+<refsect1 role="files"><title></title>
+<para>The <filename>pkglintrc</filename> configuration file takes the following
+key/value arguments:</para>
+<variablelist termlength="wholeline">
+<varlistentry><term><literal>log_level</literal></term>
+<listitem><para>The minimum level at which to emit lint messages. Lint messages
+lower than this level are discarded. The default value is <literal>INFO</literal>.
+</para>
+<para>Log levels in order of least to most severe are <literal>DEBUG</literal>, <literal>
+INFO</literal>, <literal>WARNING</literal>, <literal>ERROR</literal>, and <literal>
+CRITICAL</literal>.</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>do_pub_checks</literal></term>
+<listitem><para>If <literal>True</literal>, perform checks that might only
+make sense for published packages. The default value is <literal>True</literal>.</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>pkglint.ext.</literal>*</term>
+<listitem><para>The plugin mechanism of <command>pkglint</command> allows
+for additional lint modules to be added at runtime. Any key that starts with <literal>
+pkglint.ext.</literal> takes a value that must be a fully-specified Python
+module. See the &ldquo;Developers&rdquo; section for more information.</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>pkglint.exclude</literal></term>
+<listitem><para>A space-separated list of fully specified Python modules,
+classes, or function names to omit from the set of checks performed.</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>use_progress_tracker</literal></term>
+<listitem><para>If <literal>True</literal>, use a progress tracker when iterating
+over manifests during lint runs. The default value is <literal>True</literal>.</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>version.pattern</literal></term>
+<listitem><para>A version pattern, used when specifying a build number to
+lint against (<option>b</option>). If not specified in the configuration file,
+the <option>b</option> option uses the pattern <literal>*,5.11-0.</literal>,
+matching all components of the 5.11 build, with a branch prefix of 0.</para>
+</listitem>
+</varlistentry>
+</variablelist>
+</refsect1>
+<refsect1 role="other"><title>Developers</title>
+<para>To extend the set of checks performed by <command>pkglint</command>,
+subclass <literal>pkg.lint.base.Checker</literal> and its subclasses, <literal>ManifestChecker
+</literal>, <literal>ActionChecker</literal>, and <literal>ContentChecker</literal>.
+Add the Python module name that contains those classes to a new <literal>pkglint.ext.
+</literal> key in the configuration file.</para>
+<para>Instances of those new subclasses are created by <command>pkglint</command> on
+startup. Methods inside each subclass with the special keyword argument <literal>
+pkglint_id</literal> are invoked during the course of the lint session. Those
+methods should have the same signature as the corresponding <function>check</function> method
+in the super class. Methods should also be assigned a <literal>pkglint_desc</literal> attribute,
+which is used as the description printed by <command>pkglint -L</command>.</para>
+<para>Parameters are available to <literal>Checker</literal> subclasses, allowing
+them to tune their behavior. The recommended parameter naming convention is <literal><replaceable>
+pkglint_id</replaceable>.<replaceable>name</replaceable></literal>. Parameter
+values can be stored in the configuration file, or accessed in manifests or
+actions retrieved using the <function>LintEngine.get_param</function> method.
+When accessing parameters from the manifest, the prefix <literal>pkg.lint</literal> is
+prepended to the key name to ensure that <command>pkglint</command> parameters
+do not overlap with any existing action or manifest values.</para>
+</refsect1>
+<refsect1 role="examples"><title></title>
+<example><title>First Run on a Particular Repository</title>
+<para>Running a <command>pkglint</command> session for the first time on a
+given repository.</para>
+<screen>$ <userinput>pkglint -c /space/cache -r http://localhost:10000 mymanifest.mf</userinput></screen>
+</example>
+<example><title>Subsequent Run on the Same Repository</title>
+<para>A subsequent run against the same repository used in Example 1.</para>
+<screen>$ <userinput>pkglint -c /space/cache mymanifest-fixed.mf</userinput></screen>
+</example>
+<example><title>Using a Lint Repository With a Narrowed Manifest Set</title>
+<para>Running a <command>pkglint</command> session with a lint repository
+and specifying a subset of manifests to check.</para>
+<screen>$ <userinput>pkglint -c /space/othercache -l http://localhost:10000 &bsol;</userinput>
+<userinput>-p '.*firefox.*'</userinput></screen>
+</example>
+<example><title>Specifying a Build</title>
+<para>Running a <command>pkglint</command> session against a given build in
+verbose mode.</para>
+<screen>$ <userinput>pkglint -c /space/cache -r http://localhost:10000 &bsol;</userinput>
+<userinput>-l http://localhost:12000 -b 147 -v</userinput></screen>
+</example>
+<example><title>Modifying a Configuration File</title>
+<para>A configuration file with a new lint module, excluding some checks.</para>
+<screen>$ <userinput>cat ~/.pkglintrc</userinput>
 [pkglint]
 
 log_level = DEBUG
@@ -314,82 +221,75 @@ pkglint.ext.mycheck = org.timf.mychecks
 pkglint.ext.opensolaris = pkg.lint.opensolaris
 pkglint.exclude: pkg.lint.opensolaris.OpenSolarisActionChecker
 pkg.lint.pkglint.PkgActionChecker.unusual_perms pkg.lint.pkglint.PkgManifestChecker
-pkg.lint.opensolaris.OpenSolarisManifestChecker
-.fi
-.in -2
-.sp
+pkg.lint.opensolaris.OpenSolarisManifestChecker</screen>
+</example>
+</refsect1>
+<refsect1 role="exit-status"><title></title>
+<para>The following exit values are returned:</para>
+<variablelist>
+<varlistentry><term><returnvalue>0</returnvalue></term>
+<listitem><para>Command succeeded.</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><returnvalue>1</returnvalue></term>
+<listitem><para>One or more package manifests contain lint errors.</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><returnvalue>2</returnvalue></term>
+<listitem><para>An error occurred that is not a lint error in a manifest. For example, an invalid command line option might have been specified.</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><returnvalue>99</returnvalue></term>
+<listitem><para>An unanticipated exception occurred.</para>
+</listitem>
+</varlistentry>
+</variablelist>
+</refsect1>
+<refsect1 role="attributes"><title></title>
+<para>See <literal>attributes</literal>(5) for descriptions of the following
+attributes:</para>
+<informaltable frame="all" orient="port">
+<tgroup cols="2" colsep="1" rowsep="1"><colspec colname="col1" colwidth="198*"
+align="left"/><colspec colname="col2" colwidth="198*" align="left"/><thead>
+<row>
+<entry align="center">
+<para>ATTRIBUTE TYPE</para>
+</entry>
+<entry align="center">
+<para>ATTRIBUTE VALUE</para>
+</entry>
+</row>
+</thead>
+<tbody>
+<row>
+<entry align="left">
+<para>Availability</para>
+</entry>
+<entry align="left">
+<para><literal>package/pkg</literal></para>
+</entry>
+</row>
+<row>
+<entry align="left">
+<para>Interface Stability</para>
+</entry>
+<entry align="left">
+<para>Uncommitted</para>
+</entry>
+</row>
+</tbody>
+</tgroup>
+</informaltable></refsect1>
+<refsect1 role="see-also"><title></title>
+<para><olink targetdoc="refman" targetptr="pkg-1"><citerefentry><refentrytitle>pkg
+</refentrytitle><manvolnum>1</manvolnum></citerefentry></olink>, <olink
+targetdoc="refman" targetptr="pkg.depotd-1m"><citerefentry><refentrytitle>pkg.depotd
+</refentrytitle><manvolnum>1M</manvolnum></citerefentry></olink>, <olink
+targetdoc="refman" targetptr="pkgsend-1"><citerefentry><refentrytitle>pkgsend</refentrytitle>
+<manvolnum>1</manvolnum></citerefentry></olink>, <olink targetdoc="refman"
+targetptr="pkg-5"><citerefentry><refentrytitle>pkg</refentrytitle><manvolnum>5</manvolnum>
+</citerefentry></olink></para>
+<para><literal>https://java.net/projects/ips/pages/Home</literal></para>
+</refsect1>
+</refentry>
 
-.SH EXIT STATUS
-.sp
-.LP
-The following exit values are returned:
-.sp
-.ne 2
-.mk
-.na
-\fB\fB0\fR\fR
-.ad
-.RS 6n
-.rt  
-Command succeeded.
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fB\fB1\fR\fR
-.ad
-.RS 6n
-.rt  
-One or more package manifests contain lint errors.
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fB\fB2\fR\fR
-.ad
-.RS 6n
-.rt  
-An error occurred that is not a lint error in a manifest. For example, an invalid command line option might have been specified.
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fB\fB99\fR\fR
-.ad
-.RS 6n
-.rt  
-An unanticipated exception occurred.
-.RE
-
-.SH ATTRIBUTES
-.sp
-.LP
-See \fBattributes\fR(5) for descriptions of the following attributes:
-.sp
-
-.sp
-.TS
-tab() box;
-cw(2.75i) |cw(2.75i) 
-lw(2.75i) |lw(2.75i) 
-.
-ATTRIBUTE TYPEATTRIBUTE VALUE
-_
-Availability\fBpackage/pkg\fR
-_
-Interface StabilityUncommitted
-.TE
-
-.SH SEE ALSO
-.sp
-.LP
-\fBpkg\fR(1), \fBpkg.depotd\fR(1M), \fBpkgsend\fR(1), \fBpkg\fR(5)
-.sp
-.LP
-\fBhttps://java.net/projects/ips/pages/Home\fR

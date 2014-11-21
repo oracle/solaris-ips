@@ -1,846 +1,386 @@
-'\" te
-.\" Copyright (c) 2007, 2013, Oracle and/or its affiliates.All rights reserved.
-.TH pkg.depotd 1M "2013 年 10 月 2 日" "SunOS 5.12" "系统管理命令"
-.SH 名称
-pkg.depotd \- 映像包管理系统 depot 服务器
-.SH 用法概要
-.LP
-.nf
-/usr/lib/pkg.depotd [--cfg \fIsource\fR] [-a \fIaddress\fR]
-    [--content-root \fIroot_dir\fR] [-d \fIinst_root\fR]
-    [--debug \fIfeature_list\fR] [--disable-ops=\fIop\fR[/1][,...]]
-    [--image-root \fIpath\fR] [--log-access \fIdest\fR]
-    [--log-errors \fIdest\fR] [--mirror \fImode\fR] [-p \fIport\fR]
-    [--proxy-base \fIurl\fR] [--readonly \fImode\fR] [-s \fIthreads\fR]
-    [--sort-file-max-size \fIbytes\fR] [--ssl-cert-file \fIsource\fR]
-    [--ssl-dialog \fItype\fR] [--ssl-key-file \fIsource\fR]
-    [-t \fIsocket_timeout\fR] [--writable-root \fIpath\fR]
-.fi
+<?xml version="1.0" encoding="utf-8"?>
+<!--Arbortext, Inc., 1988-2008, v.4002-->
+<!DOCTYPE refentry PUBLIC "-//Sun Microsystems//DTD SolBook-XML 3.7//EN" "xsolbook.dtd" [
+<!ENTITY % ent SYSTEM "entities.ent">
+%ent;
+]>
 
-.SH 描述
-.sp
-.LP
-\fBpkg.depotd\fR 是映像包管理系统的 depot 服务器。它提供对包含在软件包系统信息库中的数据的网络访问。对于不支持通过文件系统直接访问系统信息库的客户机，或网络访问是唯一可用或希望使用的传输方法的客户机，通常使用软件包库 (depot)。
-.sp
-.LP
-诸如 \fBpkg\fR 之类的检索客户机可直接从系统信息库或通过 depot 服务器检索软件包和软件包元数据列表。发布客户机 \fBpkgsend\fR 可将新版本的软件包直接或通过 depot 服务器发送到系统信息库。\fBpkgrepo\fR 可用于创建系统信息库供 depot 服务器使用，或用于直接以及通过 depot 服务器管理它们。
-.sp
-.LP
-\fBpkg.depotd\fR 通常在系统上作为服务运行。软件包和软件开发者可能希望运行专用副本进行测试。
-.sp
-.LP
-库不提供任何自己的访问控制方法。缺省情况下，所有能够连接的客户机都能够读取所有软件包数据和发布新的软件包版本。在服务管理工具 (Service Management Facility, SMF) 下运行时例外，缺省情况为在只读模式中运行。下列“附注”部分描述了维护具有不断变化内容的公共 depot 服务器的一些最佳做法。
-.SH SMF 属性
-.sp
-.LP
-\fBpkg.depotd\fR 服务器通常通过与其服务关联的 SMF 属性配置。\fBsvc:/application/pkg/server\fR 服务运行一个 \fBpkg.depot\fR 服务器进程，或者为 \fBsvc:/application/pkg/depot\fR 服务提供配置。请参见 \fBpkg.depot-config\fR(1M) 手册页和下文中的 \fBpkg/standalone\fR 属性。
-.sp
-.LP
-有关 SMF 属性的信息，请参见 \fBsmf\fR(5) 手册页。可以识别以下属性：
-.sp
-.ne 2
-.mk
-.na
-\fB\fBpkg/address\fR\fR
-.ad
-.sp .6
-.RS 4n
-(\fBnet_address\fR) 在其上侦听连接的 IP 地址。缺省值为 0.0.0.0 (\fBINADDR_ANY\fR)，该地址侦听所有活动接口。要侦听所有活动的 IPv6 接口，请使用 \fB::\fR。只使用第一个值。
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fB\fBpkg/content_root\fR\fR
-.ad
-.sp .6
-.RS 4n
-(\fBastring\fR) 实例应在其中找到其静态 Web 内容以及其他 Web 内容的文件系统路径。缺省值为 \fB/usr/share/lib/pkg\fR。
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fB\fBpkg/debug\fR\fR
-.ad
-.sp .6
-.RS 4n
-(\fBastring\fR) 以逗号分隔的要启用的调试功能列表。可能的值为：
-.sp
-.ne 2
-.mk
-.na
-\fB\fBheaders\fR\fR
-.ad
-.RS 11n
-.rt  
-将每个请求的标题记录到错误日志。
-.RE
-
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fB\fBpkg/disable_ops\fR\fR
-.ad
-.sp .6
-.RS 4n
-(\fBastring\fR) 以逗号分隔的应该为 depot 服务器禁用的操作列表。操作以 \fI operation\fR[/\fIversion\fR] 形式提供（例如 \fBcatalog\fR 或 \fB search_1\fR）。
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fB\fBpkg/image_root\fR\fR
-.ad
-.sp .6
-.RS 4n
-(\fBastring\fR) 其文件信息将用作文件数据高速缓存的映像的路径。
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fB\fBpkg/inst_root\fR\fR
-.ad
-.sp .6
-.RS 4n
-(\fBastring\fR) 实例应在其中找到其系统信息库数据的文件系统路径。必需，除非已提供了 \fBPKG_REPO\fR。缺省值为 \fB/var/pkgrepo\fR。
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fB\fBpkg/log_access\fR\fR
-.ad
-.sp .6
-.RS 4n
-(\fBastring\fR) 库进程记录的任何与访问相关的信息的目标。可能的值为：\fBstderr\fR、\fBstdout\fR、\fBnone\fR 或绝对路径名称。如果 \fBstdout\fR 是 \fBtty\fR，则缺省值为 \fBstdout\fR。如果 \fBstdout\fR 不是 \fBtty\fR，则缺省值为 \fBnone\fR。如果您将 \fBpkg\fR 作为服务运行，则 \fBlog_access\fR 的缺省值为 \fBnone\fR，且输出将写入 \fB/var/svc/log/application-pkg-server:* \fR 中。有关管理大日志文件的示例，请参见 \fBlogadm\fR(1M) 手册页。
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fB\fBpkg/log_errors\fR\fR
-.ad
-.sp .6
-.RS 4n
-(\fBastring\fR) 库进程记录的任何错误或其他信息的目标。可能的值为：\fBstderr\fR、\fBstdout\fR、\fBnone\fR 或绝对路径名称。缺省值为 \fBstderr\fR。有关管理大日志文件的示例，请参见 \fBlogadm\fR(1M) 手册页。
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fB\fBpkg/mirror\fR\fR
-.ad
-.sp .6
-.RS 4n
-(\fBboolean\fR) 设置是否使用软件包镜像模式。为 true 时，禁用发布和元数据操作，只提供受限制的浏览器用户界面。当 \fBpkg/readonly\fR 属性为 true 时，该属性不能为 true。缺省值为 \fBfalse\fR。
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fB\fBpkg/port\fR\fR
-.ad
-.sp .6
-.RS 4n
-(\fBcount\fR) 实例应侦听传入软件包请求的端口号。如果未提供 SSL 证书和密钥信息，则缺省值为 80；否则，缺省值为 443。
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fB\fBpkg/proxy_base\fR\fR
-.ad
-.sp .6
-.RS 4n
-(\fBuri\fR) 该属性更改 depot 服务器的基 URL，当在 Apache 或反向代理配置中的某个其他 Web 服务器后运行时最有用。
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fB\fBpkg/readonly\fR\fR
-.ad
-.sp .6
-.RS 4n
-(\fBboolean\fR) 设置是否禁用修改操作，例如由 \fBpkgsend\fR 启动的那些操作。检索操作仍可用。当 \fBpkg/mirror \fR 属性为 true 时，该属性不能为 true。缺省值为 \fBtrue\fR。
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fB\fBpkg/socket_timeout\fR\fR
-.ad
-.sp .6
-.RS 4n
-(\fBcount\fR) 在断开连接之前服务器应该等待客户机响应的最大秒数。缺省值为 60。
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fB\fBpkg/sort_file_max_size\fR\fR
-.ad
-.sp .6
-.RS 4n
-(\fBcount\fR) 索引器排序文件的最大大小。用于限制库用来创建索引的 RAM 数量，或增加数量以提高速度。
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fB\fBpkg/ssl_cert_file\fR\fR
-.ad
-.sp .6
-.RS 4n
-(\fBastring\fR) PEM 编码的证书文件的绝对路径名称。缺省值为 \fBnone\fR。此属性必须与 \fBssl_key_file\fR 一起使用。如果同时提供 \fBssl_cert_file\fR 和 \fB/ssl_key_file \fR，则库只响应 SSL 请求。
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fB\fBpkg/ssl_dialog\fR\fR
-.ad
-.sp .6
-.RS 4n
-(\fBastring\fR) 指定应使用何种方法来获取用于对 \fBssl_key_file\fR 进行解密的口令短语。可能的值为：
-.sp
-.ne 2
-.mk
-.na
-\fB\fBbuiltin\fR\fR
-.ad
-.sp .6
-.RS 4n
-提示输入口令短语。这是缺省值。
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fB\fBexec:\fI/path/to/program\fR\fR\fR
-.ad
-.sp .6
-.RS 4n
-执行指定的外部程序来获取口令短语。程序的第一个参数为 \fB\&''\fR，并保留该参数。程序的第二个参数是服务器的端口号。口令短语输出到 \fBstdout\fR。
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fB\fBsmf:fmri\fR\fR
-.ad
-.sp .6
-.RS 4n
-尝试从与 FMRI 相关的服务实例中检索属性 \fBpkg_secure/ssl_key_passphrase \fR 的值。
-.RE
-
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fB\fBpkg/ssl_key_file\fR\fR
-.ad
-.sp .6
-.RS 4n
-(\fBastring\fR) PEM 编码的私钥文件的绝对路径名称。此属性必须与 \fBssl_cert_file \fR 属性一起使用。如果同时提供 \fB/ssl_key_file \fR 和 \fBssl_cert_file\fR，则库只响应 SSL 请求。
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fB\fBpkg/standalone\fR\fR
-.ad
-.sp .6
-.RS 4n
-(\fBboolean\fR) 要轻松地通过具有最低 Apache 配置的单个 Apache 实例为多个系统信息库提供服务，请将此属性设置为 \fBfalse\fR 并将此 \fBpkg/server\fR 实例的 \fBpkg/readonly\fR 属性设置为 \fBtrue\fR。\fBpkg/standalone\fR 的缺省值为 \fBfalse\fR，\fBpkg/readonly\fR 的缺省值为 \fBtrue\fR。有关更多信息，请参见 \fBpkg.depot-config\fR(1M) 手册页。
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fB\fBpkg/threads\fR\fR
-.ad
-.sp .6
-.RS 4n
-(\fBcount\fR) 启动以为请求提供服务的线程数。缺省值为 60。只适用于小型部署。该值应该为并发客户机数量的 20 倍左右。\fBthreads\fR 的最大值为 5000。
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fB\fBpkg/writable_root\fR\fR
-.ad
-.sp .6
-.RS 4n
-(\fBastring\fR) 程序对其具有写入访问权限的目录的文件系统路径。此属性可与 \fB-readonly\fR 选项一起使用，以便 depot 服务器无需具有对软件包信息的写入访问权限即可创建文件（如搜索索引）。
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fB\fBpkg_secure/ssl_key_passphrase\fR\fR
-.ad
-.sp .6
-.RS 4n
-(\fBastring\fR) 用于对 \fBpkg/ssl_key_file\fR 进行解密的口令。该值受读取授权保护（使用属性 \fBsolaris.smf.read.pkg-server\fR）。
-.RE
-
-.sp
-.LP
-使用以下属性控制 depot 服务器的浏览器用户界面 (Browser User Interface, BUI) 的显示和行为：
-.sp
-.ne 2
-.mk
-.na
-\fB\fBpkg_bui/feed_description\fR\fR
-.ad
-.sp .6
-.RS 4n
-(\fBastring\fR) RSS/Atom 源的描述性段落。
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fB\fBpkg_bui/feed_icon\fR\fR
-.ad
-.sp .6
-.RS 4n
-(\fBastring\fR) 用于以可视方式表示 RSS/Atom 源的小型图像的路径名称。路径名称应相对于 \fBcontent_root\fR。缺省值为 \fBweb/_themes/pkg-block-icon.png\fR。
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fB\fBpkg_bui/feed_logo\fR\fR
-.ad
-.sp .6
-.RS 4n
-(\fBastring\fR) 将用于以可视方式标记或标识 RSS/Atom 源的大型图像的路径名称。该值应相对于 \fBcontent_root\fR。缺省值为 \fBweb/_themes/pkg-block-icon.png\fR。
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fB\fBpkg_bui/feed_name\fR\fR
-.ad
-.sp .6
-.RS 4n
-(\fBastring\fR) 由为系统信息库提供服务的库生成的 RSS/Atom 源的简短描述性名称。缺省值为 "package repository feed"。
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fB\fBpkg_bui/feed_window\fR\fR
-.ad
-.sp .6
-.RS 4n
-(\fBcount\fR) 系统信息库的源最后生成之前的小时数，以包括生成源的时间。
-.RE
-
-.sp
-.LP
-软件包库还可以用作来自 \fBpkg\fR(5) 的本地客户机映像的镜像服务器。这使得在 LAN 上共享一个子网的客户机可以对它们的文件高速缓存进行镜像。客户机可以相互下载文件，从而减少软件包 depot 服务器上的负载。此功能是作为由 SMF 配置的替代 depot 服务提供的。它为服务发现使用 mDNS 和 \fBdns-sd\fR。
-.sp
-.LP
-mDNS 镜像通常是通过与其服务关联的 SMF 属性配置的。可以识别以下属性：
-.sp
-.ne 2
-.mk
-.na
-\fB\fBpkg/image_root\fR\fR
-.ad
-.sp .6
-.RS 4n
-(\fBastring\fR) 其文件信息将用作文件数据高速缓存的映像的路径。缺省值为 \fB/\fR。
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fB\fBpkg/port\fR\fR
-.ad
-.sp .6
-.RS 4n
-(\fBcount\fR) 实例应侦听传入软件包请求的端口号。缺省值为 80。
-.RE
-
-.SH 选项
-.sp
-.LP
-\fBpkg.depotd\fR 可从文件或从现有 SMF 服务实例的属性数据读取其基本配置信息。
-.sp
-.ne 2
-.mk
-.na
-\fB\fB--cfg\fR \fIsource\fR\fR
-.ad
-.sp .6
-.RS 4n
-指定读取和写入配置数据时要使用的文件的路径名，或格式为 \fBsmf:\fIfmri\fR\fR 的字符串，其中 \fIfmri\fR 是从中读取配置数据的实例的服务故障管理资源标识符 (fault management resource identifier, FMRI)。有关指定文件的格式的详细信息，请参见下文的“库配置”。
-.RE
-
-.sp
-.LP
-如果没有可用的已存在的配置源，或者要覆盖从使用 \fB--cfg\fR 提供的配置文件中读取的值，则可以使用下列选项来更改 depot 服务器的缺省行为：
-.sp
-.ne 2
-.mk
-.na
-\fB\fB-a\fR \fIaddress\fR\fR
-.ad
-.sp .6
-.RS 4n
-请参见上述 \fBpkg/address\fR。
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fB\fB--content-root\fR \fIroot_dir\fR\fR
-.ad
-.sp .6
-.RS 4n
-请参见上述 \fBpkg/content_root\fR。
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fB\fB-d\fR \fIinst_root\fR\fR
-.ad
-.sp .6
-.RS 4n
-请参见上述 \fBpkg/inst_root\fR。
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fB\fB--debug\fR \fIfeature_list\fR\fR
-.ad
-.sp .6
-.RS 4n
-请参见上述 \fBpkg/debug\fR。
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fB\fB--disable-ops\fR=\fIop\fR[\fB /1\fR][,...]\fR
-.ad
-.sp .6
-.RS 4n
-请参见上述 \fBpkg/disable_ops\fR。
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fB\fB--image-root\fR \fIpath\fR\fR
-.ad
-.sp .6
-.RS 4n
-请参见上面的 \fBpkg/image_root\fR。
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fB\fB--log-access\fR \fIdest\fR\fR
-.ad
-.sp .6
-.RS 4n
-请参见上述 \fBpkg/log_access\fR。
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fB\fB--log-errors\fR \fIdest\fR\fR
-.ad
-.sp .6
-.RS 4n
-请参见上述 \fBpkg/log_errors\fR。
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fB\fB--mirror\fR \fImode\fR\fR
-.ad
-.sp .6
-.RS 4n
-请参见上述 \fBpkg/mirror\fR。
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fB\fB-p\fR \fIport\fR\fR
-.ad
-.sp .6
-.RS 4n
-请参见上述 \fBpkg/port\fR。
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fB\fB--proxy-base\fR \fIurl\fR\fR
-.ad
-.sp .6
-.RS 4n
-请参见上述 \fBpkg/proxy_base\fR。如果提供空值，则忽略该选项。
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fB\fB--readonly\fR \fImode\fR\fR
-.ad
-.sp .6
-.RS 4n
-请参见上述 \fBpkg/readonly\fR。
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fB\fB-s\fR \fIthreads\fR\fR
-.ad
-.sp .6
-.RS 4n
-请参见上述 \fBpkg/threads\fR。
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fB\fB--sort-file-max-size\fR \fIbytes\fR\fR
-.ad
-.sp .6
-.RS 4n
-请参见上述 \fBpkg/sort_file_max_size\fR。
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fB\fB--ssl-cert-file\fR \fIsource\fR\fR
-.ad
-.sp .6
-.RS 4n
-请参见上述 \fBpkg/ssl_cert_file\fR。
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fB\fB--ssl-dialog\fR \fItype\fR\fR
-.ad
-.sp .6
-.RS 4n
-请参见上述 \fBpkg/ssl_dialog\fR。
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fB\fB--ssl-key-file\fR \fIsource\fR\fR
-.ad
-.sp .6
-.RS 4n
-请参见上述 \fBpkg/ssl_key_file\fR。
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fB\fB-t\fR \fIsocket_timeout\fR\fR
-.ad
-.sp .6
-.RS 4n
-请参见上述 \fBpkg/socket_timeout\fR。
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fB\fB--writable-root\fR \fIpath\fR\fR
-.ad
-.sp .6
-.RS 4n
-请参见上述 \fBpkg/writable_root\fR。
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fB\fB-?\fR\fR
-.ad
-.br
-.na
-\fB\fB--help\fR\fR
-.ad
-.sp .6
-.RS 4n
-显示用法消息。
-.RE
-
-.sp
-.LP
-针对软件包系统信息库的其他管理功能是由 \fBpkgrepo\fR 提供的。
-.SH 库配置
-.sp
-.LP
-如果使用 \fB--cfg\fR 选项提供了配置文件（而非 SMF FMRI），则 depot 服务器将以简单的文本格式读取和写入所有配置数据。在上述“SMF 属性”中描述了配置数据。配置数据包含各个部分，以 \fB[\fIsection\fR]\fR 标题开始，后跟 \fBname = \fIvalue\fR\fR 条目。后续部分为 RFC 822 样式。可以跨多个行拆分数据，以空格开始后续行即可。
-.sp
-.LP
-必须使用上述“选项”中列出的选项提供配置文件中未提供的任何所需值。样例配置文件可能类似如下：
-.sp
-.in +2
-.nf
-[pkg]
+<refentry lang="zh" id="pkg.depotd-1m">
+<refmeta><refentrytitle>pkg.depotd</refentrytitle><manvolnum>1M</manvolnum> <refmiscinfo class="date">2013 年 10 月 2 日</refmiscinfo> <refmiscinfo class="sectdesc">&man1m;</refmiscinfo> <refmiscinfo class="software">&release;</refmiscinfo> <refmiscinfo class="arch">generic</refmiscinfo> <refmiscinfo class="copyright">Copyright (c) 2007, 2013, Oracle and/or its affiliates.All rights reserved.</refmiscinfo> 
+</refmeta>
+<refnamediv>
+<refname>pkg.depotd</refname><refpurpose>映像包管理系统 depot 服务器</refpurpose>
+</refnamediv>
+<refsynopsisdiv><title></title>
+<synopsis>/usr/lib/pkg.depotd [--cfg <replaceable>source</replaceable>] [-a <replaceable>address</replaceable>]
+    [--content-root <replaceable>root_dir</replaceable>] [-d <replaceable>inst_root</replaceable>]
+    [--debug <replaceable>feature_list</replaceable>] [--disable-ops=<replaceable>op</replaceable>[/1][,...]]
+    [--image-root <replaceable>path</replaceable>] [--log-access <replaceable>dest</replaceable>]
+    [--log-errors <replaceable>dest</replaceable>] [--mirror <replaceable>mode</replaceable>] [-p <replaceable>port</replaceable>]
+    [--proxy-base <replaceable>url</replaceable>] [--readonly <replaceable>mode</replaceable>] [-s <replaceable>threads</replaceable>]
+    [--sort-file-max-size <replaceable>bytes</replaceable>] [--ssl-cert-file <replaceable>source</replaceable>]
+    [--ssl-dialog <replaceable>type</replaceable>] [--ssl-key-file <replaceable>source</replaceable>]
+    [-t <replaceable>socket_timeout</replaceable>] [--writable-root <replaceable>path</replaceable>]</synopsis>
+</refsynopsisdiv>
+<refsect1 id="GLHAR" role="description"><title></title>
+<para><command>pkg.depotd</command> 是映像包管理系统的 depot 服务器。它提供对包含在软件包系统信息库中的数据的网络访问。对于不支持通过文件系统直接访问系统信息库的客户机，或网络访问是唯一可用或希望使用的传输方法的客户机，通常使用软件包库 (depot)。</para>
+<para>诸如 <command>pkg</command> 之类的检索客户机可直接从系统信息库或通过 depot 服务器检索软件包和软件包元数据列表。发布客户机 <command>pkgsend</command> 可将新版本的软件包直接或通过 depot 服务器发送到系统信息库。<command>pkgrepo</command> 可用于创建系统信息库供 depot 服务器使用，或用于直接以及通过 depot 服务器管理它们。</para>
+<para><command>pkg.depotd</command> 通常在系统上作为服务运行。软件包和软件开发者可能希望运行专用副本进行测试。</para>
+<para>库不提供任何自己的访问控制方法。缺省情况下，所有能够连接的客户机都能够读取所有软件包数据和发布新的软件包版本。在服务管理工具 (Service Management Facility, SMF) 下运行时例外，缺省情况为在只读模式中运行。下列“附注”部分描述了维护具有不断变化内容的公共 depot 服务器的一些最佳做法。</para>
+</refsect1>
+<refsect1 role="other"><title>SMF 属性</title>
+<para><literal>pkg.depotd</literal> 服务器通常通过与其服务关联的 SMF 属性配置。<literal>svc:/application/pkg/server</literal> 服务运行一个 <literal>pkg.depot</literal> 服务器进程，或者为 <literal>svc:/application/pkg/depot</literal> 服务提供配置。请参见 <literal>pkg.depot-config</literal>(1M) 手册页和下文中的 <literal>pkg/standalone</literal> 属性。</para>
+<para>有关 SMF 属性的信息，请参见 <literal>smf</literal>(5) 手册页。可以识别以下属性：</para>
+<variablelist termlength="wholeline">
+<varlistentry><term><literal>pkg/address</literal></term>
+<listitem><para>(<literal>net_address</literal>) 在其上侦听连接的 IP 地址。缺省值为 0.0.0.0 (<literal>INADDR_ANY</literal>)，该地址侦听所有活动接口。要侦听所有活动的 IPv6 接口，请使用 <literal>::</literal>。只使用第一个值。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>pkg/content_root</literal></term>
+<listitem><para>(<literal>astring</literal>) 实例应在其中找到其静态 Web 内容以及其他 Web 内容的文件系统路径。缺省值为 <filename>/usr/share/lib/pkg</filename>。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>pkg/debug</literal></term>
+<listitem><para>(<literal>astring</literal>) 以逗号分隔的要启用的调试功能列表。可能的值为：</para>
+<variablelist>
+<varlistentry><term><literal>headers</literal></term>
+<listitem><para>将每个请求的标题记录到错误日志。</para>
+</listitem>
+</varlistentry>
+</variablelist>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>pkg/disable_ops</literal></term>
+<listitem><para>(<literal>astring</literal>) 以逗号分隔的应该为 depot 服务器禁用的操作列表。操作以 <replaceable> operation</replaceable>[/<replaceable>version</replaceable>] 形式提供（例如 <literal>catalog</literal> 或 <literal> search_1</literal>）。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>pkg/image_root</literal></term>
+<listitem><para>(<literal>astring</literal>) 其文件信息将用作文件数据高速缓存的映像的路径。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>pkg/inst_root</literal></term>
+<listitem><para>(<literal>astring</literal>) 实例应在其中找到其系统信息库数据的文件系统路径。必需，除非已提供了 <literal>PKG_REPO</literal>。缺省值为 <filename>/var/pkgrepo</filename>。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>pkg/log_access</literal></term>
+<listitem><para>(<literal>astring</literal>) 库进程记录的任何与访问相关的信息的目标。可能的值为：<filename>stderr</filename>、<filename>stdout</filename>、<literal>none</literal> 或绝对路径名称。如果 <filename>stdout</filename> 是 <literal>tty</literal>，则缺省值为 <filename>stdout</filename>。如果 <filename>stdout</filename> 不是 <literal>tty</literal>，则缺省值为 <literal>none</literal>。如果您将 <literal>pkg</literal> 作为服务运行，则 <literal>log_access</literal> 的缺省值为 <literal>none</literal>，且输出将写入 <filename>/var/svc/log/application-pkg-server:* </filename> 中。有关管理大日志文件的示例，请参见 <literal>logadm</literal>(1M) 手册页。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>pkg/log_errors</literal></term>
+<listitem><para>(<literal>astring</literal>) 库进程记录的任何错误或其他信息的目标。可能的值为：<filename>stderr</filename>、<filename>stdout</filename>、<literal>none</literal> 或绝对路径名称。缺省值为 <filename>stderr</filename>。有关管理大日志文件的示例，请参见 <literal>logadm</literal>(1M) 手册页。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>pkg/mirror</literal></term>
+<listitem><para>(<literal>boolean</literal>) 设置是否使用软件包镜像模式。为 true 时，禁用发布和元数据操作，只提供受限制的浏览器用户界面。当 <literal>pkg/readonly</literal> 属性为 true 时，该属性不能为 true。缺省值为 <literal>false</literal>。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>pkg/port</literal></term>
+<listitem><para>(<literal>count</literal>) 实例应侦听传入软件包请求的端口号。如果未提供 SSL 证书和密钥信息，则缺省值为 80；否则，缺省值为 443。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>pkg/proxy_base</literal></term>
+<listitem><para>(<literal>uri</literal>) 该属性更改 depot 服务器的基 URL，当在 Apache 或反向代理配置中的某个其他 Web 服务器后运行时最有用。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>pkg/readonly</literal></term>
+<listitem><para>(<literal>boolean</literal>) 设置是否禁用修改操作，例如由 <command>pkgsend</command> 启动的那些操作。检索操作仍可用。当 <literal>pkg/mirror </literal> 属性为 true 时，该属性不能为 true。缺省值为 <literal>true</literal>。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>pkg/socket_timeout</literal></term>
+<listitem><para>(<literal>count</literal>) 在断开连接之前服务器应该等待客户机响应的最大秒数。缺省值为 60。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>pkg/sort_file_max_size</literal></term>
+<listitem><para>(<literal>count</literal>) 索引器排序文件的最大大小。用于限制库用来创建索引的 RAM 数量，或增加数量以提高速度。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>pkg/ssl_cert_file</literal></term>
+<listitem><para>(<literal>astring</literal>) PEM 编码的证书文件的绝对路径名称。缺省值为 <literal>none</literal>。此属性必须与 <literal>ssl_key_file</literal> 一起使用。如果同时提供 <literal>ssl_cert_file</literal> 和 <literal>/ssl_key_file </literal>，则库只响应 SSL 请求。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>pkg/ssl_dialog</literal></term>
+<listitem><para>(<literal>astring</literal>) 指定应使用何种方法来获取用于对 <literal>ssl_key_file</literal> 进行解密的口令短语。可能的值为：</para>
+<variablelist termlength="wholeline">
+<varlistentry><term><literal>builtin</literal></term>
+<listitem><para>提示输入口令短语。这是缺省值。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>exec:<replaceable>/path/to/program</replaceable></literal></term>
+<listitem><para>执行指定的外部程序来获取口令短语。程序的第一个参数为 <literal>''</literal>，并保留该参数。程序的第二个参数是服务器的端口号。口令短语输出到 <filename>stdout</filename>。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>smf:fmri</literal></term>
+<listitem><para>尝试从与 FMRI 相关的服务实例中检索属性 <literal>pkg_secure/ssl_key_passphrase </literal> 的值。</para>
+</listitem>
+</varlistentry>
+</variablelist>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>pkg/ssl_key_file</literal></term>
+<listitem><para>(<literal>astring</literal>) PEM 编码的私钥文件的绝对路径名称。此属性必须与 <literal>ssl_cert_file </literal> 属性一起使用。如果同时提供 <literal>/ssl_key_file </literal> 和 <literal>ssl_cert_file</literal>，则库只响应 SSL 请求。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>pkg/standalone</literal></term>
+<listitem><para>(<literal>boolean</literal>) 要轻松地通过具有最低 Apache 配置的单个 Apache 实例为多个系统信息库提供服务，请将此属性设置为 <literal>false</literal> 并将此 <literal>pkg/server</literal> 实例的 <literal>pkg/readonly</literal> 属性设置为 <literal>true</literal>。<literal>pkg/standalone</literal> 的缺省值为 <literal>false</literal>，<literal>pkg/readonly</literal> 的缺省值为 <literal>true</literal>。有关更多信息，请参见 <literal>pkg.depot-config</literal>(1M) 手册页。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>pkg/threads</literal></term>
+<listitem><para>(<literal>count</literal>) 启动以为请求提供服务的线程数。缺省值为 60。只适用于小型部署。该值应该为并发客户机数量的 20 倍左右。<literal>threads</literal> 的最大值为 5000。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>pkg/writable_root</literal></term>
+<listitem><para>(<literal>astring</literal>) 程序对其具有写入访问权限的目录的文件系统路径。此属性可与 <option>readonly</option> 选项一起使用，以便 depot 服务器无需具有对软件包信息的写入访问权限即可创建文件（如搜索索引）。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>pkg_secure/ssl_key_passphrase</literal></term>
+<listitem><para>(<literal>astring</literal>) 用于对 <literal>pkg/ssl_key_file</literal> 进行解密的口令。该值受读取授权保护（使用属性 <literal>solaris.smf.read.pkg-server</literal>）。</para>
+</listitem>
+</varlistentry>
+</variablelist>
+<para>使用以下属性控制 depot 服务器的浏览器用户界面 (Browser User Interface, BUI) 的显示和行为：</para>
+<variablelist termlength="wholeline">
+<varlistentry><term><literal>pkg_bui/feed_description</literal></term>
+<listitem><para>(<literal>astring</literal>) RSS/Atom 源的描述性段落。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>pkg_bui/feed_icon</literal></term>
+<listitem><para>(<literal>astring</literal>) 用于以可视方式表示 RSS/Atom 源的小型图像的路径名称。路径名称应相对于 <literal>content_root</literal>。缺省值为 <filename>web/_themes/pkg-block-icon.png</filename>。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>pkg_bui/feed_logo</literal></term>
+<listitem><para>(<literal>astring</literal>) 将用于以可视方式标记或标识 RSS/Atom 源的大型图像的路径名称。该值应相对于 <literal>content_root</literal>。缺省值为 <filename>web/_themes/pkg-block-icon.png</filename>。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>pkg_bui/feed_name</literal></term>
+<listitem><para>(<literal>astring</literal>) 由为系统信息库提供服务的库生成的 RSS/Atom 源的简短描述性名称。缺省值为 "package repository feed"。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>pkg_bui/feed_window</literal></term>
+<listitem><para>(<literal>count</literal>) 系统信息库的源最后生成之前的小时数，以包括生成源的时间。</para>
+</listitem>
+</varlistentry>
+</variablelist>
+<para>软件包库还可以用作来自 <literal>pkg</literal>(5) 的本地客户机映像的镜像服务器。这使得在 LAN 上共享一个子网的客户机可以对它们的文件高速缓存进行镜像。客户机可以相互下载文件，从而减少软件包 depot 服务器上的负载。此功能是作为由 SMF 配置的替代 depot 服务提供的。它为服务发现使用 mDNS 和 <literal>dns-sd</literal>。</para>
+<para>mDNS 镜像通常是通过与其服务关联的 SMF 属性配置的。可以识别以下属性：</para>
+<variablelist termlength="wholeline">
+<varlistentry><term><literal>pkg/image_root</literal></term>
+<listitem><para>(<literal>astring</literal>) 其文件信息将用作文件数据高速缓存的映像的路径。缺省值为 <filename>/</filename>。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>pkg/port</literal></term>
+<listitem><para>(<literal>count</literal>) 实例应侦听传入软件包请求的端口号。缺省值为 80。</para>
+</listitem>
+</varlistentry>
+</variablelist>
+</refsect1>
+<refsect1 role="options"><title></title>
+<para><command>pkg.depotd</command> 可从文件或从现有 SMF 服务实例的属性数据读取其基本配置信息。</para>
+<variablelist termlength="wholeline">
+<varlistentry><term><option>-cfg</option> <replaceable>source</replaceable></term>
+<listitem><para>指定读取和写入配置数据时要使用的文件的路径名，或格式为 <literal>smf:<replaceable>fmri</replaceable></literal> 的字符串，其中 <replaceable>fmri</replaceable> 是从中读取配置数据的实例的服务故障管理资源标识符 (fault management resource identifier, FMRI)。有关指定文件的格式的详细信息，请参见下文的“库配置”。</para>
+</listitem>
+</varlistentry>
+</variablelist>
+<para>如果没有可用的已存在的配置源，或者要覆盖从使用 <option>-cfg</option> 提供的配置文件中读取的值，则可以使用下列选项来更改 depot 服务器的缺省行为：</para>
+<variablelist termlength="wholeline">
+<varlistentry><term><option>a</option> <replaceable>address</replaceable></term>
+<listitem><para>请参见上述 <literal>pkg/address</literal>。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>-content-root</option> <replaceable>root_dir</replaceable></term>
+<listitem><para>请参见上述 <literal>pkg/content_root</literal>。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>d</option> <replaceable>inst_root</replaceable></term>
+<listitem><para>请参见上述 <literal>pkg/inst_root</literal>。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>-debug</option> <replaceable>feature_list</replaceable></term>
+<listitem><para>请参见上述 <literal>pkg/debug</literal>。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>-disable-ops</option>=<replaceable>op</replaceable>[<literal> /1</literal>][,...]</term>
+<listitem><para>请参见上述 <literal>pkg/disable_ops</literal>。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>-image-root</option> <replaceable>path</replaceable></term>
+<listitem><para>请参见上面的 <literal>pkg/image_root</literal>。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>-log-access</option> <replaceable>dest</replaceable></term>
+<listitem><para>请参见上述 <literal>pkg/log_access</literal>。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>-log-errors</option> <replaceable>dest</replaceable></term>
+<listitem><para>请参见上述 <literal>pkg/log_errors</literal>。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>-mirror</option> <replaceable>mode</replaceable></term>
+<listitem><para>请参见上述 <literal>pkg/mirror</literal>。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>p</option> <replaceable>port</replaceable></term>
+<listitem><para>请参见上述 <literal>pkg/port</literal>。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>-proxy-base</option> <replaceable>url</replaceable></term>
+<listitem><para>请参见上述 <literal>pkg/proxy_base</literal>。如果提供空值，则忽略该选项。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>-readonly</option> <replaceable>mode</replaceable></term>
+<listitem><para>请参见上述 <literal>pkg/readonly</literal>。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>s</option> <replaceable>threads</replaceable></term>
+<listitem><para>请参见上述 <literal>pkg/threads</literal>。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>-sort-file-max-size</option> <replaceable>bytes</replaceable></term>
+<listitem><para>请参见上述 <literal>pkg/sort_file_max_size</literal>。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>-ssl-cert-file</option> <replaceable>source</replaceable></term>
+<listitem><para>请参见上述 <literal>pkg/ssl_cert_file</literal>。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>-ssl-dialog</option> <replaceable>type</replaceable></term>
+<listitem><para>请参见上述 <literal>pkg/ssl_dialog</literal>。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>-ssl-key-file</option> <replaceable>source</replaceable></term>
+<listitem><para>请参见上述 <literal>pkg/ssl_key_file</literal>。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>t</option> <replaceable>socket_timeout</replaceable></term>
+<listitem><para>请参见上述 <literal>pkg/socket_timeout</literal>。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>-writable-root</option> <replaceable>path</replaceable></term>
+<listitem><para>请参见上述 <literal>pkg/writable_root</literal>。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>?</option></term><term><option>-help</option></term>
+<listitem><para>显示用法消息。</para>
+</listitem>
+</varlistentry>
+</variablelist>
+<para>针对软件包系统信息库的其他管理功能是由 <command>pkgrepo</command> 提供的。</para>
+</refsect1>
+<refsect1 role="other"><title>库配置</title>
+<para>如果使用 <option>-cfg</option> 选项提供了配置文件（而非 SMF FMRI），则 depot 服务器将以简单的文本格式读取和写入所有配置数据。在上述“SMF 属性”中描述了配置数据。配置数据包含各个部分，以 <literal>[<replaceable>section</replaceable>]</literal> 标题开始，后跟 <literal>name = <replaceable>value</replaceable></literal> 条目。后续部分为 RFC 822 样式。可以跨多个行拆分数据，以空格开始后续行即可。</para>
+<para>必须使用上述“选项”中列出的选项提供配置文件中未提供的任何所需值。样例配置文件可能类似如下：</para>
+<programlisting>[pkg]
 port = 80
 inst_root = /export/repo
 
 [pub_example_com]
 feed_description = example.com's software
-  update log
-.fi
-.in -2
+  update log</programlisting>
+</refsect1>
+<refsect1 role="examples"><title></title>
+<example><title>启用 depot 服务器</title>
+<screen># <userinput>svcadm enable application/pkg/server</userinput></screen>
+</example>
+<example id="GLHBM"><title>更改服务器的侦听端口。</title>
+<screen># <userinput>svccfg -s application/pkg/server setprop pkg/port = 10000</userinput>
+# <userinput>svcadm refresh application/pkg/server</userinput>
+# <userinput>svcadm restart application/pkg/server</userinput></screen>
+</example>
+<example id="GLHAW"><title>启用镜像</title>
+<screen># <userinput>svcadm enable application/pkg/dynamic-mirror</userinput></screen>
+</example>
+</refsect1>
+<refsect1 role="environment-variables"><title></title>
+<variablelist>
+<varlistentry><term><envar>PKG_REPO</envar></term>
+<listitem><para>指定包含要提供的系统信息库的目录。如果指定 <option>d</option>，则忽略该值。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><envar>PKG_DEPOT_CONTENT</envar></term>
+<listitem><para>指定包含库提供的静态内容的目录。该目录中应该有列在下方“文件”下的文件，虽然其中的内容可能与提供的缺省内容不同。</para>
+</listitem>
+</varlistentry>
+</variablelist>
+</refsect1>
+<refsect1 role="exit-status"><title></title>
+<para>将返回以下退出值：</para>
+<variablelist termlength="xtranarrow">
+<varlistentry><term><returnvalue>0</returnvalue></term>
+<listitem><para>操作成功。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><returnvalue>1</returnvalue></term>
+<listitem><para>出现错误。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><returnvalue>2</returnvalue></term>
+<listitem><para>指定的命令行选项无效。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><returnvalue>99</returnvalue></term>
+<listitem><para>发生了意外的异常。</para>
+</listitem>
+</varlistentry>
+</variablelist>
+</refsect1>
+<refsect1 role="files"><title></title>
+<variablelist termlength="wholeline">
+<varlistentry><term><filename>/usr/share/lib/pkg</filename></term>
+<listitem><para>缺省显示内容的位置。修改 <literal>pkg/content_root </literal> 以选择备用位置。</para>
+</listitem>
+</varlistentry>
+</variablelist>
+</refsect1>
+<refsect1 role="attributes"><title></title>
+<para>有关下列属性的说明，请参见 <literal>attributes</literal>(5)：</para>
+<informaltable frame="all" orient="port">
+<tgroup cols="2" colsep="1" rowsep="1"><colspec colname="col1" colwidth="198*" align="left" /><colspec colname="col2" colwidth="198*" align="left" /><thead>
+<row>
+<entry align="center">
+<para>属性类型</para>
+</entry>
+<entry align="center">
+<para>属性值</para>
+</entry>
+</row>
+</thead>
+<tbody>
+<row>
+<entry align="left">
+<para>可用性</para>
+</entry>
+<entry align="left">
+<para><literal>package/pkg</literal></para>
+</entry>
+</row>
+<row>
+<entry align="left">
+<para>接口稳定性</para>
+</entry>
+<entry align="left">
+<para>Uncommitted（未确定）</para>
+</entry>
+</row>
+</tbody>
+</tgroup>
+</informaltable></refsect1>
+<refsect1 role="see-also"><title></title>
+<para><olink targetdoc="refman" targetptr="pkg.depot-config-1m"><citerefentry><refentrytitle>pkg.depot-config</refentrytitle><manvolnum>1M</manvolnum></citerefentry></olink>、<olink targetdoc="refman" targetptr="dns-sd-1m"><citerefentry><refentrytitle>dns-sd</refentrytitle><manvolnum>1M</manvolnum></citerefentry></olink>、<olink targetdoc="refman" targetptr="MDNSD-1M"><citerefentry><refentrytitle>mdnsd</refentrytitle><manvolnum>1M</manvolnum></citerefentry></olink>、<olink targetdoc="refman" targetptr="pkg-1"><citerefentry><refentrytitle>pkg</refentrytitle><manvolnum>1</manvolnum></citerefentry></olink>、<olink targetdoc="refman" targetptr="pkgrepo-1"><citerefentry><refentrytitle>pkgrepo</refentrytitle><manvolnum>1</manvolnum></citerefentry></olink>、<olink targetdoc="refman" targetptr="pkgsend-1"><citerefentry><refentrytitle>pkgsend</refentrytitle><manvolnum>1</manvolnum></citerefentry></olink>、<literal>syslogd</literal>(1M)、<olink targetdoc="refman" targetptr="SMF-5"><citerefentry><refentrytitle>smf</refentrytitle><manvolnum>5</manvolnum></citerefentry></olink></para>
+<para><olink targetdoc="CCOSP">《<citetitle remap="book">Copying and Creating Package Repositories in Oracle Solaris 11.2</citetitle>》</olink></para>
+<para><literal>https://java.net/projects/ips/pages/Home</literal></para>
+</refsect1>
+<refsect1 role="notes"><title></title>
+<para><literal>pkd.depotd</literal> 服务由 SMF 管理，在服务标识符 <literal>svc:/application/pkg/server</literal> 下。</para>
+<para>mDNS 镜像服务由 <literal>svc:/application/pkg/dynamic-mirror</literal> 服务标识符下的 SMF 管理。</para>
+<para>要控制对库的读取访问权限，可以将 HTTP 反向代理与验证方法（例如 <command>pkg</command> 本身就支持的基于客户机的 SSL 证书访问权限）结合使用。</para>
+<para>要轻松地通过具有最低 Apache 配置的单个 Apache 实例为多个系统信息库提供服务，请将特定 <literal>pkg/server</literal> 实例的 <literal>pkg/standalone</literal> 属性设置为 <literal>false</literal>，并将该实例的 <literal>pkg/readonly</literal> 属性设置为 <literal>true</literal>。有关更多信息，请参见 <literal>pkg.depot-config</literal>(1M) 手册页。</para>
+<para>配置的更改，或使用基于文件系统的操作对软件包数据的更改，需要重新启动 depot 服务器进程，从而使更改能够反映在操作和输出中。使用下列方法之一来重新启动 depot 服务器进程：</para>
+<itemizedlist>
+<listitem><para>使用 <command>svcadm</command> 重新启动 <literal>application/pkg/server</literal> 实例。</para></listitem>
+<listitem><para>使用 <command>kill</command> 向 depot 服务器进程发送一个 <literal>SIGUSR1</literal> 信号。这样可执行正常的重新启动，使进程保持不变，但重新加载所有配置、软件包和搜索数据：</para>
+<screen># <userinput>kill -USR1 <replaceable>pid</replaceable></userinput></screen>
+</listitem>
+</itemizedlist>
+</refsect1>
+</refentry>
 
-.SH 示例
-.LP
-\fB示例 1 \fR启用 depot 服务器
-.sp
-.in +2
-.nf
-# \fBsvcadm enable application/pkg/server\fR
-.fi
-.in -2
-.sp
-
-.LP
-\fB示例 2 \fR更改服务器的侦听端口。
-.sp
-.in +2
-.nf
-# \fBsvccfg -s application/pkg/server setprop pkg/port = 10000\fR
-# \fBsvcadm refresh application/pkg/server\fR
-# \fBsvcadm restart application/pkg/server\fR
-.fi
-.in -2
-.sp
-
-.LP
-\fB示例 3 \fR启用镜像
-.sp
-.in +2
-.nf
-# \fBsvcadm enable application/pkg/dynamic-mirror\fR
-.fi
-.in -2
-.sp
-
-.SH 环境变量
-.sp
-.ne 2
-.mk
-.na
-\fB\fBPKG_REPO\fR\fR
-.ad
-.RS 21n
-.rt  
-指定包含要提供的系统信息库的目录。如果指定 \fB-d\fR，则忽略该值。
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fB\fBPKG_DEPOT_CONTENT\fR\fR
-.ad
-.RS 21n
-.rt  
-指定包含库提供的静态内容的目录。该目录中应该有列在下方“文件”下的文件，虽然其中的内容可能与提供的缺省内容不同。
-.RE
-
-.SH 退出状态
-.sp
-.LP
-将返回以下退出值：
-.sp
-.ne 2
-.mk
-.na
-\fB\fB0\fR\fR
-.ad
-.RS 13n
-.rt  
-操作成功。
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fB\fB1\fR\fR
-.ad
-.RS 13n
-.rt  
-出现错误。
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fB\fB2\fR\fR
-.ad
-.RS 13n
-.rt  
-指定的命令行选项无效。
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fB\fB99\fR\fR
-.ad
-.RS 13n
-.rt  
-发生了意外的异常。
-.RE
-
-.SH 文件
-.sp
-.ne 2
-.mk
-.na
-\fB\fB/usr/share/lib/pkg\fR\fR
-.ad
-.sp .6
-.RS 4n
-缺省显示内容的位置。修改 \fBpkg/content_root \fR 以选择备用位置。
-.RE
-
-.SH 属性
-.sp
-.LP
-有关下列属性的说明，请参见 \fBattributes\fR(5)：
-.sp
-
-.sp
-.TS
-tab() box;
-cw(2.75i) |cw(2.75i) 
-lw(2.75i) |lw(2.75i) 
-.
-属性类型属性值
-_
-可用性\fBpackage/pkg\fR
-_
-接口稳定性Uncommitted（未确定）
-.TE
-
-.SH 另请参见
-.sp
-.LP
-\fBpkg.depot-config\fR(1M)、\fBdns-sd\fR(1M)、\fBmdnsd\fR(1M)、\fBpkg\fR(1)、\fBpkgrepo\fR(1)、\fBpkgsend\fR(1)、\fBsyslogd\fR(1M)、\fBsmf\fR(5)
-.sp
-.LP
-《\fI《Copying and Creating Package Repositories in Oracle Solaris 11.2》\fR》
-.sp
-.LP
-\fBhttps://java.net/projects/ips/pages/Home\fR
-.SH 附注
-.sp
-.LP
-\fBpkd.depotd\fR 服务由 SMF 管理，在服务标识符 \fBsvc:/application/pkg/server\fR 下。
-.sp
-.LP
-mDNS 镜像服务由 \fBsvc:/application/pkg/dynamic-mirror\fR 服务标识符下的 SMF 管理。
-.sp
-.LP
-要控制对库的读取访问权限，可以将 HTTP 反向代理与验证方法（例如 \fBpkg\fR 本身就支持的基于客户机的 SSL 证书访问权限）结合使用。
-.sp
-.LP
-要轻松地通过具有最低 Apache 配置的单个 Apache 实例为多个系统信息库提供服务，请将特定 \fBpkg/server\fR 实例的 \fBpkg/standalone\fR 属性设置为 \fBfalse\fR，并将该实例的 \fBpkg/readonly\fR 属性设置为 \fBtrue\fR。有关更多信息，请参见 \fBpkg.depot-config\fR(1M) 手册页。
-.sp
-.LP
-配置的更改，或使用基于文件系统的操作对软件包数据的更改，需要重新启动 depot 服务器进程，从而使更改能够反映在操作和输出中。使用下列方法之一来重新启动 depot 服务器进程：
-.RS +4
-.TP
-.ie t \(bu
-.el o
-使用 \fBsvcadm\fR 重新启动 \fBapplication/pkg/server\fR 实例。
-.RE
-.RS +4
-.TP
-.ie t \(bu
-.el o
-使用 \fBkill\fR 向 depot 服务器进程发送一个 \fBSIGUSR1\fR 信号。这样可执行正常的重新启动，使进程保持不变，但重新加载所有配置、软件包和搜索数据：
-.sp
-.in +2
-.nf
-# \fBkill -USR1 \fIpid\fR\fR
-.fi
-.in -2
-.sp
-
-.RE

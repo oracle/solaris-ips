@@ -1,1653 +1,1351 @@
-'\" te
-.\" Copyright (c) 2009, 2014, Oracle and/or its affiliates. All rights reserved.
-.TH pkg 5 "28 May 2014" "SunOS 5.12" "Standards, Environments, and Macros"
-.SH NAME
-pkg \- Image Packaging System
-.SH DESCRIPTION
-.sp
-.LP
-The image packaging system, \fBpkg\fR(5), is a framework that provides for software lifecycle management (installation, upgrade, and removal). Image packaging manages software in units of packages, which are collections of actions, defined by a set of key/value pairs and possibly a data payload. In many cases, actions are files found in a file system, but they also represent other installable objects, such as drivers, services, and users.
-.SH PACKAGE FMRIS AND VERSIONS
-.sp
-.LP
-Each package is represented by a fault management resource identifier (FMRI) with the scheme \fBpkg:\fR. The full FMRI for a package consists of the scheme, a publisher, the package name, and a version string in the following format:
-.sp
-.in +2
-.nf
-pkg://solaris/system/library/c++-runtime@0.5.11,5.11-0.175.0.0.0.2.1:20120921T190358Z
-.fi
-.in -2
-.sp
-
-.sp
-.LP
-\fBsolaris\fR is the publisher. \fBsystem/library/c++-runtime\fR is the package name. Although the namespace is hierarchical and arbitrarily deep, there is no enforced containment; the name is essentially arbitrary. The publisher information is optional, but must be preceded by \fBpkg://\fR if present. An FMRI that includes the publisher is often referred to as being "fully qualified." If publisher information is not present, then the package name should generally be preceded by \fBpkg:/\fR.
-.sp
-.LP
-Packaging clients often allow the scheme of an FMRI to be omitted if it does not contain publisher information. For example, \fBpkg:/system/library/c++-runtime\fR can be written as \fBsystem/library/c++-runtime\fR. If the scheme is omitted, clients also allow omission of all but the last component of a package name for matching purposes. For example, \fBsystem/library/c++-runtime\fR could be written as \fBlibrary/c++-runtime\fR or \fBc++-runtime\fR, which would then match packages named \fBc++-runtime\fR or package names ending in \fB/c++-runtime\fR.
-.sp
-.LP
-A publisher name identifies a person, group of persons, or an organization as the source of one or more packages. To avoid publisher name collisions and help identify the publisher, a best practice is to use a domain name that represents the entity publishing the packages as a publisher name.
-.sp
-.LP
-The version follows the package name, separated by an at sign (@). The version consists of four sequences of numbers, separated by punctuation. The elements in the first three sequences are separated by dots, and the sequences are arbitrarily long. Leading zeros in version components (for example, 01.1 or 1.01) are not permitted. Trailing zeros (for example, 1.10) are permitted.
-.sp
-.LP
-The first part of the version is the component version. For components tightly bound to the operating system, this is usually the value of \fBuname -r\fR for that version of the operating system. For a component with its own development lifecycle, this sequence is a dotted release number, such as 2.4.10.
-.sp
-.LP
-The second part of the version, which if present must follow a comma (,), is the build version. The build version specifies what version of the operating system the contents of the package were built on, providing a minimum bound on which operating system version the contents can be expected to run successfully.
-.sp
-.LP
-The third part of the version, which if present must follow a hyphen (\fB-\fR), is the branch version. The branch version is a versioning component that provides vendor-specific information. The branch version can be incremented when the packaging metadata is changed, independently of the component version. The branch version might contain a build number or other information.
-.sp
-.LP
-The fourth part of the version, which if present must follow a colon (:), is a timestamp. The timestamp represents when the package was published.
-.sp
-.LP
-When performing comparisons between versions, no component of the full version is considered unless the components to its left are the same. Thus, \fB4.3-1\fR is greater than \fB4.2-7\fR because \fB4.3\fR is greater than \fB4.2\fR, and \fB4.3-3\fR is greater than \fB4.3-1\fR because \fB3\fR is greater than \fB1\fR.
-.sp
-.LP
-The \fBpkg.human-version\fR attribute can be used to provide a human-readable version string. The value of the \fBpkg.human-version\fR attribute can be provided in addition to the package version described above for the package FMRI but cannot replace the package FMRI version. The human-readable version string is only used for display purposes. See "Set Actions" for more information.
-.sp
-.LP
-Many parts of the system, when appropriate, abridge FMRIs when displaying them, and accept input in shorter forms to reduce the volume of information displayed or required. Typically, the scheme, publisher, build version, and timestamp can be elided. Sometimes all of the versioning information can be omitted.
-.SH ACTIONS
-.sp
-.LP
-Actions represent the installable objects on a system. Actions are described in the manifest of a package. Every action consists primarily of its name and a key attribute. Together, these refer to a unique object as it follows a version history. Actions can have other attributes. Some attributes are interpreted directly by the packaging system. Other attributes might be useful only to the system administrator or the end-user.
-.sp
-.LP
-Actions have a simple text representation:
-.sp
-.in +2
-.nf
-\fIaction_name\fR \fIattribute1\fR=\fIvalue1\fR \fIattribute2\fR=\fIvalue2\fR ...
-.fi
-.in -2
-
-.sp
-.LP
-Names of attributes cannot have whitespace, quotation marks, or equals signs (=) in them. All characters after the first equals sign belong to the value. Values can have all of those, though spaces must be enclosed in single or double quotation marks. Single quotation marks do not need to be escaped inside a string that is enclosed in double quotation marks, and double quotation marks do not need to be escaped inside a string that is enclosed in single quotation marks. A quotation mark can be prefixed with a backslash (\e) character to avoid terminating the quoted string. A backslash can be escaped with a backslash.
-.sp
-.LP
-Actions can have multiple attributes. Some attributes can be named multiple times with different values for a single action. Multiple attributes with the same name are treated as unordered lists.
-.sp
-.LP
-Actions with many attributes can create long lines in a manifest file. Such lines can be wrapped by terminating each incomplete line with a backslash. Note that this continuation character must occur between attribute/value pairs. Neither attributes nor their values nor the combination can be split.
-.sp
-.LP
-The attributes listed below are not an exhaustive set. In fact, the attributes that can be attached to an action are arbitrary, and the standard sets of attributes are easy to augment to incorporate future developments.
-.sp
-.LP
-Some attributes cause additional operations to be executed outside of the packaging context. These attributes are documented in the "Actuators" section below.
-.SS "File Actions"
-.sp
-.LP
-The \fBfile\fR action represents an ordinary file. The \fBfile\fR action references a payload, and has four standard attributes:
-.sp
-.ne 2
-.mk
-.na
-\fB\fBpath\fR\fR
-.ad
-.RS 9n
-.rt  
-The file system path where the file is installed. This is a \fBfile\fR action's key attribute.
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fB\fBmode\fR\fR
-.ad
-.RS 9n
-.rt  
-The access permissions (in numeric form) of the file. These are simple permissions only, not ACLs.
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fB\fBowner\fR\fR
-.ad
-.RS 9n
-.rt  
-The name of the user that owns the file.
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fB\fBgroup\fR\fR
-.ad
-.RS 9n
-.rt  
-The name of the group that owns the file.
-.RE
-
-.sp
-.LP
-The payload is a positional attribute in that it is not named. It is the first word after the action name. In a published manifest, it is the \fBSHA-1\fR hash of the file contents. If present in a manifest that has yet to be published, it represents the path where the payload can be found. See \fBpkgsend\fR(1). The hash attribute can be used instead of the positional attribute, should the value include an equals sign. Both can be used in the same action. However, the hashes must be identical.
-.sp
-.LP
-The \fBpreserve\fR and \fBoverlay\fR attributes affect whether and how a \fBfile\fR action is installed.
-.sp
-.ne 2
-.mk
-.na
-\fB\fBpreserve\fR\fR
-.ad
-.sp .6
-.RS 4n
-Specifies when and how files are preserved during package operations.
-.sp
-When a package is initially installed, if a file delivered by the package has a \fBpreserve\fR attribute defined with any value except \fBabandon\fR and the file already exists in the image, the existing file is stored in \fB/var/pkg/lost+found\fR and the packaged file is installed.
-.sp
-When a package is initially installed, if a file delivered by the package has a \fBpreserve\fR attribute defined and the file does not already exist in the image, whether that file is installed depends on the value of the \fBpreserve\fR attribute:
-.RS +4
-.TP
-.ie t \(bu
-.el o
-If the value of \fBpreserve\fR is \fBlegacy\fR or \fBabandon\fR, the packaged file is not installed.
-.RE
-.RS +4
-.TP
-.ie t \(bu
-.el o
-If the value of \fBpreserve\fR is not \fBlegacy\fR or \fBabandon\fR, the packaged file is installed.
-.RE
-When a package is downgraded, if a file delivered by the downgraded version of the package has a \fBpreserve\fR attribute defined with any value except \fBabandon\fR and all of the following conditions are true, the file that currently exists in the image is renamed with the extension \fB\&.update\fR, and the file from the downgraded package is installed.
-.RS +4
-.TP
-.ie t \(bu
-.el o
-The file exists in the image.
-.RE
-.RS +4
-.TP
-.ie t \(bu
-.el o
-The content of the file delivered by the downgraded version of the package is different from the content of the file delivered by the currently installed version of the package.
-.RE
-.RS +4
-.TP
-.ie t \(bu
-.el o
-The content of the file delivered by the downgraded version of the package is different from the content of the file that exists in the image.
-.RE
-If any of the above conditions is not true, the file is treated the same as if the package is being upgraded, rather than downgraded.
-.sp
-When a package is upgraded, if a \fBfile\fR action delivered by the upgraded version of the package has a \fBpreserve\fR attribute defined with any value and the \fBfile\fR action is the same as the \fBfile\fR action delivered by the currently installed version of the package, the file is not installed, and the file that exists in the image is not modified. Any modifications made since the previous version was installed are preserved.
-.sp
-When a package is upgraded, if a \fBfile\fR action delivered by the upgraded version of the package has a \fBpreserve\fR attribute defined and the \fBfile\fR action is new or is different from the \fBfile\fR action delivered by the currently installed version of the package, the upgrade is done in the following way:
-.RS +4
-.TP
-.ie t \(bu
-.el o
-If the file delivered by the upgraded version of the package has a \fBpreserve\fR value of \fBabandon\fR in the upgraded package, the new file will not be installed and the existing file will not be modified.
-.RE
-.RS +4
-.TP
-.ie t \(bu
-.el o
-If the file does not exist in the image, the new file is installed.
-.RE
-.RS +4
-.TP
-.ie t \(bu
-.el o
-If the file delivered by the upgraded version of the package exists in the image, did not exist in the currently installed version of the package, and was not renamed or moved by using the \fBoriginal_name\fR attribute (see below), then the existing file is stored in \fB/var/pkg/lost+found\fR and the file delivered by the upgraded version of the package is installed.
-.RE
-.RS +4
-.TP
-.ie t \(bu
-.el o
-If the file delivered by the upgraded version of the package exists in the image and has different content from the file delivered by the currently installed version of the package, the upgrade is done according to the value of the \fBpreserve\fR attribute:
-.RS +4
-.TP
-.ie t \(bu
-.el o
-If the file delivered by the upgraded version of the package has a \fBpreserve\fR value of \fBrenameold\fR, the existing file is renamed with the extension \fB\&.old\fR, and the new file is installed with updated permissions and timestamp (if present). See the \fBtimestamp\fR attribute description below.
-.RE
-.RS +4
-.TP
-.ie t \(bu
-.el o
-If the file delivered by the upgraded version of the package has a \fBpreserve\fR value of \fBrenamenew\fR, the new file is installed with the extension \fB\&.new\fR and the existing file is not modified.
-.RE
-.RS +4
-.TP
-.ie t \(bu
-.el o
-If the file delivered by the upgraded version of the package has a \fBpreserve\fR value of \fBtrue\fR, the new file is not installed, but the permissions and timestamp (if present) are reset on the existing file.
-.RE
-.RE
-.RS +4
-.TP
-.ie t \(bu
-.el o
-If the file delivered by the upgraded version of the package exists in the image, has the same content as the file delivered by the currently installed version of the package, and has a \fBpreserve\fR value of either \fBrenameold\fR or \fBrenamenew\fR, the existing file is replaced by the file delivered by the upgraded version of the package, including replacing permissions and timestamp (if present).
-.RE
-.RS +4
-.TP
-.ie t \(bu
-.el o
-If the file delivered by the upgraded version of the package exists in the image, has a \fBpreserve\fR value of \fBlegacy\fR in the upgraded package, and has a different \fBpreserve\fR value in the currently installed version of the package, the existing file is renamed with the extension \fB\&.legacy\fR, and the new file is installed with updated permissions and timestamp (if present).
-.RE
-.RS +4
-.TP
-.ie t \(bu
-.el o
-If the file delivered by the upgraded version of the package exists in the image and has a \fBpreserve\fR value of \fBlegacy\fR in both the upgraded package and the currently installed version of the package, the permissions and timestamp (if present) are reset on the existing file.
-.RE
-.sp
-When a package is uninstalled, if a \fBfile\fR action delivered by the currently installed version of the package has a \fBpreserve\fR value of \fBabandon\fR and the file exists in the image, the file will not be removed.
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fB\fBoverlay\fR\fR
-.ad
-.sp .6
-.RS 4n
-Specifies whether the action allows other packages to deliver a file at the same location or whether it delivers a file intended to overlay another file. This functionality is intended for use with configuration files that do not participate in any self-assembly (for example, \fB/etc/motd\fR) and that can be safely overwritten.
-.sp
-If \fBoverlay\fR is not specified, multiple packages cannot deliver files to the same location.
-.sp
-The \fBoverlay\fR attribute can have one of the following values:
-.sp
-.ne 2
-.mk
-.na
-\fB\fBallow\fR\fR
-.ad
-.RS 9n
-.rt  
-One other package is allowed to deliver a file to the same location. This value has no effect unless the \fBpreserve\fR attribute is also set.
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fB\fBtrue\fR\fR
-.ad
-.RS 9n
-.rt  
-The file delivered by the action overwrites any other action that has specified \fBallow\fR.
-.RE
-
-Changes to the installed file are preserved based on the value of the \fBpreserve\fR attribute of the overlaying file. On removal, the contents of the file are preserved if the action being overlaid is still installed, regardless of whether the \fBpreserve\fR attribute was specified. Only one action can overlay another, and the \fBmode\fR, \fBowner\fR, and \fBgroup\fR attributes must match.
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fB\fBdehydrate\fR\fR
-.ad
-.sp .6
-.RS 4n
-Specifies whether this action should be removed when a package publisher's packages are dehydrated or when a dehydrated publisher's packages are modified. The value of the \fBdehydrate\fR attribute can be \fBtrue\fR or \fBfalse\fR. If the value of the \fBdehydrate\fR attribute is \fBfalse\fR, the action will not be removed during dehydrate operations. Otherwise, the action will be removed. File actions tagged with the \fBpreserve\fR or \fBoverlay\fR attributes are implicitly excluded from dehydration operations and do not need this attribute.
-.sp
-.in +2
-.nf
-file path=etc/zones/SYSdefault.xml dehydrate=false ...
-.fi
-.in -2
-
-.RE
-
-.sp
-.LP
-The following attributes are recognized for ELF files:
-.sp
-.ne 2
-.mk
-.na
-\fB\fBelfarch\fR\fR
-.ad
-.sp .6
-.RS 4n
-The architecture of the ELF file. This is the output of \fBuname -p\fR on the architecture for which the file is built.
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fB\fBelfbits\fR\fR
-.ad
-.sp .6
-.RS 4n
-This is \fB32\fR or \fB64\fR.
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fB\fBelfhash\fR\fR
-.ad
-.sp .6
-.RS 4n
-This is the hash of the "interesting" ELF sections in the file. These are the sections that are mapped into memory when the binary is loaded. These are the only sections necessary to consider when determining whether the executable behavior of two binaries will differ.
-.RE
-
-.sp
-.LP
-The following additional attributes are recognized for \fBfile\fR actions:
-.sp
-.ne 2
-.mk
-.na
-\fB\fBoriginal_name\fR\fR
-.ad
-.sp .6
-.RS 4n
-This attribute is used to handle editable files moving from package to package or from place to place, or both. The form this takes is the name of the originating package, followed by a colon and the original path to the file. Any file being deleted is recorded either with its package and path, or with the value of the \fBoriginal_name\fR attribute if specified. Any editable file being installed that has the \fBoriginal_name\fR attribute set uses the file of that name if it is deleted as part of the same packaging operation.
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fB\fBrelease-note\fR\fR
-.ad
-.sp .6
-.RS 4n
-This attribute is used to indicate that this file contains release note text. The value of this attribute is a package FMRI. If the FMRI specifies a package name that is present in the original image and a version that is newer than the version of the package in the original image, this file will be part of the release notes. A special FMRI of \fBfeature/pkg/self\fR refers to the containing package. If the version of \fBfeature/pkg/self\fR is 0, this file will only be part of the release notes on initial installation.
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fB\fBrevert-tag\fR\fR
-.ad
-.sp .6
-.RS 4n
-This attribute is used to tag editable files that should be reverted as a set. The value of the \fBrevert-tag\fR attribute is a \fItagname\fR. Multiple \fBrevert-tag\fR attributes can be specified for a single \fBfile\fR action. The file reverts to its manifest-defined state when \fBpkg revert\fR is invoked with any of those tags specified. See the \fBpkg\fR(1) man page for information about the \fBpkg revert\fR command.
-.sp
-The \fBrevert-tag\fR attribute can also be specified at the directory level. See "Directory Actions" below.
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fB\fBsysattr\fR\fR
-.ad
-.sp .6
-.RS 4n
-This attribute is used to specify any system attributes that should be set for this file. The value of the \fBsysattr\fR attribute can be a comma-separated list of verbose system attributes or a string sequence of compact system attribute options, as shown in the following examples. Supported system attributes are explained in the \fBchmod\fR(1) man page. System attributes specified in the manifest are set additionally to system attributes that might have been set by other subsystems of the operating system.
-.sp
-.in +2
-.nf
-file path=opt/secret_file sysattr=hidden,sensitive
-file path=opt/secret_file sysattr=HT
-.fi
-.in -2
-
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fB\fBtimestamp\fR\fR
-.ad
-.sp .6
-.RS 4n
-This attribute is used to set the access and modification time on the file. The \fBtimestamp\fR attribute value must be expressed in UTC in ISO-8601 format, omitting the colons and hyphens.
-.sp
-The \fBtimestamp\fR attribute is essential when packaging \fB\&.pyc\fR or \fB\&.pyo\fR files for Python. The related \fB\&.py\fR file for the \fB\&.pyc\fR or \fB\&.pyo\fR files must be marked with the timestamp embedded within those files, as shown in the following example:
-.sp
-.in +2
-.nf
-file path=usr/lib/python2.6/vendor-packages/pkg/__init__.pyc ...
-file path=usr/lib/python2.6/vendor-packages/pkg/__init__.py \e
-     timestamp=20130311T221521Z ...
-.fi
-.in -2
-
-.RE
-
-.sp
-.LP
-The following attributes for \fBfile\fR actions are automatically generated by the system and should not be specified by package developers:
-.sp
-.ne 2
-.mk
-.na
-\fB\fBhash\fR\fR
-.ad
-.sp .6
-.RS 4n
-The SHA-1 hash of the uncompressed file.
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fB\fBchash\fR\fR
-.ad
-.sp .6
-.RS 4n
-The SHA-1 hash of the compressed file.
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fB\fBpkg.size\fR\fR
-.ad
-.sp .6
-.RS 4n
-The size in bytes of the uncompressed file.
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fB\fBpkg.csize\fR\fR
-.ad
-.sp .6
-.RS 4n
-The size in bytes of the compressed file.
-.RE
-
-.SS "Directory Actions"
-.sp
-.LP
-The \fBdir\fR action is like the \fBfile\fR action in that it represents a file system object. The \fBdir\fR action represents a directory instead of an ordinary file. The \fBdir\fR action has the same \fBpath\fR, \fBmode\fR, \fBowner\fR, and \fBgroup\fR attributes that the \fBfile\fR action has, and \fBpath\fR is the key attribute. The \fBdir\fR action also accepts the \fBrevert-tag\fR attribute. The value of the \fBrevert-tag\fR attribute is different for \fBfile\fR and \fBdir\fR actions.
-.sp
-.LP
-Directories are reference counted in IPS. When the last package that either explicitly or implicitly references a directory no longer does so, that directory is removed. If that directory contains unpackaged file system objects, those items are moved into \fB$IMAGE_META/lost+found\fR. See the "Files" section for more information about \fB$IMAGE_META\fR.
-.sp
-.ne 2
-.mk
-.na
-\fB\fBrevert-tag\fR\fR
-.ad
-.sp .6
-.RS 4n
-This attribute is used to identify unpackaged files that should be removed as a set. See "File Actions" above for a description of how to specify this attribute for \fBfile\fR actions. For directories, the value of the \fBrevert-tag\fR attribute is \fItagname\fR\fB=\fR\fIpattern\fR. Multiple \fBrevert-tag\fR attributes can be specified for a single \fBdir\fR action. When \fBpkg revert\fR is invoked with a matching \fItagname\fR, any unpackaged files or directories under this \fBdir\fR directory that match \fIpattern\fR (using shell globbing characters) are removed. See the \fBpkg\fR(1) man page for information about the \fBpkg revert\fR command.
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fB\fBsalvage-from\fR\fR
-.ad
-.sp .6
-.RS 4n
-This attribute can be used to move unpackaged contents into a new directory. The value of this attribute is the name of a directory of salvaged items. A directory with a \fBsalvage-from\fR attribute inherits on creation any contents of the directory named in the value of the \fBsalvage-from\fR attribute.
-.RE
-
-.SS "Link Actions"
-.sp
-.LP
-The \fBlink\fR action represents a symbolic link. The \fBlink\fR action has the following standard attributes:
-.sp
-.ne 2
-.mk
-.na
-\fB\fBpath\fR\fR
-.ad
-.sp .6
-.RS 4n
-The file system path where the symbolic link is installed. This is a \fBlink\fR action's key attribute.
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fB\fBtarget\fR\fR
-.ad
-.sp .6
-.RS 4n
-The target of the symbolic link. The file system object to which the link resolves.
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fB\fBmediator\fR\fR
-.ad
-.sp .6
-.RS 4n
-Specifies the entry in the mediation namespace shared by all path names participating in a given mediation group (for example, \fBpython\fR). Link mediation can be performed based on \fBmediator-version\fR and/or \fBmediator-implementation\fR. All mediated links for a given path name must specify the same mediator. However, not all mediator versions and implementations need to provide a link at a given path. If a mediation does not provide a link, then the link is removed when that mediation is selected. A \fBmediator\fR, in combination with a specific version and/or implementation represents a mediation that can be selected for use by the packaging system.
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fB\fBmediator-version\fR\fR
-.ad
-.sp .6
-.RS 4n
-Specifies the version (expressed as a dot-separated sequence of nonnegative integers) of the interface described by the \fBmediator\fR attribute. This attribute is required if \fBmediator\fR is specified and \fBmediator-implementation\fR is not. A local system administrator can set the version to use explicitly. The value specified should generally match the version of the package delivering the link (for example, \fBruntime/python-26\fR should use \fBmediator-version=2.6\fR), although this is not required.
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fB\fBmediator-implementation\fR\fR
-.ad
-.sp .6
-.RS 4n
-Specifies the implementation of the mediator for use in addition to or instead of the \fBmediator-version\fR. Implementation strings are not considered to be ordered and a string is arbitrary selected by \fBpkg\fR(5) if not explicitly specified by a system administrator.
-.sp
-The value can be a string of arbitrary length composed of alphanumeric characters and spaces. If the implementation itself can be versioned or is versioned, then the version should be specified at the end of the string, after a @ (expressed as a dot-separated sequence of nonnegative integers). If multiple versions of an implementation exist, the default behavior is to select the implementation with the greatest version.
-.sp
-If only one instance of an implementation mediation link at a particular path is installed on a system, then that one is chosen automatically. If future links at the path are installed, the link is not switched unless a vendor, site, or local override applies, or if one of the links is version mediated.
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fB\fBmediator-priority\fR\fR
-.ad
-.sp .6
-.RS 4n
-When resolving conflicts in mediated links, \fBpkg\fR(5) normally chooses the link with the greatest value of \fBmediator-version\fR or based on \fBmediator-implementation\fR if that is not possible. This attribute is used to specify an override for the normal conflict resolution process.
-.sp
-If this attribute is not specified, the default mediator selection logic is applied.
-.sp
-If the value is \fBvendor\fR, the link is preferred over those that do not have a \fBmediator-priority\fR specified.
-.sp
-If the value is \fBsite\fR, the link is preferred over those that have a value of \fBvendor\fR or that do not have a \fBmediator-priority\fR specified.
-.sp
-A local system administrator can override the selection logic described above.
-.RE
-
-.SS "Hardlink Actions"
-.sp
-.LP
-The \fBhardlink\fR action represents a hard link. It has the same attributes as the \fBlink\fR action, and \fBpath\fR is also its key attribute.
-.SS "Driver Actions"
-.sp
-.LP
-The \fBdriver\fR action represents a device driver. The \fBdriver\fR action does not reference a payload. The driver files themselves must be installed as \fBfile\fR actions. The following attributes are recognized (see \fBadd_drv\fR(1M) for more information):
-.sp
-.ne 2
-.mk
-.na
-\fB\fBname\fR\fR
-.ad
-.sp .6
-.RS 4n
-The name of the driver. This is usually, but not always, the file name of the driver binary. This is the \fBdriver\fR action's key attribute.
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fB\fBalias\fR\fR
-.ad
-.sp .6
-.RS 4n
-This represents an alias for the driver. A given driver can have more than one \fBalias\fR attribute. No special quoting rules are necessary.
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fB\fBclass\fR\fR
-.ad
-.sp .6
-.RS 4n
-This represents a driver class. A given driver can have more than one \fBclass\fR attribute.
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fB\fBperms\fR\fR
-.ad
-.sp .6
-.RS 4n
-This represents the file system permissions for the driver's device nodes.
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fB\fBclone_perms\fR\fR
-.ad
-.sp .6
-.RS 4n
-This represents the file system permissions for the clone driver's minor nodes for this driver.
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fB\fBpolicy\fR\fR
-.ad
-.sp .6
-.RS 4n
-This specifies additional security policy for the device. A given driver can have more than one \fBpolicy\fR attribute, but no minor device specification can be present in more than one attribute.
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fB\fBprivs\fR\fR
-.ad
-.sp .6
-.RS 4n
-This specifies privileges used by the driver. A given driver can have more than one \fBprivs\fR attribute.
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fB\fBdevlink\fR\fR
-.ad
-.sp .6
-.RS 4n
-This specifies an entry in \fB/etc/devlink.tab\fR. The value is the exact line to go into the file, with tabs denoted by \fB\et\fR\&. See \fBdevlinks\fR(1M) for more information. A given driver can have more than one \fBdevlink\fR attribute.
-.RE
-
-.SS "Depend Actions"
-.sp
-.LP
-The \fBdepend\fR action represents an inter-package dependency. A package can depend on another package because the first requires functionality in the second for the functionality in the first to work, or even to install. Dependencies can be optional. If a dependency is not met at the time of installation, the packaging system attempts to install or update the dependent package to a sufficiently new version, subject to other constraints.
-.sp
-.LP
-The following attributes are recognized:
-.sp
-.ne 2
-.mk
-.na
-\fB\fBfmri\fR\fR
-.ad
-.sp .6
-.RS 4n
-The FMRI representing the dependent package. This is the \fBdependency\fR action's key attribute. The \fBfmri\fR value must not include the publisher. The package name is assumed to be complete. Dependencies of type \fBrequire-any\fR can have multiple \fBfmri\fR attributes. A version is optional on the \fBfmri\fR value, though for some types of dependencies, an \fBfmri\fR with no version has no meaning.
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fB\fBtype\fR\fR
-.ad
-.sp .6
-.RS 4n
-The type of the dependency.
-.sp
-.ne 2
-.mk
-.na
-\fB\fBrequire\fR\fR
-.ad
-.sp .6
-.RS 4n
-The dependency is required and must have a version equal to or greater than the version specified in the \fBfmri\fR attribute. If the version is not specified, any version satisfies the dependency. A package cannot be installed if any of its required dependencies cannot be satisfied.
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fB\fBoptional\fR\fR
-.ad
-.sp .6
-.RS 4n
-The dependency, if present, must be at the specified version level or greater.
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fB\fBexclude\fR\fR
-.ad
-.sp .6
-.RS 4n
-The containing package cannot be installed if the dependency is present at the specified version level or greater. If no version is specified, the dependent package cannot be installed concurrently with the package specifying the dependency.
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fB\fBincorporate\fR\fR
-.ad
-.sp .6
-.RS 4n
-The dependency is optional, but the version of the dependent package is constrained. See "Constraints and Freezing" below.
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fB\fBrequire-any\fR\fR
-.ad
-.sp .6
-.RS 4n
-Any one of multiple dependent packages as specified by multiple \fBfmri\fR attributes can satisfy the dependency, following the same rules as the \fBrequire\fR dependency type.
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fB\fBconditional\fR\fR
-.ad
-.sp .6
-.RS 4n
-The dependency is required only if the package defined by the \fBpredicate\fR attribute is present on the system.
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fB\fBorigin\fR\fR
-.ad
-.sp .6
-.RS 4n
-Prior to installation of this package, the dependency target must, if present, be at the specified value or greater on the image to be modified. If the value of the \fBroot-image\fR attribute is \fBtrue\fR, the target must be present on the image rooted at / in order to install this package. If the value of the \fBroot-image\fR attribute is \fBtrue\fR and the value of the \fBfmri\fR attribute starts with \fBpkg:/feature/firmware/\fR, the remainder of the \fBfmri\fR value is treated as a command in \fB/usr/lib/fwenum\fR that evaluates the firmware dependency. See \fIPackaging and Delivering Software With the Image Packaging System in Oracle Solaris 11.2\fR for examples.
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fB\fBgroup\fR\fR
-.ad
-.sp .6
-.RS 4n
-The dependency is required unless the package is on the image avoid list. Note that obsolete packages silently satisfy the group dependency. See the \fBavoid\fR subcommand in \fBpkg\fR(1).
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fB\fBparent\fR\fR
-.ad
-.sp .6
-.RS 4n
-The dependency is ignored if the image is not a child image. If the image is a child image then the dependency is required to be present in the parent image. The package version matching for a \fBparent\fR dependency is the same as that used for \fBincorporate\fR dependencies.
-.RE
-
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fB\fBpredicate\fR\fR
-.ad
-.sp .6
-.RS 4n
-The FMRI representing the predicate for \fBconditional\fR dependencies.
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fB\fBroot-image\fR\fR
-.ad
-.sp .6
-.RS 4n
-Has an effect only for \fBorigin\fR dependencies as mentioned above.
-.RE
-
-.SS "License Actions"
-.sp
-.LP
-The \fBlicense\fR action represents a license or other informational file associated with the package contents. A package can deliver licenses, disclaimers, or other guidance to the package installer through the use of the \fBlicense\fR action.
-.sp
-.LP
-The payload of the \fBlicense\fR action is delivered into the image metadata directory related to the package, and should only contain human-readable text data. It should not contain HTML or any other form of markup. Through attributes, \fBlicense\fR actions can indicate to clients that the related payload must be displayed and/or require acceptance of it. The method of display and/or acceptance is at the discretion of clients.
-.sp
-.LP
-The following attributes are recognized:
-.sp
-.ne 2
-.mk
-.na
-\fB\fBlicense\fR\fR
-.ad
-.sp .6
-.RS 4n
-This is a \fBlicense\fR action's key attribute. This attribute provides a meaningful description for the license to assist users in determining the contents without reading the license text itself. Some example values include:
-.RS +4
-.TP
-.ie t \(bu
-.el o
-ABC Co. Copyright Notice
-.RE
-.RS +4
-.TP
-.ie t \(bu
-.el o
-ABC Co. Custom License
-.RE
-.RS +4
-.TP
-.ie t \(bu
-.el o
-Common Development and Distribution License 1.0 (CDDL)
-.RE
-.RS +4
-.TP
-.ie t \(bu
-.el o
-GNU General Public License 2.0 (GPL)
-.RE
-.RS +4
-.TP
-.ie t \(bu
-.el o
-GNU General Public License 2.0 (GPL) Only
-.RE
-.RS +4
-.TP
-.ie t \(bu
-.el o
-MIT License
-.RE
-.RS +4
-.TP
-.ie t \(bu
-.el o
-Mozilla Public License 1.1 (MPL)
-.RE
-.RS +4
-.TP
-.ie t \(bu
-.el o
-Simplified BSD License
-.RE
-The \fBlicense\fR value must be unique within a package. Including the version of the license in the description, as shown in several of the examples above, is recommended. If a package has code under multiple licenses, use multiple \fBlicense\fR actions. The length of the license attribute value should not be more than 64 characters.
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fB\fBmust-accept\fR\fR
-.ad
-.sp .6
-.RS 4n
-When \fBtrue\fR, this license must be accepted by a user before the related package can be installed or updated. Omission of this attribute is equivalent to \fBfalse\fR. The method of acceptance (interactive or configuration-based, for example) is at the discretion of clients. For package updates, this attribute is ignored if the license action or payload has not changed.
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fB\fBmust-display\fR\fR
-.ad
-.sp .6
-.RS 4n
-When \fBtrue\fR, the action's payload must be displayed by clients during packaging operations. Omission of this value is equivalent to \fBfalse\fR. This attribute should not be used for copyright notices. This attribute should only be used for licenses or other material that must be displayed during operations. The method of display is at the discretion of clients. For package updates, this attribute is ignored if the license action or payload has not changed.
-.RE
-
-.SS "Legacy Actions"
-.sp
-.LP
-The \fBlegacy\fR action represents package data used by a legacy packaging system. The attributes associated with this action are added into the legacy system's databases so that the tools querying those databases can operate as if the legacy package were actually installed. In particular, this should be sufficient to convince the legacy system that the package named by the \fBpkg\fR attribute is installed on the system, so that the package can be used to satisfy dependencies.
-.sp
-.LP
-The following attributes, named in accordance with the parameters on \fBpkginfo\fR(4), are recognized:
-.sp
-.ne 2
-.mk
-.na
-\fB\fBcategory\fR\fR
-.ad
-.sp .6
-.RS 4n
-The value for the \fBCATEGORY\fR parameter. The default value is \fBsystem\fR.
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fB\fBdesc\fR\fR
-.ad
-.sp .6
-.RS 4n
-The value for the \fBDESC\fR parameter.
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fB\fBhotline\fR\fR
-.ad
-.sp .6
-.RS 4n
-The value for the \fBHOTLINE\fR parameter.
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fB\fBname\fR\fR
-.ad
-.sp .6
-.RS 4n
-The value for the \fBNAME\fR parameter. The default value is \fBnone provided\fR.
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fB\fBpkg\fR\fR
-.ad
-.sp .6
-.RS 4n
-The abbreviation for the package being installed. The default value is the name from the FMRI of the package. This is a \fBlegacy\fR action's key attribute.
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fB\fBvendor\fR\fR
-.ad
-.sp .6
-.RS 4n
-The value for the \fBVENDOR\fR parameter.
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fB\fBversion\fR\fR
-.ad
-.sp .6
-.RS 4n
-The value for the VERSION parameter. The default value is the version from the FMRI of the package.
-.RE
-
-.SS "Set Actions"
-.sp
-.LP
-The \fBset\fR action represents a package-level attribute, or metadata, such as the package description.
-.sp
-.LP
-The following attributes are recognized:
-.sp
-.ne 2
-.mk
-.na
-\fB\fBname\fR\fR
-.ad
-.RS 9n
-.rt  
-The name of the attribute.
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fB\fBvalue\fR\fR
-.ad
-.RS 9n
-.rt  
-The value given to the attribute.
-.RE
-
-.sp
-.LP
-The \fBset\fR action can deliver any metadata the package author chooses. However, there are a number of well defined attribute names that have specific meaning to the packaging system.
-.sp
-.ne 2
-.mk
-.na
-\fB\fBinfo.classification\fR\fR
-.ad
-.sp .6
-.RS 4n
-One or more tokens that a \fBpkg\fR(5) client can use to classify the package. The value should have a scheme (such as "org.opensolaris.category.2008" or "org.acm.class.1998") and the actual classification, such as "Applications/Games", separated by a colon (:).
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fB\fBpkg.description\fR\fR
-.ad
-.sp .6
-.RS 4n
-A detailed description of the contents and functionality of the package, typically a paragraph or so in length.
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fB\fBpkg.fmri\fR\fR
-.ad
-.sp .6
-.RS 4n
-The name and version of the containing package. See "Package FMRIs and Versions" in the "Description" section.
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fB\fBpkg.human-version\fR\fR
-.ad
-.sp .6
-.RS 4n
-The version scheme used by IPS is strict. See "Package FMRIs and Versions" in the "Description" section. A more flexible version can be provided as the value of the \fBpkg.human-version\fR attribute. The value is displayed by IPS tools such as \fBpkg info\fR, \fBpkg contents\fR, and \fBpkg search\fR. The \fBpkg.human-version\fR value is not used as a basis for version comparison and cannot be used in place of the \fBpkg.fmri\fR version.
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fB\fBpkg.obsolete\fR\fR
-.ad
-.sp .6
-.RS 4n
-When \fBtrue\fR, the package is marked obsolete. An obsolete package can have no actions other than more set actions, and must not be marked renamed.
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fB\fBpkg.renamed\fR\fR
-.ad
-.sp .6
-.RS 4n
-When \fBtrue\fR, the package has been renamed. There must be one or more \fBdepend\fR actions in the package as well that point to the package versions to which this package has been renamed. A package cannot be marked both renamed and obsolete, but otherwise can have any number of set actions.
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fB\fBpkg.summary\fR\fR
-.ad
-.sp .6
-.RS 4n
-A short, one-line description of the package.
-.RE
-
-.SS "Group Actions"
-.sp
-.LP
-The \fBgroup\fR action defines a UNIX group as defined in \fBgroup\fR(4). No support is present for group passwords. Groups defined with this action initially have no user list. Users can be added with the \fBuser\fR action. The following attributes are recognized:
-.sp
-.ne 2
-.mk
-.na
-\fB\fBgroupname\fR\fR
-.ad
-.sp .6
-.RS 4n
-The value for the name of the group.
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fB\fBgid\fR\fR
-.ad
-.sp .6
-.RS 4n
-The group's unique numerical id. The default value is the first free group under 100.
-.RE
-
-.SS "User Actions"
-.sp
-.LP
-The \fBuser\fR action defines a UNIX user as defined in \fB/etc/passwd\fR, \fB/etc/shadow\fR, \fB/etc/group\fR, and \fB/etc/ftpd/ftpusers\fR files. Entries are added to the appropriate files for users defined with this \fBuser\fR action.
-.sp
-.LP
-The \fBuser\fR action is intended to define a user for a daemon or other software to use. Do not use the \fBuser\fR action to define administrative or interactive accounts.
-.sp
-.LP
-The following attributes are recognized:
-.sp
-.ne 2
-.mk
-.na
-\fB\fBusername\fR\fR
-.ad
-.sp .6
-.RS 4n
-The unique name of the user
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fB\fBpassword\fR\fR
-.ad
-.sp .6
-.RS 4n
-The encrypted password of the user. Default value is \fB*LK*\fR. See \fBshadow\fR(4).
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fB\fBuid\fR\fR
-.ad
-.sp .6
-.RS 4n
-The unique uid of the user. Default value is first free value under 100.
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fB\fBgroup\fR\fR
-.ad
-.sp .6
-.RS 4n
-The name of the user's primary group. Must be found in \fB/etc/group\fR.
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fB\fBgcos-field\fR\fR
-.ad
-.sp .6
-.RS 4n
-The value of the \fBgcos\fR field in \fB/etc/passwd\fR. Default value is \fBusername\fR.
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fB\fBhome-dir\fR\fR
-.ad
-.sp .6
-.RS 4n
-The user's home directory. This directory must be in the system image directories and not under another mount point such as \fB/home\fR. Default value is \fB/\fR.
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fB\fBlogin-shell\fR\fR
-.ad
-.sp .6
-.RS 4n
-The user's default shell. Default value is empty.
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fB\fBgroup-list\fR\fR
-.ad
-.sp .6
-.RS 4n
-Secondary groups to which the user belongs. See \fBgroup\fR(4).
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fB\fBftpuser\fR\fR
-.ad
-.sp .6
-.RS 4n
-Can be set to \fBtrue\fR or \fBfalse\fR. The default value of \fBtrue\fR indicates that the user is permitted to login via FTP. See \fBftpusers\fR(4).
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fB\fBlastchg\fR\fR
-.ad
-.sp .6
-.RS 4n
-The number of days between January 1, 1970, and the date that the password was last modified. Default value is empty. See \fBshadow\fR(4).
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fB\fBmin\fR\fR
-.ad
-.sp .6
-.RS 4n
-The minimum number of days required between password changes. This field must be set to 0 or above to enable password aging. Default value is empty. See \fBshadow\fR(4).
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fB\fBmax\fR\fR
-.ad
-.sp .6
-.RS 4n
-The maximum number of days the password is valid. Default value is empty. See \fBshadow\fR(4).
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fB\fBwarn\fR\fR
-.ad
-.sp .6
-.RS 4n
-The number of days before password expires that the user is warned. See \fBshadow\fR(4).
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fB\fBinactive\fR\fR
-.ad
-.sp .6
-.RS 4n
-The number of days of inactivity allowed for that user. This is counted on a per-machine basis. The information about the last login is taken from the machine's \fBlastlog\fR file. See \fBshadow\fR(4).
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fB\fBexpire\fR\fR
-.ad
-.sp .6
-.RS 4n
-An absolute date expressed as the number of days since the UNIX Epoch (January 1, 1970). When this number is reached, the login can no longer be used. For example, an expire value of 13514 specifies a login expiration of January 1, 2007. See \fBshadow\fR(4).
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fB\fBflag\fR\fR
-.ad
-.sp .6
-.RS 4n
-Set to empty. See \fBshadow\fR(4).
-.RE
-
-.SH ACTUATORS
-.sp
-.LP
-In certain contexts, additional operations can be appropriate to execute in preparation for or following the introduction of a particular action. These additional operations are operating system specific and are generally needed only on a live system image. A live image is the image mounted at \fB/\fR of the active, running boot environment of the current zone. When multiple actions involved in a package installation or removal have identical actuators, then the operation corresponding to actuator presence is executed once for that installation or removal.
-.sp
-.LP
-Incorrectly specified actuators can result in package installation failure if the actuator cannot determine a means of making safe installation progress.
-.sp
-.LP
-The following actuators are defined:
-.sp
-.ne 2
-.mk
-.na
-\fB\fBreboot-needed\fR\fR
-.ad
-.sp .6
-.RS 4n
-Can be set to \fBtrue\fR or \fBfalse\fR. This actuator declares that update or removal of the tagged action must be performed in a new boot environment if the package system is operating on a live image. Creation of a new boot environment is controlled by the \fBbe-policy\fR image property. See the "Image Properties" section in the \fBpkg\fR(1) man page for more information about the \fBbe-policy\fR property.
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fB\fBdisable_fmri\fR, \fBrefresh_fmri\fR, \fBrestart_fmri\fR, \fBsuspend_fmri\fR\fR
-.ad
-.sp .6
-.RS 4n
-Each of these actuators takes the value of an FMRI of a service instance to operate on during the package installation or removal. \fBdisable_fmri\fR causes the given FMRI to be disabled prior to action removal, per the \fBdisable\fR subcommand to \fBsvcadm\fR(1M). \fBrefresh_fmri\fR and \fBrestart_fmri\fR cause the given FMRI to be refreshed or restarted after action installation, update, or removal per the respective subcommands of \fBsvcadm\fR(1M). Finally, \fBsuspend_fmri\fR causes the given FMRI to be disabled temporarily prior to the action install phase, and then enabled after the completion of that phase.
-.sp
-The value can contain a pattern that matches multiple service instances. However, it must do so explicitly with a glob as accepted by \fBsvcs\fR(1), rather than doing so implicitly by not indicating any instances.
-.RE
-
-.SH MEDIATIONS
-.sp
-.LP
-A mediator is a name that represents a set of related symbolic or hard links. If two or more link actions have the same path and mediator name, the user or the package system selects the link target based on version, implementation, or priority. See "Link Actions" for information about mediator attributes.
-.sp
-.LP
-The following example shows two different instances of a mediator named \fBjava\fR where the link choices are between versions. These two \fBlink\fR actions would appear in two different packages.
-.sp
-.in +2
-.nf
-link mediator=java mediator-version=1.6 path=usr/java target=jdk/jdk1.6.0_31
-link mediator=java mediator-version=1.7 path=usr/java target=jdk/jdk1.7.0_02
-.fi
-.in -2
-
-.sp
-.LP
-See the \fBset-mediator\fR subcommand in the \fBpkg\fR(1) man page for information about how to select the version you want for this link path. To have a choice of versions, both packages must be installed.
-.SH CONSTRAINTS AND FREEZING
-.sp
-.LP
-When a package is transitioned to a new version, or when it is added to or removed from the system, the version that is chosen, or whether removal is allowed, is determined by a variety of constraints put on the package. Those constraints can be defined by other packages in the form of dependencies, or by the administrator in the form of freezes.
-.sp
-.LP
-The most common form of constraint is delivered by the \fBrequire\fR dependency, as described in "Depend Actions" above. Such a constraint prevents the package from being downgraded or removed.
-.sp
-.LP
-Most parts of the operating system are encapsulated by packages called \fBincorporations\fR. These packages primarily deliver constraints represented by the \fBincorporate\fR dependency.
-.sp
-.LP
-As described above, an incorporated package need not be present on the system, but if it is, then it specifies both an inclusive minimum version and an exclusive maximum version. For example, if the dependent FMRI has a version of 1.4.3, then no version less than 1.4.3 would satisfy the dependency, and neither would any version greater than or equal to 1.4.4. However, versions that merely extended the dotted sequence, such as 1.4.3.7, would be allowed.
-.sp
-.LP
-Incorporations are used to force parts of the system to upgrade synchronously. For some components, such as the C library and the kernel, this is a basic requirement. For others, such as a simple userland component on which nothing else has a dependency, the synchronous upgrade is used merely to provide a known and tested set of package versions that can be referred to by a particular version of the incorporation.
-.sp
-.LP
-Since an incorporation is simply a package, it can be removed, and all the constraints it delivers are therefore relaxed. However, many of the incorporations delivered by Oracle Solaris are required by the packages they incorporate because that relaxation would not be safe.
-.sp
-.LP
-Attempting an upgrade of a package to a version that is not allowed by an installed incorporation will not attempt to find a newer version of the incorporation in order to satisfy the request, but will instead fail. If the constraint itself must be moved, and the incorporation specifying it cannot be removed, then the incorporation must be upgraded to a version that specifies a desired version of the constraint. Upgrading an incorporation causes all of the incorporated packages that would not satisfy the constraints delivered by the new version to be upgraded as well.
-.sp
-.LP
-A system administrator can constrain a package by using the \fBpkg freeze\fR command. The named package is constrained to the version installed on the system if no version is provided. If a versioned package is provided, then this administrative constraint, or freeze, acts as if an incorporate dependency were installed where the \fBfmri\fR attribute had the value of the provided package version.
-.sp
-.LP
-A freeze is never lifted automatically by the packaging system. To relax a constraint, use the \fBpkg unfreeze\fR command.
-.SH PUBLISHERS AND REPOSITORIES
-.sp
-.LP
-As detailed above, a publisher is simply a name that package clients use to identify the provider of packages. Publishers can distribute their packages using package repositories and/or package archives. There are two types of repositories currently supported by the package system: origin repositories and mirror repositories.
-.sp
-.LP
-An \fBorigin\fR is a package repository that contains all of the metadata (such as catalogs, manifests, and search indexes) and content (files) for one or more packages. If multiple origins are configured for a given publisher in an image, the package client API attempts to choose the best origin to retrieve package data from. This is the most common type of repository, and is implicitly created whenever \fBpkgsend\fR or \fBpkgrecv\fR is used on a package repository.
-.sp
-.LP
-A \fBmirror\fR is a package repository that contains only package content (files). If one or more mirrors are configured for a given publisher in an image, the client API prefers the mirrors for package content retrieval and attempts to choose the best one to retrieve package content from. If the mirror is unreachable, does not have the required content, or is slower, the client API retrieves the content from any configured origin repositories. Mirrors are intended for content sharing among a trusted set of clients using the dynamic mirror functionality of \fBpkg.depotd\fR(1M). Mirrors are also intended to be used to authenticate access to package metadata, but distribute the package content without authentication. For example, a client might be configured with an \fBhttps\fR origin that requires an SSL key and certificate pair to access, and with an \fBhttp\fR mirror that provides the package content. In this way, only authorized clients can install or update the packages, while the overhead of authentication for package content retrieval is avoided. A mirror can be created by removing all subdirectories of a repository except those named \fBfile\fR and their parents. An origin repository can be also be provisioned as a mirror by using the mirror mode of \fBpkg.depotd\fR(1M).
-.SH GLOBAL AND NON-GLOBAL ZONE UPDATE
-.sp
-.LP
-The \fBpkg\fR system forces non-global zones to be kept in sync with the global zone. This means that certain packages must be at the same version in the global zone and all non-global zones to ensure the same kernel is run. To do this, \fBpkg\fR uses \fBparent\fR dependencies to impose certain constraints on non-global zones. See "Depend Actions" above for more information about \fBparent\fR dependencies.
-.sp
-.LP
-Because of restrictions that the global zone imposes on non-global zones, the non-global zones must have access to the packages of the global zone and must have a similar publisher configuration. Both of these objectives are achieved by using a \fBsystem repository\fR (see the \fBpkg.sysrepo\fR(1M) man page). The system repository provides access to the publishers configured in the global zone and information about how those publishers are configured. To prevent non-global zones from choosing different packages during installation or update, system publishers are ranked higher in the publisher search order than publishers configured in the non-global zone. See the \fBpkg set-publisher\fR command in the \fBpkg\fR(1) man page for information about publisher search order.
-.sp
-.LP
-To update all non-global zones on the system, use the \fBpkg update\fR command with no arguments in the global zone. This command operates on the global zone and on each non-global zone recursively. The minimal changes necessary are made to non-global zones to bring them in sync with the changes made in the global zone. For example, suppose package \fBfoo\fR is installed at version 1 in both the global zone and non-global zones, and suppose version 2 is available in a system repository. If \fBfoo\fR has a parent dependency, then \fBpkg update foo\fR updates \fBfoo\fR to version 2 in both the global zone and the non-global zones because the \fBparent\fR dependency forces the package to stay in sync. If \fBfoo\fR does not have a parent dependency, then \fBfoo\fR is updated to version 2 in the global zone but remains at version 1 in the non-global zones.
-.SH FACETS AND VARIANTS
-.sp
-.LP
-Software can have components that are optional and components that are mutually exclusive. Examples of optional components include locales and documentation. Examples of mutually exclusive components include SPARC or x86 and debug or non-debug binaries.
-.sp
-.LP
-In IPS, optional components are called \fBfacets\fR and mutually exclusive components are called \fBvariants\fR. Facets and variants are specified as tags on package actions. Each facet and variant tag has a name and a value. A single action can have multiple facet and variant tags. Examples of components with multiple facet and variant tags include an architecture-specific header file that is used by developers, or a component that is only for a SPARC global zone.
-.sp
-.LP
-An example of a variant tag is \fBvariant.arch=sparc\fR. An example of a facet tag is \fBfacet.devel=true\fR. Facets and variants are often referred to without the leading \fBfacet.\fR and \fBvariant.\fR.
-.sp
-.LP
-Facets and variants are special properties of the image and cannot be set on individual packages. To view the current values of the facets and variants set on the image, use the \fBpkg facet\fR and \fBpkg variant\fR commands as shown in the \fBpkg\fR(1) man page. To modify the values of the facets and variants set on the image, use the \fBpkg change-facet\fR and \fBpkg change-variant\fR commands.
-.sp
-.LP
-Facets are treated as boolean values by package clients: Facets can be set only to \fBtrue\fR (enabled) or \fBfalse\fR (disabled) in the image. By default, all facets are considered to be set to \fBtrue\fR in the image.
-.sp
-.LP
-Facets can be either set locally within an image using the \fBpkg change-facet\fR command or inherited from a parent image. For example, a non-global zone can inherit a facet from the global zone. Inherited facets are evaluated before, and take priority over, any locally set facets. If the same facet is both inherited and locally set, the inherited facet value masks the locally set value. Masked facets have no effect on facet evaluation and package actions. Facet changes made by using the \fBpkg change-facet\fR command only affect locally set facets. Inherited facets can only be changed by making the change in the parent image. By default, the \fBpkg facet\fR command does not display masked facets.
-.sp
-.LP
-The value of a facet tag on an action can be set to \fBall\fR or \fBtrue\fR to control how clients filter faceted actions. All values other than \fBall\fR or \fBtrue\fR have undefined behavior. See below for a description of the conditions that must exist in the image to install an action that has facet tags.
-.sp
-.LP
-The \fBall\fR value for a facet is useful when more than a single level of filtering is required. In the following example, \fBfoo.txt\fR is installed only if the \fBdoc\fR facet and at least one of the \fBlocale\fR facets is \fBtrue\fR in the image. This enables administrators to exclude documentation, but still enable or disable support for specific locales. In addition, \fBapi.txt\fR is only installed if both the \fBdoc\fR and \fBdevel\fR facets are \fBtrue\fR in the image.
-.sp
-.in +2
-.nf
-file path=usr/share/doc/foo/foo.txt facet.doc=all facet.locale.en_GB=true facet.locale.en_US=true
-file path=usr/share/doc/foo/api.txt facet.doc=all facet.devel=all
-.fi
-.in -2
-
-.sp
-.LP
-A facet set on the image can be a full facet such as \fBdoc.man\fR or a pattern such as \fBlocale.*\fR. This is useful when you want to disable a portion of the facet namespace, and only enable individual facets within it. For example, you could disable all locales and then only enable one or two specific locales, as shown in the following example:
-.sp
-.in +2
-.nf
-# \fBpkg change-facet locale.*=false\fR
+<?xml version="1.0" encoding="iso-8859-1"?>
+<!--Arbortext, Inc., 1988-2008, v.4002-->
+<!DOCTYPE refentry PUBLIC "-//Sun Microsystems//DTD SolBook-XML 3.7//EN" "xsolbook.dtd" [
+<!ENTITY % ent SYSTEM "entities.ent">
+%ent;
+]>
+
+<refentry id="pkg-5">
+<refmeta><refentrytitle>pkg</refentrytitle><manvolnum>5</manvolnum>
+<refmiscinfo class="date">28 May 2014</refmiscinfo>
+<refmiscinfo class="sectdesc">&man5;</refmiscinfo>
+<refmiscinfo class="software">&release;</refmiscinfo>
+<refmiscinfo class="arch">generic</refmiscinfo>
+<refmiscinfo class="copyright">Copyright (c) 2009, 2014, Oracle and/or its affiliates. All rights reserved.</refmiscinfo>
+</refmeta>
+<refnamediv>
+<refname>pkg</refname><refpurpose>Image Packaging System</refpurpose>
+</refnamediv>
+<refsect1 id="GLHDA" role="description"><title></title>
+<para>The image packaging system, <literal>pkg</literal>(5), is a framework
+that provides for software lifecycle management (installation, upgrade, and
+removal). Image packaging manages software in units of packages, which are
+collections of actions, defined by a set of key/value pairs and possibly a
+data payload. In many cases, actions are files found in a file system, but
+they also represent other installable objects, such as drivers, services,
+and users.</para>
+</refsect1>
+<refsect1 role="other"><title>Package FMRIs and Versions</title>
+<para>Each package is represented by a fault management resource identifier
+(FMRI) with the scheme <literal>pkg:</literal>. The full FMRI for a package
+consists of the scheme, a publisher, the package name, and a version string
+in the following format:</para>
+<screen>pkg://solaris/system/library/c++-runtime@0.5.11,5.11-0.175.0.0.0.2.1:20120921T190358Z
+</screen>
+<para><literal>solaris</literal> is the publisher. <literal>system/library/c++-runtime
+</literal> is the package name. Although the namespace is hierarchical and
+arbitrarily deep, there is no enforced containment; the name is essentially
+arbitrary. The publisher information is optional, but must be preceded by <literal>
+pkg://</literal> if present. An FMRI that includes the publisher is often
+referred to as being &ldquo;fully qualified.&rdquo; If publisher information
+is not present, then the package name should generally be preceded by <literal>pkg:/
+</literal>.</para>
+<para>Packaging clients often allow the scheme of an FMRI to be omitted if
+it does not contain publisher information. For example, <literal>pkg:/system/library/c++-runtime
+</literal> can be written as <literal>system/library/c++-runtime</literal>.
+If the scheme is omitted, clients also allow omission of all but the last
+component of a package name for matching purposes. For example, <literal>system/library/c++-runtime
+</literal> could be written as <literal>library/c++-runtime</literal> or <literal>
+c++-runtime</literal>, which would then match packages named <literal>c++-runtime
+</literal> or package names ending in <literal>/c++-runtime</literal>.</para>
+<para>A publisher name identifies a person, group of persons, or an organization
+as the source of one or more packages. To avoid publisher name collisions
+and help identify the publisher, a best practice is to use a domain name that
+represents the entity publishing the packages as a publisher name.</para>
+<para>The version follows the package name, separated by an at sign (@). The
+version consists of four sequences of numbers, separated by punctuation. The
+elements in the first three sequences are separated by dots, and the sequences
+are arbitrarily long. Leading zeros in version components (for example, 01.1
+or 1.01) are not permitted. Trailing zeros (for example, 1.10) are permitted.</para>
+<para>The first part of the version is the component version. For components
+tightly bound to the operating system, this is usually the value of
+<command>uname -r</command> for that version of the operating system. For a
+component with its own development lifecycle, this sequence is a dotted
+release number, such as 2.4.10.</para>
+<para>The second part of the version, which if present must follow a comma
+(,), is the build version. The build version specifies what version of the
+operating system the contents of the package were built on, providing a minimum
+bound on which operating system version the contents can be expected to run
+successfully.</para>
+<para>The third part of the version, which if present must follow a hyphen
+(<literal>-</literal>), is the branch version. The branch version is a versioning
+component that provides vendor-specific information. The branch version can
+be incremented when the packaging metadata is changed, independently of the
+component version. The branch version might contain a build number or other
+information.</para>
+<para>The fourth part of the version, which if present must follow a colon
+(:), is a timestamp. The timestamp represents when the package was published.</para>
+<para>When performing comparisons between versions, no component of the full
+version is considered unless the components to its left are the same. Thus, <literal>
+4.3-1</literal> is greater than <literal>4.2-7</literal> because <literal>4.3</literal> is
+greater than <literal>4.2</literal>, and <literal>4.3-3</literal> is greater
+than <literal>4.3-1</literal> because <literal>3</literal> is greater than <literal>
+1</literal>.</para>
+<para>The <literal>pkg.human-version</literal> attribute can be used to provide
+a human-readable version string. The value of the
+<literal>pkg.human-version</literal> attribute can be provided in addition to
+the package version described above for the package FMRI but cannot replace the
+package FMRI version. The human-readable version string is only used for
+display purposes. See &ldquo;Set Actions&rdquo; for more information.</para>
+<para>Many parts of the system, when appropriate, abridge FMRIs when displaying
+them, and accept input in shorter forms to reduce the volume of information
+displayed or required. Typically, the scheme, publisher, build version, and
+timestamp can be elided. Sometimes all of the versioning information can be
+omitted.</para>
+</refsect1>
+<refsect1 role="other"><title>Actions</title>
+<para>Actions represent the installable objects on a system. Actions are described
+in the manifest of a package. Every action consists primarily of its name
+and a key attribute. Together, these refer to a unique object as it follows
+a version history. Actions can have other attributes. Some attributes are
+interpreted directly by the packaging system. Other attributes might be useful
+only to the system administrator or the end-user.</para>
+<para>Actions have a simple text representation:</para>
+<programlisting><replaceable>action_name</replaceable> <replaceable>attribute1</replaceable>=<replaceable>
+value1</replaceable> <replaceable>attribute2</replaceable>=<replaceable>value2</replaceable> ...
+</programlisting>
+<para>Names of attributes cannot have whitespace, quotation marks, or equals
+signs (=) in them. All characters after the first equals sign belong to the
+value. Values can have all of those, though spaces must be enclosed in single
+or double quotation marks. Single quotation marks do not need to be escaped
+inside a string that is enclosed in double quotation marks, and double quotation
+marks do not need to be escaped inside a string that is enclosed in single
+quotation marks. A quotation mark can be prefixed with a backslash (&bsol;)
+character to avoid terminating the quoted string. A backslash can be escaped
+with a backslash.</para>
+<para>Actions can have multiple attributes. Some attributes can be named multiple
+times with different values for a single action. Multiple attributes with
+the same name are treated as unordered lists.</para>
+<para>Actions with many attributes can create long lines in a manifest file.
+Such lines can be wrapped by terminating each incomplete line with a backslash.
+Note that this continuation character must occur between attribute/value pairs.
+Neither attributes nor their values nor the combination can be split.</para>
+<para>The attributes listed below are not an exhaustive set. In fact, the
+attributes that can be attached to an action are arbitrary, and the standard
+sets of attributes are easy to augment to incorporate future developments.</para>
+<para>Some attributes cause additional operations to be executed outside of
+the packaging context. These attributes are documented in the &ldquo;Actuators&rdquo;
+section below.</para>
+<refsect2><title>File Actions</title>
+<para>The <literal>file</literal> action represents an ordinary file. The <literal>
+file</literal> action references a payload, and has four standard attributes:</para>
+<variablelist>
+<varlistentry><term><literal>path</literal></term>
+<listitem><para>The file system path where the file is installed. This is
+a <literal>file</literal> action's key attribute.</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>mode</literal></term>
+<listitem><para>The access permissions (in numeric form) of the file. These
+are simple permissions only, not ACLs.</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>owner</literal></term>
+<listitem><para>The name of the user that owns the file.</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>group</literal></term>
+<listitem><para>The name of the group that owns the file.</para>
+</listitem>
+</varlistentry>
+</variablelist>
+<para>The payload is a positional attribute in that it is not named. It is
+the first word after the action name. In a published manifest, it is the <literal>
+SHA-1</literal> hash of the file contents. If present in a manifest that has
+yet to be published, it represents the path where the payload can be found.
+See <command>pkgsend</command>(1). The hash attribute can be used instead
+of the positional attribute, should the value include an equals sign. Both
+can be used in the same action. However, the hashes must be identical.</para>
+<para>The <literal>preserve</literal> and <literal>overlay</literal> attributes
+affect whether and how a <literal>file</literal> action is installed.</para>
+<variablelist termlength="wholeline">
+<varlistentry><term><literal>preserve</literal></term>
+<listitem><para>Specifies when and how files are preserved during package
+operations.</para>
+<para>When a package is initially installed, if a file delivered by the package
+has a <literal>preserve</literal> attribute defined with any value except <literal>abandon</literal> and the
+file already exists in the image, the existing file is stored in <filename>/var/pkg/lost+found
+</filename> and the packaged file is installed.</para>
+<para>When a package is initially installed, if a file delivered by the package
+has a <literal>preserve</literal> attribute defined and the file does not
+already exist in the image, whether that file is installed depends on the
+value of the <literal>preserve</literal> attribute:</para>
+<itemizedlist>
+<listitem><para>If the value of <literal>preserve</literal> is <literal>legacy</literal>
+or <literal>abandon</literal>, the packaged file is not installed.</para></listitem>
+<listitem><para>If the value of <literal>preserve</literal> is not <literal>legacy
+</literal> or <literal>abandon</literal>, the packaged file is installed.</para></listitem>
+</itemizedlist>
+<para>When a package is downgraded, if a file delivered by the downgraded
+version of the package has a <literal>preserve</literal> attribute defined
+with any value except <literal>abandon</literal> and all of the following
+conditions are true, the file that currently exists in the image is renamed
+with the extension <filename>.update</filename>, and the file from the
+downgraded package is installed.</para>
+<itemizedlist>
+<listitem><para>The file exists in the image.</para></listitem>
+<listitem><para>The content of the file delivered by the downgraded version
+of the package is different from the content of the file delivered by the
+currently installed version of the package.</para></listitem>
+<listitem><para>The content of the file delivered by the downgraded version
+of the package is different from the content of the file that exists in the
+image.</para></listitem>
+</itemizedlist>
+<para>If any of the above conditions is not true, the file is treated the
+same as if the package is being upgraded, rather than downgraded.</para>
+<para>When a package is upgraded, if a <literal>file</literal> action delivered
+by the upgraded version of the package has a <literal>preserve</literal> attribute
+defined with any value and the <literal>file</literal> action is the same
+as the <literal>file</literal> action delivered by the currently installed
+version of the package, the file is not installed, and the file that exists
+in the image is not modified. Any modifications made since the previous version
+was installed are preserved.</para>
+<para>When a package is upgraded, if a <literal>file</literal> action delivered
+by the upgraded version of the package has a <literal>preserve</literal> attribute
+defined and the <literal>file</literal> action is new or is different from
+the <literal>file</literal> action delivered by the currently installed version
+of the package, the upgrade is done in the following way:</para>
+<itemizedlist>
+<listitem><para>If the file delivered by the upgraded version of the package has
+a <literal>preserve</literal> value of <literal>abandon</literal> in the upgraded
+package, the new file will not be installed and the existing file will not be
+modified.
+</para></listitem>
+<listitem><para>If the file does not exist in the image, the new file is installed.
+</para></listitem>
+<listitem><para>If the file delivered by the upgraded version of the package
+exists in the image, did not exist in the currently installed version of the
+package, and was not renamed or moved by using the <literal>original_name</literal> attribute
+(see below), then the existing file is stored in <filename>/var/pkg/lost+found</filename> and
+the file delivered by the upgraded version of the package is installed.</para>
+</listitem>
+<listitem><para>If the file delivered by the upgraded version of the package
+exists in the image and has different content from the file delivered by the
+currently installed version of the package, the upgrade is done according
+to the value of the <literal>preserve</literal> attribute:</para>
+<itemizedlist>
+<listitem><para>If the file delivered by the upgraded version of the package
+has a <literal>preserve</literal> value of <literal>renameold</literal>, the
+existing file is renamed with the extension <filename>.old</filename>, and
+the new file is installed with updated permissions and timestamp (if present).
+See the <literal>timestamp</literal> attribute description below.</para>
+</listitem>
+<listitem><para>If the file delivered by the upgraded version of the package
+has a <literal>preserve</literal> value of <literal>renamenew</literal>, the
+new file is installed with the extension <filename>.new</filename> and the
+existing file is not modified.</para></listitem>
+<listitem><para>If the file delivered by the upgraded version of the package
+has a <literal>preserve</literal> value of <literal>true</literal>, the new
+file is not installed, but the permissions and timestamp (if present) are
+reset on the existing file.</para></listitem>
+</itemizedlist>
+</listitem>
+<listitem><para>If the file delivered by the upgraded version of the package
+exists in the image, has the same content as the file delivered by the currently
+installed version of the package, and has a <literal>preserve</literal> value
+of either <literal>renameold</literal> or <literal>renamenew</literal>, the
+existing file is replaced by the file delivered by the upgraded version of
+the package, including replacing permissions and timestamp (if present).</para>
+</listitem>
+<listitem><para>If the file delivered by the upgraded version of the package
+exists in the image, has a <literal>preserve</literal> value of <literal>legacy</literal> in
+the upgraded package, and has a different <literal>preserve</literal> value
+in the currently installed version of the package, the existing file is renamed
+with the extension <literal>.legacy</literal>, and the new file is installed
+with updated permissions and timestamp (if present).</para></listitem>
+<listitem><para>If the file delivered by the upgraded version of the package
+exists in the image and has a <literal>preserve</literal> value of <literal>legacy
+</literal> in both the upgraded package and the currently installed version
+of the package, the permissions and timestamp (if present) are reset on the
+existing file.</para></listitem>
+</itemizedlist>
+<para>When a package is uninstalled, if a <literal>file</literal> action delivered by the currently installed version of the package has a <literal>preserve</literal> value of <literal>abandon</literal> and the file exists in the image, the file will not be removed.</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>overlay</literal></term>
+<listitem><para>Specifies whether the action allows other packages to deliver
+a file at the same location or whether it delivers a file intended to overlay
+another file. This functionality is intended for use with configuration files
+that do not participate in any self-assembly (for example, <filename>/etc/motd</filename>)
+and that can be safely overwritten.</para>
+<para>If <literal>overlay</literal> is not specified, multiple packages cannot
+deliver files to the same location.</para>
+<para>The <literal>overlay</literal> attribute can have one of the following
+values:</para>
+<variablelist>
+<varlistentry><term><literal>allow</literal></term>
+<listitem><para>One other package is allowed to deliver a file to the same
+location. This value has no effect unless the <literal>preserve</literal> attribute
+is also set.</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>true</literal></term>
+<listitem><para>The file delivered by the action overwrites any other action
+that has specified <literal>allow</literal>.</para>
+</listitem>
+</varlistentry>
+</variablelist>
+<para>Changes to the installed file are preserved based on the value of the <literal>
+preserve</literal> attribute of the overlaying file. On removal, the contents
+of the file are preserved if the action being overlaid is still installed,
+regardless of whether the <literal>preserve</literal> attribute was specified.
+Only one action can overlay another, and the <literal>mode</literal>, <literal>owner
+</literal>, and <literal>group</literal> attributes must match.</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>dehydrate</literal></term>
+<listitem><para>Specifies whether this action should be removed when a package publisher's packages are dehydrated or when a dehydrated publisher's packages are modified. The value of the <literal>dehydrate</literal> attribute can be <literal>true</literal> or <literal>false</literal>. If the value of the <literal>dehydrate</literal> attribute is <literal>false</literal>, the action will not be removed during dehydrate operations. Otherwise, the action will be removed. File actions tagged with the <literal>preserve</literal> or <literal>overlay</literal> attributes are implicitly excluded from dehydration operations and do not need this attribute.
+</para>
+<programlisting>file path=etc/zones/SYSdefault.xml dehydrate=false ...</programlisting>
+</listitem>
+</varlistentry>
+</variablelist>
+<para>The following attributes are recognized for ELF files:</para>
+<variablelist termlength="wholeline">
+<varlistentry><term><literal>elfarch</literal></term>
+<listitem><para>The architecture of the ELF file. This is the output of <command>
+uname -p</command> on the architecture for which the file is built.</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>elfbits</literal></term>
+<listitem><para>This is <literal>32</literal> or <literal>64</literal>.</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>elfhash</literal></term>
+<listitem><para>This is the hash of the &ldquo;interesting&rdquo; ELF sections
+in the file. These are the sections that are mapped into memory when the binary
+is loaded. These are the only sections necessary to consider when determining
+whether the executable behavior of two binaries will differ.</para>
+</listitem>
+</varlistentry>
+</variablelist>
+<para>The following additional attributes are recognized for <literal>file</literal> actions:</para>
+<variablelist termlength="wholeline">
+<varlistentry><term><literal>original_name</literal></term>
+<listitem><para>This attribute is used to handle editable files moving from
+package to package or from place to place, or both. The form this takes is
+the name of the originating package, followed by a colon and the original
+path to the file. Any file being deleted is recorded either with its package
+and path, or with the value of the <literal>original_name</literal> attribute
+if specified. Any editable file being installed that has the <literal>original_name
+</literal> attribute set uses the file of that name if it is deleted as part
+of the same packaging operation.</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>release-note</literal></term>
+<listitem><para>This attribute is used to indicate that this file contains
+release note text. The value of this attribute is a package FMRI. If the FMRI
+specifies a package name that is present in the original image and a version
+that is newer than the version of the package in the original image, this
+file will be part of the release notes. A special FMRI of <literal>feature/pkg/self
+</literal> refers to the containing package. If the version of <literal>feature/pkg/self
+</literal> is 0, this file will only be part of the release notes on initial
+installation.</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>revert-tag</literal></term>
+<listitem><para>This attribute is used to tag editable files that should be
+reverted as a set. The value of the <literal>revert-tag</literal> attribute
+is a <replaceable>tagname</replaceable>. Multiple <literal>revert-tag</literal> attributes
+can be specified for a single <literal>file</literal> action. The file reverts
+to its manifest-defined state when <command>pkg revert</command> is invoked
+with any of those tags specified. See the <command>pkg</command>(1) man page
+for information about the <command>pkg revert</command> command.</para>
+<para>The <literal>revert-tag</literal> attribute can also be specified at the directory level. See &ldquo;Directory Actions&rdquo; below.</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>sysattr</literal></term>
+<listitem><para>This attribute is used to specify any system attributes that should be set for this file. The value of the <literal>sysattr</literal> attribute can be a comma-separated list of verbose system attributes or a string sequence of compact system attribute options, as shown in the following examples. Supported system attributes are explained in the <literal>chmod</literal>(1) man page. System attributes specified in the manifest are set additionally to system attributes that might have been set by other subsystems of the operating system.</para>
+<programlisting>file path=opt/secret_file sysattr=hidden,sensitive
+file path=opt/secret_file sysattr=HT</programlisting>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>timestamp</literal></term>
+<listitem><para>This attribute is used to set the access and modification
+time on the file. The <literal>timestamp</literal> attribute value must be
+expressed in UTC in ISO-8601 format, omitting the colons and hyphens.</para>
+<para>The <literal>timestamp</literal> attribute is essential when packaging <filename>.pyc</filename> or <filename>.pyo</filename> files for Python. The related <filename>.py</filename> file for the <filename>.pyc</filename> or <filename>.pyo</filename> files must be marked with the timestamp embedded within those files, as shown in the following example:</para>
+<programlisting>file path=usr/lib/python2.6/vendor-packages/pkg/__init__.pyc ...
+file path=usr/lib/python2.6/vendor-packages/pkg/__init__.py &bsol;
+     timestamp=20130311T221521Z ...</programlisting>
+</listitem>
+</varlistentry>
+</variablelist>
+<para>The following attributes for <literal>file</literal> actions are automatically generated by the system and should not be specified by package developers:</para>
+<variablelist termlength="wholeline">
+<varlistentry><term><literal>hash</literal></term>
+<listitem><para>The SHA-1 hash of the uncompressed file.</para></listitem>
+</varlistentry>
+<varlistentry><term><literal>chash</literal></term>
+<listitem><para>The SHA-1 hash of the compressed file.</para></listitem>
+</varlistentry>
+<varlistentry><term><literal>pkg.size</literal></term>
+<listitem><para>The size in bytes of the uncompressed file.</para></listitem>
+</varlistentry>
+<varlistentry><term><literal>pkg.csize</literal></term>
+<listitem><para>The size in bytes of the compressed file.</para></listitem>
+</varlistentry>
+</variablelist>
+</refsect2>
+<refsect2><title>Directory Actions</title>
+<para>The <literal>dir</literal> action is like the <command>file</command> action in that it
+represents a file system object. The <literal>dir</literal> action represents a directory instead of
+an ordinary file. The <literal>dir</literal> action has the same <literal>path</literal>,
+<literal>mode</literal>, <literal>owner</literal>, and <literal>group</literal> attributes that the
+<literal>file</literal> action has, and <literal>path</literal> is the key attribute. The <literal>dir</literal> action also accepts the <literal>revert-tag</literal> attribute. The value of the <literal>revert-tag</literal> attribute is different for <literal>file</literal> and <literal>dir</literal> actions.</para>
+<para>Directories are reference counted in IPS. When the last package that either explicitly or
+implicitly references a directory no longer does so, that directory is removed. If that directory
+contains unpackaged file system objects, those items are moved into
+<filename>$IMAGE_META/lost+found</filename>. See the &ldquo;Files&rdquo; section for more
+information about <literal>$IMAGE_META</literal>.</para>
+<variablelist termlength="wholeline">
+<varlistentry>
+<term><literal>revert-tag</literal></term>
+<listitem>
+<para>This attribute is used to identify unpackaged files that should be removed as a set. See
+&ldquo;File Actions&rdquo; above for a description of how to specify this attribute for
+<literal>file</literal> actions. For directories, the value of the <literal>revert-tag</literal>
+attribute is
+<replaceable>tagname</replaceable><literal>=</literal><replaceable>pattern</replaceable>. Multiple
+<literal>revert-tag</literal> attributes can be specified for a single <literal>dir</literal>
+action. When <command>pkg revert</command> is invoked with a matching
+<replaceable>tagname</replaceable>, any unpackaged files or directories under this
+<literal>dir</literal> directory that match <replaceable>pattern</replaceable> (using shell globbing
+characters) are removed. See the <command>pkg</command>(1) man page for information about the
+<command>pkg revert</command> command.</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>salvage-from</literal></term>
+<listitem><para>This attribute can be used to move unpackaged contents into a new directory. The value of this
+attribute is the name of a directory of salvaged items. A directory with a
+<literal>salvage-from</literal> attribute inherits on creation any contents of the directory named
+in the value of the <literal>salvage-from</literal> attribute.</para>
+</listitem>
+</varlistentry>
+</variablelist>
+</refsect2>
+<refsect2><title>Link Actions</title>
+<para>The <literal>link</literal> action represents a symbolic link. The <literal>link</literal>
+action has the following standard attributes:</para>
+<variablelist termlength="wholeline">
+<varlistentry><term><literal>path</literal></term>
+<listitem><para>The file system path where the symbolic link is installed.
+This is a <literal>link</literal> action's key attribute.</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>target</literal></term>
+<listitem><para>The target of the symbolic link. The file system object to
+which the link resolves.</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>mediator</literal></term>
+<listitem><para>Specifies the entry in the mediation namespace shared by all
+path names participating in a given mediation group (for example, <literal>python
+</literal>). Link mediation can be performed based on <literal>mediator-version</literal> and/or <literal>
+mediator-implementation</literal>. All mediated links for a given path name
+must specify the same mediator. However, not all mediator versions and implementations
+need to provide a link at a given path. If a mediation does not provide a
+link, then the link is removed when that mediation is selected. A <literal>mediator
+</literal>, in combination with a specific version and/or implementation represents
+a mediation that can be selected for use by the packaging system.</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>mediator-version</literal></term>
+<listitem><para>Specifies the version (expressed as a dot-separated sequence
+of nonnegative integers) of the interface described by the <literal>mediator</literal> attribute.
+This attribute is required if <literal>mediator</literal> is specified and <literal>
+mediator-implementation</literal> is not. A local system administrator can
+set the version to use explicitly. The value specified should generally match
+the version of the package delivering the link (for example, <literal>runtime/python-26
+</literal> should use <literal>mediator-version=2.6</literal>), although this
+is not required.</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>mediator-implementation</literal></term>
+<listitem><para>Specifies the implementation of the mediator for use in addition
+to or instead of the <literal>mediator-version</literal>. Implementation strings
+are not considered to be ordered and a string is arbitrary selected by <literal>pkg
+</literal>(5) if not explicitly specified by a system administrator.</para>
+<para>The value can be a string of arbitrary length composed of alphanumeric
+characters and spaces. If the implementation itself can be versioned or is
+versioned, then the version should be specified at the end of the string,
+after a @ (expressed as a dot-separated sequence of nonnegative integers).
+If multiple versions of an implementation exist, the default behavior is to
+select the implementation with the greatest version.</para>
+<para>If only one instance of an implementation mediation link at a particular
+path is installed on a system, then that one is chosen automatically. If future
+links at the path are installed, the link is not switched unless a vendor,
+site, or local override applies, or if one of the links is version mediated.</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>mediator-priority</literal></term>
+<listitem><para>When resolving conflicts in mediated links, <literal>pkg</literal>(5)
+normally chooses the link with the greatest value of <literal>mediator-version</literal> or
+based on <literal>mediator-implementation</literal> if that is not possible.
+This attribute is used to specify an override for the normal conflict resolution
+process.</para>
+<para>If this attribute is not specified, the default mediator selection logic
+is applied.</para>
+<para>If the value is <literal>vendor</literal>, the link is preferred over
+those that do not have a <literal>mediator-priority</literal> specified.</para>
+<para>If the value is <literal>site</literal>, the link is preferred over
+those that have a value of <literal>vendor</literal> or that do not have a <literal>
+mediator-priority</literal> specified.</para>
+<para>A local system administrator can override the selection logic described
+above.</para>
+</listitem>
+</varlistentry>
+</variablelist>
+</refsect2>
+<refsect2><title>Hardlink Actions</title>
+<para>The <literal>hardlink</literal> action represents a hard link. It has
+the same attributes as the <literal>link</literal> action, and <literal>path</literal> is
+also its key attribute.</para>
+</refsect2>
+<refsect2><title>Driver Actions</title>
+<para>The <literal>driver</literal> action represents a device driver. The <literal>
+driver</literal> action does not reference a payload. The driver files themselves
+must be installed as <literal>file</literal> actions. The following attributes
+are recognized (see <command>add_drv</command>(1M) for more information):</para>
+<variablelist termlength="wholeline">
+<varlistentry><term><literal>name</literal></term>
+<listitem><para>The name of the driver. This is usually, but not always, the
+file name of the driver binary. This is the <literal>driver</literal> action's
+key attribute.</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>alias</literal></term>
+<listitem><para>This represents an alias for the driver. A given driver can
+have more than one <literal>alias</literal> attribute. No special quoting
+rules are necessary.</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>class</literal></term>
+<listitem><para>This represents a driver class. A given driver can have more
+than one <literal>class</literal> attribute.</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>perms</literal></term>
+<listitem><para>This represents the file system permissions for the driver's
+device nodes.</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>clone_perms</literal></term>
+<listitem><para>This represents the file system permissions for the clone
+driver's minor nodes for this driver.</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>policy</literal></term>
+<listitem><para>This specifies additional security policy for the device.
+A given driver can have more than one <literal>policy</literal> attribute,
+but no minor device specification can be present in more than one attribute.</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>privs</literal></term>
+<listitem><para>This specifies privileges used by the driver. A given driver
+can have more than one <literal>privs</literal> attribute.</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>devlink</literal></term>
+<listitem><para>This specifies an entry in <filename>/etc/devlink.tab</filename>. The value is the exact line to go into the file, with tabs denoted by <literal>&bsol;t</literal>. See <literal>devlinks</literal>(1M) for more information. A given driver can have more than one <literal>devlink</literal> attribute.</para>
+</listitem>
+</varlistentry>
+</variablelist>
+</refsect2>
+<refsect2><title>Depend Actions</title>
+<para>The <command>depend</command> action represents an inter-package dependency.
+A package can depend on another package because the first requires functionality
+in the second for the functionality in the first to work, or even to install.
+Dependencies can be optional. If a dependency is not met at the time of installation,
+the packaging system attempts to install or update the dependent package to
+a sufficiently new version, subject to other constraints.</para>
+<para>The following attributes are recognized:</para>
+<variablelist termlength="wholeline">
+<varlistentry><term><literal>fmri</literal></term>
+<listitem><para>The FMRI representing the dependent package. This is the <literal>
+dependency</literal> action's key attribute. The <literal>fmri</literal> value
+must not include the publisher. The package name is assumed to be complete.
+Dependencies of type <literal>require-any</literal> can have multiple <literal>fmri
+</literal> attributes. A version is optional on the <literal>fmri</literal> value,
+though for some types of dependencies, an <literal>fmri</literal> with no
+version has no meaning.</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>type</literal></term>
+<listitem><para>The type of the dependency.</para>
+<variablelist termlength="wholeline">
+<varlistentry><term><literal>require</literal></term>
+<listitem><para>The dependency is required and must have a version equal to
+or greater than the version specified in the <literal>fmri</literal> attribute.
+If the version is not specified, any version satisfies the dependency. A package
+cannot be installed if any of its required dependencies cannot be satisfied.</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>optional</literal></term>
+<listitem><para>The dependency, if present, must be at the specified version
+level or greater.</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>exclude</literal></term>
+<listitem><para>The containing package cannot be installed if the dependency
+is present at the specified version level or greater. If no version is specified,
+the dependent package cannot be installed concurrently with the package specifying
+the dependency.</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>incorporate</literal></term>
+<listitem><para>The dependency is optional, but the version of the dependent
+package is constrained. See &ldquo;Constraints and Freezing&rdquo; below.</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>require-any</literal></term>
+<listitem><para>Any one of multiple dependent packages as specified by multiple <literal>fmri</literal>
+attributes can satisfy the dependency, following the same rules as the <literal>require</literal>
+dependency type.</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>conditional</literal></term>
+<listitem><para>The dependency is required only if the package defined by
+the <literal>predicate</literal> attribute is present on the system.</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>origin</literal></term>
+<listitem><para>Prior to installation of this package, the dependency target must, if present, be at the
+specified value or greater on the image to be modified. If the value of the
+<literal>root-image</literal> attribute is <literal>true</literal>, the target must be present on
+the image rooted at / in order to install this package. If the value of the
+<literal>root-image</literal> attribute is <literal>true</literal> and the value of the
+<literal>fmri</literal> attribute starts with <literal>pkg:/feature/firmware/</literal>, the
+remainder of the <literal>fmri</literal> value is treated as a command in
+<filename>/usr/lib/fwenum</filename> that evaluates the firmware dependency. See
+<citetitle>Packaging and Delivering Software With the Image Packaging System in Oracle Solaris 11.2</citetitle>
+for examples.</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>group</literal></term>
+<listitem><para>The dependency is required unless the package is on the image
+avoid list. Note that obsolete packages silently satisfy the group dependency.
+See the <command>avoid</command> subcommand in <command>pkg</command>(1).</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>parent</literal></term>
+<listitem><para>The dependency is ignored if the image is not a child image.
+If the image is a child image then the dependency is required to be present
+in the parent image. The package version matching for a <literal>parent</literal> dependency
+is the same as that used for <literal>incorporate</literal> dependencies.</para>
+</listitem>
+</varlistentry>
+</variablelist>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>predicate</literal></term>
+<listitem><para>The FMRI representing the predicate for <literal>conditional</literal> dependencies.
+</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>root-image</literal></term>
+<listitem><para>Has an effect only for <literal>origin</literal> dependencies
+as mentioned above.</para>
+</listitem>
+</varlistentry>
+</variablelist>
+</refsect2>
+<refsect2><title>License Actions</title>
+<para>The <literal>license</literal> action represents a license or other
+informational file associated with the package contents. A package can deliver
+licenses, disclaimers, or other guidance to the package installer through
+the use of the <literal>license</literal> action.</para>
+<para>The payload of the <literal>license</literal> action is delivered into
+the image metadata directory related to the package, and should only contain
+human-readable text data. It should not contain HTML or any other form of
+markup. Through attributes, <literal>license</literal> actions can indicate
+to clients that the related payload must be displayed and/or require acceptance
+of it. The method of display and/or acceptance is at the discretion of clients.</para>
+<para>The following attributes are recognized:</para>
+<variablelist termlength="wholeline">
+<varlistentry><term><literal>license</literal></term>
+<listitem><para>This is a <literal>license</literal> action's key attribute.
+This attribute provides a meaningful description for the license to assist
+users in determining the contents without reading the license text itself.
+Some example values include:</para>
+<itemizedlist>
+<listitem><para>ABC Co. Copyright Notice</para></listitem>
+<listitem><para>ABC Co. Custom License</para></listitem>
+<listitem><para>Common Development and Distribution License 1.0 (CDDL)</para>
+</listitem>
+<listitem><para>GNU General Public License 2.0 (GPL)</para></listitem>
+<listitem><para>GNU General Public License 2.0 (GPL) Only</para></listitem>
+<listitem><para>MIT License</para></listitem>
+<listitem><para>Mozilla Public License 1.1 (MPL)</para></listitem>
+<listitem><para>Simplified BSD License</para></listitem>
+</itemizedlist>
+<para>The <literal>license</literal> value must be unique within a package.
+Including the version of the license in the description, as shown in several
+of the examples above, is recommended. If a package has code under multiple
+licenses, use multiple <literal>license</literal> actions. The length of the
+license attribute value should not be more than 64 characters.</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>must-accept</literal></term>
+<listitem><para>When <literal>true</literal>, this license must be accepted
+by a user before the related package can be installed or updated. Omission
+of this attribute is equivalent to <literal>false</literal>. The method of
+acceptance (interactive or configuration-based, for example) is at the discretion
+of clients. For package updates, this attribute is ignored if the license
+action or payload has not changed.</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>must-display</literal></term>
+<listitem><para>When <literal>true</literal>, the action's payload must be
+displayed by clients during packaging operations. Omission of this value is
+equivalent to <literal>false</literal>. This attribute should not be used
+for copyright notices. This attribute should only be used for licenses or
+other material that must be displayed during operations. The method of display
+is at the discretion of clients. For package updates, this attribute is ignored
+if the license action or payload has not changed.</para>
+</listitem>
+</varlistentry>
+</variablelist>
+</refsect2>
+<refsect2><title>Legacy Actions</title>
+<para>The <literal>legacy</literal> action represents package data used by
+a legacy packaging system. The attributes associated with this action are
+added into the legacy system's databases so that the tools querying those
+databases can operate as if the legacy package were actually installed. In
+particular, this should be sufficient to convince the legacy system that the
+package named by the <literal>pkg</literal> attribute is installed on the
+system, so that the package can be used to satisfy dependencies.</para>
+<para>The following attributes, named in accordance with the parameters on <literal>
+pkginfo</literal>(4), are recognized:</para>
+<variablelist termlength="wholeline">
+<varlistentry><term><literal>category</literal></term>
+<listitem><para>The value for the <literal>CATEGORY</literal> parameter. The
+default value is <literal>system</literal>.</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>desc</literal></term>
+<listitem><para>The value for the <literal>DESC</literal> parameter.</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>hotline</literal></term>
+<listitem><para>The value for the <literal>HOTLINE</literal> parameter.</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>name</literal></term>
+<listitem><para>The value for the <literal>NAME</literal> parameter. The default
+value is <literal>none provided</literal>.</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>pkg</literal></term>
+<listitem><para>The abbreviation for the package being installed. The default
+value is the name from the FMRI of the package. This is a <literal>legacy</literal> action's
+key attribute.</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>vendor</literal></term>
+<listitem><para>The value for the <literal>VENDOR</literal> parameter.</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>version</literal></term>
+<listitem><para>The value for the VERSION parameter. The default value is
+the version from the FMRI of the package.</para>
+</listitem>
+</varlistentry>
+</variablelist>
+</refsect2>
+<refsect2><title>Set Actions</title>
+<para>The <literal>set</literal> action represents a package-level attribute,
+or metadata, such as the package description.</para>
+<para>The following attributes are recognized:</para>
+<variablelist>
+<varlistentry><term><literal>name</literal></term>
+<listitem><para>The name of the attribute.</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>value</literal></term>
+<listitem><para>The value given to the attribute.</para>
+</listitem>
+</varlistentry>
+</variablelist>
+<para>The <literal>set</literal> action can deliver any metadata the package
+author chooses. However, there are a number of well defined attribute names
+that have specific meaning to the packaging system.</para>
+<variablelist termlength="wholeline">
+<varlistentry><term><literal>info.classification</literal></term>
+<listitem><para>One or more tokens that a <literal>pkg</literal>(5) client
+can use to classify the package. The value should have a scheme (such as &ldquo;org.opensolaris.category.2008&rdquo;
+or &ldquo;org.acm.class.1998&rdquo;) and the actual classification, such as &ldquo;Applications/Games&rdquo;,
+separated by a colon (:).</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>pkg.description</literal></term>
+<listitem><para>A detailed description of the contents and functionality of
+the package, typically a paragraph or so in length.</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>pkg.fmri</literal></term>
+<listitem><para>The name and version of the containing package. See
+&ldquo;Package FMRIs and Versions&rdquo; in the &ldquo;Description&rdquo;
+section.</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>pkg.human-version</literal></term>
+<listitem><para>The version scheme used by IPS is strict. See &ldquo;Package
+FMRIs and Versions&rdquo; in the &ldquo;Description&rdquo; section. A more
+flexible version can be provided as the value of the
+<literal>pkg.human-version</literal> attribute. The value is displayed by IPS
+tools such as <command>pkg info</command>, <command>pkg contents</command>, and
+<command>pkg search</command>. The <literal>pkg.human-version</literal> value
+is not used as a basis for version comparison and cannot be used in place of
+the <literal>pkg.fmri</literal> version.</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>pkg.obsolete</literal></term>
+<listitem><para>When <literal>true</literal>, the package is marked obsolete.
+An obsolete package can have no actions other than more set actions, and must
+not be marked renamed.</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>pkg.renamed</literal></term>
+<listitem><para>When <literal>true</literal>, the package has been renamed.
+There must be one or more <literal>depend</literal> actions in the package
+as well that point to the package versions to which this package has been
+renamed. A package cannot be marked both renamed and obsolete, but otherwise
+can have any number of set actions.</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>pkg.summary</literal></term>
+<listitem><para>A short, one-line description of the package.</para>
+</listitem>
+</varlistentry>
+</variablelist>
+</refsect2>
+<refsect2><title>Group Actions</title>
+<para>The <literal>group</literal> action defines a UNIX group as defined
+in <literal>group</literal>(4). No support is present for group passwords.
+Groups defined with this action initially have no user list. Users can be
+added with the <literal>user</literal> action. The following attributes are
+recognized:</para>
+<variablelist termlength="wholeline">
+<varlistentry><term><literal>groupname</literal></term>
+<listitem><para>The value for the name of the group.</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>gid</literal></term>
+<listitem><para>The group's unique numerical id. The default value is the
+first free group under 100.</para>
+</listitem>
+</varlistentry>
+</variablelist>
+</refsect2>
+<refsect2><title>User Actions</title>
+<para>The <literal>user</literal> action defines a UNIX user as defined in <filename>
+/etc/passwd</filename>, <filename>/etc/shadow</filename>, <filename>/etc/group</filename>,
+and <filename>/etc/ftpd/ftpusers</filename> files. Entries are added to the
+appropriate files for users defined with this <literal>user</literal> action.</para>
+<para>The <literal>user</literal> action is intended to define a user for
+a daemon or other software to use. Do not use the <literal>user</literal> action
+to define administrative or interactive accounts.</para>
+<para>The following attributes are recognized:</para>
+<variablelist termlength="wholeline">
+<varlistentry><term><literal>username</literal></term>
+<listitem><para>The unique name of the user</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>password</literal></term>
+<listitem><para>The encrypted password of the user. Default value is <literal>*LK*
+</literal>. See <literal>shadow</literal>(4).</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>uid</literal></term>
+<listitem><para>The unique uid of the user. Default value is first free value
+under 100.</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>group</literal></term>
+<listitem><para>The name of the user's primary group. Must be found in <filename>
+/etc/group</filename>.</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>gcos-field</literal></term>
+<listitem><para>The value of the <literal>gcos</literal> field in <filename>/etc/passwd
+</filename>. Default value is <literal>username</literal>.</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>home-dir</literal></term>
+<listitem><para>The user's home directory. This directory must be in the system
+image directories and not under another mount point such as <filename>/home</filename>.
+Default value is <literal>/</literal>.</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>login-shell</literal></term>
+<listitem><para>The user's default shell. Default value is empty.</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>group-list</literal></term>
+<listitem><para>Secondary groups to which the user belongs. See <literal>group</literal>(4).
+</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>ftpuser</literal></term>
+<listitem><para>Can be set to <literal>true</literal> or <literal>false</literal>.
+The default value of <literal>true</literal> indicates that the user is permitted
+to login via FTP. See <literal>ftpusers</literal>(4).</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>lastchg</literal></term>
+<listitem><para>The number of days between January 1, 1970, and the date that
+the password was last modified. Default value is empty. See <literal>shadow</literal>(4).
+</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>min</literal></term>
+<listitem><para>The minimum number of days required between password changes.
+This field must be set to 0 or above to enable password aging. Default value
+is empty. See <literal>shadow</literal>(4).</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>max</literal></term>
+<listitem><para>The maximum number of days the password is valid. Default
+value is empty. See <literal>shadow</literal>(4).</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>warn</literal></term>
+<listitem><para>The number of days before password expires that the user is
+warned. See <literal>shadow</literal>(4).</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>inactive</literal></term>
+<listitem><para>The number of days of inactivity allowed for that user. This
+is counted on a per-machine basis. The information about the last login is
+taken from the machine's <filename>lastlog</filename> file. See <literal>shadow</literal>(4).
+</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>expire</literal></term>
+<listitem><para>An absolute date expressed as the number of days since the
+UNIX Epoch (January 1, 1970). When this number is reached, the login can no
+longer be used. For example, an expire value of 13514 specifies a login expiration
+of January 1, 2007. See <literal>shadow</literal>(4).</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>flag</literal></term>
+<listitem><para>Set to empty. See <literal>shadow</literal>(4).</para>
+</listitem>
+</varlistentry>
+</variablelist>
+</refsect2>
+</refsect1>
+<refsect1 role="other"><title>Actuators</title>
+<para>In certain contexts, additional operations can be appropriate to execute
+in preparation for or following the introduction of a particular action. These
+additional operations are operating system specific and are generally needed
+only on a live system image. A live image is the image mounted at <literal>/</literal> of
+the active, running boot environment of the current zone. When multiple actions
+involved in a package installation or removal have identical actuators, then
+the operation corresponding to actuator presence is executed once for that
+installation or removal.</para>
+<para>Incorrectly specified actuators can result in package installation failure
+if the actuator cannot determine a means of making safe installation progress.</para>
+<para>The following actuators are defined:</para>
+<variablelist termlength="wholeline">
+<varlistentry><term><literal>reboot-needed</literal></term>
+<listitem><para>Can be set to <literal>true</literal> or <literal>false</literal>.
+This actuator declares that update or removal of the tagged action must be
+performed in a new boot environment if the package system is operating on
+a live image. Creation of a new boot environment is controlled by the <literal>be-policy
+</literal> image property. See the &ldquo;Image Properties&rdquo; section
+in the <literal>pkg</literal>(1) man page for more information about the <literal>
+be-policy</literal> property.</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>disable_fmri</literal>, <literal>refresh_fmri</literal>, <literal>
+restart_fmri</literal>, <literal>suspend_fmri</literal></term>
+<listitem><para>Each of these actuators takes the value of an FMRI of a service
+instance to operate on during the package installation or removal. <literal>disable_fmri
+</literal> causes the given FMRI to be disabled prior to action removal, per
+the <literal>disable</literal> subcommand to <literal>svcadm</literal>(1M). <literal>
+refresh_fmri</literal> and <literal>restart_fmri</literal> cause the given
+FMRI to be refreshed or restarted after action installation, update, or removal
+per the respective subcommands of <literal>svcadm</literal>(1M). Finally, <literal>
+suspend_fmri</literal> causes the given FMRI to be disabled temporarily prior
+to the action install phase, and then enabled after the completion of that
+phase.</para>
+<para>The value can contain a pattern that matches multiple service instances.
+However, it must do so explicitly with a glob as accepted by <literal>svcs</literal>(1),
+rather than doing so implicitly by not indicating any instances.</para>
+</listitem>
+</varlistentry>
+</variablelist>
+</refsect1>
+<refsect1 role="other"><title>Mediations</title>
+<para>A mediator is a name that represents a set of related symbolic or hard
+links. If two or more link actions have the same path and mediator name, the
+user or the package system selects the link target based on version, implementation,
+or priority. See &ldquo;Link Actions&rdquo; for information about mediator
+attributes.</para>
+<para>The following example shows two different instances of a mediator named <literal>
+java</literal> where the link choices are between versions. These two <literal>link
+</literal> actions would appear in two different packages.</para>
+<programlisting>link mediator=java mediator-version=1.6 path=usr/java target=jdk/jdk1.6.0_31
+link mediator=java mediator-version=1.7 path=usr/java target=jdk/jdk1.7.0_02</programlisting>
+<para>See the <command>set-mediator</command> subcommand in the <command>pkg</command>(1)
+man page for information about how to select the version you want for this
+link path. To have a choice of versions, both packages must be installed.</para>
+</refsect1>
+<refsect1 role="other"><title>Constraints and Freezing</title>
+<para>When a package is transitioned to a new version, or when it is added
+to or removed from the system, the version that is chosen, or whether removal
+is allowed, is determined by a variety of constraints put on the package.
+Those constraints can be defined by other packages in the form of dependencies,
+or by the administrator in the form of freezes.</para>
+<para>The most common form of constraint is delivered by the <literal>require</literal> dependency,
+as described in &ldquo;Depend Actions&rdquo; above. Such a constraint prevents
+the package from being downgraded or removed.</para>
+<para>Most parts of the operating system are encapsulated by packages called <emphasis>
+incorporations</emphasis>. These packages primarily deliver constraints represented
+by the <literal>incorporate</literal> dependency.</para>
+<para>As described above, an incorporated package need not be present on the
+system, but if it is, then it specifies both an inclusive minimum version
+and an exclusive maximum version. For example, if the dependent FMRI has a
+version of 1.4.3, then no version less than 1.4.3 would satisfy the dependency,
+and neither would any version greater than or equal to 1.4.4. However, versions
+that merely extended the dotted sequence, such as 1.4.3.7, would be allowed.</para>
+<para>Incorporations are used to force parts of the system to upgrade synchronously.
+For some components, such as the C library and the kernel, this is a basic
+requirement. For others, such as a simple userland component on which nothing
+else has a dependency, the synchronous upgrade is used merely to provide a
+known and tested set of package versions that can be referred to by a particular
+version of the incorporation.</para>
+<para>Since an incorporation is simply a package, it can be removed, and all
+the constraints it delivers are therefore relaxed. However, many of the incorporations
+delivered by Oracle Solaris are required by the packages they incorporate
+because that relaxation would not be safe.</para>
+<para>Attempting an upgrade of a package to a version that is not allowed
+by an installed incorporation will not attempt to find a newer version of
+the incorporation in order to satisfy the request, but will instead fail.
+If the constraint itself must be moved, and the incorporation specifying it
+cannot be removed, then the incorporation must be upgraded to a version that
+specifies a desired version of the constraint. Upgrading an incorporation
+causes all of the incorporated packages that would not satisfy the constraints
+delivered by the new version to be upgraded as well.</para>
+<para>A system administrator can constrain a package by using the
+<command>pkg freeze</command> command. The named package is constrained to the version
+installed on the system if no version is provided. If a versioned package
+is provided, then this administrative constraint, or freeze, acts as if an
+incorporate dependency were installed where the <literal>fmri</literal> attribute
+had the value of the provided package version.</para>
+<para>A freeze is never lifted automatically by the packaging system. To relax
+a constraint, use the <command>pkg unfreeze</command> command.</para>
+</refsect1>
+<refsect1 role="other"><title>Publishers and Repositories</title>
+<para>As detailed above, a publisher is simply a name that package clients
+use to identify the provider of packages. Publishers can distribute their
+packages using package repositories and/or package archives. There are two
+types of repositories currently supported by the package system: origin repositories
+and mirror repositories.</para>
+<para>An <emphasis>origin</emphasis> is a package repository that contains
+all of the metadata (such as catalogs, manifests, and search indexes) and
+content (files) for one or more packages. If multiple origins are configured
+for a given publisher in an image, the package client API attempts to choose
+the best origin to retrieve package data from. This is the most common type
+of repository, and is implicitly created whenever <command>pkgsend</command> or <command>
+pkgrecv</command> is used on a package repository.</para>
+<para>A <emphasis>mirror</emphasis> is a package repository that contains
+only package content (files). If one or more mirrors are configured for a
+given publisher in an image, the client API prefers the mirrors for package
+content retrieval and attempts to choose the best one to retrieve package
+content from. If the mirror is unreachable, does not have the required content,
+or is slower, the client API retrieves the content from any configured origin
+repositories. Mirrors are intended for content sharing among a trusted set
+of clients using the dynamic mirror functionality of <command>pkg.depotd</command>(1M).
+Mirrors are also intended to be used to authenticate access to package metadata,
+but distribute the package content without authentication. For example, a
+client might be configured with an <literal>https</literal> origin that requires
+an SSL key and certificate pair to access, and with an <literal>http</literal> mirror
+that provides the package content. In this way, only authorized clients can
+install or update the packages, while the overhead of authentication for package
+content retrieval is avoided. A mirror can be created by removing all subdirectories
+of a repository except those named <filename>file</filename> and their parents.
+An origin repository can be also be provisioned as a mirror by using the mirror
+mode of <command>pkg.depotd</command>(1M).</para>
+</refsect1>
+<refsect1 role="other"><title>Global and Non-Global Zone Update</title>
+<para>The <literal>pkg</literal> system forces non-global zones to be kept
+in sync with the global zone. This means that certain packages must be at
+the same version in the global zone and all non-global zones to ensure the
+same kernel is run. To do this, <literal>pkg</literal> uses <literal>parent</literal> dependencies
+to impose certain constraints on non-global zones. See &ldquo;Depend Actions&rdquo;
+above for more information about <literal>parent</literal> dependencies.</para>
+<para>Because of restrictions that the global zone imposes on non-global zones,
+the non-global zones must have access to the packages of the global zone and
+must have a similar publisher configuration. Both of these objectives are
+achieved by using a <emphasis role="strong">system repository</emphasis> (see
+the <literal>pkg.sysrepo</literal>(1M) man page). The system repository provides
+access to the publishers configured in the global zone and information about
+how those publishers are configured. To prevent non-global zones from choosing
+different packages during installation or update, system publishers are ranked
+higher in the publisher search order than publishers configured in the non-global
+zone. See the <command>pkg set-publisher</command> command in the <literal>pkg</literal>(1)
+man page for information about publisher search order.</para>
+<para>To update all non-global zones on the system, use the <command>pkg update</command> command
+with no arguments in the global zone. This command operates on the global
+zone and on each non-global zone recursively. The minimal changes necessary
+are made to non-global zones to bring them in sync with the changes made in
+the global zone. For example, suppose package <literal>foo</literal> is installed
+at version 1 in both the global zone and non-global zones, and suppose version
+2 is available in a system repository. If <literal>foo</literal> has a parent
+dependency, then <command>pkg update foo</command> updates <literal>foo</literal> to
+version 2 in both the global zone and the non-global zones because the <literal>parent
+</literal> dependency forces the package to stay in sync. If <literal>foo</literal> does
+not have a parent dependency, then <literal>foo</literal> is updated to version
+2 in the global zone but remains at version 1 in the non-global zones.</para>
+</refsect1>
+<refsect1 role="other"><title>Facets and Variants</title>
+<para>Software can have components that are optional and components that are
+mutually exclusive. Examples of optional components include locales and documentation.
+Examples of mutually exclusive components include SPARC or x86 and debug or
+non-debug binaries.</para>
+<para>In IPS, optional components are called <emphasis>facets</emphasis> and
+mutually exclusive components are called <emphasis>variants</emphasis>. Facets
+and variants are specified as tags on package actions. Each facet and variant
+tag has a name and a value. A single action can have multiple facet and variant
+tags. Examples of components with multiple facet and variant tags include
+an architecture-specific header file that is used by developers, or a component
+that is only for a SPARC global zone.</para>
+<para>An example of a variant tag is <literal>variant.arch=sparc</literal>.
+An example of a facet tag is <literal>facet.devel=true</literal>. Facets and
+variants are often referred to without the leading <literal>facet.</literal> and <literal>
+variant.</literal>.</para>
+<para>Facets and variants are special properties of the image and cannot be
+set on individual packages. To view the current values of the facets and variants
+set on the image, use the <command>pkg facet</command> and <command>pkg variant</command> commands
+as shown in the <command>pkg</command>(1) man page. To modify the values of
+the facets and variants set on the image, use the <command>pkg change-facet</command> and <command>
+pkg change-variant</command> commands.</para>
+<para>Facets are treated as boolean values by package clients: Facets can
+be set only to <literal>true</literal> (enabled) or <literal>false</literal> (disabled)
+in the image. By default, all facets are considered to be set to <literal>true</literal> in
+the image.</para>
+<para>Facets can be either set locally within an image using the <command>pkg change-facet</command> command or inherited from a parent image. For
+example, a non-global zone can inherit a facet from the global zone. Inherited facets are evaluated
+before, and take priority over, any locally set facets. If the same facet is both inherited and
+locally set, the inherited facet value masks the locally set value. Masked facets have no effect on facet evaluation and package actions. Facet changes made by using the
+<command>pkg change-facet</command> command only affect locally set facets. Inherited facets can only be changed by making the change in the parent image. By default, the <command>pkg facet</command> command does not display masked facets.</para>
+<para>The value of a facet tag on an action can be set to <literal>all</literal> or
+<literal>true</literal> to control how clients filter faceted actions. All values other than
+<literal>all</literal> or <literal>true</literal> have undefined behavior. See below for a
+description of the conditions that must exist in the image to install an action that has facet
+tags.</para>
+<para>The <literal>all</literal> value for a facet is useful when more than
+a single level of filtering is required. In the following example, <literal>foo.txt
+</literal> is installed only if the <literal>doc</literal> facet and at least
+one of the <literal>locale</literal> facets is <literal>true</literal> in
+the image. This enables administrators to exclude documentation, but still
+enable or disable support for specific locales. In addition, <literal>api.txt</literal> is
+only installed if both the <literal>doc</literal> and <literal>devel</literal> facets
+are <literal>true</literal> in the image.</para>
+<programlisting>file path=usr/share/doc/foo/foo.txt facet.doc=all facet.locale.en_GB=true facet.locale.en_US=true
+file path=usr/share/doc/foo/api.txt facet.doc=all facet.devel=all</programlisting>
+<para>A facet set on the image can be a full facet such as <literal>doc.man</literal> or
+a pattern such as <literal>locale.*</literal>. This is useful when you want
+to disable a portion of the facet namespace, and only enable individual facets
+within it. For example, you could disable all locales and then only enable
+one or two specific locales, as shown in the following example:</para>
+<screen># <userinput>pkg change-facet locale.*=false</userinput>
 [output about packages being updated]
-# \fBpkg change-facet locale.en_US=true\fR
-[output about packages being updated]
-.fi
-.in -2
-.sp
-
-.sp
-.LP
-Most variants can have any number of values. For example, the \fBarch\fR variant can be set to \fBi386\fR, \fBsparc\fR, \fBppc\fR, \fBarm\fR, or whatever architectures the distribution supports. (Only \fBi386\fR and \fBsparc\fR are used in Oracle Solaris.) The exception are the \fBdebug\fR variants. The \fBdebug\fR variants can only be set to \fBtrue\fR or \fBfalse\fR; other values have undefined behavior. If a file action has both non-debug and debug versions, both versions must have the applicable \fBdebug\fR variant explicitly set, as shown in the following example:
-.sp
-.in +2
-.nf
-file group=sys mode=0644 overlay=allow owner=root \e
-  path=etc/motd pkg.csize=115 pkg.size=103 preserve=true \e
+# <userinput>pkg change-facet locale.en_US=true</userinput>
+[output about packages being updated]</screen>
+<para>Most variants can have any number of values. For example, the
+<literal>arch</literal> variant can be set to <literal>i386</literal>,
+<literal>sparc</literal>, <literal>ppc</literal>, <literal>arm</literal>, or
+whatever architectures the distribution
+supports. (Only <literal>i386</literal> and <literal>sparc</literal> are used
+in Oracle Solaris.) The exception are the <literal>debug</literal> variants.
+The <literal>debug</literal> variants can only be set to <literal>true</literal>
+or <literal>false</literal>; other values have undefined behavior. If a file
+action has both non-debug and debug versions, both versions must have the
+applicable <literal>debug</literal> variant explicitly set, as shown in the
+following example:</para>
+<programlisting>file group=sys mode=0644 overlay=allow owner=root &bsol;
+  path=etc/motd pkg.csize=115 pkg.size=103 preserve=true &bsol;
   variant.debug.osnet=true
 
-file group=sys mode=0644 overlay=allow owner=root \e
-  path=etc/motd pkg.csize=68 pkg.size=48 preserve=true \e
-  variant.debug.osnet=false
-.fi
-.in -2
-
-.sp
-.LP
-The variant value must be set on the image in order for a package using the variant to be installed. The \fBarch\fR and \fBzone\fR variants are set by the program that creates the image and installs its initial contents. The \fBdebug.*\fR variants are \fBfalse\fR in the image by default.
-.sp
-.LP
-The facets and variants set on the image affect whether a particular action is installed.
-.RS +4
-.TP
-.ie t \(bu
-.el o
-Actions with no facet or variant tags are always installed.
-.RE
-.RS +4
-.TP
-.ie t \(bu
-.el o
-Actions with facet tags are installed if the following conditions exist in the image:
-.RS +4
-.TP
-.ie t \(bu
-.el o
-All facet tags on the action that have a value of \fBall\fR are \fBtrue\fR in the image (\fBtrue\fR is the default).
-.RE
-.RS +4
-.TP
-.ie t \(bu
-.el o
-If any facet tags on the action have a value of \fBtrue\fR, at least one of those facets is \fBtrue\fR in the image.
-.RE
-.RE
-.RS +4
-.TP
-.ie t \(bu
-.el o
-Actions with variant tags are installed only if the values of all the variant tags are the same as the values set in the image.
-.RE
-.RS +4
-.TP
-.ie t \(bu
-.el o
-Actions with both facet and variant tags are installed if both the facets and the variants allow the action to be installed.
-.RE
-.sp
-.LP
-You can create custom facet tags and \fBvariant.debug.*\fR variant tags. See \fIPackaging and Delivering Software With the Image Packaging System in Oracle Solaris 11.2\fR for more information. The following tags are in common use in Oracle Solaris.
-.sp
-
-.sp
-.TS
-tab();
-cw(2.75i) cw(2.75i) 
-lw(2.75i) lw(2.75i) 
-.
-Variant NamePossible Values
-_
-\fBvariant.arch\fR\fBsparc\fR, \fBi386\fR
-\fBvariant.opensolaris.zone\fR\fBglobal\fR, \fBnonglobal\fR
-\fBvariant.debug.*\fR\fBtrue\fR, \fBfalse\fR
-.TE
-
-.sp
-.LP
-The following list shows a small sample of the facet tags that are used in Oracle Solaris:
-.sp
-.in +2
-.nf
-facet.devel             facet.doc
+file group=sys mode=0644 overlay=allow owner=root &bsol;
+  path=etc/motd pkg.csize=68 pkg.size=48 preserve=true &bsol;
+  variant.debug.osnet=false</programlisting>
+<para>The variant value must be set on the image in order for a package using
+the variant to be installed. The <literal>arch</literal> and
+<literal>zone</literal> variants are set by the program that creates the image
+and installs its initial contents. The <literal>debug.*</literal> variants are
+<literal>false</literal> in the image by default.</para>
+<itemizedlist>
+<para>The facets and variants set on the image affect whether a particular
+action is installed.</para>
+<listitem><para>Actions with no facet or variant tags are always installed.</para>
+</listitem>
+<listitem><para>Actions with facet tags are installed if the following
+conditions exist in the image:</para>
+<itemizedlist>
+<listitem><para>All facet tags on the action that have a value of
+<literal>all</literal> are <literal>true</literal> in the image
+(<literal>true</literal> is the default).</para>
+</listitem>
+<listitem><para>If any facet tags on the action have a value of
+<literal>true</literal>, at least one of those facets is <literal>true</literal>
+in the image.</para>
+</listitem>
+</itemizedlist>
+</listitem>
+<listitem><para>Actions with variant tags are installed only if the values
+of all the variant tags are the same as the values set in the image.</para>
+</listitem>
+<listitem><para>Actions with both facet and variant tags are installed if
+both the facets and the variants allow the action to be installed.</para>
+</listitem>
+</itemizedlist>
+<para>You can create custom facet tags and <literal>variant.debug.*</literal>
+variant tags. See
+<citetitle>Packaging and Delivering Software With the Image Packaging System in Oracle Solaris 11.2</citetitle>
+for more information. The following tags are in common use in Oracle
+Solaris.</para>
+<informaltable frame="topbot">
+<textobject><simpara>Variants and their possible values.</simpara></textobject>
+<tgroup cols="2" colsep="0" rowsep="0"><colspec colwidth="50*"/><colspec
+colwidth="50*"/><thead>
+<row rowsep="1">
+<entry>
+<para>Variant Name</para>
+</entry>
+<entry>
+<para>Possible Values</para>
+</entry>
+</row>
+</thead>
+<tbody>
+<row>
+<entry>
+<para><literal>variant.arch</literal></para>
+</entry>
+<entry>
+<para><literal>sparc</literal>, <literal>i386</literal></para>
+</entry>
+</row>
+<row>
+<entry>
+<para><literal>variant.opensolaris.zone</literal></para>
+</entry>
+<entry>
+<para><literal>global</literal>, <literal>nonglobal</literal></para>
+</entry>
+</row>
+<row>
+<entry>
+<para><literal>variant.debug.*</literal></para>
+</entry>
+<entry>
+<para><literal>true</literal>, <literal>false</literal></para>
+</entry>
+</row>
+</tbody>
+</tgroup>
+</informaltable>
+<para>The following list shows a small sample of the facet tags that are used
+in Oracle Solaris:</para>
+<programlisting>facet.devel             facet.doc
 facet.doc.html          facet.doc.info
 facet.doc.man           facet.doc.pdf
 facet.locale.de         facet.locale.en_GB
 facet.locale.en_US      facet.locale.fr
-facet.locale.ja_JP      facet.locale.zh_CN
-.fi
-.in -2
+facet.locale.ja_JP      facet.locale.zh_CN</programlisting>
+</refsect1>
+<refsect1 role="other"><title>Image Policies</title>
+<para>Image policies are defined by image properties with boolean values.
+See &ldquo;Image Properties&rdquo; in the <literal>pkg</literal>(1) man page
+for descriptions of the <literal>flush-content-cache-on-success</literal> and <literal>
+send-uuid</literal> properties and information about how to view and modify
+their values.</para>
+</refsect1>
+<refsect1 role="files"><title></title>
+<para>Since <literal>pkg</literal>(5) images can be located arbitrarily within
+a larger file system, the token <literal>$IMAGE_ROOT</literal> is used to
+distinguish relative paths. For a typical system installation, <literal>$IMAGE_ROOT
+</literal> is equivalent to /.</para>
+<variablelist termlength="wholeline">
+<varlistentry><term><filename>$IMAGE_ROOT/var/pkg</filename></term>
+<listitem><para>Metadata directory for a full or partial image.</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><filename>$IMAGE_ROOT/.org.opensolaris,pkg</filename></term>
+<listitem><para>Metadata directory for a user image.</para>
+</listitem>
+</varlistentry>
+</variablelist>
+<para>Within the metadata of a particular image, certain files and directories
+can contain information useful during repair and recovery. The token <literal>$IMAGE_META
+</literal> is used to refer to the top-level directory that contains the metadata. <literal>
+$IMAGE_META</literal> is typically one of the two paths given above.</para>
+<variablelist termlength="wholeline">
+<varlistentry><term><filename>$IMAGE_META/lost+found</filename></term>
+<listitem><para>Location of conflicting directories and files moved during
+a package operation.</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><filename>$IMAGE_META/publisher</filename></term>
+<listitem><para>Contains a directory for each publisher. Each directory stores
+publisher-specific metadata.</para>
+</listitem>
+</varlistentry>
+</variablelist>
+<para>Other paths within the <literal>$IMAGE_META</literal> directory hierarchy
+are Private, and are subject to change.</para>
+</refsect1>
+<refsect1 role="attributes"><title></title>
+<para>See <literal>attributes</literal>(5) for descriptions of the following
+attributes:</para>
+<informaltable frame="all" orient="port">
+<tgroup cols="2" colsep="1" rowsep="1"><colspec colname="col1" colwidth="198*"
+align="left"/><colspec colname="col2" colwidth="198*" align="left"/><thead>
+<row>
+<entry align="center">
+<para>ATTRIBUTE TYPE</para>
+</entry>
+<entry align="center">
+<para>ATTRIBUTE VALUE</para>
+</entry>
+</row>
+</thead>
+<tbody>
+<row>
+<entry align="left">
+<para>Availability</para>
+</entry>
+<entry align="left">
+<para><literal>package/pkg</literal></para>
+</entry>
+</row>
+<row>
+<entry align="left">
+<para>Interface Stability</para>
+</entry>
+<entry align="left">
+<para>Uncommitted</para>
+</entry>
+</row>
+</tbody>
+</tgroup>
+</informaltable></refsect1>
+<refsect1 role="see-also"><title></title>
+<para><olink targetdoc="refman" targetptr="pkg-1"><citerefentry><refentrytitle>pkg</refentrytitle><manvolnum>1</manvolnum></citerefentry></olink>,
+<olink targetdoc="refman" targetptr="pkgsend-1"><citerefentry><refentrytitle>pkgsend</refentrytitle><manvolnum>1</manvolnum></citerefentry></olink>,
+<olink targetdoc="refman" targetptr="pkg.depotd-1m"><citerefentry><refentrytitle>pkg.depotd</refentrytitle><manvolnum>1M</manvolnum></citerefentry></olink>,
+<olink targetdoc="refman" targetptr="pkg.sysrepo-1m"><citerefentry><refentrytitle>pkg.sysrepo</refentrytitle><manvolnum>1M</manvolnum></citerefentry></olink>,
+<olink targetdoc="refman" targetptr="svcs-1"><citerefentry><refentrytitle>svcs</refentrytitle><manvolnum>1</manvolnum></citerefentry></olink>,
+<olink targetdoc="refman" targetptr="svcadm-1m"><citerefentry><refentrytitle>svcadm</refentrytitle><manvolnum>1M</manvolnum></citerefentry></olink></para>
+<para><olink targetdoc="AUOSS"><citetitle remap="book">Adding and Updating Software in Oracle Solaris 11.2</citetitle></olink></para>
+<para><olink targetdoc="CCOSP"><citetitle remap="book">Copying and Creating Package Repositories in Oracle Solaris 11.2</citetitle></olink></para>
+<para><olink targetdoc="PKDEV"><citetitle remap="book">Packaging and Delivering Software With the Image Packaging System in Oracle Solaris 11.2</citetitle></olink></para>
+<para><literal>https://java.net/projects/ips/pages/Home</literal></para>
+</refsect1>
+</refentry>
 
-.SH IMAGE POLICIES
-.sp
-.LP
-Image policies are defined by image properties with boolean values. See "Image Properties" in the \fBpkg\fR(1) man page for descriptions of the \fBflush-content-cache-on-success\fR and \fBsend-uuid\fR properties and information about how to view and modify their values.
-.SH FILES
-.sp
-.LP
-Since \fBpkg\fR(5) images can be located arbitrarily within a larger file system, the token \fB$IMAGE_ROOT\fR is used to distinguish relative paths. For a typical system installation, \fB$IMAGE_ROOT\fR is equivalent to /.
-.sp
-.ne 2
-.mk
-.na
-\fB\fB$IMAGE_ROOT/var/pkg\fR\fR
-.ad
-.sp .6
-.RS 4n
-Metadata directory for a full or partial image.
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fB\fB$IMAGE_ROOT/.org.opensolaris,pkg\fR\fR
-.ad
-.sp .6
-.RS 4n
-Metadata directory for a user image.
-.RE
-
-.sp
-.LP
-Within the metadata of a particular image, certain files and directories can contain information useful during repair and recovery. The token \fB$IMAGE_META\fR is used to refer to the top-level directory that contains the metadata. \fB$IMAGE_META\fR is typically one of the two paths given above.
-.sp
-.ne 2
-.mk
-.na
-\fB\fB$IMAGE_META/lost+found\fR\fR
-.ad
-.sp .6
-.RS 4n
-Location of conflicting directories and files moved during a package operation.
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fB\fB$IMAGE_META/publisher\fR\fR
-.ad
-.sp .6
-.RS 4n
-Contains a directory for each publisher. Each directory stores publisher-specific metadata.
-.RE
-
-.sp
-.LP
-Other paths within the \fB$IMAGE_META\fR directory hierarchy are Private, and are subject to change.
-.SH ATTRIBUTES
-.sp
-.LP
-See \fBattributes\fR(5) for descriptions of the following attributes:
-.sp
-
-.sp
-.TS
-tab() box;
-cw(2.75i) |cw(2.75i) 
-lw(2.75i) |lw(2.75i) 
-.
-ATTRIBUTE TYPEATTRIBUTE VALUE
-_
-Availability\fBpackage/pkg\fR
-_
-Interface StabilityUncommitted
-.TE
-
-.SH SEE ALSO
-.sp
-.LP
-\fBpkg\fR(1), \fBpkgsend\fR(1), \fBpkg.depotd\fR(1M), \fBpkg.sysrepo\fR(1M), \fBsvcs\fR(1), \fBsvcadm\fR(1M)
-.sp
-.LP
-\fIAdding and Updating Software in Oracle Solaris 11.2\fR
-.sp
-.LP
-\fICopying and Creating Package Repositories in Oracle Solaris 11.2\fR
-.sp
-.LP
-\fIPackaging and Delivering Software With the Image Packaging System in Oracle Solaris 11.2\fR
-.sp
-.LP
-\fBhttps://java.net/projects/ips/pages/Home\fR
