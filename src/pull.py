@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2008, 2013, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2008, 2014, Oracle and/or its affiliates. All rights reserved.
 #
 
 import calendar
@@ -1063,7 +1063,7 @@ def clone_repo(pargs, target, list_newest, all_versions, all_timestamps,
                 cmd = os.path.join(os.path.dirname(misc.api_cmdpath()),
                     "pkgrepo")
                 args = [cmd, 'verify', '-s',
-                    target.get_pathname()]
+                    target.get_pathname(), '--disable', 'dependency']
 
                 try:
                         ret = subprocess.call(args)

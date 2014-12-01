@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2007, 2013, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2007, 2014, Oracle and/or its affiliates. All rights reserved.
 #
 
 
@@ -461,7 +461,7 @@ class DependencyAction(generic.Action):
 
                 errors = generic.Action._validate(self, fmri=fmri,
                     raise_errors=False, required_attrs=required_attrs,
-                    single_attrs=("predicate", "root-image"))
+                    single_attrs=("predicate", "root-image", "ignore-check"))
 
                 if "predicate" in self.attrs and dtype != "conditional":
                         errors.append(("predicate", _("a predicate may only be "

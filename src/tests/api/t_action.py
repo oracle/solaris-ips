@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2008, 2012, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2008, 2014, Oracle and/or its affiliates. All rights reserved.
 #
 
 import testutils
@@ -477,7 +477,9 @@ Incorrect attribute list.
                     # root-image attribute is only valid for origin dependencies.
                     "depend type=require fmri=foo root-image=true",
                     # Multiple values for predicate are not allowed.
-                    "depend type=conditional predicate=foo predicate=bar fmri=baz"):
+                    "depend type=conditional predicate=foo predicate=bar fmri=baz",
+                    # Multiple values for ignore-check are not allowed.
+                    "depend type=require fmri=foo ignore-check=true ignore-check=false"):
                         assert_invalid_attrs(nact)
 
                 # Verify multiple values for file attributes are rejected.

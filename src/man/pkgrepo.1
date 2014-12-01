@@ -1,6 +1,6 @@
 '\" te
 .\" Copyright (c) 2007, 2014, Oracle and/or its affiliates. All rights reserved.
-.TH pkgrepo 1 "27 Mar 2014" "SunOS 5.12" "User Commands"
+.TH pkgrepo 1 "4 Nov 2014" "SunOS 5.12" "User Commands"
 .SH NAME
 pkgrepo \- Image Packaging System repository management utility
 .SH SYNOPSIS
@@ -82,8 +82,8 @@ pkgrepo \- Image Packaging System repository management utility
 
 .LP
 .nf
-/usr/bin/pkgrepo verify [-p \fIpublisher\fR]...
-    -s \fIrepo_uri_or_path\fR
+/usr/bin/pkgrepo verify [-d] [-p \fIpublisher\fR]... [-i \fIignored_dep_file\fR]...
+    [--disable \fIverification\fR]... -s \fIrepo_uri_or_path\fR
 .fi
 
 .LP
@@ -816,7 +816,7 @@ Properties not documented here, but listed in the output of the \fBget\fR subcom
 .ne 2
 .mk
 .na
-\fB\fBpkgrepo verify\fR [\fB-p\fR \fIpublisher\fR]... \fB-s\fR \fIrepo_uri_or_path\fR\fR
+\fB\fBpkgrepo verify\fR [\fB-d\fR] [\fB-p\fR \fIpublisher\fR]... [\fB-i\fR \fIignored_dep_file\fR]... [\fB--disable\fR \fIverification\fR]... \fB-s\fR \fIrepo_uri_or_path\fR\fR
 .ad
 .sp .6
 .RS 4n
@@ -867,6 +867,39 @@ This subcommand can be used only with version 4 file system based repositories.
 .sp .6
 .RS 4n
 Perform the operation only for the specified publisher. If no publisher is specified, or if the special value \fBall\fR is specified, the operation is performed for all publishers. This option can be specified multiple times.
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB-d\fR\fR
+.ad
+.sp .6
+.RS 4n
+Perform complete dependency verification. This option cannot be used with \fB--disable dependency\fR together.
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB-i\fR \fIignored_dep_file\fR\fR
+.ad
+.sp .6
+.RS 4n
+Perform dependency verification but ignore dependencies specified in the file. This option cannot be used with \fB--disable dependency\fR together.
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB--disable\fR \fIverification\fR\fR
+.ad
+.sp .6
+.RS 4n
+Disable verification specified. The current allowed value(s): dependency.
 .RE
 
 .sp

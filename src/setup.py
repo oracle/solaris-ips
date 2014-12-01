@@ -122,6 +122,7 @@ man5_zh_CN_dir = 'usr/share/man/zh_CN.UTF-8/man5'
 
 resource_dir = 'usr/share/lib/pkg'
 transform_dir = 'usr/share/pkg/transforms'
+ignored_deps_dir = 'usr/share/pkg/ignored_deps'
 smf_app_dir = 'lib/svc/manifest/application/pkg'
 execattrd_dir = 'etc/security/exec_attr.d'
 authattrd_dir = 'etc/security/auth_attr.d'
@@ -377,6 +378,8 @@ depot_log_stubs = [
         'util/apache2/depot/logs/error_log',
         'util/apache2/depot/logs/rewrite.log',
         ]
+ignored_deps_files = []
+
 # The apache-based depot includes an shtml file we add to the resource dir
 web_files.append((os.path.join(resource_dir, "web"),
     ["util/apache2/depot/repos.shtml"]))
@@ -1497,6 +1500,10 @@ data_files += [
 # add transforms
 data_files += [
         (transform_dir, transform_files)
+        ]
+# add ignored deps
+data_files += [
+        (ignored_deps_dir, ignored_deps_files)
         ]
 if osname == 'sunos':
         # Solaris-specific extensions are added here

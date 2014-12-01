@@ -46,6 +46,7 @@ import getopt
 import gettext
 import locale
 import logging
+import os
 import shlex
 import shutil
 import sys
@@ -164,7 +165,8 @@ Subcommands:
          section/property[+|-]=[value] ... or
          section/property[+|-]=([value]) ...
 
-     pkgrepo verify [-p publisher ...] -s repo_uri_or_path
+     pkgrepo verify [-d] [-p publisher ...] [-i ignored_dep_file ...]
+         [--disable verification ...] -s repo_uri_or_path
 
      pkgrepo fix [-v] [-p publisher ...] -s repo_uri_or_path
 
@@ -1072,7 +1074,8 @@ def subcmd_contents(conf, args):
                 return rval
 
         # Default output prints out the raw manifest. The -m option is implicit 
-        # for now and supported to make the interface equivalent to pkg contents.
+        # for now and supported to make the interface equivalent to pkg
+        # contents.
         if not attrs or display_raw:
                 attrs = ["action.raw"]
 
@@ -1519,6 +1522,8 @@ def __load_verify_msgs():
             "fpath": _("Path"),
             "permissionspath": _("Path"),
             "pkg": _("Package"),
+            "depend": _("Dependency"),
+            "type":_("Dependency type"),
             "err": _("Detail")
         }
 
@@ -1549,6 +1554,8 @@ def __fmt_verify(verify_tuple):
                 reason_keys = ["path", "err"]
         elif error == sr.REPO_VERIFY_BADSIG:
                 reason_keys = ["pkg", "path", "err"]
+        elif error == sr.REPO_VERIFY_DEPENDERROR:
+                reason_keys = ["pkg", "depend", "type"]
         elif error == sr.REPO_VERIFY_WARN_OPENPERMS:
                 formatted_message = \
                     "%(error_type)16s: %(message)s\n" % \
@@ -1587,27 +1594,62 @@ def __fmt_verify(verify_tuple):
 
         if error == sr.REPO_VERIFY_WARN_OPENPERMS:
                 return formatted_message, None
+        elif "depend" in reason:
+                return formatted_message, reason["depend"]
         elif "pkg" in reason:
                 return formatted_message, reason["pkg"]
         return formatted_message, reason["path"]
 
 
+def __collect_default_ignore_dep_files(ignored_dep_files):
+        """Helpler function to collect default ignored-dependency files."""
+
+        root_ignored = "/usr/share/pkg/ignored_deps"
+        altroot = DebugValues.get_value("ignored_deps")
+        if altroot:
+                root_ignored = altroot
+        if os.path.exists(root_ignored):
+                igfiles = os.listdir(root_ignored)
+                for igf in igfiles:
+                        ignored_dep_files.append(os.path.join(root_ignored,
+                            igf))
+
+
 def subcmd_verify(conf, args):
-        """Verify the repository content (file and manifest content only)."""
+        """Verify the repository content (file, manifest content and
+        dependencies only)."""
 
         subcommand = "verify"
         __load_verify_msgs()
 
-        opts, pargs = getopt.getopt(args, "p:s:")
+        opts, pargs = getopt.getopt(args, "dp:s:i:", ["disable="])
+        allowed_checks = []
+        for c in sr.default_checks:
+                allowed_checks.append(c)
+        force_dep_check = False
+        ignored_dep_files = []
         pubs = set()
         for opt, arg in opts:
                 if opt == "-s":
                         conf["repo_uri"] = parse_uri(arg)
-                if opt == "-p":
+                elif opt == "-p":
                         if not misc.valid_pub_prefix(arg):
                                 error(_("Invalid publisher prefix '%s'") % arg,
                                     cmd=subcommand)
                         pubs.add(arg)
+                elif opt == "-d":
+                        force_dep_check = True
+                elif opt == "--disable":
+                        arg = arg.lower()
+                        if arg in sr.default_checks:
+                                if arg in allowed_checks:
+                                        allowed_checks.remove(arg)
+                        else:
+                                usage(_("Invalid verification to be disabled, "
+                                    "please consider: %s") % ", ".join(
+                                    sr.default_checks), cmd=subcommand)
+                elif opt == "-i":
+                        ignored_dep_files.append(arg)
 
         if pargs:
                 usage(_("command does not take operands"), cmd=subcommand)
@@ -1621,6 +1663,11 @@ def subcmd_verify(conf, args):
                 usage(_("Network repositories are not currently supported "
                     "for this operation."), cmd=subcommand)
 
+        if "dependency" not in allowed_checks and \
+            (force_dep_check or len(ignored_dep_files) > 0):
+                usage(_("-d or -i option cannot be used when dependency "
+                    "verification is disabled."), cmd=subcommand)
+
         xport, xpub, tmp_dir = setup_transport(conf, subcommand=subcommand)
         rval, found, pub_data = _get_matching_pubs(subcommand, pubs, xport,
             xpub)
@@ -1629,16 +1676,24 @@ def subcmd_verify(conf, args):
 
         logger.info("Initiating repository verification.")
         bad_fmris = set()
-        for pfx in found:
-                progtrack = get_tracker()
-                repo = sr.Repository(root=repo_uri.get_pathname())
-                xpub.prefix = pfx
-                xpub.transport = xport
-                for verify_tuple in repo.verify(pub=xpub, progtrack=progtrack):
-                        message, bad_fmri = __fmt_verify(verify_tuple)
-                        if bad_fmri:
-                                bad_fmris.add(bad_fmri)
-                        progtrack.repo_verify_yield_error(bad_fmri, message)
+        progtrack = get_tracker()
+
+        def report_error(verify_tuple):
+                message, bad_fmri = __fmt_verify(verify_tuple)
+                if bad_fmri:
+                        bad_fmris.add(bad_fmri)
+                progtrack.repo_verify_yield_error(bad_fmri, message)
+
+        if "dependency" in allowed_checks or not force_dep_check:
+                __collect_default_ignore_dep_files(ignored_dep_files)
+
+        repo = sr.Repository(root=repo_uri.get_pathname())
+        xpub.transport = xport
+        for verify_tuple in repo.verify(pubs=found, xpub=xpub,
+            allowed_checks=allowed_checks, force_dep_check=force_dep_check,
+            ignored_dep_files=ignored_dep_files, progtrack=progtrack):
+                report_error(verify_tuple)
+
         if bad_fmris:
                 return EXIT_OOPS
         return EXIT_OK
@@ -1652,6 +1707,10 @@ def subcmd_fix(conf, args):
         subcommand = "fix"
         __load_verify_msgs()
         verbose = False
+
+        # Dependency verification. Note fix will not force dependency check.
+        force_dep_check = False
+        ignored_dep_files = []
 
         opts, pargs = getopt.getopt(args, "vp:s:")
         pubs = set()
@@ -1696,27 +1755,32 @@ def subcmd_fix(conf, args):
                 tracker.repo_verify_yield_error(bad_fmri, formatted_message)
 
         repo = sr.Repository(root=repo_uri.get_pathname())
+        bad_deps = set()
         broken_fmris = set()
         failed_fix_paths = set()
-        for pfx in found:
-                xpub.prefix = pfx
-                xpub.transport = xport
-                progtrack = get_tracker()
-                for status_code, path, message, reason in \
-                    repo.fix(pub=xpub, progtrack=progtrack,
-                        verify_callback=verify_cb):
-                        if status_code == sr.REPO_FIX_ITEM:
-                                # When we can't get the FMRI, eg. in the case
-                                # of a corrupt manifest, use the path instead.
-                                fmri = reason["pkg"]
-                                if not fmri:
-                                        fmri = path
-                                broken_fmris.add(fmri)
-                                if verbose:
-                                        progtrack.repo_fix_yield_info(fmri,
-                                            message)
-                        else:
-                                failed_fix_paths.add(path)
+        progtrack = get_tracker()
+        __collect_default_ignore_dep_files(ignored_dep_files)
+
+        xpub.transport = xport
+        for status_code, path, message, reason in \
+            repo.fix(pubs=found, xpub=xpub, force_dep_check=force_dep_check,
+                ignored_dep_files=ignored_dep_files,
+                progtrack=progtrack,
+                verify_callback=verify_cb):
+                if status_code == sr.REPO_FIX_ITEM:
+                        # When we can't get the FMRI, eg. in the case
+                        # of a corrupt manifest, use the path instead.
+                        fmri = reason["pkg"]
+                        if not fmri:
+                                fmri = path
+                        broken_fmris.add(fmri)
+                        if verbose:
+                                progtrack.repo_fix_yield_info(fmri,
+                                    message)
+                elif status_code == sr.REPO_VERIFY_DEPENDERROR:
+                        bad_deps.add(reason["depend"])
+                else:
+                        failed_fix_paths.add(path)
 
         progtrack.flush()
         logger.info("")
@@ -1730,13 +1794,16 @@ def subcmd_fix(conf, args):
                 logger.info(_("\npkgrepo could not repair the following paths "
                     "in the repository:\n\n\t%s") %
                     "\n\t".join([p for p in failed_fix_paths]))
-
-        if not (broken_fmris or failed_fix_paths):
+        if bad_deps:
+                logger.info(_("\npkgrepo could not repair the following "
+                    "dependency issues in the repository:\n\n\t%s") %
+                    "\n\t".join([p for p in bad_deps]))
+        if not (broken_fmris or failed_fix_paths or bad_deps):
                 logger.info(_("No repository fixes required."))
         else:
                 logger.info(_("Repository repairs completed."))
 
-        if failed_fix_paths:
+        if failed_fix_paths or bad_deps:
                 return EXIT_OOPS
         return EXIT_OK
 

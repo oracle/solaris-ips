@@ -2603,6 +2603,9 @@ class CliTestCase(Pkg5TestCase):
                 else:
                         debug_arg = ""
 
+                # Always add the current ignored_deps dir path.
+                debug_arg += "-D ignored_deps=%s " % os.path.join(
+                    g_pkg_path, "usr/share/pkg/ignored_deps")
                 cmdline = os.path.join(g_pkg_path,
                     "usr/bin/pkgrepo %s%s" % (debug_arg, command))
                 return self.cmdline_run(cmdline, comment=comment, exit=exit,

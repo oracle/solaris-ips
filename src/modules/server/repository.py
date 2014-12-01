@@ -19,7 +19,7 @@
 #
 # CDDL HEADER END
 #
-# Copyright (c) 2008, 2013, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2008, 2014, Oracle and/or its affiliates. All rights reserved.
 
 import cStringIO
 import codecs
@@ -74,10 +74,13 @@ REPO_VERIFY_PERM = 4
 REPO_VERIFY_MFPERM = 5
 REPO_VERIFY_BADSIG = 6
 REPO_VERIFY_WARN_OPENPERMS = 7
+REPO_VERIFY_DEPENDERROR = 8
 REPO_VERIFY_UNKNOWN = 99
 
 REPO_FIX_ITEM = 0
 REPO_FIX_FAILED = 1
+
+default_checks = ["dependency"]
 
 from pkg.pkggzip import PkgGzipFile
 
@@ -132,6 +135,57 @@ class RepositoryInvalidError(RepositoryError):
 
 class RepositoryInvalidFMRIError(RepositoryError):
         """Used to indicate that the FMRI provided is invalid."""
+
+
+class RepositoryInvalidIgnoreDepFMRIError(RepositoryError):
+        """Used to indicate an invalid FMRI in the ignored dependency
+        file."""
+
+        def __init__(self, filename, fmri):
+                Exception.__init__(self)
+                self.filename = filename
+                self.fmri = fmri
+
+        def __str__(self):
+                return _("The FMRI in ignored-dependency file: %(fn)s is "
+                    "invalid.\n'%(fmri)s'.") % {"fn": self.filename,
+                    "fmri": self.fmri}
+
+
+class RepositoryInvalidIgnoreDepEntryError(RepositoryError):
+        """Used to indicate an invalid entry in the ignored dependency
+        file."""
+
+        def __init__(self, filename, entry):
+                Exception.__init__(self)
+                self.filename = filename
+                self.entry = entry
+
+        def __str__(self):
+                return _("The entry in ignored-dependency file: %(fn)s is "
+                    "invalid.\n'%(entry)s'.") % {"fn": self.filename,
+                    "entry": self.entry}
+
+
+class RepositoryIgnoreDepEntryAttrError(RepositoryError):
+        """Used to indicate an unknown attribute for an ignored dep entry."""
+
+        def __init__(self, etype, entry=None, attrs=None):
+                RepositoryError.__init__(self)
+                self.etype = etype
+                self.entry = entry
+                self.attrs = attrs
+
+        def __str__(self):
+                if self.etype == "missing":
+                        return _("Missing attribute(s) in ignored-"
+                            "dependency entry: '%(entry)s'.\n%(attrs)s.") % {
+                            "entry": self.entry,
+                            "attrs": ", ".join(self.attrs)}
+                elif self.etype == "unknown":
+                        return _("Unknown attribute(s) found in ignored-"
+                            "dependency entry: '%(entry)s'.\n%(attrs)s.") % {
+                            "entry": self.entry, "attrs": ", ".join(self.attrs)}
 
 
 class RepositoryUnqualifiedFMRIError(RepositoryError):
@@ -3659,13 +3713,26 @@ class Repository(object):
                 # Update the publisher's configuration.
                 rstore.update_publisher(pub)
 
-        def verify(self, progtrack=None, pub=None):
+        def verify(self, pubs=[], xpub=None, allowed_checks=[],
+            force_dep_check=False, ignored_dep_files=[], progtrack=None):
                 """A generator that verifies that repository content matches
                 expected state for all or specified publishers.
 
                 'progtrack' is an optional ProgressTracker object.
 
-                'pub' is an optional publisher prefix to limit the operation to.
+                'pubs' is an optional publisher prefix list to limit the
+                operation to.
+
+                'xpub' is an transport publisher.
+
+                'disable_checks' is a list of verfications which should be
+                disabled.
+
+                'force_dep_check' is a boolean variable to indicate whether we
+                should run complete dependency check.
+
+                'ignored_dep_files' is a list of files which contain
+                ignored dependencies.
 
                 The generator yields tuples of the form:
 
@@ -3682,8 +3749,6 @@ class Repository(object):
                         raise RepositoryInvalidVersionError(self.root,
                             self.cfg.get_property("repository", "version"), 4)
 
-                rstore = self.get_pub_rstore(pub.prefix)
-
                 trust_anchor_dir = self.cfg.get_property("repository",
                     "trust-anchor-directory")
                 sig_required_names = set(self.cfg.get_property("repository",
@@ -3691,16 +3756,388 @@ class Repository(object):
                 use_crls = self.cfg.get_property("repository",
                     "check-certificate-revocation")
 
-                return rstore.verify(progtrack=progtrack, pub=pub,
-                    trust_anchor_dir=trust_anchor_dir,
-                    sig_required_names=sig_required_names, use_crls=use_crls)
+                for pfx in pubs:
+                        rstore = self.get_pub_rstore(pfx)
+                        xpub.prefix = pfx
+                        for verify_tuple in rstore.verify(progtrack=progtrack,
+                            pub=xpub, trust_anchor_dir=trust_anchor_dir,
+                            sig_required_names=sig_required_names,
+                            use_crls=use_crls):
+                                yield verify_tuple
 
-        def fix(self, progtrack=None, pub=None, verify_callback=None):
+                if "dependency" in allowed_checks:
+                        for verify_tuple in self.__verify_depend(pubs,
+                            force_dep_check, progtrack,
+                            ignored_dep_files=ignored_dep_files):
+                                yield verify_tuple
+
+        def __build_error_tuple(self, fmri, depend, depType, message):
+                """Build a dependency verification error tuple."""
+
+                reason = {"pkg": fmri, "depend":depend, "type":depType}
+                return (REPO_VERIFY_DEPENDERROR, None, message, reason)
+
+        def __find_verify_match(self, afmri, fmris, dep_type, all_pkgs,
+            force_dep_check, ignored_pkgs):
+                """Generator function to find the matching package given the
+                dependency fmri."""
+
+                # Get the containing package stem for looking up the ignored
+                # deps.
+                astem = afmri.get_pkg_stem(anarchy=True,
+                    include_scheme=False)
+                for f in fmris:
+                        try:
+                                pfmri = fmri.PkgFmri(f)
+                        except fmri.IllegalFmri:
+                                yield self.__build_error_tuple(
+                                    afmri.get_fmri(), f, dep_type,
+                                    _("Illegal dependency FMRI."))
+                                continue
+
+                        pstem = pfmri.get_pkg_stem(anarchy=True,
+                            include_scheme=False)
+                        # Feature is reserved dependency term. We should ignore
+                        # dependency starts with feature.
+                        if pstem.startswith("feature/"):
+                                continue
+
+                        found = False
+                        if pstem in all_pkgs:
+                                # If the dependency package does not have
+                                # publisher and version, then find matched stem
+                                # means dependency is found.
+                                if not pfmri.publisher and \
+                                    not pfmri.version:
+                                        found = True
+                                        continue
+
+                                rfmris = all_pkgs[pstem]
+                                for rf in rfmris:
+                                        if pfmri.publisher and rf.publisher \
+                                            != pfmri.publisher:
+                                                continue
+                                        if pfmri.version:
+                                                # For incorporate dependencies,
+                                                # we need to do more work to
+                                                # see if the dependency is
+                                                # satisfied.
+                                                if dep_type == "incorporate":
+                                                        if not rf.version.is_successor(
+                                                            pfmri.version,
+                                                            pkg.version.CONSTRAINT_AUTO):
+                                                                continue
+                                                else:
+                                                        # If the current
+                                                        # version is less than
+                                                        # the dependency's,
+                                                        # skip.
+                                                        if not rf.version.is_successor(
+                                                            pfmri.version,
+                                                            pkg.version.CONSTRAINT_NONE) \
+                                                            and rf.version != pfmri.version:
+                                                                continue
+
+                                        # Dependency match found.
+                                        found = True
+                                        break
+                        # We can ignore missing optional dependencies if not in
+                        # force_dep_check mode.
+                        elif not force_dep_check and dep_type == "optional":
+                                found = True
+
+                        if not found:
+                                if force_dep_check or astem not in ignored_pkgs:
+                                        yield self.__build_error_tuple(
+                                            afmri.get_fmri(), f, dep_type,
+                                            _("Missing dependency."))
+                                        continue
+                        else:
+                                continue
+
+                        # To make sure the not found dependency is actually
+                        # ignored, we need to check the ignored deps.
+                        for attrs in ignored_pkgs[astem]:
+                                pub = fmri.PkgFmri(
+                                    attrs["pkg"]).publisher
+                                if pub != None and pub != afmri.publisher:
+                                        continue
+                                # Check the lower bound.
+                                minfmri = attrs.get(
+                                    "min_ver", None)
+                                if minfmri and not (
+                                    afmri.version.is_successor(
+                                    minfmri.version,
+                                    pkg.version.CONSTRAINT_NONE) \
+                                    or afmri.version.is_successor(
+                                    minfmri.version,
+                                    pkg.version.CONSTRAINT_AUTO)):
+                                        continue
+                                # Check the upper bound.
+                                maxfmri = attrs.get("max_ver", None)
+                                if maxfmri and not (
+                                    maxfmri.version.is_successor(
+                                    afmri.version,
+                                    pkg.version.CONSTRAINT_NONE) \
+                                    or afmri.version.is_successor(
+                                    maxfmri.version,
+                                    pkg.version.CONSTRAINT_AUTO)):
+                                        continue
+                                # If verifying dep is not in this entry, then
+                                # continue to next.
+                                if pstem not in attrs["depend"]:
+                                        continue
+                                for ifmri in attrs["depend"][pstem]:
+                                        # Do not ignore if publishers do not
+                                        # match.
+                                        if pfmri.publisher and \
+                                            ifmri.publisher and \
+                                            pfmri.publisher \
+                                            != ifmri.publisher:
+                                                continue
+                                        # If there is no version specified
+                                        # for ifmri, ignore all packages
+                                        # indicated by ifmri stem. So we
+                                        # set found.
+                                        if not ifmri.version:
+                                                found = True
+                                                break
+                                        # If there is no version for pfmri but
+                                        # there is one for ifmri, we will not
+                                        # try to ignore it.
+                                        if not pfmri.version:
+                                                continue
+                                        # If versions match, # we report found.
+                                        elif pfmri.version.is_successor(
+                                            ifmri.version,
+                                            pkg.version.CONSTRAINT_AUTO):
+                                                found = True
+                                                break
+                                if found:
+                                        break
+
+                        # Dependency not matched; report an error.
+                        if not found:
+                                yield self.__build_error_tuple(
+                                    afmri.get_fmri(), f, dep_type,
+                                    _("Missing dependency."))
+
+        def __gen_verify_dependency_actions(self, pubs):
+                """Generator function which provides depend and set actions
+                stored in catalog.dependency.C for verification for a list of
+                given publishers."""
+
+                for pub in pubs:
+                        for r, e, acts in pub.catalog.entry_actions(
+                            (pub.catalog.DEPENDENCY,)):
+                                apkg = "pkg://%s/%s@%s" % r
+                                yield apkg, acts
+
+        def __get_dep_actions_checklist(self, force_dep_check, acts):
+                """Get a list of dependency actions which need to be
+                checked."""
+
+                check_deps = []
+                for act in acts:
+                        if act.name != "depend":
+                                continue
+                        tmpfmris = act.attrlist("fmri")
+                        dep_type = act.attrs.get("type")
+
+                        ignore_check = None
+                        if not force_dep_check:
+                                ic = act.attrs.get("ignore-check")
+                                if ic:
+                                        ignore_check = ic.lower()
+                        if not ignore_check and tmpfmris and dep_type:
+                                if dep_type != "exclude" and dep_type != \
+                                    "parent":
+                                        check_deps.append((tmpfmris, dep_type))
+
+                return check_deps
+
+        def __read_ignored_dep_file(self, filename):
+                """Read ignored dependency file."""
+
+                try:
+                        with open(filename) as igfd:
+                                lines = igfd.readlines()
+                        return lines
+                except EnvironmentError, e:
+                        if e.errno == errno.ENOENT:
+                                raise RepositoryNoSuchFileError(e.filename)
+                        if e.errno == errno.EACCES:
+                                raise apx.PermissionsException(e.filename)
+                        if e.errno == errno.EROFS:
+                                raise apx.ReadOnlyFileSystemException(
+                                    e.filename)
+                        raise
+
+        def __load_ignored_packages(self, ignored_dep_files=None):
+                """Load ignored dependency packages."""
+
+                allowed_attrs = set(["pkg", "min_ver", "max_ver", "depend"])
+                mandatory_attrs = set(["pkg", "depend"])
+
+                ignored_pkgs_dict = {}
+                if not ignored_dep_files:
+                        return ignored_pkgs_dict
+
+                for igf in ignored_dep_files:
+                        lines = self.__read_ignored_dep_file(igf)
+                        for le in lines:
+                                entry = le.strip()
+                                # If line is empty or comments, do not process.
+                                if not entry or entry.startswith("#"):
+                                        continue
+                                dumentry = "set name='bogus' value=0 " + entry
+                                try:
+                                        act = actions._actions.fromstr(dumentry)
+                                except actions.ActionError, e:
+                                        raise RepositoryInvalidIgnoreDepEntryError(igf, entry)
+                                attrs = act.attrs
+                                attrs.pop("name")
+                                attrs.pop("value")
+                                attrks = set(attrs.keys())
+                                unknowns = None
+                                if not attrks.issubset(
+                                    allowed_attrs):
+                                        unknowns = attrks - allowed_attrs
+                                if unknowns:
+                                        raise RepositoryIgnoreDepEntryAttrError(
+                                            "unknown", entry=entry,
+                                            attrs=unknowns)
+                                if not mandatory_attrs.issubset(attrks):
+                                        missings = mandatory_attrs - attrks
+                                        raise RepositoryIgnoreDepEntryAttrError(
+                                            "missing", entry=entry,
+                                            attrs=missings)
+                                try:
+                                        istem = fmri.PkgFmri(
+                                            attrs["pkg"]).get_pkg_stem(
+                                            anarchy=True,
+                                            include_scheme=False)
+
+                                        if attrs.get("min_ver", None):
+                                                minfmri = fmri.PkgFmri(
+                                                    "%s@%s" % \
+                                                    (attrs["pkg"],
+                                                    attrs["min_ver"]))
+                                                attrs["min_ver"] = minfmri
+                                        if attrs.get("max_ver", None):
+                                                maxfmri = fmri.PkgFmri(
+                                                    "%s@%s" % \
+                                                    (attrs["pkg"],
+                                                    attrs["max_ver"])
+                                                    )
+                                                attrs["max_ver"] = maxfmri
+
+                                        depdict = {}
+                                        deplist = []
+                                        if not isinstance(
+                                            attrs["depend"], list):
+                                                deplist.append(attrs["depend"])
+                                        else:
+                                                deplist = attrs["depend"]
+                                        for dep in deplist:
+                                                dfmri = fmri.PkgFmri(dep)
+                                                dstem = dfmri.get_pkg_stem(
+                                                    anarchy=True,
+                                                    include_scheme=False)
+                                                if dstem not in depdict:
+                                                        depdict[dstem] \
+                                                            = [dfmri]
+                                                else:
+                                                        depdict[dstem].append(
+                                                            dfmri)
+                                        attrs["depend"] = depdict
+                                        # Use stem of the package
+                                        # for fast look-up.
+                                        if istem not in ignored_pkgs_dict:
+                                                ignored_pkgs_dict[istem] = \
+                                                    [attrs]
+                                        else:
+                                                ignored_pkgs_dict[istem].append(
+                                                    attrs)
+                                except fmri.FmriError, e:
+                                        raise RepositoryInvalidIgnoreDepFMRIError(igf, e.fmri)
+                return ignored_pkgs_dict
+
+        def __verify_depend(self, found, force_dep_check, tracker,
+            ignored_dep_files=None):
+                """Generator function to determine if the whole repository
+                or packages by given publishers form a complete dependency
+                graph."""
+
+                all_pkgs = {}
+                # Load ignored packages on dependency check.
+                ignored_pkgs = {}
+                # Only load ignored deps when not in force mode.
+                if not force_dep_check:
+                        ignored_pkgs = self.__load_ignored_packages(
+                            ignored_dep_files=ignored_dep_files)
+
+                # Collecting pkgs and fmris for all pubs.
+                allpubrs = [rs for rs in self.rstores if rs.catalog_root]
+                for rs in allpubrs:
+                        pkgs, fmris, unmatched = \
+                            rs.catalog.get_matching_fmris("*")
+                        for k, v in pkgs.items():
+                                if k in all_pkgs:
+                                        # Merge value list as a set.
+                                        all_pkgs[k] |= set(v)
+                                else:
+                                        all_pkgs[k] = set(v)
+
+                foundpubs = [self.get_pub_rstore(pub) for pub in found]
+
+                # Get total number of verification goals.
+                goals = 0
+                for apkg, acts in self.__gen_verify_dependency_actions(
+                    foundpubs):
+                        goals += 1
+
+                tracker.repo_verify_start(goals)
+                for apkg, acts in self.__gen_verify_dependency_actions(
+                    foundpubs):
+                        try:
+                                afmri = fmri.PkgFmri(apkg)
+                        except fmri.FmriError, e:
+                                raise RepositoryInvalidFMRIError(e)
+                        tracker.repo_verify_start_pkg(afmri)
+
+                        tmpacts = [act for act in acts]
+                        selected_deps = \
+                            self.__get_dep_actions_checklist(
+                            force_dep_check, tmpacts)
+                        for tmpfmris, dep_type in selected_deps:
+                                for verify_tuple in self.__find_verify_match(
+                                    afmri, tmpfmris, dep_type, all_pkgs,
+                                    force_dep_check, ignored_pkgs):
+                                        yield verify_tuple
+
+                        tracker.repo_verify_add_progress(afmri)
+                        tracker.repo_verify_end_pkg(afmri)
+
+                tracker.job_done(tracker.JOB_REPO_VERIFY_REPO)
+
+        def fix(self, pubs=[], xpub=None, force_dep_check=False,
+            ignored_dep_files=[], progtrack=None, verify_callback=None):
                 """A generator that corrects any problems in the repository.
 
                 'progtrack' is an optional ProgressTracker object.
 
-                'pub' is an optional publisher prefix to limit the operation to.
+                'pubs' is an optional publisher prefix list to limit the
+                operation to.
+
+                'disable_checks' is a list of verfications which should be
+                disabled.
+
+                'force_dep_check' is a boolean variable to indicate whether we
+                should run complete dependency check.
+
+                'ignored_dep_files' is a list of files which contain
+                ignored dependencies.
 
                 During the operation, we emit progress, printing the details
                 using 'verify_callback', a method which requires the following
@@ -3721,8 +4158,6 @@ class Repository(object):
                         raise RepositoryInvalidVersionError(self.root,
                             self.cfg.get_property("repository", "version"), 4)
 
-                rstore = self.get_pub_rstore(pub.prefix)
-
                 trust_anchor_dir = self.cfg.get_property("repository",
                     "trust-anchor-directory")
                 sig_required_names = set(self.cfg.get_property("repository",
@@ -3730,10 +4165,21 @@ class Repository(object):
                 use_crls = self.cfg.get_property("repository",
                     "check-certificate-revocation")
 
-                return rstore.fix(progtrack=progtrack, pub=pub,
-                    verify_callback=verify_callback,
-                    trust_anchor_dir=trust_anchor_dir,
-                    sig_required_names=sig_required_names, use_crls=use_crls)
+                for pfx in pubs:
+                        rstore = self.get_pub_rstore(pfx)
+                        xpub.prefix = pfx
+                        for verify_tuple in rstore.fix(progtrack=progtrack,
+                            pub=xpub,
+                            verify_callback=verify_callback,
+                            trust_anchor_dir=trust_anchor_dir,
+                            sig_required_names=sig_required_names,
+                            use_crls=use_crls):
+                                yield verify_tuple
+
+                for verify_tuple in self.__verify_depend(pubs, force_dep_check,
+                    progtrack, ignored_dep_files=ignored_dep_files):
+                        verify_callback(progtrack, verify_tuple)
+                        yield verify_tuple
 
         def valid_new_fmri(self, pfmri):
                 """Check that the FMRI supplied as an argument would be valid

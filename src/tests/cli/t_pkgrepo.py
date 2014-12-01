@@ -73,7 +73,7 @@ class TestPkgRepo(pkg5unittest.SingleDepotTestCase):
 
         amber10 = """
             open amber@1.0,5.11-0:20110804T203458Z
-            add depend fmri=pkg:/tree@1.0 type=require
+            add depend fmri=pkg:/tree@1.0,5.11-0:20110804T203458Z type=require
             add set name=pkg.summary value="Millenia old resin"
             add set name=pkg.human-version value="1.0a"
             close
@@ -106,6 +106,13 @@ class TestPkgRepo(pkg5unittest.SingleDepotTestCase):
             close
         """
 
+        trucknd10 = """
+            open trucknd@1.0,5.11-0:20110804T203458Z
+            add file tmp/empty mode=0555 owner=root group=bin path=/etc/NOTICES/empty
+            add file tmp/truck1 mode=0444 owner=root group=bin path=/etc/truck1
+            close
+        """
+
         truck20 = """
             open truck@2.0,5.11-0:20110804T203458Z
             add file tmp/empty mode=0555 owner=root group=bin path=/etc/NOTICES/empty
@@ -120,6 +127,88 @@ class TestPkgRepo(pkg5unittest.SingleDepotTestCase):
             close
         """
 
+        refuse10 = """
+            open refuse@1.0,5.11-0:20110804T203458Z
+            add file tmp/other mode=0444 owner=root group=bin path=/etc/other
+            add depend fmri=pkg:/amber@2.0 type=exclude
+            close
+        """
+
+        illegaldep10 = """
+            open illegaldep@1.0,5.11-0:20110804T203458Z
+            add file tmp/other mode=0444 owner=root group=bin path=/etc/other1
+            close
+        """
+
+        wtinstallhold10 = """
+            open wtinstallhold@1.0,5.11-0:20110804T203458Z
+            add file tmp/other mode=0444 owner=root group=bin path=/etc/other1
+            add depend fmri=pkg:/amber@1.0 type=require
+            close
+        """
+
+        wtinstallhold20 = """
+            open wtinstallhold@2.0,5.11-0:20110804T203458Z
+            add file tmp/other mode=0444 owner=root group=bin path=/etc/other1
+            add depend fmri=pkg:/amber@2.0 type=require
+            close
+        """
+
+        withpub1_10 = """
+            open pkg://test1/withpub1@1.0,5.11-0:20110804T203458Z
+            add file tmp/other mode=0444 owner=root group=bin path=/etc/other1
+            add depend fmri=pkg:/amber@1.0 type=require
+            close
+        """
+
+        withpub1_20 = """
+            open pkg://test2/withpub1@2.0,5.11-0:20110804T203458Z
+            add set name=pkg.depend.install-hold value=test
+            add file tmp/other mode=0444 owner=root group=bin path=/etc/other1
+            add depend fmri=pkg:/amber@1.0 type=require
+            close
+        """
+
+        withpub2_10 = """
+            open pkg://test2/withpub2@1.0,5.11-0:20110804T203458Z
+            add set name=pkg.depend.install-hold value=test
+            add file tmp/other mode=0444 owner=root group=bin path=/etc/other1
+            add depend fmri=pkg:/amber@2.0 type=require
+            close
+        """
+
+        incorp10 = """
+            open incorp@1.0,5.11-0:20110804T203458Z
+            add file tmp/other mode=0444 owner=root group=bin path=/etc/other1
+            close
+        """
+
+        require_any10 = """
+            open requireany@1.0,5.11-0:20110804T203458Z
+            add file tmp/other mode=0444 owner=root group=bin path=/etc/other1
+            add depend fmri=pkg:/amber@1.0 fmri=pkg:/amber@2.0 type=require-any
+            close
+        """
+
+        depchecktag10 = """
+            open depchecktag@1.0,5.11-0:20110804T203458Z
+            add file tmp/other mode=0444 owner=root group=bin path=/etc/other1
+            add depend fmri=pkg:/depcheckdep@1.0 type=require
+            close
+        """
+
+        depcheckdep10 = """
+            open depcheckdep@1.0,5.11-0:20110804T203458Z
+            add file tmp/other mode=0444 owner=root group=bin path=/etc/other1
+            close
+        """
+
+        optionalpkg10 = """
+            open optionalpkg@1.0,5.11-0:20110804T203458Z
+            add file tmp/other mode=0444 owner=root group=bin path=/etc/other1
+            add depend fmri=pkg:/zoo@2.0 type=optional
+            close
+        """
         # These hashes should remain as SHA-1 until such time as we bump the
         # least-preferred hash for actions.
         fhashes = {
@@ -1797,12 +1886,15 @@ test2	zoo		1.0	5.11	0	20110804T203458Z	pkg://test2/zoo@1.0,5.11-0:20110804T20345
                 self.pkgrepo("list -s %s -H -F tsv nosuchpackage" % repo_path,
                     exit=1)
 
-        def __get_mf_path(self, fmri_str):
+        def __get_mf_path(self, fmri_str, pub=None):
                 """Given an FMRI, return the path to its manifest in our
                 repository."""
 
+                usepub = "test"
+                if pub:
+                        usepub = pub
                 path_comps = [self.dc.get_repodir(), "publisher",
-                    "test", "pkg"]
+                    usepub, "pkg"]
                 pfmri = pkg.fmri.PkgFmri(fmri_str)
                 path_comps.append(pfmri.get_name())
                 path_comps.append(pfmri.get_link_path().split("@")[1])
@@ -1825,6 +1917,12 @@ test2	zoo		1.0	5.11	0	20110804T203458Z	pkg://test2/zoo@1.0,5.11-0:20110804T20345
                 mf = pkg.manifest.Manifest()
                 mf.set_content(pathname=mpath)
                 return mf.tostr_unsorted()
+
+        def __inject_depend(self, fmri_str, depend_str, pub=None):
+                mpath = self.__get_mf_path(fmri_str, pub=pub)
+                with open(mpath, "ab+") as mf:
+                        mf.write(depend_str)
+                return mpath
 
         def __inject_badhash(self, path, valid_gzip=True):
                 """Corrupt a file in the repository with the given path, where
@@ -1994,6 +2092,7 @@ test2	zoo		1.0	5.11	0	20110804T203458Z	pkg://test2/zoo@1.0,5.11-0:20110804T20345
 
                 # fix the file in the repository, and publish another package
                 self.__repair_badhash("tmp/truck1")
+                self.pkgsend_bulk(repo_path, (self.amber20))
                 fmris += self.pkgsend_bulk(repo_path, (self.truck10))
                 self.pkgrepo("-s %s verify" % repo_path, exit=0)
                 self.assert_(bad_hash_path not in self.output)
@@ -2171,7 +2270,7 @@ test2	zoo		1.0	5.11	0	20110804T203458Z	pkg://test2/zoo@1.0,5.11-0:20110804T20345
                 repo_path = self.dc.get_repodir()
 
                 # publish a single package and break it
-                fmris = self.pkgsend_bulk(repo_path, (self.truck10))
+                fmris = self.pkgsend_bulk(repo_path, (self.tree10))
                 self.pkgsign(repo_path, "\*")
                 self.pkgrepo("-s %s verify" % repo_path)
                 bad_path = self.__inject_badsig(fmris[0])
@@ -2198,7 +2297,7 @@ test2	zoo		1.0	5.11	0	20110804T203458Z	pkg://test2/zoo@1.0,5.11-0:20110804T20345
                 # remove the old package and republish it so it can be signed
                 # again.
                 self.pkgrepo("-s %s remove %s" % (repo_path, fmris[0]))
-                fmris = self.pkgsend_bulk(repo_path, (self.truck10))
+                fmris = self.pkgsend_bulk(repo_path, (self.tree10))
 
                 # Create an image, setup its trust-anchor dir, then use that
                 # for our repository so that pkgrepo verify can perform
@@ -2239,7 +2338,7 @@ test2	zoo		1.0	5.11	0	20110804T203458Z	pkg://test2/zoo@1.0,5.11-0:20110804T20345
                 not world-readable."""
 
                 repo_path = self.dc.get_repodir()
-                fmris = self.pkgsend_bulk(repo_path, (self.truck10))
+                fmris = self.pkgsend_bulk(repo_path, (self.tree10))
                 os.chmod(self.test_root, 0700)
                 self.pkgrepo("-s %s verify" % repo_path, exit=0)
                 self.assert_("WARNING: " in self.output)
@@ -2273,6 +2372,728 @@ test2	zoo		1.0	5.11	0	20110804T203458Z	pkg://test2/zoo@1.0,5.11-0:20110804T20345
                 fmris = self.pkgsend_bulk(repo_path, (self.truck10))
                 self.pkgrepo("-s %s verify" % repo_path, exit=1)
 
+        def test_19_verify_valid_dependency(self):
+                """Test package with valid dependency will not cause verify
+                failure."""
+
+                repo_path = self.dc.get_repodir()
+                shutil.rmtree(repo_path)
+                self.pkgrepo("create %s" % repo_path)
+                self.pkgrepo("-s %s set publisher/prefix=test" %
+                    repo_path)
+                self.pkgsend_bulk(repo_path, (self.truck10, self.truck20,
+                    self.amber10, self.amber20, self.tree10))
+                self.pkgrepo("-s %s verify -d" % repo_path)
+                self.pkgrepo("-s %s verify" % repo_path)
+
+        def test_20_verify_missing_nonincorp_dependency(self):
+                """Test that we can verify which dependency is missing from
+                a repository."""
+
+                repo_path = self.dc.get_repodir()
+                shutil.rmtree(repo_path)
+                self.pkgrepo("create %s" % repo_path)
+                self.pkgrepo("-s %s set publisher/prefix=test" %
+                    repo_path)
+                # Test that missing dependency will be reported in -d mode.
+                self.pkgsend_bulk(repo_path, (self.wtinstallhold10,
+                    self.wtinstallhold20))
+                self.pkgrepo("-s %s verify -d" % repo_path, exit=1)
+                # Test that it will also be reported without -d.
+                self.pkgrepo("-s %s verify" % repo_path, exit=1)
+                # Test that disabling dependency check works.
+                self.pkgrepo("-s %s verify --disable dependency" % repo_path)
+                self.pkgrepo("-s %s verify --disable dependency "
+                    "--disable dependency" % repo_path)
+                # Test that disabling unknown check fails.
+                self.pkgrepo("-s %s verify --disable unknown" % repo_path,
+                    exit=2)
+                # Test that disabling dependency check will disallow -i or -d
+                # option
+                self.pkgrepo("-s %s verify --disable dependency -i file" %
+                    repo_path, exit=2)
+                self.pkgrepo("-s %s verify --disable dependency -d" %
+                    repo_path, exit=2)
+                # Test that complete dependency will pass verification and
+                # miner version dependency will be used if the exact version
+                # required is missing.
+                self.pkgsend_bulk(repo_path, (self.amber20,
+                    self.tree10))
+                self.pkgrepo("-s %s verify -d" % repo_path)
+                self.pkgrepo("-s %s verify" % repo_path)
+                self.pkgsend_bulk(repo_path, self.optionalpkg10)
+                # Should be no problem for completely missing optional
+                # dependency.
+                self.pkgrepo("-s %s verify" % repo_path)
+                self.pkgrepo("-s %s verify -d" % repo_path, exit=1)
+                self.pkgsend_bulk(repo_path, (self.zoo10))
+                # Should fail this time.
+                self.pkgrepo("-s %s verify" % repo_path, exit=1)
+                self.pkgrepo("-s %s verify -d" % repo_path, exit=1)
+
+        def test_21_verify_exclude_dependency(self):
+                """Test that exclude dependency does not cause failure."""
+
+                repo_path = self.dc.get_repodir()
+                shutil.rmtree(repo_path)
+                self.pkgrepo("create %s" % repo_path)
+                self.pkgrepo("-s %s set publisher/prefix=test" %
+                    repo_path)
+                self.pkgsend_bulk(repo_path, (self.refuse10))
+                self.pkgrepo("-s %s verify -d" % repo_path)
+                self.pkgrepo("-s %s verify" % repo_path)
+
+        def test_22_verify_illegal_dependency(self):
+                """Test illegal dependency will cause verification errors."""
+
+                repo_path = self.dc.get_repodir()
+                shutil.rmtree(repo_path)
+                self.pkgrepo("create %s" % repo_path)
+                self.pkgrepo("-s %s set publisher/prefix=test" %
+                    repo_path)
+                fmris = self.pkgsend_bulk(repo_path, (self.illegaldep10))
+
+                # Test bad depend version number causes reporting error.
+                badversion = "depend fmri=pkg:/amber@1.x type=require"
+                self.__inject_depend(fmris[0], badversion)
+                self.pkgrepo("-s %s rebuild" % repo_path)
+                self.pkgrepo("-s %s verify -d" % repo_path, exit=1)
+                self.pkgrepo("-s %s verify" % repo_path, exit=1)
+
+                # Test bad depend package name causes reporting error.
+                shutil.rmtree(repo_path)
+                self.pkgrepo("create %s" % repo_path)
+                self.pkgrepo("-s %s set publisher/prefix=test" %
+                    repo_path)
+                fmris = self.pkgsend_bulk(repo_path, (self.illegaldep10))
+                badname = "depend fmri=pkg:/_amber@1.0 type=require"
+                self.__inject_depend(fmris[0], badname)
+                self.pkgrepo("-s %s rebuild" % repo_path)
+                self.pkgrepo("-s %s verify -d" % repo_path, exit=1)
+                self.pkgrepo("-s %s verify" % repo_path, exit=1)
+
+        def test_23_verify_no_install_hold(self):
+                """Test if there is no install-hold, then dependency check will
+                still run with or without -d."""
+
+                repo_path = self.dc.get_repodir()
+                shutil.rmtree(repo_path)
+                self.pkgrepo("create %s" % repo_path)
+                self.pkgrepo("-s %s set publisher/prefix=test" %
+                    repo_path)
+                self.pkgsend_bulk(repo_path, (self.truck10, self.truck20))
+                self.pkgrepo("-s %s verify" % repo_path, exit=1)
+                self.pkgrepo("-s %s verify -d" % repo_path, exit=1)
+                # Sending amber@1.0 without tree@1.0 still fail.
+                self.pkgsend_bulk(repo_path, (self.amber10))
+                self.pkgrepo("-s %s verify -d" % repo_path, exit=1)
+                self.pkgrepo("-s %s verify" % repo_path, exit=1)
+                # Sending amber@2.0 still fail.
+                self.pkgsend_bulk(repo_path, (self.amber20))
+                self.pkgrepo("-s %s verify -d" % repo_path, exit=1)
+                self.pkgrepo("-s %s verify" % repo_path, exit=1)
+                # Finally send tree@1.0 to make the repo complete.
+                self.pkgsend_bulk(repo_path, (self.tree10))
+                self.pkgrepo("-s %s verify -d" % repo_path)
+                self.pkgrepo("-s %s verify" % repo_path)
+
+        def test_24_verify_provided_publisher(self):
+                """Test verifying only the dependencies of provided publisher
+                by -p option."""
+
+                repo_path = self.dc.get_repodir()
+                shutil.rmtree(repo_path)
+                self.pkgrepo("create %s" % repo_path)
+                self.pkgrepo("-s %s set publisher/prefix=test1" %
+                    repo_path)
+                self.pkgrepo("-s %s add-publisher test2" % repo_path)
+                self.pkgsend_bulk(repo_path, (self.withpub1_10,
+                    self.withpub2_10))
+                #This should fail, because dependency amber@1.0 is missing
+                # for withpub1@1.0 under test1.
+                self.pkgrepo("-s %s verify -p test1 -d" % repo_path, exit=1)
+                self.pkgrepo("-s %s verify -p test1" % repo_path, exit=1)
+                # Send the missing dependency should lead to verifaction
+                # success.
+                self.pkgsend_bulk(repo_path, (self.amber10, self.tree10))
+                self.pkgrepo("-s %s verify -p test1 -d" % repo_path)
+                self.pkgrepo("-s %s verify -p test1" % repo_path)
+                # Package withpub2 under test2 should still fail on
+                # verification.
+                self.pkgrepo("-s %s verify -p test2 -d" % repo_path, exit=1)
+                self.pkgrepo("-s %s verify -p test2" % repo_path, exit=1)
+
+        def __make_repo_incorp(self, repo_path, dep_inj):
+                """Create a repository with incorporation dependency."""
+
+                shutil.rmtree(repo_path)
+                self.pkgrepo("create %s" % repo_path)
+                self.pkgrepo("-s %s set publisher/prefix=test" %
+                    repo_path)
+                fmris = self.pkgsend_bulk(repo_path, (self.incorp10,
+                    self.amber10, self.tree10))
+                self.__inject_depend(fmris[0], dep_inj)
+                self.pkgrepo("-s %s rebuild" % repo_path)
+
+        def test_25_verify_missing_incorp_dependency(self):
+                """Test missing incorporate dependency will cause verify
+                failure."""
+
+                repo_path = self.dc.get_repodir()
+                shutil.rmtree(repo_path)
+                self.pkgrepo("create %s" % repo_path)
+                self.pkgrepo("-s %s set publisher/prefix=test" %
+                    repo_path)
+                fmris = self.pkgsend_bulk(repo_path, (self.incorp10,
+                    self.amber10, self.tree10))
+                # Test just specifying same release number will not cause
+                # verify failure.
+                verrel = "depend fmri=pkg:/amber@1.0 type=incorporate"
+                self.__make_repo_incorp(repo_path, verrel)
+                self.pkgrepo("-s %s verify -d" % repo_path)
+                self.pkgrepo("-s %s verify" % repo_path)
+
+                # Shorter release number will work.
+                verrel = "depend fmri=pkg:/amber@1 type=incorporate"
+                self.__make_repo_incorp(repo_path, verrel)
+                self.pkgrepo("-s %s verify -d" % repo_path)
+                self.pkgrepo("-s %s verify" % repo_path)
+
+                # Test specifying different release version will cause verify
+                # failure.
+                verrel = "depend fmri=pkg:/amber@2.0 type=incorporate"
+                self.__make_repo_incorp(repo_path, verrel)
+                self.pkgrepo("-s %s verify -d" % repo_path, exit=1)
+                self.pkgrepo("-s %s verify" % repo_path, exit=1)
+
+                verrel = "depend fmri=pkg:/amber@0.8 type=incorporate"
+                self.__make_repo_incorp(repo_path, verrel)
+                self.pkgrepo("-s %s verify -d" % repo_path, exit=1)
+                self.pkgrepo("-s %s verify" % repo_path, exit=1)
+
+                # Test specifying same release and build version will not lead
+                # to fail.
+                version = "depend fmri=pkg:/amber@1.0,5.11 type=incorporate"
+                self.__make_repo_incorp(repo_path, version)
+                self.pkgrepo("-s %s verify -d" % repo_path)
+                self.pkgrepo("-s %s verify" % repo_path)
+
+                # Test specifying same release and different build version
+                # will not cause verify failure, simply because the build
+                # version is ignored.
+                version = "depend fmri=pkg:/amber@1.0,5.10 type=incorporate"
+                self.__make_repo_incorp(repo_path, version)
+                self.pkgrepo("-s %s verify -d" % repo_path)
+                self.pkgrepo("-s %s verify" % repo_path)
+
+                version = "depend fmri=pkg:/amber@1.0,5.12 type=incorporate"
+                self.__make_repo_incorp(repo_path, version)
+                self.pkgrepo("-s %s verify -d" % repo_path)
+                self.pkgrepo("-s %s verify" % repo_path)
+
+                # Test specifying same release, build and branch version will
+                # not cause verify failure.
+                version = "depend fmri=pkg:/amber@1.0,5.11-0 type=incorporate"
+                self.__make_repo_incorp(repo_path, version)
+                self.pkgrepo("-s %s verify -d" % repo_path)
+                self.pkgrepo("-s %s verify" % repo_path)
+
+                # Test specifying same release and build version but different
+                # branch version will cause verify failure.
+                version = "depend fmri=pkg:/amber@1.0,5.11-1 type=incorporate"
+                self.__make_repo_incorp(repo_path, version)
+                self.pkgrepo("-s %s verify -d" % repo_path, exit=1)
+                self.pkgrepo("-s %s verify" % repo_path, exit=1)
+
+                version = "depend fmri=pkg:/amber@1.0,5.11-0.1 " \
+                    "type=incorporate"
+                self.__make_repo_incorp(repo_path, version)
+                self.pkgrepo("-s %s verify -d" % repo_path, exit=1)
+                self.pkgrepo("-s %s verify" % repo_path, exit=1)
+                # Test specifying same release, build, branch version and time
+                # stamp will not cause verify failure.
+                version = \
+                    "depend fmri=pkg:/amber@1.0,5.11-0:20110804T203458Z " \
+                    "type=incorporate"
+                self.__make_repo_incorp(repo_path, version)
+                self.pkgrepo("-s %s verify -d" % repo_path)
+                self.pkgrepo("-s %s verify" % repo_path)
+
+                # Test specifying same release, build and branch version but
+                # different time stamp will cause verify failure.
+                version = \
+                    "depend fmri=pkg:/amber@1.0,5.11-0:20100804T203458Z " \
+                    "type=incorporate"
+                self.__make_repo_incorp(repo_path, version)
+                self.pkgrepo("-s %s verify -d" % repo_path, exit=1)
+                self.pkgrepo("-s %s verify" % repo_path, exit=1)
+
+                version = \
+                    "depend fmri=pkg:/amber@1.0,5.11-0:20120804T203458Z " \
+                    "type=incorporate"
+                self.__make_repo_incorp(repo_path, version)
+                self.pkgrepo("-s %s verify -d" % repo_path, exit=1)
+                self.pkgrepo("-s %s verify" % repo_path, exit=1)
+
+                version = \
+                    "depend fmri=pkg:/amber@1.0,5.11-0:20120804 " \
+                    "type=incorporate"
+                self.__make_repo_incorp(repo_path, version)
+                self.pkgrepo("-s %s verify -d" % repo_path, exit=1)
+                self.pkgrepo("-s %s verify" % repo_path, exit=1)
+
+        def test_26_verify_require_any_dependency(self):
+                """Test require-any dependency verification."""
+
+                repo_path = self.dc.get_repodir()
+                shutil.rmtree(repo_path)
+                self.pkgrepo("create %s" % repo_path)
+                self.pkgrepo("-s %s set publisher/prefix=test" %
+                    repo_path)
+                self.pkgsend_bulk(repo_path, (self.require_any10, self.tree10))
+                # Test missing dependency will cause verify failure.
+                self.pkgrepo("-s %s verify -d" % repo_path, exit=1)
+                self.pkgrepo("-s %s verify" % repo_path, exit=1)
+                # Test sending one of the require-any dependency still cause
+                # verify failed.
+                self.pkgsend_bulk(repo_path, (self.amber10))
+                self.pkgrepo("-s %s verify -d" % repo_path, exit=1)
+                self.pkgrepo("-s %s verify" % repo_path, exit=1)
+                # Test sending all of the require-any dependency lead
+                # to success.
+                self.pkgsend_bulk(repo_path, (self.amber20))
+                self.pkgrepo("-s %s verify -d" % repo_path)
+                self.pkgrepo("-s %s verify" % repo_path)
+
+        def test_27_verify_publisher_merge(self):
+                """Test packages with same package, different version and
+                different publisher are merged together for verification."""
+
+                repo_path = self.dc.get_repodir()
+                shutil.rmtree(repo_path)
+                self.pkgrepo("create %s" % repo_path)
+                self.pkgrepo("-s %s set publisher/prefix=test1" %
+                    repo_path)
+                self.pkgrepo("-s %s add-publisher test2" % repo_path)
+                fmris = self.pkgsend_bulk(repo_path, (self.incorp10,
+                    self.withpub1_10, self.withpub1_20, self.amber10,
+                    self.tree10))
+
+                dep_str = "depend fmri=pkg:/withpub1@2.0 type=require"
+                self.__inject_depend(fmris[0], dep_str, pub="test1")
+                self.pkgrepo("-s %s rebuild" % repo_path)
+                self.pkgrepo("-s %s verify -d" % repo_path)
+                self.pkgrepo("-s %s verify" % repo_path)
+
+        def test_28_verify_ignore_dep_attr(self):
+                """Test whether ignore-check tag works as expected."""
+
+                repo_path = self.dc.get_repodir()
+                shutil.rmtree(repo_path)
+                self.pkgrepo("create %s" % repo_path)
+                self.pkgrepo("-s %s set publisher/prefix=test" %
+                    repo_path)
+                fmris = self.pkgsend_bulk(repo_path, (self.depchecktag10))
+                # Missing unignored dependency causes failure.
+                self.pkgrepo("-s %s verify" % repo_path, exit=1)
+                self.pkgrepo("-s %s verify -d" % repo_path, exit=1)
+                # Sending missing dependency leads to success.
+                fmris = self.pkgsend_bulk(repo_path, (self.depcheckdep10))
+                self.pkgrepo("-s %s verify" % repo_path)
+                self.pkgrepo("-s %s verify -d" % repo_path)
+
+                # Check if Ignore check label works.
+                dep_str = "depend fmri=tree@1.0 type=require " \
+                    "ignore-check=\"external\"\n"
+                self.__inject_depend(fmris[0], dep_str)
+                self.pkgrepo("-s %s rebuild" % repo_path)
+                self.pkgrepo("-s %s verify" % repo_path)
+                self.pkgrepo("-s %s verify -d" % repo_path, exit=1)
+
+                fmris = self.pkgsend_bulk(repo_path, (self.tree10))
+                dep_str = "depend fmri=incorp@1.0 type=require " \
+                    "ignore-check=\"excluded\"\n"
+                self.__inject_depend(fmris[0], dep_str)
+                self.pkgrepo("-s %s rebuild" % repo_path)
+                self.pkgrepo("-s %s verify" % repo_path)
+                self.pkgrepo("-s %s verify -d" % repo_path, exit=1)
+
+        def test_29_verify_parent_and_special_dep(self):
+                """Test parent dependency and special dependency are handled
+                properly."""
+
+                repo_path = self.dc.get_repodir()
+                shutil.rmtree(repo_path)
+                self.pkgrepo("create %s" % repo_path)
+                self.pkgrepo("-s %s set publisher/prefix=test" %
+                    repo_path)
+                fmris = self.pkgsend_bulk(repo_path, (self.tree10))
+                dep_str = "depend fmri=incorp@1.0 type=parent\n"
+                self.__inject_depend(fmris[0], dep_str)
+                self.pkgrepo("-s %s rebuild" % repo_path)
+                self.pkgrepo("-s %s verify" % repo_path)
+                self.pkgrepo("-s %s verify -d" % repo_path)
+
+                shutil.rmtree(repo_path)
+                self.pkgrepo("create %s" % repo_path)
+                self.pkgrepo("-s %s set publisher/prefix=test" %
+                    repo_path)
+                fmris = self.pkgsend_bulk(repo_path, (self.tree10))
+                dep_str = "depend fmri=feature/test/magic@1.0 type=require\n"
+                self.__inject_depend(fmris[0], dep_str)
+                self.pkgrepo("-s %s rebuild" % repo_path)
+                self.pkgrepo("-s %s verify" % repo_path)
+                self.pkgrepo("-s %s verify -d" % repo_path)
+
+        def __make_repo_ignore_dep(self, repo_path, dep_inj):
+                """Create a repository with incorporation dependency."""
+
+                shutil.rmtree(repo_path)
+                self.pkgrepo("create %s" % repo_path)
+                self.pkgrepo("-s %s set publisher/prefix=test" %
+                    repo_path)
+                fmris = self.pkgsend_bulk(repo_path, (self.incorp10))
+                self.__inject_depend(fmris[0], dep_inj)
+                self.pkgrepo("-s %s rebuild" % repo_path)
+
+        def __run_verify_with_ignore_file(self, repo_path, ientry, ifpath,
+            exit1=0, exit2=0):
+                """Run pkgrepo verify with ignored dep files."""
+
+                with open(ifpath, "wb") as iff:
+                        iff.write(ientry)
+                self.pkgrepo("-s %s verify -i %s" % (repo_path, ifpath),
+                    exit=exit1)
+                self.pkgrepo("-s %s verify -i %s -d" % (repo_path, ifpath),
+                    exit=exit2)
+
+        def test_30_verify_ignore_pkgs(self):
+                """Test if supplied ignored packages in ignored dep files are
+                handled properly."""
+
+                repo_path = self.dc.get_repodir()
+                shutil.rmtree(repo_path)
+                self.pkgrepo("create %s" % repo_path)
+                self.pkgrepo("-s %s set publisher/prefix=test1" %
+                    repo_path)
+                self.pkgsend_bulk(repo_path, (self.amber10, self.amber20))
+                ifpath = os.path.join(self.test_root, "tmp",
+                    "ignored_dep_file")
+
+                # Test invalid entry causes failure.
+                ientry = "tree"
+                self.__run_verify_with_ignore_file(repo_path, ientry, ifpath,
+                    exit1=1, exit2=1)
+
+                ientry = "pkg=tree@x.1"
+                self.__run_verify_with_ignore_file(repo_path, ientry, ifpath,
+                    exit1=1, exit2=1)
+
+                ientry = "pkg=amber depend=tree@x.1"
+                self.__run_verify_with_ignore_file(repo_path, ientry, ifpath,
+                    exit1=1, exit2=1)
+
+                ientry = "pkg=amber min_ver=4abc* depend=tree"
+                self.__run_verify_with_ignore_file(repo_path, ientry, ifpath,
+                    exit1=1, exit2=1)
+
+                ientry = "pkg=amber max_ver=x.1 depend=tree"
+                self.__run_verify_with_ignore_file(repo_path, ientry, ifpath,
+                    exit1=1, exit2=1)
+
+                ientry = "pkg=tree@x.1 unknown=2"
+                self.__run_verify_with_ignore_file(repo_path, ientry, ifpath,
+                    exit1=1, exit2=1)
+
+                ientry = "pkg=tree@x.1 unknown1=2, unknown2=\"u\""
+                self.__run_verify_with_ignore_file(repo_path, ientry, ifpath,
+                    exit1=1, exit2=1)
+
+                # Test bad file path causes failure.
+                badifpath = os.path.join(self.test_root, "tmp",
+                    "bad_ignored_dep_file")
+                self.pkgrepo("-s %s verify -i %s" % (repo_path, badifpath),
+                    exit=1)
+                self.pkgrepo("-s %s verify -i %s -d" % (repo_path, badifpath),
+                    exit=1)
+
+                # Test file with arbitary new line or other space symbols does
+                # not cause failure.
+                ientry = "   pkg=amber   \t\t depend=tree   \n\t\r\n\n"
+                self.__run_verify_with_ignore_file(repo_path, ientry, ifpath,
+                    exit2=1)
+
+                # Test with comment line
+                ientry = " # this comments test \npkg=amber depend=tree\n"
+                self.__run_verify_with_ignore_file(repo_path, ientry, ifpath,
+                    exit2=1)
+
+                # Test duplicate entries will not cause problem.
+                ientry = "pkg=amber   depend=tree\npkg=amber   depend=tree"
+                with open(ifpath, "wb") as iff:
+                        iff.write(ientry)
+                self.pkgrepo("-s %s verify -i %s" % (repo_path, ifpath))
+                # Test in -d mode, ignored_dep_file will not be used.
+                self.pkgrepo("-s %s verify -i %s -d" % (repo_path, ifpath),
+                    exit=1)
+
+                # Test min version bound
+                ientry = "pkg=amber min_ver=1.0 depend=tree"
+                self.__run_verify_with_ignore_file(repo_path, ientry, ifpath,
+                    exit2=1)
+
+                ientry = "pkg=amber min_ver=1 depend=tree"
+                self.__run_verify_with_ignore_file(repo_path, ientry, ifpath,
+                    exit2=1)
+
+                ientry = "pkg=amber min_ver=0.9.1 depend=tree"
+                self.__run_verify_with_ignore_file(repo_path, ientry, ifpath,
+                    exit2=1)
+
+                ientry = "pkg=amber min_ver=1.0-0:20110804T203458Z depend=tree"
+                self.__run_verify_with_ignore_file(repo_path, ientry, ifpath,
+                    exit2=1)
+
+                ientry = "pkg=amber min_ver=1.0-1:20110804T203458Z depend=tree"
+                self.__run_verify_with_ignore_file(repo_path, ientry, ifpath,
+                    exit1=1, exit2=1)
+
+                ientry = "pkg=amber min_ver=1.0-0:20110804T203459Z depend=tree"
+                self.__run_verify_with_ignore_file(repo_path, ientry, ifpath,
+                    exit1=1, exit2=1)
+
+                ientry = "pkg=amber min_ver=0.5 depend=tree"
+                self.__run_verify_with_ignore_file(repo_path, ientry, ifpath,
+                    exit2=1)
+
+                ientry = "pkg=amber min_ver=0.5-2 depend=tree"
+                self.__run_verify_with_ignore_file(repo_path, ientry, ifpath,
+                    exit2=1)
+
+                ientry = "pkg=amber min_ver=2.0 depend=tree"
+                self.__run_verify_with_ignore_file(repo_path, ientry, ifpath,
+                    exit1=1, exit2=1)
+
+                ientry = "pkg=amber min_ver=2.5 depend=tree"
+                self.__run_verify_with_ignore_file(repo_path, ientry, ifpath,
+                    exit1=1, exit2=1)
+
+                # Test max version bound
+                ientry = "pkg=amber max_ver=2 depend=tree"
+                self.__run_verify_with_ignore_file(repo_path, ientry, ifpath,
+                    exit2=1)
+
+                ientry = "pkg=amber max_ver=2.0 depend=tree"
+                self.__run_verify_with_ignore_file(repo_path, ientry, ifpath,
+                    exit2=1)
+
+                ientry = "pkg=amber max_ver=2.0.1 depend=tree"
+                self.__run_verify_with_ignore_file(repo_path, ientry, ifpath,
+                    exit2=1)
+
+                ientry = "pkg=amber max_ver=1.9.1 depend=tree"
+                self.__run_verify_with_ignore_file(repo_path, ientry, ifpath,
+                    exit1=1, exit2=1)
+
+                ientry = "pkg=amber max_ver=2.0-0 depend=tree"
+                self.__run_verify_with_ignore_file(repo_path, ientry, ifpath,
+                    exit2=1)
+
+                ientry = "pkg=amber max_ver=2.0-0:20110804T203458Z " \
+                    "depend=tree"
+                self.__run_verify_with_ignore_file(repo_path, ientry, ifpath,
+                    exit2=1)
+
+                ientry = "pkg=amber max_ver=2.0-0:20110804T203457Z " \
+                    "depend=tree"
+                self.__run_verify_with_ignore_file(repo_path, ientry, ifpath,
+                    exit1=1, exit2=1)
+
+                ientry = "pkg=amber max_ver=2.5-0:20110804T203457Z " \
+                    "depend=tree"
+                self.__run_verify_with_ignore_file(repo_path, ientry, ifpath,
+                    exit2=1)
+
+                ientry = "pkg=amber max_ver=2.5 depend=tree"
+                self.__run_verify_with_ignore_file(repo_path, ientry, ifpath,
+                    exit2=1)
+
+                ientry = "pkg=amber max_ver=1.0 depend=tree"
+                self.__run_verify_with_ignore_file(repo_path, ientry, ifpath,
+                    exit1=1, exit2=1)
+
+                # Test combination of max and min bound.
+                ientry = "pkg=amber min_ver=1.0 max_ver=2.0 depend=tree"
+                self.__run_verify_with_ignore_file(repo_path, ientry, ifpath,
+                    exit2=1)
+
+                # Test with publisher specified.
+                ientry = "pkg=pkg://test1/amber depend=tree"
+                self.__run_verify_with_ignore_file(repo_path, ientry, ifpath,
+                    exit2=1)
+
+                ientry = "pkg=pkg://test2/amber depend=tree"
+                self.__run_verify_with_ignore_file(repo_path, ientry, ifpath,
+                    exit1=1, exit2=1)
+
+                # Test gaps between two pairs of min and max version bounds.
+                self.pkgsend_bulk(repo_path, (self.amber30))
+                ientry = "pkg=amber min_ver=1.0 max_ver=1.0 depend=tree\n" \
+                    "pkg=amber min_ver=3.0 max_ver=3.5 depend=bronze\n"
+                self.__run_verify_with_ignore_file(repo_path, ientry, ifpath,
+                    exit1=1, exit2=1)
+
+        def test_31_verify_ignore_deps(self):
+                """ Test if dependencies specified in ignored dep files are
+                handled correctly."""
+
+                repo_path = self.dc.get_repodir()
+                ifpath = os.path.join(self.test_root, "tmp",
+                    "ignored_dep_file")
+                dep_inj = "depend fmri=tree type=require"
+                self.__make_repo_ignore_dep(repo_path, dep_inj)
+                ientry = "pkg=incorp@1.0 depend=tree"
+                with open(ifpath, "wb") as iff:
+                        iff.write(ientry)
+                self.pkgrepo("-s %s verify -i %s" % (repo_path, ifpath))
+                self.pkgrepo("-s %s verify -i %s -d" % (repo_path, ifpath),
+                    exit=1)
+
+                dep_inj = "depend fmri=tree@1.0-1.1:20110804T203458Z " \
+                    "type=require"
+                self.__make_repo_ignore_dep(repo_path, dep_inj)
+                ientry = "pkg=incorp depend=tree@1.0"
+                self.__run_verify_with_ignore_file(repo_path, ientry, ifpath,
+                    exit2=1)
+
+                ientry = "pkg=incorp depend=tree@1.0-1"
+                self.__run_verify_with_ignore_file(repo_path, ientry, ifpath,
+                    exit2=1)
+
+                ientry = "pkg=incorp depend=tree@1.0-1.1"
+                self.__run_verify_with_ignore_file(repo_path, ientry, ifpath,
+                    exit2=1)
+
+                ientry = "pkg=incorp depend=tree@1.0-1.1:20110804T203458Z"
+                self.__run_verify_with_ignore_file(repo_path, ientry, ifpath,
+                    exit2=1)
+
+                dep_inj = "depend fmri=tree@1.0 type=require"
+                self.__make_repo_ignore_dep(repo_path, dep_inj)
+                ientry = "pkg=incorp depend=tree@1.0,5.11"
+                self.__run_verify_with_ignore_file(repo_path, ientry, ifpath,
+                    exit2=1)
+
+                dep_inj = "depend fmri=tree@1.0 type=require"
+                self.__make_repo_ignore_dep(repo_path, dep_inj)
+                ientry = "depend=tree@1.0,5.11-0 pkg=incorp"
+                self.__run_verify_with_ignore_file(repo_path, ientry, ifpath,
+                    exit1=1, exit2=1)
+
+                dep_inj = "depend fmri=tree@1.0 type=require"
+                self.__make_repo_ignore_dep(repo_path, dep_inj)
+                ientry = "depend=tree@1.0,5.11-0:20110804T203458Z pkg=incorp"
+                self.__run_verify_with_ignore_file(repo_path, ientry, ifpath,
+                    exit1=1, exit2=1)
+
+                # Test multiple ignore entries or multiple dependency actions.
+                dep_inj = "depend fmri=tree@1.0 type=require\n" \
+                    "depend fmri=forest@1.0 type=require"
+                self.__make_repo_ignore_dep(repo_path, dep_inj)
+                ientry = "depend=tree@1.0 depend=forest@1.0 pkg=incorp"
+                self.__run_verify_with_ignore_file(repo_path, ientry, ifpath,
+                    exit2=1)
+
+                ientry = "depend=tree@1.0 pkg=incorp\n"
+                self.__run_verify_with_ignore_file(repo_path, ientry, ifpath,
+                    exit1=1, exit2=1)
+
+                dep_inj = "depend fmri=tree@1.0 type=require\n" \
+                    "depend fmri=tree@1.1 type=require"
+                self.__make_repo_ignore_dep(repo_path, dep_inj)
+                ientry = "depend=tree@1 pkg=incorp"
+                self.__run_verify_with_ignore_file(repo_path, ientry, ifpath,
+                    exit2=1)
+
+                dep_inj = "depend fmri=tree type=require\n"
+                self.__make_repo_ignore_dep(repo_path, dep_inj)
+                ientry = "pkg=incorp depend=tree@1.0\npkg=incorp depend=tree\n"
+                self.__run_verify_with_ignore_file(repo_path, ientry, ifpath,
+                    exit2=1)
+
+                # Test multiple files input.
+                dep_inj = "depend fmri=tree@1.0 type=require\n" \
+                    "depend fmri=forest@1.0 type=require\n"
+                self.__make_repo_ignore_dep(repo_path, dep_inj)
+                i1entry = "depend=tree@1.0 pkg=incorp\n"
+                with open(ifpath, "wb") as iff:
+                        iff.write(i1entry)
+                i2entry = "depend=forest@1.0 pkg=incorp\n"
+                if2path = os.path.join(self.test_root, "tmp",
+                    "ignored_dep_file2")
+                with open(if2path, "wb") as iff:
+                        iff.write(i2entry)
+                self.pkgrepo("-s %s verify -i %s -i %s" % (repo_path, ifpath,
+                    if2path))
+                self.pkgrepo("-s %s verify -i %s -i %s -d" % (repo_path, ifpath,
+                    if2path), exit=1)
+
+                # Test if there is no version limit for dependency, then it
+                # should not be ignored unless user specifies an ignored
+                # package without version as well.
+                dep_inj = "depend fmri=tree type=require"
+                self.__make_repo_ignore_dep(repo_path, dep_inj)
+                ientry = "depend=tree@1.0 pkg=incorp"
+                self.__run_verify_with_ignore_file(repo_path, ientry, ifpath,
+                    exit1=1, exit2=1)
+
+                # Test more wrong versions.
+                dep_inj = "depend fmri=tree@1 type=require"
+                self.__make_repo_ignore_dep(repo_path, dep_inj)
+                ientry = "depend=tree@1.0 pkg=incorp"
+                self.__run_verify_with_ignore_file(repo_path, ientry, ifpath,
+                    exit1=1, exit2=1)
+
+                dep_inj = "depend fmri=tree@1.0,5.11-0 type=require"
+                self.__make_repo_ignore_dep(repo_path, dep_inj)
+                ientry = "depend=tree@1.0,5.11-1:20110804T203458Z pkg=incorp"
+                self.__run_verify_with_ignore_file(repo_path, ientry, ifpath,
+                    exit1=1, exit2=1)
+
+                dep_inj = "depend fmri=tree@1.0,5.11-0:20120804T203458Z " \
+                    "type=require"
+                self.__make_repo_ignore_dep(repo_path, dep_inj)
+                ientry = "depend=tree@1.0,5.11-1:20110804T203458Z pkg=incorp"
+                self.__run_verify_with_ignore_file(repo_path, ientry, ifpath,
+                    exit1=1, exit2=1)
+
+                # Test giving publisher for both dependency and ignored pkg
+                # works.
+                dep_inj = "depend fmri=pkg://test/tree@1.0 type=require"
+                self.__make_repo_ignore_dep(repo_path, dep_inj)
+                ientry = "depend=pkg://test/tree@1.0 pkg=incorp"
+                self.__run_verify_with_ignore_file(repo_path, ientry, ifpath,
+                    exit2=1)
+
+                # Test giving publisher for only dependency works.
+                ientry = "depend=tree@1.0 pkg=incorp"
+                self.__run_verify_with_ignore_file(repo_path, ientry, ifpath,
+                    exit2=1)
+
+                # Test giving publisher for ignored pkg works.
+                dep_inj = "depend fmri=tree@1.0 type=require"
+                self.__make_repo_ignore_dep(repo_path, dep_inj)
+                ientry = "depend=pkg://test/tree@1.0 pkg=incorp"
+                self.__run_verify_with_ignore_file(repo_path, ientry, ifpath,
+                    exit2=1)
+
+                # Test wrong publisher will not work.
+                dep_inj = "depend fmri=pkg://test/tree@1.0 type=require"
+                self.__make_repo_ignore_dep(repo_path, dep_inj)
+                ientry = "depend=pkg://test1/tree@1.0 pkg=incorp"
+                self.__run_verify_with_ignore_file(repo_path, ientry, ifpath,
+                    exit1=1, exit2=1)
+
         def __get_fhashes(self, repodir, pub):
                 """Returns a list of file hashes for the publisher
                 pub in a given repository."""
@@ -2283,12 +3104,12 @@ test2	zoo		1.0	5.11	0	20110804T203458Z	pkg://test2/zoo@1.0,5.11-0:20110804T20345
                         fhashes.extend(files)
                 return fhashes
 
-        def test_19_fix_brokenmanifest(self):
+        def test_32_fix_brokenmanifest(self):
                 """Test that fix operations correct a bad manifest in a file
                 repo."""
 
                 repo_path = self.dc.get_repodir()
-                fmris = self.pkgsend_bulk(repo_path, (self.truck10))
+                fmris = self.pkgsend_bulk(repo_path, (self.tree10))
                 self.pkgsign(repo_path, "\*")
 
                 self.pkgrepo("-s %s fix" % repo_path)
@@ -2323,11 +3144,11 @@ test2	zoo		1.0	5.11	0	20110804T203458Z	pkg://test2/zoo@1.0,5.11-0:20110804T20345
                 self.assert_(set(valid_hashes) == set(remaining_hashes))
 
                 # finally, ensure we can republish this package
-                fmris = self.pkgsend_bulk(repo_path, (self.truck10))
+                fmris = self.pkgsend_bulk(repo_path, (self.tree10))
                 self.pkgrepo("-s %s list -F tsv" % repo_path)
                 self.assert_(fmris[0] in self.output)
 
-        def test_20_fix_brokenfile(self):
+        def test_33_fix_brokenfile(self):
                 """Test that operations that cause us to fix a file shared
                 by several packages cause all of those packages to be
                 quarantined.
@@ -2339,7 +3160,7 @@ test2	zoo		1.0	5.11	0	20110804T203458Z	pkg://test2/zoo@1.0,5.11-0:20110804T20345
 
                 repo_path = self.dc.get_repodir()
                 fmris = self.pkgsend_bulk(repo_path, (self.tree10,
-                    self.truck10))
+                    self.trucknd10))
                 self.pkgrepo("-s %s fix" % repo_path)
                 bad_file = self.__inject_badhash("tmp/truck1")
 
@@ -2384,12 +3205,12 @@ test2	zoo		1.0	5.11	0	20110804T203458Z	pkg://test2/zoo@1.0,5.11-0:20110804T20345
                 # replaced.
                 self.pkgrepo("-s %s fix" % repo_path)
                 fmris = self.pkgsend_bulk(repo_path, (self.tree10,
-                    self.truck10))
+                    self.trucknd10))
                 new_hashes = self.__get_fhashes(repo_path, "test1")
                 self.assert_(set(new_hashes) == set(old_hashes))
                 self.pkgrepo("-s %s fix" % repo_path)
 
-        def test_21_fix_brokenperm(self):
+        def test_34_fix_brokenperm(self):
                 """Tests that when running fix as an unpriviliged user that we
                 fail to fix the repository."""
 
@@ -2420,7 +3241,7 @@ test2	zoo		1.0	5.11	0	20110804T203458Z	pkg://test2/zoo@1.0,5.11-0:20110804T20345
                 self.pkgrepo("-s %s verify" % repo_path)
                 self.assert_("WARNING: " in self.output)
 
-        def test_22_fix_unsupported_repo(self):
+        def test_35_fix_unsupported_repo(self):
                 """Tests that when running fix on a v3 repo fails"""
 
                 repo_path = self.dc.get_repodir()
@@ -2432,18 +3253,54 @@ test2	zoo		1.0	5.11	0	20110804T203458Z	pkg://test2/zoo@1.0,5.11-0:20110804T20345
                 self.assert_("only version 4 repositories are supported." in
                     self.errout)
 
-        def test_23_fix_empty_missing_pub(self):
+        def test_36_fix_empty_missing_pub(self):
                 """Test that we can attempt to fix a repository that contains a
                 publisher with no packages, and that we fail on missing pubs"""
 
                 repo_path = self.dc.get_repodir()
-                fmris = self.pkgsend_bulk(repo_path, (self.truck10))
+                fmris = self.pkgsend_bulk(repo_path, (self.tree10))
                 self.pkgrepo("-s %s add-publisher empty" % repo_path)
                 self.pkgrepo("-s %s fix -p test" % repo_path)
                 self.pkgrepo("-s %s fix -p missing" % repo_path, exit=1)
                 self.assert_("no matching publishers" in self.errout)
 
-        def test_24_invalid_repo(self):
+        def test_37_fix_dependency(self):
+                """Test with dependency errors, fix will fail."""
+
+                repo_path = self.dc.get_repodir()
+                shutil.rmtree(repo_path)
+                self.pkgrepo("create %s" % repo_path)
+                self.pkgrepo("-s %s set publisher/prefix=test" %
+                    repo_path)
+                self.pkgsend_bulk(repo_path, (self.wtinstallhold20,
+                    self.amber10))
+                self.dc.start()
+                self.pkgrepo("-s %s fix -v" % repo_path, exit=1)
+
+                shutil.rmtree(repo_path)
+                self.pkgrepo("create %s" % repo_path)
+                self.pkgrepo("-s %s set publisher/prefix=test" %
+                    repo_path)
+                fmris = self.pkgsend_bulk(repo_path, (self.illegaldep10))
+
+                # Test bad depend version number causes reporting error.
+                badversion = "depend fmri=pkg:/amber@1.x type=require"
+                self.__inject_depend(fmris[0], badversion)
+                self.pkgrepo("-s %s rebuild" % repo_path)
+                self.pkgrepo("-s %s fix -v" % repo_path, exit=1)
+
+                # Test bad depend package name causes reporting error.
+                shutil.rmtree(repo_path)
+                self.pkgrepo("create %s" % repo_path)
+                self.pkgrepo("-s %s set publisher/prefix=test" %
+                    repo_path)
+                fmris = self.pkgsend_bulk(repo_path, (self.illegaldep10))
+                badname = "depend fmri=pkg:/_amber@1.0 type=require"
+                self.__inject_depend(fmris[0], badname)
+                self.pkgrepo("-s %s rebuild" % repo_path)
+                self.pkgrepo("-s %s fix" % repo_path, exit=1)
+
+        def test_38_invalid_repo(self):
                 """Test that trying to open an invalid repository is handled
                 correctly"""
 
@@ -2455,7 +3312,7 @@ test2	zoo		1.0	5.11	0	20110804T203458Z	pkg://test2/zoo@1.0,5.11-0:20110804T20345
                 self.assertRaises(sr.RepositoryInvalidError, sr.Repository, 
                     root=tmpdir)
 
-        def test_25_remove_publisher(self):
+        def test_39_remove_publisher(self):
                 """Verify that remove-publisher subcommand works as expected."""
 
                 # Create a repository.
@@ -2624,7 +3481,7 @@ publisher\tprefix\t""
                 pdir = os.path.join(repo_path, "publisher", "example.com")
                 self.assert_(not os.path.exists(pdir))
 
-        def test_26_contents(self):
+        def test_40_contents(self):
                 """Verify that contents subcommand works as expected."""
 
                 repo_path = self.dc.get_repodir()
