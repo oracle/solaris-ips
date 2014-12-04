@@ -4064,10 +4064,20 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                         if not_avoided:
                                 raise apx.PlanCreationException(not_avoided=not_avoided)
 
+                        # Don't allow unavoid if removal of the package from the
+                        # avoid list would require the package to be installed
+                        # as this would invalidate current image state.  If the
+                        # package is already installed though, it doesn't really
+                        # matter if it's a target of an avoid or not.
+                        installed_set = set([
+                            f.pkg_name
+                            for f in self.gen_installed_pkgs()
+                        ])
+
                         would_install = [
                             a
                             for f, a in self.gen_tracked_stems()
-                            if a in unavoid_set
+                            if a in unavoid_set and a not in installed_set
                         ]
 
                         if would_install:

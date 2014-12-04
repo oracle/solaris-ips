@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2011, 2013 Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2011, 2014, Oracle and/or its affiliates. All rights reserved.
 #
 
 import testutils
@@ -36,8 +36,10 @@ class TestPkgAvoid(pkg5unittest.SingleDepotTestCase):
 
         pkgs = """
             open A@1.0,5.11-0
+            add depend type=require fmri=liveroot
             close
             open B@1.0,5.11-0
+            add depend type=group fmri=liveroot
             close
             open Bobcats@1.0,5.11-0
             close
@@ -99,10 +101,15 @@ class TestPkgAvoid(pkg5unittest.SingleDepotTestCase):
             open I@3.0,5.11-0
             add depend type=incorporate fmri=G@3.0
             close
+            open liveroot@1.0
+            add dir path=/etc mode=755 owner=root group=root
+            add file tmp/liveroot path=/etc/liveroot mode=644 owner=root group=sys reboot-needed=true
+            close
             """
 
         def setUp(self):
                 pkg5unittest.SingleDepotTestCase.setUp(self)
+                self.make_misc_files("tmp/liveroot")
                 self.pkgsend_bulk(self.rurl, self.pkgs)
 
         def test_group_basics(self):
@@ -278,6 +285,46 @@ class TestPkgAvoid(pkg5unittest.SingleDepotTestCase):
                 self.pkg("verify I@3.0 G@3.0 H@1.0")
                 self.pkg("avoid")
                 assert self.output == ""
+
+        def test_unavoid(self):
+                """Make sure pkg unavoid should always allow installed packages
+                that are a target of group dependencies to be unavoided."""
+
+                self.image_create(self.rurl)
+                # Avoid package liveroot to put it on the avoid list.
+                self.pkg("avoid liveroot")
+                self.pkg("avoid")
+                assert "liveroot" in self.output
+
+                # A has require dependency on liveroot and B has group
+                # dependency on liveroot. Since require dependency 'overpower'
+                # avoid state, liveroot is required to be installed.
+                self.pkg("--debug simulate_live_root=%s install A B" %
+                    self.get_img_path())
+                self.pkg("list")
+                assert "liveroot" in self.output
+
+                # Make sure liveroot is still on the avoid list.
+                self.pkg("avoid")
+                assert "liveroot" in self.output
+
+                # Unable to uninstall A because the package system currently
+                # requires the avoided package liveroot to be uninstalled,
+                # which requires reboot.
+                self.pkg("--debug simulate_live_root=%s uninstall --deny-new-be A" %
+                    self.get_img_path(), exit=5)
+
+                # We need to remove liveroot from the avoid list, and pkg unvoid
+                # should allow installed packages that are a target of group
+                # dependencies to be unavoided.
+                self.pkg("unavoid liveroot")
+                self.pkg("avoid")
+                assert "liveroot" not in self.output
+
+                # Uninstall A should succeed now because liveroot is not on the
+                # avoid list.
+                self.pkg("--debug simulate_live_root=%s uninstall --deny-new-be A" %
+                    self.get_img_path())
 
 
 if __name__ == "__main__":
