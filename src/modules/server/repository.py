@@ -80,7 +80,10 @@ REPO_VERIFY_UNKNOWN = 99
 REPO_FIX_ITEM = 0
 REPO_FIX_FAILED = 1
 
-default_checks = ["dependency"]
+VERIFY_DEPENDENCY = "dependency"
+verify_default_checks = frozenset([
+      VERIFY_DEPENDENCY,
+])
 
 from pkg.pkggzip import PkgGzipFile
 
@@ -3713,17 +3716,15 @@ class Repository(object):
                 # Update the publisher's configuration.
                 rstore.update_publisher(pub)
 
-        def verify(self, pubs=[], xpub=None, allowed_checks=[],
+        def verify(self, pubs=[], allowed_checks=[],
             force_dep_check=False, ignored_dep_files=[], progtrack=None):
                 """A generator that verifies that repository content matches
                 expected state for all or specified publishers.
 
                 'progtrack' is an optional ProgressTracker object.
 
-                'pubs' is an optional publisher prefix list to limit the
+                'pubs' is an optional publisher list to limit the
                 operation to.
-
-                'xpub' is an transport publisher.
 
                 'disable_checks' is a list of verfications which should be
                 disabled.
@@ -3756,17 +3757,17 @@ class Repository(object):
                 use_crls = self.cfg.get_property("repository",
                     "check-certificate-revocation")
 
-                for pfx in pubs:
-                        rstore = self.get_pub_rstore(pfx)
-                        xpub.prefix = pfx
+                for pub in pubs:
+                        rstore = self.get_pub_rstore(pub.prefix)
                         for verify_tuple in rstore.verify(progtrack=progtrack,
-                            pub=xpub, trust_anchor_dir=trust_anchor_dir,
+                            pub=pub, trust_anchor_dir=trust_anchor_dir,
                             sig_required_names=sig_required_names,
                             use_crls=use_crls):
                                 yield verify_tuple
 
-                if "dependency" in allowed_checks:
-                        for verify_tuple in self.__verify_depend(pubs,
+                if VERIFY_DEPENDENCY in allowed_checks:
+                        for verify_tuple in self.__verify_depend(
+                            [pub.prefix for pub in pubs],
                             force_dep_check, progtrack,
                             ignored_dep_files=ignored_dep_files):
                                 yield verify_tuple
@@ -4121,13 +4122,13 @@ class Repository(object):
 
                 tracker.job_done(tracker.JOB_REPO_VERIFY_REPO)
 
-        def fix(self, pubs=[], xpub=None, force_dep_check=False,
+        def fix(self, pubs=[], force_dep_check=False,
             ignored_dep_files=[], progtrack=None, verify_callback=None):
                 """A generator that corrects any problems in the repository.
 
                 'progtrack' is an optional ProgressTracker object.
 
-                'pubs' is an optional publisher prefix list to limit the
+                'pubs' is an optional publisher list to limit the
                 operation to.
 
                 'disable_checks' is a list of verfications which should be
@@ -4165,18 +4166,18 @@ class Repository(object):
                 use_crls = self.cfg.get_property("repository",
                     "check-certificate-revocation")
 
-                for pfx in pubs:
-                        rstore = self.get_pub_rstore(pfx)
-                        xpub.prefix = pfx
+                for pub in pubs:
+                        rstore = self.get_pub_rstore(pub.prefix)
                         for verify_tuple in rstore.fix(progtrack=progtrack,
-                            pub=xpub,
+                            pub=pub,
                             verify_callback=verify_callback,
                             trust_anchor_dir=trust_anchor_dir,
                             sig_required_names=sig_required_names,
                             use_crls=use_crls):
                                 yield verify_tuple
 
-                for verify_tuple in self.__verify_depend(pubs, force_dep_check,
+                for verify_tuple in self.__verify_depend(
+                    [pub.prefix for pub in pubs], force_dep_check,
                     progtrack, ignored_dep_files=ignored_dep_files):
                         verify_callback(progtrack, verify_tuple)
                         yield verify_tuple

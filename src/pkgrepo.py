@@ -277,8 +277,8 @@ def get_repo(conf, allow_invalid=False, read_only=True, subcommand=None):
             root=path)
 
 
-def setup_transport(conf, subcommand=None, verbose=False, ssl_key=None,
-    ssl_cert=None):
+def setup_transport(conf, subcommand=None, prefix=None, verbose=False,
+    remote_prefix=True, ssl_key=None, ssl_cert=None):
         repo_uri = conf.get("repo_uri", None)
         if not repo_uri:
                 usage(_("No repository location specified."), cmd=subcommand)
@@ -301,9 +301,15 @@ def setup_transport(conf, subcommand=None, verbose=False, ssl_key=None,
         xport_cfg.incoming_root = incoming_dir
         xport_cfg.pkg_root = tmp_dir
 
+        if not prefix:
+                pub = "target"
+        else:
+                pub = prefix
+
         # Configure target publisher.
-        src_pub = transport.setup_publisher(str(repo_uri), "target", xport,
-            xport_cfg, remote_prefix=True, ssl_key=ssl_key, ssl_cert=ssl_cert)
+        src_pub = transport.setup_publisher(str(repo_uri), pub, xport,
+            xport_cfg, remote_prefix=remote_prefix, ssl_key=ssl_key,
+            ssl_cert=ssl_cert)
 
         return xport, src_pub, tmp_dir
 
@@ -1623,9 +1629,7 @@ def subcmd_verify(conf, args):
         __load_verify_msgs()
 
         opts, pargs = getopt.getopt(args, "dp:s:i:", ["disable="])
-        allowed_checks = []
-        for c in sr.default_checks:
-                allowed_checks.append(c)
+        allowed_checks = set(sr.verify_default_checks)
         force_dep_check = False
         ignored_dep_files = []
         pubs = set()
@@ -1641,13 +1645,13 @@ def subcmd_verify(conf, args):
                         force_dep_check = True
                 elif opt == "--disable":
                         arg = arg.lower()
-                        if arg in sr.default_checks:
+                        if arg in sr.verify_default_checks:
                                 if arg in allowed_checks:
                                         allowed_checks.remove(arg)
                         else:
                                 usage(_("Invalid verification to be disabled, "
                                     "please consider: %s") % ", ".join(
-                                    sr.default_checks), cmd=subcommand)
+                                    sr.verify_default_checks), cmd=subcommand)
                 elif opt == "-i":
                         ignored_dep_files.append(arg)
 
@@ -1663,7 +1667,7 @@ def subcmd_verify(conf, args):
                 usage(_("Network repositories are not currently supported "
                     "for this operation."), cmd=subcommand)
 
-        if "dependency" not in allowed_checks and \
+        if sr.VERIFY_DEPENDENCY not in allowed_checks and \
             (force_dep_check or len(ignored_dep_files) > 0):
                 usage(_("-d or -i option cannot be used when dependency "
                     "verification is disabled."), cmd=subcommand)
@@ -1671,6 +1675,7 @@ def subcmd_verify(conf, args):
         xport, xpub, tmp_dir = setup_transport(conf, subcommand=subcommand)
         rval, found, pub_data = _get_matching_pubs(subcommand, pubs, xport,
             xpub)
+
         if rval == EXIT_OOPS:
                 return rval
 
@@ -1684,12 +1689,20 @@ def subcmd_verify(conf, args):
                         bad_fmris.add(bad_fmri)
                 progtrack.repo_verify_yield_error(bad_fmri, message)
 
-        if "dependency" in allowed_checks or not force_dep_check:
+        if sr.VERIFY_DEPENDENCY in allowed_checks or not force_dep_check:
                 __collect_default_ignore_dep_files(ignored_dep_files)
 
         repo = sr.Repository(root=repo_uri.get_pathname())
-        xpub.transport = xport
-        for verify_tuple in repo.verify(pubs=found, xpub=xpub,
+
+        found_pubs = []
+        for pfx in found:
+                xport, xpub, tmp_dir = setup_transport(conf, prefix=pfx,
+                    remote_prefix=False,
+                    subcommand=subcommand)
+                xpub.transport = xport
+                found_pubs.append(xpub)
+
+        for verify_tuple in repo.verify(pubs=found_pubs,
             allowed_checks=allowed_checks, force_dep_check=force_dep_check,
             ignored_dep_files=ignored_dep_files, progtrack=progtrack):
                 report_error(verify_tuple)
@@ -1761,9 +1774,16 @@ def subcmd_fix(conf, args):
         progtrack = get_tracker()
         __collect_default_ignore_dep_files(ignored_dep_files)
 
-        xpub.transport = xport
+        found_pubs = []
+        for pfx in found:
+                xport, xpub, tmp_dir = setup_transport(conf, prefix=pfx,
+                    remote_prefix=False,
+                    subcommand=subcommand)
+                xpub.transport = xport
+                found_pubs.append(xpub)
+
         for status_code, path, message, reason in \
-            repo.fix(pubs=found, xpub=xpub, force_dep_check=force_dep_check,
+            repo.fix(pubs=found_pubs, force_dep_check=force_dep_check,
                 ignored_dep_files=ignored_dep_files,
                 progtrack=progtrack,
                 verify_callback=verify_cb):
