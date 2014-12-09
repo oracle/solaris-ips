@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2010, 2012, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2010, 2014, Oracle and/or its affiliates. All rights reserved.
 #
 
 """module describing a driver packaging object.
@@ -30,6 +30,7 @@ This module contains the DriverAction class, which represents a driver-type
 packaging object.
 """
 
+from __future__ import print_function
 import os
 from tempfile import mkstemp
 
@@ -121,14 +122,14 @@ class DriverAction(generic.Action):
                 if ret != 0:
                         fmtargs["retcode"] = ret
                         # XXX Module printing
-                        print
+                        print()
                         fmt += " failed with return code %(retcode)s"
-                        print _(fmt) % fmtargs
-                        print ("command run was:"), " ".join(args)
-                        print ("command output was:")
-                        print "-" * 60
-                        print buf,
-                        print "-" * 60
+                        print(_(fmt) % fmtargs)
+                        print(("command run was:"), " ".join(args))
+                        print("command output was:")
+                        print("-" * 60)
+                        print(buf, end=" ")
+                        print("-" * 60)
 
         @staticmethod
         def remove_aliases(driver_name, aliases, image):
@@ -257,7 +258,7 @@ the package delivering '%(old)s' or ensure that the package delivering\n\
                                 lines[line] = comment + lines[line]
                                 # XXX Module printing
                                 if be_name:
-                                        print "\
+                                        print("\
 The '%(new)s' driver shares the alias '%(alias)s' with the '%(old)s'\n\
 driver, but the system cannot determine how the latter was delivered.\n\
 Its entry on line %(line)d in /etc/driver_aliases has been commented\n\
@@ -266,17 +267,15 @@ into the '%(be)s' boot environment and invoking 'rem_drv %(old)s'\n\
 as well as removing line %(line)d from /etc/driver_aliases or, before\n\
 rebooting, mounting the '%(be)s' boot environment and running\n\
 'rem_drv -b <mountpoint> %(old)s' and removing line %(line)d from\n\
-<mountpoint>/etc/driver_aliases." % \
-                                            errdict
+<mountpoint>/etc/driver_aliases." % errdict)
                                 else:
-                                        print "\
+                                        print("\
 The '%(new)s' driver shares the  alias '%(alias)s' with the '%(old)s'\n\
 driver, but the system cannot determine how the latter was delivered.\n\
 Its entry on line %(line)d in /etc/driver_aliases has been commented\n\
 out.  If this driver is no longer needed, it may be removed by invoking\n\
 'rem_drv -b %(imgroot)s %(old)s' as well as removing line %(line)d\n\
-from %(imgroot)s/etc/driver_aliases." % \
-                                            errdict
+from %(imgroot)s/etc/driver_aliases." % errdict)
 
                         dap = image.get_root() + "/etc/driver_aliases"
                         datd, datp = mkstemp(suffix=".driver_aliases",
@@ -450,12 +449,12 @@ from %(imgroot)s/etc/driver_aliases." % \
                         try:
                                 update_classes(add_class, rem_class)
                         except IOError, e:
-                                print "%s (%s) upgrade (classes modification) " \
-                                    "failed %s etc/driver_classes with error: " \
+                                print("%s (%s) upgrade (classes modification) "
+                                    "failed %s etc/driver_classes with error: "
                                     "%s (%s)" % (self.name, self.attrs["name"],
-                                        e[1], e[0], e[2])
-                                print "tried to add %s and remove %s" % \
-                                    (add_class, rem_class)
+                                        e[1], e[0], e[2]))
+                                print("tried to add %s and remove %s" %
+                                    (add_class, rem_class))
 
                 # We have to update devlink.tab by hand, too.
                 def update_devlinks():
@@ -516,17 +515,17 @@ from %(imgroot)s/etc/driver_aliases." % \
                         try:
                                 update_devlinks()
                         except IOError, e:
-                                print "%s (%s) upgrade (devlinks modification) " \
-                                    "failed %s etc/devlink.tab with error: " \
+                                print("%s (%s) upgrade (devlinks modification) "
+                                    "failed %s etc/devlink.tab with error: "
                                     "%s (%s)" % (self.name, self.attrs["name"],
-                                        e[1], e[0], e[2])
+                                        e[1], e[0], e[2]))
                         except RuntimeError, e:
-                                print "%s (%s) upgrade (devlinks modification) " \
-                                    "failed modifying\netc/devlink.tab.  The " \
-                                    "following entries were to be removed, " \
-                                    "but were\nnot found:\n    " % \
-                                    (self.name, self.attrs["name"]) + \
-                                    "\n    ".join(e.args[0])
+                                print("%s (%s) upgrade (devlinks modification) "
+                                    "failed modifying\netc/devlink.tab.  The "
+                                    "following entries were to be removed, "
+                                    "but were\nnot found:\n    " %
+                                    (self.name, self.attrs["name"]) +
+                                    "\n    ".join(e.args[0]))
 
                 # For perms, we do removes first because of a busted starting
                 # point in build 79, where smbsrv has perms of both "* 666" and
@@ -584,9 +583,9 @@ from %(imgroot)s/etc/driver_aliases." % \
                                 # minor node.
                                 minornode = "*"
                         else:
-                                print "driver (%s) update (removal of " \
-                                    "policy '%s') failed: invalid policy " \
-                                    "spec." % (self.attrs["name"], i)
+                                print("driver (%s) update (removal of "
+                                    "policy '%s') failed: invalid policy "
+                                    "spec." % (self.attrs["name"], i))
                                 continue
 
                         args = rem_base + ("-p", minornode, self.attrs["name"])
@@ -938,10 +937,10 @@ from %(imgroot)s/etc/driver_aliases." % \
                                 dlf.close()
                                 st = os.stat(dlp)
                         except IOError, e:
-                                print "%s (%s) removal (devlinks modification) " \
-                                    "failed reading etc/devlink.tab with error: " \
+                                print("%s (%s) removal (devlinks modification) "
+                                    "failed reading etc/devlink.tab with error: "
                                     "%s (%s)" % (self.name, self.attrs["name"],
-                                        e[0], e[1])
+                                        e[0], e[1]))
                                 return
 
                         devlinks = self.attrlist("devlink")
@@ -956,12 +955,12 @@ from %(imgroot)s/etc/driver_aliases." % \
                                 del lines[lineno]
 
                         if missing_entries:
-                                print "%s (%s) removal (devlinks modification) " \
-                                    "failed modifying\netc/devlink.tab.  The " \
-                                    "following entries were to be removed, " \
-                                    "but were\nnot found:\n    " % \
-                                    (self.name, self.attrs["name"]) + \
-                                    "\n    ".join(missing_entries)
+                                print("%s (%s) removal (devlinks modification) "
+                                    "failed modifying\netc/devlink.tab.  The "
+                                    "following entries were to be removed, "
+                                    "but were\nnot found:\n    " %
+                                    (self.name, self.attrs["name"]) +
+                                    "\n    ".join(missing_entries))
 
                         try:
                                 dlt, dltp = mkstemp(suffix=".devlink.tab",
@@ -973,10 +972,10 @@ from %(imgroot)s/etc/driver_aliases." % \
                                 os.chown(dltp, st.st_uid, st.st_gid)
                                 os.rename(dltp, dlp)
                         except EnvironmentError, e:
-                                print "%s (%s) removal (devlinks modification) " \
-                                    "failed writing etc/devlink.tab with error: " \
+                                print("%s (%s) removal (devlinks modification) "
+                                    "failed writing etc/devlink.tab with error: "
                                     "%s (%s)" % (self.name, self.attrs["name"],
-                                        e[0], e[1])
+                                        e[0], e[1]))
 
         def generate_indices(self):
                 """Generates the indices needed by the search dictionary.  See

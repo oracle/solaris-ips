@@ -21,10 +21,10 @@
 #
 
 #
-# Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
-# Use is subject to license terms.
+# Copyright (c) 2009, 2014, Oracle and/or its affiliates. All rights reserved.
 #
 
+from __future__ import print_function
 import gettext
 import locale
 import sys
@@ -71,7 +71,7 @@ class Scenario(object):
                 self.__total_mb = mb
 
         def run(self):
-                print "SCENARIO: %s" % self.title
+                print("SCENARIO: %s" % self.title)
 
                 total = self.__total_mb * 1024 * 1024
 
@@ -90,7 +90,7 @@ class Scenario(object):
                         else:
                                 c = 100
 
-                        print "bytes left %d; retrieving %d files" % (total, c)
+                        print("bytes left %d; retrieving %d files" % (total, c))
                         rc.dump()
 
                         # get 100 files

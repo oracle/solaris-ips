@@ -20,9 +20,10 @@
 # CDDL HEADER END
 
 #
-# Copyright (c) 2011, 2012, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2011, 2014, Oracle and/or its affiliates. All rights reserved.
 #
 
+from __future__ import print_function
 try:
         import calendar
         import collections
@@ -984,7 +985,7 @@ if __name__ == "__main__":
                 __ret = main_func()
         except (pkg.actions.ActionError, trans.TransactionError,
             RuntimeError, pkg.fmri.FmriError, apx.ApiException), __e:
-                print >> sys.stderr, "pkgmerge: %s" % __e
+                print("pkgmerge: %s" % __e, file=sys.stderr)
                 __ret = 1
         except (PipeError, KeyboardInterrupt):
                 __ret = 1

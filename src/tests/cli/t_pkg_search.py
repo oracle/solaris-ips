@@ -24,6 +24,7 @@
 # Copyright (c) 2008, 2014, Oracle and/or its affiliates. All rights reserved.
 #
 
+from __future__ import print_function
 import testutils
 if __name__ == "__main__":
         testutils.setup_environment("../../../proto")
@@ -369,10 +370,10 @@ adm:NP:6445::::::
                 self.debug("Correct Answer : " + str(correct_answer))
                 if isinstance(correct_answer, set) and \
                     isinstance(proposed_answer, set):
-                        print >> sys.stderr, "Missing: " + \
-                            str(correct_answer - proposed_answer)
-                        print >> sys.stderr, "Extra  : " + \
-                            str(proposed_answer - correct_answer)
+                        print("Missing: " + str(correct_answer - proposed_answer),
+                            file=sys.stderr)
+                        print("Extra  : " + str(proposed_answer - correct_answer),
+                            file=sys.stderr)
                 self.assert_(correct_answer == proposed_answer)
 
         def _search_op(self, remote, token, test_value, case_sensitive=False,

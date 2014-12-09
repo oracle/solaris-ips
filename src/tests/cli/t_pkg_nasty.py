@@ -21,9 +21,10 @@
 #
 
 #
-# Copyright (c) 2012, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2012, 2014, Oracle and/or its affiliates. All rights reserved.
 #
 
+from __future__ import print_function
 import testutils
 if __name__ == "__main__":
         testutils.setup_environment("../../../proto")
@@ -246,7 +247,7 @@ class TestNastyInstall(TestPkgNasty):
                 path = os.path.join(self.img_path(), "A", "f1")
                 self.assert_(os.path.exists(path))
                 f = open(path, "w")
-                print >> f, "I LIKE COCONUTS!"
+                print("I LIKE COCONUTS!", file=f)
                 f.close()
                 self._trythis("revert",
                     lambda: self.pkg("revert A/f1", env_arg=env, exit=[0, 1]))

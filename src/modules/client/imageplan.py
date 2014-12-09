@@ -24,6 +24,7 @@
 # Copyright (c) 2007, 2014, Oracle and/or its affiliates. All rights reserved.
 #
 
+from __future__ import print_function
 from collections import defaultdict, namedtuple
 import contextlib
 import errno
@@ -3137,7 +3138,7 @@ class ImagePlan(object):
                         for note in self.pd.release_notes[1]:
                                 if isinstance(note, unicode):
                                         note = note.encode("utf-8")
-                                print >> tmpfile, note
+                                print(note, file=tmpfile)
                         # make file world readable
                         os.chmod(path, 0644)
                         tmpfile.close()

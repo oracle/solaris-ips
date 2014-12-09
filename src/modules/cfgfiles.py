@@ -21,12 +21,13 @@
 #
 
 #
-# Copyright (c) 2008, 2011, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2008, 2014, Oracle and/or its affiliates. All rights reserved.
 #
 
 # NOTE: This module is inherently posix specific.  Care is taken in the modules
 # that use this module to not use it on other operating systems.
 
+from __future__ import print_function
 import datetime
 import errno
 import os
@@ -192,7 +193,7 @@ class CfgFile(object):
         os.chown(name, st.st_uid, st.st_gid)
 
         for l in self.getfilelines():
-            print >>file, l
+            print(l, file=file)
 
         file.close()
 

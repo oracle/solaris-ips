@@ -19,8 +19,9 @@
 #
 # CDDL HEADER END
 #
-# Copyright (c) 2013, 2014 Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2013, 2014, Oracle and/or its affiliates. All rights reserved.
 
+from __future__ import print_function
 import atexit
 import cherrypy
 import httplib
@@ -339,7 +340,7 @@ class WsgiDepot(object):
                                 repo = sr.Repository(root=path, read_only=True,
                                     writable_root=writable_root)
                         except sr.RepositoryError, e:
-                                print "Unable to load repository: %s" % e
+                                print("Unable to load repository: %s" % e)
                                 continue
 
                         repositories[prefix] = repo

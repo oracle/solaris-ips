@@ -20,8 +20,10 @@
 # CDDL HEADER END
 
 #
-# Copyright (c) 2009, 2012, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2009, 2014, Oracle and/or its affiliates. All rights reserved.
 #
+
+from __future__ import print_function
 
 # Prefixes should be ordered alphabetically with most specific first.
 DRIVER_ALIAS_PREFIXES = (
@@ -93,9 +95,9 @@ def usage(errmsg="", exitcode=2):
                 error(errmsg)
 
         # -f is intentionally undocumented.
-        print >> sys.stderr, _("""\
+        print(_("""\
 Usage:
-        pkgfmt [-cdu] [file1] ... """)
+        pkgfmt [-cdu] [file1] ... """), file=sys.stderr)
 
         sys.exit(exitcode)
 
@@ -493,14 +495,14 @@ def write_line(line, fileobj):
                         opt_unwrap = False
 
         if comments:
-                print >> fileobj, comments
+                print(comments, file=fileobj)
 
         if opt_format == FMT_V2:
                 # Force 'dir' actions to use four spaces at beginning of lines
                 # so they line up with other filesystem actions such as file,
                 # link, etc.
                 output = re.sub("^dir ", "dir  ", output)
-        print >> fileobj, output
+        print(output, file=fileobj)
 
 def main_func():
         gettext.install("pkg", "/usr/share/locale",
@@ -583,12 +585,12 @@ def main_func():
                                 # formatting or displaying diffs.
                                 ret = 0
 
-                        # Display formatted version (trailing comma needed to
+                        # Display formatted version (explicit 'end' needed to
                         # prevent output of extra newline) even if manifest
                         # didn't need formatting for the stdin case.  (The
                         # assumption is that it might be used in a pipeline.)
                         if formatted:
-                                print formatted,
+                                print(formatted, end="")
                 except EnvironmentError, e:
                         if e.errno == errno.EPIPE:
                                 # User closed input or output (i.e. killed piped
@@ -627,10 +629,10 @@ def main_func():
                                     "manifest in place") % fname, exitcode=None)
                                 continue
                         elif opt_diffs:
-                                # Display differences (trailing comma needed to
+                                # Display differences (explicit 'end' needed to
                                 # prevent output of extra newline).
                                 ret = 1
-                                print formatted,
+                                print(formatted, end=" ")
                                 continue
                         elif ret != 1:
                                 # Treat as successful exit if not checking
@@ -680,9 +682,9 @@ def fmt_file(in_file, out_file):
                         # will simply be printed back out wherever they
                         # were found before or after actions.
                         for l in tp[2]:
-                                print >> out_file, l
+                                print(l, file=out_file)
                         if tp[1]:
-                                print >> out_file, tp[1]
+                                print(tp[1], file=out_file)
                 else:
                         lines.append(tp)
                         saw_action = True

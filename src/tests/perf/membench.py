@@ -21,13 +21,14 @@
 #
 
 #
-# Copyright 2010 Sun Microsystems, Inc.  All rights reserved.
-# Use is subject to license terms.
+# Copyright (c) 2010, 2014, Oracle and/or its affiliates. All rights reserved.
 #
 
 #
 # membench - benchmark memory usage of various objects
 #
+
+from __future__ import print_function
 
 import pkg.fmri as fmri
 import pkg.version as version
@@ -57,7 +58,7 @@ collection = []
 funcs = [dotseq, dotseq_different, vers, vers_different, mfmri, mfmri_different]
 
 for func in funcs:
-        print "#", func.__name__
+        print("#", func.__name__)
         pid = os.fork()
         if pid == 0:
                 startusage = misc.__getvmusage()
@@ -71,7 +72,7 @@ for func in funcs:
                 endusage = misc.__getvmusage()
 
                 est = (endusage - startusage) / n
-                print func.__name__, "%d rounds, estimated memory per object: %d bytes" % (n, est)
+                print(func.__name__, "%d rounds, estimated memory per object: %d bytes" % (n, est))
                 sys.exit(0)
         else:
                 os.wait()

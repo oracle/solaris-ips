@@ -22,6 +22,7 @@
 
 # Copyright (c) 2011, 2014, Oracle and/or its affiliates. All rights reserved.
 
+from __future__ import print_function
 import testutils
 if __name__ == "__main__":
         testutils.setup_environment("../../../proto")
@@ -71,9 +72,9 @@ if __name__ == "__main__":
                 prop = prop_dict.get(prop, None)
                 if not found_c or not prop:
                         sys.exit(1)
-                print prop
+                print(prop)
                 sys.exit(0)
-        print s
+        print(s)
         sys.exit(0)
 """,
                 "usr/sbin/svcadm" : \

@@ -21,12 +21,14 @@
 #
 
 #
-# Copyright (c) 2008, 2012, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2008, 2014, Oracle and/or its affiliates. All rights reserved.
 #
 
 #
 # actionbench - benchmark action creation
 #
+
+from __future__ import print_function
 
 import pkg.actions as actions
 
@@ -41,12 +43,12 @@ if __name__ == "__main__":
         setup1 = "import pkg.actions as actions"
         str1 = 'action = actions.fromstr("file 58371e22b5e75ec66602b966edf29bcce7038db5 elfarch=i386 elfbits=32 elfhash=cd12b081ddaef993fd0276dd04d653222d25fa77 group=bin mode=0755 owner=root path=usr/lib/libzonecfg.so.1 pkg.size=178072")'
 
-        print "action creation"
+        print("action creation")
         n = 20000
         for i in (1, 2, 3):
                 try:
                         t = timeit.Timer(str1, setup1).timeit(n)
-                        print "%20f  %8d actions/sec" % (t, n / t)
+                        print("%20f  %8d actions/sec" % (t, n / t))
                 except KeyboardInterrupt:
                         import sys
                         sys.exit(0)
@@ -59,18 +61,18 @@ a2 = actions.fromstr("dir group=bin mode=0755 owner=root path=usr/lib/libzonecfg
         n = 520000
         str2 = "cmp(a1, a2)"
 
-        print "action comparison"
+        print("action comparison")
         for i in (1, 2, 3):
 
                 try:
                         t = timeit.Timer(str2, setup2).timeit(n)
-                        print "%20f  %8d action comparisons/sec" % (t, n / t)
+                        print("%20f  %8d action comparisons/sec" % (t, n / t))
                 except KeyboardInterrupt:
                         import sys
                         sys.exit(0)
 
 
-        print "minimalist comparison"
+        print("minimalist comparison")
 
         setup3 = """
 class superc(object):
@@ -94,7 +96,7 @@ b = bb()
 
                 try:
                         t = timeit.Timer(str3, setup3).timeit(n)
-                        print "%20f  %8d comparisons/sec" % (t, n / t)
+                        print("%20f  %8d comparisons/sec" % (t, n / t))
                 except KeyboardInterrupt:
                         import sys
                         sys.exit(0)
@@ -107,12 +109,12 @@ a1 = actions.fromstr("file 1234 group=bin mode=0755 owner=root path=usr/lib/libz
         n = 260000
         str4 = "str(a1)"
 
-        print "action to string conversion"
+        print("action to string conversion")
         for i in (1, 2, 3):
 
                 try:
                         t = timeit.Timer(str4, setup4).timeit(n)
-                        print "%20f  %8d actions to string/sec" % (t, n / t)
+                        print("%20f  %8d actions to string/sec" % (t, n / t))
                 except KeyboardInterrupt:
                         import sys
                         sys.exit(0)
@@ -192,20 +194,20 @@ mf.set_content(m)
 """
 
         try:
-                print "manifest contents loading"
+                print("manifest contents loading")
                 for i in (1, 2, 3):
 
                         t = timeit.Timer(str5, setup5).timeit(n)
-                        print "%20f %8d manifest contents loads/sec (%d actions/sec)" % \
-                            (t, n / t, (n * 60) / t)
+                        print("%20f %8d manifest contents loads/sec (%d actions/sec)" % \
+                            (t, n / t, (n * 60) / t))
 
                 n = 1000000
                 str6 = "id(a1)"
-                print "id() speed"
+                print("id() speed")
                 for i in (1, 2, 3):
 
                         t = timeit.Timer(str6, setup4).timeit(n)
-                        print "%20f %8d calls to id(action) /sec" % (t, n / t)
+                        print("%20f %8d calls to id(action) /sec" % (t, n / t))
         except KeyboardInterrupt:
                 import sys
                 sys.exit(0)

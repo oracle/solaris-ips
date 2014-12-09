@@ -32,6 +32,7 @@
 # SingleDepotTestCaseCorruptImage
 #
 
+from __future__ import print_function
 import baseline
 import ConfigParser
 import copy
@@ -497,7 +498,7 @@ if __name__ == "__main__":
                 s = str(s)
                 for x in s.splitlines():
                         if self.debug_output:
-                                print >> sys.stderr, "# %s" % x
+                                print("# %s" % x, file=sys.stderr)
                         self.__debug_buf += x + "\n"
 
         def debugcmd(self, cmdline):
@@ -664,7 +665,7 @@ if __name__ == "__main__":
                         try:
                                 self.killalldepots()
                         except Exception, e:
-                                print >> sys.stderr, str(e)
+                                print(str(e), file=sys.stderr)
 
                 #
                 # We have some sloppy subclasses which don't call the superclass
@@ -1150,21 +1151,21 @@ class _Pkg5TestResult(unittest._TextTestResult):
                 try:
                         tdf()
                 except Exception, e:
-                        print >> sys.stderr, str(e)
+                        print(str(e), file=sys.stderr)
                         pass
 
                 if getattr(test, "persistent_setup", None):
                         try:
                                 test.reallytearDown()
                         except Exception, e:
-                                print >> sys.stderr, str(e)
+                                print(str(e), file=sys.stderr)
                                 pass
 
                 if hasattr(inst, "killalldepots"):
                         try:
                                 inst.killalldepots()
                         except Exception, e:
-                                print >> sys.stderr, str(e)
+                                print(str(e), file=sys.stderr)
                                 pass
                 raise TestStopException()
 
@@ -1591,27 +1592,26 @@ class Pkg5TestRunner(unittest.TextTestRunner):
                 if not class_list and not method_list:
                         return
                 tot = 0
-                print >> stream, "Tests run for '%s' Suite, " \
-                    "broken down by class:\n" % suite_name
+                print("Tests run for '%s' Suite, broken down by class:\n" %
+                    suite_name, file=stream)
                 for secs, cname in class_list:
-                        print >> stream, "%6.2f %s.%s" % \
-                            (secs, suite_name, cname)
+                        print("%6.2f %s.%s" %
+                            (secs, suite_name, cname), file=stream)
                         tot += secs
                         for secs, mcname, mname in method_list:
                                 if mcname != cname:
                                         continue
-                                print >> stream, \
-                                    "    %6.2f %s" % (secs, mname)
-                        print >> stream
-                print >> stream, "%6.2f Total time\n" % tot
-                print >> stream, "=" * 60
-                print >> stream, "\nTests run for '%s' Suite, " \
-                    "sorted by time taken:\n" % suite_name
+                                print("    %6.2f %s" % (secs, mname), file=stream)
+                        print(file=stream)
+                print("%6.2f Total time\n" % tot, file=stream)
+                print("=" * 60, file=stream)
+                print("\nTests run for '%s' Suite, " \
+                    "sorted by time taken:\n" % suite_name, file=stream)
                 for secs, cname, mname in method_list:
-                        print >> stream, "%6.2f %s %s" % (secs, cname, mname)
-                print >> stream, "%6.2f Total time\n" % tot
-                print >> stream, "=" * 60
-                print >> stream, ""
+                        print("%6.2f %s %s" % (secs, cname, mname), file=stream)
+                print("%6.2f Total time\n" % tot, file=stream)
+                print("=" * 60, file=stream)
+                print("", file=stream)
 
         @staticmethod
         def __write_timing_history(stream, suite_name, method_list,
@@ -1757,16 +1757,15 @@ class Pkg5TestRunner(unittest.TextTestRunner):
             quiet):
                 if quiet:
                         return
-                print >> self.stream, "\n\n"
-                print >> self.stream, "Tests in " \
-                    "progress:"
+                print("\n\n", file=self.stream)
+                print("Tests in progress:", file=self.stream)
                 for p in sorted(started_tests.keys()):
-                        print >> self.stream, "\t%s\t%s\t%s %s" % \
+                        print("\t%s\t%s\t%s %s" % \
                             (p, p_dict[p].pid, started_tests[p][0],
-                            started_tests[p][1])
+                            started_tests[p][1]), file=self.stream)
                 if remaining_time is not None:
-                        print >> self.stream, "Estimated time remaining %d " \
-                            "seconds" % round(remaining_time)
+                        print("Estimated time remaining %d " \
+                            "seconds" % round(remaining_time), file=self.stream)
 
         def test_done_display(self, result, all_tests, finished_tests,
             started_tests, total_tests, quiet, remaining_time, output_text,
@@ -1775,20 +1774,22 @@ class Pkg5TestRunner(unittest.TextTestRunner):
                         self.stream.write(output_text)
                         return
                 if g_debug_output:
-                        print >> sys.stderr, "\n%s" % comm[3].debug_buf
-                print >> self.stream, "\n\n"
-                print >> self.stream, "Finished %s %s in process %s" % \
-                    (comm[1][0], comm[1][1], comm[2])
-                print >> self.stream, "Total test classes:%s Finished test " \
-                    "classes:%s Running tests:%s" % \
-                    (len(all_tests), len(finished_tests), len(started_tests))
-                print >> self.stream, "Total tests:%s Tests run:%s " \
-                    "Errors:%s Failures:%s Skips:%s" % \
+                        print("\n%s" % comm[3].debug_buf, file=sys.stderr)
+                print("\n\n", file=self.stream)
+                print("Finished %s %s in process %s" %
+                    (comm[1][0], comm[1][1], comm[2]), file=self.stream)
+                print("Total test classes:%s Finished test "
+                    "classes:%s Running tests:%s" %
+                    (len(all_tests), len(finished_tests), len(started_tests)),
+                    file=self.stream)
+                print("Total tests:%s Tests run:%s "
+                    "Errors:%s Failures:%s Skips:%s" %
                     (total_tests, result.testsRun, len(result.errors),
-                    len(result.failures), len(result.skips))
+                    len(result.failures), len(result.skips)),
+                    file=self.stream)
                 if remaining_time and all_tests - finished_tests:
-                        print >> self.stream, "Estimated time remaining %d " \
-                            "seconds" % round(remaining_time)
+                        print("Estimated time remaining %d "
+                            "seconds" % round(remaining_time), file=self.stream)
 
         @staticmethod
         def __terminate_processes(jobs):
@@ -1799,8 +1800,8 @@ class Pkg5TestRunner(unittest.TextTestRunner):
                 signal.signal(signal.SIGTERM, signal.SIG_IGN)
                 cmd = ["pkill", "-T", "0"]
                 subprocess.call(cmd)
-                print >> sys.stderr, "All spawned processes should be " \
-                    "terminated, now cleaning up directories."
+                print("All spawned processes should be terminated, now "
+                    "cleaning up directories.", file=sys.stderr)
 
                 # Terminated test jobs may have mounted filesystems under their
                 # images and not told us about them, so we catch EBUSY, unmount,
@@ -1836,9 +1837,9 @@ class Pkg5TestRunner(unittest.TextTestRunner):
                                 finished = True
 
                 if not finished:
-                        print >> sys.stderr, "Not all directories removed!"
+                        print("Not all directories removed!", file=sys.stderr)
                 else:
-                        print >> sys.stderr, "Directories successfully removed."
+                        print("Directories successfully removed.", file=sys.stderr)
                 sys.exit(1)
 
         def run(self, suite_list, jobs, port, time_estimates, quiet,
@@ -1959,13 +1960,13 @@ class Pkg5TestRunner(unittest.TextTestRunner):
                                                 broken.add(i)
                                 if broken:
 
-                                        print >> sys.stderr, "The following " \
-                                            "processes have died, " \
-                                            "terminating the others: %s" % \
+                                        print("The following "
+                                            "processes have died, "
+                                            "terminating the others: %s" %
                                             ",".join([
                                                 str(p_dict[i].pid)
                                                 for i in sorted(broken)
-                                            ])
+                                            ]), file=sys.stderr)
                                         raise TestStopException()
                         for i in range(0, jobs * 2):
                                 inq.put("STOP")
@@ -2052,13 +2053,13 @@ class Pkg5TestSuite(unittest.TestSuite):
                 reload(sys)
 
         def cleanup_and_die(self, inst, info):
-                print >> sys.stderr, \
-                    "\nCtrl-C: Attempting cleanup during %s" % info
+                print("\nCtrl-C: Attempting cleanup during %s" % info,
+                    file=sys.stderr)
 
                 if hasattr(inst, "killalldepots"):
-                        print >> sys.stderr, "Killing depots..."
+                        print("Killing depots...", file=sys.stderr)
                         inst.killalldepots()
-                print >> sys.stderr, "Stopping tests..."
+                print("Stopping tests...", file=sys.stderr)
                 raise TestStopException()
 
         def run(self, result):
@@ -3500,9 +3501,9 @@ class ManyDepotTestCase(CliTestCase):
                         dc.start()
 
         def killall_sighandler(self, signum, frame):
-                print >> sys.stderr, \
-                    "Ctrl-C: I'm killing depots, please wait.\n"
-                print self
+                print("Ctrl-C: I'm killing depots, please wait.\n",
+                    file=sys.stderr)
+                print(self)
                 self.signalled = True
 
         def killalldepots(self):
@@ -4195,7 +4196,7 @@ def debug(s):
         s = str(s)
         for x in s.splitlines():
                 if g_debug_output:
-                        print >> sys.stderr, "# %s" % x
+                        print("# %s" % x, file=sys.stderr)
 
 def mkdir_eexist_ok(p):
         try:
@@ -4310,7 +4311,7 @@ def eval_assert_raises(ex_type, eval_ex_func, func, *args):
         try:
                 func(*args)
         except ex_type, e:
-                print str(e)
+                print(str(e))
                 if not eval_ex_func(e):
                         raise
         else:
@@ -4509,9 +4510,9 @@ class ApacheController(object):
                 pass
 
         def killall_sighandler(self, signum, frame):
-                print >> sys.stderr, \
-                    "Ctrl-C: I'm killing depots, please wait.\n"
-                print self
+                print("Ctrl-C: I'm killing depots, please wait.\n",
+                    file=sys.stderr)
+                print(self)
                 self.signalled = True
 
         def is_alive(self):

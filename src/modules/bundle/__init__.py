@@ -21,8 +21,10 @@
 #
 
 #
-# Copyright (c) 2007, 2010, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2007, 2014, Oracle and/or its affiliates. All rights reserved.
 #
+
+from __future__ import print_function
 
 # The ordering is important -- SolarisPackageDirBundle must come before
 # DirectoryBundle, or the latter class will recognize a Solaris package
@@ -83,13 +85,13 @@ if __name__ == "__main__":
         try:
                 b = make_bundle(sys.argv[1])
         except TypeError, e:
-                print e
+                print(e)
                 sys.exit(1)
 
         for file in b:
-                print file.type, file.attrs
+                print(file.type, file.attrs)
                 try:
-                        print file.attrs["file"]
-                        print os.stat(file.attrs["file"])
+                        print(file.attrs["file"])
+                        print(os.stat(file.attrs["file"]))
                 except:
                         pass

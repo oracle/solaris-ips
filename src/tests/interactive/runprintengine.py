@@ -21,9 +21,10 @@
 #
 
 #
-# Copyright (c) 2012, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2012, 2014, Oracle and/or its affiliates. All rights reserved.
 #
 
+from __future__ import print_function
 import getopt
 import locale
 import gettext
@@ -48,37 +49,37 @@ if __name__ == "__main__":
                 elif opt == '-l':
                         test_logging = True
                 else:
-                        print >> sys.stderr, "bad option %s" % opt
+                        print("bad option %s" % opt, file=sys.stderr)
                         sys.exit(2)
 
         if not (test_ttymode or test_nottymode or test_logging):
-                print >> sys.stderr, \
-                    "must specify one or more of -t, -T or -l"
+                print("must specify one or more of -t, -T or -l",
+                    file=sys.stderr)
                 sys.exit(2)
 
         if len(argv) == 1:
                 output_file = open(argv[0], "w")
         elif len(argv) > 1:
-                print >> sys.stderr, "too many arguments"
+                print("too many arguments", file=sys.stderr)
                 sys.exit(2)
         else:
                 output_file = sys.stdout
 
         try:
                 if test_ttymode:
-                        print >> output_file, "---test_ttymode---"
-                        print >> output_file, ("-" * 60)
+                        print("---test_ttymode---", file=output_file)
+                        print(("-" * 60), file=output_file)
                         printengine.test_posix_printengine(output_file, True)
                 if test_nottymode:
-                        print >> output_file, "---test_nottymode---"
-                        print >> output_file, ("-" * 60)
+                        print("---test_nottymode---", file=output_file)
+                        print(("-" * 60), file=output_file)
                         printengine.test_posix_printengine(output_file, False)
                 if test_logging:
-                        print >> output_file, "---test_logging---"
-                        print >> output_file, ("-" * 60)
+                        print("---test_logging---", file=output_file)
+                        print(("-" * 60), output_file)
                         printengine.test_logging_printengine(output_file)
         except printengine.PrintEngineException, e:
-                print >> sys.stderr, e
+                print(e, file=sys.stderr)
                 sys.exit(1)
         except:
                 traceback.print_exc()

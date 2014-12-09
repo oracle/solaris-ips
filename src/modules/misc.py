@@ -26,6 +26,7 @@
 Misc utility functions used by the packaging system.
 """
 
+from __future__ import print_function
 import OpenSSL.crypto as osc
 import cStringIO
 import calendar
@@ -191,7 +192,7 @@ def copytree(src, dst):
                 elif S_IFMT(s.st_mode) == 0xe000: # event ports
                         pass
                 else:
-                        print "unknown file type:", oct(S_IFMT(s.st_mode))
+                        print("unknown file type:", oct(S_IFMT(s.st_mode)))
 
         os.chmod(dst, S_IMODE(src_stat.st_mode))
         os.chown(dst, src_stat.st_uid, src_stat.st_gid)
@@ -443,7 +444,7 @@ def msg(*text):
         """ Emit a message. """
 
         try:
-                print ' '.join([str(l) for l in text])
+                print(' '.join([str(l) for l in text]))
         except IOError, e:
                 if e.errno == errno.EPIPE:
                         raise PipeError, e
@@ -453,7 +454,7 @@ def emsg(*text):
         """ Emit a message to sys.stderr. """
 
         try:
-                print >> sys.stderr, ' '.join([str(l) for l in text])
+                print(' '.join([str(l) for l in text]), file=sys.stderr)
         except IOError, e:
                 if e.errno == errno.EPIPE:
                         raise PipeError, e
@@ -1740,8 +1741,8 @@ def json_encode(name, data, desc, commonize=None, je_state=None):
 
         # debugging
         if je_state is None and json_debug:
-                print >> sys.stderr, "json_encode name: ", name
-                print >> sys.stderr, "json_encode data: ", data
+                print("json_encode name: ", name, file=sys.stderr)
+                print("json_encode data: ", data, file=sys.stderr)
 
         # we don't encode None
         if data is None:
@@ -1829,8 +1830,10 @@ def json_encode(name, data, desc, commonize=None, je_state=None):
 
                 # debugging
                 if json_debug:
-                        print >> sys.stderr, "json_encode finished name: ", name
-                        print >> sys.stderr, "json_encode finished data: ", data
+                        print("json_encode finished name: ", name,
+                            file=sys.stderr)
+                        print("json_encode finished data: ", data,
+                            file=sys.stderr)
 
                 return data
 
@@ -1981,8 +1984,8 @@ def json_decode(name, data, desc, commonize=None, jd_state=None):
 
         # debugging
         if jd_state is None and json_debug:
-                print >> sys.stderr, "json_decode name: ", name
-                print >> sys.stderr, "json_decode data: ", data
+                print("json_decode name: ", name, file=sys.stderr)
+                print("json_decode data: ", data, file=sys.stderr)
 
         # we don't decode None
         if data is None:
@@ -2067,8 +2070,10 @@ def json_decode(name, data, desc, commonize=None, jd_state=None):
 
                 # debugging
                 if json_debug:
-                        print >> sys.stderr, "json_decode finished name: ", name
-                        print >> sys.stderr, "json_decode finished data: ", data
+                        print("json_decode finished name: ", name,
+                            file=sys.stderr)
+                        print("json_decode finished data: ", data,
+                            file=sys.stderr)
                 return data
 
         # check if the description is a type object

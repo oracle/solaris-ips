@@ -24,6 +24,7 @@
 # Copyright (c) 2009, 2014, Oracle and/or its affiliates. All rights reserved.
 #
 
+from __future__ import print_function
 import getopt
 import gettext
 import locale
@@ -43,19 +44,19 @@ def usage(errmsg="", exitcode=2):
         error message.  Causes program to exit."""
 
         if errmsg:
-                print >> sys.stderr, "pkgdiff: %s" % errmsg
+                print("pkgdiff: %s" % errmsg, file=sys.stderr)
 
-        print _("""\
+        print(_("""\
 Usage:
         pkgdiff [-i attribute]... [-o attribute]
             [-t action_name[,action_name]...]...
-            [-v name=value]... (file1 | -) (file2 | -)""")
+            [-v name=value]... (file1 | -) (file2 | -)"""))
         sys.exit(exitcode)
 
 def error(text, exitcode=3):
         """Emit an error message prefixed by the command name """
 
-        print >> sys.stderr, "pkgdiff: %s" % text
+        print("pkgdiff: %s" % text, file=sys.stderr)
 
         if exitcode != None:
                 sys.exit(exitcode)
@@ -288,7 +289,7 @@ def main_func():
                 elif ignoreattrs:
                         if not set(a.attrs.keys()) - ignoreattrs:
                                 return False
-                print "%s %s" % (s, a)
+                print("%s %s" % (s, a))
                 return True
 
         different = False
@@ -344,12 +345,12 @@ def main_func():
                         # print out part of action that is the same
                         if s:
                                 different = True
-                                print "%s %s %s" % (old.name,
+                                print("%s %s %s" % (old.name,
                                     attrval(old.attrs, old.key_attr),
                                     " ".join(("%s" % attrval(old.attrs,v)
-                                    for v in attrsames if v != old.key_attr)))
+                                    for v in attrsames if v != old.key_attr))))
                                 for l in s:
-                                        print l
+                                        print(l)
 
         return int(different)
 

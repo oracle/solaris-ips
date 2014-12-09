@@ -180,7 +180,7 @@ file fff555ff9 mode=0555 owner=sch group=staff path=/usr/bin/i386/sort isa=i386
                         new_contents += str(d[1]) + "\n"
 
                 mtmp = manifest.Manifest()
-                #print new_contents
+                #print(new_contents)
                 mtmp.set_content(new_contents)
 
                 diffs = self.m2.combined_difference(mtmp)
@@ -192,7 +192,7 @@ file fff555ff9 mode=0555 owner=sch group=staff path=/usr/bin/i386/sort isa=i386
                 self.m1.set_content(self.m4_contents)
                 self.m2.set_content(self.m5_contents)
 
-                #print self.m2.display_differences(self.m1)
+                #print(self.m2.display_differences(self.m1))
 
                 diffs = self.m2.combined_difference(self.m1)
                 self.assertEqual(len(diffs), 1)
@@ -337,7 +337,7 @@ dir mode=0755 owner=bin group=sys path=usr
                         self.assertEqual(kv, ('dir', 'usr'))
                         for a in actions:
                                 acount += 1
-                                #print " %s %s" % (kv, a)
+                                #print(" %s %s" % (kv, a))
                 self.assertEqual(acount, 3)
 
         def test_errors(self):

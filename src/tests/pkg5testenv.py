@@ -22,6 +22,7 @@
 
 # Copyright (c) 2010, 2014, Oracle and/or its affiliates. All rights reserved.
 
+from __future__ import print_function
 import os
 import sys
 import platform
@@ -63,8 +64,8 @@ def setup_environment(path_to_proto, debug=False, system_test=False):
         elif osname == 'aix':
                 proc = osname
         else:
-                print "Unable to determine appropriate proto area location."
-                print "This is a porting problem."
+                print("Unable to determine appropriate proto area location.")
+                print("This is a porting problem.")
                 sys.exit(1)
 
         # Figure out from where we're invoking the command

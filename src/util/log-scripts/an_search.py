@@ -20,9 +20,11 @@
 # CDDL HEADER END
 #
 
-# Copyright 2008 Sun Microsystems, Inc.  All rights reserved.
-# Use is subject to license terms.
+#
+# Copyright (c) 2008, 2014, Oracle and/or its affiliates. All rights reserved.
+#
 
+from __future__ import print_function
 import datetime
 import fileinput
 import getopt
@@ -50,25 +52,25 @@ search_by_failure = {}
 pkg_pat = re.compile("/search/(?P<mversion>\d+)/(?P<keywords>.*)")
 
 def emit_search_report(summary_file, searchtype, label, results):
-        print "<pre>"
+        print("<pre>")
         for i, n in results:
-                print i, n
-        print "</pre>"
+                print(i, n)
+        print("</pre>")
 
         if summary_file:
-                print >>summary_file, """
+                print("""
 			<h3>Top 25 %(searchtype)s searches</h3>
 			<div id="search-%(searchtype)s-container">
 			<table id="search-%(searchtype)s-table">
 			<thead><tr><th>Term</th><th>%(label)s</th></tr></thead>
-		""" % {"label":label, "searchtype": searchtype}
+		""" % {"label":label, "searchtype": searchtype}, file=summary_file)
 
                 for i, n in results[:25]:
-                        print >>summary_file,  \
-			    "<tr><td>%s</td><td>%s</td></tr>" % (i, n)
+                        print("<tr><td>%s</td><td>%s</td></tr>" % (i, n),
+                            file=summary_file)
 
-                print >>summary_file, "</table></div>"
-		print >>summary_file, """
+                print("</table></div>", file=summary_file)
+		print("""
 <script type="text/javascript">
 	var myDataSource =
 	    new YAHOO.util.DataSource(YAHOO.util.Dom.get(
@@ -90,7 +92,7 @@ def emit_search_report(summary_file, searchtype, label, results):
 	    myColumnDefs, myDataSource,
 	    {sortedBy:{key:"%(label)s", dir:YAHOO.widget.DataTable.CLASS_DESC}});
 </script>
-		""" % {"label":label, "searchtype": searchtype}
+		""" % {"label":label, "searchtype": searchtype}, file=summary_file)
 
 
 

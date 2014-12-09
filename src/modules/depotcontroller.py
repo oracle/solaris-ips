@@ -19,9 +19,10 @@
 #
 # CDDL HEADER END
 #
-# Copyright (c) 2008, 2013, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2008, 2014, Oracle and/or its affiliates. All rights reserved.
 #
 
+from __future__ import print_function
 import httplib
 import os
 import pkg.pkgsubprocess as subprocess
@@ -542,31 +543,32 @@ def test_func(testdir):
         dc.set_repodir(testdir)
 
         for j in range(0, 10):
-                print "%4d: Starting Depot... (%s)" % (j, " ".join(dc.get_args())),
+                print("%4d: Starting Depot... (%s)" %
+                    (j, " ".join(dc.get_args())), end=" ")
                 try:
                         dc.start()
-                        print " Done.    ",
-                        print "... Ping ",
+                        print(" Done.    ", end=" ")
+                        print("... Ping ", end=" ")
                         sys.stdout.flush()
                         time.sleep(0.2)
                         while dc.is_alive() == False:
                                 pass
-                        print "... Done.  ",
+                        print("... Done.  ", end=" ")
 
-                        print "Stopping Depot...",
+                        print("Stopping Depot...", end=" ")
                         status = dc.stop()
                         if status == 0:
-                                print " Done.",
+                                print(" Done.", end=" ")
                         elif status < 0:
-                                print " Result: Signal %d" % (-1 * status),
+                                print(" Result: Signal %d" % (-1 * status), end=" ")
                         else:
-                                print " Result: Exited %d" % status,
-                        print
+                                print(" Result: Exited %d" % status, end=" ")
+                        print()
                         f = open("/tmp/depot.log", "r")
-                        print f.read()
+                        print(f.read())
                         f.close()
                 except KeyboardInterrupt:
-                        print "\nKeyboard Interrupt: Cleaning up Depots..."
+                        print("\nKeyboard Interrupt: Cleaning up Depots...")
                         dc.stop()
                         raise
 
@@ -577,5 +579,5 @@ if __name__ == "__main__":
         except KeyboardInterrupt:
                 pass
         os.system("rm -fr %s" % __testdir)
-        print "\nDone"
+        print("\nDone")
 

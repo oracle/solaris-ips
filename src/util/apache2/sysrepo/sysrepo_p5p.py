@@ -19,8 +19,9 @@
 #
 # CDDL HEADER END
 #
-# Copyright (c) 2012, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2012, 2014, Oracle and/or its affiliates. All rights reserved.
 
+from __future__ import print_function
 import pkg.p5p
 
 import httplib
@@ -109,7 +110,7 @@ class SysrepoP5p(object):
                 # we only want error_log output if our status is not 4xx
                 if status != SERVER_NOTFOUND_STATUS and \
                     status != SERVER_BADREQUEST_STATUS:
-                        print traceback.format_exc()
+                        print(traceback.format_exc())
                 self.start_response(status, response_headers,
                     sys.exc_info())
 
@@ -346,7 +347,7 @@ class SysrepoP5p(object):
                         else:
                                 raise UnknownPathException(path)
                 except OSError, e:
-                        print e.errno
+                        print(e.errno)
                         if e.errno == os.errno.ENOENT:
                                 self.log_Exception(
                                     status=SERVER_NOTFOUND_STATUS)
@@ -420,9 +421,9 @@ if __name__ == "__main__":
 
         def start_response(status, response_headers, exc_info=None):
                 """A dummy response function."""
-                print "responding with %s" % status
+                print("responding with %s" % status)
                 if exc_info:
-                        print traceback.format_exc(exc_info)
+                        print(traceback.format_exc(exc_info))
 
         if len(sys.argv) != 3:
                 query = \
@@ -430,8 +431,8 @@ if __name__ == "__main__":
                 "&path=manifest/0/mypackage@1.2.9%2C5.11-1%3A20110617T204846Z'")
                 alias = \
                 "de5acae11333890c457665379eec812a67f78dd3=/tmp/archive.p5p"
-                print "usage: sysrepo_p5p <query> <hash>=<path to p5p file>"
-                print "eg: ./sysrepo_p5p.py %s %s" % (query, alias)
+                print("usage: sysrepo_p5p <query> <hash>=<path to p5p file>")
+                print("eg: ./sysrepo_p5p.py %s %s" % (query, alias))
                 sys.exit(2)
 
         environ = {}
@@ -446,7 +447,7 @@ if __name__ == "__main__":
 
         for response in application(environ, start_response):
                 if isinstance(response, basestring):
-                        print response.rstrip()
+                        print(response.rstrip())
                 elif response:
                         for line in response.readlines():
-                                print line.rstrip()
+                                print(line.rstrip())

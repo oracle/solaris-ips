@@ -21,9 +21,10 @@
 #
 
 #
-# Copyright (c) 2009, 2013, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2009, 2014, Oracle and/or its affiliates. All rights reserved.
 #
 
+from __future__ import print_function
 import os
 import fnmatch
 import re
@@ -185,7 +186,7 @@ class QueryLexer(object):
                         tok = self.lexer.token()
                         if not tok:
                                 break
-                        print >> sys.stderr, tok
+                        print(tok, file=sys.stderr)
 
 
 class QueryParser(object):

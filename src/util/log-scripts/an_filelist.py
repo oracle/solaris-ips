@@ -20,9 +20,11 @@
 # CDDL HEADER END
 #
 
-# Copyright 2008 Sun Microsystems, Inc.  All rights reserved.
-# Use is subject to license terms.
+#
+# Copyright (c) 2008, 2014, Oracle and/or its affiliates. All rights reserved.
+#
 
+from __future__ import print_function
 import datetime
 import fileinput
 import getopt
@@ -48,11 +50,11 @@ filelist_totals["bytes"] = 0
 pkg_pat = re.compile("/filelist/(?P<mversion>\d+)/(?P<trailing>.*)")
 
 def report_filelist_by_bytes():
-        print "<p>Total kilobytes sent via filelist: %f</p>" % (filelist_totals["kilobytes"] + float(filelist_totals["bytes"])/1024)
+        print("<p>Total kilobytes sent via filelist: %f</p>" % (filelist_totals["kilobytes"] + float(filelist_totals["bytes"])/1024))
 
 
         if summary_file:
-                print >>summary_file, "<p>Total kilobytes sent via filelist: %d</p>" % (filelist_totals["kilobytes"] + float(filelist_totals["bytes"])/1024)
+                print("<p>Total kilobytes sent via filelist: %d</p>" % (filelist_totals["kilobytes"] + float(filelist_totals["bytes"])/1024), file=summary_file)
 
 def count_filelist(mg, d):
         try:

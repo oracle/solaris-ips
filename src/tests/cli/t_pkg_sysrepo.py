@@ -24,6 +24,7 @@
 # Copyright (c) 2011, 2014, Oracle and/or its affiliates. All rights reserved.
 #
 
+from __future__ import print_function
 import testutils
 if __name__ == "__main__":
         testutils.setup_environment("../../../proto")
@@ -2261,10 +2262,10 @@ if __name__ == "__main__":
                 prop = prop_dict.get(prop, None)
                 if not found_c or not prop:
                         sys.exit(1)
-                print prop
+                print(prop)
                 sys.exit(0)
         for k, v in prop_dict.iteritems():
-                print "%%s %%s" %% (k, v)
+                print("%%s %%s" %% (k, v))
         sys.exit(0)
 """,
 

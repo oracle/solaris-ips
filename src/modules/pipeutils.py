@@ -65,10 +65,11 @@ A RPC server can be implemented as follows:
 A RPC client can be implemented as follows:
 
         client_rpc = PipedServerProxy(client_pipe_fd)
-        print client_rpc.add(1, 2)
+        print(client_rpc.add(1, 2))
         del client_rpc
 """
 
+from __future__ import print_function
 import SocketServer
 import errno
 import fcntl
@@ -154,8 +155,9 @@ class PipeFile(object):
                 else:
                         label = "%s" % os.getpid()
 
-                print >> sys.stderr, "%s: %s.%s(%d)%s" % \
-                    (label, op, type(self).__name__, self.__pipefd, msg)
+                print("%s: %s.%s(%d)%s" %
+                    (label, op, type(self).__name__, self.__pipefd, msg),
+                    file=sys.stderr)
 
         def debug_dumpfd(self, op, fd):
                 """If debugging is enabled dump the contents of fd."""
@@ -527,7 +529,7 @@ class _PipedRequestHandler(_PipedHTTPRequestHandler):
                 except:
                         # The server had an unexpected exception.
                         # dump the error to stderr
-                        print >> sys.stderr, traceback.format_exc()
+                        print(traceback.format_exc(), file=sys.stderr)
 
                         # Return the error to the caller.
                         err_lines = traceback.format_exc().splitlines()

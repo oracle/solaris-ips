@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2008, 2011, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2008, 2014, Oracle and/or its affiliates. All rights reserved.
 #
 
 """SystemV / Solaris packages.
@@ -36,6 +36,7 @@ XXX Some caveats about rewinding a datastream or multiple packages per
 datastream.
 """
 
+from __future__ import print_function
 import errno
 import gzip
 import os
@@ -283,14 +284,14 @@ if __name__ == "__main__":
         pkg = SolarisPackage(sys.argv[1])
 
         for key in sorted(pkg.pkginfo):
-                print key + '=' + str(pkg.pkginfo[key])
+                print(key + '=' + str(pkg.pkginfo[key]))
 
-        print
+        print()
 
         for obj in pkg.manifest:
-                print obj.type + ' ' + obj.pathname
+                print(obj.type + ' ' + obj.pathname)
 
-        print
+        print()
 
         for d in pkg.deps:
-                print d
+                print(d)

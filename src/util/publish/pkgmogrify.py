@@ -20,9 +20,10 @@
 # CDDL HEADER END
 
 #
-# Copyright (c) 2009, 2012, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2009, 2014, Oracle and/or its affiliates. All rights reserved.
 #
 
+from __future__ import print_function
 import getopt
 import gettext
 import locale
@@ -49,12 +50,12 @@ def usage(errmsg="", exitcode=2):
         error message.  Causes program to exit."""
 
         if errmsg:
-                print >> sys.stderr, "pkgmogrify: %s" % errmsg
+                print("pkgmogrify: %s" % errmsg, file=sys.stderr)
 
-        print _("""\
+        print(_("""\
 Usage:
         pkgmogrify [-vi] [-I includedir ...] [-D macro=value ...]
-            [-O outputfile] [-P printfile] [inputfile ...]""")
+            [-O outputfile] [-P printfile] [inputfile ...]"""))
         sys.exit(exitcode)
 
 def add_transform(transform, filename, lineno):
@@ -162,7 +163,7 @@ def add_transform(transform, filename, lineno):
                                 newmsg = substitute_values(msg, action,
                                     matches, pkg_attrs, filename, lineno,
                                     quote=True)
-                                print >> sys.stderr, newmsg
+                                print(newmsg, file=sys.stderr)
                         sys.exit(exitval)
 
                 operation = exit_func
@@ -675,7 +676,7 @@ def read_file(tp, ignoreincludes):
 def error(text, exitcode=1):
         """Emit an error message prefixed by the command name """
 
-        print >> sys.stderr, "pkgmogrify: %s" % text
+        print("pkgmogrify: %s" % text, file=sys.stderr)
 
         if exitcode != None:
                 sys.exit(exitcode)
@@ -782,7 +783,7 @@ def main_func():
                         printfile = file(printfilename, "w")
 
                 for p in printinfo:
-                        print >> printfile, "%s" % p
+                        print("%s" % p, file=printfile) 
         except IOError, e:
                 error(_("Cannot write extra data %s") % e)
 
@@ -796,7 +797,7 @@ def main_func():
                 for comment, actionlist, prepended_macro in output:
                         if comment:
                                 for l in comment:
-                                        print >> outfile, "%s" % l
+                                        print("%s" % l, file=outfile)
                         for i, action in enumerate(actionlist):
                                 if action is None:
                                         continue
@@ -809,9 +810,9 @@ def main_func():
                                 # emitted and should only be printed if not
                                 # duplicates.
                                 if i == 0:
-                                        print >> outfile, s
+                                        print(s, file=outfile)
                                 elif s not in emitted:
-                                        print >> outfile, s
+                                        print(s, file=outfile)
                                         emitted.add(s)
         except IOError, e:
                 error(_("Cannot write output %s") % e)

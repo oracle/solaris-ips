@@ -20,12 +20,13 @@
 # CDDL HEADER END
 
 #
-# Copyright (c) 2007, 2013, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2007, 2014, Oracle and/or its affiliates. All rights reserved.
 #
 
 """face - provides the BUI (Browser User Interface) for the image packaging
 server"""
 
+from __future__ import print_function
 import cherrypy
 import cherrypy.lib.static
 import httplib
@@ -41,8 +42,8 @@ try:
 except ImportError:
         # Can't actually perform a version check since Mako doesn't provide
         # version information, but this is what should be used currently.
-        print >> sys.stderr, "Mako 0.2.2 or greater is required to use this " \
-            "program."
+        print("Mako 0.2.2 or greater is required to use this program.",
+            file=sys.stderr)
         sys.exit(2)
 
 tlookup = None

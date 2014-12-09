@@ -22,6 +22,8 @@
 # Copyright (c) 2007, 2014, Oracle and/or its affiliates. All rights reserved.
 #
 
+from __future__ import print_function
+
 # pkg.depotd - package repository daemon
 
 # XXX The prototype pkg.depotd combines both the version management server that
@@ -81,8 +83,8 @@ try:
         elif map(int, version) >= [3, 2, 0]:
                 raise ImportError
 except ImportError:
-        print >> sys.stderr, """cherrypy 3.1.0 or greater (but less than """ \
-            """3.2.0) is required to use this program."""
+        print("""cherrypy 3.1.0 or greater (but less than """
+            """3.2.0) is required to use this program.""", file=sys.stderr) 
         sys.exit(2)
 
 import cherrypy.process.servers
@@ -127,7 +129,7 @@ def usage(text=None, retcode=2, full=False):
                     "information."))
                 sys.exit(retcode)
 
-        print """\
+        print("""\
 Usage: /usr/lib/pkg.depotd [-a address] [-d inst_root] [-p port] [-s threads]
            [-t socket_timeout] [--cfg] [--content-root]
            [--disable-ops op[/1][,...]] [--debug feature_list]
@@ -222,7 +224,7 @@ Options:
 Environment:
         PKG_REPO                Used as default inst_root if -d not provided.
         PKG_DEPOT_CONTENT       Used as default content_root if --content-root
-                                not provided."""
+                                not provided.""")
         sys.exit(retcode)
 
 class OptionError(Exception):

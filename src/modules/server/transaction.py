@@ -21,9 +21,10 @@
 #
 
 #
-# Copyright (c) 2007, 2013, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2007, 2014, Oracle and/or its affiliates. All rights reserved.
 #
 
+from __future__ import print_function
 import calendar
 import datetime
 import errno
@@ -256,7 +257,7 @@ class Transaction(object):
                 # an action string, convert it to an action, and then back, it
                 # does ensure that the server is adding a valid action.
                 fact = actions.fromstr("set name=pkg.fmri value=%s" % self.fmri)
-                print >> tfile, str(fact)
+                print(str(fact), file=tfile)
                 tfile.close()
 
                 # XXX:
@@ -605,7 +606,7 @@ class Transaction(object):
                 # manifest.
                 tfpath = os.path.join(self.dir, "manifest")
                 tfile = file(tfpath, "ab+")
-                print >> tfile, action
+                print(action, file=tfile)
                 tfile.close()
 
                 self.types_found.add(action.name)

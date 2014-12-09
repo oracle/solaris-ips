@@ -29,9 +29,10 @@
 """
 
 #
-# Copyright 2008 Sun Microsystems, Inc.  All rights reserved.
-# Use is subject to license terms.
+# Copyright (c) 2008, 2014, Oracle and/or its affiliates. All rights reserved.
 #
+
+from __future__ import print_function
 
 #---------
 # Imports
@@ -270,7 +271,7 @@ class _Stream:
                 else:
                         buf = self._read(size)
                 self.pos += len(buf)
-                # print "reading %s bytes to %s (%s)" % (size, self.pos, self.fileobj.tell())
+                # print("reading %s bytes to %s (%s)" % (size, self.pos, self.fileobj.tell()))
                 return buf
 
         def _read(self, size):
@@ -959,20 +960,20 @@ def is_cpiofile(name):
         return False
 
 if __name__ == "__main__":
-        print is_cpiofile(sys.argv[1])
+        print(is_cpiofile(sys.argv[1]))
 
         cf = CpioFile.open(sys.argv[1])
-        print "cpiofile is:", cf
+        print("cpiofile is:", cf)
 
         for ci in cf:
-                print "cpioinfo is:", ci
-                print "  mode:", oct(ci.mode)
-                print "  uid:", ci.uid
-                print "  gid:", ci.gid
-                print "  mtime:", ci.mtime, "(%s)" % time.ctime(ci.mtime)
-                print "  size:", ci.size
-                print "  name:", ci.name
+                print("cpioinfo is:", ci)
+                print("  mode:", oct(ci.mode))
+                print("  uid:", ci.uid)
+                print("  gid:", ci.gid)
+                print("  mtime:", ci.mtime, "(%s)" % time.ctime(ci.mtime))
+                print("  size:", ci.size)
+                print("  name:", ci.name)
                 # f = cf.extractfile(ci)
                 # for l in f.readlines():
-                #         print l,
+                #         print(l, end=" ")
                 # f.close()

@@ -20,9 +20,11 @@
 # CDDL HEADER END
 #
 
-# Copyright 2008 Sun Microsystems, Inc.  All rights reserved.
-# Use is subject to license terms.
+#
+# Copyright (c) 2008, 2014, Oracle and/or its affiliates. All rights reserved.
+#
 
+from __future__ import print_function
 import cPickle as pickle
 import GeoIP
 import datetime
@@ -112,7 +114,8 @@ def retrieve_chart(url, fileprefix):
                 u = urllib2.urlopen(url)
                 f.write(u.read())
         except:
-                print >>sys.stderr, "an_catalog: couldn't retrieve chart '%s'" % url
+                print("an_catalog: couldn't retrieve chart '%s'" % url,
+                    file=sys.stderr)
 
         f.close()
 
@@ -129,19 +132,19 @@ def prefix_summary_open(fileprefix):
         return f
 
 def report_begin(cap_title):
-        print """\
+        print("""\
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
 <head>
 <title>pkg.depotd Logs: %s</title>
 </head>
-<body>""" % cap_title
+<body>""" % cap_title)
 
 def report_end():
-        print """\
+        print("""\
 </body>
-</html>"""
+</html>""")
 
 	
 def report_section_begin(cap_title, summary_file = None):
@@ -150,42 +153,42 @@ def report_section_begin(cap_title, summary_file = None):
 <div class="section">
 <h2>%s</h2>""" % cap_title
 
-        print msg
+        print(msg)
         if summary_file:
-                print >>summary_file, msg
+                print(msg, file=summary_file)
 
 def report_section_end(summary_file = None):
         msg = """</div> <!--end class=section-->"""
-        print msg
+        print(msg)
         if summary_file:
-                print >>summary_file, msg
+                print(msg, file=summary_file)
 
 
 def report_cols_begin(summary_file = None):
         msg = """<div class="colwrapper">"""
-        print msg
+        print(msg)
         if summary_file:
-                print >>summary_file, msg
+                print(msg, file=summary_file)
 
 def report_cols_end(summary_file = None):
         msg = """<br clear="all" /></div>"""
-        print msg
+        print(msg)
         if summary_file:
-                print >>summary_file, msg
+                print(msg, file=summary_file)
 
 def report_col_begin(col, summary_file = None):
         msg = """<div class="%scolumn">""" % col
 
-        print msg
+        print(msg)
         if summary_file:
-                print >>summary_file, msg
+                print(msg, file=summary_file)
 
 def report_col_end(col, summary_file = None):
         msg = """</div> <!-- end class=%scolumn -->""" % col
 
-        print msg
+        print(msg)
         if summary_file:
-                print >>summary_file, msg
+                pprint(msg, file=summary_file)
 
 
 
@@ -208,7 +211,7 @@ def report_by_date(data, title, summary_file = None):
                 days += 1
                 total += data[i]
 
-                print >>rf, i, data[i]
+                print(i, data[i], file=rf) 
                 if chart_data == "":
                         chart_data = "%d" % data[i]
                 else:
@@ -237,9 +240,9 @@ Average %s requests per day: %.1f</p>""" % (title, total, start_day, end_day,
 
         rf.close()
         
-        print msg
+        print(msg)
         if summary_file:
-                print >>summary_file, msg
+                print(msg, file=summary_file)
 
 def report_by_ip(data, title, summary_file = None):
         total = 0
@@ -247,17 +250,17 @@ def report_by_ip(data, title, summary_file = None):
 
         for i, n in (sorted(data.items(), key=lambda(k,v): (v,k))):
                 total += n
-                print >>rf, n, i
-                #print n, host_cache_lookup(i)
+                print(n, i, file=rf)
+                #print(n, host_cache_lookup(i))
 
-        print "<p>Distinct IP addresses: <b>%d</b></p>" % len(data.keys())
-        print "<p>Total %s retrievals: <b>%d</b></p>" % (title, total)
+        print("<p>Distinct IP addresses: <b>%d</b></p>" % len(data.keys()))
+        print("<p>Total %s retrievals: <b>%d</b></p>" % (title, total))
 
         rf.close()
 
         if summary_file:
-                print >>summary_file, "<p>Distinct IP addresses: <b>%d</b></p>" % len(data.keys())
-                print >>summary_file, "<p>Total %s retrievals: <b>%d</b></p>" % (title, total)
+                print("<p>Distinct IP addresses: <b>%d</b></p>" % len(data.keys()), file=summary_file)
+                print("<p>Total %s retrievals: <b>%d</b></p>" % (title, total), file=summary_file)
 
 def report_by_country(data, title, summary_file = None):
         total = 0
@@ -274,7 +277,7 @@ def report_by_country(data, title, summary_file = None):
         rf = prefix_raw_open(title, "country")
         for i, n in (sorted(data.items(), key=lambda(k,v): (v,k))):
                 total += n
-                print >>rf, n, i
+                print(n, i, file=rf)
                 if i == None:
                         continue
 
@@ -315,7 +318,7 @@ def report_by_country(data, title, summary_file = None):
 
         for r in map_regions:
                 url = "chs=440x220&cht=t&chtm=%s&chld=%s&chd=t:%s&chco=ffffff,b0d2ff,013476" % (r, chart_ccs, chart_data)
-                print "<!-- %s -->" % url
+                print("<!-- %s -->" % url)
                 fname = retrieve_chart("http://chart.apis.google.com/chart?%s" % url,
                     "%s-%s-map" % (title, r))
                 msg += """<div id="%s-%s"><img src="%s" alt="%s" /></div>""" % (title, r, fname, title)
@@ -326,14 +329,14 @@ def report_by_country(data, title, summary_file = None):
 <small>Color intensity linear in log of requests.</small>"""
        
 
-        print msg
+        print(msg)
         if summary_file:
-                print >>summary_file, msg
+                print(msg, file=summary_file)
 
 def report_by_raw_agent(data, title, summary_file = None):
         rf = prefix_raw_open(title, "country")
         for i, n in (sorted(data.items(), key=lambda(k,v): (v,k))):
-                print >>rf, i, n
+                print(i, n, file=rf)
 
         rf.close()
 

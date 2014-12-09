@@ -13,7 +13,7 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 #
-# Copyright (c) 2011, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2011, 2014, Oracle and/or its affiliates. All rights reserved.
 
 
 # Create a dictionary (timestamps) mapping paths of python files in the modules
@@ -21,6 +21,7 @@
 # filesystem timestamp.  If it's unchanged, its timestamp is the timestamp of
 # the last changeset which modified it.
 
+from __future__ import print_function
 import os
 import time
 import mercurial.cmdutil as cmdutil
@@ -71,7 +72,7 @@ for ctx in cmdutil.walkchangerevs(repo, matchfn, {'rev': revs}, prep):
                         manifest.remove(f)
 
 for name, stamp in timestamps.iteritems():
-        print stamp, name
+        print(stamp, name)
 
 # Get the timestamp of the workspace.  If it's unmodified, then use the
 # timestamp of the parent of the working directory, and the latest timestamp of
@@ -80,9 +81,9 @@ for name, stamp in timestamps.iteritems():
 s = repo.status()
 modadd = s[0] + s[1]
 if any(modadd):
-        print max((
+        print(max((
             os.stat(os.path.join(repo.root, f)).st_mtime
             for f in modadd
-        )), "."
+        )), ".")
 else:
-        print repo["."].date()[0], "."
+        print(repo["."].date()[0], ".")

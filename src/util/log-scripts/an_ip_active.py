@@ -20,8 +20,9 @@
 # CDDL HEADER END
 #
 
-# Copyright 2008 Sun Microsystems, Inc.  All rights reserved.
-# Use is subject to license terms.
+#
+# Copyright (c) 2009, 2014, Oracle and/or its affiliates. All rights reserved.
+#
 
 import cPickle as pickle
 import datetime

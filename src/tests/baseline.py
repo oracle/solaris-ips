@@ -20,9 +20,11 @@
 # CDDL HEADER END
 #
 
-# Copyright 2010 Sun Microsystems, Inc.  All rights reserved.
-# Use is subject to license terms.
+#
+# Copyright (c) 2010, 2014, Oracle and/or its affiliates. All rights reserved.
+#
 
+from __future__ import print_function
 import os
 import sys
 import unittest
@@ -80,15 +82,15 @@ class BaseLine(object):
                 """
                 lst = self.getfailures()
                 if lst:
-                        print >> sys.stderr, ""
-                        print >> sys.stderr, self.sep1
-                        print >> sys.stderr, "BASELINE MISMATCH: The" \
-                            " following results didn't match the baseline." 
-                        print >> sys.stderr, self.sep2
+                        print("", file=sys.stderr)
+                        print(self.sep1, file=sys.stderr)
+                        print("BASELINE MISMATCH: The following results didn't "
+                         "match the baseline.", file=sys.stderr)
+                        print(self.sep2, file=sys.stderr)
                         for name, result in lst:
-                                print >> sys.stderr, "%s: %s" % (name, result)
-                        print >> sys.stderr, self.sep2
-                        print >> sys.stderr, ""
+                                print("%s: %s" % (name, result), file=sys.stderr)
+                        print(self.sep2, file=sys.stderr)
+                        print("", file=sys.stderr)
   
         def store(self):
                 """Store the result set."""
@@ -98,15 +100,16 @@ class BaseLine(object):
                 try:
                         f = file(self.__filename, "w")
                 except IOError, (err, msg):
-                        print >> sys.stderr, "ERROR: storing baseline:"
-                        print >> sys.stderr, "Failed to open %s: %s" % \
-                                (self.__filename, msg)
+                        print("ERROR: storing baseline:", file=sys.stderr)
+                        print("Failed to open %s: %s" %
+                            (self.__filename, msg), file=sys.stderr)
                         return 
 
-		# Sort the results to make baseline diffs easier
-		results_sorted = self.__results.keys()
-		results_sorted.sort()
-                print >> sys.stderr, "# Writing baseline to %s." % self.__filename	
+                # Sort the results to make baseline diffs easier
+                results_sorted = self.__results.keys()
+                results_sorted.sort()
+                print("# Writing baseline to %s." % self.__filename,
+                    file=sys.stderr)
                 for s in results_sorted:
                         f.write("%s|%s%s" %
                             (s, self.__results[s], os.linesep))
@@ -122,9 +125,9 @@ class BaseLine(object):
                 try:
                         f = file(self.__filename, "r")
                 except IOError, (err, msg):
-                        print >> sys.stderr, "ERROR: loading baseline:"
-                        print >> sys.stderr, "Failed to open %s: %s" % \
-                                (self.__filename, msg)
+                        print("ERROR: loading baseline:", file=sys.stderr)
+                        print("Failed to open %s: %s" %
+                            (self.__filename, msg), file=sys.stderr)
                         return
                 for line in f.readlines():
                         n, r = line.split('|')

@@ -18,7 +18,7 @@
 #
 # CDDL HEADER END
 #
-# Copyright (c) 2010, 2012, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2010, 2014, Oracle and/or its affiliates. All rights reserved.
 #
 
 PKGVERS_COMPONENT = 5.12
@@ -247,7 +247,7 @@ lint: repository-metadata $(PDIR)
 # to pkgsend generate.
 TARGETS.cmd       = \
 	$(PKGMOGRIFY) -O /dev/null transforms/find-links $(MOGRIFESTS) | \
-		python -c 'import os, sys; print " ".join(("--target " + os.path.normpath(os.path.join(os.path.dirname(p), t)) for p, t in (l.strip().split() for l in sys.stdin.readlines())))'
+		python -c 'import os, sys; print(" ".join(("--target " + os.path.normpath(os.path.join(os.path.dirname(p), t)) for p, t in (l.strip().split() for l in sys.stdin.readlines()))))'
 
 # Create a pseudo-manifest of the proto area
 $(PDIR)/protomanifest: FRC transforms/compare-strip $(PDIR)

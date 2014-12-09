@@ -24,6 +24,7 @@
 # Copyright (c) 2014, Oracle and/or its affiliates. All rights reserved.
 #
 
+from __future__ import print_function
 import sys
 import getopt
 import gettext
@@ -72,7 +73,7 @@ def parse_argv():
                 try:
                         trackerclass = trackers[tname]
                 except KeyError:
-                        print "unknown tracker %s" % argv[0]
+                        print("unknown tracker %s" % argv[0])
                         sys.exit(2)
 
                 try:
@@ -81,8 +82,8 @@ def parse_argv():
                         st = trackerclass()
                 pts.append(st)
 
-                print "Created %s progress tracker on %s" % \
-                    (trackerclass.__name__, outputdevname)
+                print("Created %s progress tracker on %s" % \
+                    (trackerclass.__name__, outputdevname))
                 argv = argv[2:]
 
         if len(pts) > 1:
@@ -109,7 +110,7 @@ if __name__ == "__main__":
                 (_tracker, _gofast) = parse_argv()
                 progress.test_progress_tracker(_tracker, gofast=_gofast)
         except progress.ProgressTrackerException, e:
-                print >> sys.stderr, "Error: %s" % e
+                print("Error: %s" % e, file=sys.stderr)
                 sys.exit(1)
         sys.exit(0)
 

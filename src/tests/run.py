@@ -24,6 +24,7 @@
 # Copyright (c) 2008, 2014, Oracle and/or its affiliates. All rights reserved.
 #
 
+from __future__ import print_function
 import simplejson as json
 import multiprocessing
 import os
@@ -57,12 +58,12 @@ import warnings
 cov = None
 
 def usage():
-        print >> sys.stderr, "Usage: %s [-ghptv] [-c format] [-b filename] "\
-                "[-o regexp]" % sys.argv[0]
-        print >> sys.stderr, "       %s [-hptvx] [-c format] [-b filename] "\
-                "[-s regexp] [-o regexp]" % sys.argv[0]
-        print >> sys.stderr, \
-"""   -a <dir>       Archive failed test cases to <dir>/$pid/$testcasename
+        print("Usage: %s [-ghptv] [-c format] [-b filename] "\
+            "[-o regexp]" % sys.argv[0], file=sys.stderr)
+        print("       %s [-hptvx] [-c format] [-b filename] "\
+            "[-s regexp] [-o regexp]" % sys.argv[0], file=sys.stderr)
+        print("""\
+   -a <dir>       Archive failed test cases to <dir>/$pid/$testcasename
    -b <filename>  Baseline filename
    -c <format>    Collect code coverage data in xml or html format
    -d             Show debug output, including commands run, and outputs
@@ -79,7 +80,7 @@ def usage():
    -v             Verbose output
    -x             Stop after the first baseline mismatch
    -z <port>      Lowest port the test suite should use
-"""
+""", file=sys.stderr)
         sys.exit(2)
 
 if __name__ == "__main__":
@@ -106,7 +107,7 @@ if __name__ == "__main__":
                     ["generate-baseline", "parseable", "port", "timing",
                     "verbose", "baseline-file", "only"])
         except getopt.GetoptError, e:
-                print >> sys.stderr, "Illegal option -- %s" % e.opt
+                print("Illegal option -- %s" % e.opt, file=sys.stderr)
                 sys.exit(1)
 
         bfile = os.path.join(os.getcwd(), "baseline.txt")
@@ -155,8 +156,8 @@ if __name__ == "__main__":
                         try:
                                 port = int(arg)
                         except ValueError:
-                                print >> sys.stderr, "The provided port must " \
-                                    "be an integer."
+                                print("The provided port must be an integer.",
+                                    file=sys.stderr)
                                 usage()
                 elif opt == "-h":
                         usage()
@@ -166,7 +167,7 @@ if __name__ == "__main__":
                         quiet = True
                 elif opt == "-l":
                         system_test = True
-                        print "Running tests on live system."
+                        print("Running tests on live system.")
 
         pkg5testenv.setup_environment("../../proto", system_test=system_test)
 
@@ -184,7 +185,7 @@ from pkg5unittest import OUTPUT_DOTS, OUTPUT_VERBOSE, OUTPUT_PARSEABLE
 
 # Verify that CLIENT_API_VERSION is compatible.
 if pkg5unittest.CLIENT_API_VERSION not in api.COMPATIBLE_API_VERSIONS:
-        print "Test suite needs to be syned with the pkg bits."
+        print("Test suite needs to be syned with the pkg bits.")
         sys.exit(1)
     
 osname = platform.uname()[0].lower()
@@ -227,7 +228,7 @@ def find_tests(testdir, testpats, startatpat=False, output=OUTPUT_DOTS,
 
         def _vprint(*text):
                 if output == OUTPUT_VERBOSE or output == OUTPUT_PARSEABLE:
-                        print ' '.join([str(l) for l in text]),
+                        print(' '.join([str(l) for l in text]), end=" ")
 
         loader = Pkg5TestLoader()
         testclasses = []
@@ -251,7 +252,7 @@ def find_tests(testdir, testpats, startatpat=False, output=OUTPUT_DOTS,
                 try:
                         obj = __import__(name)
                 except ImportError, e:
-                        print "Skipping %s: %s" % (name, str(e))
+                        print("Skipping %s: %s" % (name, str(e)))
                         continue
 
                 if curlinepos != 0 and (curlinepos + len(filename) + 1) >= 78:
@@ -341,7 +342,7 @@ def generate_coverage(cov_format, includes, omits, dest):
                 cmd.extend(["--omit", ",".join(omits)])
         cmd.extend([cov_option, cov_dest])
 
-        print >> sys.stderr, "Generating coverage report via: ", " ".join(cmd)
+        print("Generating coverage report via: ", " ".join(cmd), file=sys.stderr)
         if subprocess.Popen(cmd).wait() != 0:
                 raise Exception("Failed to generate coverage report!")
 
@@ -367,7 +368,7 @@ if __name__ == "__main__":
         if (bailonfail or startattest) and generate:
                 usage()
         if quiet and (output != OUTPUT_DOTS):
-                print >> sys.stderr, "-q cannot be used with -v or -p"
+                print("-q cannot be used with -v or -p", file=sys.stderr)
                 usage()
 
         if output != OUTPUT_DOTS:
@@ -381,7 +382,7 @@ if __name__ == "__main__":
                 shutil.rmtree(covdir)
                 cov = None
         elif not coverage_format in ("xml", "html"):
-                print >> sys.stderr, "-c <format> must be xml or html"
+                print("-c <format> must be xml or html", file=sys.stderr)
                 usage()
 
         # Allow relative archive dir, but first convert it to abs. paths.
@@ -393,8 +394,8 @@ if __name__ == "__main__":
         import pkg.portable
 
         if not pkg.portable.is_admin():
-                print >> sys.stderr, "WARNING: You don't seem to be root." \
-                    " Some tests may fail."
+                print("WARNING: You don't seem to be root."
+                    " Some tests may fail.", file=sys.stderr)
         else:
                 ppriv = "/usr/bin/ppriv"
                 if os.path.exists(ppriv):
@@ -436,7 +437,7 @@ if __name__ == "__main__":
         # Make sure we capture stdout
         testlogfd, testlogpath = tempfile.mkstemp(suffix='.pkg-test.log')
         testlogfp = os.fdopen(testlogfd, "w")
-        print "# logging to %s" % testlogpath
+        print("# logging to %s" % testlogpath)
         sys.stdout = testlogfp
 
         if timing_file:
@@ -459,9 +460,9 @@ if __name__ == "__main__":
         cmd = ["newtask", "-c", str(os.getpid())]
         ret = subprocess.call(cmd)
         if ret != 0:
-                print >> sys.stderr, "Couldn't find the 'newtask' command.  " \
+                print("Couldn't find the 'newtask' command.  " \
                     "Please ensure it's in your path before running the test " \
-                    "suite."
+                    "suite.", file=sys.stderr)
                 sys.exit(1)
 
         # Run the python test suites
@@ -479,12 +480,12 @@ if __name__ == "__main__":
                             time_estimates, quiet, bfile)
                 except pkg5unittest.Pkg5TestCase.failureException, e:
                         exitval = 1
-                        print >> sys.stderr
-                        print >> sys.stderr, e
+                        print(file=sys.stderr)
+                        print(e, file=sys.stderr)
                         break
                 except pkg5unittest.TestStopException, e:
                         exitval = 1
-                        print >> sys.stderr
+                        print(file=sys.stderr)
                         break
                 if res.mismatches:
                         exitval = 1
@@ -522,7 +523,7 @@ if __name__ == "__main__":
                         generate_coverage(coverage_format, None,
                             proto + omits, "cov_tests")
                 except Exception, e:
-                        print >> sys.stderr, e                        
+                        print(e, file=sys.stderr)                        
                         exitval = 1
 
                 # The coverage data file and report are most likely owned by

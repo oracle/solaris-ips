@@ -28,6 +28,7 @@
 # Missing docstring; pylint: disable=C0111
 #
 
+from __future__ import print_function
 import inspect
 import itertools
 import math
@@ -272,7 +273,7 @@ class PrintTimer(object):
         read to get a monotonically increasing count of the number of times
         time_to_print() has returned True.  Can be used to key a spinner,
         e.g.:
-                print "%c" % (pt.print_value % len(__spinner_chars))
+                print("%c" % (pt.print_value % len(__spinner_chars)))
         """
 
         def __init__(self, delay):
@@ -1775,8 +1776,8 @@ class FunctionProgressTracker(ProgressTracker):
                                 # and spoiling the test_multi() test case.
                                 #
                                 chainedmeth(*args, **kwargs)
-                                print >> self.output_file, \
-                                    "%s(%s)" % (methname, s)
+                                print("%s(%s)" % (methname, s),
+                                    file=self.output_file)
 
                         return __printargs
 
@@ -2727,7 +2728,7 @@ def test_progress_tracker(t, gofast=False):
         # Unused variables (in several loops) pylint: disable=W0612
         import random
 
-        print "Use ctrl-c to skip sections"
+        print("Use ctrl-c to skip sections")
 
         if gofast == False:
                 fast = 1.0

@@ -120,7 +120,7 @@ file tmp/file/should/not/exist/here/foo group=bin mode=0755 owner=root path=foo/
                         return res
 
                 sp = subprocess.Popen(
-                    "python%s -c 'import sys; print sys.path'" % ver,
+                    "python%s -c 'import sys; print(sys.path)'" % ver,
                     shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
                 out, err = sp.communicate()
                 if err:

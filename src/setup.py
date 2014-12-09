@@ -22,6 +22,7 @@
 # Copyright (c) 2008, 2014, Oracle and/or its affiliates. All rights reserved.
 #
 
+from __future__ import print_function
 import errno
 import fnmatch
 import os
@@ -795,10 +796,10 @@ def run_cmd(args, swdir, updenv=None, ignerr=False, savestderr=None):
                 if ret != 0:
                         if stderr:
                             stderr.close()
-                        print >> sys.stderr, \
-                            "install failed and returned %d." % ret
-                        print >> sys.stderr, \
-                            "Command was: %s" % " ".join(args)
+                        print("install failed and returned %d." % ret,
+                            file=sys.stderr)
+                        print("Command was: %s" % " ".join(args),
+                            file=sys.stderr)
                         sys.exit(1)
                 if stderr:
                         stderr.close()
@@ -859,38 +860,38 @@ def intltool_update_maintain():
         args = [
             "/usr/bin/intltool-update", "--maintain"
         ]
-        print " ".join(args)
+        print(" ".join(args))
         podir = os.path.join(os.getcwd(), "po")
         run_cmd(args, podir, updenv={"LC_ALL": "C"}, ignerr=True)
 
         if os.path.exists("po/missing"):
-            print >> sys.stderr, \
-                "New file(s) with translatable strings detected:"
+            print("New file(s) with translatable strings detected:",
+                file=sys.stderr)
             missing = open("po/missing", "r")
-            print >> sys.stderr, "--------"
+            print("--------", file=sys.stderr)
             for fn in missing:
-                print >> sys.stderr, "%s" % fn.strip()
-            print >> sys.stderr, "--------"
+                print("%s" % fn.strip(), file=sys.stderr) 
+            print("--------", file=sys.stderr) 
             missing.close()
-            print >> sys.stderr, \
-"""Please evaluate whether any of the above file(s) needs localization.
+            print("""\
+Please evaluate whether any of the above file(s) needs localization.
 If so, please add its name to po/POTFILES.in.  If not (e.g., it's not
 delivered), please add its name to po/POTFILES.skip.
-Please be sure to maintain alphabetical ordering in both files."""
+Please be sure to maintain alphabetical ordering in both files.""", file=sys.stderr)
             sys.exit(1)
 
         if os.path.exists("po/notexist"):
-            print >> sys.stderr, \
-"""The following files are listed in po/POTFILES.in, but no longer exist
-in the workspace:"""
+            print("""\
+The following files are listed in po/POTFILES.in, but no longer exist
+in the workspace:""", file=sys.stderr)
             notexist = open("po/notexist", "r")
-            print >> sys.stderr, "--------"
+            print("--------", file=sys.stderr)
             for fn in notexist:
-                print >> sys.stderr, "%s" % fn.strip()
-            print >> sys.stderr, "--------"
+                print("%s" % fn.strip(), file=sys.stderr) 
+            print("--------", file=sys.stderr) 
             notexist.close()
-            print >> sys.stderr, \
-                "Please remove the file names from po/POTFILES.in"
+            print("Please remove the file names from po/POTFILES.in",
+                file=sys.stderr)
             sys.exit(1)
 
 def intltool_update_pot():
@@ -902,14 +903,13 @@ def intltool_update_pot():
         args = [
             "/usr/bin/intltool-update", "--pot"
         ]
-        print " ".join(args)
+        print(" ".join(args))
         podir = os.path.join(os.getcwd(), "po")
         run_cmd(args, podir,
             updenv={"LC_ALL": "C", "XGETTEXT": "/usr/gnu/bin/xgettext"})
 
         if not os.path.exists("po/pkg.pot"):
-            print >> sys.stderr, \
-                "Failed in generating pkg.pot."
+            print("Failed in generating pkg.pot.", file=sys.stderr)
             sys.exit(1)
 
 def intltool_merge(src, dst):
@@ -920,7 +920,7 @@ def intltool_merge(src, dst):
             "/usr/bin/intltool-merge", "-d", "-u",
             "-c", "po/.intltool-merge-cache", "po", src, dst
         ]
-        print " ".join(args)
+        print(" ".join(args))
         run_cmd(args, os.getcwd(), updenv={"LC_ALL": "C"})
 
 def i18n_check():
@@ -959,11 +959,12 @@ def i18n_check():
                                 found_errs = True
         i18n_errs.close()
         if found_errs:
-                print >> sys.stderr, \
-"The following i18n errors were detected and should be corrected:\n" \
-"(this list is saved in po/i18n_errs.txt)\n"
+                print("""\
+The following i18n errors were detected and should be corrected:
+(this list is saved in po/i18n_errs.txt)
+""", file=sys.stderr)
                 for line in open("po/i18n_errs.txt", "r"):
-                        print >> sys.stderr, line.rstrip()
+                        print(line.rstrip(), file=sys.stderr)
                 sys.exit(1)
         os.remove(xgettext_output_path)
 
@@ -972,7 +973,7 @@ def msgfmt(src, dst):
                 return
 
         args = ["/usr/bin/msgfmt", "-o", dst, src]
-        print " ".join(args)
+        print(" ".join(args))
         run_cmd(args, os.getcwd())
 
 def localizablexml(src, dst):
@@ -992,14 +993,14 @@ def localizablexml(src, dst):
             if in_fr: # in French part
                 if l.startswith('</legalnotice>'):
                     # reached end of legalnotice
-                    print >> fdst, l,
+                    print(l, file=fdst)
                     in_fr = False
             elif l.startswith('<para lang="fr"/>') or \
                     l.startswith('<para lang="fr"></para>'):
                 in_fr = True
             else:
                 # not in French part
-                print >> fdst, l,
+                print(l, file=fdst)
 
         fsrc.close()
         fdst.close()
@@ -1012,7 +1013,7 @@ def xml2po_gen(src, dst):
                 return
 
         args = ["/usr/bin/xml2po", "-o", dst, src]
-        print " ".join(args)
+        print(" ".join(args))
         run_cmd(args, os.getcwd())
 
 def xml2po_merge(src, dst, mofile):
@@ -1028,7 +1029,7 @@ def xml2po_merge(src, dst, mofile):
                 return
 
         args = ["/usr/bin/xml2po", "-t", mofile, "-o", dst, src]
-        print " ".join(args)
+        print(" ".join(args))
         run_cmd(args, os.getcwd())
 
 class installfile(Command):
@@ -1075,7 +1076,8 @@ def get_hg_version():
                 p = subprocess.Popen(['hg', 'id', '-i'], stdout = subprocess.PIPE)
                 return p.communicate()[0].strip()
         except OSError:
-                print >> sys.stderr, "ERROR: unable to obtain mercurial version"
+                print("ERROR: unable to obtain mercurial version",
+                    file=sys.stderr)
                 return "unknown"
 
 def syntax_check(filename):
@@ -1214,8 +1216,8 @@ class build_py_func(_build_py):
                         self.timestamps[path] = stamp
 
                 if p.wait() != 0:
-                        print >> sys.stderr, "ERROR: unable to gather .py " \
-                            "timestamps"
+                        print("ERROR: unable to gather .py timestamps",
+                            file=sys.stderr)
                         sys.exit(1)
 
                 return ret
@@ -1247,7 +1249,7 @@ class build_py_func(_build_py):
                         tmpfd, tmp_file = tempfile.mkstemp()
                         os.write(tmpfd, mcontent)
                         os.close(tmpfd)
-                        print "doing version substitution: ", v
+                        print("doing version substitution: ", v)
                         rv = _build_py.build_module(self, module, tmp_file, package)
                         os.unlink(tmp_file)
                         return rv
@@ -1338,7 +1340,7 @@ def xml2roff(files):
                 output_dir = os.path.join(*files[0].split("/")[:-2])
                 args = ["/usr/share/xml/xsolbook/python/xml2roff.py", "-o", output_dir]
                 args += do_files
-                print " ".join(args)
+                print(" ".join(args))
                 run_cmd(args, os.getcwd())
 
 class build_data_func(Command):

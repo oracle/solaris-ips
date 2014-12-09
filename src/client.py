@@ -42,6 +42,7 @@
 # PKG_IMAGE_TYPE [entire, partial, user] - type of image
 #       XXX or is this in the Image configuration?
 
+from __future__ import print_function
 try:
         import calendar
         import collections
@@ -1161,7 +1162,7 @@ def __write_tmp_release_notes(plan):
                         for a in plan.get_release_notes():
                                 if isinstance(a, unicode):
                                         a = a.encode("utf-8")
-                                print >> tmpfile, a
+                                print(a, file=tmpfile)
                         tmpfile.close()
                         return path
                 except Exception:

@@ -20,9 +20,11 @@
 # CDDL HEADER END
 #
 
-# Copyright 2008 Sun Microsystems, Inc.  All rights reserved.
-# Use is subject to license terms.
+#
+# Copyright (c) 2008, 2014, Oracle and/or its affiliates. All rights reserved.
+#
 
+from __future__ import print_function
 import config
 
 hostname = config.get("hostname", default="pkg")
@@ -111,4 +113,4 @@ header = """
 	<h1><img src="http://%s/logo" alt="%s"/> %s Statistics</h1>
 """ % (hostname, hostname, hostname)
 
-print header
+print(header)

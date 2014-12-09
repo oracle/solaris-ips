@@ -20,8 +20,9 @@
 # CDDL HEADER END
 #
 
-# Copyright (c) 2009, 2012, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2009, 2014, Oracle and/or its affiliates. All rights reserved.
 
+from __future__ import print_function
 import testutils
 if __name__ == "__main__":
         testutils.setup_environment("../../../proto")
@@ -2147,7 +2148,7 @@ file NOHASH group=sys mode=0755 owner=root path=%(runpath_mod_test_path)s
 
         def print_deps(self, deps):
                 for dep in deps:
-                        print dep.base_names
+                        print(dep.base_names)
 
         def test_int_smf_manifest(self):
                 """We identify SMF dependencies delivered in the same package"""

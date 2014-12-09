@@ -20,9 +20,11 @@
 # CDDL HEADER END
 #
 
-# Copyright 2008 Sun Microsystems, Inc.  All rights reserved.
-# Use is subject to license terms.
+#
+# Copyright (c) 2008, 2014, Oracle and/or its affiliates. All rights reserved.
+#
 
+from __future__ import print_function
 import cPickle as pickle
 import datetime
 import time
@@ -74,9 +76,9 @@ Period: %s - %s (%d days)<br />
 <!-- %s -->
 <img src=\"%s\" alt=\"%s\" /><br />""" % (url, fname, "Active catalog IPs over %d day window" % ndays)
 
-        print msg
+        print(msg)
         if summary_file:
-                print >>summary_file, msg
+                print(msg, file=summary_file)
 
 merge_entries_by_date = {}
 
@@ -142,6 +144,6 @@ for d in dates[1:]:
         data[d] = len(ip_counts.keys())
         
 report_section_begin("Active IP addresses")
-print "<h3>Distinct IP addresses, by date</h3>"
+print("<h3>Distinct IP addresses, by date</h3>")
 report_by_date(data, "distinct-cat-1d")
 report_section_end()

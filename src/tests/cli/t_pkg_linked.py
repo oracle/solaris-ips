@@ -25,6 +25,7 @@
 # Copyright (c) 2011, 2014, Oracle and/or its affiliates. All rights reserved.
 #
 
+from __future__ import print_function
 import testutils
 if __name__ == "__main__":
         testutils.setup_environment("../../../proto")
@@ -4132,7 +4133,7 @@ exit 0""".strip("\n")
 
         def __mk_bin(self, path, txt):
                 with file(path, "w+") as fobj:
-                        print >> fobj, txt
+                        print(txt, file=fobj)
                 self.cmdline_run("chmod a+x %s" % path, coverage=False)
 
         def __mk_zone_bins(self, base_path):

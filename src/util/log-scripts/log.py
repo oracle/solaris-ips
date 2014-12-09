@@ -20,9 +20,11 @@
 # CDDL HEADER END
 #
 
-# Copyright 2008 Sun Microsystems, Inc.  All rights reserved.
-# Use is subject to license terms.
+#
+# Copyright (c) 2008, 2014, Oracle and/or its affiliates. All rights reserved.
+#
 
+from __future__ import print_function
 import os
 import getopt
 import re
@@ -85,7 +87,7 @@ def dls_linked(codes_200, codes_206, size):
                         if total > 10 * size:
                                 try:
                                         host = socket.gethostbyaddr(k)[0],
-                                        print host
+                                        print(host)
                                 except:
                                         pass
 
@@ -110,17 +112,17 @@ if __name__ == "__main__":
         for l in lg.readlines():
                 process(l)
 
-        print "distinct hosts:  %d" % len(hosts.keys())
-        print "200 requests:  %d" % len(codes_200.keys())
-        print "206 requests:  %d" % len(codes_206.keys())
-        print "other requests:  %d" % len(codes_other.keys())
+        print("distinct hosts:  %d" % len(hosts.keys()))
+        print("200 requests:  %d" % len(codes_200.keys()))
+        print("206 requests:  %d" % len(codes_206.keys()))
+        print("other requests:  %d" % len(codes_other.keys()))
 
         if not size:
                 sys.exit(0)
 
-        print "200 units: %d" % dlunits(codes_200, size)
-        print "206 units: %d" % dlunits(codes_206, size)
+        print("200 units: %d" % dlunits(codes_200, size))
+        print("206 units: %d" % dlunits(codes_206, size))
 
-        print "linked units: %d" % dls_linked(codes_200, codes_206, size)
+        print("linked units: %d" % dls_linked(codes_200, codes_206, size))
 
-        print "total units: %d" % (totals["dl"] / size)
+        print("total units: %d" % (totals["dl"] / size))

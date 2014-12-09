@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2008, 2013, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2008, 2014, Oracle and/or its affiliates. All rights reserved.
 #
 
 """\
@@ -45,6 +45,7 @@ The model is that the summary is printed to standard out, and a fuller report is
 printed to catalog.html in the current directory.
 """
 
+from __future__ import print_function
 import datetime
 import fileinput
 import getopt
@@ -71,22 +72,22 @@ catalog_by_pkg_version = {}
 catalog_by_arch = {}
 
 def report_catalog_by_arch():
-        print "<pre>"
+        print("<pre>")
         for i in catalog_by_arch.keys():
-                print i, catalog_by_arch[i]
-        print "</pre>"
+                print(i, catalog_by_arch[i])
+        print("</pre>")
 
 def report_catalog_by_raw_agent(summary_file = None):
-        print "<pre>"
+        print("<pre>")
         for i, n in (sorted(catalog_by_raw_agent.items(), key=lambda(k,v): (v,k))):
-                print i, n
-        print "</pre>"
+                print(i, n)
+        print("</pre>")
 
 def report_catalog_by_pkg_version():
-        print "<pre>"
+        print("<pre>")
         for i, n in (sorted(catalog_by_pkg_version.items(), key=lambda(k,v): (v,k))):
-                print i, n
-        print "</pre>"
+                print(i, n)
+        print("</pre>")
 
 def report_catalog_by_lang():
         labels = ""
@@ -94,7 +95,7 @@ def report_catalog_by_lang():
         min = 0
         max = 0
 
-        print "<pre>"
+        print("<pre>")
         for i, n in (sorted(catalog_by_lang.items(), key=lambda(k,v): (v,k))):
                 if labels == "":
                         labels = "%s" % i
@@ -105,16 +106,16 @@ def report_catalog_by_lang():
                 else:
                         data += ",%d" % n
 
-                print i, n
+                print(i, n)
                 if n > max:
                         max = n
 
-        print "</pre>"
+        print("</pre>")
 
         url = "cht=p3&chs=800x300&chl=%s&chds=%d,%d&chd=t:%s" % (labels,min,max,data)
 
         fname = retrieve_chart("http://chart.apis.google.com/chart?%s" % url, "lang")
-        print "<img src=\"%s\" />" % fname
+        print("<img src=\"%s\" />" % fname)
 
 def count_catalog(mg, d):
 

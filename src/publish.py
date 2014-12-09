@@ -24,6 +24,7 @@
 # Copyright (c) 2007, 2014, Oracle and/or its affiliates. All rights reserved.
 #
 
+from __future__ import print_function
 import fnmatch
 import getopt
 import gettext
@@ -78,7 +79,7 @@ def usage(usage_error=None, cmd=None, retcode=2):
         if usage_error:
                 error(usage_error, cmd=cmd)
 
-        print _("""\
+        print(_("""\
 Usage:
         pkgsend [options] command [cmd_options] [operands]
 
@@ -92,7 +93,7 @@ Options:
         --help or -?    display usage message
 
 Environment:
-        PKG_REPO        The path or URI of the destination repository.""")
+        PKG_REPO        The path or URI of the destination repository."""))
         sys.exit(retcode)
 
 class SolarisBundleVisitor(object):
@@ -586,8 +587,8 @@ def trans_import(repo_uri, args, visitors=[]):
         try:
                 trans_id = os.environ["PKG_TRANS_ID"]
         except KeyError:
-                print >> sys.stderr, \
-                    _("No transaction ID specified in $PKG_TRANS_ID")
+                print(_("No transaction ID specified in $PKG_TRANS_ID"),
+                    file=sys.stderr)
                 sys.exit(1)
 
         opts, pargs = getopt.getopt(args, "T:", ["target="])
@@ -664,7 +665,7 @@ def trans_generate(args, visitors=[]):
                         if "path" in action.attrs and hasattr(action, "hash") \
                             and action.hash == "NOHASH":
                                 action.hash = action.attrs["path"]
-                        print action
+                        print(action)
         except TypeError, e:
                 error(e, cmd="generate")
                 return 1
@@ -790,13 +791,13 @@ def main_func():
                 for visitor in visitors:
                         for warn in visitor.warnings:
                                 if not printed_space:
-                                        print ""
+                                        print("")
                                         printed_space = True
                                 error(warn, cmd=subcommand)
 
                         for err in visitor.errors:
                                 if not printed_space:
-                                        print ""
+                                        print("")
                                         printed_space = True
                                 error(err, cmd=subcommand)
                                 ret = 1
@@ -833,7 +834,7 @@ if __name__ == "__main__":
                 if not (isinstance(_e, IOError) and _e.errno == errno.EPIPE):
                         # Only print message if failure wasn't due to
                         # broken pipe (EPIPE) error.
-                        print >> sys.stderr, "pkgsend: %s" % _e
+                        print("pkgsend: %s" % _e, file=sys.stderr)
                 __ret = 1
         except MemoryError:
                 error("\n" + misc.out_of_memory())

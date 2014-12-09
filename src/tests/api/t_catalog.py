@@ -21,8 +21,9 @@
 # CDDL HEADER END
 #
 
-# Copyright (c) 2008, 2012, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2008, 2014, Oracle and/or its affiliates. All rights reserved.
 
+from __future__ import print_function
 import testutils
 if __name__ == "__main__":
         testutils.setup_environment("../../../proto")
@@ -1153,7 +1154,7 @@ class TestCorruptCatalog(pkg5unittest.Pkg5TestCase):
         def test_corrupt_attrs2(self):
                 """Raise InvalidCatalogFile for a catalog.attrs w/ garbage"""
                 f = open(os.path.join(self.test_root, "catalog.attrs"), "w")
-                print >> f, 'garbage'
+                print('garbage', file=f)
                 f.close()
                 self.assertRaises(api_errors.InvalidCatalogFile,
                     catalog.Catalog, meta_root=self.test_root)
@@ -1172,7 +1173,7 @@ class TestCorruptCatalog(pkg5unittest.Pkg5TestCase):
                 f.close()
                 del struct["parts"]
                 f = open(fname, "w")
-                print >> f, simplejson.dumps(struct)
+                print(simplejson.dumps(struct), file=f)
                 f.close()
 
                 self.assertRaises(api_errors.InvalidCatalogFile,
@@ -1194,7 +1195,7 @@ class TestCorruptCatalog(pkg5unittest.Pkg5TestCase):
                 sig = int(struct["_SIGNATURE"]["sha-1"], 16)
                 struct["_SIGNATURE"]["sha-1"] = "%x" % (sig + 1)
                 f = open(fname, "w")
-                print >> f, simplejson.dumps(struct)
+                print(simplejson.dumps(struct), file=f)
                 f.close()
 
                 c = catalog.Catalog(meta_root=self.test_root)
@@ -1217,7 +1218,7 @@ class TestCorruptCatalog(pkg5unittest.Pkg5TestCase):
                 f.close()
                 del struct["_SIGNATURE"]
                 f = open(fname, "w")
-                print >> f, simplejson.dumps(struct)
+                print(simplejson.dumps(struct), file=f)
                 f.close()
 
                 c = catalog.Catalog(meta_root=self.test_root)
@@ -1240,7 +1241,7 @@ class TestCorruptCatalog(pkg5unittest.Pkg5TestCase):
                 f.close()
                 struct["parts"]["/badpartname/"] = {}
                 f = open(fname, "w")
-                print >> f, simplejson.dumps(struct)
+                print(simplejson.dumps(struct), file=f)
                 f.close()
 
                 # Catalog constructor should reject busted 'parts'
