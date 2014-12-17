@@ -231,7 +231,7 @@ class TestFix(pkg5unittest.SingleDepotTestCase):
                 size2 = self.file_size(victim)
                 self.assertEqual(size1, size2)
 
-        def __do_alter_verify(self, pfmri):
+        def __do_alter_verify(self, pfmri, verbose=False, quiet=False):
                 # Alter the owner, group, mode, and timestamp of all files (and
                 # directories) to something different than the package declares.
                 m = manifest.Manifest()
@@ -252,7 +252,12 @@ class TestFix(pkg5unittest.SingleDepotTestCase):
                         os.utime(fpath, (ctime, ctime))
 
                 # Call pkg fix to fix them.
-                self.pkg("fix %s" % pfmri)
+                fix_cmd = "fix"
+                if verbose:
+                        fix_cmd += " -v"
+                if quiet:
+                        fix_cmd += " -q"
+                self.pkg("%s %s" % (fix_cmd, pfmri))
 
                 # Now verify that fix actually fixed them.
                 for a in m.gen_actions():
@@ -344,17 +349,37 @@ class TestFix(pkg5unittest.SingleDepotTestCase):
                 # wasn't changed.
                 self.pkg("fix", exit=1)
 
-        def test_fix_info_output(self):
-                """Test that pkg fix will show informational messages if the
-                package has errors to be fixed."""
-
+        def test_fix_output(self):
+                """Test that the output and exit code works fine for pkg fix."""
+ 
                 self.image_create(self.rurl)
                 pfmri = self.plist["preserve@1.0-0"]
                 self.pkg("install %s" % pfmri)
+                info = "editable file has been changed"
+                # Test that the output is expected when the file has only info
+                # level mistakes.
                 self.file_append("amber1", "junk")
+                self.pkg("fix preserve", exit=4)
+                assert info not in self.output
+                self.pkg("fix -n preserve", exit=4)
+                assert info not in self.output
+
+                self.pkg("fix -v preserve", exit=4)
+                assert info in self.output
+                self.pkg("fix -nv preserve", exit=4)
+                assert info in self.output
+
+                self.pkg("fix -q preserve", exit=4)
+                assert(self.output == "")
+
+                # Test that the output is expected when the file has both info
+                # and error level mistakes. 
                 self.__do_alter_verify(pfmri)
-                self.output.index("editable file has been changed")
-                self.pkg("verify preserve")
+                assert info not in self.output
+                self.__do_alter_verify(pfmri, verbose=True)
+                assert info in self.output
+                self.__do_alter_verify(pfmri, quiet=True)
+                assert(self.output == "")
 
 
 if __name__ == "__main__":

@@ -4597,7 +4597,7 @@ adm:NP:6445::::::
                 sdata = file(spath).readlines()
 
                 def finderr(err):
-                        self.assert_("\t\t" + err in self.output)
+                        self.assert_("\t\tERROR: " + err in self.output)
 
                 # change a provided, empty-default field to something else
                 pdata[-1] = "misspiggy:x:5:0:& loves Kermie:/:/bin/zsh"
@@ -9214,7 +9214,7 @@ adm
 
                         pkgs.append(s)
 
-                self.pkgsend_bulk(self.rurl, pkgs)
+                self.plist = self.pkgsend_bulk(self.rurl, pkgs)
 
         def test_multiple_files_install(self):
                 """Test the behavior of pkg(1) when multiple file actions
@@ -9270,22 +9270,27 @@ adm
                 self.pkg("uninstall '*'")
                 self.pkg("-D broken-conflicting-action-handling=1 install "
                     "dupfilesp1 dupfilesp2@0 dupfilesp3")
-                # XXX The checks here rely on verify failing due to hashes being
-                # wrong; they should probably report a duplicate action instead.
+                # Verify should report a duplicate action error on dupfilesp1,
+                # dupfilesp2 and dupfilesp3 and shouldn't report it was failing
+                # due to hashes being wrong.
                 self.pkg("verify", exit=1)
                 out1, err1 = self.output, self.errout
+                for i, l in enumerate(self.plist):
+                    if l.startswith("pkg://test/dupfilesp1"):
+                        index = i
+                expected = "\n  {0}\n  {1}\n  {2}".format(
+                    self.plist[index], self.plist[index + 1], self.plist[index + 3])
+                self.assert_(expected in err1, err1)
+                self.assert_("Hash" not in out1)
                 self.pkg("uninstall dupfilesp3")
-                # Because we removed dupfilesp3, the error output in this verify
-                # won't exactly match that from the previous one, but the one
-                # remaining failing package should give the same output since we
-                # didn't modify the FS, so search for the current output in the
-                # old.
+                # Removing dupfilesp3, verify should still report a duplicate
+                # action error on dupfilesp1 and dupfilesp2.
                 self.pkg("verify", exit=1)
-                out2 = self.output
-                # Strip the first (header) line; this error might not have been
-                # first in the previous output.
-                out2 = out2[out2.index("\n") + 1:]
-                self.assert_(out2 in out1)
+                out2, err2 = self.output, self.errout
+                expected = "\n  {0}\n  {1}".format(
+                    self.plist[index], self.plist[index + 1])
+                self.assert_(expected in err2)
+                self.assert_("Hash" not in out2)
 
                 # Removing all but one of the offending actions should get us
                 # back to sanity.
@@ -10278,7 +10283,7 @@ adm
                 self.pkg("uninstall dupuserp3")
                 self.pkg("verify", exit=1)
                 out2 = self.output
-                out2 = out2[out2.index("\n") + 1:]
+                out2 = out2[out2.index("STATUS\n") + 7:]
                 self.assert_(out2 in out1)
 
                 # Removing all but one of the offending actions should get us

@@ -2208,7 +2208,7 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                     _noexecute=noexecute, _refresh_catalogs=False,
                     _update_index=False, args=args, tagged=tagged)
 
-        def gen_plan_dehydrate(self, publishers, noexecute=True):
+        def gen_plan_dehydrate(self, publishers=None, noexecute=True):
                 """This is a generator function that yields a PlanDescription
                 object.
 
@@ -2228,7 +2228,7 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                     _refresh_catalogs=False, _update_index=False,
                     publishers=publishers)
 
-        def gen_plan_rehydrate(self, publishers, noexecute=True):
+        def gen_plan_rehydrate(self, publishers=None, noexecute=True):
                 """This is a generator function that yields a PlanDescription
                 object.
 
@@ -2270,7 +2270,7 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                 return self.__plan_op(op, args=args, _be_activate=be_activate,
                     _backup_be=backup_be, _backup_be_name=backup_be_name,
                     _be_name=be_name, _new_be=new_be, _noexecute=noexecute,
-                    _update_index=False)
+                    _refresh_catalogs=False, _update_index=False)
 
         def attach_linked_child(self, lin, li_path, li_props=None,
             accept=False, allow_relink=False, force=False, li_md_only=False,

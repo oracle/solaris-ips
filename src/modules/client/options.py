@@ -89,7 +89,6 @@ ACT_TIMEOUT           = "act_timeout"
 PUBLISHERS            = "publishers"
 
 
-
 def opts_table_cb_beopts(api_inst, opts, opts_new):
 
         # synthesize require_new_be and deny_new_be into new_be
@@ -876,7 +875,16 @@ opts_fix = \
     opts_table_beopts + \
     opts_table_nqv + \
     opts_table_licenses + \
+    opts_table_no_headers + \
     []
+
+opts_verify = \
+    opts_table_quiet + \
+    opts_table_verbose + \
+    opts_table_no_headers + \
+    [
+    opts_table_cb_nqv
+]
 
 pkg_op_opts = {
 
@@ -899,7 +907,8 @@ pkg_op_opts = {
     pkgdefs.PKG_OP_SET_PROP_LINKED: opts_set_property_linked,
     pkgdefs.PKG_OP_SYNC           : opts_sync_linked,
     pkgdefs.PKG_OP_UNINSTALL      : opts_uninstall,
-    pkgdefs.PKG_OP_UPDATE         : opts_update
+    pkgdefs.PKG_OP_UPDATE         : opts_update,
+    pkgdefs.PKG_OP_VERIFY         : opts_verify
 }
 
 def get_pkg_opts(op, add_table=None):

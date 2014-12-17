@@ -66,6 +66,7 @@ PKG_OP_SET_PROP_LINKED = "set-property-linked"
 PKG_OP_SYNC            = "sync-linked"
 PKG_OP_UNINSTALL       = "uninstall"
 PKG_OP_UPDATE          = "update"
+PKG_OP_VERIFY          = "verify"
 pkg_op_values          = frozenset([
     PKG_OP_ATTACH,
     PKG_OP_AUDIT_LINKED,
@@ -87,6 +88,7 @@ pkg_op_values          = frozenset([
     PKG_OP_SYNC,
     PKG_OP_UNINSTALL,
     PKG_OP_UPDATE,
+    PKG_OP_VERIFY
 ])
 
 API_OP_ATTACH         = "attach-linked"

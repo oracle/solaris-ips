@@ -131,6 +131,16 @@ class TestPkgVerify(pkg5unittest.SingleDepotTestCase):
                     "bobcat"))
                 self.pkg_verify("foo", exit=1)
                 self.assert_("Unexpected Exception" not in self.output)
+                self.assert_("PACKAGE" in self.output and "STATUS" in self.output)
+
+                # Test that "-H" works as expected. 
+                self.pkg_verify("foo -H", exit=1)
+                self.assert_("PACKAGE" not in self.output and
+                    "STATUS" not in self.output)
+
+                # Should not output anything when using -q.
+                self.pkg_verify("-q foo", exit=1)
+                assert(self.output == "")
                 self.pkg("set-publisher -p %s" % self.rurl)
                 self.pkg("fix foo")
 
@@ -210,7 +220,7 @@ class TestPkgVerify(pkg5unittest.SingleDepotTestCase):
                 fd.write("Bobcats are here")
                 fd.close()
                 self.pkg_verify("foo")
-                assert(self.output == "")
+                assert("editable file has been changed" not in self.output)
                 # find out about it via -v
                 self.pkg_verify("-v foo")
                 self.output.index("etc/preserved")

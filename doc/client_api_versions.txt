@@ -19,7 +19,7 @@ Incompatible with clients using versions 72-80.
         * Added methods:
                 add_item_message()
                 extend_item_messages()
-                get_item_mssages()
+                gen_item_messages()
 
     pkg.client.progress has changed as follows:
         * Removed methods from ProgressTracker:

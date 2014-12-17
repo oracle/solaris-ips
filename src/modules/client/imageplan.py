@@ -64,7 +64,8 @@ import pkg.version
 from pkg.client.debugvalues import DebugValues
 from pkg.client.plandesc import _ActionPlan
 from pkg.mediator import mediator_impl_matches
-from pkg.client.pkgdefs import PKG_OP_DEHYDRATE, PKG_OP_REHYDRATE
+from pkg.client.pkgdefs import (PKG_OP_DEHYDRATE, PKG_OP_REHYDRATE, MSG_ERROR,
+    MSG_WARNING, MSG_INFO)
 
 class ImagePlan(object):
         """ImagePlan object contains the plan for changing the image...
@@ -1430,27 +1431,35 @@ class ImagePlan(object):
 
                 pt = self.__progtrack
                 pt.plan_all_start()
-                pt.plan_start(pt.PLAN_PKGPLAN)
 
                 if args:
                         proposed_dict, self.__match_rm = self.__match_user_fmris(
                             self.image, args, self.MATCH_INST_VERSIONS)
 
                         # merge patterns together
-                        result = set([
+                        proposed_fixes = sorted(set([
                             f
                             for each in proposed_dict.values()
                             for f in each
-                        ])
+                        ]))
                 else:
-                        result = [ f for f in self.image.gen_installed_pkgs() ]
+                        proposed_fixes = [
+                            f 
+                            for f in self.image.gen_installed_pkgs(ordered=True)
+                        ]
 
-                if result:
-                        pt.plan_start(pt.PLAN_PKG_VERIFY, goal=len(result))
+                if proposed_fixes:
+                        pt.plan_start(pt.PLAN_PKG_VERIFY, goal=len(proposed_fixes))
                 repairs = []
 
-                for pfmri in result:
+                for pfmri in proposed_fixes:
                         entries = []
+                        needs_fix = []
+                        result = _("OK")
+                        failed = False
+                        msg_type = MSG_INFO
+                        ffmri = str(pfmri)
+                        timestamp = time.time()
 
                         # Since every entry returned by verify might not be
                         # something needing repair, the relevant information
@@ -1459,43 +1468,57 @@ class ImagePlan(object):
                         # related messages output for it.
                         for act, errors, warnings, pinfo in self.image.verify(
                             pfmri, pt, verbose=True, forever=True):
-                                    if not errors:
-                                            # Fix will silently skip packages that
-                                            # don't have errors, but will display
-                                            # the additional messages if there
-                                            # is at least one error.
-                                            continue
+                                    # determine the package's status and message
+                                    # type
+                                    if errors:
+                                            failed = True
+                                            result = _("ERROR")
+                                            msg_type = MSG_ERROR
+                                            # something needs fix for this action
+                                            needs_fix.append(act)
+                                    elif not failed and warnings:
+                                            result = _("WARNING")
+                                            msg_type = MSG_WARNING
 
                                     entries.append((act, errors, warnings,
                                         pinfo))
 
-                        if not entries:
-                                # Nothing to fix for this package.
-                                continue
+                        self.pd.add_item_message(ffmri, timestamp,
+                            msg_type, _("%(pkg_name)-70s %(result)7s") % {
+                            "pkg_name": pfmri.get_pkg_stem(),
+                            "result": result })
 
-                        failed = []
-                        ffmri = str(pfmri)
-                        timestamp = time.time()
                         for act, errors, warnings, info in entries:
-                                if act:
-                                        failed.append(act)
-                                        self.pd.add_item_message(ffmri,
-                                            timestamp, pkgdefs.MSG_ERROR,
-                                            "\t%s" % act.distinguished_name())
-                                for x in errors:
-                                        self.pd.add_item_message(ffmri,
-                                            timestamp, pkgdefs.MSG_ERROR,
-                                            "\t\t%s" % x)
-                                for x in warnings:
-                                        self.pd.add_item_message(ffmri,
-                                            timestamp, pkgdefs.MSG_WARNING,
-                                            "\t\t%s" % x)
-                                for x in info:
-                                        self.pd.add_item_message(ffmri,
-                                            timestamp, pkgdefs.MSG_INFO,
-                                            "\t\t%s" % x)
-                        repairs.append((pfmri, failed))
-                if result:
+                                    if act:
+                                            # determine the action's message type
+                                            if errors:
+                                                    msg_type = MSG_ERROR
+                                            elif warnings:
+                                                    msg_type = MSG_WARNING
+                                            else:
+                                                    msg_type = MSG_INFO
+
+                                            self.pd.add_item_message(ffmri,
+                                                timestamp, msg_type,
+                                                "\t%s" % act.distinguished_name())
+
+                                    for x in errors:
+                                            self.pd.add_item_message(ffmri,
+                                                timestamp, MSG_ERROR,
+                                                "\t\tERROR: %s" % x)
+                                    for x in warnings:
+                                            self.pd.add_item_message(ffmri,
+                                                timestamp, MSG_WARNING,
+                                                "\t\tWARNING: %s" % x)
+                                    for x in info:
+                                            self.pd.add_item_message(ffmri,
+                                                timestamp, MSG_INFO,
+                                                "\t\t%s" % x)
+
+                        if not needs_fix:
+                                continue
+                        repairs.append((pfmri, needs_fix))
+                if proposed_fixes:
                         pt.plan_done(pt.PLAN_PKG_VERIFY)
 
                 # Repair anything we failed to verify

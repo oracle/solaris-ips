@@ -242,7 +242,7 @@ def usage(usage_error=None, cmd=None, retcode=EXIT_BADOPT, full=False):
 
         adv_usage["verify"] = _("[-Hqv] [pkg_fmri_pattern ...]")
         adv_usage["fix"] = _(
-            "[-nvq] [--no-be-activate]\n"
+            "[-Hnvq] [--no-be-activate]\n"
             "            [--no-backup-be | --require-backup-be] [--backup-be-name name]\n"
             "            [--deny-new-be | --require-new-be] [--be-name name]\n"
             "            [--accept] [--licenses] [pkg_fmri_pattern ...]")
@@ -711,137 +711,6 @@ def get_tracker():
                         progresstracker = progress.CommandLineProgressTracker()
 
         return progresstracker
-
-def verify_image(api_inst, args):
-        opts, pargs = getopt.getopt(args, "vfqH")
-
-        quiet = False
-        verbose = 0
-        # for now, always check contents of files
-        forever = display_headers = True
-
-        for opt, arg in opts:
-                if opt == "-H":
-                        display_headers = False
-                if opt == "-v":
-                        verbose = verbose + 1
-                elif opt == "-f":
-                        forever = True
-                elif opt == "-q":
-                        quiet = True
-                        display_headers = False
-                        global_settings.client_output_quiet = True
-
-        if verbose and quiet:
-                usage(_("-v and -q may not be combined"), cmd="verify")
-        if verbose > 2:
-                DebugValues.set_value("plan", "True")
-
-        # XXX suppress progress tracker output until verify is moved into api.
-        global_settings.client_output_quiet = True
-
-        # Reset the progress tracker here, because we may have
-        # to switch to a different tracker due to the options parse.
-        _api_inst.progresstracker = get_tracker()
-
-        # XXX verify should be part of pkg.client.api
-        any_errors = False
-        processed = False
-        notfound = EmptyI
-        try:
-                res = api_inst.get_pkg_list(api.ImageInterface.LIST_INSTALLED,
-                    patterns=pargs, raise_unmatched=True, return_fmris=True)
-                # We un-generate this because this is a long operation and
-                # we would like to know how many pkgs we will operate upon.
-                result = list(res)
-                pt = api_inst.progresstracker
-                if result:
-                        pt.plan_start(pt.PLAN_PKG_VERIFY, goal=len(result))
-
-                for entry in result:
-                        pfmri = entry[0]
-                        entries = []
-                        result = _("OK")
-                        failed = False
-                        processed = True
-
-                        # Since every entry returned by verify might not be
-                        # something needing repair, the relevant information
-                        # for each package must be accumulated first to find
-                        # an overall success/failure result and then the
-                        # related messages output for it.
-                        for act, errors, warnings, pinfo in img.verify(pfmri,
-                            pt, verbose=verbose, forever=forever):
-                                if errors:
-                                        failed = True
-                                        if quiet:
-                                                # Nothing more to do.
-                                                break
-                                        result = _("ERROR")
-                                elif not failed and warnings:
-                                        result = _("WARNING")
-
-                                entries.append((act, errors, warnings, pinfo))
-
-                        any_errors = any_errors or failed
-                        if (not failed and not verbose) or quiet:
-                                # Nothing more to do.
-                                continue
-
-                        if display_headers:
-                                display_headers = False
-                                msg(_("%(pkg_name)-70s %(result)7s") % {
-                                    "pkg_name": _("PACKAGE"),
-                                    "result": _("STATUS") })
-
-                        msg(_("%(pkg_name)-70s %(result)7s") % {
-                            "pkg_name": pfmri.get_pkg_stem(),
-                            "result": result })
-
-                        for act, errors, warnings, pinfo in entries:
-                                if act:
-                                        msg("\t%s" % act.distinguished_name())
-                                for x in errors:
-                                        msg("\t\t%s" % x)
-                                for x in warnings:
-                                        msg("\t\t%s" % x)
-                                if verbose:
-                                        # Only display informational messages if
-                                        # verbose is True.
-                                        for x in pinfo:
-                                                msg("\t\t%s" % x)
-                pt.plan_done(pt.PLAN_PKG_VERIFY)
-        except api_errors.InventoryException, e:
-                if e.illegal:
-                        for i in e.illegal:
-                                error(i)
-                        return EXIT_OOPS
-                notfound = e.notfound
-        except api_errors.ImageFormatUpdateNeeded, e:
-                format_update_error(e)
-                return EXIT_OOPS
-
-        if notfound:
-                if processed:
-                        # Ensure a blank line is inserted after verify output.
-                        logger.error(" ")
-
-                error(_("no packages matching the following patterns are "
-                    "installed:\n  %s") %
-                    "\n  ".join(notfound), cmd="verify")
-
-                if processed:
-                        if any_errors:
-                                msg2 = _("See above for\nverification failures.")
-                        else:
-                                msg2 = _("No packages failed\nverification.")
-                        logger.error(_("\nAll other patterns matched "
-                            "installed packages.  %s" % msg2))
-                any_errors = True
-
-        if any_errors:
-                return EXIT_OOPS
-        return EXIT_OK
 
 def accept_plan_licenses(api_inst):
         """Helper function that marks all licenses for the current plan as
@@ -1326,7 +1195,7 @@ def display_plan_licenses(api_inst, show_all=False, show_req=True):
                 api_inst.set_plan_license_status(pfmri, lic, displayed=True)
 
 def display_plan(api_inst, child_image_plans, noexecute, op, parsable_version,
-    quiet, show_licenses, stage, verbose):
+    quiet, show_licenses, stage, verbose, omit_headers):
 
         plan = api_inst.describe()
         if not plan:
@@ -1338,7 +1207,7 @@ def display_plan(api_inst, child_image_plans, noexecute, op, parsable_version,
                 display_plan_licenses(api_inst, show_req=False)
                 return
 
-        if parsable_version is None and \
+        if not quiet and parsable_version is None and \
             api_inst.planned_nothingtodo(li_ignore_all=True):
                 # nothing todo
                 if op == PKG_OP_UPDATE:
@@ -1348,29 +1217,46 @@ def display_plan(api_inst, child_image_plans, noexecute, op, parsable_version,
                 if api_inst.ischild():
                         s += " (%s)" % api_inst.get_linked_name()
                 msg(s)
-                return
+                if op != PKG_OP_FIX or not verbose:
+                        # Even nothingtodo, but need to continue to display INFO
+                        # message if verbose is True.
+                        return
 
         if parsable_version is None:
                 display_plan_licenses(api_inst, show_all=show_licenses)
 
         if not quiet:
                 __display_plan(api_inst, verbose, noexecute, op=op)
+
         if parsable_version is not None:
                 __display_parsable_plan(api_inst, parsable_version,
                     child_image_plans)
-        else:
+        elif not quiet:
                 # Ensure a blank line is inserted before the message output.
                 msg()
+
                 last_item_id = None
                 for item_id, msg_time, msg_type, msg_text in \
-                    plan.get_item_messages():
+                    plan.gen_item_messages(ordered=True):
 
                         if last_item_id is None or last_item_id != item_id:
                                 last_item_id = item_id
-                                if not noexecute and op == PKG_OP_FIX:
-                                        msg(_("Repaired: %-50s") % item_id)
-                                else:
-                                        msg(_("Package: %-50s") % item_id)
+                                if not noexecute and op == PKG_OP_FIX and \
+                                    msg_type == MSG_ERROR:
+                                        msg(_("Repairing: %-50s") % item_id)
+
+                        if op == PKG_OP_FIX and not verbose and \
+                            msg_type == MSG_INFO:
+                                # If verbose is False, don't display any INFO
+                                # messages.
+                                continue
+
+                        if not omit_headers:
+                                omit_headers = True
+                                msg(_("%(pkg_name)-70s %(result)7s") % {
+                                    "pkg_name": _("PACKAGE"),
+                                    "result": _("STATUS") })
+
                         msg(msg_text)
 
 def __api_prepare_plan(operation, api_inst):
@@ -1635,7 +1521,7 @@ pkg:/package/pkg' as a privileged user and then retry the %(op)s."""
 def __api_plan(_op, _api_inst, _accept=False, _li_ignore=None, _noexecute=False,
     _origins=None, _parsable_version=None, _quiet=False,
     _review_release_notes=False, _show_licenses=False, _stage=API_STAGE_DEFAULT,
-    _verbose=0, **kwargs):
+    _verbose=0, _omit_headers=False, **kwargs):
 
         # All the api interface functions that we invoke have some
         # common arguments.  Set those up now.
@@ -1702,7 +1588,8 @@ def __api_plan(_op, _api_inst, _accept=False, _li_ignore=None, _noexecute=False,
                         if _parsable_version is None:
                                 display_plan(_api_inst, [], _noexecute,
                                     _op, _parsable_version, _quiet,
-                                    _show_licenses, _stage, _verbose)
+                                    _show_licenses, _stage, _verbose,
+                                    _omit_headers)
 
                         # if requested accept licenses for child images.  we
                         # have to do this before recursing into children.
@@ -1729,7 +1616,7 @@ def __api_plan(_op, _api_inst, _accept=False, _li_ignore=None, _noexecute=False,
                 try:
                         display_plan(_api_inst, child_plans, _noexecute,
                             _op, _parsable_version, _quiet, _show_licenses,
-                            _stage, _verbose)
+                            _stage, _verbose, _omit_headers)
                 except api_errors.ApiException, e:
                         error(e, cmd=_op)
                         return EXIT_OOPS
@@ -1806,7 +1693,7 @@ def __api_plan_delete(api_inst):
 def __api_op(_op, _api_inst, _accept=False, _li_ignore=None, _noexecute=False,
     _origins=None, _parsable_version=None, _quiet=False,
     _review_release_notes=False, _show_licenses=False,
-    _stage=API_STAGE_DEFAULT, _verbose=0, **kwargs):
+    _stage=API_STAGE_DEFAULT, _verbose=0, _omit_headers=False, **kwargs):
         """Do something that involves the api.
 
         Arguments prefixed with '_' are primarily used within this
@@ -1822,7 +1709,7 @@ def __api_op(_op, _api_inst, _accept=False, _li_ignore=None, _noexecute=False,
                     _parsable_version=_parsable_version, _quiet=_quiet,
                     _review_release_notes=_review_release_notes,
                     _show_licenses=_show_licenses, _stage=_stage,
-                    _verbose=_verbose, **kwargs)
+                    _verbose=_verbose, _omit_headers=_omit_headers, **kwargs)
 
                 if rv != EXIT_OK:
                         return rv
@@ -2203,13 +2090,29 @@ def rehydrate(op, api_inst, pargs, noexecute, publishers, quiet, verbose):
             _verbose=verbose, publishers=publishers)
 
 def fix(op, api_inst, pargs, accept, backup_be, backup_be_name, be_activate,
-    be_name, new_be, noexecute, quiet, show_licenses, verbose):
+    be_name, new_be, noexecute, omit_headers, quiet, show_licenses, verbose):
         """Fix packaging errors found in the image."""
 
         return __api_op(op, api_inst, args=pargs, _accept=accept,
-            _noexecute=noexecute, _quiet=quiet, _show_licenses=show_licenses,
-            _verbose=verbose, backup_be=backup_be, backup_be_name=backup_be_name,
-            be_activate=be_activate, be_name=be_name, new_be=new_be)
+            _noexecute=noexecute, _omit_headers=omit_headers, _quiet=quiet,
+            _show_licenses=show_licenses, _verbose=verbose, backup_be=backup_be,
+            backup_be_name=backup_be_name, be_activate=be_activate,
+            be_name=be_name, new_be=new_be)
+
+def verify(op, api_inst, pargs, omit_headers, quiet, verbose):
+        """Determine if installed packages match manifests."""
+
+        rval = __api_op(PKG_OP_FIX, api_inst, args=pargs, _noexecute=True,
+            _quiet=quiet, _verbose=verbose, _omit_headers=omit_headers)
+
+        if rval == EXIT_NOP:
+                # Nothing to fix.
+                return EXIT_OK
+        elif rval == EXIT_OK:
+                # Fixes to image required.
+                return EXIT_OOPS
+        else:
+                return rval
 
 def list_mediators(op, api_inst, pargs, omit_headers, output_format,
     list_available):
@@ -6048,7 +5951,7 @@ cmds = {
     "update"                : [update],
     "update-format"         : [update_format],
     "variant"               : [list_variant],
-    "verify"                : [verify_image],
+    "verify"                : [verify],
     "version"               : [None],
 }
 

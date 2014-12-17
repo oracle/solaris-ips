@@ -709,11 +709,29 @@ class PlanDescription(object):
                 """Add new messages to an item."""
                 self._item_msgs[item_id].extend(messages)
 
-        def get_item_messages(self):
-                """Return all item messages."""
-                for item_id, msgs in self._item_msgs.iteritems():
-                        for msg_time, msg_type, msg_text in msgs:
-                                yield item_id, msg_time, msg_type, msg_text
+        def gen_item_messages(self, ordered=False):
+                """Return all item messages.
+
+                'ordered' is an optional boolean value that indicates that
+                item messages will be sorted by msg_time. If False, item messages
+                will be in an arbitrary order."""
+
+                if ordered:
+                        # Sort all the item messages by msg_time
+                        ordered_list = sorted(self._item_msgs.iteritems(),
+                            key=lambda(k,v): v[0][0])
+                        for item in ordered_list:
+                                item_id = item[0]
+                                for msg_time, msg_type, msg_text in \
+                                    self._item_msgs[item_id]:
+                                        yield item_id, msg_time, msg_type, \
+                                            msg_text
+                else:
+                        for item_id in self._item_msgs:
+                                for msg_time, msg_type, msg_text in \
+                                    self._item_msgs[item_id]:
+                                        yield item_id, msg_time, msg_type, \
+                                            msg_text
 
         def set_actuator_timeout(self, timeout):
                 """Set timeout for synchronous actuators."""

@@ -7,7 +7,7 @@
 
 <refentry id="pkg-1">
 <refmeta><refentrytitle>pkg</refentrytitle><manvolnum>1</manvolnum>
-<refmiscinfo class="date">28 May 2014</refmiscinfo>
+<refmiscinfo class="date">12 Nov 2014</refmiscinfo>
 <refmiscinfo class="sectdesc">&man1;</refmiscinfo>
 <refmiscinfo class="software">&release;</refmiscinfo>
 <refmiscinfo class="arch">generic</refmiscinfo>
@@ -67,7 +67,7 @@ cmd_options</replaceable>] [<replaceable>operands</replaceable>]</synopsis>
 <synopsis>/usr/bin/pkg search [-HIaflpr]
     [-o <replaceable>attribute</replaceable>[,<replaceable>attribute</replaceable>]...]... [-s <replaceable>repo_uri</replaceable>] <replaceable>query</replaceable></synopsis>
 <synopsis>/usr/bin/pkg verify [-Hqv] [<replaceable>pkg_fmri_pattern</replaceable> ...]</synopsis>
-<synopsis>/usr/bin/pkg fix [-nvq] [--no-be-activate]
+<synopsis>/usr/bin/pkg fix [-Hnvq] [--no-be-activate]
     [--no-backup-be | --require-backup-be]
     [--backup-be-name <replaceable>name</replaceable>]
     [--deny-new-be | --require-new-be] [--be-name <replaceable>name</replaceable>]
@@ -902,19 +902,16 @@ in the current image.</para>
 <listitem><para>Omit the headers from the verification output.</para>
 </listitem>
 </varlistentry>
-<varlistentry><term><option>q</option></term>
-<listitem><para>Suppress progress messages and all other output during the
-requested operation.</para>
-</listitem>
-</varlistentry>
 <varlistentry><term><option>v</option></term>
-<listitem><para>Include informational messages regarding packages.</para>
+<listitem><para>Include informational messages regarding packages, also see its
+description in the install command above.</para>
 </listitem>
 </varlistentry>
 </variablelist>
+<para>For all other options, see the \fBinstall\fR command above.</para>
 </listitem>
 </varlistentry>
-<varlistentry><term><command>pkg fix</command> [<option>nvq</option>]
+<varlistentry><term><command>pkg fix</command> [<option>Hnvq</option>]
 [<option>-no-be-activate</option>]
 [<option>-no-backup-be</option> | <option>-require-backup-be</option>]
 [<option>-backup-be-name</option> <replaceable>name</replaceable>]
@@ -927,6 +924,15 @@ that might return different results than those of other programs.</para>
 <varlistentry><term><replaceable>pkg_fmri_pattern</replaceable></term>
 <listitem><para>Fix errors reported by <command>pkg verify</command> for only
 the specified packages installed in the current image.</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>H</option></term>
+<listitem><para>Omit the headers from the verification output.</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><option>v</option></term>
+<listitem><para>Include informational messages regarding packages, also see its
+description in the install command above.</para>
 </listitem>
 </varlistentry>
 <varlistentry><term><option>-accept</option></term>

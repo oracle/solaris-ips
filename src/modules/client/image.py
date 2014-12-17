@@ -2279,9 +2279,10 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                                 errors, warnings, info = act.verify(
                                     self, pfmri=fmri, **kwargs)
                         elif act.include_this(vardrate_excludes,
-                            publisher=fmri.publisher):
-                                # Verify that file that is faceted out
-                                # does not exist.
+                            publisher=fmri.publisher) and not act.refcountable:
+                                # Verify that file that is faceted out does not
+                                # exist. Exclude actions which may be delivered
+                                # from multiple packages.
                                 path = act.attrs.get("path", None)
                                 if path is not None and os.path.exists(
                                     os.path.join(self.root, path)):
@@ -3431,11 +3432,11 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                                 continue
                         yield f
 
-        def gen_installed_pkgs(self, pubs=EmptyI):
+        def gen_installed_pkgs(self, pubs=EmptyI, ordered=False):
                 """Return an iteration through the installed packages."""
 
                 cat = self.get_catalog(self.IMG_CATALOG_INSTALLED)
-                for f in cat.fmris(pubs=pubs):
+                for f in cat.fmris(pubs=pubs, ordered=ordered):
                         yield f
 
         def count_installed_pkgs(self, pubs=EmptyI):
