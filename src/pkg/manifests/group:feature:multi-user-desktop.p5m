@@ -20,7 +20,7 @@
 #
 
 #
-# Copyright (c) 2011, 2013, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2011, 2014, Oracle and/or its affiliates. All rights reserved.
 #
 
 set name=pkg.fmri value=pkg:/group/feature/multi-user-desktop@$(PKGVERS)
@@ -37,7 +37,6 @@ depend type=group fmri=codec/libtheora
 depend type=group fmri=codec/ogg-vorbis
 depend type=group fmri=codec/speex
 depend type=group fmri=communication/im/pidgin
-depend type=group fmri=desktop/administration/nwam-manager
 depend type=group fmri=desktop/archive-manager/file-roller
 depend type=group fmri=desktop/calculator/gcalctool
 depend type=group fmri=desktop/character-map/gucharmap
@@ -67,8 +66,6 @@ depend type=group fmri=driver/audio/audiop16x
 $(i386_ONLY)depend type=group fmri=driver/audio/audiosolo
 $(i386_ONLY)depend type=group fmri=driver/audio/audiovia823x
 depend type=group fmri=driver/graphics/usbvc
-depend type=group fmri=driver/ieee-1394/av1394
-depend type=group fmri=driver/ieee-1394/dcam1394
 depend type=group fmri=driver/x11/winlock
 $(i386_ONLY)depend type=group fmri=driver/x11/xsvc
 depend type=group fmri=editor/diagram/dia
@@ -138,8 +135,6 @@ depend type=group fmri=library/myspell/dictionary/pt_br
 depend type=group fmri=library/python-2/coherence-26
 depend type=group fmri=mail/thunderbird
 depend type=group fmri=mail/thunderbird/plugin/thunderbird-lightning
-depend type=group fmri=network/dhcp/dhcpmgr
-depend type=group fmri=network/dhcp/dhcpmgr/locale
 depend type=group fmri=print/cups/system-config-printer
 depend type=group fmri=print/filter/ghostscript
 depend type=group fmri=print/filter/ghostscript/fonts/gnu-gs-fonts-other
@@ -148,7 +143,6 @@ depend type=group fmri=print/filter/gutenprint
 depend type=group fmri=print/mp
 depend type=group fmri=release/os-welcome
 depend type=group fmri=service/gnome/desktop-cache
-depend type=group fmri=service/network/dhcp/datastore/binfiles
 depend type=group fmri=service/postrun
 depend type=group fmri=system/display-manager/desktop-startup
 depend type=group fmri=system/display-manager/gdm
@@ -178,20 +172,6 @@ depend type=group fmri=system/input-method/imf-startup
 depend type=group fmri=system/io/audio
 depend type=group fmri=system/keyboard/kbd_mode
 depend type=group fmri=system/locale/support
-#
-# Include the same panels that are delivered by
-# group/system/solaris-desktop.  Those should be the panels that match
-# the underlying technologies included with the desktop group package.
-#
-depend type=group fmri=system/management/visual-panels-core
-depend type=group fmri=system/management/visual-panels/panel-apache
-depend type=group fmri=system/management/visual-panels/panel-coreadm
-depend type=group fmri=system/management/visual-panels/panel-firewall
-depend type=group fmri=system/management/visual-panels/panel-smf
-depend type=group fmri=system/management/visual-panels/panel-sysmon
-depend type=group fmri=system/management/visual-panels/panel-time
-depend type=group fmri=system/management/visual-panels/panel-usermgr
-depend type=group fmri=system/management/visual-panels/panel-zconsole
 depend type=group fmri=system/network/avahi
 $(i386_ONLY)depend type=group fmri=system/storage/parted
 depend type=group fmri=terminal/fbconsole
