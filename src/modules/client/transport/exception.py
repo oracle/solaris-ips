@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2009, 2012, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2009, 2015, Oracle and/or its affiliates. All rights reserved.
 #
 
 import errno
@@ -153,11 +153,22 @@ class TransportProtoError(TransportException):
                 self.uuid = uuid
                 self.details = details
                 self.proxy = proxy
+                self.codename = ""
+                codenames = [
+                        name
+                        for name in vars(pycurl)
+                        if len(name) > 1 and name[:2] == "E_" and \
+                            getattr(pycurl, name) == code
+                ]
+                if len(codenames) >= 1:
+                        self.codename = codenames[0]
 
         def __str__(self):
                 s = "%s protocol error" % self.proto
-                if self.code:
-                        s += ": code: %d" % self.code
+                if self.code and self.codename:
+                        s += ": code: %s (%d)" % (self.codename, self.code)
+                elif self.code:
+                        s += ": Unknown error code: %d" % self.code
                 if self.reason:
                         s += " reason: %s" % self.reason
                 if self.url:
@@ -176,7 +187,7 @@ class TransportProtoError(TransportException):
 
         def __cmp__(self, other):
                 if not isinstance(other, TransportProtoError):
-                        return -1        
+                        return -1
                 r = cmp(self.proto, other.proto)
                 if r != 0:
                         return r
@@ -206,9 +217,21 @@ class TransportFrameworkError(TransportException):
                 self.retryable = self.code in retryable_pycurl_errors
                 self.uuid = uuid
                 self.proxy = proxy
+                self.codename = ""
+                codenames = [
+                        name
+                        for name in vars(pycurl)
+                        if len(name) > 1 and name[:2] == "E_" and \
+                            getattr(pycurl, name) == code
+                ]
+                if len(codenames) >= 1:
+                        self.codename = codenames[0]
 
         def __str__(self):
-                s = "Framework error: code: %d" % self.code
+                if self.codename:
+                        s = "Framework error: code: %s (%d)" % (self.codename, self.code)
+                else:
+                        s = "Unkown Framework error code: %d" % self.code
                 if self.reason:
                         s += " reason: %s" % self.reason
                 if self.url:
@@ -220,7 +243,7 @@ class TransportFrameworkError(TransportException):
 
         def __cmp__(self, other):
                 if not isinstance(other, TransportFrameworkError):
-                        return -1        
+                        return -1
                 r = cmp(self.code, other.code)
                 if r != 0:
                         return r
@@ -286,7 +309,7 @@ class TransferContentException(TransportException):
 
         def __cmp__(self, other):
                 if not isinstance(other, TransferContentException):
-                        return -1        
+                        return -1
                 r = cmp(self.url, other.url)
                 if r != 0:
                         return r
@@ -323,7 +346,7 @@ class InvalidContentException(TransportException):
 
         def __cmp__(self, other):
                 if not isinstance(other, InvalidContentException):
-                        return -1        
+                        return -1
                 r = cmp(self.path, other.path)
                 if r != 0:
                         return r
@@ -352,7 +375,7 @@ class PkgProtoError(TransportException):
                 self.operation = operation
                 self.version = version
                 self.proxy = proxy
-        
+
         def __str__(self):
                 if self.proxy:
                         s = "Invalid pkg(5) response from %s (proxy %s)" % \
@@ -382,7 +405,7 @@ class PkgProtoError(TransportException):
                 r = cmp(self.proxy, other.proxy)
                 if r != 0:
                         return r
-                return cmp(self.reason, other.reason) 
+                return cmp(self.reason, other.reason)
 
 
 class ExcessiveTransientFailure(TransportException):
@@ -407,7 +430,7 @@ class ExcessiveTransientFailure(TransportException):
                 if self.count:
                         s += "Count: %s " % self.count
                 return s
-                
+
         def __cmp__(self, other):
                 if not isinstance(other, ExcessiveTransientFailure):
                         return -1
