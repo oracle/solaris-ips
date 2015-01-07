@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2007, 2014, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2007, 2015, Oracle and/or its affiliates. All rights reserved.
 #
 
 #
@@ -1194,14 +1194,14 @@ def display_plan_licenses(api_inst, show_all=False, show_req=True):
                 # Mark license as having been displayed.
                 api_inst.set_plan_license_status(pfmri, lic, displayed=True)
 
-def display_plan(api_inst, child_image_plans, noexecute, op, parsable_version,
-    quiet, show_licenses, stage, verbose, omit_headers):
+def display_plan(api_inst, child_image_plans, noexecute, omit_headers, op,
+    parsable_version, quiet, quiet_plan, show_licenses, stage, verbose):
 
         plan = api_inst.describe()
         if not plan:
                 return
 
-        if stage not in [API_STAGE_DEFAULT, API_STAGE_PLAN]:
+        if stage not in [API_STAGE_DEFAULT, API_STAGE_PLAN] and not quiet_plan:
                 # we should have displayed licenses earlier so mark all
                 # licenses as having been displayed.
                 display_plan_licenses(api_inst, show_req=False)
@@ -1209,31 +1209,34 @@ def display_plan(api_inst, child_image_plans, noexecute, op, parsable_version,
 
         if not quiet and parsable_version is None and \
             api_inst.planned_nothingtodo(li_ignore_all=True):
-                # nothing todo
-                if op == PKG_OP_UPDATE:
-                        s = _("No updates available for this image.")
-                else:
-                        s = _("No updates necessary for this image.")
-                if api_inst.ischild():
-                        s += " (%s)" % api_inst.get_linked_name()
-                msg(s)
+                if not quiet_plan:
+                        # nothing todo
+                        if op == PKG_OP_UPDATE:
+                                s = _("No updates available for this image.")
+                        else:
+                                s = _("No updates necessary for this image.")
+                        if api_inst.ischild():
+                                s += " (%s)" % api_inst.get_linked_name()
+                        msg(s)
                 if op != PKG_OP_FIX or not verbose:
                         # Even nothingtodo, but need to continue to display INFO
                         # message if verbose is True.
                         return
 
-        if parsable_version is None:
+        if parsable_version is None and not quiet_plan:
                 display_plan_licenses(api_inst, show_all=show_licenses)
 
-        if not quiet:
+        if not quiet and not quiet_plan:
                 __display_plan(api_inst, verbose, noexecute, op=op)
 
         if parsable_version is not None:
                 __display_parsable_plan(api_inst, parsable_version,
                     child_image_plans)
         elif not quiet:
-                # Ensure a blank line is inserted before the message output.
-                msg()
+                if not quiet_plan:
+                        # Ensure a blank line is inserted before the message
+                        # output.
+                        msg()
 
                 last_item_id = None
                 for item_id, msg_time, msg_type, msg_text in \
@@ -1519,9 +1522,9 @@ pkg:/package/pkg' as a privileged user and then retry the %(op)s."""
         # NOTREACHED
 
 def __api_plan(_op, _api_inst, _accept=False, _li_ignore=None, _noexecute=False,
-    _origins=None, _parsable_version=None, _quiet=False,
-    _review_release_notes=False, _show_licenses=False, _stage=API_STAGE_DEFAULT,
-    _verbose=0, _omit_headers=False, **kwargs):
+    _omit_headers=False, _origins=None, _parsable_version=None, _quiet=False,
+    _quiet_plan=False, _review_release_notes=False, _show_licenses=False,
+    _stage=API_STAGE_DEFAULT, _verbose=0, **kwargs):
 
         # All the api interface functions that we invoke have some
         # common arguments.  Set those up now.
@@ -1587,9 +1590,9 @@ def __api_plan(_op, _api_inst, _accept=False, _li_ignore=None, _noexecute=False,
                         # until after we finish planning for all children
                         if _parsable_version is None:
                                 display_plan(_api_inst, [], _noexecute,
-                                    _op, _parsable_version, _quiet,
-                                    _show_licenses, _stage, _verbose,
-                                    _omit_headers)
+                                    _omit_headers, _op, _parsable_version,
+                                    _quiet, _quiet_plan, _show_licenses, _stage,
+                                    _verbose)
 
                         # if requested accept licenses for child images.  we
                         # have to do this before recursing into children.
@@ -1615,8 +1618,8 @@ def __api_plan(_op, _api_inst, _accept=False, _li_ignore=None, _noexecute=False,
         if not planned_self or _parsable_version is not None:
                 try:
                         display_plan(_api_inst, child_plans, _noexecute,
-                            _op, _parsable_version, _quiet, _show_licenses,
-                            _stage, _verbose, _omit_headers)
+                            _omit_headers, _op, _parsable_version, _quiet,
+                            _quiet_plan, _show_licenses, _stage, _verbose)
                 except api_errors.ApiException, e:
                         error(e, cmd=_op)
                         return EXIT_OOPS
@@ -1691,9 +1694,9 @@ def __api_plan_delete(api_inst):
                 raise api_errors._convert_error(e)
 
 def __api_op(_op, _api_inst, _accept=False, _li_ignore=None, _noexecute=False,
-    _origins=None, _parsable_version=None, _quiet=False,
-    _review_release_notes=False, _show_licenses=False,
-    _stage=API_STAGE_DEFAULT, _verbose=0, _omit_headers=False, **kwargs):
+    _omit_headers=False, _origins=None, _parsable_version=None, _quiet=False,
+    _quiet_plan=False, _review_release_notes=False, _show_licenses=False,
+    _stage=API_STAGE_DEFAULT, _verbose=0, **kwargs):
         """Do something that involves the api.
 
         Arguments prefixed with '_' are primarily used within this
@@ -1705,11 +1708,12 @@ def __api_op(_op, _api_inst, _accept=False, _li_ignore=None, _noexecute=False,
                 # create a new plan
                 rv = __api_plan(_op=_op, _api_inst=_api_inst,
                     _accept=_accept, _li_ignore=_li_ignore,
-                    _noexecute=_noexecute, _origins=_origins,
-                    _parsable_version=_parsable_version, _quiet=_quiet,
+                    _noexecute=_noexecute, _omit_headers=_omit_headers,
+                    _origins=_origins, _parsable_version=_parsable_version,
+                    _quiet=_quiet, _quiet_plan=_quiet_plan,
                     _review_release_notes=_review_release_notes,
                     _show_licenses=_show_licenses, _stage=_stage,
-                    _verbose=_verbose, _omit_headers=_omit_headers, **kwargs)
+                    _verbose=_verbose, **kwargs)
 
                 if rv != EXIT_OK:
                         return rv
@@ -2103,7 +2107,8 @@ def verify(op, api_inst, pargs, omit_headers, quiet, verbose):
         """Determine if installed packages match manifests."""
 
         rval = __api_op(PKG_OP_FIX, api_inst, args=pargs, _noexecute=True,
-            _quiet=quiet, _verbose=verbose, _omit_headers=omit_headers)
+            _omit_headers=omit_headers, _quiet=quiet, _quiet_plan=True,
+            _verbose=verbose)
 
         if rval == EXIT_NOP:
                 # Nothing to fix.
