@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2008, 2014, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2008, 2015, Oracle and/or its affiliates. All rights reserved.
 #
 
 """This module provides the supported, documented interface for clients to
@@ -1220,7 +1220,7 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                     "_li_erecurse":         (iter,                 True),
                     "_li_ignore":           (iter,                 True),
                     "_li_md_only":          (bool,                 False),
-                    "_li_parent_sync":      (bool,                 False),      
+                    "_li_parent_sync":      (bool,                 False),
                     "_new_be":              (bool,                 True),
                     "_noexecute":           (bool,                 False),
                     "_pubcheck":            (bool,                 False),
@@ -5067,6 +5067,8 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                 self._img.remove_publisher(prefix=prefix, alias=alias,
                     progtrack=self.__progresstracker)
 
+                self.__remove_unused_client_certificates()
+
         def update_publisher(self, pub, refresh_allowed=True, search_after=None,
             search_before=None, search_first=None):
                 """Replaces an existing publisher object with the provided one
@@ -5279,6 +5281,31 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
 
                 # Successful; so save configuration.
                 self._img.save_config()
+
+                self.__remove_unused_client_certificates()
+
+        def __remove_unused_client_certificates(self):
+                """Remove unused client certificate files"""
+
+                # Get certificate files currently in use.
+                ssl_path = os.path.join(self._img.imgdir, "ssl")
+                current_file_list = set()
+                pubs = self._img.get_publishers()
+                for p in pubs:
+                        pub = pubs[p]
+                        for origin in pub.repository.origins:
+                                current_file_list.add(origin.ssl_key)
+                                current_file_list.add(origin.ssl_cert)
+
+                # Remove files found in ssl directory that
+                # are not in use by publishers.
+                for f in os.listdir(ssl_path):
+                        path = os.path.join(ssl_path, f)
+                        if path not in current_file_list:
+                                try:
+                                        portable.remove(path)
+                                except:
+                                        continue
 
         def log_operation_end(self, error=None, result=None,
             release_notes=None):

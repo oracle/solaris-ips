@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2008, 2013, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2008, 2015, Oracle and/or its affiliates. All rights reserved.
 #
 
 import testutils
@@ -565,6 +565,76 @@ class TestPkgPublisherBasics(pkg5unittest.SingleDepotTestCase):
                     "prefix": "test3" } })
                 self.pkg("set-publisher -g %s test3" % repo_dir)
                 shutil.rmtree(repo_dir)
+
+        def test_remove_unused_cert_key(self):
+                """Ensure that unused client certificate files are removed."""
+
+                self.image_create(self.rurl)
+
+                # Set the first publisher to a https URL
+                key_path = os.path.join(self.keys_dir, "cs1_ch1_ta3_key.pem")
+                cert_path = os.path.join(self.cs_dir, "cs1_ch1_ta3_cert.pem")
+
+                img_key_path = os.path.join(self.img_path(), "var", "pkg",
+                    "ssl", pkg.misc.get_data_digest(key_path,
+                    hash_func=hashlib.sha1)[0])
+                img_cert_path = os.path.join(self.img_path(), "var", "pkg",
+                    "ssl", pkg.misc.get_data_digest(cert_path,
+                    hash_func=hashlib.sha1)[0])
+
+                self.pkg("set-publisher --no-refresh -O https://{0} -c {1} \
+                    -k {2} test1" .format(self.bogus_url, cert_path, key_path))
+
+                # cert and key should exist
+                self.assert_(os.path.exists(img_key_path))
+                self.assert_(os.path.exists(img_cert_path))
+
+                # Now change test1 to http URL to check whether
+                # certificate and key are removed
+                self.pkg("set-publisher --no-refresh -O http://{0} \
+                    test1".format(self.bogus_url))
+
+                # cert and key should not exist.
+                self.assert_(not os.path.exists(img_key_path))
+                self.assert_(not os.path.exists(img_cert_path))
+
+                # Now test if cert and key is still in use
+                # we should not remove them
+                self.pkg("set-publisher --no-refresh -O https://{0} -c {1} \
+                    -k {2} test1".format(self.bogus_url, cert_path, key_path))
+
+                self.pkg("set-publisher --no-refresh -O https://{0} -c {1} \
+                    -k {2} foo".format(self.bogus_url, cert_path, key_path))
+
+                # cert and key should exist
+                self.assert_(os.path.exists(img_key_path))
+                self.assert_(os.path.exists(img_cert_path))
+
+                # Remove ssl for test1
+                self.pkg("set-publisher --no-refresh -O http://{0} \
+                    foo".format(self.bogus_url))
+
+                # cert and key should still exist.
+                self.assert_(os.path.exists(img_key_path))
+                self.assert_(os.path.exists(img_cert_path))
+
+                # Test unset-publisher
+                self.pkg("set-publisher --no-refresh -O https://{0} -c {1} \
+                    -k {2} foo".format(self.bogus_url, cert_path, key_path))
+
+                # cert and key should exist.
+                self.assert_(os.path.exists(img_key_path))
+                self.assert_(os.path.exists(img_cert_path))
+
+                self.pkg("unset-publisher foo")
+                # cert and key should still exist.
+                self.assert_(os.path.exists(img_key_path))
+                self.assert_(os.path.exists(img_cert_path))
+
+                self.pkg("unset-publisher test1")
+                # cert and key should not exist.
+                self.assert_(not os.path.exists(img_key_path))
+                self.assert_(not os.path.exists(img_cert_path))
 
 
 class TestPkgPublisherMany(pkg5unittest.ManyDepotTestCase):
@@ -1168,7 +1238,7 @@ class TestMultiPublisherRepo(pkg5unittest.ManyDepotTestCase):
                 self.assertEqual(lines[2].split()[0], "test2")
 
         def test_multiple_p_option(self):
-                """Verify that providing multiple repositories using 
+                """Verify that providing multiple repositories using
                 -p option fails"""
                 self.image_create()
                 self.pkg("set-publisher -p %s -p %s" % (self.rurl1,
