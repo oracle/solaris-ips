@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2007, 2011, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2007, 2015, Oracle and/or its affiliates. All rights reserved.
 #
 
 import os
@@ -33,7 +33,7 @@ from pkg.actions import *
 
 class TarBundle(pkg.bundle.Bundle):
 
-        def __init__(self, filename, targetpaths=None):
+        def __init__(self, filename, **kwargs):
                 # XXX This could be more intelligent.  Or get user input.  Or
                 # extend API to take FMRI.
                 filename = os.path.normpath(filename)
@@ -47,7 +47,7 @@ class TarBundle(pkg.bundle.Bundle):
 
         def _walk_bundle(self):
                 for f in self.tf:
-                        yield tarinfo.name, (self.tf, f)
+                        yield f.name, (self.tf, f)
 
         def __iter__(self):
                 for path, data in self._walk_bundle():

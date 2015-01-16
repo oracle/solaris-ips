@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2007, 2014, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2007, 2015, Oracle and/or its affiliates. All rights reserved.
 #
 
 from __future__ import print_function
@@ -84,7 +84,7 @@ Usage:
         pkgsend [options] command [cmd_options] [operands]
 
 Packager subcommands:
-        pkgsend generate [-T pattern] [--target file] source ...
+        pkgsend generate [-T pattern] [-u] [--target file] source ...
         pkgsend publish [-b bundle ...] [-d source ...] [-s repo_uri_or_path]
             [-T pattern] [--key ssl_key ... --cert ssl_cert ...]
             [--no-catalog] [manifest ...]
@@ -406,7 +406,7 @@ def trans_publish(repo_uri, fargs):
                 )
 
         bundles = [
-            pkg.bundle.make_bundle(bundle, target_files)
+            pkg.bundle.make_bundle(bundle, targetpaths=target_files)
             for bundle in bundles
         ]
 
@@ -553,9 +553,13 @@ def trans_include(repo_uri, fargs, transaction=None):
         else:
                 return 0
 
-def gen_actions(files, timestamp_files, target_files, minimal=False, visitors=[]):
+def gen_actions(files, timestamp_files, target_files, minimal=False, visitors=[],
+    use_default_owner=True):
         for filename in files:
-                bundle = pkg.bundle.make_bundle(filename, target_files)
+                bundle = pkg.bundle.make_bundle(filename,
+                    targetpaths=target_files,
+                    use_default_owner=use_default_owner)
+
                 for visitor in visitors:
                         visitor.visit(bundle)
 
@@ -613,7 +617,7 @@ def trans_import(repo_uri, args, visitors=[]):
         abandon = False
         try:
                 for action, err in gen_actions(pargs, timestamp_files,
-                    target_files, visitors=visitors):
+                    target_files, visitors=visitors, use_default_owner=True):
                         if err:
                                 error(_("invalid action for publication: %s") %
                                     action, cmd="import")
@@ -644,16 +648,19 @@ def trans_import(repo_uri, args, visitors=[]):
 def trans_generate(args, visitors=[]):
         """Generate a package manifest based on the provided sources."""
 
-        opts, pargs = getopt.getopt(args, "T:", ["target="])
+        opts, pargs = getopt.getopt(args , "uT:", ["target="])
 
         timestamp_files = []
         target_files = []
+        use_default_owner = True
 
         for opt, arg in opts:
                 if opt == "-T":
                         timestamp_files.append(arg)
                 elif opt == "--target":
                         target_files.append(arg)
+                elif opt == "-u":
+                        use_default_owner = False
 
         if not args:
                 usage(_("No arguments specified for subcommand."),
@@ -661,7 +668,8 @@ def trans_generate(args, visitors=[]):
 
         try:
                 for action, err in gen_actions(pargs, timestamp_files,
-                    target_files, minimal=True, visitors=visitors):
+                    target_files, minimal=True, visitors=visitors,
+                    use_default_owner=use_default_owner):
                         if "path" in action.attrs and hasattr(action, "hash") \
                             and action.hash == "NOHASH":
                                 action.hash = action.attrs["path"]

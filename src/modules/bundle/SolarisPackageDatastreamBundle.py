@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2007, 2012, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2007, 2015, Oracle and/or its affiliates. All rights reserved.
 #
 
 import os
@@ -46,7 +46,7 @@ typemap = {
 class SolarisPackageDatastreamBundle(SolarisPackageDirBundle):
         """XXX Need a class comment."""
 
-        def __init__(self, filename, targetpaths=()):
+        def __init__(self, filename, **kwargs):
                 filename = os.path.normpath(filename)
                 self.pkg = SolarisPackage(filename)
                 self.pkgname = self.pkg.pkginfo["PKG"]

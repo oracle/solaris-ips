@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2007, 2014, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2007, 2015, Oracle and/or its affiliates. All rights reserved.
 #
 
 from __future__ import print_function
@@ -47,6 +47,26 @@ class InvalidBundleException(Exception):
                 return str(self)
 
 
+class InvalidOwnershipException(InvalidBundleException):
+        """Raised when gid or uid lookup fails for a file during bundle
+        generation."""
+
+        def __init__(self, fname, uid=None, gid=None):
+                InvalidBundleException.__init__(self)
+                self.fname = fname
+                msg = []
+                if uid:
+                        msg.append("UID {uid} is not associated with a user "
+                            "name (file: {fname})".format(uid=uid, fname=fname))
+                if gid:
+                        msg.append("GID {gid} is not associated with a group "
+                            "name (file: {fname})".format(gid=gid, fname=fname))
+                self.msg = '\n'.join(msg)
+
+        def __str__(self):
+                return self.msg
+
+
 class Bundle(object):
         """Base bundle class."""
 
@@ -64,7 +84,7 @@ class Bundle(object):
                                 # Action was returned.
                                 return data
 
-def make_bundle(filename, targetpaths=()):
+def make_bundle(filename, **kwargs):
         """Determines what kind of bundle is at the given filename, and returns
         the appropriate bundle object.
         """
@@ -76,7 +96,7 @@ def make_bundle(filename, targetpaths=()):
                 bmodule = sys.modules[bname]
                 if bmodule.test(filename):
                         bundle_create = getattr(bmodule, btype)
-                        return bundle_create(filename, targetpaths=targetpaths)
+                        return bundle_create(filename, **kwargs)
 
         raise TypeError("Unknown bundle type for '%s'" % filename)
 

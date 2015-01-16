@@ -11,7 +11,7 @@
 <refmiscinfo class="sectdesc">&man1;</refmiscinfo>
 <refmiscinfo class="software">&release;</refmiscinfo>
 <refmiscinfo class="arch">generic</refmiscinfo>
-<refmiscinfo class="copyright">Copyright (c) 2007, 2013, Oracle and/or its affiliates. All rights reserved.</refmiscinfo>
+<refmiscinfo class="copyright">Copyright (c) 2007, 2015, Oracle and/or its affiliates. All rights reserved.</refmiscinfo>
 </refmeta>
 <refnamediv>
 <refname>pkgsend</refname><refpurpose>Image Packaging System publication client</refpurpose>
@@ -19,7 +19,7 @@
 <refsynopsisdiv><title></title>
 <synopsis>/usr/bin/pkgsend [<replaceable>options</replaceable>] <replaceable>command</replaceable> [<replaceable>cmd_options</replaceable>] [<replaceable>operands</replaceable>]
 </synopsis>
-<synopsis>/usr/bin/pkgsend generate [-T <replaceable>pattern</replaceable>] [--target <replaceable>file</replaceable>]
+<synopsis>/usr/bin/pkgsend generate [-T <replaceable>pattern</replaceable>] [-u] [--target <replaceable>file</replaceable>]
     <replaceable>source</replaceable> ...</synopsis>
 <synopsis>/usr/bin/pkgsend publish [-b <replaceable>bundle</replaceable>]... [-d <replaceable>source</replaceable>]...
     [-s <replaceable>repo_uri_or_path</replaceable>] [--key <replaceable>ssl_key</replaceable> --cert <replaceable>ssl_cert</replaceable>]...
@@ -47,12 +47,10 @@ indexes.</para>
 <refsect1 role="subcommands"><title></title>
 <para>The following subcommands are supported:</para>
 <variablelist termlength="wholeline">
-<varlistentry><term><command>pkgsend generate</command> [<option>T</option> <replaceable>pattern</replaceable>] [<option>-target</option> <replaceable>file</replaceable>] <replaceable>source</replaceable> ...</term>
+<varlistentry><term><command>pkgsend generate</command> [<option>T</option> <replaceable>pattern</replaceable>] [<option>u</option>] [<option>-target</option> <replaceable>file</replaceable>] <replaceable>source</replaceable> ...</term>
 <listitem><para>Read each <replaceable>source</replaceable> (such as an SVR4
 package, a directory, or a <command>tar</command> file) and emit the manifest
 that describes the <replaceable>source</replaceable> to <filename>stdout</filename>.
-In the output manifest, <literal>file</literal> and <literal>dir</literal> actions
-have owner set to <literal>root</literal> and group set to <literal>bin</literal>.
 </para>
 <para>The output manifest can then be annotated, have dependencies added or
 analyzed using <command>pkgdepend</command>, and have its correctness verified
@@ -104,6 +102,10 @@ SMF manifests installed with the <literal>manifest</literal> class. <literal>BAS
 <para>The SVR4 <literal>DESC</literal> parameter is converted to a <literal>pkg.description
 </literal> value. The SVR4 <literal>NAME</literal> parameter is converted
 to a <literal>pkg.summary</literal> value.</para>
+<para>When generating a manifest based on a directory, the owner and group
+for each file and directory defaults to root and bin respectively.
+To use the owner and group information set on the files and directories instead, 
+specify <option>u</option>.</para>
 </listitem>
 </varlistentry>
 <varlistentry><term><command>pkgsend publish</command> [<option>b</option> <replaceable>bundle</replaceable>]... [<option>d</option> <replaceable>source</replaceable>]... [<option>s</option> <replaceable>repo_uri_or_path</replaceable>] [<option>-key</option> <replaceable>ssl_key</replaceable> <option>-cert</option> <replaceable>ssl_cert</replaceable>]... [<option>T</option> <replaceable>pattern</replaceable>] [<option>-no-catalog</option>] [<replaceable>manifest</replaceable> ...]</term>

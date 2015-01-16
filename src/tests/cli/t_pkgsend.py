@@ -27,9 +27,11 @@ if __name__ == "__main__":
         testutils.setup_environment("../../../proto")
 import pkg5unittest
 
+import grp
 import os
 import pkg.fmri as fmri
 import pkg.manifest as manifest
+import pwd
 import shutil
 import stat
 import tempfile
@@ -1334,6 +1336,75 @@ file %s path=/foo owner=root group=sys mode=0644 pkg.hash.%s=spaghetti \
                     not in self.output)
                 self.assert_("pkg.hash.rot13=caesar" in self.output)
 
+        def test_27_ownership(self):
+                """Test whether the ownership of the file will change if the
+                ownership flag is set during the manifest generation."""
+
+                rootdir = self.test_root
+                src_dir = os.path.join(rootdir, "foo")
+                url = self.dc.get_depot_url()
+
+                # Build a file tree under each source directory to test
+                # import and generate functionality.  Tree should look like:
+                #   src-foo/
+                #       file-foo
+                #       dir-foo/
+                #           subfile-foo
+                #           subdir-foo/
+                #               subdirfile-foo
+                cwd = os.getcwd()
+                # Final component used as part of name for all entries.
+                name = os.path.basename(src_dir)
+
+                # File at top level in source directory.
+                top_file = os.path.join(src_dir, "file-{0}".format(name))
+                self.make_misc_files(os.path.relpath(top_file, src_dir),
+                    prefix=name, mode=0644)
+
+                top_dir = os.path.join(src_dir, "dir-{0}".format(name))
+                os.mkdir(top_dir, 0755)
+
+                # File in top_dir.
+                top_dir_file = os.path.join(top_dir,
+                    "subfile-{0}".format(name))
+                self.make_misc_files(os.path.relpath(top_dir_file,
+                    src_dir), prefix=name, mode=0444)
+
+                # Directory in top_dir.
+                sub_dir = os.path.join(top_dir, "subdir-{0}".format(name))
+                os.mkdir(sub_dir, 0750)
+
+                # File in sub_dir.
+                sub_dir_file = os.path.join(sub_dir,
+                    "subdirfile-{0}".format(name))
+                self.make_misc_files(os.path.relpath(sub_dir_file,
+                    src_dir), prefix=name, mode=0400)
+
+                # Change ownership.
+                owner_id, group_id =  pkg5unittest.get_su_wrap_user(uid_gid = True)
+                for root, folders, files in os.walk(src_dir):
+                        os.chown(root, owner_id, group_id)
+                        for f in files:
+                                os.chown(os.path.join(root,f), owner_id,
+                                    group_id)
+
+                rc, actual = self.pkgsend(url, "generate -u {0}".format(src_dir))
+
+                # Pre-generated result used for package validation.
+                owner = pwd.getpwuid(owner_id).pw_name
+                group = grp.getgrgid(group_id).gr_name
+                expected = """\
+dir group={group} mode=0755 owner={owner} path=dir-foo
+file file-foo group={group} mode=0644 owner={owner} path=file-foo
+dir group={group} mode=0750 owner={owner} path=dir-foo/subdir-foo
+file dir-foo/subfile-foo group={group} mode=0444 owner={owner} path=dir-foo/subfile-foo
+file dir-foo/subdir-foo/subdirfile-foo group={group} mode=0400 owner={owner} \
+path=dir-foo/subdir-foo/subdirfile-foo\n""".format(
+                        owner=owner, group=group)
+
+                self.assertEqualDiff(self.reduceSpaces(expected),
+                    self.reduceSpaces(actual))
+
 
 class TestPkgsendHardlinks(pkg5unittest.CliTestCase):
 
@@ -1475,7 +1546,7 @@ class TestPkgsendHTTPS(pkg5unittest.HTTPSTestClass):
                 self.make_misc_files(self.misc_files)
                 #set permissions of tmp/verboten to make it non-readable
                 self.verboten = os.path.join(self.test_root, "tmp/verboten")
-                os.system("chmod 600 %s" % self.verboten) 
+                os.system("chmod 600 %s" % self.verboten)
 
         def test_01_basics(self):
                 """Test that publishing to an SSL-secured repo works"""
@@ -1512,12 +1583,12 @@ class TestPkgsendHTTPS(pkg5unittest.HTTPSTestClass):
                 # Add the trust anchor needed to verify the server's identity.
                 self.seed_ta_dir("ta7")
 
-                # Try to publish a simple package to SSL-secured repo  
+                # Try to publish a simple package to SSL-secured repo
                 self.pkgsend(self.url, "publish --key %(key)s --cert %(cert)s "
                     "-d %(dir)s %(mani)s" % arg_dict)
-        
+
                 # Try to publish a simple package to SSL-secured repo without
-                # prvoviding certs (should fail).  
+                # prvoviding certs (should fail).
                 self.pkgsend(self.url, "publish -d %(dir)s %(mani)s" % arg_dict,
                     exit=1)
 
@@ -1546,12 +1617,12 @@ class TestPkgsendHTTPS(pkg5unittest.HTTPSTestClass):
                 self.pkgsend(self.url, "publish --key %(empty)s "
                     "--cert %(cert)s -d %(dir)s %(mani)s" % arg_dict, exit=1)
 
-                # No permissions to read certificate 
+                # No permissions to read certificate
                 self.pkgsend(self.url, "publish --key %(key)s "
                     "--cert %(verboten)s -d %(dir)s %(mani)s" % arg_dict,
                     su_wrap=True, exit=1)
 
-                # No permissions to read key 
+                # No permissions to read key
                 self.pkgsend(self.url, "publish --key %(verboten)s "
                     "--cert %(cert)s -d %(dir)s %(mani)s" % arg_dict,
                     su_wrap=True, exit=1)

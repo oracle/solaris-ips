@@ -21,10 +21,12 @@
 #
 
 #
-# Copyright (c) 2008, 2011 Oracle and/or its affiliates.  All rights reserved.
+# Copyright (c) 2008, 2015 Oracle and/or its affiliates.  All rights reserved.
 #
 
+import grp
 import os
+import pwd
 import stat
 import pkg.misc
 
@@ -46,7 +48,7 @@ class DirectoryBundle(pkg.bundle.Bundle):
         caller once the action has been emitted.
         """
 
-        def __init__(self, path, targetpaths=()):
+        def __init__(self, path, targetpaths=(), use_default_owner=True):
                 # XXX This could be more intelligent.  Or get user input.  Or
                 # extend API to take FMRI.
                 path = os.path.normpath(path)
@@ -56,6 +58,7 @@ class DirectoryBundle(pkg.bundle.Bundle):
                 self.inodes = None
                 self.targetpaths = targetpaths
                 self.pkg = None
+                self.use_default_owner = use_default_owner
 
         def _walk_bundle(self):
                 # Pre-populate self.inodes with the paths of known targets
@@ -84,6 +87,31 @@ class DirectoryBundle(pkg.bundle.Bundle):
                 mode = oct(stat.S_IMODE(pstat.st_mode))
                 timestamp = pkg.misc.time_to_timestamp(pstat.st_mtime)
 
+                # Set default root and group.
+                owner = "root"
+                group = "bin"
+
+                # Check whether need to change owner.
+                if not self.use_default_owner:
+                        try:
+                                owner = pwd.getpwuid(pstat.st_uid).pw_name
+                        except KeyError, e:
+                                owner = None
+                        try:
+                                group = grp.getgrgid(pstat.st_gid).gr_name
+                        except KeyError, e:
+                                group = None
+
+                        if not owner and not group:
+                                raise pkg.bundle.InvalidOwnershipException(
+                                    path, uid=pstat.st_uid, gid=pstat.st_gid)
+                        elif not owner:
+                                raise pkg.bundle.InvalidOwnershipException(
+                                    path, uid=pstat.st_uid)
+                        elif not group:
+                                 raise pkg.bundle.InvalidOwnershipException(
+                                    path, gid=pstat.st_gid)
+
                 if stat.S_ISREG(pstat.st_mode):
                         inode = pstat.st_ino
                         # Any inode in self.inodes will either have been visited
@@ -95,8 +123,8 @@ class DirectoryBundle(pkg.bundle.Bundle):
                                 if pstat.st_nlink > 1:
                                         self.inodes.setdefault(inode, path)
                                 return pkg.actions.file.FileAction(
-                                    open(path, "rb"), mode=mode, owner="root",
-                                    group="bin", path=pubpath,
+                                    open(path, "rb"), mode=mode, owner=owner,
+                                    group=group, path=pubpath,
                                     timestamp=timestamp)
                         else:
                                 # Find the relative path to the link target.
@@ -109,8 +137,8 @@ class DirectoryBundle(pkg.bundle.Bundle):
                             target=os.readlink(path), path=pubpath)
                 elif stat.S_ISDIR(pstat.st_mode):
                         return pkg.actions.directory.DirectoryAction(
-                            timestamp=timestamp, mode=mode, owner="root",
-                            group="bin", path=pubpath)
+                            timestamp=timestamp, mode=mode, owner=owner,
+                            group=group, path=pubpath)
 
 def test(filename):
         return stat.S_ISDIR(os.stat(filename).st_mode)

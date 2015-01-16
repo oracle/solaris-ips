@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2007, 2012, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2007, 2015, Oracle and/or its affiliates. All rights reserved.
 #
 
 import os
@@ -39,7 +39,7 @@ class SolarisPackageDirBundle(pkg.bundle.Bundle):
 
         hollow_attr = "pkg.send.convert.sunw-pkg-hollow"
 
-        def __init__(self, filename, data=True, targetpaths=()):
+        def __init__(self, filename, data=True, **kwargs):
                 filename = os.path.normpath(filename)
                 self.pkg = SolarisPackage(filename)
                 self.pkgname = self.pkg.pkginfo["PKG"]
