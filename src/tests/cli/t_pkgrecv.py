@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2008, 2014, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2008, 2015, Oracle and/or its affiliates. All rights reserved.
 #
 
 import testutils
@@ -1003,7 +1003,7 @@ Estimated transfer size: 528.00 B
 
                 # Now attempt to clone a repository.
                 self.pkgrepo("create %s" % self.tempdir)
-                self.pkgrecv(self.dpath1, "--clone -d %s -p \* -n -v \*" \
+                self.pkgrecv(self.dpath1, "--clone -d %s -p \* -n -v" \
                     % self.tempdir)
                 expected = """\
 Retrieving packages (dry-run) ...

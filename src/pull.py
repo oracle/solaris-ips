@@ -501,6 +501,9 @@ def main_func():
         if clone and list_newest:
                 usage(_("--clone can not be used with --newest.\n"))
 
+        if clone and pargs:
+                usage(_("--clone does not support FMRI patterns"))
+
         if publishers and not clone:
                 usage(_("-p can only be used with --clone.\n"))
 

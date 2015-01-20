@@ -19,7 +19,7 @@
 #
 # CDDL HEADER END
 #
-# Copyright (c) 2013, 2014, Oracle and/or its affiliates.  All rights reserved.
+# Copyright (c) 2013, 2015, Oracle and/or its affiliates.  All rights reserved.
 #
 
 #
@@ -284,6 +284,8 @@ function update_repository {
 	set -A ssl_certs ""
 	set -A http_proxies ""
 	set -A https_proxies ""
+	set -A clones ""
+	set -A pubs ""
 
 	#
 	# Gather the details we need to connect to the origins
@@ -306,6 +308,8 @@ function update_repository {
 		# 'pkg publisher -F tsv'. It really ought to use
 		# 'pkg publisher -o' option when that's available.
 		#
+
+		first_index=$index
 		while read publisher sticky syspub enabled ptype status \
 		    uri proxy ; do
 			if [ "$pub" != "$publisher" ]; then
@@ -330,24 +334,33 @@ configured for publisher $pub"
 			fi
 			https_proxies[$index]=$proxy
 			http_proxies[$index]=$proxy
+			clones[$index]=""
+			pubs[$index]=$pub
 			index=$(( $index + 1 ))
 		done < /tmp/pkg.mirror.$$
 		$RM /tmp/pkg.mirror.$$
 		i=$(( $i + 1 ))
+
+		# If only one origin for this publisher
+		if [ $first_index -eq $(( $index - 1 )) ]; then
+			clones[$first_index]="true"
+		fi
 	done
 
 	# Iterate over all configured origins
 	i=0
 	while [ $i -lt ${#origins[@]} ]; do
 		origin=${origins[$i]}
+		pub=${pubs[$i]}
 		key=${ssl_keys[$i]}
 		cert=${ssl_certs[$i]}
 		http_proxy=${http_proxies[$i]}
 		https_proxy=${https_proxies[$i]}
+		clone=${clones[$i]}
 
 		pkgrecv_from_origin "$repo" "$origin" "$key" \
 		    "$cert" $SMF_FMRI "$cachedir" "$http_proxy" \
-		    "$https_proxy"
+		    "$https_proxy" "$clone" "$pub"
 		check_failure $? \
 		    "unable to update repository $repo" $SMF_FMRI \
 		    degrade
@@ -396,6 +409,8 @@ function pkgrecv_from_origin {
 	typeset cachedir=$6
 	typeset http_proxy=$(echo $7 | reduce_null_str)
 	typeset https_proxy=$(echo $8 | reduce_null_str)
+	typeset clone=$9
+	typeset publisher=${10}
 
 	typeset instance=$(echo $SMF_FMRI | $AWK -F: '{print $NF}')
 	typeset debug_flag=$($SVCPROP -p config/debug $SMF_FMRI)
@@ -412,13 +427,23 @@ function pkgrecv_from_origin {
 		key="--key $key"
 		cert="--cert $cert"
 	fi
+	
+	set -f
+	if [ -n "$clone" ]; then
+		cmd="$PKGRECV -s $origin -d "$repo" -p $publisher \
+		    $key $cert --clone"
+	else
+		cmd="$PKGRECV -s $origin -c "$cachedir"/$instance \
+		    -d "$repo" -m all-timestamps $key $cert *"
+	fi
+
 	# show the command we're running
 	if [ "$debug_flag" = "true" ] ; then
-		echo $PKGRECV -s $origin -c "$cachedir"/$instance \
-		    -d "$repo" -m all-timestamps $key $cert '*'
+		echo $cmd
 	fi
-	$PKGRECV -s $origin -c "$cachedir"/$instance -d "$repo" \
-	    -m all-timestamps $key $cert '*' >  $LOG.tmp 2>&1
+
+	$cmd > $LOG.tmp 2>&1
+	set +f
 	EXIT=$?
 
 	if [ "$debug_flag" = "true" ]; then
